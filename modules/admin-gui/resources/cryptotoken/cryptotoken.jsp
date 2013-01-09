@@ -35,6 +35,38 @@ org.cesecore.authorization.control.CryptoTokenRules
   <base href="<%= ejbcawebbean.getBaseUrl() %>" />
   <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>" />
   <script src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
+  <script>
+  /**
+   * Ensure that only fields related to the current CryptoToken type is shown.
+   * Called on load and type changes during CryptoToken creation.
+   */
+  function selectOneMenuTypeUpdated(selectOneMenu) {
+	  // If the component is unavailable, we are not in initial create mode and nothing should be done here
+	  if (selectOneMenu != null) {
+		  if (selectOneMenu.value == 'PKCS11CryptoToken') {
+			  document.getElementById('currentCryptoTokenForm:currentCryptoTokenAllowExportPrivateKey').style.display = 'none';
+			  document.getElementById('currentCryptoTokenForm:currentCryptoTokenAllowExportPrivateKeyLabel').style.display = 'none';
+			  document.getElementById('currentCryptoTokenForm:currentCryptoTokenP11Library').style.display = '';
+			  document.getElementById('currentCryptoTokenForm:currentCryptoTokenP11LibraryLabel').style.display = '';
+			  document.getElementById('currentCryptoTokenForm:currentCryptoTokenP11Slot').style.display = '';
+			  document.getElementById('currentCryptoTokenForm:currentCryptoTokenP11SlotLabel').style.display = '';
+			  document.getElementById('currentCryptoTokenForm:currentCryptoTokenP11AttributeFile').style.display = '';
+			  document.getElementById('currentCryptoTokenForm:currentCryptoTokenP11AttributeFileLabel').style.display = '';
+		  } else if (selectOneMenu.value == 'SoftCryptoToken') {
+			  document.getElementById('currentCryptoTokenForm:currentCryptoTokenAllowExportPrivateKey').style.display = '';
+			  document.getElementById('currentCryptoTokenForm:currentCryptoTokenAllowExportPrivateKeyLabel').style.display = '';
+			  document.getElementById('currentCryptoTokenForm:currentCryptoTokenP11Library').style.display = 'none';
+			  document.getElementById('currentCryptoTokenForm:currentCryptoTokenP11LibraryLabel').style.display = 'none';
+			  document.getElementById('currentCryptoTokenForm:currentCryptoTokenP11Slot').style.display = 'none';
+			  document.getElementById('currentCryptoTokenForm:currentCryptoTokenP11SlotLabel').style.display = 'none';
+			  document.getElementById('currentCryptoTokenForm:currentCryptoTokenP11AttributeFile').style.display = 'none';
+			  document.getElementById('currentCryptoTokenForm:currentCryptoTokenP11AttributeFileLabel').style.display = 'none';
+		  } else {
+			  console.log('Unknown selection ignored silently: ' + selectOneMenu.value);
+		  }
+	  }
+  }
+  </script>
      <style type="text/css">
 		/* TODO: Move re-usable styles to included .css */
 		.expandOnClick { width: 25em;  height: 1em;  display: block; overflow: hidden; white-space: nowrap; }
@@ -43,13 +75,13 @@ org.cesecore.authorization.control.CryptoTokenRules
 		.expandOnClick:focus:after { content: ""; }
    </style>
 </head>
-<body>
+<body onload="selectOneMenuTypeUpdated(document.getElementById('currentCryptoTokenForm:selectOneMenuType'))">
 	<h1>
 	    <h:outputText value="#{web.text.CRYPTOTOKEN_NEW}" rendered="#{cryptoTokenMBean.currentCryptoTokenId == 0}"/>
 		<h:outputText value="#{web.text.CRYPTOTOKEN} #{cryptoTokenMBean.currentCryptoToken.name}" rendered="#{cryptoTokenMBean.currentCryptoTokenId != 0}"/>
 	</h1>
 	<div class="message"><h:messages layout="table" errorClass="alert"/></div>
-	<h:form>
+	<h:form id="currentCryptoTokenForm">
 	<h:panelGrid columns="2">
 		<h:outputLink value="adminweb/cryptotoken/cryptotokens.jsf"><h:outputText value="#{web.text.CRYPTOTOKEN_NAV_BACK}"/></h:outputLink>
 		<h:commandButton action="#{cryptoTokenMBean.toggleCurrentCryptoTokenEditMode}" value="#{web.text.CRYPTOTOKEN_NAV_EDIT}" rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode && cryptoTokenMBean.allowedToModify}"/>
@@ -63,7 +95,7 @@ org.cesecore.authorization.control.CryptoTokenRules
 		</h:panelGroup>
 		<h:outputLabel for="currentCryptoTokenType" value="#{web.text.CRYPTOTOKEN_TYPE}:"/>
 		<h:panelGroup id="currentCryptoTokenType">
-			<h:selectOneMenu value="#{cryptoTokenMBean.currentCryptoToken.type}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode && cryptoTokenMBean.currentCryptoTokenId == 0}">
+			<h:selectOneMenu id="selectOneMenuType" onchange="selectOneMenuTypeUpdated(this)" value="#{cryptoTokenMBean.currentCryptoToken.type}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode && cryptoTokenMBean.currentCryptoTokenId == 0}">
 				<f:selectItems value="#{cryptoTokenMBean.availableCryptoTokenTypes}"/>
 			</h:selectOneMenu>
 	    	<h:outputText value="#{cryptoTokenMBean.currentCryptoToken.type}" rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode || cryptoTokenMBean.currentCryptoTokenId != 0}"/>
@@ -77,10 +109,10 @@ org.cesecore.authorization.control.CryptoTokenRules
 		<h:outputLabel for="currentCryptoTokenAutoActivate" value="#{web.text.CRYPTOTOKEN_AUTO}:"/>
 		<h:selectBooleanCheckbox id="currentCryptoTokenAutoActivate" value="#{cryptoTokenMBean.currentCryptoToken.autoActivate}"
 			disabled="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
-		<h:outputLabel for="currentCryptoTokenAllowExportPrivateKey" rendered="#{cryptoTokenMBean.currentCryptoToken.showSoftCryptoToken}" value="(#{web.text.CRYPTOTOKEN_TYPE_SOFT}) #{web.text.CRYPTOTOKEN_ALLOWEXPORT}:"/>
+		<h:outputLabel id="currentCryptoTokenAllowExportPrivateKeyLabel" for="currentCryptoTokenAllowExportPrivateKey" rendered="#{cryptoTokenMBean.currentCryptoToken.showSoftCryptoToken}" value="(#{web.text.CRYPTOTOKEN_TYPE_SOFT}) #{web.text.CRYPTOTOKEN_ALLOWEXPORT}:"/>
 		<h:selectBooleanCheckbox id="currentCryptoTokenAllowExportPrivateKey" rendered="#{cryptoTokenMBean.currentCryptoToken.showSoftCryptoToken}"
 			value="#{cryptoTokenMBean.currentCryptoToken.allowExportPrivateKey}" disabled="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
-		<h:outputLabel for="currentCryptoTokenP11Library" rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken}"
+		<h:outputLabel id="currentCryptoTokenP11LibraryLabel" for="currentCryptoTokenP11Library" rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken}"
 			value="(#{web.text.CRYPTOTOKEN_TYPE_P11}) #{web.text.CRYPTOTOKEN_LIBRARY}:"/>
 		<h:panelGroup id="currentCryptoTokenP11Library" rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken}">
 			<h:selectOneMenu value="#{cryptoTokenMBean.currentCryptoToken.p11Library}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}">
@@ -88,17 +120,17 @@ org.cesecore.authorization.control.CryptoTokenRules
 			</h:selectOneMenu>
 			<h:outputText value="#{cryptoTokenMBean.currentCryptoToken.p11LibraryAlias}" rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
 		</h:panelGroup>
-		<h:outputLabel for="currentCryptoTokenP11AttributeFile" rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken}" value="(#{web.text.CRYPTOTOKEN_TYPE_P11}) #{web.text.CRYPTOTOKEN_ATTRFILE}:"/>
+		<h:outputLabel id="currentCryptoTokenP11SlotLabel" for="currentCryptoTokenP11Slot" rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken}" value="(#{web.text.CRYPTOTOKEN_TYPE_P11}) #{web.text.CRYPTOTOKEN_SLOT}:"/>
+		<h:panelGroup id="currentCryptoTokenP11Slot" rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken}">
+		    <h:inputText value="#{cryptoTokenMBean.currentCryptoToken.p11Slot}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+			<h:outputText value="#{cryptoTokenMBean.currentCryptoToken.p11Slot}" rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+		</h:panelGroup>
+		<h:outputLabel id="currentCryptoTokenP11AttributeFileLabel" for="currentCryptoTokenP11AttributeFile" rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken}" value="(#{web.text.CRYPTOTOKEN_TYPE_P11}) #{web.text.CRYPTOTOKEN_ATTRFILE}:"/>
 		<h:panelGroup id="currentCryptoTokenP11AttributeFile" rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken}">
 			<h:selectOneMenu value="#{cryptoTokenMBean.currentCryptoToken.p11AttributeFile}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}">
 				<f:selectItems value="#{cryptoTokenMBean.availableCryptoTokenP11AttributeFiles}"/>
 			</h:selectOneMenu>
 			<h:outputText value="#{cryptoTokenMBean.currentCryptoToken.p11AttributeFileAlias}" rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
-		</h:panelGroup>
-		<h:outputLabel for="currentCryptoTokenP11Slot" rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken}" value="(#{web.text.CRYPTOTOKEN_TYPE_P11}) #{web.text.CRYPTOTOKEN_SLOT}:"/>
-		<h:panelGroup id="currentCryptoTokenP11Slot" rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken}">
-		    <h:inputText value="#{cryptoTokenMBean.currentCryptoToken.p11Slot}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"/>
-			<h:outputText value="#{cryptoTokenMBean.currentCryptoToken.p11Slot}" rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
 		</h:panelGroup>
 		<h:panelGroup/>
 		<h:panelGroup>
@@ -134,7 +166,8 @@ org.cesecore.authorization.control.CryptoTokenRules
 		<h:column>
    			<f:facet name="header"><h:outputText value="#{web.text.CRYPTOTOKEN_KPM_ACTION}"/></f:facet>
 			<h:commandButton value="#{web.text.CRYPTOTOKEN_KPM_TEST}" action="#{cryptoTokenMBean.testKeyPair}" rendered="#{cryptoTokenMBean.allowedToKeyTest}"/>
-			<h:commandButton value="#{web.text.CRYPTOTOKEN_KPM_REMOVE}" action="#{cryptoTokenMBean.removeKeyPair}" rendered="#{cryptoTokenMBean.allowedToKeyRemoval}"/>
+			<h:commandButton value="#{web.text.CRYPTOTOKEN_KPM_REMOVE}" action="#{cryptoTokenMBean.removeKeyPair}" rendered="#{cryptoTokenMBean.allowedToKeyRemoval}"
+				onclick="return confirm('#{web.text.CRYPTOTOKEN_KPM_CONF_REM}')"/>
 			<h:outputLink value="adminweb/cryptoTokenDownloads?cryptoTokenId=#{cryptoTokenMBean.currentCryptoTokenId}&alias=#{keyPairGuiInfo.alias}">
 				<h:outputText value="#{web.text.CRYPTOTOKEN_KPM_DOWNPUB}"/>
 			</h:outputLink>
@@ -144,7 +177,8 @@ org.cesecore.authorization.control.CryptoTokenRules
 	<h:panelGrid columns="3">
 		<h:panelGroup rendered="#{!cryptoTokenMBean.keyPairGuiListEmpty && cryptoTokenMBean.allowedToKeyRemoval}"/>
 		<h:panelGroup rendered="#{!cryptoTokenMBean.keyPairGuiListEmpty && cryptoTokenMBean.allowedToKeyRemoval}"/>
-	    <h:commandButton value="#{web.text.CRYPTOTOKEN_KPM_REMOVESEL}" action="#{cryptoTokenMBean.removeSelectedKeyPairs}" rendered="#{!cryptoTokenMBean.keyPairGuiListEmpty && cryptoTokenMBean.allowedToKeyRemoval}"/>
+	    <h:commandButton value="#{web.text.CRYPTOTOKEN_KPM_REMOVESEL}" action="#{cryptoTokenMBean.removeSelectedKeyPairs}"
+	    	rendered="#{!cryptoTokenMBean.keyPairGuiListEmpty && cryptoTokenMBean.allowedToKeyRemoval}" onclick="return confirm('#{web.text.CRYPTOTOKEN_KPM_CONF_REMS}')"/>
 		<h:inputText value="#{cryptoTokenMBean.newKeyPairAlias}" rendered="#{cryptoTokenMBean.allowedToKeyGeneration}"/>
 		<h:selectOneMenu value="#{cryptoTokenMBean.newKeyPairSpec}" rendered="#{cryptoTokenMBean.allowedToKeyGeneration}">
 			<f:selectItems value="#{cryptoTokenMBean.availbleKeySpecs}"/>
