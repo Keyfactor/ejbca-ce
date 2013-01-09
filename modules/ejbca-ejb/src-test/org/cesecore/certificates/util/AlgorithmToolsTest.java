@@ -100,7 +100,9 @@ public class AlgorithmToolsTest {
         assertEquals("unknown", AlgorithmTools.getKeySpecification(new MockECDSAPublicKey()));
         assertEquals("10", AlgorithmTools.getKeySpecification(new MockRSAPublicKey()));
         KeyPair pair = KeyTools.genKeys("prime192v1", "ECDSA");
-        assertEquals("prime192v1", AlgorithmTools.getKeySpecification(pair.getPublic()));
+        final String ecNamedCurve = AlgorithmTools.getKeySpecification(pair.getPublic());
+        assertTrue("Key was generated with the right curve.", AlgorithmTools.getEcKeySpecAliases(ecNamedCurve).contains("prime192v1"));
+        assertEquals("Wrong preferred named curve alias.", "secp192r1", ecNamedCurve);
         pair = KeyTools.genKeys("1024", "DSA");
         assertEquals("1024", AlgorithmTools.getKeySpecification(pair.getPublic()));
     }
