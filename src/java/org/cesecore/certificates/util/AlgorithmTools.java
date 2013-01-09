@@ -244,7 +244,7 @@ public final class AlgorithmTools {
 	}
 	
 	/** Check if the curve name is known by the first found PKCS#11 provider or default (if none was found)*/
-	private static boolean isNamedECKnownInDefaultProvider(String ecNamedCurveBc) {
+	public static boolean isNamedECKnownInDefaultProvider(String ecNamedCurveBc) {
         final Provider[] providers = Security.getProviders("KeyPairGenerator.EC");
         String providerName = providers[0].getName();
 	    try {
