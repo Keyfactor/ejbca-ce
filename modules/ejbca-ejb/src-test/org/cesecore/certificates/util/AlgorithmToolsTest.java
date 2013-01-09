@@ -102,7 +102,9 @@ public class AlgorithmToolsTest {
         KeyPair pair = KeyTools.genKeys("prime192v1", "ECDSA");
         final String ecNamedCurve = AlgorithmTools.getKeySpecification(pair.getPublic());
         assertTrue("Key was generated with the right curve.", AlgorithmTools.getEcKeySpecAliases(ecNamedCurve).contains("prime192v1"));
-        assertEquals("Wrong preferred named curve alias.", "secp192r1", ecNamedCurve);
+        assertTrue("Key was generated with the right curve.", AlgorithmTools.getEcKeySpecAliases(ecNamedCurve).contains("secp192r1"));
+        // We can't really say if "secp192r1" or "prime192v1" should be the preferred name on this system, since it depends on available providers.
+        //assertEquals("Unexpected preferred named curve alias.", "secp192r1", ecNamedCurve);
         pair = KeyTools.genKeys("1024", "DSA");
         assertEquals("1024", AlgorithmTools.getKeySpecification(pair.getPublic()));
     }
