@@ -439,6 +439,7 @@ function checkallfields(){
   <h2><c:out value="<%= ejbcawebbean.getText(\"EDITCERTIFICATEPROFILE\") %>" /></h2>
   <h3><c:out value="<%= ejbcawebbean.getText(\"CERTIFICATEPROFILE\")+ \" : \" + certprofile %>" /></h3>
 </div>
+
 <form name="editcertificateprofile" method="post" action="<%=THIS_FILENAME %>">
   <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_CERTIFICATEPROFILE %>'>
   <input type="hidden" name='<%= HIDDEN_CERTIFICATEPROFILENAME %>' value='<c:out value="<%=certprofile %>"/>'>
@@ -1121,7 +1122,7 @@ function checkallfields(){
            <label for="<%=CHECKBOX_USEDEFAULTOCSPSERVICELOCALTOR%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
          </td>
        </tr>
-       tr  id="Row<%=row%2%>">
+       <tr  id="Row<%=row%2%>"> 
  	      <td width="50%"  align="right">
  	        <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_AIA_OCSP_URI\") %>" /> <%= ejbcawebbean.getHelpReference("/userguide.html#OCSP%20Service%20Locator") %>
  	      </td>
