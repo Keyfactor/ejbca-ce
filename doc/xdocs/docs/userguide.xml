@@ -217,6 +217,21 @@ client support is rare and the certSignKey will always be used.</li>
 </p>
 </subsubsection>
 
+<subsubsection name="Extended Services Key Specification">
+<p>
+Each CA has a set of Extended Services than can be enabled and sign requests in various formats.
+For some of the services, the CA will delegate signing to soft keys stored in the database as part of the CA object.
+These keys will have signing certificates issued by the CA's signature keys and similar SubjectDN to the CA.
+This field allows selection of the key specifications to use for these soft keys. 
+<ul>
+<li><i>Internal</i> Online Certificate Status Protocol (OCSP): The CA's certSignKey key pair will be used.</li>
+<li>Cryptographic Message Syntax (CMS, superseded PKCS#7): A soft key pair in the database will be used.</li>
+<li>XML Key Management Specification (XKMS): A soft key pair in the database will be used.</li>
+</ul>
+If you don't plan on using CMS or XKMS with any special requirements, you safely use the default value here.
+</p>
+</subsubsection>
+
 <subsubsection name="Key sequence">
 <p>
 <a href="cvccas.html">CVC</a> Sequence<br/>
