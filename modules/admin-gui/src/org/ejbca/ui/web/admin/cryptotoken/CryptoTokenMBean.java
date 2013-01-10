@@ -13,9 +13,6 @@
 package org.ejbca.ui.web.admin.cryptotoken;
 
 import java.io.Serializable;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.KeyPairGenerator;
-import java.security.spec.ECGenParameterSpec;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -487,7 +484,8 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     // KeyPair related stuff
     //
     
-    private String newKeyPairAlias = "newLabel";
+    // This default is taken from CAToken.SOFTPRIVATESIGNKEYALIAS, but we don't want to depend on the CA module
+    private String newKeyPairAlias = "privatesignkeyalias";
     private String newKeyPairSpec = AlgorithmConstants.KEYALGORITHM_RSA+"2048";
     
     /** @return a List of available (but not neccessarly supported by the underlying CryptoToken) key specs */
