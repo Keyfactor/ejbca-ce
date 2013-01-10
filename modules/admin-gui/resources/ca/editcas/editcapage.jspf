@@ -462,7 +462,10 @@ function checkallfields(){
             <%  } %>
 	            <%/* When JavaScript is not available, we show a "Reload" image. */%>
 	            <input id="changecatokentypeUpdateButton" type="image" src="reload.png" alt="Reload"/>
-	            <script>document.getElementById('changecatokentypeUpdateButton').style.display = 'none';</script>
+                <script>document.getElementById('changecatokentypeUpdateButton').style.display = 'none';</script>
+                <a href="<%= ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "cryptotoken/cryptotoken.jsf?cryptoTokenId=0" %>">
+                    <%= ejbcawebbean.getText("CRYPTOTOKEN_NAV_CREATE") %>
+                </a>
             </form>
             </td>	
         </tr>
@@ -500,9 +503,14 @@ function checkallfields(){
 	        <td>
 	            <select name="<%= SELECT_CRYPTOTOKEN_CERTSIGNKEY %>" size="1">
                     <option value="">- Use default key</option>
-                <%  for (final String alias : cabean.getAvailableCryptoTokenAliases(currentCryptoTokenId, signatureAlgorithmParam)) { %>
-                    <option value="<%=alias %>"><%= alias %></option>
-                <%  } %>
+                <%  for (final String alias : cabean.getAvailableCryptoTokenAliases(currentCryptoTokenId, signatureAlgorithmParam)) {
+            	        // If we come accross the (legacy) default signing key alias we use it as selected 
+                	    if (CAToken.SOFTPRIVATESIGNKEYALIAS.equals(alias)) { %>
+                            <option selected="selected" value="<%=alias %>"><%= alias %></option>
+                <%      } else { %>
+                            <option value="<%=alias %>"><%= alias %></option>
+                <%      }
+                    } %>
 	            </select>
             </td>	
         </tr>
@@ -555,7 +563,9 @@ function checkallfields(){
             </td>
         </tr>
         <tr id="Row<%=row++%2%>"> 
-            <td width="50%"  align="right">Extended Services Key Specification</td>
+            <td width="50%"  align="right">
+                <%= ejbcawebbean.getText("EXTSERVICESKEYSPEC") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Extended%20Services%20Key%20Specification") %>
+            </td>
             <td width="50%"> 
                 <select name="<%= SELECT_KEYSIZE %>" size="1">
                 <%  for (final Entry<String,String> entry : cabean.getAvailbleKeySpecs()) {
@@ -570,7 +580,7 @@ function checkallfields(){
   <%   } %>
 
       <tr id="Row<%=row++%2%>"> 
-        <td width="50%"  align="right"> 
+        <td width="50%"  align="right">
           <%= ejbcawebbean.getText("KEYSEQUENCEFORMAT") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Key%20sequence%20format") %>
         </td>
         <td width="50%" valign="top">
