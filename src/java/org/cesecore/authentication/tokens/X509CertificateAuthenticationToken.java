@@ -23,6 +23,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.user.AccessUserAspect;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
+import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.util.CertTools;
@@ -111,7 +112,7 @@ public class X509CertificateAuthenticationToken extends LocalJvmOnlyAuthenticati
             if (accessUser.getCaId() == adminCaId) {
                 // Determine part of certificate to match with.
                 DNFieldExtractor usedExtractor = dnExtractor;
-                X500PrincipalAccessMatchValue matchValue = X500PrincipalAccessMatchValue.matchFromDatabase(accessUser.getMatchWith());
+                X500PrincipalAccessMatchValue matchValue = (X500PrincipalAccessMatchValue) getMatchValueFromDatabaseValue(accessUser.getMatchWith());
                 if (matchValue == X500PrincipalAccessMatchValue.WITH_SERIALNUMBER) {
                     try {
                     BigInteger matchValueAsBigInteger = new BigInteger(accessUser.getMatchValue(), 16);
@@ -299,7 +300,7 @@ public class X509CertificateAuthenticationToken extends LocalJvmOnlyAuthenticati
     
     @Override
     public AccessMatchValue getMatchValueFromDatabaseValue(Integer databaseValue) {
-        return X500PrincipalAccessMatchValue.matchFromDatabase(databaseValue);
+        return AccessMatchValueReverseLookupRegistry.INSTANCE.performReverseLookup(TOKEN_TYPE, databaseValue.intValue());
     }
     
     @Override

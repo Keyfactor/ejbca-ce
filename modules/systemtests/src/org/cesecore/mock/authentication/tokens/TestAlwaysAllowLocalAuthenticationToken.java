@@ -81,7 +81,7 @@ public class TestAlwaysAllowLocalAuthenticationToken extends AuthenticationToken
 
     @Override
     public AccessMatchValue getDefaultMatchValue() {
-        return DefaultInternalMatchValue.INSTANCE;
+        return InternalMatchValue.DEFAULT;
     }
 
     @Override
@@ -90,13 +90,19 @@ public class TestAlwaysAllowLocalAuthenticationToken extends AuthenticationToken
     }
     
     private static enum InternalMatchValue implements AccessMatchValue {
-        INSTANCE;
+        INSTANCE(0), DEFAULT(Integer.MAX_VALUE);
 
         private static final String TOKEN_TYPE = "AlwaysAllowAuthenticationToken";
         
+        private final int numericValue;
+        
+        private InternalMatchValue(final int numericValue) {
+            this.numericValue = numericValue;
+        }
+        
         @Override
         public int getNumericValue() {         
-            return 0;
+            return numericValue;
         }
 
         @Override
@@ -108,27 +114,10 @@ public class TestAlwaysAllowLocalAuthenticationToken extends AuthenticationToken
         public boolean isIssuedByCa() {
             return false;
         }
-        
-    }
-    
-    private static enum DefaultInternalMatchValue implements AccessMatchValue {
-        INSTANCE;
 
-        private static final String TOKEN_TYPE = "AlwaysAllowAuthenticationToken";
-        
         @Override
-        public int getNumericValue() {         
-            return Integer.MAX_VALUE;
+        public boolean isDefaultValue() {
+            return numericValue == DEFAULT.numericValue;
         }
-
-        @Override
-        public String getTokenType() {           
-            return TOKEN_TYPE;
-        }
-
-        @Override
-        public boolean isIssuedByCa() {
-            return false;
-        }    
     }
 }

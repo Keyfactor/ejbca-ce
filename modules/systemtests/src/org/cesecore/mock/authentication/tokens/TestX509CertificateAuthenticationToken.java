@@ -23,6 +23,7 @@ import org.cesecore.authentication.tokens.InvalidAuthenticationTokenException;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.user.AccessUserAspect;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
+import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.util.CertTools;
@@ -245,6 +246,6 @@ public class TestX509CertificateAuthenticationToken extends X509CertificateAuthe
     
     @Override
     public AccessMatchValue getMatchValueFromDatabaseValue(Integer databaseValue) {
-        return X500PrincipalAccessMatchValue.matchFromDatabase(databaseValue);
+        return AccessMatchValueReverseLookupRegistry.INSTANCE.performReverseLookup(TOKEN_TYPE, databaseValue.intValue());
     }
 }

@@ -12,10 +12,6 @@
  *************************************************************************/
 package org.cesecore.authorization.user.matchvalues;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 
 /**
@@ -28,37 +24,11 @@ public enum X500PrincipalAccessMatchValue implements AccessMatchValue {
     NONE(0), WITH_COUNTRY(1), WITH_DOMAINCOMPONENT(2), WITH_STATEORPROVINCE(3), WITH_LOCALITY(4), WITH_ORGANIZATION(5), WITH_ORGANIZATIONALUNIT(6), WITH_TITLE(7), WITH_COMMONNAME(
             8), WITH_UID(9), WITH_DNSERIALNUMBER(10), WITH_SERIALNUMBER(11), WITH_DNEMAILADDRESS(12), WITH_RFC822NAME(13), WITH_UPN(14), WITH_FULLDN(15);
     
-    private static final Logger log = Logger.getLogger(X500PrincipalAccessMatchValue.class);
-    
-    private static Map<Integer, X500PrincipalAccessMatchValue> databaseLookup;
-    private static Map<String, AccessMatchValue> nameLookup;
-    private int numericValue;
-    
     static {
-        /**
-         * Create internal mappings to translate from the database representation of this match value (an int) or
-         * to GUI representation (a String) to an actual match value.
-         */
-        databaseLookup = new HashMap<Integer, X500PrincipalAccessMatchValue>();
-        nameLookup = new HashMap<String, AccessMatchValue>();
-        for(X500PrincipalAccessMatchValue value : X500PrincipalAccessMatchValue.values()) {
-            databaseLookup.put(value.numericValue, value);
-            nameLookup.put(value.name(), value);
-        }
-        
-        /*
-         * This match value is registered with the token reverse lookup registry, which will allow it to be looked up from the string
-         * return by the getTokenType method implemented from AccessMatchValue.  
-         */
-        try {
-            AccessMatchValueReverseLookupRegistry.INSTANCE.registerLookupMethod(X509CertificateAuthenticationToken.TOKEN_TYPE,
-                    X500PrincipalAccessMatchValue.class.getMethod("matchFromDatabase", Integer.class), nameLookup, WITH_SERIALNUMBER);
-        } catch (SecurityException e) {
-            log.error("Failure when registering method", e);
-        } catch (NoSuchMethodException e) {
-            log.error("Failure when registering method", e);
-        }
+        AccessMatchValueReverseLookupRegistry.INSTANCE.register(X500PrincipalAccessMatchValue.values());
     }
+    
+    private final int numericValue;
     
     private X500PrincipalAccessMatchValue(int numericValue) {
         this.numericValue = numericValue;
@@ -68,13 +38,10 @@ public enum X500PrincipalAccessMatchValue implements AccessMatchValue {
     public int getNumericValue() {
         return numericValue;
     }
-    
-    public static X500PrincipalAccessMatchValue matchFromDatabase(Integer numericValue) {
-        return databaseLookup.get(numericValue);
-    }
-    
-    public static AccessMatchValue matchFromName(String name) {
-        return nameLookup.get(name);
+
+    @Override
+    public boolean isDefaultValue() {
+        return numericValue == WITH_SERIALNUMBER.numericValue;
     }
 
     @Override
@@ -86,5 +53,4 @@ public enum X500PrincipalAccessMatchValue implements AccessMatchValue {
     public boolean isIssuedByCa() {
         return true;
     }
-
 }

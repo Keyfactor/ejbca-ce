@@ -16,9 +16,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
-import java.security.InvalidParameterException;
-import java.util.HashMap;
-
 import org.junit.Test;
 
 /**
@@ -32,92 +29,21 @@ public class AccessMatchValueReverseLookupRegistryTest {
     @Test
     public void testVanillaMatchValue() throws SecurityException, NoSuchMethodException {
         try {
-            AccessMatchValueReverseLookupRegistry.INSTANCE.registerLookupMethod(VanillaAccessMatchValueMock.TOKEN_TYPE,
-                    VanillaAccessMatchValueMock.class.getMethod("lookup", Integer.class), new HashMap<String, AccessMatchValue>(), VanillaAccessMatchValueMock.FOO);
+            AccessMatchValueReverseLookupRegistry.INSTANCE.register(VanillaAccessMatchValueMock.values());
         } catch (InvalidMatchValueException e) {
             fail("Exception was caught for vanilla AccessMatchValue, test can't proceed");
         }
-        
         //Test that you can't add twice.
         try {
-            AccessMatchValueReverseLookupRegistry.INSTANCE.registerLookupMethod(VanillaAccessMatchValueMock.TOKEN_TYPE,
-                    VanillaAccessMatchValueMock.class.getMethod("lookup", Integer.class), null, null);
+            AccessMatchValueReverseLookupRegistry.INSTANCE.register(VanillaAccessMatchValueMock.values());
             fail("Added the same lookup method twice"); // NOPMD
         } catch (InvalidMatchValueException e) {
             //Ignore
         }
         VanillaAccessMatchValueMock foo = (VanillaAccessMatchValueMock) AccessMatchValueReverseLookupRegistry.INSTANCE.performReverseLookup(VanillaAccessMatchValueMock.TOKEN_TYPE, 0);
         assertEquals("Retrieved match value was not as expected", VanillaAccessMatchValueMock.FOO, foo);
-        
-        //Test the reverse lookup
-        
     }
 
-    /**
-     * This test checks that the return type is checked.
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void testInstanceCheck() throws Exception {
-        try {
-            AccessMatchValueReverseLookupRegistry.INSTANCE.registerLookupMethod(IncorrectInstanceAccessMatchValueMock.TOKEN_TYPE,
-                    IncorrectInstanceAccessMatchValueMock.class.getMethod("lookup"), null, null);
-            fail("Should have caught exception for method with invalid return type.");
-        } catch (InvalidMatchValueException e) {
-            //Ignore
-        }
-
-    }
-
-    /**
-     * This test checks that the method must be public
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void testPublicCheck() throws Exception {
-        try {
-            AccessMatchValueReverseLookupRegistry.INSTANCE.registerLookupMethod(PrivateAccessMatchValueMock.TOKEN_TYPE,
-                    PrivateAccessMatchValueMock.class.getDeclaredMethod("lookup"), null, null);
-            fail("Should have caught exception with private method.");
-        } catch (InvalidMatchValueException e) {
-            //Ignore
-        }
-    }
-
-    /**
-     * This test checks that the method must be static
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void testStaticCheck() throws Exception {
-        try {
-            AccessMatchValueReverseLookupRegistry.INSTANCE.registerLookupMethod(UnstaticAccessMatchValueMock.TOKEN_TYPE,
-                    UnstaticAccessMatchValueMock.class.getMethod("lookup"), null, null);
-            fail("Should have caught exception private method.");
-        } catch (InvalidMatchValueException e) {
-            //Ignore
-        }
-    }
-
-    /**
-     * Test that registerLookupMethod performs a null check on the params
-     * @throws NoSuchMethodException 
-     * @throws SecurityException 
-     */
-    @Test
-    public void testRegisterLookupMethodParameterNullCheck() throws SecurityException, NoSuchMethodException {
-        try {
-            AccessMatchValueReverseLookupRegistry.INSTANCE.registerLookupMethod(null,
-                    VanillaAccessMatchValueMock.class.getMethod("lookup", Integer.class), null, null);
-            fail("Should not have been able to set tokenType parameter null");
-        } catch (InvalidParameterException e) {
-            //Ignore
-        }
-    }
-    
     /**
      * Tests that the lookup registry gives a nice reply to an unregistered token type
      */
@@ -150,69 +76,9 @@ public class AccessMatchValueReverseLookupRegistryTest {
         public boolean isIssuedByCa() {
             return false;
         }
-    }
-
-    public enum PrivateAccessMatchValueMock implements AccessMatchValue {
-        FOO;
-        public static final String TOKEN_TYPE = "xyy";
         @Override
-        public int getNumericValue() {
-            return 0;
-        }
-        @Override
-        public String getTokenType() {
-            return TOKEN_TYPE;
-        }
-        @SuppressWarnings("unused")
-        private static AccessMatchValue lookup() {
-            return FOO;
-        }
-        @Override
-        public boolean isIssuedByCa() {
-            return false;
+        public boolean isDefaultValue() {
+            return true;
         }
     }
-
-    private enum UnstaticAccessMatchValueMock implements AccessMatchValue {
-        FOO;
-        public static final String TOKEN_TYPE = "qrr";
-        @Override
-        public int getNumericValue() {
-            return 0;
-        }
-        @Override
-        public String getTokenType() {
-            return TOKEN_TYPE;
-        }
-        @SuppressWarnings("unused")
-        public AccessMatchValue lookup() {
-            return FOO;
-        }
-        @Override
-        public boolean isIssuedByCa() {
-            return false;
-        }
-    }
-
-    private enum IncorrectInstanceAccessMatchValueMock implements AccessMatchValue {
-        FOO;
-        public static final String TOKEN_TYPE = "bar";
-        @Override
-        public int getNumericValue() {
-            return 0;
-        }
-        @Override
-        public String getTokenType() {
-            return TOKEN_TYPE;
-        }
-        @SuppressWarnings("unused")
-        public static String lookup() {
-            return "foo";
-        }
-        @Override
-        public boolean isIssuedByCa() {
-            return false;
-        }
-    }
-
 }
