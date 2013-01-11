@@ -23,6 +23,7 @@ import javax.faces.validator.Validator;
 import javax.faces.validator.ValidatorException;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 
@@ -39,7 +40,9 @@ public class HexSerialNumberValidator implements Validator{
 		}
 		Map<String, String> map = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
 		for(String key :  map.keySet()) {
-			if (key.contains("matchWith") && X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.equals(X500PrincipalAccessMatchValue.matchFromName(map.get(key)))) {
+			if (key.contains("matchWith") && X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.equals(
+			        AccessMatchValueReverseLookupRegistry.INSTANCE.lookupMatchValueFromTokenTypeAndName(
+			                X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getTokenType(), map.get(key)))) {
 				try {
 					new BigInteger((String) object, 16);
 				} catch (NumberFormatException e) {
