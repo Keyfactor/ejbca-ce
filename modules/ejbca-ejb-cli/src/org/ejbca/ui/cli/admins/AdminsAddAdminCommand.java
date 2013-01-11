@@ -21,6 +21,7 @@ import java.util.List;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
+import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
@@ -99,7 +100,7 @@ public class AdminsAddAdminCommand extends BaseAdminsCommand {
                 return;
             }
             int caid = caInfo.getCAId();
-            AccessMatchValue matchWith = X500PrincipalAccessMatchValue.matchFromName(args[3]);
+            AccessMatchValue matchWith = AccessMatchValueReverseLookupRegistry.INSTANCE.lookupMatchValueFromTokenTypeAndName(X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getTokenType(), args[3]);
             if (matchWith == null) {
                 getLogger().error("No such thing to match with as \"" + args[3] + "\".");
                 return;

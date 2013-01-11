@@ -27,6 +27,10 @@ public interface AccessMatchValue {
      */
     int getNumericValue();
     
+
+    /** @return true if this is a preferred value */
+    boolean isDefaultValue();
+
     /**
      * A string value inherent to the implementing AccessMatchValue. This value should be unique, but independent of code 
      * (i.e do not use Class.getSimpleName()) to avoid upgrade issues in case of future refactorization.

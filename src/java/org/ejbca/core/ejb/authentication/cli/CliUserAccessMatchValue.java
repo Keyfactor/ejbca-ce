@@ -12,10 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.authentication.cli;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.log4j.Logger;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 
@@ -26,37 +22,11 @@ import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookup
 public enum CliUserAccessMatchValue implements AccessMatchValue {
     USERNAME(0);
 
-    private static final Logger log = Logger.getLogger(CliUserAccessMatchValue.class);
-    
-    private int numericValue;
-    private static Map<Integer, CliUserAccessMatchValue> databaseLookup;
-    private static Map<String, AccessMatchValue> nameLookup;
-
     static {
-        /**
-         * Create an internal mapping to translate from the database representation of this match value (an int)
-         * to an actual match value.
-         */
-        databaseLookup = new HashMap<Integer, CliUserAccessMatchValue>();
-        nameLookup = new HashMap<String, AccessMatchValue>();
-        for (CliUserAccessMatchValue value : CliUserAccessMatchValue.values()) {
-            databaseLookup.put(value.numericValue, value);
-            nameLookup.put(value.name(), value);
-        }
-        
-        /*
-         * This match value is registered with the token reverse lookup registry, which will allow it to be looked up from the string
-         * return by the getTokenType method implemented from AccessMatchValue.  
-         */  
-        try {
-            AccessMatchValueReverseLookupRegistry.INSTANCE.registerLookupMethod(CliAuthenticationToken.TOKEN_TYPE,
-                    CliUserAccessMatchValue.class.getMethod("matchFromDatabase", Integer.class), nameLookup, USERNAME);
-        } catch (SecurityException e) {
-            log.error("Failure when registering method", e);
-        } catch (NoSuchMethodException e) {
-            log.error("Failure when registering method", e);
-        }
+        AccessMatchValueReverseLookupRegistry.INSTANCE.register(CliUserAccessMatchValue.values());
     }
+    
+    private final int numericValue;
 
     private CliUserAccessMatchValue(int numericValue) {
         this.numericValue = numericValue;
@@ -68,17 +38,17 @@ public enum CliUserAccessMatchValue implements AccessMatchValue {
     }
 
     @Override
-    public String getTokenType() {
-        return CliAuthenticationToken.TOKEN_TYPE;
+    public boolean isDefaultValue() {
+        return numericValue == USERNAME.numericValue;
     }
 
-    public static CliUserAccessMatchValue matchFromDatabase(Integer numericValue) {
-        return databaseLookup.get(numericValue);
+    @Override
+    public String getTokenType() {
+        return CliAuthenticationToken.TOKEN_TYPE;
     }
 
     @Override
     public boolean isIssuedByCa() {
         return false;
     }
-
 }
