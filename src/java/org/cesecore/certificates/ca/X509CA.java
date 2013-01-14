@@ -734,7 +734,7 @@ public class X509CA extends CA implements Serializable {
             if (overridenexts.getExtension(new ASN1ObjectIdentifier(oid)) == null) {
                 final CertificateExtension certExt = fact.getStandardCertificateExtension(oid, certProfile);
                 if (certExt != null) {
-                    final byte[] value = certExt.getValueEncoded(subject, this, certProfile, publicKey, caPublicKey);
+                    final byte[] value = certExt.getValueEncoded(subject, this, certProfile, publicKey, caPublicKey, val);
                     if (value != null) {
                         extgen.addExtension(new ASN1ObjectIdentifier(certExt.getOID()), certExt.isCriticalFlag(), value);
                     }
@@ -758,7 +758,7 @@ public class X509CA extends CA implements Serializable {
                 // from the request, if AllowExtensionOverride is enabled.
                 // Two extensions with the same oid is not allowed in the standard.
                 if (overridenexts.getExtension(new ASN1ObjectIdentifier(certExt.getOID())) == null) {
-                    final byte[] value = certExt.getValueEncoded(subject, this, certProfile, publicKey, caPublicKey);
+                    final byte[] value = certExt.getValueEncoded(subject, this, certProfile, publicKey, caPublicKey, val);
                     if (value != null) {
                         extgen.addExtension(new ASN1ObjectIdentifier(certExt.getOID()), certExt.isCriticalFlag(), value);
                     }

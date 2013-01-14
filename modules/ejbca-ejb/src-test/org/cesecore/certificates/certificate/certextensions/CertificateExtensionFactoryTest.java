@@ -89,8 +89,8 @@ public class CertificateExtensionFactoryTest {
 		assertTrue(certExt.getId() == 1);
 		assertTrue(certExt.getOID().equals("1.2.3.4"));
 		assertTrue(certExt.isCriticalFlag());
-		assertTrue(getObject(certExt.getValueEncoded(null, null, null, null, null)) instanceof DERPrintableString);
-		assertTrue(((DERPrintableString) getObject(certExt.getValueEncoded(null, null, null, null, null))).getString().equals("Test 123"));
+		assertTrue(getObject(certExt.getValueEncoded(null, null, null, null, null, null)) instanceof DERPrintableString);
+		assertTrue(((DERPrintableString) getObject(certExt.getValueEncoded(null, null, null, null, null, null))).getString().equals("Test 123"));
 		
 		assertNull(fact.getCertificateExtensions(Integer.valueOf(2)));
 		
@@ -99,8 +99,8 @@ public class CertificateExtensionFactoryTest {
 		assertTrue(certExt.getId() == 3);
 		assertTrue(certExt.getOID().equals("3.2.3.4"));
 		assertTrue(!certExt.isCriticalFlag());
-		assertTrue(getObject(certExt.getValueEncoded(null, null, null, null, null)) instanceof DERPrintableString);
-		assertTrue(((DERPrintableString) getObject(certExt.getValueEncoded(null, null, null, null, null))).getString().equals("Test 321"));
+		assertTrue(getObject(certExt.getValueEncoded(null, null, null, null, null, null)) instanceof DERPrintableString);
+		assertTrue(((DERPrintableString) getObject(certExt.getValueEncoded(null, null, null, null, null, null))).getString().equals("Test 321"));
 		
 	}
 	

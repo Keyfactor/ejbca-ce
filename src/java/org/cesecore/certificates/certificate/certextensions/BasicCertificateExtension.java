@@ -34,6 +34,7 @@ import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.internal.CertificateValidity;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
@@ -95,7 +96,7 @@ public class BasicCertificateExtension extends CertificateExtension {
     /**
      * @deprecated use getValueEncoded instead.
      */
-    public ASN1Encodable getValue(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey)
+    public ASN1Encodable getValue(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey, CertificateValidity val)
     throws CertificateExtensionException, CertificateExtentionConfigurationException {
         throw new UnsupportedOperationException("Use getValueEncoded instead");
     }
@@ -116,10 +117,10 @@ public class BasicCertificateExtension extends CertificateExtension {
      * @param certProfile
      *            not used
      * @see org.cesecore.certificates.certificate.certextensions.CertificateExtension#getValue(EndEntityInformation, CA, CertificateProfile, PublicKey,
-     *      PublicKey)
+     *      PublicKey, CertificateValidity)
      */
     @Override
-    public byte[] getValueEncoded(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey)
+    public byte[] getValueEncoded(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey, CertificateValidity val)
     throws CertificateExtensionException, CertificateExtentionConfigurationException {
         final byte[] result;
         String encoding = StringUtils.trim(getProperties().getProperty(PROPERTY_ENCODING));

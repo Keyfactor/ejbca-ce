@@ -19,6 +19,7 @@ import java.util.Properties;
 
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.internal.CertificateValidity;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 
@@ -129,6 +130,7 @@ public abstract class CertificateExtension {
 	 * @param certProfile the certificate profile
 	 * @param userPublicKey public key of the user, or null if not available
 	 * @param caPublicKey public key of the CA, or null if not available
+	 * @param val validity of certificate where the extension will be added
 	 * @return a ASN1Encodable or null, if this extension should not be used, which was determined from the values somehow.
 	 * @throws CertificateExtensionException if there was an error constructing the certificate extension
          * @deprecated Callers should use the getValueEncoded method as this 
@@ -136,7 +138,7 @@ public abstract class CertificateExtension {
          * can still implement this method if they prefer as it gets called 
          * from getValueEncoded.
 	 */
-	public abstract ASN1Encodable getValue(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException;
+	public abstract ASN1Encodable getValue(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey, CertificateValidity val ) throws CertificateExtentionConfigurationException, CertificateExtensionException;
 
 	/**
 	 * Method that should return the byte[] value used in the extension. 
@@ -153,12 +155,13 @@ public abstract class CertificateExtension {
 	 * @param certProfile the certificate profile
 	 * @param userPublicKey public key of the user, or null if not available
 	 * @param caPublicKey public key of the CA, or null if not available
+     * @param val validity of certificate where the extension will be added
 	 * @return a byte[] or null, if this extension should not be used, which was determined from the values somehow.
 	 * @throws CertificateExtensionException if there was an error constructing the certificate extension
 	 */
-	public byte[] getValueEncoded(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
+	public byte[] getValueEncoded(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey, CertificateValidity val ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
 		final byte[] result;
-		final ASN1Encodable value = getValue(userData, ca, certProfile, userPublicKey, caPublicKey);
+		final ASN1Encodable value = getValue(userData, ca, certProfile, userPublicKey, caPublicKey, val);
 		if (value == null) {
 			result = null;
 		} else {
