@@ -31,6 +31,7 @@ import java.security.cert.X509CRL;
 import java.security.cert.X509CRLEntry;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -457,12 +458,12 @@ public class X509CATest {
 	public void testInvalidSignatureAlg() throws Exception {
         final CryptoToken cryptoToken = getNewCryptoToken();
 		try {
-			createTestCA(cryptoToken, CADN, "MD5WithRSA");
+			createTestCA(cryptoToken, CADN, "MD5WithRSA", null, null);
 			fail("This should throw because md5withRSA is not an allowed signature algorithm. It is vulnerable.");
 		} catch (InvalidAlgorithmException e) {
 			// NOPMD: this is what we want
 		}
-		X509CA ca = createTestCA(cryptoToken, CADN, "SHA1WithRSA");
+		X509CA ca = createTestCA(cryptoToken, CADN, "SHA1WithRSA", null, null);
 		assertNotNull("should work to create a CA", ca);
 		CAToken token = new CAToken(0, new Properties());
 		ca.setCAToken(token);
@@ -549,10 +550,56 @@ public class X509CATest {
         assertEquals("A list was returned without any values present.", 0, result.size());        
     }
 	
+    /** 
+     * Test that the CA refuses to issue certificates outside of the PrivateKeyUsagePeriod, but that it does issue a cert within this period.
+     * This test has some timing, so it sleeps in total 11 seconds during the test.
+     */
+    @Test
+    public void testCAPrivateKeyUsagePeriodRequest() throws Exception {
+        // User keypair, generate first so it will not take any seconds from the timing test below
+        final KeyPair keypair = KeyTools.genKeys("512", "RSA");
+        // Create a new CA with private key usage period
+        final CryptoToken cryptoToken = getNewCryptoToken();
+        Calendar notBefore = Calendar.getInstance();
+        notBefore.add(Calendar.SECOND, 5); // 5 seconds in the future
+        Calendar notAfter = Calendar.getInstance();
+        notAfter.add(Calendar.SECOND, 10); // 10 seconds in the future gives us a 5 second window to generate a cert
+        X509CA testCa = createTestCA(cryptoToken, "CN=foo", "SHA256WithRSA", notBefore.getTime(), notAfter.getTime());    
+        // Issue a certificate before PrivateKeyUsagePeriod has started to be valid
+        EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+        CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        cp.addCertificatePolicy(new CertificatePolicy("1.1.1.2", null, null));
+        cp.setUseCertificatePolicies(true);
+        try {
+            testCa.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, 10L, cp, "00000");
+            fail("Should throw CAOfflineException when trying to issue cert before PrivateKeyUsagePeriod starts.");
+        } catch (CAOfflineException e) {
+            // NOPMD: this is what we expect
+        }
+        // Issue a certificate within private key usage period
+        // Sleep 6 seconds, now it should work
+        Thread.sleep(6000);
+        try {
+            Certificate cert = testCa.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, 10L, cp, "00000");
+            assertNotNull("A certificate should have been issued", cert);
+        } catch (CAOfflineException e) {
+            fail("Should not throw CAOfflineException when issuing a certificate within PrivateKeyUsagePeriod.");
+        }
+        // Issue a certificate after private key usage period expires
+        // Sleep 5 seconds, now it should not work again since PrivateKeyUsagePeriod has expired
+        Thread.sleep(5000);
+        try {
+            testCa.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, 10L, cp, "00000");
+            fail("Should throw CAOfflineException when trying to issue cert after PrivateKeyUsagePeriod ands.");
+        } catch (CAOfflineException e) {
+            // NOPMD: this is what we expect
+        }
+    }
+
 	private static X509CA createTestCA(CryptoToken cryptoToken, final String cadn) throws Exception {
-		return createTestCA(cryptoToken, cadn, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
+		return createTestCA(cryptoToken, cadn, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, null, null);
 	}
-	private static X509CA createTestCA(CryptoToken cryptoToken, final String cadn, final String sigAlg) throws Exception {
+	private static X509CA createTestCA(CryptoToken cryptoToken, final String cadn, final String sigAlg, Date notBefore, Date notAfter) throws Exception {
         cryptoToken.generateKeyPair("512", CAToken.SOFTPRIVATESIGNKEYALIAS);
         cryptoToken.generateKeyPair("512", CAToken.SOFTPRIVATEDECKEYALIAS);
         // Create CAToken
@@ -605,7 +652,8 @@ public class X509CATest {
         // A CA certificate
         final PublicKey publicKey = cryptoToken.getPublicKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
         final PrivateKey privateKey = cryptoToken.getPrivateKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
-        X509Certificate cacert = CertTools.genSelfCert(cadn, 10L, "1.1.1.1", privateKey, publicKey, "SHA256WithRSA", true);
+        int keyusage = X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
+        X509Certificate cacert = CertTools.genSelfCertForPurpose(cadn, 10L, "1.1.1.1", privateKey, publicKey, "SHA256WithRSA", true, keyusage, notBefore, notAfter, "BC");
 		assertNotNull(cacert);
         Collection<Certificate> cachain = new ArrayList<Certificate>();
         cachain.add(cacert);
