@@ -29,6 +29,7 @@ import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.Extension;
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.internal.CertificateValidity;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtentionConfigurationException;
@@ -55,7 +56,7 @@ public class AuthorityKeyIdentifier extends StandardCertificateExtension {
 
     @Override
     public ASN1Encodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey,
-            final PublicKey caPublicKey) throws CertificateExtentionConfigurationException, CertificateExtensionException {
+            final PublicKey caPublicKey, CertificateValidity val) throws CertificateExtentionConfigurationException, CertificateExtensionException {
         org.bouncycastle.asn1.x509.AuthorityKeyIdentifier ret = null;
         // Default value is that we calculate it from scratch!
         // (If this is a root CA we must calculate the AuthorityKeyIdentifier from scratch)

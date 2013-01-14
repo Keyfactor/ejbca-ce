@@ -68,7 +68,7 @@ public class BasicCertificateExtensionTest {
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", false, props);
 		
-		ASN1Encodable value = getObject(baseExt.getValueEncoded(null, null, null, null, null));
+		ASN1Encodable value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));
 		assertTrue(value.getClass().toString(),value instanceof DERNull);
 		assertTrue(baseExt.getOID().equals("1.2.3"));
 		assertTrue(baseExt.getId() == 1);
@@ -84,7 +84,7 @@ public class BasicCertificateExtensionTest {
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", false, props);
 		
-		ASN1Encodable value = getObject(baseExt.getValueEncoded(null, null, null, null, null));
+		ASN1Encodable value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));
 		assertTrue(value.getClass().toString(),value instanceof DERInteger);
 		assertTrue(((DERInteger)value).toString(),((DERInteger)value).toString().equals("1234"));
 		assertTrue(baseExt.getOID().equals("1.2.3"));
@@ -98,7 +98,7 @@ public class BasicCertificateExtensionTest {
 		try{
 		  baseExt = new BasicCertificateExtension();
 		  baseExt.init(1, "1.2.3", false, props);
-		  value = getObject(baseExt.getValueEncoded(null, null, null, null, null));
+		  value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));
 		}catch(CertificateExtentionConfigurationException e){
 			exceptionThrown = true;
                         assertEquals(intres.getLocalizedMessage("certext.basic.illegalvalue", "123SA4", 1, "1.2.3"), e.getMessage());
@@ -115,7 +115,7 @@ public class BasicCertificateExtensionTest {
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", false, props);		
 		byte[] result = {15};
-		ASN1Encodable value = getObject(baseExt.getValueEncoded(null, null, null, null, null));
+		ASN1Encodable value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));
 		assertTrue(value.getClass().toString(),value instanceof DERBitString);
 		assertEquals(((DERBitString)value).getBytes()[0],result[0]);
 		assertEquals(((DERBitString)value).getPadBits(), 0);
@@ -131,7 +131,7 @@ public class BasicCertificateExtensionTest {
 		
 		baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", false, props);
-		value = getObject(baseExt.getValueEncoded(null, null, null, null, null));
+		value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));
 		assertTrue(value.getClass().toString(),value instanceof DERBitString);
 		new BigInteger(((DERBitString)value).getBytes()); // Will throw if value is wrong
 		//log.debug(bi.toString(2));
@@ -150,7 +150,7 @@ public class BasicCertificateExtensionTest {
 		baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", false, props);
 		try {
-			value = getObject(baseExt.getValueEncoded(null, null, null, null, null));
+			value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));
 			assertTrue("Should throw", false);
 		} catch (CertificateExtentionConfigurationException e) {
 			assertEquals(intres.getLocalizedMessage("certext.basic.illegalvalue", "qqqq", 1, "1.2.3"), e.getMessage());
@@ -167,7 +167,7 @@ public class BasicCertificateExtensionTest {
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", false, props);
 		
-		ASN1Encodable value = getObject(baseExt.getValueEncoded(null, null, null, null, null));
+		ASN1Encodable value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));
 		assertTrue(value.getClass().toString(),value instanceof DERBoolean);
 		assertTrue(((DERBoolean)value).toString(),((DERBoolean)value).toString().equals("TRUE"));
 		assertTrue(baseExt.getOID().equals("1.2.3"));
@@ -179,7 +179,7 @@ public class BasicCertificateExtensionTest {
 		baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", false, props);
 		
-		value = getObject(baseExt.getValueEncoded(null, null, null, null, null));		
+		value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));		
 		assertTrue(((DERBoolean)value).toString(),((DERBoolean)value).toString().equals("FALSE"));
 		
 		props = new Properties();
@@ -189,7 +189,7 @@ public class BasicCertificateExtensionTest {
 		try{
 		  baseExt = new BasicCertificateExtension();
 		  baseExt.init(1, "1.2.3", false, props);
-		  value = getObject(baseExt.getValueEncoded(null, null, null, null, null));
+		  value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));
 		}catch(CertificateExtentionConfigurationException e){
 			exceptionThrown = true;
                         assertEquals(intres.getLocalizedMessage("certext.basic.illegalvalue", "1sdf", 1, "1.2.3"), e.getMessage());
@@ -206,7 +206,7 @@ public class BasicCertificateExtensionTest {
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", false, props);
 		
-		ASN1Encodable value = getObject(baseExt.getValueEncoded(null, null, null, null, null));
+		ASN1Encodable value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));
 		assertTrue(value.getClass().toString(),value instanceof DEROctetString);
 		assertTrue(((DEROctetString)value).toString(),((DEROctetString)value).toString().equalsIgnoreCase("#DBE81232"));
 		
@@ -217,7 +217,7 @@ public class BasicCertificateExtensionTest {
 		try{	
 		  baseExt = new BasicCertificateExtension();
 		  baseExt.init(1, "1.2.3", false, props);
-		  value = getObject(baseExt.getValueEncoded(null, null, null, null, null));		  
+		  value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));		  
 		}catch(CertificateExtentionConfigurationException e){
 			exceptionThrown = true;
                         assertEquals(intres.getLocalizedMessage("certext.basic.illegalvalue", "123SA4", 1, "1.2.3"), e.getMessage());
@@ -235,7 +235,7 @@ public class BasicCertificateExtensionTest {
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", false, props);
 		
-		ASN1Encodable value = getObject(baseExt.getValueEncoded(null, null, null, null, null));
+		ASN1Encodable value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));
 		assertTrue(value.getClass().toString(),value instanceof DERPrintableString);
 		assertTrue(((DERPrintableString)value).toString(),((DERPrintableString)value).toString().equals("This is a printable string"));
 		
@@ -246,7 +246,7 @@ public class BasicCertificateExtensionTest {
 		try{	
 		  baseExt = new BasicCertificateExtension();
 		  baseExt.init(1, "1.2.3", false, props);
-		  value = getObject(baseExt.getValueEncoded(null, null, null, null, null));
+		  value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));
 		}catch(CertificateExtentionConfigurationException e){
 			exceptionThrown = true;
                         assertEquals(intres.getLocalizedMessage("certext.basic.illegalvalue", "This is a non  printable string ���", 1, "1.2.3"), e.getMessage());
@@ -263,7 +263,7 @@ public class BasicCertificateExtensionTest {
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", false, props);
 		
-		ASN1Encodable value = getObject(baseExt.getValueEncoded(null, null, null, null, null));
+		ASN1Encodable value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));
 		assertTrue(value.getClass().toString(),value instanceof DERUTF8String);
 		assertTrue(((DERUTF8String)value).getString(),((DERUTF8String)value).getString().equals("This is a utf8 ��� ��string"));
         
@@ -278,7 +278,7 @@ public class BasicCertificateExtensionTest {
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", false, props);
 		try{
-			baseExt.getValueEncoded(null, null, null, null, null);
+			baseExt.getValueEncoded(null, null, null, null, null, null);
 			assertTrue("Should throw", false);		
 		}catch(CertificateExtentionConfigurationException e){
 			assertEquals(intres.getLocalizedMessage("certext.basic.incorrectenc", "DERUTF8sdfTRING", 1), e.getMessage());
@@ -291,7 +291,7 @@ public class BasicCertificateExtensionTest {
 		BasicCertificateExtension baseExt1 = new BasicCertificateExtension();
 		baseExt1.init(1, "1.2.3", false, props1);
 		try{
-			baseExt1.getValueEncoded(null, null, null, null, null);
+			baseExt1.getValueEncoded(null, null, null, null, null, null);
 			assertTrue("Should throw", false);		
 		}catch(CertificateExtentionConfigurationException e){
 			// NOPMD
@@ -307,7 +307,7 @@ public class BasicCertificateExtensionTest {
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", false, props);
 		
-		ASN1Encodable value = getObject(baseExt.getValueEncoded(null, null, null, null, null));
+		ASN1Encodable value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));
 		assertTrue(value.getClass().toString(),value instanceof ASN1ObjectIdentifier);
 		assertTrue(((ASN1ObjectIdentifier)value).getId(),((ASN1ObjectIdentifier)value).getId().equals("1.1.1.255.1"));
 		
@@ -318,7 +318,7 @@ public class BasicCertificateExtensionTest {
 		baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", false, props);		
 		try{
-			baseExt.getValueEncoded(null, null, null, null, null);
+			baseExt.getValueEncoded(null, null, null, null, null, null);
 			assertTrue("Should throw", false);		
 		}catch(CertificateExtentionConfigurationException e){
 			// NOPMD
@@ -337,7 +337,7 @@ public class BasicCertificateExtensionTest {
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", false, props);
 		
-		ASN1Encodable value = getObject(baseExt.getValueEncoded(null, null, null, null, null));
+		ASN1Encodable value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));
 		assertTrue(value.getClass().toString(),value instanceof DLSequence);
 		DLSequence seq = (DLSequence)value;
 		assertEquals(3, seq.size());
@@ -362,7 +362,7 @@ public class BasicCertificateExtensionTest {
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", false, props);
 		
-		ASN1Encodable value = getObject(baseExt.getValueEncoded(null, null, null, null, null));
+		ASN1Encodable value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));
 		assertTrue(value.getClass().toString(),value instanceof DERIA5String);
 		assertEquals("This is a printable string", ((DERIA5String)value).toString());
 		
@@ -373,7 +373,7 @@ public class BasicCertificateExtensionTest {
 		try{	
 		  baseExt = new BasicCertificateExtension();
 		  baseExt.init(1, "1.2.3", false, props);
-		  value = getObject(baseExt.getValueEncoded(null, null, null, null, null));
+		  value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));
 		}catch(CertificateExtentionConfigurationException e){
 			exceptionThrown = true;
 		}
@@ -395,7 +395,7 @@ public class BasicCertificateExtensionTest {
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", false, props);
 		
-		ASN1Encodable value = getObject(baseExt.getValueEncoded(null, null, null, null, null));
+		ASN1Encodable value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));
 		assertTrue(value.getClass().toString(),value instanceof DLSet);
 		DLSet set1 = (DLSet)value;
 		assertEquals(3, set1.size());
@@ -406,7 +406,7 @@ public class BasicCertificateExtensionTest {
 		baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", false, props);
 		try{	
-		  value = getObject(baseExt.getValueEncoded(null, null, null, null, null));
+		  value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));
 		  assertTrue("Should throw", false);
 		}catch(CertificateExtentionConfigurationException e){
 			// NOPMD
@@ -431,7 +431,7 @@ public class BasicCertificateExtensionTest {
 		
 		// Fail without value specified
 		try {
-			baseExt.getValueEncoded(userData, null, null, null, null);
+			baseExt.getValueEncoded(userData, null, null, null, null, null);
 			fail("Should have failed as no value was specified in EI.");
 		} catch (CertificateExtentionConfigurationException ex) {
 			assertEquals(intres.getLocalizedMessage("certext.basic.incorrectvalue", 1, "1.2.3"), ex.getMessage());
@@ -439,7 +439,7 @@ public class BasicCertificateExtensionTest {
 		
 		// Success with value specified
 		userData.getExtendedinformation().setExtensionData("1.2.3", "The value 123");
-		ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(baseExt.getValueEncoded(userData, null, null, null, null)));
+		ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(baseExt.getValueEncoded(userData, null, null, null, null, null)));
 		ASN1Encodable value1 = in.readObject();
 		assertTrue(value1.getClass().toString(), value1 instanceof DERPrintableString);
 		assertEquals("The value 123", ((DERPrintableString) value1).getString());
@@ -463,14 +463,14 @@ public class BasicCertificateExtensionTest {
 		userData.setExtendedinformation(new ExtendedInformation());
 		
 		// Without value in userdata, the static value is used
-		ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(baseExt.getValueEncoded(userData, null, null, null, null)));
+		ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(baseExt.getValueEncoded(userData, null, null, null, null, null)));
 		ASN1Encodable value1 = in.readObject();
 		assertTrue(value1.getClass().toString(), value1 instanceof DERPrintableString);
 		assertEquals("The static value 123", ((DERPrintableString) value1).getString());
 		
 		// With value in userdata, that value is used
 		userData.getExtendedinformation().setExtensionData("1.2.3", "A dynamic value 123");
-		in = new ASN1InputStream(new ByteArrayInputStream(baseExt.getValueEncoded(userData, null, null, null, null)));
+		in = new ASN1InputStream(new ByteArrayInputStream(baseExt.getValueEncoded(userData, null, null, null, null, null)));
 		value1 = in.readObject();
 		assertTrue(value1.getClass().toString(), value1 instanceof DERPrintableString);
 		assertEquals("A dynamic value 123", ((DERPrintableString) value1).getString());
@@ -498,7 +498,7 @@ public class BasicCertificateExtensionTest {
 		userData.setExtendedinformation(new ExtendedInformation());
 		
 		// Without value in userdata, the static values is used
-		ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(baseExt.getValueEncoded(userData, null, null, null, null)));
+		ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(baseExt.getValueEncoded(userData, null, null, null, null, null)));
 		ASN1Encodable value = in.readObject();
 		assertTrue(value.getClass().toString(),value instanceof DLSequence);
 		DLSequence seq = (DLSequence)value;
@@ -516,7 +516,7 @@ public class BasicCertificateExtensionTest {
 		userData.getExtendedinformation().setExtensionData("1.2.3.value1", "A dynamic value 1");
 		userData.getExtendedinformation().setExtensionData("1.2.3.value2", "A dynamic value 2");
 		userData.getExtendedinformation().setExtensionData("1.2.3.value3", "A dynamic value 3");
-		in = new ASN1InputStream(new ByteArrayInputStream(baseExt.getValueEncoded(userData, null, null, null, null)));
+		in = new ASN1InputStream(new ByteArrayInputStream(baseExt.getValueEncoded(userData, null, null, null, null, null)));
 		value = in.readObject();
 		assertTrue(value.getClass().toString(),value instanceof DLSequence);
 		seq = (DLSequence)value;
@@ -548,14 +548,14 @@ public class BasicCertificateExtensionTest {
 		userData.setExtendedinformation(new ExtendedInformation());
 		
 		// Ok without value specified
-		ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(baseExt.getValueEncoded(userData, null, null, null, null)));
+		ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(baseExt.getValueEncoded(userData, null, null, null, null, null)));
 		ASN1Encodable value1 = in.readObject();
 		assertTrue(value1.getClass().toString(), value1 instanceof DERPrintableString);
 		assertEquals("The static value", ((DERPrintableString) value1).getString());
 		
 		// Ignoring dynamic value specified
 		userData.getExtendedinformation().setExtensionData("1.2.3", "The value 123");
-		in = new ASN1InputStream(new ByteArrayInputStream(baseExt.getValueEncoded(userData, null, null, null, null)));
+		in = new ASN1InputStream(new ByteArrayInputStream(baseExt.getValueEncoded(userData, null, null, null, null, null)));
 		value1 = in.readObject();
 		assertTrue(value1.getClass().toString(), value1 instanceof DERPrintableString);
 		assertEquals("The static value", ((DERPrintableString) value1).getString());
@@ -577,14 +577,14 @@ public class BasicCertificateExtensionTest {
 		userData.setExtendedinformation(new ExtendedInformation());
 		
 		// Ok without value specified
-		ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(baseExt.getValueEncoded(userData, null, null, null, null)));
+		ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(baseExt.getValueEncoded(userData, null, null, null, null, null)));
 		ASN1Encodable value = in.readObject();
 		assertTrue(value.getClass().toString(), value instanceof DERPrintableString);
 		assertEquals("The static value", ((DERPrintableString) value).getString());
 		
 		// Ignoring dynamic value specified
 		userData.getExtendedinformation().setExtensionData("1.2.3", "The value 123");
-		in = new ASN1InputStream(new ByteArrayInputStream(baseExt.getValueEncoded(userData, null, null, null, null)));
+		in = new ASN1InputStream(new ByteArrayInputStream(baseExt.getValueEncoded(userData, null, null, null, null, null)));
 		value = in.readObject();
 		assertTrue(value.getClass().toString(), value instanceof DERPrintableString);
 		assertEquals("The static value", ((DERPrintableString) value).getString());
@@ -605,7 +605,7 @@ public class BasicCertificateExtensionTest {
 		
 		// Success with value specified
 		userData.getExtendedinformation().setExtensionData("1.2.3.value", "The value 456");
-		ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(baseExt.getValueEncoded(userData, null, null, null, null)));
+		ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(baseExt.getValueEncoded(userData, null, null, null, null, null)));
 		ASN1Encodable value1 = in.readObject();
 		assertTrue(value1.getClass().toString(), value1 instanceof DERPrintableString);
 		assertEquals("The value 456", ((DERPrintableString) value1).getString());
@@ -626,12 +626,12 @@ public class BasicCertificateExtensionTest {
 		userData.setExtendedinformation(new ExtendedInformation());
 		
 		// Without value in userdata, the static value is used
-		byte[] value = baseExt.getValueEncoded(userData, null, null, null, null);
+		byte[] value = baseExt.getValueEncoded(userData, null, null, null, null, null);
 		assertEquals("value", "aabbccdd", new String(Hex.encode(value)));
 		
 		// With value in userdata, that value is used
 		userData.getExtendedinformation().setExtensionData("1.2.3", "eeff0000");
-		value = baseExt.getValueEncoded(userData, null, null, null, null);
+		value = baseExt.getValueEncoded(userData, null, null, null, null, null);
 		assertEquals("value", "eeff0000", new String(Hex.encode(value)));
 	}
 
@@ -644,7 +644,7 @@ public class BasicCertificateExtensionTest {
         	BasicCertificateExtension baseExt = new BasicCertificateExtension();
         	baseExt.init(1, "1.2.3", false, props);
 
-        	byte[] value = baseExt.getValueEncoded(null, null, null, null, null);
+        	byte[] value = baseExt.getValueEncoded(null, null, null, null, null, null);
 
         	ExtensionsGenerator extgen = new ExtensionsGenerator();
         	extgen.addExtension(new ASN1ObjectIdentifier(baseExt.getOID()), baseExt.isCriticalFlag(), value);
@@ -679,7 +679,7 @@ public class BasicCertificateExtensionTest {
 		
 		// Without value in userdata it should fail
                 try {
-                    baseExt.getValueEncoded(userData, null, null, null, null);
+                    baseExt.getValueEncoded(userData, null, null, null, null, null);
                     fail("Should have fail as no dynamic value specified");
                 } catch (CertificateExtentionConfigurationException ex) {
                     assertEquals(intres.getLocalizedMessage("certext.basic.incorrectvalue", 1, "1.2.3"), ex.getMessage());
@@ -687,7 +687,7 @@ public class BasicCertificateExtensionTest {
 		
 		// With value in userdata, that value is used
 		userData.getExtendedinformation().setExtensionData("1.2.3", "eeff0000");
-		byte[] value = baseExt.getValueEncoded(userData, null, null, null, null);
+		byte[] value = baseExt.getValueEncoded(userData, null, null, null, null, null);
 		assertEquals("value", "eeff0000", new String(Hex.encode(value)));
 	}
         
@@ -703,7 +703,7 @@ public class BasicCertificateExtensionTest {
 		baseExt.init(1, "1.2.3", false, props);
 		
                 try {
-                    baseExt.getValueEncoded(null, null, null, null, null);
+                    baseExt.getValueEncoded(null, null, null, null, null, null);
                     fail("Should have fail as no value specified");
                 } catch (CertificateExtentionConfigurationException ex) {
                     assertEquals(intres.getLocalizedMessage("certext.basic.incorrectvalue", 1, "1.2.3"), ex.getMessage());
@@ -730,7 +730,7 @@ public class BasicCertificateExtensionTest {
 		userData.setExtendedinformation(new ExtendedInformation());
 		
                 try {
-                    baseExt.getValueEncoded(userData, null, null, null, null);
+                    baseExt.getValueEncoded(userData, null, null, null, null, null);
                     fail("Should have fail as both raw and nvalues specified");
                 } catch (CertificateExtentionConfigurationException ex) {
                     assertEquals(intres.getLocalizedMessage("certext.certextmissconfigured", 1), ex.getMessage());

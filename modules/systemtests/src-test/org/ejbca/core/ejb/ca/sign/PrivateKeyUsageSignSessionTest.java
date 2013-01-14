@@ -20,6 +20,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
+import java.util.Calendar;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.PrivateKeyUsagePeriod;
@@ -126,7 +127,7 @@ public class PrivateKeyUsageSignSessionTest extends SignSessionCommon {
      */
     @Test
     public void testPrivateKeyUsagePeriod_unused() throws Exception {        
-    	X509Certificate cert = privateKeyUsageGetCertificate(false, 0L, false, 0L);        
+    	X509Certificate cert = privateKeyUsageGetCertificate(false, 0L, false, 0L, false);        
         assertNull("Has not the extension", cert.getExtensionValue("2.5.29.16"));
     }
     
@@ -179,53 +180,65 @@ public class PrivateKeyUsageSignSessionTest extends SignSessionCommon {
      */
     @Test
     public void testPrivateKeyUsagePeriod_both() throws Exception {
-        
+        privateKeyUsagePeriod_both(false);
+    }
 
+    /** See that privateKeyUsage period is set correctly when certificate validity override is allowed and used.
+     * If we use a custom startDate (allowed through "allowValidityOverride" there will be no CertificateValidity.SETBACKTIME
+     * in the cert.getNotBefore, and hence PrivateKeyUsagePeriod must be exactly same as in the cert and can not use the default certificate
+     * validity.
+     */
+    @Test
+    public void testPrivateKeyUsagePeriod_allowvalidityOverride() throws Exception {
+        privateKeyUsagePeriod_both(true);
+    }
+
+    private void privateKeyUsagePeriod_both(boolean allowValidityOverride) throws Exception {        
     	// A: 1, 2, 3, 4
-    	privateKeyUsageTestBoth(0L, 33 * 24 * 3600L);
-    	privateKeyUsageTestBoth(0L, 5 * 365 * 24 * 3600L);
-    	privateKeyUsageTestBoth(0L, 1L);
-    	privateKeyUsageTestBoth(0L, 0L);
+    	privateKeyUsageTestBoth(0L, 33 * 24 * 3600L, allowValidityOverride);
+    	privateKeyUsageTestBoth(0L, 5 * 365 * 24 * 3600L, allowValidityOverride);
+    	privateKeyUsageTestBoth(0L, 1L, allowValidityOverride);
+    	privateKeyUsageTestBoth(0L, 0L, allowValidityOverride);
     	
     	// B: 1, 2, 3, 4
-    	privateKeyUsageTestBoth(33 * 24 * 3600L, 33 * 24 * 3600L);
-    	privateKeyUsageTestBoth(33 * 24 * 3600L, 5 * 365 * 24 * 3600L);
-    	privateKeyUsageTestBoth(33 * 24 * 3600L, 1L);
-    	privateKeyUsageTestBoth(33 * 24 * 3600L, 0L);
+    	privateKeyUsageTestBoth(33 * 24 * 3600L, 33 * 24 * 3600L, allowValidityOverride);
+    	privateKeyUsageTestBoth(33 * 24 * 3600L, 5 * 365 * 24 * 3600L, allowValidityOverride);
+    	privateKeyUsageTestBoth(33 * 24 * 3600L, 1L, allowValidityOverride);
+    	privateKeyUsageTestBoth(33 * 24 * 3600L, 0L, allowValidityOverride);
     	
     	// C: 1, 2, 3, 4
-    	privateKeyUsageTestBoth(5 * 365 * 24 * 3600L, 33 * 24 * 3600L);
-    	privateKeyUsageTestBoth(5 * 365 * 24 * 3600L, 5 * 365 * 24 * 3600L);
-    	privateKeyUsageTestBoth(5 * 365 * 24 * 3600L, 1L);
-    	privateKeyUsageTestBoth(5 * 365 * 24 * 3600L, 0L);
+    	privateKeyUsageTestBoth(5 * 365 * 24 * 3600L, 33 * 24 * 3600L, allowValidityOverride);
+    	privateKeyUsageTestBoth(5 * 365 * 24 * 3600L, 5 * 365 * 24 * 3600L, allowValidityOverride);
+    	privateKeyUsageTestBoth(5 * 365 * 24 * 3600L, 1L, allowValidityOverride);
+    	privateKeyUsageTestBoth(5 * 365 * 24 * 3600L, 0L, allowValidityOverride);
     	
     	// D: 1, 2, 3, 4
-    	privateKeyUsageTestBoth(1L, 33 * 24 * 3600L);
-    	privateKeyUsageTestBoth(1L, 5 * 365 * 24 * 3600L);
-    	privateKeyUsageTestBoth(1L, 1L);
-    	privateKeyUsageTestBoth(1L, 0L);
+    	privateKeyUsageTestBoth(1L, 33 * 24 * 3600L, allowValidityOverride);
+    	privateKeyUsageTestBoth(1L, 5 * 365 * 24 * 3600L, allowValidityOverride);
+    	privateKeyUsageTestBoth(1L, 1L, allowValidityOverride);
+    	privateKeyUsageTestBoth(1L, 0L, allowValidityOverride);
         
     	// E: 1, 2, 3, 4
-    	privateKeyUsageTestBoth(-5 * 365 * 24 * 3600L, 33 * 24 * 3600L);
-    	privateKeyUsageTestBoth(-5 * 365 * 24 * 3600L, 5 * 365 * 24 * 3600L);
-    	privateKeyUsageTestBoth(-5 * 365 * 24 * 3600L, 1L);
-    	privateKeyUsageTestBoth(-5 * 365 * 24 * 3600L, 0L);
+    	privateKeyUsageTestBoth(-5 * 365 * 24 * 3600L, 33 * 24 * 3600L, allowValidityOverride);
+    	privateKeyUsageTestBoth(-5 * 365 * 24 * 3600L, 5 * 365 * 24 * 3600L, allowValidityOverride);
+    	privateKeyUsageTestBoth(-5 * 365 * 24 * 3600L, 1L, allowValidityOverride);
+    	privateKeyUsageTestBoth(-5 * 365 * 24 * 3600L, 0L, allowValidityOverride);
     	
     	// F: 1, 2, 3, 4
-    	privateKeyUsageTestBoth(-33 * 24 * 3600L, 33 * 24 * 3600L);
-    	privateKeyUsageTestBoth(-33 * 24 * 3600L, 5 * 365 * 24 * 3600L);
-    	privateKeyUsageTestBoth(-33 * 24 * 3600L, 1L);
-    	privateKeyUsageTestBoth(-33 * 24 * 3600L, 0L);
+    	privateKeyUsageTestBoth(-33 * 24 * 3600L, 33 * 24 * 3600L, allowValidityOverride);
+    	privateKeyUsageTestBoth(-33 * 24 * 3600L, 5 * 365 * 24 * 3600L, allowValidityOverride);
+    	privateKeyUsageTestBoth(-33 * 24 * 3600L, 1L, allowValidityOverride);
+    	privateKeyUsageTestBoth(-33 * 24 * 3600L, 0L, allowValidityOverride);
     	
     	// G: 1, 2, 3, 4
-    	privateKeyUsageTestBoth(-1L, 33 * 24 * 3600L);
-    	privateKeyUsageTestBoth(-1L, 5 * 365 * 24 * 3600L);
-    	privateKeyUsageTestBoth(-1L, 1L);
-    	privateKeyUsageTestBoth(-1L, 0L);
+    	privateKeyUsageTestBoth(-1L, 33 * 24 * 3600L, allowValidityOverride);
+    	privateKeyUsageTestBoth(-1L, 5 * 365 * 24 * 3600L, allowValidityOverride);
+    	privateKeyUsageTestBoth(-1L, 1L, allowValidityOverride);
+    	privateKeyUsageTestBoth(-1L, 0L, allowValidityOverride);
     }
-    
+        
     private void privateKeyUsageTestStartOffset(final long startOffset) throws Exception {
-    	X509Certificate cert = privateKeyUsageGetCertificate(true, startOffset, false, 0L);        
+    	X509Certificate cert = privateKeyUsageGetCertificate(true, startOffset, false, 0L, false);        
         assertNotNull("Has not the extension", cert.getExtensionValue("2.5.29.16"));
         assertTrue("Extension is non-critical", cert.getNonCriticalExtensionOIDs().contains("2.5.29.16"));
         PrivateKeyUsagePeriod ext = PrivateKeyUsagePeriod.getInstance(X509ExtensionUtil.fromExtensionValue(cert.getExtensionValue("2.5.29.16")));
@@ -235,7 +248,7 @@ public class PrivateKeyUsageSignSessionTest extends SignSessionCommon {
     }
     
     private void privateKeyUsageTestValidityLength(final long length) throws Exception {
-    	X509Certificate cert = privateKeyUsageGetCertificate(false, 0L, true, length);        
+    	X509Certificate cert = privateKeyUsageGetCertificate(false, 0L, true, length, false);        
         assertNotNull("Has the extension", cert.getExtensionValue("2.5.29.16"));
         assertTrue("Extension is non-critical", cert.getNonCriticalExtensionOIDs().contains("2.5.29.16"));
         PrivateKeyUsagePeriod ext = PrivateKeyUsagePeriod.getInstance(X509ExtensionUtil.fromExtensionValue(cert.getExtensionValue("2.5.29.16")));
@@ -244,8 +257,8 @@ public class PrivateKeyUsageSignSessionTest extends SignSessionCommon {
         assertEquals("notAfter " + length + " seconds after issue time", cert.getNotBefore().getTime() + length * 1000, ext.getNotAfter().getDate().getTime());
     }
     
-    private void privateKeyUsageTestBoth(final long startOffset, final long length) throws Exception {
-    	X509Certificate cert = privateKeyUsageGetCertificate(true, startOffset, true, length);        
+    private void privateKeyUsageTestBoth(final long startOffset, final long length, boolean allowValidityOverride) throws Exception {
+    	X509Certificate cert = privateKeyUsageGetCertificate(true, startOffset, true, length, allowValidityOverride);        
         assertNotNull("Has the extension", cert.getExtensionValue("2.5.29.16"));
         assertTrue("Extension is non-critical", cert.getNonCriticalExtensionOIDs().contains("2.5.29.16"));
         PrivateKeyUsagePeriod ext = PrivateKeyUsagePeriod.getInstance(X509ExtensionUtil.fromExtensionValue(cert.getExtensionValue("2.5.29.16")));
@@ -255,10 +268,11 @@ public class PrivateKeyUsageSignSessionTest extends SignSessionCommon {
         assertEquals("notAfter " + length + " seconds after notBefore", ext.getNotBefore().getDate().getTime() + length * 1000, ext.getNotAfter().getDate().getTime());
     }
     
-    private X509Certificate privateKeyUsageGetCertificate(final boolean useStartOffset, final long startOffset, final boolean usePeriod, final long period) throws Exception {
+    private X509Certificate privateKeyUsageGetCertificate(final boolean useStartOffset, final long startOffset, final boolean usePeriod, final long period, boolean allowValidityOverride) throws Exception {
     	
     	certificateProfileSession.removeCertificateProfile(internalAdmin, CERTPROFILE_PRIVKEYUSAGEPERIOD);
     	final CertificateProfile certProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+    	certProfile.setAllowValidityOverride(allowValidityOverride);
     	certProfile.setUsePrivateKeyUsagePeriodNotBefore(useStartOffset);
     	certProfile.setPrivateKeyUsagePeriodStartOffset(startOffset);
     	certProfile.setUsePrivateKeyUsagePeriodNotAfter(usePeriod);
@@ -280,7 +294,12 @@ public class PrivateKeyUsageSignSessionTest extends SignSessionCommon {
         user.setStatus(EndEntityConstants.STATUS_NEW);
         endEntityManagementSession.changeUser(internalAdmin, user, false);
         
-        X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, USER_PRIVKEYUSAGEPERIOD, "foo123", rsakeyPrivKeyUsagePeriod.getPublic());
+        Calendar cal = Calendar.getInstance();
+        Calendar notBefore = Calendar.getInstance();
+        notBefore.add(Calendar.DAY_OF_MONTH, 2);
+        cal.add(Calendar.DAY_OF_MONTH, 10);
+        X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, USER_PRIVKEYUSAGEPERIOD, "foo123", rsakeyPrivKeyUsagePeriod.getPublic(),-1,notBefore.getTime(), cal.getTime());
+        //X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, USER_PRIVKEYUSAGEPERIOD, "foo123", rsakeyPrivKeyUsagePeriod.getPublic());
         assertNotNull("Failed to create certificate", cert);
         String dn = cert.getSubjectDN().getName();
         assertEquals(CertTools.stringToBCDNString(DN_PRIVKEYUSAGEPERIOD), CertTools.stringToBCDNString(dn));

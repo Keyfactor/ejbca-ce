@@ -50,11 +50,19 @@ public class PrivateKeyUsagePeriod extends StandardCertificateExtension {
 
     @Override
     public ASN1Encodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile,
-            final PublicKey userPublicKey, final PublicKey caPublicKey) throws CertificateExtentionConfigurationException,
+            final PublicKey userPublicKey, final PublicKey caPublicKey, CertificateValidity val) throws CertificateExtentionConfigurationException,
             CertificateExtensionException {
         // Construct the start and end dates of PrivateKeyUsagePeriod
-        // Set back start date ten minutes to avoid some problems with unsynchronized clocks.
-        long start = new Date().getTime() - CertificateValidity.SETBACKTIME;
+        // As start date, use the same as the start date of the certificate
+        long start;
+        if (val != null) {
+            start = val.getNotBefore().getTime();
+        } else {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("No validity passed in to getValue, using default 'Date().getTime() - CertificateValidity.SETBACKTIME'");
+            }
+            start = new Date().getTime() - CertificateValidity.SETBACKTIME;
+        }
         if (certProfile.isUsePrivateKeyUsagePeriodNotBefore()) {
             start += certProfile.getPrivateKeyUsagePeriodStartOffset() * 1000;
         }

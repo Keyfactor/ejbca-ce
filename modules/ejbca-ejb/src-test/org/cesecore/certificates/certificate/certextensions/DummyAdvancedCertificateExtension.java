@@ -18,6 +18,7 @@ import java.security.PublicKey;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.internal.CertificateValidity;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 
@@ -42,7 +43,7 @@ public class DummyAdvancedCertificateExtension extends CertificateExtension {
 	 * 
 	 */	
 	public ASN1Encodable getValue(EndEntityInformation userData, CA ca,
-			CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey) throws CertificateExtensionException {
+			CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey, CertificateValidity val) throws CertificateExtensionException {
 		
 		String value = getProperties().getProperty(PROPERTY_VALUE);
 		

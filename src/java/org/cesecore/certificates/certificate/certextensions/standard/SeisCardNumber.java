@@ -19,6 +19,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.internal.CertificateValidity;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtentionConfigurationException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -52,7 +53,7 @@ public class SeisCardNumber extends StandardCertificateExtension {
 	}
 	
     @Override
-	public ASN1Encodable getValue(final EndEntityInformation userData, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey)
+	public ASN1Encodable getValue(final EndEntityInformation userData, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey, CertificateValidity val)
 			throws CertificateExtentionConfigurationException, CertificateExtensionException {
 		final String cardnumber = userData.getCardNumber();
 		ASN1Encodable ret = null;
