@@ -589,10 +589,12 @@ public class X509CA extends CA implements Serializable {
             final String msg = intres.getLocalizedMessage("createcert.invalidsignaturealg", sigAlg);
             throw new InvalidAlgorithmException(msg);        	
         }
-        final X509Certificate cacert = (X509Certificate) getCACertificate();
         // Check if this is a root CA we are creating
         final boolean isRootCA = certProfile.getType() == CertificateConstants.CERTTYPE_ROOTCA;
 
+        final X509Certificate cacert = (X509Certificate) getCACertificate();
+        // Check CA certificate PrivateKeyUsagePeriod if it exists (throws CAOfflineException if it exists and is not within this time)
+        CertificateValidity.checkPrivateKeyUsagePeriod(cacert);
         // Get certificate validity time notBefore and notAfter
         final CertificateValidity val = new CertificateValidity(subject, certProfile, notBefore, notAfter, cacert, isRootCA);
 
