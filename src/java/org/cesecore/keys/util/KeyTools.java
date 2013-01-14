@@ -495,13 +495,17 @@ public final class KeyTools {
                     String cafriendly = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "CN");
                     // On the ones below we +i to make it unique, O might not be otherwise
                     if (cafriendly == null) {
-                        cafriendly = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "O") + i;
-                    }
-                    if (cafriendly == null) {
-                        cafriendly = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "OU" + i);
-                    }
-                    if (cafriendly == null) {
-                        cafriendly = "CA_unknown" + i;
+                        cafriendly = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "O");
+                        if (cafriendly == null) {
+                            cafriendly = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "OU");
+                            if (cafriendly == null) {
+                                cafriendly = "CA_unknown" + i;
+                            } else {
+                                cafriendly = cafriendly +i;
+                            }
+                        } else {
+                            cafriendly = cafriendly +i;
+                        }
                     }
                     caBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_friendlyName, new DERBMPString(cafriendly));
                 } catch (ClassCastException e) {
