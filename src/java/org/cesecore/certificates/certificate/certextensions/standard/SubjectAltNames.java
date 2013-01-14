@@ -19,6 +19,7 @@ import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.internal.CertificateValidity;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtentionConfigurationException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -43,7 +44,7 @@ public class SubjectAltNames extends StandardCertificateExtension {
 	}
     
     @Override
-	public ASN1Encodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
+	public ASN1Encodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey, CertificateValidity val ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
 		GeneralNames ret = null;
         String altName = subject.getSubjectAltName(); 
         if(certProfile.getUseSubjectAltNameSubSet()){
