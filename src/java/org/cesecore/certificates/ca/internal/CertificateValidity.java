@@ -12,11 +12,15 @@
  *************************************************************************/ 
 package org.cesecore.certificates.ca.internal;
 
+import java.io.IOException;
 import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.x509.PrivateKeyUsagePeriod;
+import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -177,4 +181,48 @@ public class CertificateValidity {
 	public Date getNotBefore() {
 		return firstDate;
 	}
+	
+	/**
+	 * Checks that the PrivateKeyUsagePeriod of the certificate is valid at this time
+	 * @param cacert
+	 * @throws IOException If there is an error reading PrivateKeyUsagePeriod extension from the certificate
+	 * @throws ParseException If there is an error reading PrivateKeyUsagePeriod extension from the certificate
+	 * @throws CAOfflineException if PrivateKeyUsagePeriod either is not valid yet or has expired, exception message gives details
+	 */
+    public static void checkPrivateKeyUsagePeriod(final X509Certificate cert) throws IOException, ParseException, CAOfflineException {
+        if (cert != null) {
+            final PrivateKeyUsagePeriod pku = CertTools.getPrivateKeyUsagePeriod(cert);
+            if (pku != null) {
+                final Date now = new Date();
+                final Date pkuNotBefore = pku.getNotBefore().getDate();
+                if (log.isDebugEnabled()) {
+                    log.debug("PrivateKeyUsagePeriod.notBefore is "+pkuNotBefore.toString());
+                }
+                if (pkuNotBefore != null && now.before(pkuNotBefore)) {
+                    final String msg = intres.getLocalizedMessage("createcert.privatekeyusagenotvalid", pkuNotBefore.toString(), cert.getSubjectDN().toString());
+                    if (log.isDebugEnabled()) {
+                        log.debug(msg);
+                    }
+                    throw new CAOfflineException(msg);
+                }
+                final Date pkuNotAfter = pku.getNotAfter().getDate();
+                if (log.isDebugEnabled()) {
+                    log.debug("PrivateKeyUsagePeriod.notAfter is "+pkuNotAfter.toString());
+                }
+                if (pkuNotAfter != null && now.after(pkuNotAfter)) {
+                    final String msg = intres.getLocalizedMessage("createcert.privatekeyusageexpired", pkuNotAfter.toString(), cert.getSubjectDN().toString());
+                    if (log.isDebugEnabled()) {
+                        log.debug(msg);
+                    }
+                    throw new CAOfflineException(msg);
+                }
+            } else if (log.isDebugEnabled()) {
+                log.debug("No PrivateKeyUsagePeriod available in certificate.");
+            }
+        } else if (log.isDebugEnabled()) {
+            log.debug("No CA certificate available, not checking PrivateKeyUsagePeriod.");       
+        }
+    }
+
+
 }

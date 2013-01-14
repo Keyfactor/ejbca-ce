@@ -83,6 +83,7 @@ import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERGeneralString;
+import org.bouncycastle.asn1.DERGeneralizedTime;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DEROctetString;
@@ -102,6 +103,7 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.PolicyInformation;
+import org.bouncycastle.asn1.x509.PrivateKeyUsagePeriod;
 import org.bouncycastle.asn1.x509.ReasonFlags;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
@@ -1286,11 +1288,13 @@ public class CertTools {
         return genSelfCert(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, "BC");
     }
 
-    // TODO: Fix documentation
+    /** Generates a self signed certificate with keyUsage X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, i.e. a CA certificate
+     * 
+     */
     public static X509Certificate genSelfCert(String dn, long validity, String policyId, PrivateKey privKey, PublicKey pubKey, String sigAlg,
             boolean isCA, String provider) throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, IllegalStateException, NoSuchProviderException, OperatorCreationException, CertificateException, IOException {
         int keyusage = X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
-        return genSelfCertForPurpose(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, keyusage, provider);
+        return genSelfCertForPurpose(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, keyusage, null, null, provider);
     } // genselfCert
 
     /**
@@ -1319,11 +1323,11 @@ public class CertTools {
     public static X509Certificate genSelfCertForPurpose(String dn, long validity, String policyId, PrivateKey privKey, PublicKey pubKey,
             String sigAlg, boolean isCA, int keyusage) throws NoSuchAlgorithmException, SignatureException, InvalidKeyException,
             IllegalStateException, NoSuchProviderException, OperatorCreationException, CertificateException, IOException {
-        return genSelfCertForPurpose(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, keyusage, "BC");
+        return genSelfCertForPurpose(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, keyusage, null, null, "BC");
     }
 
     public static X509Certificate genSelfCertForPurpose(String dn, long validity, String policyId, PrivateKey privKey, PublicKey pubKey,
-            String sigAlg, boolean isCA, int keyusage, String provider) throws NoSuchAlgorithmException, SignatureException, InvalidKeyException,
+            String sigAlg, boolean isCA, int keyusage, Date privateKeyNotBefore, Date privateKeyNotAfter, String provider) throws NoSuchAlgorithmException, SignatureException, InvalidKeyException,
             IllegalStateException, NoSuchProviderException, IOException, OperatorCreationException, CertificateException {
         // Create self signed certificate
         Date firstDate = new Date();
@@ -1386,6 +1390,17 @@ public class CertTools {
             certbuilder.addExtension(Extension.keyUsage, true, ku);
         }
 
+        if ((privateKeyNotBefore != null) || (privateKeyNotAfter != null)) {
+            final ASN1EncodableVector v = new ASN1EncodableVector();
+            if (privateKeyNotBefore != null) {
+                v.add(new DERTaggedObject(false, 0, new DERGeneralizedTime(privateKeyNotBefore)));
+            }
+            if (privateKeyNotAfter != null) {
+                v.add(new DERTaggedObject(false, 1, new DERGeneralizedTime(privateKeyNotAfter)));
+            }
+            certbuilder.addExtension(Extension.privateKeyUsagePeriod, false, new DERSequence(v));
+        }
+        
         // Subject and Authority key identifier is always non-critical and MUST be present for certificates to verify in Firefox.
         try {
             if (isCA) {
@@ -2428,6 +2443,24 @@ public class CertTools {
         return ret;
     }
     
+    /** Reads PrivateKeyUsagePeriod extension from a certificate
+     * 
+     */
+    public static PrivateKeyUsagePeriod getPrivateKeyUsagePeriod(
+            final X509Certificate cert) throws IOException {
+        PrivateKeyUsagePeriod res = null;
+        final byte[] extvalue = cert.getExtensionValue(Extension.privateKeyUsagePeriod.getId());
+        if ((extvalue != null) && (extvalue.length > 0)) {
+            if (log.isTraceEnabled()) {
+                log.trace("Found a PrivateKeyUsagePeriod in the certificate with subject: "+cert.getSubjectDN().toString());
+            }
+            final DEROctetString oct = (DEROctetString) (new ASN1InputStream(new ByteArrayInputStream(extvalue)).readObject());
+            res = PrivateKeyUsagePeriod.
+                    getInstance((ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(oct.getOctets())).readObject());
+        }
+        return res;
+    }
+
     /**
      * 
      * @param cert An X509Certificate
