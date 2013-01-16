@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -39,7 +40,7 @@ public class CAAuthorization implements Serializable {
 
     private static final long serialVersionUID = -7397428143642714604L;
 
-    private Collection<Integer> authcas = null;
+    private List<Integer> authcas = null;
     private TreeMap<String, Integer> profilenamesendentity = null;
     private TreeMap<String, Integer> profilenamessubca = null;
     private TreeMap<String, Integer> profilenamesrootca = null;
@@ -62,10 +63,10 @@ public class CAAuthorization implements Serializable {
     }
 
     /**
-     * Method returning a Collection of authorized CA id's (Integer).
+     * Method returning a List of authorized CA id's (Integer).
      *
      */
-    public Collection<Integer> getAuthorizedCAIds() {         
+    public List<Integer> getAuthorizedCAIds() {         
     	if(authcas == null || authcas.size() == 0){
     		authcas = caSession.getAvailableCAs(admin);
     	}

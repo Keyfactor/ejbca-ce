@@ -853,7 +853,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
     @SuppressWarnings("unchecked")
 	public int[] getAvailableBitLengths() {
-        ArrayList<Integer> availablebitlengths = (ArrayList<Integer>) data.get(AVAILABLEBITLENGTHS);
+        List<Integer> availablebitlengths = (List<Integer>) data.get(AVAILABLEBITLENGTHS);
         int[] returnval = new int[availablebitlengths.size()];
 
         for (int i = 0; i < availablebitlengths.size(); i++) {
@@ -862,25 +862,36 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
         return returnval;
     }
+    @SuppressWarnings("unchecked")
+    public List<Integer> getAvailableBitLengthsAsList() {
+        return (ArrayList<Integer>) data.get(AVAILABLEBITLENGTHS);
+    }
+
+    public void setAvailableBitLengths(List<Integer> availablebitlengths) {
+        // Strange values here, but it makes the <> below work for sure
+        int minimumavailablebitlength = 99999999;
+        int maximumavailablebitlength = 0;
+
+        for (int i = 0; i < availablebitlengths.size(); i++) {
+            if (availablebitlengths.get(i) > maximumavailablebitlength) {
+                maximumavailablebitlength = availablebitlengths.get(i);
+            }
+            if (availablebitlengths.get(i) < minimumavailablebitlength) {
+                minimumavailablebitlength = availablebitlengths.get(i);
+            }
+        }
+        data.put(AVAILABLEBITLENGTHS, availablebitlengths);        
+        data.put(MINIMUMAVAILABLEBITLENGTH, Integer.valueOf(minimumavailablebitlength));
+        data.put(MAXIMUMAVAILABLEBITLENGTH, Integer.valueOf(maximumavailablebitlength));        
+    }
 
     public void setAvailableBitLengths(int[] availablebitlengths) {
         ArrayList<Integer> availbitlengths = new ArrayList<Integer>(availablebitlengths.length);
 
-        int minimumavailablebitlength = 99999999;
-        int maximumavailablebitlength = 0;
-
         for (int i = 0; i < availablebitlengths.length; i++) {
-            if (availablebitlengths[i] > maximumavailablebitlength) {
-                maximumavailablebitlength = availablebitlengths[i];
-            }
-            if (availablebitlengths[i] < minimumavailablebitlength) {
-                minimumavailablebitlength = availablebitlengths[i];
-            }
             availbitlengths.add(Integer.valueOf(availablebitlengths[i]));
         }
-        data.put(AVAILABLEBITLENGTHS, availbitlengths);
-        data.put(MINIMUMAVAILABLEBITLENGTH, Integer.valueOf(minimumavailablebitlength));
-        data.put(MAXIMUMAVAILABLEBITLENGTH, Integer.valueOf(maximumavailablebitlength));
+        setAvailableBitLengths(availbitlengths);
     }
 
     public int getMinimumAvailableBitLength() {
@@ -1116,19 +1127,19 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     /**
-     * Returns a collection of Integer (DNFieldExtractor constants) indicating which subject dn fields that should be used in certificate.
+     * Returns a List of Integer (DNFieldExtractor constants) indicating which subject dn fields that should be used in certificate.
      * 
      */
     @SuppressWarnings("unchecked")
-    public Collection<Integer> getSubjectDNSubSet() {
-        return (Collection<Integer>) data.get(SUBJECTDNSUBSET);
+    public List<Integer> getSubjectDNSubSet() {
+        return (List<Integer>) data.get(SUBJECTDNSUBSET);
     }
 
     /**
      * Should contain a collection of Integer (DNFieldExtractor constants) indicating which subject dn fields that should be used in certificate.
      * 
      */
-    public void setSubjectDNSubSet(Collection<Integer> subjectdns) {
+    public void setSubjectDNSubSet(List<Integer> subjectdns) {
         data.put(SUBJECTDNSUBSET, subjectdns);
 
     }
@@ -1154,19 +1165,19 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     /**
-     * Returns a collection of Integer (DNFieldExtractor constants) indicating which subject altnames fields that should be used in certificate.
+     * Returns a List of Integer (DNFieldExtractor constants) indicating which subject altnames fields that should be used in certificate.
      * 
      */
     @SuppressWarnings("unchecked")
-    public Collection<Integer> getSubjectAltNameSubSet() {
-        return (Collection<Integer>) data.get(SUBJECTALTNAMESUBSET);
+    public List<Integer> getSubjectAltNameSubSet() {
+        return (List<Integer>) data.get(SUBJECTALTNAMESUBSET);
     }
 
     /**
-     * Returns a collection of Integer (DNFieldExtractor constants) indicating which subject altnames fields that should be used in certificate.
+     * Sets a List of Integer (DNFieldExtractor constants) indicating which subject altnames fields that should be used in certificate.
      * 
      */
-    public void setSubjectAltNameSubSet(Collection<Integer> subjectaltnames) {
+    public void setSubjectAltNameSubSet(List<Integer> subjectaltnames) {
         data.put(SUBJECTALTNAMESUBSET, subjectaltnames);
 
     }
@@ -1215,52 +1226,52 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     /**
-     * Returns a Collections of caids (Integer), indicating which CAs the profile should be applicable to.
+     * Returns a List of caids (Integer), indicating which CAs the profile should be applicable to.
      * 
      * If it contains the constant ANYCA then the profile is applicable to all CAs
      */
     @SuppressWarnings("unchecked")
-    public Collection<Integer> getAvailableCAs() {
-        return (Collection<Integer>) data.get(AVAILABLECAS);
+    public List<Integer> getAvailableCAs() {
+        return (List<Integer>) data.get(AVAILABLECAS);
     }
 
     /**
      * Saves the CertificateProfile's list of CAs the cert profile is applicable to.
      * 
      * @param availablecas
-     *            a Collection of caids (Integer)
+     *            a List of caids (Integer)
      */
 
-    public void setAvailableCAs(Collection<Integer> availablecas) {
+    public void setAvailableCAs(List<Integer> availablecas) {
         data.put(AVAILABLECAS, availablecas);
     }
 
     @SuppressWarnings("unchecked")
     public boolean isApplicableToAnyCA() {
-        return ((Collection<Integer>) data.get(AVAILABLECAS)).contains(Integer.valueOf(ANYCA));
+        return ((List<Integer>) data.get(AVAILABLECAS)).contains(Integer.valueOf(ANYCA));
     }
 
     /**
-     * Returns a Collection of publisher id's (Integer) indicating which publishers a certificate created with this profile should be published to.
+     * Returns a List of publisher id's (Integer) indicating which publishers a certificate created with this profile should be published to.
      * Never returns null.
      */
     @SuppressWarnings("unchecked")
-    public Collection<Integer> getPublisherList() {
+    public List<Integer> getPublisherList() {
         Object o = data.get(USEDPUBLISHERS);
         if (o == null) {
             o = new ArrayList<Integer>();
         }
-        return (Collection<Integer>) o;
+        return (List<Integer>) o;
     }
 
     /**
      * Saves the CertificateProfile's list of publishers that certificates created with this profile should be published to.
      * 
      * @param publishers
-     *            a Collection<Integer> of publisher Ids
+     *            a List<Integer> of publisher Ids
      */
 
-    public void setPublisherList(Collection<Integer> publisher) {
+    public void setPublisherList(List<Integer> publisher) {
         data.put(USEDPUBLISHERS, publisher);
     }
 
@@ -1586,19 +1597,19 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     /**
-     * Returns a collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which action that requires approvals, default none
+     * Returns a List of Integers (CAInfo.REQ_APPROVAL_ constants) of which action that requires approvals, default none
      * 
      * Never null
      */
     @SuppressWarnings("unchecked")
-    public Collection<Integer> getApprovalSettings() {
-        return (Collection<Integer>) data.get(APPROVALSETTINGS);
+    public List<Integer> getApprovalSettings() {
+        return (List<Integer>) data.get(APPROVALSETTINGS);
     }
 
     /**
-     * Collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which action that requires approvals
+     * List of Integers (CAInfo.REQ_APPROVAL_ constants) of which action that requires approvals
      */
-    public void setApprovalSettings(Collection<Integer> approvalSettings) {
+    public void setApprovalSettings(List<Integer> approvalSettings) {
         data.put(APPROVALSETTINGS, approvalSettings);
     }
 
@@ -1713,7 +1724,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.put(PRIVKEYUSAGEPERIODLENGTH, validity);
     }
     
-    public Object clone() throws CloneNotSupportedException {
+    public CertificateProfile clone() throws CloneNotSupportedException {
         final CertificateProfile clone = new CertificateProfile(0);
         // We need to make a deep copy of the hashmap here
         clone.data = new LinkedHashMap<Object,Object>(data.size());
