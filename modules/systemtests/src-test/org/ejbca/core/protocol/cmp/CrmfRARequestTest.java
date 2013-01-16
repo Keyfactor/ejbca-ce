@@ -580,7 +580,8 @@ public class CrmfRARequestTest extends CmpTestCase {
                 assertNotNull(cert);
                 // Check that this was really signed using SHA256WithECDSA and that the users key algo is in there
                 assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmTools.getSignatureAlgorithm(cert));
-                assertEquals("secp256r1", AlgorithmTools.getKeySpecification(cert.getPublicKey()));
+                // Keyspec we get back from AlgorithmTools.getKeySpecification seems to differ between OracleJDK and OpenJDK so we only check key type
+                assertEquals(AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmTools.getKeyAlgorithm(cert.getPublicKey()));
             } finally {
                 try {
                     endEntityManagementSession.deleteUser(admin, userName1);
