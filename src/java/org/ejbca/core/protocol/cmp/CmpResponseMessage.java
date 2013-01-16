@@ -60,7 +60,6 @@ import org.cesecore.util.CertTools;
 /**
  * CMP certificate response message
  * 
- * @author tomas
  * @version $Id$
  */
 public class CmpResponseMessage implements CertificateResponseMessage {
@@ -100,7 +99,7 @@ public class CmpResponseMessage implements CertificateResponseMessage {
     /** transaction id */
     private String transactionId = null;
 
-    /** Default digest algorithm for SCEP response message, can be overridden */
+    /** Default digest algorithm for CMP response message, can be overridden */
     private String digestAlg = CMSSignedGenerator.DIGEST_SHA1;
     /** The default provider is BC, if nothing else is specified when setting SignKeyInfo */
     private String provider = "BC";
