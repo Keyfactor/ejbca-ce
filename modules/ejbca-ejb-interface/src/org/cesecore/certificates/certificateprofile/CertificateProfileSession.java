@@ -13,6 +13,7 @@
 package org.cesecore.certificates.certificateprofile;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -86,7 +87,7 @@ public interface CertificateProfileSession {
 	 * @param availableCaIds list of CAid to replace the original list with, or null.
      */
     void cloneCertificateProfile(AuthenticationToken admin, String orgname, String newname,
-            Collection<Integer> authorizedCaIds) throws CertificateProfileExistsException, CertificateProfileDoesNotExistException, AuthorizationDeniedException;
+            List<Integer> authorizedCaIds) throws CertificateProfileExistsException, CertificateProfileDoesNotExistException, AuthorizationDeniedException;
 
     /**
      * Retrieves a Collection of id:s (Integer) to authorized profiles. The method does not make any authorization checks itself, only 

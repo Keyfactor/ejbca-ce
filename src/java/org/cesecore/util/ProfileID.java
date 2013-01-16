@@ -42,7 +42,7 @@ public class ProfileID {
 	 */
 	public static int getNotUsedID(final DB db) {
 		for ( int i=0; i<10; i++ ) {
-			final int id = RANDOM.nextInt(Integer.MAX_VALUE-MIN)+MIN;
+		    final int id = getRandomIdNumber();
 			if ( db.isFree(id) ) {
 				return id;
 			}
@@ -50,5 +50,9 @@ public class ProfileID {
 		}
 		// this throw is indicating an implementation error of the DB class and should never occur. If it does the code must be fixed.
 		throw new RuntimeException("Impossible to find a spare ID in the database for the class: "+db.getClass().getCanonicalName());
+	}
+	
+	public static int getRandomIdNumber() {
+        return RANDOM.nextInt(Integer.MAX_VALUE-MIN)+MIN;	    
 	}
 }

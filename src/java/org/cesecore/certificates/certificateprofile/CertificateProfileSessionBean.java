@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -176,7 +177,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void cloneCertificateProfile(final AuthenticationToken admin, final String orgname, final String newname,
-            final Collection<Integer> authorizedCaIds) throws CertificateProfileExistsException, CertificateProfileDoesNotExistException,
+            final List<Integer> authorizedCaIds) throws CertificateProfileExistsException, CertificateProfileDoesNotExistException,
             AuthorizationDeniedException {
         CertificateProfile profile = null;
 

@@ -230,7 +230,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         cprofile = new CertificateProfile();
                                         cprofile.loadData(decoder.readObject());
                                         // Make sure CAs in profile exist
-                                        Collection<Integer> cas = cprofile.getAvailableCAs();
+                                        List<Integer> cas = cprofile.getAvailableCAs();
                                         ArrayList<Integer> casToRemove = new ArrayList<Integer>();
                                         for (Integer currentCA : cas) {
                                             // If the CA is not ANYCA and the CA does not exist, remove it from the profile before import
@@ -257,7 +257,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         }
                                         cprofile.setAvailableCAs(cas);
                                         // Remove and warn about unknown publishers
-                                        Collection<Integer> publishers = cprofile.getPublisherList();
+                                        List<Integer> publishers = cprofile.getPublisherList();
                                         ArrayList<Integer> allToRemove = new ArrayList<Integer>();
                                         for (Integer publisher : publishers) {
                                         	BasePublisher pub = null;

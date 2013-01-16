@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -369,13 +370,13 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public Collection<Integer> getAvailableCAs() {
+    public List<Integer> getAvailableCAs() {
         return CAData.findAllCaIds(entityManager);
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public Collection<Integer> getAvailableCAs(final AuthenticationToken admin) {
+    public List<Integer> getAvailableCAs(final AuthenticationToken admin) {
         final Collection<Integer> availableCaIds = getAvailableCAs();
         final ArrayList<Integer> returnval = new ArrayList<Integer>();
         for (Integer caid : availableCaIds) {
@@ -388,7 +389,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public Collection<String> getAvailableCANames(final AuthenticationToken admin) {
+    public List<String> getAvailableCANames(final AuthenticationToken admin) {
         final Collection<CAData> allCAs = CAData.findAll(entityManager);
         final ArrayList<String> returnval = new ArrayList<String>();
         for (CAData ca : allCAs) {

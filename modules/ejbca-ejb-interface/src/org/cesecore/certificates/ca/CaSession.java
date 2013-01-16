@@ -13,6 +13,7 @@
 package org.cesecore.certificates.ca;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -78,9 +79,9 @@ public interface CaSession {
      * Method returning id's of all CA's available to the system. i.e. not
      * having status "external" or "waiting for certificate response"
      * 
-     * @return a Collection (Integer) of available CA id's
+     * @return a List (Integer) of available CA id's
      */
-    public Collection<Integer> getAvailableCAs();
+    public List<Integer> getAvailableCAs();
 
     /**
      * Method returning id's of all CA's available to the system, i.e. not 
@@ -91,9 +92,9 @@ public interface CaSession {
      * give access to the CAs but only returns CAIds of CAs.
      * 
      * @param admin AuthenticationToken of admin
-     * @return a Collection<Integer> of available CA id's
+     * @return a List<Integer> of available CA id's
      */
-    public Collection<Integer> getAvailableCAs(AuthenticationToken admin);
+    public List<Integer> getAvailableCAs(AuthenticationToken admin);
     
     /**
      * Method returning names of all CA's available to the system that the
@@ -101,9 +102,9 @@ public interface CaSession {
      * "waiting for certificate response"
      * 
      * @param admin AuthenticationToken of admin
-     * @return a Collection<String> of available CA names
+     * @return a List<String> of available CA names
      */
-    public Collection<String> getAvailableCANames(final AuthenticationToken admin);
+    public List<String> getAvailableCANames(final AuthenticationToken admin);
 
     /**
      * Returns a value object containing non-sensitive information about a CA
