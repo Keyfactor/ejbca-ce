@@ -297,6 +297,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         	setUse(CARDNUMBER,0,false);
         	setUse(ISSUANCEREVOCATIONREASON,0,false);
         	setUse(MAXFAILEDLOGINS,0,false);
+            setValue(MAXFAILEDLOGINS, 0, Integer.toString(ExtendedInformation.DEFAULT_MAXLOGINATTEMPTS));
         	setUse(MINPWDSTRENGTH,0,false);
         } else {
         	// initialize profile data
@@ -320,7 +321,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         	addFieldWithDefaults(ALLOWEDREQUESTS, "", Boolean.FALSE, Boolean.FALSE, Boolean.TRUE);
         	addFieldWithDefaults(CARDNUMBER, "", Boolean.FALSE, Boolean.FALSE, Boolean.TRUE);
         	addFieldWithDefaults(ISSUANCEREVOCATIONREASON, CONST_ISSUANCEREVOCATIONREASON, Boolean.FALSE, Boolean.FALSE, Boolean.TRUE);
-        	addFieldWithDefaults(MAXFAILEDLOGINS, "", Boolean.FALSE, Boolean.FALSE, Boolean.TRUE);
+        	addFieldWithDefaults(MAXFAILEDLOGINS, Integer.toString(ExtendedInformation.DEFAULT_MAXLOGINATTEMPTS), Boolean.FALSE, Boolean.FALSE, Boolean.TRUE);
         }
     }
 
@@ -580,7 +581,23 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         availablecaids.addAll(Arrays.asList(getValue(AVAILCAS,0).split(SPLITCHAR)));
         return availablecaids;
     }
-    
+
+    /** Sets available CA ids. These are stored as a ; separated string in the end entity profile
+     * 
+     * @param ids Collection of CA ids
+     */
+    public void setAvailableCAs(Collection<Integer> ids) {
+        StringBuilder builder = new StringBuilder();
+        for (Integer id: ids) {
+            if (builder.length() == 0) {
+                builder.append(id);
+            } else {
+                builder.append(';').append(id);
+            }
+        }
+        setValue(AVAILCAS,0, builder.toString());
+    }
+
     /** Gets a Collection of available certificate profile ids
      * Use String.valueOf(caidstring) to get the int value
      * 
@@ -595,6 +612,22 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         return profiles;    	
     }
 
+    /** Sets available certificate profile ids. These are stored as a ; separated string in the end entity profile
+     * 
+     * @param ids Collection of certificate profile ids
+     */
+    public void setAvailableCertificateProfileIds(Collection<Integer> ids) {
+        StringBuilder builder = new StringBuilder();
+        for (Integer id: ids) {
+            if (builder.length() == 0) {
+                builder.append(id);
+            } else {
+                builder.append(';').append(id);
+            }
+        }
+        setValue(AVAILCERTPROFILES,0, builder.toString());
+    }
+    
     public int getDefaultCA() {
     	int ret = -1;
     	final String str = getValue(DEFAULTCA,0);
