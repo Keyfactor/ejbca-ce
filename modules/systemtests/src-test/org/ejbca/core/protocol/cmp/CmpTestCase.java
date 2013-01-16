@@ -105,11 +105,13 @@ import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.bouncycastle.jce.X509Principal;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.WebConfiguration;
@@ -462,10 +464,15 @@ public abstract class CmpTestCase extends CaTestCase {
         PKIHeader header = respObject.getHeader();
 
         // Check that the message is signed with the correct digest alg
+        String expectedSignAlg = PKCSObjectIdentifiers.sha1WithRSAEncryption.getId();
+        // if cacert is ECDSA we should expect an ECDSA signature alg
+        if (AlgorithmTools.getSignatureAlgorithm(cacert).contains("ECDSA")) {
+            expectedSignAlg = X9ObjectIdentifiers.ecdsa_with_SHA1.getId();
+        }
         if (signed) {
             AlgorithmIdentifier algId = header.getProtectionAlg();
             assertNotNull("The AlgorithmIdentifier in the response signature could not be read.", algId);
-            assertEquals(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), algId.getAlgorithm().getId());
+            assertEquals(expectedSignAlg, algId.getAlgorithm().getId());
         }
         if (pbe) {
             AlgorithmIdentifier algId = header.getProtectionAlg();
@@ -486,7 +493,7 @@ public abstract class CmpTestCase extends CaTestCase {
             DERBitString bs = respObject.getProtection();
             Signature sig;
             try {
-                sig = Signature.getInstance(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), "BC");
+                sig = Signature.getInstance(expectedSignAlg, "BC");
                 sig.initVerify(cacert);
                 sig.update(protBytes);
                 boolean ret = sig.verify(bs.getBytes());
