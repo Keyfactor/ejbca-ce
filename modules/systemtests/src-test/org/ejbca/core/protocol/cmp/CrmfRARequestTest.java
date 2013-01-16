@@ -13,6 +13,9 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
 import java.security.KeyPair;
@@ -39,6 +42,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRem
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -66,7 +70,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * @author tomas
  * @version $Id$
  */
 public class CrmfRARequestTest extends CmpTestCase {
@@ -184,12 +187,14 @@ public class CrmfRARequestTest extends CmpTestCase {
      * @param userDN for new certificate.
      * @param keys key of the new certificate.
      * @param sFailMessage if !=null then EJBCA is expected to fail. The failure response message string is checked against this parameter.
+     * @return X509Certificate the cert produced if test was successful, null for a test that resulted in failure (can be expected if sFailMessage != null)
      * @throws Exception
      */
-    private void crmfHttpUserTest(String userDN, KeyPair keys, String sFailMessage, BigInteger customCertSerno) throws Exception {
+    private X509Certificate crmfHttpUserTest(String userDN, KeyPair keys, String sFailMessage, BigInteger customCertSerno) throws Exception {
 
         // Create a new good user
 
+        X509Certificate cert = null;
         final byte[] nonce = CmpMessageHelper.createSenderNonce();
         final byte[] transid = CmpMessageHelper.createSenderNonce();
         final int reqId;
@@ -209,7 +214,7 @@ public class CrmfRARequestTest extends CmpTestCase {
             // do not check signing if we expect a failure (sFailMessage==null)
             checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, sFailMessage == null, null);
             if (sFailMessage == null) {
-                X509Certificate cert = checkCmpCertRepMessage(userDN, cacert, resp, reqId);
+                cert = checkCmpCertRepMessage(userDN, cacert, resp, reqId);
                 // verify if custom cert serial number was used
                 if (customCertSerno != null) {
                     Assert.assertTrue(cert.getSerialNumber().toString(16) + " is not same as expected " + customCertSerno.toString(16), cert
@@ -234,6 +239,7 @@ public class CrmfRARequestTest extends CmpTestCase {
             checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
             checkCmpPKIConfirmMessage(userDN, cacert, resp);
         }
+        return cert;
     }
 
     @Test
@@ -554,6 +560,41 @@ public class CrmfRARequestTest extends CmpTestCase {
         caAdminSession.editCA(admin, cainfo);
     }
     
+    @Test
+    public void test05CrmfEcdsaCA() throws Exception {
+        final String oldIssuerDN = issuerDN;
+        final X509Certificate oldCaCert = cacert;
+        try {
+            createEllipticCurveDsaCa();
+            CAInfo caInfo = caSession.getCAInfo(admin, "TESTECDSA");
+            updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, "TESTECDSA");
+
+            issuerDN = caInfo.getSubjectDN(); // Make sure this CA is used for the test
+            cacert = (X509Certificate)caInfo.getCertificateChain().iterator().next();
+            final KeyPair key1 = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_ECDSA);
+            final String userName1 = "cmptestecdsa1";
+            final String userDN1 = "C=SE,O=PrimeKey,CN=" + userName1;
+            try {
+                // check that we can get a certificate from this ECDSA CA.
+                X509Certificate cert = crmfHttpUserTest(userDN1, key1, null, null);
+                assertNotNull(cert);
+                // Check that this was really signed using SHA256WithECDSA and that the users key algo is in there
+                assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmTools.getSignatureAlgorithm(cert));
+                assertEquals("secp256r1", AlgorithmTools.getKeySpecification(cert.getPublicKey()));
+            } finally {
+                try {
+                    endEntityManagementSession.deleteUser(admin, userName1);
+                } catch (NotFoundException e) {
+                }
+            }
+        } finally {
+            // Reset this test class as it was before this test
+            issuerDN = oldIssuerDN;
+            cacert = oldCaCert;
+            updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, "AdminCA1");
+        }
+    }
+
     @After
     public void tearDown() throws Exception {
         super.tearDown();

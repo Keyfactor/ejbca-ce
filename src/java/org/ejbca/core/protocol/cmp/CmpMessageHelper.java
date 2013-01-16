@@ -72,20 +72,19 @@ import org.bouncycastle.asn1.crmf.POPOPrivKey;
 import org.bouncycastle.asn1.crmf.POPOSigningKey;
 import org.bouncycastle.asn1.crmf.ProofOfPossession;
 import org.bouncycastle.asn1.ocsp.BasicOCSPResponse;
-import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.ReasonFlags;
-import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.ocsp.BasicOCSPResp;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
+import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -155,16 +154,8 @@ public class CmpMessageHelper {
 	public static PKIMessage buildCertBasedPKIProtection( PKIMessage pKIMessage, CMPCertificate cert, PrivateKey key, String digestAlg, String provider )
 	throws NoSuchProviderException, NoSuchAlgorithmException, SecurityException, SignatureException, InvalidKeyException, IOException
 	{
-		// Select which signature algorithm we should use for the response, based on the digest algorithm.
-		ASN1ObjectIdentifier oid = PKCSObjectIdentifiers.sha1WithRSAEncryption;
-		if(digestAlg != null) {
-		    if (digestAlg.equals(CMSSignedGenerator.DIGEST_SHA256)) {
-		        oid = PKCSObjectIdentifiers.sha256WithRSAEncryption;			
-		    }
-		    if (digestAlg.equals(CMSSignedGenerator.DIGEST_MD5)) {
-		        oid = PKCSObjectIdentifiers.md5WithRSAEncryption;			
-		    }
-		}
+		// Select which signature algorithm we should use for the response, based on the digest algorithm and key type.
+		ASN1ObjectIdentifier oid = AlgorithmTools.getSignAlgOidFromDigestAndKey(digestAlg, key.getAlgorithm());
     	if (LOG.isDebugEnabled()) {
     		LOG.debug("Selected signature alg oid: "+oid.getId());
     	}
@@ -193,7 +184,7 @@ public class CmpMessageHelper {
 		}
 		return pKIMessage;
 	}
-	
+
 	//TODO see if we could do this in a better way
 	public static PKIHeaderBuilder getHeaderBuilder(PKIHeader head) throws IOException {
 	    PKIHeaderBuilder builder = new PKIHeaderBuilder(head.getPvno().getValue().intValue(), head.getSender(), head.getRecipient());
