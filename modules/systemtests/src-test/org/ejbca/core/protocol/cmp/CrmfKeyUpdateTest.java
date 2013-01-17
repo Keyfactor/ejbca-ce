@@ -21,20 +21,15 @@ import static org.junit.Assert.assertTrue;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.security.InvalidKeyException;
 import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.Principal;
 import java.security.Signature;
-import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -47,40 +42,22 @@ import javax.security.auth.x500.X500Principal;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Primitive;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.DERGeneralizedTime;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
-import org.bouncycastle.asn1.DERSequence;
-import org.bouncycastle.asn1.DERTaggedObject;
-import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.cmp.CMPCertificate;
 import org.bouncycastle.asn1.cmp.CertRepMessage;
 import org.bouncycastle.asn1.cmp.CertResponse;
 import org.bouncycastle.asn1.cmp.ErrorMsgContent;
 import org.bouncycastle.asn1.cmp.PKIBody;
-import org.bouncycastle.asn1.cmp.PKIHeaderBuilder;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.cmp.PKIStatusInfo;
-import org.bouncycastle.asn1.crmf.AttributeTypeAndValue;
-import org.bouncycastle.asn1.crmf.CRMFObjectIdentifiers;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
-import org.bouncycastle.asn1.crmf.CertReqMsg;
-import org.bouncycastle.asn1.crmf.CertRequest;
-import org.bouncycastle.asn1.crmf.CertTemplateBuilder;
-import org.bouncycastle.asn1.crmf.OptionalValidity;
-import org.bouncycastle.asn1.crmf.POPOSigningKey;
-import org.bouncycastle.asn1.crmf.ProofOfPossession;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
-import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.ReasonFlags;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -246,7 +223,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertNotNull("Failed to create a test certificate", certificate);
 
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
-        PKIMessage req = genRenewalReq(keys, false, null, null, pAlg, new DEROctetString(nonce));
+        PKIMessage req = genRenewalReq(userDN, cacert, nonce, transid, keys, false, null, null, pAlg, new DEROctetString(nonce));
         assertNotNull("Failed to generate a CMP renewal request", req);
         CertReqMessages kur = (CertReqMessages) req.getBody().getContent();
         int reqId = kur.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
@@ -326,7 +303,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertNotNull("Failed to create a test certificate", certificate);
 
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
-        PKIMessage req = genRenewalReq(keys, false, null, null, pAlg, new DEROctetString(nonce));
+        PKIMessage req = genRenewalReq(userDN, cacert, nonce, transid, keys, false, null, null, pAlg, new DEROctetString(nonce));
         assertNotNull("Failed to generate a CMP renewal request", req);
 
         CMPCertificate extraCert = getCMPCert(certificate);
@@ -414,7 +391,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertTrue("Failed to revoke the test certificate", certStoreSession.isRevoked(CertTools.getIssuerDN(certificate), CertTools.getSerialNumber(certificate)));
         
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
-        PKIMessage req = genRenewalReq(keys, false, null, null, pAlg, new DEROctetString(nonce));
+        PKIMessage req = genRenewalReq(userDN, cacert, nonce, transid, keys, false, null, null, pAlg, new DEROctetString(nonce));
         assertNotNull("Failed to generate a CMP renewal request", req);
 
         CMPCertificate extraCert = getCMPCert(certificate);
@@ -487,7 +464,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertNotNull("Failed to create a test certificate", fakeCert);
         
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
-        PKIMessage req = genRenewalReq(keys, false, null, null, pAlg, new DEROctetString(nonce));
+        PKIMessage req = genRenewalReq(userDN, cacert, nonce, transid, keys, false, null, null, pAlg, new DEROctetString(nonce));
         assertNotNull("Failed to generate a CMP renewal request", req);
 
         CMPCertificate extraCert = getCMPCert(fakeCert);
@@ -562,7 +539,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertNotNull("Failed to create a test certificate", certificate);
 
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
-        PKIMessage req = genRenewalReq(keys, false, null, null, pAlg, new DEROctetString(nonce));
+        PKIMessage req = genRenewalReq(userDN, cacert, nonce, transid, keys, false, null, null, pAlg, new DEROctetString(nonce));
         assertNotNull("Failed to generate a CMP renewal request", req);
 
         CMPCertificate extraCert = getCMPCert(certificate);
@@ -636,7 +613,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         
         KeyPair newkeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
-        PKIMessage req = genRenewalReq(newkeys, false, null, null, pAlg, new DEROctetString(nonce));
+        PKIMessage req = genRenewalReq(userDN, cacert, nonce, transid, newkeys, false, null, null, pAlg, new DEROctetString(nonce));
         assertNotNull("Failed to generate a CMP renewal request", req);
         CertReqMessages kur = (CertReqMessages) req.getBody().getContent();
         int reqId = kur.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
@@ -714,7 +691,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertNotNull("Failed to create a test certificate", certificate);
 
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
-        PKIMessage req = genRenewalReq(keys, false, userDN, issuerDN, pAlg, new DEROctetString("CMPTESTPROFILE".getBytes()));
+        PKIMessage req = genRenewalReq(userDN, cacert, nonce, transid, keys, false, userDN, issuerDN, pAlg, new DEROctetString("CMPTESTPROFILE".getBytes()));
         assertNotNull("Failed to generate a CMP renewal request", req);
         CertReqMessages kur = (CertReqMessages) req.getBody().getContent();
         int reqId = kur.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
@@ -789,7 +766,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertNotNull("Failed to create a test certificate", certificate);
 
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
-        PKIMessage req = genRenewalReq(keys, false, userDN, issuerDN, pAlg, new DEROctetString("CMPTESTPROFILE".getBytes()));
+        PKIMessage req = genRenewalReq(userDN, cacert, nonce, transid, keys, false, userDN, issuerDN, pAlg, new DEROctetString("CMPTESTPROFILE".getBytes()));
         assertNotNull("Failed to generate a CMP renewal request", req);
         
         CMPCertificate extraCert = getCMPCert(certificate);
@@ -864,7 +841,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertNotNull("Failed to create a test certificate", certificate);
 
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
-        PKIMessage req = genRenewalReq(keys, false, userDN, null, pAlg, new DEROctetString("CMPTESTPROFILE".getBytes()));
+        PKIMessage req = genRenewalReq(userDN, cacert, nonce, transid, keys, false, userDN, null, pAlg, new DEROctetString("CMPTESTPROFILE".getBytes()));
         assertNotNull("Failed to generate a CMP renewal request", req);
         CertReqMessages kur = (CertReqMessages) req.getBody().getContent();
         int reqId = kur.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
@@ -939,7 +916,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertNotNull("Failed to create a test certificate", certificate);
 
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
-        PKIMessage req = genRenewalReq(keys, false, null, null, pAlg, new DEROctetString("CMPTESTPROFILE".getBytes()));
+        PKIMessage req = genRenewalReq(userDN, cacert, nonce, transid, keys, false, null, null, pAlg, new DEROctetString("CMPTESTPROFILE".getBytes()));
         assertNotNull("Failed to generate a CMP renewal request", req);
         
         createUser("cmpTestAdmin", "CN=cmpTestAdmin,C=SE", "foo123");
@@ -1021,7 +998,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertNotNull("Failed to create a test certificate", certificate);
 
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
-        PKIMessage req = genRenewalReq(keys, false, userDN, null, pAlg, new DEROctetString("CMPTESTPROFILE".getBytes()));
+        PKIMessage req = genRenewalReq(userDN, cacert, nonce, transid, keys, false, userDN, null, pAlg, new DEROctetString("CMPTESTPROFILE".getBytes()));
         assertNotNull("Failed to generate a CMP renewal request", req);
         CertReqMessages kur = (CertReqMessages) req.getBody().getContent();
         int reqId = kur.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
@@ -1098,7 +1075,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertNotNull("Failed to create a test certificate", certificate);
 
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
-        PKIMessage req = genRenewalReq(keys, false, userDN, null, pAlg, null);
+        PKIMessage req = genRenewalReq(userDN, cacert, nonce, transid, keys, false, userDN, null, pAlg, null);
         assertNotNull("Failed to generate a CMP renewal request", req);
         
         createUser("cmpTestAdmin", "CN=cmpTestAdmin,C=SE", "foo123");
@@ -1181,7 +1158,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertNotNull("Failed to create a test certificate", certificate);
 
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
-        PKIMessage req = genRenewalReq(keys, false, userDN, issuerDN, pAlg, new DEROctetString("CMPTESTPROFILE".getBytes()));
+        PKIMessage req = genRenewalReq(userDN, cacert, nonce, transid, keys, false, userDN, issuerDN, pAlg, new DEROctetString("CMPTESTPROFILE".getBytes()));
         assertNotNull("Failed to generate a CMP renewal request", req);
         //int reqId = req.getBody().getKur().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
         
@@ -1287,7 +1264,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertNotNull("Failed to create a test certificate", certificate);
 
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
-        PKIMessage req = genRenewalReq(keys, false, null, null, pAlg, new DEROctetString(nonce));
+        PKIMessage req = genRenewalReq(userDN, cacert, nonce, transid, keys, false, null, null, pAlg, new DEROctetString(nonce));
         assertNotNull("Failed to generate a CMP renewal request", req);
         //int reqId = req.getBody().getKur().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
 
@@ -1420,99 +1397,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         return user;
 
     }
-    
-    private PKIMessage genRenewalReq(KeyPair keys, boolean raVerifiedPopo, String reqSubjectDN, String reqIssuerDN, 
-               AlgorithmIdentifier pAlg, DEROctetString senderKID) throws IOException, NoSuchAlgorithmException, NoSuchProviderException, 
-               InvalidKeyException, SignatureException {
-        
-        CertTemplateBuilder myCertTemplate = new CertTemplateBuilder();
-
-        ASN1EncodableVector optionalValidityV = new ASN1EncodableVector();
-        org.bouncycastle.asn1.x509.Time nb = new org.bouncycastle.asn1.x509.Time(new DERGeneralizedTime("20030211002120Z"));
-        org.bouncycastle.asn1.x509.Time na = new org.bouncycastle.asn1.x509.Time(new Date());
-        optionalValidityV.add(new DERTaggedObject(true, 0, nb));
-        optionalValidityV.add(new DERTaggedObject(true, 1, na));
-        OptionalValidity myOptionalValidity = OptionalValidity.getInstance(new DERSequence(optionalValidityV));
-        
-        myCertTemplate.setValidity(myOptionalValidity);
-        
-        if(reqSubjectDN != null) {
-            myCertTemplate.setSubject(new X500Name(reqSubjectDN));
-        }
-        if(reqIssuerDN != null) {
-            myCertTemplate.setIssuer(new X500Name(reqIssuerDN));
-        }
-        
-        
-        byte[] bytes = keys.getPublic().getEncoded();
-        ByteArrayInputStream bIn = new ByteArrayInputStream(bytes);
-        ASN1InputStream dIn = new ASN1InputStream(bIn);
-        SubjectPublicKeyInfo keyInfo = new SubjectPublicKeyInfo((ASN1Sequence) dIn.readObject());
-        myCertTemplate.setPublicKey(keyInfo);
-
-        CertRequest myCertRequest = new CertRequest(4, myCertTemplate.build(), null);
-
-        // POPO
-        /*
-         * PKMACValue myPKMACValue = new PKMACValue( new AlgorithmIdentifier(new
-         * ASN1ObjectIdentifier("8.2.1.2.3.4"), new DERBitString(new byte[] { 8,
-         * 1, 1, 2 })), new DERBitString(new byte[] { 12, 29, 37, 43 }));
-         * 
-         * POPOPrivKey myPOPOPrivKey = new POPOPrivKey(new DERBitString(new
-         * byte[] { 44 }), 2); //take choice pos tag 2
-         * 
-         * POPOSigningKeyInput myPOPOSigningKeyInput = new POPOSigningKeyInput(
-         * myPKMACValue, new SubjectPublicKeyInfo( new AlgorithmIdentifier(new
-         * ASN1ObjectIdentifier("9.3.3.9.2.2"), new DERBitString(new byte[] { 2,
-         * 9, 7, 3 })), new byte[] { 7, 7, 7, 4, 5, 6, 7, 7, 7 }));
-         */
-        ProofOfPossession myProofOfPossession = null;
-        if (raVerifiedPopo) {
-            // raVerified POPO (meaning there is no POPO)
-            myProofOfPossession = new ProofOfPossession();
-        } else {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            DEROutputStream mout = new DEROutputStream(baos);
-            mout.writeObject(myCertRequest);
-            mout.close();
-            byte[] popoProtectionBytes = baos.toByteArray();
-            Signature sig = Signature.getInstance(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), "BC");
-            sig.initSign(keys.getPrivate());
-            sig.update(popoProtectionBytes);
-
-            DERBitString bs = new DERBitString(sig.sign());
-
-            POPOSigningKey myPOPOSigningKey = new POPOSigningKey(null, new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption), bs);
-            myProofOfPossession = new ProofOfPossession(myPOPOSigningKey);
-        }
-
-        // myCertReqMsg.addRegInfo(new AttributeTypeAndValue(new
-        // ASN1ObjectIdentifier("1.3.6.2.2.2.2.3.1"), new
-        // DERInteger(1122334455)));
-        AttributeTypeAndValue av = new AttributeTypeAndValue(CRMFObjectIdentifiers.id_regCtrl_regToken, new DERUTF8String("foo123"));
-        AttributeTypeAndValue[] avs = {av};
-
-        CertReqMsg myCertReqMsg = new CertReqMsg(myCertRequest, myProofOfPossession, avs);
-        
-        CertReqMessages myCertReqMessages = new CertReqMessages(myCertReqMsg);
-
-        PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(new X500Name(userDN)), new GeneralName(new X500Name(
-                ((X509Certificate) cacert).getSubjectDN().getName())));
-        myPKIHeader.setMessageTime(new DERGeneralizedTime(new Date()));
-        // senderNonce
-        myPKIHeader.setSenderNonce(new DEROctetString(nonce));
-        // TransactionId
-        myPKIHeader.setTransactionID(new DEROctetString(transid));
-        myPKIHeader.setProtectionAlg(pAlg);
-        myPKIHeader.setSenderKID(senderKID);
-
-        PKIBody myPKIBody = new PKIBody(7, myCertReqMessages); // Key Update Request
-        PKIMessage myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
-        
-        return myPKIMessage;
-
-    }
-    
 
     @Override
     public String getRoleName() {

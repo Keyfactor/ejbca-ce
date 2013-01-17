@@ -247,29 +247,35 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         CertificateInfo certinfo = null;
         if(!CmpConfiguration.getRAOperationMode() || isCASet) { // if client mode, or cmp.authenticationparameters in cmp.properties is set in RA mode
             
-            // Check that extraCert is in the Database
-            certinfo = certSession.getCertificateInfo(fp);
-            if(certinfo == null) {
-                errorMessage = "The certificate attached to the PKIMessage in the extraCert field could not be found in the database.";
-                if(log.isDebugEnabled()) {
-                    log.debug(errorMessage+". Fingerprint="+fp);
-                }
+            // Get the CAInfo of the CA that should have issued extraCert and check extraCert is actually issued by the right CA 
+            cainfo = getCAInfo(extraCert, isCASet, msg.getBody().getType());
+            if ( cainfo == null ) {
                 return false;
             }
+
+            if(!is3GPP(msg.getBody().getType())) {
+                // Check that extraCert is in the Database
+                certinfo = certSession.getCertificateInfo(fp);
+                if(certinfo == null) {
+                    errorMessage = "The certificate attached to the PKIMessage in the extraCert field could not be found in the database.";
+                    if(log.isDebugEnabled()) {
+                        log.debug(errorMessage+". Fingerprint="+fp);
+                    }
+                    return false;
+                }
             
-            // Get the CAInfo of the CA that had issued extraCert
-            cainfo = getCAInfo(extraCert, isCASet);
-            if (cainfo == null) {
+                // Check that extraCert is valid and is not revoked
+                if(!isCertValid(fp) || !isCertActive(certinfo)) {
+                    return false;
+                }
+            }
+            
+            if(!isIssuedByCA(cainfo)) {
                 return false;
             } else {
                 if(log.isDebugEnabled()) {
-                    log.debug("The certificate in extraCert field should be issued by '" + cainfo.getName() + "'");
+                    log.debug("The certificate in extraCert field is correctly issued by '" + cainfo.getName() + "'");
                 }
-            }
-
-            // Check that extraCert is issued by the right CA, that it is valid and is not revoked
-            if(!isIssuedByCA(cainfo) || !isCertValid(fp) || !isCertActive(certinfo)) {
-                return false;
             }
 
         }
@@ -304,11 +310,12 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             
             // Check if this certificate belongs to the user
             if (username != null) {
-                if (!StringUtils.equals(username, certinfo.getUsername())) {
+                String extraCertUsername = getUsername(certinfo);
+                if (!StringUtils.equals(username, extraCertUsername)) {
                     errorMessage = "The End Entity certificate attached to the PKIMessage in the extraCert field does not belong to user '"+username+"'.";
                     if(log.isDebugEnabled()) {
                         // Use a different debug message, as not to reveal too much information
-                        final String debugMessage = "The End Entity certificate attached to the PKIMessage in the extraCert field does not belong to user '"+username+"', but to user '"+certinfo.getUsername()+"'.";
+                        final String debugMessage = "The End Entity certificate attached to the PKIMessage in the extraCert field does not belong to user '"+username+"', but to user '"+extraCertUsername+"'.";
                         log.debug(debugMessage);
                     }
                     return false;                
@@ -374,6 +381,8 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                     password = genRandomPwd();
                 }
                 return true;
+            } else {
+                log.error("Failed to verify the signature in the PKIMessage.");
             }
         } catch (InvalidKeyException e) {
             if(log.isDebugEnabled()) {
@@ -603,13 +612,17 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         return true;
     }
     
-    private CAInfo getCAInfo(final Certificate extracert, boolean isCASet) {
+    private CAInfo getCAInfo(final Certificate extracert, boolean isCASet, int reqType) {
         CAInfo cainfo = null;
         try {
-            if (isCASet) {
-                cainfo = caSession.getCAInfo(this.admin, this.authenticationParameterCAName);
+            if(is3GPP(reqType)) {
+                cainfo = caSession.getCAInfo(admin, CmpConfiguration.get3GPPCA());
             } else {
-                cainfo = caSession.getCAInfo(this.admin, CertTools.getIssuerDN(extracert).hashCode());
+                if (isCASet) {
+                    cainfo = caSession.getCAInfo(this.admin, this.authenticationParameterCAName);
+                } else {
+                    cainfo = caSession.getCAInfo(this.admin, CertTools.getIssuerDN(extracert).hashCode());
+                }
             }
         } catch (CADoesntExistsException e) {
             String canamelog = isCASet ? this.authenticationParameterCAName : String.valueOf(CertTools.getIssuerDN(extracert).hashCode());
@@ -625,6 +638,23 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         }
         
         return cainfo;
+    }
+    
+    private String getUsername(CertificateInfo certinfo) {
+        if(CmpConfiguration.get3GPPMode()) {
+            String subjectDN = CertTools.getSubjectDN(extraCert);
+            String username = CertTools.getPartFromDN(subjectDN, CmpConfiguration.getExtractUsernameComponent());
+            if(log.isDebugEnabled()) {
+                log.debug("Username was extracted from the '" + CmpConfiguration.getExtractUsernameComponent() + "' part of the subjectDN of the certificate in the 'extraCerts' field.");
+            }
+            return username;
+        } else {
+            return certinfo.getUsername();
+        }
+    }
+    
+    private boolean is3GPP(int reqType) {
+        return CmpConfiguration.get3GPPMode() && (reqType == 0 || reqType == 2);
     }
  
 }

@@ -24,15 +24,18 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Principal;
+import java.security.PrivateKey;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -52,6 +55,7 @@ import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.cmp.CMPCertificate;
+import org.bouncycastle.asn1.cmp.CertRepMessage;
 import org.bouncycastle.asn1.cmp.ErrorMsgContent;
 import org.bouncycastle.asn1.cmp.PKIBody;
 import org.bouncycastle.asn1.cmp.PKIMessage;
@@ -91,12 +95,14 @@ import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
+import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EjbcaConfigurationHolder;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
@@ -147,6 +153,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
     private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
     private RoleAccessSessionRemote roleAccessSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
 
     
     @BeforeClass
@@ -1357,7 +1364,199 @@ public class AuthenticationModulesTest extends CmpTestCase {
             internalCertStoreSession.removeCertificate(fingerprint2);
         }
     }
+
     
+    /**
+     * Tests that EndEntityAuthentication module in client mode when 3GPP option is activated:
+     * 
+     * 1- A certification request, signed by the vendor-issued certificate (not in the database), is sent. The request should pass.
+     * 2- A certification request, signed by Ejbca issued certificate, is sent. The request should fail.
+     * 3- A KeyUpdate request (aka. renewal request), signed by the vendor-issued certificate (still not in the database), is sent. The request should fail.
+     * 4- A KeyUpdate request (aka. renewal request), signed by Ejbca issued certificate, is sent. The request should pass.
+     * 5- A revocation request, signed by Ejbca issued certificate, is sent. The request should pass.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void test223GPPMode() throws Exception {
+        confSession.updateProperty(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
+        assertTrue("The CMP Authentication module was not configured correctly.",
+                confSession.verifyProperty(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE));
+        confSession.updateProperty(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "AdminCA1");
+        assertTrue("The CMP Authentication module was not configured correctly.",
+                confSession.verifyProperty(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "AdminCA1"));
+        confSession.updateProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "normal");
+        assertTrue("The CMP Authentication module was not configured correctly.",
+                confSession.verifyProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "normal"));
+        confSession.updateProperty(CmpConfiguration.CONFIG_3GPPMODE, "true");
+        assertTrue("The CMP Authentication module was not configured correctly.",
+                confSession.verifyProperty(CmpConfiguration.CONFIG_3GPPMODE, "true"));
+        confSession.updateProperty(CmpConfiguration.CONFIG_3GPPCA, "3GPPCA");
+        assertTrue("The CMP Authentication module was not configured correctly.",
+                confSession.verifyProperty(CmpConfiguration.CONFIG_3GPPCA, "3GPPCA"));
+        confSession.updateProperty(CmpConfiguration.CONFIG_EXTRACTUSERNAMECOMPONENT, "UID");
+        assertTrue("The CMP Authentication module was not configured correctly.",
+                confSession.verifyProperty(CmpConfiguration.CONFIG_EXTRACTUSERNAMECOMPONENT, "UID"));
+        confSession.updateProperty(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true");
+        assertTrue("The CMP Authentication module was not configured correctly.",
+                confSession.verifyProperty(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true"));
+        confSession.updateProperty(CmpConfiguration.CONFIG_ALLOWUPDATEWITHSAMEKEY, "true");
+        assertTrue("The CMP Authentication module was not configured correctly.",
+                confSession.verifyProperty(CmpConfiguration.CONFIG_ALLOWUPDATEWITHSAMEKEY, "true"));
+
+        
+        String testUIDUsername = "uidusername";
+        String testUserDN = "CN=3gpptestuse,UID=" + testUIDUsername + ",C=se";
+        
+        X509Certificate gppcacert = (X509Certificate) CertTools.getCertfromByteArray(gppCA);
+        X509Certificate gppusercert = (X509Certificate) CertTools.getCertfromByteArray(gppuser);
+        
+        KeyFactory kf = KeyFactory.getInstance("RSA");
+        PKCS8EncodedKeySpec ks = new PKCS8EncodedKeySpec(gppuserkey);
+        PrivateKey privkey = kf.generatePrivate(ks);
+        
+        //importing gppcacert as an external CA
+        Collection<Certificate> cacerts = new ArrayList<Certificate>();
+        cacerts.add(gppcacert);
+        caAdminSession.importCACertificate(ADMIN, "3GPPCA", cacerts);
+        createUser(testUIDUsername, testUserDN, "foo123", false);
+        
+        String fingerprint = null;
+        String fingerprint2 = null;
+        try {
+            
+            // Creating an CertificationRequest signed by the vendor-issued certificate, not in the database, for an endentity that already exists.
+            KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+            AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
+            PKIMessage msg = genCertReq(issuerDN, testUserDN, keys, gppcacert, nonce, transid, false, null, null, null, null, pAlg, null);
+            assertNotNull("Generating CrmfRequest failed.", msg);
+            CMPCertificate extraCert = getCMPCert(gppusercert);
+            msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, privkey, pAlg.getAlgorithm().getId(), "BC");
+            assertNotNull(msg);
+
+            ByteArrayOutputStream bao = new ByteArrayOutputStream();
+            DEROutputStream out = new DEROutputStream(bao);
+            out.writeObject(msg);
+            byte[] ba = bao.toByteArray();
+            byte[] resp = sendCmpHttp(ba, 200);
+            CertReqMessages ir = (CertReqMessages) msg.getBody().getContent();
+            Certificate cert = checkCmpCertRepMessage(testUserDN, cacert, resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
+                    .getValue().intValue());
+            assertNotNull("CrmfRequest did not return a certificate", cert);
+            fingerprint = CertTools.getFingerprintAsString(cert);
+            
+            
+            // Sending another CertificationRequest signed by the endentity's certificate issued by Ejbca
+            msg = genCertReq(issuerDN, testUserDN, keys, cacert, nonce, transid, false, null, null, null, null, pAlg, null);
+            assertNotNull("Generating CrmfRequest failed.", msg);
+            extraCert = getCMPCert(cert);
+            msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, keys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
+            assertNotNull(msg);
+
+            bao = new ByteArrayOutputStream();
+            out = new DEROutputStream(bao);
+            out.writeObject(msg);
+            ba = bao.toByteArray();
+            resp = sendCmpHttp(ba, 200);
+            checkCmpResponseGeneral(resp, issuerDN, testUserDN, cacert, msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
+                    .getTransactionID().getOctets(), false, null);
+            
+            PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(resp)).readObject());
+            assertNotNull(respObject);
+
+            PKIBody body = respObject.getBody();
+            assertEquals(23, body.getType());
+            ErrorMsgContent err = (ErrorMsgContent) body.getContent();
+            String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+            String expectedErrMsg = "The End Entity certificate attached to the PKIMessage is not issued by the CA '3GPPCA'";
+            assertEquals(expectedErrMsg, errMsg);
+            
+            
+            // Sending a KeyUpdateRequest signed by the vendor-issued certificate
+            msg = genRenewalReq(testUserDN, gppcacert, nonce, transid, keys, false, null, null, pAlg, new DEROctetString(nonce));
+            assertNotNull("Generating CrmfRequest failed.", msg);
+            extraCert = getCMPCert(gppusercert);
+            msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, privkey, pAlg.getAlgorithm().getId(), "BC");
+            assertNotNull(msg);
+
+            bao = new ByteArrayOutputStream();
+            out = new DEROutputStream(bao);
+            out.writeObject(msg);
+            ba = bao.toByteArray();
+            resp = sendCmpHttp(ba, 200);
+            checkCmpResponseGeneral(resp, CertTools.getSubjectDN(gppcacert), testUserDN, cacert, msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
+                    .getTransactionID().getOctets(), false, null);
+            
+            respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(resp)).readObject());
+            assertNotNull(respObject);
+
+            body = respObject.getBody();
+            assertEquals(23, body.getType());
+            err = (ErrorMsgContent) body.getContent();
+            errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+            expectedErrMsg = "The certificate attached to the PKIMessage in the extraCert field could not be found in the database.";
+            assertEquals(expectedErrMsg, errMsg);
+
+            
+            // Sending a KeyUpdateRequest signed by the endtity's certificate issued by Ejbca
+            msg = genRenewalReq(testUserDN, cacert, nonce, transid, keys, false, null, null, pAlg, new DEROctetString(nonce));
+            assertNotNull("Generating CrmfRequest failed.", msg);
+            extraCert = getCMPCert(cert);
+            msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, keys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
+            assertNotNull(msg);
+
+            bao = new ByteArrayOutputStream();
+            out = new DEROutputStream(bao);
+            out.writeObject(msg);
+            ba = bao.toByteArray();
+            resp = sendCmpHttp(ba, 200);
+            respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(resp)).readObject());
+            assertNotNull(respObject);
+            
+            body = respObject.getBody();
+            int tag = body.getType();
+            assertEquals(8, tag);
+            CertRepMessage c = (CertRepMessage) body.getContent();
+            assertNotNull(c);            
+            CMPCertificate cmpcert = c.getResponse()[0].getCertifiedKeyPair().getCertOrEncCert().getCertificate();
+            assertNotNull(cmpcert);
+            X509Certificate cert2 = (X509Certificate) CertTools.getCertfromByteArray(cmpcert.getEncoded());
+            assertNotNull("Failed to renew the certificate", cert2);
+            
+            assertEquals(CertTools.stringToBCDNString(testUserDN), CertTools.stringToBCDNString(cert2.getSubjectDN().getName()) );// CertTools.getSubjectDN(cert2) );
+            assertEquals(issuerDN, CertTools.getIssuerDN(cert2));
+            fingerprint2 = CertTools.getFingerprintAsString(cert2);
+            
+            //Send a revocation request
+            msg = genRevReq(issuerDN, testUserDN, CertTools.getSerialNumber(cert2), cacert, nonce, transid, false, pAlg, null);
+            assertNotNull("Generating CrmfRequest failed.", msg);
+            extraCert = getCMPCert(cert2);
+            msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, keys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
+            assertNotNull(msg);
+
+            bao = new ByteArrayOutputStream();
+            out = new DEROutputStream(bao);
+            out.writeObject(msg);
+            ba = bao.toByteArray();
+            resp = sendCmpHttp(ba, 200);
+            checkCmpResponseGeneral(resp, issuerDN, testUserDN, cacert, msg.getHeader().getSenderNonce().getOctets(), msg.getHeader().getTransactionID()
+                    .getOctets(), true, null);
+            int revStatus = checkRevokeStatus(issuerDN, CertTools.getSerialNumber(cert2));
+            assertNotSame("Revocation request failed to revoke the certificate", RevokedCertInfo.NOT_REVOKED, revStatus);
+            
+            
+        } finally {
+            try {
+                endEntityManagementSession.revokeAndDeleteUser(ADMIN, testUIDUsername, ReasonFlags.unused);
+                caSession.removeCA(ADMIN, CertTools.getIssuerDN(gppcacert).hashCode());
+            } catch (Exception e) {
+            }
+
+            internalCertStoreSession.removeCertificate(fingerprint);
+            internalCertStoreSession.removeCertificate(fingerprint2);
+        }
+    }
+
     
     @AfterClass
     public static void restoreConf() {
@@ -1588,4 +1787,49 @@ public class AuthenticationModulesTest extends CmpTestCase {
     public String getRoleName() {
         return this.getClass().getSimpleName();
     }
+    
+    
+    
+    static byte[] gppCA = Base64.decode( ("MIICHDCCAYWgAwIBAgIId2qio28kX2EwDQYJKoZIhvcNAQEFBQAwHjEPMA0GA1UE" +
+                                            "AwwGM0dQUENBMQswCQYDVQQGEwJTRTAeFw0xMzAxMTYxMTM4MjRaFw0xNDAxMTYx" +
+                                            "MTM4MjRaMB4xDzANBgNVBAMMBjNHUFBDQTELMAkGA1UEBhMCU0UwgZ8wDQYJKoZI" +
+                                            "hvcNAQEBBQADgY0AMIGJAoGBAIK2gGWwWJgcwvB8f83/VAcT3UOiQ1ThZXWetf33" +
+                                            "rcldeMD/7Rydz6SIle0MrDgc9rda4ZdVN+0FJPvL8Q3hcGHUvJeyKGwyf7mJMc8D" +
+                                            "P11qCajZElbmV5Axv8/+i8EZk71XrRLbz8uxSLp84hFe+RQkkJV8hrlV5S8sKGGl" +
+                                            "ebfRAgMBAAGjYzBhMB0GA1UdDgQWBBSZ3XmLRWJOBIt8YUHCETSEdyk4+zAPBgNV" +
+                                            "HRMBAf8EBTADAQH/MB8GA1UdIwQYMBaAFJndeYtFYk4Ei3xhQcIRNIR3KTj7MA4G" +
+                                            "A1UdDwEB/wQEAwIBhjANBgkqhkiG9w0BAQUFAAOBgQAsnWEJVneEGwD33JQuSwAH" +
+                                            "c9IT4S7ZM+jrN9ybrJQEV9+dlbfXG8ISdo0aC7RH94vEiVWN2vPcXv1kHcYDmCus" +
+                                            "TB1QaZ/ERhO8SI9x6OHMZ9E4tsgytBsndFadfKKVpODgvXkB6x3/PV96AKz/gpjd" +
+                                            "LYGWSWywpLuutYiiFb6a8w==").getBytes() );
+    
+    static byte[] gppuser = Base64.decode( ("MIICWzCCAcSgAwIBAgIIAxXKnyDArMYwDQYJKoZIhvcNAQEFBQAwHjEPMA0GA1UE" +
+                                            "AwwGM0dQUENBMQswCQYDVQQGEwJTRTAeFw0xMzAxMTYxMTM0MzhaFw0xNDAxMTYx" +
+                                            "MTM4MjRaMEExGzAZBgoJkiaJk/IsZAEBDAt1aWR1c2VybmFtZTEVMBMGA1UEAwwM" +
+                                            "M2dwcHRlc3R1c2VyMQswCQYDVQQGEwJTRTCBnzANBgkqhkiG9w0BAQEFAAOBjQAw" +
+                                            "gYkCgYEA3mEpApioQ1liwNTvrABdwiieJ9AeImQr5VFoZFDv7NXyoRitMgSZJYNT" +
+                                            "hv1ANPnOTSVpB49n/rVVaniAP+kvdYyZyY3jJUZunQeC6QsdQ+oAE2eTFTyvuJJS" +
+                                            "6bXEertb+Smv9dF+c9NMwLC3KDU4KpO+P9sXim0pCHn2iOWtaWcCAwEAAaN/MH0w" +
+                                            "HQYDVR0OBBYEFJw2zz8wmLbzSP1RHyu5X6/u2X30MAwGA1UdEwEB/wQCMAAwHwYD" +
+                                            "VR0jBBgwFoAUmd15i0ViTgSLfGFBwhE0hHcpOPswDgYDVR0PAQH/BAQDAgXgMB0G" +
+                                            "A1UdJQQWMBQGCCsGAQUFBwMCBggrBgEFBQcDBDANBgkqhkiG9w0BAQUFAAOBgQAG" +
+                                            "VYKkWoysnf999Hxh9jcOC34chJYX0LMqRLpioPEB2uSqDoZgUdpAOJlI/CxLmTJh" +
+                                            "Z/vCqCjWM2CX1T/NmokD3Ea4A0m99y73VEZ4dWtzBi/tFu93XSQzwWXMSRKyYp0/" +
+                                            "SQuEunEJEw76otrAzhCVs3tcKr/+h5F7nMQuOFh1EA==").getBytes() );
+    
+    static byte[] gppuserkey = Base64.decode( ("MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBAN5hKQKYqENZYsDU" +
+                                            "76wAXcIonifQHiJkK+VRaGRQ7+zV8qEYrTIEmSWDU4b9QDT5zk0laQePZ/61VWp4" +
+                                            "gD/pL3WMmcmN4yVGbp0HgukLHUPqABNnkxU8r7iSUum1xHq7W/kpr/XRfnPTTMCw" +
+                                            "tyg1OCqTvj/bF4ptKQh59ojlrWlnAgMBAAECgYEA2LBsOa9vJlFPPP9Am6WvtqXF" +
+                                            "lp3g/zoE2+s7gaSsZWcEiZ12BqscX8Vb+smDaxuPvvSZJ1jByRwBI0JQFfau2lcg" +
+                                            "7wqRgjr6Y1rQV6/PsVJLr8xa1iKUgxI9JCktvKu+DT4cHEFMtLlOpIA6niSZP0el" +
+                                            "qiRBzvpsb06Ai4Ng8qECQQDx/CFXxXoIndClM1T6w7snioMapfFgaiq8Ch8c1qoM" +
+                                            "H/fyAfISVqlpmTd6ELHHabjl9hOUDn+0BX2jX5zNYy2LAkEA60JYOv0EruR6560B" +
+                                            "NsnOqiFGYO1zZ583MEGdNXStxSzthplWAEEFkwKdHhaJzW0QQxzhDJqMF+BdTYnQ" +
+                                            "Qh+nFQJANk+FWEK9KfPpoTpNJ18IwU4oMLHv49jQMJYA96MCVWhTaOCg6RbEPSwj" +
+                                            "NGVM0VncItjA+ijq5oeY9DMAaWSKEwJAE3s7+S6Im7752oN+DT5q6bW1sUMYgmUx" +
+                                            "2cIlNY8C8MgGp1W9RGod/w2BW0N8h9FXPmd+z19g6H1A3LHj2AXs/QJAPCWj2EPX" +
+                                            "ZSPn88/rmy8Rrs7owCGvl+v2jeRyDARHF5SVS/7v3pcc8qOxTdWgChS2wv1juvQR" +
+                                            "IgUnBaZUk5bbtw==").getBytes() ); 
+
 }
