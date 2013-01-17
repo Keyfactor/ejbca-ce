@@ -109,7 +109,11 @@ org.cesecore.authorization.control.CryptoTokenRules
 		<h:outputLabel for="currentCryptoTokenAutoActivate" value="#{web.text.CRYPTOTOKEN_AUTO}:"/>
 		<h:selectBooleanCheckbox id="currentCryptoTokenAutoActivate" value="#{cryptoTokenMBean.currentCryptoToken.autoActivate}"
 			disabled="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
-		<h:outputLabel id="currentCryptoTokenAllowExportPrivateKeyLabel" for="currentCryptoTokenAllowExportPrivateKey" rendered="#{cryptoTokenMBean.currentCryptoToken.showSoftCryptoToken}" value="(#{web.text.CRYPTOTOKEN_TYPE_SOFT}) #{web.text.CRYPTOTOKEN_ALLOWEXPORT}:"/>
+		<h:panelGroup id="currentCryptoTokenAllowExportPrivateKeyPanelGroup">
+		<h:outputLabel id="currentCryptoTokenAllowExportPrivateKeyLabel" for="currentCryptoTokenAllowExportPrivateKey" rendered="#{cryptoTokenMBean.currentCryptoToken.showSoftCryptoToken}"
+			value="(#{web.text.CRYPTOTOKEN_TYPE_SOFT}) #{web.text.CRYPTOTOKEN_ALLOWEXPORT} "/>
+			<%= ejbcawebbean.getHelpReference("/userguide.html#New CryptoTokens") + ":" %>
+		</h:panelGroup>
 		<h:selectBooleanCheckbox id="currentCryptoTokenAllowExportPrivateKey" rendered="#{cryptoTokenMBean.currentCryptoToken.showSoftCryptoToken}"
 			value="#{cryptoTokenMBean.currentCryptoToken.allowExportPrivateKey}" disabled="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
 		<h:outputLabel id="currentCryptoTokenP11LibraryLabel" for="currentCryptoTokenP11Library" rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken}"

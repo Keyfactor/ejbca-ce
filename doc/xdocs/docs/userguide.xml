@@ -99,7 +99,7 @@ for a list of available sub-commands.
 <li>Authentication Code: The PKCS#11 slot PIN or the password that will protect the soft keystore.</li>
 <li>Repeat Authentication Code: Should be the same as the previous field.</li>
 <li>Auto-activation: If the authentication code should be stored (obfuscated) in the database and used to always keep the CryptoToken active.</li>
-<li>Allow export of private keys: Soft CryptoToken keystore export by EJBCA can be prevented by checking this flag.</li>
+<li>Allow export of private keys: EJBCA will not try to prevent Soft CryptoToken keystore export if this box is checked.</li>
 <li>Library: PKCS#11 shared library configured as available in conf/web.properties.</li>
 <li>Attribute file: PKCS#11 attribute file configured as available in conf/web.properties.</li>
 <li>Slot: PKCS#11 slot number or index if the number starts with an "i".</li>
@@ -136,6 +136,27 @@ The shown SubjectKeyID column is a SHA1 over the public key.
 </ul>
 Please note that the show key specifications might not be supported by underlying PKCS#11 modules and
 an error will be shown when trying to use such a key specification.
+</p>
+</subsection>
+<subsection name="CryptoToken Authorization">
+<p>
+For all authorized CA operations, authorization for underlying CryptoToken operations are implied.
+The minimum authorization required to create a CA is authorization to "view" and "use" (or "modify") a CryptoToken.
+</p><p>
+Since modification of PKCS#11 CryptoTokens could change the slot mapping, we require the same authorization for creation and modification.
+The full list of authorization rules follow:
+<ul>
+<li>/cryptotoken/: Required for displaying the CryptoToken management in the Admin GUI.</li>
+<li>/cryptotoken/view/<i>cryptoTokenId</i>: Required for viewing CryptoToken information and listing key pairs.</li>
+<li>/cryptotoken/use/<i>cryptoTokenId</i>: Required for binding a CryptoToken to a CA.</li>
+<li>/cryptotoken/modify/: Required for creating or modifying a CryptoToken.</li>
+<li>/cryptotoken/delete/: Required for deletion of a CryptoToken.</li>
+<li>/cryptotoken/activate/<i>cryptoTokenId</i>: Required for activation of a CryptoToken.</li>
+<li>/cryptotoken/deactivate/<i>cryptoTokenId</i>: Required for de-activation of a CryptoToken.</li>
+<li>/cryptotoken/keys/generate/<i>cryptoTokenId</i>: Required for key pair generation.</li>
+<li>/cryptotoken/keys/remove/<i>cryptoTokenId</i>: Required for key pair removal.</li>
+<li>/cryptotoken/keys/test/<i>cryptoTokenId</i>: Required for key pair testing.</li>
+</ul>
 </p>
 </subsection>
 </section>
