@@ -59,7 +59,9 @@ import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 /**
  * Test of certificate extensions with values from WS.
@@ -67,6 +69,7 @@ import org.junit.Test;
  * @author Lars Silvén
  * @version $Id$
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class CertificateExtensionTest extends CommonEjbcaWS {
 
 	private static final Logger log = Logger.getLogger(CertificateExtensionTest.class);

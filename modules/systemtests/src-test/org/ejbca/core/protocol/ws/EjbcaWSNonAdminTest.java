@@ -82,12 +82,15 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 /**
  * 
  * @version $Id$
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
 
     private static final Logger log = Logger.getLogger(EjbcaWSNonAdminTest.class);

@@ -97,13 +97,16 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 /**
  * This test uses remote EJB calls to setup the environment.
  * 
  * @version $Id$
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EjbcaWSTest extends CommonEjbcaWS {
 
     private static final Logger log = Logger.getLogger(EjbcaWSTest.class);
@@ -586,7 +589,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
      * @throws Exception
      */
     @Test
-    public void testEvilFind01() throws Exception {
+    public void test40EvilFind01() throws Exception {
         log.trace(">testEvilFind01()");
         UserMatch usermatch = new UserMatch();
         usermatch.setMatchwith(org.ejbca.util.query.UserMatch.MATCH_WITH_USERNAME);
@@ -607,7 +610,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
      * characters in the certificate SubjectDN.
      */
     @Test
-    public void testCertificateRequestWithSpecialChars01() throws Exception {
+    public void test41CertificateRequestWithSpecialChars01() throws Exception {
         long rnd = new SecureRandom().nextLong();
         testCertificateRequestWithSpecialChars("CN=test" + rnd + ", O=foo\\+bar\\\"\\,, C=SE", "CN=test" + rnd + ",O=foo\\+bar\\\"\\,,C=SE");
     }
@@ -617,7 +620,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
      * characters in the certificate SubjectDN.
      */
     @Test
-    public void testCertificateRequestWithSpecialChars02() throws Exception {
+    public void test42CertificateRequestWithSpecialChars02() throws Exception {
         long rnd = new SecureRandom().nextLong();
         testCertificateRequestWithSpecialChars("CN=test" + rnd + ", O=foo;bar\\;123, C=SE", "CN=test" + rnd + ",O=foo/bar\\;123,C=SE");
     }
@@ -627,7 +630,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
      * characters in the certificate SubjectDN.
      */
     @Test
-    public void testCertificateRequestWithSpecialChars03() throws Exception {
+    public void test43CertificateRequestWithSpecialChars03() throws Exception {
         long rnd = new SecureRandom().nextLong();
         testCertificateRequestWithSpecialChars("CN=test" + rnd + ", O=foo+bar\\+123, C=SE", "CN=test" + rnd + ",O=foo\\+bar\\+123,C=SE");
     }
@@ -637,7 +640,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
      * characters in the certificate SubjectDN.
      */
     @Test
-    public void testCertificateRequestWithSpecialChars04() throws Exception {
+    public void test44CertificateRequestWithSpecialChars04() throws Exception {
         long rnd = new SecureRandom().nextLong();
         testCertificateRequestWithSpecialChars("CN=test" + rnd + ", O=foo\\=bar, C=SE", "CN=test" + rnd + ",O=foo\\=bar,C=SE");
     }
@@ -647,7 +650,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
      * characters in the certificate SubjectDN.
      */
     @Test
-    public void testCertificateRequestWithSpecialChars05() throws Exception {
+    public void test45CertificateRequestWithSpecialChars05() throws Exception {
         long rnd = new SecureRandom().nextLong();
         testCertificateRequestWithSpecialChars("CN=test" + rnd + ", O=\"foo=bar, C=SE\"", "CN=test" + rnd + ",O=foo\\=bar\\, C\\=SE");
     }
@@ -657,7 +660,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
      * characters in the certificate SubjectDN.
      */
     @Test
-    public void testCertificateRequestWithSpecialChars06() throws Exception {
+    public void test46CertificateRequestWithSpecialChars06() throws Exception {
         long rnd = new SecureRandom().nextLong();
         testCertificateRequestWithSpecialChars("CN=test" + rnd + ", O=\"foo+b\\+ar, C=SE\"", "CN=test" + rnd + ",O=foo\\+b\\\\\\+ar\\, C\\=SE");
     }
@@ -667,7 +670,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
      * characters in the certificate SubjectDN.
      */
     @Test
-    public void testCertificateRequestWithSpecialChars07() throws Exception {
+    public void test47CertificateRequestWithSpecialChars07() throws Exception {
         long rnd = new SecureRandom().nextLong();
         testCertificateRequestWithSpecialChars("CN=test" + rnd + ", O=\\\"foo+b\\+ar\\, C=SE\\\"", "CN=test" + rnd + ",O=\\\"foo\\+b\\+ar\\, C\\=SE\\\"");
     }
@@ -679,7 +682,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
      * @throws Exception in case of error
      */
     @Test
-    public void testCertificateRequestWithCardNumber() throws Exception {
+    public void test48CertificateRequestWithCardNumber() throws Exception {
     	String userName = "wsRequestCardNumber" + new SecureRandom().nextLong();
     	
     	// Generate a CSR
