@@ -170,6 +170,12 @@ public class CertificateExtensionFactory {
 		return ret;
 	}
 
+	/** Method used for testing to be able to reset class between tests
+	 */
+	protected static void resetExtensions() {
+	    instance = null;
+	}
+	
 	/** 
 	 * Method responsible to read the configuration file.
 	 * and parse it into AvailableCertificateExtension and
