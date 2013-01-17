@@ -442,7 +442,7 @@ function checkallfields(){
             <%  
                 final List<Entry<String, String>> availableCryptoTokens = cabean.getAvailableCryptoTokens(signatureAlgorithmParam);
                 if (availableCryptoTokens.size()==0) { %>
-                	No suitable CryptoToken available for this signature algorithm
+                    <%= ejbcawebbean.getText("CRYPTOTOKEN_NOSUITABLE") %>
             <%  } else { %>
 	            <select name="<%= SELECT_CRYPTOTOKEN %>" size="1" onchange="document.changecatokentype.submit()">
             <%  for (final Entry<String, String> entry : availableCryptoTokens) {
@@ -463,9 +463,6 @@ function checkallfields(){
 	            <%/* When JavaScript is not available, we show a "Reload" image. */%>
 	            <input id="changecatokentypeUpdateButton" type="image" src="reload.png" alt="Reload"/>
                 <script>document.getElementById('changecatokentypeUpdateButton').style.display = 'none';</script>
-                <a href="<%= ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "cryptotoken/cryptotoken.jsf?cryptoTokenId=0" %>">
-                    <%= ejbcawebbean.getText("CRYPTOTOKEN_NAV_CREATE") %>
-                </a>
             </form>
             </td>	
         </tr>
@@ -484,17 +481,21 @@ function checkallfields(){
     <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_CREATE_CA %>'>
     <input type="hidden" name='<%= HIDDEN_CANAME %>' value='<c:out value="<%= caname %>"/>'>
 
-    <%  /* If there is no available CryptoToken, there is little point in continueing here.. */
-        if (cryptoTokenIdParam != null && cryptoTokenIdParam.length()>0) {
+    <%  /* If there is no available CryptoToken, there is little point in continuing here.. */
+        if (cryptoTokenIdParam != null && cryptoTokenIdParam.length()>0 && Integer.parseInt(cryptoTokenIdParam)!=0) {
             currentCryptoTokenId = Integer.parseInt(cryptoTokenIdParam);
     %>
         <tr id="Row<%=row++%2%>">
             <td width="50%" align="right">defaultKey: </td>
             <td>
 	            <select name="<%= SELECT_CRYPTOTOKEN_DEFAULTKEY %>" size="1">
-                <%  for (final String alias : cabean.getAvailableCryptoTokenAliases(currentCryptoTokenId, signatureAlgorithmParam)) { %>
-                        <option value="<%=alias %>"><%= alias %></option>
-                <%  } %>
+                <%  for (final String alias : cabean.getAvailableCryptoTokenMixedAliases(currentCryptoTokenId, signatureAlgorithmParam)) {
+                	    if (CAToken.SOFTPRIVATEDECKEYALIAS.equals(alias) || alias.contains("default") || alias.contains("Default")) { %>
+                            <option selected="selected" value="<%=alias %>"><%= alias %></option>
+                <%      } else { %>
+                            <option value="<%=alias %>"><%= alias %></option>
+                <%      }
+                    } %>
 	            </select>
             </td>	
         </tr>
@@ -505,7 +506,7 @@ function checkallfields(){
                     <option value="">- Use default key</option>
                 <%  for (final String alias : cabean.getAvailableCryptoTokenAliases(currentCryptoTokenId, signatureAlgorithmParam)) {
             	        // If we come accross the (legacy) default signing key alias we use it as selected 
-                	    if (CAToken.SOFTPRIVATESIGNKEYALIAS.equals(alias)) { %>
+                	    if (CAToken.SOFTPRIVATESIGNKEYALIAS.equals(alias) || alias.contains("sign") || alias.contains("Sign")) { %>
                             <option selected="selected" value="<%=alias %>"><%= alias %></option>
                 <%      } else { %>
                             <option value="<%=alias %>"><%= alias %></option>
@@ -515,8 +516,7 @@ function checkallfields(){
             </td>	
         </tr>
         <tr id="Row<%=row++%2%>">
-            <td width="50%" align="right">crlSignKey: </td>
-	        <td>Use same as Certificate Singing Key.</td>
+            <td width="50%" align="right">crlSignKey: </td><td><%= ejbcawebbean.getText("CRYPTOTOKEN_USECERTSIGN") %></td>
 <%/*
             Instead of letting the user select something that will later be unusable, we will just use the same as for the certSignKey..
 	        <td>
@@ -556,9 +556,13 @@ function checkallfields(){
 	        <td>
 	            <select name="<%= SELECT_CRYPTOTOKEN_KEYTESTKEY %>" size="1">
                     <option value="">- Use default key</option>
-                <%  for (final String alias : cabean.getAvailableCryptoTokenAliases(currentCryptoTokenId, signatureAlgorithmParam)) { %>
-                    <option value="<%=alias %>"><%= alias %></option>
-                <%  } %>
+                <%  for (final String alias : cabean.getAvailableCryptoTokenAliases(currentCryptoTokenId, signatureAlgorithmParam)) {
+                	    if (alias.contains("test") || alias.contains("Test")) { %>
+                            <option selected="selected" value="<%=alias %>"><%= alias %></option>
+                <%      } else { %>
+                            <option value="<%=alias %>"><%= alias %></option>
+                <%      }
+                    } %>
 	            </select>
             </td>
         </tr>
