@@ -69,6 +69,8 @@ public class CertificateExtensionFactoryTest {
 	    props.put("id3.critical", "FALSE");
 	    props.put("id3.property.value", "Test 321");		
 		
+	    // Reset before test
+	    CertificateExtensionFactory.resetExtensions();
 		CertificateExtensionFactory fact = CertificateExtensionFactory.getInstance(props);
 		
 		assertEquals(2, fact.getAvailableCertificateExtensions().size());
@@ -107,6 +109,8 @@ public class CertificateExtensionFactoryTest {
 	@Test
 	public void test02StandardCertificateExtensions() throws Exception{
 		
+        // Reset before test
+        CertificateExtensionFactory.resetExtensions();
 		CertificateExtensionFactory fact = CertificateExtensionFactory.getInstance();
     	CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
     	profile.setUseAuthorityInformationAccess(true);
