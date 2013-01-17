@@ -24,6 +24,7 @@ public class CmpConfiguration {
 	public static final String CONFIG_OPERATIONMODE           = "cmp.operationmode";
 	public static final String CONFIG_AUTHENTICATIONMODULE	  = "cmp.authenticationmodule";
 	public static final String CONFIG_AUTHENTICATIONPARAMETERS= "cmp.authenticationparameters";
+	public static final String CONFIG_EXTRACTUSERNAMECOMPONENT= "cmp.extractusernamecomponent";
 	public static final String CONFIG_RA_ALLOWCUSTOMCERTSERNO = "cmp.ra.allowcustomcertserno";
 	public static final String CONFIG_RA_NAMEGENERATIONSCHEME = "cmp.ra.namegenerationscheme";
 	public static final String CONFIG_RA_NAMEGENERATIONPARAMS = "cmp.ra.namegenerationparameters";
@@ -33,7 +34,9 @@ public class CmpConfiguration {
 	public static final String CONFIG_RESPONSEPROTECTION      = "cmp.responseprotection";
 	public static final String CONFIG_RACANAME				  = "cmp.ra.caname";
 	public static final String CONFIG_CERTREQHANDLER_CLASS    = "cmp.certreqhandler.class";
-	public static final String CONFIG_UNIDDATASOURCE		  = "cmp.uniddatasource";
+	public static final String CONFIG_UNIDDATASOURCE           = "cmp.uniddatasource";
+	public static final String CONFIG_3GPPMODE                 = "cmp.3gppmode"; 
+	public static final String CONFIG_3GPPCA                   = "cmp.3gppca";
 
     public static final String CONFIG_RACERT_PATH             = "cmp.racertificatepath";
 
@@ -82,7 +85,7 @@ public class CmpConfiguration {
 	 * Nothing means that the DN will be used to look up the user.
 	 */
 	public static String getExtractUsernameComponent() {
-		return EjbcaConfigurationHolder.getString("cmp.extractusernamecomponent");
+		return EjbcaConfigurationHolder.getString(CONFIG_EXTRACTUSERNAMECOMPONENT);
 	}
 	
 	public static String getAuthenticationModule() {
@@ -115,6 +118,14 @@ public class CmpConfiguration {
 		return "ra".equalsIgnoreCase(EjbcaConfigurationHolder.getString(CONFIG_OPERATIONMODE));
 	}
 	
+	public static boolean get3GPPMode() {
+	       return "true".equalsIgnoreCase(EjbcaConfigurationHolder.getString(CONFIG_3GPPMODE));
+	}
+	
+    public static String get3GPPCA() {
+        return EjbcaConfigurationHolder.getString(CONFIG_3GPPCA);
+    }
+    
 	public static String getRANameGenerationScheme() {
 		return EjbcaConfigurationHolder.getString(CONFIG_RA_NAMEGENERATIONSCHEME);
 	}
