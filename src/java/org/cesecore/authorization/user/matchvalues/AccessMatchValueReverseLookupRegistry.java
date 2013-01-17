@@ -43,6 +43,7 @@ public enum AccessMatchValueReverseLookupRegistry {
             if (defaultValues.containsKey(tokenType)) {
                 throw new InvalidMatchValueException(tokenType + " has already been registered.");
             }
+            // If none of the provided AccessMatchValues would volunteer as default we will use the first one as fall-back
             defaultValues.put(tokenType, values[0]);
             final Map<String, AccessMatchValue> nameLookup = new HashMap<String, AccessMatchValue>();
             final Map<Integer, AccessMatchValue> idLookup = new HashMap<Integer, AccessMatchValue>();
