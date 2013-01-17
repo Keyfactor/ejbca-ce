@@ -78,6 +78,8 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.DNFieldExtractor;
+import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -711,7 +713,36 @@ public class CAInterfaceBean implements Serializable {
 
 	    boolean illegaldnoraltname = false;
 
-	    final int cryptoTokenId = Integer.parseInt(cryptoTokenIdString);
+	    int cryptoTokenId = Integer.parseInt(cryptoTokenIdString);
+	    if (cryptoTokenId==0) {
+            // The admin has requested a quick setup and wants to generate a soft keystore with some usable keys
+	        keyAliasDefaultKey = "defaultKey";
+            keyAliasCertSignKey = "signKey";
+            keyAliasCrlSignKey = keyAliasCertSignKey;
+            keyAliasHardTokenEncryptKey = "";
+            keyAliasKeyEncryptKey = "";
+            keyAliasKeyTestKey = "testKey";
+	        // First create a new soft auto-activated CryptoToken with the same name as the CA
+	        final Properties cryptoTokenProperties = new Properties();
+	        cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, CesecoreConfiguration.getCaKeyStorePass());
+	        cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, caName, SoftCryptoToken.class.getName(),
+	                cryptoTokenProperties, null, null);
+	        // Next generate recommended RSA key pairs for decryption and test
+	        cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, keyAliasDefaultKey, AlgorithmConstants.KEYALGORITHM_RSA + "2048");
+            cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, keyAliasKeyTestKey, AlgorithmConstants.KEYALGORITHM_RSA + "1024");
+            // Next, create a CA signing key
+            final String caSignKeyAlgo = AlgorithmTools.getKeyAlgorithmFromSigAlg(signatureAlgorithm);
+            String caSignKeySpec = AlgorithmConstants.KEYALGORITHM_RSA + "2048";
+            extendedServiceSignatureKeySpec = "2048";
+            if (AlgorithmConstants.KEYALGORITHM_DSA.equals(caSignKeyAlgo)) {
+                caSignKeySpec = AlgorithmConstants.KEYALGORITHM_DSA + "1024";
+                extendedServiceSignatureKeySpec = caSignKeySpec;
+            } else if (AlgorithmConstants.KEYALGORITHM_ECDSA.equals(caSignKeyAlgo)) {
+                caSignKeySpec = "prime256v1";
+                extendedServiceSignatureKeySpec = caSignKeySpec;
+            }
+            cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, keyAliasCertSignKey, caSignKeySpec);
+	    }
 	    final List<String> keyPairAliases = cryptoTokenManagementSession.getKeyPairAliases(authenticationToken, cryptoTokenId);
 	    if (!keyPairAliases.contains(keyAliasDefaultKey)) {
 	        log.info(authenticationToken.toString() + " attempted to createa a CA with a non-existing defaultKey alias: "+keyAliasDefaultKey);
@@ -1118,6 +1149,10 @@ public class CAInterfaceBean implements Serializable {
 
 	public List<Entry<String, String>> getAvailableCryptoTokens(final String caSigingAlgorithm) throws AuthorizationDeniedException, KeyStoreException, CryptoTokenOfflineException {
 	    final List<Entry<String, String>> availableCryptoTokens = new ArrayList<Entry<String, String>>();
+        if (accessControlSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource())) {
+            // Add a quick setup option for key generation
+            availableCryptoTokens.add(new AbstractMap.SimpleEntry<String,String>(Integer.toString(0), ejbcawebbean.getText("CRYPTOTOKEN_NEWFROMCA")));
+        }
 	    if (caSigingAlgorithm != null && caSigingAlgorithm.length()>0) {
 	        final List<CryptoTokenInfo> cryptoTokenInfos = cryptoTokenManagementSession.getCryptoTokenInfos(authenticationToken);
             for (final CryptoTokenInfo cryptoTokenInfo : cryptoTokenInfos) {
@@ -1144,6 +1179,17 @@ public class CAInterfaceBean implements Serializable {
 	    return availableCryptoTokens;
 	}
 
+    /** @return a list of key pair aliases that can be used for either signing or encryption under the supplied CA signing algorithm */
+    public List<String> getAvailableCryptoTokenMixedAliases(int cryptoTokenId, final String caSigingAlgorithm) throws KeyStoreException, CryptoTokenOfflineException, AuthorizationDeniedException {
+        final List<String> aliases = new ArrayList<String>();
+        aliases.addAll(getAvailableCryptoTokenAliases(cryptoTokenId, caSigingAlgorithm));
+        final List<String> encAliases = getAvailableCryptoTokenEncryptionAliases(cryptoTokenId, caSigingAlgorithm);
+        aliases.removeAll(encAliases);  // Avoid duplicates
+        aliases.addAll(encAliases);
+        return aliases;
+    }
+
+    /** @return a list of key pair aliases that can be used for signing using the supplied CA signing algorithm */
 	public List<String> getAvailableCryptoTokenAliases(int cryptoTokenId, final String caSigingAlgorithm) throws KeyStoreException, CryptoTokenOfflineException, AuthorizationDeniedException {
         final List<KeyPairInfo> cryptoTokenKeyPairInfos = cryptoTokenManagementSession.getKeyPairInfos(authenticationToken, cryptoTokenId);
         final List<String> aliases = new ArrayList<String>();
@@ -1155,6 +1201,18 @@ public class CAInterfaceBean implements Serializable {
         return aliases;
 	}
 
+    /** @return a list of key pair aliases that can be used for encryption using the supplied CA signing algorithm to derive encryption algo. */
+    public List<String> getAvailableCryptoTokenEncryptionAliases(int cryptoTokenId, final String caSigingAlgorithm) throws KeyStoreException, CryptoTokenOfflineException, AuthorizationDeniedException {
+        final List<KeyPairInfo> cryptoTokenKeyPairInfos = cryptoTokenManagementSession.getKeyPairInfos(authenticationToken, cryptoTokenId);
+        final List<String> aliases = new ArrayList<String>();
+        for (final KeyPairInfo cryptoTokenKeyPairInfo : cryptoTokenKeyPairInfos) {
+            if (AlgorithmTools.getKeyAlgorithmFromSigAlg(AlgorithmTools.getEncSigAlgFromSigAlg(caSigingAlgorithm)).equals(cryptoTokenKeyPairInfo.getKeyAlgorithm())) {
+                aliases.add(cryptoTokenKeyPairInfo.getAlias());
+            }
+        }
+        return aliases;
+    }
+    
 	public boolean isCryptoTokenActive(final int cryptoTokenId) throws AuthorizationDeniedException {
 	    return cryptoTokenManagementSession.isCryptoTokenStatusActive(authenticationToken, cryptoTokenId);
 	}
@@ -1184,17 +1242,6 @@ public class CAInterfaceBean implements Serializable {
 	    return ret;
 	}
 
-    public List<String> getAvailableCryptoTokenEncryptionAliases(int cryptoTokenId, final String caSigingAlgorithm) throws KeyStoreException, CryptoTokenOfflineException, AuthorizationDeniedException {
-        final List<KeyPairInfo> cryptoTokenKeyPairInfos = cryptoTokenManagementSession.getKeyPairInfos(authenticationToken, cryptoTokenId);
-        final List<String> aliases = new ArrayList<String>();
-        for (final KeyPairInfo cryptoTokenKeyPairInfo : cryptoTokenKeyPairInfos) {
-            if (AlgorithmTools.getKeyAlgorithmFromSigAlg(AlgorithmTools.getEncSigAlgFromSigAlg(caSigingAlgorithm)).equals(cryptoTokenKeyPairInfo.getKeyAlgorithm())) {
-                aliases.add(cryptoTokenKeyPairInfo.getAlias());
-            }
-        }
-        return aliases;
-    }
-    
 	public List<Entry<String,String>> getAvailableCaCertificateProfiles() {
 	    final int[] types = { CertificateConstants.CERTTYPE_ROOTCA, CertificateConstants.CERTTYPE_SUBCA };
         final Map<Integer, String> idToNameMap = certificateProfileSession.getCertificateProfileIdToNameMap();
