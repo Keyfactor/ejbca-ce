@@ -10,7 +10,7 @@ jdom-b9.jar (I think)
 velocity-dep-1.4.jar
 
 Used to run regular JUnit tests (license CPL):
-junit-3.8.1.jar
+junit-4.11.jar
 
 Used to run Http/Html specific JUnit tests (license apache like...see doc/licenses/LICENSE_HTMLUNIT):
 htmlunit-1.14.jar
