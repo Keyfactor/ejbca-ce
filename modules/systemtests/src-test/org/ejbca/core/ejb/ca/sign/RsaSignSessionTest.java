@@ -58,7 +58,6 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
-import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
@@ -95,7 +94,9 @@ import org.ejbca.util.cert.SeisCardNumberExtension;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 /**
  * Test class for tests based on an RSA
@@ -103,6 +104,7 @@ import org.junit.Test;
  * @version $Id$
  *
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class RsaSignSessionTest extends SignSessionCommon {
 
     private static final Logger log = Logger.getLogger(RsaSignSessionTest.class);
@@ -148,7 +150,6 @@ public class RsaSignSessionTest extends SignSessionCommon {
     private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-    private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     private static KeyPair rsakeys;
 
@@ -275,11 +276,6 @@ public class RsaSignSessionTest extends SignSessionCommon {
         endEntityManagementSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
 
-        // Make sure we have keyUsageOverride enabled
-        CertificateProfile certProf = certificateProfileSession.getCertificateProfile(DEFAULT_CERTIFICATE_PROFILE);
-        certProf.setAllowKeyUsageOverride(true);
-        certificateProfileSession.changeCertificateProfile(internalAdmin, DEFAULT_CERTIFICATE_PROFILE, certProf);
-        
         int keyusage1 = X509KeyUsage.digitalSignature | X509KeyUsage.keyEncipherment;
 
         X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", rsakeys.getPublic(), keyusage1,
@@ -948,92 +944,84 @@ public class RsaSignSessionTest extends SignSessionCommon {
                 +"dNSName=foo8.bar.com,dNSName=foo9.bar.com,dNSName=foo10.bar.com,dNSName=foo11.bar.com,dNSName=foo12.bar.com,dNSName=foo13.bar.com,dNSName=foo14.bar.com,"
                 +"dNSName=foo15.bar.com,dNSName=foo16.bar.com,dNSName=foo17.bar.com,dNSName=foo18.bar.com,dNSName=foo19.bar.com,dNSName=foo20.bar.com,dNSName=foo21.bar.com";
         // Create a good certificate profile (good enough), using QC statement
-        X509Certificate cert1 = null;
-        X509Certificate cert2 = null;
-        try {
-            final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-            // Default profile does not allow Extension override
-            certprof.setValidity(298);
-            certificateProfileSession.addCertificateProfile(internalAdmin, "TESTEXTENSIONOVERRIDE", certprof);
-            int cprofile = certificateProfileSession.getCertificateProfileId("TESTEXTENSIONOVERRIDE");
-            // Create a good end entity profile (good enough), allowing multiple UPN
-            // names
-            EndEntityProfile profile = new EndEntityProfile();
-            profile.addField(DnComponents.COUNTRY);
-            profile.addField(DnComponents.COMMONNAME);
-            profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
-            profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cprofile));
-            endEntityProfileSession.addEndEntityProfile(internalAdmin, "TESTEXTENSIONOVERRIDE", profile);
-            int eeprofile = endEntityProfileSession.getEndEntityProfileId("TESTEXTENSIONOVERRIDE");
-            int rsacaid = caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId();
-            EndEntityInformation user = new EndEntityInformation(RSA_USERNAME, "C=SE,CN=extoverride", rsacaid, null, "foo@anatom.nu", new EndEntityType(EndEntityTypes.ENDUSER), eeprofile, cprofile,
-                    SecConst.TOKEN_SOFT_PEM, 0, null);
-            user.setPassword("foo123");
-            user.setStatus(EndEntityConstants.STATUS_NEW);
-            // Change a user that we know...
-            endEntityManagementSession.changeUser(internalAdmin, user, false);
-            // Create a P10 with extensions, in this case altNames with a lot of DNS
-            // names
-            ASN1EncodableVector extensionattr = new ASN1EncodableVector();
-            extensionattr.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
-            GeneralNames san = CertTools.getGeneralNamesFromAltName(altnames);
-            ExtensionsGenerator extgen = new ExtensionsGenerator();
-            extgen.addExtension(Extension.subjectAlternativeName, false, san);
-            Extensions exts = extgen.generate();        
-            extensionattr.add(new DERSet(exts));
-            // Complete the Attribute section of the request, the set (Attributes)
-            // contains one sequence (Attribute)
-            ASN1EncodableVector v = new ASN1EncodableVector();
-            v.add(new DERSequence(extensionattr));
-            DERSet attributes = new DERSet(v);
-            // Create PKCS#10 certificate request
-            PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", new X500Name("C=SE,CN=extoverride"), rsakeys.getPublic(), attributes,
-                    rsakeys.getPrivate(), null);
-            ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-            DEROutputStream dOut = new DEROutputStream(bOut);
-            dOut.writeObject(req.toASN1Structure());
-            dOut.close();
-            byte[] p10bytes = bOut.toByteArray();
-            // FileOutputStream fos = new FileOutputStream("/tmp/foo.der");
-            // fos.write(p10bytes);
-            // fos.close();
-            PKCS10RequestMessage p10 = new PKCS10RequestMessage(p10bytes);
-            p10.setUsername(RSA_USERNAME);
-            p10.setPassword("foo123");
-            // See if the request message works...
-            Extensions p10exts = p10.getRequestExtensions();
-            assertNotNull(p10exts);
-            ResponseMessage resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
-            cert1 = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
-            assertNotNull("Failed to create certificate", cert1);
-            assertEquals("CN=extoverride,C=SE", cert1.getSubjectDN().getName());
-            // check altNames, should be none
-            Collection<List<?>> c = cert1.getSubjectAlternativeNames();
-            assertNull(c);
-            // Change so that we allow override of validity time
-            CertificateProfile prof = certificateProfileSession.getCertificateProfile(cprofile);
-            prof.setAllowExtensionOverride(true);
-            certificateProfileSession.changeCertificateProfile(internalAdmin, "TESTEXTENSIONOVERRIDE", prof);
-            endEntityManagementSession.changeUser(internalAdmin, user, false);
-            resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
-            cert2 = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
-            assertNotNull("Failed to create certificate", cert2);
-            assertEquals("CN=extoverride,C=SE", cert2.getSubjectDN().getName());
-            // check altNames, should be one altName
-            c = cert2.getSubjectAlternativeNames();
-            assertNotNull(c);
-            assertEquals(21, c.size());
-            String retAltNames = CertTools.getSubjectAlternativeName(cert2);
-            List<String> originalNames = Arrays.asList(altnames.split(","));
-            List<String> returnNames = Arrays.asList(retAltNames.split(", "));
-            assertTrue(originalNames.containsAll(returnNames));
-        } finally {
-            endEntityProfileSession.removeEndEntityProfile(internalAdmin, "TESTEXTENSIONOVERRIDE");
-            certificateProfileSession.removeCertificateProfile(internalAdmin, "TESTEXTENSIONOVERRIDE");
-            internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(cert1));
-            internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(cert2));
-
-        }
+        certificateProfileSession.removeCertificateProfile(internalAdmin, "TESTEXTENSIONOVERRIDE");
+        final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        // Default profile does not allow Extension override
+        certprof.setValidity(298);
+        certificateProfileSession.addCertificateProfile(internalAdmin, "TESTEXTENSIONOVERRIDE", certprof);
+        int cprofile = certificateProfileSession.getCertificateProfileId("TESTEXTENSIONOVERRIDE");
+        // Create a good end entity profile (good enough), allowing multiple UPN
+        // names
+        endEntityProfileSession.removeEndEntityProfile(internalAdmin, "TESTEXTENSIONOVERRIDE");
+        EndEntityProfile profile = new EndEntityProfile();
+        profile.addField(DnComponents.COUNTRY);
+        profile.addField(DnComponents.COMMONNAME);
+        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+        profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cprofile));
+        endEntityProfileSession.addEndEntityProfile(internalAdmin, "TESTEXTENSIONOVERRIDE", profile);
+        int eeprofile = endEntityProfileSession.getEndEntityProfileId("TESTEXTENSIONOVERRIDE");
+        int rsacaid = caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId();
+        EndEntityInformation user = new EndEntityInformation(RSA_USERNAME, "C=SE,CN=extoverride", rsacaid, null, "foo@anatom.nu", new EndEntityType(EndEntityTypes.ENDUSER), eeprofile, cprofile,
+                SecConst.TOKEN_SOFT_PEM, 0, null);
+        user.setPassword("foo123");
+        user.setStatus(EndEntityConstants.STATUS_NEW);
+        // Change a user that we know...
+        endEntityManagementSession.changeUser(internalAdmin, user, false);
+        // Create a P10 with extensions, in this case altNames with a lot of DNS
+        // names
+        ASN1EncodableVector extensionattr = new ASN1EncodableVector();
+        extensionattr.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
+        GeneralNames san = CertTools.getGeneralNamesFromAltName(altnames);
+        ExtensionsGenerator extgen = new ExtensionsGenerator();
+        extgen.addExtension(Extension.subjectAlternativeName, false, san);
+        Extensions exts = extgen.generate();        
+        extensionattr.add(new DERSet(exts));
+        // Complete the Attribute section of the request, the set (Attributes)
+        // contains one sequence (Attribute)
+        ASN1EncodableVector v = new ASN1EncodableVector();
+        v.add(new DERSequence(extensionattr));
+        DERSet attributes = new DERSet(v);
+        // Create PKCS#10 certificate request
+        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", new X500Name("C=SE,CN=extoverride"), rsakeys.getPublic(), attributes,
+                rsakeys.getPrivate(), null);
+        ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+        DEROutputStream dOut = new DEROutputStream(bOut);
+        dOut.writeObject(req.toASN1Structure());
+        dOut.close();
+        byte[] p10bytes = bOut.toByteArray();
+        // FileOutputStream fos = new FileOutputStream("/tmp/foo.der");
+        // fos.write(p10bytes);
+        // fos.close();
+        PKCS10RequestMessage p10 = new PKCS10RequestMessage(p10bytes);
+        p10.setUsername(RSA_USERNAME);
+        p10.setPassword("foo123");
+        // See if the request message works...
+        Extensions p10exts = p10.getRequestExtensions();
+        assertNotNull(p10exts);
+        ResponseMessage resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
+        X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
+        assertNotNull("Failed to create certificate", cert);
+        assertEquals("CN=extoverride,C=SE", cert.getSubjectDN().getName());
+        // check altNames, should be none
+        Collection<List<?>> c = cert.getSubjectAlternativeNames();
+        assertNull(c);
+        // Change so that we allow override of validity time
+        CertificateProfile prof = certificateProfileSession.getCertificateProfile(cprofile);
+        prof.setAllowExtensionOverride(true);
+        certificateProfileSession.changeCertificateProfile(internalAdmin, "TESTEXTENSIONOVERRIDE", prof);
+        endEntityManagementSession.changeUser(internalAdmin, user, false);
+        resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
+        cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
+        assertNotNull("Failed to create certificate", cert);
+        assertEquals("CN=extoverride,C=SE", cert.getSubjectDN().getName());
+        // check altNames, should be one altName
+        c = cert.getSubjectAlternativeNames();
+        assertNotNull(c);
+        assertEquals(21, c.size());
+        String retAltNames = CertTools.getSubjectAlternativeName(cert);
+        List<String> originalNames = Arrays.asList(altnames.split(","));
+        List<String> returnNames = Arrays.asList(retAltNames.split(", "));
+        assertTrue(originalNames.containsAll(returnNames));
     } 
     
     /**
@@ -1129,6 +1117,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
     @Test
     public void testDNOverride() throws Exception {
         // Create a good certificate profile (good enough), using QC statement
+        certificateProfileSession.removeCertificateProfile(internalAdmin, "TESTDNOVERRIDE");
         final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         // Default profile does not allow DN override
         certprof.setValidity(298);
@@ -1136,6 +1125,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
         int cprofile = certificateProfileSession.getCertificateProfileId("TESTDNOVERRIDE");
         // Create a good end entity profile (good enough), allowing multiple UPN
         // names
+        endEntityProfileSession.removeEndEntityProfile(internalAdmin, "TESTDNOVERRIDE");
         EndEntityProfile profile = new EndEntityProfile();
         profile.addField(DnComponents.COUNTRY);
         profile.addField(DnComponents.COMMONNAME);
@@ -1146,8 +1136,6 @@ public class RsaSignSessionTest extends SignSessionCommon {
         int rsacaid = caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId();
         final String dnOverrideEndEntityName = "DnOverride";
         createEndEntity(dnOverrideEndEntityName, eeprofile, cprofile, rsacaid);
-        X509Certificate cert1 = null;
-        X509Certificate cert2 = null;
         try {
             EndEntityInformation user = new EndEntityInformation(dnOverrideEndEntityName, "C=SE,CN=dnoverride", rsacaid, null, "foo@anatom.nu",
                     new EndEntityType(EndEntityTypes.ENDUSER), eeprofile, cprofile, SecConst.TOKEN_SOFT_PEM, 0, null);
@@ -1173,24 +1161,20 @@ public class RsaSignSessionTest extends SignSessionCommon {
             p10.setUsername(dnOverrideEndEntityName);
             p10.setPassword("foo123");
             ResponseMessage resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
-            cert1 = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
-            assertNotNull("Failed to create certificate", cert1);
-            assertEquals("CN=dnoverride,C=SE", cert1.getSubjectDN().getName());
+            X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
+            assertNotNull("Failed to create certificate", cert);
+            assertEquals("CN=dnoverride,C=SE", cert.getSubjectDN().getName());
             // Change so that we allow override of validity time
             CertificateProfile prof = certificateProfileSession.getCertificateProfile(cprofile);
             prof.setAllowDNOverride(true);
             certificateProfileSession.changeCertificateProfile(internalAdmin, "TESTDNOVERRIDE", prof);
             endEntityManagementSession.changeUser(internalAdmin, user, false);
             resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
-            cert2 = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
-            assertNotNull("Failed to create certificate", cert2);
-            assertEquals("CN=foo,C=SE,Name=AnaTom,O=My org", cert2.getSubjectDN().getName());
+            cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
+            assertNotNull("Failed to create certificate", cert);
+            assertEquals("CN=foo,C=SE,Name=AnaTom,O=My org", cert.getSubjectDN().getName());
         } finally {
             endEntityManagementSession.deleteUser(internalAdmin, dnOverrideEndEntityName);
-            internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(cert1));
-            internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(cert2));
-            endEntityProfileSession.removeEndEntityProfile(internalAdmin, "TESTDNOVERRIDE");
-            certificateProfileSession.removeCertificateProfile(internalAdmin, "TESTDNOVERRIDE");
         }
     }
 
