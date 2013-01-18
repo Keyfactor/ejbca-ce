@@ -144,6 +144,7 @@ import org.hibernate.ObjectNotFoundException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runners.MethodSorters;
@@ -179,6 +180,7 @@ public class NestedMessageContentTest extends CmpTestCase {
     private String subjectDN;
     private String issuerDN;
     private String raCertsPath = "/tmp/racerts";
+    @Rule
     private TemporaryFolder folder = new TemporaryFolder();
     
     @Before
