@@ -12,10 +12,15 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.sign;
 
+import java.security.cert.Certificate;
+import java.util.List;
+
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
@@ -23,6 +28,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
@@ -102,9 +108,10 @@ public abstract class SignSessionCommon extends CaTestCase{
         
         CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
         EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
-        
+        CertificateStoreSessionRemote storeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
+        InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+
         EndEntityInformation endEntity = endEntityAccessSession.findUser(internalAdmin, username);
-        
         try {
             endEntityProfileSession.removeEndEntityProfile(internalAdmin, endEntityProfileSession.getEndEntityProfileName(endEntity.getEndEntityProfileId()));           
             } catch (Exception e) { /* ignore */
@@ -115,6 +122,15 @@ public abstract class SignSessionCommon extends CaTestCase{
         } catch (Exception e) { /* ignore */
             //NOPMD
         }
+        List<Certificate> certs = storeSession.findCertificatesByUsername(username);
+        for (Certificate certificate : certs) {
+            try {
+                internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(certificate));
+            } catch (Exception e) { /* ignore */
+                //NOPMD
+            }
+        }
+
         try {
             endEntityManagementSession.deleteUser(internalAdmin, username);
         } catch (Exception e) { /* ignore */
