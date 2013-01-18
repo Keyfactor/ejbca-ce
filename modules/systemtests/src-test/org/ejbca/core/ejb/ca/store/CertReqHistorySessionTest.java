@@ -38,13 +38,16 @@ import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 /**
  * Tests certificate store.
  *
  * @version $Id$
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class CertReqHistorySessionTest {
 
     private static final Logger log = Logger.getLogger(CertReqHistorySessionTest.class);

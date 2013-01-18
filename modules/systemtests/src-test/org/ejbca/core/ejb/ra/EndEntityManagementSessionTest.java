@@ -92,13 +92,16 @@ import org.ejbca.util.query.UserMatch;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 /**
  * Tests the EndEntityInformation entity bean and some parts of EndEntityManagementSession.
  * 
  * @version $Id$
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EndEntityManagementSessionTest extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(EndEntityManagementSessionTest.class);
