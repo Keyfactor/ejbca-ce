@@ -74,7 +74,9 @@ import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 /**
  * This test runs in 'normal' CMP mode
@@ -82,6 +84,7 @@ import org.junit.Test;
  * @version $Id$
  * 
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class CrmfRequestTest extends CmpTestCase {
 
     private static final Logger log = Logger.getLogger(CrmfRequestTest.class);

@@ -103,7 +103,9 @@ import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 /**
  * This will test the different cmp authentication modules.
@@ -111,6 +113,7 @@ import org.junit.Test;
  * @version $Id$
  *
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class CrmfKeyUpdateTest extends CmpTestCase {
 
     

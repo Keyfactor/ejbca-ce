@@ -120,7 +120,9 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 /**
  * This will test the different cmp authentication modules.
@@ -128,6 +130,7 @@ import org.junit.Test;
  * @version $Id$
  *
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class AuthenticationModulesTest extends CmpTestCase {
 
     private static final Logger log = Logger.getLogger(AuthenticationModulesTest.class);
