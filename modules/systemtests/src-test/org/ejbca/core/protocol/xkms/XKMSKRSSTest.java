@@ -89,7 +89,9 @@ import org.ejbca.util.query.Query;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 import org.w3._2000._09.xmldsig_.KeyInfoType;
 import org.w3._2000._09.xmldsig_.RSAKeyValueType;
 import org.w3._2000._09.xmldsig_.X509DataType;
@@ -116,6 +118,7 @@ import org.w3._2002._03.xkms_.UseKeyWithType;
  * @version $Id$
  */
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class XKMSKRSSTest {
 
     private final static Logger log = Logger.getLogger(XKMSKRSSTest.class);
