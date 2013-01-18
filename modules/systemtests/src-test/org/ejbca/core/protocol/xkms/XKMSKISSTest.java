@@ -65,7 +65,9 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 import org.w3._2000._09.xmldsig_.KeyInfoType;
 import org.w3._2000._09.xmldsig_.KeyValueType;
 import org.w3._2000._09.xmldsig_.RSAKeyValueType;
@@ -91,6 +93,7 @@ import org.w3._2002._03.xkms_.ValidateResultType;
  * @version $Id$
  */
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class XKMSKISSTest {
 
     private static Logger log = Logger.getLogger(XKMSKISSTest.class);

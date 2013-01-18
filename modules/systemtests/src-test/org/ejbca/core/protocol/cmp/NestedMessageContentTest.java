@@ -143,8 +143,10 @@ import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.hibernate.ObjectNotFoundException;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.junit.runners.MethodSorters;
 
 /**
  * This will the the different kind of CMP messages that can be sent as NestedMessageContent and if 
@@ -153,6 +155,7 @@ import org.junit.rules.TemporaryFolder;
  * @version $Id$
  *
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class NestedMessageContentTest extends CmpTestCase {
 
     private static final Logger log = Logger.getLogger(NestedMessageContentTest.class);
