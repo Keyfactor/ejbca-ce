@@ -46,13 +46,16 @@ import org.ejbca.core.model.hardtoken.types.TurkishEIDHardToken;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 /**
  * Tests the hard token related entity beans.
  * 
  * @version $Id$
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class HardTokenSessionTest extends CaTestCase {
     private static final Logger log = Logger.getLogger(HardTokenSessionTest.class);
     private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("HardTokenTest"));

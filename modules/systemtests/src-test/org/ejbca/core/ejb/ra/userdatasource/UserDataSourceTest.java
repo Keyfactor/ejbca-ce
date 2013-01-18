@@ -52,13 +52,16 @@ import org.ejbca.core.model.ra.userdatasource.UserDataSourceExistsException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceVO;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 /**
  * Tests User Data Sources.
  *
  * @version $Id$
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class UserDataSourceTest extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(UserDataSourceTest.class);
