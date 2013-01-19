@@ -49,9 +49,6 @@ import org.cesecore.util.StringTools;
  * Multiple crypto tokens can be repeated by using xx.1.(keyid) etc, where keyid is an integer, defined by you.
  * this makes it possible to start using a new crypto token with new keys, while still being able to verify older protected rows.
  * 
- * Based on CESeCore version:
- *      ProtectedDataConfiguration.java 897 2011-06-20 11:17:25Z johane
- * 
  * @version $Id$
  */
 public final class ProtectedDataConfiguration {

@@ -21,9 +21,6 @@ import org.cesecore.audit.log.AuditLogResetException;
  * 
  * @see SecurityEventsAuditorSession
  * 
- * Based on CESeCore version:
- *      SecurityEventsAuditorSessionLocal.java 900 2011-06-21 16:33:28Z johane
- * 
  * @version $Id$
  */
 @Local

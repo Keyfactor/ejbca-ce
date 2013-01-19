@@ -27,11 +27,6 @@ import org.bouncycastle.asn1.x509.Extension;
 /**
  * A class for reading values from CRL extensions.
  *
- * Based on EJBCA version: 
- *      CrlExtensions.java 8373 2009-11-30 14:07:00Z jeklund
- * Based on CESeCore version:
- *      CrlExtensions.java 207 2011-01-31 13:36:36Z tomas  * 
- * 
  * @version $Id$
  */
 public class CrlExtensions {

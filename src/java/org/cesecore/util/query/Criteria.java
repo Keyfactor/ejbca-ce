@@ -24,8 +24,6 @@ import org.cesecore.util.query.elems.Term;
 /**
  * This class is a DSL sugar to all possible Criterias.
  * 
- * Based on CESeCore version: Criteria.java 1224 2011-10-17 14:06:55Z filiper 
- * 
  * @version $Id$
  */
 public class Criteria implements Serializable {

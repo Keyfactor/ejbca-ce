@@ -18,9 +18,6 @@ import org.cesecore.audit.Auditable;
 import org.cesecore.audit.log.AuditLogResetException;
 
 /**
- * Based on CESeCore version:
- *      QueuedAuditorSessionLocal.java 927 2011-07-05 09:18:35Z filiper
- * 
  * @version $Id$
  */
 @Local

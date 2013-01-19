@@ -17,9 +17,6 @@ package org.cesecore.audit.enums;
  *
  * When doing secure audit log it is necessary to identify the event being logged.
  *
- * Based on CESeCore version:
- *       EventTypes.java 919 2011-07-01 11:19:33Z filiper
- *
  * @version $Id$
  */
 public enum EventTypes implements EventType {

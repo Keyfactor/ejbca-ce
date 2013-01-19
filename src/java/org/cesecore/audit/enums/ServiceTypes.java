@@ -18,9 +18,6 @@ package org.cesecore.audit.enums;
  * When doing secure audit log ServiceType is used to indicate if the log  
  * was executed from the core itself or by an external application.
  * 
- * Based on CESeCore version:
- *      ServiceTypes.java 919 2011-07-01 11:19:33Z filiper
- * 
  * @version $Id$
  */
 public enum ServiceTypes implements ServiceType {

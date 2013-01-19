@@ -16,8 +16,6 @@ import org.cesecore.util.query.Elem;
 /**
  * Query ORDER BY element.
  * 
- * Based on CESeCore version: Order.java 1224 2011-10-17 14:06:55Z filiper
- * 
  * @version $Id$
  */
 public class Order implements Elem {

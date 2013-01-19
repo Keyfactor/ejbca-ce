@@ -16,9 +16,6 @@ package org.cesecore.audit.enums;
  * Specifies the status of an operation. When trying to do a secure log through the SecureEventsLogger session bean, it is necessary 
  * to specify if the overall operation resulted in FAILURE, SUCCESS or if it doens't matter VOID.
  * 
- * Based on CESeCore version:
- *      EventStatus.java 546 2011-03-14 16:36:56Z filiper
- * 
  * @version $Id$
  * 
  */

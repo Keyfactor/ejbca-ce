@@ -22,9 +22,6 @@ import org.cesecore.util.QueryResultWrapper;
 /**
  * Get this node's next log row sequence number.
  * 
- * Based on CESeCore version:
- *       NodeSequenceHolder.java 907 2011-06-22 14:42:15Z johane
- * 
  * @version $Id$
  */
 public class NodeSequenceHolder {

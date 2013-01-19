@@ -17,8 +17,6 @@ import org.cesecore.util.query.Elem;
 /**
  * Query term. Each term is composed as followed: [name] [operator] [value] 
  * 
- * Based on CESeCore version: Term.java 1224 2011-10-17 14:06:55Z filiper
- * 
  * @version $Id$
  */
 public final class Term implements Elem {

@@ -15,9 +15,6 @@ package org.cesecore.time.providers;
 /**
  * This exception should be used on TrustedTime provider errors.
  *
- * Based on CESeCore version:
- *      TrustedTimeProviderException.java 800 2011-05-17 11:23:26Z filiper
- *
  * @version $Id$
  * 
  */ 

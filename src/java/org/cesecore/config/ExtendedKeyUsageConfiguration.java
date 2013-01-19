@@ -25,11 +25,6 @@ import org.apache.log4j.Logger;
 /**
  * This file handles configuration from conf/extendedkeyusage.properties
  * 
- * Based on EJBCA version: 
- *      ExtendedKeyUsageConfiguration.java 11079 2011-01-07 08:43:47Z anatom
- * Based on CESeCore version:
- *      ExtendedKeyUsageConfiguration.java 71 2011-01-07 10:48:09Z tomas
- * 
  * @version $Id$
  */
 public final class ExtendedKeyUsageConfiguration {

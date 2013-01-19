@@ -20,9 +20,6 @@ import org.apache.log4j.spi.LoggingEvent;
 /**
  * Custom wrapper for Log4J ErrorHandler, so we can check if logging was successful or not.
  * 
- * Based on CESeCore version:
- *      Log4jDeviceErrorHandler.java 907 2011-06-22 14:42:15Z johane
- * 
  * @version $Id$
  */
 public class Log4jDeviceErrorHandler implements ErrorHandler {

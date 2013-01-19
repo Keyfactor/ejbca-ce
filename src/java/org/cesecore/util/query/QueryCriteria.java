@@ -30,9 +30,6 @@ import java.util.List;
  * 
  * <em>For usage example @see QueryCriteriaTest</em>
  * 
- * Based on CESeCore version:
- *  QueryCriteria.java 1225 2011-10-17 15:44:50Z filiper
- * 
  * @version $Id$
  */
 public final class QueryCriteria implements Serializable {

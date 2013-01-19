@@ -12,8 +12,6 @@
  *************************************************************************/
 package org.cesecore.util.query.elems;
 /**
- * Based on CESeCore version: LogicOperator.java 1212 2011-10-13 20:58:34Z filiper
- * 
  * @version $Id$
  */
 public enum LogicOperator {

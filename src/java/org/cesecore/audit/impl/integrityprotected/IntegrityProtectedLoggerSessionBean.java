@@ -37,9 +37,6 @@ import org.cesecore.util.CryptoProviderTools;
  * 
  * This was created to evaluate the performance of using database integrity protection instead of custom code for log singing.
  * 
- * Based on CESeCore version:
- *      IntegrityProtectedLoggerSessionBean.java 907 2011-06-22 14:42:15Z johane
- * 
  * @version $Id$
  */
 @Stateless

@@ -38,11 +38,6 @@ import org.cesecore.util.CertTools;
 /**
  * A class for reading values from SubjectDirectoryAttributes extension.
  *
- * Based on EJBCA version: 
- *      SubjectDirAttrExtension.java 11096 2011-01-07 16:06:28Z anatom
- * Based on CESeCore version:
- *      SubjectDirAttrExtension.java 199 2011-01-31 09:41:48Z tomas
- * 
  * @version $Id$
  */
 public class SubjectDirAttrExtension extends CertTools {

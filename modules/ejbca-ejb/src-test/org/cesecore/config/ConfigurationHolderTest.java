@@ -30,11 +30,6 @@ import org.junit.Test;
 /**
  * Tests the ConfigurationHolder class
  * 
- * Based on EJBCA version: 
- *      ConfigurationHolderTest.java 11085 2011-01-07 09:55:34Z anatom
- * Based on CESeCore version:
- *      ConfigurationHolderTest.java 790 2011-05-16 14:45:05Z johane 
- * 
  * @version $Id$
  */
 public class ConfigurationHolderTest {

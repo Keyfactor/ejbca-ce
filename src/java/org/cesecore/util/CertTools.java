@@ -137,9 +137,6 @@ import org.ejbca.cvc.exception.ParseException;
 /**
  * Tools to handle common certificate operations.
  * 
- * Based on CESeCore version:   
- *      CertTools.java 853 2011-05-24 12:54:31Z johane
- * 
  * @version $Id$
  */
 public class CertTools {

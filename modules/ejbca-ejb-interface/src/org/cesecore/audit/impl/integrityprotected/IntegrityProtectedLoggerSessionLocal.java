@@ -17,9 +17,6 @@ import javax.ejb.Local;
 import org.cesecore.audit.AuditLogger;
 
 /**
- * Based on CESeCore version:
- *      IntegrityProtectedLoggerSessionLocal.java 907 2011-06-22 14:42:15Z johane
- * 
  * @version $Id$
  */
 @Local

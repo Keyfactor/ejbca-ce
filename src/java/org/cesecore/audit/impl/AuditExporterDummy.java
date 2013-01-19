@@ -20,9 +20,6 @@ import org.cesecore.audit.audit.AuditExporter;
 /**
  * Dummy implementation of AuditExporter that does nothing.
  * 
- * Based on CESeCore version:
- *      AuditExporterDummy.java 907 2011-06-22 14:42:15Z johane
- * 
  * @version $Id$
  */
 public class AuditExporterDummy implements AuditExporter {

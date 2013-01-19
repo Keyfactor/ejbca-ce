@@ -22,9 +22,6 @@ import org.cesecore.audit.audit.AuditExporter;
 /**
  * Exports audit log using the Java's XML serialization. A verbose format, but easy to use from Java applications.
  * 
- * Based on CESeCore version:
- *      AuditExporterXml.java 907 2011-06-22 14:42:15Z johane
- * 
  * @version $Id$
  */
 public class AuditExporterXml implements AuditExporter {

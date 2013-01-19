@@ -36,11 +36,6 @@ import org.cesecore.util.CeSecoreNameStyle;
  * The underlying implementations have not changed much though, in order to still have things working, therefore there are lots of different maps and arrays, with
  * seemingly similar contents. 
  * 
- * Based on EJBCA version: 
- *      DnComponents.java 10947 2010-12-22 09:48:10Z anatom
- * Based on CESeCore version:
- *      DnComponents.java 819 2011-05-18 13:45:09Z mikek
- * 
  * @version $Id$
  */
 public class DnComponents {

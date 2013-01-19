@@ -22,9 +22,6 @@ import org.cesecore.audit.audit.AuditExporter;
  * Simple implementation of AuditExporter that writes the field values as a
  * tab-separated file for easy import in spread sheet processors.
  * 
- * Based on CESeCore version:
- *      AuditExportCsv.java 907 2011-06-22 14:42:15Z johane
- * 
  * @version $Id$
  */
 public class AuditExportCsv implements AuditExporter {

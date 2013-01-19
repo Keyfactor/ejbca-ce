@@ -20,9 +20,6 @@ import javax.persistence.Query;
 /**
  * Helper class to cope with Hibernates JPA 1.0 Provider implementation.
  * 
- * Based on EJBCA version: QueryResultWrapper.java 11570 2011-03-21 20:08:57Z jeklund Based on CESeCore version: QueryResultWrapper.java 933
- * 2011-07-07 18:53:11Z mikek
- * 
  * @version $Id$
  */
 public abstract class QueryResultWrapper {

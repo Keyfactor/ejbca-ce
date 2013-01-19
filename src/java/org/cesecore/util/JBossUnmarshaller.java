@@ -27,12 +27,6 @@ import org.cesecore.config.CesecoreConfiguration;
  * 
  * Used during upgrade from EJBCA 3.11.x to EJBCA 4.0.y.
  *
- * Based on EJBCA version: 
- *      JBossUnmarshaller.java 11162 2011-01-12 12:25:42Z anatom
- *      Some changes to "CesecoreConfiguration.keepJbossSerializationIfUsed" done.
- * Based on CESeCore version:
- *      JBossUnmarshaller.java 665 2011-04-02 22:33:59Z mikek
- * 
  * @version $Id$
  */
 public final class JBossUnmarshaller {
