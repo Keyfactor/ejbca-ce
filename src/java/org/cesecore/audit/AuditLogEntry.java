@@ -40,7 +40,7 @@ public interface AuditLogEntry {
 	public static final String FIELD_SEARCHABLE_DETAIL1   = "searchDetail1";
 	public static final String FIELD_SEARCHABLE_DETAIL2   = "searchDetail2";
 	public static final String FIELD_ADDITIONAL_DETAILS   = "additionalDetails";
-	public static final String FIELD_SEQENCENUMBER        = "sequenceNumber";
+	public static final String FIELD_SEQUENCENUMBER        = "sequenceNumber";
 	public static final String FIELD_NODEID               = "nodeId";
 	
 	/** @return epoch GMT timestamp when log was created. */
