@@ -152,14 +152,15 @@ public class RsaSignSessionTest extends SignSessionCommon {
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 
     private static KeyPair rsakeys;
-
+    private static int rsacaid;
+    
     @BeforeClass
     public static void beforeClass() throws Exception {
         // Install BouncyCastle provider
         CryptoProviderTools.installBCProviderIfNotAvailable();
         CaTestCase.createTestCA();
         CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-        int rsacaid = caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId();
+        rsacaid = caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId();
         createEndEntity(RSA_USERNAME, DEFAULT_EE_PROFILE, DEFAULT_CERTIFICATE_PROFILE, rsacaid);
 
         rsakeys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
@@ -201,8 +202,8 @@ public class RsaSignSessionTest extends SignSessionCommon {
 
     @After
     public void tearDown() throws Exception {
-
-
+        // Reset the end entity after each test, if it was changed during that test
+        createEndEntity(RSA_USERNAME, DEFAULT_EE_PROFILE, DEFAULT_CERTIFICATE_PROFILE, rsacaid);
     }
 
     @Test
@@ -215,7 +216,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
             assertNotNull("Failed to create certificate.", cert);
             log.debug("Cert=" + cert.toString());
             // Normal DN order
-            assertEquals(cert.getSubjectX500Principal().getName(), "C=SE,CN=" + RSA_USERNAME);
+            assertEquals("C=SE,CN=" + RSA_USERNAME, cert.getSubjectX500Principal().getName());
             X509Certificate rsacacert = (X509Certificate) caSession.getCAInfo(internalAdmin, getTestCAName()).getCertificateChain().toArray()[0];
             cert.verify(rsacacert.getPublicKey());
             cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_REVERSE_USERNAME, "foo123", rsakeys.getPublic());
@@ -249,7 +250,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
     @Test
     public void testDSAKey() throws Exception {
         endEntityManagementSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
-        log.debug("Reset status of 'foo' to NEW");
+        log.debug("Reset status of '"+RSA_USERNAME+"' to NEW");
         try {
             PKCS10RequestMessage p10 = new PKCS10RequestMessage(keytooldsa);
             p10.setUsername(RSA_USERNAME);
@@ -427,8 +428,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
     @Test
     public void testTestMultipleAltNames() throws Exception {
         log.trace(">test09TestMultipleAltNames()");
-        // Create a good end entity profile (good enough), allowing multiple UPN
-        // names
+        // Create a good end entity profile (good enough), allowing multiple UPN names
         final String multipleAltNameEndEntityProfileName = "TESTMULALTNAME";
         endEntityProfileSession.removeEndEntityProfile(internalAdmin, multipleAltNameEndEntityProfileName);
         EndEntityProfile profile = new EndEntityProfile();
