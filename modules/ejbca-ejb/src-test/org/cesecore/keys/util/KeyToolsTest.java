@@ -58,11 +58,6 @@ import org.junit.Test;
 /**
  * Tests the CertTools class .
  * 
- * Based on EJBCA version: 
- *      KeyToolsTest.java 11068 2011-01-05 13:17:53Z anatom
- * Based on cesecore version:
- *      KeyToolsTest.java 135 2011-01-21 17:04:20Z tomas
- * 
  * @version $Id$
  */
 public class KeyToolsTest {

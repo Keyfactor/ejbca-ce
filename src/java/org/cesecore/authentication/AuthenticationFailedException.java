@@ -15,9 +15,6 @@ package org.cesecore.authentication;
 /**
  * This Exception is thrown whenever a public session bean is entered with an invalid authentication token.
  * 
- * Based on cesecore version:
- *      AuthenticationFailedException.java 451 2011-03-07 07:56:04Z tomas
- * 
  * @version $Id$
  * 
  */

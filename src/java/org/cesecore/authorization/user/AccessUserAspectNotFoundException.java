@@ -15,9 +15,6 @@ package org.cesecore.authorization.user;
 /**
  * Thrown when an AccessUserAspect is not found.
  * 
- * Based on cesecore version:
- *      AccessUserAspectNotFoundException.java 249 2011-02-11 17:40:39Z filiper
- * 
  * @version $Id$
  *
  */

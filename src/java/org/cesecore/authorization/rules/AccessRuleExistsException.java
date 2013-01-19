@@ -15,9 +15,6 @@ package org.cesecore.authorization.rules;
 /**
  * Thrown when creating an access rule that already exists.
  * 
- * Based on cesecore version:
- *      AccessRuleExistsException.java 160 2011-01-26 15:03:43Z tomas
- * 
  * @version $Id$
  *
  */

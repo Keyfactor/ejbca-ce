@@ -32,9 +32,6 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
  * 
  * Adapted from AccessRule version $Id$ in EJBCA.
  * 
- * Based on cesecore version:
- *      AccessRuleData.java 858 2011-05-25 09:22:16Z johane
- * 
  * @version $Id$
  * 
  */

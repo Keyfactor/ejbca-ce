@@ -41,9 +41,6 @@ import org.junit.Test;
 /**
  * Unit tests for the AccessTreeNode class.
  * 
- * Based on cesecore version:
- *      AccessTreeNodeTest.java 168 2011-01-27 10:07:30Z mikek
- * 
  * @version $Id$
  * 
  */

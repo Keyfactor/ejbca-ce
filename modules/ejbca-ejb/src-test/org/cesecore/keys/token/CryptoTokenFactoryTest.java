@@ -23,9 +23,6 @@ import org.junit.Test;
 /**
  * Tests crypto token manager
  * 
- * Based on cesecore version:
- *      CryptoTokenFactoryTest.java 815 2011-05-18 09:19:08Z tomas
- * 
  * @version $Id$
  */
 public class CryptoTokenFactoryTest {

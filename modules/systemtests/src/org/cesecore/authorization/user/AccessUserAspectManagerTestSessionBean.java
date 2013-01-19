@@ -26,9 +26,6 @@ import org.cesecore.roles.RoleData;
 /**
  * Test bean giving remote access to local-only interface of AccessUserAspectManagerSessionBean
  * 
- * Based on cesecore version:
- *      AccessUserAspectManagerTestSessionBean.java 937 2011-07-14 15:57:25Z mikek
- * 
  * @version $Id$
  * 
  */

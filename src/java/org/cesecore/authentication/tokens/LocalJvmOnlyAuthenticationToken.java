@@ -26,9 +26,6 @@ import org.apache.log4j.Logger;
  * 
  * Based on the work by Markus Kilås.  
  * 
- * Based on cesecore version:
- *      LocalJvmOnlyAuthenticationToken.java 948 2011-07-18 09:04:26Z mikek
- * 
  * @version $Id$
  */
 public abstract class LocalJvmOnlyAuthenticationToken extends AuthenticationToken {

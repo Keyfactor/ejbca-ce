@@ -19,9 +19,6 @@ import org.cesecore.roles.RoleData;
 /**
  * Implementations of this bean give access to RoleData objects.
  * 
- * Based on cesecore version:
- *      RoleAccessSession.java 538 2011-03-14 13:12:09Z tomas
- * 
  * @version $Id$
  * 
  */

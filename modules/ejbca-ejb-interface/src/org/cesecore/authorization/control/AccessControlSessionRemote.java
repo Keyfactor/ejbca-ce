@@ -20,9 +20,6 @@ import javax.ejb.Remote;
  * 
  * @See {@link AccessControlSession}
  * 
- * Based on cesecore:
- *      AccessControlSessionRemote.java 125 2011-01-20 16:48:11Z mikek
- * 
  * @version $Id$
  *
  */

@@ -18,9 +18,6 @@ import java.io.Serializable;
  * This is a callback interface that provides a method of authentication for a subject. It should be implemented by whatever EJB Session bean (outside
  * of CESeCore) that perform local authentication.
  * 
- * Based on cesecore version:
- *      AuthenticationProvider.java 509 2011-03-10 13:48:44Z mikek
- * 
  * @version $Id$
  * 
  */

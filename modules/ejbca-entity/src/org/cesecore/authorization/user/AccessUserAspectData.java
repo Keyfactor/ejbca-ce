@@ -32,11 +32,6 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
  * Represents an aspect of an external user. It can be set to match one administrator's <i>DN</i> or an entire organization by matching against
  * <i>O</i>.
  * 
- * Based on EJBCA version:
- *      AdminEntityData.java 11168 2011-01-12 15:05:15Z jeklund from EJBCA
- * Based on cesecore version:
- *      AccessUserAspectData.java 944 2011-07-15 16:22:06Z mikek
- * 
  * @version $Id$
  */
 @Entity

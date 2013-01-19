@@ -26,11 +26,6 @@ import org.junit.Test;
 /**
  * Tests base64 encoding and decoding
  * 
- * Based on EJBCA version: 
- *      Base64Test.java 9435 2010-07-14 15:18:39Z mikekushner
- * Based on cesecore version:
- *      Base64Test.java 81 2011-01-10 16:11:52Z mikek
- * 
  * @version $Id$
  */
 public class Base64Test {

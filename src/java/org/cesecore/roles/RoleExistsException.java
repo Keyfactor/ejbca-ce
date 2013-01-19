@@ -13,9 +13,6 @@
 package org.cesecore.roles;
 
 /**
- * Based on cesecore version:
- *      RoleExistsException.java 112 2011-01-17 19:43:09Z mikek
- * 
  * @version $Id$
  *
  */
