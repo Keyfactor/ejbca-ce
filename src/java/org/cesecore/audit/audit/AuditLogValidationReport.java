@@ -22,9 +22,6 @@ import org.apache.log4j.Logger;
  * This class represents the audit log validation report. 
  * It's generated during validation.
  *
- * Based on cesecore:
- *      AuditLogValidationReport.java 897 2011-06-20 11:17:25Z johane
- *
  * @version $Id$
  */
 public class AuditLogValidationReport implements Serializable{

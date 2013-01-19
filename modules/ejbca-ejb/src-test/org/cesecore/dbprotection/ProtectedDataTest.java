@@ -23,9 +23,6 @@ import org.junit.Test;
 /**
  * Tests the ProtectedData class
  * 
- * Based on cesecore version:
- *      ProtectedDataTest.java 897 2011-06-20 11:17:25Z johane
- * 
  * @version $Id$
  */
 public class ProtectedDataTest extends ProtectedData {

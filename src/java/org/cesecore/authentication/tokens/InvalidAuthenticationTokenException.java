@@ -15,9 +15,6 @@ package org.cesecore.authentication.tokens;
 /**
  * Thrown when an invalid AuthenticationToken is encountered.
  * 
- * Based on cesecore version:
- *      InvalidAuthenticationTokenException.java 124 2011-01-20 14:41:21Z tomas
- * 
  * @version $Id$
  *
  */

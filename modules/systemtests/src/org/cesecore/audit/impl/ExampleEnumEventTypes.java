@@ -17,9 +17,6 @@ import org.cesecore.audit.enums.EventType;
 /**
  * Example class on how EventTypes can be extended.
  * 
- * Based on cesecore version:
- *      ExampleEnumEventTypes.java 919 2011-07-01 11:19:33Z filiper
- * 
  * @version $Id$
  */
 public enum ExampleEnumEventTypes implements EventType {

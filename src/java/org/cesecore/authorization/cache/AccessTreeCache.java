@@ -23,9 +23,6 @@ import org.cesecore.roles.RoleData;
  * 
  * This file is based on AuthorizationCache (updated 2010-12-14) and Authorizer (probably r10794) from EJBCA
  * 
- * Based on cesecore version:
- *      AccessTreeCache.java 790 2011-05-16 14:45:05Z johane
- * 
  * TODO: This class requires some minor unit tests.
  * 
  * @version $Id$

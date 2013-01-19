@@ -25,9 +25,6 @@ import org.cesecore.time.TrustedTime;
 /**
  * Interface for writing secure audit events.
  * 
- * Based on cesecore:
- *      AuditLogger.java 907 2011-06-22 14:42:15Z johane
- * 
  * @version $Id$
  */
 public interface AuditLogger {

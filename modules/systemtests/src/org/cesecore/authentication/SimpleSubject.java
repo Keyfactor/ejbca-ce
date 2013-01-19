@@ -20,9 +20,6 @@ import org.cesecore.authentication.tokens.AuthenticationSubject;
 /**
  * Trivial Subject stub for testing purposes.
  * 
- * Based on cesecore version:
- *      SimpleSubject.java 111 2011-01-17 16:25:38Z tomas
- * 
  * @version $Id$
  *
  */

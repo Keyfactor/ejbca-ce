@@ -51,9 +51,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Based on cesecore version:
- *      RoleManagementSessionBeanTest.java 561 2011-03-15 16:15:28Z mikek
- * 
  * @version $Id$
  * 
  */

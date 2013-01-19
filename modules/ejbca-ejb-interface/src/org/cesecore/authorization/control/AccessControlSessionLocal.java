@@ -19,8 +19,6 @@ import javax.ejb.Local;
  * 
  * @See {@link AccessControlSession}
  * 
- *      Based on cesecore: AccessControlSessionLocal.java 125 2011-01-20 16:48:11Z mikek
- * 
  * @version $Id$
  * 
  */

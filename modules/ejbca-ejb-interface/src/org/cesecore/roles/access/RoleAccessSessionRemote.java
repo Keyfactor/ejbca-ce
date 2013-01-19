@@ -17,9 +17,6 @@ import javax.ejb.Remote;
 /**
  * Remote interface for RoleAccess
  * 
- * Based on cesecore version:
- *      RoleAccessSessionRemote.java 451 2011-03-07 07:56:04Z tomas
- * 
  * @version $Id$
  *
  */

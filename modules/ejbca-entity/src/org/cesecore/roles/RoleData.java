@@ -35,8 +35,6 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
 /**
  * Represents a role, and is based in the AdminGroup concept from EJBCA.
  * 
- * Based on cesecore version: RoleData.java 394 2011-03-01 15:41:34Z mikek
- * 
  * @version $Id$
  * 
  */

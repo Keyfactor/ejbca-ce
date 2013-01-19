@@ -15,9 +15,6 @@ package org.cesecore.authorization.rules;
 /**
  * Thrown when accessing an access rule that doesn't exist.
  * 
- * Based on cesecore version:
- *      AccessRuleNotFoundException.java 249 2011-02-11 17:40:39Z filiper
- * 
  * @version $Id$
  *
  */

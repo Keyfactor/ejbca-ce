@@ -27,11 +27,6 @@ import org.cesecore.jndi.JndiConstants;
 /**
  * Bean to handle the AuthorizationTreeUpdateData entity.
  * 
- * Based on EJBCA version:
- *      AuthorizationTreeUpdateDataSessionBean.java 10845 2010-12-14 10:37:21Z anatom
- * Based on cesecore version:
- *      AccessTreeUpdateSessionBean.java 461 2011-03-08 09:40:15Z tomas
- * 
  * 
  * @version $Id$
  */

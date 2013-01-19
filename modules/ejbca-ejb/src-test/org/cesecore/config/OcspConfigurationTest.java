@@ -25,11 +25,6 @@ import org.junit.Test;
 /**
  * Tests the OcspConfiguration class
  * 
- * Based on EJBCA version:
- *      OcspConfigurationTest.java 8865 2010-04-09 15:14:51Z mikekushner
- * Based on cesecore version:
- *      OcspConfigurationTest.java 790 2011-05-16 14:45:05Z johane
- * 
  * @version $Id$
  */
 public class OcspConfigurationTest {

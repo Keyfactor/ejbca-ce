@@ -19,9 +19,6 @@ import org.junit.Test;
 /**
  * Test of LogServiceState.  
  * 
- * Based on cesecore version:
- *      LogServiceStateTest.java 948 2011-07-18 09:04:26Z mikek
- * 
  * @version $Id$
  */
 public class LogServiceStateTest {

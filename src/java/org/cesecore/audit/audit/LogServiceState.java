@@ -19,9 +19,6 @@ import org.cesecore.audit.log.AuditLogResetException;
 /**
  * Keep the state of security audit logging. Enabled or disabled.
  * 
- * Based on cesecore:
- *      LogServiceState.java 948 2011-07-18 09:04:26Z mikek
- * 
  * @version $Id$
  */
 public enum LogServiceState {

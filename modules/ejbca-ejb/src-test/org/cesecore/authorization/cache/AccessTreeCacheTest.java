@@ -26,9 +26,6 @@ import org.junit.Test;
 /**
  * Unit tests for the AccessTreeCache class.
  * 
- * Based on cesecore version:
- *      AccessTreeCacheTest.java 177 2011-01-27 14:59:36Z mikek
- * 
  * @version $Id$
  * 
  */

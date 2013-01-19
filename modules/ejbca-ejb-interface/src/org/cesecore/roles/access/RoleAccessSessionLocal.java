@@ -17,9 +17,6 @@ import javax.ejb.Local;
 /**
  * Local interface for RoleAccess
  * 
- * Based on cesecore version:
- *      RoleAccessSessionLocal.java 451 2011-03-07 07:56:04Z tomas
- * 
  * @version $Id$
  *
  */

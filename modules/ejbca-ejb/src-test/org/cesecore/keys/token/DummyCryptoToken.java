@@ -28,9 +28,6 @@ import java.util.Properties;
 
 /** This class is used only for testing.
  * 
- * Based on cesecore version:
- *      DummyCryptoToken.java 278 2011-02-18 09:48:41Z tomas
- * 
  * @version $Id$
  */
 public class DummyCryptoToken extends BaseCryptoToken {
