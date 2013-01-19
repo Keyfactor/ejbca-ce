@@ -24,11 +24,6 @@ import org.apache.log4j.Logger;
 /**
  * Class for encoding and decoding certificate validity and end date.
  * 
- * Based on EJBCA version: 
- *      ValidityDate.java 8797 2010-03-24 13:37:19Z anatom
- * Based on CESeCore version:
- *      ValidityDate.java 850 2011-05-20 15:01:44Z johane
- * 
  * @version $Id$
  */
 public class ValidityDate {

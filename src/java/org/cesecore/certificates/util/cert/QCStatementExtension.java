@@ -36,11 +36,6 @@ import org.cesecore.util.CertTools;
 /**
  * A class for reading values from QC-statement extension.
  *
- * Based on EJBCA version: 
- *      QCStatementExtension.java 11096 2011-01-07 16:06:28Z anatom
- * Based on CESeCore version:
- *      QCStatementExtension.java 831 2011-05-19 07:45:39Z mikek
- * 
  * @version $Id$
  */
 public final class QCStatementExtension extends CertTools {

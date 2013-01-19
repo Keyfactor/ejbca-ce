@@ -37,9 +37,6 @@ import org.apache.log4j.Logger;
  * 
  * See in-line comments below for the sources added to the configuration.
  * 
- * Based on CESeCore version:
- *      ConfigurationHolder.java 831 2011-05-19 07:45:39Z mikek
- * 
  * @version $Id$
  */
 public final class ConfigurationHolder {

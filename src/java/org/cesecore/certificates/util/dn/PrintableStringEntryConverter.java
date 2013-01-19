@@ -27,11 +27,6 @@ import org.cesecore.util.CeSecoreNameStyle;
  * A converter for X509 DN entries that uses PrintableString where possible.
  * Default encoding is UTF-8, so this one is used when the default encoding is not desired.
  * 
- * Based on EJBCA version: 
- *      PrintableStringEntryConverter.java 8373 2009-11-30 14:07:00Z jeklund
- * Based on CESeCore version: 
- *      PrintableStringEntryConverter.java 146 2011-01-25 11:59:11Z tomas
- * 
  * @version $Id$
  */
 public class PrintableStringEntryConverter

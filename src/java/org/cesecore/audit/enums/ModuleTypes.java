@@ -17,9 +17,6 @@ package org.cesecore.audit.enums;
  *
  * When doing secure audit log it is necessary to identify wich CESeCore module is loggin.
  * 
- * Based on CESeCore version:
- *      ModuleTypes.java 919 2011-07-01 11:19:33Z filiper
- * 
  * @version $Id$
  * 
  */

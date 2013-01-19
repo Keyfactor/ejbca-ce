@@ -5,9 +5,6 @@ import java.io.Serializable;
 /**
  *  Generic constant type holder.
  * 
- * Based on CESeCore version:
- *      ConstantType.java 920 2011-07-01 11:27:04Z filiper
- * 
  * @version $Id$
  * 
  */

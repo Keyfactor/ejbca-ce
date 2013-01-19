@@ -22,9 +22,6 @@ import org.apache.log4j.Logger;
 /**
  * This file handles configuration from ejbca.properties
  * 
- * Based on CESeCore version:
- *      CesecoreConfiguration.java 897 2011-06-20 11:17:25Z johane
- * 
  * @version $Id$
  */
 public final class CesecoreConfiguration {

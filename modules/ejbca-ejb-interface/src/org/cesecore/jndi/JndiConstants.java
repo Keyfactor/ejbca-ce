@@ -15,9 +15,6 @@ package org.cesecore.jndi;
 /**
  * Container class to keep track of JNDI constants.
  * 
- * Based on CESeCore version:
- *      JndiConstants.java 61 2011-01-05 11:57:39Z tomas
- * 
  * @version $Id$
  * 
  */

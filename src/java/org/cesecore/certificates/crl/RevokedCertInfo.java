@@ -20,11 +20,6 @@ import java.util.Date;
  * Holds information about a revoked certificate. The information kept here is the
  * information that goes into a CRLEntry.
  *
- * Based on EJBCA version: 
- *      RevokedCertInfo.java 11087 2011-01-07 11:00:24Z anatom
- * Based on CESeCore version:
- *      RevokedCertInfo.java 348 2011-02-25 16:05:57Z tomas
- * 
  * @version $Id$
  * 
  **/

@@ -17,9 +17,6 @@ import org.cesecore.CesecoreException;
 /**
  * An exception thrown when someone tries to extract a Private Key from a Crypto Token that doesn't allow it.
  *
- * Based on CESeCore version:
- *      PrivateKeyNotExtractableException.java 313 2011-02-23 10:29:28Z filiper
- *
  * @version $Id$
  */
 public class PrivateKeyNotExtractableException extends CesecoreException {

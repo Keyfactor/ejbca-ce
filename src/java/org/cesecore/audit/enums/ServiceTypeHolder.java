@@ -3,9 +3,6 @@ package org.cesecore.audit.enums;
 /**
  * Simple implementation of ServiceType that holds the identifier.
  * 
- * Based on CESeCore version:
- *      ServiceTypeHolder.java 919 2011-07-01 11:19:33Z filiper
- * 
  * @version $Id$
  */
 public class ServiceTypeHolder implements ServiceType {

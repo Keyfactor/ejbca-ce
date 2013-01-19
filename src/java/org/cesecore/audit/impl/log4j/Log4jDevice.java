@@ -47,9 +47,6 @@ import org.cesecore.util.query.QueryCriteria;
  * This implementation does not comply to the CESeCore TSF regarding log protection and only provided as a compliment
  * to monitor operations or for use in high performance environments where compliance is not an issue.
  * 
- * Based on CESeCore version:
- *      Log4jDevice.java 929 2011-07-05 11:54:28Z johane
- * 
  * @version $Id$
  */
 public class Log4jDevice implements AuditLogDevice {

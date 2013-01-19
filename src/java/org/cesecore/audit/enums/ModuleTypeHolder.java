@@ -15,9 +15,6 @@ package org.cesecore.audit.enums;
 /**
  * Simple implementation of ModuleType that holds the identifier.
  * 
- * Based on CESeCore version:
- *      ModuleTypeHolder.java 919 2011-07-01 11:19:33Z filiper
- * 
  * @version $Id$
  */
 public class ModuleTypeHolder implements ModuleType {

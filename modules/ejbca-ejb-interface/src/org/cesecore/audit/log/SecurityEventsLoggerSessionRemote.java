@@ -17,9 +17,6 @@ import javax.ejb.Remote;
 /**
  * Remote interface for the SecurityEventsLogger
  * 
- * Based on CESeCore version:
- *      SecurityEventsLoggerSessionRemote.java 167 2011-01-27 09:11:21Z tomas
- * 
  * @version $Id$
  *
  */

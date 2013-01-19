@@ -19,9 +19,6 @@ import javax.ejb.Remote;
  * 
  * @see SecurityEventsAuditorSession
  * 
- * Based on CESeCore version:
- *      SecurityEventsAuditorSessionRemote.java 897 2011-06-20 11:17:25Z johane 
- * 
  * @version $Id$
  */
 @Remote

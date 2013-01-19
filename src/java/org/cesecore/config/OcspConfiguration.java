@@ -28,11 +28,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 /**
  * Parses configuration bundled in conf/ocsp.properties, both for the internal and external OCSP responder.
  * 
- * Based on EJBCA version: 
- *      OcspConfiguration.java 10696 2010-11-25 17:59:18Z jeklund
- * Based on CESeCore version:
- *      OcspConfiguration.java 933 2011-07-07 18:53:11Z mikek
- * 
  * @version $Id$
  */
 public class OcspConfiguration {

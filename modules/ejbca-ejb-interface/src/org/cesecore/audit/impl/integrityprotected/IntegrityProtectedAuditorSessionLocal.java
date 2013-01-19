@@ -28,9 +28,6 @@ import org.cesecore.authorization.AuthorizationDeniedException;
  * ://www.cesecore.eu/mediawiki/index.php/Functional_Specifications_
  * (ADV_FSP)#Audit_Security_Events}
  * 
- * Based on CESeCore version:
- *      IntegrityProtectedAuditorSessionLocal.java 907 2011-06-22 14:42:15Z johane
- * 
  * @version $Id$
  */
 @Local
