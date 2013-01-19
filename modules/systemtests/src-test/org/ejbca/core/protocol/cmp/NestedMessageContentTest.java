@@ -285,6 +285,13 @@ public class NestedMessageContentTest extends CmpTestCase {
         
     }
 
+    @After
+    public void tearDown() throws Exception {
+        super.tearDown();        
+        // The TemporaryFolder and all it's contents are guaranteed to be deleted automaticallly by JUnit
+        // so we don't have to delete temporary files
+    }
+
     @Test
     public void test01CrmfReq() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException, EjbcaException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, Exception {
         
@@ -1071,23 +1078,6 @@ public class NestedMessageContentTest extends CmpTestCase {
         log.trace("<testZZZCleanUp");
     }
     
-    @After
-    public void tearDown() throws Exception {
-        super.tearDown();
-        
-        File createdFolder = new File(raCertsPath);
-        File[] certs = createdFolder.listFiles();
-        for(int i=0; i<certs.length; i++) {
-            certs[i].delete();
-        }
-        createdFolder.delete();
-    }
-    
-    
-    
-    
-    
-
     private Certificate createRACertificate(String username, String password, KeyPair keys, Date notBefore, 
             Date notAfter) throws AuthorizationDeniedException, EjbcaException, CertificateException, FileNotFoundException,
             IOException, UserDoesntFullfillEndEntityProfile, ObjectNotFoundException, Exception {
@@ -1104,9 +1094,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         
         String raCertPath = configurationSession.getProperty(CmpConfiguration.CONFIG_RACERT_PATH);
         String filename = raCertPath + "/" + username + ".pem";
-        File file = folder.newFile(filename);
-        assertNotNull(file);
-        FileOutputStream fout = new FileOutputStream(file);
+        FileOutputStream fout = new FileOutputStream(filename);
         fout.write(pemRaCert);
         fout.flush();
         fout.close();        
