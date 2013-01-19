@@ -138,7 +138,7 @@ public class IntegrityProtectedAuditorSessionBean implements IntegrityProtectedA
         detailsDelete.put("timestamp", FastDateFormat.getInstance(ValidityDate.ISO8601_DATE_FORMAT, TimeZone.getTimeZone("GMT")).format(timestamp));
         securityEventsLogger.log(EventTypes.LOG_DELETE, EventStatus.VOID, ModuleTypes.SECURITY_AUDIT, ServiceTypes.CORE, token.toString(), null, null, null, detailsDelete);
         // Delete all the exported logs (from all nodes)
-		final QueryCriteria queryCriteria = QueryCriteria.create().add(Criteria.leq(AuditLogEntry.FIELD_TIMESTAMP, timestamp.getTime())).add(Criteria.orderAsc(AuditLogEntry.FIELD_SEQENCENUMBER));
+		final QueryCriteria queryCriteria = QueryCriteria.create().add(Criteria.leq(AuditLogEntry.FIELD_TIMESTAMP, timestamp.getTime())).add(Criteria.orderAsc(AuditLogEntry.FIELD_SEQUENCENUMBER));
 		return buildConditionalQuery(entityManager, "DELETE FROM AuditRecordData a", queryCriteria, 0, 0).executeUpdate();
 	}
 
@@ -176,7 +176,7 @@ public class IntegrityProtectedAuditorSessionBean implements IntegrityProtectedA
     			log.debug("exportAuditLogs for nodeId " + nodeId);
     		}
     		// Assuming timeStamp is in UTC
-    		final QueryCriteria queryCriteria = QueryCriteria.create().add((Criteria.and(Criteria.eq(AuditLogEntry.FIELD_NODEID, nodeId), Criteria.leq(AuditLogEntry.FIELD_TIMESTAMP, timestamp.getTime())))).add(Criteria.orderAsc(AuditLogEntry.FIELD_SEQENCENUMBER));
+    		final QueryCriteria queryCriteria = QueryCriteria.create().add((Criteria.and(Criteria.eq(AuditLogEntry.FIELD_NODEID, nodeId), Criteria.leq(AuditLogEntry.FIELD_TIMESTAMP, timestamp.getTime())))).add(Criteria.orderAsc(AuditLogEntry.FIELD_SEQUENCENUMBER));
     		int startIndex = 1;
     		final Holder<Long> lastSeqNumber = new Holder<Long>(Long.valueOf(-1L));
     		while (true) {
