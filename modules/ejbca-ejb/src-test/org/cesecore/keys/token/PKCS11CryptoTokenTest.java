@@ -22,6 +22,7 @@ import java.security.InvalidKeyException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.Security;
 import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
@@ -33,6 +34,7 @@ import javax.crypto.NoSuchPaddingException;
 
 import org.apache.log4j.Logger;
 import org.cesecore.util.CryptoProviderTools;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -57,6 +59,12 @@ public class PKCS11CryptoTokenTest extends CryptoTokenTestBase {
 
     public PKCS11CryptoTokenTest() {
         CryptoProviderTools.installBCProvider();
+    }
+
+    @After
+    public void tearDown() {
+        // Make sure we remove the provider after one test, so it is not still there affecting the next test
+        Security.removeProvider(getProvider());
     }
 
     @Test
