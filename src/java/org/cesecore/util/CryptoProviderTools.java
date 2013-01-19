@@ -32,11 +32,6 @@ import org.ejbca.cvc.CVCProvider;
 /**
  * Basic crypto provider helper methods.
  * 
- * Based on EJBCA version: 
- *      CryptoProviderTools.java 11090 2011-01-07 11:49:16Z anatom
- * Based on CESeCore version:
- *      CryptoProviderTools.java 665 2011-04-02 22:33:59Z mikek
- * 
  * @version $Id$
  */
 public final class CryptoProviderTools {

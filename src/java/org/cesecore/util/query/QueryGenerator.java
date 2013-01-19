@@ -39,8 +39,6 @@ import org.cesecore.util.query.elems.Term;
  * 
  * <em>For usage examples @see QueryCriteriaTest</em>
  * 
- * Based on CESeCore version: QueryGenerator.java 1224 2011-10-17 14:06:55Z filiper
- * 
  * @version $Id$
  */
 public final class QueryGenerator implements Serializable {

@@ -17,9 +17,6 @@ import javax.ejb.Local;
 /**
  * Local interface for the TrustedTime
  * 
- * Based on CESeCore version:
- *      TrustedTimeWatcherSessionLocal.java 678 2011-04-06 19:55:00Z filiper
- * 
  * @version $Id$
  *
  */

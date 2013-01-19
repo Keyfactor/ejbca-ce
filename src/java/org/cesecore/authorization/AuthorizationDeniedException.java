@@ -18,11 +18,6 @@ import javax.xml.ws.WebFault;
 /**
  * An exception thrown by the isauthorized method in the EjbcaAthorization bean.
  *
- * Based on EJBCA version: 
- *      AuthorizationDeniedException.java 11201 2011-01-15 10:23:15Z anatom
- * Based on CESeCore version:
- *      AuthorizationDeniedException.java 439 2011-03-04 16:50:41Z tomas
- * 
  * @version $Id$
  */
 @WebFault

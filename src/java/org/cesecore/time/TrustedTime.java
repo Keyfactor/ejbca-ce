@@ -20,9 +20,6 @@ import java.util.Date;
  * provides information related to thhe trusted time source: accuracy and
  * stratum
  * 
- * Based on CESeCore version:
- *      TrustedTime.java 858 2011-05-25 09:22:16Z johane
- * 
  * @version $Id$
  */
 public class TrustedTime implements Serializable {

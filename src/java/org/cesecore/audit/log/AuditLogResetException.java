@@ -13,9 +13,6 @@
 package org.cesecore.audit.log;
 
 /**
- * Based on CESeCore version:
- *      AuditLogResetException.java 907 2011-06-22 14:42:15Z johane
- * 
  * @version $Id$
  */
 public class AuditLogResetException extends Exception {

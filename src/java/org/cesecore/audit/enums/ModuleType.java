@@ -17,9 +17,6 @@ package org.cesecore.audit.enums;
  * Interface used to describe the available Module Types. 
  * Created to allow extension of the current defined types.
  * 
- * Based on CESeCore version:   
- *      ModuleType.java 919 2011-07-01 11:19:33Z filiper
- * 
  * @version $Id$
  */
 public interface ModuleType extends ConstantType<ModuleType> {

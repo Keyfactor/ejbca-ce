@@ -25,11 +25,6 @@ import org.ietf.ldap.LDAPDN;
 /**
  * A class used to retrieve different fields from a Distinguished Name or Subject Alternate Name or Subject Directory Attributes strings.
  * 
- * Based on EJBCA version: 
- *      DNFieldExtractor.java 11094 2011-01-07 15:01:12Z anatom
- * Based on CESeCore version:
- *      DNFieldExtractor.java 94 2011-01-14 11:44:38Z tomas
- * 
  * @version $Id$
  */
 public class DNFieldExtractor implements java.io.Serializable {

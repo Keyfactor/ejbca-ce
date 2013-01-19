@@ -16,9 +16,6 @@ package org.cesecore.audit.enums;
 /**
  * Representation of an event log type.
  * 
- * Based on CESeCore version:
- *      EventType.java 919 2011-07-01 11:19:33Z filiper
- * 
  * @version $Id$
  */
 public interface EventType extends ConstantType<EventType> {}

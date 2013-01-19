@@ -73,9 +73,6 @@ import org.cesecore.keys.token.CryptoToken;
  * third field is the keyid used, so different rows can be protected with different keys (key rollover etc) The fourth field is the protection itself,
  * hmac, digital signature etc.
  * 
- * Based on CESeCore version:
- *	  ProtectedData.java 897 2011-06-20 11:17:25Z johane
- * 
  * @version $Id$
  */
 public abstract class ProtectedData {

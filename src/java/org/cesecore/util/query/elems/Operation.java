@@ -17,8 +17,6 @@ import org.cesecore.util.query.Elem;
 /**
  * Operation is a combination of Terms. Terms are logiclly related by logical operators @see LogicOperator
  * 
- * Based on CESeCore version: Operation.java 1225 2011-10-17 15:44:50Z filiper
- * 
  * @version $Id$
  */
 public final class Operation implements Elem {

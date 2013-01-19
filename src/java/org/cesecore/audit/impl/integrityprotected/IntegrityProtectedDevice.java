@@ -68,9 +68,6 @@ import org.cesecore.util.query.QueryCriteria;
  * This implementation makes this information available via AuditRecordData.getRowProtection() and this is also
  * included in exported log files.
  * 
- * Based on CESeCore version:
- *      IntegrityProtectedDevice.java 929 2011-07-05 11:54:28Z johane
- * 
  * @version $Id$
  */
 public class IntegrityProtectedDevice implements AuditLogDevice {

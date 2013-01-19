@@ -25,9 +25,6 @@ import java.util.Map;
  * 
  * Stored Strings in the input are stored as Base64 encoded strings.  
  * 
- * Based on CESeCore version:
- *      XmlSerializer.java 948 2011-07-18 09:04:26Z mikek
- * 
  * @version $Id$
  */
 public class XmlSerializer {

@@ -41,9 +41,6 @@ import org.cesecore.util.XmlSerializer;
  * The following index is recommended as a minimum:
  * create unique index auditrecorddata_idx1 on AuditRecordData (nodeId,timeStamp,sequenceNumber);
  * 
- * Based on CESeCore version:
- *      AuditRecordData.java 910 2011-06-23 07:22:28Z johane
- * 
  * @version $Id$
  */
 @Entity

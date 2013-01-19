@@ -22,9 +22,6 @@ import org.cesecore.audit.enums.ServiceType;
 /**
  * Stored log dta that should be searchable should implement this interface.
  * 
- * Based on CESeCore version:
- *      AuditLogEntry.java 907 2011-06-22 14:42:15Z johane 
- * 
  * @version $Id$
  */
 public interface AuditLogEntry {

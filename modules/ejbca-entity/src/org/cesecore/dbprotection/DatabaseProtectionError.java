@@ -18,9 +18,6 @@ package org.cesecore.dbprotection;
  * An exception thrown when there is an error with database protection, this error is fatal and should lead to 
  * application not working, thus the use of RuntimeException.
  *
- * Based on CESeCore version:
- *      DatabaseProtectionError.java 897 2011-06-20 11:17:25Z johane
- *  
  * @version $Id$
  */
 public class DatabaseProtectionError extends RuntimeException {

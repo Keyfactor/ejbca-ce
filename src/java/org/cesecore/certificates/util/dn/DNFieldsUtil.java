@@ -25,9 +25,6 @@ import org.apache.log4j.Logger;
  * Not built to handle '+' char separators or take special consideration to Unicode.
  * Current implementation will treat unescaped '=' in values as ok (backwards compatible).
  * 
- * Based on CESeCore version:
- *      DNFieldsUtil.java 858 2011-05-25 09:22:16Z johane
- * 
  * @version $Id$
  */
 public abstract class DNFieldsUtil {

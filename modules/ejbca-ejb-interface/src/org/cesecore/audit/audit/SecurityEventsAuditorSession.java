@@ -31,9 +31,6 @@ import org.cesecore.util.query.QueryCriteria;
  * ://www.cesecore.eu/mediawiki/index.php/Functional_Specifications_
  * (ADV_FSP)#Audit_Security_Events}
  * 
- * Based on CESeCore version:
- *      SecurityEventsAuditorSession.java 929 2011-07-05 11:54:28Z johane
- * 
  * @version $Id$
  */
 public interface SecurityEventsAuditorSession {

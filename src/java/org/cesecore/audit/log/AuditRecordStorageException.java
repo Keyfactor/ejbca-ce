@@ -17,9 +17,6 @@ import javax.ejb.ApplicationException;
 /**
  * Handles secure audit log storage exceptions
  * 
- * Based on CESeCore version:
- *      AuditRecordStorageException.java 207 2011-01-31 13:36:36Z tomas
- * 
  * @version $Id$
  * 
  */
