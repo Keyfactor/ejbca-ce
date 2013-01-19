@@ -19,8 +19,6 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
  * 
  * See {@link https://www.cesecore.eu/mediawiki/index.php/Functional_Specifications_(ADV_FSP)#Access_Control_2}
  * 
- * Based on cesecore: AccessControlSession.java 956 2011-02-25 09:46:38Z tomas
- * 
  * @version $Id$
  * 
  */

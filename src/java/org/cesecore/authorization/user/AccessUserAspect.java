@@ -18,9 +18,6 @@ import java.io.Serializable;
 /**
  * Interface for AccessUserAspectData.  
  * 
- * Based on cesecore:
- *      AccessUserAspect.java 948 2011-07-18 09:04:26Z mikek
- * 
  * @version $Id$
  *
  */

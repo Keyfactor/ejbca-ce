@@ -25,9 +25,6 @@ import org.cesecore.roles.RoleNotFoundException;
 /**
  * Local interface for RoleManagementSession.
  * 
- * Based on cesecore version:
- *      RoleManagementSessionLocal.java 506 2011-03-10 12:46:42Z tomas
- * 
  * @version $Id$
  *
  */

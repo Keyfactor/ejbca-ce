@@ -24,8 +24,6 @@ import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
  * 
  * Example usage: AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Internal function abc"));
  * 
- * Based on cesecore version: AlwaysAllowLocalAuthenticationToken.java 948 2011-07-18 09:04:26Z mikek
- * 
  * @version $Id$
  */
 public class AlwaysAllowLocalAuthenticationToken extends LocalJvmOnlyAuthenticationToken {

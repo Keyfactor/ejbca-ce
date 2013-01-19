@@ -24,9 +24,6 @@ import org.junit.Test;
 /**
  * Functional tests for the AccessUserAspectManagerSessionBean class.
  * 
- * Based on cesecore version:
- *      AccessUserAspectManagerSessionBeanTest.java 533 2011-03-14 12:51:39Z tomas
- * 
  * @version $Id$
  * 
  */

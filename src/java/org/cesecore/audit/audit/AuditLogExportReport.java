@@ -16,9 +16,6 @@ package org.cesecore.audit.audit;
  * When we export logs we also validate them. This is an extension of the
  * validation report where the resulting exported files are available.
  * 
- * Based on cesecore:
- *      AuditLogExportReport.java 907 2011-06-22 14:42:15Z johane
- * 
  * @version $Id$
  */
 public class AuditLogExportReport extends AuditLogValidationReport {

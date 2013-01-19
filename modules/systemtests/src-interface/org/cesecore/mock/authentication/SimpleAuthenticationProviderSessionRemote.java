@@ -22,9 +22,6 @@ import org.cesecore.authentication.tokens.AuthenticationProvider;
  * 
  * TODO: Remove me when proper authentication infrastructure falls into place.
  * 
- * Based on cesecore version:
- *      SimpleAuthenticationProviderRemote.java 841 2011-05-19 14:14:29Z johane
- * 
  * @version $Id$
  */
 @Remote

@@ -39,8 +39,6 @@ import org.cesecore.util.ValidityDate;
  * Custom properties for each device is reformatted. E.g. "securityeventsaudit.deviceproperty.1.key1.key2=value" is available to the log device
  * implementation 1 as "key1.key2=value"
  * 
- * Based on cesecore: AuditDevicesConfig.java 907 2011-06-22 14:42:15Z johane
- * 
  * @version $Id$
  */
 public class AuditDevicesConfig {

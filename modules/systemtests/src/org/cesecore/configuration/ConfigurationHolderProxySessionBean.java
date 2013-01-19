@@ -20,9 +20,6 @@ import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.jndi.JndiConstants;
 
 /**  
- * Based on cesecore version:
- *      ConfigurationHolderProxySessionBean.java 948 2011-07-18 09:04:26Z mikek
- * 
  * @version $Id$
  *
  */

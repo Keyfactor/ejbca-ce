@@ -27,11 +27,6 @@ import org.junit.Test;
 /**
  * Tests the ExtendedKeyUsageConfiguration class
  * 
- * Based on EJBCA version: 
- *      ExtendedKeyUsageConfTest.java 11086 2011-01-07 10:44:04Z anatom
- * Based on cesecore version:   
- *      ExtendedKeyUsageConfTest.java 823 2011-05-18 14:24:50Z mikek
- * 
  * @version $Id$
  */
 public class ExtendedKeyUsageConfTest {

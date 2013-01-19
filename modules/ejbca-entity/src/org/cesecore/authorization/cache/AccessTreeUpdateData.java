@@ -29,9 +29,6 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
  * Especially in a cluster this is used in order to avoid rebuilding the internal access tree unless it has changed.
  * I.e. this is for efficiency reasons, since building to complete access tree requires multiple database accesses and some processing.
  *  
- * Based on cesecore version:
- *      AccessTreeUpdateData.java 459 2011-03-07 12:31:15Z tomas
- *  
  * @version $Id$
  */
 @Entity

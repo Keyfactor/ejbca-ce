@@ -15,9 +15,6 @@ package org.cesecore.certificates;
 /**
  * RuntimeException thrown when an error is encountered during certificate creation.
  * 
- * Based on cesecore version: 
- *      CertificateCreationException.java 124 2011-01-20 14:41:21Z tomas
- * 
  * @version $Id$
  *
  */

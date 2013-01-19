@@ -22,11 +22,6 @@ import javax.xml.ws.WebFault;
  * non-critical application exceptions they may be possible to handle: <code> try { . . . } catch
  * (EjbcaException e) { error("Error: blahblah", e); ... }</code>
  *
- * Based on EJBCA version: 
- *      EjbcaException.java 11201 2011-01-15 10:23:15Z anatom
- * CESeCore version:
- *       CesecoreException.java 123 2011-01-20 14:40:53Z tomas 
- * 
  * @version $Id$
  *
  */

@@ -29,9 +29,6 @@ import org.cesecore.util.query.QueryCriteria;
 /**
  * Interface for querying, validating and exporting log.
  * 
- * Based on cesecore:
- *      Auditable.java 929 2011-07-05 11:54:28Z johane
- * 
  * @version $Id$
  */
 public interface Auditable {

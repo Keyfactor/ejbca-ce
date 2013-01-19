@@ -26,9 +26,6 @@ import org.junit.Test;
 /**
  * Test XML exporter implementation.
  * 
- * Based on cesecore version:
- *      AuditExporterXmlTest.java 948 2011-07-18 09:04:26Z mikek
- * 
  * @version $Id$
  */
 public class AuditExporterXmlTest {

@@ -66,8 +66,6 @@ import org.cesecore.util.ProfileID;
 /**
  * Implementation of the RoleManagementSession interface.
  * 
- * Based on cesecore version: RoleManagementSessionBean.java 925 2011-07-04 11:41:17Z mikek
- * 
  * @version $Id$
  * 
  */

@@ -23,11 +23,6 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 /**
  * Maintains an access tree in memory
  * 
- * Based on EJBCA version:
- *      AccessTree.java 9993 2010-09-27 07:12:52Z anatom
- * Based on cesecore version:
- *      AccessTree.java 790 2011-05-16 14:45:05Z johane
- * 
  * @version $Id$
  * 
  */

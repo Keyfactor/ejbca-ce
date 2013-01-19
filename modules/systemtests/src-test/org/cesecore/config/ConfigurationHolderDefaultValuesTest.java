@@ -20,9 +20,6 @@ import org.junit.Test;
 /**
  * Functional tests to check that the ConfigurationHolder can find its values when deployed in the AS.  
  * 
- * Based on cesecore version:
- *      ConfigurationHolderDefaultValuesTest.java 948 2011-07-18 09:04:26Z mikek
- * 
  * @version $Id$
  * 
  */

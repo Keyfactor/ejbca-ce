@@ -23,9 +23,6 @@ import org.cesecore.roles.RoleNotFoundException;
 /**
  * Remote interface for RoleManagementSession
  * 
- * Based on cesecore version:
- *      RoleInitializationSessionRemote.java 506 2011-03-10 12:46:42Z tomas
- * 
  * @version $Id$
  *
  */

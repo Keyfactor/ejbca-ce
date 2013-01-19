@@ -15,9 +15,6 @@ package org.cesecore.roles;
 /**
  * Thrown when trying to access a role which doesn't exist.
  * 
- * Based on cesecore version:
- *      RoleNotFoundException.java 506 2011-03-10 12:46:42Z tomas
- * 
  * @version $Id$
  * 
  */

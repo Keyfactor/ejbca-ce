@@ -17,9 +17,6 @@ import javax.ejb.ApplicationException;
 /**
  * Error during export of secure audit log events.
  * 
- * Based on cesecore:
- *      AuditLogExporterException.java 897 2011-06-20 11:17:25Z johane
- * 
  * @version $Id$
  */
 @ApplicationException(rollback=true)

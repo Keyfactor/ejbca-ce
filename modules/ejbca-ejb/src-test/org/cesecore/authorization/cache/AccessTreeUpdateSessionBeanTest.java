@@ -26,9 +26,6 @@ import org.junit.Test;
 /**
  * Unit tests for AccessTreeUpdateSessionBean
  * 
- * Based on cesecore version:
- *      AccessTreeUpdateSessionBeanTest.java 207 2011-01-31 13:36:36Z tomas
- * 
  * @version $Id$
  * 
  */

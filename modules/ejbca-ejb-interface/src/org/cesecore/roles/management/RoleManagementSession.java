@@ -38,8 +38,6 @@ import org.cesecore.roles.RoleNotFoundException;
  * 
  * See {@link https://www.cesecore.eu/mediawiki/index.php/Functional_Specifications_(ADV_FSP)#Roles_Management}
  * 
- * Based on cesecore version: RoleManagementSession.java 621 2011-03-18 10:18:26Z tomas
- * 
  * @version $Id$
  * 
  */

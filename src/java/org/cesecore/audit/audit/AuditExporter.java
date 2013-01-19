@@ -26,9 +26,6 @@ import java.io.OutputStream;
  * 2c. writeEndObject()
  * 3. close()
  * 
- * Based on cesecore:
- *      AuditExporter.java 907 2011-06-22 14:42:15Z johane
- * 
  * @version $Id$
  */
 public interface AuditExporter {

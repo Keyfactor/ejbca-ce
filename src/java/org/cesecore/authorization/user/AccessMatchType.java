@@ -16,8 +16,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Based on cesecore: AccessMatchType.java 191 2011-01-28 15:12:56Z mikek
- * 
  * @version $Id$
  * 
  */

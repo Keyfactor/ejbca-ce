@@ -18,9 +18,6 @@ import java.security.Principal;
 /**
  * The representation of a user name.  
  * 
- * Based on cesecore version:
- *      UsernamePrincipal.java 948 2011-07-18 09:04:26Z mikek
- * 
  * @version $Id$
  */
 public class UsernamePrincipal implements Principal, Serializable {

@@ -24,9 +24,6 @@ import org.cesecore.jndi.JndiConstants;
 /**
  * Test session bean giving access to the local-only interface of AccessRuleManagementSessionBean, from remote EJB.
  * 
- * Based on cesecore version:
- *      AccessRuleManagementTestSessionBean.java 475 2011-03-09 09:54:43Z tomas
- * 
  * @version $Id$
  * 
  */

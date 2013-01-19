@@ -22,9 +22,6 @@ import java.util.Set;
  * 
  * TODO: Make proper hashcode/compare methods.
  * 
- * Based on cesecore version:
- *      AuthenticationSubject.java 508 2011-03-10 13:34:41Z mikek
- * 
  * @version $Id$
  * 
  */

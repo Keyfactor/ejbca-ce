@@ -19,8 +19,6 @@ import javax.ejb.Local;
 /**
  * Local interface for AccessRuleManagement
  * 
- * Based on cesecore version: AccessRuleManagementSessionLocal.java 461 2011-03-08 09:40:15Z tomas
- * 
  * @version $Id$
  * 
  */

@@ -24,11 +24,6 @@ import java.io.Serializable;
  * }
  * </pre>
  * 
- * Based on EJBCA version: 
- *      ErrorCode.java 9196 2010-06-14 13:21:04Z aveen4711
- * CESeCore version:
- *      ErrorCode.java 123 2011-01-20 14:40:53Z tomas
- * 
  * @version $Id$
  */
 public class ErrorCode implements Serializable {

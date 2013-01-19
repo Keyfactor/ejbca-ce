@@ -47,9 +47,6 @@ import org.junit.Test;
 /**
  * Functional tests for AccessControlSessionBean
  * 
- * Based on cesecore version:
- *      AccessControlSessionBeanTest.java 506 2011-03-10 12:46:42Z tomas
- * 
  * @version $Id$
  * 
  */

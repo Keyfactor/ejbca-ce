@@ -13,9 +13,6 @@
 package org.cesecore.authorization.user;
 
 /**
- * Based on cesecore version:
- *      AccessUserAspectExistsException.java 207 2011-01-31 13:36:36Z tomas
- * 
  * @version $Id$
  *
  */

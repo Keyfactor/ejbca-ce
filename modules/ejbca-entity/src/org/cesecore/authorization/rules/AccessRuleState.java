@@ -16,9 +16,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Based on cesecore version:
- *      AccessRuleState.java 229 2011-02-03 10:23:18Z mikek
- * 
  * @version $Id$
  * 
  */

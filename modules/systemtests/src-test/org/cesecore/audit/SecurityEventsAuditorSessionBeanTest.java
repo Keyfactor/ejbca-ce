@@ -51,9 +51,6 @@ import org.junit.Test;
 /**
  * Security auditor logs auditor functional tests;
  * 
- * Based on cesecore version:
- *      SecurityEventsAuditorSessionBeanTest.java 929 2011-07-05 11:54:28Z johane
- * 
  * @version $Id$
  * 
  */

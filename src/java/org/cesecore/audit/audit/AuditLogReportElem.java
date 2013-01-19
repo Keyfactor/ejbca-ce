@@ -19,9 +19,6 @@ import java.util.List;
 /**
  * A sub-element of a AuditLogValidationReport representing an error or warning.
  * 
- * Based on cesecore:
- *       AuditLogReportElem.java 897 2011-06-20 11:17:25Z johane
- *       
  * @version $Id$
  */
 public class AuditLogReportElem implements Serializable {

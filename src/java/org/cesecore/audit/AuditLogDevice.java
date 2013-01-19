@@ -19,9 +19,6 @@ import org.cesecore.audit.log.AuditLogResetException;
 /**
  * Interface for Secure Audit Log device that can be logged to or read from.
  * 
- * Based on cesecore:
- *      AuditLogDevice.java 907 2011-06-22 14:42:15Z johane 
- * 
  * @version $Id$
  */
 public interface AuditLogDevice extends Auditable, AuditLogger {

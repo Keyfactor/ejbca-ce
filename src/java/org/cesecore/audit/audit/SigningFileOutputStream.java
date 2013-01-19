@@ -39,9 +39,6 @@ import org.cesecore.util.Base64;
  * 
  * The signature is written as raw data to a separate file with the extension ".sig".
  * 
- * Based on cesecore:
- *      SigningFileOutputStream.java 907 2011-06-22 14:42:15Z johane 
- * 
  * @version $Id$
  */
 /* TODO: Rename/move to org.cesecore.audit.impl.BasicSigningFileOutputStream

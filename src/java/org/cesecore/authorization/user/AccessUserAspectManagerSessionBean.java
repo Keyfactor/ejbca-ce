@@ -31,9 +31,6 @@ import org.cesecore.util.ValueExtractor;
 /**
  * Implementation of AccessUserAspectManagerSession
  * 
- * Based on cesecore version:
- *      AccessUserAspectManagerSessionBean.java 937 2011-07-14 15:57:25Z mikek
- * 
  * @version $Id$
  * 
  */

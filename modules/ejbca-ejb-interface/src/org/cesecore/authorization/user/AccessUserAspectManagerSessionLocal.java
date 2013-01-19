@@ -22,9 +22,6 @@ import org.cesecore.roles.RoleData;
 /**
  * Local interface for AccessUserAspectSession
  * 
- * Based on cesecore version:
- *      AccessUserAspectManagerSessionLocal.java 937 2011-07-14 15:57:25Z mikek
- * 
  * @version $Id$
  *
  */

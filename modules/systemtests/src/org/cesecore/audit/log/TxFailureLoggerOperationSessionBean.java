@@ -30,9 +30,6 @@ import org.cesecore.jndi.JndiConstants;
 /**
  * Dummy bean to test that log is not saved when an Exception is thrown.
  *
- * Based on cesecore version:
- *      TxFailureLoggerOperationSessionBean.java 897 2011-06-20 11:17:25Z johane
- *
  * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "TxFailureLoggerOperationSessionRemote")

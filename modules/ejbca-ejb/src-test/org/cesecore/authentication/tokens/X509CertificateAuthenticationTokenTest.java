@@ -53,9 +53,6 @@ import org.junit.Test;
  * Unit tests for the X509CertificateAuthenticationToken class. Note that this test class subverts the unit test concept slightly by using 'real'
  * certificates.
  * 
- * Based on cesecore version:
- *      X509CertificateAuthenticationTokenTest.java 937 2011-07-14 15:57:25Z mikek
- * 
  * @version $Id$
  * 
  */

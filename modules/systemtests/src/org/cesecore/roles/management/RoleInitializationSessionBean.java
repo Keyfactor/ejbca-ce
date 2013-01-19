@@ -25,9 +25,6 @@ import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 
 /**
- * Based on cesecore version:
- *      RoleInitializationSessionBean.java 506 2011-03-10 12:46:42Z tomas
- * 
  * @version $Id$
  * 
  */

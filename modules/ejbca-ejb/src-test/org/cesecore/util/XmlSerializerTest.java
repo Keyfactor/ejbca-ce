@@ -22,9 +22,6 @@ import org.junit.Test;
 /**
  * Test that XML serialization works as expected.
  * 
- * Based on cesecore version:
- *      XmlSerializerTest.java 948 2011-07-18 09:04:26Z mikek
- * 
  * @version $Id$
  */
 public class XmlSerializerTest {
