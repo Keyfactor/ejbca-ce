@@ -117,7 +117,7 @@ public class AuditorManagedBean implements Serializable {
 		columnNameMap.put(AuditLogEntry.FIELD_NODEID, ejbcaWebBean.getText("NODE"));
 		columnNameMap.put(AuditLogEntry.FIELD_SEARCHABLE_DETAIL1, ejbcaWebBean.getText("CERTIFICATE"));
 		columnNameMap.put(AuditLogEntry.FIELD_SEARCHABLE_DETAIL2, ejbcaWebBean.getText("USERNAME_ABBR"));
-		//columnNameMap.put(AuditLogEntry.FIELD_SEQENCENUMBER, ejbcaWebBean.getText("SEQENCENUMBER"));
+		//columnNameMap.put(AuditLogEntry.FIELD_SEQUENCENUMBER, ejbcaWebBean.getText("SEQUENCENUMBER"));
 		//columnNameMap.put(AuditLogEntry.FIELD_SERVICE, ejbcaWebBean.getText("SERVICE"));
 		columnNameMap.put(AuditLogEntry.FIELD_TIMESTAMP, ejbcaWebBean.getText("TIMESTAMP"));
 		for (final Entry<String,String> entry : columnNameMap.entrySet()) {
@@ -289,7 +289,7 @@ public class AuditorManagedBean implements Serializable {
 				|| AuditLogEntry.FIELD_NODEID.equals(conditionColumn)
 				|| AuditLogEntry.FIELD_SEARCHABLE_DETAIL1.equals(conditionColumn)
 				|| AuditLogEntry.FIELD_SEARCHABLE_DETAIL2.equals(conditionColumn)
-				|| AuditLogEntry.FIELD_SEQENCENUMBER.equals(conditionColumn)) {
+				|| AuditLogEntry.FIELD_SEQUENCENUMBER.equals(conditionColumn)) {
 			setConditionToAdd(new AuditSearchCondition(conditionColumn, Condition.EQUALS, ""));
 		} else if (AuditLogEntry.FIELD_CUSTOM_ID.equals(conditionColumn)) {
 			List<SelectItem> caIds = new ArrayList<SelectItem>();
@@ -590,7 +590,7 @@ public class AuditorManagedBean implements Serializable {
         auditExporter.writeStartObject();
         auditExporter.writeField("pk", auditRecordData.getPk());
         auditExporter.writeField(AuditLogEntry.FIELD_NODEID, auditRecordData.getNodeId());
-        auditExporter.writeField(AuditLogEntry.FIELD_SEQENCENUMBER, auditRecordData.getSequenceNumber());
+        auditExporter.writeField(AuditLogEntry.FIELD_SEQUENCENUMBER, auditRecordData.getSequenceNumber());
         auditExporter.writeField(AuditLogEntry.FIELD_TIMESTAMP, auditRecordData.getTimeStamp());
         auditExporter.writeField(AuditLogEntry.FIELD_EVENTTYPE, auditRecordData.getEventTypeValue().toString());
         auditExporter.writeField(AuditLogEntry.FIELD_EVENTSTATUS, auditRecordData.getEventStatusValue().toString());
