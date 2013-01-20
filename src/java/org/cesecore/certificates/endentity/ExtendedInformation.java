@@ -33,8 +33,6 @@ import org.cesecore.util.ValidityDate;
  * 
  * TODO: Clean out whatever final static variables which aren't externally references.
  * 
- * Based on EJBCA version: ExtendedInformation.java 10633 2010-11-22 13:09:38Z anatom
- * 
  * @version $Id$
  *
  */

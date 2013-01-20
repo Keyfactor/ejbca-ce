@@ -37,8 +37,6 @@ import org.cesecore.certificates.ca.SignRequestException;
  * byte[] responseMessage = resp.getResponseMessage(); 
  * </code>
  *
- * Based on EJBCA version: IResponseMessage.java 10365 2010-11-04 10:11:23Z anatom
- * 
  * @version $Id$
  */
 public interface ResponseMessage extends Serializable {

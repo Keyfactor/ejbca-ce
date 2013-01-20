@@ -35,8 +35,6 @@ import org.cesecore.util.QueryResultWrapper;
 /**
  * Representation of a certificate profile (template).
  * 
- * Based on EJBCA version: CertificateProfileData.java 11161 2011-01-12 12:24:34Z anatom
- * 
  * @version $Id$
  */
 @Entity

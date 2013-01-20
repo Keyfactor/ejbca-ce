@@ -27,8 +27,6 @@ import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
  * The Sets of Principals and credentials contained within this class will correspond to the subset of those found in the Subject class submitted for
  * authentication used for that process.
  * 
- * Based on AuthenticationToken.java 937 2011-07-14 15:57:25Z mikek from cesecore
- * 
  * @version $Id$
  * 
  */

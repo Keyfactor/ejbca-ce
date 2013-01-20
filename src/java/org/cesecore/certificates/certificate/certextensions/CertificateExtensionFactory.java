@@ -52,8 +52,6 @@ import org.cesecore.util.CertTools;
  * 
  * It also keep a list of standard (not custom) built in extensions.
  *
- * Based on EJBCA version: CertificateExtensionFactory.java 10397 2010-11-08 14:18:57Z anatom
- * 
  * @version $Id$
  */
 public class CertificateExtensionFactory {

@@ -100,8 +100,6 @@ import org.junit.Test;
 
 /**
  * 
- * Based on OcspUtilTest.java 9435 2010-07-14 15:18:39Z mikekushner
- * 
  * @version $Id$
  * 
  */

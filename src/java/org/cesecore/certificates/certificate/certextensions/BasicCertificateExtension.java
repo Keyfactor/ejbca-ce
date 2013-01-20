@@ -60,8 +60,6 @@ import org.cesecore.internal.InternalResources;
  *
  * See documentation for more information.
  * 
- * Based on EJBCA version: BasicCertificateExtension.java 10397 2010-11-08 14:18:57Z anatom
- * 
  * @version $Id$
  */
 public class BasicCertificateExtension extends CertificateExtension {

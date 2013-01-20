@@ -18,8 +18,6 @@ import org.cesecore.CesecoreException;
 /**
  * An exception thrown when someone tries to change or create a CA that doesn't already exits
  *
- * Based on EJBCA version: CAExistsException.java 8373 2009-11-30 14:07:00Z jeklund
- * 
  * @version $Id$
  */
 public class CAExistsException extends CesecoreException {

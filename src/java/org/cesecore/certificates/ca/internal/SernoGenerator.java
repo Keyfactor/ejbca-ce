@@ -19,8 +19,6 @@ import java.security.NoSuchAlgorithmException;
 /**
  * Interface for a serial number generator.
  *
- * Based on EJBCA version: ISernoGenerator.java 8373 2009-11-30 14:07:00Z jeklund
- * 
  * @version $Id$
  */
 public interface SernoGenerator {

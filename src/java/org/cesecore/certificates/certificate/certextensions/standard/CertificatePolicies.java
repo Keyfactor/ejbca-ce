@@ -43,8 +43,6 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
  * Class for standard X509 certificate extension. 
  * See rfc3280 or later for spec of this extension.
  * 
- * Based on EJBCA version: CertificatePolicies.java 11883 2011-05-04 08:52:09Z anatom $
- * 
  * @version $Id$
  */
 public class CertificatePolicies extends StandardCertificateExtension {

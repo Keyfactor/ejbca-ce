@@ -21,8 +21,6 @@ import org.cesecore.keys.token.CryptoToken;
 /**
  * Class for printing properties (for debug purposes) without revealing any pin properties in the log file
  * 
- * Based on EJBCA version: CATokenContainerImpl.java 10397 2010-11-08 14:18:57Z anatom $
- * 
  * @version $Id$
  */
 public class PropertiesWithHiddenPIN extends Properties {

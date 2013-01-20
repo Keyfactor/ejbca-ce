@@ -23,8 +23,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
  * init should call setOID and setCriticalFlag from the super class.
  * Implementing class must have a default constructor, calling super constructor.
  * 
- * Based on EJBCA version: StandardCertificateExtension.java 11096 2011-01-07 16:06:28Z anatom
- * 
  * @version $Id$
  */
 public abstract class StandardCertificateExtension extends CertificateExtension {

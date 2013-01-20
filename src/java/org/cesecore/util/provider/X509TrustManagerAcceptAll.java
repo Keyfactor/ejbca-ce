@@ -22,10 +22,7 @@ import javax.net.ssl.X509TrustManager;
  * Could be us used when you are fetching things from the server that are signed by the server (like certificates).
  * The class must not be used on the server side.
  *
- * Based on X509TrustManagerAcceptAll.java 8373 2009-11-30 14:07:00Z jeklund from cesecore
- * 
  * @version  $Id$
- *
  */
 public class X509TrustManagerAcceptAll implements X509TrustManager {
 

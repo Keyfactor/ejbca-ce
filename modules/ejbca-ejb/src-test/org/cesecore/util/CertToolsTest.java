@@ -91,8 +91,6 @@ import com.novell.ldap.LDAPDN;
 /**
  * Tests the CertTools class .
  * 
- * Based on EJBCA version: CertToolsTest.java 10951 2010-12-22 12:11:12Z anatom
- * 
  * @version $Id$
  */
 public class CertToolsTest {

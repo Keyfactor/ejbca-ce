@@ -68,10 +68,6 @@ import org.junit.Test;
 /**
  * Tests certificate store.
  *
- * Based on EJBCA version: CertificateDataTest.java 11280 2011-01-28 15:42:09Z jeklund
- * 
- * With all tests for CertReqHistory removed.
- * 
  * @version $Id$
  */
 public class CertificateStoreSessionTest extends RoleUsingTestCase {

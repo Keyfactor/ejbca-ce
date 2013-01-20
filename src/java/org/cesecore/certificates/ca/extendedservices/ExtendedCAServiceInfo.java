@@ -18,8 +18,6 @@ import java.io.Serializable;
  * Should be inherited by all ExtendedCAServiceInfo Value objects. These classes are used to retrieve general information about the service and also
  * used to send parameters to the service when creating it.
  * 
- * Based on EJBCA version: ExtendedCAServiceInfo.java 8616 2010-02-03 16:03:01Z jeklund $
- * 
  * @version $Id$
  */
 public abstract class ExtendedCAServiceInfo implements Serializable {

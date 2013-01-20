@@ -19,8 +19,6 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 
 /** Session bean storing and retrieving CRLs
  * 
- * Based on EJBCA version: CrlSession.java 11143 2011-01-11 15:32:31Z jeklund
- * 
  * @version $Id$
  */
 public interface CrlStoreSession {

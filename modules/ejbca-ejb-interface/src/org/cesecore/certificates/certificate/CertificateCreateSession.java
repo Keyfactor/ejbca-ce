@@ -25,8 +25,6 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 /**
  * Interface for creating certificates
  *
- * Based on EJBCA version: SignSession.java 11374 2011-02-19 08:12:26Z anatom
- * 
  * Only one method from this bean is used.
  * 
  * @version $Id$

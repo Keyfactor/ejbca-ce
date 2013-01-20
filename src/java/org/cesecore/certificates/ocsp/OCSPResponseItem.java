@@ -22,8 +22,6 @@ import org.bouncycastle.cert.ocsp.CertificateStatus;
 /**
  * Class used to encapsulate the data that goes into a OCSP response
  * 
- * Based on OCSPResponseItem.java 10328 2010-10-29 09:34:36Z anatom
- * 
  * @version $Id$
  */
 public class OCSPResponseItem implements Serializable {

@@ -18,8 +18,6 @@ import java.util.Date;
 /**
  * Holds information about a CRL but not he CRL itself.
  *
- * Based on EJBCA version: CRLInfo.java 8373 2009-11-30 14:07:00Z jeklund
- * 
  * @version $Id$
  */
 public class CRLInfo implements Serializable {

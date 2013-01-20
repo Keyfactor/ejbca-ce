@@ -25,8 +25,6 @@ import org.cesecore.util.Base64GetHashMap;
  * UpgradeableDataHashMap is an class implementing the IUpgradeableData intended to be extended by
  * classes saving it's data to a database in BLOB/CLOB form.
  *
- * Based on EJBCA version: UpgradeableDataHashMap.java 11075 2011-01-07 07:40:42Z anatom
- * 
  * @version $Id$
  *
  * @see org.cesecore.internal.IUpgradeableData
