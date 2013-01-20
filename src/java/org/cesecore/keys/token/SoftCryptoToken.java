@@ -45,9 +45,6 @@ import org.cesecore.util.StringTools;
 /**
  * Handles maintenance of the soft devices producing signatures and handling the private key and stored in database.
  * 
- * CESeCore version:
- *      SoftCryptoToken.java 477 2011-03-09 12:55:57Z mikek
- * 
  * @version $Id$
  */
 public class SoftCryptoToken extends BaseCryptoToken {

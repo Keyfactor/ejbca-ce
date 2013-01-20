@@ -99,9 +99,6 @@ import org.ejbca.cvc.PublicKeyEC;
 /**
  * Tools to handle common key and keystore operations.
  * 
- * CESeCore version:
- *      KeyTools.java 733 2011-05-02 10:41:57Z tomas
- * 
  * @version $Id$
  */
 public final class KeyTools {

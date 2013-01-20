@@ -38,8 +38,6 @@ public final class CAConstants {
      * Constants used in the SignSessionBean indicating the userdata defined CA should be used.
      */
     public static final int CAID_USEUSERDEFINED = 0;
-    
-   
 
     /** Used in profiles and service workers to make the catch all every CA instead of listing individual CAs when operating on them */
     public static final int ALLCAS = 1;

@@ -19,11 +19,6 @@ package org.cesecore.internal;
  * be the collection saved to the database. This is to avoid serialization problems when upgrading
  * the class.
  *
- * Based on EJBCA version: 
- *      IUpgradeableData.java 11075 2011-01-07 07:40:42Z anatom
- * CESeCore version:
- *      IUpgradeableData.java 73 2011-01-07 17:13:52Z tomas
- * 
  * @version $Id$
  */
 public interface IUpgradeableData {

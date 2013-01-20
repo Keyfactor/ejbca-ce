@@ -24,9 +24,6 @@ import org.cesecore.internal.InternalResources;
  * Class managing available Crypto Tokens and instantiated Crypto Tokens. 
  * Each CryptoToken plug-in should register itself by using the method register.
  * 
- * CESeCore version:
- *      CryptoTokenFactory.java 577 2011-03-16 12:26:39Z tomas
- * 
  * @version $Id$
  */
 public class CryptoTokenFactory {

@@ -19,11 +19,6 @@ import org.cesecore.ErrorCode;
 /**
  * An exception thrown when someone tries to use a CA Token that isn't available
  *
- * Based on EJBCA version: 
- *      CryptoTokenOfflineException.java 8373 2009-11-30 14:07:00Z jeklund
- * CESeCore version:
- *      CryptoTokenOfflineException.java 922 2011-07-04 09:01:47Z mikek
- * 
  * @version $Id$
  */
 public class CryptoTokenOfflineException extends CesecoreException {
