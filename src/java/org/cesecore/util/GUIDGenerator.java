@@ -18,7 +18,6 @@ import org.apache.log4j.Logger;
 /**
  * Shamelessly ripped from generated XDoclet source, because I don't want to generate util classes.
  * 
- * @author XDoclet.sf.net
  * @version $Id$
  */
 public class GUIDGenerator {
@@ -37,7 +36,7 @@ public class GUIDGenerator {
      * Usage: Add an id field (type java.lang.String) to your EJB, and add setId(XXXUtil.generateGUID(this)); to the ejbCreate method.
      */
     public static final String generateGUID(Object o) {
-        StringBuffer tmpBuffer = new StringBuffer(16);
+
         if (hexServerIP == null) {
             java.net.InetAddress localInetAddress = null;
             try {
@@ -52,17 +51,15 @@ public class GUIDGenerator {
             hexServerIP = hexFormat(getInt(serverIP), 8);
         }
 
-        String hashcode = hexFormat(System.identityHashCode(o), 8);
-        tmpBuffer.append(hexServerIP);
-        tmpBuffer.append(hashcode);
-
+        final String hashcode = hexFormat(System.identityHashCode(o), 8);
         long timeNow = System.currentTimeMillis();
         int timeLow = (int) timeNow & 0xFFFFFFFF;
         int node = seeder.nextInt();
+        final StringBuilder guid = new StringBuilder(32);
 
-        StringBuffer guid = new StringBuffer(32);
         guid.append(hexFormat(timeLow, 8));
-        guid.append(tmpBuffer.toString());
+        guid.append(hexServerIP);
+        guid.append(hashcode);
         guid.append(hexFormat(node, 8));
         return guid.toString();
     }
@@ -79,12 +76,12 @@ public class GUIDGenerator {
     }
 
     private static String hexFormat(int i, int j) {
-        String s = Integer.toHexString(i);
+        final String s = Integer.toHexString(i);
         return padHex(s, j) + s;
     }
 
     private static String padHex(String s, int i) {
-        StringBuffer tmpBuffer = new StringBuffer();
+        final StringBuilder tmpBuffer = new StringBuilder();
         if (s.length() < i) {
             for (int j = 0; j < i - s.length(); j++) {
                 tmpBuffer.append('0');
