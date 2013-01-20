@@ -13,11 +13,6 @@
 package org.cesecore.keys.token;
 
 /**
- * Based on EJBCA version: 
- *      CATokenConstants.java 8629 2010-02-08 15:47:15Z jeklund
- * CESeCore version:
- *      CryptoTokenConstants.java 389 2011-03-01 14:56:15Z tomas
- * 
  * @version $Id$
  */
 public final class CryptoTokenConstants {

@@ -62,11 +62,6 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 
 /**
- * Based on EJBCA version: 
- *      KeyStoreContainerBase.java 8626 2010-02-08 09:40:47Z anatom
- * CESeCore version:
- *      KeyStoreTools.java 278 2011-02-18 09:48:41Z tomas 
- * 
  * @version $Id$
  */
 public class KeyStoreTools {

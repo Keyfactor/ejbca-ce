@@ -18,11 +18,6 @@ import org.cesecore.CesecoreException;
 /**
  * An exception thrown when authentication to HardCATokens fail.
  *
- * Based on EJBCA's: 
- *      CryptoTokenAuthenticationFailedException.java 8373 2009-11-30 14:07:00Z jeklund
- * CESeCore version: 
- *      CryptoTokenAuthenticationFailedException.java 790 2011-05-16 14:45:05Z johane
- * 
  * @version $Id$
  */
 public class CryptoTokenAuthenticationFailedException extends CesecoreException {
