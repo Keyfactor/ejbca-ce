@@ -23,8 +23,6 @@ import org.junit.Test;
 /**
  * Test the PatternLogger  
  * 
- * Based on PatternLoggerTest.java 12021 2011-05-18 14:46:13Z anatom
- * 
  * @version $Id$
  */
 public class PatternLoggerTest {

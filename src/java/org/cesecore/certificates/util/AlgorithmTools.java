@@ -65,8 +65,6 @@ import org.ejbca.cvc.OIDField;
  * @see CertTools#getSignatureAlgorithm
  * @see KeyTools#getKeyLength
  * 
- * Based on EJBCA version: AlgorithmTools.java 11100 2011-01-07 16:34:50Z anatom
- * 
  * @version $Id$
  */
 public final class AlgorithmTools {

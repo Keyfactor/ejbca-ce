@@ -32,8 +32,6 @@ import org.cesecore.util.ValidityDate;
 
 /** Class used to construct validity times based on a range of different input parameters and configuration. 
  * 
- * Based on EJBCA version: CertificateValidity.java 8373 2009-11-30 14:07:00Z jeklund
- * 
  * @version $Id$
  */
 public class CertificateValidity {

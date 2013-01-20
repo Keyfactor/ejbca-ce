@@ -52,8 +52,6 @@ import org.cesecore.util.ValueExtractor;
 /**
  * Representation of a certificate and related information.
  * 
- * Based on EJBCA version: CertificateData.java 11168 2011-01-12 15:05:15Z jeklund
- * 
  * @version $Id$
  */
 @Entity

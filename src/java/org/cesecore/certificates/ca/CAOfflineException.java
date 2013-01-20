@@ -19,9 +19,6 @@ import org.cesecore.ErrorCode;
 /**
  * An exception thrown when someone tries to use a CA that is off line
  *
- * @author  Tomas Gustavsson
- * Based on EJBCA version: CAOfflineException.java 8373 2009-11-30 14:07:00Z jeklund
- * 
  * @version $Id$
  */
 public class CAOfflineException extends CesecoreException {

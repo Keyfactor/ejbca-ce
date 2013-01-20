@@ -30,14 +30,7 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
  * Interface for certificate store operations
  * Stores certificate in the local database using Certificate JPA Beans. 
  * 
- *
- * Based on EJBCA version: CertificateStoreSession.java 11010 2010-12-29 17:40:11Z jeklund
- * 
- * Removed all CertReqHistory stuff, which belongs in it's own session bean in EJBCA
- * Also removed authenticate method, strange place...
- * Also removed getDatabaseStatus, completely wrong place, move to own healthcheck session
- * Also removed setArchivedStatus, strange "use internally only" method
- * IMPORTANT: Also removed publishing to publishersession from setRevokeStatus
+ * IMPORTANT: No publishing to publishersession from setRevokeStatus
  * 
  * @version $Id$
  */

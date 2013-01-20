@@ -14,8 +14,6 @@ package org.cesecore.certificates.util;
 
 /** Constants for digital signature algorithms.
  * 
- * Based on EJBCA version: AlgorithmConstants.java 11087 2011-01-07 11:00:24Z anatom
- * 
  * @version $Id$
  */
 public final class AlgorithmConstants {

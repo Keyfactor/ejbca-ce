@@ -26,8 +26,6 @@ import java.util.regex.Pattern;
  * decimal number and the units are specified in the constructor. 
  * Spaces are optional. Units are case-insensitive.
  *  
- * Based on UnitParser.java 124 2011-01-20 14:41:21Z tomas from cesecore,
- * 
  * @version $Id$
  * @see SimpleTime
  * @see YearMonthDayTime

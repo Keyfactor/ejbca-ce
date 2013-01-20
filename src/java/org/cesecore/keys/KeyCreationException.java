@@ -15,10 +15,7 @@ package org.cesecore.keys;
 /**
  * This exception is thrown when an error is encountered when trying to create a key.
  * 
- * Based on KeyCreationException.java 124 2011-01-20 14:41:21Z tomas
- * 
  * @version $Id$
- *
  */
 public class KeyCreationException extends RuntimeException {
 

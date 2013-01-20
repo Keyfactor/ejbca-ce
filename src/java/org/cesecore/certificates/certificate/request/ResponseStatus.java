@@ -21,8 +21,6 @@ import java.io.Serializable;
 /**
  * Encapsulates the possible values for the status of a certificate response. Original response codes from the SCEP protocol.
  *
- * Based on EJBCA version: ResponseStatus.java 11140 2011-01-11 13:38:41Z anatom
- *
  * @version $Id$
  */
 public final class ResponseStatus implements Serializable {

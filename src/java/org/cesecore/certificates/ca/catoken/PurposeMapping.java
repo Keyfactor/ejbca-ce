@@ -39,8 +39,6 @@ import java.util.Set;
  *  
  *   The returned values are supposed to be used to get keys for different aliases from a keystore.
  * 
- * Based on EJBCA version: KeyStrings.java 10397 2010-11-08 14:18:57Z anatom $
- * 
  * @version $Id$
  */
 public final class PurposeMapping {

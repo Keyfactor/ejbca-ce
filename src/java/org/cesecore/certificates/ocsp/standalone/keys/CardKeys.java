@@ -17,8 +17,6 @@ import java.security.interfaces.RSAPublicKey;
 
 /**
  * 
- * Based on CardKeys.java 11346 2011-02-12 08:43:16Z primelars
- * 
  * @version $Id$
  */
 public interface CardKeys {

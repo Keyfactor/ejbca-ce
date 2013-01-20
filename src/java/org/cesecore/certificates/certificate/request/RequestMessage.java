@@ -30,8 +30,6 @@ import org.bouncycastle.asn1.x500.X500Name;
  * Base interface for request messages sent to the CA. Implementors of this interface must also
  * implement Serializable if they are to be sent to any EJB business methods.
  *
- * Based on EJBCA version: IRequestMessage.java 10364 2010-11-04 09:57:19Z anatom
- * 
  * @version $Id$
  */
 public interface RequestMessage extends Serializable {

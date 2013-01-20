@@ -19,8 +19,6 @@ import org.cesecore.CesecoreException;
 /**
  * Error due to an invalid request validity period for a certificate.
  *
- * Based on EJBCA version: IllegalValidityException.java 8854 2010-03-30 15:55:35Z anatom
- * 
  * @version $Id$
  */
 public class IllegalValidityException extends CesecoreException {

@@ -21,8 +21,6 @@ import java.io.ByteArrayOutputStream;
  * It extends the bouncycastle implementation and adds the functionality to split lines 
  * with a '\n' after every 64 bytes.
  *
- * Based on EJBCA version: Base64.java 11088 2011-01-07 11:05:54Z anatom
- * 
  * @version $Id$
  */
 public final class Base64 {

@@ -46,8 +46,6 @@ import org.cesecore.util.CeSecoreNameStyle;
 /**
  * Class to handle PKCS10 request messages sent to the CA.
  *
- * Based on EJBCA version: PKCS10RequestMessage.java 10894 2010-12-17 15:18:09Z anatom
- * 
  * @version $Id$
  */
 public class PKCS10RequestMessage implements RequestMessage {

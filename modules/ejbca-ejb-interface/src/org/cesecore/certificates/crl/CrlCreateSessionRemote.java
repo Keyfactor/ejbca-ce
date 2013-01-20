@@ -17,7 +17,6 @@ import javax.ejb.Remote;
 /**
  * Remote interface for CrlCreateSession
  * 
- * Based on EJBCA version: CrlCreateSessionRemote.java 10401 2010-11-09 12:20:21Z anatom
  * @version $Id$
  *
  */

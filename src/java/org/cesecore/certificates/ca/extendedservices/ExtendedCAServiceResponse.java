@@ -17,8 +17,6 @@ import java.io.Serializable;
 /**
  * Should be inherited by all ExtendedCAServiceResonse Value objects.  
  *
- * Based on EJBCA version: ExtendedCAServiceResponse.java 8373 2009-11-30 14:07:00Z jeklund $
- * 
  * @version $Id$
  */
 public abstract class ExtendedCAServiceResponse  implements Serializable {    

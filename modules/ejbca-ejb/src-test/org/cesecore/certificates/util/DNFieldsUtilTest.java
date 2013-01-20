@@ -20,8 +20,6 @@ import org.cesecore.certificates.util.dn.DNFieldsUtil;
 import org.junit.Test;
 
 /**
- * Based on EJBCA version: TestDNFieldsUtil.java 10267 2010-10-22 13:27:52Z primelars
- * 
  * @version $Id$
  */
 public class DNFieldsUtilTest {

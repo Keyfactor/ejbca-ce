@@ -17,8 +17,6 @@ import javax.ejb.Remote;
 /**
  * Remote interface for CaSession
  * 
- * Based on EJBCA version: CaSessionRemote.java 10428 2010-11-11 16:45:12Z anatom
- * 
  * @version $Id$
  */
 @Remote

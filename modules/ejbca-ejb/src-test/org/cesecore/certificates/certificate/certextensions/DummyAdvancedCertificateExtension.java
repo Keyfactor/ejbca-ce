@@ -28,9 +28,6 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
  * 
  * Should implement the getValue method.
  * 
- * 
- * Based on EJBCA version: DummyAdvancedCertificateExtension.java 8597 2010-01-29 11:01:30Z anatom
- * 
  * @version $Id$
  */
 public class DummyAdvancedCertificateExtension extends CertificateExtension {

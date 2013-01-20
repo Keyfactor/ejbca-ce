@@ -19,8 +19,6 @@ import java.util.Date;
 /**
  * Holds information about a certificate but not the certificate itself.
  *
- * Based on EJBCA version: CertificateInfo.java 10498 2010-11-15 15:01:03Z jeklund
- * 
  * @version $Id$
  */
 public class CertificateInfo implements Serializable {

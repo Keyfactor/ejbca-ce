@@ -27,8 +27,6 @@ import org.cesecore.util.StringTools;
 /**
  * Holds admin data collected from UserData in the database. Strings are stored in Base64 encoded format to be safe for storing in database, xml etc.
  *
- * Based on EJBCA version: UserDataVO.java 10252 2010-10-21 19:02:03Z primelars $
- * 
  * @version $Id$
  */
 public class EndEntityInformation implements Serializable {

@@ -22,8 +22,6 @@ import org.bouncycastle.asn1.x509.PolicyQualifierId;
  * Contains an OID and optionally a policy qualifier. Several CertificatePolicy classes 
  * can be created with the same oid, for different qualifiers
  * 
- * Based on EJBCA version: CertificatePolicy.java 11092 2011-01-07 12:05:08Z anatom
- * 
  * @version $Id$
  */
 public class CertificatePolicy implements Serializable, Cloneable {

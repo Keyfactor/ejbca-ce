@@ -39,8 +39,6 @@ import org.cesecore.util.CertTools;
 /**
  * CertificateProfile is a basic class used to customize a certificate configuration or be inherited by fixed certificate profiles.
  * 
- * Based on EJBCA version: CertificateProfile.java 11141 2011-01-11 13:44:11Z anatom
- * 
  * @version $Id$
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {

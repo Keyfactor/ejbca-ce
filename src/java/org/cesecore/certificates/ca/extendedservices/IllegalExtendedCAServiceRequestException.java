@@ -14,8 +14,6 @@ package org.cesecore.certificates.ca.extendedservices;
 
 /** Used for illegal (invalid) CA Service Requests
  * 
- * Based on EJBCA version: IllegalExtendedCAServiceRequestException.java 8373 2009-11-30 14:07:00Z jeklund $
- * 
  * @version $Id$
  */
 public class IllegalExtendedCAServiceRequestException extends Exception {

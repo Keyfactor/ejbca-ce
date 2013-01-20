@@ -47,8 +47,6 @@ import org.junit.Test;
 /**
  * Testing various aspects of request messages
  *
- * Based on EJBCA version: RequestMessageTest.java 10893 2010-12-17 14:21:18Z anatom
- * 
  * @version $Id$
  */
 public class RequestMessageTest {

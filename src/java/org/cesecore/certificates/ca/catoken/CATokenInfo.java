@@ -17,8 +17,6 @@ import java.io.Serializable;
 /**
  * Holds non sensitive information about a CryptoToken.
  *
- * Based on EJBCA version: CATokenInfo.java 8828 2010-03-29 08:10:51Z anatom
- * 
  * @version $Id$
  */
 @Deprecated // Try to live without it..

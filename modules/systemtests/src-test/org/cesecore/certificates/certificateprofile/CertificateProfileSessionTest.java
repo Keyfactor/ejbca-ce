@@ -55,8 +55,6 @@ import org.junit.Test;
 /**
  * Tests the certificate profile entity bean.
  * 
- * Based on CertificateProfileTest.java 11524 2011-03-16 09:57:15Z netmackan from EJBCA
- *
  * @version $Id$
  */
 public class CertificateProfileSessionTest extends RoleUsingTestCase {

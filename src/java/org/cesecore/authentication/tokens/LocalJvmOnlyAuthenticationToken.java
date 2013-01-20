@@ -24,8 +24,6 @@ import org.apache.log4j.Logger;
  * otherwise be spoofed. E.g. X509 client certificate validation AuthenticationToken could
  * otherwise be created and sent to a remote EJB interface.
  * 
- * Based on the work by Markus Kilås.  
- * 
  * @version $Id$
  */
 public abstract class LocalJvmOnlyAuthenticationToken extends AuthenticationToken {

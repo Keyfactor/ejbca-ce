@@ -23,8 +23,6 @@ import org.junit.Test;
 /**
  * Tests generation of serial numbers.
  *
- * Based on EJBCA version: SernoGeneratorTest.java 9435 2010-07-14 15:18:39Z mikekushner
- * 
  * @version $Id$
  */
 public class SernoGeneratorTest {

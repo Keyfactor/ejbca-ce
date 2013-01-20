@@ -15,10 +15,7 @@ package org.cesecore.util;
 /**
  * Query Criteria Exception. Thrown on entity parameter mismatch. 
  * 
- * Based on QueryParameterException.java 252 2011-02-14 12:53:56Z tomas from cesecore
- * 
  * @version $Id$
- * 
  */
 public class QueryParameterException extends RuntimeException {
 

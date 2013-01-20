@@ -30,8 +30,6 @@ import org.bouncycastle.cms.CMSSignedGenerator;
 /**
  * Class to handle simple requests from only a public key, all required parameters must be set.
  *
- * Based on EJBCA version: SimpleRequestMessage.java 10364 2010-11-04 09:57:19Z anatom
- * 
  * @version $Id$
  */
 public class SimpleRequestMessage implements RequestMessage {

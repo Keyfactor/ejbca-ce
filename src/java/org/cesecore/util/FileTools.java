@@ -32,7 +32,6 @@ import org.apache.log4j.Logger;
 /**
  * Tools to handle some common file operations.
  *
- * Based on FileTools.java 73 2011-01-07 17:13:52Z tomas from cesecore
  * @version $Id$
  */
 public final class FileTools {

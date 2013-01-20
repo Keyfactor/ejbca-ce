@@ -34,8 +34,6 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
  *       -- id-seis-pe-cn is defined in Annex A
  * CardNumber ::= PrintableString 
  *
- * Based on EJBCA version: SeisCardNumber.java 11883 2011-05-04 08:52:09Z anatom $
- * 
  * @version $Id$
  */
 public class SeisCardNumber extends StandardCertificateExtension {

@@ -20,8 +20,6 @@ import org.cesecore.CesecoreException;
 /**
  * Error due to malformed key. The cause of failure can be related to illegal key length etc.
  *
- * Based on EJBCA version: IllegalKeyException.java 10392 2010-11-08 08:22:39Z mikekushner
- * 
  * @version $Id$
  */
 public class IllegalKeyException extends CesecoreException {

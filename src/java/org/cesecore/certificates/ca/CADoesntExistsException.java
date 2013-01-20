@@ -24,8 +24,6 @@ import org.cesecore.ErrorCode;
  * Should really be called CADoesntExistsException, but changing this name have ripple effects down 
  * to the WS-API, and it's not worth breaking any backwards compatibility to change this name. 
  *
- * Based on EJBCA version: CADoesntExistsException.java 11201 2011-01-15 10:23:15Z anatom
- * 
  * @version $Id$
  */
 @WebFault

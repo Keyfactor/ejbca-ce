@@ -20,9 +20,6 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 /**
  * CRUD bean for creating, removing and retrieving CAs.
  * 
- * Based on EJBCA version: CaSession.java 10428 2010-11-11 16:45:12Z anatom
- * Based on EJBCA version: CaSessionRemote.java 10428 2010-11-11 16:45:12Z anatom
- * 
  * @version $Id$
  */
 @Remote

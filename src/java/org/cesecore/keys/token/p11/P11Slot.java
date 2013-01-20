@@ -36,8 +36,6 @@ import org.cesecore.keys.util.KeyTools;
  * Use an instance of this class for all your access of a specific P11 slot.
  * Use {@link P11Slot#getProvider()} to get a provider for the slot.
  *
- * Based on EJBCA version: P11Slot.java 11228 2011-01-19 11:34:11Z anatom
- * 
  * @version $Id$
  */
 public class P11Slot {

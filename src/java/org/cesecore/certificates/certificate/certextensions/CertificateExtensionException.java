@@ -15,9 +15,6 @@ package org.cesecore.certificates.certificate.certextensions;
 /**
  * Exception thrown of advanced certificate extensions when it is configured with bad properties.
  * 
- * 
- * Based on EJBCA version: CertificateExtensionException.java 8373 2009-11-30 14:07:00Z jeklund
- * 
  * @version $Id$
  */
 public class CertificateExtensionException extends Exception {

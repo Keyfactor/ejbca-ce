@@ -36,8 +36,6 @@ import org.cesecore.util.QueryResultWrapper;
 /**
  * Representation of a CRL.
  * 
- * Based on EJBCA version: CRLData.java 11168 2011-01-12 15:05:15Z jeklund
- * 
  * @version $Id$
  */
 @Entity

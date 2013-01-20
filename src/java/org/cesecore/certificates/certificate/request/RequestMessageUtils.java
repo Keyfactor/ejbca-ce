@@ -51,8 +51,6 @@ import org.ejbca.cvc.exception.ParseException;
 /**
  * Utility class to gather a few functions
  *
- * Based on EJBCA version: RequestMessageUtils.java 10878 2010-12-15 13:23:52Z anatom
- * 
  * @version $Id$
  */
 public class RequestMessageUtils {

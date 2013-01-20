@@ -19,8 +19,6 @@ package org.cesecore.util.log;
  * Since the appender is used from JBoss we can't just throw an Exception and
  * need this to communicate errors.
  * 
- * Based on ProbableErrorHandler.java 498 2011-03-09 16:35:44Z mikek from cesecore
- * 
  * @version  $Id$
  */
 public interface SaferAppenderListener {

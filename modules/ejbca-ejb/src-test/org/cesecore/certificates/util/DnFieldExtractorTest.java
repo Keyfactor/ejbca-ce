@@ -25,8 +25,6 @@ import org.junit.Test;
 /**
  * Tests the DNFieldExtractor class.
  *
- * Based on EJBCA version: DnFieldExtractorTest.java 11095 2011-01-07 15:07:39Z anatom
- * 
  * @version $Id$
  */
 public class DnFieldExtractorTest {

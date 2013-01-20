@@ -24,8 +24,6 @@ import org.apache.log4j.Logger;
  * The format is in the form '*d *h *m *s *ms' where * is a decimal number and
  * d=days, h=hours, m=minutes, s=seconds, ms=milliseconds. Spaces are optional.
  *  
- * Based on SimpleTime.java 124 2011-01-20 14:41:21Z tomas from cesecore
- * 
  * @version $Id$
  */
 public class SimpleTime {

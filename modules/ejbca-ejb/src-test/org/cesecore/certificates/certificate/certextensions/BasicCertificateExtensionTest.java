@@ -51,8 +51,6 @@ import org.cesecore.internal.InternalResources;
 import org.junit.Test;
 
 /**
- * Based on EJBCA version: BasicCertificateExtensionTest.java 8865 2010-04-09 15:14:51Z mikekushner
- * 
  * @version $Id$
  */
 public class BasicCertificateExtensionTest {

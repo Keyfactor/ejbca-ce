@@ -60,10 +60,7 @@ import org.cesecore.util.StringTools;
 import org.ejbca.cvc.PublicKeyEC;
 
 /**
- * Based on EJBCA version: CertificateStoreSessionBean.java 11170 2011-01-12 17:08:32Z anatom
- * 
  * @version $Id$
- * 
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CertificateStoreSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)

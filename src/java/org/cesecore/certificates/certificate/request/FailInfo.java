@@ -17,8 +17,6 @@ import java.io.Serializable;
 /**
  * Encapsulates the possible values for the failinfo part of a SCEP FAILURE response.
  *
- * Based on EJBCA version: FailInfo.java 8373 2009-11-30 14:07:00Z jeklund
- * 
  * @version $Id$
  */
 public class FailInfo implements Serializable {

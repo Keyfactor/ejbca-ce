@@ -24,8 +24,6 @@ import org.junit.Test;
 /**
  * Tests the DnComponents class.
  * 
- * Based on EJBCA version: DnComponentsTest.java 10947 2010-12-22 09:48:10Z anatom
- * 
  * @version $Id$
  */
 public class DnComponentsTest {
