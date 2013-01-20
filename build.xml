@@ -1047,4 +1047,43 @@
         <ant dir="modules" target="clover.xml"/>
     </target>
 
+	<!-- Target that copies all org.cesecore java files from EJBCA to cesecore (if it is in a subdirectory cesecore above ejbca dir).
+	     Since EJBCA usually is the master for cesecore fies, this eases code merge very much.
+	-->
+    <target name="cesecorecodedrop">
+        <copy todir="../cesecore/src/main/java" overwrite="true">
+            <fileset dir="src/java">
+                <include name="org/cesecore/**/*java"/>
+                <include name="certextensions.properties"/>
+                <include name="profilemappings.properties"/>
+            </fileset>
+            <fileset dir="modules/ejbca-ejb-interface/src">
+                <include name="org/cesecore/**/*java"/>
+            </fileset>
+        </copy>
+        <copy todir="../cesecore/src/main/resources/intresources" overwrite="true">
+            <fileset dir="src/intresources">
+                <include name="intresources*.properties"/>
+            </fileset>
+        </copy>
+        <copy todir="../cesecore/src/test/java" overwrite="true">
+            <fileset dir="modules/ejbca-ejb/src-test">
+                <include name="org/cesecore/**/*java"/>
+            </fileset>
+        </copy>
+        <copy todir="../cesecore/src/functionaltests/java" overwrite="true">
+            <fileset dir="modules/systemtests/src-interface">
+                <include name="org/cesecore/**/*java"/>
+            </fileset>
+            <fileset dir="modules/systemtests/src">
+                <include name="org/cesecore/**/*java"/>
+            </fileset>
+        </copy>
+        <copy todir="../cesecore/src/functionaltests/test" overwrite="true">
+            <fileset dir="modules/systemtests/src-test">
+                <include name="org/cesecore/**/*java"/>
+            </fileset>
+        </copy>
+    </target>
+
 </project>
