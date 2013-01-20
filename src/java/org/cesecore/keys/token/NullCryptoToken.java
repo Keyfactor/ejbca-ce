@@ -28,9 +28,6 @@ import java.util.Properties;
 
 /** This class is used as crypto Token for virtual CAs that does not have a keystore, such as external SubCAs.
  * 
- * CESeCore version:
- *      NullCryptoToken.java 278 2011-02-18 09:48:41Z tomas
- * 
  * @version $Id$
  */
 public class NullCryptoToken extends BaseCryptoToken {
