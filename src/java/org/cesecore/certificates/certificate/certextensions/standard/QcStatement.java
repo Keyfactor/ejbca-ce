@@ -45,8 +45,6 @@ import org.cesecore.util.CertTools;
  * Class for standard X509 certificate extension. 
  * See rfc3280 or later for spec of this extension.      
  * 
- * Based on EJBCA version: QcStatement.java 11883 2011-05-04 08:52:09Z anatom $
- * 
  * @version $Id$
  */
 public class QcStatement extends StandardCertificateExtension {

@@ -33,8 +33,6 @@ import org.cesecore.util.CertTools;
  * UniqueSernoHelper.testUniqueCertificateSerialNumberIndex(). Actually calling this method only does something once, called several times does nothing
  * and does not change any values returned by isUniqueCertificateSerialNumberIndex().
  *  
- * Based on EJBCA version: UniqueSernoHelper.java 10867 2010-12-14 16:35:40Z anatom
- * 
  * @version $Id$
  */
 public final class UniqueSernoHelper {

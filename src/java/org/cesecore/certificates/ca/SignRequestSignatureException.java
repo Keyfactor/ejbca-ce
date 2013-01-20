@@ -17,8 +17,6 @@ import org.cesecore.CesecoreException;
 /**
  * Error due to invalid signature on certificate request.
  *
- * Based on EJBCA version: SignRequestSignatureException.java 8373 2009-11-30 14:07:00Z jeklund $
- * 
  * @version $Id$
  */
 public class SignRequestSignatureException extends CesecoreException {

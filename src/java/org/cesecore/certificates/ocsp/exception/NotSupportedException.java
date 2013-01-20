@@ -16,8 +16,6 @@ package org.cesecore.certificates.ocsp.exception;
 /**
  * Error due to some part of the request is not supported.
  * 
- * Based on NotSupportedException.java 8373 2009-11-30 14:07:00Z jeklund
- *
  * @version $Id$
  */
 public class NotSupportedException extends Exception  {

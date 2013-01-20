@@ -18,8 +18,6 @@ import org.cesecore.CesecoreException;
  * Exception used in order to catch the error that we are trying to use custom certificate serial numbers, but are not using a unique
  * issuerDN/certSerialNo index in the database. This index is needed in order to use custom certificate serial numbers.
  * 
- * Based on Exception private to RSASignSessionBean: RSASignSessionBean.java 11374 2011-02-19 08:12:26Z anatom
- * 
  * @version $Id$
  */
 public class CustomCertSerialNumberException extends CesecoreException {

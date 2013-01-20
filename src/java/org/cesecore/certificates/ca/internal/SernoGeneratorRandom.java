@@ -47,8 +47,6 @@ import org.cesecore.internal.InternalResources;
  * numerical values assigned to each bit for those bits which are set to one, excluding bit 8 of the first octet, and then reducing this value by the
  * numerical value assigned to bit 8 of the first octet if that bit is set to one.
  * 
- * Based on EJBCA version: SernoGenerator.java 11594 2011-03-23 12:23:46Z jeklund
- * 
  * @version $Id$
  */
 public class SernoGeneratorRandom implements SernoGenerator {

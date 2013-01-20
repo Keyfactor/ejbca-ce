@@ -41,8 +41,6 @@ import org.ejbca.cvc.exception.ParseException;
 /**
  * Class to handle CVC request messages sent to the CA.
  *
- * Based on EJBCA version: CVCRequestMessage.java 10364 2010-11-04 09:57:19Z anatom
- * 
  * @version $Id$
  */
 public class CVCRequestMessage implements RequestMessage {

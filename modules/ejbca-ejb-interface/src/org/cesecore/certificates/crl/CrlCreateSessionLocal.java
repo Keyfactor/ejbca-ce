@@ -26,7 +26,6 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 /**
  * Local interface for CrlCreateSession
  * 
- * Based on EJBCA version: CrlCreateSessionLocal.java 10401 2010-11-09 12:20:21Z anatom
  * @version $Id$
  *
  */

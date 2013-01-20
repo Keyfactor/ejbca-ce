@@ -22,9 +22,6 @@ import java.util.Map;
  * if they start with 'B64', i.e. it base64 decodes string of form "B64:<base64 encoded string>".
  * It only tries to decode objects of type String.
  * 
- * Based on Base64GetHashMap.java 317 2011-02-23 16:26:16Z tomas from cesecore
- * 
- *  
  * @version $Id$
  */
 public class Base64GetHashMap extends LinkedHashMap<Object, Object> {

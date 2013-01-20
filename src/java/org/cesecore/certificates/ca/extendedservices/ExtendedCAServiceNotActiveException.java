@@ -13,8 +13,6 @@
 package org.cesecore.certificates.ca.extendedservices;
 
 /**
- * Based on EJBCA version: ExtendedCAServiceNotActiveException.java 8373 2009-11-30 14:07:00Z jeklund $
- * 
  * @version $Id$
  */
 public class ExtendedCAServiceNotActiveException extends java.lang.Exception {

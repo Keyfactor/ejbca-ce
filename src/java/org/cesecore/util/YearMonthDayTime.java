@@ -27,8 +27,6 @@ import org.apache.log4j.Logger;
  * The format is in the form '*y *mo *d' where * is a decimal number and
  * y=years, mo=months, d=days. Spaces are optional.
  *  
- * Based on  YearMonthDayTime.java 124 2011-01-20 14:41:21Z tomas from cesecore
- * 
  * @version $Id$
  */
 public class YearMonthDayTime {

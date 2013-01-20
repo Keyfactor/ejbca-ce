@@ -30,8 +30,6 @@ import org.cesecore.util.CertTools;
  * A response message consisting of a single X509 or CVC Certificate. Name is nowadays slightly misleading since the class can 
  * care any type of "Certificate", for example a CV certificate.
  *
- * Based on EJBCA version: X509ResponseMessage.java 10365 2010-11-04 10:11:23Z anatom
- * 
  * @version $Id$
  */
 public class X509ResponseMessage implements CertificateResponseMessage {

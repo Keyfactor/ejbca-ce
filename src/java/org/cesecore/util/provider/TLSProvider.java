@@ -17,10 +17,7 @@ import java.security.Provider;
 /**
  * Provider with to be used for TLS session.
  *
- * Based on TLSProvider.java 11132 2011-01-10 21:27:08Z jeklund from cesecore
- *
  * @version  $Id$
- *
  */
 public class TLSProvider extends Provider {
 

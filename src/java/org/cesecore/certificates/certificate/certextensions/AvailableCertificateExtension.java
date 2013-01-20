@@ -17,8 +17,6 @@ package org.cesecore.certificates.certificate.certextensions;
  * available custom extensions in the edit certificate profile 
  * page 
  * 
- * Based on EJBCA version: AvailableCertificateExtension.java 8373 2009-11-30 14:07:00Z jeklund
- * 
  * @version $Id$
  */
 public class AvailableCertificateExtension {

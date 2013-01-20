@@ -29,8 +29,6 @@ import org.junit.Test;
 /**
  * Tests the StringTools class .
  * 
- * Based on EJBCA version: StringToolsTest.java 11089 2011-01-07 11:41:50Z anatom
- * 
  * @version $Id$
  */
 public class StringToolsTest {

@@ -25,8 +25,6 @@ import org.apache.log4j.spi.LoggingEvent;
  * The purpose of this errorhandler is that we can still respond with InternalServer error if and error occurs, but repeated errors will only be
  * logged once.
  * 
- * Based on ProbableErrorHandler.java 498 2011-03-09 16:35:44Z mikek from cesecore
- * 
  * @version $Id$
  */
 

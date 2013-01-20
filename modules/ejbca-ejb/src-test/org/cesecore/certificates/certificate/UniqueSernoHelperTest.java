@@ -33,8 +33,6 @@ import org.junit.Test;
  * Test the behavior of UniqueSernoHelper with help of a mock CertificateStoreSession.
  * (This is a unit test, but the test subject is currently a part of the EJB bundle.)
  * 
- * Based on version UniqueSernoHelperTest.java 11901 2011-05-05 09:39:45Z jeklund  
- * 
  * @version $Id$
  */
 public class UniqueSernoHelperTest {

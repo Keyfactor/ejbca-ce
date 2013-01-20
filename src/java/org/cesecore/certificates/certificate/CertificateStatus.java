@@ -21,8 +21,6 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 
 /** Simple class encapsulating the certificate status information needed when making revocation checks.
  * 
- * Based on EJBCA version: CertificateStatus.java 8402 2009-12-04 14:00:15Z anatom
- * 
  * @version $Id$
  */
 public class CertificateStatus implements Serializable {

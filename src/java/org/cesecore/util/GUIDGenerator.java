@@ -18,8 +18,6 @@ import org.apache.log4j.Logger;
 /**
  * Shamelessly ripped from generated XDoclet source, because I don't want to generate util classes.
  * 
- * Based on GUIDGenerator.java 451 2011-03-07 07:56:04Z tomas from cesecore
- * 
  * @author XDoclet.sf.net
  * @version $Id$
  */

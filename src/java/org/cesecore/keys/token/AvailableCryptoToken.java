@@ -15,8 +15,6 @@ package org.cesecore.keys.token;
 /**
  * Value class containing information about an available crypto token registered to the CryptoTokenCache.
  * 
- * Based on AvailableCryptoToken.java 126 2011-01-21 09:18:01Z tomas from cesecore
- * 
  * @version $Id$
  */
 public class AvailableCryptoToken {

@@ -33,8 +33,6 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 /**
  * Class for standard X509 certificate extension. See rfc3280 or later for spec of this extension.
  * 
- * Based on PrivateKeyUsagePeriod.java 11883 2011-05-04 08:52:09Z anatom from EJBCA  
- * 
  * @version $Id$
  */
 public class PrivateKeyUsagePeriod extends StandardCertificateExtension {
