@@ -24,12 +24,12 @@ import java.util.TreeMap;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
-import org.ejbca.core.model.authorization.AccessRulesConstants;
 
 /**
  * A class that looks up the which CA:s and certificate profiles the administrator is authorized to view.
@@ -125,7 +125,7 @@ public class CAAuthorization implements Serializable {
             // check if administrator
             boolean superadministrator = false;
 
-            superadministrator = authorizationsession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ROOT);
+            superadministrator = authorizationsession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource());
 
             allprofilenames = new TreeMap<String, Integer>();
         Iterator<Integer> iter= null;  

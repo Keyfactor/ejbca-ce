@@ -25,9 +25,9 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSession;
-import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
 import org.ejbca.core.model.ra.userdatasource.CustomUserDataSourceContainer;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceConnectionException;
@@ -132,7 +132,7 @@ public class EditUserDataSourceJSPHelper implements java.io.Serializable {
             admin = ejbcawebbean.getAdminObject();
             this.ejbcawebbean = ejbcawebbean;
             try{
-                issuperadministrator = ejbcawebbean.isAuthorizedNoLog(AccessRulesConstants.ROLE_ROOT);
+                issuperadministrator = ejbcawebbean.isAuthorizedNoLog(StandardRules.ROLE_ROOT.resource());
             }catch(AuthorizationDeniedException ade){}
         }
     }

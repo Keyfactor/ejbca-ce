@@ -16,6 +16,7 @@ package org.cesecore.authorization.control;
  * @version $Id$
  */
 public enum StandardRules {
+    ROLE_ROOT("/"),
 	CAACCESSBASE("/ca"),
 	CAACCESS("/ca/"),
 	CAACCESSANYCA("/ca/-1"),

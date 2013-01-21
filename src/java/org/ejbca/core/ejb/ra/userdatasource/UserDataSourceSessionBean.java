@@ -36,6 +36,7 @@ import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.Base64GetHashMap;
@@ -333,7 +334,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
         HashSet<Integer> returnval = new HashSet<Integer>();
         boolean superadmin = false;
         // If superadmin return all available user data sources
-        superadmin = authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ROOT);
+        superadmin = authorizationSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource());
         Collection<Integer> authorizedcas = caSession.getAvailableCAs(admin);
         Iterator<UserDataSourceData> i = UserDataSourceData.findAll(entityManager).iterator();
         while (i.hasNext()) {
@@ -457,7 +458,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
      * @return true if the administrator is authorized
      */
     private boolean isAuthorizedToUserDataSource(AuthenticationToken admin, int id,  BaseUserDataSource userdatasource,boolean remove) {    	
-    	if(authorizationSession.isAuthorizedNoLogging(admin,AccessRulesConstants.ROLE_ROOT)){
+    	if(authorizationSession.isAuthorizedNoLogging(admin,StandardRules.ROLE_ROOT.resource())){
     		return true;
         }
         if (remove) {
@@ -495,7 +496,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
     private void authorizedToEditUserDataSource(final AuthenticationToken admin, final String name, final BaseUserDataSource userdatasource) throws AuthorizationDeniedException {
 
         boolean ret = false;
-        if (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ROOT)) {
+        if (authorizationSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource())) {
             ret = true;
         }
 

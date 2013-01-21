@@ -214,10 +214,10 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         boolean returnval = false;
         if (profileid == SecConst.EMPTY_ENDENTITYPROFILE
                 && (rights.equals(AccessRulesConstants.CREATE_RIGHTS) || rights.equals(AccessRulesConstants.EDIT_RIGHTS))) {
-            if (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ROOT)) {
+            if (authorizationSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource())) {
                 returnval = true;
             } else {
-                log.info("Admin " + admin.toString() + " was not authorized to resource " +AccessRulesConstants.ROLE_ROOT);
+                log.info("Admin " + admin.toString() + " was not authorized to resource " +StandardRules.ROLE_ROOT);
             }
         } else {
             returnval = authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + rights,

@@ -28,7 +28,7 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadBase;
 import org.apache.commons.fileupload.FileUploadException;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.cesecore.authorization.control.StandardRules;
 import org.ejbca.core.model.hardtoken.HardTokenProfileExistsException;
 import org.ejbca.core.model.hardtoken.profiles.EIDProfile;
 import org.ejbca.core.model.hardtoken.profiles.EnhancedEIDProfile;
@@ -147,7 +147,7 @@ public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
         initialized = true;
 		issuperadministrator = false;
 		try{
-		  issuperadministrator = ejbcawebbean.isAuthorizedNoLog(AccessRulesConstants.ROLE_ROOT);
+		  issuperadministrator = ejbcawebbean.isAuthorizedNoLog(StandardRules.ROLE_ROOT.resource());
 		}catch(AuthorizationDeniedException ade){}
       }
     }

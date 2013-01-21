@@ -36,6 +36,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.jndi.JndiConstants;
@@ -46,7 +47,6 @@ import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.ra.raadmin.GlobalConfigurationData;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.authorization.AccessRulesConstants;
 
 /**
  * This bean handled global configurations.
@@ -93,8 +93,8 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public Properties getAllProperties(AuthenticationToken admin) throws AuthorizationDeniedException {
-        if (!accessSession.isAuthorized(admin, AccessRulesConstants.ROLE_ROOT)) {
-            String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.ROLE_ROOT, null);
+        if (!accessSession.isAuthorized(admin, StandardRules.ROLE_ROOT.resource())) {
+            String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.ROLE_ROOT, null);
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EventTypes.ACCESS_CONTROL, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), null, null, null, details);
@@ -155,7 +155,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
         if (log.isTraceEnabled()) {
             log.trace(">saveGlobalConfiguration()");
         }
-        if (this.accessSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ROOT)) {
+        if (this.accessSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource())) {
             final String pk = "0";
             final GlobalConfigurationData gcdata = GlobalConfigurationData.findByConfigurationId(entityManager, pk);
             if (gcdata != null) {

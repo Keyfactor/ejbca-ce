@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import javax.servlet.http.HttpServletRequest;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.cesecore.authorization.control.StandardRules;
 import org.ejbca.core.model.ca.publisher.ActiveDirectoryPublisher;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
@@ -156,7 +156,7 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
             initialized = true;
             issuperadministrator = false;
             try{
-                issuperadministrator = ejbcawebbean.isAuthorizedNoLog(AccessRulesConstants.ROLE_ROOT);
+                issuperadministrator = ejbcawebbean.isAuthorizedNoLog(StandardRules.ROLE_ROOT.resource());
             }catch(AuthorizationDeniedException ade){}
         }
     }

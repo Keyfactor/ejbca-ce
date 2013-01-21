@@ -9,6 +9,7 @@ java.security.cert.Certificate,
 org.apache.commons.fileupload.*,
 org.ejbca.ui.web.admin.configuration.EjbcaWebBean,
 org.ejbca.config.GlobalConfiguration,
+org.cesecore.authorization.control.StandardRules,
 org.cesecore.util.FileTools,
 org.cesecore.util.CertTools,
 org.cesecore.CesecoreException,
@@ -216,7 +217,7 @@ java.security.InvalidAlgorithmParameterException
   boolean  catokenauthfailed    = false;
   String errormessage = null;
 
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.ROLE_ROOT);
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.ROLE_ROOT.resource());
   cabean.initialize(request, ejbcawebbean);
   CADataHandler cadatahandler = cabean.getCADataHandler();
 

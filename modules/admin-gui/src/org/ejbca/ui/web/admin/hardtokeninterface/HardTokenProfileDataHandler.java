@@ -20,6 +20,7 @@ import java.util.HashSet;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -188,7 +189,7 @@ public class HardTokenProfileDataHandler implements Serializable {
      */    
     private boolean authorizedToProfile(HardTokenProfile profile, boolean editcheck) {
         boolean returnval = false;
-        if (authorizationsession.isAuthorizedNoLogging(administrator, AccessRulesConstants.ROLE_ROOT)) {
+        if (authorizationsession.isAuthorizedNoLogging(administrator, StandardRules.ROLE_ROOT.resource())) {
             returnval = true; // yes authorized to everything
         } else {
             if (editcheck && authorizationsession.isAuthorizedNoLogging(administrator, AccessRulesConstants.HARDTOKEN_EDITHARDTOKENPROFILES)) {      

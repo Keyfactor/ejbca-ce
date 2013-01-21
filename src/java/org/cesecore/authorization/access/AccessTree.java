@@ -16,9 +16,9 @@ import java.util.Collection;
 
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.roles.RoleData;
-import org.ejbca.core.model.authorization.AccessRulesConstants;
 
 /**
  * Maintains an access tree in memory
@@ -40,7 +40,7 @@ public class AccessTree {
      *            A collection of RoleData objects.
      */
     public synchronized void buildTree(Collection<RoleData> roles) {
-        AccessTreeNode newRootnode = new AccessTreeNode(AccessRulesConstants.ROLE_ROOT);
+        AccessTreeNode newRootnode = new AccessTreeNode(StandardRules.ROLE_ROOT.resource());
         for (RoleData role : roles) {
             for (AccessRuleData accessrule : role.getAccessRules().values()) {
                 newRootnode.addAccessRule(accessrule.getAccessRuleName(), accessrule, role); // Without heading '/'

@@ -7,10 +7,11 @@
 <%@page import="org.ejbca.core.model.authorization.AccessRulesConstants"%>
 <%@page import="org.ejbca.ui.web.RequestHelper"%>
 <%@page import="org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper"%>
+<%@page import="org.cesecore.authorization.control.StandardRules"%>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
 <%   // Initialize environment
- GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.ROLE_ROOT); 
+ GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.ROLE_ROOT.resource()); 
  EjbcaJSFHelper helpbean = EjbcaJSFHelper.getBean();
  helpbean.setEjbcaWebBean(ejbcawebbean);
 %>

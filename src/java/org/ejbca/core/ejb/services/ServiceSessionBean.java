@@ -49,6 +49,7 @@ import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
@@ -75,7 +76,6 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.IInterval;
 import org.ejbca.core.model.services.IWorker;
@@ -323,7 +323,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     public Collection<Integer> getAuthorizedVisibleServiceIds(AuthenticationToken admin) {
         Collection<Integer> allVisibleServiceIds = new ArrayList<Integer>();
         // If superadmin return all visible services
-        if (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ROOT)) {
+        if (authorizationSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource())) {
             Collection<Integer> allServiceIds = getServiceIdToNameMap().keySet();
             Iterator<Integer> i = allServiceIds.iterator();
             while (i.hasNext()) {
@@ -335,7 +335,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             }
         } else {
             if (log.isDebugEnabled()) {
-                log.debug("Authorization denied for admin " + admin + " for resouce " + AccessRulesConstants.ROLE_ROOT);
+                log.debug("Authorization denied for admin " + admin + " for resouce " + StandardRules.ROLE_ROOT);
             }
         }
         return allVisibleServiceIds;
@@ -922,7 +922,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      */
     private boolean isAuthorizedToEditService(AuthenticationToken admin) {
 
-        if (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ROOT)) {
+        if (authorizationSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource())) {
             return true;
         }
 
