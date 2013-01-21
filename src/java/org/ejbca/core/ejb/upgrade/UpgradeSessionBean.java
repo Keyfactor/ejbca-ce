@@ -53,6 +53,7 @@ import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleExistsException;
 import org.cesecore.authorization.rules.AccessRuleManagementSessionLocal;
@@ -86,7 +87,6 @@ import org.ejbca.core.ejb.hardtoken.HardTokenIssuerData;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData;
 import org.ejbca.core.ejb.ra.raadmin.GlobalConfigurationData;
-import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAService;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceTypes;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAService;
@@ -350,7 +350,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     /**
      * In EJBCA 5.0 we have introduced a new authorization rule system.
-     * The old "/super_administrator" rule is replaced by a rule to access "/" (AccessRulesConstants.ROLE_ROOT) with recursive=true.
+     * The old "/super_administrator" rule is replaced by a rule to access "/" (StandardRules.ROLE_ROOT.resource()) with recursive=true.
      * therefore we must insert a new access rule in the database in all roles that have super_administrator access.
      * 
      * We have also added a column to the table AdminEntityData: tokenType
@@ -490,11 +490,11 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     		final Map<Integer, AccessRuleData> rulemap = role.getAccessRules();
     		final Collection<AccessRuleData> rules = rulemap.values();
     		for (AccessRuleData rule : rules) {
-    			if (StringUtils.equals(AccessRulesConstants.ROLE_ROOT, rule.getAccessRuleName()) && 
+    			if (StringUtils.equals(StandardRules.ROLE_ROOT.resource(), rule.getAccessRuleName()) && 
     					rule.getInternalState().equals(AccessRuleState.RULE_ACCEPT)) {
     				// Now we add a new rule
-    				final AccessRuleData slashRule = new AccessRuleData(role.getRoleName(), AccessRulesConstants.ROLE_ROOT, AccessRuleState.RULE_ACCEPT, true);
-    				log.info("Replacing all rules of the role '"+role.getRoleName()+"' with the rule '"+slashRule+"' since the role contained the '"+AccessRulesConstants.ROLE_ROOT+"' rule.");
+    				final AccessRuleData slashRule = new AccessRuleData(role.getRoleName(), StandardRules.ROLE_ROOT.resource(), AccessRuleState.RULE_ACCEPT, true);
+    				log.info("Replacing all rules of the role '"+role.getRoleName()+"' with the rule '"+slashRule+"' since the role contained the '"+StandardRules.ROLE_ROOT+"' rule.");
     				final Collection<AccessRuleData> newrules = new ArrayList<AccessRuleData>();
     				newrules.add(slashRule);
     				try {

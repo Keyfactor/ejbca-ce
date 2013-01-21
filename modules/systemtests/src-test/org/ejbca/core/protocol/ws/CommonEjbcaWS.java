@@ -69,6 +69,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionRemote;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
@@ -124,7 +125,6 @@ import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.DummyCustomPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
@@ -315,7 +315,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         	log.info("Creating new role: "+wsadminRoleName);
             role = roleManagementSession.create(intAdmin, wsadminRoleName);
             final List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
-            accessRules.add(new AccessRuleData(wsadminRoleName, AccessRulesConstants.ROLE_ROOT, AccessRuleState.RULE_ACCEPT, true));
+            accessRules.add(new AccessRuleData(wsadminRoleName, StandardRules.ROLE_ROOT.resource(), AccessRuleState.RULE_ACCEPT, true));
             role = roleManagementSession.addAccessRulesToRole(intAdmin, role, accessRules);
         }
         for (AccessUserAspectData accessUser : role.getAccessUsers().values()) {
@@ -1997,9 +1997,9 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     protected void isAuthorized(boolean authorized) throws Exception {
         // This is a superadmin keystore, improve in the future
         if (authorized) {
-            assertTrue(ejbcaraws.isAuthorized(AccessRulesConstants.ROLE_ROOT));
+            assertTrue(ejbcaraws.isAuthorized(StandardRules.ROLE_ROOT.resource()));
         } else {
-            assertFalse(ejbcaraws.isAuthorized(AccessRulesConstants.ROLE_ROOT));            
+            assertFalse(ejbcaraws.isAuthorized(StandardRules.ROLE_ROOT.resource()));            
         }
     }
 

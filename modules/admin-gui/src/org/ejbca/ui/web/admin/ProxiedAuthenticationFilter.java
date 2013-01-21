@@ -32,9 +32,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.ejbca.config.WebConfiguration;
-import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.util.EjbLocalHelper;
 
 /**
@@ -92,8 +92,8 @@ public class ProxiedAuthenticationFilter implements Filter {
 	                    final Set<X509Certificate> credentials = new HashSet<X509Certificate>();
 	                    credentials.add(tempCerts[0]);
 	                    final AuthenticationToken admin = new X509CertificateAuthenticationToken(null, credentials);
-	                    if (ejb.getAccessControlSession().isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ROOT) ||
-	                            ejb.getAccessControlSession().isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ROOT)) {
+	                    if (ejb.getAccessControlSession().isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource()) ||
+	                            ejb.getAccessControlSession().isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource())) {
 	                        final String msg = "Authentication failed. Superadmin login is only allowed using client certificate. Subject was '"+username+"'.";
 	                        log.info(msg);
 	                        showError((HttpServletResponse)response, msg);

@@ -10,10 +10,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
-import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.pub.ServletUtils;
@@ -77,7 +77,7 @@ public class CAExportServlet extends HttpServlet {
 	       req.getSession().setAttribute("ejbcawebbean", ejbcawebbean);
 	    }
 	    try{
-	    	ejbcawebbean.initialize(req, AccessRulesConstants.ROLE_ROOT);
+	    	ejbcawebbean.initialize(req, StandardRules.ROLE_ROOT.resource());
 	    } catch(Exception e) {
 	    	throw new java.io.IOException("Authorization Denied");
 	    }

@@ -56,9 +56,6 @@ public abstract class AccessRulesConstants {
 
     public static final String ROLE_PUBLICWEBUSER                         = "/public_web_user";
     public static final String ROLE_ADMINISTRATOR                         = "/administrator";
-    public static final String ROLE_ROOT                                  = "/";
-    
-    
     public static final String REGULAR_CAFUNCTIONALTY                     = StandardRules.CAFUNCTIONALITY.resource();
     public static final String REGULAR_CABASICFUNCTIONS                   = StandardRules.CAFUNCTIONALITY.resource()+"/basic_functions";
     public static final String REGULAR_ACTIVATECA                         = REGULAR_CABASICFUNCTIONS+"/activate_ca";    
@@ -130,7 +127,7 @@ public abstract class AccessRulesConstants {
                                                            REGULAR_EDITSYSTEMCONFIGURATION};
                                                        
     // Role Access Rules
-    public static final  String[] ROLEACCESSRULES = {ROLE_PUBLICWEBUSER, ROLE_ADMINISTRATOR, ROLE_ROOT};
+    public static final  String[] ROLEACCESSRULES = {ROLE_PUBLICWEBUSER, ROLE_ADMINISTRATOR, StandardRules.ROLE_ROOT.resource()};
                                                         
     // Hard Token specific accessrules used in authorization module.
     public static final String[] HARDTOKENACCESSRULES = 

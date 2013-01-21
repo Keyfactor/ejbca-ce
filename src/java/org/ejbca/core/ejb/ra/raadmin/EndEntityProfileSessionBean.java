@@ -36,6 +36,7 @@ import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.jndi.JndiConstants;
@@ -278,7 +279,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     	final HashSet<Integer> authorizedcaids = new HashSet<Integer>(caSession.getAvailableCAs(admin));
 		// If this is the special value ALLCAs we are authorized
     	authorizedcaids.add(Integer.valueOf(SecConst.ALLCAS));
-        if (authSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ROOT)) {
+        if (authSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource())) {
             returnval.add(SecConst.EMPTY_ENDENTITYPROFILE);
         }
         try {

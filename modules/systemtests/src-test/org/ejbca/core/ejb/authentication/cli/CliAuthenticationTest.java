@@ -34,6 +34,7 @@ import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionRemote;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
@@ -52,7 +53,6 @@ import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.util.crypto.CryptoTools;
@@ -102,7 +102,7 @@ public class CliAuthenticationTest {
         subjects.add(defaultCliUserAspect);
         roleManagementSession.addSubjectsToRole(internalToken, role, subjects);
 
-        AccessRuleData rule = new AccessRuleData(CLI_TEST_ROLENAME, AccessRulesConstants.ROLE_ROOT, AccessRuleState.RULE_ACCEPT, true);
+        AccessRuleData rule = new AccessRuleData(CLI_TEST_ROLENAME, StandardRules.ROLE_ROOT.resource(), AccessRuleState.RULE_ACCEPT, true);
         List<AccessRuleData> newrules = new ArrayList<AccessRuleData>();
         newrules.add(rule);
         roleManagementSession.addAccessRulesToRole(internalToken, role, newrules);       
@@ -133,7 +133,7 @@ public class CliAuthenticationTest {
         CliAuthenticationToken authenticationToken =  (CliAuthenticationToken) cliAuthenticationProvider.authenticate(subject);
         // Set hashed value anew in order to send back
         authenticationToken.setSha1HashFromCleartextPassword(CliAuthenticationTestHelperSessionRemote.PASSWORD);
-        assertTrue(accessControlSession.isAuthorized(authenticationToken, AccessRulesConstants.ROLE_ROOT));
+        assertTrue(accessControlSession.isAuthorized(authenticationToken, StandardRules.ROLE_ROOT.resource()));
     }
 
     @Test
@@ -147,7 +147,7 @@ public class CliAuthenticationTest {
         // Set hashed value anew in order to send back
         authenticationToken.setSha1HashFromCleartextPassword(CliAuthenticationTestHelperSessionRemote.PASSWORD);
         assertFalse("Old-style hash value was not used (BCrypt prefix detected).", authenticationToken.getSha1Hash().startsWith(CryptoTools.BCRYPT_PREFIX));
-        assertTrue(accessControlSession.isAuthorized(authenticationToken, AccessRulesConstants.ROLE_ROOT));
+        assertTrue(accessControlSession.isAuthorized(authenticationToken, StandardRules.ROLE_ROOT.resource()));
     }
     
     /**
@@ -189,7 +189,7 @@ public class CliAuthenticationTest {
         CliAuthenticationToken authenticationToken =  (CliAuthenticationToken) cliAuthenticationProvider.authenticate(subject);
         // Set hashed value anew in order to send back
         authenticationToken.setSha1HashFromCleartextPassword("monkeys");
-        assertFalse("Authentication token was returned for incorrect password", accessControlSession.isAuthorized(authenticationToken, AccessRulesConstants.ROLE_ROOT));
+        assertFalse("Authentication token was returned for incorrect password", accessControlSession.isAuthorized(authenticationToken, StandardRules.ROLE_ROOT.resource()));
         //Examine the last log entry
         for (final String logDeviceId : securityEventsAuditorSession.getQuerySupportingLogDevices()) {
             final List<? extends AuditLogEntry> list = securityEventsAuditorSession.selectAuditLogs(internalToken, 0, 0,
