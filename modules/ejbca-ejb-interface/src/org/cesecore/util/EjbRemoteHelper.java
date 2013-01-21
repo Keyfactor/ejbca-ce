@@ -25,6 +25,7 @@ import org.cesecore.jndi.JndiHelper;
 public enum EjbRemoteHelper {
     INSTANCE;
 
+    /** NOTE: diff between EJBCA and CESeCore */
     public final static String MODULE_EJBCA = "ejbca-ejb";
     public final static String MODULE_TEST = "systemtests-ejb";
     
@@ -55,6 +56,7 @@ public enum EjbRemoteHelper {
         T session = (T) interfaceCache.get(key);
         if (session == null) {
             if (module == null) {
+                // NOTE: diff between EJBCA and CESeCore
                 module = EjbRemoteHelper.MODULE_EJBCA;
             }
             session = JndiHelper.getRemoteSession(key, module);

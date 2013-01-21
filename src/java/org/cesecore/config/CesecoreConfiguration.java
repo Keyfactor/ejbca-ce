@@ -28,6 +28,7 @@ public final class CesecoreConfiguration {
 
     private static final Logger log = Logger.getLogger(CesecoreConfiguration.class);
 
+    /** NOTE: diff between EJBCA and CESeCore */
     public static final String PERSISTENCE_UNIT = "ejbca";
 
     /** This is a singleton so it's not allowed to create an instance explicitly */
