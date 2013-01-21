@@ -64,7 +64,6 @@ import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
-import org.ejbca.config.EjbcaConfiguration;
 
 /**
  * Implementation of CaSession, i.e takes care of all CA related CRUD operations.
@@ -656,19 +655,17 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         HashMap<String, String> tokendata = (HashMap<String, String>) data.get(CA.CATOKENDATA);
         if (tokendata.get(CAToken.CRYPTOTOKENID) != null) {
             // Already upgraded
-            if (EjbcaConfiguration.getEffectiveApplicationVersion() >= 510) {
+            if (!CesecoreConfiguration.isKeepInternalCAKeystores()) {
                 // All nodes in the cluster has been upgraded so we can remove any internal CA keystore now
                 if (tokendata.get(CAToken.KEYSTORE)!=null) {
                     tokendata.remove(CAToken.KEYSTORE);
                     tokendata.remove(CAToken.CLASSPATH);
-                    if (log.isDebugEnabled()) {
-                        log.debug("Removed duplciate of upgraded CA's internal keystore for CA with id: " + caid);
-                    }
+                    log.info("Removed duplicate of upgraded CA's internal keystore for CA with id: " + caid);
                     return true;
                 }
             } else {
                 if (log.isDebugEnabled()) {
-                    log.debug("CA already has cryptoTokenId and will not have it's token split of to a different db table: " + caid);
+                    log.debug("CA already has cryptoTokenId and will not have it's token split of to a different db table because db.keepinternalcakeystores=true: " + caid);
                 }
             }
             return false;
