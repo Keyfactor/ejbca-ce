@@ -1091,7 +1091,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
                 assertEquals(23, body.getType());
                 ErrorMsgContent err = (ErrorMsgContent) body.getContent();
                 String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
-                String expectedErrMsg = "The certificate attached to the PKIMessage in the extraCert field could not be found in the database.";
+                String expectedErrMsg = "CA does not exist: " + testUserDN.hashCode();
                 assertEquals(expectedErrMsg, errMsg);
             }
             // Step 2, sign the request with a certificate that does not belong to the user
