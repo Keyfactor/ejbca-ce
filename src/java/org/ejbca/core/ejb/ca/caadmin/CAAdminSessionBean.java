@@ -1980,8 +1980,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         // Create initial CRLs
         Collection<Integer> caids = new ArrayList<Integer>();
         caids.add(ca.getCAId());
-        crlCreateSession.createCRLs(caSession, admin, caids, 0);
-        crlCreateSession.createDeltaCRLs(caSession, admin, caids, 0);
+        crlCreateSession.createCRLs(admin, caids, 0);
+        crlCreateSession.createDeltaCRLs(admin, caids, 0);
         return ca;
     }
 
