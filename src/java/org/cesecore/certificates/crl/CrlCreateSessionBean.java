@@ -121,10 +121,9 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
 
     
     
-	@Override
-    public int createCRLs(CaSessionLocal caSession, AuthenticationToken admin, Collection<Integer> caids, long addtocrloverlaptime)
-            throws AuthorizationDeniedException {
-	    int createdcrls = 0;
+    @Override
+    public int createCRLs(AuthenticationToken admin, Collection<Integer> caids, long addtocrloverlaptime) throws AuthorizationDeniedException {
+        int createdcrls = 0;
         Iterator<Integer> iter = null;
         if (caids != null) {
             iter = caids.iterator();
@@ -136,7 +135,7 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
             int caid = ((Integer) iter.next()).intValue();
             log.debug("createCRLs for caid: " + caid);
             try {
-                if (crlCreateSession.createCRLNewTransactionConditioned(caSession, admin, caid, addtocrloverlaptime)) {
+                if (crlCreateSession.createCRLNewTransactionConditioned(admin, caid, addtocrloverlaptime)) {
                     createdcrls++;
                 }                   
             } catch (CesecoreException e) {
@@ -148,11 +147,6 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
             }
         }
         return createdcrls;
-    }
-
-    @Override
-    public int createCRLs(AuthenticationToken admin, Collection<Integer> caids, long addtocrloverlaptime) throws AuthorizationDeniedException {
-		return createCRLs(this.caSession, admin, caids, addtocrloverlaptime);
     }
     
     
@@ -172,7 +166,7 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
             int caid = iter.next().intValue();
             log.debug("createDeltaCRLs for caid: " + caid);
             try {
-                if (crlCreateSession.createDeltaCRLnewTransactionConditioned(caSession, admin, caid, crloverlaptime)) {
+                if (crlCreateSession.createDeltaCRLnewTransactionConditioned(admin, caid, crloverlaptime)) {
                     createddeltacrls++;
                 }
             } catch (CesecoreException e) {
@@ -188,13 +182,10 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
         return createddeltacrls;
     }
 
+    
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
-    public int createDeltaCRLs(CaSessionLocal caSession, AuthenticationToken admin, Collection<Integer> caids, long crloverlaptime) throws AuthorizationDeniedException {
-        return createDeltaCRLs(admin, caids, crloverlaptime);
-    }
-
-    @Override
-    public boolean createCRLNewTransactionConditioned(CaSessionLocal caSession, AuthenticationToken admin, int caid, long addtocrloverlaptime) throws CryptoTokenOfflineException, CADoesntExistsException, AuthorizationDeniedException, CAOfflineException {
+    public boolean createCRLNewTransactionConditioned(AuthenticationToken admin, int caid, long addtocrloverlaptime) throws CryptoTokenOfflineException, CADoesntExistsException, AuthorizationDeniedException, CAOfflineException {
         boolean ret = false;
         Date currenttime = new Date();
         // Get CA checks authorization to the CA
@@ -293,16 +284,10 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
         }
         return ret;
     }
-    
+        
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
-    public boolean createCRLNewTransactionConditioned(AuthenticationToken admin, int caid, long addtocrloverlaptime) throws CryptoTokenOfflineException, CADoesntExistsException, AuthorizationDeniedException, CAOfflineException {
-        return createCRLNewTransactionConditioned(this.caSession, admin, caid, addtocrloverlaptime);
-    }
-    
-    
-    @Override
-    public boolean createDeltaCRLnewTransactionConditioned(CaSessionLocal caSession, AuthenticationToken admin, int caid, long crloverlaptime) throws CryptoTokenOfflineException, CAOfflineException, CADoesntExistsException, AuthorizationDeniedException {
+    public boolean createDeltaCRLnewTransactionConditioned(AuthenticationToken admin, int caid, long crloverlaptime) throws CryptoTokenOfflineException, CAOfflineException, CADoesntExistsException, AuthorizationDeniedException {
         boolean ret = false;
         Date currenttime = new Date();
         CA ca = caSession.getCA(admin, caid);
@@ -368,12 +353,6 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
             throw e;            
         }
         return ret;
-    }
-        
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    @Override
-    public boolean createDeltaCRLnewTransactionConditioned(AuthenticationToken admin, int caid, long crloverlaptime) throws CryptoTokenOfflineException, CAOfflineException, CADoesntExistsException, AuthorizationDeniedException {
-        return createDeltaCRLnewTransactionConditioned(caSession, admin, caid, crloverlaptime);
     }
 
     @Override
@@ -650,7 +629,7 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     			}
     			crlSession.storeCRL(admin, tmpcrlBytes, cafp, nextCrlNumber, crl.getIssuer().toString(), crl.toASN1Structure().getThisUpdate().getDate(), crl.toASN1Structure().getNextUpdate().getDate(), (deltaCRL ? 1 : -1));
     			// TODO: publishing below is something that is NOT included in CESeCore.
-    			// It is an add-one for EJBCA put here because we did not want to refactor all references to CrlCreateSessionBean in the last minute.
+    			// It is an add-on for EJBCA put here because we did not want to refactor all references to CrlCreateSessionBean in the last minute.
     			// Hard and error-prone to do that.
     			if (log.isDebugEnabled()) {
     			    log.debug("Storing CRL in publishers");
