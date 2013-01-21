@@ -12,10 +12,13 @@
  *************************************************************************/
 package org.cesecore.audit.impl.queued;
 
+import java.util.Date;
+
 import javax.ejb.Local;
 
 import org.cesecore.audit.Auditable;
 import org.cesecore.audit.log.AuditLogResetException;
+import org.cesecore.authentication.tokens.AuthenticationToken;
 
 /**
  * @version $Id$
@@ -37,5 +40,8 @@ public interface QueuedAuditorSessionLocal extends Auditable {
      * This method should be used with caution.
      */
     void reset() throws AuditLogResetException;
+    
+    
+    void delete(AuthenticationToken token, Date timestamp);
 
 }
