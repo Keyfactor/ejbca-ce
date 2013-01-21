@@ -30,8 +30,8 @@ import java.util.Map;
 public class XmlSerializer {
 
 	@SuppressWarnings("unchecked")
-    public static Map<Object, Object> decode(final String input) {
-		Map<Object, Object> ret = null;
+    public static Map<String, Object> decode(final String input) {
+		Map<String, Object> ret = null;
 		if (input != null) {
 			try {
 				XMLDecoder decoder = new XMLDecoder(new ByteArrayInputStream(input.getBytes("UTF8")));

@@ -266,7 +266,7 @@ public class AuditRecordData extends ProtectedData implements Serializable, Audi
     /** @return additional details. */
     @Transient
 	@Override
-    public Map<Object, Object> getMapAdditionalDetails() {
+    public Map<String, Object> getMapAdditionalDetails() {
     	// TODO: Decide on which implementation to use for serialization of the additional details
         return XmlSerializer.decode(getAdditionalDetails());
     }

@@ -24,13 +24,15 @@ import java.util.Map;
  * 
  * @version $Id$
  */
-public class Base64GetHashMap extends LinkedHashMap<Object, Object> {
+@SuppressWarnings("rawtypes")
+public class Base64GetHashMap extends LinkedHashMap {
   
     private static final long serialVersionUID = 510436675714264809L;
 
     public Base64GetHashMap() {
         super();
     }
+    @SuppressWarnings("unchecked")
     public Base64GetHashMap(Map<?, ?> m) {
         super(m);
     }
