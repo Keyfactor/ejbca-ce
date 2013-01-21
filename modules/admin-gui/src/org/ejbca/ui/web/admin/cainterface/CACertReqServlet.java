@@ -24,13 +24,13 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.cvc.CVCAuthenticatedRequest;
 import org.ejbca.cvc.CVCObject;
 import org.ejbca.cvc.CVCertificate;
@@ -112,7 +112,7 @@ public class CACertReqServlet extends HttpServlet {
 
 
         try{
-          ejbcawebbean.initialize(req, AccessRulesConstants.ROLE_ROOT);          
+          ejbcawebbean.initialize(req, StandardRules.ROLE_ROOT.resource());          
         } catch(Exception e){
            throw new java.io.IOException("Authorization Denied");
         }

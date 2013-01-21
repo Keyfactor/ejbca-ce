@@ -40,6 +40,7 @@ import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.control.AccessControlSessionRemote;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
@@ -69,7 +70,6 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.GenerateTokenApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.ViewHardTokenDataApprovalRequest;
-import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.hardtoken.types.HardToken;
 import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalRequestExecutionException_Exception;
@@ -167,7 +167,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         setUpNonAdmin();
 
         // This is a superadmin keystore, improve in the future
-        assertFalse(ejbcaraws.isAuthorized(AccessRulesConstants.ROLE_ROOT));
+        assertFalse(ejbcaraws.isAuthorized(StandardRules.ROLE_ROOT.resource()));
 
         try {
             editUser();

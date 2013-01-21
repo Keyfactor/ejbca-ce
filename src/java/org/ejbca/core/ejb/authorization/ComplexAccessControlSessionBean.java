@@ -112,7 +112,7 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
         }
 
         Map<Integer, AccessRuleData> rules = role.getAccessRules();
-        AccessRuleData rule = new AccessRuleData(SUPERADMIN_ROLE, AccessRulesConstants.ROLE_ROOT, AccessRuleState.RULE_ACCEPT, true);
+        AccessRuleData rule = new AccessRuleData(SUPERADMIN_ROLE, StandardRules.ROLE_ROOT.resource(), AccessRuleState.RULE_ACCEPT, true);
         if (!rules.containsKey(rule.getPrimaryKey())) {
             log.debug("Adding new rule '/' to " + SUPERADMIN_ROLE + ".");
             Map<Integer, AccessRuleData> newrules = new HashMap<Integer, AccessRuleData>();
@@ -151,7 +151,7 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
             roleMgmtSession.create(admin, SUPERADMIN_ROLE);
         }
         Map<Integer, AccessRuleData> rules = role.getAccessRules();
-        AccessRuleData rule = new AccessRuleData(SUPERADMIN_ROLE, AccessRulesConstants.ROLE_ROOT, AccessRuleState.RULE_ACCEPT, true);
+        AccessRuleData rule = new AccessRuleData(SUPERADMIN_ROLE, StandardRules.ROLE_ROOT.resource(), AccessRuleState.RULE_ACCEPT, true);
         if (!rules.containsKey(rule.getPrimaryKey())) {
             log.debug("Adding new rule '/' to " + SUPERADMIN_ROLE + ".");
             Collection<AccessRuleData> newrules = new ArrayList<AccessRuleData>();
@@ -186,11 +186,11 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
 
         accessrules.add(AccessRulesConstants.ROLEACCESSRULES[0]);
         accessrules.add(AccessRulesConstants.ROLEACCESSRULES[1]);
-        if (accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.ROLE_ROOT)) {
-            accessrules.add(AccessRulesConstants.ROLE_ROOT);
+        if (accessControlSession.isAuthorizedNoLogging(authenticationToken, StandardRules.ROLE_ROOT.resource())) {
+            accessrules.add(StandardRules.ROLE_ROOT.resource());
         }
-        if (accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.ROLE_ROOT)) {
-            accessrules.add(AccessRulesConstants.ROLE_ROOT);
+        if (accessControlSession.isAuthorizedNoLogging(authenticationToken, StandardRules.ROLE_ROOT.resource())) {
+            accessrules.add(StandardRules.ROLE_ROOT.resource());
         }
 
         // Insert Standard Access Rules.
@@ -246,7 +246,7 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
                 accessrules.add(AccessRulesConstants.ENDENTITYPROFILEBASE);
             } else {
                 // Add it to SuperAdministrator anyway
-                if (accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.ROLE_ROOT)) {
+                if (accessControlSession.isAuthorizedNoLogging(authenticationToken, StandardRules.ROLE_ROOT.resource())) {
                     accessrules.add(AccessRulesConstants.ENDENTITYPROFILEBASE);
                 }
             }

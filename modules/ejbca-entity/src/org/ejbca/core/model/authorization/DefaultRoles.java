@@ -19,6 +19,7 @@ import java.util.Map;
 
 import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.control.CryptoTokenRules;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 
@@ -31,7 +32,7 @@ import org.cesecore.authorization.rules.AccessRuleState;
 public enum DefaultRoles {
     CUSTOM("CUSTOM"), 
     SUPERADMINISTRATOR("SUPERADMINISTRATOR", 
-            new AccessRuleTemplate(AccessRulesConstants.ROLE_ROOT, AccessRuleState.RULE_ACCEPT, true)), 
+            new AccessRuleTemplate(StandardRules.ROLE_ROOT.resource(), AccessRuleState.RULE_ACCEPT, true)), 
     CAADMINISTRATOR("CAADMINISTRATOR", 
             new AccessRuleTemplate(AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRuleState.RULE_ACCEPT, false), 
             new AccessRuleTemplate(AccessRulesConstants.REGULAR_CAFUNCTIONALTY, AccessRuleState.RULE_ACCEPT, true), 

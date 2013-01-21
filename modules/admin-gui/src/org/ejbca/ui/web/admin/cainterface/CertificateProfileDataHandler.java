@@ -20,13 +20,13 @@ import java.util.HashSet;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
-import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.configuration.InformationMemory;
 
 /**
@@ -156,7 +156,7 @@ public class CertificateProfileDataHandler implements Serializable {
     private boolean authorizedToProfile(CertificateProfile profile, boolean editcheck) {
         boolean returnval = false;
 
-        boolean issuperadministrator = authorizationsession.isAuthorizedNoLogging(administrator, AccessRulesConstants.ROLE_ROOT);
+        boolean issuperadministrator = authorizationsession.isAuthorizedNoLogging(administrator, StandardRules.ROLE_ROOT.resource());
 
         boolean editauth = true; // will be set to false if we should check it and we are not authorized
         if (editcheck) {

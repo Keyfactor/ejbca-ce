@@ -4,7 +4,7 @@
 <%@page errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.config.GlobalConfiguration, org.ejbca.core.model.SecConst, 
               org.cesecore.authorization.AuthorizationDeniedException, org.ejbca.core.model.authorization.AccessRulesConstants,
                org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.core.model.ca.publisher.*, org.ejbca.ui.web.admin.cainterface.EditPublisherJSPHelper, 
-               org.ejbca.core.model.ca.publisher.PublisherExistsException, org.cesecore.certificates.util.DNFieldExtractor, org.cesecore.certificates.util.DnComponents"%>
+               org.ejbca.core.model.ca.publisher.PublisherExistsException, org.cesecore.certificates.util.DNFieldExtractor, org.cesecore.certificates.util.DnComponents, org.cesecore.authorization.control.StandardRules"%>
 
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
@@ -17,7 +17,7 @@
   String includefile = "publisherspage.jspf"; 
 
 
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ROOT); 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, StandardRules.ROLE_ROOT.resource()); 
                                             cabean.initialize(request, ejbcawebbean); 
                                             publisherhelper.initialize(request,ejbcawebbean, cabean);
   String THIS_FILENAME            =  globalconfiguration.getCaPath()  + "/editpublishers/editpublishers.jsp";
