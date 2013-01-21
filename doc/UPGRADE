@@ -33,12 +33,16 @@ From EJBCA 5.0.x to EJBCA 5.1.x
 -------------------------------
 See release notes for more details on changes.
 
+100% upgrade notes:
 The CryptoToken concept has extended the internal CA Token concept. CA's now
 reference a named set of keys in a CryptoToken and CA Service and CryptoToken
 activation are clearly separated. Upgrades are made during first startup.
 Older EJBCA nodes will continue to function during a 100% up-time upgrade, as
-long as newer instances has been deployed with "app.version.effective" lower
-than 5.1.x.
+long as newer instances has been deployed with "db.keepinternalcakeystores" set to true
+For 100% upgrade, or possibility to back out of upgrade, set db.keepinternalcakeystores to true (default is false). 
+
+PKCS#11 libraries for presentation in the AdminGUI are autodetected. If you have a library that is not automatically detected by 
+EJBCA you can add it to the configuration.
 See web.properties.sample for PKCS#11 library auto-detection configuration.
 
 The class CliAuthenticationToken and associated classes have been moved from the CLI module to reside next to the other 
@@ -119,6 +123,11 @@ In EJBCA 5.0.6 new versions of BouncyCastle jars are included. If you have been 
  
 From EJBCA 4.0.x to EJBCA 5.0.x
 --------------------------------
+100% upgrade notes:
+For some serialized classes serialization is changed to a portable format. 
+For 100% upgrade, or possibility to back out of upgrade, set db.keepjbossserialization to true (default is false). 
+After all nodes have been upgraded, db.keepjbossserialization can be set to false again.
+
 Support for the old LogEntryData has been dropped in EJBCA 5.0 and is replaced by a new AuditRecordData. 
 If you need to old audit records export the logs before upgrading. There is also a tool to export them after upgrade.
 The new audit log function have the capability for audit record protection, at the same time as being cluster friendly. 
