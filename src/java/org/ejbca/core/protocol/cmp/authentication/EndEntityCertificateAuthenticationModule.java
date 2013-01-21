@@ -245,9 +245,17 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         }
         CAInfo cainfo = null;
         CertificateInfo certinfo = null;
-        if(!CmpConfiguration.getRAOperationMode() || isCASet) { // if client mode, or cmp.authenticationparameters in cmp.properties is set in RA mode
+        
+        // if client mode, or cmp.authenticationparameters in cmp.properties is set in RA mode:
+        //          - Get the CA info that should have issued extraCert
+        //          - Check that extraCert is actually issued by the right CA
+        //          - If 3GPP mode is NOT activated:
+        //                  - Check that extraCert is in the database
+        //                  - Check that extraCert is valid
+        //                  - Check that extraCert is active
+        if(!CmpConfiguration.getRAOperationMode() || isCASet) {
             
-            // Get the CAInfo of the CA that should have issued extraCert and check extraCert is actually issued by the right CA 
+            // Get the CAInfo of the CA that should have issued extraCert 
             cainfo = getCAInfo(extraCert, isCASet, msg.getBody().getType());
             if ( cainfo == null ) {
                 return false;
