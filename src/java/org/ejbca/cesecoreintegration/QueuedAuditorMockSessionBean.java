@@ -66,4 +66,10 @@ public class QueuedAuditorMockSessionBean implements QueuedAuditorSessionLocal {
 	public AuditLogValidationReport verifyLogsIntegrity(AuthenticationToken token, Date date, Properties properties) throws AuditLogValidatorException {
 		throw new RuntimeException(UNSUPPORTED);
 	}
+	
+    @Override
+    public void delete(AuthenticationToken token, Date timestamp) {
+        throw new RuntimeException(UNSUPPORTED);
+    }
+
 }
