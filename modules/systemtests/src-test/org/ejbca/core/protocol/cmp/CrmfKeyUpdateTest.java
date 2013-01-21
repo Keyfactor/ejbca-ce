@@ -170,6 +170,8 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, "AdminCA1");
         updatePropertyOnServer(CmpConfiguration.CONFIG_DEFAULTCA, "AdminCA1");
         updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "normal");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, "RegTokenPwd;HMAC");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "-;-");
 
     }
 
@@ -461,8 +463,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         //--------------- create the user and issue his first certificate -----------------
         final String fakeUserDN = "CN=fakeuser,C=SE";
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        Certificate fakeCert = null;
-        fakeCert = CertTools.genSelfCert(fakeUserDN, 30, null, keys.getPrivate(), keys.getPublic(),
+        Certificate fakeCert = CertTools.genSelfCert(fakeUserDN, 30, null, keys.getPrivate(), keys.getPublic(),
                     AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
         assertNotNull("Failed to create a test certificate", fakeCert);
         
@@ -489,7 +490,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertEquals(23, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
         final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
-        final String expectedErrMsg = "The certificate attached to the PKIMessage in the extraCert field could not be found in the database.";
+        final String expectedErrMsg = "CA does not exist: " + fakeUserDN.hashCode();
         assertEquals(expectedErrMsg, errMsg);
 
         if(log.isTraceEnabled()) {
