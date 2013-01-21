@@ -119,15 +119,6 @@ public class CaSessionTest extends RoleUsingTestCase {
         CryptoTokenManagementSessionTest.removeCryptoToken(null, cryptoTokenId);
     }
 
-// We don't use the CryptoTokenSession in EJBCA
-//    @Test
-//    public void addCAUseSessionBeanToGenerateKeys() throws Exception {
-//        final String cadn = "CN=TEST GEN KEYS, O=CaSessionTest, C=SE";
-//        final String tokenpwd = "thisisatest";
-//        CA ca = CaSessionTest.createTestX509CAOptionalGenKeys(cadn, tokenpwd, false, false);
-//        testBase.addCAUseSessionBeanToGenerateKeys(ca, cadn, tokenpwd);
-//    }
-
     @Test
     public void addCAUseSessionBeanToGenerateKeys2() throws Exception {
         final String cadn = "CN=TEST GEN KEYS, O=CaSessionTest, C=SE";

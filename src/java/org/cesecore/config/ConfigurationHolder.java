@@ -48,7 +48,8 @@ public final class ConfigurationHolder {
     private static CompositeConfiguration config = null;
     private static CompositeConfiguration configBackup = null;
 
-    /** cesecore.properties must be first in this file, because CONFIGALLOWEXTERNAL is defined in there. */
+    /** cesecore.properties must be first in this file, because CONFIGALLOWEXTERNAL is defined in there.
+     * NOTE: diff between EJBCA and CESeCore*/
     private static final String[] CONFIG_FILES = { "cesecore.properties", "extendedkeyusage.properties",
             "cache.properties", "database.properties", "databaseprotection.properties", "backup.properties", "va.properties", "ocsp.properties"};
 

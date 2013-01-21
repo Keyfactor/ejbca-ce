@@ -20,5 +20,6 @@ package org.cesecore.jndi;
  */
 public class JndiConstants {
 
+    /** NOTE: diff between EJBCA and CESeCore */
     public static final String APP_JNDI_PREFIX = "ejbca/";
 }

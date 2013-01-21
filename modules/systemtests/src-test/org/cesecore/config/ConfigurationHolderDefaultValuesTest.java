@@ -29,6 +29,7 @@ public class ConfigurationHolderDefaultValuesTest {
     
     @Test
     public void testDefaultValues() {
+        // NOTE: Difference between CESeCore and EJBCA
         Assert.assertEquals("hsqldb", configurationHolderProxySession.getDefaultValue("database.name"));
     }
 

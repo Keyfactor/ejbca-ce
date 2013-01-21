@@ -21,6 +21,7 @@ import org.junit.Test;
  */
 public class InternalResourcesTest {
 
+    /** Note diff between EJBCA and CESeCore */
     private static final String TEST_RESOURCE_LOCATION = "/intresources";
     // Classpath issues, use "src/intresources" when running from within eclipse
     //private static final String TEST_RESOURCE_LOCATION = "src/intresources";

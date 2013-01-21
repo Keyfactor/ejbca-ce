@@ -437,51 +437,6 @@ public class CaSessionTestBase extends RoleUsingTestCase {
     	}    	
     }
     
-//    public void addCAUseSessionBeanToGenerateKeys(CA ca, String cadn, String tokenpwd) throws Exception {
-//    	// Generate CA keys
-//    	CryptoToken newtoken = tokenSession.generateKeyPair(roleMgmgToken, ca.getCAToken().getCryptoToken(), tokenpwd.toCharArray(), "512", "privatesignkeyalias");
-//    	CAToken catoken = ca.getCAToken();
-//    	catoken.setCryptoToken(newtoken);
-//    	ca.setCAToken(catoken);
-//    	ca.getCAToken().getCryptoToken().activate(tokenpwd.toCharArray());
-//    	PublicKey pubK = ca.getCAToken().getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
-//    	assertNotNull(pubK);
-//    	Certificate cert = null;
-//    	try {
-//        	// Store CA
-//        	caSession.addCA(roleMgmgToken, ca);
-//        	caTokenSession.activateCAToken(roleMgmgToken, ca.getCAId(), tokenpwd.toCharArray());
-//        	// Now create a CA certificate
-//        	CAInfo info = caSession.getCAInfo(roleMgmgToken, ca.getCAId());
-//        	Collection<Certificate> certs = info.getCertificateChain(); 
-//        	assertEquals(0, certs.size());
-//
-//            EndEntityInformation user = new EndEntityInformation("casessiontestca",cadn,ca.getCAId(),null,null,new EndEntityType(EndEntityTypes.USER_ENDUSER),0,CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, EndEntityConstants.TOKEN_USERGEN, 0, null);
-//            user.setStatus(EndEntityConstants.STATUS_NEW);
-//            user.setPassword("foo123");
-//        	SimpleRequestMessage req = new SimpleRequestMessage(pubK, user.getUsername(), user.getPassword());
-//            X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
-//            cert = (X509Certificate)resp.getCertificate();
-//            assertNotNull("Failed to create certificate", cert);
-//            // Verifies with CA token?
-//            cert.verify(ca.getCAToken().getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
-//            // Add the new CA cert
-//            certs.add(cert);
-//            info.setCertificateChain(certs);
-//            caSession.editCA(roleMgmgToken, info);
-//            
-//            // Get it again
-//            CAInfo info1 = caSession.getCAInfo(roleMgmgToken, ca.getCAId());
-//        	Collection<Certificate> certs1 = info1.getCertificateChain(); 
-//        	assertEquals(1, certs1.size());
-//        	Certificate cert1 = certs1.iterator().next();
-//            cert1.verify(ca.getCAToken().getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
-//    	} finally {
-//    		caSession.removeCA(roleMgmgToken, ca.getCAId());
-//    		internalCertStoreSession.removeCertificate(cert);
-//    	}    	
-//    }
-
     public void addCAUseSessionBeanToGenerateKeys2(CA ca, String cadn, String tokenpwd) throws Exception {
     	// Generate CA keys
     	Certificate cert = null;
