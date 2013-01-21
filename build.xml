@@ -1087,6 +1087,7 @@
                 <include name="org/cesecore/**/*java"/>
             </fileset>
         </copy>
+        <copy file="conf/cesecore.properties.sample" tofile="../cesecore/src/main/resources/conf/cesecore.properties" overwrite="true"/>
     </target>
 
 </project>
