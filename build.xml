@@ -1060,6 +1060,9 @@
             <fileset dir="modules/ejbca-ejb-interface/src">
                 <include name="org/cesecore/**/*java"/>
             </fileset>
+            <fileset dir="modules/ejbca-entity/src">
+                <include name="org/cesecore/**/*java"/>
+            </fileset>
         </copy>
         <copy todir="../cesecore/src/main/resources/intresources" overwrite="true">
             <fileset dir="src/intresources">
