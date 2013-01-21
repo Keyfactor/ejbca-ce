@@ -173,7 +173,7 @@ public class CliAuthenticationTest {
         for (final String logDeviceId : securityEventsAuditorSession.getQuerySupportingLogDevices()) {
             final List<? extends AuditLogEntry> list = securityEventsAuditorSession.selectAuditLogs(internalToken, 0, 0,
                     QueryCriteria.create().add(Criteria.eq(AuditLogEntry.FIELD_EVENTTYPE, EventTypes.AUTHENTICATION.toString())).add(Criteria.orderAsc("sequenceNumber")), logDeviceId);
-            Map<Object, Object> details = list.get(list.size()-1).getMapAdditionalDetails();
+            Map<String, Object> details = list.get(list.size()-1).getMapAdditionalDetails();
             String msg = (String) details.get("msg");           
             assertEquals("Incorrect log message was produced.", expectedMessage, msg);
         }
@@ -194,7 +194,7 @@ public class CliAuthenticationTest {
         for (final String logDeviceId : securityEventsAuditorSession.getQuerySupportingLogDevices()) {
             final List<? extends AuditLogEntry> list = securityEventsAuditorSession.selectAuditLogs(internalToken, 0, 0,
                     QueryCriteria.create().add(Criteria.eq(AuditLogEntry.FIELD_EVENTTYPE, EventTypes.AUTHENTICATION.toString())).add(Criteria.orderAsc("sequenceNumber")), logDeviceId);
-            Map<Object, Object> details = list.get(list.size()-1).getMapAdditionalDetails();
+            Map<String, Object> details = list.get(list.size()-1).getMapAdditionalDetails();
             String msg = (String) details.get("msg");           
             final String expectedRegexp = expectedMessage + ".*";
             assertTrue("Incorrect log message was produced. (Was: <" + msg + ">. Expected to match: <" +  expectedRegexp +">", msg.matches(expectedRegexp));
