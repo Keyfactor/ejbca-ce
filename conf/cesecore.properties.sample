@@ -109,6 +109,15 @@ securityeventsaudit.exporter.1=org.cesecore.audit.impl.AuditExporterXml
 # Default: false
 #db.keepjbossserialization=true
 
+# Option if we should keep internal CA keystores in the CAData table to be compatible with CeSecore 1.1/EJBCA 5.0.
+# Default to true. Set to false when all nodes in a cluster have been upgraded to CeSecore 1.2/EJBCA 5.1 or later,
+# then internal keystore in CAData will be migrated to CryptotokenData table instead and replaced with a foreign key in CAData.
+#
+# When upgrading a 100% up-time cluster, all nodes should be deployed with db.keepinternalcakeystores=true.
+# Once all nodes are running > EJBCA 5.0, set to false to increase efficiency and portability.
+# Default: false
+#db.keepinternalcakeystores=true
+
 #------------------- ECDSA implicitlyCA settings -------------
 # Sets pre-defined EC curve parameters for the implicitlyCA facility.
 # See the User's Guide for more information about the implicitlyCA facility.
