@@ -46,6 +46,7 @@ import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.cvc.CAReferenceField;
 import org.ejbca.cvc.CardVerifiableCertificate;
@@ -444,7 +445,7 @@ public class RequestHelper {
 
         // Set content-type to general file
         out.setContentType("application/octet-stream");        
-        out.setHeader("Content-disposition", "filename=\""+filename+"\"");
+        out.setHeader("Content-disposition", "filename=\""+StringTools.stripFilename(filename)+"\"");
 
         out.setContentLength(b64cert.length + beginKey.length() + endKey.length());
 
@@ -507,7 +508,7 @@ public class RequestHelper {
         if (filename != null) {
             // We must remove cache headers for IE
             ServletUtils.removeCacheHeaders(out);
-            out.setHeader("Content-disposition", "filename=\""+filename+"\"");        	
+            out.setHeader("Content-disposition", "filename=\""+StringTools.stripFilename(filename)+"\"");        	
         }
 
         // Set content-type to general file

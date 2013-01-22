@@ -47,6 +47,7 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.FileTools;
+import org.cesecore.util.StringTools;
 import org.ejbca.config.EjbcaConfigurationHolder;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
@@ -693,7 +694,7 @@ public class RequestInstance {
 		File fin = new File(tempDirectory + System.getProperty("file.separator") + filename);
 		FileInputStream vpnfile = new FileInputStream(fin);
 		out.setContentType("application/x-msdos-program");
-		out.setHeader("Content-disposition", "filename=" + filename);
+		out.setHeader("Content-disposition", "filename=\"" + StringTools.stripFilename(filename) + "\"");
 		out.setContentLength((int)fin.length());
 		OutputStream os = out.getOutputStream();
 		byte[] buf = new byte[4096];
@@ -712,7 +713,7 @@ public class RequestInstance {
 		ks.store(buffer, kspassword.toCharArray());
 
 		out.setContentType("application/x-pkcs12");
-		out.setHeader("Content-disposition", "filename=" + username + ".p12");
+		out.setHeader("Content-disposition", "filename=\"" + StringTools.stripFilename(username + ".p12") + "\"");
 		out.setContentLength(buffer.size());
 		buffer.writeTo(out.getOutputStream());
 		out.flushBuffer();
@@ -724,7 +725,7 @@ public class RequestInstance {
 		ks.store(buffer, kspassword.toCharArray());
 
 		out.setContentType("application/octet-stream");
-		out.setHeader("Content-disposition", "filename=" + username + ".jks");
+		out.setHeader("Content-disposition", "filename=\"" + StringTools.stripFilename(username + ".jks") + "\"");
 		out.setContentLength(buffer.size());
 		buffer.writeTo(out.getOutputStream());
 		out.flushBuffer();
@@ -733,7 +734,7 @@ public class RequestInstance {
 
 	private void sendPEMTokens(KeyStore ks, String username, String kspassword, HttpServletResponse out) throws Exception {
 		out.setContentType("application/octet-stream");
-		out.setHeader("Content-disposition", " attachment; filename=" + username + ".pem");
+		out.setHeader("Content-disposition", " attachment; filename=\"" + StringTools.stripFilename(username + ".pem") + "\"");
 		out.getOutputStream().write(KeyTools.getSinglePemFromKeyStore(ks, kspassword.toCharArray()));
 		out.flushBuffer();
 	}

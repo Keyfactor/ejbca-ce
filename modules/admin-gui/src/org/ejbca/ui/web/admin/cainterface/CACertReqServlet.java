@@ -29,6 +29,7 @@ import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.cvc.CVCAuthenticatedRequest;
@@ -205,7 +206,7 @@ public class CACertReqServlet extends HttpServlet {
             	
                 // We must remove cache headers for IE
                 ServletUtils.removeCacheHeaders(res);
-                res.setHeader("Content-disposition", "attachment; filename=" +  filename);
+                res.setHeader("Content-disposition", "attachment; filename=\"" + StringTools.stripFilename(filename)+"\"");
                 res.setContentType("application/octet-stream");
                 res.setContentLength(length);
                 res.getOutputStream().write(outbytes);
