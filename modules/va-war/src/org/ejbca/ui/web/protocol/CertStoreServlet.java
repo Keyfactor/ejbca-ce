@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.StringTools;
 import org.ejbca.core.protocol.certificatestore.HashID;
 import org.ejbca.util.HTMLTools;
 
@@ -104,7 +105,7 @@ public class CertStoreServlet extends StoreServletBase {
 			throw new ServletException(e);
 		}
 		resp.setContentType("application/pkix-cert");
-		resp.setHeader("Content-disposition", "attachment; filename=" + name + ".der");
+		resp.setHeader("Content-disposition", "attachment; filename=\"" + StringTools.stripFilename(name+".der") + "\"");
 		resp.setContentLength(encoded.length);
 		resp.getOutputStream().write(encoded);
 	}
@@ -123,7 +124,7 @@ public class CertStoreServlet extends StoreServletBase {
 				}
 				final InternetHeaders headers = new InternetHeaders();
 				headers.addHeader("Content-type", "application/pkix-cert");
-				headers.addHeader("Content-disposition", "attachment; filename="+filename);
+				headers.addHeader("Content-disposition", "attachment; filename=\""+StringTools.stripFilename(filename)+"\"");
 				mp.addBodyPart(new MimeBodyPart(headers,certs[i].getEncoded()));
 			}
 			if (log.isTraceEnabled()) {
@@ -144,7 +145,7 @@ public class CertStoreServlet extends StoreServletBase {
 			// Upload the certificates with mime-header for user certificates.
 			ps.println("--"+BOUNDARY);
 			ps.println("Content-type: application/pkix-cert");
-			ps.println("Content-disposition: attachment; filename=cert" + name + '-' + i + ".der");
+			ps.println("Content-disposition: attachment; filename=\""+StringTools.stripFilename("cert" + name + '-' + i + ".der")+"\"");
 			ps.println();
 			try {
 				ps.write(certs[i].getEncoded());

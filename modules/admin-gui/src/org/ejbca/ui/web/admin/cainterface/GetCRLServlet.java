@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.StringTools;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
@@ -107,7 +108,7 @@ public class GetCRLServlet extends HttpServlet {
                 String filename = basename+".crl";
                 // We must remove cache headers for IE
                 ServletUtils.removeCacheHeaders(res);
-                res.setHeader("Content-disposition", "attachment; filename=" +  filename);
+                res.setHeader("Content-disposition", "attachment; filename=\"" +  StringTools.stripFilename(filename) + "\"");
                 res.setContentType("application/pkix-crl");
                 res.setContentLength(crl.length);
                 res.getOutputStream().write(crl);
@@ -127,7 +128,7 @@ public class GetCRLServlet extends HttpServlet {
         		String filename = basename+"_delta.crl";
         		// We must remove cache headers for IE
         		ServletUtils.removeCacheHeaders(res);
-        		res.setHeader("Content-disposition", "attachment; filename=" +  filename);
+        		res.setHeader("Content-disposition", "attachment; filename=\"" + StringTools.stripFilename(filename) + "\"");
         		res.setContentType("application/pkix-crl");
         		res.setContentLength(crl.length);
         		res.getOutputStream().write(crl);
