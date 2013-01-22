@@ -468,12 +468,12 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
              */
             if(accessRule.getTreeState() == AccessTreeState.STATE_ACCEPT) {
                 if (!accessControlSession.isAuthorizedNoLogging(authenticationToken, false, rule)) {
-                    log.debug(authenticationToken + " not not authorized to " + rule); 
+                    log.debug(authenticationToken + " not authorized to " + rule); 
                     return false;
                 }
             } else if(accessRule.getTreeState() == AccessTreeState.STATE_ACCEPT_RECURSIVE) {
                 if (!accessControlSession.isAuthorizedNoLogging(authenticationToken, true, rule)) {
-                    log.debug(authenticationToken + " not not authorized to " + rule + " (recursive)");
+                    log.debug(authenticationToken + " not authorized to " + rule + " (recursive)");
                     return false;
                 }
             }
