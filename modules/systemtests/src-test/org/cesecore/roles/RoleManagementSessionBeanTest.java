@@ -226,10 +226,11 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
         RoleData role = roleManagementSession.create(authenticationToken, "ProfessorFarnsworth");
         int futureRamaPrimaryKey = AccessRuleData.generatePrimaryKey(role.getRoleName(), "/future/rama");
         int futureWorldPrimaryKey = AccessRuleData.generatePrimaryKey(role.getRoleName(), "/future/world");
-
+        AccessRuleData futureRama = null;
+        AccessRuleData futureWorld = null;
         try {
             Collection<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
-            AccessRuleData futureRama = accessRuleManagementSession.createRule("/future/rama", role.getRoleName(), AccessRuleState.RULE_ACCEPT, true);
+            futureRama = accessRuleManagementSession.createRule("/future/rama", role.getRoleName(), AccessRuleState.RULE_ACCEPT, true);
 
             accessRules.add(futureRama);
             role = roleManagementSession.addAccessRulesToRole(alwaysAllowAuthenticationToken, role, accessRules);
@@ -248,7 +249,7 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
             accessRules.add(futureRama);
 
             // Add another rule, unpersisted, make sure that it's created
-            AccessRuleData futureWorld = new AccessRuleData(role.getRoleName(), "/future/world", AccessRuleState.RULE_ACCEPT, true);
+            futureWorld = new AccessRuleData(role.getRoleName(), "/future/world", AccessRuleState.RULE_ACCEPT, true);
             accessRules.add(futureWorld);
             role = roleManagementSession.addAccessRulesToRole(alwaysAllowAuthenticationToken, role, accessRules);
 
@@ -269,6 +270,19 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
             assertNull(accessRuleManagementSession.find(futureRamaPrimaryKey));
 
         } finally {
+            Map<Integer, AccessRuleData> rules = role.getAccessRules();
+            if (futureRama != null) {
+                // If the test failed adding the access rule to the role, it will not be removed when removing the role below
+                if (!rules.containsKey(futureRama.getPrimaryKey())) {
+                    accessRuleManagementSession.remove(futureRama);
+                }
+            }
+            if (futureWorld != null) {
+                // If the test failed adding the access rule to the role, it will not be removed when removing the role below
+                if (!rules.containsKey(futureWorld.getPrimaryKey())) {
+                    accessRuleManagementSession.remove(futureWorld);
+                }
+            }
             roleManagementSession.remove(authenticationToken, role);
             assertNull("All rules where not removed when their attendant roles were.", accessRuleManagementSession.find(futureWorldPrimaryKey));
         }
