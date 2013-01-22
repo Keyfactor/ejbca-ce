@@ -29,6 +29,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.ui.web.RequestHelper;
@@ -150,7 +151,7 @@ public class CACertServlet extends HttpServlet {
                 	if (cacert instanceof CardVerifiableCertificate) {
                 		ending = ".cvcert";
                 	}
-                    res.setHeader("Content-disposition", "attachment; filename=" + filename + ending);
+                    res.setHeader("Content-disposition", "attachment; filename=\"" + StringTools.stripFilename(filename + ending) + "\"");
                     res.setContentType("application/octet-stream");
                     res.setContentLength(enccert.length);
                     res.getOutputStream().write(enccert);
@@ -160,7 +161,7 @@ public class CACertServlet extends HttpServlet {
                     String out = RequestHelper.BEGIN_CERTIFICATE_WITH_NL;                   
                     out += new String(b64cert);
                     out += RequestHelper.END_CERTIFICATE_WITH_NL;
-                    res.setHeader("Content-disposition", "attachment; filename=" + filename + ".cacert.pem");
+                    res.setHeader("Content-disposition", "attachment; filename=\"" + StringTools.stripFilename(filename + ".cacert.pem") + "\"");
                     res.setContentType("application/octet-stream");
                     res.setContentLength(out.length());
                     res.getOutputStream().write(out.getBytes());
@@ -172,7 +173,7 @@ public class CACertServlet extends HttpServlet {
                     	KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
                     	ks.load(null, jksPassword.toCharArray());
                     	ks.setCertificateEntry(filename, cacert);
-                        res.setHeader("Content-disposition", "attachment; filename=" + filename + ".cacert.jks");
+                        res.setHeader("Content-disposition", "attachment; filename=\"" + StringTools.stripFilename(filename + ".cacert.jks") + "\"");
                         res.setContentType("application/octet-stream");
                     	ks.store(res.getOutputStream(), jksPassword.toCharArray());
                     } else {

@@ -13,6 +13,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
@@ -96,7 +97,7 @@ public class CAExportServlet extends HttpServlet {
             ServletUtils.removeCacheHeaders(res);	// We must remove cache headers for IE
         	res.setContentType("application/octet-stream");
         	res.setContentLength(keystorebytes.length);
-        	res.setHeader("Content-Disposition", "attachment;filename=\"" + caname + "."+ext+"\"");
+        	res.setHeader("Content-Disposition", "attachment;filename=\"" + StringTools.stripFilename(caname+"."+ext) + "\"");
 	        res.getOutputStream().write(keystorebytes);
   		} catch(Exception e) {
 	        res.setContentType("text/plain");

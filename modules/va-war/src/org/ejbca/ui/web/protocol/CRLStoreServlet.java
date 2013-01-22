@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
+import org.cesecore.util.StringTools;
 import org.ejbca.core.protocol.certificatestore.HashID;
 import org.ejbca.core.protocol.crlstore.CRLCacheFactory;
 import org.ejbca.core.protocol.crlstore.ICRLCache;
@@ -98,7 +99,7 @@ public class CRLStoreServlet extends StoreServletBase {
 			return;
 		}
 		resp.setContentType("application/pkix-crl");
-		resp.setHeader("Content-disposition", "attachment; filename="+(isDelta?"delta":"") + name + ".crl");
+		resp.setHeader("Content-disposition", "attachment; filename=\""+StringTools.stripFilename((isDelta?"delta":"") + name + ".crl")+"\"");
 		resp.setContentLength(crl.length);
 		resp.getOutputStream().write(crl);
 	}

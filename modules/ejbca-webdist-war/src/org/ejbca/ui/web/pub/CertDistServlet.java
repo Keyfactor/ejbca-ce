@@ -49,6 +49,7 @@ import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.ui.web.RequestHelper;
@@ -177,7 +178,7 @@ public class CertDistServlet extends HttpServlet {
                 	filename = "delta_"+filename;
                 }                 
                 if ((moz == null) || !moz.equalsIgnoreCase("y")) {
-                    res.setHeader("Content-disposition", "attachment; filename=\"" +  filename+"\"");                    
+                    res.setHeader("Content-disposition", "attachment; filename=\"" + StringTools.stripFilename(filename)+"\"");                    
                 }
                 res.setContentType("application/x-x509-crl");
                 if (StringUtils.equals(format, "PEM")) {
@@ -229,7 +230,7 @@ public class CertDistServlet extends HttpServlet {
                         filename = filename+ending;                        
                         // We must remove cache headers for IE
                         ServletUtils.removeCacheHeaders(res);
-                        res.setHeader("Content-disposition", "attachment; filename=\"" +  filename+"\"");
+                        res.setHeader("Content-disposition", "attachment; filename=\"" +  StringTools.stripFilename(filename)+"\"");
                         res.setContentType("application/octet-stream");
                         if (StringUtils.equals(format, "PEM")) {
                             RequestHelper.sendNewB64File(Base64.encode(cert, true), res, filename, RequestHelper.BEGIN_CERTIFICATE_WITH_NL, RequestHelper.END_CERTIFICATE_WITH_NL);
@@ -313,13 +314,13 @@ public class CertDistServlet extends HttpServlet {
                     // We must remove cache headers for IE
                     ServletUtils.removeCacheHeaders(res);
                     if (pkcs7){
-                        res.setHeader("Content-disposition", "attachment; filename=\""+filename+".p7c\"");
+                        res.setHeader("Content-disposition", "attachment; filename=\""+StringTools.stripFilename(filename)+".p7c\"");
                     } else {
                     	String ending = ".crt";
                     	if (cacert instanceof CardVerifiableCertificate) {
                     		ending = ".cvcert";
                     	}
-                        res.setHeader("Content-disposition", "attachment; filename=\""+filename+ending+"\"");
+                        res.setHeader("Content-disposition", "attachment; filename=\""+StringTools.stripFilename(filename+ending)+"\"");
                     }
                     res.setContentType("application/octet-stream");
                     res.setContentLength(enccert.length);
@@ -341,7 +342,7 @@ public class CertDistServlet extends HttpServlet {
                     }
                     // We must remove cache headers for IE
                     ServletUtils.removeCacheHeaders(res);
-                    res.setHeader("Content-disposition", "attachment; filename=\""+filename+".pem\"");
+                    res.setHeader("Content-disposition", "attachment; filename=\""+StringTools.stripFilename(filename)+".pem\"");
                     res.setContentType("application/octet-stream");
                     res.setContentLength(out.length());
                     res.getOutputStream().write(out.getBytes());
@@ -457,7 +458,7 @@ public class CertDistServlet extends HttpServlet {
 				}
 				// We must remove cache headers for IE
 				ServletUtils.removeCacheHeaders(res);
-				res.setHeader("Content-disposition", "attachment; filename=\""+filename+"\"");
+				res.setHeader("Content-disposition", "attachment; filename=\""+StringTools.stripFilename(filename)+"\"");
 				res.setContentType("application/octet-stream");
 				res.setContentLength(outbytes.length);
 				res.getOutputStream().write(outbytes);

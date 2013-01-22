@@ -48,6 +48,7 @@ import org.cesecore.audit.impl.integrityprotected.AuditRecordData;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
@@ -575,7 +576,7 @@ public class AuditorManagedBean implements Serializable {
     private void downloadResults(byte[] b, String contentType, String filename) throws IOException {
             final HttpServletResponse response = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();
             response.setContentType(contentType);
-            response.addHeader("Content-Disposition", "attachment; filename=\""+filename+"\"");
+            response.addHeader("Content-Disposition", "attachment; filename=\""+StringTools.stripFilename(filename)+"\"");
             final ServletOutputStream out = response.getOutputStream();
             response.setContentLength(b.length);
             out.write(b);

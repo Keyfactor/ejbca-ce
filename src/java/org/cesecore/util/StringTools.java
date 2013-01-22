@@ -79,6 +79,8 @@ public final class StringTools {
     private static final char[] stripCharsIncludingXSS = { '\n', '\r', ';', '!', '\0', '%', '`', '?', '$', '~', '<', '>' };
     // Characters that are not allowed in strings that may be used in db queries
     private static final char[] stripSqlChars = { '\'', '\"', '\n', '\r', '\\', ';', '&', '|', '!', '\0', '%', '`', '<', '>', '?', '$', '~' };
+    // Characters that are not allowed in filenames
+    private static final char[] stripFilenameChars = { '\0', '\n', '\r', '/', '\\', '?', '%', '*', ':', '|', '\"', '<', '>' };
     // Characters that are allowed to escape in strings.
     // RFC 2253, section 2.4 lists ',' '"' '\' '+' '<' '>' ';' as valid escaped chars.
     // Also allow '=' to be escaped.
@@ -109,6 +111,15 @@ public final class StringTools {
      */
     public static String stripIncludingXss(final String str) {
     	return strip(str, stripCharsIncludingXSS);
+    }
+    
+    /**
+     * Strips characters that are not allowed in filenames
+     * @param str the string whose contents will be stripped.
+     * @return the stripped version of the input string.
+     */
+    public static String stripFilename(final String str) {
+        return strip(str, stripFilenameChars);
     }
 
     public static String strip(final String str, final char[] stripThis) {

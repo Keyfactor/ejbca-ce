@@ -31,6 +31,7 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 
 /**
@@ -70,7 +71,7 @@ public class CryptoTokenDownloadServlet extends HttpServlet {
         try {
             final PublicKey publicKey = cryptoTokenManagementSession.getPublicKey(alwaysAllowAuthenticationToken, cryptoTokenId, aliasParam);
             response.setContentType("application/octet-stream");
-            response.setHeader("Content-disposition", " attachment; filename=" + aliasParam + ".pem");
+            response.setHeader("Content-disposition", " attachment; filename=\"" + StringTools.stripFilename(aliasParam + ".pem") + "\"");
             response.getOutputStream().write(KeyTools.getAsPem(publicKey).getBytes());
             response.flushBuffer();
         } catch (CryptoTokenOfflineException e) {
