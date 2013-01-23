@@ -20,17 +20,11 @@ import java.net.URLConnection;
 /**
  * Used to activate the external OCSP responder.
  * 
- * @author Lars Silven PrimeKey Solution AB
  * @version $Id$
  * 
  */
 public class OCSPActivate extends ClientToolBox {
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.ejbca.ui.cli.ClientToolBox#execute(java.lang.String[])
-     */
     @Override
 	protected void execute(String[] args) {
         if (args.length < 2) {
@@ -63,17 +57,12 @@ public class OCSPActivate extends ClientToolBox {
                 System.out.println("Unexpected result code " + responseCode + " for URL: '" + url + "'. Message was: '" + responseMessage + '\'');
                 return;
             }
-            System.out.println("Password for keys sent to the OCSP responder. If the password was right the respnder will be activated. Check this.");
+            System.out.println("Password for keys sent to the OCSP responder. If the password was right the responder will be activated. Check this.");
         } catch (IOException e) {
             System.out.println("Network problems: '" + e.getMessage() + '\'');
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.ejbca.ui.cli.ClientToolBox#getName()
-     */
     @Override
     protected String getName() {
         return "OCSPActivate";
