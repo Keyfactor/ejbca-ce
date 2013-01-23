@@ -993,7 +993,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         String fingerprint = null;
         try {
             
-            //------------ Creating an CertificationRequest signed by the vendor-issued certificate, not in the database, for an endentity that already exists.
+            //------------ Creating an initialization Request in client mode signed by the vendor-issued certificate, not in the database, for an endentity that already exists.
             byte[] nonce = CmpMessageHelper.createSenderNonce();
             byte[] transid = CmpMessageHelper.createSenderNonce();
             KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
