@@ -31,9 +31,11 @@ import org.cesecore.roles.RoleNotFoundException;
 @Local
 public interface RoleManagementSessionLocal extends RoleManagementSession {
 
-    /** Method used to initialize an initial role with access to edit roles
+    /** Method used to initialize an initial role with access to edit roles, i.e. a superadmin "/" rule, and "editroles".
+     * If only would have EDITROLES rule, the admin could only edit roles with the EDITROLE rule.
+     * LocalOnly, should only be used from test code.
+     *  
      * @throws RoleExistsException if the role already exist
-     * 
      */
     void initializeAccessWithCert(AuthenticationToken authenticationToken, String roleName, Certificate certificate) throws RoleExistsException, RoleNotFoundException;
     

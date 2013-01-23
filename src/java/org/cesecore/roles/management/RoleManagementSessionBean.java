@@ -118,7 +118,7 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
 
         // Add rules to the role
         List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
-        accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.EDITROLES.resource(), AccessRuleState.RULE_ACCEPT, true));
+        accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.ROLE_ROOT.resource(), AccessRuleState.RULE_ACCEPT, true));
         addAccessRulesToRoleNoAuth(authenticationToken, role, accessRules);
         if (log.isTraceEnabled()) {
             log.trace("<initializeAccessWithCert: " + authenticationToken.toString() + ", " + roleName);
