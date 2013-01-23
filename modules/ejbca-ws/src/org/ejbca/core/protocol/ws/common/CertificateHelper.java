@@ -31,15 +31,15 @@ public class CertificateHelper {
 	/**
 	 * Indicates that the requester want a BASE64 encoded certificate in the CertificateResponse object.
 	 */
-	public static String RESPONSETYPE_CERTIFICATE    = "CERTIFICATE";
+	public static final String RESPONSETYPE_CERTIFICATE    = "CERTIFICATE";
 	/**
 	 * Indicates that the requester want a BASE64 encoded pkcs7 in the CertificateResponse object.
 	 */
-	public static String RESPONSETYPE_PKCS7          = "PKCS7";
+	public static final String RESPONSETYPE_PKCS7          = "PKCS7";
 	/**
 	 * Indicates that the requester want a BASE64 encoded pkcs7 with the complete chain in the CertificateResponse object.
 	 */
-	public static String RESPONSETYPE_PKCS7WITHCHAIN = "PKCS7WITHCHAIN";
+	public static final String RESPONSETYPE_PKCS7WITHCHAIN = "PKCS7WITHCHAIN";
 	
 	/**
 	 * Request data types for WS
