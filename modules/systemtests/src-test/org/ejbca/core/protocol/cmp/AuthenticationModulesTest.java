@@ -1372,11 +1372,12 @@ public class AuthenticationModulesTest extends CmpTestCase {
     /**
      * Tests that EndEntityAuthentication module in client mode when 3GPP option is activated:
      * 
-     * 1- A certification request, signed by the vendor-issued certificate (not in the database), is sent. The request should pass.
-     * 2- A certification request, signed by Ejbca issued certificate, is sent. The request should fail.
-     * 3- A KeyUpdate request (aka. renewal request), signed by the vendor-issued certificate (still not in the database), is sent. The request should fail.
-     * 4- A KeyUpdate request (aka. renewal request), signed by Ejbca issued certificate, is sent. The request should pass.
-     * 5- A revocation request, signed by Ejbca issued certificate, is sent. The request should pass.
+     * 1- An initialization request, signed by the vendor-issued certificate (not in the database), is sent in RA mode. The request should fail.
+     * 2- An initialization request, signed by the vendor-issued certificate (not in the database), is sent in client mode. The request should pass.
+     * 3- An initialization request, signed by Ejbca issued certificate, is sent in client mode. The request should fail.
+     * 4- A KeyUpdate request (aka. renewal request), signed by the vendor-issued certificate (still not in the database), is sent. The request should fail.
+     * 5- A KeyUpdate request (aka. renewal request), signed by Ejbca issued certificate, is sent. The request should pass.
+     * 6- A revocation request, signed by Ejbca issued certificate, is sent. The request should pass.
      * 
      * @throws Exception
      */
