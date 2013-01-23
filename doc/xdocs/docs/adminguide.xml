@@ -5126,7 +5126,7 @@ The upgrade EJBCA without downtime, you can use the 'app.version.effective' prop
 </p>
 </section>
 
-<section name="Monitoring and healtcheck">
+<section name="Monitoring and healthcheck">
 <p>In EJBCA there exists a health check service that can be used for health monitoring. 
 It is also useful for cluster, as it can be checked by load balancers to determine if a node should be active in the cluster (healthy) 
 or taken out of the cluster (unhealthy). 

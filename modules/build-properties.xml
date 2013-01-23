@@ -61,7 +61,7 @@
     <property name="mod.cmp-war.war" location="${mod.dist.path}/cmp.war" />
     <property name="mod.ejbca-cmp-tcp.path" location="${mod.path}/ejbca-cmp-tcp" />
     <property name="mod.ejbca-cmp-tcp.war" location="${mod.dist.path}/ejbca-cmp-tcp.war" />
-    <property name="mod.healthcheck-war.path" location="${mod.path}/healtcheck-war" />
+    <property name="mod.healthcheck-war.path" location="${mod.path}/healthcheck-war" />
     <property name="mod.healthcheck-war.war" location="${mod.dist.path}/healthcheck.war" />
     <property name="mod.clearcache-war.path" location="${mod.path}/clearcache-war" />
     <property name="mod.clearcache-war.war" location="${mod.dist.path}/clearcache.war" />
