@@ -51,7 +51,7 @@ public abstract class RoleUsingTestCase {
         String commonname = this.getClass().getCanonicalName();
         roleMgmgToken = createAuthenticationToken("C=SE,O=Test,CN=" + commonname);
         X509Certificate cert = (X509Certificate) roleMgmgToken.getCredentials().iterator().next();
-        // Initialize the role mgmt system with this role that is allowed to edit roles
+        // Initialize the role mgmt system with this role that is allowed to edit roles, i.e. needs access to /
         final RoleAccessSessionRemote roleAccessSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
         if (roleAccessSessionRemote.findRole(roleName) == null) {
             final RoleInitializationSessionRemote roleInitSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleInitializationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
