@@ -662,7 +662,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     }
     
     private boolean is3GPP(int reqType) {
-        return CmpConfiguration.get3GPPMode() && (reqType == 0 || reqType == 2);
+        return !CmpConfiguration.getRAOperationMode() && CmpConfiguration.get3GPPMode() && (reqType == 0 || reqType == 2);
     }
  
 }

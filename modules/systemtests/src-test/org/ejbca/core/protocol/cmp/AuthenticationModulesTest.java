@@ -1388,9 +1388,6 @@ public class AuthenticationModulesTest extends CmpTestCase {
         confSession.updateProperty(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "AdminCA1");
         assertTrue("The CMP Authentication module was not configured correctly.",
                 confSession.verifyProperty(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "AdminCA1"));
-        confSession.updateProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "normal");
-        assertTrue("The CMP Authentication module was not configured correctly.",
-                confSession.verifyProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "normal"));
         confSession.updateProperty(CmpConfiguration.CONFIG_3GPPMODE, "true");
         assertTrue("The CMP Authentication module was not configured correctly.",
                 confSession.verifyProperty(CmpConfiguration.CONFIG_3GPPMODE, "true"));
@@ -1424,13 +1421,18 @@ public class AuthenticationModulesTest extends CmpTestCase {
         caAdminSession.importCACertificate(ADMIN, "3GPPCA", cacerts);
         createUser(testUIDUsername, testUserDN, "foo123", false);
         
+        KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+        AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
+        
         String fingerprint = null;
         String fingerprint2 = null;
         try {
             
-            // Creating an CertificationRequest signed by the vendor-issued certificate, not in the database, for an endentity that already exists.
-            KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-            AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
+            // Creating an initialization Request in RA mode signed by the vendor-issued certificate, not in the database, for an endentity that already exists.
+            confSession.updateProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
+            assertTrue("The CMP Authentication module was not configured correctly.",
+                    confSession.verifyProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "ra"));
+            
             PKIMessage msg = genCertReq(issuerDN, testUserDN, keys, gppcacert, nonce, transid, false, null, null, null, null, pAlg, null);
             assertNotNull("Generating CrmfRequest failed.", msg);
             CMPCertificate extraCert = getCMPCert(gppusercert);
@@ -1442,6 +1444,35 @@ public class AuthenticationModulesTest extends CmpTestCase {
             out.writeObject(msg);
             byte[] ba = bao.toByteArray();
             byte[] resp = sendCmpHttp(ba, 200);
+            checkCmpResponseGeneral(resp, issuerDN, testUserDN, cacert, msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
+                    .getTransactionID().getOctets(), false, null);
+            
+            PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(resp)).readObject());
+            assertNotNull(respObject);
+
+            PKIBody body = respObject.getBody();
+            assertEquals(23, body.getType());
+            ErrorMsgContent err = (ErrorMsgContent) body.getContent();
+            String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+            String expectedErrMsg = "The certificate attached to the PKIMessage in the extraCert field could not be found in the database.";
+            assertEquals(expectedErrMsg, errMsg);
+            
+            confSession.updateProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "normal");
+            assertTrue("The CMP Authentication module was not configured correctly.",
+                    confSession.verifyProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "normal"));
+            
+            // Creating an initialization Request in client mode signed by the vendor-issued certificate, not in the database, for an endentity that already exists.
+            msg = genCertReq(issuerDN, testUserDN, keys, gppcacert, nonce, transid, false, null, null, null, null, pAlg, null);
+            assertNotNull("Generating CrmfRequest failed.", msg);
+            extraCert = getCMPCert(gppusercert);
+            msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, privkey, pAlg.getAlgorithm().getId(), "BC");
+            assertNotNull(msg);
+
+            bao = new ByteArrayOutputStream();
+            out = new DEROutputStream(bao);
+            out.writeObject(msg);
+            ba = bao.toByteArray();
+            resp = sendCmpHttp(ba, 200);
             CertReqMessages ir = (CertReqMessages) msg.getBody().getContent();
             Certificate cert = checkCmpCertRepMessage(testUserDN, cacert, resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
                     .getValue().intValue());
@@ -1449,7 +1480,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             fingerprint = CertTools.getFingerprintAsString(cert);
             
             
-            // Sending another CertificationRequest signed by the endentity's certificate issued by Ejbca
+            // Sending another initialization Request in client mode signed by the endentity's certificate issued by Ejbca
             msg = genCertReq(issuerDN, testUserDN, keys, cacert, nonce, transid, false, null, null, null, null, pAlg, null);
             assertNotNull("Generating CrmfRequest failed.", msg);
             extraCert = getCMPCert(cert);
@@ -1464,14 +1495,14 @@ public class AuthenticationModulesTest extends CmpTestCase {
             checkCmpResponseGeneral(resp, issuerDN, testUserDN, cacert, msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
                     .getTransactionID().getOctets(), false, null);
             
-            PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(resp)).readObject());
+            respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(resp)).readObject());
             assertNotNull(respObject);
 
-            PKIBody body = respObject.getBody();
+            body = respObject.getBody();
             assertEquals(23, body.getType());
-            ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-            String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
-            String expectedErrMsg = "The End Entity certificate attached to the PKIMessage is not issued by the CA '3GPPCA'";
+            err = (ErrorMsgContent) body.getContent();
+            errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+            expectedErrMsg = "The End Entity certificate attached to the PKIMessage is not issued by the CA '3GPPCA'";
             assertEquals(expectedErrMsg, errMsg);
             
             
