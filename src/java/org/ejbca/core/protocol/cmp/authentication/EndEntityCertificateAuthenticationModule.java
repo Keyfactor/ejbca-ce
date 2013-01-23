@@ -661,6 +661,13 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         }
     }
     
+    /**
+     * Checks whether authentication by vendor-issued-certificate should be used. If authentication by vendor-issued-certificate is 
+     * activated in the Cmp.properties file, it can be used only in client mode and with initialization/certification requests.
+     *  
+     * @param reqType
+     * @return 'True' if authentication by vendor-issued-certificate is used. 'False' otherwise
+     */
     private boolean is3GPP(int reqType) {
         return !CmpConfiguration.getRAOperationMode() && CmpConfiguration.get3GPPMode() && (reqType == 0 || reqType == 2);
     }
