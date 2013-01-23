@@ -13,10 +13,12 @@
 
 package org.ejbca.ui.web.admin.configuration;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.security.cert.X509Certificate;
@@ -802,28 +804,41 @@ public class EjbcaWebBean implements Serializable {
         if (log.isTraceEnabled()) {
             log.trace(">clearClusterCache");
         }
-        Set<String> nodes = globalconfiguration.getNodesInCluster();
+        final Set<String> nodes = globalconfiguration.getNodesInCluster();
         final Iterator<String> itr = nodes.iterator();
         String host = null;
+        final StringBuffer failedHosts = new StringBuffer();
+        final StringBuffer succeededHost = new StringBuffer();
         while (itr.hasNext()) {
             host = (String) itr.next();
             if (host != null) {
                 // get http port of remote host, this requires that all cluster nodes uses the same public htt port
-                int pubport = WebConfiguration.getPublicHttpPort();
-                String requestUrl = "http://" + host + ":" + pubport + "/ejbca/clearcache?command=clearcaches";
-                URL url = new URL(requestUrl);
-                HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                final int pubport = WebConfiguration.getPublicHttpPort();
+                final String requestUrl = "http://" + host + ":" + pubport + "/ejbca/clearcache?command=clearcaches";
+                final URL url = new URL(requestUrl);
+                final HttpURLConnection con = (HttpURLConnection) url.openConnection();
                 if (log.isDebugEnabled()) {
                     log.debug("Contacting host with url:" + requestUrl);
                 }
-                int responseCode = con.getResponseCode();
-                if (responseCode != 200) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Failed to clear caches for host: " + host + ", responseCode=" + responseCode);
+                try {
+                    final int responseCode = con.getResponseCode();
+                    if (responseCode != 200) {
+                        log.info("Failed to clear caches for host: " + host + ", responseCode=" + responseCode);
+                        failedHosts.append(' ').append(host);
+                    } else {
+                        succeededHost.append(' ').append(host);
                     }
-                    throw new Exception("Failed to clear caches for host: " + host + ", responseCode=" + responseCode);
+                } catch (SocketException e) {
+                    log.info("Failed to clear caches for host: " + host + ", message=" + e.getMessage());
+                    failedHosts.append(' ').append(host);
+                } catch (IOException e) {
+                    log.info("Failed to clear caches for host: " + host + ", message=" + e.getMessage());
+                    failedHosts.append(' ').append(host);
                 }
             }
+        }
+        if (failedHosts.length() > 0) {
+            throw new Exception("Failed to clear cache on hosts ("+failedHosts.toString()+"), but succeeded on ("+succeededHost.toString()+").");
         }
         if (log.isTraceEnabled()) {
             log.trace("<clearClusterCache");
