@@ -925,8 +925,8 @@ public class NestedMessageContentTest extends CmpTestCase {
         updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "AdminCA1");
         updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "normal");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_3GPPMODE, "true");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_3GPPCA, "3GPPCA");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_VENDORCERTIFICATEMODE, "true");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_VENDORCA, "3GPPCA");
         updatePropertyOnServer(CmpConfiguration.CONFIG_EXTRACTUSERNAMECOMPONENT, "UID");
         updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true");
         updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWUPDATEWITHSAMEKEY, "true");

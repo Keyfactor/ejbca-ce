@@ -82,17 +82,17 @@
 # This option works in combination with the authentication module 'EndEntityCertificate' in client mode. Normally, the certificate attached in
 # the 'extraCerts' field in the PKIMessage has to be present in Ejbca's database in order for the PKIMessage to authenticate. But when 3GPP
 # mode is activates, aka. this option is set to 'true', the certificate in 'extraCerts' does not need to be present in the database, however, 
-# it has to be issued by the CA specified in 'cmp.3gppca' (which is expected to be an external CA) and this only works with 
+# it has to be issued by the CA specified in 'cmp.vendorca' (which is expected to be an external CA) and this only works with 
 # the initialization and certification requests. If you are not sure whether you are following 3GPP specifications or not, it is recommended 
 # that you leave this option set to 'false'.
 #
 # Default: false
-#cmp.3gppmode=true
+#cmp.vendorcertificatemode=true
 
 # Specify the name of the external CA to be used to authenticate the certificate in the 'extraCerts' field when 3GPP mode is activated.
 #
 # Default:
-#cmp.3gppca=3GPPCA
+#cmp.vendorca=VendorCA
 
 # Shared secret between the CA and the RA used to authenticate valid RA messages.
 # Leave this commented out to be able to use a separate secret for each CA (see Edit Certificate Authorities configuration).

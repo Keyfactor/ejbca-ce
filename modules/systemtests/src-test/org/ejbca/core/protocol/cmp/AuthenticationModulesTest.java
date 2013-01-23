@@ -1389,12 +1389,12 @@ public class AuthenticationModulesTest extends CmpTestCase {
         confSession.updateProperty(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "AdminCA1");
         assertTrue("The CMP Authentication module was not configured correctly.",
                 confSession.verifyProperty(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "AdminCA1"));
-        confSession.updateProperty(CmpConfiguration.CONFIG_3GPPMODE, "true");
+        confSession.updateProperty(CmpConfiguration.CONFIG_VENDORCERTIFICATEMODE, "true");
         assertTrue("The CMP Authentication module was not configured correctly.",
-                confSession.verifyProperty(CmpConfiguration.CONFIG_3GPPMODE, "true"));
-        confSession.updateProperty(CmpConfiguration.CONFIG_3GPPCA, "3GPPCA");
+                confSession.verifyProperty(CmpConfiguration.CONFIG_VENDORCERTIFICATEMODE, "true"));
+        confSession.updateProperty(CmpConfiguration.CONFIG_VENDORCA, "3GPPCA");
         assertTrue("The CMP Authentication module was not configured correctly.",
-                confSession.verifyProperty(CmpConfiguration.CONFIG_3GPPCA, "3GPPCA"));
+                confSession.verifyProperty(CmpConfiguration.CONFIG_VENDORCA, "3GPPCA"));
         confSession.updateProperty(CmpConfiguration.CONFIG_EXTRACTUSERNAMECOMPONENT, "UID");
         assertTrue("The CMP Authentication module was not configured correctly.",
                 confSession.verifyProperty(CmpConfiguration.CONFIG_EXTRACTUSERNAMECOMPONENT, "UID"));

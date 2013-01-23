@@ -261,7 +261,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 return false;
             }
 
-            if(!is3GPP(msg.getBody().getType())) {
+            if(!isVendorCertificateMode(msg.getBody().getType())) {
                 // Check that extraCert is in the Database
                 certinfo = certSession.getCertificateInfo(fp);
                 if(certinfo == null) {
@@ -318,7 +318,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             
             // Check if this certificate belongs to the user
             if (username != null) {
-                String extraCertUsername = getUsername(certinfo);
+                String extraCertUsername = getUsername(certinfo, msg.getBody().getType());
                 if (!StringUtils.equals(username, extraCertUsername)) {
                     errorMessage = "The End Entity certificate attached to the PKIMessage in the extraCert field does not belong to user '"+username+"'.";
                     if(log.isDebugEnabled()) {
@@ -623,8 +623,8 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     private CAInfo getCAInfo(final Certificate extracert, boolean isCASet, int reqType) {
         CAInfo cainfo = null;
         try {
-            if(is3GPP(reqType)) {
-                cainfo = caSession.getCAInfo(admin, CmpConfiguration.get3GPPCA());
+            if(isVendorCertificateMode(reqType)) {
+                cainfo = caSession.getCAInfo(admin, CmpConfiguration.getVendorCA());
             } else {
                 if (isCASet) {
                     cainfo = caSession.getCAInfo(this.admin, this.authenticationParameterCAName);
@@ -648,8 +648,8 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         return cainfo;
     }
     
-    private String getUsername(CertificateInfo certinfo) {
-        if(CmpConfiguration.get3GPPMode()) {
+    private String getUsername(CertificateInfo certinfo, int reqType) {
+        if(isVendorCertificateMode(reqType)) {
             String subjectDN = CertTools.getSubjectDN(extraCert);
             String username = CertTools.getPartFromDN(subjectDN, CmpConfiguration.getExtractUsernameComponent());
             if(log.isDebugEnabled()) {
@@ -668,8 +668,8 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
      * @param reqType
      * @return 'True' if authentication by vendor-issued-certificate is used. 'False' otherwise
      */
-    private boolean is3GPP(int reqType) {
-        return !CmpConfiguration.getRAOperationMode() && CmpConfiguration.get3GPPMode() && (reqType == 0 || reqType == 2);
+    private boolean isVendorCertificateMode(int reqType) {
+        return !CmpConfiguration.getRAOperationMode() && CmpConfiguration.getVendorCertificateMode() && (reqType == 0 || reqType == 2);
     }
  
 }

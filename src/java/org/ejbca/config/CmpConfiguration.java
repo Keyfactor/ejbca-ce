@@ -35,8 +35,8 @@ public class CmpConfiguration {
 	public static final String CONFIG_RACANAME				  = "cmp.ra.caname";
 	public static final String CONFIG_CERTREQHANDLER_CLASS    = "cmp.certreqhandler.class";
 	public static final String CONFIG_UNIDDATASOURCE           = "cmp.uniddatasource";
-	public static final String CONFIG_3GPPMODE                 = "cmp.3gppmode"; 
-	public static final String CONFIG_3GPPCA                   = "cmp.3gppca";
+	public static final String CONFIG_VENDORCERTIFICATEMODE    = "cmp.vendorcertificatemode"; 
+	public static final String CONFIG_VENDORCA                 = "cmp.vendorca";
 
     public static final String CONFIG_RACERT_PATH             = "cmp.racertificatepath";
 
@@ -118,12 +118,12 @@ public class CmpConfiguration {
 		return "ra".equalsIgnoreCase(EjbcaConfigurationHolder.getString(CONFIG_OPERATIONMODE));
 	}
 	
-	public static boolean get3GPPMode() {
-	       return "true".equalsIgnoreCase(EjbcaConfigurationHolder.getString(CONFIG_3GPPMODE));
+	public static boolean getVendorCertificateMode() {
+	       return "true".equalsIgnoreCase(EjbcaConfigurationHolder.getString(CONFIG_VENDORCERTIFICATEMODE));
 	}
 	
-    public static String get3GPPCA() {
-        return EjbcaConfigurationHolder.getString(CONFIG_3GPPCA);
+    public static String getVendorCA() {
+        return EjbcaConfigurationHolder.getString(CONFIG_VENDORCA);
     }
     
 	public static String getRANameGenerationScheme() {
