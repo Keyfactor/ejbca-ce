@@ -331,7 +331,7 @@ public class CmpMessageHelper {
 			resp.setRecipient(msg.getSender());
 			resp.setTransactionId(msg.getTransactionId());			
 		} else {
-			// We didn't even have a request the get these from, so send back some dummy values
+			// We didn't even have a request to get these from, so send back some dummy values
 			resp.setSender(new GeneralName(CertTools.stringToBcX500Name("CN=Failure Sender")));
 			resp.setRecipient(new GeneralName(CertTools.stringToBcX500Name("CN=Failure Recipient")));
 		}
