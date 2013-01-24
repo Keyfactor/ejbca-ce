@@ -401,6 +401,8 @@ java.security.InvalidAlgorithmParameterException
                         }
                         t = t.getCause();
                     }
+                } catch (ParameterError pe) {
+                    errormessage = pe.getMessage();
                 } catch (EJBException ejbe) {
                     Exception ex = ejbe.getCausedByException();
                     if (ex instanceof InvalidAlgorithmParameterException) {
