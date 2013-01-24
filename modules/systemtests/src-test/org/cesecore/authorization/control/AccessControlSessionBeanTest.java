@@ -23,12 +23,14 @@ import java.util.List;
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
+import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.UsernameAccessMatchValue;
 import org.cesecore.mock.authentication.tokens.UsernameBasedAuthenticationToken;
@@ -54,7 +56,7 @@ public class AccessControlSessionBeanTest extends RoleUsingTestCase {
     private AccessControlSessionRemote accessControlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessControlSessionRemote.class);
     private RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
-
+  
     private final AuthenticationToken alwaysAllowAuthenticationToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
             "AccessControlSessionBeanTest"));
     
@@ -74,14 +76,17 @@ public class AccessControlSessionBeanTest extends RoleUsingTestCase {
         // Let's set up a role and a nice resource tree to play with.
         final String roleName = "NerfHerder";
         try {
-            RoleData nerfHerder = roleManagementSession.create(roleMgmgToken, roleName);
-            X509Certificate[] certificateArray = new X509Certificate[1]; 
-            certificateArray = roleMgmgToken.getCredentials().toArray(certificateArray);       
-            int caId = CertTools.getIssuerDN(certificateArray[0]).hashCode();       
+            RoleData nerfHerder = roleManagementSession.create(alwaysAllowAuthenticationToken, roleName);      
+            String issuerDn = "CN="+roleName;
+            X509CertificateAuthenticationToken authenticationToken = (X509CertificateAuthenticationToken) createAuthenticationToken(issuerDn);
+            int caId = issuerDn.hashCode();
+           
             List<AccessUserAspectData> accessUsers = new ArrayList<AccessUserAspectData>();
-            accessUsers.add(new AccessUserAspectData(nerfHerder.getRoleName(), caId, X500PrincipalAccessMatchValue.WITH_COUNTRY,
-                    AccessMatchType.TYPE_EQUALCASE, "SE"));
-            roleManagementSession.addSubjectsToRole(roleMgmgToken, nerfHerder, accessUsers);          
+            accessUsers.add(new AccessUserAspectData(nerfHerder.getRoleName(), caId, X500PrincipalAccessMatchValue.WITH_COMMONNAME,
+                    AccessMatchType.TYPE_EQUALCASE, roleName));
+            
+            roleManagementSession.addSubjectsToRole(alwaysAllowAuthenticationToken, nerfHerder, accessUsers);          
+            
             List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();       
             accessRules.add(new AccessRuleData(nerfHerder.getRoleName(), StandardRules.ROLE_ROOT.resource(), AccessRuleState.RULE_NOTUSED, false));            
             accessRules.add(new AccessRuleData(nerfHerder.getRoleName(), "/acceptRecursive", AccessRuleState.RULE_ACCEPT, true));
@@ -102,40 +107,40 @@ public class AccessControlSessionBeanTest extends RoleUsingTestCase {
             accessRules.add(new AccessRuleData(nerfHerder.getRoleName(), "/decline/decline", AccessRuleState.RULE_DECLINE, false));    
             roleManagementSession.addAccessRulesToRole(alwaysAllowAuthenticationToken, nerfHerder, accessRules);            
 
-            assertFalse(accessControlSession.isAuthorized(roleMgmgToken, StandardRules.ROLE_ROOT.resource()));
+            assertFalse(accessControlSession.isAuthorized(authenticationToken, StandardRules.ROLE_ROOT.resource()));
            
-            assertTrue(accessControlSession.isAuthorized(roleMgmgToken, "/acceptRecursive"));            
-            assertTrue(accessControlSession.isAuthorized(roleMgmgToken, "/accept"));
-            assertFalse(accessControlSession.isAuthorized(roleMgmgToken, "/decline"));
-            assertFalse(accessControlSession.isAuthorized(roleMgmgToken, "/notused"));
-            assertFalse(accessControlSession.isAuthorized(roleMgmgToken, "/unexistent"));
+            assertTrue(accessControlSession.isAuthorized(authenticationToken, "/acceptRecursive"));            
+            assertTrue(accessControlSession.isAuthorized(authenticationToken, "/accept"));
+            assertFalse(accessControlSession.isAuthorized(authenticationToken, "/decline"));
+            assertFalse(accessControlSession.isAuthorized(authenticationToken, "/notused"));
+            assertFalse(accessControlSession.isAuthorized(authenticationToken, "/unexistent"));
             
-            assertTrue(accessControlSession.isAuthorized(roleMgmgToken, "/acceptRecursive/accept"));
-            assertFalse(accessControlSession.isAuthorized(roleMgmgToken, "/acceptRecursive/decline"));
-            assertTrue(accessControlSession.isAuthorized(roleMgmgToken, "/acceptRecursive/notused"));
-            assertTrue(accessControlSession.isAuthorized(roleMgmgToken, "/acceptRecursive/unexistent"));
+            assertTrue(accessControlSession.isAuthorized(authenticationToken, "/acceptRecursive/accept"));
+            assertFalse(accessControlSession.isAuthorized(authenticationToken, "/acceptRecursive/decline"));
+            assertTrue(accessControlSession.isAuthorized(authenticationToken, "/acceptRecursive/notused"));
+            assertTrue(accessControlSession.isAuthorized(authenticationToken, "/acceptRecursive/unexistent"));
             
-            assertTrue(accessControlSession.isAuthorized(roleMgmgToken, "/acceptRecursive/accept/notused"));
-            assertFalse(accessControlSession.isAuthorized(roleMgmgToken, "/acceptRecursive/decline/notused"));
-            assertTrue(accessControlSession.isAuthorized(roleMgmgToken, "/acceptRecursive/notused/notused"));
+            assertTrue(accessControlSession.isAuthorized(authenticationToken, "/acceptRecursive/accept/notused"));
+            assertFalse(accessControlSession.isAuthorized(authenticationToken, "/acceptRecursive/decline/notused"));
+            assertTrue(accessControlSession.isAuthorized(authenticationToken, "/acceptRecursive/notused/notused"));
             
-            assertTrue(accessControlSession.isAuthorized(roleMgmgToken, "/accept/accept"));
-            assertFalse(accessControlSession.isAuthorized(roleMgmgToken, "/accept/decline"));
-            assertFalse(accessControlSession.isAuthorized(roleMgmgToken, "/accept/notused"));
-            assertFalse(accessControlSession.isAuthorized(roleMgmgToken, "/accept/unexistent"));
+            assertTrue(accessControlSession.isAuthorized(authenticationToken, "/accept/accept"));
+            assertFalse(accessControlSession.isAuthorized(authenticationToken, "/accept/decline"));
+            assertFalse(accessControlSession.isAuthorized(authenticationToken, "/accept/notused"));
+            assertFalse(accessControlSession.isAuthorized(authenticationToken, "/accept/unexistent"));
           
-            assertFalse(accessControlSession.isAuthorized(roleMgmgToken, "/decline/accept"));
-            assertFalse(accessControlSession.isAuthorized(roleMgmgToken, "/decline/decline"));
-            assertFalse(accessControlSession.isAuthorized(roleMgmgToken, "/decline/notused"));
-            assertFalse(accessControlSession.isAuthorized(roleMgmgToken, "/decline/unexistent"));
+            assertFalse(accessControlSession.isAuthorized(authenticationToken, "/decline/accept"));
+            assertFalse(accessControlSession.isAuthorized(authenticationToken, "/decline/decline"));
+            assertFalse(accessControlSession.isAuthorized(authenticationToken, "/decline/notused"));
+            assertFalse(accessControlSession.isAuthorized(authenticationToken, "/decline/unexistent"));
       
-            assertTrue(accessControlSession.isAuthorized(roleMgmgToken, "/acceptRecursive/notused", "/acceptRecursive/unexistent"));
-            assertTrue(accessControlSession.isAuthorized(roleMgmgToken, "/acceptRecursive/accept", "/acceptRecursive/notused", "/acceptRecursive/unexistent"));
-            assertFalse(accessControlSession.isAuthorized(roleMgmgToken, "/acceptRecursive/decline", "/acceptRecursive/accept"));
-            assertFalse(accessControlSession.isAuthorized(roleMgmgToken, "/acceptRecursive/accept", "/acceptRecursive/decline"));
-            assertFalse(accessControlSession.isAuthorized(roleMgmgToken, "/acceptRecursive/accept", "/acceptRecursive/decline", "/acceptRecursive/unexistent"));
+            assertTrue(accessControlSession.isAuthorized(authenticationToken, "/acceptRecursive/notused", "/acceptRecursive/unexistent"));
+            assertTrue(accessControlSession.isAuthorized(authenticationToken, "/acceptRecursive/accept", "/acceptRecursive/notused", "/acceptRecursive/unexistent"));
+            assertFalse(accessControlSession.isAuthorized(authenticationToken, "/acceptRecursive/decline", "/acceptRecursive/accept"));
+            assertFalse(accessControlSession.isAuthorized(authenticationToken, "/acceptRecursive/accept", "/acceptRecursive/decline"));
+            assertFalse(accessControlSession.isAuthorized(authenticationToken, "/acceptRecursive/accept", "/acceptRecursive/decline", "/acceptRecursive/unexistent"));
         } finally {
-            roleManagementSession.remove(roleMgmgToken, roleName);
+            roleManagementSession.remove(alwaysAllowAuthenticationToken, roleName);
         }
     }
     
@@ -154,7 +159,7 @@ public class AccessControlSessionBeanTest extends RoleUsingTestCase {
         final String flynnDn = "CN=Flynn";
         RoleData role = roleAccessSession.findRole(roleName);
         if (role == null) {
-            role = roleManagementSession.create(roleMgmgToken, roleName);
+            role = roleManagementSession.create(alwaysAllowAuthenticationToken, roleName);
         }
         try {
             //Give the role a ClI-based aspect and an X509-based aspect
@@ -184,7 +189,7 @@ public class AccessControlSessionBeanTest extends RoleUsingTestCase {
             assertFalse("Invalid X509 token should not have been able to authorize", accessControlSession.isAuthorizedNoLogging(invalidX509Token, resourceName));
         } finally {
             try {
-                roleManagementSession.remove(roleMgmgToken, role);
+                roleManagementSession.remove(alwaysAllowAuthenticationToken, role);
             } catch (RoleNotFoundException e) {
                 //ignore
             }
