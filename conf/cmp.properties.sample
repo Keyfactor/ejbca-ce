@@ -80,16 +80,19 @@
 #cmp.authenticationparameters=-;O;-
 
 # This option works in combination with the authentication module 'EndEntityCertificate' in client mode. Normally, the certificate attached in
-# the 'extraCerts' field in the PKIMessage has to be present in Ejbca's database in order for the PKIMessage to authenticate. But when 3GPP
-# mode is activates, aka. this option is set to 'true', the certificate in 'extraCerts' does not need to be present in the database, however, 
-# it has to be issued by the CA specified in 'cmp.vendorca' (which is expected to be an external CA) and this only works with 
-# the initialization and certification requests. If you are not sure whether you are following 3GPP specifications or not, it is recommended 
-# that you leave this option set to 'false'.
+# the 'extraCerts' field in the PKIMessage has to be present in Ejbca's database in order for the PKIMessage to authenticate. But when vendor certificate
+# mode is activated, aka. this option is set to 'true', the certificate in 'extraCerts' does not need to be present in the database, however, 
+# it has to be issued by the CA specified in 'cmp.vendorca' (which is expected to be an external CA) and this only works with the initialization and 
+# certification requests. 
+# This mode is used for initial enrollment only, so the end entity concerned has to have status NEW in order for this to work.
+#
+# Such enrollment method is used for example when following 3GPP standard. If you are not sure whether you are following 3GPP specifications or not, 
+# it is recommended that you leave this option set to 'false'.
 #
 # Default: false
 #cmp.vendorcertificatemode=true
 
-# Specify the name of the external CA to be used to authenticate the certificate in the 'extraCerts' field when 3GPP mode is activated.
+# Specify the name of the external CA to be used to authenticate the certificate in the 'extraCerts' field when vendor certificate mode is activated.
 #
 # Default:
 #cmp.vendorca=VendorCA
