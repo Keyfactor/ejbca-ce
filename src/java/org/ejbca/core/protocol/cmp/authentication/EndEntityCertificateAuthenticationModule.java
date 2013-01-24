@@ -276,6 +276,10 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 if(!isCertValid(fp) || !isCertActive(certinfo)) {
                     return false;
                 }
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("CMP is in vendor certificate mode. Not checking that the certificate attached to the PKIMessage in the extraCert field is in the database.");
+                }
             }
             
             if(!isIssuedByCA(cainfo)) {
@@ -608,7 +612,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         try {
             extraCert.verify(cacert.getPublicKey(), "BC");
             if(log.isDebugEnabled()) {
-                log.debug("The certificate in extraCert is issued by the right CA");
+                log.debug("The certificate in extraCert is issued by the right CA: "+cainfo.getName());
             }
         } catch (Exception e) {
             errorMessage = "The End Entity certificate attached to the PKIMessage is not issued by the CA '" + cainfo.getName() + "'";
@@ -625,6 +629,9 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         try {
             if(isVendorCertificateMode(reqType)) {
                 cainfo = caSession.getCAInfo(admin, CmpConfiguration.getVendorCA());
+                if (log.isDebugEnabled()) {
+                    log.debug("CMP is in vendor certificate mode and the Vendor CA is '"+CmpConfiguration.getVendorCA()+"'.");
+                }
             } else {
                 if (isCASet) {
                     cainfo = caSession.getCAInfo(this.admin, this.authenticationParameterCAName);
@@ -653,7 +660,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             String subjectDN = CertTools.getSubjectDN(extraCert);
             String username = CertTools.getPartFromDN(subjectDN, CmpConfiguration.getExtractUsernameComponent());
             if(log.isDebugEnabled()) {
-                log.debug("Username was extracted from the '" + CmpConfiguration.getExtractUsernameComponent() + "' part of the subjectDN of the certificate in the 'extraCerts' field.");
+                log.debug("Username ("+username+") was extracted from the '" + CmpConfiguration.getExtractUsernameComponent() + "' part of the subjectDN of the certificate in the 'extraCerts' field.");
             }
             return username;
         } else {
