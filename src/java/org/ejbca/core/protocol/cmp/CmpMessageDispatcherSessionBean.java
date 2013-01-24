@@ -221,7 +221,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 			}
 			final ResponseMessage ret  = handler.handleMessage(cmpMessage, authenticated);
 			if (ret != null) {
-				log.debug("Received a response message from CmpMessageHandler.");
+				log.debug("Received a response message of type '"+ret.getClass().getName()+"' from CmpMessageHandler.");
 			} else {
 				log.error( intres.getLocalizedMessage("cmp.errorresponsenull") );
 			}

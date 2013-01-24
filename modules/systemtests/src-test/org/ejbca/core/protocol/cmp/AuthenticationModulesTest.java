@@ -1404,7 +1404,9 @@ public class AuthenticationModulesTest extends CmpTestCase {
         confSession.updateProperty(CmpConfiguration.CONFIG_ALLOWUPDATEWITHSAMEKEY, "true");
         assertTrue("The CMP Authentication module was not configured correctly.",
                 confSession.verifyProperty(CmpConfiguration.CONFIG_ALLOWUPDATEWITHSAMEKEY, "true"));
-
+        confSession.updateProperty(CmpConfiguration.CONFIG_RESPONSEPROTECTION, "signature");
+        assertTrue("The response protection was not configured correctly.",
+                confSession.verifyProperty(CmpConfiguration.CONFIG_RESPONSEPROTECTION, "signature"));
         
         String testUIDUsername = "uidusername";
         String testUserDN = "CN=3gpptestuse,UID=" + testUIDUsername + ",C=se";
@@ -1445,6 +1447,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             out.writeObject(msg);
             byte[] ba = bao.toByteArray();
             byte[] resp = sendCmpHttp(ba, 200);
+            // Unprotected error message
             checkCmpResponseGeneral(resp, issuerDN, testUserDN, cacert, msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
                     .getTransactionID().getOctets(), false, null);
             
@@ -1474,6 +1477,8 @@ public class AuthenticationModulesTest extends CmpTestCase {
             out.writeObject(msg);
             ba = bao.toByteArray();
             resp = sendCmpHttp(ba, 200);
+            checkCmpResponseGeneral(resp, issuerDN, testUserDN, cacert, msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
+                    .getTransactionID().getOctets(), true, null);
             CertReqMessages ir = (CertReqMessages) msg.getBody().getContent();
             Certificate cert = checkCmpCertRepMessage(testUserDN, cacert, resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
                     .getValue().intValue());
