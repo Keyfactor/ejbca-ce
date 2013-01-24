@@ -18,6 +18,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
@@ -74,6 +75,8 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
 
     private static final Logger log = Logger.getLogger(CertificateStoreSessionTest.class);
     private static KeyPair keys;
+    
+    private static final String USERNAME = "foo";
     
     private RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
@@ -611,6 +614,21 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
 	        internalCertStoreSession.removeCertificate(xcert);			
 		}
 	}
+
+    @Test
+    public void testFindUsernameByIssuerDnAndSerialNumber() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException,
+            InvalidAlgorithmParameterException, SignatureException, IllegalStateException, OperatorCreationException, CertificateException,
+            CreateException, AuthorizationDeniedException, IOException {
+        Certificate cert = generateCert(roleMgmgToken, CertificateConstants.CERT_ACTIVE);
+        try {
+            String issuerDn = CertTools.getIssuerDN(cert);
+            BigInteger serialNumber = CertTools.getSerialNumber(cert);
+            assertEquals("Username was not delivered properly", USERNAME,
+                    certificateStoreSession.findUsernameByIssuerDnAndSerialNumber(issuerDn, serialNumber));
+        } finally {
+            internalCertStoreSession.removeCertificate(cert);
+        }
+    }
 	
 	// Commented out code.
 	// Keep it here, because it can be nice to have as a reference how this can be done.
@@ -642,7 +660,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
         if (ce != null) {
             assertTrue("Certificate with fp=" + fp + " already exists in db, very strange since I just generated it.", false);
         }
-        boolean ret = certificateStoreSession.storeCertificate(admin, xcert, "foo", "1234", status, CertificateConstants.CERTTYPE_ENDENTITY,
+        boolean ret = certificateStoreSession.storeCertificate(admin, xcert, USERNAME, "1234", status, CertificateConstants.CERTTYPE_ENDENTITY,
         		CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, "footag", new Date().getTime());
         assertTrue("Failed to store", ret);
         return xcert;
