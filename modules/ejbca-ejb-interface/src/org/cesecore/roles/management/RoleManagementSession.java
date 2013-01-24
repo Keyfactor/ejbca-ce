@@ -49,6 +49,7 @@ public interface RoleManagementSession {
      * @param roleName Name of the role
      * @throws RoleExistsException If role by that name already exists.
      * @throws AuthorizationDeniedException is authenticationToken not authorized to edit roles
+     * @return the {@link RoleData} that was created
      */
     RoleData create(AuthenticationToken authenticationToken, String roleName) throws RoleExistsException, AuthorizationDeniedException;
 
@@ -80,6 +81,7 @@ public interface RoleManagementSession {
      * @param newName The new name of the role.
      * @throws RoleExistsException If the new role name already exists.
      * @throws AuthorizationDeniedException is authenticationToken not authorized to edit roles
+     * @return the new {@link RoleData} that was the result of the rename
      */
     RoleData renameRole(AuthenticationToken authenticationToken, String role, String newName) throws RoleExistsException,
             AuthorizationDeniedException;
@@ -91,6 +93,7 @@ public interface RoleManagementSession {
      * @param newName The new name of the role.
      * @throws RoleExistsException If the new role name already exists.
      * @throws AuthorizationDeniedException is authenticationToken not authorized to edit roles
+     * @return the new {@link RoleData} that was the result of the rename
      */
     RoleData renameRole(AuthenticationToken authenticationToken, RoleData role, String newName) throws RoleExistsException,
             AuthorizationDeniedException;
@@ -104,7 +107,7 @@ public interface RoleManagementSession {
      * @throws RoleNotFoundException if the role does not exist
      * @throws AuthorizationDeniedException is authenticationToken not authorized to edit roles
      * 
-     * @return the merged {@link RoleData}
+     * @return the merged {@link RoleData} with the new access rules
      */
     RoleData addAccessRulesToRole(AuthenticationToken authenticationToken, RoleData role, Collection<AccessRuleData> accessRules)
             throws RoleNotFoundException, AccessRuleNotFoundException, AuthorizationDeniedException;
@@ -116,6 +119,7 @@ public interface RoleManagementSession {
      * @param accessRules A collection of access rules. If these rules haven't been removed from persistence, they will be here.
      * @throws RoleNotFoundException if the role does not exist
      * @throws AuthorizationDeniedException is authenticationToken not authorized to edit roles
+     * @return the merged {@link RoleData} with the new access rules
      */
     RoleData removeAccessRulesFromRole(AuthenticationToken authenticationToken, RoleData role, Collection<AccessRuleData> accessRules)
             throws RoleNotFoundException, AuthorizationDeniedException;
@@ -127,6 +131,7 @@ public interface RoleManagementSession {
     * @param accessRules A collection of strings. These rules will be looked up and removed from persistence.
     * @throws RoleNotFoundException if the role does not exist
     * @throws AuthorizationDeniedException is authenticationToken not authorized to edit roles
+    * @return the merged {@link RoleData} with the new access rules
     */
    RoleData removeAccessRulesFromRole(AuthenticationToken authenticationToken, RoleData role, List<String> accessRuleNames)
            throws RoleNotFoundException, AuthorizationDeniedException;
@@ -138,6 +143,7 @@ public interface RoleManagementSession {
      * @param role The role to give.
      * @throws RoleNotFoundException if the role does not exist
      * @throws AuthorizationDeniedException is authenticationToken not authorized to edit roles
+     * @return the merged {@link RoleData} with the new subjects
      * 
      *             TODO: Rename this method AddAccessUserAspectsToRole
      */
@@ -151,6 +157,7 @@ public interface RoleManagementSession {
      * @param role The role to remove.
      * @throws RoleNotFoundException if the role does not exist
      * @throws AuthorizationDeniedException is authenticationToken not authorized to edit roles
+     * @return the merged {@link RoleData} with the new subjects
      */
     RoleData removeSubjectsFromRole(AuthenticationToken authenticationToken, RoleData role, Collection<AccessUserAspectData> subjects)
             throws RoleNotFoundException, AuthorizationDeniedException;
@@ -192,7 +199,7 @@ public interface RoleManagementSession {
      * @param authenticationToken for authorization purposes.
      * @param role the role in question.
      * @param accessRules A Collection of access rules to replace with.
-     * @return the same role.
+     * @return the merged {@link RoleData} with the new rules
      * @throws AuthorizationDeniedException if authorization was denied.
      * @throws RoleNotFoundException if the supplied role was not found in persistence. 
      */
