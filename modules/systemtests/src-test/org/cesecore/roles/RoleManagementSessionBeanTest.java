@@ -271,19 +271,20 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
 
         } finally {
             Map<Integer, AccessRuleData> rules = role.getAccessRules();
-            if (futureRama != null) {
-                // If the test failed adding the access rule to the role, it will not be removed when removing the role below
+            roleManagementSession.remove(authenticationToken, role);
+            if (accessRuleManagementSession.find(futureRama.getPrimaryKey()) != null) {
+                // If the test failed adding the access rule to the role, it will not be removed when removing the role above
                 if (!rules.containsKey(futureRama.getPrimaryKey())) {
                     accessRuleManagementSession.remove(futureRama);
                 }
             }
-            if (futureWorld != null) {
-                // If the test failed adding the access rule to the role, it will not be removed when removing the role below
+            if (accessRuleManagementSession.find(futureWorld.getPrimaryKey()) != null) {
+                // If the test failed adding the access rule to the role, it will not be removed when removing the role above
                 if (!rules.containsKey(futureWorld.getPrimaryKey())) {
                     accessRuleManagementSession.remove(futureWorld);
                 }
             }
-            roleManagementSession.remove(authenticationToken, role);
+           
             assertNull("All rules where not removed when their attendant roles were.", accessRuleManagementSession.find(futureWorldPrimaryKey));
         }
     }
