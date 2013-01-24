@@ -105,9 +105,9 @@ import org.junit.runners.MethodSorters;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class RsaSignSessionTest extends SignSessionCommon {
+public class SignSessionTest extends SignSessionCommon {
 
-    private static final Logger log = Logger.getLogger(RsaSignSessionTest.class);
+    private static final Logger log = Logger.getLogger(SignSessionTest.class);
 
     private static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF"
             + "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDY+ATE4ZB0oKfmXStu8J+do0GhTag6rOGtoydI"
@@ -1302,7 +1302,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
     
     @Override
     public String getRoleName() {
-        return RsaSignSessionTest.class.getSimpleName();
+        return SignSessionTest.class.getSimpleName();
     }
 
 }
