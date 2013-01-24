@@ -4830,21 +4830,22 @@ public class SomeAdvancedCertificateExtension extends CertificateExtension {
     private static String PROPERTY_SOMEPROPERTY = "someproperty";
 
 	/**
-	 * The main method that should return a ASN1Encodable
+	 * The main method that should return a byte[] with the ASN.1 encoded data to be put in the extension valud
 	 * using the input data (optional) or defined properties (optional)
 	 * 
-	 * @see org.cesecore.certificates.certificate.certextensions.CertificateExtension#getValue(org.cesecore.certificates.endentity.EndEntityInformation, org.cesecore.certificates.ca.caadmin.CA, org.cesecore.certificates.certificateprofile.CertificateProfile)
+	 * @see org.cesecore.certificates.certificate.certextensions.CertificateExtension#getValueEncoded
 	 */
-        @Override
-	public ASN1Primitive getValue(EndEntityInformation userData, CA ca,
-			CertificateProfile certProfile) {
+	@Override
+	public byte[] getValueEncoded(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, 
+		PublicKey caPublicKey, CertificateValidity val ) 
+		throws CertificateExtentionConfigurationException, CertificateExtensionException {
 		
-                // Optionally get dynamic values for this extension
-                //String dynamicValue = userData.getExtendedinformation().getExtensionData(getOID() + ".someotherproperty");
+		// Optionally get dynamic values for this extension
+		//String dynamicValue = userData.getExtendedinformation().getExtensionData(getOID() + ".someotherproperty");
                 
 		String value = getProperties().getProperty(PROPERTY_SOMEPROPERTY);
-		
-		return new DERPrintableString(value);
+		DERPrintableString asn1value = new DERPrintableString(value);
+		return asn1value.toASN1Primitive().getEncoded();
 	}
 
 }
