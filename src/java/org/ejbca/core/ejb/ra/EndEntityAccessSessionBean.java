@@ -84,7 +84,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         final List<UserData> dataList = UserData.findBySubjectDN(entityManager, dn);
         if (dataList.size() == 0) {
             if (log.isDebugEnabled()) {
-                log.debug("Cannot find userd with subjectdn: " + dn);
+                log.debug("Cannot find user with subjectdn: " + dn);
             }
         }
         final List<EndEntityInformation> result = new ArrayList<EndEntityInformation>();
