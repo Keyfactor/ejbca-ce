@@ -84,9 +84,11 @@ public class EjbcaAuditorSessionBeanTest extends RoleUsingTestCase {
         final RoleData role = roleAccessSession.findRole(ROLE_NAME);
         final List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
         accessRules.add(new AccessRuleData(ROLE_NAME, AuditLogRules.VIEW.resource(), AccessRuleState.RULE_ACCEPT, true));
-        roleManagementSession.removeAccessRulesFromRole(roleMgmgToken, role, accessRules);
+        roleManagementSession.removeAccessRulesFromRole(alwaysAllowToken, role, accessRules);
+        //Create a brand spanking new authenticationToken
+        AuthenticationToken authenticationToken = createAuthenticationToken("CN="+ROLE_NAME);
         try {
-            ejbcaAuditorSession.selectAuditLog(roleMgmgToken, DEVICE_NAME, 0, 10, null, null, null);
+            ejbcaAuditorSession.selectAuditLog(authenticationToken, DEVICE_NAME, 0, 10, null, null, null);
             fail("Authorization was not denied!");
         } catch (AuthorizationDeniedException e) {
             // Expected
