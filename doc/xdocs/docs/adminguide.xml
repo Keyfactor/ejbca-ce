@@ -1094,6 +1094,26 @@ EJBCA authenticates the request using the signature protection with the certific
 bin/ejbca.sh ra setuserstatus user1 10
 ./openssl cmp -cmd cr -server localhost:8080 -path ejbca/publicweb/cmp -srvcert AdminCA1.cacert.pem -cert clcert.pem -key key.pem -certout clcert1.pem -newkey key1.pem -keyfmt PEM -certfmt PEM -subject "/CN=user1/O=My Organization/C=SE"
 </source>
+
+<p><strong>Client mode, Vendor certificate authentication</strong></p>
+<p>
+If the end entity has a Vendor certificate with which it should identify itself for initial enrollment, as specified in 3GPP for example, it can also do that. 
+In this case the CA issuing the end entity certificate is not the same as the Vendor CA. The vendor CA must be imported in EJBCA as an External CA ('Import CA certificate' in the admin GUI).
+To enable vendor certificate authentication add the following to the CMP configuration for client certificate authentication:
+</p>
+<source>
+cmp.vendorcertificatemode=true
+cmp.vendorca=3GPP-CA
+</source>
+<p>With this configuration you can now request an initial certificate with the following command:
+</p>
+<source>
+./openssl cmp -cmd ir -server localhost:8080 -path ejbca/publicweb/cmp -srvcert AdminCA1.cacert.pem -cert devicecert.pem -key devicekey.pem -certout clcert1.pem -newkey key1.pem -keyfmt PEM -certfmt PEM -subject "/CN=device/O=My Organization/C=SE"
+</source>
+<p>
+In this configuration 'devicecert.pem' and 'devicekey.pem' are the device's private key and the certificate issued by the Vendor CA (3GPP-CA). 
+AdminCA1.cacert.pem is the CA certificate of the CA in EJBCA issuing the new certificate for the device.
+</p>
 </subsubsection>
 </subsection>
 <subsection name="Custom handling of certificate request">
