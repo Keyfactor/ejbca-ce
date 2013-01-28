@@ -32,13 +32,12 @@ import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.internet.MimeMultipart;
 
-import junit.framework.Assert;
-
 import org.apache.log4j.Logger;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.protocol.certificatestore.HashID;
+import org.junit.Assert;
 
 /**
  * Tests that it is possible to find certificates for all CAs that has been created.

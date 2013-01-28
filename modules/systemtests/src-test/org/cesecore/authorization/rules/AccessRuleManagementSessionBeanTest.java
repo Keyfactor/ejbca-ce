@@ -15,7 +15,7 @@ package org.cesecore.authorization.rules;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.util.EjbRemoteHelper;

@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.cesecore.audit;
 
-import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
