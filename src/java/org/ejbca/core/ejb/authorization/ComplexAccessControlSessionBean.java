@@ -29,6 +29,7 @@ import javax.persistence.Query;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
@@ -40,6 +41,8 @@ import org.cesecore.authorization.rules.AccessRuleNotFoundException;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
+import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
+import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -102,7 +105,10 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
     public void createSuperAdministrator() {
+        //Create the GUI Super Admin
         RoleData role = roleAccessSession.findRole(SUPERADMIN_ROLE);
+        Map<Integer, AccessUserAspectData> newUsers = new HashMap<Integer, AccessUserAspectData>();   
+        RoleData oldSuperAdminRole = roleAccessSession.findRole(TEMPORARY_SUPERADMIN_ROLE);
         if (role == null) {
             log.debug("Creating new role '" + SUPERADMIN_ROLE + "'.");
             role = new RoleData(1, SUPERADMIN_ROLE);
@@ -121,20 +127,38 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
         } else {
             log.debug("rule '/' already exists in " + SUPERADMIN_ROLE + ".");
         }
+        //Pick up the aspects from the old temp. super admin group and add them to the new one. 
+        Map<Integer, AccessUserAspectData> oldSuperAdminAspects = oldSuperAdminRole.getAccessUsers();
+        Map<Integer, AccessUserAspectData> existingSuperAdminAspects = role.getAccessUsers();
+        for (AccessUserAspectData aspect : oldSuperAdminAspects.values()) {
+            AccessMatchValue matchWith = AccessMatchValueReverseLookupRegistry.INSTANCE.performReverseLookup(
+                    X509CertificateAuthenticationToken.TOKEN_TYPE, aspect.getMatchWith());
+            AccessUserAspectData superAdminUserAspect = new AccessUserAspectData(SUPERADMIN_ROLE, aspect.getCaId(), matchWith,
+                    aspect.getMatchTypeAsType(), aspect.getMatchValue());
+            if(existingSuperAdminAspects.containsKey(superAdminUserAspect.getPrimaryKey())) {
+                log.debug(SUPERADMIN_ROLE + " already contains aspect matching " + aspect.getMatchValue() + " for CA with ID " + aspect.getCaId()); 
+            } else {
+                newUsers.put(superAdminUserAspect.getPrimaryKey(), superAdminUserAspect);
+            }
+        }
+           
+        //Create the CLI Default User
         Map<Integer, AccessUserAspectData> users = role.getAccessUsers();
         AccessUserAspectData defaultCliUserAspect = new AccessUserAspectData(SUPERADMIN_ROLE, 0, CliUserAccessMatchValue.USERNAME,
                 AccessMatchType.TYPE_EQUALCASE, EjbcaConfiguration.getCliDefaultUser());
         if (!users.containsKey(defaultCliUserAspect.getPrimaryKey())) {
             log.debug("Adding new AccessUserAspect '"+EjbcaConfiguration.getCliDefaultUser()+"' to " + SUPERADMIN_ROLE + ".");
-            Map<Integer, AccessUserAspectData> newUsers = new HashMap<Integer, AccessUserAspectData>();      
+              
             newUsers.put(defaultCliUserAspect.getPrimaryKey(), defaultCliUserAspect);
-            role.setAccessUsers(newUsers);
             UserData defaultCliUserData = new UserData(EjbcaConfiguration.getCliDefaultUser(), EjbcaConfiguration.getCliDefaultPassword(), false, "UID="
                     + EjbcaConfiguration.getCliDefaultUser(), 0, null, null, null, 0, SecConst.EMPTY_ENDENTITYPROFILE, 0, 0, 0, null);
             entityManager.persist(defaultCliUserData);
         } else {
             log.debug("AccessUserAspect '"+EjbcaConfiguration.getCliDefaultUser()+"' already exists in " + SUPERADMIN_ROLE + ".");            
         }
+        //Add all created aspects to role
+        role.setAccessUsers(newUsers);
+        
     }
 
     public void initializeAuthorizationModule(AuthenticationToken admin, int caid, String superAdminCN) throws RoleExistsException,

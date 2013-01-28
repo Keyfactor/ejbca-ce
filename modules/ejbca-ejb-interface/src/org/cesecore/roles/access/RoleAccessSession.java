@@ -45,7 +45,7 @@ public interface RoleAccessSession {
      * @param roleName
      *            Name of the sought role.
      * 
-     * @return The sought roll, null
+     * @return The sought roll, null if not found
      */
     RoleData findRole(final String roleName);
 }
