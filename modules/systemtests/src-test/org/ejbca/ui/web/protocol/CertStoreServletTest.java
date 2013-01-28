@@ -36,7 +36,7 @@ import java.util.Set;
 
 import javax.mail.MessagingException;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
