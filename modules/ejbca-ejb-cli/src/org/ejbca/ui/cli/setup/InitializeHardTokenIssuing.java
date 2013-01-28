@@ -62,7 +62,9 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  * 
  * @version $Id$
  * 
+ * @deprecated Since 5.1.0 since PrimeCard support has been dropped. 
  */
+@Deprecated 
 public class InitializeHardTokenIssuing extends BaseCommand {
 
     private static final String SVGPINFILENAME = "src/cli/admincard_pintemplate.svg";
