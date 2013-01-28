@@ -118,7 +118,7 @@ public abstract class HardToken extends UpgradeableDataHashMap implements Serial
 	}
 
     /**
-     * Implemtation of UpgradableDataHashMap function getLatestVersion
+     * Implementation of UpgradableDataHashMap function getLatestVersion
      *
      */
     public float getLatestVersion() {
@@ -126,7 +126,7 @@ public abstract class HardToken extends UpgradeableDataHashMap implements Serial
     }
 
     /**
-     * Implemtation of UpgradableDataHashMap function upgrade.
+     * Implementation of UpgradableDataHashMap function upgrade.
      */
     public void upgrade() {
     }

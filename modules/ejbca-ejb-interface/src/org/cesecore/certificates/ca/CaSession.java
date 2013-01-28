@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
-import java.util.Collection;
 import java.util.List;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
