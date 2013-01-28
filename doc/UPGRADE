@@ -2,7 +2,7 @@ $Id$
 
 UPGRADE
 =======
-
+ 
 This document describes procedures needed to upgrade from one 
 version of EJBCA to a new version.
 Upgrades within a major version, from 3.6.1 to 3.6.2 for example, are 
