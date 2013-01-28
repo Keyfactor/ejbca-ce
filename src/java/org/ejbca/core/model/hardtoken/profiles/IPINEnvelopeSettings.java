@@ -19,13 +19,8 @@ import java.io.IOException;
 
 import org.cesecore.certificates.endentity.EndEntityInformation;
 
-
-
-
-
-
 /**
- * Interface contating methods that need to be implementet in order 
+ * Interface containing methods that need to be implemented in order 
  * to have a hard token profile contain PIN Envelope settings.
  * 
  * @version $Id$
