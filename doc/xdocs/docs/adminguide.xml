@@ -5061,7 +5061,7 @@ line interface.
 renewing the Super Administrator certificate! Please, make sure to renew the administrator certificates using the Admin Web 
 before they expire!
 </p>
-<b>Note:</b> After changing this property you mey need to click the Clear All Caches button or run the CLI command:</p>
+<b>Note:</b> After changing this property you may need to click the Clear All Caches button or run the CLI command:</p>
 <source>
 bin/ejbca.sh clearcache -all
 </source>
