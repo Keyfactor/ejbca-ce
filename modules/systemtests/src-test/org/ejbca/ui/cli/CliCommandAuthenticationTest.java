@@ -20,7 +20,7 @@ import java.util.Set;
 
 import javax.ejb.EJBException;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationSubject;

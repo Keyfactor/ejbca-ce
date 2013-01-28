@@ -15,7 +15,7 @@ package org.cesecore.util;
 import java.util.Date;
 import java.util.Iterator;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.cesecore.audit.impl.integrityprotected.AuditRecordData;
 import org.cesecore.util.query.Criteria;
