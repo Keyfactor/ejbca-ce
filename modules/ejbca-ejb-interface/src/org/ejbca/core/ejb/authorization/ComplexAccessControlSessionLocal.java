@@ -22,6 +22,7 @@ import javax.ejb.Local;
 public interface ComplexAccessControlSessionLocal extends ComplexAccessControlSession {
 
     public static final String SUPERADMIN_ROLE = "Super Administrator Role";
+    public static final String TEMPORARY_SUPERADMIN_ROLE = "Temporary Super Administrator Group";
     
     /**
      * Creates a super administrator role and a default CLI user. A role and default CLI user is needed in order

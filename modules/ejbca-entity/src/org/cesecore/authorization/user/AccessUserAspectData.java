@@ -56,7 +56,7 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
             this.primaryKey = generatePrimaryKey(roleName, caId, matchWith, matchType, matchValue);
         }
         if (matchWith == null) {
-            throw new InvalidParameterException("Attempted to create an AccessUserAspectData with roleName == null");
+            throw new InvalidParameterException("Attempted to create an AccessUserAspectData with matchWith == null");
         } else {
             this.matchWith = matchWith.getNumericValue();
         }

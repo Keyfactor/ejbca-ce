@@ -276,7 +276,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private <T> List<T> getSubSet(final List<T> source, final int index, final int count) {
     	List<T> ret = new ArrayList<T>(count);
     	for (int i=0; i<count; i++) {
-    		ret.add(source.get(index + i));
+            if (source.size() > (index + i)) {
+                ret.add(source.get(index + i));
+
+            }
     	}
     	return ret;
     }
@@ -691,9 +694,56 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     	// In practice this means that when upgrading from EJBCA 4.0 you can not use the CLI in 5.0 before you
     	// have finished migrating all your 4.0 nodes and run post-upgrade.
         complexAccessControlSession.createSuperAdministrator();
-    	
+    
+        //Remove all old roles, should remove associated aspects and rules as well.
+        removeOldRoles500();
+
     	log.error("(this is not an error) Finished post upgrade from ejbca 4.0.x to ejbca 5.0.x with result: "+ret);
+	
         return ret;
+    }
+    
+    /**
+     * This method removes the following now unused roles:
+     *                                                  DEFAULT
+     *                                                  Temporary Super Administrator Group
+     *                                                  Public Web Users
+     */
+    private void removeOldRoles500() {
+        final String defaultRoleName = "DEFAULT";
+        final String tempSuperAdminRoleName = "Temporary Super Administrator Group";
+        final String publicWebRoleName = "Public Web Users";
+        final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("UpgradeSessionBean.removeOldRoles"));
+
+        try {
+            RoleData defaultRole = roleAccessSession.findRole(defaultRoleName);
+            if (defaultRole != null) {
+                try {
+                    roleMgmtSession.remove(admin, defaultRole);
+                } catch (RoleNotFoundException e) {
+                    //Ignore, can't happen
+                }
+            }
+            RoleData tempSuperAdminRole = roleAccessSession.findRole(tempSuperAdminRoleName);
+            if (defaultRole != null) {
+                try {
+                    roleMgmtSession.remove(admin, tempSuperAdminRole);
+                } catch (RoleNotFoundException e) {
+                    //Ignore, can't happen
+                }
+            }
+            RoleData publicWebRole = roleAccessSession.findRole(publicWebRoleName);
+            if (defaultRole != null) {
+                try {
+                    roleMgmtSession.remove(admin, publicWebRole);
+                } catch (RoleNotFoundException e) {
+                    //Ignore, can't happen
+                }
+            }
+        } catch (AuthorizationDeniedException e) {
+            throw new IllegalStateException("AlwaysAllowLocalAuthenticationToken should not have been denied authorization");
+
+        }
     }
 
     private List<CertificatePolicy> getNewPolicies(final List<CertificatePolicy> policies) {
