@@ -308,6 +308,7 @@ public class PublisherQueueTest {
         log.trace("<test04ExternalOCSPPublisherOnlyUseQueue");
     }
 
+    @Test
     public void test05ExternalOCSPPublisherOnlyUseQueueOnlyPublishRevoked() throws Exception {
         log.trace(">test05ExternalOCSPPublisherOnlyUseQueueOnlyPublishRevoked");
         boolean ret = false;
