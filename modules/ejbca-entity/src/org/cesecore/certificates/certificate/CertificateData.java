@@ -241,7 +241,7 @@ public class CertificateData extends ProtectedData implements Serializable {
     }
 
     /**
-     * status of certificate, ex CertificateData.CERT_ACTIVE
+     * status of certificate, ex CertificateConstants.CERT_ACTIVE
      * 
      * @return status
      */
@@ -251,7 +251,7 @@ public class CertificateData extends ProtectedData implements Serializable {
     }
 
     /**
-     * status of certificate, ex CertificateData.CERT_ACTIVE
+     * status of certificate, ex CertificateConstants.CERT_ACTIVE
      * 
      * @param status status
      */
