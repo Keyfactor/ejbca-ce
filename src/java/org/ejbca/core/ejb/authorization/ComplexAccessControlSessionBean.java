@@ -127,18 +127,20 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
         } else {
             log.debug("rule '/' already exists in " + SUPERADMIN_ROLE + ".");
         }
-        //Pick up the aspects from the old temp. super admin group and add them to the new one. 
-        Map<Integer, AccessUserAspectData> oldSuperAdminAspects = oldSuperAdminRole.getAccessUsers();
-        Map<Integer, AccessUserAspectData> existingSuperAdminAspects = role.getAccessUsers();
-        for (AccessUserAspectData aspect : oldSuperAdminAspects.values()) {
-            AccessMatchValue matchWith = AccessMatchValueReverseLookupRegistry.INSTANCE.performReverseLookup(
-                    X509CertificateAuthenticationToken.TOKEN_TYPE, aspect.getMatchWith());
-            AccessUserAspectData superAdminUserAspect = new AccessUserAspectData(SUPERADMIN_ROLE, aspect.getCaId(), matchWith,
-                    aspect.getMatchTypeAsType(), aspect.getMatchValue());
-            if(existingSuperAdminAspects.containsKey(superAdminUserAspect.getPrimaryKey())) {
-                log.debug(SUPERADMIN_ROLE + " already contains aspect matching " + aspect.getMatchValue() + " for CA with ID " + aspect.getCaId()); 
-            } else {
-                newUsers.put(superAdminUserAspect.getPrimaryKey(), superAdminUserAspect);
+        //Pick up the aspects from the old temp. super admin group and add them to the new one.        
+        if (oldSuperAdminRole != null) {
+            Map<Integer, AccessUserAspectData> oldSuperAdminAspects = oldSuperAdminRole.getAccessUsers();
+            Map<Integer, AccessUserAspectData> existingSuperAdminAspects = role.getAccessUsers();
+            for (AccessUserAspectData aspect : oldSuperAdminAspects.values()) {
+                AccessMatchValue matchWith = AccessMatchValueReverseLookupRegistry.INSTANCE.performReverseLookup(
+                        X509CertificateAuthenticationToken.TOKEN_TYPE, aspect.getMatchWith());
+                AccessUserAspectData superAdminUserAspect = new AccessUserAspectData(SUPERADMIN_ROLE, aspect.getCaId(), matchWith,
+                        aspect.getMatchTypeAsType(), aspect.getMatchValue());
+                if (existingSuperAdminAspects.containsKey(superAdminUserAspect.getPrimaryKey())) {
+                    log.debug(SUPERADMIN_ROLE + " already contains aspect matching " + aspect.getMatchValue() + " for CA with ID " + aspect.getCaId());
+                } else {
+                    newUsers.put(superAdminUserAspect.getPrimaryKey(), superAdminUserAspect);
+                }
             }
         }
            
