@@ -1123,7 +1123,7 @@ public class CertToolsTest {
         assertEquals("testDirName@jamador.pki.gva.es", CertTools.getUPNAltName(cer));
 
         name = CertTools.getPartFromDN(altNames, CertTools.DIRECTORYNAME);
-        assertEquals("CN=testDirName|dir|name", name);
+        assertEquals("CN=testDirName|dir|name", name.replace("cn=", "CN="));
         assertEquals(name.substring("CN=".length()), (new X500Name("CN=testDirName|dir|name").getRDNs()[0].getFirst().getValue()).toString());
 
         String altName = "rfc822name=foo@bar.se, uri=http://foo.bar.se, directoryName=" + LDAPDN.escapeRDN("CN=testDirName, O=Foo, OU=Bar, C=SE")
