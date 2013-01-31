@@ -1824,6 +1824,9 @@ public class CertTools {
         } catch (IOException e) {
             throw new RuntimeException("Could not read ASN1InputStream", e);
         }
+        if (oct instanceof ASN1TaggedObject) {
+            oct = ((ASN1TaggedObject)oct).getObject();
+        }
         ASN1Sequence seq = ASN1Sequence.getInstance(oct);
         return seq;
     }

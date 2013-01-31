@@ -36,6 +36,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.util.encoders.DecoderException;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -297,6 +298,12 @@ public class CardCertReqServlet extends HttpServlet {
             return;
         } catch (java.lang.ArrayIndexOutOfBoundsException ae) {
             log.error("Empty or invalid request received.", ae);
+            debug.printMessage("Empty or invalid request!");
+            debug.printMessage("Please supply a correct request.");
+            debug.printDebugInfo();
+            return;
+        } catch (DecoderException de) {
+            log.error("Empty or invalid request received.", de);
             debug.printMessage("Empty or invalid request!");
             debug.printMessage("Please supply a correct request.");
             debug.printDebugInfo();

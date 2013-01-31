@@ -46,6 +46,7 @@ import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.generators.PKCS12ParametersGenerator;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.params.ParametersWithIV;
+import org.bouncycastle.util.encoders.DecoderException;
 import org.bouncycastle.util.encoders.Hex;
 
 /**
@@ -374,7 +375,7 @@ public final class StringTools {
                 n = new String(Base64.decode(s1.getBytes("UTF-8")), "UTF-8");
             } catch (UnsupportedEncodingException e) {
                 n = s;
-            } catch (ArrayIndexOutOfBoundsException e) {
+            } catch (DecoderException e) {
                 // We get this if we try to decode something that is not base 64
                 n = s;
             }

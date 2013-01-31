@@ -216,6 +216,10 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
             final InvalidKeyException newe = new InvalidKeyException("Error decoding public key.");
             newe.initCause(e);
             throw newe;
+        } catch (IOException e) {
+            final InvalidKeyException newe = new InvalidKeyException("Error decoding public key.");
+            newe.initCause(e);
+            throw newe;
         }
     }
 

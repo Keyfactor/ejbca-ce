@@ -20,6 +20,8 @@ import java.util.Vector;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.x509.Extension;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.internal.CertificateValidity;
@@ -47,17 +49,21 @@ public class ExtendedKeyUsage extends StandardCertificateExtension {
     @Override
 	public ASN1Encodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey, CertificateValidity val ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
 		org.bouncycastle.asn1.x509.ExtendedKeyUsage ret = null;
-        // Get extended key usage from certificate profile
-		final Collection<String> c = certProfile.getExtendedKeyUsageOids();
-		final Vector<ASN1ObjectIdentifier> usage = new Vector<ASN1ObjectIdentifier>();
-		final Iterator<String> iter = c.iterator();
-        while (iter.hasNext()) {
-            usage.add(new ASN1ObjectIdentifier(iter.next()));
-        }
-        // Don't add empty key usage extension
-        if (!usage.isEmpty()) {
-            ret = new org.bouncycastle.asn1.x509.ExtendedKeyUsage(usage);
-        }
+		// Get extended key usage from certificate profile
+		final Collection<String> oids = certProfile.getExtendedKeyUsageOids();
+		
+		// Don't add empty key usage extension
+		if (oids.size() != 0) {
+			final ASN1Encodable[] usage = new ASN1Encodable[oids.size()];
+			int i = 0;
+			for (String oid : oids) {
+				usage[i] = org.bouncycastle.asn1.x509.KeyPurposeId.getInstance(new ASN1ObjectIdentifier(oid));
+				i++;
+			}
+			
+			ASN1Sequence seq = ASN1Sequence.getInstance(new DERSequence(usage));
+			ret = org.bouncycastle.asn1.x509.ExtendedKeyUsage.getInstance(seq);
+		}
 		if (ret == null) {
 			log.error("ExtendedKeyUsage missconfigured, no oids defined");
 		}

@@ -35,6 +35,7 @@ import org.apache.xml.security.signature.XMLSignature;
 import org.apache.xml.security.signature.XMLSignatureException;
 import org.apache.xml.security.transforms.Transforms;
 import org.apache.xml.security.utils.Constants;
+import org.bouncycastle.util.encoders.DecoderException;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAService;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
@@ -290,7 +291,7 @@ public class XKMSCAService extends ExtendedCAService implements Serializable {
 			retval = new String(Base64.decode((str).getBytes("UTF-8")));
 		} catch (UnsupportedEncodingException e) {
 			m_log.error("Could not decode XKMS data from Base64",e);
-		} catch (ArrayIndexOutOfBoundsException e) {
+		} catch (DecoderException e) {
 			// This is an old CA, where it's not Base64encoded
 			m_log.debug("Old non base64 encoded altname: "+str);
 			retval = str; 
