@@ -418,12 +418,12 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 
     /**
      * Internal method for getting CA, to avoid code duplication. Tries to find the CA even if the CAId is wrong due to CA certificate DN not being
-     * the same as CA DN. Uses CACacheManager directly if configured to do so in ejbca.properties.
+     * the same as CA DN. Uses CACache directly if configured to do so in ejbca.properties.
      * 
      * Note! No authorization checks performed in this internal method
      * 
      * @param caid
-     *            numerical id of CA (subjectDN.hashCode()) that we search for, or -1 of a name is to ge used instead
+     *            numerical id of CA (subjectDN.hashCode()) that we search for, or -1 if a name is to be used instead
      * @param name
      *            human readable name of CA, used instead of caid if caid == -1, can be null if caid != -1
      * @param fromCache if we should use the CA cache or return a new, decoupled, instance from the database, to be used when you need
@@ -570,9 +570,9 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 
     /** @return the CA object, from the database (including any upgrades) is necessary */
     private CA getCa(final int caId) {
-        // 1. Check (new) CryptoTokenCache if it is time to sync-up with database
+        // 1. Check (new) CaCache if it is time to sync-up with database
         if (CaCache.INSTANCE.shouldCheckForUpdates(caId)) {
-            log.debug("CryptoToken with ID " + caId + " will be checked for updates.");
+            log.debug("CA with ID " + caId + " will be checked for updates.");
             // 2. If cache is expired or missing, first thread to discover this reloads item from database and sends it to the cache
             try {
                 CAData caData = getCAData(caId, null);
@@ -590,7 +590,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             // 3. The cache compares the database data with what is in the cache
             // 4. If database is different from cache, replace it in the cache
         }
-        // 5. Get CryptoToken from cache (or null) and be merry
+        // 5. Get CA from cache (or null) and be merry
         return CaCache.INSTANCE.getEntry(caId);
     }
 
