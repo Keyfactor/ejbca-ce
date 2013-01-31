@@ -32,7 +32,7 @@ function check()
       </td>
       <td width="50%" valign="top"> 
         <div align="right">
-        <A href="<%=THIS_FILENAME %>"><u><%= ejbcawebbean.getText("BACKTOPROFILES") %></u></A>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <A href="<%=THIS_FILENAME %>"><u><%= ejbcawebbean.getText("BACKTOENDENTITYPROFILES") %></u></A>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
       </td>
     </tr>
     <form name="uploadfile" action="<%= THIS_FILENAME %>" method="post" enctype='multipart/form-data' >

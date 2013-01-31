@@ -346,7 +346,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
 
 </script>
 <div align="center"> 
-  <h2><c:out value="<%= ejbcawebbean.getText(\"EDITPROFILE\") %>" /></h2>
+  <h2><c:out value="<%= ejbcawebbean.getText(\"EDITENDENTITYPROFILE\") %>" /></h2>
   <h3><c:out value="<%= ejbcawebbean.getText(\"ENDENTITYPROFILE\") + \" : \" + profile %>" /></h3>
   <% if(fileuploadsuccess){%>
   <h3><c:out value="<%= ejbcawebbean.getText(\"TEMPLATEUPLOADSUCCESSFUL\")%>" /></h3>
@@ -367,7 +367,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         &nbsp;
       </td>
       <td width="50%" valign="top" align="right"> 
-        <a href="<%=THIS_FILENAME %>"><c:out value="<%= ejbcawebbean.getText(\"BACKTOPROFILES\") %>" /></a>
+        <a href="<%=THIS_FILENAME %>"><c:out value="<%= ejbcawebbean.getText(\"BACKTOENDENTITYPROFILES\") %>" /></a>
         <!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         <a onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ra_help.html") + "#profiles"%>")'>
         <c:out value="<%= ejbcawebbean.getText(\"HELP\") %>" /></a> -->
@@ -531,8 +531,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
          &nbsp;
       </td>
       <td width="40%" valign="top" align="right"> 
-        <c:out value="<%= ejbcawebbean.getText(\"EMAILDOMAIN\") %>" /><br />
-        <c:out value="<%= ejbcawebbean.getText(\"USEONLYDOMAIN\") %>" />
+        <c:out value="<%= ejbcawebbean.getText(\"EMAILADDRESS\") %>" />
       </td>
       <td width="50%"> 
         <% used = false;

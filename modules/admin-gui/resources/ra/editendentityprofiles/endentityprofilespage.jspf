@@ -28,13 +28,13 @@
   <% } %> 
   <% if(profileexists){ %> 
     <tr> 
-      <td width="40%" class="alert"><%= ejbcawebbean.getText("PROFILEALREADYEXISTS") %></td>
+      <td width="40%" class="alert"><%= ejbcawebbean.getText("EEPROFILEALREADYEXISTS") %></td>
       <td width="60%"></td>
     </tr>
   <% } %>
   <% if(profiledeletefailed){ %> 
     <tr> 
-      <td width="40%" class="alert"><%= ejbcawebbean.getText("COULDNTDELETEPROFILE") %></td>
+      <td width="40%" class="alert"><%= ejbcawebbean.getText("COULDNTDELETEEEPROFILE") %></td>
       <td width="60%"></td>
     </tr>
   <% } %>
@@ -67,13 +67,13 @@
         <table width="100%" border="0" cellspacing="0" cellpadding="0">
           <tr>
             <td align="left">
-              <input type="submit" name="<%= BUTTON_EDIT_PROFILE %>" value="<%= ejbcawebbean.getText("EDITPROFILE") %>">
+              <input type="submit" name="<%= BUTTON_EDIT_PROFILE %>" value="<%= ejbcawebbean.getText("EDITENDENTITYPROFILE") %>">
             </td>
             <td align="center">
               &nbsp;
             </td>
             <td align="right">
-              <input class=buttonstyle type="submit" onClick="return confirm('<%= ejbcawebbean.getText("AREYOUSURE",true) %>');" name="<%= BUTTON_DELETE_PROFILE %>" value="<%= ejbcawebbean.getText("DELETEPROFILE") %>">
+              <input class=buttonstyle type="submit" onClick="return confirm('<%= ejbcawebbean.getText("AREYOUSURE",true) %>');" name="<%= BUTTON_DELETE_PROFILE %>" value="<%= ejbcawebbean.getText("DELETEENDENTITYPROFILE") %>">
             </td>
           </tr>
         </table> 
