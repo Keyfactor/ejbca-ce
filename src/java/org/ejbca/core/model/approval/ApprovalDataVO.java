@@ -54,7 +54,7 @@ public class ApprovalDataVO implements Serializable {
 	public static final int APPROVALTYPE_ACTIVATECATOKEN             = 10;
 	
 	//IMPORTANT REMEMBER TO SET THE RESOURCES IN BOTH INTERNAL AND ADMINWEB LANGUAGE FILES
-	public static final String[] APPROVALTYPENAMES = {"DUMMY","APVIEWHARDTOKENDATA","APADDENDENTITY","APEDITENDENTITY",
+	public static final String[] APPROVALTYPENAMES = {"APDUMMY","APVIEWHARDTOKENDATA","APADDENDENTITY","APEDITENDENTITY",
 		                                              "APCHANGESTATUSENDENTITY", "APKEYRECOVERY", "APGENERATETOKEN",
 		                                              "APREVOKEENDENTITY", "APREVOKEDELETEENDENTITY", "APREVOKECERTIFICATE",
                                                       "APACTIVATECATOKEN"};
