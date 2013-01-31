@@ -143,13 +143,13 @@
         <table width="100%" border="0" cellspacing="0" cellpadding="0">
           <tr>
             <td align="left">
-              <input type="submit" name="<%= BUTTON_EDIT_CERTIFICATEPROFILES %>" value="<%= ejbcawebbean.getText("EDITCERTPROF") %>">
+              <input type="submit" name="<%= BUTTON_EDIT_CERTIFICATEPROFILES %>" value="<%= ejbcawebbean.getText("EDITCERTIFICATEPROFILE") %>">
             </td>
             <td align="center">
               &nbsp;
             </td>
             <td align="right">
-              <input class=buttonstyle type="submit" onClick="return confirm('<%= ejbcawebbean.getText("AREYOUSURE",true) %>');" name="<%= BUTTON_DELETE_CERTIFICATEPROFILES %>" value="<%= ejbcawebbean.getText("DELETECERTPROF") %>">
+              <input class=buttonstyle type="submit" onClick="return confirm('<%= ejbcawebbean.getText("AREYOUSURE",true) %>');" name="<%= BUTTON_DELETE_CERTIFICATEPROFILES %>" value="<%= ejbcawebbean.getText("DELETECERTIFICATEPROFILE") %>">
             </td>
           </tr>
         </table> 
