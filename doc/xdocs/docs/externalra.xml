@@ -256,8 +256,9 @@ pages.
  <li>Configure conf/externalra-gui.properties to use the keystores, the certificates, the local database and the local application server.</li>
  <li>Make sure a database JDBC connector JAR is installed in the local application server for your database.</li>
  <li>Run 'ant externalra-gui-deploy' to deploy the DataSource and External RA GUI application.</li>
- <li>Start JBoss and verify that the application is available at http://hostname:8080/externalra-gui/ (and https://hostname:8442/externalra-gui/)</li>
+ <li>Start JBoss and verify that the application is available at http://hostname:8080/externalra-gui/</li>
 </ol>
+If you need to use https (https://hostname:8442/externalra-gui/) you have to configure your application server manually. You can look at how it is done by EJBCA for example.
 </p>
 </subsection>
 <subsection name="Configuration message polling from EJBCA">

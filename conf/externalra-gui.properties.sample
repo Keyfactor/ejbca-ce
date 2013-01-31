@@ -67,6 +67,12 @@
 # Default: jdbc:mysql://127.0.0.1/messages
 #externalra-gui.datasource.jdbc-url=jdbc:mysql://127.0.0.1/messages
 
+# JDBC driver classname.
+# The JEE server needs to be configured with the appropriate JDBC driver for the selected database
+#externalra-database.driver=com.mysql.jdbc.Driver
+#externalra-database.driver=org.postgresql.Driver
+#externalra-database.driver=org.hsqldb.jdbcDriver
+
 # Username for database connection.
 # Default: ejbca
 #externalra-gui.datasource.username=ejbca
