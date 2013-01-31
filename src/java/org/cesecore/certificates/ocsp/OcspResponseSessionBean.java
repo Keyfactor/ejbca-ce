@@ -46,11 +46,11 @@ import javax.ejb.EJBException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERGeneralizedTime;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.ocsp.RevokedInfo;
 import org.bouncycastle.asn1.x509.CRLReason;
@@ -328,7 +328,7 @@ public abstract class OcspResponseSessionBean implements OcspResponseGeneratorSe
                     } else if (status.equals(CertificateStatus.REVOKED)) {
                         // Revocation info available for this cert, handle it
                         sStatus = "revoked";
-                        certStatus = new RevokedStatus(new RevokedInfo(new DERGeneralizedTime(status.revocationDate),
+                        certStatus = new RevokedStatus(new RevokedInfo(new ASN1GeneralizedTime(status.revocationDate),
                                 CRLReason.lookup(status.revocationReason)));
                     } else {
                         sStatus = "good";
@@ -340,7 +340,7 @@ public abstract class OcspResponseSessionBean implements OcspResponseGeneratorSe
                     responseList.add(new OCSPResponseItem(certId, certStatus, nextUpdate));
 
                 } else {
-                    certStatus = new RevokedStatus(new RevokedInfo(new DERGeneralizedTime(signerIssuerCertStatus.revocationDate),
+                    certStatus = new RevokedStatus(new RevokedInfo(new ASN1GeneralizedTime(signerIssuerCertStatus.revocationDate),
                             CRLReason.lookup(signerIssuerCertStatus.revocationReason)));
                     infoMsg = intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", "revoked", certId.getSerialNumber().toString(16), subjectDn);
                     log.info(infoMsg);

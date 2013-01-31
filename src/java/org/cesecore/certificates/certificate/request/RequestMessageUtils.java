@@ -36,6 +36,7 @@ import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jce.netscape.NetscapeCertRequest;
+import org.bouncycastle.util.encoders.DecoderException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.util.Base64;
@@ -190,8 +191,8 @@ public class RequestMessageUtils {
 						if (buffer == null) {
 							throw new IOException("Base64 decode of buffer returns null");
 						}					
-					} catch (ArrayIndexOutOfBoundsException ae) {
-						throw new IOException("Base64 decode fails, message not base64 encoded: "+ae.getMessage());
+					} catch (DecoderException de) {
+						throw new IOException("Base64 decode fails, message not base64 encoded: "+de.getMessage());
 					}					
 				}
 			}
@@ -265,8 +266,8 @@ public class RequestMessageUtils {
                     if (request == null) {
                         throw new IOException("Base64 decode of buffer returns null");
                     }
-                } catch (ArrayIndexOutOfBoundsException ae) {
-                    throw new IOException("Base64 decode fails, message not base64 encoded: " + ae.getMessage());
+                } catch (DecoderException de) {
+                    throw new IOException("Base64 decode fails, message not base64 encoded: " + de.getMessage());
                 }
             }
             final ASN1InputStream in = new ASN1InputStream(request);

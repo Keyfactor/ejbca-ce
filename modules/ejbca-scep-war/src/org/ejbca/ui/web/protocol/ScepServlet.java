@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.util.encoders.DecoderException;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -279,11 +280,11 @@ public class ScepServlet extends HttpServlet {
             log.error(errMsg, cae);
             // TODO: Send back proper Failure Response
             response.sendError(HttpServletResponse.SC_NOT_FOUND, cae.getMessage());
-        } catch (java.lang.ArrayIndexOutOfBoundsException ae) {
+        } catch (DecoderException de) {
     		String errMsg = intres.getLocalizedMessage("scep.errorinvalidreq");
-            log.error(errMsg, ae);
+            log.error(errMsg, de);
             // TODO: Send back proper Failure Response
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, ae.getMessage());
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, de.getMessage());
         } catch (AuthorizationDeniedException ae) {
     		String errMsg = intres.getLocalizedMessage("scep.errorauth");
             log.error(errMsg, ae);

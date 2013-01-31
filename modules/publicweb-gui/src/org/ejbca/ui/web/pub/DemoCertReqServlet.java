@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.util.encoders.DecoderException;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -293,6 +294,12 @@ public class DemoCertReqServlet extends HttpServlet {
             debug.printDebugInfo();
             return;
         } catch (java.lang.ArrayIndexOutOfBoundsException ae) {
+            log.debug("Empty or invalid request received.");
+            debug.printMessage("Empty or invalid request!");
+            debug.printMessage("Please supply a correct request.");
+            debug.printDebugInfo();
+            return;
+        } catch (DecoderException de) {
             log.debug("Empty or invalid request received.");
             debug.printMessage("Empty or invalid request!");
             debug.printMessage("Please supply a correct request.");
