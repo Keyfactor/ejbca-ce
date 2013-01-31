@@ -32,6 +32,7 @@ import org.apache.commons.fileupload.FileUpload;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.util.encoders.DecoderException;
 import org.cesecore.ErrorCode;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -496,6 +497,8 @@ public class RequestInstance {
 			debug.printDebugInfo();
 			return;
 		} catch (ArrayIndexOutOfBoundsException ae) {
+			iErrorMessage = intres.getLocalizedMessage("certreq.invalidreq");
+		} catch (DecoderException de) {
 			iErrorMessage = intres.getLocalizedMessage("certreq.invalidreq");
 		} catch (org.cesecore.certificates.certificate.IllegalKeyException e) {
 			iErrorMessage = intres.getLocalizedMessage("certreq.invalidkey", e.getMessage());

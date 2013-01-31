@@ -552,7 +552,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         // Extended Key Usage
         Vector<KeyPurposeId> usage = new Vector<KeyPurposeId>();
         usage.add(KeyPurposeId.id_kp_codeSigning);
-        ExtendedKeyUsage eku = new ExtendedKeyUsage(usage);
+        ExtendedKeyUsage eku = ExtendedKeyUsage.getInstance(usage);
         extgen.addExtension(Extension.extendedKeyUsage, false, eku);
         // OcspNoCheck
         extgen.addExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nocheck, false, new DERNull());
