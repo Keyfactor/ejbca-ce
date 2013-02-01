@@ -12,12 +12,12 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ocsp.standalone;
 
+
 import java.io.ByteArrayInputStream;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
-import java.security.KeyStoreException;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.ArrayList;
 import java.util.Date;
@@ -42,9 +42,8 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
-import org.ejbca.core.ejb.ocsp.standalone.OcspKeyRenewalSessionLocal;
+import org.ejbca.core.ejb.ocsp.standalone.StandaloneOcspKeyRenewalSessionLocal;
 import org.ejbca.core.protocol.ws.client.gen.AlreadyRevokedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalRequestExecutionException_Exception;
@@ -90,95 +89,95 @@ import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Excepti
 public class OcspKeyRenewalProxySessionBean implements OcspKeyRenewalProxySessionRemote {
 
     @EJB
-    private OcspKeyRenewalSessionLocal ocspKeyRenewalSession;
+    private StandaloneOcspKeyRenewalSessionLocal ocspKeyRenewalSession;
+    
+     @PostConstruct
+     public void setMockWebServiceObject() throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+         EjbcaWSMock ejbcaWSMock = new EjbcaWSMock();
+         ocspKeyRenewalSession.setEjbcaWs(ejbcaWSMock);
+         
+     }
+     
+     @Override
+     public void renewKeyStores(String signerSubjectDN) {       
+         ocspKeyRenewalSession.renewKeyStores(signerSubjectDN);
+     }
+     
+     private static class EjbcaWSMock implements EjbcaWS, Serializable {
+         private static final long serialVersionUID = 694285260730885817L;
 
-    @PostConstruct
-    public void setMockWebServiceObject() throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-        EjbcaWSMock ejbcaWSMock = new EjbcaWSMock();
-        ocspKeyRenewalSession.setEjbcaWs(ejbcaWSMock);
+         @Override
+         public Certificate getCertificate(String arg0, String arg1) throws AuthorizationDeniedException_Exception, CADoesntExistsException_Exception,
+                 EjbcaException_Exception {
+             return null;
+         }
 
-    }
+         @Override
+         public void editUser(UserDataVOWS arg0) throws ApprovalException_Exception, AuthorizationDeniedException_Exception,
+                 CADoesntExistsException_Exception, EjbcaException_Exception, UserDoesntFullfillEndEntityProfile_Exception,
+                 WaitingForApprovalException_Exception {
+             
+         }
 
-    @Override
-    public void renewKeyStores(String signerSubjectDN) throws KeyStoreException, CryptoTokenOfflineException {
-        ocspKeyRenewalSession.renewKeyStores(signerSubjectDN);
-    }
+         @Override
+         public List<UserDataVOWS> findUser(UserMatch arg0) throws AuthorizationDeniedException_Exception, EjbcaException_Exception,
+                 IllegalQueryException_Exception {
+             List<UserDataVOWS> result = new ArrayList<UserDataVOWS>();
+             UserDataVOWS resultValue = new UserDataVOWS();
+             resultValue.setUsername("ocspTestSigner");
+             resultValue.setPassword("foo123");
+             resultValue.setCaName("AdminCA1");
+             result.add(resultValue);
+             
+             return result;
+         }
 
-    private static class EjbcaWSMock implements EjbcaWS, Serializable {
-        private static final long serialVersionUID = 694285260730885817L;
+         @Override
+         public List<Certificate> findCerts(String arg0, boolean arg1) throws AuthorizationDeniedException_Exception, EjbcaException_Exception {
+             return null;
+         }
 
-        @Override
-        public Certificate getCertificate(String arg0, String arg1) throws AuthorizationDeniedException_Exception, CADoesntExistsException_Exception,
-                EjbcaException_Exception {
-            return null;
-        }
+         @Override
+         public List<Certificate> getLastCertChain(String arg0) throws AuthorizationDeniedException_Exception, EjbcaException_Exception {
+             return null;
+         }
 
-        @Override
-        public void editUser(UserDataVOWS arg0) throws ApprovalException_Exception, AuthorizationDeniedException_Exception,
-                CADoesntExistsException_Exception, EjbcaException_Exception, UserDoesntFullfillEndEntityProfile_Exception,
-                WaitingForApprovalException_Exception {
+         @Override
+         public CertificateResponse crmfRequest(String arg0, String arg1, String arg2, String arg3, String arg4)
+                 throws AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, CesecoreException_Exception,
+                 EjbcaException_Exception, NotFoundException_Exception {
+             // TODO Auto-generated method stub
+             return null;
+         }
 
-        }
+         @Override
+         public CertificateResponse spkacRequest(String arg0, String arg1, String arg2, String arg3, String arg4)
+                 throws AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, CesecoreException_Exception,
+                 EjbcaException_Exception, NotFoundException_Exception {
+             return null;
+         }
 
-        @Override
-        public List<UserDataVOWS> findUser(UserMatch arg0) throws AuthorizationDeniedException_Exception, EjbcaException_Exception,
-                IllegalQueryException_Exception {
-            List<UserDataVOWS> result = new ArrayList<UserDataVOWS>();
-            UserDataVOWS resultValue = new UserDataVOWS();
-            resultValue.setUsername("ocspTestSigner");
-            resultValue.setPassword("foo123");
-            resultValue.setCaName("AdminCA1");
-            result.add(resultValue);
+         @Override
+         public List<Certificate> cvcRequest(String arg0, String arg1, String arg2) throws ApprovalException_Exception,
+                 AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, CertificateExpiredException_Exception,
+                 CesecoreException_Exception, EjbcaException_Exception, NotFoundException_Exception, SignRequestException_Exception,
+                 UserDoesntFullfillEndEntityProfile_Exception, WaitingForApprovalException_Exception {
+             return null;
+         }
 
-            return result;
-        }
+         @Override
+         public byte[] caRenewCertRequest(String arg0, List<byte[]> arg1, boolean arg2, boolean arg3, boolean arg4, String arg5)
+                 throws ApprovalException_Exception, AuthorizationDeniedException_Exception, CADoesntExistsException_Exception,
+                 EjbcaException_Exception, WaitingForApprovalException_Exception {
+             return null;
+         }
 
-        @Override
-        public List<Certificate> findCerts(String arg0, boolean arg1) throws AuthorizationDeniedException_Exception, EjbcaException_Exception {
-            return null;
-        }
-
-        @Override
-        public List<Certificate> getLastCertChain(String arg0) throws AuthorizationDeniedException_Exception, EjbcaException_Exception {
-            return null;
-        }
-
-        @Override
-        public CertificateResponse crmfRequest(String arg0, String arg1, String arg2, String arg3, String arg4)
-                throws AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, CesecoreException_Exception,
-                EjbcaException_Exception, NotFoundException_Exception {
-            // TODO Auto-generated method stub
-            return null;
-        }
-
-        @Override
-        public CertificateResponse spkacRequest(String arg0, String arg1, String arg2, String arg3, String arg4)
-                throws AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, CesecoreException_Exception,
-                EjbcaException_Exception, NotFoundException_Exception {
-            return null;
-        }
-
-        @Override
-        public List<Certificate> cvcRequest(String arg0, String arg1, String arg2) throws ApprovalException_Exception,
-                AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, CertificateExpiredException_Exception,
-                CesecoreException_Exception, EjbcaException_Exception, NotFoundException_Exception, SignRequestException_Exception,
-                UserDoesntFullfillEndEntityProfile_Exception, WaitingForApprovalException_Exception {
-            return null;
-        }
-
-        @Override
-        public byte[] caRenewCertRequest(String arg0, List<byte[]> arg1, boolean arg2, boolean arg3, boolean arg4, String arg5)
-                throws ApprovalException_Exception, AuthorizationDeniedException_Exception, CADoesntExistsException_Exception,
-                EjbcaException_Exception, WaitingForApprovalException_Exception {
-            return null;
-        }
-
-        @Override
-        public void caCertResponse(String arg0, byte[] arg1, List<byte[]> arg2, String arg3) throws ApprovalException_Exception,
-                AuthorizationDeniedException_Exception, CesecoreException_Exception, EjbcaException_Exception, WaitingForApprovalException_Exception {
-
-        }
-
+         @Override
+         public void caCertResponse(String arg0, byte[] arg1, List<byte[]> arg2, String arg3) throws ApprovalException_Exception,
+                 AuthorizationDeniedException_Exception, CesecoreException_Exception, EjbcaException_Exception, WaitingForApprovalException_Exception {
+             
+         }
+     
         @Override
         public CertificateResponse pkcs10Request(final String username, final String password, final String pkcs10, final String hardTokenSN,
                 final String responseType) throws AuthorizationDeniedException_Exception, CADoesntExistsException_Exception,
@@ -187,13 +186,13 @@ public class OcspKeyRenewalProxySessionBean implements OcspKeyRenewalProxySessio
                 //Create a fake certificate to return
                 RequestMessage req = RequestMessageUtils.getSimpleRequestMessageFromType(username, password, pkcs10,
                         CertificateConstants.CERT_REQ_TYPE_PKCS10);
-                final X500Name issuerDn = new X500Name(req.getIssuerDN());
-                final BigInteger serialNumber = SernoGeneratorRandom.instance().getSerno();
+                final X500Name issuerDn =  new X500Name(req.getIssuerDN());
+                final BigInteger serialNumber =  SernoGeneratorRandom.instance().getSerno();
                 final Date notBefore = req.getRequestValidityNotBefore();
                 final Date notAfter = req.getRequestValidityNotAfter();
                 final X500Name subject = X500Name.getInstance(req.getRequestX500Name().toASN1Object());
-                SubjectPublicKeyInfo publicKey = new SubjectPublicKeyInfo((ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(req
-                        .getRequestPublicKey().getEncoded())).readObject());
+                SubjectPublicKeyInfo publicKey = new SubjectPublicKeyInfo((ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(
+                        req.getRequestPublicKey().getEncoded())).readObject());
                 X509v3CertificateBuilder certificateBuilder = new X509v3CertificateBuilder(issuerDn, serialNumber, notBefore, notAfter, subject,
                         publicKey);
                 //Create a new keystore to pretend to be the CA
@@ -201,8 +200,7 @@ public class OcspKeyRenewalProxySessionBean implements OcspKeyRenewalProxySessio
                 KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA", "BC");
                 kpg.initialize(algorithmParameterSpec);
                 KeyPair caKeyPair = kpg.generateKeyPair();
-                X509CertificateHolder certificateHolder = certificateBuilder.build(new JcaContentSignerBuilder("SHA1WithRSA").build(caKeyPair
-                        .getPrivate()));
+               X509CertificateHolder certificateHolder =  certificateBuilder.build(new JcaContentSignerBuilder("SHA1WithRSA").build(caKeyPair.getPrivate()));
                 byte[] data = new JcaX509CertificateConverter().getCertificate(certificateHolder).getEncoded();
                 return new CertificateResponse(responseType, data);
             } catch (Exception e) {
@@ -210,172 +208,172 @@ public class OcspKeyRenewalProxySessionBean implements OcspKeyRenewalProxySessio
             }
         }
 
-        @Override
-        public KeyStore pkcs12Req(String arg0, String arg1, String arg2, String arg3, String arg4) throws AuthorizationDeniedException_Exception,
-                CADoesntExistsException_Exception, EjbcaException_Exception, NotFoundException_Exception {
+         @Override
+         public KeyStore pkcs12Req(String arg0, String arg1, String arg2, String arg3, String arg4) throws AuthorizationDeniedException_Exception,
+                 CADoesntExistsException_Exception, EjbcaException_Exception, NotFoundException_Exception {
 
-            return null;
-        }
+             return null;
+         }
 
-        @Override
-        public void revokeCert(String arg0, String arg1, int arg2) throws AlreadyRevokedException_Exception, ApprovalException_Exception,
-                AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, EjbcaException_Exception, NotFoundException_Exception,
-                WaitingForApprovalException_Exception {
+         @Override
+         public void revokeCert(String arg0, String arg1, int arg2) throws AlreadyRevokedException_Exception, ApprovalException_Exception,
+                 AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, EjbcaException_Exception, NotFoundException_Exception,
+                 WaitingForApprovalException_Exception {
+             
+         }
 
-        }
+         @Override
+         public void revokeCertBackdated(String arg0, String arg1, int arg2, String arg3) throws AlreadyRevokedException_Exception,
+                 ApprovalException_Exception, AuthorizationDeniedException_Exception, CADoesntExistsException_Exception,
+                 DateNotValidException_Exception, EjbcaException_Exception, NotFoundException_Exception,
+                 RevokeBackDateNotAllowedForProfileException_Exception, WaitingForApprovalException_Exception {
+             
+         }
 
-        @Override
-        public void revokeCertBackdated(String arg0, String arg1, int arg2, String arg3) throws AlreadyRevokedException_Exception,
-                ApprovalException_Exception, AuthorizationDeniedException_Exception, CADoesntExistsException_Exception,
-                DateNotValidException_Exception, EjbcaException_Exception, NotFoundException_Exception,
-                RevokeBackDateNotAllowedForProfileException_Exception, WaitingForApprovalException_Exception {
+         @Override
+         public void revokeUser(String arg0, int arg1, boolean arg2) throws AlreadyRevokedException_Exception, ApprovalException_Exception,
+                 AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, EjbcaException_Exception, NotFoundException_Exception,
+                 WaitingForApprovalException_Exception {
+             
+         }
 
-        }
+         @Override
+         public void keyRecoverNewest(String arg0) throws ApprovalException_Exception, AuthorizationDeniedException_Exception,
+                 CADoesntExistsException_Exception, EjbcaException_Exception, NotFoundException_Exception, WaitingForApprovalException_Exception {
+             
+         }
 
-        @Override
-        public void revokeUser(String arg0, int arg1, boolean arg2) throws AlreadyRevokedException_Exception, ApprovalException_Exception,
-                AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, EjbcaException_Exception, NotFoundException_Exception,
-                WaitingForApprovalException_Exception {
+         @Override
+         public void revokeToken(String arg0, int arg1) throws AlreadyRevokedException_Exception, ApprovalException_Exception,
+                 AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, EjbcaException_Exception, NotFoundException_Exception,
+                 WaitingForApprovalException_Exception {
+             
+         }
 
-        }
+         @Override
+         public RevokeStatus checkRevokationStatus(String arg0, String arg1) throws AuthorizationDeniedException_Exception,
+                 CADoesntExistsException_Exception, EjbcaException_Exception {
+             return null;
+         }
 
-        @Override
-        public void keyRecoverNewest(String arg0) throws ApprovalException_Exception, AuthorizationDeniedException_Exception,
-                CADoesntExistsException_Exception, EjbcaException_Exception, NotFoundException_Exception, WaitingForApprovalException_Exception {
+         @Override
+         public boolean isAuthorized(String arg0) throws EjbcaException_Exception {
+             return false;
+         }
 
-        }
+         @Override
+         public List<UserDataSourceVOWS> fetchUserData(List<String> arg0, String arg1) throws AuthorizationDeniedException_Exception,
+                 EjbcaException_Exception, UserDataSourceException_Exception {
+             return null;
+         }
 
-        @Override
-        public void revokeToken(String arg0, int arg1) throws AlreadyRevokedException_Exception, ApprovalException_Exception,
-                AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, EjbcaException_Exception, NotFoundException_Exception,
-                WaitingForApprovalException_Exception {
+         @Override
+         public List<TokenCertificateResponseWS> genTokenCertificates(UserDataVOWS arg0, List<TokenCertificateRequestWS> arg1, HardTokenDataWS arg2,
+                 boolean arg3, boolean arg4) throws ApprovalException_Exception, ApprovalRequestExecutionException_Exception,
+                 ApprovalRequestExpiredException_Exception, AuthorizationDeniedException_Exception, CADoesntExistsException_Exception,
+                 EjbcaException_Exception, HardTokenExistsException_Exception, UserDoesntFullfillEndEntityProfile_Exception,
+                 WaitingForApprovalException_Exception {
+             return null;
+         }
 
-        }
+         @Override
+         public boolean existsHardToken(String arg0) throws EjbcaException_Exception {
+             return false;
+         }
 
-        @Override
-        public RevokeStatus checkRevokationStatus(String arg0, String arg1) throws AuthorizationDeniedException_Exception,
-                CADoesntExistsException_Exception, EjbcaException_Exception {
-            return null;
-        }
+         @Override
+         public HardTokenDataWS getHardTokenData(String arg0, boolean arg1, boolean arg2) throws ApprovalRequestExecutionException_Exception,
+                 ApprovalRequestExpiredException_Exception, AuthorizationDeniedException_Exception, CADoesntExistsException_Exception,
+                 EjbcaException_Exception, HardTokenDoesntExistsException_Exception, NotFoundException_Exception,
+                 WaitingForApprovalException_Exception {
+             return null;
+         }
 
-        @Override
-        public boolean isAuthorized(String arg0) throws EjbcaException_Exception {
-            return false;
-        }
+         @Override
+         public List<HardTokenDataWS> getHardTokenDatas(String arg0, boolean arg1, boolean arg2) throws AuthorizationDeniedException_Exception,
+                 CADoesntExistsException_Exception, EjbcaException_Exception {
+             return null;
+         }
 
-        @Override
-        public List<UserDataSourceVOWS> fetchUserData(List<String> arg0, String arg1) throws AuthorizationDeniedException_Exception,
-                EjbcaException_Exception, UserDataSourceException_Exception {
-            return null;
-        }
+         @Override
+         public void republishCertificate(String arg0, String arg1) throws AuthorizationDeniedException_Exception, CADoesntExistsException_Exception,
+                 EjbcaException_Exception, PublisherException_Exception {
+         }
 
-        @Override
-        public List<TokenCertificateResponseWS> genTokenCertificates(UserDataVOWS arg0, List<TokenCertificateRequestWS> arg1, HardTokenDataWS arg2,
-                boolean arg3, boolean arg4) throws ApprovalException_Exception, ApprovalRequestExecutionException_Exception,
-                ApprovalRequestExpiredException_Exception, AuthorizationDeniedException_Exception, CADoesntExistsException_Exception,
-                EjbcaException_Exception, HardTokenExistsException_Exception, UserDoesntFullfillEndEntityProfile_Exception,
-                WaitingForApprovalException_Exception {
-            return null;
-        }
+         @Override
+         public void customLog(int arg0, String arg1, String arg2, String arg3, Certificate arg4, String arg5)
+                 throws AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, EjbcaException_Exception {
+         }
 
-        @Override
-        public boolean existsHardToken(String arg0) throws EjbcaException_Exception {
-            return false;
-        }
+         @Override
+         public boolean deleteUserDataFromSource(List<String> arg0, String arg1, boolean arg2) throws AuthorizationDeniedException_Exception,
+                 EjbcaException_Exception, MultipleMatchException_Exception, UserDataSourceException_Exception {
+             return false;
+         }
 
-        @Override
-        public HardTokenDataWS getHardTokenData(String arg0, boolean arg1, boolean arg2) throws ApprovalRequestExecutionException_Exception,
-                ApprovalRequestExpiredException_Exception, AuthorizationDeniedException_Exception, CADoesntExistsException_Exception,
-                EjbcaException_Exception, HardTokenDoesntExistsException_Exception, NotFoundException_Exception,
-                WaitingForApprovalException_Exception {
-            return null;
-        }
+         @Override
+         public int isApproved(int arg0) throws ApprovalException_Exception, ApprovalRequestExpiredException_Exception, EjbcaException_Exception {
+             return 0;
+         }
 
-        @Override
-        public List<HardTokenDataWS> getHardTokenDatas(String arg0, boolean arg1, boolean arg2) throws AuthorizationDeniedException_Exception,
-                CADoesntExistsException_Exception, EjbcaException_Exception {
-            return null;
-        }
+         @Override
+         public List<NameAndId> getAvailableCAs() throws AuthorizationDeniedException_Exception, EjbcaException_Exception {
+             List<NameAndId> result = new ArrayList<NameAndId>();
+             result.add(new NameAndId("AdminCA1", -1688117755));
+             return result;
+         }
 
-        @Override
-        public void republishCertificate(String arg0, String arg1) throws AuthorizationDeniedException_Exception, CADoesntExistsException_Exception,
-                EjbcaException_Exception, PublisherException_Exception {
-        }
+         @Override
+         public List<NameAndId> getAuthorizedEndEntityProfiles() throws AuthorizationDeniedException_Exception, EjbcaException_Exception {
+             return null;
+         }
 
-        @Override
-        public void customLog(int arg0, String arg1, String arg2, String arg3, Certificate arg4, String arg5)
-                throws AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, EjbcaException_Exception {
-        }
+         @Override
+         public List<NameAndId> getAvailableCertificateProfiles(int arg0) throws AuthorizationDeniedException_Exception, EjbcaException_Exception {
+             return null;
+         }
 
-        @Override
-        public boolean deleteUserDataFromSource(List<String> arg0, String arg1, boolean arg2) throws AuthorizationDeniedException_Exception,
-                EjbcaException_Exception, MultipleMatchException_Exception, UserDataSourceException_Exception {
-            return false;
-        }
+         @Override
+         public List<NameAndId> getAvailableCAsInProfile(int arg0) throws AuthorizationDeniedException_Exception, EjbcaException_Exception {
+             return null;
+         }
 
-        @Override
-        public int isApproved(int arg0) throws ApprovalException_Exception, ApprovalRequestExpiredException_Exception, EjbcaException_Exception {
-            return 0;
-        }
+         @Override
+         public void createCRL(String arg0) throws ApprovalException_Exception, ApprovalRequestExpiredException_Exception,
+                 CADoesntExistsException_Exception, CAOfflineException_Exception, CryptoTokenOfflineException_Exception, EjbcaException_Exception {
+             
+         }
 
-        @Override
-        public List<NameAndId> getAvailableCAs() throws AuthorizationDeniedException_Exception, EjbcaException_Exception {
-            List<NameAndId> result = new ArrayList<NameAndId>();
-            result.add(new NameAndId("AdminCA1", -1688117755));
-            return result;
-        }
+         @Override
+         public String getEjbcaVersion() {
+             return null;
+         }
 
-        @Override
-        public List<NameAndId> getAuthorizedEndEntityProfiles() throws AuthorizationDeniedException_Exception, EjbcaException_Exception {
-            return null;
-        }
+         @Override
+         public int getPublisherQueueLength(String arg0) throws EjbcaException_Exception {
+             return 0;
+         }
 
-        @Override
-        public List<NameAndId> getAvailableCertificateProfiles(int arg0) throws AuthorizationDeniedException_Exception, EjbcaException_Exception {
-            return null;
-        }
+         @Override
+         public CertificateResponse certificateRequest(UserDataVOWS arg0, String arg1, int arg2, String arg3, String arg4)
+                 throws ApprovalException_Exception, AuthorizationDeniedException_Exception, EjbcaException_Exception, NotFoundException_Exception,
+                 UserDoesntFullfillEndEntityProfile_Exception, WaitingForApprovalException_Exception {
+             return null;
+         }
 
-        @Override
-        public List<NameAndId> getAvailableCAsInProfile(int arg0) throws AuthorizationDeniedException_Exception, EjbcaException_Exception {
-            return null;
-        }
+         @Override
+         public KeyStore softTokenRequest(UserDataVOWS arg0, String arg1, String arg2, String arg3) throws ApprovalException_Exception,
+                 AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, EjbcaException_Exception, NotFoundException_Exception,
+                 UserDoesntFullfillEndEntityProfile_Exception, WaitingForApprovalException_Exception {
+             return null;
+         }
 
-        @Override
-        public void createCRL(String arg0) throws ApprovalException_Exception, ApprovalRequestExpiredException_Exception,
-                CADoesntExistsException_Exception, CAOfflineException_Exception, CryptoTokenOfflineException_Exception, EjbcaException_Exception {
+         @Override
+         public List<Certificate> getLastCAChain(String arg0) throws AuthorizationDeniedException_Exception, CADoesntExistsException_Exception,
+                 EjbcaException_Exception {
+             return null;
+         }
+         
+     }
 
-        }
-
-        @Override
-        public String getEjbcaVersion() {
-            return null;
-        }
-
-        @Override
-        public int getPublisherQueueLength(String arg0) throws EjbcaException_Exception {
-            return 0;
-        }
-
-        @Override
-        public CertificateResponse certificateRequest(UserDataVOWS arg0, String arg1, int arg2, String arg3, String arg4)
-                throws ApprovalException_Exception, AuthorizationDeniedException_Exception, EjbcaException_Exception, NotFoundException_Exception,
-                UserDoesntFullfillEndEntityProfile_Exception, WaitingForApprovalException_Exception {
-            return null;
-        }
-
-        @Override
-        public KeyStore softTokenRequest(UserDataVOWS arg0, String arg1, String arg2, String arg3) throws ApprovalException_Exception,
-                AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, EjbcaException_Exception, NotFoundException_Exception,
-                UserDoesntFullfillEndEntityProfile_Exception, WaitingForApprovalException_Exception {
-            return null;
-        }
-
-        @Override
-        public List<Certificate> getLastCAChain(String arg0) throws AuthorizationDeniedException_Exception, CADoesntExistsException_Exception,
-                EjbcaException_Exception {
-            return null;
-        }
-
-    }
-
-}
+ }
