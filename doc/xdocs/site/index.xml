@@ -46,21 +46,21 @@ new TWTR.Widget({
 </div>
 </td>
 
-<td valign="top">
-<div class="frame note">
-<div class="label"><a style="color:white; padding:1.8em;" href="http://www.primekey.se/PKI+shop/">PKI Course in California!</a><a style="color:white; padding:1.8em;" href="http://www.primekey.se/PKI+shop/">Learn PKI in Sweden!</a><a style="color:white; padding:1.8em;" href="http://www.primekey.se/services/training/Open+schedule">PKI Training Schedule</a></div>
+<td valign="top" id="news">
+<div class="frame">
+<div class="label"><a style="color:white; padding:1em;" href="http://www.primekey.se/Services/Training/EJBCA+Certification/" target="pk">EJBCA Certification</a>
+<a style="color:white; padding:1.8em;" href="http://www.primekey.se/services/training/Open+schedule" target="pk">PKI Training Schedule</a>
+<a style="color:white; padding:1em;" href="http://www.primekey.se/Services/Support/" target="pk">Enterprise Support</a>
+<a style="color:white; padding:1.8em;" href="http://www.primekey.se/Company/Register+to+Receive/Gov+eID+%26+ePassports/" target="pk">Free eID &amp; ePassport booklet</a>
+</div>
 <div class="content">
-  <p><strong>EJBCA 4.0.10 is now out!</strong>
+<a href="https://ae.rsaconference.com/US13/portal/newreg.ww" target="rsa"><img src="./images/RSAC-2013_623px.png" alt="Visit PrimeKey at RSA 2013. Free Expo Pass Code." class="banner"/></a>
+    <hr/>
+  <p><strong>EJBCA 5.0.8 is now out!</strong>
   <br />Visit the <a href="download.html">download</a> section. There is also a LiveCD!
   <br />
   <span class="date"> Date: 2012-03-14</span>  
   </p>  
-  <p><strong>Full EU EAC ePassport support in Cert-cvc 1.3.0!</strong><br />
-  The <a href="download.html">cert-cvc library</a> handles CVC certificates for <a href="cvccas.html">EU EAC ePassport PKI</a> and the current release has full support for EU EAC ePassports using all algorithms. Release Date: 2012-05-03!
-Visit the download section. There is also a LiveCD!
-<br />
-  <span class="date"> Date: 2012-05-03</span> 
-  </p>
   <p>
   <strong>Another EJBCA User Guide!</strong><br />The latest addition is a CMP 3GPP manual. Buy it at the <a href="http://www.primekey.se/PKI+shop/">Prime PKI Shop!</a>
   <br />
@@ -72,8 +72,9 @@ Visit the download section. There is also a LiveCD!
   <br />
   </p>
    <p>
-  <strong><a href="http://blog.ejbca.org/2012/05/ejbca-will-always-be-open-source.html">Employees Guarantee Top OS Software Quality...</a><br /><a href="http://blog.ejbca.org/2012/05/new-features-in-ejbca-5.html">EJBCA Enterprise vs Community Features...</a>
-  <br /><a href="http://blog.ejbca.org">Read more News from the EJBCA Blog...</a></strong>
+  <a href="http://blog.ejbca.org/2012/05/ejbca-will-always-be-open-source.html">EJBCA remains Open Source, but needs employed developers to remain top notch PKI software...</a>
+  <br /><a href="http://blog.ejbca.org/2012/05/new-features-in-ejbca-5.html">EJBCA Enterprise vs Community Features...</a>
+  <br /><a href="http://blog.ejbca.org">Read more News from the EJBCA Blog...</a>
   </p>
   <p>
   </p>
