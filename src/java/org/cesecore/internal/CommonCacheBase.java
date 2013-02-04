@@ -127,6 +127,12 @@ public abstract class CommonCacheBase<T> implements CommonCache<T> {
         }
     }
 
+    @Override
+    public String getName(int id) {
+        final CacheEntry entry = getCacheEntry(id);
+        return entry != null ? entry.name : null;
+    }
+    
     /** @return cache entry for the requested key or null */
     private CacheEntry getCacheEntry(final Integer key) {
         lock.lock();

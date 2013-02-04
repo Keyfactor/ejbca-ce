@@ -186,6 +186,22 @@ public final class EjbcaConfiguration {
         }
         return time;
     }
+    
+    /**
+     * Parameter to specify if retrieving Publishers from PublisherSession should be cached, and in that case for how long.
+     */
+    public static long getCachePublisherTime() {
+        final String value = EjbcaConfigurationHolder.getString("publisher.cachetime");
+        long time = 1000; // cache 1 second is the default
+        try {
+            if (value!=null) {
+                time = Long.valueOf(value);
+            }
+        } catch (NumberFormatException e) {
+            log.error("Invalid value in publisher.cachetime, must be decimal number (milliseconds to cache Publisher): " + e.getMessage());
+        }
+        return time;
+    }
 
     /**
      * Parameter to specify if retrieving GlobalConfiguration (in GlobalConfigurationSessionBean) should be cached, and in that case for how long.
