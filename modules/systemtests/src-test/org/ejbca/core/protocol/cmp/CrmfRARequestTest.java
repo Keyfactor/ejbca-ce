@@ -277,14 +277,14 @@ public class CrmfRARequestTest extends CmpTestCase {
             crmfHttpUserTest(
                     "CN=AdminCA1,O=EJBCA Sample,C=SE",
                     key3,
-                    "User 'AdminCA1' is not allowed to use same subject DN as the user(s) 'SYSTEMCA' is/are using. See setting for 'Enforce unique DN' in Edit Certificate Authorities.", null);
+                    "User 'AdminCA1' is not allowed to use same subject DN as the user(s) 'SYSTEMCA' is/are using (even if CN postfix is used). See setting for 'Enforce unique DN' in Edit Certificate Authorities.", null);
 
             hostname = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME);
 
             crmfHttpUserTest(
                     "CN=" + hostname + ",O=EJBCA Sample,C=SE",
                     key4,
-                    "User 'localhost' is not allowed to use same subject DN as the user(s) 'tomcat' is/are using. See setting for 'Enforce unique DN' in Edit Certificate Authorities.", null);
+                    "User 'localhost' is not allowed to use same subject DN as the user(s) 'tomcat' is/are using (even if CN postfix is used). See setting for 'Enforce unique DN' in Edit Certificate Authorities.", null);
 
         } finally {
             try {
