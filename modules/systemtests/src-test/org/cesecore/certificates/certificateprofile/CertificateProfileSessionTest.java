@@ -331,7 +331,7 @@ public class CertificateProfileSessionTest extends RoleUsingTestCase {
 
     /**
      * Test of the cache of certificate profiles. This test depends on the default cache time of 1 second being used.
-     * If you changed this config, eeprofiles.cachetime, this test may fail. 
+     * If you changed this config, certprofiles.cachetime, this test may fail. 
      */
     @Test
     public void test07CertificateProfileCache() throws Exception {
