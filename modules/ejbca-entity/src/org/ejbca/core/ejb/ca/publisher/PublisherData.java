@@ -118,7 +118,7 @@ public class PublisherData extends ProtectedData implements Serializable {
 		encoder.close();
         try {
             if (log.isDebugEnabled()) {
-                log.debug("Profiledata: \n" + baos.toString("UTF8"));
+                log.debug("Publisher data: \n" + baos.toString("UTF8"));
             }
             setData(baos.toString("UTF8"));
         } catch (UnsupportedEncodingException e) {
@@ -134,7 +134,7 @@ public class PublisherData extends ProtectedData implements Serializable {
 
     @Transient
     @Override
-    protected String getProtectString(final int version) {
+    public String getProtectString(final int version) {
         final ProtectionStringBuilder build = new ProtectionStringBuilder();
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
         build.append(getId()).append(getName()).append(getUpdateCounter()).append(getData());

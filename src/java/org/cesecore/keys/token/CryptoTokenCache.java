@@ -60,6 +60,11 @@ public enum CryptoTokenCache implements CommonCache<CryptoToken> {
     }
     
     @Override
+    public String getName(int id) {
+        return cryptoTokenCache.getName(id);
+    }
+
+    @Override
     public Map<String,Integer> getNameToIdMap() {
         return cryptoTokenCache.getNameToIdMap();
     }

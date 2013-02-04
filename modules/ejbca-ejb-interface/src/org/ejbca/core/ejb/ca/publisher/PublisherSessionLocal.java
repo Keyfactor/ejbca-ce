@@ -33,6 +33,12 @@ import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 public interface PublisherSessionLocal extends PublisherSession {
     
     /**
+     * Makes sure that no Publishers are cached to ensure that we read from database
+     * next time we try to access it.
+     */
+    void flushPublisherCache(); 
+
+    /**
      * Revokes the certificate in the given collection of publishers. See
      * BasePublisher class for further documentation about function
      * 

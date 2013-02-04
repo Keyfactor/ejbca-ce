@@ -30,13 +30,13 @@ public interface PublisherSession {
 
     /**
      * @return a BasePublisher or null of a publisher with the given id does not
-     *         exist
+     *         exist. Uses cache to get the object as quickly as possible.
      */
     BasePublisher getPublisher(int id);
     
     /**
      * @return a BasePublisher or null of a publisher with the given name does
-     *         not exist
+     *         not exist. Uses cache to get the object as quickly as possible.
      */
     BasePublisher getPublisher(String name);
 
@@ -71,5 +71,5 @@ public interface PublisherSession {
      * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
     boolean storeCRL(AuthenticationToken admin, Collection<Integer> publisherids, byte[] incrl, String cafp,
-                            int number, String issuerDn) throws AuthorizationDeniedException;	
+            int number, String issuerDn) throws AuthorizationDeniedException;
 }

@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  CESeCore: CE Security Core                                           *
+ *  EJBCA: The OpenSource Certificate Authority                          *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,67 +10,67 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.certificates.ca.internal;
+package org.ejbca.core.ejb.ca.publisher;
 
 import java.util.Map;
 
-import org.cesecore.certificates.ca.CA;
-import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.CommonCache;
 import org.cesecore.internal.CommonCacheBase;
+import org.ejbca.config.EjbcaConfiguration;
+import org.ejbca.core.model.ca.publisher.BasePublisher;
 
 /**
- * CA object and name to id lookup cache. Configured through CesecoreConfiguration.getCacheCaTimeInCaSession().
+ * Publisher object and name to id lookup cache. Configured through CesecoreConfiguration.getCachePublisherTime().
  * 
- * @version $Id$
+ * @version $Id: CaCache.java 16177 2013-01-22 13:57:07Z anatom $
  */
-public enum CaCache implements CommonCache<CA> {
+public enum PublisherCache implements CommonCache<BasePublisher> {
     INSTANCE;
 
-    final private CommonCache<CA> caCache = new CommonCacheBase<CA>() {
+    final private CommonCache<BasePublisher> cache = new CommonCacheBase<BasePublisher>() {
         @Override
         protected long getCacheTime() {
-            return CesecoreConfiguration.getCacheCaTimeInCaSession();
+            return EjbcaConfiguration.getCachePublisherTime();
         };
         @Override
         protected long getMaxCacheLifeTime() {
-            // CAs are not short-lived objects with long cache times so we disable it
+            // Publishers are not short-lived objects with long cache times so we disable it
             return 0L;
         };
     };
 
     @Override
-    public CA getEntry(final int caId) {
-        return caCache.getEntry(caId);
+    public BasePublisher getEntry(final int id) {
+        return cache.getEntry(id);
     }
 
     @Override
-    public boolean shouldCheckForUpdates(final int caId) {
-        return caCache.shouldCheckForUpdates(caId);
+    public boolean shouldCheckForUpdates(final int id) {
+        return cache.shouldCheckForUpdates(id);
     }
     
     @Override
-    public void updateWith(int caId, int digest, String name, CA object) {
-        caCache.updateWith(caId, digest, name, object);
+    public void updateWith(int id, int digest, String name, BasePublisher object) {
+        cache.updateWith(id, digest, name, object);
     }
 
     @Override
-    public void removeEntry(int caId) {
-        caCache.removeEntry(caId);
+    public void removeEntry(int id) {
+        cache.removeEntry(id);
     }
-    
+
     @Override
     public String getName(int id) {
-        return caCache.getName(id);
+        return cache.getName(id);
     }
 
     @Override
     public Map<String,Integer> getNameToIdMap() {
-        return caCache.getNameToIdMap();
+        return cache.getNameToIdMap();
     }
     
     @Override
     public void flush() {
-        caCache.flush();
+        cache.flush();
     }
 }
