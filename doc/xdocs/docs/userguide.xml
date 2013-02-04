@@ -304,7 +304,7 @@ See doc/sql-scripts for index scripts.
 
 <subsubsection name="Enforce unique DN">
 <p>
-'Enforce unique DN' guarantees that certificates with the same Subject DN can only be issued to the same user from this
+'Enforce unique DN' guarantees that users with the same Subject DN can not be issued certificates from this
 CA. This means that a user is allowed to have multiple certificates (e.g. for different uses) with the same Subject DN
 as long as the same 'username' is used, but two users can not share the same Subject DN. The check is only performed
 when new certificates are issued.
