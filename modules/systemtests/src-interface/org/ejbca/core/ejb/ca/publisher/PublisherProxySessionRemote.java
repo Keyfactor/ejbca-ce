@@ -87,4 +87,15 @@ public interface PublisherProxySessionRemote {
      * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
     void testConnection(int publisherid) throws PublisherConnectionException;
+    
+    /**
+     * Makes sure that no Publishers are cached to ensure that we read from database
+     * next time we try to access it.
+     */
+    void flushPublisherCache();
+
+    /** Change a Publisher without affecting the cache */
+    void internalChangeCertificateProfileNoFlushCache(String name, BasePublisher publisher)
+            throws AuthorizationDeniedException; 
+
 }

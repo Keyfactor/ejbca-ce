@@ -33,7 +33,12 @@ public interface CommonCache<T> {
     /** Remove the specified entry from the cache and mapping if it exists. */
     void removeEntry(int id);
 
-    /** @return a copy of the id to name map as a name to id map*/
+    /** Provides functionality of an IdToNameMap. 
+     * @return return the name from the entry, given the id.
+     */
+    String getName(int id);
+
+    /** @return a copy of the id to name map as a name to id map */
     Map<String, Integer> getNameToIdMap();
 
     /** Remove all references from this cache */
