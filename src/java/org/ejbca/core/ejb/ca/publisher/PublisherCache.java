@@ -22,7 +22,7 @@ import org.ejbca.core.model.ca.publisher.BasePublisher;
 /**
  * Publisher object and name to id lookup cache. Configured through CesecoreConfiguration.getCachePublisherTime().
  * 
- * @version $Id: CaCache.java 16177 2013-01-22 13:57:07Z anatom $
+ * @version $Id$
  */
 public enum PublisherCache implements CommonCache<BasePublisher> {
     INSTANCE;
