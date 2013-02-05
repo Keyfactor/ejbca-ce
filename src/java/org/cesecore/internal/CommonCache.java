@@ -34,7 +34,7 @@ public interface CommonCache<T> {
     void removeEntry(int id);
 
     /** Provides functionality of an IdToNameMap. 
-     * @return return the name from the entry, given the id.
+     * @return return the name from the entry, given the id, or null if it does not exist.
      */
     String getName(int id);
 
