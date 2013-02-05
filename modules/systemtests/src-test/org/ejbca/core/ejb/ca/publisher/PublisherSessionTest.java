@@ -62,6 +62,11 @@ public class PublisherSessionTest {
         final String name = PublisherSessionTest.class.getSimpleName();
         final String name1 = PublisherSessionTest.class.getSimpleName()+"1";
         try {
+            // Test some initial empty checks to see we do not get NPEs
+            int noid = publisherProxySession.getPublisherId(name);
+            assertEquals(0, noid);
+            String noname = publisherProxySession.getPublisherName(123);
+            assertNull(noname);
             // Add new publisher
             publisherProxySession.addPublisher(internalAdmin, name, publ);
             publisherProxySession.addPublisher(internalAdmin, name1, publ1);

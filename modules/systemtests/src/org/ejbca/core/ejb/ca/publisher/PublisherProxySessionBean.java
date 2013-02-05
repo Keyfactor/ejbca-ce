@@ -63,6 +63,11 @@ public class PublisherProxySessionBean implements PublisherProxySessionRemote {
     }
 
     @Override
+    public String getPublisherName(int id) {
+        return publisherSession.getPublisherName(id);
+    }
+
+    @Override
     public void removePublisher(AuthenticationToken admin, String name) throws AuthorizationDeniedException {
        publisherSession.removePublisher(admin, name);
 
