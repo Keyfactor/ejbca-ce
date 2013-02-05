@@ -526,8 +526,9 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public int getPublisherId(String name) {
-        getPublisherInternal(-1, name, true);
-        return PublisherCache.INSTANCE.getNameToIdMap().get(name);
+        getPublisher(name);
+        final Integer val = PublisherCache.INSTANCE.getNameToIdMap().get(name);
+        return (val != null) ? val : 0;
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
