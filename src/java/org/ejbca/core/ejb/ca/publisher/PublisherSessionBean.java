@@ -369,15 +369,15 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         if (htp != null) {
             final Map<Object, Object> diff = getPublisher(htp).diff(publisher);
             htp.setPublisher(publisher);
-            String msg = intres.getLocalizedMessage("publisher.changedpublisher", name);
+            // Since loading a Publisher is quite complex, we simple purge the cache here
+            PublisherCache.INSTANCE.removeEntry(htp.getId());            
+            final String msg = intres.getLocalizedMessage("publisher.changedpublisher", name);
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             for (Map.Entry<Object, Object> entry : diff.entrySet()) {
                 details.put(entry.getKey().toString(), entry.getValue().toString());
             }
             auditSession.log(EjbcaEventTypes.PUBLISHER_CHANGE, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
-            // Since loading a Publisher is quite complex, we simple purge the cache here
-            PublisherCache.INSTANCE.removeEntry(htp.getId());            
         } else {
             String msg = intres.getLocalizedMessage("publisher.errorchangepublisher", name);
             log.info(msg);
