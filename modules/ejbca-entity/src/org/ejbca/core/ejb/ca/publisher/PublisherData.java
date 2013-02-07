@@ -36,6 +36,8 @@ import org.ejbca.core.model.ca.publisher.BasePublisher;
 
 /**
  * Representation of a publisher.
+ * 
+ * @version $Id$
  */
 @Entity
 @Table(name="PublisherData")
