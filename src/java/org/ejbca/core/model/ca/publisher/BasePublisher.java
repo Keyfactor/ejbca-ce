@@ -127,6 +127,15 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
      */
     public void setUseQueueForCertificates(boolean useQueueForCertificates) { data.put(USEQUEUEFORCERTIFICATES, Boolean.valueOf(useQueueForCertificates));}
 
+    /** Asks the publisher if the certificate with these parameters will be published. Used by the publisher queue to avoid
+     * storing things that will never be published in the publisher queue.
+     * 
+     * @return default BasePublisher.willCertBePublished returns true, override in sub class to change behavior.
+     */
+    public boolean willPublishCertificate(int status, int revocationReason) {
+        return true;
+    }
+    
     // Abstact methods.
     
     /**
