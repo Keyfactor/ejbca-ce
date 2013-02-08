@@ -291,6 +291,7 @@ public class OCSPUnidClient {
     	if (noncerep != null) {
         	ASN1InputStream ain = new ASN1InputStream(noncerep);
         	ASN1OctetString oct = ASN1OctetString.getInstance(ain.readObject());
+        	ain.close();
         	boolean eq = ArrayUtils.isEquals(this.nonce, oct.getOctets());    		
             if (!eq) {
             	ret.setErrorCode(OCSPUnidResponse.ERROR_INVALID_NONCE);
