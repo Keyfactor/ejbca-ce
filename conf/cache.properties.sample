@@ -21,8 +21,8 @@
 # is kept in the active state until removed or changed in the database.
 # Setting this value will improve performance for very large volume installations (>100 cert/s). 
 # Default: -1 (always check database for updates)
-# Possible values -1 (no caching) to 9223372036854775807 (2^63-1 = Long.MAX_VALUE), 
-#  anything more than 157680000000 (5 years) should mean infinitely in practice.
+# Possible values -1 (no caching) to 9223372036854775807 (2^63-1 = Long.MAX_VALUE).
+#  If you want caching for an infinite time then set something high for example 157680000000 (5years). 
 #cryptotoken.cachetime=157680000000
 #cryptotoken.cachetime=-1
 
@@ -32,8 +32,8 @@
 # For normal installations, where extreme speeds and response times are not required, leave as default.
 # Value is milliseconds.
 # Default: -1 (don't use cache)
-# Possible values -1 (no caching) to 9223372036854775807 (2^63-1 = Long.MAX_VALUE), 
-#  anything more than 157680000000 (5 years) should mean infinitely in practice.
+# Possible values -1 (no caching) to 9223372036854775807 (2^63-1 = Long.MAX_VALUE).
+#  If you want caching for an infinite time then set something high for example 157680000000 (5years). 
 #cainfo.cachetime=157680000000
 #cainfo.cachetime=-1
 
@@ -46,8 +46,8 @@
 # For normal installations, where extreme speeds and response times are not required, leave as default.
 # Value is milliseconds.
 # Default: 1000 (1 second)
-# Possible values -1 (no caching) to 9223372036854775807 (2^63-1 = Long.MAX_VALUE), 
-#  anything more than 157680000000 (5 years) should mean infinitely in practice.
+# Possible values -1 (no caching) to 9223372036854775807 (2^63-1 = Long.MAX_VALUE).
+#  If you want caching for an infinite time then set something high for example 157680000000 (5years). 
 #eeprofiles.cachetime=157680000000
 #eeprofiles.cachetime=-1
 
@@ -60,8 +60,8 @@
 # For normal installations, where extreme speeds and response times are not required, leave as default.
 # Value is milliseconds.
 # Default: 1000 (1 second)
-# Possible values -1 (no caching) to 9223372036854775807 (2^63-1 = Long.MAX_VALUE), 
-#  anything more than 157680000000 (5 years) should mean infinitely in practice.
+# Possible values -1 (no caching) to 9223372036854775807 (2^63-1 = Long.MAX_VALUE).
+#  If you want caching for an infinite time then set something high for example 157680000000 (5years). 
 #certprofiles.cachetime=157680000000
 #certprofiles.cachetime=-1
 
@@ -74,8 +74,8 @@
 # For normal installations, where extreme speeds and response times are not required, leave as default.
 # Value is milliseconds.
 # Default: 1000 (1 second)
-# Possible values -1 (no caching) to 9223372036854775807 (2^63-1 = Long.MAX_VALUE), 
-#  anything more than 157680000000 (5 years) should mean infinitely in practice.
+# Possible values -1 (no caching) to 9223372036854775807 (2^63-1 = Long.MAX_VALUE).
+#  If you want caching for an infinite time then set something high for example 157680000000 (5years). 
 #publisher.cachetime=157680000000
 #publisher.cachetime=-1
 
@@ -88,8 +88,8 @@
 # For normal installations, where extreme speeds and response times are not required, leave as default.
 # Value is milliseconds.
 # Default: 30000 (30 seconds)
-# Possible values -1 (no caching) to 9223372036854775807 (2^63-1 = Long.MAX_VALUE), 
-#  anything more than 157680000000 (5 years) should mean infinitely in practice.
+# Possible values -1 (no caching) to 9223372036854775807 (2^63-1 = Long.MAX_VALUE).
+#  If you want caching for an infinite time then set something high for example 157680000000 (5years). 
 #globalconfiguration.cachetime=157680000000
 #globalconfiguration.cachetime=-1
 
@@ -102,8 +102,8 @@
 # For normal installations, where extreme speeds and response times are not required, leave as default.
 # Value is milliseconds.
 # Default: 30000 (30 seconds)
-# Possible values -1 (no caching) to 9223372036854775807 (2^63-1 = Long.MAX_VALUE), 
-#  anything more than 157680000000 (5 years) should mean infinitely in practice.
+# Possible values -1 (no caching) to 9223372036854775807 (2^63-1 = Long.MAX_VALUE).
+#  If you want caching for an infinite time then set something high for example 157680000000 (5years). 
 #authorization.cachetime=157680000000
 #authorization.cachetime=-1
 
