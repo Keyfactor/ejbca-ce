@@ -27,7 +27,7 @@
          emptySessionPath="true" protocol="org.apache.coyote.http11.Http11Protocol"
          enableLookups="false" redirectPort="@httpserver.privhttps@" acceptCount="100"
          connectionTimeout="20000" disableUploadTimeout="true"
-         URIEncoding="@web.contentencoding@"/>
+         URIEncoding="@web.contentencoding@" proxyName="@httpserver.external.fqdn@" />
 
     <!-- Define a SSL HTTP/1.1 Connector on port 8443
          This connector uses the JSSE configuration, when using APR, the 
@@ -42,7 +42,7 @@
          keystoreFile="${jboss.server.home.dir}/@keystore.file@"
          keystorePass="@httpsserver.password@" sslProtocol="TLS"
          truststoreFile="${jboss.server.home.dir}/@truststore.file@" truststorePass="@java.trustpassword@" truststoreType="JKS"
-         URIEncoding="@web.contentencoding@" />
+         URIEncoding="@web.contentencoding@" proxyName="@httpserver.external.fqdn@" />
 @definitions_away_end@
     <!-- HTTPS Connector requiring client cert on port 8443 -->
 @definitions_away_begin@
@@ -53,7 +53,7 @@
          keystoreFile="${jboss.server.home.dir}/@keystore.file@"
          keystorePass="@httpsserver.password@" sslProtocol="TLS" 
          truststoreFile="${jboss.server.home.dir}/@truststore.file@" truststorePass="@java.trustpassword@" truststoreType="JKS"
-         URIEncoding="@web.contentencoding@" />
+         URIEncoding="@web.contentencoding@" proxyName="@httpserver.external.fqdn@" />
 @definitions_away_end@
 
 <!-- If you want to use a native APR SSL Coyote HTTP/1.1 Connector, 
