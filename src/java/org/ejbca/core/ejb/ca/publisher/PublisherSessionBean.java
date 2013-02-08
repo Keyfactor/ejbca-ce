@@ -158,7 +158,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                         && publ.getUseQueueForCertificates()) {
                     // Write to the publisher queue either for audit reasons or
                     // to be able try again
-                    if (publ.willPublishCertificate(publishStatus, revocationReason)) {
+                    if (publ.willPublishCertificate(status, revocationReason)) {
                         PublisherQueueVolatileData pqvd = new PublisherQueueVolatileData();
                         pqvd.setUsername(username);
                         pqvd.setPassword(password);
