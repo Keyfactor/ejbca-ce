@@ -56,6 +56,7 @@ public class Asn1Dump extends BaseCommand {
     		if (!iscert) {
         		ASN1InputStream ais = new ASN1InputStream(new FileInputStream(filename));
         		ASN1Primitive obj = ais.readObject();
+        		ais.close();
         		String dump = ASN1Dump.dumpAsString(obj);
         		getLogger().info(dump);    			
     		} else {

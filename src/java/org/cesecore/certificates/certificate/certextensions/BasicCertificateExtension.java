@@ -339,6 +339,7 @@ public class BasicCertificateExtension extends CertificateExtension {
                 } else {
                     retval = firstObject;
                 }
+                ais.close();
             } catch (Exception e) {
                 throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.illegalvalue", value,
                         Integer.valueOf(getId()), getOID()));

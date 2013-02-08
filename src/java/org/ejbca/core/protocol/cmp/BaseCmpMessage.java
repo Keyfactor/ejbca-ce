@@ -68,6 +68,7 @@ public abstract class BaseCmpMessage implements Serializable {
 			ASN1InputStream ais = new ASN1InputStream(new ByteArrayInputStream(recipientBytes));
 			try {
 				recipient = GeneralName.getInstance(ais.readObject());
+				ais.close();
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
@@ -90,6 +91,7 @@ public abstract class BaseCmpMessage implements Serializable {
 			ASN1InputStream ais = new ASN1InputStream(new ByteArrayInputStream(senderBytes));
 			try {
 				sender = GeneralName.getInstance(ais.readObject());
+				ais.close();
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}

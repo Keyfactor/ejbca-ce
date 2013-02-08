@@ -128,6 +128,7 @@ public class OcspJunitHelper {
 			assertNotNull(noncerep);
 			ASN1InputStream ain = new ASN1InputStream(noncerep);
 			ASN1OctetString oct = ASN1OctetString.getInstance(ain.readObject());
+			ain.close();
 			assertEquals(nonce, new String(oct.getOctets()));
 		}
 		SingleResp[] singleResps = brep.getResponses();
@@ -181,6 +182,7 @@ public class OcspJunitHelper {
 			assertNotNull(noncerep);
 			ASN1InputStream ain = new ASN1InputStream(noncerep);
 			ASN1OctetString oct = ASN1OctetString.getInstance(ain.readObject());
+			ain.close();
 			assertEquals(nonce, new String(oct.getOctets()));
 		}
 		return brep;
