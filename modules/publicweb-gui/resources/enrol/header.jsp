@@ -100,6 +100,11 @@
               </li>
               <%  }
                  } %>
+              <% if (org.ejbca.config.WebConfiguration.isProxiedAuthenticationEnabled()) { %>
+              <li>
+                <a href="/logout">Logout</a>
+              </li>
+              <% } %>
             </ul>
           </li>  
         </ul>
