@@ -216,6 +216,7 @@ public class MSPKCS10RequestMessage extends PKCS10RequestMessage {
                 				}
                 			}
             			}
+            			ais.close();
             		} catch (IOException e) {
 						log.error(e);
 					}

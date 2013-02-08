@@ -79,6 +79,7 @@ public class CertAndRequestDumpBean {
 //				ret = pkcs10.toString();
 				final ASN1InputStream ais = new ASN1InputStream(new ByteArrayInputStream(pkcs10.getEncoded()));
 				final ASN1Primitive obj = ais.readObject();
+				ais.close();
 				ret = ASN1Dump.dumpAsString(obj);
 				type = "PKCS#10";
 			} catch (IOException e1) {
@@ -102,6 +103,7 @@ public class CertAndRequestDumpBean {
 				try {
 					final ASN1InputStream ais = new ASN1InputStream(new ByteArrayInputStream(bytes));
 					final ASN1Primitive obj = ais.readObject();
+					ais.close();
 					if (obj != null) {
 						ret = ASN1Dump.dumpAsString(obj);
 						type = "ASN.1";						

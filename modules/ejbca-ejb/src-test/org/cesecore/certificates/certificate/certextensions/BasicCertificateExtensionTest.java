@@ -654,6 +654,7 @@ public class BasicCertificateExtensionTest {
         	ASN1OctetString str = ext.getExtnValue();
         	ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(str.getOctets()));
         	DERIA5String ia5str = (DERIA5String)aIn.readObject();
+        	aIn.close();
         	assertEquals("This is a printable string", ia5str.getString());
         }
 
