@@ -185,6 +185,7 @@
                         <replacestring from="@httpserver.pubhttp@" to="${httpserver.pubhttp}"/>
                         <replacestring from="@httpserver.pubhttps@" to="${httpserver.pubhttps}"/>
                         <replacestring from="@httpserver.privhttps@" to="${httpserver.privhttps}"/>
+                    	<replacestring from="@httpserver.external.fqdn@" to="${httpserver.external.fqdn}"/>
                         <replacestring from="@web.contentencoding@" to="${web.contentencoding}"/>
                         <replacestring from="@httpsserver.bindaddress.pubhttp@" to="${httpsserver.bindaddress.pubhttp}"/>
                         <replacestring from="@httpsserver.bindaddress.pubhttps@" to="${httpsserver.bindaddress.pubhttps}"/>

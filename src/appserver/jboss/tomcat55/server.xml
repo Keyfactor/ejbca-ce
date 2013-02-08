@@ -14,7 +14,7 @@
          emptySessionPath="true"
          enableLookups="false" redirectPort="@httpserver.privhttps@" acceptCount="100"
          connectionTimeout="20000" disableUploadTimeout="true"
-         URIEncoding="@web.contentencoding@"/>
+         URIEncoding="@web.contentencoding@" proxyName="@httpserver.external.fqdn@" />
 
       <!-- A AJP 1.3 Connector on port 8009 -->
       <Connector port="8009" address="${jboss.bind.address}"
@@ -30,7 +30,7 @@
          keystoreFile="${jboss.server.home.dir}/@keystore.file@"
          keystorePass="@httpsserver.password@" sslProtocol = "TLS" 
          truststoreFile="${jboss.server.home.dir}/@truststore.file@" truststorePass="@java.trustpassword@" truststoreType="JKS"
-         URIEncoding="@web.contentencoding@" />
+         URIEncoding="@web.contentencoding@" proxyName="@httpserver.external.fqdn@" />
 @definitions_away_end@
     <!-- HTTPS Connector requiring client cert on port 8443 -->
 @definitions_away_begin@
@@ -41,7 +41,7 @@
          keystoreFile="${jboss.server.home.dir}/@keystore.file@"
          keystorePass="@httpsserver.password@" sslProtocol = "TLS" 
          truststoreFile="${jboss.server.home.dir}/@truststore.file@" truststorePass="@java.trustpassword@" truststoreType="JKS"
-         URIEncoding="@web.contentencoding@" />
+         URIEncoding="@web.contentencoding@" proxyName="@httpserver.external.fqdn@" />
 @definitions_away_end@
       <Engine name="jboss.web" defaultHost="localhost">
 

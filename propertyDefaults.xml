@@ -165,6 +165,7 @@
 	<property name="httpsserver.bindaddress.pubhttp" value="0.0.0.0" />
 	<property name="httpsserver.bindaddress.pubhttps" value="0.0.0.0" />
 	<property name="httpsserver.bindaddress.privhttps" value="0.0.0.0" />
+	<property name="httpserver.external.fqdn" value="" />
 	<condition property="doc.war.enabled">
 		<equals arg1="internal" arg2="${web.docbaseuri}" casesensitive="false" trim="true" />
 	</condition>
@@ -223,6 +224,7 @@ httpserver.pubhttps	     = ${httpserver.pubhttps}
 httpserver.privhttps     = ${httpserver.privhttps}
 httpsserver.hostname     = ${httpsserver.hostname}
 httpsserver.password     = ***
+httpserver.external.fqdn = ${httpserver.external.fqdn}
 web.contentencoding      = ${web.contentencoding}
 web.renewalenabled       = ${web.renewalenabled}
 ejbcaws.enabled          = ${ejbcaws.enabled}
