@@ -39,7 +39,6 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.certificate.CertificateConstants;
-import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.Base64GetHashMap;
@@ -157,21 +156,9 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                 }
                 if ((publishStatus != PublisherConst.STATUS_SUCCESS || publ.getKeepPublishedInQueue())
                         && publ.getUseQueueForCertificates()) {
-                    boolean doQueue = true;
-                    if (publ instanceof ValidationAuthorityPublisher) {
-                        ValidationAuthorityPublisher valpubl = (ValidationAuthorityPublisher) publ;
-                        if (valpubl.getOnlyPublishRevoked()) {
-                            // If we should use the queue for only revoked certificates and
-                            // - status is not revoked
-                            // - revocation reason is not REVOCATION_REASON_REMOVEFROMCRL even if status is active
-                            if ((status != CertificateConstants.CERT_REVOKED) && (revocationReason != RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL)) {
-                                doQueue = false;
-                            }
-                        }
-                    }
                     // Write to the publisher queue either for audit reasons or
                     // to be able try again
-                    if (doQueue) {
+                    if (publ.willPublishCertificate(publishStatus, revocationReason)) {
                         PublisherQueueVolatileData pqvd = new PublisherQueueVolatileData();
                         pqvd.setUsername(username);
                         pqvd.setPassword(password);
