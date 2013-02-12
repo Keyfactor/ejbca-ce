@@ -9,64 +9,6 @@
  */
 
 
-/* The css items below between "Tigris begin" and "Tigris end" tags have been copied from the
-   Tigris style project, http://style.tigris.org/. */ 
-/* Tigris begin */
-
-.app h3, .app h4 {
-	color: #fff;
-}
-.app h3 {
-	background-color: #333;
-}
-.app h3 a:link, .app h3 a:visited, .app h4 a:link, .app h4 a:visited {
-	color: #fff !important;
-	text-decoration: underline;
-}
-
-.app h4 {
-	background-color: #888;
-}
-.app th {
-	background-color: #bbb;
-	white-space: nowrap;
-}
-.app h3, .app h4, pre, code {
-	font-size: small;
-}
-.app h3, .app h4 {
-	padding: 5px;
-	margin-right: 2px;
-	margin-left: 2px;
-}
-
-.app td, .app th {
-	padding: 2px 3px;
-}
-.app h3, .app h4 {
-	clear: both;
-}
-body .grid td {
-	border-top: 1px solid #ccc;
-	border-left: 1px solid #ccc;
-	background-color: transparent;
-}
-.a td {
-	background: #ddd;
-}
-.b td {
-	background: #efefef;
-}
-table {
-	font-size: 1em;
-}
-.app table, th, td {
-	border: none;
-	vertical-align: top;
-}
-/* Tigris end */
-
-
 /*--------------------------------------------------------------------------*/
 /* GLOBAL */
 
@@ -174,7 +116,7 @@ body#menu {
 /*--------------------------------------------------------------------------*/
 /* HEADER & FOOTER */
 
-/* Header */
+/* --- Header */
 body#header {
 	margin: 0em;
 	padding: 0em;
@@ -197,7 +139,7 @@ body#header {
 	margin-top: 0px;
 }
 
-/* Footer */
+/* --- Footer */
 div#footer {
 	margin-top: 1.5em;
 	text-align: center;
@@ -218,7 +160,6 @@ div#footer {
 /*--------------------------------------------------------------------------*/
 /* CONTENT */
 
-/* Page: ALL */
 h1 {
 	margin-top: 0em;
 	margin-bottom: .2em;
@@ -266,6 +207,7 @@ a:active {
 	color: #A00;
 }
 input,
+textarea,
 select {
 	font-size: 11pt;
 }
@@ -274,36 +216,30 @@ select option:focus,
 select option:active {
 	background-color: #FFC;
 }
-p.help {
-	margin-top: .25em;
-	margin-bottom: .25em;
+select.number {
+	text-align: right;
 }
-div.h4 {
-	margin: 0em .5em;
-}
-#home h4 {
-	margin: 0px;
-	padding: 3px 4px;
-	background: #DDD none;
-	border: 1px solid #6F9AD3;
-	border-bottom: 0px none;
-	border-radius: .8em .8em 0em 0em;
-	-o-border-radius: .8em .8em 0em 0em;
-	-moz-border-radius: .8em .8em 0em 0em;
-	-khtml-border-radius: .8em .8em 0em 0em;
-	-webkit-border-radius: .8em .8em 0em 0em;
-	color: #000;
-}
-#home h4 a:link,
-#home h4 a:visited,
-#home h4 a:hover,
-#home h4 a:focus,
-#home h4 a:active {
-	color: #000 !important;
+select.acronym {
+	text-align: center;
 }
 div.message {
 	margin-top: .5em;
 	text-align: center;
+}
+.hexa {
+	text-transform: uppercase;
+}
+
+/* --- Tables */
+table {
+	font-size: 1em;
+}
+table th,
+table td {
+	margin: 0px;
+	padding: 2px 3px;
+	border: none;
+	vertical-align: top;
 }
 table h3 {
 	margin-top: 0em;
@@ -314,6 +250,7 @@ table.grid {
 table.grid th {
 	background-color: #F4F4F4;
 	color: #284E81;
+	white-space: nowrap;
 }
 table.grid th,
 table.grid td {
@@ -322,82 +259,202 @@ table.grid td {
 	border: 1px solid #6F9AD3;
 }
 
-/* Page: ALL List/Add forms */
+
+/*--------------------------------------------------------------------------*/
+/* CONTENT > FORMS */
+
+/* --- Forms: All tables */
+form table fieldset {
+	display: inline;
+	padding: .1em .5em .2em 0em;
+	border: 1px solid #CED0D5;		/* Keep it, for old web browsers */
+	border: 1px solid rgba(0,0,0,.15);
+	border-radius: .8em;
+	-o-border-radius: .8em;
+	-moz-border-radius: .8em;
+	-khtml-border-radius: .8em;
+	-webkit-border-radius: .8em;
+	background-color: #F2F4FA;		/* Keep it, for old web browsers */
+	background-color: rgba(0,0,0,.02);
+}
+
+/* --- Forms: Help */
+table .help {
+/*	display: none;		/* Hide all in-line help */
+	line-height: 1.40em;
+	white-space: normal;
+/*	font-size: .9em;	/* Smaller font size */
+	color: #606060;		/* Keep it, for old web browsers */
+	color: rgba(0,0,0,.6);
+}
+table p.help {
+	margin: .2em .1em;
+}
+table span.help {
+}
+/* Add End-Entity */
+table#addendentity .help {
+	font-size: .8em;
+}
+
+
+/* --- Forms: List/Actions */
 table.list,
-table.add {
+table.actions {
 	width: 100%;
 	margin: 0em;
 	padding: 0em;
 	border: 0px;
 }
 table.list tr td,
-table.add tr td {
+table.actions tr td {
 	padding-bottom: .2em;
 	line-height: 2em;
 }
 table.list tr td h3,
-table.add tr td h3 {
+table.actions tr td h3 {
 	margin-bottom: -.25em;
 }
 
-/* Page: ALL View tables */
-table.view tr td.dn {
+
+/* --- Forms: Edit/Action/View */
+table.view,
+table.action,
+table.edit-top,
+table.edit-bottom,
+table.edit {
+	margin: .75em -2px 0em -2px;
+	border-spacing: 3px 1px;
+}
+table.edit-bottom {
+	margin-top: -1px;
+}
+table.view tr td,
+table.action tr td,
+table.edit-top tr td,
+table.edit-bottom tr td,
+table.edit tr td {
+	padding: .25em .5em;
+	line-height: 1.60em;
+}
+/* Titles (and Sections) */
+table tr.section td,
+table tr.title td {
+	font-size: 1.25em;
+}
+/* DN & attributes */
+table tr td .dn {
 	white-space: pre-wrap;
 }
-table.view tr td .attribute {
+table tr td .attribute {
 	white-space: pre !important;
 }
 
-/* Page: ALL Edit forms */
-form#edit table,                        /* Services */
-form#basicRules table,          /* Admin privileges */
-table.edit {
- 	        margin-top: .75em;
- 	        margin-left: -2px;
- 	        border-spacing: 3px 1px;
+/* --- Form: Edit */
+/* Headers, Sections, and Footers */
+table.edit-top tr:first-child td,
+table.edit tr:first-child td,
+table.edit-bottom tr.section td,
+table.edit tr.section td {
+	background-color: #FEEECD;
+	border-top: 3px solid #FEDD9A;
+	color: #A00;
 }
-form#edit table tr td,			/* Services */
-form#basicRules table tr td,	/* Admin privileges */
-table.edit tr td {
-        padding: .25em .5em;
-	line-height: 1.55em;
+table.edit-top tr:first-child td.field,		/* For JSF */
+table.edit tr:first-child td.field {
+	text-align: right;
 }
-/* --- Sections, Headers, and Footers */
- 	form#edit table tr:first-child td,      /* Services */
- 	form#edit table tr.section td,          /* Services */
- 	table.edit tr:first-child td,
- 	table.edit tr.section td {
- 	        background-color: #FEEECD;
- 	        border-top: 3px solid #FEDD9A;
- 	        color: #A00;
-	}
-<> 	form#edit table tr:last-child td,       /* Services */
- 	table.edit tr:last-child td {
- 	        background-color: #FEEECD;
- 	        border-bottom: 3px solid #FEDD9A;
- 	        color: #A00;
- 	}
- 	/* --- Titles */
- 	form#edit table tr.section td,          /* Services */
- 	table.edit tr.section td,
- 	form#edit table tr.title td,            /* Services */
- 	table.edit tr.title td {
- 	        font-size: 1.25em;
- 	}
- 	form#edit table tr td.title,            /* Services */          /* OLD TO KEEP */
- 	table.edit tr td.title {                                                                /* OLD TO KEEP */
- 	        font-size: 1.25em;
- 	}
- 	/* --- Others */
+table.edit-bottom tr:last-child td,
+table.edit tr:last-child td {
+	background-color: #FEEECD;
+	border-bottom: 3px solid #FEDD9A;
+	color: #A00;
 }
-table.edit tr td .attribute {
-	white-space: pre !important;
-}
-table.edit tr td table tr td {
-	line-height: 1.75em;
+/* Titles */
+table.edit-top tr.title td,
+table.edit-bottom tr.title td,
+table.edit tr.title td {
+	background-color: #FEF6E6;
+	/* Color: rgba(254,238,205,1) = #FEEECD */
+	background-image: -moz-linear-gradient(top, rgba(254,238,205,1) 0%, rgba(254,238,205,0) 100%);		/* FF3.6+ */
+	background-image: -webkit-linear-gradient(top, rgba(254,238,205,1) 0%,rgba(254,238,205,0) 100%);	/* Chrome10+,Safari5.1+ */
+	background-image: -o-linear-gradient(top, rgba(254,238,205,1) 0%,rgba(254,238,205,0) 100%);			/* Opera 11.10+ */
+	background-image: -ms-linear-gradient(top, rgba(254,238,205,1) 0%,rgba(254,238,205,0) 100%);		/* IE10+ */
+	background-image: linear-gradient(top, rgba(254,238,205,1) 0%,rgba(254,238,205,0) 100%);			/* W3C */
+	color: #600;
 }
 
-/* Page: ALL Search forms */
+/* --- Form: Action */
+table.action tr td {
+	vertical-align: middle;
+}
+/* Headers, Sections, and Footers */
+table.action tr:first-child td,
+table.action tr.section td {
+	background-color: #D0E2F6;
+	border-top: 3px solid #A5C7EE;
+	color: #1F60A9;
+}
+table.action tr:last-child td {
+	background-color: #D0E2F6;
+	border-bottom: 3px solid #A5C7EE;
+	color: #1F60A9;
+}
+
+/* --- Form: View */
+table.view {
+	margin-top: .25em;
+}
+table.view tr td {
+	padding: .15em .5em !important;
+	line-height: 1.4em;
+}
+/* Headers, Sections, and Footers */
+table.view tr:first-child td,
+table.view tr.section td {
+	background-color: #E5E5E5;
+	border-top: 3px solid #CCCCCC;
+	color: #000;
+}
+table.view tr:last-child td {
+	background-color: #E5E5E5;
+	border-bottom: 3px solid #CCCCCC;
+	color: #000;
+}
+/* Titles */
+table.view tr.title td {
+	background-color: #F2F2F2;
+	/* Color: rgba(229,229,229,1) = #E5E5E5 */
+	background-image: -moz-linear-gradient(top, rgba(229,229,229,1) 0%, rgba(229,229,229,0) 100%);		/* FF3.6+ */
+	background-image: -webkit-linear-gradient(top, rgba(229,229,229,1) 0%,rgba(229,229,229,0) 100%);	/* Chrome10+,Safari5.1+ */
+	background-image: -o-linear-gradient(top, rgba(229,229,229,1) 0%,rgba(229,229,229,0) 100%);			/* Opera 11.10+ */
+	background-image: -ms-linear-gradient(top, rgba(229,229,229,1) 0%,rgba(229,229,229,0) 100%);		/* IE10+ */
+	background-image: linear-gradient(top, rgba(229,229,229,1) 0%,rgba(229,229,229,0) 100%);			/* W3C */
+	color: #000;
+}
+
+/* --- Forms: Edit/Action/View */		/* KEEP IT HERE */
+table.view table,
+table.action table,
+table.edit-top table,
+table.edit-bottom table,
+table.edit table {
+	background-color: transparent;
+	border-spacing: 0px;
+}
+table.view table tr td,
+table.action table tr td,
+table.edit-top table tr td,
+table.edit-bottom table tr td,
+table.edit table tr td {
+	padding: 0em .5em .1em 0em !important;
+	background-color: transparent !important;
+	border: 0px none transparent !important;
+	color: #000 !important;
+}
+
+
+/* --- Forms: Search/Results */
 table.search tr td {
 	padding: .25em .5em .1em 0em;
 	line-height: 1.75em;
@@ -431,11 +488,18 @@ table.results tbody tr:focus,
 table.results tbody tr:active {
 	background-color: #FFB !important;
 }
-select.number {
-	text-align: right;
+table.results tbody tr td {
+	vertical-align: middle;
+}
+table.results tbody tr td a {
+	white-space: nowrap;
 }
 
-/* Page: Home */
+
+/*--------------------------------------------------------------------------*/
+/* CONTENT > PAGES */
+
+/* --- Page: Home */
 h3#welcome {
 	color: #555;
 	text-shadow: .1em .1em .15em rgba(0,0,0,.1);
@@ -447,82 +511,98 @@ h3#welcome {
 div#information {
 	margin-top: .5em;
 }
-div#information code {
+#information code {
 	font-size: 1.15em;
 /*	font-weight: bold;	/**/
 }
 div#home {
 	margin-top: 1.5em;
 }
-div#home > table > tbody > tr > td {
+#home > table > tbody > tr > td {
 	margin: 0em;
 	padding: 0em;
 }
-div#crlstatus {
-	margin-left: 0em;
+div.status {
+	margin: 0em 1em 0em 0em;
 }
-div#publishqueuestatus {
-	margin-right: 0em;
+div.status h4 {
+	margin: 0px;
+	padding: 3px 4px;
+	background: #DDD none;
+	border: 1px solid #6F9AD3;
+	border-bottom: 0px none;
+	border-radius: .8em .8em 0em 0em;
+	-o-border-radius: .8em .8em 0em 0em;
+	-moz-border-radius: .8em .8em 0em 0em;
+	-khtml-border-radius: .8em .8em 0em 0em;
+	-webkit-border-radius: .8em .8em 0em 0em;
+	color: #000;
+	font-size: small;
 }
-#crlstatus h4,
-#publishqueuestatus h4,
-#crlstatus table th,
-#publishqueuestatus table th,
-#crlstatus table td,
-#publishqueuestatus table td {
+div.status h4 a:link,
+div.status h4 a:visited,
+div.status h4 a:hover,
+div.status h4 a:focus,
+div.status h4 a:active {
+	color: #000 !important;
+	text-decoration: underline;
+}
+div.status h4,
+div.status table th,
+div.status table td {
 	white-space: nowrap;
 }
-#crlstatus table td img,
-#publishqueuestatus table td img {
+div.status table td img {
 	width: 16px;
 	height: 16px;
 	margin-top: .1em;
 }
-table.results tbody tr td {
-	vertical-align: middle;
-}
-table.results tbody tr td a {
-	white-space: nowrap;
-}
 
-/* Page: CA > CA Activation */
-div#activation {
-	margin-top: 1em;
+/* --- Page: CA > CA Activation */
+.actTokenAndCasHeader {
+	text-align: left;
+	color: #000;
+	background-color: #FFF;
 }
-#activation table tbody tr:nth-child(2n) {
-	background-color: #FAFAFA;
+.actCasHeader {
+	padding-left: 4px;
+	padding-right: 8px;
+	text-align: left;
+	background-color: #EEE;
+	color: #284E81;
+	border-top: 1px solid #ccc;
+	border-left: 1px solid #ccc;
+	border-right: 1px solid #ccc;
 }
-#activation table tbody tr:hover,
-#activation table tbody tr:focus,
-#activation table tbody tr:active {
+.actCas {
+	margin-top: 0.3em;
+	margin-bottom: 1em;
+	border-collapse: collapse;
+	right: auto;
+	left: auto;
+}
+.actCas tbody tr:nth-child(2n) {
+	background-color: #F7F9FD;
+}
+.actCas tbody tr:hover,
+.actCas tbody tr:focus,
+.actCas tbody tr:active {
 	background-color: #FFB;
 }
-#activation table th,
-#activation table td {
+.actCas tbody th,
+.actCas tbody td {
+	margin: 0px;
+	padding: 2px 3px;
+	border: 1px solid #2E5A94;
+	background-color: transparent;
 	padding: 4px 3px;
 	vertical-align: middle;
 	text-align: left;
 	white-space: nowrap;
-}
-#activation table td {
 	padding-right: 9px;
 }
-#activation table td img {
-	width: 16px;
-	height: 16px;
-	vertical-align: -.07em;
-	margin: 0em .35em 0em .5em;
-}
-#activation table td input[type="checkbox"],
-#activation table td label {
-	margin-right: .4em;
-}
-#activation table table th,
-#activation table table td {
-	margin: 0px;
-	padding: 0px;
-	border: 0px none;
-}
+
+
 div#code {
 	margin-top: 1.5em;
 }
@@ -533,21 +613,32 @@ div#code input[type="submit"] {
 	margin-left: 1em;
 }
 
-/* Page: RA > Add End-Entity */
-table#addendentity.edit tr td {
+/* --- Page: RA > End-Entity profile */
+table#endentityprofile.edit tr td:first-child {
+	vertical-align: middle;
+	text-align: center;
+}
+table#endentityprofile.edit tr td input[name="textfieldpassword"] {
+	margin-bottom: .1em;
+}
+
+/* --- Page: RA > Add End-Entity */
+table#addendentity tr td {
 	padding: .15em .3em;
 	vertical-align: middle;
 	white-space: nowrap;
-	font-size: 1.1em;
-}
-table#addendentity.edit tr td.title {
 	font-size: 1.2em;
 }
-table#addendentity.edit tr td:last-child {
+/* Titles (and Sections) */
+table#addendentity tr.section td,
+table#addendentity tr.title td {
+	font-size: 1.35em;
+}
+table#addendentity tr td:last-child {
 	text-align: center;
 }
 
-/* Page: SUP > Log configuration */
+/* --- Page: SUP > Log configuration */
 table#logconfiguration {
 	margin-bottom: .25em;
 }
@@ -581,16 +672,8 @@ table#logconfigbuttons td input[type="submit"] {
 	margin-right: 1em;
 }
 
-/* Page: SYS > Services */
-form#edit div {
-	margin: .5em auto;
-	font-size: .8em;
-}
-form#edit table tr td.label {
-	text-align: right;
-}
-
-/* Page: SYS > Administrators Groups */
+/* --- Page: SYS > Administrators Groups */
+/* Administrator entities */
 form#groupList p {
 	margin-top: 1.25em;
 }
@@ -638,12 +721,79 @@ form#groupList table td a:active {
 	-khtml-border-radius: .25em;
 	-webkit-border-radius: .25em;
 }
+/* Access rules */
+form#accessRulesForm table {
+	margin-top: 3px;
+}
+form#accessRulesForm table table {
+	margin: 0em;
+}
+form#accessRulesForm table table thead tr:first-child th {
+	background-color: #FEEECD !important;
+	border-top: 3px solid #FEDD9A;
+	color: #A00;
+}
+form#accessRulesForm table table thead tr th {
+	text-align: center;
+}
+form#accessRulesForm table table thead tr th:first-child {
+	text-align: left;
+}
+
+/* --- Page: SYS > Configuration */
+table#config {
+	margin-top: .25em;
+}
+table#config tr td {
+	padding: .4em .4em;
+	line-height: 1.40em;
+}
+table#config tr td:first-child {
+	vertical-align: top;
+}
+
+
+/*--------------------------------------------------------------------------*/
+/* TABLES */
+
+.Row0, #Row0 { color: black; font-size: 9pt; background-color: #F7F9FF; }
+.Row1, #Row1 { color: black; font-size: 9pt; background-color: #E5ECFF; }
+
+.label { vertical-align: top; text-align: right; }
+.field { vertical-align: top; text-align: left; }
+
+/* --- Table: List/Actions */
+
+.listColumn1 { text-align: left; width: 40%; }
+.listColumn2 { text-align: left; width: 60%; }
+
+/* --- Table: SUP > Logs */
+
+td#InfoRow0 { color: black; font-size: 9pt; background-color: white; }
+td#InfoRow1 { color: black; font-size: 9pt; background-color: #ccffcc; }
+td#ErrorRow0 { color: black; font-size: 9pt; background-color: white; }
+td#ErrorRow1 { color: black; font-size: 9pt; background-color: #ffcccc; }
+
+tr#LogTextRow0 { color: black; font-size: 7pt; background-color: white; }
+tr#LogTextRow1 { color: black; font-size: 7pt; background-color: #E5ECFF; }
+
+/* --- Table: SYS > Administrators Groups */
+
+.listHeader { color: #777; font-size: 1.2em; font-weight: bold; text-align: left; }
+
+.caColumn { text-align: left; width: 20%; }
+.withColumn { text-align: left; width: 35%; }
+.typeColumn { text-align: left; width: 20%; }
+.valueColumn { text-align: left; width: 20%; }
+.commandColumn { text-align: left; width: 5%; }
+
+.rulesColumn1 { text-align: left; width: 70%; }
+.rulesColumn2 { text-align: center; width: 15%; }
 
 
 /*--------------------------------------------------------------------------*/
 /* POPUPS */
 
-/* Popup: ALL */
 body.popup {
 	margin: 1em;
 	padding: 0em;
@@ -673,8 +823,10 @@ body.popup {
 	border: 0px none;
 }
 .popup table tr td {
-	padding: .1em .4em .1em .3em;
+	padding: .1em .3em;
 }
+/* Titles (and Sections) */
+.popup table tr.section td,
 .popup table tr.title td {
 	font-size: 1.2em;
 }
@@ -682,9 +834,27 @@ body.popup {
 	white-space: nowrap;
 }
 
-/* Popup: Edit End-Entity */
+/* --- Popup: View End-Entity */
+.popup#viewendentity table.view {
+	margin-top: .5em;
+}
+.popup#viewendentity table.view table {
+	margin: 0em -.5em;
+}
+.popup#viewendentity table.view table tr td {
+	padding-left: .6em !important;
+}
+.popup#viewendentity table.view table tr:nth-child(2n) td {
+	background-color: #EEE !important;
+	background-color: rgba(0,0,0,.03) !important;
+}
+
+/* --- Popup: Edit End-Entity */
+.popup#editendentity table.edit {
+	margin-top: .5em;
+}
 .popup#editendentity table.edit tr td {
-	padding: .15em .4em .15em .3em;
+	padding: .15em .3em;
 	vertical-align: middle;
 	white-space: nowrap;
 }
@@ -692,7 +862,15 @@ body.popup {
 	text-align: center;
 }
 
-/* Popup: View History */
+/* --- Popup: View Certificate */
+.popup#viewcertificate table.view tr.title td {			/* Set Normal size */
+	font-size: 1.0em;
+}
+.popup#viewcertificate table.view tr:first-child td {	/* Rollback Popup Title size */
+	font-size: 1.2em;
+}
+
+/* --- Popup: View History */
 .popup#viewhistory h2,
 .popup#viewhistory h3,
 .popup#viewhistory h4 {
@@ -708,40 +886,13 @@ body.popup {
 .alert { color: red; font-size: 11pt; font-weight: bold; background-color: white; }
 .info { color: black; font-size: 11pt; font-weight: bold; background-color: white; }
 
-#Row0 { color: black; font-size: 9pt; background-color: #f7f9ff; }
-#Row1 { color: black; font-size: 9pt; background-color: #e5ecff; }
-
-td#InfoRow0 { color: black; font-size: 9pt; background-color: white; }
-td#InfoRow1 { color: black; font-size: 9pt; background-color: #ccffcc; }
-td#ErrorRow0 { color: black; font-size: 9pt; background-color: white; }
-td#ErrorRow1 { color: black; font-size: 9pt; background-color: #ffcccc; }
-
-tr#LogTextRow0 { color: black; font-size: 7pt; background-color: white; }
-tr#LogTextRow1 { color: black; font-size: 7pt; background-color: #e5ecff; }
-.jsfrow1 { color: black; font-size: 9pt; background-color: white; }
-.jsfrow2 { color: black; font-size: 9pt; background-color: #e5ecff; }
-
-.listHeader { color: black; font-size: 1.2em; font-weight: bold; text-align: left; }
-.listRow1 { color: black; font-size: .85em; text-align: left; background-color: white; }
-.listRow2 { color: black; font-size: .85em; text-align: left; background-color: #e5ecff; }
-
-.leftColumn { vertical-align: top; text-align: right; width: 50%; }
-
-.rulesColumn1 { text-align: left; width: 70%; }
-.rulesColumn2 { text-align: left; width: 15%; }
-
-.caColumn { text-align: left; width: 20%; }
-.withColumn { text-align: left; width: 35%; }
-.typeColumn { text-align: left; width: 20%; }
-.valueColumn { text-align: left; width: 20%; }
-.commandColumn { text-align: left; width: 5%; }
-
 .commandLink { font-size: 9pt; font-weight: bold; text-decoration: none; text-align: right; margin-left: .5em; margin-right: .5em; }
 .commandButton { font-size: 9pt; vertical-align: bottom; margin-left: .5em; margin-right: .5em; }
 
 select option.lightgreen { background-color: #80FF80; }
 select option.lightyellow { background-color: #FFFFB3; }
 select option.lightred { background-color: #FFB8B8; }
+
 
 /*--------------------------------------------------------------------------*/
 /* EOF */
