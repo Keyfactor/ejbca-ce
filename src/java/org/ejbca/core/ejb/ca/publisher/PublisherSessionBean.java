@@ -115,50 +115,50 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             int publishStatus = PublisherConst.STATUS_PENDING;
             BasePublisher publ = getPublisher(id);
             if (publ != null) {
-                final String name = getPublisherName(id);
-                String fingerprint = CertTools.getFingerprintAsString(incert);
-                // If it should be published directly
-                if (!publ.getOnlyUseQueue()) {
-                    try {
-                    	try {
-                    		if (publisherQueueSession.storeCertificateNonTransactional(publ, admin, incert, username, password, userDN, cafp, status, type, revocationDate, revocationReason,
-                    				tag, certificateProfileId, lastUpdate, extendedinformation)) {
-                    			publishStatus = PublisherConst.STATUS_SUCCESS;
-                            } else {
-                                throw new PublisherException("Return code from publisher is false.");
+                // If the publisher will not publish the certificate, break out directly and do not call the publisher or queue the certificate
+                if (publ.willPublishCertificate(status, revocationReason)) {
+                    final String name = getPublisherName(id);
+                    String fingerprint = CertTools.getFingerprintAsString(incert);
+                    // If it should be published directly
+                    if (!publ.getOnlyUseQueue()) {
+                        try {
+                            try {
+                                if (publisherQueueSession.storeCertificateNonTransactional(publ, admin, incert, username, password, userDN, cafp, status, type, revocationDate, revocationReason,
+                                        tag, certificateProfileId, lastUpdate, extendedinformation)) {
+                                    publishStatus = PublisherConst.STATUS_SUCCESS;
+                                } else {
+                                    throw new PublisherException("Return code from publisher is false.");
+                                }
+                            } catch (EJBException e) {
+                                final Throwable t = e.getCause();
+                                if (t instanceof PublisherException) {
+                                    throw (PublisherException)t;
+                                } else {
+                                    throw e;
+                                }
                             }
-                        } catch (EJBException e) {
-                        	final Throwable t = e.getCause();
-                        	if (t instanceof PublisherException) {
-                        		throw (PublisherException)t;
-                        	} else {
-                        		throw e;
-                        	}
+                            final String msg = intres.getLocalizedMessage("publisher.store", CertTools.getSubjectDN(incert), name);
+                            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                            details.put("msg", msg);
+                            auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CERTIFICATE, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), null, username, certSerno, details);
+                        } catch (PublisherException pe) {
+                            final String msg = intres.getLocalizedMessage("publisher.errorstore", name, fingerprint);
+                            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                            details.put("msg", msg);
+                            details.put("error", pe.getMessage());
+                            auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CERTIFICATE, EventStatus.FAILURE, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), null, username, certSerno, details);
                         }
-                        final String msg = intres.getLocalizedMessage("publisher.store", CertTools.getSubjectDN(incert), name);
-                        final Map<String, Object> details = new LinkedHashMap<String, Object>();
-                        details.put("msg", msg);
-                        auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CERTIFICATE, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), null, username, certSerno, details);
-                    } catch (PublisherException pe) {
-                        final String msg = intres.getLocalizedMessage("publisher.errorstore", name, fingerprint);
-                        final Map<String, Object> details = new LinkedHashMap<String, Object>();
-                        details.put("msg", msg);
-                        details.put("error", pe.getMessage());
-                        auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CERTIFICATE, EventStatus.FAILURE, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), null, username, certSerno, details);
                     }
-                }
-                if (publishStatus != PublisherConst.STATUS_SUCCESS) {
-                    returnval = false;
-                }
-                if (log.isDebugEnabled()) {
-                    log.debug("KeepPublishedInQueue: " + publ.getKeepPublishedInQueue());
-                    log.debug("UseQueueForCertificates: " + publ.getUseQueueForCertificates());
-                }
-                if ((publishStatus != PublisherConst.STATUS_SUCCESS || publ.getKeepPublishedInQueue())
-                        && publ.getUseQueueForCertificates()) {
-                    // Write to the publisher queue either for audit reasons or
-                    // to be able try again
-                    if (publ.willPublishCertificate(status, revocationReason)) {
+                    if (publishStatus != PublisherConst.STATUS_SUCCESS) {
+                        returnval = false;
+                    }
+                    if (log.isDebugEnabled()) {
+                        log.debug("KeepPublishedInQueue: " + publ.getKeepPublishedInQueue());
+                        log.debug("UseQueueForCertificates: " + publ.getUseQueueForCertificates());
+                    }
+                    if ((publishStatus != PublisherConst.STATUS_SUCCESS || publ.getKeepPublishedInQueue())
+                            && publ.getUseQueueForCertificates()) {
+                        // Write to the publisher queue either for audit reasons or to be able try again
                         PublisherQueueVolatileData pqvd = new PublisherQueueVolatileData();
                         pqvd.setUsername(username);
                         pqvd.setPassword(password);
@@ -173,10 +173,10 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                             final String msg = intres.getLocalizedMessage("publisher.errorstorequeue", name, fp, status);
                             log.info(msg, e);
                         }
-                    } else {
-                        if (log.isDebugEnabled()) {
-                            log.debug("Not storing certificate for ValidationAuthority in queue because we should only publish revoked and status="+status+", revocationReason="+revocationReason);
-                        }
+                    }
+                } else {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Not storing or queuing certificate for Publisher with id "+id+" because publisher will not publish it.");
                     }
                 }
             } else {
