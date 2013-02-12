@@ -56,7 +56,9 @@ import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -209,6 +211,43 @@ public class KeyStoreTools {
         	log.trace("<generate: curve name "+name+", keyEntryName "+keyEntryName);
         }
     }
+    
+    private void generateExtraEC(final String name, final String keyEntryName,
+            final String algInstanceName, final String sigAlgName) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, InvalidKeyException, SignatureException, KeyStoreException, CertificateException, IOException {
+        if (log.isTraceEnabled()) {
+            log.trace(">generate "+algInstanceName+": curve name "+name+", keyEntryName "+keyEntryName);
+        }
+        // Generate the EC Keypair
+        final KeyPairGenerator kpg = KeyPairGenerator.getInstance(algInstanceName, this.providerName);
+        try {
+            ECGenParameterSpec ecSpec = new ECGenParameterSpec(name);
+            kpg.initialize(ecSpec);
+        } catch( InvalidAlgorithmParameterException e ) {
+            log.debug("EC "+algInstanceName+" name "+name+" not supported.");
+            throw e;
+        }
+        generateKeyPair(kpg, keyEntryName, sigAlgName);
+        if (log.isTraceEnabled()) {
+            log.trace("<generate: curve name "+name+", keyEntryName "+keyEntryName);
+        }
+    }
+
+    private void generateGOST3410( final String name,
+            final String keyEntryName) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, InvalidKeyException, SignatureException, KeyStoreException, CertificateException, IOException {
+        generateExtraEC(name, keyEntryName, AlgorithmConstants.KEYALGORITHM_ECGOST3410, AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410);
+    }
+    
+    private void generateDSTU4145( final String name,
+            final String keyEntryName) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, InvalidKeyException, SignatureException, KeyStoreException, CertificateException, IOException {
+        /*
+         * XXX This doesn't work because JcaContentSignerBuilder uses
+         * DefaultSignatureAlgorithmIdentifierFinder, which doesn't
+         * support it. See:
+         * 
+         * http://stackoverflow.com/questions/8778531/bouncycastle-does-not-find-algorithms-that-it-provides
+         */
+        generateExtraEC(name, keyEntryName, AlgorithmConstants.KEYALGORITHM_DSTU4145, AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145);
+    }
 
     private void generateRSA(final int keySize,
                             final String keyEntryName) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException, KeyStoreException, CertificateException, IOException {
@@ -244,9 +283,15 @@ public class KeyStoreTools {
      */
     public void generateKeyPair( final String keySpec,
                             final String keyEntryName) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, InvalidKeyException, SignatureException, KeyStoreException, CertificateException, IOException {
+        
     	if (keySpec.toUpperCase().startsWith ("DSA")) {
     		generateDSA (Integer.parseInt(keySpec.substring(3).trim()), keyEntryName);
+    	} else if (keySpec.startsWith(AlgorithmConstants.KEYSPECPREFIX_ECGOST3410)) {
+    	    generateGOST3410(keySpec, keyEntryName);
+    	} else if (AlgorithmTools.isDstu4145Enabled() && keySpec.startsWith(CesecoreConfiguration.getOidDstu4145()+".")) {
+            generateDSTU4145(keySpec, keyEntryName);
     	} else {
+    	    
             try {
                 generateRSA(Integer.parseInt(keySpec.trim()), keyEntryName);
             } catch (NumberFormatException e) {

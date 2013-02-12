@@ -61,6 +61,7 @@ import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
@@ -102,6 +103,8 @@ public abstract class CaTestCase extends RoleUsingTestCase {
 
     public static final String TEST_RSA_REVERSE_CA_NAME = "TESTRSAREVERSE";
     public static final String TEST_ECDSA_CA_NAME = "TESTECDSA";
+    public static final String TEST_ECGOST3410_CA_NAME = "TESTECGOST3410";
+    public static final String TEST_DSTU4145_CA_NAME = "TESTDSTU4145";
     public static final String TEST_ECDSA_IMPLICIT_CA_NAME = "TESTECDSAImplicitlyCA";
     public static final String TEST_SHA256_WITH_MFG1_CA_NAME = "TESTSha256WithMGF1";
     public static final String TEST_SHA256_WITH_MFG1_CA_DN = "CN="+TEST_SHA256_WITH_MFG1_CA_NAME;
@@ -720,6 +723,110 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                 null // cmpRaAuthSecret
         );
         removeOldCa(TEST_ECDSA_CA_NAME);
+        CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+        caAdminSession.createCA(internalAdmin, cainfo);
+    }
+    
+    protected static void createECGOST3410Ca() throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
+            InvalidAlgorithmException, AuthorizationDeniedException {
+        final String keyspec = CesecoreConfiguration.getExtraAlgSubAlgName("gost3410", "B");
+        final int cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(null, TEST_ECGOST3410_CA_NAME, keyspec);
+        final CAToken catoken = CaSessionTest.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        // Create and active OSCP CA Service.
+        final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
+        extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+        extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
+                "CN=XKMSSignerCertificate, " + "CN=" + TEST_ECGOST3410_CA_NAME, "", keyspec, AlgorithmConstants.KEYALGORITHM_ECGOST3410));
+        extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+        extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+        final List<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
+        policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
+        X509CAInfo cainfo = new X509CAInfo("CN=" + TEST_ECGOST3410_CA_NAME, TEST_ECGOST3410_CA_NAME, CAConstants.CA_ACTIVE, new Date(), "",
+                CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365, null, // Expiretime
+                CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catoken, "JUnit GOST3410 CA", -1, null, policies, // PolicyId
+                24, // CRLPeriod
+                0, // CRLIssueInterval
+                10, // CRLOverlapTime
+                0, // Delta CRL period
+                new ArrayList<Integer>(), true, // Authority Key Identifier
+                false, // Authority Key Identifier Critical
+                true, // CRL Number
+                false, // CRL Number Critical
+                null, // defaultcrldistpoint
+                null, // defaultcrlissuer
+                null, // defaultocsplocator
+                null, // Authority Information Access
+                null, // defaultfreshestcrl
+                true, // Finish User
+                extendedcaservices, false, // use default utf8 settings
+                new ArrayList<Integer>(), // Approvals Settings
+                1, // Number of Req approvals
+                false, // Use UTF8 subject DN by default
+                true, // Use LDAP DN order by default
+                false, // Use CRL Distribution Point on CRL
+                false, // CRL Distribution Point on CRL critical
+                true, // include in Health Check
+                true, // isDoEnforceUniquePublicKeys
+                true, // isDoEnforceUniqueDistinguishedName
+                false, // isDoEnforceUniqueSubjectDNSerialnumber
+                true, // useCertReqHistory
+                true, // useUserStorage
+                true, // useCertificateStorage
+                null // cmpRaAuthSecret
+        );
+        removeOldCa(TEST_ECGOST3410_CA_NAME);
+        CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+        caAdminSession.createCA(internalAdmin, cainfo);
+    }
+    
+    protected static void createDSTU4145Ca() throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
+            InvalidAlgorithmException, AuthorizationDeniedException {
+        final String keyspec = CesecoreConfiguration.getExtraAlgSubAlgName("dstu4145", "233");
+        final int cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(null, TEST_DSTU4145_CA_NAME, keyspec);
+        final CAToken catoken = CaSessionTest.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        // Create and active OSCP CA Service.
+        final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
+        extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+        extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
+                "CN=XKMSSignerCertificate, " + "CN=" + TEST_DSTU4145_CA_NAME, "", keyspec, AlgorithmConstants.KEYALGORITHM_DSTU4145));
+        extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+        extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+        final List<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
+        policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
+        X509CAInfo cainfo = new X509CAInfo("CN=" + TEST_DSTU4145_CA_NAME, TEST_DSTU4145_CA_NAME, CAConstants.CA_ACTIVE, new Date(), "",
+                CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365, null, // Expiretime
+                CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catoken, "JUnit DSTU4145 CA", -1, null, policies, // PolicyId
+                24, // CRLPeriod
+                0, // CRLIssueInterval
+                10, // CRLOverlapTime
+                0, // Delta CRL period
+                new ArrayList<Integer>(), true, // Authority Key Identifier
+                false, // Authority Key Identifier Critical
+                true, // CRL Number
+                false, // CRL Number Critical
+                null, // defaultcrldistpoint
+                null, // defaultcrlissuer
+                null, // defaultocsplocator
+                null, // Authority Information Access
+                null, // defaultfreshestcrl
+                true, // Finish User
+                extendedcaservices, false, // use default utf8 settings
+                new ArrayList<Integer>(), // Approvals Settings
+                1, // Number of Req approvals
+                false, // Use UTF8 subject DN by default
+                true, // Use LDAP DN order by default
+                false, // Use CRL Distribution Point on CRL
+                false, // CRL Distribution Point on CRL critical
+                true, // include in Health Check
+                true, // isDoEnforceUniquePublicKeys
+                true, // isDoEnforceUniqueDistinguishedName
+                false, // isDoEnforceUniqueSubjectDNSerialnumber
+                true, // useCertReqHistory
+                true, // useUserStorage
+                true, // useCertificateStorage
+                null // cmpRaAuthSecret
+        );
+        removeOldCa(TEST_DSTU4145_CA_NAME);
         CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
         caAdminSession.createCA(internalAdmin, cainfo);
     }

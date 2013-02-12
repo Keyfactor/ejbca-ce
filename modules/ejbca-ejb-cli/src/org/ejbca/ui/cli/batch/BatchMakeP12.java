@@ -281,6 +281,10 @@ public class BatchMakeP12 extends BaseCommand {
                 sigAlg = AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA;
             } else if (props.getKeyAlg().equals("DSA")) {
                 sigAlg = AlgorithmConstants.SIGALG_SHA1_WITH_DSA;
+            } else if (props.getKeyAlg().equals(AlgorithmConstants.KEYALGORITHM_ECGOST3410)) {                
+                sigAlg = AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410;
+            } else if (props.getKeyAlg().equals(AlgorithmConstants.KEYALGORITHM_DSTU4145)) {                
+                sigAlg = AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145;
             }
 
             X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, rsaKeys.getPrivate(), rsaKeys.getPublic(), sigAlg, false);

@@ -72,16 +72,21 @@ import javax.crypto.interfaces.DHPublicKey;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERBMPString;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.ua.DSTU4145NamedCurves;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.crypto.params.ECDomainParameters;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.EC5Util;
+import org.bouncycastle.jce.ECGOST3410NamedCurveTable;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.interfaces.PKCS12BagAttributeCarrier;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
+import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import org.bouncycastle.jce.spec.ECPublicKeySpec;
 import org.bouncycastle.math.ec.ECCurve;
@@ -89,6 +94,7 @@ import org.bouncycastle.openssl.PEMWriter;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -173,6 +179,34 @@ public final class KeyTools {
                 // We just make sure that ecSpec == null here
             } else {
                 throw new InvalidAlgorithmParameterException("No keySpec no algSpec and no implicitlyCA specified");
+            }
+            keygen.initialize(ecSpec, new SecureRandom());
+        } else if(keyAlg.equals(AlgorithmConstants.KEYALGORITHM_ECGOST3410)) {
+            AlgorithmParameterSpec ecSpec = null;
+            if(keySpec != null) {
+                log.debug("Generating keys from given key specifications : " + keySpec);
+                ecSpec = ECGOST3410NamedCurveTable.getParameterSpec(keySpec);
+                if(ecSpec == null) throw new InvalidAlgorithmParameterException(
+                        "Key specification " + keySpec + " is invalid for ECGOST3410");
+            } else if(algSpec != null) {
+                log.debug("Generating keys from given algorithm parameters : " + algSpec);
+                ecSpec = algSpec;
+            } else {
+                throw new InvalidAlgorithmParameterException("No key or algorithm specifications");
+            }
+            keygen.initialize(ecSpec, new SecureRandom());
+        } else if(keyAlg.equals(AlgorithmConstants.KEYALGORITHM_DSTU4145)) {
+            AlgorithmParameterSpec ecSpec = null;
+            if(keySpec != null) {
+                log.debug("Generating keys from given key specifications : " + keySpec);
+                ecSpec = dstuOidToAlgoParams(keySpec);
+                if(ecSpec == null) throw new InvalidAlgorithmParameterException(
+                        "Key specification " + keySpec + " is invalid for DSTU4145");
+            } else if(algSpec != null) {
+                log.debug("Generating keys from given algorithm parameters : " + algSpec);
+                ecSpec = algSpec;
+            } else {
+                throw new InvalidAlgorithmParameterException("No key or algorithm specifications");
             }
             keygen.initialize(ecSpec, new SecureRandom());
         } else {
@@ -1201,19 +1235,14 @@ public final class KeyTools {
 
     public static void checkValidKeyLength(String keyspec) throws InvalidKeyException, NoSuchAlgorithmException,
     NoSuchProviderException, InvalidAlgorithmParameterException {
-        String keyAlg;
-        int len;
-        if (StringUtils.isNumeric(keyspec)) {
-            keyAlg = AlgorithmConstants.KEYALGORITHM_RSA;
+        final String keyAlg = keyspecToKeyalg(keyspec);
+        final int len;
+        if (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_RSA)) {
             len = Integer.valueOf(keyspec); 
-        } else if (keyspec.startsWith(AlgorithmConstants.KEYALGORITHM_DSA)) {
-            keyAlg = AlgorithmConstants.KEYALGORITHM_DSA;
-            if (keyspec.startsWith(AlgorithmConstants.KEYALGORITHM_DSA)) {
-                keyspec = keyspec.substring(3);
-            }
-            len = Integer.valueOf(keyspec);
+        } else if (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_DSA)) {
+            len = Integer.valueOf(keyspec.substring(3));
         } else {
-            keyAlg = AlgorithmConstants.KEYALGORITHM_ECDSA;
+            // Assume it's elliptic curve
             final KeyPair kp = KeyTools.genKeys(keyspec, keyAlg);
             len = KeyTools.getKeyLength(kp.getPublic());
         }
@@ -1228,7 +1257,10 @@ public final class KeyTools {
     }
 
     public static void checkValidKeyLength(final String keyAlg, final int len) throws InvalidKeyException {
-        if (AlgorithmConstants.KEYALGORITHM_ECDSA.equals(keyAlg)) {
+        final boolean isEcdsa = AlgorithmConstants.KEYALGORITHM_ECDSA.equals(keyAlg);
+        final boolean isGost3410 = AlgorithmTools.isGost3410Enabled() && AlgorithmConstants.KEYALGORITHM_ECGOST3410.equals(keyAlg);
+        final boolean isDstu4145 = AlgorithmTools.isDstu4145Enabled() && keyAlg.startsWith(CesecoreConfiguration.getOidDstu4145()+".");
+        if (isEcdsa || isGost3410 || isDstu4145) {
             // We allow key lengths of 0, because that means that implicitlyCA is used. 
             // for ImplicitlyCA we have no idea what the key length is, on the other hand only real professionals
             // will ever use that to we will allow it.
@@ -1241,6 +1273,34 @@ public final class KeyTools {
                 final String msg = intres.getLocalizedMessage("catoken.invalidkeylength", "RSA/DSA", "1024", len);
                 throw new InvalidKeyException(msg);
             }
+        }
+    }
+    
+    /**
+     * Gets the parameter spec from a given OID of a DSTU curve (they don't have names) 
+     */
+    public static AlgorithmParameterSpec dstuOidToAlgoParams(String dstuOid) {
+        ECDomainParameters ecP = DSTU4145NamedCurves.getByOID(new ASN1ObjectIdentifier(dstuOid));
+        return new ECNamedCurveParameterSpec(
+                dstuOid,
+                ecP.getCurve(),
+                ecP.getG(),
+                ecP.getN(),
+                ecP.getH(),
+                ecP.getSeed());
+    }
+    
+    public static String keyspecToKeyalg(String keyspec) {
+        if (StringUtils.isNumeric(keyspec)) {
+            return AlgorithmConstants.KEYALGORITHM_RSA;
+        } else if (keyspec.startsWith(AlgorithmConstants.KEYALGORITHM_DSA)) {
+            return AlgorithmConstants.KEYALGORITHM_DSA;
+        } else if (AlgorithmTools.isGost3410Enabled() && keyspec.startsWith(AlgorithmConstants.KEYSPECPREFIX_ECGOST3410)) {
+            return AlgorithmConstants.KEYALGORITHM_ECGOST3410;
+        } else if (AlgorithmTools.isDstu4145Enabled() && keyspec.startsWith(CesecoreConfiguration.getOidDstu4145()+".")) {
+            return AlgorithmConstants.KEYALGORITHM_DSTU4145;
+        } else {
+            return AlgorithmConstants.KEYALGORITHM_ECDSA;
         }
     }
 }

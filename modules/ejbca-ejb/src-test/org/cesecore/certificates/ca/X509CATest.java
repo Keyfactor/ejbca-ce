@@ -18,10 +18,14 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 import java.io.ByteArrayInputStream;
 import java.math.BigInteger;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
@@ -81,6 +85,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.cert.CrlExtensions;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.SoftCryptoToken;
@@ -101,8 +106,19 @@ public class X509CATest {
 	public X509CATest() {
 		CryptoProviderTools.installBCProvider();
 	}
+	
 	@Test
-	public void testX509CABasicOperations() throws Exception {
+	public void testX509CABasicOperationsRSA() throws Exception {
+	    doTestX509CABasicOperations(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+	}
+	
+	@Test
+    public void testX509CABasicOperationsGOST() throws Exception {
+	    assumeTrue(AlgorithmTools.isGost3410Enabled());
+        doTestX509CABasicOperations(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410);
+    }
+	
+    private void doTestX509CABasicOperations(String algName) throws Exception {
 	    final CryptoToken cryptoToken = getNewCryptoToken();
         final X509CA x509ca = createTestCA(cryptoToken, CADN);
         Certificate cacert = x509ca.getCACertificate();
@@ -122,7 +138,7 @@ public class X509CATest {
         assertEquals(1, certs.size());
         
 		// Create a certificate request (will be pkcs10)
-        byte[] req = x509ca.createRequest(cryptoToken, null, "SHA1WithRSA", cacert, CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+        byte[] req = x509ca.createRequest(cryptoToken, null, algName, cacert, CATokenConstants.CAKEYPURPOSE_CERTSIGN);
         PKCS10CertificationRequest p10 = new PKCS10CertificationRequest(req);
         assertNotNull(p10);
         String dn = p10.getCertificationRequestInfo().getSubject().toString();
@@ -147,7 +163,7 @@ public class X509CATest {
         attributes.add(new DERSequence(altnameattr));
         attributes.add(new DERSequence(pwdattr));
         // create the p10
-        req = x509ca.createRequest(cryptoToken, attributes, "SHA1WithRSA", cacert, CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+        req = x509ca.createRequest(cryptoToken, attributes, algName, cacert, CATokenConstants.CAKEYPURPOSE_CERTSIGN);
         p10 = new PKCS10CertificationRequest(req);
         assertNotNull(p10);
         dn = p10.getCertificationRequestInfo().getSubject().toString();
@@ -166,7 +182,7 @@ public class X509CATest {
         
         // Generate a client certificate and check that it was generated correctly
         EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
-        KeyPair keypair = KeyTools.genKeys("512", "RSA");
+        KeyPair keypair = genTestKeyPair(algName);
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         cp.addCertificatePolicy(new CertificatePolicy("1.1.1.2", null, null));
         cp.setUseCertificatePolicies(true);
@@ -174,7 +190,7 @@ public class X509CATest {
         assertNotNull(usercert);
         assertEquals("CN=User", CertTools.getSubjectDN(usercert));
         assertEquals(CADN, CertTools.getIssuerDN(usercert));
-        assertEquals("SHA256WITHRSA", AlgorithmTools.getCertSignatureAlgorithmNameAsString(usercert));
+        assertEquals(algName.toUpperCase(), AlgorithmTools.getCertSignatureAlgorithmNameAsString(usercert).toUpperCase());
         assertEquals(new String(CertTools.getSubjectKeyId(cacert)), new String(CertTools.getAuthorityKeyId(usercert)));
         assertEquals("user@user.com", CertTools.getEMailAddress(usercert));
         assertEquals("rfc822name=user@user.com", CertTools.getSubjectAlternativeName(usercert));
@@ -271,7 +287,7 @@ public class X509CATest {
      * 
      */
 	@Test
-    public void testCRLDistPointOnCRL() throws Exception {
+	public void testCRLDistPointOnCRL() throws Exception {
         final CryptoToken cryptoToken = getNewCryptoToken();
         final X509CA ca = createTestCA(cryptoToken, CADN);
 
@@ -356,12 +372,22 @@ public class X509CATest {
     }
 
 	@Test
-	public void testStoreAndLoad() throws Exception {
+    public void testStoreAndLoadRSA() throws Exception {
+	    doTestStoreAndLoad(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+    }
+    
+    @Test
+    public void testStoreAndLoadGOST() throws Exception {
+        assumeTrue(AlgorithmTools.isGost3410Enabled());
+        doTestStoreAndLoad(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410);
+    }
+	
+	private void doTestStoreAndLoad(String algName) throws Exception {
         final CryptoToken cryptoToken = getNewCryptoToken();
 		final X509CA ca = createTestCA(cryptoToken, CADN);
 		
         EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
-        KeyPair keypair = KeyTools.genKeys("512", "RSA");
+        KeyPair keypair = genTestKeyPair(algName);
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         cp.addCertificatePolicy(new CertificatePolicy("1.1.1.2", null, null));
         cp.setUseCertificatePolicies(true);
@@ -470,13 +496,23 @@ public class X509CATest {
 	}
 	
 	@Test
-	public void testWrongCAKey() throws Exception {
+    public void testWrongCAKeyRSA() throws Exception {
+        doTestWrongCAKey(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+    }
+    
+    @Test
+    public void testWrongCAKeyGOST() throws Exception {
+        assumeTrue(AlgorithmTools.isGost3410Enabled());
+        doTestWrongCAKey(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410);
+    }
+	
+	public void doTestWrongCAKey(String algName) throws Exception {
         final CryptoToken cryptoToken = getNewCryptoToken();
 	    X509CA x509ca = createTestCA(cryptoToken, CADN);
 
 	    // Generate a client certificate and check that it was generated correctly
 	    EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
-	    KeyPair keypair = KeyTools.genKeys("512", "RSA");
+	    KeyPair keypair = genTestKeyPair(algName);
 	    CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
 	    cp.addCertificatePolicy(new CertificatePolicy("1.1.1.2", null, null));
 	    cp.setUseCertificatePolicies(true);
@@ -485,7 +521,8 @@ public class X509CATest {
 	    
 	    // Change CA keys, but not CA certificate, should not work to issue a certificate with this CA, when the 
 	    // issued cert can not be verified by the CA certificate
-	    cryptoToken.generateKeyPair("512", CAToken.SOFTPRIVATESIGNKEYALIAS);
+        cryptoToken.generateKeyPair(getTestKeySpec(algName), CAToken.SOFTPRIVATESIGNKEYALIAS);
+	    
 	    try {
 	        usercert = x509ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, 10L, cp, "00000");
 	        fail("should not work to issue this certificate");
@@ -599,9 +636,10 @@ public class X509CATest {
 	private static X509CA createTestCA(CryptoToken cryptoToken, final String cadn) throws Exception {
 		return createTestCA(cryptoToken, cadn, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, null, null);
 	}
+
 	private static X509CA createTestCA(CryptoToken cryptoToken, final String cadn, final String sigAlg, Date notBefore, Date notAfter) throws Exception {
-        cryptoToken.generateKeyPair("512", CAToken.SOFTPRIVATESIGNKEYALIAS);
-        cryptoToken.generateKeyPair("512", CAToken.SOFTPRIVATEDECKEYALIAS);
+        cryptoToken.generateKeyPair(getTestKeySpec(sigAlg), CAToken.SOFTPRIVATESIGNKEYALIAS);
+        cryptoToken.generateKeyPair(getTestKeySpec(sigAlg), CAToken.SOFTPRIVATEDECKEYALIAS);
         // Create CAToken
         Properties caTokenProperties = new Properties();
         caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
@@ -669,5 +707,22 @@ public class X509CATest {
         final CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(
                 SoftCryptoToken.class.getName(), cryptoTokenProperties, null, 17, "CryptoToken's name");
         return cryptoToken;
+    }
+    
+    private static KeyPair genTestKeyPair(String algName) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
+        if(algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410)) {
+            final String keyspec = CesecoreConfiguration.getExtraAlgSubAlgName("gost3410", "B");
+            return KeyTools.genKeys(keyspec, AlgorithmConstants.KEYALGORITHM_ECGOST3410);
+        } else {
+            return KeyTools.genKeys("512", "RSA");
+        }
+    }
+    
+    private static String getTestKeySpec(String algName) {
+        if(algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410)) {
+            return CesecoreConfiguration.getExtraAlgSubAlgName("gost3410", "B");
+        } else {
+            return "512"; // Assume RSA
+        }
     }
 }

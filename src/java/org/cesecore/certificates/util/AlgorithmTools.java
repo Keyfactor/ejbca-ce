@@ -47,6 +47,7 @@ import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import org.bouncycastle.math.ec.ECCurve;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.ejbca.cvc.AlgorithmUtil;
@@ -87,6 +88,12 @@ public final class AlgorithmTools {
 	/** Signature algorithms supported by ECDSA keys */
 	private static final Collection<String> SIG_ALGS_ECDSA;
 	
+	/** Signature algorithms supported by GOST keys */
+    private static final Collection<String> SIG_ALGS_ECGOST3410;
+    
+    /** Signature algorithms supported by DSTU4145 keys */
+    private static final Collection<String> SIG_ALGS_DSTU4145;
+	
 	static {
 		SIG_ALGS_RSA = new LinkedList<String>();
 		SIG_ALGS_RSA.add(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
@@ -102,6 +109,12 @@ public final class AlgorithmTools {
 		SIG_ALGS_ECDSA.add(AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA);
 		SIG_ALGS_ECDSA.add(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
 		SIG_ALGS_ECDSA.add(AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA);
+		
+		SIG_ALGS_ECGOST3410 = new LinkedList<String>();
+        SIG_ALGS_ECGOST3410.add(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410);
+        
+        SIG_ALGS_DSTU4145 = new LinkedList<String>();
+        SIG_ALGS_DSTU4145.add(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145);
 	}
 
 	/**
@@ -120,7 +133,14 @@ public final class AlgorithmTools {
 		} else if ( publickey instanceof DSAPublicKey ) {
 			keyAlg = AlgorithmConstants.KEYALGORITHM_DSA;
 		} else if ( publickey instanceof ECPublicKey ) {
-			keyAlg = AlgorithmConstants.KEYALGORITHM_ECDSA;
+		    final String algo = publickey.getAlgorithm();
+		    if (StringUtils.equals(algo, AlgorithmConstants.KEYALGORITHM_ECGOST3410)) {
+	            keyAlg = AlgorithmConstants.KEYALGORITHM_ECGOST3410;
+		    } else if (StringUtils.equals(algo, AlgorithmConstants.KEYALGORITHM_DSTU4145)) {
+		        keyAlg = AlgorithmConstants.KEYALGORITHM_DSTU4145;
+		    } else {
+		        keyAlg = AlgorithmConstants.KEYALGORITHM_ECDSA;
+		    }
 		}
 		return keyAlg;
 	}
@@ -139,7 +159,14 @@ public final class AlgorithmTools {
 		} else if ( publickey instanceof DSAPublicKey ) {
 			ret = SIG_ALGS_DSA;
 		} else if ( publickey instanceof ECPublicKey ) {
-			ret = SIG_ALGS_ECDSA;
+		    final String algo = publickey.getAlgorithm();
+            if (StringUtils.equals(algo, AlgorithmConstants.KEYALGORITHM_ECGOST3410)) {
+                ret = SIG_ALGS_ECGOST3410;
+            } else if (StringUtils.equals(algo, AlgorithmConstants.KEYALGORITHM_DSTU4145)) {
+                ret = SIG_ALGS_DSTU4145;
+            } else {
+                ret = SIG_ALGS_ECDSA;
+            }
 		} else {
 			ret = Collections.emptyList();			
 		}
@@ -157,7 +184,11 @@ public final class AlgorithmTools {
 		final String ret;
 		if ( signatureAlgorithm.contains("ECDSA") ) {
 			ret = AlgorithmConstants.KEYALGORITHM_ECDSA;
-		} else if ( signatureAlgorithm.contains("DSA") ) {
+		} else if ( signatureAlgorithm.contains("GOST3410")) {
+            ret = AlgorithmConstants.KEYALGORITHM_ECGOST3410;
+		} else if ( signatureAlgorithm.contains("DSTU4145")) {
+            ret = AlgorithmConstants.KEYALGORITHM_DSTU4145;
+        } else if ( signatureAlgorithm.contains("DSA") ) {
 			ret = AlgorithmConstants.KEYALGORITHM_DSA;
 		} else {
 			ret = AlgorithmConstants.KEYALGORITHM_RSA;			
@@ -281,17 +312,20 @@ public final class AlgorithmTools {
         final ECNamedCurveParameterSpec parameterSpec = ECNamedCurveTable.getParameterSpec(namedEllipticCurve);
 	    final List<String> ret = new ArrayList<String>();
 	    ret.add(namedEllipticCurve);
-        @SuppressWarnings("unchecked")
-        final Enumeration<String> ecNamedCurves = ECNamedCurveTable.getNames();
-        while (ecNamedCurves.hasMoreElements()) {
-            final String currentCurve = ecNamedCurves.nextElement();
-            if (!namedEllipticCurve.equals(currentCurve)) {
-                final ECNamedCurveParameterSpec parameterSpec2 = ECNamedCurveTable.getParameterSpec(currentCurve);
-                if (parameterSpec.equals(parameterSpec2)) {
-                    ret.add(currentCurve);
+	    
+	    if (parameterSpec != null) { // GOST and DSTU aren't present in ECNamedCurveTable (and don't have aliases)
+            @SuppressWarnings("unchecked")
+            final Enumeration<String> ecNamedCurves = ECNamedCurveTable.getNames();
+            while (ecNamedCurves.hasMoreElements()) {
+                final String currentCurve = ecNamedCurves.nextElement();
+                if (!namedEllipticCurve.equals(currentCurve)) {
+                    final ECNamedCurveParameterSpec parameterSpec2 = ECNamedCurveTable.getParameterSpec(currentCurve);
+                    if (parameterSpec.equals(parameterSpec2)) {
+                        ret.add(currentCurve);
+                    }
                 }
             }
-        }
+	    }
 	    return ret;
 	}
 	
@@ -315,7 +349,11 @@ public final class AlgorithmTools {
 		} else if ( signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA) ) {
 			encSigAlg = AlgorithmConstants.SIGALG_SHA1_WITH_RSA;
 		} else if( signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA1_WITH_DSA) ) {
-			encSigAlg = AlgorithmConstants.SIGALG_SHA1_WITH_RSA;
+            encSigAlg = AlgorithmConstants.SIGALG_SHA1_WITH_RSA;
+        } else if( signatureAlgorithm.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410) ) {
+			encSigAlg = AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410;
+		} else if( signatureAlgorithm.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145) ) {
+            encSigAlg = AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145;
 		}
 		return encSigAlg;
 	}
@@ -333,13 +371,21 @@ public final class AlgorithmTools {
 				ret = true;
 			}
 		} else if (StringUtils.contains(signatureAlgorithm, AlgorithmConstants.KEYALGORITHM_ECDSA)) {
-    		if (publicKey instanceof ECPublicKey) {
+    		if (publicKey instanceof ECPublicKey && !publicKey.getAlgorithm().contains("GOST")) {
     			ret = true;
     		}
     	} else if (StringUtils.contains(signatureAlgorithm, AlgorithmConstants.KEYALGORITHM_DSA)) {
-     		if (publicKey instanceof DSAPublicKey) {
+            if (publicKey instanceof DSAPublicKey) {
+                ret = true;
+            }
+        } else if (StringUtils.contains(signatureAlgorithm, AlgorithmConstants.KEYALGORITHM_ECGOST3410)) {
+     		if (publicKey instanceof ECPublicKey && publicKey.getAlgorithm().contains("GOST")) {
      			ret = true;
      		}
+     	} else if (StringUtils.contains(signatureAlgorithm, AlgorithmConstants.KEYALGORITHM_DSTU4145)) {
+            if (publicKey instanceof ECPublicKey && publicKey.getAlgorithm().contains("DSTU")) {
+                ret = true;
+            }
      	}
 		return ret;
 	}
@@ -388,6 +434,14 @@ public final class AlgorithmTools {
         if (certSignatureAlgorithm.equalsIgnoreCase("1.2.840.10045.4.3.2")) {
             certSignatureAlgorithm = AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA;
         }
+        // GOST3410
+        if(isGost3410Enabled() && certSignatureAlgorithm.equalsIgnoreCase(CesecoreConfiguration.getOidGost3410())) {
+            certSignatureAlgorithm = AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410;
+        }
+        // DSTU4145
+        if(isDstu4145Enabled() && certSignatureAlgorithm.startsWith(CesecoreConfiguration.getOidDstu4145()+".")) {
+            certSignatureAlgorithm = AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145;
+        }
         return certSignatureAlgorithm;
     }
 
@@ -433,9 +487,13 @@ public final class AlgorithmTools {
                 signatureAlgorithm = AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA;
             } else if (certSignatureAlgorithm.indexOf("384") != -1) {
                 signatureAlgorithm = AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA;
-            } else {
+            } else if (certSignatureAlgorithm.indexOf("ECDSA") != -1) {
             	// From x509cert.getSigAlgName(), SHA1withECDSA only returns name ECDSA
                 signatureAlgorithm = AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA;
+            } else if (certSignatureAlgorithm.indexOf("GOST") != -1) {
+                signatureAlgorithm = AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410;
+            } else if (certSignatureAlgorithm.indexOf("DSTU") != -1) {
+                signatureAlgorithm = AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145;
             }
         }
         if (log.isDebugEnabled()) {
@@ -443,6 +501,19 @@ public final class AlgorithmTools {
         }
         return signatureAlgorithm;
     } // getSignatureAlgorithm
+    
+    /** 
+     * Get the digest algorithm corresponding to the signature algorithm. This is used for the creation of
+     * PKCS7 file. SHA1 shall always be used, but it is not working with GOST which needs GOST3411 digest.
+     * 
+     */
+    public static String getDigestFromSigAlg(String sigAlg) {
+        if (sigAlg.toUpperCase().contains("GOST") || sigAlg.toUpperCase().contains("DSTU")) {
+            return CMSSignedGenerator.DIGEST_GOST3411;
+        } else {
+            return CMSSignedGenerator.DIGEST_SHA1;
+        }
+    }
 
     /** Calculates which signature algorithm to use given a key type and a digest algorithm
      * 
@@ -488,5 +559,11 @@ public final class AlgorithmTools {
         return oid;
     }
     
+    public static boolean isGost3410Enabled() {
+        return CesecoreConfiguration.getOidGost3410() != null;
+    }
 
+    public static boolean isDstu4145Enabled() {
+        return CesecoreConfiguration.getOidDstu4145() != null;
+    }
 }

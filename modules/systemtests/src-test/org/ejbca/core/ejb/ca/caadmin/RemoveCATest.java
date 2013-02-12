@@ -14,6 +14,7 @@
 package org.ejbca.core.ejb.ca.caadmin;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assume.assumeTrue;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -21,6 +22,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -69,6 +71,18 @@ public class RemoveCATest extends CaTestCase {
     @Test
     public void test03removeECDSAImplicitlyCA() throws Exception {
         removeCa("CN=TESTECDSAImplicitlyCA");
+    }
+
+    @Test
+    public void test03primRemoveECGOST3410CA() throws Exception {
+        assumeTrue(AlgorithmTools.isGost3410Enabled());
+        removeCa("CN=TESTECGOST3410");
+    }
+    
+    @Test
+    public void test03bisRemoveDSTU4145CA() throws Exception {
+        assumeTrue(AlgorithmTools.isDstu4145Enabled());
+        removeCa("CN=TESTDSTU4145");
     }
 
     @Test

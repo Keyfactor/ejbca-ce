@@ -15,8 +15,14 @@ package org.cesecore.config;
 
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
+import java.util.Set;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -273,6 +279,27 @@ public final class ConfigurationHolder {
         }
         m.appendTail(sb);
         return sb.toString();
+    }
+    
+    /**
+     * In a list of properties named "something.NAME.xxx.yyy", returns all
+     * unique names (the NAME part only) in sorted order.
+     */
+    public static List<String> getPrefixedPropertyNames(String prefix) {
+        prefix = prefix + ".";
+        Set<String> algs = new HashSet<String>();
+        Properties props = ConfigurationHolder.getAsProperties();
+        for (Entry<Object,Object> entry : props.entrySet()) {
+            final String key = (String)entry.getKey();
+            if (key.startsWith(prefix)) {
+                int dot = key.indexOf(".", prefix.length());
+                algs.add(key.substring(prefix.length(), dot));
+            }
+        }
+        
+        ArrayList<String> list = new ArrayList<String>(algs);
+        Collections.sort(list);
+        return list;
     }
 
     /**

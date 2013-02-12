@@ -15,6 +15,7 @@ package org.cesecore.config;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
@@ -262,5 +263,55 @@ public final class CesecoreConfiguration {
 			ConfigurationHolder.updateConfiguration(PROPERTY_NAME, value);
         }
         return value;
+    }
+
+    /** Oid tree for GOST32410 */
+    public static String getOidGost3410() {
+        return ConfigurationHolder.getString("extraalgs.gost3410.oidtree");
+    }
+
+    /** Oid tree for DSTU4145 */
+    public static String getOidDstu4145() {
+        return ConfigurationHolder.getString("extraalgs.dstu4145.oidtree");
+    }
+    
+    /** Returns extraalgs such as GOST, DSTU */
+    public static List<String> getExtraAlgs() {
+        return ConfigurationHolder.getPrefixedPropertyNames("extraalgs");
+    }
+    
+    /** Returns "subalgorithms", e.g. different keylengths or curves */
+    public static List<String> getExtraAlgSubAlgs(String algName) {
+        return ConfigurationHolder.getPrefixedPropertyNames("extraalgs." + algName + ".subalgs");
+    }
+    
+    public static String getExtraAlgSubAlgTitle(String algName, String subAlg) {
+        String name = ConfigurationHolder.getString("extraalgs." + algName + ".subalgs." + subAlg + ".title");
+        if (name == null) {
+            // Show the algorithm name, if it has one
+            String end = ConfigurationHolder.getString("extraalgs." + algName + ".subalgs." + subAlg + ".name");
+            // Otherwise, show the key name in the configuration
+            if (end == null) { end = subAlg; }
+            name = ConfigurationHolder.getString("extraalgs." + algName + ".title") + " " + end;
+        }
+        return name;
+    }
+    
+    public static String getExtraAlgSubAlgName(String algName, String subAlg) {
+        String name = ConfigurationHolder.getString("extraalgs." + algName + ".subalgs." + subAlg + ".name");
+        if (name == null) {
+            // Not a named algorithm
+            name = getExtraAlgSubAlgOid(algName, subAlg);
+        }
+        return name;
+    }
+    
+    public static String getExtraAlgSubAlgOid(String algName, String subAlg) {
+        final String oidTree = ConfigurationHolder.getString("extraalgs." + algName + ".oidtree");
+        final String oidEnd = ConfigurationHolder.getString("extraalgs." + algName + ".subalgs." + subAlg + ".oid");
+        
+        if (oidEnd != null && oidTree != null) { return oidTree + "." + oidEnd; }
+        if (oidEnd != null) { return oidEnd; }
+        else { return null; }
     }
 }

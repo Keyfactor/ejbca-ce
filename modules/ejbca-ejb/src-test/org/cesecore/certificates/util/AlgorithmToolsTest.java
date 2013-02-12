@@ -18,16 +18,23 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.cert.Certificate;
+import java.security.spec.AlgorithmParameterSpec;
 import java.util.Collection;
 import java.util.Iterator;
 
+import org.bouncycastle.jce.ECGOST3410NamedCurveTable;
 import org.cesecore.certificates.util.AlgorithmToolsHelper.MockDSAPublicKey;
+import org.cesecore.certificates.util.AlgorithmToolsHelper.MockDSTU4145PublicKey;
 import org.cesecore.certificates.util.AlgorithmToolsHelper.MockECDSAPublicKey;
+import org.cesecore.certificates.util.AlgorithmToolsHelper.MockGOST3410PublicKey;
 import org.cesecore.certificates.util.AlgorithmToolsHelper.MockNotSupportedPublicKey;
 import org.cesecore.certificates.util.AlgorithmToolsHelper.MockRSAPublicKey;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -106,6 +113,28 @@ public class AlgorithmToolsTest {
         pair = KeyTools.genKeys("1024", "DSA");
         assertEquals("1024", AlgorithmTools.getKeySpecification(pair.getPublic()));
     }
+    
+    @Test
+    public void testGetKeySpecificationGOST3410() throws Exception {
+        assumeTrue(AlgorithmTools.isGost3410Enabled());
+        final String keyspec = CesecoreConfiguration.getExtraAlgSubAlgName("gost3410", "B");
+        KeyPairGenerator keygen = KeyPairGenerator.getInstance("ECGOST3410", "BC");
+        AlgorithmParameterSpec ecSpec = ECGOST3410NamedCurveTable.getParameterSpec(keyspec); 
+        keygen.initialize(ecSpec);
+        KeyPair keys = keygen.generateKeyPair();
+        assertEquals(keyspec, AlgorithmTools.getKeySpecification(keys.getPublic()));
+    }
+    
+    @Test
+    public void testGetKeySpecificationDSTU4145() throws Exception {
+        assumeTrue(AlgorithmTools.isDstu4145Enabled());
+        final String keyspec = CesecoreConfiguration.getExtraAlgSubAlgName("dstu4145", "233");
+        KeyPairGenerator keygen = KeyPairGenerator.getInstance("DSTU4145", "BC");
+        AlgorithmParameterSpec ecSpec = KeyTools.dstuOidToAlgoParams(keyspec); 
+        keygen.initialize(ecSpec);
+        KeyPair keys = keygen.generateKeyPair();
+        assertEquals(keyspec, AlgorithmTools.getKeySpecification(keys.getPublic()));
+    }
 
     @Test
     public void testGetEncSigAlgFromSigAlg() {
@@ -120,6 +149,8 @@ public class AlgorithmToolsTest {
         assertEquals(AlgorithmConstants.SIGALG_SHA512_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA512_WITH_RSA));
         assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA_AND_MGF1, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA1_WITH_RSA_AND_MGF1));
         assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1));
+        assertEquals(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410));
+        assertEquals(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145));
         assertEquals("Foobar", AlgorithmTools.getEncSigAlgFromSigAlg("Foobar"));
     }
 
@@ -156,6 +187,30 @@ public class AlgorithmToolsTest {
     	assertFalse(AlgorithmTools.isCompatibleSigAlg(new MockDSAPublicKey(), AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA));
     	assertFalse(AlgorithmTools.isCompatibleSigAlg(new MockDSAPublicKey(), AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA));
     	assertFalse(AlgorithmTools.isCompatibleSigAlg(new MockDSAPublicKey(), AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA));
+    }
+    
+    @Test
+    public void testIsCompatibleSigAlgGOST3410() {
+        assumeTrue(AlgorithmTools.isGost3410Enabled());
+    	assertTrue(AlgorithmTools.isCompatibleSigAlg(new MockGOST3410PublicKey(), AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(new MockGOST3410PublicKey(), AlgorithmConstants.SIGALG_SHA1_WITH_DSA));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(new MockGOST3410PublicKey(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(new MockGOST3410PublicKey(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(new MockGOST3410PublicKey(), AlgorithmConstants.SIGALG_SHA384_WITH_RSA));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(new MockGOST3410PublicKey(), AlgorithmConstants.SIGALG_SHA512_WITH_RSA));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(new MockGOST3410PublicKey(), AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145));
+    }
+    
+    @Test
+    public void testIsCompatibleSigAlgDSTU4145() {
+        assumeTrue(AlgorithmTools.isDstu4145Enabled());
+        assertTrue(AlgorithmTools.isCompatibleSigAlg(new MockDSTU4145PublicKey(), AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(new MockDSTU4145PublicKey(), AlgorithmConstants.SIGALG_SHA1_WITH_DSA));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(new MockDSTU4145PublicKey(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(new MockDSTU4145PublicKey(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(new MockDSTU4145PublicKey(), AlgorithmConstants.SIGALG_SHA384_WITH_RSA));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(new MockDSTU4145PublicKey(), AlgorithmConstants.SIGALG_SHA512_WITH_RSA));
+        assertFalse(AlgorithmTools.isCompatibleSigAlg(new MockDSTU4145PublicKey(), AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410));
     }
     
     @Test
@@ -242,7 +297,24 @@ public class AlgorithmToolsTest {
     	assertEquals("SHA1withECDSA", AlgorithmTools.getSignatureAlgorithm(cvsha1ecc));
     	assertEquals("SHA224withECDSA", AlgorithmTools.getSignatureAlgorithm(cvsha224ecc));
     	assertEquals("SHA256withECDSA", AlgorithmTools.getSignatureAlgorithm(cvsha256ecc));
-
+    }
+    
+    @Test
+    public void testCertSignatureAlgorithmAsStringGOST3410() throws Exception {
+        assumeTrue(AlgorithmTools.isGost3410Enabled());
+        KeyPair keyPair = KeyTools.genKeys(CesecoreConfiguration.getExtraAlgSubAlgName("gost3410", "B"), AlgorithmConstants.KEYALGORITHM_ECGOST3410);
+        Certificate gost3411withgost3410 = CertTools.genSelfCert("CN=TEST", 10L, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410, true);
+        assertEquals("GOST3411WITHECGOST3410", AlgorithmTools.getCertSignatureAlgorithmNameAsString(gost3411withgost3410));
+        assertEquals("GOST3411withECGOST3410", AlgorithmTools.getSignatureAlgorithm(gost3411withgost3410));
+    }
+    
+    @Test
+    public void testCertSignatureAlgorithmAsStringDSTU4145() throws Exception {
+        assumeTrue(AlgorithmTools.isDstu4145Enabled());
+        KeyPair keyPair = KeyTools.genKeys(CesecoreConfiguration.getExtraAlgSubAlgName("dstu4145", "233"), AlgorithmConstants.KEYALGORITHM_DSTU4145);
+        Certificate gost3411withgost3410 = CertTools.genSelfCert("CN=TEST", 10L, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145, true);
+        assertEquals("GOST3411WITHDSTU4145", AlgorithmTools.getCertSignatureAlgorithmNameAsString(gost3411withgost3410));
+        assertEquals("GOST3411withDSTU4145", AlgorithmTools.getSignatureAlgorithm(gost3411withgost3410));
     }
 
 }
