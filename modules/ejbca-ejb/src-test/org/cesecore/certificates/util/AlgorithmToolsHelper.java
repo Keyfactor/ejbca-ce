@@ -56,5 +56,29 @@ public class AlgorithmToolsHelper {
 		private static final long serialVersionUID = 1L;
 		public ECPoint getW() { return null; }
 		public ECParameterSpec getParams() { return null; }
+		@Override
+		public String getAlgorithm() {
+		    return "ECDSA mock";
+		}
 	}
+	
+	static class MockGOST3410PublicKey extends MockPublicKey implements ECPublicKey {
+        private static final long serialVersionUID = 1L;
+        public ECPoint getW() { return null; }
+        public ECParameterSpec getParams() { return null; }
+        @Override
+        public String getAlgorithm() {
+            return "GOST mock";
+        }
+    }
+	
+	static class MockDSTU4145PublicKey extends MockPublicKey implements ECPublicKey {
+        private static final long serialVersionUID = 1L;
+        public ECPoint getW() { return null; }
+        public ECParameterSpec getParams() { return null; }
+        @Override
+        public String getAlgorithm() {
+            return "DSTU mock";
+        }
+    }
 }

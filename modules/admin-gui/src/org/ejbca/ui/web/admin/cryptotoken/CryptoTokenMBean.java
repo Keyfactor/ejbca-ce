@@ -38,6 +38,7 @@ import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.token.AvailableCryptoToken;
 import org.cesecore.keys.token.BaseCryptoToken;
 import org.cesecore.keys.token.CryptoToken;
@@ -543,22 +544,15 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         for (String name : keys) {
             availableKeySpecs.add(new SelectItem(name, AlgorithmConstants.KEYALGORITHM_ECDSA + " "+processedCurveNames.get(name)));
         }
-        /* Add when we start supporting GOST...
-        final Enumeration<String> ecGostNamedCurves = ECGOST3410NamedCurveTable.getNames();
-        while (ecGostNamedCurves.hasMoreElements()) {
-            final String ecGostNamedCurve = ecGostNamedCurves.nextElement();
-            // Only add it if the key-length is sufficient
-            try {
-                final ECNamedCurveParameterSpec parameterSpec = ECGOST3410NamedCurveTable.getParameterSpec(ecGostNamedCurve);
-                final int bitLength = parameterSpec.getN().bitLength();
-                KeyTools.checkValidKeyLength(AlgorithmConstants.KEYALGORITHM_ECDSA, bitLength);
-                //KeyTools.checkValidKeyLength(AlgorithmConstants.KEYALGORITHM_ECGOST, bitLength);
-                availableKeySpecs.add(new SelectItem(ecGostNamedCurve, "ECGOST "+ecGostNamedCurve));
-            } catch (Exception e) {
-                // Ignore
+        
+        for (String alg : CesecoreConfiguration.getExtraAlgs()) {
+            for (String subalg : CesecoreConfiguration.getExtraAlgSubAlgs(alg)) {
+                final String title = CesecoreConfiguration.getExtraAlgSubAlgTitle(alg, subalg);
+                final String name = CesecoreConfiguration.getExtraAlgSubAlgName(alg, subalg);
+                availableKeySpecs.add(new SelectItem(name, title));
             }
         }
-        */
+        
         return availableKeySpecs;
     }
 

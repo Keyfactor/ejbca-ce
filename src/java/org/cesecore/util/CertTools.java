@@ -123,6 +123,7 @@ import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
 import org.ejbca.cvc.AuthorizationRoleEnum;
 import org.ejbca.cvc.CVCAuthorizationTemplate;
@@ -1353,7 +1354,14 @@ public class CertTools {
             ECPublicKey ecpk = (ECPublicKey) pubKey;
             try {
                 ECPublicKeySpec ecspec = new ECPublicKeySpec(ecpk.getW(), ecpk.getParams()); // will throw NPE if key is "implicitlyCA"
-                publicKey = KeyFactory.getInstance("EC").generatePublic(ecspec);
+                final String algo = ecpk.getAlgorithm();
+                if (algo.equals(AlgorithmConstants.KEYALGORITHM_ECGOST3410)) {
+                    publicKey = KeyFactory.getInstance("ECGOST3410").generatePublic(ecspec);
+                } else if (algo.equals(AlgorithmConstants.KEYALGORITHM_DSTU4145)) {
+                    publicKey = KeyFactory.getInstance("DSTU4145").generatePublic(ecspec);
+                } else {
+                    publicKey = KeyFactory.getInstance("EC").generatePublic(ecspec);
+                }
             } catch (InvalidKeySpecException e) {
                 log.error("Error creating ECPublicKey from spec: ", e);
                 publicKey = pubKey;

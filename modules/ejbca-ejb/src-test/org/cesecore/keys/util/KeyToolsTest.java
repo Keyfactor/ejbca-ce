@@ -18,6 +18,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -36,13 +37,16 @@ import java.security.interfaces.ECPublicKey;
 import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.DSAParameterSpec;
 import java.security.spec.ECParameterSpec;
+import java.security.spec.ECPublicKeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.RSAKeyGenParameterSpec;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.jce.ECGOST3410NamedCurveTable;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -431,5 +435,160 @@ public class KeyToolsTest {
 		// Call method in CertificateGenerator
 		return CertificateGenerator.createTestCertificate(keyPair.getPublic(), keyPair.getPrivate(), caRef, holderRef, "SHA1WithECDSA", role);
 	}
+	
+	@Test
+	public void testGenKeysGOSTAlgorithmSpec() throws Exception {
+        assumeTrue(AlgorithmTools.isGost3410Enabled());
+        log.trace(">testGenKeysGOSTAlgorithmSpec");
+        KeyPairGenerator keygen = KeyPairGenerator.getInstance("ECGOST3410", "BC");
+        
+        final String keyspec = CesecoreConfiguration.getExtraAlgSubAlgName("gost3410", "B");
+        AlgorithmParameterSpec ecSpec = ECGOST3410NamedCurveTable.getParameterSpec(keyspec); 
+        keygen.initialize(ecSpec);
+        
+        KeyPair keys = keygen.generateKeyPair();
+        assertEquals(AlgorithmConstants.KEYALGORITHM_ECGOST3410, keys.getPublic().getAlgorithm());
+        
+        String spec = AlgorithmTools.getKeySpecification(keys.getPublic());
+        assertEquals(keyspec, spec);
+        
+        ECPublicKey ecpub = (ECPublicKey) keys.getPublic();
+        java.security.spec.ECParameterSpec sunsp = ecpub.getParams();
+        sunsp.getCurve(); // return value not tested
+        
+        // Nothing to do here, the gost parameter seem to behave similarly to EC parameter
+        AlgorithmParameterSpec paramspec = KeyTools.getKeyGenSpec(keys.getPublic());
+        
+        KeyPair keys2 = KeyTools.genKeys(null, paramspec, AlgorithmConstants.KEYALGORITHM_ECGOST3410);
+        KeyPair keys3 = KeyTools.genKeys(keyspec, AlgorithmConstants.KEYALGORITHM_ECGOST3410);
+        
+        assertEquals(AlgorithmConstants.KEYALGORITHM_ECGOST3410, keys2.getPublic().getAlgorithm());
+        assertEquals(AlgorithmConstants.KEYALGORITHM_ECGOST3410, keys3.getPublic().getAlgorithm());
+        
+        ECPublicKey pk1 = (ECPublicKey)keys.getPublic();
+        ECPublicKey pk2 = (ECPublicKey)keys2.getPublic();
+        ECPublicKey pk3 = (ECPublicKey)keys3.getPublic();
+        
+        // Verify that it's the same key size
+        int len1 = KeyTools.getKeyLength(pk1);
+        int len2 = KeyTools.getKeyLength(pk2);
+        int len3 = KeyTools.getKeyLength(pk3);
+        
+        assertEquals(len1, len2);
+        assertEquals(len1, len3);
 
+        // Verify that the domain parameters are the same
+        ECParameterSpec ecs1 = pk1.getParams();
+        ECParameterSpec ecs2 = pk2.getParams();
+        ECParameterSpec ecs3 = pk3.getParams();
+        
+        assertEquals(ecs1.getCofactor(), ecs2.getCofactor());
+        assertEquals(ecs1.getOrder(), ecs2.getOrder());
+        assertEquals(ecs1.getCurve(), ecs2.getCurve());
+        
+        assertEquals(ecs1.getCofactor(), ecs3.getCofactor());
+        assertEquals(ecs1.getOrder(), ecs3.getOrder());
+        assertEquals(ecs1.getCurve(), ecs3.getCurve());
+        
+        // Verify that it is not the same key though
+        assertFalse(pk1.getW().equals(pk2.getW()));
+        assertFalse(pk1.getW().equals(pk3.getW()));
+        
+        KeyTools.testKey(keys.getPrivate(), keys.getPublic(), "BC");
+        
+        byte[] signature = KeyTools.signData(keys2.getPrivate(),
+                AlgorithmConstants.KEYALGORITHM_ECGOST3410,
+                "Hello world ! How cool is ejbca ??".getBytes());
+        
+        assertTrue(KeyTools.verifyData(keys2.getPublic(),
+                AlgorithmConstants.KEYALGORITHM_ECGOST3410,
+                "Hello world ! How cool is ejbca ??".getBytes(),
+                signature));
+        
+        
+        ECPublicKeySpec ecspec = new ECPublicKeySpec(pk2.getW(), pk2.getParams());
+        KeyFactory.getInstance("ECGOST3410").generatePublic(ecspec); // return value not tested
+        KeyFactory.getInstance("EC").generatePublic(ecspec); // return value not tested
+        
+        log.trace("<testGenKeysGOSTAlgorithmSpec");
+    }
+	
+	@Test
+    public void testGenKeysDSTU4145AlgorithmSpec() throws Exception {
+        assumeTrue(AlgorithmTools.isDstu4145Enabled());
+        log.trace(">testGenKeysDSTU4145AlgorithmSpec");
+        KeyPairGenerator keygen = KeyPairGenerator.getInstance("DSTU4145", "BC");
+
+        final String keyspec = CesecoreConfiguration.getExtraAlgSubAlgName("dstu4145", "233");
+        AlgorithmParameterSpec ecSpec = ECGOST3410NamedCurveTable.getParameterSpec(keyspec); 
+        keygen.initialize(ecSpec);
+        
+        KeyPair keys = keygen.generateKeyPair();
+        assertEquals(AlgorithmConstants.KEYALGORITHM_DSTU4145, keys.getPublic().getAlgorithm());
+        
+        String spec = AlgorithmTools.getKeySpecification(keys.getPublic());
+        assertEquals(keyspec, spec);
+        
+        ECPublicKey ecpub = (ECPublicKey) keys.getPublic();
+        java.security.spec.ECParameterSpec sunsp = ecpub.getParams();
+        sunsp.getCurve(); // return value not tested
+        
+        // Nothing to do here, the gost parameter seem to behave similarly to EC parameter
+        AlgorithmParameterSpec paramspec = KeyTools.getKeyGenSpec(keys.getPublic());
+        
+        KeyPair keys2 = KeyTools.genKeys(null, paramspec, AlgorithmConstants.KEYALGORITHM_DSTU4145);
+        KeyPair keys3 = KeyTools.genKeys(keyspec, AlgorithmConstants.KEYALGORITHM_DSTU4145);
+        
+        assertEquals(AlgorithmConstants.KEYALGORITHM_DSTU4145, keys2.getPublic().getAlgorithm());
+        assertEquals(AlgorithmConstants.KEYALGORITHM_DSTU4145, keys3.getPublic().getAlgorithm());
+        
+        ECPublicKey pk1 = (ECPublicKey)keys.getPublic();
+        ECPublicKey pk2 = (ECPublicKey)keys2.getPublic();
+        ECPublicKey pk3 = (ECPublicKey)keys3.getPublic();
+        
+        // Verify that it's the same key size
+        int len1 = KeyTools.getKeyLength(pk1);
+        int len2 = KeyTools.getKeyLength(pk2);
+        int len3 = KeyTools.getKeyLength(pk3);
+        
+        assertEquals(len1, len2);
+        assertEquals(len1, len3);
+
+        // Verify that the domain parameters are the same
+        ECParameterSpec ecs1 = pk1.getParams();
+        ECParameterSpec ecs2 = pk2.getParams();
+        ECParameterSpec ecs3 = pk3.getParams();
+        
+        assertEquals(ecs1.getCofactor(), ecs2.getCofactor());
+        assertEquals(ecs1.getOrder(), ecs2.getOrder());
+        assertEquals(ecs1.getCurve(), ecs2.getCurve());
+        
+        assertEquals(ecs1.getCofactor(), ecs3.getCofactor());
+        assertEquals(ecs1.getOrder(), ecs3.getOrder());
+        assertEquals(ecs1.getCurve(), ecs3.getCurve());
+        
+        // Verify that it is not the same key though
+        assertFalse(pk1.getW().equals(pk2.getW()));
+        assertFalse(pk1.getW().equals(pk3.getW()));
+        
+        KeyTools.testKey(keys.getPrivate(), keys.getPublic(), "BC");
+        
+        byte[] signature = KeyTools.signData(keys2.getPrivate(),
+                AlgorithmConstants.KEYALGORITHM_DSTU4145,
+                "Hello world ! How cool is ejbca ??".getBytes());
+        
+        assertTrue(KeyTools.verifyData(keys2.getPublic(),
+                AlgorithmConstants.KEYALGORITHM_DSTU4145,
+                "Hello world ! How cool is ejbca ??".getBytes(),
+                signature));
+        
+        
+        ECPublicKeySpec ecspec = new ECPublicKeySpec(pk2.getW(), pk2.getParams());
+        KeyFactory.getInstance("DSTU4145").generatePublic(ecspec); // return value not tested
+        KeyFactory.getInstance("EC").generatePublic(ecspec); // return value not tested
+        
+        log.trace("<testGenKeysDSTU4145AlgorithmSpec");
+    }
+
+	
 }
