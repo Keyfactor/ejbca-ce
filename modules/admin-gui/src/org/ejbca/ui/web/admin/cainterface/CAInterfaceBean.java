@@ -1272,14 +1272,15 @@ public class CAInterfaceBean implements Serializable {
             final String ecNamedCurve = ecNamedCurves.nextElement();
             ret.add(new SimpleEntry<String,String>(ecNamedCurve, "ECDSA "+ecNamedCurve));
         }
-        /* TODO: Will be supported..
-        @SuppressWarnings("unchecked")
-        final Enumeration<String> ecGostNamedCurves = ECGOST3410NamedCurveTable.getNames();
-        while (ecGostNamedCurves.hasMoreElements()) {
-            final String ecGostNamedCurve = ecGostNamedCurves.nextElement();
-            ret.add(new SimpleEntry<String,String>(ecGostNamedCurve, "ECGOST "+ecGostNamedCurve));
+        
+        for (String alg : CesecoreConfiguration.getExtraAlgs()) {
+            for (String subalg : CesecoreConfiguration.getExtraAlgSubAlgs(alg)) {
+                final String title = CesecoreConfiguration.getExtraAlgSubAlgTitle(alg, subalg);
+                final String name = CesecoreConfiguration.getExtraAlgSubAlgName(alg, subalg);
+                ret.add(new SimpleEntry<String,String>(name, title));
+            }
         }
-        */
+
         return ret;
     }
     
