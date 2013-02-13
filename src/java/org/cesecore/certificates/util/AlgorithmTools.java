@@ -490,9 +490,9 @@ public final class AlgorithmTools {
             } else if (certSignatureAlgorithm.indexOf("ECDSA") != -1) {
             	// From x509cert.getSigAlgName(), SHA1withECDSA only returns name ECDSA
                 signatureAlgorithm = AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA;
-            } else if (certSignatureAlgorithm.indexOf("GOST") != -1) {
+            } else if (isGost3410Enabled() && certSignatureAlgorithm.indexOf("GOST") != -1) {
                 signatureAlgorithm = AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410;
-            } else if (certSignatureAlgorithm.indexOf("DSTU") != -1) {
+            } else if (isDstu4145Enabled() && certSignatureAlgorithm.startsWith(CesecoreConfiguration.getOidDstu4145())) {
                 signatureAlgorithm = AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145;
             }
         }
