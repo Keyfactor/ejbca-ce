@@ -63,9 +63,11 @@ import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.request.CVCRequestMessage;
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
@@ -113,7 +115,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Tests the ca data entity bean.
+ * Tests CA administration.
  * 
  * @version $Id$
  */
@@ -129,6 +131,7 @@ public class CAsTest extends CaTestCase {
     private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     private SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
+    private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     // private AuthenticationToken adminTokenNoAuth;
 
@@ -1334,7 +1337,7 @@ public class CAsTest extends CaTestCase {
         // active certificate, we should simply renew the CA
         info.setStatus(CAConstants.CA_ACTIVE);
         caAdminSession.editCA(admin, info); // need active status in order
-        // to do renew
+        // finally do a new renew
         caAdminSession.renewCA(admin, getTestCAId(), false, null, false);
     } // test13RenewCA
 
@@ -1343,6 +1346,7 @@ public class CAsTest extends CaTestCase {
         final String caname = "TestRevokeCA";
         removeTestCA(caname);
         createTestCA(caname);
+        List<Certificate> toremove = new ArrayList<Certificate>();
         try {
             CAInfo info = caSession.getCAInfo(admin, caname);
             assertEquals(CAConstants.CA_ACTIVE, info.getStatus());
@@ -1355,8 +1359,51 @@ public class CAsTest extends CaTestCase {
             assertEquals(CAConstants.CA_REVOKED, info.getStatus());
             assertEquals(RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE, info.getRevocationReason());
             assertTrue(info.getRevocationDate().getTime() > 0);
+            // Check that the CAs certificate(s) are revoked.
+            Collection<Certificate> certs = certificateStoreSession.findCertificatesBySubject(info.getSubjectDN());
+            toremove.addAll(certs);
+            assertEquals("Test CA should have one certificate", 1, certs.size());
+            final String fp = CertTools.getFingerprintAsString(certs.iterator().next());
+            CertificateInfo certinfo = certificateStoreSession.getCertificateInfo(fp);
+            assertEquals("Certificate should have status REVOKED", CertificateConstants.CERT_REVOKED, certinfo.getStatus());
+            // Renew the CA, twice, we have to "unrevoke it first though
+            info.setStatus(CAConstants.CA_ACTIVE);
+            caSession.editCA(admin, info);
+            caAdminSession.renewCA(admin, info.getCAId(), false, null, false);
+            caAdminSession.renewCA(admin, info.getCAId(), false, null, false);
+            certs = certificateStoreSession.findCertificatesBySubject(info.getSubjectDN());
+            toremove.addAll(certs);
+            assertEquals("Test CA should have three certificates", 3, certs.size());
+            // Remove the old revoked one one to make it easier for us
+            internalCertStoreSession.removeCertificate(fp);                
+            certs = certificateStoreSession.findCertificatesBySubject(info.getSubjectDN());
+            assertEquals("Test CA should have two certificates", 2, certs.size());
+            Iterator<Certificate> iter = certs.iterator();
+            certinfo = certificateStoreSession.getCertificateInfo(CertTools.getFingerprintAsString(iter.next()));
+            assertEquals("Certificate should have status ACTIVE", CertificateConstants.CERT_ACTIVE, certinfo.getStatus());
+            certinfo = certificateStoreSession.getCertificateInfo(CertTools.getFingerprintAsString(iter.next()));
+            assertEquals("Certificate should have status ACTIVE", CertificateConstants.CERT_ACTIVE, certinfo.getStatus());
+            // Revoke the CA with two active certificates, both should be revoked
+            caAdminSession.revokeCA(admin, info.getCAId(), RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION);
+            certs = certificateStoreSession.findCertificatesBySubject(info.getSubjectDN());
+            assertEquals("Test CA should have two certificates", 2, certs.size());
+            iter = certs.iterator();
+            final String fp1 = CertTools.getFingerprintAsString(iter.next());
+            certinfo = certificateStoreSession.getCertificateInfo(fp1);
+            assertEquals("Certificate should have status REVOKED", CertificateConstants.CERT_REVOKED, certinfo.getStatus());
+            assertEquals("Revocation reason should be CACOMPROMISE", RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION, certinfo.getRevocationReason());
+            final String fp2 = CertTools.getFingerprintAsString(iter.next());
+            assertFalse(fp1.equals(fp2));
+            certinfo = certificateStoreSession.getCertificateInfo(fp2);
+            assertEquals("Certificate should have status REVOKED", CertificateConstants.CERT_REVOKED, certinfo.getStatus());            
+            assertEquals("Revocation reason should be CACOMPROMISE", RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION, certinfo.getRevocationReason());
         } finally {
-            //removeTestCA(caname);
+            // Remove the test CA
+            removeTestCA(caname);
+            // Remove the test CAs certificates from the database
+            for (Certificate certificate : toremove) {
+                internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(certificate));                
+            }
         }
     } // test14RevokeCA
 
