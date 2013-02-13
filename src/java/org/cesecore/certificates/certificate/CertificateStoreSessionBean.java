@@ -664,7 +664,6 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void revokeAllCertByCA(AuthenticationToken admin, String issuerdn, int reason) throws AuthorizationDeniedException {
-        int temprevoked = 0;
         int revoked = 0;
         
         // Must be authorized to CA in order to change status is certificates issued by the CA
@@ -675,33 +674,23 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         try {
             final int maxRows = 10000;
             int firstResult = 0;
-            // Change all temporary revoked certificates to permanently revoked certificates
-            List<CertificateData> list = CertificateData.findAllOnHold(entityManager, bcdn, firstResult, maxRows);
-            while (list.size() > 0) {
-            	for (int i = 0; i<list.size(); i++) {
-                	CertificateData d = list.get(i);
-                	d.setStatus(CertificateConstants.CERT_REVOKED);
-            	}
-            	firstResult += maxRows;
-            	list = CertificateData.findAllNonRevokedCertificates(entityManager, bcdn, firstResult, maxRows);
-            }
-            //temprevoked = CertificateData.revokeOnHoldPermanently(entityManager, bcdn);
             // Revoking all non revoked certificates.
             
             // Update 10000 records at a time
             firstResult = 0;
-            list = CertificateData.findAllNonRevokedCertificates(entityManager, bcdn, firstResult, maxRows);
+            List<CertificateData> list = CertificateData.findAllNonRevokedCertificates(entityManager, bcdn, firstResult, maxRows);
             while (list.size() > 0) {
             	for (int i = 0; i<list.size(); i++) {
                 	CertificateData d = list.get(i);
                 	d.setStatus(CertificateConstants.CERT_REVOKED);
                 	d.setRevocationDate(System.currentTimeMillis());
                 	d.setRevocationReason(reason);
+                	revoked++;
             	}
             	firstResult += maxRows;
             	list = CertificateData.findAllNonRevokedCertificates(entityManager, bcdn, firstResult, maxRows);
             }
-            final String msg = INTRES.getLocalizedMessage("store.revokedallbyca", issuerdn, Integer.valueOf(revoked + temprevoked), Integer.valueOf(reason));
+            final String msg = INTRES.getLocalizedMessage("store.revokedallbyca", issuerdn, Integer.valueOf(revoked), Integer.valueOf(reason));
     		Map<String, Object> details = new LinkedHashMap<String, Object>();
     		details.put("msg", msg);
     		logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), null, null, details);            
