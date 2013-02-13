@@ -138,20 +138,19 @@ public class MessagesTest {
         if (msg.requireKeyInfo()) {
             msg.setKeyInfo(caCert, privateKey, null);
         }
-        // We know this will throw an exception since scepclient doesn't work
-        // If it starts working we know there is something wrong
-        boolean ret = msg.verify();  
-        assertFalse("Failed to fail to verify SCEP message from Java Scep Client.", ret);
-        /*
+        // This message is missing an IV which apparently wasn't required in
+        // PKCS#7 but is in the RFCs. BouncyCastle 1.47 used to not allow this,
+        // since but BC 1.48 does, we now allow also.
+        boolean ret = msg.verify();
+        assertTrue("Failed to verify SCEP message from Java Scep Client (without IV).", ret);
         String dn = msg.getRequestDN();
         log.debug("DN: " + dn);
-        assertEquals("C=SE,O=Foo,CN=openscep", dn);
+        assertEquals("C=SE,ST=Some-State,O=Foo,CN=scepclient", dn);
         String username = msg.getUsername();
-        assertEquals("openvpn", username);
+        assertEquals("scepclient", username);
         String pwd = msg.getPassword();
         log.debug("Pwd: " + pwd);
         assertEquals("foo123", pwd);
-        */
         log.trace("<test03TestJavaScepClient()");
     }
     /** Tests scep message from Cisco VPN client
