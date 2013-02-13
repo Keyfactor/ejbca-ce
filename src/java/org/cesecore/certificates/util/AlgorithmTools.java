@@ -365,13 +365,19 @@ public final class AlgorithmTools {
 	 * @return true if signature algorithm can be used with the public key algorithm
 	 */
 	public static boolean isCompatibleSigAlg(final PublicKey publicKey, final String signatureAlgorithm) {
+		String algname = publicKey.getAlgorithm();
+		if (algname == null) algname = "";
+		boolean isGost3410 = algname.contains("GOST3410");
+		boolean isDstu4145 = algname.contains("DSTU4145");
+		boolean isSpecialECC = isGost3410 || isDstu4145;
+		
 		boolean ret = false;
 		if (StringUtils.contains(signatureAlgorithm, AlgorithmConstants.KEYALGORITHM_RSA)) {
 			if (publicKey instanceof RSAPublicKey) {
 				ret = true;
 			}
 		} else if (StringUtils.contains(signatureAlgorithm, AlgorithmConstants.KEYALGORITHM_ECDSA)) {
-    		if (publicKey instanceof ECPublicKey && !publicKey.getAlgorithm().contains("GOST")) {
+    		if (publicKey instanceof ECPublicKey && !isSpecialECC) {
     			ret = true;
     		}
     	} else if (StringUtils.contains(signatureAlgorithm, AlgorithmConstants.KEYALGORITHM_DSA)) {
@@ -379,11 +385,11 @@ public final class AlgorithmTools {
                 ret = true;
             }
         } else if (StringUtils.contains(signatureAlgorithm, AlgorithmConstants.KEYALGORITHM_ECGOST3410)) {
-     		if (publicKey instanceof ECPublicKey && publicKey.getAlgorithm().contains("GOST")) {
+     		if (publicKey instanceof ECPublicKey && isGost3410) {
      			ret = true;
      		}
      	} else if (StringUtils.contains(signatureAlgorithm, AlgorithmConstants.KEYALGORITHM_DSTU4145)) {
-            if (publicKey instanceof ECPublicKey && publicKey.getAlgorithm().contains("DSTU")) {
+            if (publicKey instanceof ECPublicKey && isDstu4145) {
                 ret = true;
             }
      	}
