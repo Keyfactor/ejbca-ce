@@ -6,7 +6,6 @@ import static org.junit.Assume.assumeTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -15,7 +14,6 @@ import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
-import java.security.Security;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.ECPublicKey;
@@ -38,7 +36,6 @@ import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.jce.ECGOST3410NamedCurveTable;
 import org.bouncycastle.jce.X509KeyUsage;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.util.encoders.Base64;
@@ -108,7 +105,6 @@ public class ExtraAlgorithmsPKCS12Test {
     private static void testAlgorithm(String algInstance, String keyAlg, String sigAlg, AlgorithmParameterSpec paramSpec) throws Exception {
         // We first create a keypair and a certificate to add to our PKCS12 file
         KeyStore ks = null;
-        Security.addProvider(new BouncyCastleProvider());
         KeyPair newsignkeys = null;
         Certificate[] certchain = new Certificate[1];
         String ksbytes = null;
@@ -133,15 +129,15 @@ public class ExtraAlgorithmsPKCS12Test {
         java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
         ks.store(baos, "foo123".toCharArray());
         ksbytes = new String(base64Encode(baos.toByteArray()));
+        baos.close();
 
         // Uncomment to write to a file to check that everything is correct with openssl/cryptonit
-        //DataOutputStream out = new DataOutputStream(new FileOutputStream("pkcs12TestECGOST3410"));
-        DataOutputStream out = new DataOutputStream(new ByteArrayOutputStream());
+        /*DataOutputStream out = new DataOutputStream(new FileOutputStream("pkcs12TestECGOST3410"));
         try {
             out.write(Base64.decode(ksbytes.getBytes()));
         } finally {
             out.close();
-        }
+        }*/
         
         // We try to initiate a new keystore from the one we have just created
         KeyStore tryReadKS = KeyStore.getInstance("PKCS12", "BC");
