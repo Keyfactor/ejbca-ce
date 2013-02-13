@@ -50,7 +50,9 @@ public interface PublisherSession {
      * 
      * @param publisherids
      *            a Collection (Integer) of publisher IDs.
-     * @return true if successful result on all given publishers
+     * @return true if successful result on all given publishers, if the publisher is configured to not publish the certificate 
+     * (for example publishing an active certificate when the publisher only publishes revoked), true is still returned because 
+     * the publishing operation succeeded even though the publisher did not publish the certificate.
      * @throws AuthorizationDeniedException if access is denied to the CA issuing incert
      * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
