@@ -74,33 +74,37 @@ public class ECGOST3410SignSessionTest extends SignSessionCommon {
     
     @BeforeClass
     public static void beforeClass() throws Exception {
-        assumeTrue(AlgorithmTools.isGost3410Enabled());
-        // Install BouncyCastle provider
-        CryptoProviderTools.installBCProviderIfNotAvailable();
-
-        CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-        createTestCA();
-        createECGOST3410Ca();
-        
-        int rsacaid = caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId();
-        createEndEntity(RSA_USERNAME, DEFAULT_EE_PROFILE, DEFAULT_CERTIFICATE_PROFILE, rsacaid);
-        createEcgost3410EndEntity();
-        
-        final String keyspec = CesecoreConfiguration.getExtraAlgSubAlgName("gost3410", "B");
-        gostkeys = KeyTools.genKeys(keyspec, AlgorithmConstants.KEYALGORITHM_ECGOST3410);
+        if (AlgorithmTools.isGost3410Enabled()) {
+            // Install BouncyCastle provider
+            CryptoProviderTools.installBCProviderIfNotAvailable();
+    
+            CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+            createTestCA();
+            createECGOST3410Ca();
+            
+            int rsacaid = caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId();
+            createEndEntity(RSA_USERNAME, DEFAULT_EE_PROFILE, DEFAULT_CERTIFICATE_PROFILE, rsacaid);
+            createEcgost3410EndEntity();
+            
+            final String keyspec = CesecoreConfiguration.getExtraAlgSubAlgName("gost3410", "B");
+            gostkeys = KeyTools.genKeys(keyspec, AlgorithmConstants.KEYALGORITHM_ECGOST3410);
+        }
     }
     
     @AfterClass
     public static void afterClass() throws Exception {
-        EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-        cleanUpEndEntity(RSA_USERNAME);
-        userAdminSession.deleteUser(internalAdmin, ECGOST3410_USERNAME);
-        removeTestCA();
-        removeTestCA(TEST_ECGOST3410_CA_NAME);
+        if (AlgorithmTools.isGost3410Enabled()) {
+            EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+            cleanUpEndEntity(RSA_USERNAME);
+            userAdminSession.deleteUser(internalAdmin, ECGOST3410_USERNAME);
+            removeTestCA();
+            removeTestCA(TEST_ECGOST3410_CA_NAME);
+        }
     }
     
     @Test
     public void testSignSessionECGOST3410WithECGOST3410CA() throws Exception {
+        assumeTrue(AlgorithmTools.isGost3410Enabled());
         log.trace(">test14SignSessionECGOST3410WithECGOST3410CA()");
         userAdminSession.setUserStatus(internalAdmin, ECGOST3410_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of '" + ECGOST3410_USERNAME + "' to NEW");
@@ -129,8 +133,8 @@ public class ECGOST3410SignSessionTest extends SignSessionCommon {
      */
     @Test
     public void testBCPKCS10ECGOST3410WithECGOST3410CA() throws Exception {
+        assumeTrue(AlgorithmTools.isGost3410Enabled());
         log.trace(">test15TestBCPKCS10ECGOST3410WithECGOST3410CA()");
-        
         userAdminSession.setUserStatus(internalAdmin, ECGOST3410_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
