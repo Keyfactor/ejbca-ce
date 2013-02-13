@@ -1101,8 +1101,7 @@ public class CAsTest extends CaTestCase {
     public void test11RSASignedByExternal() throws Exception {
         removeOldCa("TESTSIGNEDBYEXTERNAL");
 
-        boolean ret = false;
-        CAInfo info = null;
+        List<Certificate> toremove = new ArrayList<Certificate>();
         try {
             final CAToken caToken = createCaToken("test11", "1024", AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             // Create and active OSCP CA Service.
@@ -1155,15 +1154,15 @@ public class CAsTest extends CaTestCase {
             }
             caAdminSession.createCA(admin, cainfo);
 
-            info = caSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
-            assertEquals(CAConstants.CA_WAITING_CERTIFICATE_RESPONSE, info.getStatus());
+            CAInfo info = caSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
+            assertEquals("Creating an initial CA signed by external should have the CA in status WAITING_CERTIFICATE_RESPONSE", CAConstants.CA_WAITING_CERTIFICATE_RESPONSE, info.getStatus());
 
             // Generate a certificate request from the CA and send to the TEST CA
             CAInfo rootinfo = caSession.getCAInfo(caAdmin, getTestCAName());
             Collection<Certificate> rootcacertchain = rootinfo.getCertificateChain();
             byte[] request = caAdminSession.makeRequest(admin, info.getCAId(), rootcacertchain, info.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
             info = caSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
-            assertEquals(CAConstants.CA_WAITING_CERTIFICATE_RESPONSE, info.getStatus());
+            assertEquals("Making an initial certificate request should have the CA in status WAITING_CERTIFICATE_RESPONSE", CAConstants.CA_WAITING_CERTIFICATE_RESPONSE, info.getStatus());
             PKCS10RequestMessage msg = new PKCS10RequestMessage(request);
             assertEquals("CN=TESTSIGNEDBYEXTERNAL", msg.getRequestDN());
 
@@ -1173,6 +1172,8 @@ public class CAsTest extends CaTestCase {
 
             // Receive the signed certificate back on our SubCA
             caAdminSession.receiveResponse(admin, info.getCAId(), resp, null, null);
+            Collection<Certificate> certs = certificateStoreSession.findCertificatesBySubject(info.getSubjectDN());
+            toremove.addAll(certs); // Remove CA certificate after completed test
 
             // Check that the CA has the correct certificate chain now
             info = caSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
@@ -1195,24 +1196,63 @@ public class CAsTest extends CaTestCase {
             assertTrue("Error in root ca certificate", CertTools.getSubjectDN(cert).equals("CN=TEST"));
             assertTrue("Error in root ca certificate", CertTools.getIssuerDN(cert).equals("CN=TEST"));
 
-            ret = true;
+            // Make a new certificate request from the CA
+            Collection<Certificate> cachain = info.getCertificateChain();
+            request = caAdminSession.makeRequest(admin, info.getCAId(), cachain, info.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+            info = caSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
+            assertEquals(CAConstants.CA_ACTIVE, info.getStatus()); // No new keys
+            // generated, still active
+            msg = new PKCS10RequestMessage(request);
+            assertEquals("CN=TESTSIGNEDBYEXTERNAL", msg.getRequestDN());
+            
+            // Add another certificate for the subCA so we have more than 1 to revoke
+            // Generate a certificate request from the CA and send to the TEST CA
+            request = caAdminSession.makeRequest(admin, info.getCAId(), rootcacertchain, info.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+            info = caSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
+            // CA should still active after only making a new request
+            assertEquals("CA should still active after only making a new request", CAConstants.CA_ACTIVE, info.getStatus());
+            msg = new PKCS10RequestMessage(request);
+            assertEquals("CN=TESTSIGNEDBYEXTERNAL", msg.getRequestDN());
+            // Receive the certificate request on the TEST CA
+            info.setSignedBy("CN=TEST".hashCode());
+            resp = caAdminSession.processRequest(admin, info, msg);
+            // Receive the signed certificate back on our SubCA
+            caAdminSession.receiveResponse(admin, info.getCAId(), resp, null, null);
+            
+            // Ensure all issued subCA certificates are cleaned out after test finishes
+            certs = certificateStoreSession.findCertificatesBySubject(info.getSubjectDN());
+            toremove.addAll(certs); 
+            assertEquals("Test CA should have two certificates", 2, certs.size());
+            CertificateInfo certinfo = certificateStoreSession.getCertificateInfo(CertTools.getFingerprintAsString(certs.iterator().next()));
+            assertEquals("Certificate should have status ACTIVE", CertificateConstants.CERT_ACTIVE, certinfo.getStatus());
+            certinfo = certificateStoreSession.getCertificateInfo(CertTools.getFingerprintAsString(certs.iterator().next()));
+            assertEquals("Certificate should have status ACTIVE", CertificateConstants.CERT_ACTIVE, certinfo.getStatus());
 
+            // Revoke the subCA, both subCA certificates should be revoked
+            caAdminSession.revokeCA(admin, info.getCAId(), RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION);
+            certs = certificateStoreSession.findCertificatesBySubject(info.getSubjectDN());
+            assertEquals("Test CA should have two certificates", 2, certs.size());
+            iter = certs.iterator();
+            final String fp1 = CertTools.getFingerprintAsString(iter.next());
+            certinfo = certificateStoreSession.getCertificateInfo(fp1);
+            assertEquals("Certificate should have status REVOKED", CertificateConstants.CERT_REVOKED, certinfo.getStatus());
+            assertEquals("Revocation reason should be CACOMPROMISE", RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION, certinfo.getRevocationReason());
+            final String fp2 = CertTools.getFingerprintAsString(iter.next());
+            assertFalse(fp1.equals(fp2));
+            certinfo = certificateStoreSession.getCertificateInfo(fp2);
+            assertEquals("Certificate should have status REVOKED", CertificateConstants.CERT_REVOKED, certinfo.getStatus());            
+            assertEquals("Revocation reason should be CACOMPROMISE", RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION, certinfo.getRevocationReason());
+            
         } catch (CAExistsException pee) {
             log.info("CA exists: ", pee);
+        } finally {
+            removeOldCa("TESTSIGNEDBYEXTERNAL");            
+            // Remove the test certificates from the database
+            for (Certificate certificate : toremove) {
+                internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(certificate));                
+            }
         }
 
-        // Make a certificate request from the CA
-        Collection<Certificate> cachain = info.getCertificateChain();
-        byte[] request = caAdminSession.makeRequest(admin, info.getCAId(), cachain, info.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
-        info = caSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
-        assertEquals(CAConstants.CA_ACTIVE, info.getStatus()); // No new keys
-        // generated, still
-        // active
-        PKCS10RequestMessage msg = new PKCS10RequestMessage(request);
-        assertEquals("CN=TESTSIGNEDBYEXTERNAL", msg.getRequestDN());
-
-        assertTrue("Creating RSA CA (signed by external) failed", ret);
-        removeOldCa("TESTSIGNEDBYEXTERNAL");
     } // test10RSASignedByExternal
 
     /**
