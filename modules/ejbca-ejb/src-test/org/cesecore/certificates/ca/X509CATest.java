@@ -190,7 +190,7 @@ public class X509CATest {
         assertNotNull(usercert);
         assertEquals("CN=User", CertTools.getSubjectDN(usercert));
         assertEquals(CADN, CertTools.getIssuerDN(usercert));
-        assertEquals(algName.toUpperCase(), AlgorithmTools.getCertSignatureAlgorithmNameAsString(usercert).toUpperCase());
+        assertEquals(getTestKeyPairAlgName(algName).toUpperCase(), AlgorithmTools.getCertSignatureAlgorithmNameAsString(usercert).toUpperCase());
         assertEquals(new String(CertTools.getSubjectKeyId(cacert)), new String(CertTools.getAuthorityKeyId(usercert)));
         assertEquals("user@user.com", CertTools.getEMailAddress(usercert));
         assertEquals("rfc822name=user@user.com", CertTools.getSubjectAlternativeName(usercert));
@@ -715,6 +715,15 @@ public class X509CATest {
             return KeyTools.genKeys(keyspec, AlgorithmConstants.KEYALGORITHM_ECGOST3410);
         } else {
             return KeyTools.genKeys("512", "RSA");
+        }
+    }
+    
+    /** @return Algorithm name for test key pair */
+    private static String getTestKeyPairAlgName(String algName) {
+        if(algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410)) {
+            return algName;
+        } else {
+            return "SHA256withRSA";
         }
     }
     
