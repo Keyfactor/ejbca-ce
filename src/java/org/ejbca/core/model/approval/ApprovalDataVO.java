@@ -57,7 +57,7 @@ public class ApprovalDataVO implements Serializable {
 	public static final String[] APPROVALTYPENAMES = {"APDUMMY","APVIEWHARDTOKENDATA","APADDENDENTITY","APEDITENDENTITY",
 		                                              "APCHANGESTATUSENDENTITY", "APKEYRECOVERY", "APGENERATETOKEN",
 		                                              "APREVOKEENDENTITY", "APREVOKEDELETEENDENTITY", "APREVOKECERTIFICATE",
-                                                      "APACTIVATECATOKEN"};
+                                                      "APPROVEACTIVATECA"};
 	
 	/** Used to indicate that the approcal is applicable to any ca. */
 	public static final int ANY_CA = SecConst.ALLCAS;

@@ -44,55 +44,69 @@ org.ejbca.core.model.authorization.AccessRulesConstants
 	<h1><h:outputText value="#{web.text.ACTIVATECAS}"/></h1>
 	<div class="message"><h:messages layout="table" errorClass="alert"/></div>
 	<h:form>
-	<h:dataTable value="#{cAActivationMBean.authorizedTokensAndCas}" var="tokenAndCa" styleClass="actTokenAndCas">
+	<h:dataTable value="#{cAActivationMBean.authorizedTokensAndCas}" var="tokenAndCa" styleClass="actCas" footerClass="actCasFooter" headerClass="actCasHeader">
 		<h:column>
-			<h:panelGroup>
-				<h:outputLink value="adminweb/cryptotoken/cryptotoken.jsf?cryptoTokenId=#{tokenAndCa.cryptoTokenId}">
-					<h2><h:outputText value="#{tokenAndCa.cryptoTokenName}"/></h2>
-				</h:outputLink>
-				<h:graphicImage rendered="#{tokenAndCa.cryptoTokenActive}" url="adminweb/images/status-ca-active.png" height="12" width="12" style="border-width:0"/>
-				<h:graphicImage rendered="#{!tokenAndCa.cryptoTokenActive}" url="adminweb/images/status-ca-offline.png" height="12" width="12" style="border-width:0"/>
-				<h:outputText value=" CryptoToken is #{web.text.ACTIVE} on #{web.ejbcaWebBean.hostName}" rendered="#{tokenAndCa.cryptoTokenActive}"/>
-				<h:outputText value=" CryptoToken is #{web.text.OFFLINE} on #{web.ejbcaWebBean.hostName}" rendered="#{!tokenAndCa.cryptoTokenActive}"/>
-				<h:selectBooleanCheckbox value="#{tokenAndCa.cryptoTokenNewState}" disabled="#{tokenAndCa.stateChangeDisabled}"/>
-				<h:outputText value=" Keep #{web.text.ACTIVE}" rendered="#{tokenAndCa.cryptoTokenActive}"/>
-				<h:outputText value=" #{web.text.ACTIVATE}" rendered="#{!tokenAndCa.cryptoTokenActive}"/>
-			</h:panelGroup>
-			<h:dataTable value="#{tokenAndCa.cas}" var="ca" styleClass="actCas" headerClass="actCasHeader">
-				<h:column>
-	    			<f:facet name="header"><h:outputText value="#{web.text.CA}"/></f:facet>
-	    			<h:outputText value="#{ca.name}"/>
-	    		</h:column>
-				<h:column>
-					<f:facet name="header"><h:outputText value="CA Service state"/></f:facet>
-					<h:graphicImage rendered="#{ca.active}" url="adminweb/images/status-ca-active.png" height="12" width="12" style="border-width:0"/>
-					<h:graphicImage rendered="#{!ca.active}" url="adminweb/images/status-ca-offline.png" height="12" width="12" style="border-width:0"/>
-					<h:outputText value="#{web.text.ACTIVE}" rendered="#{ca.active}"/>
-					<h:outputText value="#{web.text.EXPIRED}" rendered="#{ca.expired}"/>
-					<h:outputText value="#{web.text.REVOKED}" rendered="#{ca.revoked}"/>
-					<h:outputText value="#{web.text.OFFLINE}" rendered="#{!ca.active && !ca.expired && !ca.revoked}"/>
-				</h:column>
-				<h:column>
-					<f:facet name="header"><h:outputText value="Action"/></f:facet>
-					<h:selectBooleanCheckbox value="#{ca.newState}" disabled="#{ca.unableToChangeState}"/>
-					<h:outputText value="Keep #{web.text.ACTIVE}" rendered="#{ca.active}"/>
-					<h:outputText value="#{web.text.ACTIVATE}" rendered="#{!ca.active}"/>
-				</h:column>
-				<h:column>
-					<f:facet name="header"><h:outputText value="Monitor"/></f:facet>
-					<h:selectBooleanCheckbox value="#{ca.monitoredNewState}"/>
-					<h:outputText value="Monitored from HealthCheck"/>
-				</h:column>
-			</h:dataTable>
+   			<f:facet name="header"><h:panelGroup><h:outputText value="#{web.text.CRYPTOTOKEN}"/><br/><h:outputText value="#{web.text.ACTIVATECAS_NAME}"/></h:panelGroup></f:facet>
+			<h:outputLink rendered="#{tokenAndCa.first && tokenAndCa.cryptoToken.existing}" value="adminweb/cryptotoken/cryptotoken.jsf?cryptoTokenId=#{tokenAndCa.cryptoToken.cryptoTokenId}">
+				<h:outputText value="#{tokenAndCa.cryptoToken.cryptoTokenName}"/>
+			</h:outputLink>
+			<h:outputText rendered="#{!tokenAndCa.first}" value="#{tokenAndCa.cryptoToken.cryptoTokenName}"/>
+			<h:outputText rendered="#{!tokenAndCa.cryptoToken.existing}" style="font-style: italic;" value="#{web.text.ACTIVATECAS_NA}"/>
 		</h:column>
+		<h:column>
+   			<f:facet name="header"><h:panelGroup><h:outputText value="#{web.text.CRYPTOTOKEN}"/><br/><h:outputText value="#{web.text.ACTIVATECAS_STATE}*"/></h:panelGroup></f:facet>
+			<h:panelGroup rendered="#{tokenAndCa.first}">
+				<h:graphicImage rendered="#{tokenAndCa.cryptoToken.cryptoTokenActive}" url="adminweb/images/status-ca-active.png" height="12" width="12" style="border-width:0"/>
+				<h:graphicImage rendered="#{!tokenAndCa.cryptoToken.cryptoTokenActive}" url="adminweb/images/status-ca-offline.png" height="12" width="12" style="border-width:0"/>
+				<h:outputText value=" #{web.text.ACTIVE}" rendered="#{tokenAndCa.cryptoToken.cryptoTokenActive}"/>
+				<h:outputText value=" #{web.text.OFFLINE}" rendered="#{!tokenAndCa.cryptoToken.cryptoTokenActive}"/>
+			</h:panelGroup>
+			<h:outputText rendered="#{!tokenAndCa.first}" escape="false" value=" &#12291;"/>
+		</h:column>
+		<h:column>
+   			<f:facet name="header"><h:panelGroup><h:outputText value="#{web.text.CRYPTOTOKEN}"/><br/><h:outputText value="#{web.text.ACTIVATECAS_ACTION}"/></h:panelGroup></f:facet>
+			<h:panelGroup rendered="#{tokenAndCa.first}">
+				<h:selectBooleanCheckbox value="#{tokenAndCa.cryptoToken.cryptoTokenNewState}" disabled="#{tokenAndCa.cryptoToken.stateChangeDisabled}"/>
+				<h:outputText value=" #{web.text.ACTIVATECAS_KEEPACT}" rendered="#{tokenAndCa.cryptoToken.cryptoTokenActive}"/>
+				<h:outputText value=" #{web.text.ACTIVATE}" rendered="#{!tokenAndCa.cryptoToken.cryptoTokenActive}"/>
+			</h:panelGroup>
+			<h:outputText rendered="#{!tokenAndCa.first}" escape="false" value=" &#12291;"/>
+		</h:column>
+		<h:column>
+   			<f:facet name="header"><h:panelGroup><h:outputText value="#{web.text.CA}"/><br/><h:outputText value="#{web.text.ACTIVATECAS_NAME}"/></h:panelGroup></f:facet>
+   			<h:outputText value="#{tokenAndCa.ca.name}"/>
+   		</h:column>
+		<h:column>
+   			<f:facet name="header"><h:panelGroup><h:outputText value="#{web.text.CA}"/><br/><h:outputText value="#{web.text.ACTIVATECAS_SSTATE}"/></h:panelGroup></f:facet>
+			<h:graphicImage rendered="#{tokenAndCa.ca.active}" url="adminweb/images/status-ca-active.png" height="12" width="12" style="border-width:0"/>
+			<h:graphicImage rendered="#{!tokenAndCa.ca.active}" url="adminweb/images/status-ca-offline.png" height="12" width="12" style="border-width:0"/>
+			<h:outputText value="#{web.text.ACTIVE}" rendered="#{tokenAndCa.ca.active}"/>
+			<h:outputText value="#{web.text.EXPIRED}" rendered="#{tokenAndCa.ca.expired}"/>
+			<h:outputText value="#{web.text.REVOKED}" rendered="#{tokenAndCa.ca.revoked}"/>
+			<h:outputText value="#{web.text.OFFLINE}" rendered="#{!tokenAndCa.ca.active && !tokenAndCa.ca.expired && !tokenAndCa.ca.revoked}"/>
+		</h:column>
+		<h:column>
+   			<f:facet name="header"><h:panelGroup><h:outputText value="#{web.text.CA}"/><br/><h:outputText value="#{web.text.ACTIVATECAS_SACTION}"/></h:panelGroup></f:facet>
+			<h:selectBooleanCheckbox value="#{tokenAndCa.ca.newState}" disabled="#{tokenAndCa.ca.unableToChangeState}"/>
+			<h:outputText value=" #{web.text.ACTIVATECAS_KEEPACT}" rendered="#{tokenAndCa.ca.active}"/>
+			<h:outputText value=" #{web.text.ACTIVATE}" rendered="#{!tokenAndCa.ca.active}"/>
+		</h:column>
+		<h:column>
+   			<f:facet name="header"><h:panelGroup><h:outputText value="#{web.text.CA}"/><br/><h:outputText value="#{web.text.ACTIVATECAS_MONITORED}"/></h:panelGroup></f:facet>
+			<h:selectBooleanCheckbox value="#{tokenAndCa.ca.monitoredNewState}" disabled="#{!tokenAndCa.cryptoToken.existing}"/>
+			<h:outputText value="#{web.text.ACTIVATECAS_HCHECK}"/>
+		</h:column>
+		<f:facet name="footer">
+			<h:outputText value="* #{web.text.ACTIVATECAS_FOOTNOTE} (#{web.ejbcaWebBean.hostName})."/>
+		</f:facet>
 	</h:dataTable>
 	<h:panelGrid columns="3">
-		<h:outputLabel rendered="#{cAActivationMBean.activationCodeShown}" for="authCode" value="CryptoToken activation code:"/>
+		<h:outputLabel rendered="#{cAActivationMBean.activationCodeShown}" for="authCode" value="#{web.text.ACTIVATECAS_ACTCODE}:"/>
 		<h:inputSecret rendered="#{cAActivationMBean.activationCodeShown}" id="authCode" value="#{cAActivationMBean.authenticationCode}"/>
 		<h:commandButton action="#{cAActivationMBean.applyChanges}" value="#{web.text.APPLY}"/>
 	</h:panelGrid>
 	</h:form>
-
+ 
 	<%/* Include footer */%>
 	<jsp:include page="<%= globalconfiguration.getFootBanner() %>" />
 </body>

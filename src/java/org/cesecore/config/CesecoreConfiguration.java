@@ -151,7 +151,7 @@ public final class CesecoreConfiguration {
      */
     public static long getCacheCaTimeInCaSession() {
         final String value = ConfigurationHolder.getString("cainfo.cachetime");
-        long time = -1; // don't cache at all is the default
+        long time = 10000L; // Cache for 10 seconds is the default (Changed 2013-02-14 under ECA-2801.)
         try {
             if (value!=null) {
                 time = Long.valueOf(value);
@@ -165,7 +165,7 @@ public final class CesecoreConfiguration {
     /** @return configuration for when cached CryptoTokens are considered stale and will be refreshed from the database. */
     public static long getCacheTimeCryptoToken() {
         final String value = ConfigurationHolder.getString("cryptotoken.cachetime");
-        long time = -1; // don't cache at all is the default
+        long time = 10000L; // Cache for 10 seconds is the default
         try {
             if (value!=null) {
                 time = Long.valueOf(value);
