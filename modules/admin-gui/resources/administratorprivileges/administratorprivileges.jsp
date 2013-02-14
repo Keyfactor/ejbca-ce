@@ -54,7 +54,7 @@
 		 <f:validator validatorId="legalCharsValidator" />
 	</h:inputHidden>
 	<h:dataTable value="#{rolesManagedBean.roles}" var="role"
-		headerClass="listHeader" rowClasses="listRow1,listRow2">
+		headerClass="listHeader" rowClasses="Row0,Row1">
 		<f:facet name="header">
 			<h:outputText value="#{web.text.CURRENTROLES}" />
 		</f:facet>

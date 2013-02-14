@@ -71,7 +71,7 @@
 	<h:form id="adminListForm" rendered="#{not empty rolesManagedBean.currentRole}" prependId="false">
 	<h:inputHidden id="currentRole" value="#{rolesManagedBean.currentRole}" />
 	<h:dataTable value="#{rolesManagedBean.admins}" var="admin" style="width: 100%;" id="adminsTable" 
-		headerClass="listHeader" rowClasses="listRow1,listRow2" columnClasses="caColumn,typeColumn,withColumn,typeColumn,valueColumn,commandColumn">
+		headerClass="listHeader" rowClasses="Row0,Row1" columnClasses="caColumn,typeColumn,withColumn,typeColumn,valueColumn,commandColumn">
 		<h:column>
 			<f:facet name="header">
 				<h:panelGroup>

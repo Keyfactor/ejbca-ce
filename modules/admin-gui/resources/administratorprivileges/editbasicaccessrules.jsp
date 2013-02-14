@@ -207,32 +207,47 @@ function checkallfields(){
 <body onload='roleupdated()'>
 
 <div align="center">
-	<p><H2><h:outputText value="#{web.text.ACCESSRULESFORROLE} #{rolesManagedBean.currentRole}" /></H2></p>
+	<h2><h:outputText value="#{web.text.ACCESSRULESFORROLE} #{rolesManagedBean.currentRole}" /></h2>
 	<h:outputText value="#{web.text.AUTHORIZATIONDENIED}" rendered="#{!rolesManagedBean.authorizedToRole}"/>
 	<h:panelGroup rendered="#{rolesManagedBean.authorizedToRole}">
 	<p><h:outputText styleClass="alert" value="#{web.text.ADVANCEDMODEREQUIRED}" rendered="#{rolesManagedBean.basicRuleSet.forceAdvanced}" /></p>
 	<p><h:messages layout="table" errorClass="alert"/></p>
   
-  	<div align="right">
-	<h:panelGrid columns="1" style="text-align: right;">
-		<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/administratorprivileges.jsf" title="#{web.text.BACKTOROLES}">
-			<h:outputText value="#{web.text.BACKTOROLES}"/>
-		</h:outputLink>
-		<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/editadminentities.jsf?currentRole=#{rolesManagedBean.currentRole}"
-			title="#{web.text.EDITADMINS}" rendered="#{not empty rolesManagedBean.currentRole}">
-			<h:outputText value="#{web.text.EDITADMINS}"/>
-		</h:outputLink>
-		<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/editadvancedaccessrules.jsf?currentRole=#{rolesManagedBean.currentRole}"
-			title="#{web.text.ADVANCEDMODE}" rendered="#{not empty rolesManagedBean.currentRole}">
-			<h:outputText value="#{web.text.ADVANCEDMODE}"/>
-		</h:outputLink>
-	</h:panelGrid>
-	</div>
 	<h:panelGroup rendered="#{!rolesManagedBean.basicRuleSet.forceAdvanced}">
  
  	<h:form id="basicRules">
 	<h:inputHidden id="currentRole" value="#{rolesManagedBean.currentRole}" />
-	<h:panelGrid columns="2" rowClasses="listRow1,listRow2" columnClasses="leftColumn,rightColumn" width="100%">
+	<h:panelGrid styleClass="edit" width="100%" columns="2" rowClasses="Row0,Row1" columnClasses="label,field">
+
+		<h:panelGroup>
+			&nbsp;
+		</h:panelGroup>
+		<h:panelGroup>
+			<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/administratorprivileges.jsf" title="#{web.text.BACKTOROLES}">
+				<h:outputText value="#{web.text.BACKTOROLES}"/>
+			</h:outputLink>
+		</h:panelGroup>
+
+		<h:panelGroup>
+			&nbsp;
+		</h:panelGroup>
+		<h:panelGroup style="display: block; text-align: right;">
+			<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/editadminentities.jsf?currentRole=#{rolesManagedBean.currentRole}"
+				title="#{web.text.EDITADMINS}" rendered="#{not empty rolesManagedBean.currentRole}">
+				<h:outputText value="#{web.text.EDITADMINS}"/>
+			</h:outputLink>
+		</h:panelGroup>
+
+		<h:panelGroup>
+			&nbsp;
+		</h:panelGroup>
+		<h:panelGroup style="display: block; text-align: right;">
+			<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/editadvancedaccessrules.jsf?currentRole=#{rolesManagedBean.currentRole}"
+				title="#{web.text.ADVANCEDMODE}" rendered="#{not empty rolesManagedBean.currentRole}">
+				<h:outputText value="#{web.text.ADVANCEDMODE}"/>
+			</h:outputLink>
+		</h:panelGroup>
+
 		<h:outputText value="#{web.text.ROLETEMPLATE}"/>
 		<h:selectOneMenu id="selectrole" value="#{rolesManagedBean.currentRoleTemplate}" onchange='roleupdated()'>
 			<f:selectItems value="#{rolesManagedBean.availableRoles}" />
@@ -258,7 +273,9 @@ function checkallfields(){
 			<f:selectItems value="#{rolesManagedBean.availableOtherRules}" />
 		</h:selectManyListbox> 
 
-		<h:outputText value=""/>
+		<h:panelGroup>
+			&nbsp;
+		</h:panelGroup>
 		<h:panelGroup>
 			<h:commandButton action="#{rolesManagedBean.saveAccessRules}" onclick="return checkallfields();" value="#{web.text.SAVE}"/>
 			<h:commandButton action="cancel" value="#{web.text.RESTORE}"/>
