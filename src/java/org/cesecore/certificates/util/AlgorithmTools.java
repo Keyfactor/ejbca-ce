@@ -351,9 +351,9 @@ public final class AlgorithmTools {
 		} else if( signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA1_WITH_DSA) ) {
             encSigAlg = AlgorithmConstants.SIGALG_SHA1_WITH_RSA;
         } else if( signatureAlgorithm.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410) ) {
-			encSigAlg = AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410;
+			encSigAlg = AlgorithmConstants.SIGALG_SHA1_WITH_RSA;
 		} else if( signatureAlgorithm.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145) ) {
-            encSigAlg = AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145;
+            encSigAlg = AlgorithmConstants.SIGALG_SHA1_WITH_RSA;
 		}
 		return encSigAlg;
 	}
