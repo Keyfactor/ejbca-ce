@@ -20,7 +20,8 @@
 # This cache can never be completely disabled to ensure that an activated CryptoToken object
 # is kept in the active state until removed or changed in the database.
 # Setting this value will improve performance for very large volume installations (>100 cert/s). 
-# Default: -1 (always check database for updates)
+# For normal installations, where extreme speeds and response times are not required, leave as default.
+# Default: 10000
 # Possible values -1 (no caching) to 9223372036854775807 (2^63-1 = Long.MAX_VALUE).
 #  If you want caching for an infinite time then set something high for example 157680000000 (5years). 
 #cryptotoken.cachetime=157680000000
@@ -31,7 +32,7 @@
 # Setting this value will improve performance for very large volume installations (>100 cert/s). 
 # For normal installations, where extreme speeds and response times are not required, leave as default.
 # Value is milliseconds.
-# Default: -1 (don't use cache)
+# Default: 10000
 # Possible values -1 (no caching) to 9223372036854775807 (2^63-1 = Long.MAX_VALUE).
 #  If you want caching for an infinite time then set something high for example 157680000000 (5years). 
 #cainfo.cachetime=157680000000

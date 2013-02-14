@@ -559,11 +559,6 @@ div.status table td img {
 }
 
 /* --- Page: CA > CA Activation */
-.actTokenAndCasHeader {
-	text-align: left;
-	color: #000;
-	background-color: #FFF;
-}
 .actCasHeader {
 	padding-left: 4px;
 	padding-right: 8px;
@@ -573,6 +568,11 @@ div.status table td img {
 	border-top: 1px solid #ccc;
 	border-left: 1px solid #ccc;
 	border-right: 1px solid #ccc;
+}
+.actCasFooter {
+	font-style: italic;
+	font-size: x-small;
+	text-align: right;
 }
 .actCas {
 	margin-top: 0.3em;

@@ -117,13 +117,29 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	    
         public int getCryptoTokenId() { return cryptoTokenInfo.getCryptoTokenId(); }
         public String getCryptoTokenName() { return cryptoTokenInfo.getName(); }
+        public boolean isExisting() { return !"NullCryptoToken".equals(cryptoTokenInfo.getType()); }
         public boolean isCryptoTokenActive() { return cryptoTokenInfo.isActive(); }
         public boolean isAutoActivated() { return cryptoTokenInfo.isAutoActivation(); }
         public boolean isStateChangeDisabled() { return isAutoActivated() || (isCryptoTokenActive() && !allowedDeactivation) || (!isCryptoTokenActive() && !allowedActivation);}
         public boolean isCryptoTokenNewState() { return cryptoTokenNewState; }
         public void setCryptoTokenNewState(boolean cryptoTokenNewState) { this.cryptoTokenNewState = cryptoTokenNewState; }
 	}
-	
+
+    /** GUI representation of a CryptoToken and its CA(s) for the activation view */
+    public class TokenAndCaActivationGuiComboInfo {
+        private final boolean firstCryptoTokenListing;
+        private final TokenAndCaActivationGuiInfo cryptoTokenInfo;
+        private final CaActivationGuiInfo caActivationGuiInfo;
+        public TokenAndCaActivationGuiComboInfo(TokenAndCaActivationGuiInfo cryptoTokenInfo, CaActivationGuiInfo caActivationGuiInfo, boolean first) {
+            this.cryptoTokenInfo = cryptoTokenInfo;
+            this.caActivationGuiInfo = caActivationGuiInfo;
+            this.firstCryptoTokenListing = first;
+        }
+        public boolean isFirst() { return firstCryptoTokenListing; }
+        public TokenAndCaActivationGuiInfo getCryptoToken() { return cryptoTokenInfo; }
+        public CaActivationGuiInfo getCa() { return caActivationGuiInfo; }
+    }
+
 	private final AuthenticationToken authenticationToken = EjbcaJSFHelper.getBean().getEjbcaWebBean().getAdminObject();
     private final EjbLocalHelper ejbLocalhelper = new EjbLocalHelper();
 	private final CAAdminSessionLocal caAdminSession = ejbLocalhelper.getCaAdminSession();
@@ -131,10 +147,10 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	private final CryptoTokenManagementSessionLocal cryptoTokenManagementSession = ejbLocalhelper.getCryptoTokenManagementSession();
     private final AccessControlSessionLocal accessControlSession = ejbLocalhelper.getAccessControlSession();
 
-	private List<TokenAndCaActivationGuiInfo> authorizedTokensAndCas = null;
+	private List<TokenAndCaActivationGuiComboInfo> authorizedTokensAndCas = null;
 	private String authenticationcode;
 
-	public List<TokenAndCaActivationGuiInfo> getAuthorizedTokensAndCas() {
+	public List<TokenAndCaActivationGuiComboInfo> getAuthorizedTokensAndCas() {
 	    final Map<Integer,TokenAndCaActivationGuiInfo> sortMap = new HashMap<Integer,TokenAndCaActivationGuiInfo>();
 	    for (final Integer caId : caSession.getAvailableCAs(authenticationToken)) {
 	        try {
@@ -152,7 +168,9 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
                         sortMap.put(cryptoTokenId, new TokenAndCaActivationGuiInfo(cryptoTokenInfo, allowedActivation, allowedDeactivation));
                     }
                 }
-                sortMap.get(cryptoTokenId).add(new CaActivationGuiInfo(caInfo.getStatus(), caInfo.getIncludeInHealthCheck(), caInfo.getName(), caInfo.getCAId()));
+                if (sortMap.get(cryptoTokenId).isExisting()) {
+                    sortMap.get(cryptoTokenId).add(new CaActivationGuiInfo(caInfo.getStatus(), caInfo.getIncludeInHealthCheck(), caInfo.getName(), caInfo.getCAId()));
+                }
             } catch (CADoesntExistsException e) {
                 throw new RuntimeException("Authorized CA Id does no longer exist.");
             }
@@ -162,15 +180,27 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
         Arrays.sort(tokenAndCasArray, new Comparator<TokenAndCaActivationGuiInfo>() {
             @Override
             public int compare(TokenAndCaActivationGuiInfo o1, TokenAndCaActivationGuiInfo o2) {
-                return o1.getCryptoTokenName().compareTo(o2.getCryptoTokenName());
+                return o1.getCryptoTokenName().compareToIgnoreCase(o2.getCryptoTokenName());
             }
         });
-        final List<TokenAndCaActivationGuiInfo> retValues = new ArrayList<TokenAndCaActivationGuiInfo>();
+        final List<TokenAndCaActivationGuiComboInfo> retValues = new ArrayList<TokenAndCaActivationGuiComboInfo>();
 	    for (final TokenAndCaActivationGuiInfo value : tokenAndCasArray) {
-	        retValues.add(value);
+	        boolean first = true;
+	        final CaActivationGuiInfo[] casArray = value.getCas().toArray(new CaActivationGuiInfo[0]);
+	        // Sort array by CA name
+	        Arrays.sort(casArray, new Comparator<CaActivationGuiInfo>() {
+	            @Override
+	            public int compare(CaActivationGuiInfo o1, CaActivationGuiInfo o2) {
+	                return o1.getName().compareToIgnoreCase(o2.getName());
+	            }
+	        });
+	        for (final CaActivationGuiInfo value2 : casArray) {
+	            retValues.add(new TokenAndCaActivationGuiComboInfo(value, value2, first));
+	            first = false;
+	        }
 	    }
 	    authorizedTokensAndCas = retValues;
-	    return authorizedTokensAndCas;
+	    return retValues;
 	}
 
 	/**
@@ -181,78 +211,82 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	    if (authorizedTokensAndCas==null) {
 	        return;
 	    }
-	    for (final TokenAndCaActivationGuiInfo tokenAndCa : authorizedTokensAndCas) {
-            log.info("isCryptoTokenActive(): " + tokenAndCa.isCryptoTokenActive() + " isCryptoTokenNewState(): " + tokenAndCa.isCryptoTokenNewState());
-	        if (tokenAndCa.isCryptoTokenActive() != tokenAndCa.isCryptoTokenNewState()) {
-	            if (tokenAndCa.isCryptoTokenNewState()) {
-	                // Assert that authcode is present
-	                if (authenticationcode != null && authenticationcode.length()>0) {
-	                    // Activate CA's CryptoToken
-	                    try {
-	                        cryptoTokenManagementSession.activate(authenticationToken, tokenAndCa.getCryptoTokenId(), authenticationcode.toCharArray());
-	                        log.info(authenticationToken.toString() + " activated CryptoToken " + tokenAndCa.getCryptoTokenId());
-	                    } catch (CryptoTokenAuthenticationFailedException e) {
-	                        super.addNonTranslatedErrorMessage("Bad authentication code.");
-	                    } catch (CryptoTokenOfflineException e) {
-                            super.addNonTranslatedErrorMessage("Crypto Token is offline and cannot be activated.");
-                        } catch (AuthorizationDeniedException e) {
-                            super.addNonTranslatedErrorMessage(e.getMessage());
-                        }
+	    for (final TokenAndCaActivationGuiComboInfo tokenAndCaCombo : authorizedTokensAndCas) {
+            if (tokenAndCaCombo.isFirst()) {
+                TokenAndCaActivationGuiInfo tokenAndCa = tokenAndCaCombo.getCryptoToken();
+	            log.info("isCryptoTokenActive(): " + tokenAndCa.isCryptoTokenActive() + " isCryptoTokenNewState(): " + tokenAndCa.isCryptoTokenNewState());
+	            if (tokenAndCa.isCryptoTokenActive() != tokenAndCa.isCryptoTokenNewState()) {
+	                if (tokenAndCa.isCryptoTokenNewState()) {
+	                    // Assert that authcode is present
+	                    if (authenticationcode != null && authenticationcode.length()>0) {
+	                        // Activate CA's CryptoToken
+	                        try {
+	                            cryptoTokenManagementSession.activate(authenticationToken, tokenAndCa.getCryptoTokenId(), authenticationcode.toCharArray());
+	                            log.info(authenticationToken.toString() + " activated CryptoToken " + tokenAndCa.getCryptoTokenId());
+	                        } catch (CryptoTokenAuthenticationFailedException e) {
+	                            super.addNonTranslatedErrorMessage("Bad authentication code.");
+	                        } catch (CryptoTokenOfflineException e) {
+	                            super.addNonTranslatedErrorMessage("Crypto Token is offline and cannot be activated.");
+	                        } catch (AuthorizationDeniedException e) {
+	                            super.addNonTranslatedErrorMessage(e.getMessage());
+	                        }
+	                    } else {
+	                        super.addNonTranslatedErrorMessage("Authentication code required.");
+	                    }
 	                } else {
-	                    super.addNonTranslatedErrorMessage("Authentication code required.");
-	                }
-	            } else {
-	                // Deactivate CA's CryptoToken
-	                try {
-                        cryptoTokenManagementSession.deactivate(authenticationToken, tokenAndCa.getCryptoTokenId());
-                        log.info(authenticationToken.toString() + " deactivated CryptoToken " + tokenAndCa.getCryptoTokenId());
-                    } catch (AuthorizationDeniedException e) {
-                        super.addNonTranslatedErrorMessage(e.getMessage());
-                    }
-	            }
-	        }
-	        for (CaActivationGuiInfo ca : tokenAndCa.getCas()) {
-	            if (ca.isActive() != ca.isNewState()) {
-	                // Valid transition 1: Currently offline, become active
-	                if (ca.isNewState() && ca.getStatus()==CAConstants.CA_OFFLINE) {
+	                    // Deactivate CA's CryptoToken
 	                    try {
-                            caAdminSession.activateCAService(authenticationToken, ca.getCaId());
-                        } catch (Exception e) {
-                            super.addNonTranslatedErrorMessage(e.getMessage());
-                        }
-	                } 
-                    // Valid transition 2: Currently online, become offline
-	                if (!ca.isNewState() && ca.getStatus()==CAConstants.CA_ACTIVE) {
-                        try {
-                            caAdminSession.deactivateCAService(authenticationToken, ca.getCaId());
-                        } catch (Exception e) {
-                            super.addNonTranslatedErrorMessage(e.getMessage());
-                        }
+	                        cryptoTokenManagementSession.deactivate(authenticationToken, tokenAndCa.getCryptoTokenId());
+	                        log.info(authenticationToken.toString() + " deactivated CryptoToken " + tokenAndCa.getCryptoTokenId());
+	                    } catch (AuthorizationDeniedException e) {
+	                        super.addNonTranslatedErrorMessage(e.getMessage());
+	                    }
 	                }
 	            }
-	            if (ca.isMonitored() != ca.isMonitoredNewState()) {
-	                // Only persist changes if there are any
-	                try {
-                        final CAInfo caInfo = caSession.getCAInfoInternal(ca.getCaId(), null, false);
-                        caInfo.setIncludeInHealthCheck(ca.isMonitoredNewState());
-                        caAdminSession.editCA(authenticationToken, caInfo);
-                    } catch (CADoesntExistsException e) {
-                        super.addNonTranslatedErrorMessage(e.getMessage());
-                    } catch (AuthorizationDeniedException e) {
-                        super.addNonTranslatedErrorMessage(e.getMessage());
-                    }
-	            }
-                log.info("caId: " + ca.getCaId() + " monitored: " + ca.isMonitored() + " newCaStatus: " + ca.isNewState());
 	        }
+	        CaActivationGuiInfo ca = tokenAndCaCombo.getCa();
+	        if (ca.isActive() != ca.isNewState()) {
+	            // Valid transition 1: Currently offline, become active
+	            if (ca.isNewState() && ca.getStatus()==CAConstants.CA_OFFLINE) {
+	                try {
+	                    caAdminSession.activateCAService(authenticationToken, ca.getCaId());
+	                } catch (Exception e) {
+	                    super.addNonTranslatedErrorMessage(e.getMessage());
+	                }
+	            } 
+	            // Valid transition 2: Currently online, become offline
+	            if (!ca.isNewState() && ca.getStatus()==CAConstants.CA_ACTIVE) {
+	                try {
+	                    caAdminSession.deactivateCAService(authenticationToken, ca.getCaId());
+	                } catch (Exception e) {
+	                    super.addNonTranslatedErrorMessage(e.getMessage());
+	                }
+	            }
+	        }
+	        if (ca.isMonitored() != ca.isMonitoredNewState()) {
+	            // Only persist changes if there are any
+	            try {
+	                final CAInfo caInfo = caSession.getCAInfoInternal(ca.getCaId(), null, false);
+	                caInfo.setIncludeInHealthCheck(ca.isMonitoredNewState());
+	                caAdminSession.editCA(authenticationToken, caInfo);
+	            } catch (CADoesntExistsException e) {
+	                super.addNonTranslatedErrorMessage(e.getMessage());
+	            } catch (AuthorizationDeniedException e) {
+	                super.addNonTranslatedErrorMessage(e.getMessage());
+	            }
+	        }
+	        log.info("caId: " + ca.getCaId() + " monitored: " + ca.isMonitored() + " newCaStatus: " + ca.isNewState());
 	    }
 	}
 
 	/** @return true when there is at least one CryptoToken that can be activated. */
     public boolean isActivationCodeShown() {
         if (authorizedTokensAndCas!=null) {
-            for (final TokenAndCaActivationGuiInfo tokenAndCa : authorizedTokensAndCas) {
-                if (!tokenAndCa.isCryptoTokenActive() && !tokenAndCa.isStateChangeDisabled()) {
-                    return true;
+            for (final TokenAndCaActivationGuiComboInfo tokenAndCa : authorizedTokensAndCas) {
+                if (tokenAndCa.isFirst()) {
+                    if (!tokenAndCa.getCryptoToken().isCryptoTokenActive() && !tokenAndCa.getCryptoToken().isStateChangeDisabled()) {
+                        return true;
+                    }
                 }
             }
         }
