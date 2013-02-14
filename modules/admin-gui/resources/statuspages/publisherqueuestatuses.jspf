@@ -9,7 +9,7 @@
 	Iterator iter = publishernames.keySet().iterator();
 %>
 
-<div class="h4" id="publishqueuestatus" >
+<div class="status" id="publishqueuestatus" >
 		<h4><%=ejbcawebbean.getText("PUBLISHERQUEUESTATUS")%> <%= ejbcawebbean.getHelpReference("/userguide.html#Publish%20queue%20status") %></h4>
 		<table border="1" cellspacing="2" cellpadding="3" width="100%" class="grid">
 		<%	if(ejbcawebbean.getAdminPreference().getFrontpagePublisherQueueStatus()) { %>
@@ -18,22 +18,22 @@
 				<th><abbr title="<%=ejbcawebbean.getText("QUEUELENGTH")%>"><%=ejbcawebbean.getText("QUEUELENGTH_ABBR")%></abbr></th>
 			</tr>
 		<%  if(!iter.hasNext()) { %>
-				<tr class="a">
-					<td colspan="2" style="font-style: italic;"><%=ejbcawebbean.getText("NOPUBLISHERS")%></td>
+				<tr>
+					<td colspan="2"><em><%=ejbcawebbean.getText("NOPUBLISHERS")%></em></td>
 				</tr>
 			<% } else {
 				while(iter.hasNext()) {
 					String name = (String) iter.next();
 					int queueLength = publisherhelper.getPublisherQueueLength(name);
 			%>
-				<tr class="a">	
+				<tr>	
 					<td><c:out value="<%=name %>"/></td>
 					<td style="text-align:center;"><%=queueLength %></td>
 				</tr>
 			<% }
 			} 
 			} else { %>
-				<tr class="a">	
+				<tr>	
 					<td colspan="2"><%=ejbcawebbean.getText("CANBEENABLED") %></td>
 				</tr>
 		<%  } %>

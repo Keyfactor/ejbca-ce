@@ -12,8 +12,7 @@ org.ejbca.ui.web.admin.cainterface.CAInterfaceBean.CaCrlStatusInfo
 	cabean.initialize(request, ejbcawebbean);
 %>
 
-        
-<div class="h4" id="crlstatus" >
+<div class="status" id="crlstatus" >
         <h4><%=ejbcawebbean.getText("CAHEALTH")%> <%= ejbcawebbean.getHelpReference("/userguide.html#CA%20Status") %></h4>
 		<table border="1" cellspacing="2" cellpadding="3" width="100%" class="grid">
 			<%	if(ejbcawebbean.getAdminPreference().getFrontpageCaStatus()) { %>
@@ -23,7 +22,7 @@ org.ejbca.ui.web.admin.cainterface.CAInterfaceBean.CaCrlStatusInfo
 				<th><%=ejbcawebbean.getText("CRLSTATUS")%></th>
 			</tr>
 				<%	for (CaCrlStatusInfo caCrlStatusInfo : cabean.getAuthorizedInternalCaCrlStatusInfos()) {	%>
-					<tr class="a">	
+					<tr>	
 						<td><c:out value="<%=caCrlStatusInfo.getCaName() %>"/></td>
 						<td style="text-align:center;">
 							<% if (caCrlStatusInfo.isCaService()) { %>
@@ -50,7 +49,7 @@ org.ejbca.ui.web.admin.cainterface.CAInterfaceBean.CaCrlStatusInfo
 					</tr>
 				<%	}
 			   } else { %>
-			   		<tr class="a">	
+			   		<tr>	
 						<td colspan="3"><%=ejbcawebbean.getText("CANBEENABLED") %></td>
 					</tr>
 			   <% } %>

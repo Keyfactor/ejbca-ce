@@ -29,26 +29,26 @@ a img {
 }
 
 ul {
-    list-style-type: square;
+	list-style-type: square;
 }
 
 li {
-    line-height: 16px;
-    margin-bottom: .5em;
+	line-height: 16px;
+	margin-bottom: .5em;
 }
 
 p { 
-    line-height: 120%;
-    margin-top: .5em;
-    margin-bottom: 1em; 
-    text-align: justify;
+	line-height: 120%;
+	margin-top: .5em;
+	margin-bottom: 1em; 
+	text-align: justify;
 }
 
 
 h1, h2, h3, h4, h5, h6 {
-    font-family: "Trebuchet MS", Verdana, Arial, Helvetica, Geneva, sans-serif;
-    margin-top: .75em;
-    margin-bottom: .5em;
+	font-family: "Trebuchet MS", Verdana, Arial, Helvetica, Geneva, sans-serif;
+	margin-top: .75em;
+	margin-bottom: .5em;
 }
 
 h1 {
@@ -62,29 +62,29 @@ h1 {
 }
 
 h3 { 
-    font-size: 100%;
-    font-style: italic;
-    font-weight: normal;
-    letter-spacing: 1px;
-    margin-top: 2em;
-    margin-right: 0px;
-    margin-bottom: 0.5em;
-    padding-top: 0px;
-    padding-bottom: 0px;
-    border-bottom: 1px dashed black;
+	font-size: 100%;
+	font-style: italic;
+	font-weight: normal;
+	letter-spacing: 1px;
+	margin-top: 2em;
+	margin-right: 0px;
+	margin-bottom: 0.5em;
+	padding-top: 0px;
+	padding-bottom: 0px;
+	border-bottom: 1px dashed black;
 }
 h4 {
-    font-size: 90%;
-    font-style: italic;
-    font-weight: normal;
-    border-bottom: 1px dashed black;
+	font-size: 90%;
+	font-style: italic;
+	font-weight: normal;
+	border-bottom: 1px dashed black;
 }
 
 a { text-decoration: underline; }
 
-a:link { color:#0F3660} 
-a:visited { color:#009999} 
-a:hover { color:#000066}
+a:link { color: #0F3660; } 
+a:visited { color: #009999; } 
+a:hover { color: #000066; }
 
 acronym { border-bottom: none; }
 
@@ -93,30 +93,35 @@ acronym { border-bottom: none; }
 /* NAVIGATION */
 
 @media print {
-   .menu {
-     display: none;
-   }
+.menu {
+	display: none;
 }
+}	/* print */
 
 .menucontainer {
-    float: left;
-    /*background-color: #EEEEEE;*/
-    background-color: #ffffff;
-    margin: 0px;
-    width: 250px;
-    height: 100%;
+	float: left;
+	background-color: #EEEEEE;
+	margin: 0px;
+	width: 250px;
+	height: 100%;
 }
 
 .menu {
-    font-size : 90%;
-    padding: 0em 1.2em 1em 1.2em;
+	font-size : 90%;
+	padding: 0em 1.2em 1em 1.2em;
 }
 
 .menu a {
 	display: block;
-	padding: .3em 0em;
+	margin: 0em -.6em;
+	padding: .3em .6em .45em .6em;
 	color: #1081b9;
 	text-decoration : none;
+	border-radius: 1em;
+	-o-border-radius: 1em;
+	-moz-border-radius: 1em;
+	-khtml-border-radius: 1em;
+	-webkit-border-radius: 1em;
 }
 .menu a:link,
 .menu a:visited {
@@ -124,6 +129,7 @@ acronym { border-bottom: none; }
 .menu a:hover,
 .menu a:focus,
 .menu a:active {
+	background-color: #FEEECD;
 	color: #A00;
 }
 
@@ -163,18 +169,16 @@ acronym { border-bottom: none; }
 /* HEADER */
 
 #header {
-	/*height: 100px;*/
+	height: 100px;
 	margin: 0em;
 	padding: 0em;
-	border-bottom: 1px dashed #688B9A;
-    /*border-bottom: 1px solid #DDD;*/
-	/*background-color: #005B88;*/
-    background-color: #f4f2f2;	
+	border-bottom: 1px solid #DDD;
+	background-color: #005B88;
 	color: #FFF;
 	overflow: hidden;
 }
 #header div#banner {
-	/*height: 84px;*/
+	height: 84px;
 	margin: 8px 8px;
 	padding: 0em;
 	/* For IMG ALT */
@@ -201,9 +205,9 @@ acronym { border-bottom: none; }
 /* CONTENT */
 
 .content {
-    margin-left: 270px;
-    margin-right: 20px;
-    padding: 5px 10px;
+	margin-left: 270px;
+	margin-right: 20px;
+	padding: 5px 10px;
 }
 
 /* Message: Note, Alert, etc. (e.g. in frame) */
@@ -232,7 +236,7 @@ acronym { border-bottom: none; }
 /*--------------------------------------------------------------------------*/
 /* FORMS */
 
-/* The form styles were adapted from <http://www.websiteoptimization.com/speed/tweak/forms/>
+/* The form styles were adapted from <http://www.websiteoptimization.com/speed/tweak/forms/> */
 
 /* set font for all fields */
 form * {
@@ -311,8 +315,8 @@ form small {
 }
 
 /* uses class instead of div, more efficient */
-form .required{
-    font-weight:bold;
+form .required {
+	font-weight:bold;
 }
 
 /* setting clear on inputs didn't work consistently, so brs added for degrade */

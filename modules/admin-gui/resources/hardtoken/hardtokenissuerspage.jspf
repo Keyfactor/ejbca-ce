@@ -91,7 +91,7 @@ function checkselected(){
     </tr>
   </table>
 
-  <table class="add">
+  <table class="actions">
     <tr> 
       <td width="150px">
         &nbsp;

@@ -38,12 +38,16 @@
 
 <h:form id="edit"> 
 
-  <div align="right">  <h:commandLink id="backToServices" action="listservices" immediate="true" style="text-align: right">
-		<h:outputText value="#{web.text.BACKTOSERVICES}" style="text-align: right"/>
-	</h:commandLink>
-  </div>	
+<h:panelGrid styleClass="edit" width="100%" columns="2" rowClasses="Row0,Row1" columnClasses="label,field">
+	<h:panelGroup>
+		&nbsp;
+	</h:panelGroup>
+	<h:panelGroup>
+	  	<h:commandLink id="backToServices" action="listservices" immediate="true" style="text-align: right">
+			<h:outputText value="#{web.text.BACKTOSERVICES}" style="text-align: right;"/>
+		</h:commandLink>
+	</h:panelGroup>
 
-<h:panelGrid width="100%" columns="2" rowClasses="jsfrow2,jsfrow1" columnClasses="label,field">
 	<h:panelGroup>
 		<h:outputText value="#{web.text.SELECTWORKER}"/><f:verbatim> </f:verbatim><h:outputText><%= ejbcawebbean.getHelpReference("/adminguide.html#Services%20Framework") %></h:outputText>
 	</h:panelGroup>

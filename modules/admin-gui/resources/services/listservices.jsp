@@ -29,29 +29,53 @@
 
 <h1><h:outputText value="#{web.text.MANAGESERVICES}"/></h1>
 
-<p>
-	<h:messages styleClass="alert" layout="table"/>
-	</p>
-
-<h3><h:outputText value="#{web.text.CURRENTSERVICES}"/></h3>
-
 	<h:form>
-		<h:selectOneListbox id="listServices" value="#{listServicesManagedBean.selectedServiceName}" style="width: 50em" size="15">
-			<f:selectItems value="#{listServicesManagedBean.availableServices}"/>
-		</h:selectOneListbox>
-		<p>
-	    <h:commandButton id="editButton" action="#{listServicesManagedBean.editService}" value="#{web.text.EDITSERVICE}"/>
-	    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-	    <h:commandButton id="deleteButton" action="#{listServicesManagedBean.deleteService}" value="#{web.text.DELETESERVICE}" onclick="return confirm('#{web.text.AREYOUSURE}');"/>
-		</p>
-		<h3><h:outputText value="#{web.text.ADDSERVICE}"/></h3>
-		<h:inputText id="newServiceName" value="#{listServicesManagedBean.newServiceName}" size="40"/>
-		<h:commandButton id="addButton" action="#{listServicesManagedBean.addService}" value="#{web.text.ADD}"/>
-		<br/>
-		<h:commandButton id="renameButton" action="#{listServicesManagedBean.renameService}" value="#{web.text.RENAMESELECTED}"/>&nbsp;&nbsp;&nbsp;&nbsp;
-		<h:commandButton id="cloneButton" action="#{listServicesManagedBean.cloneService}" value="#{web.text.USESELECTEDASTEMPLATE}"/>
-		<br/>
-		<p></p>
+	<h:panelGrid styleClass="list" columns="2" columnClasses="listColumn1,listColumn2">
+		<h:panelGroup>
+			<h:messages styleClass="alert" layout="table" />
+			<h3><h:outputText value="#{web.text.LISTOFSERVICES}"/></h3>
+		</h:panelGroup>
+		<h:panelGroup>
+		</h:panelGroup>
+	
+		<h:panelGroup>
+			<h:selectOneListbox id="listServices" value="#{listServicesManagedBean.selectedServiceName}" style="width: 50em" size="15">
+				<f:selectItems value="#{listServicesManagedBean.availableServices}"/>
+			</h:selectOneListbox>
+		</h:panelGroup>
+		<h:panelGroup>
+		</h:panelGroup>
+	
+		<h:panelGroup>
+	        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+	          <tr>
+	            <td align="left">
+	              <h:commandButton id="editButton" action="#{listServicesManagedBean.editService}" value="#{web.text.EDITSERVICE}"/>
+	            </td>
+	            <td align="center">
+	              &nbsp;
+	            </td>
+	            <td align="right">
+	              <h:commandButton id="deleteButton" action="#{listServicesManagedBean.deleteService}" value="#{web.text.DELETESERVICE}" onclick="return confirm('#{web.text.AREYOUSURE}');"/>
+	            </td>
+	          </tr>
+	        </table> 
+		</h:panelGroup>
+		<h:panelGroup>
+		</h:panelGroup>
+	</h:panelGrid>
+		
+	<h:panelGrid styleClass="actions" width="100%">
+		<h:panelGroup>
+			<h3><h:outputText value="#{web.text.ADDSERVICE}"/></h3>
+		</h:panelGroup>
+		<h:panelGroup>
+			<h:inputText id="newServiceName" value="#{listServicesManagedBean.newServiceName}" size="40" title="#{web.text.FORMAT_ID_STR}"/><h:outputText value=" "/>
+			<h:commandButton id="addButton" action="#{listServicesManagedBean.addService}" value="#{web.text.ADD}"/>&nbsp;&nbsp;
+			<h:commandButton id="renameButton" action="#{listServicesManagedBean.renameService}" value="#{web.text.RENAME}"/>&nbsp;&nbsp;&nbsp;
+			<h:commandButton id="cloneButton" action="#{listServicesManagedBean.cloneService}" value="#{web.text.USESELECTEDASTEMPLATE}"/>
+		</h:panelGroup>
+	</h:panelGrid>
 	</h:form>
 
 	<%	// Include Footer 
