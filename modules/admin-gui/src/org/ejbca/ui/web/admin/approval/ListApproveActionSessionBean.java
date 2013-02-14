@@ -138,9 +138,9 @@ public class ListApproveActionSessionBean extends BaseManagedBean {
 			return "";
 		}
 		if(listData.size() == 1){
-			return "jsfrow1";
+			return "Row0";
 		}
-		return "jsfrow1, jsfrow2";
+		return "Row0, Row1";
 	}
 
 	public List<ApprovalDataVOView> getListData() {
