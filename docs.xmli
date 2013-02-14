@@ -36,7 +36,7 @@
 	<path id="jdoc.classpath">
 		<path location="dist/ejbca-util.jar" />
 		<path location="modules/dist/ejbca-ejb.jar" />
-		<path location="lib/bcprov-jdk15on-148b11.jar" />
+		<path location="lib/bcprov-jdk15on-149b01.jar" />
     </path>
 
     <!-- =================================================================== -->
