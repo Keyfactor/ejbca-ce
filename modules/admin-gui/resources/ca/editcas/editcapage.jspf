@@ -375,7 +375,7 @@ function checkallfields(){
         <tr id="Row<%=row++%2%>">
             <td width="50%" align="right">
             <strong><%= ejbcawebbean.getText("SIGNINGALGORITHM") %></strong></td>
-	        <td><%= catoken.getSignatureAlgorithm() %></td>
+	        <td><%= catoken.getSignatureAlgorithm() != null ? catoken.getSignatureAlgorithm() : ejbcawebbean.getText("NOTUSED") %></td>
         </tr>
         <tr id="Row<%=row%2%>">
             <td width="50%" align="right">
@@ -390,6 +390,7 @@ function checkallfields(){
             <% } %>
             </td>	
         </tr>
+            <% if (cabean.isCryptoTokenPresent(catoken.getCryptoTokenId())) { %>
         <tr id="Row<%=row%2%>">
             <td width="50%" align="right">defaultKey:</td><td><%= catoken.getAliasFromPurpose(0) %></td>	
         </tr>
@@ -408,6 +409,7 @@ function checkallfields(){
         <tr id="Row<%=row%2%>">
             <td width="50%" align="right">testKey:</td><td><%= catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYTEST) %></td>	
         </tr>
+            <% } %>
         <% } else { %>
         <tr id="Row<%=row++%2%>">
             <td width="50%" align="right">
@@ -587,6 +589,7 @@ function checkallfields(){
     
   <%   } %>
 
+    <% if (!editca || cabean.isCryptoTokenPresent(catoken.getCryptoTokenId())) { %>
       <tr id="Row<%=row%2%>"> 
         <td width="50%"  align="right">
           <%= ejbcawebbean.getText("KEYSEQUENCEFORMAT") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Key%20sequence%20format") %>
@@ -613,6 +616,7 @@ function checkallfields(){
         <input type="text" name="<%=TEXTFIELD_KEYSEQUENCE%>" size="6" <% out.write(" value='"+sequence+"'"); %> maxlength="10">
       </td>
     </tr>
+    <% } %>
 
     <tr id="Row<%=row%2%>"> 
       <td width="50%"  align="right"> 
@@ -629,6 +633,7 @@ function checkallfields(){
 
     <%-- ---------- Directives -------------------- --%>
 
+    <% if (!isexternal) { %>
     <tr  id="Row<%=row++%2%>" class="section"> 
       <td width="50%"  align="right"> 
         <strong><%= ejbcawebbean.getText("DIRECTIVES") %></strong>
@@ -724,7 +729,7 @@ function checkallfields(){
                <label for="<%=CHECKBOX_USECERTIFICATESTORAGE%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>      
       </td>
     </tr>
-
+    <% } %>
 
     <%-- ---------- CA certificate data -------------------- --%>
 
@@ -740,11 +745,12 @@ function checkallfields(){
         <%= ejbcawebbean.getHelpReference("/userguide.html#Validity") %> <br />
       </td>
       <td width="50%"> 
-        <% if(isexternal || (editca && cainfo.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA)){
-              if(cainfo.getValidity() != 0)
+        <% if(isexternal || (editca && signbyexternal)){
+              if (cainfo.getValidity() != 0) {
                 out.write("" + cainfo.getValidity() + YearMonthDayTime.TYPE_DAYS);
-              else
+              } else {
                 out.write(ejbcawebbean.getText("NOTUSED"));
+              }
            }else{ %>
         <input type="text" name="<%=TEXTFIELD_VALIDITY%>" size="25" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMD") %> <%= ejbcawebbean.getText("OR") %> <%= ejbcawebbean.getText("FORMAT_ISO8601") %>"
            <% if (editca) {
@@ -754,8 +760,8 @@ function checkallfields(){
             <% } else {
                   out.write(" value=\"10y\""); %> />
             <% } %>
-        <% } %>
            <p class="help"><%= ejbcawebbean.getText("DATE_HELP") %> <%= ejbcawebbean.getDateExample() %></p>
+        <% } %>
       </td>
     </tr>
 
@@ -909,6 +915,7 @@ function checkallfields(){
     </tr>
     <% } %>
 
+    <% if (!isexternal) { %>
     <tr id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("CERT_SUBJECTDN_PRINTABLESTR") %>
@@ -932,7 +939,7 @@ function checkallfields(){
              <label for="<%=CHECKBOX_USELDAPDNORDER%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>      
       </td>
     </tr>
-
+    <% } %>
 
     <%-- ---------- CRL Specific Data -------------------- --%>
 
@@ -1549,17 +1556,26 @@ function checkallfields(){
     <%/* close CA form */%>
     </form>
 
-    <% if (editca && cabean.isCaExportable(cainfo)) { %>
-    <tr id="Row<%=row++%2%>"> 
-        <td width="49%" valign="top"  align="right"><%= ejbcawebbean.getText("EXPORTCAHELP") %></td>
-        <td width="51%" valign="top">             
+    <% if (editca && !isexternal) { %>
+    <tr id="Row<%=row++%2%>" class="section">
+        <td width="49%" valign="top" align="right"><strong><%= ejbcawebbean.getText("EXPORTCA_HEADER") %></strong></td><td width="50%">&nbsp;</td>
+    </tr>
+    <tr id="Row<%=row++%2%>">
+        <td width="49%" valign="top" align="right">&nbsp;</td>
+        <td width="51%" valign="top">
+            <% if (cabean.isCaExportable(cainfo)) { %>
+            <%= ejbcawebbean.getText("EXPORTCAHELP") %><br/>
             <form name="exportca" action="<%= globalconfiguration.getCaPath() + "/exportca" %>" method="post">
 		        <input type="hidden" name='<%= org.ejbca.ui.web.admin.cainterface.CAExportServlet.HIDDEN_CANAME %>' value='<c:out value="<%= cainfo.getName() %>"/>'/>
                 <input type="password" name="<%= org.ejbca.ui.web.admin.cainterface.CAExportServlet.TEXTFIELD_EXPORTCA_PASSWORD %>"  value="" />
                 <input type="submit" name="<%= BUTTON_EXPORTCA %>"  value="<%= ejbcawebbean.getText("EXPORTCA")+"..." %>" />
 	        </form>
+            <% } else { %>
+                <%= ejbcawebbean.getText("EXPORTCA_NA") %><br/>
+            <% } %>
         </td>
     </tr>
+    <tr id="Row<%=row++%2%>"><td width="50%" align="right">&nbsp;</td><td width="50%">&nbsp;</td></tr>
 	<% } %>
 
   </table>
