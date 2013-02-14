@@ -1068,7 +1068,7 @@ function checkUseInBatch(){
 	<td align="right"><strong><%= ejbcawebbean.getText("USERNAME") %></strong></td> 
 	<td><strong><c:out value="<%= userdata.getUsername() %>"/>
         </strong></td>
-	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_USERNAME %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" CHECKED></td>
+	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_USERNAME %>" value="<%= CHECKBOX_VALUE %>"  disabled="disabled" CHECKED></td>
       </tr>
 
           <% if(profile.getUse(EndEntityProfile.PASSWORD,0)){ %>
@@ -1092,15 +1092,17 @@ function checkUseInBatch(){
            <% } %>
  
         </td>
-	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_PASSWORD %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(EndEntityProfile.PASSWORD,0)) out.write(" CHECKED "); %>></td>
+	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_PASSWORD %>" value="<%= CHECKBOX_VALUE %>"  disabled="disabled" <% if(profile.isRequired(EndEntityProfile.PASSWORD,0)) out.write(" CHECKED "); %>></td>
       </tr>
        <% }else{ %>
       <tr id="Row<%=(row++)%2%>">
-	<td align="right"><%= ejbcawebbean.getText("REGENERATENEWPASSWORD") %></td>
+	<td align="right"><%= ejbcawebbean.getText("PASSWORD") %></td>
         <td>              
-         <input type="checkbox" name="<%= CHECKBOX_REGENERATEPASSWD %>" value="<%= CHECKBOX_VALUE %>"  tabindex="<%=tabindex++%>">
+         <input type="checkbox" name="<%= CHECKBOX_REGENERATEPASSWD %>" value="<%= CHECKBOX_VALUE %>"  tabindex="<%=tabindex++%>"
+         id="<%=CHECKBOX_REGENERATEPASSWD%>">
+         <label for="<%=CHECKBOX_REGENERATEPASSWD%>"><c:out value="<%= ejbcawebbean.getText(\"REGENERATENEWPASSWORD\") %>" /></label>
         </td>
-	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_PASSWORD %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(EndEntityProfile.PASSWORD,0)) out.write(" CHECKED "); %>></td>
+	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_PASSWORD %>" value="<%= CHECKBOX_VALUE %>"  disabled="disabled" <% if(profile.isRequired(EndEntityProfile.PASSWORD,0)) out.write(" CHECKED "); %>></td>
       </tr>
       <% } %>
       <% if(profile.getUse(EndEntityProfile.PASSWORD,0)){%>
@@ -1126,7 +1128,7 @@ function checkUseInBatch(){
       </tr>
       <% } %>
 
-      <tr id="Row<%=(row++)%2%>">
+      <tr id="Row<%=(row)%2%>">
 		<td align="right"><%= ejbcawebbean.getText("MAXFAILEDLOGINATTEMPTS") %></td>
        	<td>
        		<%
@@ -1139,14 +1141,19 @@ function checkUseInBatch(){
              <input type="radio" name="<%= RADIO_MAXFAILEDLOGINS %>" value="<%= RADIO_MAXFAILEDLOGINS_VAL_SPECIFIED %>" onclick="maxFailedLoginsSpecified()" <% if(maxLoginAttempts != -1) { out.write("checked"); } %> <% if(!profile.isModifyable(EndEntityProfile.MAXFAILEDLOGINS,0)) { out.write("readonly"); } %>>
              <input type="text" name="<%= TEXTFIELD_MAXFAILEDLOGINS %>" size="5" maxlength="255" tabindex="<%=tabindex++%>" value='<% if(maxLoginAttempts != -1) { out.write(""+maxLoginAttempts); } %>' <% if(maxLoginAttempts == -1) { out.write("disabled"); } %> <% if(!profile.isModifyable(EndEntityProfile.MAXFAILEDLOGINS,0)) { out.write(" readonly"); } %>>
              
-             <input type="radio" name="<%= RADIO_MAXFAILEDLOGINS %>" value="<%= RADIO_MAXFAILEDLOGINS_VAL_UNLIMITED %>" onclick="maxFailedLoginsUnlimited()" <% if(maxLoginAttempts == -1) { out.write("checked"); } %> <% if(!profile.isModifyable(EndEntityProfile.MAXFAILEDLOGINS,0)) { out.write("readonly"); } %>> <%= ejbcawebbean.getText("UNLIMITED") %>
+             <input type="radio" name="<%= RADIO_MAXFAILEDLOGINS %>" value="<%= RADIO_MAXFAILEDLOGINS_VAL_UNLIMITED %>" onclick="maxFailedLoginsUnlimited()" <% if(maxLoginAttempts == -1) { out.write("checked"); } %> <% if(!profile.isModifyable(EndEntityProfile.MAXFAILEDLOGINS,0)) { out.write("readonly"); } %>
+                 id="<%=RADIO_MAXFAILEDLOGINS%>unlimited">
+             <label for="<%=RADIO_MAXFAILEDLOGINS%>unlimited"><%= ejbcawebbean.getText("UNLIMITED") %></label>
       	</td>
 		<td>&nbsp;</td>
       </tr>
       <tr id="Row<%=(row++)%2%>">
 		<td align="right"><%= ejbcawebbean.getText("REMAININGLOGINATTEMPTS") %></td>
        	<td>   
-             <input type="text" name="_remainingloginattempts" size="5" maxlength="255" tabindex="<%=tabindex++%>" value='<% if((userdata.getExtendedInformation()!=null) && (userdata.getExtendedInformation().getRemainingLoginAttempts() != -1)) out.write(""+userdata.getExtendedInformation().getRemainingLoginAttempts()); %>' readonly> <input type="checkbox" name="<%= CHECKBOX_RESETLOGINATTEMPTS %>" value="<%= CHECKBOX_VALUE %>"> <%= ejbcawebbean.getText("RESETLOGINATTEMPTS") %>
+             <input type="text" name="_remainingloginattempts" size="5" maxlength="255" tabindex="<%=tabindex++%>" value='<% if((userdata.getExtendedInformation()!=null) && (userdata.getExtendedInformation().getRemainingLoginAttempts() != -1)) out.write(""+userdata.getExtendedInformation().getRemainingLoginAttempts()); %>' readonly>
+             <input type="checkbox" name="<%= CHECKBOX_RESETLOGINATTEMPTS %>" value="<%= CHECKBOX_VALUE %>"
+                 id="<%=CHECKBOX_RESETLOGINATTEMPTS%>">
+             <label for="<%=CHECKBOX_RESETLOGINATTEMPTS%>"><%= ejbcawebbean.getText("RESETLOGINATTEMPTS") %></label>
       	</td>
 		<td>&nbsp;</td>
       </tr>
@@ -1159,7 +1166,9 @@ function checkUseInBatch(){
                                                                                                                  out.write(" disabled='true'"); 
                                                                                                                if(profile.isRequired(EndEntityProfile.CLEARTEXTPASSWORD,0) || userdata.getClearTextPassword())
                                                                                                                  out.write(" CHECKED ");
-                                                                                                             %>> 
+                                                                                                             %>
+             id="<%=CHECKBOX_CLEARTEXTPASSWORD%>">
+         <label for="<%=CHECKBOX_CLEARTEXTPASSWORD%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
         </td>
 	<td>&nbsp;</td> 
       </tr>
@@ -1202,7 +1211,7 @@ function checkUseInBatch(){
              <input type="text" name="<%= TEXTFIELD_EMAILDOMAIN %>" size="20" maxlength="255" tabindex="<%=tabindex++%>"  value="<c:out value="<%= emaildomain %>"/>">
            <% } %>
         </td>
-	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_EMAIL %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(EndEntityProfile.EMAIL,0)) out.write(" CHECKED "); %>></td>
+	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_EMAIL %>" value="<%= CHECKBOX_VALUE %>"  disabled="disabled" <% if(profile.isRequired(EndEntityProfile.EMAIL,0)) out.write(" CHECKED "); %>></td>
        </tr>
        <% }%>
 
@@ -1247,15 +1256,16 @@ function checkUseInBatch(){
            <% }
             }
             else{ %>
-              <%= ejbcawebbean.getText("USESEMAILFIELDDATA") + " :"%>&nbsp;
         <input type="checkbox" name="<%=CHECKBOX_SUBJECTDN + i%>" value="<%=CHECKBOX_VALUE %>" tabindex="<%=tabindex++%>" <% if(!userdata.getSubjectDNField(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]),fielddata[EndEntityProfile.NUMBER]).equals("") || profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]))
                                                                                                                  out.write(" CHECKED "); 
                                                                                                                if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]))
                                                                                                                  out.write(" disabled='true' "); 
-                                                                                                             %>>
+                                                                                                             %>
+              id="<%=CHECKBOX_SUBJECTDN + i%>">
+          <label for="<%=CHECKBOX_SUBJECTDN + i%>"><%= ejbcawebbean.getText("USESEMAILFIELDDATA") %></label>
          <% } %>  
         </td>
-	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_SUBJECTDN + i %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])) out.write(" CHECKED "); %>></td>
+	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_SUBJECTDN + i %>" value="<%= CHECKBOX_VALUE %>"  disabled="disabled" <% if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])) out.write(" CHECKED "); %>></td>
       </tr>
      <% } %>
 
@@ -1356,15 +1366,16 @@ function checkUseInBatch(){
            <% }
             }
             }else{ %>
-              <%= ejbcawebbean.getText("USESEMAILFIELDDATA")+ " :"%>&nbsp;
         <input type="checkbox" name="<%=CHECKBOX_SUBJECTALTNAME + i%>" value="<%=CHECKBOX_VALUE %>" tabindex="<%=tabindex++%>" 
           <% if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])) out.write(" disabled='true' ");     
              if(!userdata.getSubjectAltNameField(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]),fielddata[EndEntityProfile.NUMBER]).equals("") || profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]))
                                                                                                                  out.write(" CHECKED ");
-                                                                                                             %>>
+                                                                                                             %>
+              id="<%=CHECKBOX_SUBJECTALTNAME + i%>">
+           <label for="<%=CHECKBOX_SUBJECTALTNAME + i%>"><%= ejbcawebbean.getText("USESEMAILFIELDDATA") %></label>
          <% } %>  
         </td>
-	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_SUBJECTALTNAME + i %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])) out.write(" CHECKED "); %>></td>
+	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_SUBJECTALTNAME + i %>" value="<%= CHECKBOX_VALUE %>"  disabled="disabled" <% if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])) out.write(" CHECKED "); %>></td>
       </tr>
      <%   }
         } %>
@@ -1412,7 +1423,7 @@ function checkUseInBatch(){
            <% } 
            %>
         </td>
-	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_SUBJECTDIRATTR + i %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])) out.write(" CHECKED "); %>></td>
+	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_SUBJECTDIRATTR + i %>" value="<%= CHECKBOX_VALUE %>"  disabled="disabled" <% if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])) out.write(" CHECKED "); %>></td>
       </tr>
      <%  } %>
 	<%	} %>
@@ -1444,7 +1455,7 @@ function checkUseInBatch(){
          %>
          </select>
          </td>
-	 <td><input type="checkbox" name="checkbox" value="true"  disabled="true" CHECKED></td>
+	 <td><input type="checkbox" name="checkbox" value="true"  disabled="disabled" CHECKED></td>
        </tr>
 
        <tr id="Row<%=(row++)%2%>">
@@ -1453,7 +1464,7 @@ function checkUseInBatch(){
          <select name="<%= SELECT_CA %>" size="1" tabindex="<%=tabindex++%>">
          </select>
          </td>
-	 <td><input type="checkbox" name="checkbox" value="true"  disabled="true" CHECKED></td>
+	 <td><input type="checkbox" name="checkbox" value="true"  disabled="disabled" CHECKED></td>
        </tr>
 
        <tr id="Row<%=(row++)%2%>">
@@ -1481,7 +1492,7 @@ function checkUseInBatch(){
          %>
          </select>
          </td>
-	 <td><input type="checkbox" name="checkbox" value="true"  disabled="true" CHECKED></td>
+	 <td><input type="checkbox" name="checkbox" value="true"  disabled="disabled" CHECKED></td>
        </tr>
 
        <% if(usehardtokenissuers){ %>
@@ -1513,10 +1524,9 @@ function checkUseInBatch(){
 	<% if( profile.getUse(EndEntityProfile.CERTSERIALNR, 0) ) { %>
 		<tr  id="Row<%=(row++)%2%>"> 
 			<td align="right"> 
-				<%= ejbcawebbean.getText("CERT_SERIALNUMBER_HEXA") %> <br />
-				(<%= ejbcawebbean.getText("EXAMPLE").toLowerCase() %> 1234567890abcdef)
+				<%= ejbcawebbean.getText("CERT_SERIALNUMBER_HEXA") %>
 			</td><td> 
-				<input type="text" name="<%= TEXTFIELD_CERTSERIALNUMBER %>" size="20" maxlength="40" tabindex="<%=tabindex++%>"
+				<input type="text" name="<%= TEXTFIELD_CERTSERIALNUMBER %>" size="20" maxlength="40" tabindex="<%=tabindex++%>" title="<%= ejbcawebbean.getText("FORMAT_HEXA") %>" class="hexa"
 					<%	final ExtendedInformation ei = userdata.getExtendedInformation();
 						final BigInteger oldNr = ei!=null ? ei.certificateSerialNumber() : null;
 						final String certSerialNr = oldNr!=null ? oldNr.toString(16) : "";
@@ -1525,7 +1535,7 @@ function checkUseInBatch(){
 					/>
 			</td>
 			<td>
-				<input type="checkbox" name="<%= CHECKBOX_REQUIRED_CERTSERIALNUMBER %>" value="<%= CHECKBOX_VALUE %>" disabled="true" />
+				<input type="checkbox" name="<%= CHECKBOX_REQUIRED_CERTSERIALNUMBER %>" value="<%= CHECKBOX_VALUE %>" disabled="disabled" />
 				<%	if ( profile.isRequired(EndEntityProfile.CERTSERIALNR, 0) ) {
 						out.write(" CHECKED ");
 					} %>
@@ -1536,10 +1546,7 @@ function checkUseInBatch(){
 	<%	if( profile.getUse(EndEntityProfile.STARTTIME, 0) ) { %>
 		<tr  id="Row<%=(row++)%2%>"> 
 			<td align="right"> 
-				<%= ejbcawebbean.getText("TIMEOFSTART") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Certificate%20Validity") %><br />
-				(<%= ejbcawebbean.getText("DATE_INFO") %><br/><%= ejbcawebbean.getDateExample()
-				%> <%= ejbcawebbean.getText("OR").toLowerCase() %> <%= ejbcawebbean.getText("DAYS").toLowerCase()
-				%>:<%= ejbcawebbean.getText("HOURS").toLowerCase() %>:<%= ejbcawebbean.getText("MINUTES").toLowerCase() %>)
+				<%= ejbcawebbean.getText("TIMEOFSTART") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Certificate%20Validity") %>
 			</td><td> 
 				<input type="text" name="<%= TEXTFIELD_STARTTIME %>" size="20" maxlength="40" tabindex="<%=tabindex++%>"
 					<%	ExtendedInformation ei = userdata.getExtendedInformation();
@@ -1561,7 +1568,7 @@ function checkUseInBatch(){
 					/>
 			</td>
 			<td>
-				<input type="checkbox" name="<%= CHECKBOX_REQUIRED_STARTTIME %>" value="<%= CHECKBOX_VALUE %>"  disabled="true"
+				<input type="checkbox" name="<%= CHECKBOX_REQUIRED_STARTTIME %>" value="<%= CHECKBOX_VALUE %>"  disabled="disabled"
 				<%	if ( profile.isRequired(EndEntityProfile.STARTTIME, 0) ) {
 						out.write(" CHECKED ");
 					} %>
@@ -1573,10 +1580,7 @@ function checkUseInBatch(){
 	<%	if( profile.getUse(EndEntityProfile.ENDTIME, 0) ) { %>
 		<tr  id="Row<%=(row++)%2%>"> 
 			<td align="right"> 
-				<%= ejbcawebbean.getText("TIMEOFEND") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Certificate%20Validity") %><br />
-				(<%= ejbcawebbean.getText("DATE_INFO") %><br/><%= ejbcawebbean.getDateExample() 
-				%> <%= ejbcawebbean.getText("OR").toLowerCase() %> <%= ejbcawebbean.getText("DAYS").toLowerCase()
-				%>:<%= ejbcawebbean.getText("HOURS").toLowerCase() %>:<%= ejbcawebbean.getText("MINUTES").toLowerCase() %>)
+				<%= ejbcawebbean.getText("TIMEOFEND") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Certificate%20Validity") %>
 			</td><td> 
 				<input type="text" name="<%= TEXTFIELD_ENDTIME %>" size="20" maxlength="40" tabindex="<%=tabindex++%>"
 					<%	ExtendedInformation ei = userdata.getExtendedInformation();
@@ -1598,7 +1602,7 @@ function checkUseInBatch(){
 					/>
 			</td>
 			<td>
-				<input type="checkbox" name="<%= CHECKBOX_REQUIRED_ENDTIME %>" value="<%= CHECKBOX_VALUE %>"  disabled="true"
+				<input type="checkbox" name="<%= CHECKBOX_REQUIRED_ENDTIME %>" value="<%= CHECKBOX_VALUE %>"  disabled="disabled"
 				<%	if ( profile.isRequired(EndEntityProfile.ENDTIME, 0) ) {
 						out.write(" CHECKED ");
 					} %>
@@ -1615,7 +1619,7 @@ function checkUseInBatch(){
       <td > 
         <input type="text" name="<%=TEXTFIELD_CARDNUMBER%>" size="20" maxlength="40" tabindex="<%=tabindex++%>" value="<c:out value="<%= userdata.getCardNumber() %>"/>"> 
       </td>
-	  <td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_CARDNUMBER %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(EndEntityProfile.CARDNUMBER,0)) out.write(" CHECKED "); %>></td>
+	  <td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_CARDNUMBER %>" value="<%= CHECKBOX_VALUE %>"  disabled="disabled" <% if(profile.isRequired(EndEntityProfile.CARDNUMBER,0)) out.write(" CHECKED "); %>></td>
     </tr>
      <% } %>
 
@@ -1627,7 +1631,7 @@ function checkUseInBatch(){
                             <textarea name="<%=TEXTAREA_EXTENSIONDATA%>" rows="4" cols="35"><c:if test="${!useradded}"><c:out value="${editendentitybean.extensionData}"/></c:if></textarea>
                     </td>
                     <td>
-                            <input type="checkbox" name="<%= CHECKBOX_REQUIRED_EXTENSIONDATA %>" value="<%= CHECKBOX_VALUE %>" disabled="true"/>
+                            <input type="checkbox" name="<%= CHECKBOX_REQUIRED_EXTENSIONDATA %>" value="<%= CHECKBOX_VALUE %>" disabled="disabled"/>
                     </td>
             </tr>
     <%	} %> 
@@ -1690,7 +1694,9 @@ function checkUseInBatch(){
                                                                                                                  out.write(" disabled='true'"); 
                                                                                                                if( userdata.getKeyRecoverable())
                                                                                                                  out.write(" CHECKED ");
-                                                                                                             %>>  
+                                                                                                             %>
+           id="<%=CHECKBOX_KEYRECOVERABLE%>">
+        <label for="<%=CHECKBOX_KEYRECOVERABLE%>"><c:out value="<%= ejbcawebbean.getText(\"ACTIVATE\") %>" /></label> 
       </td>
       <td>&nbsp;</td>
     </tr>
@@ -1774,7 +1780,9 @@ function checkUseInBatch(){
                                                                                                                  out.write(" disabled='true'"); 
                                                                                                                if( userdata.getSendNotification())
                                                                                                                  out.write(" CHECKED ");
-                                                                                                             %>>  
+                                                                                                             %>
+            id="<%=CHECKBOX_SENDNOTIFICATION%>">
+        <label for="<%=CHECKBOX_SENDNOTIFICATION%>"><c:out value="<%= ejbcawebbean.getText(\"ACTIVATE\") %>" /></label>
       </td>
       <td>&nbsp;</td>
     </tr>
@@ -1790,7 +1798,9 @@ function checkUseInBatch(){
                                                                                                                  out.write(" CHECKED "); 
                                                                                                                if(userdata.getPrintUserData())
                                                                                                                  out.write(" disabled='true' "); 
-                                                                                                             %>> 
+                                                                                                             %>
+            id="<%=CHECKBOX_PRINT%>">
+        <label for="<%=CHECKBOX_PRINT%>"><c:out value="<%= ejbcawebbean.getText(\"PRINT\") %>" /></label>
       </td>
       <td>&nbsp;</td>
     </tr>

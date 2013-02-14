@@ -312,7 +312,7 @@
 		if ( certSerialNr!=null ) { %>
 			<tr id="Row<%=(viewendentityhelper.row++)%2%>">
 			<td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("CERT_SERIALNUMBER") %></td>
-			<td><c:out value="<%= certSerialNr %>"/></td>
+			<td><span class="hexa"><c:out value="<%= certSerialNr %>"/></span></td>
 			</tr> 
 	<%	}
 	  } %>
