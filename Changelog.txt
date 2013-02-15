@@ -365,6 +365,19 @@ Task
     [ECA-2320] - Merge changes from CESECORE-197
     [ECA-2324] - Merge changes from CESECORE-269 to EJBCA
 
+EJBCA 4.0.14, 2013-02-15
+---
+Bug
+    [ECA-2897] - Wrong example of external SSL port number in web.properties
+
+Improvement
+    [ECA-2882] - Do not store active certificates in queue for ValidationAuthorityPublisher that only publish revoked
+    [ECA-2890] - GUI: Better link from Public Web to Administration Web, via reverse proxy
+    [ECA-2899] - Do not display passwords in stdout during build
+
+New Feature
+    [ECA-2907] - Add cache for Publishers
+
 EJBCA 4.0.13, 2012-12-19
 ---
 Bug
