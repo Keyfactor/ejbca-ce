@@ -168,9 +168,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
                         sortMap.put(cryptoTokenId, new TokenAndCaActivationGuiInfo(cryptoTokenInfo, allowedActivation, allowedDeactivation));
                     }
                 }
-                if (sortMap.get(cryptoTokenId).isExisting()) {
-                    sortMap.get(cryptoTokenId).add(new CaActivationGuiInfo(caInfo.getStatus(), caInfo.getIncludeInHealthCheck(), caInfo.getName(), caInfo.getCAId()));
-                }
+                sortMap.get(cryptoTokenId).add(new CaActivationGuiInfo(caInfo.getStatus(), caInfo.getIncludeInHealthCheck(), caInfo.getName(), caInfo.getCAId()));
             } catch (CADoesntExistsException e) {
                 throw new RuntimeException("Authorized CA Id does no longer exist.");
             }

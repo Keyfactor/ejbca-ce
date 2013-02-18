@@ -100,6 +100,8 @@ org.cesecore.authorization.control.CryptoTokenRules
 			</h:selectOneMenu>
 	    	<h:outputText value="#{cryptoTokenMBean.currentCryptoToken.type}" rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode || cryptoTokenMBean.currentCryptoTokenId != 0}"/>
 		</h:panelGroup>
+		<h:outputLabel for="currentCryptoTokenReferenced" value="#{web.text.CRYPTOTOKEN_REFDHEAD}:" rendered="#{cryptoTokenMBean.currentCryptoTokenId!=0}"/>
+		<h:selectBooleanCheckbox id="currentCryptoTokenReferenced" value="#{cryptoTokenMBean.currentCryptoToken.referenced}" disabled="true" rendered="#{cryptoTokenMBean.currentCryptoTokenId!=0}"/>
 		<h:outputLabel for="currentCryptoTokenActive" value="#{web.text.CRYPTOTOKEN_ACTIVE}:" rendered="#{cryptoTokenMBean.currentCryptoTokenId!=0}"/>
 		<h:selectBooleanCheckbox id="currentCryptoTokenActive" value="#{cryptoTokenMBean.currentCryptoToken.active}" disabled="true" rendered="#{cryptoTokenMBean.currentCryptoTokenId!=0}"/>
 		<h:outputLabel for="currentCryptoTokenSecret1" value="#{web.text.CRYPTOTOKEN_PIN}:" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"/>
@@ -109,9 +111,9 @@ org.cesecore.authorization.control.CryptoTokenRules
 		<h:outputLabel for="currentCryptoTokenAutoActivate" value="#{web.text.CRYPTOTOKEN_AUTO}:"/>
 		<h:selectBooleanCheckbox id="currentCryptoTokenAutoActivate" value="#{cryptoTokenMBean.currentCryptoToken.autoActivate}"
 			disabled="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
-		<h:panelGroup id="currentCryptoTokenAllowExportPrivateKeyPanelGroup">
-		<h:outputLabel id="currentCryptoTokenAllowExportPrivateKeyLabel" for="currentCryptoTokenAllowExportPrivateKey" rendered="#{cryptoTokenMBean.currentCryptoToken.showSoftCryptoToken}"
-			value="(#{web.text.CRYPTOTOKEN_TYPE_SOFT}) #{web.text.CRYPTOTOKEN_ALLOWEXPORT} "/>
+		<h:panelGroup id="currentCryptoTokenAllowExportPrivateKeyPanelGroup" rendered="#{cryptoTokenMBean.currentCryptoToken.showSoftCryptoToken}">
+			<h:outputLabel id="currentCryptoTokenAllowExportPrivateKeyLabel" for="currentCryptoTokenAllowExportPrivateKey"
+				value="(#{web.text.CRYPTOTOKEN_TYPE_SOFT}) #{web.text.CRYPTOTOKEN_ALLOWEXPORT} "/>
 			<%= ejbcawebbean.getHelpReference("/userguide.html#New CryptoTokens") + ":" %>
 		</h:panelGroup>
 		<h:selectBooleanCheckbox id="currentCryptoTokenAllowExportPrivateKey" rendered="#{cryptoTokenMBean.currentCryptoToken.showSoftCryptoToken}"

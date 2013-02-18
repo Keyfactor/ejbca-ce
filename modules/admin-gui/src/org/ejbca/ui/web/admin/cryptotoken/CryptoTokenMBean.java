@@ -36,6 +36,8 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.CryptoTokenRules;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.CesecoreConfiguration;
@@ -70,12 +72,14 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         private final boolean allowedActivation;
         private final boolean allowedDeactivation;
         private String authenticationCode;
+        private final boolean referenced;
         
-        private CryptoTokenGuiInfo(CryptoTokenInfo cryptoTokenInfo, String p11LibraryAlias, boolean allowedActivation, boolean allowedDectivation) {
+        private CryptoTokenGuiInfo(CryptoTokenInfo cryptoTokenInfo, String p11LibraryAlias, boolean allowedActivation, boolean allowedDectivation, boolean referenced) {
             this.cryptoTokenInfo = cryptoTokenInfo;
             this.p11LibraryAlias = p11LibraryAlias;
             this.allowedActivation = allowedActivation;
             this.allowedDeactivation = allowedDectivation;
+            this.referenced = referenced;
         }
         
         public String getStatusImg() {
@@ -92,6 +96,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         public void setAuthenticationCode(String authenticationCode) { this.authenticationCode = authenticationCode; }
         public boolean isAllowedActivation() { return allowedActivation; }
         public boolean isAllowedDeactivation() { return allowedDeactivation; }
+        public boolean isReferenced() { return referenced; }
     }
 
     /** GUI edit/view representation of a CryptoToken that can be interacted with. */
@@ -106,6 +111,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         private String p11Slot = "0";
         private String p11AttributeFile = "default";
         private boolean active = false;
+        private boolean referenced = false;
         
         private CurrentCryptoTokenGuiInfo() {}
         
@@ -129,6 +135,8 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         public void setP11AttributeFile(String p11AttributeFile) { this.p11AttributeFile = p11AttributeFile; }
         public boolean isActive() { return active; }
         public void setActive(boolean active) { this.active = active; }
+        public boolean isReferenced() { return referenced; }
+        public void setReferenced(boolean referenced) { this.referenced = referenced; }
 
         public String getP11LibraryAlias() { return CryptoTokenMBean.this.getP11LibraryAlias(p11Library); }
         public String getP11AttributeFileAlias() { return CryptoTokenMBean.this.getP11AttributeFileAlias(p11AttributeFile); }
@@ -173,6 +181,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     private final CryptoTokenManagementSessionLocal cryptoTokenManagementSession = getEjbcaWebBean().getEjb().getCryptoTokenManagementSession();
     private final AccessControlSessionLocal accessControlSession = getEjbcaWebBean().getEjb().getAccessControlSession();
     private final AuthenticationToken authenticationToken = getAdmin();
+    private final CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
 
     /** Force reload from underlying (cache) layer */
     private void flushCaches() {
@@ -186,19 +195,35 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         currentCryptoToken = null;
     }
     
+    /** @return a List of all CryptoToken Identifiers referenced by CAs. */
+    private List<Integer> getReferencedCryptoTokenIds() {
+        final List<Integer> ret = new ArrayList<Integer>();
+        for (int caId : caSession.getAvailableCAs()) {
+            try {
+                ret.add(Integer.valueOf(caSession.getCAInfoInternal(caId).getCAToken().getCryptoTokenId()));
+            } catch (CADoesntExistsException e) {
+                log.warn("Referenced CA has suddenly disappearded unexpectedly. caid=" + caId);
+            }
+        }
+        // In the future other components that use CryptoTokens should be checked here as well!
+        return ret;
+    }
+    
     /** Build a list sorted by name from the authorized cryptoTokens that can be presented to the user */
     public ListDataModel getCryptoTokenGuiList() throws AuthorizationDeniedException {
         if (cryptoTokenGuiList==null) {
+            final List<Integer> referencedCryptoTokenIds = getReferencedCryptoTokenIds();
             final List<CryptoTokenGuiInfo> list = new ArrayList<CryptoTokenGuiInfo>();
             for (final CryptoTokenInfo cryptoTokenInfo : cryptoTokenManagementSession.getCryptoTokenInfos(authenticationToken)) {
                 final String p11LibraryAlias = getP11LibraryAlias(cryptoTokenInfo.getP11Library());
                 final boolean allowedActivation = accessControlSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.ACTIVATE + "/" + cryptoTokenInfo.getCryptoTokenId().toString());
                 final boolean allowedDeactivation = accessControlSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.DEACTIVATE + "/" + cryptoTokenInfo.getCryptoTokenId().toString());
-                list.add(new CryptoTokenGuiInfo(cryptoTokenInfo, p11LibraryAlias, allowedActivation, allowedDeactivation));
+                final boolean referenced = referencedCryptoTokenIds.contains(Integer.valueOf(cryptoTokenInfo.getCryptoTokenId()));
+                list.add(new CryptoTokenGuiInfo(cryptoTokenInfo, p11LibraryAlias, allowedActivation, allowedDeactivation, referenced));
                 Collections.sort(list, new Comparator<CryptoTokenGuiInfo>() {
                     @Override
                     public int compare(CryptoTokenGuiInfo cryptoTokenInfo1, CryptoTokenGuiInfo cryptoTokenInfo2) {
-                        return cryptoTokenInfo1.getTokenName().compareTo(cryptoTokenInfo2.getTokenName());
+                        return cryptoTokenInfo1.getTokenName().compareToIgnoreCase(cryptoTokenInfo2.getTokenName());
                     }
                 });
             }
@@ -470,6 +495,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                     currentCryptoToken.setP11Slot(cryptoTokenInfo.getP11Slot());
                     currentCryptoToken.setType(cryptoTokenInfo.getType());
                     currentCryptoToken.setActive(cryptoTokenInfo.isActive());
+                    currentCryptoToken.setReferenced(getReferencedCryptoTokenIds().contains(Integer.valueOf(cryptoTokenId)));
                 }
             }
             this.currentCryptoToken = currentCryptoToken;
