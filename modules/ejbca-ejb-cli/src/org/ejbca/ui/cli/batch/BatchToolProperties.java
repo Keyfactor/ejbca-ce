@@ -78,7 +78,7 @@ public class BatchToolProperties {
 		    		batchToolProperties.load(fis);
 		    	}catch (FileNotFoundException e1) {
 		    		try{
-		    			FileInputStream fis = new FileInputStream("bin/batchtool.properties");
+		    			FileInputStream fis = new FileInputStream("conf/batchtool.properties");
 		    			batchToolProperties.load(fis);
 		    		}catch (FileNotFoundException e2) {
 		    			log.info("Could not find any batchtool property file, default values will be used.");

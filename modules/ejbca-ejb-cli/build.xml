@@ -91,7 +91,7 @@
     	<copy todir="${mod.ejbca-ejb-cli.dist}/lib" file="${clover.jar}" flatten="true" verbose="false" failonerror="false"/>
     	<copy todir="${mod.ejbca-ejb-cli.dist}">
     		<fileset dir="${ejbca.home}/src" includes="intresources/*resources.*.properties"/>
-    		<fileset dir="${ejbca.home}/bin" includes="batchtool.properties"/>
+    		<fileset dir="${ejbca.home}/conf" includes="batchtool.properties"/>
     	</copy>
         <copy file="${log4j.cli.file}" tofile="${mod.ejbca-ejb-cli.dist}/log4j.xml" failonerror="true"/>
 		<copy file="${jndi.properties.file}" tofile="${mod.ejbca-ejb-cli.dist}/jndi.properties" failonerror="true"/>
