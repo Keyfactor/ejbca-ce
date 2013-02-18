@@ -90,6 +90,11 @@ org.cesecore.authorization.control.CryptoTokenRules
 			<h:graphicImage height="16" width="16" url="#{cryptoTokenGuiInfo.statusImg}" style="border-width:0"/>
 		</h:column>
 		<h:column>
+   			<f:facet name="header"><h:outputText value="#{web.text.CRYPTOTOKEN_REFDHEAD}"/></f:facet>
+			<h:outputText value="#{web.text.CRYPTOTOKEN_UNUSED}" rendered="#{!cryptoTokenGuiInfo.referenced}"/>
+			<h:outputText value="#{web.text.CRYPTOTOKEN_REFD}" rendered="#{cryptoTokenGuiInfo.referenced}"/>
+		</h:column>
+		<h:column>
    			<f:facet name="header">
 			<h:panelGroup>
    				<h:outputText value="#{web.text.CRYPTOTOKEN_ACTION}"/>
@@ -105,7 +110,7 @@ org.cesecore.authorization.control.CryptoTokenRules
 				<h:commandButton value="#{web.text.CRYPTOTOKEN_REACTIVATE}" action="#{cryptoTokenMBean.deactivateCryptoToken}" rendered="#{cryptoTokenGuiInfo.autoActivation}"/>
 			</h:panelGroup>
 			<h:commandButton value="#{web.text.CRYPTOTOKEN_DELETE}" action="#{cryptoTokenMBean.deleteCryptoToken}"
-				rendered="#{!cryptoTokenGuiInfo.active && cryptoTokenMBean.allowedToDelete}" onclick="return confirm('#{web.text.CRYPTOTOKEN_CONF_DELETE}')"/>
+				rendered="#{cryptoTokenMBean.allowedToDelete}" onclick="return confirm('#{web.text.CRYPTOTOKEN_CONF_DELETE}')"/>
 		</h:column>
 	</h:dataTable>
 	<br/>
