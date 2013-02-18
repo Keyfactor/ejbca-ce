@@ -3792,7 +3792,7 @@ All certificates signed by an ECDSA CA will naturally use ECDSA signatures, rega
 </p>
 <p>
 When batch generating client keys using the cli command 'bin/ejbca.sh batch' you configure the type of client keys that will 
-be generated in the file <i>bin/batchtool.properties</i>. The possible parameters are explained there. 
+be generated in the file <i>conf/batchtool.properties</i>. The possible parameters are explained there. 
 If using the implicitlyCA facility the same parameters as configured for the ca in <i>conf/cesecore.properties</i> are used.
 </p>
 </subsection>

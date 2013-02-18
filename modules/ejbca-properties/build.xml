@@ -25,7 +25,7 @@
     	<mkdir dir="${mod.ejbca-properties.lib.dir}" />
         <jar destfile="${mod.ejbca-properties.lib}">
         	<fileset dir="${build.dir}"/>
-            <fileset dir="${ejbca.home}" includes="conf/**/*.properties" excludes="conf/plugins/*"/>
+            <fileset dir="${ejbca.home}" includes="conf/**/*.properties" excludes="conf/plugins/* conf/batchtool.properties"/>
             <fileset dir="${ejbca.home}/src/upgrade"/>
             <fileset dir="${internalresources.base.dir}" includes="*resources/*.properties"/>
         </jar>
