@@ -569,7 +569,12 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     }
 
     /** @return the CA object, from the database (including any upgrades) is necessary */
-    private CA getCa(final int caId) {
+    private CA getCa(int caId) {
+        final Integer realCAId = CACacheHelper.getCaCertHash(Integer.valueOf(caId));
+        if (realCAId!=null) {
+            // Since we have found a cached "real" CA Id and the cache will use this one (if cached)
+            caId = realCAId.intValue();
+        }
         // 1. Check (new) CaCache if it is time to sync-up with database
         if (CaCache.INSTANCE.shouldCheckForUpdates(caId)) {
             log.debug("CA with ID " + caId + " will be checked for updates.");
@@ -580,7 +585,8 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
                 // Special for splitting out the CAToken and committing it..
                 // Since getCAData has already run upgradeAndMergeToDatabase we can just get the CA here..
                 CA ca = caData.getCA();
-                CaCache.INSTANCE.updateWith(caId, digest, ca.getName(), ca);
+                // Note that we store using the "real" CAId in the cache.
+                CaCache.INSTANCE.updateWith(caData.getCaId(), digest, ca.getName(), ca);
                 // Since caching might be disabled, we return the value returned from the database here
                 return ca;
             } catch (CADoesntExistsException e) {
