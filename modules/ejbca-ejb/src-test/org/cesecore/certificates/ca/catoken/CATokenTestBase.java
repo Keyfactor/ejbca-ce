@@ -510,7 +510,7 @@ public abstract class CATokenTestBase {
 						cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)), cryptoToken.getSignProviderName());
 				assertTrue(false);
 			} catch (CryptoTokenOfflineException e) {
-                assertEquals("Can not instantiate BC. keyStore (111) == null.", e.getMessage());
+                assertEquals("Can not instantiate "+getProvider()+". keyStore (111) == null.", e.getMessage());
 			}
 			// Activate with wrong PIN should not work
 			try {
