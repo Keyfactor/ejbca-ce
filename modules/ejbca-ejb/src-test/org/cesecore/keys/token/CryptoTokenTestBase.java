@@ -419,14 +419,13 @@ public abstract class CryptoTokenTestBase {
                     priv = cryptoToken.getPrivateKey("rsatest00001");
                     assertTrue("Should throw", false);
                 } catch (CryptoTokenOfflineException e) {
-                    assertEquals(getProvider(), e.getMessage());
+                    assertEquals("Can not instantiate BC. keyStore (111) == null.", e.getMessage());
                 }
                 try {
                     pub = cryptoToken.getPublicKey("rsatest00001");
                     assertTrue("Should throw", false);
                 } catch (CryptoTokenOfflineException e) {
-                    assertEquals(getProvider(), e.getMessage());
-                }
+                    assertEquals("Can not instantiate BC. keyStore (111) == null.", e.getMessage());                }
                 // Activate with wrong PIN should not work
                 try {
                     cryptoToken.activate("gfhf56564".toCharArray());
