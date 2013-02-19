@@ -306,7 +306,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
     } // testAddAndGetCAWithDifferentCaid
 
     public void addRenameAndRemoveCVCCA() throws Exception {
-        cleanUpAnyExistingCa(testx509ca.getCAId(), testx509ca.getName());
+        cleanUpAnyExistingCa(testcvcca.getCAId(), testcvcca.getName());
         caSession.addCA(roleMgmgToken, testcvcca);
         // Try to add the same CA again
         try {
