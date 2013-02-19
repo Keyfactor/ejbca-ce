@@ -98,7 +98,8 @@ public abstract class BaseCryptoToken implements CryptoToken {
     protected KeyStore getKeyStore() throws CryptoTokenOfflineException {
         autoActivate();
         if (this.keyStore == null) {
-            throw new CryptoTokenOfflineException(mJcaProviderName);
+            final String msg = intres.getLocalizedMessage("token.errorinstansiate", mJcaProviderName, "keyStore ("+id+") == null");
+            throw new CryptoTokenOfflineException(msg);
         }
         return this.keyStore;
     }
