@@ -172,7 +172,7 @@ public class CAToken extends UpgradeableDataHashMap {
         	}
         } catch (CryptoTokenOfflineException e) {
         	if (log.isDebugEnabled()) {
-        		log.debug("CryptToken offline: "+e.getMessage());
+        		log.debug("CryptoToken offline: "+e.getMessage());
         	}
         }
 
