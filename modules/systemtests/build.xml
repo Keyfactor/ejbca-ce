@@ -136,7 +136,7 @@
 			</javac>
 		</target>
 
-	<target name="systemtest-compile-src" depends="ejbca-properties">
+	<target name="systemtest-compile-src" depends="ejbca-properties, ejbca-ejb">
 		<mkdir dir="${build.src.dir}" />
 		<javac srcdir="${src.dir}" destdir="${build.src.dir}" debug="on" includeantruntime="no"
 			        	encoding="iso8859-1" classpathref="compile-ejb.classpath" target="${java.target.version}">
