@@ -1,5 +1,5 @@
 EJBCA 5.0.8, 2012-12-18
----
+--- 
 Bug
     [ECA-2376] - Republishing certificates to LDAP when multiple certificates per user are allowed fails if certificate is already present
     [ECA-2710] - Last certificate gets republished twice when using '-all' in cli
