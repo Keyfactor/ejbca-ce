@@ -63,10 +63,10 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 # Default 8443
 #httpserver.privhttps=8443
 
-# The private port exposed externally, i.e. if you run an apache proxy in front of JBoss
+# The private port exposed externally, i.e. if you run an Apache proxy in front of JBoss
 # the port may be 443 instead.
 # Default same as httpserver.privhttps
-#httpserver.external.privhttps=${httpserver.privhttps}
+#httpserver.external.privhttps=443
  
 # The fully qualified domain name (FQDN) of the front-end, e.g. an Apache proxy
 #   In order to build absolute URL, the server name is got from the web client request.
