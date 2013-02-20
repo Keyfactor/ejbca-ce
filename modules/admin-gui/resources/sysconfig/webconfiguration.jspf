@@ -53,18 +53,17 @@ function checkuseautoenroll(){
 <h1><c:out value="<%= ejbcawebbean.getText(\"SYSTEMCONFIGURATION\") %>"/></h1> 
 
 <form name="webconfiguration" method="post" action="<%= gc.getConfigPath() + "/" + THIS_FILENAME %>">
-  <table width="100%" border="0" cellspacing="3" cellpadding="3">
-<!--
-    <tr id="Row0"> 
+  <table class="action" id="config" width="100%" border="0" cellspacing="3" cellpadding="3">
+
+    <tr id="Row1"> 
       <td width="50%" valign="top"> 
         &nbsp;
       </td>
-      <td width="50%" valign="top"> 
-        <div align="right"><A  onclick='displayHelpWindow("/<%=gc.getAdminWebPath() %>/help/configuration_help.en.html#mainconfig")'>
-        <u>Help</u> </A> </div>
+      <td width="50%" valign="top" align="right"> 
+        &nbsp;
       </td>
     </tr>
--->
+    
     <tr id="Row0"> 
       <td width="50%" valign="top"> 
         <h3><c:out value="<%= ejbcawebbean.getText(\"EJBCATITLE\") %>"/></h3>
@@ -74,7 +73,7 @@ function checkuseautoenroll(){
         <input type="text" name="<%=TEXTFIELD_TITLE %>" value='<c:out value="<%= gc.getEjbcaTitle() %>"/>' maxlength="150" size="45">
       </td>
     </tr>
-    <tr id="Row1"> 
+    <tr id="Row0"> 
       <td width="49%" valign="top"> 
         <h3><c:out value="<%= ejbcawebbean.getText(\"HEADBANNER\") %>"/></h3>
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"HEADBANNERHELP\") %>"/></p>

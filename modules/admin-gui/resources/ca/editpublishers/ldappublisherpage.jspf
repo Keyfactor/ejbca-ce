@@ -3,21 +3,24 @@
    LdapPublisher ldappublisher = (LdapPublisher) publisherhelper.publisherdata;
 
 %> 
-    <tr id="Row<%=row++%2%>"> 
+
+	<%-- LDAP settings --%>
+
+    <tr id="Row<%=row++%2%>" class="section"> 
       <td width="50%" valign="top" align="right"> 
-         <strong><%= ejbcawebbean.getText("LDAPSETTINGS") %> :</strong>
+         <strong><%= ejbcawebbean.getText("LDAPSETTINGS") %></strong>
          <%= ejbcawebbean.getHelpReference("/adminguide.html#Configure%20LDAP%20publishers") %>
       </td>
       <td width="50%" valign="top"> 
          &nbsp;
       </td>
     </tr>  
-   <tr id="Row<%=row++%2%>"> 
+   <tr id="Row<%=row%2%>">
       <td width="50%" valign="top" align="right"> 
-         <%= ejbcawebbean.getText("HOSTNAMES") %>
+         <strong><%= ejbcawebbean.getText("HOSTNAMES") %></strong>
       </td>
       <td width="50%" valign="top"> 
-         <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_LDAPHOSTNAME%>" size="40" maxlength="255" 
+         <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_LDAPHOSTNAME%>" size="45" maxlength="255" 
                value='<c:out value="<%= ldappublisher.getHostnames() %>"/>'>
       </td>
     </tr>
@@ -34,26 +37,27 @@
            %>>
       </td>
     </tr>
+    
     <tr id="Row<%=row++%2%>"> 
-      <td width="50%" valign="top" align="right"> 
-         <%= ejbcawebbean.getText("BASEDN") %><br />
+      <td width="50%" valign="top" align="right">
+      	 <strong><%= ejbcawebbean.getText("BASEDN") %></strong><br />
          <%= ejbcawebbean.getText("BASEDNDESCR") %>
       </td>
       <td width="50%" valign="top"> 
-         <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_LDAPBASEDN%>" size="40" maxlength="255" 
+         <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_LDAPBASEDN%>" size="45" maxlength="255" 
                value='<c:out value="<%= ldappublisher.getBaseDN() %>"/>'> 
       </td>
     </tr>
-    <tr id="Row<%=row++%2%>"> 
+    <tr id="Row<%=row%2%>"> 
       <td width="50%" valign="top" align="right"> 
          <%= ejbcawebbean.getText("LOGINDN") %>
       </td>
       <td width="50%" valign="top"> 
-         <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_LDAPLOGINDN%>" size="40" maxlength="255" 
+         <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_LDAPLOGINDN%>" size="45" maxlength="255" 
                value='<c:out value="<%= ldappublisher.getLoginDN() %>"/>'> 
       </td>
     </tr>
-    <tr id="Row<%=row++%2%>"> 
+    <tr id="Row<%=row%2%>"> 
       <td width="50%" valign="top" align="right"> 
          <%= ejbcawebbean.getText("LOGINPWD") %>
       </td>
@@ -71,7 +75,7 @@
                value='<c:out value="<%= ldappublisher.getLoginPassword() %>"/>'> 
       </td>
     </tr>
-    <tr id="Row<%=row++%2%>"> 
+    <tr id="Row<%=row%2%>"> 
       <td width="50%" valign="top" align="right"> 
          <%= ejbcawebbean.getText("CONNECTIONTIMEOUT") %>
       </td>
@@ -80,7 +84,7 @@
                value='<c:out value="<%= ldappublisher.getConnectionTimeOut() %>"/>'> 
       </td>
     </tr>
-    <tr id="Row<%=row++%2%>"> 
+    <tr id="Row<%=row%2%>"> 
       <td width="50%" valign="top" align="right"> 
          <%= ejbcawebbean.getText("READTIMEOUT") %>
       </td>
@@ -98,14 +102,18 @@
                value='<c:out value="<%= ldappublisher.getStoreTimeOut() %>"/>'> 
       </td>
     </tr>
-   <tr id="Row<%=row++%2%>"> 
+    
+   <%-- LDAP operations --%>
+   
+   <tr id="Row<%=row++%2%>" class="title"> 
       <td width="50%" valign="top" align="right"> 
-         &nbsp;
+         <strong>&nbsp;</strong>
       </td>
       <td width="50%" valign="top"> 
          &nbsp;
       </td>
    </tr>
+   
     <tr id="Row<%=row++%2%>"> 
       <td width="50%" valign="top" align="right"> 
          <%= ejbcawebbean.getText("CREATENONEXISTINGUSERS") %>
@@ -209,20 +217,23 @@
            %>>
       </td>
     </tr>
-   <tr id="Row<%=row++%2%>"> 
+    
+    <%-- Object classes & DN attributes --%>
+    
+   <tr id="Row<%=row++%2%>" class="title"> 
       <td width="50%" valign="top" align="right"> 
-         &nbsp;
+         <strong>&nbsp;</strong>
       </td>
       <td width="50%" valign="top"> 
          &nbsp;
       </td>
    </tr>
-   <tr id="Row<%=row++%2%>"> 
+   <tr id="Row<%=row%2%>"> 
       <td width="50%" valign="top" align="right"> 
          <%= ejbcawebbean.getText("USEROBJECTCLASS") %>
       </td>
       <td width="50%" valign="top"> 
-         <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_LDAPUSEROBJECTCLASS%>" size="40" maxlength="255" 
+         <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_LDAPUSEROBJECTCLASS%>" size="45" maxlength="255" 
                value='<c:out value="<%= ldappublisher.getUserObjectClass() %>"/>'> 
       </td>
     </tr>
@@ -231,43 +242,43 @@
          <%= ejbcawebbean.getText("CAOBJECTCLASS") %>
       </td>
       <td width="50%" valign="top"> 
-         <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_LDAPCAOBJECTCLASS%>" size="40" maxlength="255" 
+         <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_LDAPCAOBJECTCLASS%>" size="45" maxlength="255" 
                value='<c:out value="<%= ldappublisher.getCAObjectClass() %>"/>'> 
       </td>
     </tr>
-   <tr id="Row<%=row++%2%>"> 
+   <tr id="Row<%=row%2%>"> 
       <td width="50%" valign="top" align="right"> 
          <%= ejbcawebbean.getText("USERCERTIFICATEATTR") %>
       </td>
       <td width="50%" valign="top"> 
-         <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_LDAPUSERCERTATTRIBUTE%>" size="40" maxlength="255" 
+         <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_LDAPUSERCERTATTRIBUTE%>" size="45" maxlength="255" 
                value='<c:out value="<%= ldappublisher.getUserCertAttribute() %>"/>'> 
       </td>
     </tr>
-   <tr id="Row<%=row++%2%>"> 
+   <tr id="Row<%=row%2%>"> 
       <td width="50%" valign="top" align="right"> 
          <%= ejbcawebbean.getText("CACERTIFICATEATTR") %>
       </td>
       <td width="50%" valign="top"> 
-         <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_LDAPCACERTATTRIBUTE%>" size="40" maxlength="255" 
+         <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_LDAPCACERTATTRIBUTE%>" size="45" maxlength="255" 
                value='<c:out value="<%= ldappublisher.getCACertAttribute() %>"/>'> 
       </td>
     </tr>
-   <tr id="Row<%=row++%2%>"> 
+   <tr id="Row<%=row%2%>"> 
       <td width="50%" valign="top" align="right"> 
          <%= ejbcawebbean.getText("CRLATTRIBUTE") %>
       </td>
       <td width="50%" valign="top"> 
-         <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_LDAPCRLATTRIBUTE%>" size="40" maxlength="255" 
+         <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_LDAPCRLATTRIBUTE%>" size="45" maxlength="255" 
                value='<c:out value="<%= ldappublisher.getCRLAttribute() %>"/>'> 
       </td>
     </tr>
-    <tr id="Row<%=row++%2%>"> 
+    <tr id="Row<%=row%2%>"> 
       <td width="50%" valign="top" align="right"> 
          <%= ejbcawebbean.getText("DELTACRLATTRIBUTE") %>
       </td>
       <td width="50%" valign="top"> 
-         <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_LDAPDELTACRLATTRIBUTE%>" size="40" maxlength="255" 
+         <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_LDAPDELTACRLATTRIBUTE%>" size="45" maxlength="255" 
                value='<c:out value="<%= ldappublisher.getDeltaCRLAttribute() %>"/>'> 
       </td>
     </tr>
@@ -276,17 +287,18 @@
          <%= ejbcawebbean.getText("ARLATTRIBUTE") %>
       </td>
       <td width="50%" valign="top"> 
-         <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_LDAPARLATTRIBUTE%>" size="40" maxlength="255" 
+         <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_LDAPARLATTRIBUTE%>" size="45" maxlength="255" 
                value='<c:out value="<%= ldappublisher.getARLAttribute() %>"/>'> 
       </td>
     </tr>
+    
     <tr id="Row<%=row++%2%>"> 
       <td width="50%" valign="top" align="right"> 
          <%= ejbcawebbean.getText("USEFIELDSINDN") %><br />
          <%= ejbcawebbean.getText("DCOCSHOULDBEDEFINED") %>
       </td>
       <td width="50%" valign="top">   
-        <select name="<%=EditPublisherJSPHelper.SELECT_LDAPUSEFIELDINLDAPDN%>" size="14" multiple >       
+        <select name="<%=EditPublisherJSPHelper.SELECT_LDAPUSEFIELDINLDAPDN%>" size="10" multiple >       
             <% HashSet currentfields = new HashSet(ldappublisher.getUseFieldInLdapDN());
                Integer[] usefieldsindn = DNFieldExtractor.getUseFields(DNFieldExtractor.TYPE_SUBJECTDN);
                String[] usefieldsindntexts = (String[])DnComponents.getDnLanguageTexts().toArray(new String[0]);

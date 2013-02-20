@@ -4,23 +4,16 @@
 
   IPINEnvelopeSettings envprofile = (IPINEnvelopeSettings) edithardtokenprofile.profiledata;
 %>
-   <tr id="Row<%=row++%2%>"> 
+   <tr id="Row<%=row++%2%>" class="section"> 
       <td width="40%" valign="top" align="right"> 
-         &nbsp;
+         <strong><%= ejbcawebbean.getText("PINENVELOPESETTINGS") %></strong>
       </td>
       <td width="60%" valign="top"> 
          &nbsp;
       </td>
    </tr>
+   
    <tr id="Row<%=row++%2%>"> 
-      <td width="40%" valign="top" align="right"> 
-         <strong><%= ejbcawebbean.getText("PINENVELOPESETTINGS") %> :</strong>
-      </td>
-      <td width="60%" valign="top"> 
-         &nbsp;
-      </td>
-    </tr>
-    <tr id="Row<%=row++%2%>"> 
       <td width="40%" valign="top" align="right"> 
          <%= ejbcawebbean.getText("ENVELOPETYPE") %>
       </td>
@@ -35,7 +28,8 @@
           </select>         
       </td>
     </tr>
-    <tr id="Row<%=row++%2%>"> 
+    
+    <tr id="Row<%=row%2%>"> 
       <td width="40%" valign="top" align="right"> 
          <%= ejbcawebbean.getText("CURRENTTEMPLATE") %>
       </td>

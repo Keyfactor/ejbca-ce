@@ -771,7 +771,7 @@ function checkallfields(){
       </td>
       <td width="50%"> 
         <% if (editca) { %>
-              <c:out value="<%= cainfo.getSubjectDN() %>"/><br />
+              <span class="dn"><c:out value="<%= cainfo.getSubjectDN() %>"/></span>
           <% } else { %>
         <% /* Maxlength for the CA subject DN is based on 250 chars MySQL String mapping minus the "CN=xxxxSignerCertificate," string that is added for services. */ %>
         <input type="text" name="<%=TEXTFIELD_SUBJECTDN%>" size="45" maxlength="225" value="CN=<%= caname %>">
@@ -797,8 +797,8 @@ function checkallfields(){
           <td width="50%"  align="right"> 
             <%= ejbcawebbean.getText("CERT_ISSUERDN") %>
           </td>
-          <td width="50%"> 
-              <% out.write(issuerDN + "<br />"); %> 
+          <td width="50%">
+              <span class="dn"><c:out value="<%= issuerDN %>"/></span>
           </td>
         </tr>
     <% } %>
@@ -1374,8 +1374,10 @@ function checkallfields(){
         <%  } else { %>
                 <input style="font-weight:bold;" type="submit" name="<%= BUTTON_CREATE %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("CREATE") %>">
         <%  } %>
+        &nbsp;&nbsp;&nbsp;
             <input style="font-weight:bold;" type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>">
         <% } else { %>
+        &nbsp;&nbsp;&nbsp;
             <input style="font-weight:bold;" type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("BACK") %>">
         <% } %>
         </td>

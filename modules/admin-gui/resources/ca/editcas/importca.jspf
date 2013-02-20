@@ -1,7 +1,7 @@
 <%
 	row = 0;
 %>
-<body > 
+<body> 
 <script type="text/javascript">
 <!--  
 function check()
@@ -17,16 +17,17 @@ function check()
 <div align="center">   
 	<h2><%= ejbcawebbean.getText("IMPORTCA") %></h2>
 </div>
-	<table width="100%" border="0" cellspacing="3" cellpadding="3">
+
+	<form name="recievefile" action="<%= THIS_FILENAME %>" method="post" enctype='multipart/form-data' >
+	<table class="action" width="100%" border="0" cellspacing="3" cellpadding="3">
 		<tr id="Row<%=row++%2%>"> 
-			<td width="49%" valign="top"> </td>
-			<td width="51%" valign="top"> 
-        		<div align="right">
-        			<A href="<%=THIS_FILENAME %>"><u><%= ejbcawebbean.getText("BACKTOCAS") %></u></A>
-				</div>
+			<td width="45%" valign="top">
+				&nbsp;
+			</td>
+			<td width="55%" valign="top" align="right"> 
+       			<a href="<%=THIS_FILENAME %>"><%= ejbcawebbean.getText("BACKTOCAS") %></a>
 			</td>
 		</tr>
-		<form name="recievefile" action="<%= THIS_FILENAME %>" method="post" enctype='multipart/form-data' >
 		<tr id="Row<%=row++%2%>"> 
 			<td width="49%" valign="top" align="right"><%= ejbcawebbean.getText("IMPORTCANAMEHELP") %></td>
 			<td width="51%" valign="top">
@@ -59,11 +60,15 @@ function check()
 			</td>
 		</tr>
 		<tr id="Row<%=row++%2%>"> 
-			<td width="49%" valign="top" align="right"> </td>
-			<td width="51%" valign="top">
-					<input type="submit" name="<%= BUTTON_RECIEVEFILE %>" onClick='return check()' value="<%= ejbcawebbean.getText("IMPORTCA") %>" >
-					<input type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>">     
+			<td width="45%" valign="top" align="right">
+				&nbsp;
+			</td>
+			<td width="55%" valign="top">
+				<input type="submit" name="<%= BUTTON_RECIEVEFILE %>" onClick='return check()' value="<%= ejbcawebbean.getText("IMPORTCA") %>" >
+				&nbsp;&nbsp;&nbsp;
+				<input type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>">     
 			</td>
 		</tr>
-		</form>
 	</table>
+	</form>
+	

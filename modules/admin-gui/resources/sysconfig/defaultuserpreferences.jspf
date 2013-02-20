@@ -38,7 +38,7 @@
       </td>
     </tr>
 
-    <tr id="Row0">
+    <tr id="Row1">
       <td width="50%" valign="top"> 
         <h3><c:out value="<%= ejbcawebbean.getText(\"SECONDARYLANGUAGE\") %>"/></h3>
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"LANGUAGETOUSEWHEN\") %>"/></p>
@@ -55,7 +55,7 @@
       </td>
     </tr>
 
-    <tr  id="Row1">
+    <tr  id="Row0">
       <td width="50%" valign="top"> 
         <h3><c:out value="<%= ejbcawebbean.getText(\"THEME\") %>"/></h3>
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"THEADMINSTHEMEOFFONTS\") %>"/></p>
@@ -74,7 +74,7 @@
       </td>
     </tr>
 
-    <tr  id="Row0">
+    <tr  id="Row1">
       <td width="49%" valign="top"> 
         <h3><c:out value="<%= ejbcawebbean.getText(\"NUMBEROFRECORDSPERPAGE\") %>"/></h3>
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"THENUMBEROFRECORDSTO\") %>"/></p>
@@ -91,19 +91,20 @@
       </td>
     </tr>
 
-    <tr  id="Row1">
-      <td width="49%" valign="top">&nbsp;</td>
-      <td width="51%" valign="top">&nbsp;</td>
-    </tr>
+	<%-- Form buttons --%>
+	
     <tr  id="Row0">
       <td width="49%" valign="top">&nbsp;</td>
       <td width="51%" valign="top"> 
         <input type="submit" name="<%= BUTTON_SAVE %>" value='<c:out value="<%= ejbcawebbean.getText(\"SAVE\") %>"/>' > <!-- onclick="parent.location.reload() -->
+        &nbsp;&nbsp;&nbsp;
         <input type="submit" name="<%= BUTTON_CANCEL %>" value='<c:out value="<%= ejbcawebbean.getText(\"CANCEL\") %>"/>'>
       </td>
     </tr>
+    
   </table>
- </form>
+</form>
+ 
 <% // Include Footer 
    String footurl = gc.getFootBanner(); %>
    
