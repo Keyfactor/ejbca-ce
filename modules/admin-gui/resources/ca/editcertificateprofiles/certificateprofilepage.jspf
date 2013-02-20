@@ -348,16 +348,27 @@ function checkusepathlengtconstraintfield(){
   }
 }
 
+function checkusekeyusagefield(){
+  if(document.editcertificateprofile.<%=CHECKBOX_KEYUSAGE %>.checked){
+    document.editcertificateprofile.<%= CHECKBOX_KEYUSAGECRITICAL %>.disabled = false;
+    document.editcertificateprofile.<%= SELECT_KEYUSAGE %>.disabled = false;
+  }
+  else{
+    document.editcertificateprofile.<%= CHECKBOX_KEYUSAGECRITICAL %>.disabled = true;
+    document.editcertificateprofile.<%= CHECKBOX_KEYUSAGECRITICAL %>.checked = false;
+    document.editcertificateprofile.<%= SELECT_KEYUSAGE %>.disabled = true;
+  }
+}
 
 function checkuseextendedkeyusagefield(){
   if(document.editcertificateprofile.<%=CHECKBOX_USEEXTENDEDKEYUSAGE %>.checked){
-    document.editcertificateprofile.<%= SELECT_EXTENDEDKEYUSAGE %>.disabled = false;
     document.editcertificateprofile.<%= CHECKBOX_EXTENDEDKEYUSAGECRITICAL %>.disabled = false;
+    document.editcertificateprofile.<%= SELECT_EXTENDEDKEYUSAGE %>.disabled = false;
   }
   else{
-    document.editcertificateprofile.<%= SELECT_EXTENDEDKEYUSAGE %>.disabled = true;
     document.editcertificateprofile.<%= CHECKBOX_EXTENDEDKEYUSAGECRITICAL %>.disabled = true;
     document.editcertificateprofile.<%= CHECKBOX_EXTENDEDKEYUSAGECRITICAL %>.checked = false;
+    document.editcertificateprofile.<%= SELECT_EXTENDEDKEYUSAGE %>.disabled = true;
   }
 }
 
@@ -450,6 +461,7 @@ function checkallfields(){
 -->
 
 </script>
+
 <div align="center"> 
   <h2><c:out value="<%= ejbcawebbean.getText(\"EDITCERTIFICATEPROFILE\") %>" /></h2>
   <h3><c:out value="<%= ejbcawebbean.getText(\"CERTIFICATEPROFILE\")+ \" : \" + certprofile %>" /></h3>
@@ -774,7 +786,7 @@ function checkallfields(){
         <strong><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_KEYUSAGE\") %>" /></strong>
       </td>
       <td width="50%">
-           <input type="checkbox" name="<%=CHECKBOX_KEYUSAGE %>" onClick="checkusefield('<%=CHECKBOX_KEYUSAGE %>', '<%=CHECKBOX_KEYUSAGECRITICAL %>')" value="<%=CHECKBOX_VALUE %>" 
+           <input type="checkbox" name="<%=CHECKBOX_KEYUSAGE %>" onClick="checkusekeyusagefield()" value="<%=CHECKBOX_VALUE %>" 
            <% if(certificateprofiledata.getUseKeyUsage())
                  out.write("CHECKED");
            %> id="<%=CHECKBOX_KEYUSAGE%>">
