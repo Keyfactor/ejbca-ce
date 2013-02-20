@@ -237,10 +237,9 @@ function viewcopies(link){
 </head>
 
 <body class="popup" id="viewtoken">
+
   <h2><%= ejbcawebbean.getText("VIEWHARDTOKEN") %></h2>
- <!-- <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("hardtoken_help.html")  + "#viewhardtoken"%>")'>
-    <u><%= ejbcawebbean.getText("HELP") %></u> </A>
-  </div>  -->
+
   <%if(noparameter){%>
   <div class="message alert"><%=ejbcawebbean.getText("YOUMUSTSPECIFYPARAMETER") %></div> 
   <% } 
@@ -262,12 +261,18 @@ function viewcopies(link){
      <% } %>
      <input type="hidden" name='<%= INDEX_PARAMETER %>' value='<%=index %>'>
 
-     <table border="0" cellpadding="0" cellspacing="2" width="400">
-      <tr id="Row<%=(row++)%2%>">
-	<td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("USERNAME") %></td>
-	<td><% if(token.getUsername() != null) out.write(token.getUsername()); %>
-        </td>
-      </tr> 
+     <table class="view" border="0" cellpadding="0" cellspacing="2" width="100%">
+     
+     <!-- ---------- Title ---------- -->
+     
+     <tr id="Row<%=(row++)%2%>" class="title">
+	   <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("USERNAME") %></td>
+	   <td><% if(token.getUsername() != null) out.write(token.getUsername()); %>
+       </td>
+     </tr> 
+     
+     <!-- ---------- Index ---------- -->
+     
       <% if(alluserstokens){ %>
       <tr id="Row<%=(row++)%2%>">
 	<td align="right"><%= ejbcawebbean.getText("HARDTOKENNR") %></td>
@@ -275,10 +280,29 @@ function viewcopies(link){
         </td>
       </tr>
       <% } %>
+      
        <tr id="Row<%=(row++)%2%>">
-	 <td>&nbsp;</td>
-	 <td>&nbsp;</td>
-       </tr>
+         <td  align="right" width="<%=columnwidth%>"> 
+           &nbsp;
+           <% if(index < numberoftokens -1 ){ %>
+           <input type="submit" name="<%= BUTTON_VIEW_OLDER %>" value="&lt; <%= ejbcawebbean.getText("VIEWOLDER") %>" tabindex="1" />
+           <% } %>
+         </td>
+         <td>
+           <% if(index > 0 ){ %>
+           <input type="submit" name="<%= BUTTON_VIEW_NEWER %>" value="<%= ejbcawebbean.getText("VIEWNEWER") %> &gt;" tabindex="2" />
+           <% } %>
+           &nbsp;
+         </td>
+      </tr>
+      
+      <!-- ---------- Hard token information ---------- -->
+       
+      <tr id="Row<%=(row++)%2%>">
+	    <td>&nbsp;</td>
+	    <td>&nbsp;</td>
+      </tr>
+      
       <tr id="Row<%=(row++)%2%>">
 	<td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("HARDTOKENPROFILE") %></td>        
 	<td><% if(token.getHardTokenProfileId().intValue() != 0){
@@ -287,6 +311,7 @@ function viewcopies(link){
                   out.write(ejbcawebbean.getText("NONE"));%>
         </td>
       </tr>
+      
       <% if(token.getLabel() != null){ %>
       <tr id="Row<%=(row++)%2%>">
 	<td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("LABEL") %></td>        
@@ -294,6 +319,9 @@ function viewcopies(link){
         </td>
       </tr>
       <% } %>
+      
+      <!-- ---------- Hard token content ---------- -->
+      
       <tr id="Row<%=(row++)%2%>">
 	<td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("HARDTOKENSN") %></td>
 	<td><c:out value='<%= token.getTokenSN()%>'/></td>
@@ -302,6 +330,7 @@ function viewcopies(link){
 	 <td align="right" width="<%=columnwidth%>">&nbsp;</td>
 	 <td>&nbsp;</td>
        </tr>
+       
       <% int numoffields = token.getNumberOfFields();
          for(int i = 0; i < numoffields; i++){ %>
        <tr id="Row<%=(row++)%2%>">
@@ -320,10 +349,12 @@ function viewcopies(link){
          </td>
        </tr>
        <% }  %>  
+       
        <tr id="Row<%=(row++)%2%>">
 	 <td>&nbsp;</td>
 	 <td>&nbsp;</td>
        </tr>
+       
        <tr id="Row<%=(row++)%2%>">
 	 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("ORIGINALCOPYOF") %></td>
 	 <td> <% 
@@ -337,30 +368,32 @@ function viewcopies(link){
                  while(iter.hasNext()){ 
                     String copytokensn = (String) iter.next();%>
                    <br />
-                   <A  style="cursor:pointer;" onclick="parent.location=encodeURI('<%= VIEWTOKEN_LINK + "?" + TOKENSN_PARAMETER + "=" + copytokensn + "&" + USER_PARAMETER + "=" + java.net.URLEncoder.encode(username,"UTF-8")%>')">
+                   <a  style="cursor:pointer;" onclick="parent.location=encodeURI('<%= VIEWTOKEN_LINK + "?" + TOKENSN_PARAMETER + "=" + copytokensn + "&" + USER_PARAMETER + "=" + java.net.URLEncoder.encode(username,"UTF-8")%>')">
                       <u><c:out value='<%= copytokensn %>'/></u> 
-                   </A><%
+                   </a><%
                  }
               }     
             }else{
               out.write(ejbcawebbean.getText("THISISACOPYOF") + ":<br />");  
               String copyofsn = token.getCopyOf();%>
-                 <A style="cursor:pointer;" onclick="parent.location=encodeURI('<%= VIEWTOKEN_LINK + "?" + TOKENSN_PARAMETER + "=" + copyofsn + "&" + USER_PARAMETER + "=" + java.net.URLEncoder.encode(username,"UTF-8")%>')">
+                 <a style="cursor:pointer;" onclick="parent.location=encodeURI('<%= VIEWTOKEN_LINK + "?" + TOKENSN_PARAMETER + "=" + copyofsn + "&" + USER_PARAMETER + "=" + java.net.URLEncoder.encode(username,"UTF-8")%>')">
                    <u><c:out value='<%= copyofsn %>'/></u> 
-                 </A><%
+                 </a><%
             } %>
       </td> 
        </tr>
+       
        <tr id="Row<%=(row++)%2%>">
 	 <td>&nbsp;</td>
 	 <td>&nbsp;</td>
        </tr>
-       <tr id="Row<%=(row++)%2%>">
+       <tr id="Row<%=(row)%2%>">
          <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("CREATED") %></td>
          <td>
            <%= ejbcawebbean.formatAsISO8601(token.getCreateTime()) %>
          </td>
        </tr> 
+       
     <tr id="Row<%=(row++)%2%>">
       <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("MODIFIED") %></td>
       <td>
@@ -368,33 +401,21 @@ function viewcopies(link){
        </td>
      </tr> 
     <tr id="Row<%=(row++)%2%>">
-      <td align="right" width="<%=columnwidth%>"></td>
+      <td align="right" width="<%=columnwidth%>">&nbsp;</td>
       <td>
         <% try{ 
              if(ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_CA_VIEW_CERT)){ %>
-        <A style="cursor:pointer;" onclick='viewcert()'>
-        <u><%= ejbcawebbean.getText("VIEWCERTIFICATES") %></u> </A>
+        <a style="cursor:pointer;" onclick='viewcert()'><u><%= ejbcawebbean.getText("VIEWCERTIFICATES") %></u> </a>
         <%   }
          }catch(AuthorizationDeniedException ade){}
         %>&nbsp; 
        </td>
      </tr> 
+     
+     <!-- ---------- Actions ---------- -->
+     
      <tr id="Row<%=(row++)%2%>">
-        <td width="<%=columnwidth%>">
-          <% if(index > 0 ){ %>
-           <input type="submit" name="<%= BUTTON_VIEW_NEWER %>" value="<%= ejbcawebbean.getText("VIEWNEWER") %>" tabindex="1">&nbsp;&nbsp;&nbsp;
-          <% } %>
-        </td>
 	<td>
-          <input type="reset" name="<%= BUTTON_CLOSE %>" value="<%= ejbcawebbean.getText("CLOSE") %>" tabindex="20"
-                 onClick='self.close()'>
-          <% if((index+1) < numberoftokens){ %>
-          &nbsp;&nbsp;&nbsp;<input type="submit" name="<%= BUTTON_VIEW_OLDER %>" value="<%= ejbcawebbean.getText("VIEWOLDER") %>" tabindex="3">
-          <% } %>
-       </td>
-     </tr> 
-       <tr id="Row<%=(row++)%2%>">
-          <td>  
        <%    if(usekeyrecovery ){ %>
         <input type="submit" name="<%=BUTTON_KEYRECOVER %>" value="<%= ejbcawebbean.getText("RECOVERKEY") %>"
                onClick='return confirmkeyrecovery()'>
@@ -404,22 +425,35 @@ function viewcopies(link){
           <td>
        <%    if(rabean.authorizedToRevokeCert(username) && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS) 
                && !rabean.isAllTokenCertificatesRevoked(token.getTokenSN(),username)){ %>
-        <input type="submit" name="<%=BUTTON_REVOKE %>" value="<%= ejbcawebbean.getText("REVOKE") %>"
-               onClick='return confirmrevocation()'><br />
         <select name="<%=SELECT_REVOKE_REASON %>" >
           <% for(int i=0; i < SecConst.reasontexts.length; i++){ 
-               if(i!= 7){%>
+               if(i!= 7){ %>
                <option value='<%= i%>'><%= ejbcawebbean.getText(SecConst.reasontexts[i]) %></option>
           <%   } 
              }
-           }%> 
+           } %> 
         </select>
+        <input type="submit" name="<%=BUTTON_REVOKE %>" value="<%= ejbcawebbean.getText("REVOKE") %>"
+               onClick='return confirmrevocation()'><br />
+        
           &nbsp;
           </td>
-       </tr> 
+       </tr>
+       
+      <tr id="Row<%=(row++)%2%>">
+		<td align="right" width="<%=columnwidth%>">
+		  &nbsp;
+        </td>
+		<td>
+          <input type="reset" name="<%= BUTTON_CLOSE %>" value="<%= ejbcawebbean.getText("CLOSE") %>" tabindex="20"
+                 onClick='self.close()' />
+        </td>
+      </tr> 
+       
    </table> 
+   
  </form>
-  <p></p>
+
    <% }
     }
    }%>

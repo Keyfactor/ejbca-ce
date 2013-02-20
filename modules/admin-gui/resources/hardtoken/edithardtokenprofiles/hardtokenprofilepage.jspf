@@ -68,7 +68,7 @@ function checkallfields(){
   <h3><%= ejbcawebbean.getText("TEMPLATEUPLOADFAILED") %></h3>
   <% } %>
 </div>
-  <table class="edit" width="100%" border="0" cellspacing="3" cellpadding="3">
+  <table class="edit-top" width="100%" border="0" cellspacing="3" cellpadding="3">
     <tr id="Row<%=row++%2%>"> 
       <td width="40%" valign="top" align="left"> 
         &nbsp;
@@ -80,14 +80,16 @@ function checkallfields(){
         <%= ejbcawebbean.getText("HELP") %></a> -->
       </td>
     </tr>
+    
     <tr  id="Row<%=row++%2%>"> 
       <td width="40%"  align="right"> 
-        <%= ejbcawebbean.getText("NAME") %>
+        <strong><%= ejbcawebbean.getText("NAME") %></strong>
       </td>
       <td width="60%"> 
-        <c:out value="<%= edithardtokenprofile.profilename%>"/>
+        <strong><c:out value="<%= edithardtokenprofile.profilename%>"/></strong>
       </td>
     </tr>
+    
     <form name="profiletype" method="post" action="<%=THIS_FILENAME %>">
       <input type="hidden" name='<%= EditHardTokenProfileJSPHelper.ACTION %>' value='<%=EditHardTokenProfileJSPHelper.ACTION_CHANGE_PROFILETYPE %>'>
       <input type="hidden" name='<%= EditHardTokenProfileJSPHelper.HIDDEN_HARDTOKENPROFILENAME %>' value="<c:out value='<%= edithardtokenprofile.profilename %>'/>">
@@ -108,13 +110,14 @@ function checkallfields(){
       </td>
     </tr>
    </form>
+   
    </table>
-   <table class="edit" width="100%" border="0" cellspacing="3" cellpadding="3">
    <form name="editprofile" method="post" action="<%=THIS_FILENAME %>">
     <input type="hidden" name='<%= EditHardTokenProfileJSPHelper.ACTION %>' value='<%=EditHardTokenProfileJSPHelper.ACTION_EDIT_HARDTOKENPROFILE %>'>
     <input type="hidden" name='<%= EditHardTokenProfileJSPHelper.HIDDEN_HARDTOKENPROFILENAME %>' value='<c:out value="<%= edithardtokenprofile.profilename %>"/>'>
     <input type="hidden" name='<%= EditHardTokenProfileJSPHelper.HIDDEN_HARDTOKENTYPE %>' value='<%=edithardtokenprofile.getProfileType() %>'>
-
+    <table class="edit-bottom" width="100%" border="0" cellspacing="3" cellpadding="3">
+    
     <% if(edithardtokenprofile.profiledata instanceof SwedishEIDProfile){%>
          <%@ include file="swedisheidpage.jspf" %> 
     <% }
@@ -149,9 +152,12 @@ function checkallfields(){
        if(edithardtokenprofile.profiledata instanceof IAdressLabelSettings){%>
        <%@ include file="adresslabelpage.jspf" %> 
     <%  } %>     
-    <tr  id="Row<%=row++%2%>"> 
+    
+    <%-- General settings --%>
+    
+    <tr  id="Row<%=row++%2%>" class="section"> 
       <td width="40%"  align="right">         
-         &nbsp;
+         <strong><%= ejbcawebbean.getText("GENERALSETTINGS") %></strong>
       </td>
       <td width="60%">
          &nbsp;  
@@ -159,14 +165,6 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="40%"  align="right">         
-         <strong><%= ejbcawebbean.getText("GENERALSETTINGS") %> :</strong>
-      </td>
-      <td width="60%">
-         &nbsp;  
-      </td>
-    </tr>
-    <tr  id="Row<%=row++%2%>"> 
-      <td width="40%"  align="right"> 
          <%= ejbcawebbean.getText("HARDTOKENSNPREFIX") %> 
       </td>
       <td width="60%">
@@ -174,7 +172,8 @@ function checkallfields(){
                value='<c:out value="<%= edithardtokenprofile.profiledata.getHardTokenSNPrefix()%>"/>'>
       </td>
     </tr>
-    <!--<tr  id="Row<%=row++%2%>"> 
+<%--
+    <tr  id="Row<%=row++%2%>"> 
       <td width="40%"  align="right"> 
         <%= ejbcawebbean.getText("NUMBEROFCOPIES") %> 
       </td>
@@ -192,7 +191,8 @@ function checkallfields(){
                  out.write("CHECKED");
            %>> 
       </td>
-    </tr> -->
+    </tr>
+--%>
     <tr  id="Row<%=row++%2%>"> 
       <td width="40%"  align="right"> 
         <%= ejbcawebbean.getText("EREASABLE") %> 
@@ -204,12 +204,19 @@ function checkallfields(){
            %>>  
       </td>
     </tr>
+    
+    <%-- Form buttons --%>
+    
     <tr  id="Row<%=row++%2%>"> 
-      <td width="40%" valign="top">&nbsp;</td>
+      <td width="40%" valign="top">
+        &nbsp;
+      </td>
       <td width="60%" valign="top"> 
         <input type="submit" name="<%= EditHardTokenProfileJSPHelper.BUTTON_SAVE %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE") %>">
+        &nbsp;&nbsp;&nbsp;
         <input type="submit" name="<%= EditHardTokenProfileJSPHelper.BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>">
       </td>
     </tr>
+    
   </table>
  </form>

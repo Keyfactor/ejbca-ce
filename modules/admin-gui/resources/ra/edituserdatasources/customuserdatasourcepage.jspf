@@ -1,14 +1,18 @@
 <%               
   CustomUserDataSourceContainer customuserdatasource = (CustomUserDataSourceContainer) userdatasourcehelper.userdatasourcedata;
 %>
-   <tr id="Row<%=row++%2%>"> 
+
+   <%-- General settings --%>
+
+   <tr id="Row<%=row++%2%>" class="section"> 
       <td width="40%" valign="top" align="right"> 
-         <strong><%= ejbcawebbean.getText("CUSTOMUSERDATASOURCESETTINGS") %> :</strong>
+         <strong><%= ejbcawebbean.getText("CUSTOMUSERDATASOURCESETTINGS") %></strong>
       </td>
       <td width="60%" valign="top"> 
          &nbsp;
       </td>
     </tr>
+    
     <tr id="Row<%=row++%2%>"> 
       <td width="40%" valign="top" align="right"> 
          <%= ejbcawebbean.getText("CLASSPATH") %>

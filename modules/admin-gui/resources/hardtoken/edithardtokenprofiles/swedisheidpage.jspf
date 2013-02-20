@@ -17,10 +17,12 @@
 
 %>
 
-   <tr id="Row<%=row++%2%>"> 
+   <%-- Certificate settings --%>
+
+   <tr id="Row<%=row++%2%>" class="section"> 
       <td width="40%" valign="top"> 
         <div align="right"> 
-         &nbsp;
+          <strong><%= ejbcawebbean.getText("CERTIFICATESETTINGS") %></strong>
         </div>
       </td>
       <td width="60%" valign="top"> 
@@ -44,26 +46,7 @@
           </select>
       </td>
     </tr>
-   <tr id="Row<%=row++%2%>"> 
-      <td width="40%" valign="top"> 
-        <div align="right"> 
-         &nbsp;
-        </div>
-      </td>
-      <td width="60%" valign="top"> 
-         &nbsp;
-      </td>
-    </tr>    
-   <tr id="Row<%=row++%2%>"> 
-      <td width="40%" valign="top"> 
-        <div align="right"> 
-          <strong><%= ejbcawebbean.getText("CERTIFICATESETTINGS") %> :</strong>
-        </div>
-      </td>
-      <td width="60%" valign="top"> 
-         &nbsp;
-      </td>
-    </tr>
+    
    <tr id="Row<%=row++%2%>"> 
       <td width="40%" valign="top"> 
         <div align="right"> 
@@ -77,6 +60,9 @@
            %>>  
       </td>
     </tr>    
+    
+    <%-- Signing certificate --%>
+    
     <tr id="Row<%=row++%2%>"> 
       <td width="40%" valign="top"> 
         <div align="right"> 
@@ -87,7 +73,7 @@
          &nbsp;
       </td>
     </tr>
-    <tr id="Row<%=row++%2%>"> 
+    <tr id="Row<%=row%2%>"> 
       <td width="40%" valign="top"> 
         <div align="right"> 
           <%= ejbcawebbean.getText("CERTIFICATEPROFILE") %>
@@ -107,7 +93,7 @@
           </select>         
       </td>
     </tr>
-    <tr id="Row<%=row++%2%>"> 
+    <tr id="Row<%=row%2%>"> 
       <td width="40%" valign="top"> 
         <div align="right"> 
           <%= ejbcawebbean.getText("CA") %>
@@ -156,14 +142,9 @@
           </select> <%= ejbcawebbean.getText("CHARS") %>.                   
       </td>
     </tr>
-    <tr id="Row<%=row++%2%>"> 
-      <td width="40%" valign="top"> 
-        &nbsp;
-      </td>
-      <td width="60%" valign="top"> 
-         &nbsp;
-      </td>
-    </tr>
+    
+    <%-- Authentication/Encryption certificate --%>
+    
     <tr id="Row<%=row++%2%>"> 
       <td width="40%" valign="top"> 
         <div align="right"> 
@@ -174,7 +155,7 @@
          &nbsp;
       </td>
     </tr>
-    <tr id="Row<%=row++%2%>"> 
+    <tr id="Row<%=row%2%>"> 
       <td width="40%" valign="top"> 
         <div align="right"> 
           <%= ejbcawebbean.getText("CERTIFICATEPROFILE") %>
@@ -194,7 +175,7 @@
           </select>        
       </td>
     </tr>
-    <tr id="Row<%=row++%2%>"> 
+    <tr id="Row<%=row%2%>"> 
       <td width="40%" valign="top"> 
         <div align="right"> 
           <%= ejbcawebbean.getText("CA") %>
@@ -217,7 +198,7 @@
           </select>         
       </td>
     </tr>
-    <tr id="Row<%=row++%2%>"> 
+    <tr id="Row<%=row%2%>"> 
       <td width="40%" valign="top"> 
         <div align="right"> 
           <%= ejbcawebbean.getText("PINTYPE") %>

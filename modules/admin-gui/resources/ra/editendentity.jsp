@@ -992,10 +992,6 @@ function checkUseInBatch(){
 
   <h2><%= ejbcawebbean.getText("EDITENDENTITYTITLE") %></h2>
 
- <!-- <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ra_help.html") + "#editendentity"%>")'>
-    <u><%= ejbcawebbean.getText("HELP") %></u> </A>
-  </div> -->
-
  <%if(nouserparameter){%>
   <div class="message alert"><%=ejbcawebbean.getText("YOUMUSTSPECIFYUSERNAME") %></div> 
   <% } 
@@ -1023,7 +1019,7 @@ function checkUseInBatch(){
 
 	<table class="edit" border="0" cellpadding="0" cellspacing="2" width="100%">
 
-	<tr id="Row<%=(row)%2%>" class="title">
+	<tr id="Row<%=(row)%2%>">
 	  <td align="right"><%= ejbcawebbean.getText("ENDENTITYPROFILE")%></td>  
 	  <td><% if(rabean.getEndEntityProfileName(profileid)==null) {
 				out.write(ejbcawebbean.getText("NOENDENTITYPROFILEDEFINED"));
@@ -1055,8 +1051,8 @@ function checkUseInBatch(){
          <option <%if(userdata.getStatus()== EndEntityConstants.STATUS_REVOKED) out.write(" selected ");%> value='<%= EndEntityConstants.STATUS_REVOKED %>'><%= ejbcawebbean.getText("STATUSREVOKED") %></option>
          <option <%if(userdata.getStatus()== EndEntityConstants.STATUS_HISTORICAL) out.write(" selected ");%> value='<%= EndEntityConstants.STATUS_HISTORICAL %>'><%= ejbcawebbean.getText("STATUSHISTORICAL") %></option>
         </select>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <input type="submit" name="<%= BUTTON_SAVE %>" value="<%= ejbcawebbean.getText("SAVE") %>" tabindex="<%=tabindex++%>" onClick='return checkallfields()' />
+        &nbsp;&nbsp;&nbsp;
+        <input style="font-weight:bold;" type="submit" name="<%= BUTTON_SAVE %>" value="<%= ejbcawebbean.getText("SAVE") %>" tabindex="<%=tabindex++%>" onClick='return checkallfields()' />
       </td>
       <td>&nbsp;</td>
     </tr>
@@ -1072,7 +1068,7 @@ function checkUseInBatch(){
       </tr>
 
           <% if(profile.getUse(EndEntityProfile.PASSWORD,0)){ %>
-      <tr id="Row<%=(row++)%2%>">
+      <tr id="Row<%=(row)%2%>">
 	<td align="right"><%= ejbcawebbean.getText("PASSWORD") %></td>
         <td>   
              <%
@@ -1218,7 +1214,7 @@ function checkUseInBatch(){
 
     <!-- ---------- Subject DN -------------------- -->
 
-      <tr id="Row<%=(row++)%2%>" class="title">
+      <tr id="Row<%=(row++)%2%>" class="section">
 	<td align="right"><strong><%= ejbcawebbean.getText("CERT_SUBJECTDN") %></strong></td>
 	<td>&nbsp;</td>
 	<td>&nbsp;</td>
@@ -1271,6 +1267,17 @@ function checkUseInBatch(){
 
 
     <!-- ---------- Other subject attributes -------------------- -->
+
+     <% if (  profile.getSubjectAltNameFieldOrderLength() > 0
+           || profile.getSubjectDirAttrFieldOrderLength() > 0
+           ) {
+      %> 
+      <tr id="Row<%=(row++)%2%>" class="section">
+	<td align="right"><strong><%= ejbcawebbean.getText("OTHERSUBJECTATTR") %></strong></td>
+	<td>&nbsp;</td>
+	<td>&nbsp;</td>
+       </tr>
+     <% } %>
 
      <% int numberofsubjectaltnamefields = profile.getSubjectAltNameFieldOrderLength();
         if(numberofsubjectaltnamefields > 0 ){
@@ -1383,7 +1390,7 @@ function checkUseInBatch(){
      <%
         int numberofsubjectdirattrfields = profile.getSubjectDirAttrFieldOrderLength();
         if(numberofsubjectdirattrfields > 0){
-%> 
+     %> 
       <tr id="Row<%=(row++)%2%>">
 	<td align="right"><strong><%= ejbcawebbean.getText("EXT_ABBR_SUBJECTDIRATTRS") %></strong></td>
 	<td>&nbsp;</td>
@@ -1431,7 +1438,7 @@ function checkUseInBatch(){
 
     <!-- ---------- Main certificate data -------------------- -->
 
-      <tr id="Row<%=(row++)%2%>" class="title">
+      <tr id="Row<%=(row++)%2%>" class="section">
 	<td align="right"><strong><%= ejbcawebbean.getText("MAINCERTIFICATEDATA") %></strong></td>
 	<td>&nbsp;</td>
 	<td>&nbsp;</td>
@@ -1514,7 +1521,7 @@ function checkUseInBatch(){
 		  || profile.getUse(EndEntityProfile.ENDTIME, 0)
 		  || profile.getUse(EndEntityProfile.CARDNUMBER, 0)
 		   ) { %>
-      <tr id="Row<%=(row++)%2%>">
+      <tr id="Row<%=(row++)%2%>" class="section">
 	<td align="right"><strong><%= ejbcawebbean.getText("OTHERCERTIFICATEDATA") %></strong></td>
 	<td>&nbsp;</td>
 	<td>&nbsp;</td>
@@ -1525,7 +1532,8 @@ function checkUseInBatch(){
 		<tr  id="Row<%=(row++)%2%>"> 
 			<td align="right"> 
 				<%= ejbcawebbean.getText("CERT_SERIALNUMBER_HEXA") %>
-			</td><td> 
+			</td>
+			<td> 
 				<input type="text" name="<%= TEXTFIELD_CERTSERIALNUMBER %>" size="20" maxlength="40" tabindex="<%=tabindex++%>" title="<%= ejbcawebbean.getText("FORMAT_HEXA") %>" class="hexa"
 					<%	final ExtendedInformation ei = userdata.getExtendedInformation();
 						final BigInteger oldNr = ei!=null ? ei.certificateSerialNumber() : null;
@@ -1582,7 +1590,7 @@ function checkUseInBatch(){
 			<td align="right"> 
 				<%= ejbcawebbean.getText("TIMEOFEND") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Certificate%20Validity") %>
 			</td><td> 
-				<input type="text" name="<%= TEXTFIELD_ENDTIME %>" size="20" maxlength="40" tabindex="<%=tabindex++%>"
+				<input type="text" name="<%= TEXTFIELD_ENDTIME %>" size="25" maxlength="40" tabindex="<%=tabindex++%>" title="<%= ejbcawebbean.getText("FORMAT_ISO8601") %> <%= ejbcawebbean.getText("OR") %> (<%= ejbcawebbean.getText("DAYS").toLowerCase() %>:<%= ejbcawebbean.getText("HOURS").toLowerCase() %>:<%= ejbcawebbean.getText("MINUTES").toLowerCase() %>)"
 					<%	ExtendedInformation ei = userdata.getExtendedInformation();
 						String endTime = null;
 						if ( ei != null ) {
@@ -1628,7 +1636,7 @@ function checkUseInBatch(){
                     <td align="right"> 
                             <c:out value="<%= ejbcawebbean.getText(\"CERT_EXTENSIONDATA\") %>"/><br/>
                     </td><td>
-                            <textarea name="<%=TEXTAREA_EXTENSIONDATA%>" rows="4" cols="35"><c:if test="${!useradded}"><c:out value="${editendentitybean.extensionData}"/></c:if></textarea>
+                            <textarea name="<%=TEXTAREA_EXTENSIONDATA%>" rows="4" cols="38"><c:if test="${!useradded}"><c:out value="${editendentitybean.extensionData}"/></c:if></textarea>
                     </td>
                     <td>
                             <input type="checkbox" name="<%= CHECKBOX_REQUIRED_EXTENSIONDATA %>" value="<%= CHECKBOX_VALUE %>" disabled="disabled"/>
@@ -1644,7 +1652,7 @@ function checkUseInBatch(){
             || profile.getUse(EndEntityProfile.SENDNOTIFICATION,0)
             || profile.getUsePrinting()
              ) { %>
-       <tr id="Row<%=(row++)%2%>">
+       <tr id="Row<%=(row++)%2%>" class="section">
 	 <td align="right"><strong><%= ejbcawebbean.getText("OTHERDATA") %></strong></td>
 	 <td>&nbsp;</td>
 	 <td>&nbsp;</td>
@@ -1812,7 +1820,7 @@ function checkUseInBatch(){
 	<tr id="Row<%=(row++)%2%>">
 	  <td align="right">&nbsp;</td>
 	  <td><input type="submit" name="<%= BUTTON_SAVE %>" value="<%= ejbcawebbean.getText("SAVE") %>" tabindex="<%=tabindex++%>" onClick='return checkallfields()'>
-		  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		  &nbsp;&nbsp;&nbsp;
 		  <input type="button" name="<%= BUTTON_CLOSE %>" value="<%= ejbcawebbean.getText("CLOSE") %>" tabindex="<%=tabindex++%>" onclick='self.close()'>
 	  </td>
 	  <td>&nbsp;</td>

@@ -169,12 +169,7 @@
 
     <!-- ---------- Subject DN -------------------- -->
 
-      <tr id="Row<%=(viewendentityhelper.row++)%2%>">
-      <td align="right">&nbsp;</td>
-      <td>&nbsp;</td>
-      </tr> 
-
-       <tr id="Row<%=(viewendentityhelper.row++)%2%>" class="title">
+       <tr id="Row<%=(viewendentityhelper.row++)%2%>" class="section">
 	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><strong><%= ejbcawebbean.getText("CERT_SUBJECTDN") %></strong></td>
 	 <td>&nbsp;</td>
        </tr>
@@ -193,6 +188,16 @@
 
 
     <!-- ---------- Other subject attributes -------------------- -->
+
+       <% if (  viewendentityhelper.profile.getSubjectAltNameFieldOrderLength() > 0
+             || viewendentityhelper.profile.getSubjectDirAttrFieldOrderLength() > 0
+             ) {
+       %> 
+       <tr id="Row<%=(viewendentityhelper.row++)%2%>" class="section">
+	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><strong><%= ejbcawebbean.getText("OTHERSUBJECTATTR") %></strong></td>
+	 <td>&nbsp;</td>
+       </tr>
+       <% } %>
 
        <% subjectfieldsize = viewendentityhelper.profile.getSubjectAltNameFieldOrderLength();
           if(subjectfieldsize > 0){
@@ -239,12 +244,7 @@
 
     <!-- ---------- Main certificate data -------------------- -->
 
-       <tr id="Row<%=(viewendentityhelper.row++)%2%>">
-     <td align="right">&nbsp;</td>
-	 <td>&nbsp;</td>
-       </tr>
-
-       <tr id="Row<%=(viewendentityhelper.row++)%2%>" class="title">
+       <tr id="Row<%=(viewendentityhelper.row++)%2%>" class="section">
 	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><strong><%= ejbcawebbean.getText("MAINCERTIFICATEDATA") %></strong></td>
 	 <td>&nbsp;</td>
        </tr>
@@ -299,7 +299,7 @@
     	  || viewendentityhelper.profile.getUse(EndEntityProfile.CARDNUMBER, 0)
     	  ) {
         %>
-       <tr id="Row<%=(viewendentityhelper.row++)%2%>">
+       <tr id="Row<%=(viewendentityhelper.row++)%2%>" class="section">
 	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><strong><%= ejbcawebbean.getText("OTHERCERTIFICATEDATA") %></strong></td>
 	 <td>&nbsp;</td>
        </tr>
@@ -355,7 +355,7 @@
       <% if(viewendentityhelper.profile.getUseExtensiondata() || !editendentitybean.getExtensionDataAsMap().isEmpty()){ %>
        <tr id="Row<%=(viewendentityhelper.row++)%2%>">
 	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("CERT_EXTENSIONDATA") %></td>
-	 <td><table>
+	 <td><table width="100%">
              <c:forEach var="item" items="${editendentitybean.extensionDataAsMap}">
                <tr>
                  <td>
@@ -379,7 +379,7 @@
     	  || viewendentityhelper.profile.getUsePrinting()
     	  ) {
         %>
-       <tr id="Row<%=(viewendentityhelper.row++)%2%>">
+       <tr id="Row<%=(viewendentityhelper.row++)%2%>" class="section">
 	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><strong><%= ejbcawebbean.getText("OTHERDATA") %></strong></td>
 	 <td>&nbsp;</td>
        </tr>
