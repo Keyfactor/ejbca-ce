@@ -41,7 +41,7 @@
               </li>
               <% if(org.ejbca.config.WebConfiguration.getRenewalEnabled()) { %>
               <li>
-                <a href="../renew/index.jsp">Request Browser Certificate Renewal</a>
+                <a href="../renew/index.jsp">Renew Browser Certificate</a>
               </li>
               <% } %>
             </ul>
