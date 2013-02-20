@@ -2,7 +2,7 @@
 
 <%@ include file="header.jsp" %>
 
-<h1 class="title"><%= org.ejbca.config.InternalConfiguration.getAppNameCapital() %> Request Browser Certificate Renewal</h1>
+<h1 class="title"><%= org.ejbca.config.InternalConfiguration.getAppNameCapital() %> Renew Browser Certificate</h1>
 <hr />
 <p>
 	On this page you can request renewal of your browser certificate.
