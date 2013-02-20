@@ -358,7 +358,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
 <form name="editprofile" method="post" action="<%=THIS_FILENAME %>" >
   <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_PROFILE %>'>
   <input type="hidden" name='<%= HIDDEN_PROFILENAME %>' value='<c:out value="<%= profile %>"/>'>
-  <table class="edit" width="100%" border="0" cellspacing="3" cellpadding="3">
+  <table class="edit" id="endentityprofile" width="100%" border="0" cellspacing="3" cellpadding="3">
     <tr id="Row<%=row++%2%>"> 
       <td width="10%" valign="top">
          &nbsp;
@@ -402,7 +402,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       </td>
     </tr>
 
-    <tr id="Row<%=row++%2%>"> 
+    <tr id="Row<%=row%2%>"> 
       <td width="10%" valign="top">
          &nbsp;
       </td>
@@ -577,11 +577,11 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
 
     <!-- ---------- Directives -------------------- -->
 
-    <tr  id="Row<%=row++%2%>"> 
+    <tr  id="Row<%=row++%2%>" class="section"> 
       <td width="10%" valign="top">
         &nbsp;
       </td>
-      <td width="40%" valign="top" align="right" class="title"> 
+      <td width="40%" valign="top" align="right"> 
         <strong><c:out value="<%= ejbcawebbean.getText(\"DIRECTIVES\") %>" /></strong>
       </td>
       <td width="50%"> 
@@ -620,11 +620,11 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
 
     <!-- ---------- Subject DN attributes -------------------- -->
 
-    <tr  id="Row<%=row++%2%>"> 
+    <tr  id="Row<%=row++%2%>" class="section"> 
       <td width="10%" valign="top">
         &nbsp;
       </td>
-      <td width="40%" valign="top" align="right" class="title"> 
+      <td width="40%" valign="top" align="right"> 
         <strong><c:out value="<%= ejbcawebbean.getText(\"CERT_SUBJECTDN_ATTRIBUTES\") %>" /></strong>
         <%= ejbcawebbean.getHelpReference("/userguide.html#End%20Entity%20Profile%20fields") %>
       </td>
@@ -638,7 +638,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         <c:out value="<%= ejbcawebbean.getText(\"SELECTFORREMOVAL\") %>" />
       </td>
       <td width="40%" valign="top" align="right"> 
-        <c:out value="<%= ejbcawebbean.getText(\"CERT_SUBJECTDN_ATTRIBUTES\") %>" />
+        <strong><c:out value="<%= ejbcawebbean.getText(\"CERT_SUBJECTDN_ATTRIBUTES\") %>" /></strong>
       </td>
       <td width="50%"> 
         <select name="<%=SELECT_ADDSUBJECTDN %>" size="1" >
@@ -711,11 +711,11 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
 
     <!-- ---------- Other subject attributes -------------------- -->
 
-    <tr  id="Row<%=row++%2%>"> 
+    <tr  id="Row<%=row++%2%>" class="section"> 
       <td width="10%" valign="top">
         &nbsp;
       </td>
-      <td width="40%" valign="top" align="right" class="title"> 
+      <td width="40%" valign="top" align="right"> 
         <strong><c:out value="<%= ejbcawebbean.getText(\"OTHERSUBJECTATTR\") %>" /></strong>
       </td>
       <td width="50%"> 
@@ -728,7 +728,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         <c:out value="<%= ejbcawebbean.getText(\"SELECTFORREMOVAL\") %>" />
       </td>
       <td width="40%" valign="top" align="right"> 
-        <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_SUBJECTALTNAME\") %>" /> 
+        <strong><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_SUBJECTALTNAME\") %>" /></strong> 
         <%= ejbcawebbean.getHelpReference("/userguide.html#Subject%20Alternative%20Names") %>
       </td>
       <td width="50%"> 
@@ -820,7 +820,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         <c:out value="<%= ejbcawebbean.getText(\"SELECTFORREMOVAL\") %>" />
       </td>
       <td width="40%" valign="top" align="right"> 
-        <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_SUBJECTDIRATTRS\") %>" />
+        <strong><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_SUBJECTDIRATTRS\") %>" /></strong>
       </td>
       <td width="50%"> 
         <select name="<%=SELECT_ADDSUBJECTDIRATTR %>" size="1" >
@@ -881,11 +881,11 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
 
     <!-- ---------- Main certificate data -------------------- -->
 
-    <tr  id="Row<%=row++%2%>"> 
+    <tr  id="Row<%=row++%2%>" class="section"> 
       <td width="10%" valign="top">
         &nbsp;
       </td>
-      <td width="40%" valign="top" align="right" class="title"> 
+      <td width="40%" valign="top" align="right"> 
         <strong><c:out value="<%= ejbcawebbean.getText(\"MAINCERTIFICATEDATA\") %>" /></strong>
       </td>
       <td width="50%"> 
@@ -893,7 +893,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       </td> 
     </tr>
 
-    <tr  id="Row<%=row++%2%>"> 
+    <tr  id="Row<%=row%2%>"> 
       <td width="10%" valign="top">
          &nbsp;
       </td>
@@ -946,7 +946,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       </td>
     </tr>
 
-    <tr  id="Row<%=row++%2%>"> 
+    <tr  id="Row<%=row%2%>"> 
       <td width="10%" valign="top">
          &nbsp;
       </td>
@@ -1000,7 +1000,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       </td>
     </tr>
 
-    <tr  id="Row<%=row++%2%>"> 
+    <tr  id="Row<%=row%2%>"> 
       <td width="10%" valign="top">
          &nbsp;
       </td>
@@ -1050,7 +1050,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
     </tr>
 
    <% if(globalconfiguration.getIssueHardwareTokens()){ %>
-    <tr  id="Row<%=row++%2%>"> 
+    <tr  id="Row<%=row%2%>"> 
       <td width="10%" valign="top">
          &nbsp;
       </td>
@@ -1066,7 +1066,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
            <label for="<%=CHECKBOX_USE_HARDTOKENISSUERS%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
       </td>
     </tr>
-    <tr  id="Row<%=row++%2%>"> 
+    <tr  id="Row<%=row%2%>"> 
       <td width="10%" valign="top">
          &nbsp;
       </td>
@@ -1111,11 +1111,11 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
 
     <!-- ---------- Other certificate data -------------------- -->
 
-    <tr  id="Row<%=row++%2%>"> 
+    <tr  id="Row<%=row++%2%>" class="section"> 
       <td width="10%" valign="top">
         &nbsp;
       </td>
-      <td width="40%" valign="top" align="right" class="title"> 
+      <td width="40%" valign="top" align="right"> 
         <strong><c:out value="<%= ejbcawebbean.getText(\"OTHERCERTIFICATEDATA\") %>" /></strong>
       </td>
       <td width="50%"> 
@@ -1142,24 +1142,6 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       </td> 
     </tr>
 
-    <!-- Extensiondata -->
-    <tr  id="Row<%=row++%2%>"> 
-      <td width="10%" valign="top">
-         &nbsp;
-      </td>
-      <td width="40%"  align="right"> 
-		<c:out value="<%= ejbcawebbean.getText(\"CERT_EXTENSIONDATA_CUSTOM\") %>" /> <%= ejbcawebbean.getHelpReference("/userguide.html#Custom%20certificate%20extension%20data") %>
-      </td>
-      <td width="50%"> 
-        <%	used = profiledata.getUseExtensiondata(); %>
-		<input type="checkbox" name="<%=CHECKBOX_USE_EXTENSIONDATA %>" value="<%=CHECKBOX_VALUE %>" 
-			<%	if ( used ) {
-				out.write(" CHECKED ");
-				} %>
-			   id="<%=CHECKBOX_USE_EXTENSIONDATA%>" />
-		<label for="<%=CHECKBOX_USE_EXTENSIONDATA%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
-      </td> 
-    </tr>
 
     <tr  id="Row<%=row++%2%>"> 
       <td width="10%" valign="top">
@@ -1265,14 +1247,32 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       </td>
     </tr>
 
-
-    <!-- ---------- Other data -------------------- -->
-
-    <tr  id="Row<%=row++%2%>">
+    <!-- Extensiondata -->
+    <tr  id="Row<%=row++%2%>"> 
       <td width="10%" valign="top">
          &nbsp;
       </td>
-      <td width="40%" valign="top" align="right" class="title">
+      <td width="40%"  align="right"> 
+		<c:out value="<%= ejbcawebbean.getText(\"CERT_EXTENSIONDATA_CUSTOM\") %>" /> <%= ejbcawebbean.getHelpReference("/userguide.html#Custom%20certificate%20extension%20data") %>
+      </td>
+      <td width="50%"> 
+        <%	used = profiledata.getUseExtensiondata(); %>
+		<input type="checkbox" name="<%=CHECKBOX_USE_EXTENSIONDATA %>" value="<%=CHECKBOX_VALUE %>" 
+			<%	if ( used ) {
+				out.write(" CHECKED ");
+				} %>
+			   id="<%=CHECKBOX_USE_EXTENSIONDATA%>" />
+		<label for="<%=CHECKBOX_USE_EXTENSIONDATA%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
+      </td> 
+    </tr>
+
+    <!-- ---------- Other data -------------------- -->
+
+    <tr  id="Row<%=row++%2%>" class="section">
+      <td width="10%" valign="top">
+         &nbsp;
+      </td>
+      <td width="40%" valign="top" align="right">
          <strong><c:out value="<%= ejbcawebbean.getText(\"OTHERDATA\") %>" /></strong>
       </td>
       <td width="50%" valign="top" align="right">
@@ -1620,7 +1620,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       </td>
     </tr>
     
-    <tr  id="Row<%=row++%2%>"> 
+    <tr  id="Row<%=row%2%>"> 
       <td width="10%" valign="top">
          &nbsp;
       </td>
@@ -1651,7 +1651,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         <label for="<%=CHECKBOX_REQUIRED_PRINTING%>"><c:out value="<%= ejbcawebbean.getText(\"REQUIRED\") %>" /></label>
       </td>
     </tr>    
-    <tr  id="Row<%=row++%2%>"> 
+    <tr  id="Row<%=row%2%>"> 
       <td width="10%" valign="top">
          &nbsp;
       </td>
@@ -1677,7 +1677,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         </select>
       </td>
     </tr>
-    <tr  id="Row<%=row++%2%>"> 
+    <tr  id="Row<%=row%2%>"> 
       <td width="10%" valign="top">
          &nbsp;
       </td>
@@ -1697,7 +1697,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         </select>
       </td>
     </tr>  
-    <tr  id="Row<%=row++%2%>"> 
+    <tr  id="Row<%=row%2%>"> 
       <td width="10%" valign="top">
          <input type="submit" name="<%= BUTTON_UPLOADTEMPLATE %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("UPLOADTEMPLATE") %>">
       </td>
@@ -1725,9 +1725,11 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       </td>
       <td width="50%" valign="top"> 
         <input type="submit" name="<%= BUTTON_SAVE %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE") %>" >
+        &nbsp;&nbsp;&nbsp;
         <input type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>">
       </td>
     </tr>
+    
   </table>
- </form>
+</form>
 

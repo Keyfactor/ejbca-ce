@@ -315,12 +315,6 @@ function confirmrepublish(){
 
   <h2><%= ejbcawebbean.getText("VIEWCERTIFICATE") %></h2>
 
-<!-- 
-  <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("viewcertificate_help.html") %>")'>
-    <u><%= ejbcawebbean.getText("HELP") %></u> </A>  
-  </div> 
--->
-
   <%if(noparameter){%>
   <div class="message alert"><%=ejbcawebbean.getText("YOUMUSTSPECIFYCERT") %></div> 
   <% } 
@@ -417,9 +411,9 @@ function confirmrepublish(){
        
        <tr id="Row<%=(row++)%2%>">
 		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("CERT_ISSUERDN") %></td>
-		 <td class="dn"><%= certificatedata.getIssuerDN() %></td>
+		 <td><span class="dn"><%= certificatedata.getIssuerDN() %></span></td>
        </tr>
-       <tr id="Row<%=(row++)%2%>">
+       <tr id="Row<%=(row)%2%>">
 		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("CERT_VALIDFROM") %></td>
 		 <td><%= ejbcawebbean.formatAsISO8601(certificatedata.getValidFrom()) %></td>
        </tr>
@@ -427,9 +421,9 @@ function confirmrepublish(){
 		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("CERT_VALIDTO") %></td>
 		 <td><%= ejbcawebbean.formatAsISO8601(certificatedata.getValidTo()) %></td>
        </tr>
-       <tr id="Row<%=(row++)%2%>">
+       <tr id="Row<%=(row++)%2%>" class="title">
 		 <td align="right" width="<%=columnwidth%>"><strong><%= ejbcawebbean.getText("CERT_SUBJECTDN") %></strong></td>
-		 <td class="dn"><strong><%= certificatedata.getSubjectDN() %></strong></td>
+		 <td><strong class="dn"><%= certificatedata.getSubjectDN() %></strong></td>
        </tr>
        
       <% if (!certificatedata.getType().equalsIgnoreCase("CVC")) { %>
@@ -632,7 +626,7 @@ function confirmrepublish(){
 %>
 				<br/><br/>
 				<input type="submit" name="<%=BUTTON_UNREVOKE %>" value="<%= ejbcawebbean.getText("UNREVOKE") %>"
-                onClick='return confirmunrevocation()'><br />	
+                onClick='return confirmunrevocation()'>
 <%
 			  }
 		   }

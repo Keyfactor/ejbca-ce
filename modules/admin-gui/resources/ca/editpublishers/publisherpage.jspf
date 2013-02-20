@@ -158,7 +158,7 @@ function checkallfields(){
      <%}
    } %>
 </div>
-  <table width="100%" border="0" cellspacing="3" cellpadding="3">
+  <table class="edit-top" width="100%" border="0" cellspacing="3" cellpadding="3">
     <tr id="Row<%=row++%2%>"> 
       <td width="50%" valign="top" align="left"> 
         &nbsp;
@@ -172,10 +172,10 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("NAME") %>
+        <strong><%= ejbcawebbean.getText("NAME") %></strong>
       </td>
       <td width="50%"> 
-        <c:out value="<%= publisherhelper.publishername %>"/>
+        <strong><c:out value="<%= publisherhelper.publishername %>"/></strong>
       </td>
     </tr>
     <form name="publishertype" method="post" action="<%=THIS_FILENAME %>">
@@ -199,19 +199,13 @@ function checkallfields(){
     </tr>
    </form>
    </table>
+   
    <form name="editpublisher" method="post" action="<%=THIS_FILENAME %>">
     <input type="hidden" name='<%= EditPublisherJSPHelper.ACTION %>' value='<%=EditPublisherJSPHelper.ACTION_EDIT_PUBLISHER %>'>
     <input type="hidden" name='<%= EditPublisherJSPHelper.HIDDEN_PUBLISHERNAME %>' value='<c:out value="<%= publisherhelper.publishername %>"/>'>
     <input type="hidden" name='<%= EditPublisherJSPHelper.HIDDEN_PUBLISHERTYPE %>' value='<c:out value="<%= publisherhelper.getPublisherType() %>"/>'>
-   <table class="edit" width="100%" border="0" cellspacing="3" cellpadding="3">
-    <tr  id="Row<%=row++%2%>"> 
-      <td width="50%"  align="right">         
-         &nbsp;
-      </td>
-      <td width="50%">
-         &nbsp;  
-      </td>
-    </tr>
+   <table class="edit-bottom" width="100%" border="0" cellspacing="3" cellpadding="3">
+
     <% if(publisherhelper.publisherdata instanceof LdapPublisher){%>
          <%@ include file="ldappublisherpage.jspf" %> 
     <% }
@@ -227,17 +221,12 @@ function checkallfields(){
        if(publisherhelper.publisherdata instanceof CustomPublisherContainer){%>
          <%@ include file="custompublisherpage.jspf" %> 
     <% } %>
-    <tr  id="Row<%=row++%2%>"> 
+    
+    <%-- Publisher queue --%>
+    
+    <tr  id="Row<%=row++%2%>" class="section"> 
       <td width="50%"  align="right">         
-         &nbsp;
-      </td>
-      <td width="50%">
-         &nbsp;  
-      </td>
-    </tr>
-    <tr  id="Row<%=row++%2%>"> 
-      <td width="50%"  align="right">         
-         <strong><%= ejbcawebbean.getText("PUBLISHERQUEUE") %> :</strong>
+         <strong><%= ejbcawebbean.getText("PUBLISHERQUEUE") %></strong>
          <%= ejbcawebbean.getHelpReference("/adminguide.html#Publisher%20Queue%20and%20failures") %>
       </td>
       <td width="50%">
@@ -314,37 +303,38 @@ function checkallfields(){
            } %>>
       </td>
     </tr>
-    <tr  id="Row<%=row++%2%>"> 
+    
+    <%-- General settings --%>
+    
+    <tr  id="Row<%=row++%2%>" class="title"> 
       <td width="50%"  align="right">         
-         &nbsp;
+         <strong><%= ejbcawebbean.getText("GENERALSETTINGS") %></strong>
       </td>
       <td width="50%">
          &nbsp;  
       </td>
     </tr>
-    <tr  id="Row<%=row++%2%>"> 
+    
+    <tr  id="Row<%=row++%2%>">
       <td width="50%"  align="right">         
-         <strong><%= ejbcawebbean.getText("GENERALSETTINGS") %> :</strong>
-      </td>
-      <td width="50%">
-         &nbsp;  
-      </td>
-    </tr>
-    <tr  id="Row<%=row++%2%>"> 
-      <td width="50%"  align="right"> 
          <%= ejbcawebbean.getText("DESCRIPTION") %> 
       </td>
       <td width="50%">        
-        <textarea name="<%=EditPublisherJSPHelper.TEXTAREA_DESCRIPTION%>" cols="45" rows="4"><c:out value="<%= publisherdata.getDescription() %>"/></textarea>
+        <textarea name="<%=EditPublisherJSPHelper.TEXTAREA_DESCRIPTION%>" cols="45" rows="2"><c:out value="<%= publisherdata.getDescription() %>"/></textarea>
       </td>
     </tr>
+    
+    <%-- Form buttons --%>
+    
     <tr  id="Row<%=row++%2%>"> 
       <td width="49%" valign="top">&nbsp;</td>
       <td width="51%" valign="top"> 
         <input type="submit" name="<%= EditPublisherJSPHelper.BUTTON_TESTCONNECTION %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVEANDTESTCONNECTION") %>">
         <input type="submit" name="<%= EditPublisherJSPHelper.BUTTON_SAVE %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE") %>">
+        &nbsp;&nbsp;&nbsp;
         <input type="submit" name="<%= EditPublisherJSPHelper.BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>">
       </td>
     </tr>
+    
   </table>
  </form>

@@ -50,8 +50,7 @@
  
 	<p><h:messages layout="table" errorClass="alert"/></p>
  
-	<div align="right">
-	<h:panelGrid columns="1" style="text-align: right;">
+	<h:panelGrid styleClass="edit-top" width="100%" columns="1" rowClasses="Row0,Row1" style="text-align: right;">
 		<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/administratorprivileges.jsf"
 			title="#{web.text.BACKTOROLES}">
 			<h:outputText value="#{web.text.BACKTOROLES}"/>
@@ -66,7 +65,6 @@
 			<h:outputText value="#{web.text.BASICMODE}"/>
 		</h:outputLink>
 	</h:panelGrid>
-	</div>
 	
 	<h:form id="accessRulesForm" rendered="#{not empty rolesManagedBean.currentRole}">
 	<h:inputHidden id="currentRole" value="#{rolesManagedBean.currentRole}" />
@@ -101,10 +99,19 @@
 		</h:dataTable>
 		</h:column>
 	</h:dataTable>
-	<h:commandButton action="#{rolesManagedBean.saveAdvancedAccessRules}" value="#{web.text.SAVE}"/>
-	<h:commandButton action="#{rolesManagedBean.restoreAdvancedAccessRules}" value="#{web.text.RESTORE}"/>
+	
+	<h:panelGrid styleClass="edit-bottom" width="100%" columns="1" style="text-align: center;">
+		<h:panelGroup>
+			<h:commandButton action="#{rolesManagedBean.saveAdvancedAccessRules}" value="#{web.text.SAVE}"/>
+			<f:verbatim>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</f:verbatim>
+			<h:commandButton action="#{rolesManagedBean.restoreAdvancedAccessRules}" value="#{web.text.RESTORE}"/>
+		</h:panelGroup>
+	</h:panelGrid>
+	
 	</h:form>
+	
 	</h:panelGroup>
+	
 </div>
 
 <%	// Include Footer 

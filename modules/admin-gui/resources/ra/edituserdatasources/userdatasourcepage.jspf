@@ -43,7 +43,7 @@ function checkallfields(){
      <%}
    } %>
 </div>
-  <table class="edit" width="100%" border="0" cellspacing="3" cellpadding="3">
+  <table class="edit-top" width="100%" border="0" cellspacing="3" cellpadding="3">
     <tr id="Row<%=row++%2%>"> 
       <td width="40%" valign="top" align="left"> 
         &nbsp;
@@ -57,7 +57,7 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="40%"  align="right"> 
-        <%= ejbcawebbean.getText("NAME") %>
+        <strong><%= ejbcawebbean.getText("NAME") %></strong>
       </td>
       <td width="60%"> 
         <c:out value="<%= userdatasourcehelper.userdatasourcename %>"/>
@@ -84,41 +84,31 @@ function checkallfields(){
     </tr>
    </form>
    </table>
-   <table class="edit" width="100%" border="0" cellspacing="3" cellpadding="3">
    <form name="edituserdatasource" method="post" action="<%=THIS_FILENAME %>">
     <input type="hidden" name='<%= EditUserDataSourceJSPHelper.ACTION %>' value='<%=EditUserDataSourceJSPHelper.ACTION_EDIT_USERDATASOURCE %>'>
     <input type="hidden" name='<%= EditUserDataSourceJSPHelper.HIDDEN_USERDATASOURCENAME %>' value='<c:out value="<%= userdatasourcehelper.userdatasourcename %>"/>'>
     <input type="hidden" name='<%= EditUserDataSourceJSPHelper.HIDDEN_USERDATASOURCETYPE %>' value='<%=userdatasourcehelper.getUserDataSourceType() %>'>
-    <tr  id="Row<%=row++%2%>"> 
-      <td width="40%"  align="right">         
-         &nbsp;
-      </td>
-      <td width="60%">
-         &nbsp;  
-      </td>
-    </tr>
+
+    <table class="edit-bottom" width="100%" border="0" cellspacing="3" cellpadding="3">
+    
     <% 
        if(userdatasourcehelper.userdatasourcedata instanceof CustomUserDataSourceContainer){%>
          <%@ include file="customuserdatasourcepage.jspf" %> 
     <% } %>
-    <tr  id="Row<%=row++%2%>"> 
+    
+    <%-- General settings --%>
+    
+    <tr  id="Row<%=row++%2%>" class="section"> 
       <td width="40%"  align="right">         
-         &nbsp;
+         <strong><%= ejbcawebbean.getText("GENERALSETTINGS") %></strong>
       </td>
       <td width="60%">
          &nbsp;  
       </td>
     </tr>
+    
     <tr  id="Row<%=row++%2%>"> 
       <td width="40%"  align="right">         
-         <strong><%= ejbcawebbean.getText("GENERALSETTINGS") %> :</strong>
-      </td>
-      <td width="60%">
-         &nbsp;  
-      </td>
-    </tr>
-        <tr  id="Row<%=row++%2%>"> 
-      <td width="40%"  align="right"> 
          <%= ejbcawebbean.getText("MODIFYABLEFIELDS") %> 
       </td>
       <td width="60%"> 
@@ -138,7 +128,8 @@ function checkallfields(){
               <% } %>
         </select>
       </td>
-
+    </tr>
+    
     <tr  id="Row<%=row++%2%>"> 
       <td width="40%" align="right"> 
         <%= ejbcawebbean.getText("APPLICABLECAS") %>
@@ -167,21 +158,27 @@ function checkallfields(){
         </select>
       </td>
     </tr>
+    
     <tr  id="Row<%=row++%2%>"> 
       <td width="40%"  align="right"> 
          <%= ejbcawebbean.getText("DESCRIPTION") %> 
       </td>
       <td width="60%">        
-        <textarea name="<%=EditUserDataSourceJSPHelper.TEXTAREA_DESCRIPTION%>" cols="45" rows="4"><c:out value="<%= userdatasourcedata.getDescription() %>"/></textarea>
+        <textarea name="<%=EditUserDataSourceJSPHelper.TEXTAREA_DESCRIPTION%>" cols="45" rows="2"><c:out value="<%= userdatasourcedata.getDescription() %>"/></textarea>
       </td>
     </tr>
+    
+    <%-- Form buttons --%>
+    
     <tr  id="Row<%=row++%2%>"> 
       <td width="40%" valign="top">&nbsp;</td>
       <td width="60%" valign="top"> 
         <input type="submit" name="<%= EditUserDataSourceJSPHelper.BUTTON_TESTCONNECTION %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVEANDTESTCONNECTION") %>">
         <input type="submit" name="<%= EditUserDataSourceJSPHelper.BUTTON_SAVE %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE") %>">
+        &nbsp;&nbsp;&nbsp;
         <input type="submit" name="<%= EditUserDataSourceJSPHelper.BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>">
       </td>
     </tr>
+    
   </table>
  </form>

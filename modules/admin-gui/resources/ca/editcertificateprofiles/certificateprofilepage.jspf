@@ -1703,12 +1703,15 @@ function checkallfields(){
     </tr>
 
 
+	<%-- Form buttons --%>
+	
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" valign="top">
         &nbsp;
       </td>
       <td width="50%" valign="top"> 
         <input type="submit" name="<%= BUTTON_SAVE %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE") %>">
+        &nbsp;&nbsp;&nbsp;
         <input type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>">
       </td>
     </tr>

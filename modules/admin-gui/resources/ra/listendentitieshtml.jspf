@@ -20,7 +20,7 @@ function edituser(row){
     var username = hiddenusernamefield.value;
     var link = "<%= EDITUSER_LINK %>?<%= USER_PARAMETER %>="+username;
     link = encodeURI(link);
-    win_popup = window.open(link, 'edit_user','height=650,width=1000,scrollbars=yes,toolbar=no,resizable=1');
+    win_popup = window.open(link, 'edit_user','height=650,width=900,scrollbars=yes,toolbar=no,resizable=1');
     win_popup.focus();
 }
 
@@ -47,7 +47,7 @@ function viewtoken(row){
     var username = hiddenusernamefield.value;
     var link = "<%= VIEWTOKEN_LINK %>?<%= USER_PARAMETER %>="+username;
     link = encodeURI(link);
-    win_popup = window.open(link, 'view_token','height=650,width=650,scrollbars=yes,toolbar=no,resizable=1');
+    win_popup = window.open(link, 'view_token','height=650,width=750,scrollbars=yes,toolbar=no,resizable=1');
     win_popup.focus();
 }
 

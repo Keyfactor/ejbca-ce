@@ -21,16 +21,18 @@
 
 %>
 
-   <tr id="Row<%=row++%2%>"> 
+   <tr id="Row<%=row++%2%>" class="section"> 
+      <%-- Certificate settings --%>
       <td width="40%" valign="top"> 
         <div align="right"> 
-         &nbsp;
+          <strong><%= ejbcawebbean.getText("CERTIFICATESETTINGS") %></strong>
         </div>
       </td>
       <td width="60%" valign="top"> 
          &nbsp;
       </td>
    </tr>
+   
     <tr id="Row<%=row++%2%>"> 
       <td width="40%" valign="top"> 
         <div align="right"> 
@@ -51,26 +53,6 @@
    <tr id="Row<%=row++%2%>"> 
       <td width="40%" valign="top"> 
         <div align="right"> 
-         &nbsp;
-        </div>
-      </td>
-      <td width="60%" valign="top"> 
-         &nbsp;
-      </td>
-    </tr>    
-   <tr id="Row<%=row++%2%>"> 
-      <td width="40%" valign="top"> 
-        <div align="right"> 
-          <strong><%= ejbcawebbean.getText("CERTIFICATESETTINGS") %> :</strong>
-        </div>
-      </td>
-      <td width="60%" valign="top"> 
-         &nbsp;
-      </td>
-    </tr>
-    <tr id="Row<%=row++%2%>"> 
-      <td width="40%" valign="top"> 
-        <div align="right"> 
          <%= ejbcawebbean.getText("CERTIFICATESREWRITABLE") %> 
         </div>
       </td>
@@ -81,6 +63,9 @@
            %>>  
       </td>
     </tr>
+    
+    <%-- Signing certificate --%>
+    
     <tr id="Row<%=row++%2%>"> 
       <td width="40%" valign="top"> 
         <div align="right"> 
@@ -91,7 +76,7 @@
          &nbsp;
       </td>
     </tr>
-    <tr id="Row<%=row++%2%>"> 
+    <tr id="Row<%=row%2%>"> 
       <td width="40%" valign="top"> 
         <div align="right"> 
           <%= ejbcawebbean.getText("CERTIFICATEPROFILE") %>
@@ -111,7 +96,7 @@
           </select>      
       </td>
     </tr>
-    <tr id="Row<%=row++%2%>"> 
+    <tr id="Row<%=row%2%>"> 
       <td width="40%" valign="top"> 
         <div align="right"> 
           <%= ejbcawebbean.getText("CA") %>
@@ -160,6 +145,9 @@
           </select> <%= ejbcawebbean.getText("CHARS") %>.          
       </td>
     </tr>
+    
+    <%-- Authentication certificate --%>
+    
     <tr id="Row<%=row++%2%>"> 
       <td width="40%" valign="top"> 
         <div align="right"> 
@@ -170,7 +158,7 @@
          &nbsp;
       </td>
     </tr>
-    <tr id="Row<%=row++%2%>"> 
+    <tr id="Row<%=row%2%>"> 
       <td width="40%" valign="top"> 
         <div align="right"> 
           <%= ejbcawebbean.getText("CERTIFICATEPROFILE") %>
@@ -190,7 +178,7 @@
           </select>      
       </td>
     </tr>
-    <tr id="Row<%=row++%2%>"> 
+    <tr id="Row<%=row%2%>"> 
       <td width="40%" valign="top"> 
         <div align="right"> 
           <%= ejbcawebbean.getText("CA") %>
@@ -239,6 +227,9 @@
           </select> <%= ejbcawebbean.getText("CHARS") %>. 
       </td>
     </tr>
+    
+    <%-- Encryption certificate --%>
+    
     <tr id="Row<%=row++%2%>"> 
       <td width="40%" valign="top"> 
         <div align="right"> 
@@ -249,7 +240,7 @@
          &nbsp;
       </td>
     </tr>
-    <tr id="Row<%=row++%2%>"> 
+    <tr id="Row<%=row%2%>"> 
       <td width="40%" valign="top"> 
         <div align="right"> 
           <%= ejbcawebbean.getText("CERTIFICATEPROFILE") %>
@@ -269,7 +260,7 @@
           </select>      
       </td>
     </tr>
-    <tr id="Row<%=row++%2%>"> 
+    <tr id="Row<%=row%2%>"> 
       <td width="40%" valign="top"> 
         <div align="right"> 
           <%= ejbcawebbean.getText("CA") %>
@@ -292,7 +283,7 @@
           </select>         
       </td>
     </tr>
-    <tr id="Row<%=row++%2%>"> 
+    <tr id="Row<%=row%2%>"> 
       <td width="40%" valign="top"> 
         <div align="right"> 
           <%= ejbcawebbean.getText("PINTYPE") %>
@@ -300,7 +291,7 @@
       </td>
       <td width="60%" valign="top">          
          <input type="hidden" name='<%= EditHardTokenProfileJSPHelper.SELECT_PINTYPE + "2" %>' value='<%= EnhancedEIDProfile.PINTYPE_ENC_SAME_AS_AUTH %>'>
-      <!--   <select name="<%=EditHardTokenProfileJSPHelper.SELECT_PINTYPE + "2"%>" size="1"  >
+      <%--   <select name="<%=EditHardTokenProfileJSPHelper.SELECT_PINTYPE + "2"%>" size="1"  >
             <% currentpintype = curprofile.getPINType(EnhancedEIDProfile.CERTUSAGE_ENC);
                
                for(int i=0;i < encpintypes.length;i++){%>
@@ -308,11 +299,11 @@
                   <%= ejbcawebbean.getText(encpintexts[i]) %>
                </option>
             <%}%>
-          </select>         -->
+          </select>         --%>
           <%= ejbcawebbean.getText("SAMEASAUTHCERT") %>
       </td>
     </tr>
-    <tr id="Row<%=row++%2%>"> 
+    <tr id="Row<%=row%2%>"> 
       <td width="40%" valign="top"> 
         <div align="right"> 
           <%= ejbcawebbean.getText("KEYRECOVERABLE") %>

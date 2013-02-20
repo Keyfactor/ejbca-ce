@@ -207,8 +207,11 @@ function checkallfields(){
 <body onload='roleupdated()'>
 
 <div align="center">
+
 	<h2><h:outputText value="#{web.text.ACCESSRULESFORROLE} #{rolesManagedBean.currentRole}" /></h2>
+	
 	<h:outputText value="#{web.text.AUTHORIZATIONDENIED}" rendered="#{!rolesManagedBean.authorizedToRole}"/>
+	
 	<h:panelGroup rendered="#{rolesManagedBean.authorizedToRole}">
 	<p><h:outputText styleClass="alert" value="#{web.text.ADVANCEDMODEREQUIRED}" rendered="#{rolesManagedBean.basicRuleSet.forceAdvanced}" /></p>
 	<p><h:messages layout="table" errorClass="alert"/></p>
@@ -272,6 +275,9 @@ function checkallfields(){
 		<h:selectManyListbox id="selectother" value="#{rolesManagedBean.currentOtherRules}" size="3">
 			<f:selectItems value="#{rolesManagedBean.availableOtherRules}" />
 		</h:selectManyListbox> 
+
+
+		<%-- Form buttons --%>
 
 		<h:panelGroup>
 			&nbsp;
