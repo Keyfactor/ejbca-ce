@@ -103,8 +103,7 @@ function checkusecadefinedfreshestcrlfield(){
   }
 }
 
-function checkuseaiafield(){
-  var attr = "";
+function checkuseaiafield(caIssuersURIcount){
   if(document.editcertificateprofile.<%=CHECKBOX_USEAUTHORITYINFORMATIONACCESS %>.checked){    
     document.editcertificateprofile.<%= CHECKBOX_USEDEFAULTOCSPSERVICELOCALTOR %>.disabled = false;
     document.editcertificateprofile.<%= CHECKBOX_USEDEFAULTOCSPSERVICELOCALTOR %>.checked = true;
@@ -112,9 +111,10 @@ function checkuseaiafield(){
     document.editcertificateprofile.<%= TEXTFIELD_CAISSUERURI %>.disabled = false;
     document.editcertificateprofile.<%= TEXTFIELD_CAISSUERURI %>.value = "";
     document.editcertificateprofile.<%= BUTTON_ADD_CAISSUERURI %>.disabled = false;
-    for (var i = 0; i<3; i++) {
-      attr = "<%=TEXTFIELD_CAISSUERURI%>"+i;
-      document.editcertificateprofile[attr].removeAttribute('disabled');
+    // For already defined caIssuers URIs
+    for (var i = 0; i < caIssuersURIcount; i++) {
+      eval("document.editcertificateprofile.<%= TEXTFIELD_CAISSUERURI %>" + i + ".disabled = false");
+      eval("document.editcertificateprofile.<%= BUTTON_DELETE_CAISSUERURI %>" + i + ".disabled = false");
     }
   }
   else{
@@ -125,10 +125,10 @@ function checkuseaiafield(){
     document.editcertificateprofile.<%= TEXTFIELD_CAISSUERURI %>.disabled = true;
     document.editcertificateprofile.<%= TEXTFIELD_CAISSUERURI %>.value = "";
     document.editcertificateprofile.<%= BUTTON_ADD_CAISSUERURI %>.disabled = true;
-    for (var i = 0; i<3; i++) {
-      attr = "<%=TEXTFIELD_CAISSUERURI%>"+i;
-      document.editcertificateprofile[attr].setAttribute('disabled', 'true');
-      document.editcertificateprofile[attr].setAttribute('value', '');
+    // For already defined caIssuers URIs
+    for (var i = 0; i < caIssuersURIcount; i++) {
+      eval("document.editcertificateprofile.<%= TEXTFIELD_CAISSUERURI %>" + i + ".disabled = true");
+      eval("document.editcertificateprofile.<%= BUTTON_DELETE_CAISSUERURI %>" + i + ".disabled = true");
     }
   }
 }
@@ -302,13 +302,20 @@ function checkusebasicconstraintfield(){
   }
 }
 
-function checkusecertificatepoliciesfield(){
+function checkusecertificatepoliciesfield(policyCount){
   if(document.editcertificateprofile.<%=CHECKBOX_USECERTIFICATEPOLICIES %>.checked){
     document.editcertificateprofile.<%= CHECKBOX_CERTIFICATEPOLICIESCRITICAL %>.disabled = false;
     document.editcertificateprofile.<%= TEXTFIELD_CERTIFICATEPOLICYID %>.disabled = false;
     document.editcertificateprofile.<%= TEXTAREA_POLICYNOTICE_UNOTICE %>.disabled = false;
     document.editcertificateprofile.<%= TEXTFIELD_POLICYNOTICE_CPSURL %>.disabled = false;
     document.editcertificateprofile.<%= BUTTON_ADD_POLICY %>.disabled = false;
+    // For already defined policies
+    for (var i = 0; i < policyCount; i++) {
+      eval("document.editcertificateprofile.<%= TEXTFIELD_CERTIFICATEPOLICYID %>" + i + ".disabled = false");
+      eval("document.editcertificateprofile.<%= TEXTAREA_POLICYNOTICE_UNOTICE %>" + i + ".disabled = false");
+      eval("document.editcertificateprofile.<%= TEXTFIELD_POLICYNOTICE_CPSURL %>" + i + ".disabled = false");
+      eval("document.editcertificateprofile.<%= BUTTON_DELETE_POLICY %>" + i + ".disabled = false");
+    }
   }
   else{
     document.editcertificateprofile.<%= CHECKBOX_CERTIFICATEPOLICIESCRITICAL %>.disabled = true;
@@ -319,7 +326,15 @@ function checkusecertificatepoliciesfield(){
     document.editcertificateprofile.<%= TEXTAREA_POLICYNOTICE_UNOTICE %>.value = "";
     document.editcertificateprofile.<%= TEXTFIELD_POLICYNOTICE_CPSURL %>.disabled = true;
     document.editcertificateprofile.<%= TEXTFIELD_POLICYNOTICE_CPSURL %>.value = "";
-    document.editcertificateprofile.<%= BUTTON_ADD_POLICY %>.disabled = true;  }
+    document.editcertificateprofile.<%= BUTTON_ADD_POLICY %>.disabled = true;
+    // For already defined policies
+    for (var i = 0; i < policyCount; i++) {
+      eval("document.editcertificateprofile.<%= TEXTFIELD_CERTIFICATEPOLICYID %>" + i + ".disabled = true");
+      eval("document.editcertificateprofile.<%= TEXTAREA_POLICYNOTICE_UNOTICE %>" + i + ".disabled = true");
+      eval("document.editcertificateprofile.<%= TEXTFIELD_POLICYNOTICE_CPSURL %>" + i + ".disabled = true");
+      eval("document.editcertificateprofile.<%= BUTTON_DELETE_POLICY %>" + i + ".disabled = true");
+    }
+  }
 }
 
 function checkusepathlengtconstraintfield(){
@@ -1005,12 +1020,13 @@ function checkallfields(){
     </tr>
     
     <%-- Certificate Policies extension --%>
+    <% List policies = certificateprofiledata.getCertificatePolicies(); %>
     <tr  id="Row<%=row%2%>"> 
       <td width="50%"  align="right"> 
         <strong><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_CERTIFICATEPOLICIES\") %>" /></strong>
       </td>
       <td width="50%">
-           <input type="checkbox" name="<%=CHECKBOX_USECERTIFICATEPOLICIES %>" onClick="checkusecertificatepoliciesfield()" value="<%=CHECKBOX_VALUE %>" 
+           <input type="checkbox" name="<%=CHECKBOX_USECERTIFICATEPOLICIES %>" onClick="checkusecertificatepoliciesfield(<%= policies.size() %>)" value="<%=CHECKBOX_VALUE %>" 
            <% if(certificateprofiledata.getUseCertificatePolicies())
                  out.write("CHECKED");
             %> id="<%=CHECKBOX_USECERTIFICATEPOLICIES%>">
@@ -1028,9 +1044,7 @@ function checkallfields(){
       </td>
     </tr>
     <%-- List of already defined policies. --%>
-    <% List policies = certificateprofiledata.getCertificatePolicies();
-
-       if((policies != null) && (policies.size() > 0)) {
+    <% if((policies != null) && (policies.size() > 0)) {
            CertificatePolicy policy;
            int i = 0;
            for(Iterator it = certificateprofiledata.getCertificatePolicies().iterator(); it.hasNext(); i++) {
@@ -1094,12 +1108,13 @@ function checkallfields(){
     </tr>
     
     <%-- Authority Information Access (AIA) extension --%>
+	<% List caissuers = certificateprofiledata.getCaIssuers(); %>
     <tr  id="Row<%=row%2%>"> 
       <td width="50%"  align="right"> 
         <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_AUTHORITYINFOACCESS\") %>" /> 
       </td>
       <td width="50%">
-           <input type="checkbox" name="<%=CHECKBOX_USEAUTHORITYINFORMATIONACCESS %>" onClick="checkuseaiafield()" value="<%=CHECKBOX_VALUE %>" 
+           <input type="checkbox" name="<%=CHECKBOX_USEAUTHORITYINFORMATIONACCESS %>" onClick="checkuseaiafield(<%= caissuers.size() %>)" value="<%=CHECKBOX_VALUE %>" 
            <% if(certificateprofiledata.getUseAuthorityInformationAccess())
                  out.write("CHECKED");
            %> id="<%=CHECKBOX_USEAUTHORITYINFORMATIONACCESS%>">
@@ -1140,9 +1155,7 @@ function checkallfields(){
     </tr>
     <%-- caIssuers part of authority information access (aia) extension --%>
     <%-- List of already defined caIssuers URIs. --%>
-    <% List caissuers = certificateprofiledata.getCaIssuers();
-
-       if((caissuers != null) && (caissuers.size() > 0)) {
+    <% if((caissuers != null) && (caissuers.size() > 0)) {
            String uri;
            int i = 0;
            for(Iterator it = caissuers.iterator(); it.hasNext(); i++) {
