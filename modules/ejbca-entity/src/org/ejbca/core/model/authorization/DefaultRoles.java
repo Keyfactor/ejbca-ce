@@ -44,6 +44,9 @@ public enum DefaultRoles {
             new AccessRuleTemplate(AccessRulesConstants.HARDTOKEN_EDITHARDTOKENISSUERS, AccessRuleState.RULE_ACCEPT, false), 
             new AccessRuleTemplate(AccessRulesConstants.HARDTOKEN_EDITHARDTOKENPROFILES, AccessRuleState.RULE_ACCEPT, false),
             new AccessRuleTemplate(CryptoTokenRules.VIEW.resource(), AccessRuleState.RULE_ACCEPT, true)/*,
+            Note:
+            We DO NOT allow CA Administrators to USE CryptoTokens, since this would mean that they could
+            bind any existing CryptoToken to a new CA and access the keys.
             new AccessRuleTemplate(CryptoTokenRules.USE.resource(), AccessRuleState.RULE_ACCEPT, true)*/),
     RAADMINISTRATOR("RAADMINISTRATOR",
             new AccessRuleTemplate(AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRuleState.RULE_ACCEPT, false), 
