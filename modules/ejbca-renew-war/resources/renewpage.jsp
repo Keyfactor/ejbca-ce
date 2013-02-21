@@ -2,13 +2,9 @@
 
 <%@ include file="header.jsp" %>
 
-<h1 class="title"><%= org.ejbca.config.InternalConfiguration.getAppNameCapital() %> Renew Browser Certificate</h1>
-<hr />
-<p>
-	On this page you can request renewal of your browser certificate.
-</p> 
+<h1 class="title">Request Browser Certificate Renewal</h1>
 
-<p>&nbsp;</p>
+<p>On this page, you can request renewal of your browser certificate.</p> 
 
 <c:choose>
 	<c:when test="${!empty errorMessage}">
@@ -24,15 +20,14 @@
 	<c:otherwise>
 		<form action="index.jsp" method="post">
 		<fieldset>
-		    <legend>Request</legend>
-		    You are authenticated as: <i>${certificate.subjectDN}</i>.<br/>
-		    <br/>
-			Press the button below to request renewal:<br/>
-			<input type="submit" name="${buttonRenew}" value="Renew">
+			<legend>Request</legend>
+			You are authenticated as: <strong>${certificate.subjectDN}</strong><br />
+			<br />
+			Press the button below to request renewal:<br />
+			<input type="submit" name="${buttonRenew}" value="Renew" />
 		</fieldset>
 		</form>
 	</c:otherwise>
 </c:choose>
-
 
 <%@ include file="footer.inc" %>
