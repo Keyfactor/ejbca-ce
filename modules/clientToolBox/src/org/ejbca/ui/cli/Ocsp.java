@@ -72,7 +72,7 @@ public class Ocsp extends ClientToolBox {
             SerialNrs(String fileName) throws FileNotFoundException, IOException, ClassNotFoundException {
                 List<BigInteger> vSerialNrsTmp;
             	// Try to parse it as pure text-file with one dec-encoded certificate serialnumber on each line, like the one you would get with
-                // echo "select serialNumber from CertificateData where issuerDN like 'CN=AdminCA1%';" | mysql -u ejbca -p ejbca | grep -v serialNumber > ../sns.txt
+                // echo "select serialNumber from CertificateData where issuerDN like 'CN=ManagementCA%';" | mysql -u ejbca -p ejbca | grep -v serialNumber > ../sns.txt
             	try {
                     vSerialNrsTmp = new ArrayList<BigInteger>();
             		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new DataInputStream(new FileInputStream(fileName))));

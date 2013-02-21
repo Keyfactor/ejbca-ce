@@ -29,7 +29,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
  *   user.setPassword ("foo123");
  *   user.setClearPwd (false);
  *   user.setSubjectDN ("CN=Tester,C=SE");
- *   user.setCaName ("AdminCA1");
+ *   user.setCaName ("ManagementCA");
  *   user.setEmail (null);
  *   user.setSubjectAltName (null);
  *   user.setStatus (UserDataVOWS.STATUS_NEW);

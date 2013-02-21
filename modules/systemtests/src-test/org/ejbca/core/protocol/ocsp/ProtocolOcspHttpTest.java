@@ -76,6 +76,7 @@ import org.bouncycastle.cert.ocsp.OCSPResp;
 import org.bouncycastle.cert.ocsp.OCSPRespBuilder;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
+import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
@@ -115,6 +116,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
@@ -226,7 +228,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 	final private RevocationSessionRemote revocationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RevocationSessionRemote.class);
 	final private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
 	final private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-
+    
 	@BeforeClass
 	public static void beforeClass() throws CertificateException {
 		// Install BouncyCastle provider
@@ -245,16 +247,31 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 		log.debug("httpReqPath=" + httpReqPath);
 		assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
 				.getResponseCode() == 200);
+		
 		cacert = (X509Certificate) getTestCACert();
 		caid = getTestCAId();
+		
+        int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
+        ocspDefaultTestCA = CaSessionTest.createTestX509CA("CN=OCSPDefaultTestCA", null, false, keyusage);
+        caSession.addCA(admin, ocspDefaultTestCA);
+        Map<String, String> confmap = new HashMap<String, String>();
+        confmap.put("ocsp.defaultresponder", "CN=OCSPDefaultTestCA");
+        helper.alterConfig(confmap);        
+        helper.reloadKeys();
+
 	}
 
 	@After
 	public void tearDown() throws Exception {
 		super.tearDown();
 		cacert = null;
+		
 		removeDSACA();
 		removeECDSACA();
+		
+        CryptoTokenManagementSessionTest.removeCryptoToken(null, ocspDefaultTestCA.getCAToken().getCryptoTokenId());
+        caSession.removeCA(admin, "CN=OCSPDefaultTestCA".hashCode());
+		
 		assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
 				.getResponseCode() == 200);
 	}
@@ -733,6 +750,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 	@Test
 	public void test20MaliciousOcspRequest() throws Exception {
 		log.trace(">test20MaliciousOcspRequest");
+		
 		// Start by sending a valid OCSP requests so we know the helpers work
 		byte validOcspReq[] = getValidOcspRequest();
 		OCSPResp response = sendRawRequestToOcsp(validOcspReq.length, validOcspReq, false);

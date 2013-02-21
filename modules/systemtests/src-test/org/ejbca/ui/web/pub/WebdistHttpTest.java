@@ -23,6 +23,14 @@ import java.util.List;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.jce.X509KeyUsage;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.CaSessionTest;
+import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
@@ -44,7 +52,7 @@ public class WebdistHttpTest {
     private String httpPort;
 
     private ConfigurationSessionRemote configurationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    
+
     @Before
     public void setUp() {
         httpPort = configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP);
@@ -52,11 +60,19 @@ public class WebdistHttpTest {
 
     @Test
     public void testJspCompile() throws Exception {
+        
+        AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("WebdistHttpTest"));
+        CA testx509ca;
+        CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+        int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
+        testx509ca = CaSessionTest.createTestX509CA("CN=TestCA", null, false, keyusage);
+        caSession.addCA(admin, testx509ca);
+        
         // We hit the pages and see that they return a 200 value, so we know
         // they at least compile correctly
         String httpReqPath = "http://127.0.0.1:" + httpPort + "/ejbca";
         String resourceName = "publicweb/webdist/certdist";
-        String resourceName1 = "publicweb/webdist/certdist?cmd=cacert&issuer=CN%3dAdminCA1%2cO%3dEJBCA+Sample%2cC%3dSE&level=0";
+        String resourceName1 = "publicweb/webdist/certdist?cmd=cacert&issuer=CN%3dTestCA&level=0";
 
         final WebClient webClient = new WebClient();
         WebConnection con = webClient.getWebConnection();
@@ -68,6 +84,8 @@ public class WebdistHttpTest {
         resp = con.getResponse(settings);
         assertEquals("Response code", 200, resp.getStatusCode());
 
+        CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
+        caSession.removeCA(admin, testx509ca.getCAId());
     }
 
     @Test
@@ -124,7 +142,7 @@ public class WebdistHttpTest {
     @Test
     public void testPublicWebChainDownload() throws Exception {
     	
-    	// This test assumes we have a default AdminCA1 installed with CAId=-1688117755
+    	// This test assumes we have a default ManagementCA installed with CAId=-1688117755
         String httpReqPathPem = "http://localhost:" + httpPort + "/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=-1688117755&format=pem";
         String httpReqPathJks = "http://localhost:" + httpPort + "/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=-1688117755&format=jks";
 
@@ -146,7 +164,7 @@ public class WebdistHttpTest {
         		found = true;
         	}
         }
-        assertTrue("Unable find AdminCA1 in certificate chain or parsing the response wrong.", found);
+        assertTrue("Unable find ManagementCA in certificate chain or parsing the response wrong.", found);
 
         settings = new WebRequestSettings(new URL(httpReqPathJks));
         resp = con.getResponse(settings);

@@ -83,7 +83,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
     private static final String PBEPASSWORD = "password";
     
     private static String userDN = "CN=tomas1,UID=tomas2,O=PrimeKey Solutions AB,C=SE";
-    private static String issuerDN = "CN=AdminCA1,O=EJBCA Sample,C=SE";
+    private static String issuerDN = "CN=ManagementCA,O=EJBCA Sample,C=SE";
     private KeyPair keys = null;  
 
     private static int caid = 0;
@@ -102,16 +102,16 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        // Try to use AdminCA1 if it exists
-        CAInfo adminca1 = caSession.getCAInfo(admin, "AdminCA1");
-        if (adminca1 == null) {
+        // Try to use ManagementCA if it exists
+        CAInfo managementca = caSession.getCAInfo(admin, "ManagementCA");
+        if (managementca == null) {
             Collection<Integer> caids = caSession.getAvailableCAs(admin);
             Iterator<Integer> iter = caids.iterator();
             while (iter.hasNext()) {
                 caid = iter.next().intValue();
             }           
         } else {
-                caid = adminca1.getCAId();
+                caid = managementca.getCAId();
         }
         if (caid == 0) {
                 assertTrue("No active CA! Must have at least one active CA to run tests!", false);
@@ -137,7 +137,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET, PBEPASSWORD);
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, "EMPTY");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, "ENDUSER");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, "AdminCA1");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, "ManagementCA");
         updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
         updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "-;-");
         

@@ -139,7 +139,7 @@ public class DnFieldsTest extends CommonEjbcaWS {
         user.setPassword("foo123");
         user.setClearPwd(false);
         user.setSubjectDN("E=boss@fire.com,CN=Tester,C=SE");
-        user.setCaName("AdminCA1");
+        user.setCaName("ManagementCA");
         user.setSubjectAltName("rfc822name=boss@fire.com");
         user.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
         user.setEndEntityProfileName(PROFILE_NAME);

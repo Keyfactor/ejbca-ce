@@ -74,7 +74,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
     private static final String P12_FILENAME = "ocspTestSigner.p12";
     private static final String PASSWORD = "foo123";
     private static final String OCSP_ALIAS = "ocspTestSigner";// "OCSP Signer";
-    private static final String CA_DN = "CN=AdminCA1,O=EJBCA Sample,C=SE";
+    private static final String CA_DN = "CN=ManagementCA,O=EJBCA Sample,C=SE";
 
     private StandaloneOcspResponseGeneratorSessionRemote standaloneOcspResponseGeneratorSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(StandaloneOcspResponseGeneratorSessionRemote.class);

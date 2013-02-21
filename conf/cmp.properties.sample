@@ -13,7 +13,7 @@
 # 
 # Enforce a particual CA instead of taking it from the request.
 # This should be the DN of the CA, i.e.:
-# CN=AdminCA1,O=EJBCA Sample,C=SE 
+# CN=ManagementCA,O=EJBCA Sample,C=SE 
 #
 # Default: empty
 #cmp.defaultca=
@@ -75,8 +75,8 @@
 #cmp.authenticationparameters=-
 #cmp.authenticationparameters=UID
 #cmp.authenticationparameters=foo123
-#cmp.authenticationparameters=AdminCA1
-#cmp.authenticationparameters=UID;AdminCA1
+#cmp.authenticationparameters=ManagementCA
+#cmp.authenticationparameters=UID;ManagementCA
 #cmp.authenticationparameters=-;O;-
 
 # This option works in combination with the authentication module 'EndEntityCertificate' in client mode. Normally, the certificate attached in
@@ -207,8 +207,8 @@
 # ProfileDefault - use the default CA of the end entity profile used
 # KeyId - use a CA with the same name as the KeyId sent in the CMP request (UTF-8 encoding is used)
 #
-# Default: AdminCA1
-#cmp.ra.caname=AdminCA1
+# Default: ManagementCA
+#cmp.ra.caname=ManagementCA
 
 # ---------- Settings for the CMP TCP listener ----------
 #

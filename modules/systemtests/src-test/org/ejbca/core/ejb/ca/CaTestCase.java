@@ -290,6 +290,15 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         } catch (CADoesntExistsException e) {
             // Ignore this state, continue instead. This is due to a lack of an exists-method in CaSession
         }
+        
+        try {
+            CAInfo cainfo = caSession.getCAInfo(internalAdmin, dn.hashCode() );
+            caSession.renameCA(internalAdmin, cainfo.getName(), caName);
+            return true;
+        } catch (CADoesntExistsException e) {
+            // Ignore this state, continue instead. This is due to a lack of an exists-method in CaSession
+        }
+        
         final int cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(internalAdmin, caName, String.valueOf(keyStrength));
         final CAToken catoken = CaSessionTest.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         // Create and active OSCP CA Service.

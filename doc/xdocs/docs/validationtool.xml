@@ -41,7 +41,7 @@ To run the OCSP checks issue:
 bin/validationtool.sh ocsp -url http://localhost:8080/ejbca/publicweb/status/ocsp -caconf conf/sample1/ocspchecks_adminca.properties
 </source>
 <p>
-This will query the OCSP responder for three different results (good, revoked and unknown) as configured in ocspchecks_adminca.properties. For the tests to succeed you will have to replace the adminca1.crt with the issuer of your OCSP responder certificates as well as changing the DN:s and serial numbers in the configuration file to match your installation. For more details see later sections of the manual.
+This will query the OCSP responder for three different results (good, revoked and unknown) as configured in ocspchecks_adminca.properties. For the tests to succeed you will have to replace the managementca.crt with the issuer of your OCSP responder certificates as well as changing the DN:s and serial numbers in the configuration file to match your installation. For more details see later sections of the manual.
 </p>
 </subsection>
 <p>
@@ -76,7 +76,7 @@ Sample certificate validation output:
           Configuration:                    certchecks1.properties
           Certificate file:                 timestamp2.pem
           Certificate serial:               0x5c04ced718526417
-          Certificate issuer:               CN=AdminCA1,O=PrimeKey Solutions AB,C=SE
+          Certificate issuer:               CN=ManagementCA,O=PrimeKey Solutions AB,C=SE
           Certificate subject:              CN=Signer 1,C=SE
           Certificate fingerprint (SHA1):   05a219d835622653192c30eeeee8f01f918b30fb
 
@@ -161,12 +161,12 @@ Run the OCSP healthcheck tool with the specifed CA configuration file(s)
 Sample usages:
 a) ocsp -listchecks
 b) ocsp -url http://localhost:8080/ejbca/publicweb/status/ocsp -caconf
-ocspchecks_adminca1.properties
+managementca.properties
 c) ocsp -url http://server1/status/ocsp -url http://server2/status/ocsp
--maxtries 5 -caconf ocspchecks_adminca1.properties -caconf
+-maxtries 5 -caconf ocspchecks_managementca.properties -caconf
 ocspchecks_authca1.properties
 d) ocsp -url http://localhost:8080/ejbca/publicweb/status/ocsp -caconf
-ocspchecks_adminca1.properties -failfolder ./failfolder
+ocspchecks_managementca.properties -failfolder ./failfolder
 </source>
 </subsubsection>
 <p>
@@ -327,7 +327,7 @@ Actual:    Different values for the fields: [serialNumber, issuer, validity]
 Details:   
 serialNumber expected: 0x7d982c66a57c3430
 serialNumber   actual: 0x4d69e649072cc0d8
-issuer expected: C=SE, O=EJBCA Sample, CN=AdminCA1
+issuer expected: C=SE, O=EJBCA Sample, CN=ManagementCA
 issuer    actual: C=SE, O=EJBCA Support, CN=MyCA1
 validity expected: [Sat Jun 03 17:33:39 CEST 2006, Fri May 29 17:43:39 CEST 2026]
 validity    actual: [Wed Jul 04 20:04:07 CEST 2012, Sat Jul 02 20:04:07 CEST 2022]

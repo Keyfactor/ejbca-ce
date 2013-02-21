@@ -27,7 +27,9 @@ import java.net.URL;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
@@ -45,13 +47,17 @@ import org.bouncycastle.cert.ocsp.OCSPRespBuilder;
 import org.bouncycastle.cert.ocsp.SingleResp;
 import org.bouncycastle.cert.ocsp.UnknownStatus;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
+import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
+import org.cesecore.config.ConfigurationHolder;
+import org.cesecore.config.OcspConfiguration;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.config.EjbcaConfigurationHolder;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.junit.After;
 
@@ -69,7 +75,7 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
 
 	private static final Logger log = Logger.getLogger(ProtocolOcspTestBase.class);
 
-	protected static final String issuerDN = "CN=AdminCA1,O=EJBCA Sample,C=SE";
+	protected static final String issuerDN = "CN=ManagementCA,O=EJBCA Sample,C=SE";
 	protected static final byte[] unknowncacertBytes = Base64.decode(("MIICLDCCAZWgAwIBAgIIbzEhUVZYO3gwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
 			+ "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAyMDcw" + "OTEyNDc1OFoXDTA0MDgxNTEyNTc1OFowLzEPMA0GA1UEAxMGVGVzdENBMQ8wDQYD"
 			+ "VQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMIGdMA0GCSqGSIb3DQEBAQUAA4GLADCB" + "hwKBgQDZlACHRwJnQKlgpMqlZQmxvCrJPpPFyhxvjDHlryhp/AQ6GCm+IkGUVlwL"
@@ -87,6 +93,8 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
 	protected X509Certificate cacert = null;
 	protected X509Certificate ocspTestCert = null;
 	protected X509Certificate unknowncacert = null;
+    
+	protected CA ocspDefaultTestCA;
 
 	protected int caid;
 

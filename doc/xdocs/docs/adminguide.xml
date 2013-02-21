@@ -515,16 +515,16 @@ CertDir="/home/autosscep/"
 KeyDir="/home/autosscep/"
 
 [CA]
-DN="C=SE, O=EJBCA Sample, CN=AdminCA1"
+DN="C=SE, O=EJBCA Sample, CN=ManagementCA"
 URL="http://localhost:8080/ejbca/publicweb/apply/scep/pkiclient.exe"
-CertFile="AdminCA1.cacert.pem"
-EncCertFile="AdminCA1.cacert.pem"
+CertFile="ManagementCA.cacert.pem"
+EncCertFile="ManagementCA.cacert.pem"
 [/CA]
 
 [Certificate]
 CertFile="mycert"
 KeyFile="mykey"
-CADN="C=SE, O=EJBCA Sample, CN=AdminCA1"
+CADN="C=SE, O=EJBCA Sample, CN=ManagementCA"
 
 # Create a user with username "router4711" and password "foo123" in EJBCA
 # to automatically enroll
@@ -549,7 +549,7 @@ The SCEP RA certificate is the end entity certificate issued to the External RA 
 </p>
 <source>
 [CA]
-DN="C=SE, O=EJBCA Sample, CN=AdminCA1"
+DN="C=SE, O=EJBCA Sample, CN=ManagementCA"
 URL="http://localhost:8080/scepraserver/scep/pkiclient.exe"
 CertFile="scepra.pem"
 EncCertFile="scepra.pem"
@@ -860,7 +860,7 @@ cmp.ra.namegenerationprefix=cmp
 #cmp.ra.namegenerationpostfix=
 cmp.ra.endentityprofile=CMP_ENTITY
 cmp.ra.certificateprofile=CMP_CERT
-cmp.ra.caname=AdminCA1
+cmp.ra.caname=ManagementCA
 </source>
 </subsubsection>
 
@@ -958,7 +958,7 @@ options as for jCert.
 <source>
 CertificateRequestMessageBuilder msgbuilder = new CertificateRequestMessageBuilder(BigInteger.valueOf(certReqId));
 X509NameEntryConverter dnconverter = new X509DefaultEntryConverter();
-X500Name issuerDN = X500Name.getInstance(new X509Name("CN=AdminCA1").toASN1Object());
+X500Name issuerDN = X500Name.getInstance(new X509Name("CN=ManagementCA").toASN1Object());
 X500Name subjectDN = X500Name.getInstance(new X509Name("CN=user", dnconverter).toASN1Object());
 msgbuilder.setIssuer(issuerDN);
 msgbuilder.setSubject(subjectDN);
@@ -996,7 +996,7 @@ ProtectedPKIMessage message = pbuilder.build(macCalculator);
 <source>
 CertificateRequestMessageBuilder msgbuilder = new CertificateRequestMessageBuilder(BigInteger.valueOf(certReqId));
 X509NameEntryConverter dnconverter = new X509DefaultEntryConverter();
-X500Name issuerDN = X500Name.getInstance(new X509Name("CN=AdminCA1").toASN1Object());
+X500Name issuerDN = X500Name.getInstance(new X509Name("CN=ManagementCA").toASN1Object());
 X500Name subjectDN = X500Name.getInstance(new X509Name("CN=user", dnconverter).toASN1Object());
 msgbuilder.setIssuer(issuerDN);
 msgbuilder.setSubject(subjectDN);
@@ -1043,7 +1043,7 @@ cmp.ra.authenticationsecret=password
 <p>
 You can then use cmpclient (as an RA):</p>
 <source>
-./openssl cmp -cmd ir -server localhost:8080 -path ejbca/publicweb/cmp -srvcert AdminCA1.cacert.pem -user NewUser -pass password -certout clcert1.pem -newkey key1.pem -keyfmt PEM -certfmt PEM -subject "/CN=NewUser/O=My Organization/C=SE"
+./openssl cmp -cmd ir -server localhost:8080 -path ejbca/publicweb/cmp -srvcert ManagementCA.cacert.pem -user NewUser -pass password -certout clcert1.pem -newkey key1.pem -keyfmt PEM -certfmt PEM -subject "/CN=NewUser/O=My Organization/C=SE"
 </source>
 <p>This requests a certificate, defining the subject DN that will be used. The CA used to sign the certificate is specified in the EJBCA cmp configuration, and can be taken from the keyid.
 EJBCA authenticated the request using the HMAC protection with the password, and accepts any request upon correct authentication. See the CMP documentation above for more advanced configuration.
@@ -1057,14 +1057,14 @@ cmp.extractusernamecomponent=CN
 </source>
 <p>You can now add a new user in EJBCA:</p>
 <source>
-bin/ejbca.sh ra adduser user1 password "CN=user1,O=My Organization,C=SE" null AdminCA1 null 1 USERGENERATED
+bin/ejbca.sh ra adduser user1 password "CN=user1,O=My Organization,C=SE" null ManagementCA null 1 USERGENERATED
 bin/ejbca.sh ra setclearpwd user1 password
 bin/ejbca.sh ra setuserstatus user1 10
 </source>
 <p>
 You can then use cmpclient (as a client):</p>
 <source>
-./openssl cmp -cmd ir -server localhost:8080 -path ejbca/publicweb/cmp -srvcert AdminCA1.cacert.pem -user user1 -pass password -certout clcert1.pem -newkey key1.pem -keyfmt PEM -certfmt PEM -subject "/CN=user1/O=My Organization/C=SE"
+./openssl cmp -cmd ir -server localhost:8080 -path ejbca/publicweb/cmp -srvcert ManagementCA.cacert.pem -user user1 -pass password -certout clcert1.pem -newkey key1.pem -keyfmt PEM -certfmt PEM -subject "/CN=user1/O=My Organization/C=SE"
 </source>
 <p>This requests a certificate, and the requested subject DN must match the registered subject DN.
 EJBCA authenticates the request using the HMAC protection with the password of the registered user. See the CMP documentation above for more advanced configuration.</p>
@@ -1074,7 +1074,7 @@ EJBCA authenticates the request using the HMAC protection with the password of t
 Cmpforopenssl works with with EJBCA in client mode, with certificate authentication, using the following EJBCA configuration (cmp.properties, unset properties = default):</p>
 <source>
 cmp.authenticationmodule=EndEntityCertificate
-cmp.authenticationparameters=AdminCA1 (use the CA that issues your client authentication certificate)
+cmp.authenticationparameters=ManagementCA (use the CA that issues your client authentication certificate)
 cmp.extractusernamecomponent=CN
 </source>
 <p>You can now issue a certificate using certificate authentication in EJBCA (the end entity needs a certificate before so we re-use user1 from above):</p>
@@ -1085,14 +1085,14 @@ bin/ejbca.sh ra setuserstatus user1 10
 <p>
 You can then use cmpclient (as a client):</p>
 <source>
-./openssl cmp -cmd ir -server localhost:8080 -path ejbca/publicweb/cmp -srvcert AdminCA1.cacert.pem -cert clcert.pem -key key.pem -certout clcert1.pem -newkey key1.pem -keyfmt PEM -certfmt PEM -subject "/CN=user1/O=My Organization/C=SE"
+./openssl cmp -cmd ir -server localhost:8080 -path ejbca/publicweb/cmp -srvcert ManagementCA.cacert.pem -cert clcert.pem -key key.pem -certout clcert1.pem -newkey key1.pem -keyfmt PEM -certfmt PEM -subject "/CN=user1/O=My Organization/C=SE"
 </source>
 <p>This requests a certificate, and the requested subject DN must match the registered subject DN.
 EJBCA authenticates the request using the signature protection with the certificate of the registered user. See the CMP documentation above for more advanced configuration.</p>
 <p>You can also use a 'cr' instead of an 'ir';</p>
 <source>
 bin/ejbca.sh ra setuserstatus user1 10
-./openssl cmp -cmd cr -server localhost:8080 -path ejbca/publicweb/cmp -srvcert AdminCA1.cacert.pem -cert clcert.pem -key key.pem -certout clcert1.pem -newkey key1.pem -keyfmt PEM -certfmt PEM -subject "/CN=user1/O=My Organization/C=SE"
+./openssl cmp -cmd cr -server localhost:8080 -path ejbca/publicweb/cmp -srvcert ManagementCA.cacert.pem -cert clcert.pem -key key.pem -certout clcert1.pem -newkey key1.pem -keyfmt PEM -certfmt PEM -subject "/CN=user1/O=My Organization/C=SE"
 </source>
 
 <p><strong>Client mode, Vendor certificate authentication</strong></p>
@@ -1108,11 +1108,11 @@ cmp.vendorca=3GPP-CA
 <p>With this configuration you can now request an initial certificate with the following command:
 </p>
 <source>
-./openssl cmp -cmd ir -server localhost:8080 -path ejbca/publicweb/cmp -srvcert AdminCA1.cacert.pem -cert devicecert.pem -key devicekey.pem -certout clcert1.pem -newkey key1.pem -keyfmt PEM -certfmt PEM -subject "/CN=device/O=My Organization/C=SE"
+./openssl cmp -cmd ir -server localhost:8080 -path ejbca/publicweb/cmp -srvcert ManagementCA.cacert.pem -cert devicecert.pem -key devicekey.pem -certout clcert1.pem -newkey key1.pem -keyfmt PEM -certfmt PEM -subject "/CN=device/O=My Organization/C=SE"
 </source>
 <p>
 In this configuration 'devicecert.pem' and 'devicekey.pem' are the device's private key and the certificate issued by the Vendor CA (3GPP-CA). 
-AdminCA1.cacert.pem is the CA certificate of the CA in EJBCA issuing the new certificate for the device.
+ManagementCA.cacert.pem is the CA certificate of the CA in EJBCA issuing the new certificate for the device.
 </p>
 </subsubsection>
 </subsection>
@@ -1370,7 +1370,7 @@ Example generating a certificate from a PKCS10 request:
   UserDataVOWS user1 = new UserDataVOWS();
   user1.setUsername("WSTESTUSER1");
   user1.setSubjectDN("CN=WSTESTUSER1");
-  user1.setCaName("AdminCA1");
+  user1.setCaName("ManagementCA");
   user1.setEmail(null);
   user1.setSubjectAltName(null);
   user1.setEndEntityProfileName("EMPTY");
@@ -1618,10 +1618,10 @@ The following settings exists:
 <ul>
 <li>xkms.enabled: Enables the XKMS Service (default: false)</li>
 <li>xkms.request.requiresignature: id signed XKMS request should be required  (default: false)</li>
-<li>xkms.request.acceptedcas: List of CA names that are accepted for XKMS signed requests. Use ';' as a separate for multiple. (default 'AdminCA1')</li>
+<li>xkms.request.acceptedcas: List of CA names that are accepted for XKMS signed requests. Use ';' as a separate for multiple. (default 'ManagementCA')</li>
 <li>xkms.response.acceptsignrequest: Accept signed responses on request (default: true)</li>
 <li>xkms.response.alwayssign: Always sign responses (default: false)</li>
-<li>xkms.response.causedforsigning: Specify which CA that should be used with the signed responses. Only one can be specified. (default 'AdminCA1')</li>
+<li>xkms.response.causedforsigning: Specify which CA that should be used with the signed responses. Only one can be specified. (default 'ManagementCA')</li>
 <li>xkms.keyusage.signatureisnonrep: Setting specifying the keyusage in a X509 certificate that is mapped to XKMS KeyUsage Signature, Default is non-repudiation but if set to false will XKMS KeyUsage Signature be mapped against digital signature X509 key usage.</li>
 <li>xkms.serviceport=This is a development setting that is set in the WSDL to instruct the client use a non default port. This is only needed if a WS tap listener is used to review the messages. (default: 8080)</li>
 <li>xkms.krss.poprequired=Defines if proof of possession of the private key is required (default: true)</li>
@@ -1723,7 +1723,7 @@ for detailed help how to use the cli.
 <p>
 To automatic test the XKMS Service do the following:
 </p><p>
-1. Start with a fresh installation with all the default values. Then activate the XKMS CA service in the Edit CA page for AdminCA1.
+1. Start with a fresh installation with all the default values. Then activate the XKMS CA service in the Edit CA page for ManagementCA.
 </p><p>
 2. Run 'ant test:xkms' and a link to the report will be shown.
 </p>
@@ -4014,12 +4014,12 @@ interface, adding a user with the admin-GUI works just as fine).
 In the mail ejbca directory type (use simply 'ra' on windows):
 </p>
 <source>
-bin/ejbca.sh ra adduser ldap foo123 "C=SE,O=Foo,CN=ldap" null AdminCA1 null 1 PEM SERVER
+bin/ejbca.sh ra adduser ldap foo123 "C=SE,O=Foo,CN=ldap" null ManagementCA null 1 PEM SERVER
 bin/ejbca.sh ra setclearpwd ldap foo123
 </source>
 <p>
 Where foo123 is the ldap users password, C=SE... is the users DN and
-AdminCA1 is the name you chose for your CA. The user type is end-user (1), keystore type is PEM, and
+ManagementCA is the name you chose for your CA. The user type is end-user (1), keystore type is PEM, and
 if using the admin-GUI check 'use batch').
 Batch generate the PEM keystore:
 </p>
@@ -5206,7 +5206,7 @@ token issuers is normally done using PrimeCard.
 </p>
 <source>
 bin/ejbca.sh setup initializehardtokenissuing &lt;caname&gt;
-Ex: bin/ejbca.sh setup initializehardtokenissuing AdminCA1
+Ex: bin/ejbca.sh setup initializehardtokenissuing ManagementCA
 </source>
 <p>
 This is a utility function to quickly and easily issue an initial administration smart card using PrimeCard.
@@ -5222,7 +5222,7 @@ You can make an asn1 dump of a certificate in order to study the asn1 produced:
 </p>
 <source>
 bin/ejbca.sh asn1dump &lt;filename-of-pem-encoded-certs or filename-of-der-encoded-asn1&gt;
-Ex: bin/ejbca.sh asn1dump adminca1.pem
+Ex: bin/ejbca.sh asn1dump managementca.pem
 </source>
 </subsection>
 

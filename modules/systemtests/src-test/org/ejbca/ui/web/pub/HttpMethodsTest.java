@@ -26,9 +26,18 @@ import java.net.Socket;
 import java.net.URL;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.jce.X509KeyUsage;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.CaSessionTest;
+import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -48,15 +57,29 @@ public class HttpMethodsTest {
 
     final private static Logger log = Logger.getLogger(WebdistHttpTest.class);
 
+    private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("HttpMethodsTest"));
+    
     private String httpBaseUrl;
     private String httpPort;
-
+    private CA testx509ca;
+    
     private ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         httpPort = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP);
         httpBaseUrl = "http://127.0.0.1:" + httpPort;
+        
+        int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
+        testx509ca = CaSessionTest.createTestX509CA("CN=TestCA", null, false, keyusage);
+        caSession.addCA(admin, testx509ca);
+    }
+    
+    @After
+    public void tearDown() throws Exception {
+        CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
+        caSession.removeCA(admin, testx509ca.getCAId());
     }
 
     /** Test the doc.war module. */
@@ -74,7 +97,7 @@ public class HttpMethodsTest {
     /** Test the webdist.war module. */
     @Test
     public void testWebDist() throws Exception {
-        performResourceTest("/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3dAdminCA1%2cO%3dEJBCA+Sample%2cC%3dSE&level=0");
+        performResourceTest("/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3dTestCA&level=0");
     }
 
     /** Test the status.war module. */
@@ -86,7 +109,7 @@ public class HttpMethodsTest {
     /** Test the scep.war module. */
     @Test
     public void testScep() throws Exception {
-        performResourceTest("/ejbca/publicweb/apply/scep/pkiclient.exe?operation=GetCACert&message=AdminCA1");
+        performResourceTest("/ejbca/publicweb/apply/scep/pkiclient.exe?operation=GetCACert&message=TestCA");
     }
 
     /** Test the healthcheck.war module. */

@@ -28,10 +28,15 @@ import javax.ejb.RemoveException;
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Logger;
 import org.apache.log4j.spi.LoggingEvent;
+import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.CaSessionTest;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
@@ -42,6 +47,7 @@ import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
 import org.ejbca.util.query.UserMatch;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -54,7 +60,7 @@ public class RaAddUserCommandTest {
 
     private static final String USER_NAME = "RaSetPwdCommandTest_user1";
     private static final String USER_NAME_INVALID = "RaSetPwdCommandTest_user12";
-    private static final String CA_NAME = "AdminCA1";
+    private static final String CA_NAME = "TestCA";
     private static final String[] HAPPY_PATH_ADD_ARGS = { "adduser", USER_NAME, "foo123", "CN="+USER_NAME, "null", CA_NAME, "null", "1", "PEM" };
     private static final String[] HAPPY_PATH_SETPWD_ARGS = { "setpwd", USER_NAME, "bar123" };
     private static final String[] HAPPY_PATH_SETCLEARPWD_ARGS = { "setclearpwd", USER_NAME, "foo123bar" };
@@ -64,15 +70,28 @@ public class RaAddUserCommandTest {
     private RaAddUserCommand command0;
     private RaSetPwdCommand command1;
     private RaSetClearPwdCommand command2;
+    private CA testx509ca;
     private AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("RaSetPwdCommandTest"));
 
     private EndEntityManagementSessionRemote eeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
 
     @Before
     public void setUp() throws Exception {
+        
+        int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
+        testx509ca = CaSessionTest.createTestX509CA("CN=" + CA_NAME, null, false, keyusage);
+        caSession.addCA(admin, testx509ca);
+        
         command0 = new RaAddUserCommand();
         command1 = new RaSetPwdCommand();
         command2 = new RaSetClearPwdCommand();
+    }
+    
+    @After
+    public void tearDown() throws Exception {
+        CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
+        caSession.removeCA(admin, testx509ca.getCAId());
     }
 
     @Test

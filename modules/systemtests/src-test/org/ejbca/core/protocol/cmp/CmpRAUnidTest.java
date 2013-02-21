@@ -111,9 +111,9 @@ public class CmpRAUnidTest extends CmpTestCase {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        // Try to use AdminCA1 if it exists
-        final CAInfo adminca1 = this.caSession.getCAInfo(this.admin, "AdminCA1");
-        if (adminca1 == null) {
+        // Try to use ManagementCA if it exists
+        final CAInfo managementca = this.caSession.getCAInfo(this.admin, "ManagementCA");
+        if (managementca == null) {
             final Collection<Integer> caids = this.caSession.getAvailableCAs(this.admin);
             final Iterator<Integer> iter = caids.iterator();
             int tmp = 0;
@@ -125,7 +125,7 @@ public class CmpRAUnidTest extends CmpTestCase {
             }
             this.caid = tmp;
         } else {
-            this.caid = adminca1.getCAId();
+            this.caid = managementca.getCAId();
         }
         if (this.caid == 0) {
             assertTrue("No active CA! Must have at least one active CA to run tests!", false);

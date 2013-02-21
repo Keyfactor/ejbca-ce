@@ -737,23 +737,23 @@ ant install
     <ul>
        <pre>
        cd $EJBCA_HOME
-       keytool -exportcert -keystore p12/truststore.jks -file p12/adminca1.der -storepass changeit -alias adminca1
+       keytool -exportcert -keystore p12/truststore.jks -file p12/managementca.der -storepass changeit -alias managementca
        </pre>
     </ul>
     Install the CA certificate in the application servers truststore.<br/>
     On Glassfish open source:
     <ul>
        <pre>
-       keytool -delete -keystore  $APPSRV_HOME/domains/domain1/config/cacerts.jks -alias adminca1 -storepass changeit
+       keytool -delete -keystore  $APPSRV_HOME/domains/domain1/config/cacerts.jks -alias managementca -storepass changeit
            (will fail if this hasn't been done before)
-       keytool -importcert -keystore $APPSRV_HOME/domains/domain1/config/cacerts.jks -file p12/adminca1.der -alias adminca1 -storepass changeit
+       keytool -importcert -keystore $APPSRV_HOME/domains/domain1/config/cacerts.jks -file p12/managementca.der -alias managementca -storepass changeit
        </pre>
     </ul>
     On Glassfish Enterprise:
     <ul>
     <li>cd $APPSRV_HOME/domains/domain1/config</li>
-    <li>/usr/sfw/bin/certutil -A -n adminca1 -t "p,p,p" -i p12/adminca1.der -d .</li>
-    <li>verify that adminca1 has been added to the store with '/usr/sfw/bin/certutil -L -d .'.</li>
+    <li>/usr/sfw/bin/certutil -A -n managementca -t "p,p,p" -i p12/managementca.der -d .</li>
+    <li>verify that managementca has been added to the store with '/usr/sfw/bin/certutil -L -d .'.</li>
     </ul><br/>
     <li>
     (Optional) Replace the SSL keystore and truststore with default passwords.<br/>

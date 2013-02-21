@@ -163,10 +163,10 @@ public class CrmfRequestMessageTest {
     	PKIMessage req = PKIMessage.getInstance(derObject);
     	//log.info(req.toString());
     	// Verify should be false if we do not allow RA verify POP here, since we don't have any normal POP
-    	CrmfRequestMessage msg = new CrmfRequestMessage(req, "CN=AdminCA1", false, "CN");
+    	CrmfRequestMessage msg = new CrmfRequestMessage(req, "CN=TestCA", false, "CN");
     	assertFalse(msg.verify());
     	// Verify should be ok when we allow RA verified POP
-    	msg = new CrmfRequestMessage(req, "CN=AdminCA1", true, "CN");
+    	msg = new CrmfRequestMessage(req, "CN=ManagementCA", true, "CN");
     	assertTrue(msg.verify());
     	assertEquals("CN=AdminCA1,O=EJBCA Sample,C=SE", msg.getIssuerDN());
     	assertEquals("CN=abc123rry-4371939543913639881,O=PrimeKey Solutions AB,C=SE", msg.getRequestDN());
@@ -192,7 +192,7 @@ public class CrmfRequestMessageTest {
     		PKIMessage req = PKIMessage.getInstance(derObject);
     		//log.info(req.toString());
     		// Verify should be ok if we do not allow RA verify POP here
-    		CrmfRequestMessage msg = new CrmfRequestMessage(req, "CN=AdminCA1", false, "CN");
+    		CrmfRequestMessage msg = new CrmfRequestMessage(req, "CN=TestCA", false, "CN");
     		assertTrue(msg.verify());
     		// Since we don't have RA POP we can't test for that...
     		assertEquals("CN=AdminCA1,O=EJBCA Sample,C=SE", msg.getIssuerDN());
@@ -242,7 +242,7 @@ public class CrmfRequestMessageTest {
     		// Try to verify, also verify at the same time that encoding decoding of the signature works
     		assertTrue(CmpMessageHelper.verifyCertBasedPKIProtection(pkimsg, keys.getPublic()));
     		// Verify that our verification routine does not give positive result for any other keys
-    		CrmfRequestMessage msg = new CrmfRequestMessage(pkimsg, "CN=AdminCA1", false, "CN");
+    		CrmfRequestMessage msg = new CrmfRequestMessage(pkimsg, "CN=ManagementCA", false, "CN");
     		assertTrue(msg.verify());
     		PublicKey pubKey = msg.getRequestPublicKey();
     		assertFalse(CmpMessageHelper.verifyCertBasedPKIProtection(pkimsg, pubKey));
@@ -267,10 +267,10 @@ public class CrmfRequestMessageTest {
     	PKIMessage req = PKIMessage.getInstance(derObject);
     	//log.info(req.toString());
     	// Verify should be false if we do not allow RA verify POP here, since we don't have any normal POP
-    	CrmfRequestMessage msg = new CrmfRequestMessage(req, "CN=AdminCA1", false, "CN");
+    	CrmfRequestMessage msg = new CrmfRequestMessage(req, "CN=ManagementCA", false, "CN");
     	assertFalse(msg.verify());
     	// Verify should be ok when we allow RA verified POP
-    	msg = new CrmfRequestMessage(req, "CN=AdminCA1", true, "CN");
+    	msg = new CrmfRequestMessage(req, "CN=Test", true, "CN");
     	assertTrue(msg.verify());
     	assertEquals("CN=AdminCA1", msg.getIssuerDN());
     	assertEquals("CN=user", msg.getRequestDN());
@@ -305,7 +305,7 @@ public class CrmfRequestMessageTest {
     	PKIMessage req = PKIMessage.getInstance(derObject);
     	//log.info(req.toString());
     	// Verify should be ok if we do not allow RA verify POP here
-    	CrmfRequestMessage msg = new CrmfRequestMessage(req, "CN=AdminCA1", false, "CN");
+    	CrmfRequestMessage msg = new CrmfRequestMessage(req, "CN=TestCA", false, "CN");
     	// BC messages in BC1.46 uses POPOSigningKeyInput for POPO, not the 3rd case in RFC4211 section 4.1, like everyone else...
     	// BC messages in BC1.47 should use normal POPO, 3rd case
     	assertTrue(msg.verify());
@@ -337,9 +337,9 @@ public class CrmfRequestMessageTest {
     	// This message does not have an issuerDN in the cert template
     	assertNull(msg.getIssuerDN());
     	// Use a default CA instead
-    	msg = new CrmfRequestMessage(req, "CN=AdminCA1", false, "CN");
+    	msg = new CrmfRequestMessage(req, "CN=ManagementCA", false, "CN");
     	assertTrue(msg.verify());
-    	assertEquals("CN=AdminCA1", msg.getIssuerDN());
+    	assertEquals("CN=ManagementCA", msg.getIssuerDN());
     	assertEquals("CN=21030533610000000012 eNodeB", msg.getRequestDN());
     	assertEquals("21030533610000000012 eNodeB", msg.getUsername());
     	// We would like a password here...

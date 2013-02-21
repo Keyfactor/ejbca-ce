@@ -79,7 +79,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
     /** userDN of user used in this test, this contains special, escaped, characters to test that this works with CMP RA operations */
     private static String userDN = "C=SE,O=PrimeKey'foo'&bar\\,ha\\<ff\\\"aa,CN=cmptest";
 
-    private static String issuerDN = "CN=AdminCA1,O=EJBCA Sample,C=SE";
+    private static String issuerDN = "CN=ManagementCA,O=EJBCA Sample,C=SE";
     private KeyPair keys = null;
 
     private static int caid = 0;
@@ -105,16 +105,16 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
     public void setUp() throws Exception {
         super.setUp();
         
-        // Try to use AdminCA1 if it exists
-        CAInfo adminca1 = caSession.getCAInfo(admin, "AdminCA1");
-        if (adminca1 == null) {
+        // Try to use ManagementCA if it exists
+        CAInfo managementca = caSession.getCAInfo(admin, "ManagementCA");
+        if (managementca == null) {
             Collection<Integer> caids = caSession.getAvailableCAs(admin);
             Iterator<Integer> iter = caids.iterator();
             while (iter.hasNext()) {
                 caid = iter.next().intValue();
             }
         } else {
-            caid = adminca1.getCAId();
+            caid = managementca.getCAId();
         }
         if (caid == 0) {
             assertTrue("No active CA! Must have at least one active CA to run tests!", false);

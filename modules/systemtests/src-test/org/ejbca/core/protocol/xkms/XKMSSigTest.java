@@ -73,7 +73,7 @@ import org.w3c.dom.Element;
 
 /**
  * To Run this test, there must be a CA with DN
- * "CN=AdminCA1,O=EJBCA Sample,C=SE", and it must have XKMS service enabled.
+ * "CN=ManagementCA,O=EJBCA Sample,C=SE", and it must have XKMS service enabled.
  * Also you have to enable XKMS in conf/xkms.properties.
  * 
  * @author Philip Vendil 2006 sep 27
@@ -128,7 +128,7 @@ public class XKMSSigTest {
     @Before
     public void setUp() throws Exception {
         log.trace(">setUp()");
-        caid = CertTools.stringToBCDNString("CN=AdminCA1,O=EJBCA Sample,C=SE").hashCode();
+        caid = CertTools.stringToBCDNString("CN=ManagementCA,O=EJBCA Sample,C=SE").hashCode();
         Random ran = new Random();
         if (baseUsername == null) {
             baseUsername = "xkmstestadmin" + (ran.nextInt() % 1000) + "-";

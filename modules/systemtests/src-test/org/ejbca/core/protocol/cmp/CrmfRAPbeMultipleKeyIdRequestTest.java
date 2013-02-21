@@ -130,8 +130,8 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
     public void setUp() throws Exception {
         super.setUp();
      // Try to get caIds
-        CAInfo adminca1 = caSession.getCAInfo(admin, "CmpCA1");
-        caid1 = adminca1.getCAId();
+        CAInfo managementca = caSession.getCAInfo(admin, "CmpCA1");
+        caid1 = managementca.getCAId();
         CAInfo adminca2 = caSession.getCAInfo(admin, "CmpCA2");
         caid2 = adminca2.getCAId();
         if ((caid1 == 0) || (caid2 == 0)) {

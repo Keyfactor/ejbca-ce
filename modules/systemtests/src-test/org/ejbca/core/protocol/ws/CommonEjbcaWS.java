@@ -252,7 +252,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     }
 
     protected static String getAdminCAName() {
-        return "AdminCA1";
+        return "ManagementCA";
     }
 
     protected static void adminBeforeClass() {
