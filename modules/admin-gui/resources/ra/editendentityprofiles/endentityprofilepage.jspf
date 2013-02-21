@@ -193,23 +193,22 @@ function checkkeyrecusebox(){
 <% } %>
 
 function usenotificationchange(){
-  if(document.editprofile.<%=CHECKBOX_USE_SENDNOTIFICATION%>.checked){
-     document.editprofile.<%=BUTTON_ADD_NOTIFICATION%>.disabled = false;
-     document.editprofile.<%=BUTTON_DELETEALL_NOTIFICATION%>.disabled = false;
-     document.editprofile.<%=TEXTFIELD_NOTIFICATIONSENDER%>.disabled = false;
-     document.editprofile.<%=TEXTFIELD_NOTIFICATIONRCPT%>.disabled = false;
-     document.editprofile.<%=SELECT_NOTIFICATIONEVENTS%>.disabled = false;
-     document.editprofile.<%=TEXTFIELD_NOTIFICATIONSUBJECT%>.disabled = false;
-     document.editprofile.<%=TEXTAREA_NOTIFICATIONMESSAGE%>.disabled = false;
-  }else{
-     document.editprofile.<%=BUTTON_ADD_NOTIFICATION%>.disabled = true;
-     document.editprofile.<%=BUTTON_DELETEALL_NOTIFICATION%>.disabled = true;
-     document.editprofile.<%=TEXTFIELD_NOTIFICATIONSENDER%>.disabled = true;
-     document.editprofile.<%=TEXTFIELD_NOTIFICATIONRCPT%>.disabled = true;
-     document.editprofile.<%=SELECT_NOTIFICATIONEVENTS%>.disabled = true;
-     document.editprofile.<%=TEXTFIELD_NOTIFICATIONSUBJECT%>.disabled = true;
-     document.editprofile.<%=TEXTAREA_NOTIFICATIONMESSAGE%>.disabled = true;                  
-  }
+	var disable = !document.editprofile.<%=CHECKBOX_USE_SENDNOTIFICATION%>.checked;
+	var names = ["<%=BUTTON_DELETEALL_NOTIFICATION%>",
+	             "<%=BUTTON_ADD_NOTIFICATION%>",
+	             "<%=TEXTFIELD_NOTIFICATIONSENDER%>",
+	             "<%=TEXTFIELD_NOTIFICATIONRCPT%>",
+	             "<%=SELECT_NOTIFICATIONEVENTS%>",
+	             "<%=TEXTFIELD_NOTIFICATIONSUBJECT%>",
+	             "<%=TEXTAREA_NOTIFICATIONMESSAGE%>"];
+	for (var i = 0; i < document.editprofile.length; i++) {
+		var control = document.editprofile[i];
+		for (var j = 0; j < names.length; j++) {
+			if (control.name.indexOf(names[j]) != -1) {
+				control.disabled = disable;
+			}
+		}
+	}
 }
 
 function useprintingchange(){
@@ -1472,14 +1471,16 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
        %>
     <tr  id="Row<%=row%2%>"> 
       <td width="10%" valign="top">
-        <input type="submit" name="<%=BUTTON_DELETE_NOTIFICATION + j%>" value="<%= ejbcawebbean.getText("DELETE") %>" />
+        <input type="submit" name="<%=BUTTON_DELETE_NOTIFICATION + j%>" value="<%= ejbcawebbean.getText("DELETE") %>" <% if(!used) out.write(" disabled "); %> />
       </td>
       <td width="40%" valign="top" align="right"> 
         <c:out value="<%= ejbcawebbean.getText(\"NOTIFICATIONSENDER\") %>" />
       </td>
-      <td width="50%" valign="top"> 
-        <input type="text" name="<%=TEXTFIELD_NOTIFICATIONSENDER + j%>" size="45" maxlength="255" 
-           value="<c:out value="<%= not.getNotificationSender() %>"/>" readonly>             
+      <td width="50%" valign="top">
+        <input type="hidden" name="<%=TEXTFIELD_NOTIFICATIONSENDER + OLDVALUE + j%>" 
+           value="<c:out value="<%= not.getNotificationSender() %>"/>">
+        <input type="text" name="<%=TEXTFIELD_NOTIFICATIONSENDER + NEWVALUE + j%>" size="45" maxlength="255" 
+           value="<c:out value="<%= not.getNotificationSender() %>"/>" <% if(!used) out.write(" disabled "); %>>             
       </td>
     </tr>
     <tr  id="Row<%=row%2%>"> 
@@ -1490,8 +1491,10 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         <c:out value="<%= ejbcawebbean.getText(\"NOTIFICATIONRECIPIENT\") %>" />
       </td>
       <td width="50%">         
-        <input type="text" name="<%=TEXTFIELD_NOTIFICATIONRCPT + j%>" size="45" maxlength="255" 
-           value="<c:out value="<%= not.getNotificationRecipient() %>"/>" readonly>                  
+        <input type="hidden" name="<%=TEXTFIELD_NOTIFICATIONRCPT + OLDVALUE + j%>" 
+           value="<c:out value="<%= not.getNotificationRecipient() %>"/>">
+        <input type="text" name="<%=TEXTFIELD_NOTIFICATIONRCPT + NEWVALUE + j%>" size="45" maxlength="255" 
+           value="<c:out value="<%= not.getNotificationRecipient() %>"/>" <% if(!used) out.write(" disabled "); %>>                  
       </td>
     </tr>
     
@@ -1503,11 +1506,15 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         <c:out value="<%= ejbcawebbean.getText(\"NOTIFICATIONEVENTS\") %>" />
       </td>
       <td width="50%"> 
-        <select name="<%=SELECT_NOTIFICATIONEVENTS + j%>" size="7" multiple readonly>
-            <% int[] statuses = ViewEndEntityHelper.statusids;
-               String[] statustexts = ViewEndEntityHelper.statustexts;
-               Collection evcol = not.getNotificationEventsCollection();
-            %>
+      <% int[] statuses = ViewEndEntityHelper.statusids;
+      String[] statustexts = ViewEndEntityHelper.statustexts;
+      Collection evcol = not.getNotificationEventsCollection();
+      for(int ev2=0;ev2< statuses.length;ev2++) {
+            if ( evcol.contains(String.valueOf(statuses[ev2])) ) { %>
+               <input type="hidden" name="<%=SELECT_NOTIFICATIONEVENTS + OLDVALUE + j%>" value="<c:out value="<%= statuses[ev2] %>"/>">
+            <% }
+      }%>
+        <select name="<%=SELECT_NOTIFICATIONEVENTS + NEWVALUE + j%>" size="7" multiple <% if(!used) out.write(" disabled "); %>>
                <% for(int ev2=0;ev2< statuses.length;ev2++){%>
                <option 
                <%    // Default values
@@ -1529,9 +1536,11 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       <td width="40%" align="right"> 
         <c:out value="<%= ejbcawebbean.getText(\"NOTIFICATIONSUBJECT\") %>" />
       </td>
-      <td width="50%">         
-        <input type="text" name="<%=TEXTFIELD_NOTIFICATIONSUBJECT + j%>" size="45" maxlength="1024" 
-           value="<c:out value="<%= not.getNotificationSubject() %>"/>" readonly>                  
+      <td width="50%">
+        <input type="hidden" name="<%=TEXTFIELD_NOTIFICATIONSUBJECT + OLDVALUE + j%>" 
+           value="<c:out value="<%= not.getNotificationSubject() %>"/>">
+        <input type="text" name="<%=TEXTFIELD_NOTIFICATIONSUBJECT + NEWVALUE + j%>" size="45" maxlength="1024" 
+           value="<c:out value="<%= not.getNotificationSubject() %>"/>" <% if(!used) out.write(" disabled "); %>>                  
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 
@@ -1541,23 +1550,25 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       <td width="40%" valign="top" align="right"> 
         <c:out value="<%= ejbcawebbean.getText(\"NOTIFICATIONMESSAGE\") %>" />
       </td>
-      <td width="50%" valign="top">       
-        <textarea name="<%=TEXTAREA_NOTIFICATIONMESSAGE + j%>" cols="45" rows="8" readonly ><c:out value="<%= not.getNotificationMessage() %>"/></textarea>  
+      <td width="50%" valign="top">
+        <input type="hidden" name="<%=TEXTAREA_NOTIFICATIONMESSAGE + OLDVALUE + j%>" 
+            value="<c:out value="<%= not.getNotificationMessage() %>"/>">
+        <textarea name="<%=TEXTAREA_NOTIFICATIONMESSAGE + NEWVALUE + j%>" cols="45" rows="8" <% if(!used) out.write(" disabled "); %>><c:out value="<%= not.getNotificationMessage() %>"/></textarea>  
       </td>
       
     </tr>
     <% } // while (iter.hasNext()) %>
     
-    <%-- Editable notification input form section --%>
+    <%-- add new notification input form section --%>
     <tr id="Row<%=row%2%>">
       <td width="10%" valign="middle" align="center"> 
-        <input type="submit" name="<%=BUTTON_ADD_NOTIFICATION%>" value="<%= ejbcawebbean.getText("ADD") %>" <%=profiledata.getUse(EndEntityProfile.SENDNOTIFICATION,0) ? "" : "disabled"%>/>
+        <input type="submit" name="<%=BUTTON_ADD_NOTIFICATION%>" value="<%= ejbcawebbean.getText("ADD") %>" <% if(!used) out.write(" disabled "); %>/>
       </td>
       <td width="40%" valign="top" align="right"> 
         <c:out value="<%= ejbcawebbean.getText(\"NOTIFICATIONSENDER\") %>" />
       </td>
       <td width="50%" valign="top">
-        <input type="text" name="<%=TEXTFIELD_NOTIFICATIONSENDER%>" size="45" maxlength="255" <%=profiledata.getUse(EndEntityProfile.SENDNOTIFICATION,0) ? "" : "disabled"%>/>
+        <input type="text" name="<%=TEXTFIELD_NOTIFICATIONSENDER%>" size="45" maxlength="255" <% if(!used) out.write(" disabled "); %>/>
       </td>
     </tr>
     <tr  id="Row<%=row%2%>">       
@@ -1568,7 +1579,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         <c:out value="<%= ejbcawebbean.getText(\"NOTIFICATIONRECIPIENT\") %>" />
       </td>
       <td width="50%" valign="top">
-        <input type="text" name="<%=TEXTFIELD_NOTIFICATIONRCPT%>" size="45" maxlength="255" value="USER" <%=profiledata.getUse(EndEntityProfile.SENDNOTIFICATION,0) ? "" : "disabled"%>/>
+        <input type="text" name="<%=TEXTFIELD_NOTIFICATIONRCPT%>" size="45" maxlength="255" value="USER" <% if(!used) out.write(" disabled "); %>/>
       </td>
     </tr>
     <tr  id="Row<%=row%2%>"> 
@@ -1579,7 +1590,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         <c:out value="<%= ejbcawebbean.getText(\"NOTIFICATIONEVENTS\") %>" />
       </td>
       <td width="50%" valign="top"> 
-        <select name="<%=SELECT_NOTIFICATIONEVENTS %>" size="7" multiple >
+        <select name="<%=SELECT_NOTIFICATIONEVENTS %>" size="7" multiple <% if(!used) out.write(" disabled "); %>>
             <% int[] statuses = ViewEndEntityHelper.statusids;
                String[] statustexts = ViewEndEntityHelper.statustexts;
               %>
