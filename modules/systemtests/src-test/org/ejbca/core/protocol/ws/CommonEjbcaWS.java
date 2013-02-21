@@ -193,6 +193,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     private static final String CLI_PASSWORD = "ejbca";
     
     protected EjbcaWS ejbcaraws;
+    protected static String ADMIN_CA_NAME;
 
     protected final static AuthenticationToken intAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CommonEjbcaWS"));
     protected final String hostname;
@@ -248,15 +249,24 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         hostname = configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME);
 
         httpsPort = configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSSERVERPRIVHTTPS);
-
+        
     }
 
     protected static String getAdminCAName() {
-        return "ManagementCA";
+        return ADMIN_CA_NAME;
     }
-
+    
     protected static void adminBeforeClass() {
-        CryptoProviderTools.installBCProviderIfNotAvailable();    	
+        CryptoProviderTools.installBCProviderIfNotAvailable();
+        
+        CaSessionRemote cs = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+        List<String> canames = cs.getAvailableCANames(intAdmin);
+        if(canames.contains("AdminCA1")) {
+            ADMIN_CA_NAME = "AdminCA1";
+        } else if(canames.contains("ManagementCA")) {
+            ADMIN_CA_NAME = "ManagementCA";
+        }
+        
     }
 
     protected void adminSetUpAdmin() throws Exception {

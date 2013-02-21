@@ -34,8 +34,12 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.CaSessionTest;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -44,6 +48,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRem
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -85,7 +90,7 @@ import org.w3._2002._03.xkms_.ValidateResultType;
 
 /**
  * To Run this test, there must be a CA with DN
- * "CN=ManagementCA,O=EJBCA Sample,C=SE", and it must have XKMS service enabled.
+ * "CN=TestCA", and it must have XKMS service enabled.
  * Also you have to enable XKMS in conf/xkms.properties.
  * 
  * @author Philip Vendil 2006 sep 27
@@ -97,6 +102,7 @@ import org.w3._2002._03.xkms_.ValidateResultType;
 public class XKMSKISSTest {
 
     private static Logger log = Logger.getLogger(XKMSKISSTest.class);
+    private final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 
     static {
         org.apache.xml.security.Init.init();
@@ -115,10 +121,11 @@ public class XKMSKISSTest {
     private static String username2 = null;
     private static String username3 = null;
 
-    private static final String issuerdn = "CN=ManagementCA,O=EJBCA Sample,C=SE";
+    private static final String issuerdn = "CN=TestCA";
     private final int caid = issuerdn.hashCode();
 
     private int userNo;
+    private CA testx509ca;
 
     private static X509Certificate cert1;
     private static X509Certificate cert2;
@@ -133,6 +140,7 @@ public class XKMSKISSTest {
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+    private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
 
     @BeforeClass
     public static void beforeClass() {
@@ -144,6 +152,11 @@ public class XKMSKISSTest {
     @Before
     public void setUp() throws Exception {
         log.trace(">setUp()");    
+        
+        int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
+        testx509ca = CaSessionTest.createTestX509CA(issuerdn, null, false, keyusage);
+        caSession.addCA(admin, testx509ca);
+        
         Random ran = new Random();
         if (baseUsername == null) {
             baseUsername = "xkmstestuser" + (ran.nextInt() % 1000) + "-";
@@ -153,6 +166,8 @@ public class XKMSKISSTest {
 
     @After
     public void tearDown() throws Exception {
+        CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
+        caSession.removeCA(admin, caid);
     }
 
 	@Test

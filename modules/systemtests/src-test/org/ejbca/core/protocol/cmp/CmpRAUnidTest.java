@@ -22,18 +22,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.security.KeyPair;
-import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROutputStream;
@@ -41,19 +37,21 @@ import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStrictStyle;
+import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.X509Principal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.CaSessionTest;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
@@ -76,6 +74,7 @@ import org.junit.Test;
 public class CmpRAUnidTest extends CmpTestCase {
 
     private static final Logger log = Logger.getLogger(CmpRAUnidTest.class);
+    private final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CmpRAUnidTest"));
 
     private static final String PBEPASSWORD = "password";
     private static final String UNIDPREFIX = "1234-5678-";
@@ -92,10 +91,9 @@ public class CmpRAUnidTest extends CmpTestCase {
 
     private String issuerDN;
     private KeyPair keys;
-
     private int caid;
-    private final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CmpRAUnidTest"));
     private X509Certificate cacert;
+    private CA testx509ca;
 
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
@@ -111,42 +109,14 @@ public class CmpRAUnidTest extends CmpTestCase {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        // Try to use ManagementCA if it exists
-        final CAInfo managementca = this.caSession.getCAInfo(this.admin, "ManagementCA");
-        if (managementca == null) {
-            final Collection<Integer> caids = this.caSession.getAvailableCAs(this.admin);
-            final Iterator<Integer> iter = caids.iterator();
-            int tmp = 0;
-            while (iter.hasNext()) {
-                tmp = iter.next().intValue();
-                if (tmp != 0) {
-                    break;
-                }
-            }
-            this.caid = tmp;
-        } else {
-            this.caid = managementca.getCAId();
-        }
-        if (this.caid == 0) {
-            assertTrue("No active CA! Must have at least one active CA to run tests!", false);
-        }
-        final CAInfo cainfo = this.caSession.getCAInfo(this.admin, this.caid);
-        final Collection<Certificate> certs = cainfo.getCertificateChain();
-        if (certs.size() > 0) {
-            final Iterator<Certificate> certiter = certs.iterator();
-            final Certificate cert = certiter.next();
-            final String subject = CertTools.getSubjectDN(cert);
-            if (StringUtils.equals(subject, cainfo.getSubjectDN())) {
-                // Make sure we have a BC certificate
-                this.cacert = (X509Certificate) CertTools.getCertfromByteArray(cert.getEncoded());
-            } else {
-                this.cacert = null;
-            }
-        } else {
-            this.cacert = null;
-            log.error("NO CACERT for caid " + this.caid);
-        }
-        this.issuerDN = this.cacert.getIssuerDN().getName();
+        
+        issuerDN = "CN=TestCA";
+        int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
+        testx509ca = CaSessionTest.createTestX509CA(issuerDN, null, false, keyusage);
+        caid = testx509ca.getCAId();
+        cacert = (X509Certificate) testx509ca.getCACertificate();
+        caSession.addCA(admin, testx509ca);
+        
         // Configure CMP for this test
         updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
         updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO, "true");
@@ -154,7 +124,7 @@ public class CmpRAUnidTest extends CmpTestCase {
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET, PBEPASSWORD);
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, "KeyId");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, "KeyId");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, cainfo.getName());
+        updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, testx509ca.getName());
         updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
         updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "-;-");
         updatePropertyOnServer(CmpConfiguration.CONFIG_CERTREQHANDLER_CLASS, UnidFnrHandler.class.getName());
@@ -186,6 +156,10 @@ public class CmpRAUnidTest extends CmpTestCase {
         super.tearDown();
         this.endEntityProfileSession.removeEndEntityProfile(this.admin, EEPNAME);
         this.certificateProfileSession.removeCertificateProfile(this.admin, CPNAME);
+        
+        CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
+        caSession.removeCA(admin, caid);
+        
         assertTrue("Unable to clean up properly.", this.configurationSession.restoreConfiguration());
     }
     

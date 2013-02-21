@@ -37,20 +37,22 @@ import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.cmp.PKIFailureInfo;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
+import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.CaSessionTest;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
@@ -78,17 +80,18 @@ import org.junit.Test;
 public class CrmfRATcpRequestTest extends CmpTestCase {
 	
     private static final Logger log = Logger.getLogger(CrmfRATcpRequestTest.class);
+    private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CrmfRATcpRequestTest"));
 
     private static final String CMP_USERNAME = "cmptest";
     private static final String PBEPASSWORD = "password";
     
     private static String userDN = "CN=tomas1,UID=tomas2,O=PrimeKey Solutions AB,C=SE";
-    private static String issuerDN = "CN=ManagementCA,O=EJBCA Sample,C=SE";
+    private static String issuerDN = "CN=TestCA";
     private KeyPair keys = null;  
-
     private static int caid = 0;
-    private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CrmfRATcpRequestTest"));
     private static X509Certificate cacert = null;
+    private CA testx509ca;
+
 
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
@@ -102,34 +105,13 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        // Try to use ManagementCA if it exists
-        CAInfo managementca = caSession.getCAInfo(admin, "ManagementCA");
-        if (managementca == null) {
-            Collection<Integer> caids = caSession.getAvailableCAs(admin);
-            Iterator<Integer> iter = caids.iterator();
-            while (iter.hasNext()) {
-                caid = iter.next().intValue();
-            }           
-        } else {
-                caid = managementca.getCAId();
-        }
-        if (caid == 0) {
-                assertTrue("No active CA! Must have at least one active CA to run tests!", false);
-        }               
-        CAInfo cainfo = caSession.getCAInfo(admin, caid);
-        Collection<Certificate> certs = cainfo.getCertificateChain();
-        if (certs.size() > 0) {
-            Iterator<Certificate> certiter = certs.iterator();
-            Certificate cert = certiter.next();
-            String subject = CertTools.getSubjectDN(cert);
-            if (StringUtils.equals(subject, cainfo.getSubjectDN())) {
-                // Make sure we have a BC certificate
-                cacert = (X509Certificate) CertTools.getCertfromByteArray(cert.getEncoded());
-            }
-        } else {
-            log.error("NO CACERT for caid " + caid);
-        }
-        issuerDN = cacert.getIssuerDN().getName();
+        
+        int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
+        testx509ca = CaSessionTest.createTestX509CA(issuerDN, null, false, keyusage);
+        caid = testx509ca.getCAId();
+        cacert = (X509Certificate) testx509ca.getCACertificate();
+        caSession.addCA(admin, testx509ca);
+        
         // Configure CMP for this test
         updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
         updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO, "true");
@@ -137,7 +119,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET, PBEPASSWORD);
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, "EMPTY");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, "ENDUSER");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, "ManagementCA");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, "TestCA");
         updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
         updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "-;-");
         
@@ -154,6 +136,10 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         if (!configurationSession.restoreConfiguration()) {
             cleanUpOk = false;
         }
+        
+        CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
+        caSession.removeCA(admin, caid);
+        
         assertTrue("Unable to clean up properly.", cleanUpOk);
     }
 

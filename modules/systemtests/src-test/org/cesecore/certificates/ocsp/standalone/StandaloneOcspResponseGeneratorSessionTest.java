@@ -21,10 +21,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.KeyStore;
 import java.security.NoSuchProviderException;
-import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
 import java.util.Date;
 
 import org.bouncycastle.asn1.DEROctetString;
@@ -38,11 +36,15 @@ import org.bouncycastle.cert.ocsp.OCSPReqBuilder;
 import org.bouncycastle.cert.ocsp.OCSPResp;
 import org.bouncycastle.cert.ocsp.SingleResp;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
+import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.CaSessionTest;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -55,6 +57,7 @@ import org.cesecore.certificates.ocsp.logging.TransactionCounter;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
+import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -74,16 +77,19 @@ public class StandaloneOcspResponseGeneratorSessionTest {
     private static final String P12_FILENAME = "ocspTestSigner.p12";
     private static final String PASSWORD = "foo123";
     private static final String OCSP_ALIAS = "ocspTestSigner";// "OCSP Signer";
-    private static final String CA_DN = "CN=ManagementCA,O=EJBCA Sample,C=SE";
+    private static final String CA_DN = "CN=TestCA";
 
     private StandaloneOcspResponseGeneratorSessionRemote standaloneOcspResponseGeneratorSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(StandaloneOcspResponseGeneratorSessionRemote.class);
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySessionRemote = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CesecoreConfigurationProxySessionRemote.class);
+    private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+
 
     private X509Certificate caCertificate;
     private X509Certificate p12Certificate;
+    private CA testx509ca;
 
     private AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(StandaloneOcspResponseGeneratorSessionTest.class.getSimpleName()));
     
@@ -98,8 +104,11 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         String curDir = System.getProperty("user.dir");
         System.out.println(curDir);
 
-        caCertificate = (X509Certificate) new ArrayList<Certificate>(certificateStoreSession.findCertificatesBySubject(CA_DN)).get(0); 
-
+        int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
+        testx509ca = CaSessionTest.createTestX509CA(CA_DN, null, false, keyusage);
+        caCertificate = (X509Certificate) testx509ca.getCACertificate();
+        caSession.addCA(authenticationToken, testx509ca);
+        
         // Store a root certificate in the database.
         if (certificateStoreSession.findCertificatesBySubject(CA_DN).isEmpty()) {
             certificateStoreSession.storeCertificate(authenticationToken, caCertificate, "foo", "1234", CertificateConstants.CERT_ACTIVE,
@@ -118,7 +127,8 @@ public class StandaloneOcspResponseGeneratorSessionTest {
 
     @After
     public void tearDown() throws Exception { 
-
+        CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
+        caSession.removeCA(authenticationToken, testx509ca.getCAId());
     }
 
     @Test
