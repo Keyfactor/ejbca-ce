@@ -1,6 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <%@ page pageEncoding="ISO-8859-1"%>
+
 <%
   response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding());
   org.ejbca.ui.web.RequestHelper.setDefaultCharacterEncoding(request);
@@ -10,12 +11,15 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=<%= org.ejbca.config.WebConfiguration.getWebContentEncoding() %>" />
     <title>Certificate renewal - <%= org.ejbca.config.InternalConfiguration.getAppNameCapital() %> Public Web</title>
+    <link rel="shortcut icon" href="images/favicon.png" type="image/png" />
     <link rel="stylesheet" href="styles.css" type="text/css" />
   </head>
 
   <body>
-    <div class="logobar">
-      <a href="index.jsp"><img src="images/ejbca_pki_by_primekey_logo.png" alt="EJBCA" border="0"/></a>
+    <div id="header">
+		<div id="banner">
+			<a href="../"><img src="images/logotype.png" alt="EJBCA" /></a>
+		</div>
     </div>
     <div class="menucontainer">
       <div class="menu">
@@ -30,7 +34,7 @@
           <li><div class="menuheader">Miscellaneous</div>
             <ul>
               <li>
-                <a href="../">Public Web</a>
+                <a href="../">Public Web home</a>
               </li>
               <li>
                 <a href="../adminweb/index.jsp">Administration</a>
@@ -46,6 +50,11 @@
               </li>
               <%  }
                  } %>
+              <% if (org.ejbca.config.WebConfiguration.isProxiedAuthenticationEnabled()) { %>
+              <li>
+                <a href="/logout">Logout</a>
+              </li>
+              <% } %>
             </ul>
           </li>  
         </ul>
