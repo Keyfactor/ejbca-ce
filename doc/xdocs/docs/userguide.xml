@@ -606,7 +606,7 @@ regards to DN-contents, extensions etc.
 <li>Check "Use Extended Key Usage".</li>
 <li>Under "Extended Key Usage", choose "Server Authentication".</li>
 <li>Under "Available bit lengths", "1024 bit", "2048 bit" and "4096 bit".</li>
-<li>Under "Available CAs", choose your CA "AdminCA1" (the CA you use to issue server certificates).</li>
+<li>Under "Available CAs", choose your CA "ManagementCA" (the CA you use to issue server certificates).</li>
 <li>Under "Type", select "End Entity".</li>
 <li>Press "Save"</li>
 </ul> 
@@ -812,7 +812,7 @@ According to <a href="http://www.ietf.org/rfc/rfc3280.txt">RFC3280</a> a CRL iss
 An optional system to which a CA delegates the publication of certificate revocation lists;
 </source>
 <p>
-The contents of the field in the profile is a DN, like "CN=CRLIssuerForAdminCA1,O=foo,C=SE".
+The contents of the field in the profile is a DN, like "CN=CRLIssuerForManagementCA,O=foo,C=SE".
 You have to build the actual CRL Issuer software yourself.
 </p>
 </subsubsection>
@@ -940,8 +940,8 @@ You should previously have created the certificate profile for SSL servers in th
 <li>Uncheck "Use" at "Email Domain".</li>
 <li>Under "Default Certificate Profile", choose "SSLServerCertificateProfile" (created earlier).</li>
 <li>Under "Available Certificate Profiles", choose "SSLServerEndEntityCertificateProfile".</li>
-<li>Under "Default CA", choose "AdminCA1" (the CA you use to issue server certificates).</li>
-<li>Under "Available CAs", choose "AdminCA1" (same as above).</li>
+<li>Under "Default CA", choose "ManagementCA" (the CA you use to issue server certificates).</li>
+<li>Under "Available CAs", choose "ManagementCA" (same as above).</li>
 <li>Under "Default Token", choose "User Generated".</li>
 <li>Under "Available Tokens", choose "User Generated", "P12", "JKS" and "PEM" (ctrl-click to select multiple).</li>
 <li>Press "Save".</li> 
@@ -1229,7 +1229,7 @@ You should previously have created the certificate profile and end entity profil
 <li>Under "CN, Common Name" enter "testsrv.domain.com".</li>
 <li>And at "DNS Name" enter "testsrv.domain.com".</li>
 <li>Under "Certificate Profile" you should not be able to choose anything but the default "SSLServerCertificateProfile".</li>
-<li>Under "CA" you should not be able to choose anything but the default "AdminCA1".</li>
+<li>Under "CA" you should not be able to choose anything but the default "ManagementCA".</li>
 <li>Under "Token", choose "P12".</li>
 <li>Press "Add End Entity".</li>
 <li>Goto "Public Web" and then  "Create Keystore".</li>
@@ -1254,7 +1254,7 @@ You should previously have created the certificate profile and end entity profil
 <li>Under "CN, Common Name" enter "testsrv.domain.com".</li>
 <li>And at "DNS Name" enter "testsrv.domain.com".</li>
 <li>Under "Certificate Profile" you should not be able to choose anything but the default "SSLServerCertificateProfile".</li>
-<li>Under "CA" you should not be able to choose anything but the default "AdminCA1".</li>
+<li>Under "CA" you should not be able to choose anything but the default "ManagementCA".</li>
 <li>Under "Token", choose "User Generated".</li>
 <li>Press "Add End Entity".</li>
 <li>Goto "Public Web" and then  "Create Certificate from CSR".</li>
@@ -1468,7 +1468,7 @@ The current predefined administrator roles that exists in EJBCA are:
 
 <subsection name="Creating a Certificate Profile For the Administrator">
 <p>This section will show you how to create a new Certificate Profile for administrators. 
-The administrators certificates will be issued by a CA called AdminCA1
+The administrators certificates will be issued by a CA called ManagementCA
 </p>
 <p>
 <ul>
@@ -1484,7 +1484,7 @@ The administrators certificates will be issued by a CA called AdminCA1
 <li>Check "Use Extended Key Usage".</li>
 <li>Under "Extended Key Usage", choose "Client Authentication".</li>
 <li>Under "Available bit lengths", "1024 bit", "2048 bit" and "4096 bit".</li>
-<li>Under "Available CAs", choose "AdminCA1" (the CA you use to issue admin certificates).</li>
+<li>Under "Available CAs", choose "ManagementCA" (the CA you use to issue admin certificates).</li>
 <li>Press "Save".</li>
 </ul> 
 </p>
@@ -1501,8 +1501,8 @@ The profile will be connected to the Certificate Profile created above.</p>
 <li>Under the "Subject DN Fields" add a few DN fields that you want in the admin DN, for example O, UID and C.</li>
 <li>Under "Default Certificate Profile", choose "AdministratorEndEntityCertificateProfile"</li>
 <li>Under "Available Certificate Profiles", choose "AdministratorEndEntityCertificateProfile"</li>
-<li>Under "Default CA", choose "AdminCA1"</li>
-<li>Under "Available CAs", choose "AdminCA1"</li>
+<li>Under "Default CA", choose "ManagementCA"</li>
+<li>Under "Available CAs", choose "ManagementCA"</li>
 <li>Press "Save"</li>
 </ul>
 Issue the following new end entity based on the new end entity profile.
@@ -1518,7 +1518,7 @@ The RAadmin shall have access to add/list/edit end entites. To create a new role
 <li>Choose a name for your new administrator group, "RAAdministratorRole".</li>
 <li>When the group is created, press "Access Rules".</li>
 <li>Choose the "RA Administrator" role template.</li>
-<li>Under "Authorized CAs", choose which CAs the role should have access to. Choose "AdminCA1".</li>
+<li>Under "Authorized CAs", choose which CAs the role should have access to. Choose "ManagementCA".</li>
 <li>Under "Edit End Entity Profiles" Select "AdministratorEndEntityProfile".</li>
 <li>Press "Save".</li>
 </ul> 
@@ -1530,7 +1530,7 @@ The RAadmin shall have access to add/list/edit end entites. To create a new role
 <li>Choose "Search/Edit End Entities" and select your newly created end entity, choose "View Certificates".</li>
 <li>Copy the value of "Certificate Serial Number", e.g. "5F003A0113F507F9".</li>
 <li>Go to "Edit Administrator Privileges", press "Administrators" under "RAAdministratorRole".</li>
-<li>Choose the CA that the administrator belongs to, "AdminCA1".</li>
+<li>Choose the CA that the administrator belongs to, "ManagementCA".</li>
 <li>Paste the text from "Certificate Serial Number" in the "Match value".</li>
 <li>Press "Add"</li> 
 </ul>

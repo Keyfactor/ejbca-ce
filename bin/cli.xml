@@ -28,8 +28,8 @@
 	</target>
 
     <target name="ejbca:prompt">
-        <input message="Please enter the CA name (default: AdminCA1) ?" addproperty="ca.name" defaultvalue="AdminCA1"/>
-        <input message="Please enter the CA dn (default: CN=AdminCA1,O=EJBCA Sample,C=SE) ?" addproperty="ca.dn" defaultvalue="CN=AdminCA1,O=EJBCA Sample,C=SE"/>
+        <input message="Please enter the CA name (default: ManagementCA) ?" addproperty="ca.name" defaultvalue="ManagementCA"/>
+        <input message="Please enter the CA dn (default: CN=ManagementCA,O=EJBCA Sample,C=SE) ?" addproperty="ca.dn" defaultvalue="CN=ManagementCA,O=EJBCA Sample,C=SE"/>
         <input message="Please enter the CA key type (default: RSA) ?" addproperty="ca.keytype" defaultvalue="RSA" />
         <input message="Please enter the CA key spec (default: 2048) ?" addproperty="ca.keyspec" defaultvalue="2048" />
         <input message="Please enter the CA signature algorithm (default: SHA1WithRSA) ?" addproperty="ca.signaturealgorithm" defaultvalue="SHA1WithRSA" />

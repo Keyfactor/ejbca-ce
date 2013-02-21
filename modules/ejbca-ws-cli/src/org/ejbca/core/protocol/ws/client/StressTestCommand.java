@@ -475,8 +475,8 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 		getPrintStream().println("Usage : stress <caname> <nr of threads> <max wait time in ms to fetch cert after adding user> [<end entity profile name>] [<certificate profile name>] [<type of test>]");
 		getPrintStream().println();
 		getPrintStream().println("Here is an example of how the test could be started:");
-		getPrintStream().println("./ejbcawsracli.sh stress AdminCA1 20 5000");
-		getPrintStream().println("20 threads is started. After adding a user the thread waits between 0-500 ms before requesting a certificate for it. The certificates will all be signed by the CA AdminCA1.");
+		getPrintStream().println("./ejbcawsracli.sh stress ManagementCA 20 5000");
+		getPrintStream().println("20 threads is started. After adding a user the thread waits between 0-500 ms before requesting a certificate for it. The certificates will all be signed by the CA ManagementCA.");
 		getPrintStream().println();
 		getPrintStream().println("To define a template for the subject DN of each new user use the java system property 'subjectDN'.");
 		getPrintStream().println("If the property value contains one or several '<userName>' string these strings will be substituted with the user name.");

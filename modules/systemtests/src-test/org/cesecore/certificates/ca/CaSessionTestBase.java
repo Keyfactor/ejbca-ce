@@ -188,9 +188,10 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         assertEquals("CN=User", CertTools.getSubjectDN(usercert2));
         
 
+        String oldname = testx509ca.getName();
         caSession.renameCA(roleMgmgToken, testx509ca.getName(), "TEST1");
         try {
-        	caTestSession.getCA(roleMgmgToken, testx509ca.getName());
+        	caTestSession.getCA(roleMgmgToken, oldname);
             assertTrue("Should throw", false);
         } catch (CADoesntExistsException e) {
             // NOPMD

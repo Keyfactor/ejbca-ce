@@ -85,7 +85,7 @@ import org.w3._2002._03.xkms_.ValidateResultType;
 
 /**
  * To Run this test, there must be a CA with DN
- * "CN=AdminCA1,O=EJBCA Sample,C=SE", and it must have XKMS service enabled.
+ * "CN=ManagementCA,O=EJBCA Sample,C=SE", and it must have XKMS service enabled.
  * Also you have to enable XKMS in conf/xkms.properties.
  * 
  * @author Philip Vendil 2006 sep 27
@@ -115,7 +115,7 @@ public class XKMSKISSTest {
     private static String username2 = null;
     private static String username3 = null;
 
-    private static final String issuerdn = "CN=AdminCA1,O=EJBCA Sample,C=SE";
+    private static final String issuerdn = "CN=ManagementCA,O=EJBCA Sample,C=SE";
     private final int caid = issuerdn.hashCode();
 
     private int userNo;

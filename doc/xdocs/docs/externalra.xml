@@ -87,7 +87,7 @@ The available worker properties are:
  <li>externalra-caservice.keystore.pwd: Password for the keystore defined by externalra-caservice.keystore.path.
  (Default: foo123)</li>
  <li>externalra-caservice.raissuer: CA Name of the CA issuing RA Certificates, used to check the validity of RA signatures.
- (Default: AdminCA1)</li>
+ (Default: ManagementCA)</li>
  <li>externalra-caservice.whitelist: A comma separated list of request class-names that this worker will accept. If this is empty or undefined all kinds of request are accepted.</li>
 </ul>
 </p><p>
@@ -286,7 +286,7 @@ Sample service properties:
 externalra-caservice.whitelist=org.ejbca.extra.db.CertificateRequestRequest,org.ejbca.extra.db.KeyStoreRetrievalRequest
 externalra-caservice.keystore.path=/home/ejbca/externalra-caservice.p12
 externalra-caservice.keystore.pwd=foo123
-externalra-caservice.raissuer=AdminCA1
+externalra-caservice.raissuer=ManagementCA
 externalra-caservice.signature.required=true
 externalra-caservice.encryption.required=false
 externalra-caservice.persistenceunit=RAMessage1DS

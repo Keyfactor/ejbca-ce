@@ -14,13 +14,13 @@
 # When the administrative web server have been setup you can create other CA:s and administrators.
 # This is only used for administrative purposes,
 # Enter a short name for the administrative CA.
-ca.name=AdminCA1
+ca.name=ManagementCA
 
 # The Distinguished Name of the administrative CA. 
 # This is used in the CA certificate to distinguish the CA.
 # Note, you can not use DC components for the initial CA, you can create CAs 
 # using DC components later on once the admin GUI is up and running.
-ca.dn=CN=AdminCA1,O=EJBCA Sample,C=SE
+ca.dn=CN=ManagementCA,O=EJBCA Sample,C=SE
 
 # The token type the administrative CA will use.
 # Use soft for software generated keys (default) or enter a class path for the HSM class.

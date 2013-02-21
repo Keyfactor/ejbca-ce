@@ -19,7 +19,7 @@
 
 # Password for java trust keystore (p12/truststore.jks). Default is changeit
 # This truststore will contain the CA-certificate after running 'ant javatruststore'
-# Run 'ant -Dca.name=FooCA javatruststore' to install the CA-certificate for FooCA instead of the default AdminCA1
+# Run 'ant -Dca.name=FooCA javatruststore' to install the CA-certificate for FooCA instead of the default ManagementCA
 java.trustpassword=changeit
 
 # The CN and DN of the super administrator.

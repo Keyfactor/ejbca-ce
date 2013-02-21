@@ -444,11 +444,11 @@ Router#debug crypto pki validation
 </source>
   <p>
   Generate the SSL-certificate for Apache. This should be issued by the same CA that issued the Tomcat SSL
-  certificate (AdminCA1 in the default configuration). This can be done with the EJBCA CLI:
+  certificate (ManagementCA in the default configuration). This can be done with the EJBCA CLI:
   </p>
 <source>
   $ cd $EJBCA_HOME
-  $ bin/ejbca.sh ra adduser apache-ssl foo123 "CN=ca-server.company.local,O=EJBCA Sample,C=SE" "" AdminCA1 "" 1 PEM SERVER
+  $ bin/ejbca.sh ra adduser apache-ssl foo123 "CN=ca-server.company.local,O=EJBCA Sample,C=SE" "" ManagementCA "" 1 PEM SERVER
   $ bin/ejbca.sh ra setclearpwd apache-ssl foo123
   $ bin/ejbca.sh batch
   $ ls p12/pem/ca-server.company.local*
@@ -830,7 +830,7 @@ nameserver 192.168.0.101
   </p>
 <source>
 $cd $EJBCA_HOME
-$bin/ejbca.sh ra adduser apache-ssl foo123 "CN=ca-server.company.local,O=EJBCA Sample,C=SE" "" AdminCA1 "" 1 PEM SERVER
+$bin/ejbca.sh ra adduser apache-ssl foo123 "CN=ca-server.company.local,O=EJBCA Sample,C=SE" "" ManagementCA "" 1 PEM SERVER
 $bin/ejbca.sh ra setclearpwd apache-ssl foo123
 $bin/ejbca.sh batch
 $ls p12/pem/ca-server.company.local*
@@ -1257,7 +1257,7 @@ debug=false
 	Edit Default Domain Policy -> Computer Configuration -> Windows Settings -> Security Settings -> Public Key Policies ->
 	Trusted Root Certificate Authorities -> Import -> import the root ca certificate and run "gpupdate /force" on
 	machines that are used for testing. 
-	(You can fetch the CA certificate using the EJCBA CLI with "$EJBCA_HOME/bin/ejbca.sh ca getrootcert AdminCA1 ~/AdminCA1.crt -der".)
+	(You can fetch the CA certificate using the EJCBA CLI with "$EJBCA_HOME/bin/ejbca.sh ca getrootcert ManagementCA ~/ManagementCA.crt -der".)
   </p><p>
   	Add Startup Scripts in 
 	Start Menu -> Administration -> Users and Computer -> Right click the domain name -> Properties -> Group Policy ->

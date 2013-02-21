@@ -94,9 +94,10 @@ import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.CertificateCreationException;
+import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.CaSessionTest;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
@@ -112,6 +113,7 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
@@ -177,6 +179,7 @@ public class NestedMessageContentTest extends CmpTestCase {
     
     private int caid;
     private Certificate cacert;
+    private CA testx509ca;
     private String subjectDN;
     private String issuerDN;
     private String raCertsPath = "/tmp/racerts";
@@ -188,12 +191,20 @@ public class NestedMessageContentTest extends CmpTestCase {
         super.setUp();
         
         CryptoProviderTools.installBCProvider();
+        
+        subjectDN = "CN=nestedCMPTest,C=SE";
+        issuerDN = "CN=TestCA";
+        
+        int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
+        testx509ca = CaSessionTest.createTestX509CA(issuerDN, null, false, keyusage);
+        caid = testx509ca.getCAId();
+        cacert = (X509Certificate) testx509ca.getCACertificate();
+        caSession.addCA(admin, testx509ca); 
 
         // Create a temporary directory to store ra certificates, use JUnits TemporaryFolder that is deleted on exit
         File createdFolder = folder.newFolder("racerts");
         raCertsPath = createdFolder.getCanonicalPath();
         
-        subjectDN = "CN=nestedCMPTest,C=SE";
         // Configure CMP for this test, we allow custom certificate serial numbers
         CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         profile.setAllowValidityOverride(true);
@@ -225,64 +236,15 @@ public class NestedMessageContentTest extends CmpTestCase {
         updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO, "true");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, "CMPTESTPROFILE");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, "CMPTESTPROFILE");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, "AdminCA1");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, "TestCA");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_NAMEGENERATIONSCHEME, "DN");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_NAMEGENERATIONPARAMS, "CN");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RACERT_PATH, raCertsPath);
         updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE + ";" + CmpConfiguration.AUTHMODULE_HMAC);
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "AdminCA1;foo123");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "TestCA;foo123");
         // Also update raCerts path locally to be able to verify locally
         EjbcaConfigurationHolder.instance().setProperty(CmpConfiguration.CONFIG_RACERT_PATH, raCertsPath);
-        
-        //Set the caid and cacert
-        // Try to use AdminCA1 if it exists
-        final CAInfo adminca1;
-
-        adminca1 = caSession.getCAInfo(admin, "AdminCA1");
-
-        if (adminca1 == null) {
-            final Collection<Integer> caids;
-
-            caids = caSession.getAvailableCAs(admin);
-            final Iterator<Integer> iter = caids.iterator();
-            int tmp = 0;
-            while (iter.hasNext()) {
-                tmp = iter.next().intValue();
-                if(tmp != 0)    break;
-            }
-            caid = tmp;
-        } else {
-            caid = adminca1.getCAId();
-        }
-        if (caid == 0) {
-            assertTrue("No active CA! Must have at least one active CA to run tests!", false);
-        }
-        final CAInfo cainfo;
-
-        cainfo = caSession.getCAInfo(admin, caid);
-
-        Collection<Certificate> certs = cainfo.getCertificateChain();
-        if (certs.size() > 0) {
-            Iterator<Certificate> certiter = certs.iterator();
-            Certificate cert = certiter.next();
-            String subject = CertTools.getSubjectDN(cert);
-            if (StringUtils.equals(subject, cainfo.getSubjectDN())) {
-                // Make sure we have a BC certificate
-                try {
-                    cacert = (X509Certificate) CertTools.getCertfromByteArray(cert.getEncoded());
-                } catch (Exception e) {
-                    throw new Error(e);
-                }
-            } else {
-                cacert = null;
-            }
-        } else {
-            log.error("NO CACERT for caid " + caid);
-            cacert = null;
-        }
-        
-        issuerDN = cacert != null ? ((X509Certificate) cacert).getIssuerDN().getName() : "CN=AdminCA1,O=EJBCA Sample,C=SE";
-        
+       
     }
 
     @After
@@ -290,6 +252,9 @@ public class NestedMessageContentTest extends CmpTestCase {
         super.tearDown();        
         // The TemporaryFolder and all it's contents are guaranteed to be deleted automaticallly by JUnit
         // so we don't have to delete temporary files
+        
+        CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
+        caSession.removeCA(admin, caid);
     }
 
     @Test
@@ -923,7 +888,7 @@ public class NestedMessageContentTest extends CmpTestCase {
     public void test23NestedMessageIn3GPPMode() throws Exception {
      
         updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "AdminCA1");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "TestCA");
         updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "normal");
         updatePropertyOnServer(CmpConfiguration.CONFIG_VENDORCERTIFICATEMODE, "true");
         updatePropertyOnServer(CmpConfiguration.CONFIG_VENDORCA, "3GPPCA");
