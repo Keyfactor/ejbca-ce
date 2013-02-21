@@ -155,6 +155,9 @@
   static final String CHECKBOX_SELECTSUBJECTDIRATTR         = "checkboxselectsubjectdirattr";
   static final String SELECT_TYPE                         = "selecttype";
   
+  static final String OLDVALUE 								= "_oldvalue";
+  static final String NEWVALUE 								= "_newvalue";
+  
   public static final String FILE_TEMPLATE             = "filetemplate";
   String profile = null;
   // Declare Language file.
@@ -552,31 +555,6 @@
                profiledata.setRequired(EndEntityProfile.AVAILTOKENISSUER, 0, true);    
              }
              
-             String sender = request.getParameter(TEXTFIELD_NOTIFICATIONSENDER);
-             if ( (sender != null) && (sender.length() > 0) ) {
-                 UserNotification not = new UserNotification();
-                 not.setNotificationSender(sender);
-                 not.setNotificationSubject(request.getParameter(TEXTFIELD_NOTIFICATIONSUBJECT));
-                 not.setNotificationMessage(request.getParameter(TEXTAREA_NOTIFICATIONMESSAGE));
-                 String rcpt = request.getParameter(TEXTFIELD_NOTIFICATIONRCPT);
-                 if ( (rcpt == null) || (rcpt.length() == 0) ) {
-                     // Default value if nothing is entered is users email address
-                     rcpt = UserNotification.RCPT_USER;
-                 }
-                 not.setNotificationRecipient(rcpt);
-                 String[] val1 = request.getParameterValues(SELECT_NOTIFICATIONEVENTS);
-                 String events = null;
-     			 for(int i = 0; i < val1.length; i++) {
-     			    if (events == null) {
-     			       events = val1[i];
-     			    } else {
-                       events = events + ";"+val1[i];
-                    }
-                 }
-                 not.setNotificationEvents(events);
-                 profiledata.addUserNotification(not);
-             }
-             
              value = request.getParameter(CHECKBOX_USE_PRINTING);
              if(value != null && value.equalsIgnoreCase(CHECKBOX_VALUE)){
             	 profiledata.setUsePrinting(true);
@@ -724,11 +702,6 @@
              includefile="endentityprofilepage.jspf";
              ejbcarabean.setTemporaryEndEntityProfile(profiledata);
            
-             if(request.getParameter(BUTTON_SAVE) != null){             
-               ejbcarabean.changeEndEntityProfile(profile,profiledata);
-               ejbcarabean.setTemporaryEndEntityProfile(null);
-               includefile="endentityprofilespage.jspf";  
-             }
              /*
               * Add user notice.
               */
@@ -746,35 +719,108 @@
                  includefile = "endentityprofilepage.jspf";
              }
              /*
-              * Remove user notice.
+              * Remove/Edit user notice.
               */
-             if (profiledata.getUserNotifications() != null) {
+             if (profiledata.getUserNotifications() != null &&
+            		 ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_USE_SENDNOTIFICATION))) {
                  boolean removed = false;
-                 for(int i = 0; i < profiledata.getUserNotifications().size(); i++) {
-                     value = request.getParameter(BUTTON_DELETE_NOTIFICATION + i);
-                     if(value != null) {
-                         String s = request.getParameter(TEXTFIELD_NOTIFICATIONSENDER + i);
-                         String r = request.getParameter(TEXTFIELD_NOTIFICATIONRCPT + i);
-                         String sub = request.getParameter(TEXTFIELD_NOTIFICATIONSUBJECT + i);
-                         String msg = request.getParameter(TEXTAREA_NOTIFICATIONMESSAGE + i);
-                         String[] val = request.getParameterValues(SELECT_NOTIFICATIONEVENTS + i);
+                 final int numnots = profiledata.getUserNotifications().size();
+                 for(int i = 0; i < numnots; i++) {
+                     String delete = request.getParameter(BUTTON_DELETE_NOTIFICATION + i);
+                     
+                     if (request.getParameter(TEXTFIELD_NOTIFICATIONSENDER + NEWVALUE + i) == null) {
+                    	 continue;
+                     }
+                     
+                	 // First, delete the old value
+                     { // hide variables
+	                     String s = request.getParameter(TEXTFIELD_NOTIFICATIONSENDER + OLDVALUE + i);
+	                     String r = request.getParameter(TEXTFIELD_NOTIFICATIONRCPT + OLDVALUE + i);
+	                     String sub = request.getParameter(TEXTFIELD_NOTIFICATIONSUBJECT + OLDVALUE + i);
+	                     String msg = request.getParameter(TEXTAREA_NOTIFICATIONMESSAGE + OLDVALUE + i);
+	                     String[] val = request.getParameterValues(SELECT_NOTIFICATIONEVENTS + OLDVALUE + i);
+	                     String events = null;
+	                     if (val != null) {
+	                    	 for (String v : val) {
+		 			            if (events == null) {
+		 			               events = v;
+		 			            } else {
+		                           events = events + ";"+v;
+		                        }
+		                     }
+	                     }
+	                     UserNotification not = new UserNotification(s, r, sub, msg, events);
+	                     profiledata.removeUserNotification(not);
+                     }
+                     
+                     if (delete != null) {
+                    	 // Delete = don't create again.
+                    	 // Stay at the profile page.
+                    	 removed = true;
+                     } else {
+                    	 // Edit
+                    	 UserNotification not = new UserNotification();
+                         not.setNotificationSender(request.getParameter(TEXTFIELD_NOTIFICATIONSENDER + NEWVALUE + i));
+                         not.setNotificationSubject(request.getParameter(TEXTFIELD_NOTIFICATIONSUBJECT + NEWVALUE + i));
+                         not.setNotificationMessage(request.getParameter(TEXTAREA_NOTIFICATIONMESSAGE + NEWVALUE + i));
+                         String rcpt = request.getParameter(TEXTFIELD_NOTIFICATIONRCPT + NEWVALUE + i);
+                         if ( (rcpt == null) || (rcpt.length() == 0) ) {
+                             // Default value if nothing is entered is users email address
+                             rcpt = UserNotification.RCPT_USER;
+                         }
+                         not.setNotificationRecipient(rcpt);
+                         String[] val = request.getParameterValues(SELECT_NOTIFICATIONEVENTS + NEWVALUE + i);
                          String events = null;
-     			         for(int j = 0; j < val.length; j++) {
-     			            if (events == null) {
-     			               events = val[j];
-     			            } else {
-                               events = events + ";"+val[j];
+                         for (String v : val) {
+             			    if (events == null) {
+             			       events = v;
+             			    } else {
+                               events = events + ";"+v;
                             }
                          }
-                         UserNotification not = new UserNotification(s, r, sub, msg, events);
-                         profiledata.removeUserNotification(not);
-                         ejbcarabean.setTemporaryEndEntityProfile(profiledata);
-                         removed = true;
+                         not.setNotificationEvents(events);
+                         profiledata.addUserNotification(not);
                      }
                  }         
                  if (removed) {
+                   ejbcarabean.setTemporaryEndEntityProfile(profiledata);
                    includefile = "endentityprofilepage.jspf";
                  }
+             }
+             
+             /*
+              * Add new notification
+              */
+             String sender = request.getParameter(TEXTFIELD_NOTIFICATIONSENDER);
+             if ((sender != null) && (sender.length() > 0) &&
+            		 ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_USE_SENDNOTIFICATION))) {
+                 UserNotification not = new UserNotification();
+                 not.setNotificationSender(sender);
+                 not.setNotificationSubject(request.getParameter(TEXTFIELD_NOTIFICATIONSUBJECT));
+                 not.setNotificationMessage(request.getParameter(TEXTAREA_NOTIFICATIONMESSAGE));
+                 String rcpt = request.getParameter(TEXTFIELD_NOTIFICATIONRCPT);
+                 if ( (rcpt == null) || (rcpt.length() == 0) ) {
+                     // Default value if nothing is entered is users email address
+                     rcpt = UserNotification.RCPT_USER;
+                 }
+                 not.setNotificationRecipient(rcpt);
+                 String[] val = request.getParameterValues(SELECT_NOTIFICATIONEVENTS);
+                 String events = null;
+     			 for (String v : val) {
+     			    if (events == null) {
+     			       events = v;
+     			    } else {
+                       events = events + ";"+v;
+                    }
+                 }
+                 not.setNotificationEvents(events);
+                 profiledata.addUserNotification(not);
+             }
+             
+             if(request.getParameter(BUTTON_SAVE) != null){             
+                 ejbcarabean.changeEndEntityProfile(profile,profiledata);
+                 ejbcarabean.setTemporaryEndEntityProfile(null);
+                 includefile="endentityprofilespage.jspf";  
              }
              
 			 if(request.getParameter(BUTTON_UPLOADTEMPLATE) != null){
