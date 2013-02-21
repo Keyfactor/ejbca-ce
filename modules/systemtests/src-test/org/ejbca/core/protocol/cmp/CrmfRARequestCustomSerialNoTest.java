@@ -116,7 +116,7 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET, PBEPASSWORD);
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, "CMPTESTPROFILE");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, "CMPTESTPROFILE");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, "AdminCA1");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, "ManagementCA");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_NAMEGENERATIONSCHEME, "DN");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_NAMEGENERATIONPARAMS, "CN");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ALLOWCUSTOMCERTSERNO, "false");
@@ -124,12 +124,12 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
         updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "-;-");
 
         CryptoProviderTools.installBCProvider();
-        // Try to use AdminCA1 if it exists
-        final CAInfo adminca1;
+        // Try to use ManagementCA if it exists
+        final CAInfo managementca;
 
-        adminca1 = caSession.getCAInfo(admin, "AdminCA1");
+        managementca = caSession.getCAInfo(admin, "ManagementCA");
 
-        if (adminca1 == null) {
+        if (managementca == null) {
             final Collection<Integer> caids;
 
             caids = caSession.getAvailableCAs(admin);
@@ -141,7 +141,7 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
             }
             caid = tmp;
         } else {
-            caid = adminca1.getCAId();
+            caid = managementca.getCAId();
         }
         if (caid == 0) {
             assertTrue("No active CA! Must have at least one active CA to run tests!", false);
@@ -169,7 +169,7 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
             log.error("NO CACERT for caid " + caid);
             cacert = null;
         }
-        issuerDN = cacert != null ? cacert.getIssuerDN().getName() : "CN=AdminCA1,O=EJBCA Sample,C=SE";
+        issuerDN = cacert != null ? cacert.getIssuerDN().getName() : "CN=ManagementCA,O=EJBCA Sample,C=SE";
     }
 
     /**

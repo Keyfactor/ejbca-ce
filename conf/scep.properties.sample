@@ -31,8 +31,8 @@ allow.external-dynamic.configuration=false
 # The internal SCEP server is a part of the CA and runs as part of the CA server
 #
 # The default CA to use to send CA cert responses if the client does not pass a CA name in the GetCACert request
-# Default: AdminCA1
-#scep.defaultca=AdminCA1
+# Default: ManagementCA
+#scep.defaultca=ManagementCA
 
 
 #

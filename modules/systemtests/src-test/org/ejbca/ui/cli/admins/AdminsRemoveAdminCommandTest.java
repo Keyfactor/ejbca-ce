@@ -17,22 +17,22 @@ import static org.junit.Assert.assertNull;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.AccessUserAspectManagerTestSessionRemote;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
-import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.CaSessionTest;
+import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.RoleData;
-import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -70,18 +70,26 @@ public class AdminsRemoveAdminCommandTest {
     }
 
     @Test
-    public void testRemoveAccessUser() throws CADoesntExistsException, AuthorizationDeniedException, RoleNotFoundException,
-            ErrorAdminCommandException {
+    public void testRemoveAccessUser() throws Exception {
+        
+        int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
+        CA testx509ca = CaSessionTest.createTestX509CA("CN=TestCA", null, false, keyusage);
+        final int caId = testx509ca.getCAId();
+        caSession.addCA(internalAdmin, testx509ca);
+        
         Collection<AccessUserAspectData> subjects = new ArrayList<AccessUserAspectData>();
-        final int caId = caSession.getCAInfo(internalAdmin, "AdminCA1").getCAId();
         final String matchValue = "foo";
         subjects.add(new AccessUserAspectData(ROLENAME, caId, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE,
                 matchValue));
         roleManagementSession.addSubjectsToRole(internalAdmin, role, subjects);
-        String[] args = { "removeadmin", ROLENAME, "AdminCA1", "WITH_COMMONNAME", "TYPE_EQUALCASE", "foo" };
+        String[] args = { "removeadmin", ROLENAME, "TestCA", "WITH_COMMONNAME", "TYPE_EQUALCASE", "foo" };
         command.execute(args);
         assertNull("User aspect was not removed via CLI command", accessUserAspectManagerTestSession.find(AccessUserAspectData.generatePrimaryKey(
                 ROLENAME, caId, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, matchValue)));
+        
+        CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
+        caSession.removeCA(internalAdmin, caId);
+        
     }
 
 }

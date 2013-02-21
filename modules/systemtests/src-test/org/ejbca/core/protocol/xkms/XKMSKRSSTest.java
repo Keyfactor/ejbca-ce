@@ -112,7 +112,7 @@ import org.w3._2002._03.xkms_.UseKeyWithType;
 
 /**
  * To Run this test, there must be a CA with DN
- * "CN=AdminCA1,O=EJBCA Sample,C=SE", and it must have XKMS service enabled.
+ * "CN=ManagementCA,O=EJBCA Sample,C=SE", and it must have XKMS service enabled.
  * Also you have to enable XKMS in conf/xkms.properties.
  * 
  * @version $Id$
@@ -138,7 +138,7 @@ public class XKMSKRSSTest {
     private static String username2;
     private static String username3;
 
-    private final static String issuerdn = "CN=AdminCA1,O=EJBCA Sample,C=SE";
+    private final static String issuerdn = "CN=ManagementCA,O=EJBCA Sample,C=SE";
     private final static int caid = issuerdn.hashCode();
 
     private static String dn1;
@@ -172,7 +172,7 @@ public class XKMSKRSSTest {
 
     @Before
     public void setUp() throws Exception {
-        orgCaInfo = caSession.getCAInfo(administrator, "AdminCA1");
+        orgCaInfo = caSession.getCAInfo(administrator, "ManagementCA");
     }
     
 	@BeforeClass
@@ -217,7 +217,7 @@ public class XKMSKRSSTest {
 	    GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
 	    EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 	    
-        final CAInfo caInfo = caSession.getCAInfo(administrator, "AdminCA1");
+        final CAInfo caInfo = caSession.getCAInfo(administrator, "ManagementCA");
         // make sure same keys for different users is prevented
         caInfo.setDoEnforceUniquePublicKeys(true);
         // make sure same DN for different users is prevented

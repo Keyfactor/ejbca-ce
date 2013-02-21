@@ -64,6 +64,7 @@ import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.ReasonFlags;
+import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -74,9 +75,10 @@ import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.CertificateCreationException;
+import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.CaSessionTest;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
@@ -87,6 +89,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
@@ -139,11 +142,12 @@ public class AuthenticationModulesTest extends CmpTestCase {
 
     private static final String USERNAME = "authModuleTestUser";
     private static final String USER_DN = "CN=" + USERNAME + ",O=PrimeKey Solutions AB,C=SE,UID=foo123";
-    private static final String issuerDN = "CN=AdminCA1,O=EJBCA Sample,C=SE";
+    private static final String issuerDN = "CN=TestCA";
     private byte[] nonce;
     private byte[] transid;
     private int caid;
     private Certificate cacert;
+    private CA testx509ca;
 
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private EndEntityAccessSessionRemote eeAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
@@ -157,7 +161,6 @@ public class AuthenticationModulesTest extends CmpTestCase {
     private RoleAccessSessionRemote roleAccessSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
-
     
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -171,16 +174,11 @@ public class AuthenticationModulesTest extends CmpTestCase {
         nonce = CmpMessageHelper.createSenderNonce();
         transid = CmpMessageHelper.createSenderNonce();
      
-        try {
-            setCAID();
-            assertFalse("caid is 0", caid == 0);
-            setCaCert();
-            assertNotNull("cacert is null", cacert);
-        } catch (CADoesntExistsException e) {
-            log.error("Failed to find CA. " + e.getLocalizedMessage());
-        } catch (AuthorizationDeniedException e) {
-            log.error("Failed to find CA. " + e.getLocalizedMessage());
-        }
+        int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
+        testx509ca = CaSessionTest.createTestX509CA(issuerDN, null, false, keyusage);
+        caid = testx509ca.getCAId();
+        cacert = testx509ca.getCACertificate();
+        caSession.addCA(ADMIN, testx509ca);
 
         // Initialize config in here
         EjbcaConfigurationHolder.instance();
@@ -189,7 +187,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
 
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, "EMPTY");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, "ENDUSER");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, "AdminCA1");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, "TestCA");
 
     }
 
@@ -221,6 +219,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
 
     @Test
     public void test03HMACCrmfReq() throws Exception {
+        
         confSession.updateProperty(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_HMAC);
         assertTrue("The CMP Authentication module was not configured correctly.",
                 confSession.verifyProperty(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_HMAC));
@@ -320,9 +319,9 @@ public class AuthenticationModulesTest extends CmpTestCase {
         confSession.updateProperty(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         assertTrue("The CMP Authentication module was not configured correctly.",
                 confSession.verifyProperty(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE));
-        confSession.updateProperty(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "AdminCA1");
+        confSession.updateProperty(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "TestCA");
         assertTrue("The CMP Authentication module was not configured correctly.",
-                confSession.verifyProperty(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "AdminCA1"));
+                confSession.verifyProperty(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "TestCA"));
         confSession.updateProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
         assertTrue("The CMP Authentication module was not configured correctly.",
                 confSession.verifyProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "ra"));
@@ -382,9 +381,9 @@ public class AuthenticationModulesTest extends CmpTestCase {
         confSession.updateProperty(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         assertTrue("The CMP Authentication module was not configured correctly.",
                 confSession.verifyProperty(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE));
-        confSession.updateProperty(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "AdminCA1");
+        confSession.updateProperty(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "TestCA");
         assertTrue("The CMP Authentication module was not configured correctly.",
-                confSession.verifyProperty(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "AdminCA1"));
+                confSession.verifyProperty(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "TestCA"));
         confSession.updateProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
         assertTrue("The CMP Authentication module was not configured correctly.",
                 confSession.verifyProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "ra"));
@@ -438,9 +437,9 @@ public class AuthenticationModulesTest extends CmpTestCase {
         confSession.updateProperty(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         assertTrue("The CMP Authentication module was not configured correctly.",
                 confSession.verifyProperty(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE));
-        confSession.updateProperty(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "AdminCA1");
+        confSession.updateProperty(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "TestCA");
         assertTrue("The CMP Authentication module was not configured correctly.",
-                confSession.verifyProperty(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "AdminCA1"));
+                confSession.verifyProperty(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "TestCA"));
         confSession.updateProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
         assertTrue("The CMP Authentication module was not configured correctly.",
                 confSession.verifyProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "ra"));
@@ -500,7 +499,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
     @Test
     public void test08EECrmfReqMultipleAuthModules() throws NoSuchAlgorithmException, EjbcaException, IOException, Exception {
         String modules = CmpConfiguration.AUTHMODULE_HMAC + ";" + CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE;
-        String parameters = "foo123" + ";" + "AdminCA1";
+        String parameters = "foo123" + ";" + "TestCA";
         confSession.updateProperty(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, modules);
         assertTrue("The CMP Authentication module was not configured correctly.",
                 confSession.verifyProperty(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, modules));
@@ -556,7 +555,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         final String pbeSecret = "foo123hmac";
         String modules = CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE + ";"
                 + CmpConfiguration.AUTHMODULE_HMAC;
-        String parameters = "-;AdminCA1;" + pbeSecret;
+        String parameters = "-;TestCA;" + pbeSecret;
         confSession.updateProperty(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, modules);
         assertTrue("The CMP Authentication module was not configured correctly.",
                 confSession.verifyProperty(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, modules));
@@ -651,9 +650,9 @@ public class AuthenticationModulesTest extends CmpTestCase {
         confSession.updateProperty(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         assertTrue("The CMP Authentication module was not configured correctly.",
                 confSession.verifyProperty(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE));
-        confSession.updateProperty(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "AdminCA1");
+        confSession.updateProperty(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "TestCA");
         assertTrue("The CMP Authentication module was not configured correctly.",
-                confSession.verifyProperty(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "AdminCA1"));
+                confSession.verifyProperty(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "TestCA"));
         confSession.updateProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
         assertTrue("The CMP Authentication module was not configured correctly.",
                 confSession.verifyProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "ra"));
@@ -1267,9 +1266,9 @@ public class AuthenticationModulesTest extends CmpTestCase {
         confSession.updateProperty(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         assertTrue("The CMP Authentication module was not configured correctly.",
                 confSession.verifyProperty(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE));
-        confSession.updateProperty(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "AdminCA1");   
+        confSession.updateProperty(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "TestCA");   
         assertTrue("The CMP Authentication module was not configured correctly.",
-                confSession.verifyProperty(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "AdminCA1"));
+                confSession.verifyProperty(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "TestCA"));
         confSession.updateProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "normal");
         assertTrue("The CMP Authentication module was not configured correctly.",
                 confSession.verifyProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "normal"));
@@ -1386,9 +1385,9 @@ public class AuthenticationModulesTest extends CmpTestCase {
         confSession.updateProperty(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         assertTrue("The CMP Authentication module was not configured correctly.",
                 confSession.verifyProperty(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE));
-        confSession.updateProperty(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "AdminCA1");
+        confSession.updateProperty(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "TestCA");
         assertTrue("The CMP Authentication module was not configured correctly.",
-                confSession.verifyProperty(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "AdminCA1"));
+                confSession.verifyProperty(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "TestCA"));
         confSession.updateProperty(CmpConfiguration.CONFIG_VENDORCERTIFICATEMODE, "true");
         assertTrue("The CMP Authentication module was not configured correctly.",
                 confSession.verifyProperty(CmpConfiguration.CONFIG_VENDORCERTIFICATEMODE, "true"));
@@ -1613,67 +1612,20 @@ public class AuthenticationModulesTest extends CmpTestCase {
     public void tearDown() throws Exception {
         super.tearDown();
 
+        CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
+        caSession.removeCA(ADMIN, caid);
+        
         boolean cleanUpOk = true;
         if (!confSession.restoreConfiguration()) {
             cleanUpOk = false;
         }
         assertTrue("Unable to clean up properly.", cleanUpOk);
     }
-
-    private void setCAID() throws CADoesntExistsException, AuthorizationDeniedException {
-        // Try to use AdminCA1 if it exists
-        CAInfo adminca1 = caSession.getCAInfo(ADMIN, "AdminCA1");
-
-        if (adminca1 == null) {
-            final Collection<Integer> caids;
-
-            caids = caSession.getAvailableCAs(ADMIN);
-            final Iterator<Integer> iter = caids.iterator();
-            int tmp = 0;
-            while (iter.hasNext()) {
-                tmp = iter.next().intValue();
-                if (tmp != 0)
-                    break;
-            }
-            caid = tmp;
-        } else {
-            caid = adminca1.getCAId();
-        }
-        if (caid == 0) {
-            assertTrue("No active CA! Must have at least one active CA to run tests!", false);
-        }
-
-    }
-
-    private void setCaCert() throws CADoesntExistsException, AuthorizationDeniedException {
-        final CAInfo cainfo;
-
-        cainfo = caSession.getCAInfo(ADMIN, caid);
-
-        Collection<Certificate> certs = cainfo.getCertificateChain();
-        if (certs.size() > 0) {
-            Iterator<Certificate> certiter = certs.iterator();
-            Certificate cert = certiter.next();
-            String subject = CertTools.getSubjectDN(cert);
-            if (StringUtils.equals(subject, cainfo.getSubjectDN())) {
-                // Make sure we have a BC certificate
-                try {
-                    cacert = (X509Certificate) CertTools.getCertfromByteArray(cert.getEncoded());
-                } catch (Exception e) {
-                    throw new Error(e);
-                }
-            } else {
-                cacert = null;
-            }
-        } else {
-            log.error("NO CACERT for caid " + caid);
-            cacert = null;
-        }
-    }
-    
+   
     private CMPCertificate getCMPCert(Certificate cert) throws CertificateEncodingException, IOException {
         ASN1InputStream ins = new ASN1InputStream(cert.getEncoded());
         ASN1Primitive pcert = ins.readObject();
+        ins.close();
         org.bouncycastle.asn1.x509.Certificate c = org.bouncycastle.asn1.x509.Certificate.getInstance(pcert.toASN1Primitive());
         return new CMPCertificate(c);
     }

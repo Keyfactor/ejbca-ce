@@ -145,19 +145,23 @@ public class CaSessionTest extends RoleUsingTestCase {
     public static X509CA createTestX509CA(String cadn, char[] tokenpin, boolean pkcs11) throws Exception {
         return createTestX509CAOptionalGenKeys(cadn, tokenpin, true, pkcs11);
     }
+    public static X509CA createTestX509CA(String cadn, char[] tokenpin, boolean pkcs11, int keyusage) throws Exception {
+        return createTestX509CAOptionalGenKeys(cadn, tokenpin, true, pkcs11, "1024", keyusage);
+    }    
     public static X509CA createTestX509CA(String cadn, char[] tokenpin, boolean pkcs11, final String keyspec) throws Exception {
-        return createTestX509CAOptionalGenKeys(cadn, tokenpin, true, pkcs11, keyspec);
+        return createTestX509CAOptionalGenKeys(cadn, tokenpin, true, pkcs11, keyspec, -1);
     }
 
     public static X509CA createTestX509CAOptionalGenKeys(String cadn, char[] tokenpin, boolean genKeys, boolean pkcs11) throws Exception {
-        return createTestX509CAOptionalGenKeys(cadn, tokenpin, genKeys, pkcs11, "1024");
+        return createTestX509CAOptionalGenKeys(cadn, tokenpin, genKeys, pkcs11, "1024", -1);
     }
-    private static X509CA createTestX509CAOptionalGenKeys(String cadn, char[] tokenpin, boolean genKeys, boolean pkcs11, final String keyspec) throws Exception {
+    private static X509CA createTestX509CAOptionalGenKeys(String cadn, char[] tokenpin, boolean genKeys, boolean pkcs11, final String keyspec, int keyusage) throws Exception {
         // Create catoken
         int cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(null, tokenpin, genKeys, pkcs11, cadn, keyspec);
         final CAToken catoken = createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
         final List<ExtendedCAServiceInfo> extendedCaServices = new ArrayList<ExtendedCAServiceInfo>(0);
-        X509CAInfo cainfo = new X509CAInfo(cadn, cadn, CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA,
+        String caname = CertTools.getPartFromDN(cadn, "CN");
+        X509CAInfo cainfo = new X509CAInfo(cadn, caname, CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA,
                 3650, null, // Expiretime
                 CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catoken, "JUnit RSA CA", -1, null, null, // PolicyId
                 24, // CRLPeriod
@@ -205,7 +209,12 @@ public class CaSessionTest extends RoleUsingTestCase {
                 sigalg = AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA;
             }
             final PrivateKey privateKey = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
-            X509Certificate cacert = CertTools.genSelfCert(cadn, 10L, "1.1.1.1", privateKey, publicKey, sigalg, true, cryptoToken.getSignProviderName());
+            X509Certificate cacert = null;
+            if(keyusage == -1) {
+                cacert = CertTools.genSelfCert(cadn, 10L, "1.1.1.1", privateKey, publicKey, sigalg, true, cryptoToken.getSignProviderName());
+            } else {
+                cacert = CertTools.genSelfCertForPurpose(cadn, 10L, "1.1.1.1", privateKey, publicKey, sigalg, true, keyusage);
+            }
             assertNotNull(cacert);
             cachain.add(cacert);
         }

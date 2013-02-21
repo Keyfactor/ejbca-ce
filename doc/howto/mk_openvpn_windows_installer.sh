@@ -29,7 +29,7 @@ read SubjectDN
 # SubjectDN is the Distinguised Name of this user's cert
 #
 # username might look like "jens" 
-# IssuerDN might look like "CN=AdminCA1,O=Example,C=Com"
+# IssuerDN might look like "CN=ManagementCA,O=Example,C=Com"
 # SubjectDN might look like "CN=Jens Hansen,O=Example,OU=Sales,C=Com"
 # you could use the O or OU from a DN to specify the needed
 # openvpn configuration
@@ -110,7 +110,7 @@ mkdir -p $DIR/$username
 # Third we run a check for the setup for this username
 
 case "$IssuerDN" in
-	CN=AdminCA1,O=Example,C=com)
+	CN=ManagementCA,O=Example,C=com)
 		cfg=employee-client.conf
 		org=work
 		zipfile=openvpn_install_source-2.1beta7-gui-1.0.3.zip

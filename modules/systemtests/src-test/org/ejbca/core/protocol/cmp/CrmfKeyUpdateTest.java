@@ -29,9 +29,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -58,6 +56,7 @@ import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.ReasonFlags;
+import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -67,9 +66,11 @@ import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.CertificateCreationException;
+import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.CaSessionTest;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -79,6 +80,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
@@ -129,6 +131,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
     private byte[] transid;
     private int caid;
     private Certificate cacert;
+    private CA testx509ca;
     
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
@@ -144,22 +147,17 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
 
         username = "certRenewalUser";
         userDN = "CN="+username+",O=PrimeKey Solutions AB,C=SE";
-        issuerDN = "CN=AdminCA1,O=EJBCA Sample,C=SE";
+        issuerDN = "CN=TestCA";
         nonce = CmpMessageHelper.createSenderNonce();
         transid = CmpMessageHelper.createSenderNonce();
 
-
         CryptoProviderTools.installBCProvider();
-        try {
-            setCAID();
-            assertFalse("caid if 0", caid==0);
-            setCaCert();
-            assertNotNull("cacert is null", cacert);
-        } catch (CADoesntExistsException e) {
-            log.error("Failed to find CA. " + e.getLocalizedMessage());
-        } catch (AuthorizationDeniedException e) {
-            log.error("Failed to find CA. " + e.getLocalizedMessage());
-        }
+        
+        int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
+        testx509ca = CaSessionTest.createTestX509CA(issuerDN, null, false, keyusage);
+        caid = testx509ca.getCAId();
+        cacert = (X509Certificate) testx509ca.getCACertificate();
+        caSession.addCA(admin, testx509ca);
         
         // Initialize config in here
         EjbcaConfigurationHolder.instance();
@@ -168,8 +166,8 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, "EMPTY");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, "ENDUSER");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, "AdminCA1");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_DEFAULTCA, "AdminCA1");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, "TestCA");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_DEFAULTCA, "TestCA");
         updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "normal");
         updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, "RegTokenPwd;HMAC");
         updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "-;-");
@@ -712,7 +710,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
      * 
      * - Pre-configuration: Sets the operational mode to RA mode (cmp.raoperationalmode=ra)
      * - Pre-configuration: Sets the cmp.authenticationmodule to 'EndEntityCertificate'
-     * - Pre-configuration: Sets the cmp.authenticationparameters to 'AdminCA1'
+     * - Pre-configuration: Sets the cmp.authenticationparameters to 'TestCA'
      * - Pre-configuration: Set cmp.checkadminauthorization to 'true'
      * - Creates a new user and obtains a certificate, cert, for this user. Tests whether obtaining the certificate was successful.
      * - Generates a CMP KeyUpdate Request and tests that such request has been created.
@@ -740,7 +738,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         
         updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
         updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "AdminCA1");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "TestCA");
         updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true");
 
         //------------------ create the user and issue his first certificate -------------
@@ -788,7 +786,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
      * 
      * - Pre-configuration: Sets the operational mode to client mode (cmp.raoperationalmode=normal)
      * - Pre-configuration: Sets the cmp.authenticationmodule to 'EndEntityCertificate'
-     * - Pre-configuration: Sets the cmp.authenticationparameters to 'AdminCA1'
+     * - Pre-configuration: Sets the cmp.authenticationparameters to 'TestCA'
      * - Pre-configuration: Set cmp.checkadminauthorization to 'true'
      * - Creates a new user and obtains a certificate, cert, for this user. Tests whether obtaining the certificate was successful.
      * - Generates a CMP KeyUpdate Request and tests that such request has been created.
@@ -817,7 +815,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         
         updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
         updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "AdminCA1");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "TestCA");
 
         //------------------ create the user and issue his first certificate -------------
         createUser(username, userDN, "foo123");
@@ -863,7 +861,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
      * 
      * - Pre-configuration: Sets the operational mode to RA mode (cmp.raoperationalmode=ra)
      * - Pre-configuration: Sets the cmp.authenticationmodule to 'EndEntityCertificate'
-     * - Pre-configuration: Sets the cmp.authenticationparameters to 'AdminCA1'
+     * - Pre-configuration: Sets the cmp.authenticationparameters to 'TestCA'
      * - Pre-configuration: Set cmp.checkadminauthorization to 'true'
      * - Creates a new user and obtains a certificate, cert, for this user. Tests whether obtaining the certificate was successful.
      * - Generates a CMP KeyUpdate Request and tests that such request has been created.
@@ -891,7 +889,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         
         updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
         updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "AdminCA1");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "TestCA");
         updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true");
         
         //------------------ create the user and issue his first certificate -------------
@@ -938,7 +936,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
      * 
      * - Pre-configuration: Sets the operational mode to client mode (cmp.raoperationalmode=normal)
      * - Pre-configuration: Sets the cmp.authenticationmodule to 'EndEntityCertificate'
-     * - Pre-configuration: Sets the cmp.authenticationparameters to 'AdminCA1'
+     * - Pre-configuration: Sets the cmp.authenticationparameters to 'TestCA'
      * - Pre-configuration: Set cmp.checkadminauthorization to 'true'
      * - Creates a new user and obtains a certificate, cert, for this user. Tests whether obtaining the certificate was successful.
      * - Generates a CMP KeyUpdate Request and tests that such request has been created.
@@ -967,7 +965,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         
         updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
         updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "AdminCA1");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "TestCA");
 
         //------------------ create the user and issue his first certificate -------------
         createUser(username, userDN, "foo123");
@@ -1019,7 +1017,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
      * 
      * - Pre-configuration: Sets the operational mode to RA mode (cmp.raoperationalmode=ra)
      * - Pre-configuration: Sets the cmp.authenticationmodule to "HMAC;DnPartPwd;EndEntityCertificate"
-     * - Pre-configuration: Sets the cmp.authenticationparameters to "-;OU;AdminCA1"
+     * - Pre-configuration: Sets the cmp.authenticationparameters to "-;OU;TestCA"
      * - Pre-configuration: Set cmp.checkadminauthorization to 'true'
      * - Creates a new user and obtains a certificate, cert, for this user. Tests whether obtaining the certificate was successful.
      * - Generates a CMP KeyUpdate Request and tests that such request has been created.
@@ -1048,7 +1046,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
         String authmodules = CmpConfiguration.AUTHMODULE_HMAC + ";" + CmpConfiguration.AUTHMODULE_DN_PART_PWD + ";" + CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE;
         updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, authmodules);
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "-;OU;AdminCA1");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "-;OU;TestCA");
         updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true");
 
         //------------------ create the user and issue his first certificate -------------
@@ -1179,7 +1177,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
      * 
      * - Pre-configuration: Sets the operational mode to client mode (cmp.raoperationalmode=normal)
      * - Pre-configuration: Sets the cmp.authenticationmodule to 'EndEntityCertificate'
-     * - Pre-configuration: Sets the cmp.authenticationparameters to 'AdminCA1'
+     * - Pre-configuration: Sets the cmp.authenticationparameters to 'TestCA'
      * - Pre-configuration: Sets the cmp.allowautomatickeyupdate to 'true'
      * - Creates a new user and obtains a certificate, cert, for this user. Tests whether obtaining the certificate was successful.
      * - Generates a CMP KeyUpdate Request and tests that such request has been created.
@@ -1207,7 +1205,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         
         updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "normal");
         updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "AdminCA1");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "TestCA");
         updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true");
         
         //------------------ create the user and issue his first certificate -------------
@@ -1364,6 +1362,9 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
 
         super.tearDown();
         
+        CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
+        caSession.removeCA(admin, caid);
+        
         try {
             endEntityManagementSession.revokeAndDeleteUser(admin, username, ReasonFlags.unused);
             endEntityManagementSession.revokeAndDeleteUser(admin, "fakeuser", ReasonFlags.unused);
@@ -1377,60 +1378,10 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertTrue("Unable to clean up properly.", cleanUpOk);
     }
     
-    
-    private void setCAID() throws CADoesntExistsException, AuthorizationDeniedException {
-        // Try to use AdminCA1 if it exists
-        CAInfo adminca1 = caSession.getCAInfo(admin, "AdminCA1");
-
-        if (adminca1 == null) {
-            final Collection<Integer> caids;
-
-            caids = caSession.getAvailableCAs(admin);
-            final Iterator<Integer> iter = caids.iterator();
-            int tmp = 0;
-            while (iter.hasNext()) {
-                tmp = iter.next().intValue();
-                if(tmp != 0)    break;
-            }
-            caid = tmp;
-        } else {
-            caid = adminca1.getCAId();
-        }
-        if (caid == 0) {
-            assertTrue("No active CA! Must have at least one active CA to run tests!", false);
-        }
- 
-    }
-    
-    private void setCaCert() throws CADoesntExistsException, AuthorizationDeniedException {
-        final CAInfo cainfo;
-
-        cainfo = caSession.getCAInfo(admin, caid);
-
-        Collection<Certificate> certs = cainfo.getCertificateChain();
-        if (certs.size() > 0) {
-            Iterator<Certificate> certiter = certs.iterator();
-            Certificate cert = certiter.next();
-            String subject = CertTools.getSubjectDN(cert);
-            if (StringUtils.equals(subject, cainfo.getSubjectDN())) {
-                // Make sure we have a BC certificate
-                try {
-                    cacert = (X509Certificate) CertTools.getCertfromByteArray(cert.getEncoded());
-                } catch (Exception e) {
-                    throw new Error(e);
-                }
-            } else {
-                cacert = null;
-            }
-        } else {
-            log.error("NO CACERT for caid " + caid);
-            cacert = null;
-        }
-    }
-    
     private CMPCertificate getCMPCert(Certificate cert) throws CertificateEncodingException, IOException {
         ASN1InputStream ins = new ASN1InputStream(cert.getEncoded());
         ASN1Primitive pcert = ins.readObject();
+        ins.close();
         org.bouncycastle.asn1.x509.Certificate c = org.bouncycastle.asn1.x509.Certificate.getInstance(pcert.toASN1Primitive());
         return new CMPCertificate(c);
     }

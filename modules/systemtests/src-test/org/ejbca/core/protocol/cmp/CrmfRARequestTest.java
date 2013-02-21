@@ -21,19 +21,21 @@ import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.util.Collection;
-import java.util.Iterator;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.cmp.PKIFailureInfo;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
+import org.bouncycastle.asn1.x509.ReasonFlags;
+import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.CertificateCreationException;
+import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.CaSessionTest;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
@@ -41,9 +43,12 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
@@ -51,8 +56,8 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationProxySessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
@@ -61,6 +66,7 @@ import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
@@ -75,14 +81,15 @@ import org.junit.Test;
 public class CrmfRARequestTest extends CmpTestCase {
 
     final private static Logger log = Logger.getLogger(CrmfRARequestTest.class);
+    
+    final private AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CrmfRARequestTest"));
 
     final private static String PBEPASSWORD = "password";
 
-    private String issuerDN;
-
+    private String issuerDN = "CN=TestCA";
     private int caid;
-    final private AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CrmfRARequestTest"));
     private X509Certificate cacert;
+    private CA testx509ca;
 
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private CAAdminSessionRemote caAdminSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
@@ -93,6 +100,8 @@ public class CrmfRARequestTest extends CmpTestCase {
     private EndEntityAccessSession eeAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
     private GlobalConfigurationProxySessionRemote globalConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private GlobalConfigurationSessionRemote globalConfSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+    private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
+
 
     @Before
     public void setUp() throws Exception {
@@ -128,59 +137,19 @@ public class CrmfRARequestTest extends CmpTestCase {
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET, PBEPASSWORD);
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, "CMPTESTPROFILE");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, "CMPTESTPROFILE");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, "AdminCA1");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, "TestCA");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_NAMEGENERATIONSCHEME, "DN");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_NAMEGENERATIONPARAMS, "CN");
         updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
         updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "-;-");
 
         CryptoProviderTools.installBCProvider();
-        // Try to use AdminCA1 if it exists
-        final CAInfo adminca1;
-
-        adminca1 = caSession.getCAInfo(admin, "AdminCA1");
-
-        if (adminca1 == null) {
-            final Collection<Integer> caids;
-
-            caids = caSession.getAvailableCAs(admin);
-
-            final Iterator<Integer> iter = caids.iterator();
-            int tmp = 0;
-            while (iter.hasNext()) {
-                tmp = iter.next().intValue();
-            }
-            caid = tmp;
-        } else {
-            caid = adminca1.getCAId();
-        }
-        if (caid == 0) {
-            Assert.assertTrue("No active CA! Must have at least one active CA to run tests!", false);
-        }
-        final CAInfo cainfo;
-
-        cainfo = caSession.getCAInfo(admin, caid);
-
-        Collection<Certificate> certs = cainfo.getCertificateChain();
-        if (certs.size() > 0) {
-            Iterator<Certificate> certiter = certs.iterator();
-            Certificate cert = certiter.next();
-            String subject = CertTools.getSubjectDN(cert);
-            if (StringUtils.equals(subject, cainfo.getSubjectDN())) {
-                // Make sure we have a BC certificate
-                try {
-                    cacert = (X509Certificate) CertTools.getCertfromByteArray(cert.getEncoded());
-                } catch (Exception e) {
-                    throw new Error(e);
-                }
-            } else {
-                cacert = null;
-            }
-        } else {
-            log.error("NO CACERT for caid " + caid);
-            cacert = null;
-        }
-        issuerDN = cacert != null ? cacert.getIssuerDN().getName() : "CN=AdminCA1,O=EJBCA Sample,C=SE";
+        
+        int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
+        testx509ca = CaSessionTest.createTestX509CA(issuerDN, null, false, keyusage);
+        caSession.addCA(admin, testx509ca);
+        caid = testx509ca.getCAId();
+        cacert = (X509Certificate) testx509ca.getCACertificate();
     }
 
     /**
@@ -244,11 +213,12 @@ public class CrmfRARequestTest extends CmpTestCase {
 
     @Test
     public void test01CrmfHttpOkUser() throws Exception {
-        final CAInfo caInfo = caSession.getCAInfo(admin, "AdminCA1");
+        final CAInfo caInfo = caSession.getCAInfo(admin, "TestCA");
         // make sure same keys for different users is prevented
         caInfo.setDoEnforceUniquePublicKeys(true);
         // make sure same DN for different users is prevented
         caInfo.setDoEnforceUniqueDistinguishedName(true);
+        caInfo.setUseUserStorage(true);
         caAdminSessionRemote.editCA(admin, caInfo);
 
         final KeyPair key1 = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
@@ -259,8 +229,8 @@ public class CrmfRARequestTest extends CmpTestCase {
         final String userName2 = "cmptest2";
         final String userDN1 = "C=SE,O=PrimeKey,CN=" + userName1;
         final String userDN2 = "C=SE,O=PrimeKey,CN=" + userName2;
-        String hostname = null;
         try {
+            
             // check that several certificates could be created for one user and one key.
             crmfHttpUserTest(userDN1, key1, null, null);
             crmfHttpUserTest(userDN2, key2, null, null);
@@ -273,19 +243,30 @@ public class CrmfRARequestTest extends CmpTestCase {
                     userDN1,
                     key2,
                     "User 'cmptest1' is not allowed to use same key as the user(s) 'cmptest2' is/are using.", null);
-            // check that you can not issue a certificate with same DN as another user.
-            crmfHttpUserTest(
-                    "CN=AdminCA1,O=EJBCA Sample,C=SE",
-                    key3,
-                    "User 'AdminCA1' is not allowed to use same subject DN as the user(s) 'SYSTEMCA' is/are using (even if CN postfix is used). See setting for 'Enforce unique DN' in Edit Certificate Authorities.", null);
+            
+            // check that you can not issue a certificate with same DN as another user.            
+            EndEntityInformation user = new EndEntityInformation("samednuser1", "CN=SameDNUser,O=EJBCA Sample,C=SE", caid, null, "user1" + "@primekey.se", new EndEntityType(EndEntityTypes.ENDUSER),
+                    SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
+            user.setPassword("foo123");
+            try {
+                endEntityManagementSession.addUser(admin, user, true); 
+                log.debug("created user: samednuser1, foo123, CN=SameDNUser,O=EJBCA Sample,C=SE");
+            } catch (Exception e) {}
+            
+            Certificate user1Cert = null;
+            try {
+                user1Cert = (X509Certificate) signSession.createCertificate(admin, "samednuser1", "foo123", key3.getPublic());
+            } catch(Exception e) {
+                throw new CertificateCreationException("Error encountered when creating certificate", e);
+            }
+            assertNotNull("Failed to create a test certificate", user1Cert);
+            assertEquals(issuerDN, CertTools.getIssuerDN(user1Cert));
 
-            hostname = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME);
-
             crmfHttpUserTest(
-                    "CN=" + hostname + ",O=EJBCA Sample,C=SE",
+                    "CN=SameDNUser,O=EJBCA Sample,C=SE",
                     key4,
-                    "User 'localhost' is not allowed to use same subject DN as the user(s) 'tomcat' is/are using (even if CN postfix is used). See setting for 'Enforce unique DN' in Edit Certificate Authorities.", null);
-
+                    "User 'SameDNUser' is not allowed to use same subject DN as the user(s) 'samednuser1' is/are using (even if CN postfix is used). See setting for 'Enforce unique DN' in Edit Certificate Authorities.", null);
+            
         } finally {
             try {
                 endEntityManagementSession.deleteUser(admin, userName1);
@@ -296,11 +277,11 @@ public class CrmfRARequestTest extends CmpTestCase {
             } catch (NotFoundException e) {
             }
             try {
-                endEntityManagementSession.deleteUser(admin, "AdminCA1");
+                endEntityManagementSession.revokeAndDeleteUser(admin, "SameUserDN", ReasonFlags.unused);
             } catch (NotFoundException e) {
             }
             try {
-                endEntityManagementSession.deleteUser(admin, hostname);
+                endEntityManagementSession.revokeAndDeleteUser(admin, "samednuser1", ReasonFlags.unused);
             } catch (NotFoundException e) {
             }
         }
@@ -592,13 +573,17 @@ public class CrmfRARequestTest extends CmpTestCase {
             // Reset this test class as it was before this test
             issuerDN = oldIssuerDN;
             cacert = oldCaCert;
-            updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, "AdminCA1");
+            updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, "TestCA");
         }
     }
 
     @After
     public void tearDown() throws Exception {
         super.tearDown();
+        
+        CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
+        caSession.removeCA(admin, caid);
+        
         Assert.assertTrue("Unable to restore server configuration.", configurationSession.restoreConfiguration());
         // Remove test profiles
         certProfileSession.removeCertificateProfile(admin, "CMPTESTPROFILE");

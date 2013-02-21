@@ -7,7 +7,7 @@
 #  Select Worker:            Custom Worker
 #  Custom Worker Class Path: org.ejbca.extra.caservice.ExtRACAServiceWorker
 #  Custom Worker Properties: externalra-caservice.persistenceunit=RAMessage1DS
-#                            externalra-caservice.raissuer=AdminCA1
+#                            externalra-caservice.raissuer=ManagementCA
 #                            externalra-caservice.encryption.required=false
 #                            externalra-caservice.signature.required=false
 #                            externalra-caservice.keystore.path=/home/ejbca/externalra-caservice.p12
