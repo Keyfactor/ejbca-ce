@@ -63,6 +63,8 @@ import org.junit.Test;
 /**
  * Simple class to trigger Hibernate's JPA schema validation.
  * 
+ * run with "ant test:dbschema"
+ * 
  * We also validate that all fields can hold the values that we assume they can.
  * 
  * @version $Id$
