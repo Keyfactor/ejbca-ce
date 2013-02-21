@@ -38,8 +38,10 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.CaSessionTest;
@@ -112,7 +114,7 @@ import org.w3._2002._03.xkms_.UseKeyWithType;
 
 /**
  * To Run this test, there must be a CA with DN
- * "CN=ManagementCA,O=EJBCA Sample,C=SE", and it must have XKMS service enabled.
+ * "CN=TestCA", and it must have XKMS service enabled.
  * Also you have to enable XKMS in conf/xkms.properties.
  * 
  * @version $Id$
@@ -138,7 +140,7 @@ public class XKMSKRSSTest {
     private static String username2;
     private static String username3;
 
-    private final static String issuerdn = "CN=ManagementCA,O=EJBCA Sample,C=SE";
+    private final static String issuerdn = "CN=TestCA";
     private final static int caid = issuerdn.hashCode();
 
     private static String dn1;
@@ -156,6 +158,7 @@ public class XKMSKRSSTest {
     private static String endentityprofilename;
 
 	private static CAInfo orgCaInfo;
+    private CA testx509ca;
 
     private static DocumentBuilderFactory dbf;
     private static Random ran;
@@ -172,7 +175,10 @@ public class XKMSKRSSTest {
 
     @Before
     public void setUp() throws Exception {
-        orgCaInfo = caSession.getCAInfo(administrator, "ManagementCA");
+        int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
+        testx509ca = CaSessionTest.createTestX509CA(issuerdn, null, false, keyusage);
+        caSession.addCA(administrator, testx509ca);
+        orgCaInfo = caSession.getCAInfo(administrator, "TestCA");
     }
     
 	@BeforeClass
@@ -217,7 +223,7 @@ public class XKMSKRSSTest {
 	    GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
 	    EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 	    
-        final CAInfo caInfo = caSession.getCAInfo(administrator, "ManagementCA");
+        final CAInfo caInfo = caSession.getCAInfo(administrator, "TestCA");
         // make sure same keys for different users is prevented
         caInfo.setDoEnforceUniquePublicKeys(true);
         // make sure same DN for different users is prevented
