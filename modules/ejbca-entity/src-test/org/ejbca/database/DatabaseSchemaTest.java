@@ -58,7 +58,9 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 /**
  * Simple class to trigger Hibernate's JPA schema validation.
@@ -69,6 +71,7 @@ import org.junit.Test;
  * 
  * @version $Id$
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class DatabaseSchemaTest {
 
     private static final Logger LOG = Logger.getLogger(DatabaseSchemaTest.class);
@@ -323,10 +326,10 @@ public class DatabaseSchemaTest {
     public void testZZCRLData() {
         LOG.trace(">testCRLData");
         logMemStats();
-        String CLOB_100MiB = getClob(100 * 1024 * 1024);
+        String CLOB_10MiB = getClob(10 * 1024 * 1024);
         CRLData entity = new CRLData();
-        entity.setBase64Crl(CLOB_100MiB);
-        CLOB_100MiB = null;
+        entity.setBase64Crl(CLOB_10MiB);
+        CLOB_10MiB = null;
         System.gc();
         entity.setCaFingerprint(VARCHAR_250B);
         entity.setCrlNumber(0);
