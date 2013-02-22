@@ -258,7 +258,10 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     
     protected static void adminBeforeClass() {
         CryptoProviderTools.installBCProviderIfNotAvailable();
-        
+        setAdminCAName();
+    }
+    
+    protected static void setAdminCAName() {
         CaSessionRemote cs = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
         List<String> canames = cs.getAvailableCANames(intAdmin);
         if(canames.contains("AdminCA1")) {
@@ -266,7 +269,6 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         } else if(canames.contains("ManagementCA")) {
             ADMIN_CA_NAME = "ManagementCA";
         }
-        
     }
 
     protected void adminSetUpAdmin() throws Exception {
