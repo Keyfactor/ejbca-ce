@@ -19,12 +19,15 @@ import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SignatureException;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -131,6 +134,15 @@ public class DnFieldsTest extends CommonEjbcaWS {
             log.info("User: " + ud.getSubjectDN());
         }
 
+        String caname = null;
+        CaSession caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+        List<String> cas = caSession.getAvailableCANames(internalAdmin);
+        if(cas.contains("ManagementCA")) {
+            caname = "ManagementCA";
+        } else {
+            caname = "AdminCA1";
+        }
+        
         KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         String p10 = new String(Base64.encode(CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX500Name("CN=NOUSED"), keys
                 .getPublic(), new DERSet(), keys.getPrivate(), null).toASN1Structure().getEncoded()));
@@ -139,7 +151,7 @@ public class DnFieldsTest extends CommonEjbcaWS {
         user.setPassword("foo123");
         user.setClearPwd(false);
         user.setSubjectDN("E=boss@fire.com,CN=Tester,C=SE");
-        user.setCaName("ManagementCA");
+        user.setCaName(caname);
         user.setSubjectAltName("rfc822name=boss@fire.com");
         user.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
         user.setEndEntityProfileName(PROFILE_NAME);

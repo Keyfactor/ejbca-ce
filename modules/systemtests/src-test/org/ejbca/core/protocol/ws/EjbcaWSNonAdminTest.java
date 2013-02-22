@@ -123,6 +123,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProviderIfNotAvailable();
+        setAdminCAName();
         setupAccessRights(WS_ADMIN_ROLENAME);
         assertNotNull("Unable to fetch GlobalConfiguration.");
     }
