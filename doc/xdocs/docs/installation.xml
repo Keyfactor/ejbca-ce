@@ -60,9 +60,9 @@ earlier version of EJBCA.
 
 <section name="Ubuntu quick start">
 <p>This section provides a fast way to get installed and running for a test using Ubuntu Linux. 
-To get more information a about configuration options etc (there are plenty), you should follow the regular <strong>Quick start guide</strong> above.
+To get more information a about configuration options etc (there are plenty), you should follow the regular <strong>Installation guide</strong> below.
 </p><p>
-This quick start guide assumes EJBCA 4.0.10 and JBoss 5.1.0.GA, but other version should also be possible to use by just replacing the versions.
+This quick start guide assumes EJBCA 5.2.0 and JBoss 5.1.0.GA, but other version should also be possible to use by just replacing the versions.
 We also assume installation is made in a user account with username "user". In your environment simply replace user with the username you are using.
 </p>
 <ol>
@@ -77,22 +77,22 @@ We also assume installation is made in a user account with username "user". In y
 <li>sudo apt-get install openjdk-6-jdk ant ant-optional unzip ntp</li>
 </ul>
 </li>
-<li>Install software not in Ubuntu repositories, JBoss 5.1.0.GA-jdk6 and EJBCA 4.0.10.<br/>
+<li>Install software not in Ubuntu repositories, JBoss 5.1.0.GA-jdk6 and EJBCA 5.2.0.<br/>
 <ul>
 <li>wget http://sourceforge.net/projects/jboss/files/JBoss/JBoss-5.1.0.GA/jboss-5.1.0.GA-jdk6.zip</li>
-<li>wget http://sourceforge.net/projects/ejbca/files/ejbca4/ejbca_4_0_10/ejbca_4_0_10.zip</li>
+<li>wget http://sourceforge.net/projects/ejbca/files/ejbca5/ejbca_5_2_0/ejbca_5_2_0.zip</li>
 <li>unzip jboss-5.1.0.GA-jdk6.zip</li>
-<li>unzip ejbca_4_0_10.zip</li>
+<li>unzip ejbca_5_2_0.zip</li>
 </ul>
 </li>
 <li>Configure EJBCA so it can find the application server (JBoss).
 <ul>
-<li>echo "appserver.home=/home/user/jboss-5.1.0.GA" >> ejbca_4_0_10/conf/ejbca.properties</li>
+<li>echo "appserver.home=/home/user/jboss-5.1.0.GA" >> ejbca_5_2_0/conf/ejbca.properties</li>
 </ul>
 </li>
 <li>Build and deploy EJBCA to JBoss.
 <ul>
-<li>cd ejbca_4_0_10</li>
+<li>cd ejbca_5_2_0</li>
 <li>ant deploy (just press enter if questions show up)</li>
 </ul>
 </li>
@@ -112,7 +112,7 @@ We also assume installation is made in a user account with username "user". In y
 <li>jboss-5.1.0.GA/bin/run.sh</li>
 </ul>
 </li>
-<li>Copy /home/user/ejbca_4_0_10/p12/superadmin.p12 to admin desktop machine and import in web browser.</li>
+<li>Copy /home/user/ejbca_5_2_0/p12/superadmin.p12 to admin desktop machine and import in web browser.</li>
 <li>Open URL https://server:8443/ejbca, where 'server' is the servers name/ip.</li>
 </ol>
 <p>Done!</p>
@@ -121,10 +121,10 @@ We also assume installation is made in a user account with username "user". In y
 
 <section name="RedHat Enterprise Linux quick start">
 <p>This section provides a fast way to get installed and running for a test using RedHat Enterprise Linux. 
-To get more information a about configuration options etc (there are plenty), you should follow the regular <strong>Quick start guide</strong> above.
+To get more information a about configuration options etc (there are plenty), you should follow the regular <strong>Installation guide</strong> below.
 </p><p>
 This quick start guide makes the same assumptions and uses the same procedures as the Ubuntu quick start guide.
-RHEL by defualt only installs with a 'root' account. Therefore we start by creating a user account with username "user". In your environment simply replace user with the username you are using.
+RHEL by default only installs with a 'root' account. Therefore we start by creating a user account with username "user". In your environment simply replace user with the username you are using.
 </p>
 <ol>
 <li>Install RHEL 6.2 x86_64, default config, 'Basic Server'.</li>
@@ -176,9 +176,9 @@ gpgcheck=0
 
 <section name="Installation guide">
 <p>
-If you want to get started really quick, and is using Ubuntu Linux, you can follow the <a href="#Ubuntu%20quick%20start">Ubuntu quick start</a> guide below.
-This guide describes how to install on the most well supported application server JBoss AS. EJBCA can however also run on Glassfish and Weblogic, but your
-mileage may vary. 
+If you want to get started really quick, and is using Ubuntu Linux, you can follow the <a href="#Ubuntu%20quick%20start">Ubuntu or RedHat quick start</a> guide above.
+This guide describes how to install on the most well supported application server JBoss AS. EJBCA might however also run on Glassfish and Weblogic, but your
+mileage may vary (see further below for details). 
 </p>
 <subsection name="Prerequisites">
 <note>
@@ -384,8 +384,10 @@ EJBCA should run on any on any JEE5 compliant application server in theory. In r
 It is not enough to pass JEE validation in order to run onn all application servers.
 <ol>
 <li>JBoss 5.1.0.GA / JBoss EAP 5.1: Works well. Community and professional support available.</li>
-<li>Glassfish 2.1.1: Works. Community and professional support available.</li>
-<li>WebLogic 10.3.4: Works somewhat, sometimes. Unsupported.</li>
+<li>JBoss 7.1.1.Final / JBoss EAP 6: Works well. Community and professional support available.</li>
+<li>Glassfish 2.1.1: Works. Community support available.</li>
+<li>Glassfish 3.1.1: Not supported yet.</li>
+<li>WebLogic 10.3.4: Used to work with earlier versions of EJBCA. Unsupported.</li>
 <li>WebSphere 7.0.0.13: Does not work.</li>
 <li>Geronimo: Not supported yet.</li>
 <li>JoNaS: Not supported yet.</li>
@@ -394,6 +396,8 @@ It is not enough to pass JEE validation in order to run onn all application serv
 </p>
 
 <subsection name="JBoss">
+<note>JBoss 5 and 7 are the official well tested platforms for EJBCA 5.x. Most of the development is done against JBoss.</note>
+
 <subsubsection name="JBoss and OracleJVM bug">
 <p>
 If you are using Oracle's JDK and JBoss 5.1.x you need to copy EJBCA_HOME/lib/bc*.jar to JBOSS_HOME/server/default/lib/.
@@ -630,8 +634,11 @@ If this is not done you will get SSL errors about missing client certificate, or
 </subsection>
 
 <subsection name="Glassfish">
+<note>EJBCA 5.x has never been officially deployed on Glassfish yet. 
+The below notes can work as hints for anyone interested working on Glassfish support.</note>
+
 <p>
-Currently EJBCA has been tested with Glassfish v2.1.1.
+EJBCA 4.x has been tested with Glassfish v2.1.1.
 </p>
 <p>Don't forget to install 'Unlimited Strength Jurisdiction Policy Files' for Java.</p>
 
@@ -810,11 +817,8 @@ of $APPSRV_HOME/[directory].
 </subsection>
 
 <subsection name="Weblogic">
-<note>
-WebLogic is not a preferred production platform for EJBCA and should be concidered community supported.
-The main reasons for keeping some level of support, is to test EJBCA for JEE5 complicance and to avoid
-solutions that are specific to one or the other application server.
-</note>
+<note>EJBCA 5.x has never been officially deployed on Weblogic. 
+The below notes can work as hints for anyone interested in Weblogic.</note>
 <p>
 WebLogic Server 10 is JEE5 certified. EJBCA has been tested with Oracle WebLogic Server 10.3.4.0 generic distribution,
 Oracle JDK 6 and Oracle Database 10.2.0.1-1.0 XE on Ubuntu Server 10.10 i686.
@@ -912,10 +916,8 @@ bundled JDK's and use a pre-installed Sun JDK.
 
 
 <subsection name="Websphere 7 (Incomplete)">
-<note>Supporting EJBCA for Websphere Application Server (WAS) requires an unreasonable amount of work. A JEE5 compliant
-application cannot just be deployed on WAS without a lot of propietary configuration and secret hand-shakes. From time
-to time we might try new versions of WAS, to see if things has changed, but don't expect anything. We will still
-provide the basics that we did get to work, so if you are skilled with WAS, you can pick it up from here.</note>
+<note>EJBCA 5.x has never been officially deployed on Webshpere. In general deploying on Websphere requires an unreasonable amount of time and effort.
+The below notes can work as hints for anyone interested in Websphere.</note>
 <p>
 EJBCA 4.0alpha2 has been tested with WebSphere AS for Developers 7.0.0.13, DB2 9.7.2 Express-C on RHEL 5.4 i386.
 </p>
@@ -1042,9 +1044,9 @@ Admin web will be at: https://127.0.0.1:9443/ejbca/adminweb/
 </section>
 
 <section name="Transaction timouts">
-<p>In some cases, either if you have a slow machine, or very large data sets some common operations can take a long time to complete. The default transaction timout of 
+<p>In some cases, either if you have a slow machine or very large data sets, some common operations can take a long time to complete. The default transaction timout of 
 the application servers may then not be enough.</p>
-<subsection name="JBoss">
+<subsection name="JBoss 5">
 <p>In order to change the defautl transaction timeout in JBoss you can edit the file JBOSS_HOME/server/default/deploy/transaction-jboss-beans.xml. 
 There is a property you can change:</p>
 <source>
@@ -1056,9 +1058,39 @@ There is a property you can change:</p>
 </subsection>
 </section>
 
-<section name="Files deployed">
+<section name="Deployment reference">
+<subsection name="Ant target shortlist">
 <p>
-Here we describe shortly which files are copied during various ant targets that are called . These targets only modified files automatically on the platforms,
+To deploy and install EJBCA the first time (from clean database):
+<ul>
+<li>ant deploy</li>
+<li>ant install</li>
+</ul>
+</p>
+<p>
+To upgrade EJBCA, i.e. just deploy a new ejbca.ear file:
+<ul>
+<li>ant deployear</li>
+</ul>
+</p>
+<p>
+To (re)configure TLS, i.e. configure TLS ports and deploy TLS keystores:
+<ul>
+<li>ant web-configure</li>
+<li>ant deploy-keystore</li>
+</ul>
+</p>
+<p>
+To (re)configure database, i.e. deploy EjbcaDS datasource:
+<ul>
+<li>ant deploy-datasource</li>
+</ul>
+</p>
+</subsection>
+
+<subsection name="Files deployed">
+<p>
+Here we describe shortly which files/functions are copied/touched during various ant targets that are called. These targets only modifies files automatically on platforms where auto-configure is supported,
 but it will give an indication as well for other platforms what configuration steps are needed.
 </p>
 <p>Below shows (configuration) files updated for JBoss 5 platform. For JBoss 7/EAP6 there is only one unified configuration file and all configuration is done using the JBoss 7 command line interface.
@@ -1066,43 +1098,61 @@ but it will give an indication as well for other platforms what configuration st
 <p>
 <strong>ant deploy</strong>
 <ul>
+<li>ant deploy-datasource</li>
+<ul>
 <li>deploy/ejbca-ds.xml</li>
-<li>deploy/ejbca-mail-service.xml</li>
-<li>deploy/ejbca.ear</li>
 <li>deploy/ocsp-ds.xml (if OCSP datasource is configured)</li>
 </ul>
-</p>
-
-<p>
-    <strong>ant web-configure</strong>
-    <li>deploy/jbossweb.sar/server.xml</li>
-</p>
-
-<p>
-    <strong>ant deploy-keystore</strong>
-    <li>conf/keystore/tomcat.jks</li>
-    <li>conf/keystore/truststore.jks</li>
-</p>
-
-<p>
-    <strong>ant deploy-datasource</strong>
-    <li>deploy/ejbca-ds.xml</li>
-    <li>deploy/ocsp-ds.xml</li>
-</p>
-
-<p>
-    <strong>ant deploy-service</strong>
-    <li>deploy/ejbca-mail-service.xml</li>
+<li>ant deploy-services</li>
+<ul>
+<li>deploy/ejbca-mail-service.xml</li>
+</ul>
+<li>ant deployear</li>
+<ul>
+<li>deploy/ejbca.ear</li>
+</ul>
+</ul>
 </p>
 
 <p>
 <strong>ant install</strong>
 <ul>
-<li>Files from ant deploy</li>
-<li>Files from ant web-configure</li>
-<li>Files from ant deploy-keystore</li>
+<li>ant web-configure</li>
+<li>ant deploy-keystore</li>
 </ul>
 </p>
+
+<p>
+    <strong>ant web-configure</strong>
+    <ul>
+    <li>deploy/jbossweb.sar/server.xml</li>
+    </ul>
+</p>
+
+<p>
+    <strong>ant deploy-keystore</strong>
+    <ul>
+    <li>conf/keystore/tomcat.jks</li>
+    <li>conf/keystore/truststore.jks</li>
+    </ul>
+</p>
+
+<p>
+    <strong>ant deploy-datasource</strong>
+    <ul>
+    <li>deploy/ejbca-ds.xml</li>
+    <li>deploy/ocsp-ds.xml</li>
+	</ul>
+</p>
+
+<p>
+    <strong>ant deploy-service</strong>
+    <ul>
+    <li>deploy/ejbca-mail-service.xml</li>
+    </ul>
+</p>
+
+</subsection>
 </section>
 
 <section name="Additional howtos">
