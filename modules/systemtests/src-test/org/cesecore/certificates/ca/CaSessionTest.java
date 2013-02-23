@@ -73,9 +73,6 @@ public class CaSessionTest extends RoleUsingTestCase {
     @BeforeClass
     public static void setUpProviderAndCreateCA() throws Exception {
         CryptoProviderTools.installBCProvider();
-        testx509ca = CaSessionTest.createTestX509CA(X509CADN, null, false);
-        testcvcca = CaSessionTest.createTestCVCCA(CVCCADN, null, false);
-        testBase = new CaSessionTestBase(testx509ca, testcvcca);
     }
     
     @AfterClass
@@ -86,12 +83,20 @@ public class CaSessionTest extends RoleUsingTestCase {
 
     @Before
     public void setUp() throws Exception {
+        // Initialize role system
+        setUpAuthTokenAndRole("CaSessionTestRoleInitialization");
+        if (testBase == null) {
+            testx509ca = CaSessionTest.createTestX509CA(X509CADN, null, false);
+            testcvcca = CaSessionTest.createTestCVCCA(CVCCADN, null, false);
+            testBase = new CaSessionTestBase(testx509ca, testcvcca);            
+        }
         testBase.setUp();
     }
 
     @After
     public void tearDown() throws Exception {
         testBase.tearDown();
+        tearDownRemoveRole();
     }
 
     @Test
