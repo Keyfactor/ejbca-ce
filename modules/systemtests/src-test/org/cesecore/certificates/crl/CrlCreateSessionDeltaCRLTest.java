@@ -95,7 +95,6 @@ public class CrlCreateSessionDeltaCRLTest extends RoleUsingTestCase {
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProvider();
-        testx509ca = CaSessionTest.createTestX509CA(X509CADN, null, false);
         keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
     }
     
@@ -108,6 +107,10 @@ public class CrlCreateSessionDeltaCRLTest extends RoleUsingTestCase {
     public void setUp() throws Exception {
     	// Set up base role that can edit roles
     	setUpAuthTokenAndRole(this.getClass().getSimpleName());
+        if (testx509ca == null) {
+            // We must do this after setting up the role system above
+            testx509ca = CaSessionTest.createTestX509CA(X509CADN, null, false);
+        }
     	// Now we have a role that can edit roles, we can edit this role to include more privileges
     	RoleData role = roleAccessSession.findRole(this.getClass().getSimpleName());
         List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
