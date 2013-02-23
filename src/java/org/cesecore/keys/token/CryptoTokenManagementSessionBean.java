@@ -141,7 +141,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
             throw new AuthorizationDeniedException(msg);
         }
         if (CryptoTokenFactory.instance().getAvailableCryptoToken(className) == null) {
-            throw new RuntimeException("Invalid token class name.");
+            throw new RuntimeException("Invalid token class name: "+className);
         }
         final List<Integer> allCryptoTokenIds = cryptoTokenSession.getCryptoTokenIds();
         Integer cryptoTokenId = null;
