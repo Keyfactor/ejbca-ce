@@ -110,9 +110,10 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
     
     @Before
     public void setUp() throws Exception {
+        // Set up base role that can edit roles
+        setUpAuthTokenAndRole("CertCreateSessionTest");
+
         testx509ca = CaSessionTest.createTestX509CA(X509CADN, null, false);
-    	// Set up base role that can edit roles
-    	setUpAuthTokenAndRole("CertCreateSessionTest");
 
     	// Now we have a role that can edit roles, we can edit this role to include more privileges
     	RoleData role = roleAccessSession.findRole("CertCreateSessionTest");
