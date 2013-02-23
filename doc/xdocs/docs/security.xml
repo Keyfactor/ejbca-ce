@@ -17,11 +17,17 @@ suitable for your policy, application and environment.
 </p></section>
 
 <section name="Firewall ports">
-<p>To have a functional EJBCA installation there are only two ports that need to be open to the outside:
+<p>To have a functional EJBCA installation there are only two (or three) ports that need to be open to the outside:
+</p>
 <ul>
 <li>8080 - the public HTTP port of you application server, used for clients to access the public web for enrollment.</li>
+<li>8442 - the public HTTPS port (server side only SSL) of you application server, used for clients to access the public web for enrollment.</li>
 <li>8443 - the SSL protected HTTPS port used to access the Admin GUI of EJBCA. This port requires client certificate for access.</li>
 </ul>
+<p>
+You can choose to have both 8080 and 8442, or only one of them open whichever suits your needs.
+</p>
+<p>
 Additional ports that you may need to open are SSH, outgoing SMTP, outgoing LDAP, etc. Which additional ports that need to be opened depends on your specific setup and which 
 services you use. You do not need outgoing SMTP if you don't use email notification, for example.
 </p>
@@ -31,8 +37,9 @@ Locally on the host, a number of ports are used in order for your application se
 </section>
 
 <section name="Securing JBoss">
+<subsection name="JBoss 5">
 <note>
-Before putting anything on JBoss up on the internet, at least do the following:
+Before putting anything on JBoss 5 (community edition) up on the Internet, at least do the following:
 <ul>
 <li>rm /opt/jboss/server/default/deploy/jmx-console.war/ -R</li>
 <li>rm /opt/jboss/server/default/deploy/management/ -R</li>
@@ -41,6 +48,7 @@ Before putting anything on JBoss up on the internet, at least do the following:
 <li>rm /opt/jboss/server/default/deploy/admin-console.war/ -R</li>
 </ul>
 </note>
+</subsection>
 <p>
 JBoss has a description how to secure a default installation of JBoss. You should read this document before putting
 your application in production.
