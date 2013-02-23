@@ -133,7 +133,9 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     @Override
     public int createCryptoToken(final AuthenticationToken authenticationToken, final String tokenName, final String className, final Properties properties,
             final byte[] data, final char[] authenticationCode) throws AuthorizationDeniedException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException {
-        log.info(">createCryptoToken");
+        if (log.isTraceEnabled()) {
+            log.trace(">createCryptoToken: "+tokenName+", "+className);
+        }
         if (!accessControlSessionSession.isAuthorized(authenticationToken, CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource())) {
             final String msg = INTRES.getLocalizedMessage("authorization.notuathorizedtoresource", CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource(), authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
@@ -164,12 +166,17 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         putDelta(new Properties(), cryptoToken.getProperties(), details);
         securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_CREATE, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE, authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, details);
         cryptoTokenSession.mergeCryptoToken(cryptoToken);
+        if (log.isTraceEnabled()) {
+            log.trace("<createCryptoToken: "+tokenName+", "+className);
+        }
         return cryptoTokenId.intValue();
     }
     
     @Override
     public void saveCryptoToken(AuthenticationToken authenticationToken, int cryptoTokenId, String tokenName, Properties properties, char[] authenticationCode) throws AuthorizationDeniedException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException {
-        log.info(">createCryptoToken");
+        if (log.isTraceEnabled()) {
+            log.trace(">saveCryptoToken: "+tokenName+", "+cryptoTokenId);
+        }
         // Note that an admin that is authorized to modify a token could gain access to another HSM slot etc..
         if (!accessControlSessionSession.isAuthorized(authenticationToken, CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource())) {
             final String msg = INTRES.getLocalizedMessage("authorization.notuathorizedtoresource", CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource(), authenticationToken.toString());
@@ -208,6 +215,9 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         putDelta(currentCryptoToken.getProperties(), newCryptoToken.getProperties(), details);
         securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_EDIT, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE, authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, details);
         cryptoTokenSession.mergeCryptoToken(newCryptoToken);
+        if (log.isTraceEnabled()) {
+            log.trace("<saveCryptoToken: "+tokenName+", "+cryptoTokenId);
+        }
     }
 
     // Only removes reference
