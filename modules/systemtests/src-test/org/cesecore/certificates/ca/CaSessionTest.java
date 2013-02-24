@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.cesecore.RoleUsingTestCase;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
@@ -39,6 +40,7 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
+import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.StringTools;
@@ -73,30 +75,32 @@ public class CaSessionTest extends RoleUsingTestCase {
     @BeforeClass
     public static void setUpProviderAndCreateCA() throws Exception {
         CryptoProviderTools.installBCProvider();
+        // Initialize role system
+        setUpAuthTokenAndRole("CaSessionTestRoleInitialization");
+        testx509ca = CaSessionTest.createTestX509CA(X509CADN, null, false);
+        testcvcca = CaSessionTest.createTestCVCCA(CVCCADN, null, false);
+        testBase = new CaSessionTestBase(testx509ca, testcvcca);            
     }
     
     @AfterClass
-    public static void tearDownFinal() {
-        CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
-        CryptoTokenManagementSessionTest.removeCryptoToken(null, testcvcca.getCAToken().getCryptoTokenId());
+    public static void tearDownFinal() throws RoleNotFoundException, AuthorizationDeniedException {
+        try {
+            CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
+            CryptoTokenManagementSessionTest.removeCryptoToken(null, testcvcca.getCAToken().getCryptoTokenId());
+        } finally {
+            // Be sure to to this, even if the above fails
+            tearDownRemoveRole();
+        }
     }
 
     @Before
     public void setUp() throws Exception {
-        // Initialize role system
-        setUpAuthTokenAndRole("CaSessionTestRoleInitialization");
-        if (testBase == null) {
-            testx509ca = CaSessionTest.createTestX509CA(X509CADN, null, false);
-            testcvcca = CaSessionTest.createTestCVCCA(CVCCADN, null, false);
-            testBase = new CaSessionTestBase(testx509ca, testcvcca);            
-        }
         testBase.setUp();
     }
 
     @After
     public void tearDown() throws Exception {
         testBase.tearDown();
-        tearDownRemoveRole();
     }
 
     @Test

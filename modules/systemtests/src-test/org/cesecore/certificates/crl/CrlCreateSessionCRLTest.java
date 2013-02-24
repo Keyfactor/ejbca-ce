@@ -116,22 +116,24 @@ public class CrlCreateSessionCRLTest extends RoleUsingTestCase {
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProvider();
+        // Set up base role that can edit roles
+        setUpAuthTokenAndRole(CrlCreateSessionCRLTest.class.getSimpleName());
         keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        testx509ca = CaSessionTest.createTestX509CA(X509CADN, null, false);
     }
 
     @AfterClass
-    public static void afterClass() {
-        CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
+    public static void afterClass() throws Exception {
+        try {
+            CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
+        } finally {
+            // Be sure to to this, even if the above fails
+            tearDownRemoveRole();
+        }
     }
 
     @Before
     public void setUp() throws Exception {
-        // Set up base role that can edit roles
-        setUpAuthTokenAndRole(this.getClass().getSimpleName());
-        if (testx509ca == null) {
-            // We must do this after setting up the role system above
-            testx509ca = CaSessionTest.createTestX509CA(X509CADN, null, false);
-        }
         // Now we have a role that can edit roles, we can edit this role to include more privileges
         final RoleData role = roleAccessSession.findRole(this.getClass().getSimpleName());
         final List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
@@ -151,21 +153,16 @@ public class CrlCreateSessionCRLTest extends RoleUsingTestCase {
     @After
     public void tearDown() throws Exception {
         // Remove any testca before exiting tests
-        try {
-            byte[] crl;
-            while ((crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false)) != null) {
-                X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
-                internalCertificateStoreSession.removeCRL(alwaysAllowToken, CertTools.getFingerprintAsString(x509crl));
-            }
-            while ((crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), true)) != null) {
-                X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
-                internalCertificateStoreSession.removeCRL(alwaysAllowToken, CertTools.getFingerprintAsString(x509crl));
-            }
-            caSession.removeCA(alwaysAllowToken, testx509ca.getCAId());
-        } finally {
-            // Be sure to to this, even if the above fails
-            tearDownRemoveRole();
+        byte[] crl;
+        while ((crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false)) != null) {
+            X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
+            internalCertificateStoreSession.removeCRL(alwaysAllowToken, CertTools.getFingerprintAsString(x509crl));
         }
+        while ((crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), true)) != null) {
+            X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
+            internalCertificateStoreSession.removeCRL(alwaysAllowToken, CertTools.getFingerprintAsString(x509crl));
+        }
+        caSession.removeCA(alwaysAllowToken, testx509ca.getCAId());
     }
 
     /**
