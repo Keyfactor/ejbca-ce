@@ -77,7 +77,7 @@ public class CrlCreateSessionDeltaCRLTest extends RoleUsingTestCase {
     private static final String X509CADN = "CN=" + CrlCreateSessionDeltaCRLTest.class.getSimpleName();
     private static CA testx509ca;
 
-	private static final String USERNAME = "deltacrltest";
+    private static final String USERNAME = "deltacrltest";
 
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
@@ -95,24 +95,26 @@ public class CrlCreateSessionDeltaCRLTest extends RoleUsingTestCase {
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProvider();
+        // Set up base role that can edit roles
+        setUpAuthTokenAndRole(CrlCreateSessionDeltaCRLTest.class.getSimpleName());
+        testx509ca = CaSessionTest.createTestX509CA(X509CADN, null, false);
         keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
     }
     
     @AfterClass
-    public static void afterClass() {
-        CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
+    public static void afterClass() throws Exception {
+        try {
+            CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
+        } finally {
+            // Be sure to to this, even if the above fails
+            tearDownRemoveRole();
+        }
     }
     
     @Before
     public void setUp() throws Exception {
-    	// Set up base role that can edit roles
-    	setUpAuthTokenAndRole(this.getClass().getSimpleName());
-        if (testx509ca == null) {
-            // We must do this after setting up the role system above
-            testx509ca = CaSessionTest.createTestX509CA(X509CADN, null, false);
-        }
-    	// Now we have a role that can edit roles, we can edit this role to include more privileges
-    	RoleData role = roleAccessSession.findRole(this.getClass().getSimpleName());
+        // Now we have a role that can edit roles, we can edit this role to include more privileges
+        RoleData role = roleAccessSession.findRole(this.getClass().getSimpleName());
         List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
         accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAADD.resource(), AccessRuleState.RULE_ACCEPT, true));
         accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAEDIT.resource(), AccessRuleState.RULE_ACCEPT, true));
@@ -130,22 +132,17 @@ public class CrlCreateSessionDeltaCRLTest extends RoleUsingTestCase {
     @After
     public void tearDown() throws Exception {
         // Remove any testca before exiting tests
-        try {
-            byte[] crl;
-            while ((crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false)) != null) {
-                X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
-                internalCertificateStoreSession.removeCRL(alwaysAllowToken, CertTools.getFingerprintAsString(x509crl));
-            }
-            while ((crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), true)) != null) {
-                X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
-                internalCertificateStoreSession.removeCRL(alwaysAllowToken, CertTools.getFingerprintAsString(x509crl));
-            }
-
-            caSession.removeCA(alwaysAllowToken, testx509ca.getCAId());
-        } finally {
-            // Be sure to to this, even if the above fails
-            tearDownRemoveRole();
+        byte[] crl;
+        while ((crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false)) != null) {
+            X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
+            internalCertificateStoreSession.removeCRL(alwaysAllowToken, CertTools.getFingerprintAsString(x509crl));
         }
+        while ((crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), true)) != null) {
+            X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
+            internalCertificateStoreSession.removeCRL(alwaysAllowToken, CertTools.getFingerprintAsString(x509crl));
+        }
+
+        caSession.removeCA(alwaysAllowToken, testx509ca.getCAId());
     }
 
     @Test
@@ -205,7 +202,7 @@ public class CrlCreateSessionDeltaCRLTest extends RoleUsingTestCase {
             revsize = revset.size();
             assertEquals(revfp.size(), revsize);
         } else {
-        	assertEquals(0, revfp.size());
+            assertEquals(0, revfp.size());
         }
 
         // Do some revoke
@@ -225,9 +222,9 @@ public class CrlCreateSessionDeltaCRLTest extends RoleUsingTestCase {
             assertEquals(num1.intValue()+1, num2.intValue());
             revset = x509crl.getRevokedCertificates();
             assertNotNull("revset can not be null", revset);
-            assertEquals(revsize + 1, revset.size());        	
+            assertEquals(revsize + 1, revset.size());           
         } finally {
-        	internalCertificateStoreSession.removeCertificate(CertTools.getSerialNumber(cert));
+            internalCertificateStoreSession.removeCertificate(CertTools.getSerialNumber(cert));
         }
     }
 
@@ -373,9 +370,9 @@ public class CrlCreateSessionDeltaCRLTest extends RoleUsingTestCase {
                     }
                 }
                 assertFalse(found);
-            } // If no revoked certificates exist at all, this test passed...        	
+            } // If no revoked certificates exist at all, this test passed...           
         } finally {
-        	internalCertificateStoreSession.removeCertificate(CertTools.getSerialNumber(cert));
+            internalCertificateStoreSession.removeCertificate(CertTools.getSerialNumber(cert));
         }
     }
 

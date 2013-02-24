@@ -43,12 +43,12 @@ public abstract class RoleUsingTestCase {
 
     private static final AuthenticationToken alwaysAllowAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("RoleUsingTestCase"));
 
-    private String roleName;
-    protected AuthenticationToken roleMgmgToken;
+    private static String roleName;
+    protected static AuthenticationToken roleMgmgToken;
 
-    public void setUpAuthTokenAndRole(String roleName) throws RoleExistsException, RoleNotFoundException {
-        this.roleName = roleName;       
-        String commonname = this.getClass().getCanonicalName();
+    public static void setUpAuthTokenAndRole(String roleName) throws RoleExistsException, RoleNotFoundException {
+        RoleUsingTestCase.roleName = roleName;       
+        String commonname = RoleUsingTestCase.class.getCanonicalName();
         roleMgmgToken = createAuthenticationToken("C=SE,O=Test,CN=" + commonname);
         X509Certificate cert = (X509Certificate) roleMgmgToken.getCredentials().iterator().next();
         // Initialize the role mgmt system with this role that is allowed to edit roles, i.e. needs access to /
@@ -59,7 +59,7 @@ public abstract class RoleUsingTestCase {
         }
     }
 
-    public void tearDownRemoveRole() throws RoleNotFoundException, AuthorizationDeniedException {
+    public static void tearDownRemoveRole() throws RoleNotFoundException, AuthorizationDeniedException {
         final RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
         final RoleAccessSessionRemote roleAccessSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
         if (roleAccessSessionRemote.findRole(roleName) != null) {
@@ -67,7 +67,7 @@ public abstract class RoleUsingTestCase {
         }
     }
     
-    protected AuthenticationToken createAuthenticationToken(String issuerDn) {
+    protected static AuthenticationToken createAuthenticationToken(String issuerDn) {
         Set<Principal> principals = new HashSet<Principal>();
         X500Principal p = new X500Principal(issuerDn);
         AuthenticationSubject subject = new AuthenticationSubject(principals, null);
