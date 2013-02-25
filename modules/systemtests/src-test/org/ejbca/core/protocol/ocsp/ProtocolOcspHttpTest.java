@@ -76,7 +76,6 @@ import org.bouncycastle.cert.ocsp.OCSPResp;
 import org.bouncycastle.cert.ocsp.OCSPRespBuilder;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
-import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
@@ -116,7 +115,6 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
-import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
@@ -146,635 +144,619 @@ import org.junit.Test;
  */
 public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 
-	public static final String DEFAULT_SUPERADMIN_CN = "SuperAdmin";
+    public static final String DEFAULT_SUPERADMIN_CN = "SuperAdmin";
 
-	private static final Logger log = Logger.getLogger(ProtocolOcspHttpTest.class);
+    private static final Logger log = Logger.getLogger(ProtocolOcspHttpTest.class);
 
-	private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
-	
-	private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ProtocolOcspHttpTest"));
+    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
+    
+    private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ProtocolOcspHttpTest"));
 
 
-	private static byte[] ks3 = Base64.decode(("MIACAQMwgAYJKoZIhvcNAQcBoIAkgASCAyYwgDCABgkqhkiG9w0BBwGggCSABIID"
-			+ "DjCCAwowggMGBgsqhkiG9w0BDAoBAqCCAqkwggKlMCcGCiqGSIb3DQEMAQMwGQQU" + "/h0pQXq7ZVjYWlDvzEwwmiJ8O8oCAWQEggJ4MZ12+kTVGd1w7SP4ZWlq0bCc4MsJ"
-			+ "O0FFSX3xeVp8Bx16io1WkEFOW3xfqjuxKOL6YN9atoOZdfhlOMhmbhglm2PJSzIg" + "JSDHvWk2xKels5vh4hY1iXWOh48077Us4wP4Qt94iKglCq4xwxYcSCW8BJwbu93F"
-			+ "uxE1twnWXbH192nMhaeIAy0v4COdduQamJEtHRmIJ4GZwIhH+lNHj/ARdIfNw0Dm" + "uPspuSu7rh6rQ8SrRsjg63EoxfSH4Lz6zIJKF0OjNX07T8TetFgznCdGCrqOZ1fK"
-			+ "5oRzXIA9hi6UICiuLSm4EoHzEpifCObpiApwNj3Kmp2uyz2uipU0UKhf/WqvmU96" + "yJj6j1JjZB6p+9sgecPFj1UMWhEFTwxMEwR7iZDvjkKDNWMit+0cQyeS7U0Lxn3u"
-			+ "m2g5e6C/1akwHZsioLC5OpFq/BkPtnbtuy4Kr5Kwb2y7vSiKpjFr7sKInjdAsgCi" + "8kyUV8MyaIfZdtREjwqBe0imfP+IPVqAsl1wGW95YXsLlK+4P1bspAgeHdDq7Q91"
-			+ "bJJQAS5OTD38i1NY6MRtt/fWsShVBLjf2FzNpw6siHHl2N7BDNyO3ALtgfp50e0Z" + "Dsw5WArgKLiXfwZIrIKbYA73RFc10ReDqnJSF+NXgBo1/i4WhZLHC1Osl5UoKt9q"
-			+ "UoXIUmYhAwdAT5ZKVw6A8yp4e270yZTXNsDz8u/onEwNc1iM0v0RnPQhNE5sKEZH" + "QrMxttiwbKe3YshCjbruz/27XnNA51t2p1M6eC1HRab4xSHAyH5NTxGJ8yKhOfiT"
-			+ "aBKqdTH3P7QzlcoCUDVDDe7aLMaZEf+a2Te63cZTuUVpkysxSjAjBgkqhkiG9w0B" + "CRQxFh4UAHAAcgBpAHYAYQB0AGUASwBlAHkwIwYJKoZIhvcNAQkVMRYEFCfeHSg6"
-			+ "EdeP5A1IC8ydjyrjyFSdAAQBAAQBAAQBAAQBAASCCBoAMIAGCSqGSIb3DQEHBqCA" + "MIACAQAwgAYJKoZIhvcNAQcBMCcGCiqGSIb3DQEMAQYwGQQURNy47tUcttscSleo"
-			+ "8gY6ZAPFOl0CAWSggASCB8jdZ+wffUP1B25Ys48OFBMg/itT0EBS6J+dYVofZ84c" + "x41q9U+CRMZJwVNZbkqfRZ+F3tLORSwuIcwyioa2/JUpv8uJCjQ2tru5+HtqCrzR"
-			+ "Huh7TfdiMqvjkKpnXi69DPPjQdCSPwYMy1ahZrP5KgEZg4S92xpU2unF1kKQ30Pq" + "PTEBueDlFC39rojp51Wsnqb1QzjPo53YvJQ8ztCoG0yk+0omELyPbc/qMKe5/g5h"
-			+ "Lx7Q+2D0PC/ZHtoDkCRfMDKwgwALFsSj2uWNJsCplspmc7YgIzSr/GqqeSXHp4Ue" + "dwVJAswrhpkXZTlp1rtl/lCSFl9akwjY1fI144zfpYKpLqfoHL1uI1c3OumrFzHd"
-			+ "ZldZYgsM/h3qjgu8qcXqI0sKVXsffcftCaVs+Bxmdu9vpY15rlx1e0an/O05nMKU" + "MBU2XpGkmWxuy0tOKs3QtGzHUJR5+RdEPURctRyZocEjJgTvaIMq1dy/FIaBhi+d"
-			+ "IeAbFmjBu7cv9C9v/jMuUjLroycmo7QW9jGgyTOQ68J+6w2/PtqiqIo3Ry9WC0SQ" + "8+fVNOGLr5O2YPpw17sDQa/+2gjozngvL0OHiABwQ3EbXAQLF046VYkTi5R+8iGV"
-			+ "3jlTvvStIKY06E/s/ih86bzwJWAQENCazXErN69JO+K3IUiwxac+1AOO5WyR9qyv" + "6m/yHdIdbOVE21M2RARbI8UiDpRihCzk4duPfj/x2bZyFqLclIMhbTd2UOQQvr+W"
-			+ "4etpMJRtyFGhdLmNgYAhYrbUgmdL1kRkzPzOs77PqleMpfkii7HPk3HlVkM7NIqd" + "dN0WQaQwGJuh5f1ynhyqtsaw6Gu/X56H7hpziAh0eSDQ5roRE7yy98h2Mcwb2wtY"
-			+ "PqVFTmoKuRWR2H5tT6gCaAM3xiSC7RLa5SF1hYQGaqunqBaNPYyUIg/r03dfwF9r" + "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" + "AA==")
-			.getBytes());
+    private static byte[] ks3 = Base64.decode(("MIACAQMwgAYJKoZIhvcNAQcBoIAkgASCAyYwgDCABgkqhkiG9w0BBwGggCSABIID"
+            + "DjCCAwowggMGBgsqhkiG9w0BDAoBAqCCAqkwggKlMCcGCiqGSIb3DQEMAQMwGQQU" + "/h0pQXq7ZVjYWlDvzEwwmiJ8O8oCAWQEggJ4MZ12+kTVGd1w7SP4ZWlq0bCc4MsJ"
+            + "O0FFSX3xeVp8Bx16io1WkEFOW3xfqjuxKOL6YN9atoOZdfhlOMhmbhglm2PJSzIg" + "JSDHvWk2xKels5vh4hY1iXWOh48077Us4wP4Qt94iKglCq4xwxYcSCW8BJwbu93F"
+            + "uxE1twnWXbH192nMhaeIAy0v4COdduQamJEtHRmIJ4GZwIhH+lNHj/ARdIfNw0Dm" + "uPspuSu7rh6rQ8SrRsjg63EoxfSH4Lz6zIJKF0OjNX07T8TetFgznCdGCrqOZ1fK"
+            + "5oRzXIA9hi6UICiuLSm4EoHzEpifCObpiApwNj3Kmp2uyz2uipU0UKhf/WqvmU96" + "yJj6j1JjZB6p+9sgecPFj1UMWhEFTwxMEwR7iZDvjkKDNWMit+0cQyeS7U0Lxn3u"
+            + "m2g5e6C/1akwHZsioLC5OpFq/BkPtnbtuy4Kr5Kwb2y7vSiKpjFr7sKInjdAsgCi" + "8kyUV8MyaIfZdtREjwqBe0imfP+IPVqAsl1wGW95YXsLlK+4P1bspAgeHdDq7Q91"
+            + "bJJQAS5OTD38i1NY6MRtt/fWsShVBLjf2FzNpw6siHHl2N7BDNyO3ALtgfp50e0Z" + "Dsw5WArgKLiXfwZIrIKbYA73RFc10ReDqnJSF+NXgBo1/i4WhZLHC1Osl5UoKt9q"
+            + "UoXIUmYhAwdAT5ZKVw6A8yp4e270yZTXNsDz8u/onEwNc1iM0v0RnPQhNE5sKEZH" + "QrMxttiwbKe3YshCjbruz/27XnNA51t2p1M6eC1HRab4xSHAyH5NTxGJ8yKhOfiT"
+            + "aBKqdTH3P7QzlcoCUDVDDe7aLMaZEf+a2Te63cZTuUVpkysxSjAjBgkqhkiG9w0B" + "CRQxFh4UAHAAcgBpAHYAYQB0AGUASwBlAHkwIwYJKoZIhvcNAQkVMRYEFCfeHSg6"
+            + "EdeP5A1IC8ydjyrjyFSdAAQBAAQBAAQBAAQBAASCCBoAMIAGCSqGSIb3DQEHBqCA" + "MIACAQAwgAYJKoZIhvcNAQcBMCcGCiqGSIb3DQEMAQYwGQQURNy47tUcttscSleo"
+            + "8gY6ZAPFOl0CAWSggASCB8jdZ+wffUP1B25Ys48OFBMg/itT0EBS6J+dYVofZ84c" + "x41q9U+CRMZJwVNZbkqfRZ+F3tLORSwuIcwyioa2/JUpv8uJCjQ2tru5+HtqCrzR"
+            + "Huh7TfdiMqvjkKpnXi69DPPjQdCSPwYMy1ahZrP5KgEZg4S92xpU2unF1kKQ30Pq" + "PTEBueDlFC39rojp51Wsnqb1QzjPo53YvJQ8ztCoG0yk+0omELyPbc/qMKe5/g5h"
+            + "Lx7Q+2D0PC/ZHtoDkCRfMDKwgwALFsSj2uWNJsCplspmc7YgIzSr/GqqeSXHp4Ue" + "dwVJAswrhpkXZTlp1rtl/lCSFl9akwjY1fI144zfpYKpLqfoHL1uI1c3OumrFzHd"
+            + "ZldZYgsM/h3qjgu8qcXqI0sKVXsffcftCaVs+Bxmdu9vpY15rlx1e0an/O05nMKU" + "MBU2XpGkmWxuy0tOKs3QtGzHUJR5+RdEPURctRyZocEjJgTvaIMq1dy/FIaBhi+d"
+            + "IeAbFmjBu7cv9C9v/jMuUjLroycmo7QW9jGgyTOQ68J+6w2/PtqiqIo3Ry9WC0SQ" + "8+fVNOGLr5O2YPpw17sDQa/+2gjozngvL0OHiABwQ3EbXAQLF046VYkTi5R+8iGV"
+            + "3jlTvvStIKY06E/s/ih86bzwJWAQENCazXErN69JO+K3IUiwxac+1AOO5WyR9qyv" + "6m/yHdIdbOVE21M2RARbI8UiDpRihCzk4duPfj/x2bZyFqLclIMhbTd2UOQQvr+W"
+            + "4etpMJRtyFGhdLmNgYAhYrbUgmdL1kRkzPzOs77PqleMpfkii7HPk3HlVkM7NIqd" + "dN0WQaQwGJuh5f1ynhyqtsaw6Gu/X56H7hpziAh0eSDQ5roRE7yy98h2Mcwb2wtY"
+            + "PqVFTmoKuRWR2H5tT6gCaAM3xiSC7RLa5SF1hYQGaqunqBaNPYyUIg/r03dfwF9r" + "AkOhh6Mq7Z2ktzadWTxPl8OtIZFVeyqIOtSKBHhJyGDGiz3+SSnTnSX81NaTSJYZ"
+            + "7YTiXkXvSYNpjpPckIKfjpBw0T4pOva3a6s1z5p94Dkl4kz/zOmgveGd3dal6wUV" + "n3TR+2cyv51WcnvB9RIp58SJOc+CvCvYTvkEdvE2QtRw3wt4ngGJ5pxmC+7+8fCf"
+            + "hRDzw9LBNz/ry88y/0Bidpbhwr8gEkmHuaLp43WGQQsQ+cWYJ8AeLZMvKplbCWqy" + "iuks0MnKeaC5dcB+3BL55OvcTfGkMtz0oYBkcGBTbbR8BKJZgkIAx7Q+/rCaqv6H"
+            + "HN/cH5p8iz5k+R3MkmR3gi6ktelQ2zx1pbPz3IqR67cTX3IyTX56F2aY54ueY17m" + "7hFwSy4aMen27EO06DXn/b6vPKj73ClE2B/IPHO/H2e8r04JWMltFWuStV0If5x0"
+            + "5ZImXx068Xw34eqSWvoMzr97xDxUwdlFgrKrkMKNoTDhA4afrZ/lwHdUbNzh6cht" + "jHW/IfIaMo3NldN/ihO851D399FMsWZW7YA7//RrWzBDiLvh+RfwkMOfEpbujy0G"
+            + "73rO/Feed2MoVXvmuKBRpTNyFuBVvFDwIzBT4m/RaVf5m1pvprSk3lo43aumdN9f" + "NDETktVZ/CYaKlYK8rLcNBKJicM5+maiQSTa06XZXDMY84Q0xtCqJ/aUH4sa/z8j"
+            + "KukVUSyUZDJk/O82B3NA4+CoP3Xyc9LAUKucUvoOmGt2JCw6goB/vqeZEg9Tli0Q" + "+aRer720QdVRkPVXKSshL2FoXHWUMaBF8r//zT6HbjTNQEdxbRcBNvkUXUHzITfl"
+            + "YjQcEn+FGrF8+HVdXCKzSXSgu7mSouYyJmZh42spUFCa4j60Ks1fhQb2H1p72nJD" + "n1mC5sZkU68ITVu1juVl/L2WJPmWfasb1Ihnm9caJ/mEE/i1iKp7qaY9DPTw5hw4"
+            + "3QplYWFv47UA/sOmnWwupRuPk7ISdimuUnih8OYR75rJ0z6OYexvj/2svx9/O5Mw" + "654jFF2hAq69jt7GJo6VZaeCRCAxEU7N97l3EjqaKJVrpIPQ+3yLmqHit/CWxImB"
+            + "iIl3sW7MDEHgPdQy3QiZmAYNLQ0Te0ygcIHwtPyzhFoFmjbQwib2vxDqWaMQpUM1" + "/W96R/vbCjA7tfKYchImwAPCyRM5Je2FHewErG413kZct5tJ1JqkcjPsP7Q8kmgw"
+            + "Ec5QNq1/PZOzL1ZLr6ryfA4gLBXa6bJmf43TUkdFYTvIYbvH2jp4wpAtA152YgPI" + "FL19/Tv0B3Bmb1qaK+FKiiQmYfVOm/J86i/L3b8Z3jj8dRWEBztaI/KazZ/ZVcs/"
+            + "50bF9jH7y5+2uZxByjkM/kM/Ov9zIHbYdxLw2KHnHsGKTCooSSWvPupQLBGgkd6P" + "M9mgE6MntS+lk9ucpP5j1LXo5zlZaLSwrvSzE3/bbWJKsJuomhRbKeZ+qSYOWvPl"
+            + "/1RqREyZHbSDKzVk39oxH9EI9EWKlCbrz5EHWiSv0+9HPczxbO3q+YfqcY8plPYX" + "BvgxHUeDR+LxaAEcVEX6wd2Pky8pVwxQydU4cEgohrgZnKhxxLAvCp5sb9kgqCrh"
+            + "luvBsHpmiUSCi/r0PNXDgApvTrVS/Yv0jTpX9u9IWMmNMrnskdcP7tpEdkw8/dpf" + "RFLLgqwmNEhCggfbyT0JIUxf2rldKwd6N1wZozaBg1uKjNmAhJc1RxsABAEABAEA"
+            + "BAEABAEABAEABAEABAEABAEABAEABAEABAEAAAAAAAAAMDwwITAJBgUrDgMCGgUA" + "BBSS2GOUxqv3IT+aesPrMPNn9RQ//gQUYhjCLPh/h2ULjh+1L2s3f5JIZf0CAWQA" + "AA==")
+            .getBytes());
 
-	private static byte[] ksexpired = Base64.decode(("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" + "AAA=")
-			.getBytes());
+    private static byte[] ksexpired = Base64.decode(("MIACAQMwgAYJKoZIhvcNAQcBoIAkgASCA+gwgDCABgkqhkiG9w0BBwGggCSABIID"
+            + "FzCCAxMwggMPBgsqhkiG9w0BDAoBAqCCArIwggKuMCgGCiqGSIb3DQEMAQMwGgQU" + "+FPoYyKdBmCiikns2YwMZh4pPSkCAgQABIICgC5leUCbJ8w3O8KEUMRvHOA+Xhzm"
+            + "R5y7aHJHL1z3ZnoskDL4YW/r1TQ5AFliaH7e7kuA7NYOjv9HdFsZ9BekLkWPybit" + "rcryLkPbRF+YdAXNkbGluukY0F8O4FP9n7FtfBd5uKitvOHZgHp3JAC9A+jYfayk"
+            + "ULfZRRGmzUys+D4czobY1tkCbQIb3kzR1kaqBownMkie+y5P56dRB2lJXpkpeilM" + "H0PZvckG5jQw7ua4sVUkIzyDAZpiCtNmOF5nvyRwQRLWAHwn7Yid5e8w2A6xTq6P"
+            + "wko+2OdqHK/r/fmABREWf9GJa5Lb1QkUzITsWmPVskCUdl+VZzcYL8EV8cREH7DG" + "sWuKyp8UJ0m3fiJEZHR2538Ydp6yp6R6/9DcGwxj20fO9FQnUanYcs6bDgwZ46UK"
+            + "blnbJAWGaChG3C9T6moXroLT7Mt2gxefW8RCds09EslhVTES01fmkovpcNuF/3U9" + "ukGTCN49/mnuUpeMDrm8/BotuL+jkWBOnFy3RfEfsHyPzYflBb/M9T7Q8wsGuh0O"
+            + "oPecIsVvo4hgXX6R0fpYdPArMfuI5JaGopt07XRhbUuCqlEc4Q6DD46F/SVLk34Q" + "Yaq76xwVplsa4QZZKNE6QTpApM61KpIKFxP3FzkqQIL4AKNb/mbSclr7L25aQmMw"
+            + "YiIgWOOaXlVh1U+4eZjqqVyYH5a6Y5e0EpMdMagvfuIA09b/Bp9LVnxQD6GmQgRC" + "MRCaTr3wMQqEv92iTrj718rWmyYWTRArH/7mb4Ef250x2WgqjytuShBcL4McagQG"
+            + "NMpMBZLFAlseQYQDlgkGDMfcSZJQ34CeH7Uvy+lBYvFIGnb2o3hnHuZicOgxSjAj" + "BgkqhkiG9w0BCRQxFh4UAG8AYwBzAHAAYwBsAGkAZQBuAHQwIwYJKoZIhvcNAQkV"
+            + "MRYEFO0W5oXdg6jY3vp316fMaEFzMEYpAAAAAAAAMIAGCSqGSIb3DQEHBqCAMIAC" + "AQAwgAYJKoZIhvcNAQcBMCgGCiqGSIb3DQEMAQYwGgQU30rkEXMscb9M1uCfhs6v"
+            + "wV3eWCICAgQAoIAEggcYMs4iLKX/OQHK9oFu7l79H2zf0IlV58kAyjQG4yvadJnK" + "Y6FOVLkwidcX33qRnMkGI1vidvRBbxnyH5+HVd3hVws/v3XBbZvhhX7A8loZZmye"
+            + "wFlHwT6TzIy/MJsz3Ev6EwoYBIID6HUrQhJiT/YPmiVhoWuaMw50YSbRGOUKwxEJ" + "ggqnC4WOPxdP8xZbD+h3V1/W0KdbKyqFyXYVnfTgDisyEBnEn2BN3frl7vlucRsS"
+            + "ci0ZpJpkdlCyuF77KzPaq6/yAgPHAhABvjgiEPE11hsdDA635mDb1dRPoM6IFfzR" + "n6JGZ7PEkKHdHudimx55eoUTJskXYaNcrPR2jlrxxX6tWV07m1G61kbgNIeuBdK6"
+            + "trJslSVPlli2YsTDQ2g+EmtDZc186nAYuQN03/TdSdhByPZxcT5nVs+xv1A3BdDX" + "ow1HCyuGyBrAIEVoITE171csT78iPxNY9bukYy678XDxWkDQu7QMV8FeGEXec5sh"
+            + "NL/IUSYtzuPxaP5V/QALC0ybGxjIoxmdKS0zPxyekA+Cj8XjQBKVW2DPjWXWtAHR" + "6lfWpwIgTwD0B7o59RVjKo/jrWRsH+RKfN17FXSKInTrm1gNHQPDCyIAv2luTSUa"
+            + "2qMRqH7/qivEWXbAWBz9dtEkqeuf/j698Rfie3QNtZ5qXmaVq1LBI0sduSJM+jHr" + "uRtICzEzWMvSqVnW+3ejyHmpLc6zBYx8VwNuFy8IH+qtV0pDYyoNL96KBOJhX2hf"
+            + "DsH82SNf1CbIf8245YNmtzDby8h+3NXNIo8qAleLvgTgSN1tmS5kEJKw3M9/MYgE" + "8XHGATAJB0E7uVRS1Ktr8R1w0hunautq7ylsw62zXdPp+6EsO0tMluCyWB0lMNAh"
+            + "uPiIMudNMA+O7NlCFQVTPxPxaRXg37dLm2XFy4ZnquKDuLvKkujdIwc9VBMER+MC" + "6FiNtJw5Kq4PcARt1ulKGMknn38+3jSh3Dzg93XNMUx7lmqZCosYc4kf5X6dAWKd"
+            + "xBVNi3/hLejvWCCb55BncXiGMvs75L6b07IXcm3HTXZxCzzl5QtWM7XqpPVqbqhW" + "wz03K4qko97YdD61oa8719SRjqBpbaW6RKIx5qGvAWYKg5usNorm/SsGg37zAfPa"
+            + "0LRoD22M5psU8MmH2E0iDDsf4sZDjeAY7LUGhgUGyyQ9t6hlEjD1Nhsxb9TSKNc+" + "UBzCVRqjUWqImo8q7ZHhcDn64eXY4sSyQWWRP+TUfbpfgo+tb6NQvEhceU8sQlAh"
+            + "HGqi1/4kvc54O+dUFsRMJkXoobSRc053JgdUgaLQ22iI0nZSVVLgcR8/jTTvQhbv" + "LRNES5vdoSUd+QiC83Hlx38uZtCgJ7HZfdnhYdaRIFIc7K1nqV+8ht6s7DdXK/JP"
+            + "8/QhtsLLfn1kies1/Xi+FeATef57jtBKh75yeBR5WFigEtSgFbRUNTLIrQQiDK07" + "71bi+VA8QGH/dpUVNg0EggLZI0qqSXqD+2f2XnhK90fHl3RLZWX8xvU6sP6wGMLj"
+            + "R+OlW0Gsv0gWeVLbSKRmNyesl0lznC2yVAeoyLMSkU6YLYCuzQTzZ2dpjdPwkBOP" + "7YhIIL7c1PWPGDLb35E/57Zd+I+dUdSX8SQyKzDgWyxyLGTaozkyaR3PK3XPKJNf"
+            + "t+RjfAJOtN3uSIjhpj90YL28p+kSlWxGRLM7FFDsS8nkcWQ113ZSfUnC5k5HmGmK" + "FA5b6oVkxk98uxgK7jJ6h9wONZR9t8WbyfMYnjMgo5ZgGmKzoBRJ9rD0WiIJfHiR"
+            + "zrv9yejClIHdseps4rB96hqQjXDSk1f3e/5IQ6Zp++x7nIZy50C9HfnuDugigpNr" + "IJS46o/86AgrBikc+CUoGLnu9OKvVCznFkwyz6ZzBdE3ITwHW4TXnlbkP888wax9"
+            + "lCKde+7/dBdUVwasgrU/F05MKCGqjWHIZ0po0owOTjMzkllqDtEmUdyUrGmLEmsA" + "0tE8txLSi6TPmqL/th/7Os0B+7nyC3Ju8kBhmXVmoudcmWh2QH6VM6pegqETkCtA"
+            + "hGErIKKrdUSVNXy4izJFh9dgyYJKwm+X6XAaLWN1nlQlS08U0jR3vikDfJqUknxP" + "Dg14TeC5Sgl2UjIpGX+XVxM8PV+2+WwvcwR0Nn1HFu99toZUD7FjkP6DR+XcHOhQ"
+            + "1tZZsutVPuyVJW9sTiYw48fIlYWDJXVESbLHDNN5TJD4NY9fhzfG3BYlex+YbbOx" + "sCvmUNrrFwi1ZOGa/Z2ow5V7Kdf4rbWbyuV+0CCVJBcPTKageONp4AOaARpBMFg3"
+            + "QuTvzwEXmrTMbbrPY2o1GOS8ulwOp1VI8PcOyGwRpHXzpRZPv2u9gTmYgnfu2PcU" + "F8NfHRFnPzFkO95KYFTYxZrg3vrU49IRJXqbjaeruQaKxPibxTDOsatJpWYAnw/s"
+            + "KuCHXrnUlw5RLeublCbUAAAAAAAAAAAAAAAAAAAAAAAAMD0wITAJBgUrDgMCGgUA" + "BBRo3arw4fuHPsqvDnvA8Q/TLyjoRQQU3Xm6ZsAJT0/iLV7S3mKeme0FVGACAgQA" + "AAA=")
+            .getBytes());
 
-	final private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
-	final private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    final private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+    final private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private final CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-	final private RevocationSessionRemote revocationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RevocationSessionRemote.class);
-	final private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
-	final private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-    
-	@BeforeClass
-	public static void beforeClass() throws CertificateException {
-		// Install BouncyCastle provider
-		CryptoProviderTools.installBCProviderIfNotAvailable();
-	}
+    final private RevocationSessionRemote revocationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RevocationSessionRemote.class);
+    final private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
+    final private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 
-	public ProtocolOcspHttpTest() throws MalformedURLException, URISyntaxException {
-		super("http", "127.0.0.1", 8080, "ejbca", "publicweb/status/ocsp");
-	}
+    @BeforeClass
+    public static void beforeClass() throws CertificateException {
+        // Install BouncyCastle provider
+        CryptoProviderTools.installBCProviderIfNotAvailable();
+    }
 
-	@Before
-	public void setUp() throws Exception {
-		super.setUp();
-		unknowncacert = (X509Certificate) CertTools.getCertfromByteArray(unknowncacertBytes);
+    public ProtocolOcspHttpTest() throws MalformedURLException, URISyntaxException {
+        super("http", "127.0.0.1", 8080, "ejbca", "publicweb/status/ocsp");
+    }
 
-		log.debug("httpReqPath=" + httpReqPath);
-		assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
-				.getResponseCode() == 200);
-		
-		cacert = (X509Certificate) getTestCACert();
-		caid = getTestCAId();
-		
-        int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
-        ocspDefaultTestCA = CaSessionTest.createTestX509CA("CN=OCSPDefaultTestCA", null, false, keyusage);
-        caSession.addCA(admin, ocspDefaultTestCA);
-        Map<String, String> confmap = new HashMap<String, String>();
-        confmap.put("ocsp.defaultresponder", "CN=OCSPDefaultTestCA");
-        helper.alterConfig(confmap);        
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
+        unknowncacert = (X509Certificate) CertTools.getCertfromByteArray(unknowncacertBytes);
+
+        log.debug("httpReqPath=" + httpReqPath);
+        assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
+                .getResponseCode() == 200);
+        cacert = (X509Certificate) getTestCACert();
+        caid = getTestCAId();
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        super.tearDown();
+        cacert = null;
+        removeDSACA();
+        removeECDSACA();
+        assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
+                .getResponseCode() == 200);
+    }
+
+    public String getRoleName() {
+        return this.getClass().getSimpleName();
+    }
+
+    @Test
+    public void test01Access() throws Exception {
+        super.test01Access();
+    }
+
+    /**
+     * Tests ocsp message
+     *
+     * @throws Exception
+     *           error
+     */
+    @Test
+    public void test02OcspGood() throws Exception {
+        log.trace(">test02OcspGood()");
+
+        // find a CA (TestCA?) create a user and generate his cert
+        // send OCSP req to server and get good response
+        // change status of cert to bad status
+        // send OCSP req and get bad status
+        // (send crap message and get good error)
+
+        // Get user and ocspTestCert that we know...
+        loadUserCert(this.caid);
+        this.helper.reloadKeys();
+
+        this.helper.verifyStatusGood( this.caid, this.cacert, this.ocspTestCert.getSerialNumber());
+        log.trace("<test02OcspGood()");
+    }
+
+
+    /**
+     * Tests ocsp message
+     *
+     * @throws Exception
+     *           error
+     */
+    @Test
+    public void test03OcspRevoked() throws Exception {
+        log.trace(">test03OcspRevoked()");
+        loadUserCert(this.caid);
+        // Now revoke the certificate and try again
+        this.revocationSession.revokeCertificate(admin, this.ocspTestCert, null, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, null);
+        this.helper.reloadKeys();
+        this.helper.verifyStatusRevoked( this.caid, this.cacert, this.ocspTestCert.getSerialNumber(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+        log.trace("<test03OcspRevoked()");
+    }
+
+    @Test
+    public void test04OcspUnknown() throws Exception {
+        super.test04OcspUnknown();
+    }
+
+    @Test
+    public void test05OcspUnknownCA() throws Exception {
+        super.test05OcspUnknownCA();
+    }
+
+    @Test
+    public void test06OcspSendWrongContentType() throws Exception {
+        super.test06OcspSendWrongContentType();
+    }
+
+    @Test
+    public void test07SignedOcsp() throws Exception {
+        assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
+                .getResponseCode() == 200);
+
+        // find a CA (TestCA?) create a user and generate his cert
+        // send OCSP req to server and get good response
+        // change status of cert to bad status
+        // send OCSP req and get bad status
+        // (send crap message and get good error)
+        try {
+            KeyPair keys = createUserCert(caid);
+
+            // And an OCSP request
+            OCSPReqBuilder gen = new OCSPReqBuilder();
+            gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
+            Extension[] extensions = new Extension[1];
+            extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+            gen.setRequestExtensions(new Extensions(extensions));
+            
+            X509CertificateHolder chain[] = new X509CertificateHolder[2];
+            chain[0] = new JcaX509CertificateHolder(ocspTestCert);
+            chain[1] = new JcaX509CertificateHolder(cacert);
+            gen.setRequestorName(chain[0].getSubject());
+            OCSPReq req = gen.build(new JcaContentSignerBuilder("SHA1WithRSA").build(keys.getPrivate()), chain);
+
+            // First test with a signed OCSP request that can be verified
+            Collection<Certificate> cacerts = new ArrayList<Certificate>();
+            cacerts.add(cacert);
+            ICertificateCache certcache = CertificateCacheTstFactory.getInstance(cacerts);
+            X509Certificate signer = checkRequestSignature("127.0.0.1", req, certcache);
+            assertNotNull(signer);
+            assertEquals(ocspTestCert.getSerialNumber().toString(16), signer.getSerialNumber().toString(16));
+
+            // Try with an unsigned request, we should get a SignRequestException
+            req = gen.build();
+            boolean caught = false;
+            try {
+                signer = checkRequestSignature("127.0.0.1", req, certcache);
+            } catch (SignRequestException e) {
+                caught = true;
+            }
+            assertTrue(caught);
+
+            // sign with a keystore where the CA-certificate is not known
+            KeyStore store = KeyStore.getInstance("PKCS12", "BC");
+            ByteArrayInputStream fis = new ByteArrayInputStream(ks3);
+            store.load(fis, "foo123".toCharArray());
+            Certificate[] certs = KeyTools.getCertChain(store, "privateKey");
+            chain[0] = new JcaX509CertificateHolder((X509Certificate) certs[0]);
+            chain[1] = new JcaX509CertificateHolder((X509Certificate) certs[1]);
+            PrivateKey pk = (PrivateKey) store.getKey("privateKey", "foo123".toCharArray());
+            req = gen.build(new JcaContentSignerBuilder("SHA1WithRSA").build(pk), chain);
+            // Send the request and receive a singleResponse, this response should
+            // throw an SignRequestSignatureException
+            caught = false;
+            try {
+                signer = checkRequestSignature("127.0.0.1", req, certcache);
+            } catch (SignRequestSignatureException e) {
+                caught = true;
+            }
+            assertTrue(caught);
+
+            // sign with a keystore where the signing certificate has expired
+            store = KeyStore.getInstance("PKCS12", "BC");
+            fis = new ByteArrayInputStream(ksexpired);
+            store.load(fis, "foo123".toCharArray());
+            certs = KeyTools.getCertChain(store, "ocspclient");
+            chain[0] =  new JcaX509CertificateHolder((X509Certificate) certs[0]);
+            chain[1] =  new JcaX509CertificateHolder((X509Certificate) certs[1]);
+            pk = (PrivateKey) store.getKey("ocspclient", "foo123".toCharArray());
+            req = gen.build(new JcaContentSignerBuilder("SHA1WithRSA").build(pk), chain);
+            // Send the request and receive a singleResponse, this response should
+            // throw an SignRequestSignatureException
+            caught = false;
+            try {
+                signer = checkRequestSignature("127.0.0.1", req, certcache);
+            } catch (SignRequestSignatureException e) {
+                caught = true;
+            }
+            assertTrue(caught);
+        } finally {
+            endEntityManagementSession.deleteUser(admin, "ocsptest");
+        }
+
+    } // test07SignedOcsp
+
+    /**
+     * Tests ocsp message
+     *
+     * @throws Exception error
+     */
+    @Test
+    public void test08OcspEcdsaGood() throws Exception {
+        assertTrue("This test can only be run on a full EJBCA installation.",
+                ((HttpURLConnection) new URL(httpReqPath + '/').openConnection()).getResponseCode() == 200);
+        final int ecdsacaid = "CN=OCSPECDSATEST".hashCode();
+        final CAInfo caInfo = addECDSACA("CN=OCSPECDSATEST", "secp256r1");
+        final X509Certificate ecdsacacert = (X509Certificate) caInfo.getCertificateChain().iterator().next();
+        helper.reloadKeys();
+        try {
+            // Make user and ocspTestCert that we know...
+            createUserCert(ecdsacaid);
+            this.helper.verifyStatusGood( ecdsacaid, ecdsacacert, this.ocspTestCert.getSerialNumber() );
+        } finally {
+            endEntityManagementSession.deleteUser(admin, "ocsptest");
+            CryptoTokenManagementSessionTest.removeCryptoToken(admin, caInfo.getCAToken().getCryptoTokenId());
+        }
+    } // test08OcspEcdsaGood
+
+    /**
+     * Tests ocsp message
+     *
+     * @throws Exception
+     *           error
+     */
+    @Test
+    public void test09OcspEcdsaImplicitlyCAGood() throws Exception {
+        assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
+                .getResponseCode() == 200);
+        int ecdsacaid = "CN=OCSPECDSAIMPCATEST".hashCode();
+        final CAInfo caInfo = addECDSACA("CN=OCSPECDSAIMPCATEST", "implicitlyCA");
+        final X509Certificate ecdsacacert = (X509Certificate) caInfo.getCertificateChain().iterator().next();
+        helper.reloadKeys();
+        try {
+            // Make user and ocspTestCert that we know...
+            createUserCert(ecdsacaid);
+            this.helper.verifyStatusGood( ecdsacaid, ecdsacacert, this.ocspTestCert.getSerialNumber() );
+        } finally {
+            endEntityManagementSession.deleteUser(admin, "ocsptest");
+            CryptoTokenManagementSessionTest.removeCryptoToken(admin, caInfo.getCAToken().getCryptoTokenId());
+        }
+    } // test09OcspEcdsaImplicitlyCAGood
+
+    @Test
+    public void test10MultipleRequests() throws Exception {
+        this.helper.reloadKeys();
+        super.test10MultipleRequests();
+    }
+
+    @Test
+    public void test11MalformedRequest() throws Exception {     
+        super.test11MalformedRequest();
+    }
+
+    @Test
+    public void test12CorruptRequests() throws Exception {
+        super.test12CorruptRequests();
+    }
+
+    /**
+     * Just verify that a simple GET works.
+     */
+    @Test
+    public void test13GetRequests() throws Exception {
+        // See if the OCSP Servlet can read non-encoded requests
+        final String plainReq = httpReqPath
+                + '/'
+                + resourceOcsp
+                + '/'
+                + "MGwwajBFMEMwQTAJBgUrDgMCGgUABBRBRfilzPB+Aevx0i1AoeKTkrHgLgQUFJw5gwk9BaEgsX3pzsRF9iso29ICCCzdx5N0v9XwoiEwHzAdBgkrBgEFBQcwAQIEECrZswo/a7YW+hyi5Sn85fs=";
+        URL url = new URL(plainReq);
+        log.info(url.toString()); // Dump the exact string we use for access
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        assertEquals("Response code did not match. ", 200, con.getResponseCode());
+        assertNotNull(con.getContentType());
+        assertTrue(con.getContentType().startsWith("application/ocsp-response"));
+        OCSPResp response = new OCSPResp(IOUtils.toByteArray(con.getInputStream()));
+        assertNotNull("Response should not be null.", response);
+        assertTrue("Should not be concidered malformed.", OCSPRespBuilder.MALFORMED_REQUEST != response.getStatus());
+        final String dubbleSlashNonEncReq = "http://127.0.0.1:"
+                + httpPort
+                + "/ejbca/publicweb/status/ocsp/MGwwajBFMEMwQTAJBgUrDgMCGgUABBRBRfilzPB%2BAevx0i1AoeKTkrHgLgQUFJw5gwk9BaEgsX3pzsRF9iso29ICCAvB//HJyKqpoiEwHzAdBgkrBgEFBQcwAQIEEOTzT2gv3JpVva22Vj8cuKo%3D";
+        url = new URL(dubbleSlashNonEncReq);
+        log.info(url.toString()); // Dump the exact string we use for access
+        con = (HttpURLConnection) url.openConnection();
+        assertEquals("Response code did not match. ", 200, con.getResponseCode());
+        assertNotNull(con.getContentType());
+        assertTrue(con.getContentType().startsWith("application/ocsp-response"));
+        response = new OCSPResp(IOUtils.toByteArray(con.getInputStream()));
+        assertNotNull("Response should not be null.", response);
+        assertTrue("Should not be concidered malformed.", OCSPRespBuilder.MALFORMED_REQUEST != response.getStatus());
+        // An OCSP request, ocspTestCert is already created in earlier tests
+        loadUserCert(this.caid);
+        this.helper.reloadKeys();
+        this.helper.verifyStatusGood( this.caid, this.cacert, this.ocspTestCert.getSerialNumber() );
+    }
+
+    @Test
+    public void test14CorruptGetRequests() throws Exception {
+        super.test14CorruptGetRequests();
+    }
+
+    @Test
+    public void test15MultipleGetRequests() throws Exception {
+        super.test15MultipleGetRequests();
+    }
+
+    /**
+     * Tests ocsp message
+     *
+     * @throws Exception
+     *           error
+     */
+    @Test
+    public void test16OcspDsaGood() throws Exception {
+        assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
+                .getResponseCode() == 200);
+
+        int dsacaid = "CN=OCSPDSATEST".hashCode();
+        X509Certificate ecdsacacert = addDSACA("CN=OCSPDSATEST", "DSA1024");
         helper.reloadKeys();
 
-	}
+        // Make user and ocspTestCert that we know...
+        createUserCert(dsacaid);
 
-	@After
-	public void tearDown() throws Exception {
-		super.tearDown();
-		cacert = null;
-		
-		removeDSACA();
-		removeECDSACA();
-		
-        CryptoTokenManagementSessionTest.removeCryptoToken(null, ocspDefaultTestCA.getCAToken().getCryptoTokenId());
-        caSession.removeCA(admin, "CN=OCSPDefaultTestCA".hashCode());
-		
-		assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
-				.getResponseCode() == 200);
-	}
+        this.helper.verifyStatusGood( dsacaid, ecdsacacert, this.ocspTestCert.getSerialNumber() );
+    } // test16OcspDsaGood
 
-	public String getRoleName() {
-		return this.getClass().getSimpleName();
-	}
+    /**
+     * Verify that Internal OCSP responses are signed by CA signing key.
+     */
+    @Test
+    public void test17OCSPResponseSignature() throws Exception {
 
-	@Test
-	public void test01Access() throws Exception {
-		super.test01Access();
-	}
+        // Get user and ocspTestCert that we know...
+        loadUserCert(caid);
+        this.helper.reloadKeys();
+        // And an OCSP request
+        OCSPReqBuilder gen = new OCSPReqBuilder();
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
+        Extension[] extensions = new Extension[1];
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+        gen.setRequestExtensions(new Extensions(extensions));
+        OCSPReq req = gen.build();
 
-	/**
-	 * Tests ocsp message
-	 *
-	 * @throws Exception
-	 *			 error
-	 */
-	@Test
-	public void test02OcspGood() throws Exception {
-		log.trace(">test02OcspGood()");
+        // POST the OCSP request
+        URL url = new URL(httpReqPath + '/' + resourceOcsp);
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        // we are going to do a POST
+        con.setDoOutput(true);
+        con.setRequestMethod("POST");
 
-		// find a CA (TestCA?) create a user and generate his cert
-		// send OCSP req to server and get good response
-		// change status of cert to bad status
-		// send OCSP req and get bad status
-		// (send crap message and get good error)
+        // POST it
+        con.setRequestProperty("Content-Type", "application/ocsp-request");
+        OutputStream os = con.getOutputStream();
+        os.write(req.getEncoded());
+        os.close();
+        assertTrue("HTTP error", con.getResponseCode() == 200);
 
-		// Get user and ocspTestCert that we know...
-		loadUserCert(this.caid);
-		this.helper.reloadKeys();
+        // Some appserver (Weblogic) responds with
+        // "application/ocsp-response; charset=UTF-8"
+        assertNotNull("No Content-Type in reply.", con.getContentType());
+        assertTrue(con.getContentType().startsWith("application/ocsp-response"));
+        OCSPResp response = new OCSPResp(IOUtils.toByteArray(con.getInputStream()));
+        assertTrue("Response status not the expected.", response.getStatus() != 200);
 
-		this.helper.verifyStatusGood( this.caid, this.cacert, this.ocspTestCert.getSerialNumber());
-		log.trace("<test02OcspGood()");
-	}
+        BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
+        boolean verify = brep.isSignatureValid(new JcaContentVerifierProviderBuilder().build(cacert.getPublicKey()));
+        assertTrue("Signature verification", verify);
+    }
 
+    /**
+     * Verify OCSP response for a malicious request. Uses nonsense payload.
+     *
+     * HTTP Content-length: 1000 byte ASN1 sequence length: 199995 byte Payload
+     * size: 200000 byte (not including HTTP header)
+     */
+    @Test
+    public void test18MaliciousOcspRequest() throws Exception {
+        log.trace(">test18MaliciousOcspRequest");
+        int i = 0;
+        // Construct the fake data.
+        byte data[] = new byte[LimitLengthASN1Reader.MAX_REQUEST_SIZE * 2];
+        // The first byte indicate that this is a sequence. Necessary to past
+        // the first test as an accepted OCSP object.
+        data[0] = (byte) BERTags.SEQUENCE;
+        // The second byte indicates the number if the following bytes are more
+        // than can be represented by one byte and will be represented by 3
+        // bytes instead.
+        data[1] = (byte) 0x83;
+        // The third through the forth bytes are the number of the following
+        // bytes. (0x030D3B = 199995)
+        data[2] = (byte) 0x03; // MSB
+        data[3] = (byte) 0x0D;
+        data[4] = (byte) 0x3B; // LSB
+        // Fill the rest of the array with some fake data.
+        for (i = 5; i < data.length; i++) {
+            data[i] = (byte) i;
+        }
+        // Create the HTTP header
+        String path = "/ejbca/" + resourceOcsp;
+        String headers = "POST " + path + " HTTP/1.1\r\n" + "Host: 127.0.0.1\r\n" + "Content-Type: application/ocsp-request\r\n" + "Content-Length: 1000\r\n"
+                + "\r\n";
+        // Merge the HTTP headers and the raw data into one package.
+        byte input[] = concatByteArrays(headers.getBytes(), data);
+        // Create the socket.
+        Socket socket = new Socket(InetAddress.getByName("127.0.0.1"), Integer.parseInt(httpPort));
+        // Send data byte for byte.
+        OutputStream os = socket.getOutputStream();
+        try {
+            os.write(input);
+        } catch (IOException e) {
+            log.info("Socket threw an IOException.", e);
+            // Windows throws an IOException when trying to write more bytes to
+            // the server than it should. JBoss on Linux does not.
+            // assertTrue("Tried to write more than it should to the server (>1000), "+i, i > 1000);
+            return;
+        }
+        // Reading the response.
+        InputStream ins = socket.getInputStream();
+        byte ret[] = new byte[1024];
+        ins.read(ret);
+        socket.close();
+        // Removing the HTTP headers. The HTTP headers end at the last
+        // occurrence of "\r\n".
+        for (i = ret.length - 1; i > 0; i--) {
+            if ((ret[i] == 0x0A) && (ret[i - 1] == 0x0D)) {
+                break;
+            }
+        }
+        int start = i + 1;
+        byte respa[] = new byte[ret.length - start];
+        for (i = start; i < ret.length; i++) {
+            respa[i - start] = ret[i];
+        }
+        log.info("response contains: " + respa.length + " bytes.");
+        // Reading the response as a OCSPResp. When the input data array is
+        // longer than allowed the OCSP response will return as an internal
+        // error.
+        OCSPResp response = new OCSPResp(respa);
+        assertEquals("Incorrect response status.", OCSPRespBuilder.INTERNAL_ERROR, response.getStatus());
+        log.trace("<test18MaliciousOcspRequest");
+    }
 
-	/**
-	 * Tests ocsp message
-	 *
-	 * @throws Exception
-	 *			 error
-	 */
-	@Test
-	public void test03OcspRevoked() throws Exception {
-		log.trace(">test03OcspRevoked()");
-		loadUserCert(this.caid);
-		// Now revoke the certificate and try again
-		this.revocationSession.revokeCertificate(admin, this.ocspTestCert, null, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, null);
-		this.helper.reloadKeys();
-		this.helper.verifyStatusRevoked( this.caid, this.cacert, this.ocspTestCert.getSerialNumber(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
-		log.trace("<test03OcspRevoked()");
-	}
+    /**
+     * Verify OCSP response for a malicious request. Uses nonsense payload.
+     *
+     * HTTP Content-length: 200000 byte ASN1 sequence length: 9996 byte Payload
+     * size: 200000 byte (not including HTTP header)
+     */
+    @Test
+    public void test19MaliciousOcspRequest() throws Exception {
+        log.trace(">test19MaliciousOcspRequest");
+        int i = 0;
+        // Construct the fake data.
+        byte data[] = new byte[LimitLengthASN1Reader.MAX_REQUEST_SIZE * 2];
+        // The first byte indicate that this is a sequence. Necessary to past
+        // the first test as an accepted OCSP object.
+        data[0] = (byte) BERTags.SEQUENCE;
+        // The second byte indicates the number of the following bytes are more
+        // than can be represented by one byte and will be represented by 2
+        // bytes instead.
+        data[1] = (byte) 0x82;
+        // The third through the forth bytes are the number of the following
+        // bytes. (0x270C = 9996)
+        data[2] = (byte) 0x27; // MSB
+        data[3] = (byte) 0x0C; // LSB
+        // Fill the rest of the array with some fake data.
+        for (i = 4; i < data.length; i++) {
+            data[i] = (byte) i;
+        }
+        // Create the HTTP header
+        String path = "/ejbca/" + resourceOcsp;
+        String headers = "POST " + path + " HTTP/1.1\r\n" + "Host: 127.0.0.1\r\n" + "Content-Type: application/ocsp-request\r\n" + "Content-Length: 200000\r\n"
+                + "\r\n";
+        // Merge the HTTP headers and the raw data into one package.
+        byte input[] = concatByteArrays(headers.getBytes(), data);
+        // Create the socket.
+        Socket socket = new Socket(InetAddress.getByName("127.0.0.1"), Integer.parseInt(httpPort));
+        // Send data byte for byte.
+        OutputStream os = socket.getOutputStream();
+        try {
+            os.write(input);
+        } catch (IOException e) {
+            log.info("Socket threw an IOException.", e);
+        }
+        // Reading the response.
+        InputStream ins = socket.getInputStream();
+        byte ret[] = new byte[1024];
+        ins.read(ret);
+        socket.close();
+        // Removing the HTTP headers. The HTTP headers end at the last
+        // occurrence of "\r\n".
+        for (i = ret.length - 1; i > 0; i--) {
+            if ((ret[i] == 0x0A) && (ret[i - 1] == 0x0D)) {
+                break;
+            }
+        }
+        int start = i + 1;
+        byte respa[] = new byte[ret.length - start];
+        for (i = start; i < ret.length; i++) {
+            respa[i - start] = ret[i];
+        }
+        log.info("response contains: " + respa.length + " bytes.");
+        // Reading the response as a OCSPResp.
+        OCSPResp response = new OCSPResp(respa);
+        assertEquals("Incorrect response status.", OCSPRespBuilder.MALFORMED_REQUEST, response.getStatus());
+        log.trace("<test19MaliciousOcspRequest");
+    }
 
-	@Test
-	public void test04OcspUnknown() throws Exception {
-		super.test04OcspUnknown();
-	}
+    /**
+     * Verify OCSP response for a malicious request where the POST data starts
+     * with a proper OCSP request.
+     */
+    @Test
+    public void test20MaliciousOcspRequest() throws Exception {
+        log.trace(">test20MaliciousOcspRequest");
+        // Start by sending a valid OCSP requests so we know the helpers work
+        byte validOcspReq[] = getValidOcspRequest();
+        OCSPResp response = sendRawRequestToOcsp(validOcspReq.length, validOcspReq, false);
+        assertEquals("Incorrect response status.", OCSPRespBuilder.SUCCESSFUL, response.getStatus());
+        // Try sending a valid request and then keep sending some more data.
+        byte[] buf = new byte[LimitLengthASN1Reader.MAX_REQUEST_SIZE * 2];
+        Arrays.fill(buf, (byte) 123);
+        buf = concatByteArrays(validOcspReq, buf);
+        // This should return an error because we only allow content length of 100000 bytes
+        response = sendRawRequestToOcsp(buf.length, buf, false);
+        assertEquals("Incorrect response status.", OCSPRespBuilder.MALFORMED_REQUEST, response.getStatus());
+        // Now try with a fake HTTP content-length header
+        try {
+            response = sendRawRequestToOcsp(validOcspReq.length, buf, false);
+            // When sending a large request body with a too short content-length the serves sees this as two streaming
+            // requests. The first request will be read and processed by EJBCA normally and sent back, but the
+            // second one will not be a valid request so the server will send back an error.
+            // Glassfish actually sends back a "400 Bad request". Our reading code in sendRawRequestToOcsp
+            // does not handle multiple streaming responses so it will barf on the second one.
+            // This is different for JBoss and Glassfish though, with JBoss we will get a IOException trying
+            // to read the response, while for Glassfish we will get the response with 0 bytes from the 400 response
 
-	@Test
-	public void test05OcspUnknownCA() throws Exception {
-		super.test05OcspUnknownCA();
-	}
-
-	@Test
-	public void test06OcspSendWrongContentType() throws Exception {
-		super.test06OcspSendWrongContentType();
-	}
-
-	@Test
-	public void test07SignedOcsp() throws Exception {
-		assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
-				.getResponseCode() == 200);
-
-		// find a CA (TestCA?) create a user and generate his cert
-		// send OCSP req to server and get good response
-		// change status of cert to bad status
-		// send OCSP req and get bad status
-		// (send crap message and get good error)
-		try {
-			KeyPair keys = createUserCert(caid);
-
-			// And an OCSP request
-			OCSPReqBuilder gen = new OCSPReqBuilder();
-			gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
-			Extension[] extensions = new Extension[1];
-			extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
-			gen.setRequestExtensions(new Extensions(extensions));
-			
-			X509CertificateHolder chain[] = new X509CertificateHolder[2];
-			chain[0] = new JcaX509CertificateHolder(ocspTestCert);
-			chain[1] = new JcaX509CertificateHolder(cacert);
-			gen.setRequestorName(chain[0].getSubject());
-			OCSPReq req = gen.build(new JcaContentSignerBuilder("SHA1WithRSA").build(keys.getPrivate()), chain);
-
-			// First test with a signed OCSP request that can be verified
-			Collection<Certificate> cacerts = new ArrayList<Certificate>();
-			cacerts.add(cacert);
-			ICertificateCache certcache = CertificateCacheTstFactory.getInstance(cacerts);
-			X509Certificate signer = checkRequestSignature("127.0.0.1", req, certcache);
-			assertNotNull(signer);
-			assertEquals(ocspTestCert.getSerialNumber().toString(16), signer.getSerialNumber().toString(16));
-
-			// Try with an unsigned request, we should get a SignRequestException
-			req = gen.build();
-			boolean caught = false;
-			try {
-				signer = checkRequestSignature("127.0.0.1", req, certcache);
-			} catch (SignRequestException e) {
-				caught = true;
-			}
-			assertTrue(caught);
-
-			// sign with a keystore where the CA-certificate is not known
-			KeyStore store = KeyStore.getInstance("PKCS12", "BC");
-			ByteArrayInputStream fis = new ByteArrayInputStream(ks3);
-			store.load(fis, "foo123".toCharArray());
-			Certificate[] certs = KeyTools.getCertChain(store, "privateKey");
-			chain[0] = new JcaX509CertificateHolder((X509Certificate) certs[0]);
-			chain[1] = new JcaX509CertificateHolder((X509Certificate) certs[1]);
-			PrivateKey pk = (PrivateKey) store.getKey("privateKey", "foo123".toCharArray());
-			req = gen.build(new JcaContentSignerBuilder("SHA1WithRSA").build(pk), chain);
-			// Send the request and receive a singleResponse, this response should
-			// throw an SignRequestSignatureException
-			caught = false;
-			try {
-				signer = checkRequestSignature("127.0.0.1", req, certcache);
-			} catch (SignRequestSignatureException e) {
-				caught = true;
-			}
-			assertTrue(caught);
-
-			// sign with a keystore where the signing certificate has expired
-			store = KeyStore.getInstance("PKCS12", "BC");
-			fis = new ByteArrayInputStream(ksexpired);
-			store.load(fis, "foo123".toCharArray());
-			certs = KeyTools.getCertChain(store, "ocspclient");
-			chain[0] =  new JcaX509CertificateHolder((X509Certificate) certs[0]);
-			chain[1] =  new JcaX509CertificateHolder((X509Certificate) certs[1]);
-			pk = (PrivateKey) store.getKey("ocspclient", "foo123".toCharArray());
-			req = gen.build(new JcaContentSignerBuilder("SHA1WithRSA").build(pk), chain);
-			// Send the request and receive a singleResponse, this response should
-			// throw an SignRequestSignatureException
-			caught = false;
-			try {
-				signer = checkRequestSignature("127.0.0.1", req, certcache);
-			} catch (SignRequestSignatureException e) {
-				caught = true;
-			}
-			assertTrue(caught);
-		} finally {
-			endEntityManagementSession.deleteUser(admin, "ocsptest");
-		}
-
-	} // test07SignedOcsp
-
-	/**
-	 * Tests ocsp message
-	 *
-	 * @throws Exception error
-	 */
-	@Test
-	public void test08OcspEcdsaGood() throws Exception {
-		assertTrue("This test can only be run on a full EJBCA installation.",
-				((HttpURLConnection) new URL(httpReqPath + '/').openConnection()).getResponseCode() == 200);
-		final int ecdsacaid = "CN=OCSPECDSATEST".hashCode();
-		final CAInfo caInfo = addECDSACA("CN=OCSPECDSATEST", "secp256r1");
-        final X509Certificate ecdsacacert = (X509Certificate) caInfo.getCertificateChain().iterator().next();
-		helper.reloadKeys();
-		try {
-			// Make user and ocspTestCert that we know...
-			createUserCert(ecdsacaid);
-			this.helper.verifyStatusGood( ecdsacaid, ecdsacacert, this.ocspTestCert.getSerialNumber() );
-		} finally {
-			endEntityManagementSession.deleteUser(admin, "ocsptest");
-			CryptoTokenManagementSessionTest.removeCryptoToken(admin, caInfo.getCAToken().getCryptoTokenId());
-		}
-	} // test08OcspEcdsaGood
-
-	/**
-	 * Tests ocsp message
-	 *
-	 * @throws Exception
-	 *			 error
-	 */
-	@Test
-	public void test09OcspEcdsaImplicitlyCAGood() throws Exception {
-		assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
-				.getResponseCode() == 200);
-		int ecdsacaid = "CN=OCSPECDSAIMPCATEST".hashCode();
-		final CAInfo caInfo = addECDSACA("CN=OCSPECDSAIMPCATEST", "implicitlyCA");
-        final X509Certificate ecdsacacert = (X509Certificate) caInfo.getCertificateChain().iterator().next();
-		helper.reloadKeys();
-		try {
-			// Make user and ocspTestCert that we know...
-			createUserCert(ecdsacaid);
-			this.helper.verifyStatusGood( ecdsacaid, ecdsacacert, this.ocspTestCert.getSerialNumber() );
-		} finally {
-			endEntityManagementSession.deleteUser(admin, "ocsptest");
-            CryptoTokenManagementSessionTest.removeCryptoToken(admin, caInfo.getCAToken().getCryptoTokenId());
-		}
-	} // test09OcspEcdsaImplicitlyCAGood
-
-	@Test
-	public void test10MultipleRequests() throws Exception {
-	    this.helper.reloadKeys();
-		super.test10MultipleRequests();
-	}
-
-	@Test
-	public void test11MalformedRequest() throws Exception {	    
-		super.test11MalformedRequest();
-	}
-
-	@Test
-	public void test12CorruptRequests() throws Exception {
-		super.test12CorruptRequests();
-	}
-
-	/**
-	 * Just verify that a simple GET works.
-	 */
-	@Test
-	public void test13GetRequests() throws Exception {
-		// See if the OCSP Servlet can read non-encoded requests
-		final String plainReq = httpReqPath
-				+ '/'
-				+ resourceOcsp
-				+ '/'
-				+ "MGwwajBFMEMwQTAJBgUrDgMCGgUABBRBRfilzPB+Aevx0i1AoeKTkrHgLgQUFJw5gwk9BaEgsX3pzsRF9iso29ICCCzdx5N0v9XwoiEwHzAdBgkrBgEFBQcwAQIEECrZswo/a7YW+hyi5Sn85fs=";
-		URL url = new URL(plainReq);
-		log.info(url.toString()); // Dump the exact string we use for access
-		HttpURLConnection con = (HttpURLConnection) url.openConnection();
-		assertEquals("Response code did not match. ", 200, con.getResponseCode());
-		assertNotNull(con.getContentType());
-		assertTrue(con.getContentType().startsWith("application/ocsp-response"));
-		OCSPResp response = new OCSPResp(IOUtils.toByteArray(con.getInputStream()));
-		assertNotNull("Response should not be null.", response);
-		assertTrue("Should not be concidered malformed.", OCSPRespBuilder.MALFORMED_REQUEST != response.getStatus());
-		final String dubbleSlashNonEncReq = "http://127.0.0.1:"
-				+ httpPort
-				+ "/ejbca/publicweb/status/ocsp/MGwwajBFMEMwQTAJBgUrDgMCGgUABBRBRfilzPB%2BAevx0i1AoeKTkrHgLgQUFJw5gwk9BaEgsX3pzsRF9iso29ICCAvB//HJyKqpoiEwHzAdBgkrBgEFBQcwAQIEEOTzT2gv3JpVva22Vj8cuKo%3D";
-		url = new URL(dubbleSlashNonEncReq);
-		log.info(url.toString()); // Dump the exact string we use for access
-		con = (HttpURLConnection) url.openConnection();
-		assertEquals("Response code did not match. ", 200, con.getResponseCode());
-		assertNotNull(con.getContentType());
-		assertTrue(con.getContentType().startsWith("application/ocsp-response"));
-		response = new OCSPResp(IOUtils.toByteArray(con.getInputStream()));
-		assertNotNull("Response should not be null.", response);
-		assertTrue("Should not be concidered malformed.", OCSPRespBuilder.MALFORMED_REQUEST != response.getStatus());
-		// An OCSP request, ocspTestCert is already created in earlier tests
-		loadUserCert(this.caid);
-		this.helper.reloadKeys();
-		this.helper.verifyStatusGood( this.caid, this.cacert, this.ocspTestCert.getSerialNumber() );
-	}
-
-	@Test
-	public void test14CorruptGetRequests() throws Exception {
-		super.test14CorruptGetRequests();
-	}
-
-	@Test
-	public void test15MultipleGetRequests() throws Exception {
-		super.test15MultipleGetRequests();
-	}
-
-	/**
-	 * Tests ocsp message
-	 *
-	 * @throws Exception
-	 *			 error
-	 */
-	@Test
-	public void test16OcspDsaGood() throws Exception {
-		assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
-				.getResponseCode() == 200);
-
-		int dsacaid = "CN=OCSPDSATEST".hashCode();
-		X509Certificate ecdsacacert = addDSACA("CN=OCSPDSATEST", "DSA1024");
-		helper.reloadKeys();
-
-		// Make user and ocspTestCert that we know...
-		createUserCert(dsacaid);
-
-		this.helper.verifyStatusGood( dsacaid, ecdsacacert, this.ocspTestCert.getSerialNumber() );
-	} // test16OcspDsaGood
-
-	/**
-	 * Verify that Internal OCSP responses are signed by CA signing key.
-	 */
-	@Test
-	public void test17OCSPResponseSignature() throws Exception {
-
-		// Get user and ocspTestCert that we know...
-		loadUserCert(caid);
-		this.helper.reloadKeys();
-		// And an OCSP request
-		OCSPReqBuilder gen = new OCSPReqBuilder();
-		gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
-		Extension[] extensions = new Extension[1];
-		extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
-		gen.setRequestExtensions(new Extensions(extensions));
-		OCSPReq req = gen.build();
-
-		// POST the OCSP request
-		URL url = new URL(httpReqPath + '/' + resourceOcsp);
-		HttpURLConnection con = (HttpURLConnection) url.openConnection();
-		// we are going to do a POST
-		con.setDoOutput(true);
-		con.setRequestMethod("POST");
-
-		// POST it
-		con.setRequestProperty("Content-Type", "application/ocsp-request");
-		OutputStream os = con.getOutputStream();
-		os.write(req.getEncoded());
-		os.close();
-		assertTrue("HTTP error", con.getResponseCode() == 200);
-
-		// Some appserver (Weblogic) responds with
-		// "application/ocsp-response; charset=UTF-8"
-		assertNotNull("No Content-Type in reply.", con.getContentType());
-		assertTrue(con.getContentType().startsWith("application/ocsp-response"));
-		OCSPResp response = new OCSPResp(IOUtils.toByteArray(con.getInputStream()));
-		assertTrue("Response status not the expected.", response.getStatus() != 200);
-
-		BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
-		boolean verify = brep.isSignatureValid(new JcaContentVerifierProviderBuilder().build(cacert.getPublicKey()));
-		assertTrue("Signature verification", verify);
-	}
-
-	/**
-	 * Verify OCSP response for a malicious request. Uses nonsense payload.
-	 *
-	 * HTTP Content-length: 1000 byte ASN1 sequence length: 199995 byte Payload
-	 * size: 200000 byte (not including HTTP header)
-	 */
-	@Test
-	public void test18MaliciousOcspRequest() throws Exception {
-		log.trace(">test18MaliciousOcspRequest");
-		int i = 0;
-		// Construct the fake data.
-		byte data[] = new byte[LimitLengthASN1Reader.MAX_REQUEST_SIZE * 2];
-		// The first byte indicate that this is a sequence. Necessary to past
-		// the first test as an accepted OCSP object.
-		data[0] = (byte) BERTags.SEQUENCE;
-		// The second byte indicates the number if the following bytes are more
-		// than can be represented by one byte and will be represented by 3
-		// bytes instead.
-		data[1] = (byte) 0x83;
-		// The third through the forth bytes are the number of the following
-		// bytes. (0x030D3B = 199995)
-		data[2] = (byte) 0x03; // MSB
-		data[3] = (byte) 0x0D;
-		data[4] = (byte) 0x3B; // LSB
-		// Fill the rest of the array with some fake data.
-		for (i = 5; i < data.length; i++) {
-			data[i] = (byte) i;
-		}
-		// Create the HTTP header
-		String path = "/ejbca/" + resourceOcsp;
-		String headers = "POST " + path + " HTTP/1.1\r\n" + "Host: 127.0.0.1\r\n" + "Content-Type: application/ocsp-request\r\n" + "Content-Length: 1000\r\n"
-				+ "\r\n";
-		// Merge the HTTP headers and the raw data into one package.
-		byte input[] = concatByteArrays(headers.getBytes(), data);
-		// Create the socket.
-		Socket socket = new Socket(InetAddress.getByName("127.0.0.1"), Integer.parseInt(httpPort));
-		// Send data byte for byte.
-		OutputStream os = socket.getOutputStream();
-		try {
-			os.write(input);
-		} catch (IOException e) {
-			log.info("Socket threw an IOException.", e);
-			// Windows throws an IOException when trying to write more bytes to
-			// the server than it should. JBoss on Linux does not.
-			// assertTrue("Tried to write more than it should to the server (>1000), "+i, i > 1000);
-			return;
-		}
-		// Reading the response.
-		InputStream ins = socket.getInputStream();
-		byte ret[] = new byte[1024];
-		ins.read(ret);
-		socket.close();
-		// Removing the HTTP headers. The HTTP headers end at the last
-		// occurrence of "\r\n".
-		for (i = ret.length - 1; i > 0; i--) {
-			if ((ret[i] == 0x0A) && (ret[i - 1] == 0x0D)) {
-				break;
-			}
-		}
-		int start = i + 1;
-		byte respa[] = new byte[ret.length - start];
-		for (i = start; i < ret.length; i++) {
-			respa[i - start] = ret[i];
-		}
-		log.info("response contains: " + respa.length + " bytes.");
-		// Reading the response as a OCSPResp. When the input data array is
-		// longer than allowed the OCSP response will return as an internal
-		// error.
-		OCSPResp response = new OCSPResp(respa);
-		assertEquals("Incorrect response status.", OCSPRespBuilder.INTERNAL_ERROR, response.getStatus());
-		log.trace("<test18MaliciousOcspRequest");
-	}
-
-	/**
-	 * Verify OCSP response for a malicious request. Uses nonsense payload.
-	 *
-	 * HTTP Content-length: 200000 byte ASN1 sequence length: 9996 byte Payload
-	 * size: 200000 byte (not including HTTP header)
-	 */
-	@Test
-	public void test19MaliciousOcspRequest() throws Exception {
-		log.trace(">test19MaliciousOcspRequest");
-		int i = 0;
-		// Construct the fake data.
-		byte data[] = new byte[LimitLengthASN1Reader.MAX_REQUEST_SIZE * 2];
-		// The first byte indicate that this is a sequence. Necessary to past
-		// the first test as an accepted OCSP object.
-		data[0] = (byte) BERTags.SEQUENCE;
-		// The second byte indicates the number of the following bytes are more
-		// than can be represented by one byte and will be represented by 2
-		// bytes instead.
-		data[1] = (byte) 0x82;
-		// The third through the forth bytes are the number of the following
-		// bytes. (0x270C = 9996)
-		data[2] = (byte) 0x27; // MSB
-		data[3] = (byte) 0x0C; // LSB
-		// Fill the rest of the array with some fake data.
-		for (i = 4; i < data.length; i++) {
-			data[i] = (byte) i;
-		}
-		// Create the HTTP header
-		String path = "/ejbca/" + resourceOcsp;
-		String headers = "POST " + path + " HTTP/1.1\r\n" + "Host: 127.0.0.1\r\n" + "Content-Type: application/ocsp-request\r\n" + "Content-Length: 200000\r\n"
-				+ "\r\n";
-		// Merge the HTTP headers and the raw data into one package.
-		byte input[] = concatByteArrays(headers.getBytes(), data);
-		// Create the socket.
-		Socket socket = new Socket(InetAddress.getByName("127.0.0.1"), Integer.parseInt(httpPort));
-		// Send data byte for byte.
-		OutputStream os = socket.getOutputStream();
-		try {
-			os.write(input);
-		} catch (IOException e) {
-			log.info("Socket threw an IOException.", e);
-		}
-		// Reading the response.
-		InputStream ins = socket.getInputStream();
-		byte ret[] = new byte[1024];
-		ins.read(ret);
-		socket.close();
-		// Removing the HTTP headers. The HTTP headers end at the last
-		// occurrence of "\r\n".
-		for (i = ret.length - 1; i > 0; i--) {
-			if ((ret[i] == 0x0A) && (ret[i - 1] == 0x0D)) {
-				break;
-			}
-		}
-		int start = i + 1;
-		byte respa[] = new byte[ret.length - start];
-		for (i = start; i < ret.length; i++) {
-			respa[i - start] = ret[i];
-		}
-		log.info("response contains: " + respa.length + " bytes.");
-		// Reading the response as a OCSPResp.
-		OCSPResp response = new OCSPResp(respa);
-		assertEquals("Incorrect response status.", OCSPRespBuilder.MALFORMED_REQUEST, response.getStatus());
-		log.trace("<test19MaliciousOcspRequest");
-	}
-
-	/**
-	 * Verify OCSP response for a malicious request where the POST data starts
-	 * with a proper OCSP request.
-	 */
-	@Test
-	public void test20MaliciousOcspRequest() throws Exception {
-		log.trace(">test20MaliciousOcspRequest");
-		
-		// Start by sending a valid OCSP requests so we know the helpers work
-		byte validOcspReq[] = getValidOcspRequest();
-		OCSPResp response = sendRawRequestToOcsp(validOcspReq.length, validOcspReq, false);
-		assertEquals("Incorrect response status.", OCSPRespBuilder.SUCCESSFUL, response.getStatus());
-		// Try sending a valid request and then keep sending some more data.
-		byte[] buf = new byte[LimitLengthASN1Reader.MAX_REQUEST_SIZE * 2];
-		Arrays.fill(buf, (byte) 123);
-		buf = concatByteArrays(validOcspReq, buf);
-		// This should return an error because we only allow content length of 100000 bytes
-		response = sendRawRequestToOcsp(buf.length, buf, false);
-		assertEquals("Incorrect response status.", OCSPRespBuilder.MALFORMED_REQUEST, response.getStatus());
-		// Now try with a fake HTTP content-length header
-		try {
-			response = sendRawRequestToOcsp(validOcspReq.length, buf, false);
-			// When sending a large request body with a too short content-length the serves sees this as two streaming
-			// requests. The first request will be read and processed by EJBCA normally and sent back, but the
-			// second one will not be a valid request so the server will send back an error.
-			// Glassfish actually sends back a "400 Bad request". Our reading code in sendRawRequestToOcsp
-			// does not handle multiple streaming responses so it will barf on the second one.
-			// This is different for JBoss and Glassfish though, with JBoss we will get a IOException trying
-			// to read the response, while for Glassfish we will get the response with 0 bytes from the 400 response
-
-			// Only glassfish will come here, with a non-null response, but of length 2(/r/n?). JBoss (4, 5, 6) will go to the
-			// IOException below
+            // Only glassfish will come here, with a non-null response, but of length 2(/r/n?). JBoss (4, 5, 6) will go to the
+            // IOException below
             try {
                 byte[] encoded = response.getEncoded();
                 if ((encoded != null) && (encoded.length > 2)) {
@@ -785,64 +767,64 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
             } catch (NullPointerException npe) { // NOPMD
                 // the response.getEncoded() can give NPE, in some versions of BC, if it was not created with correct input
             }
-		} catch (IOException e) {
-		}
-		// Try sneaking through a payload that is just under the limit. The
-		// responder will answer politely, but log a warning.
-		buf = new byte[LimitLengthASN1Reader.MAX_REQUEST_SIZE - validOcspReq.length];
-		Arrays.fill(buf, (byte) 123);
-		buf = concatByteArrays(validOcspReq, buf);
-		response = sendRawRequestToOcsp(buf.length, buf, false);
-		assertEquals("Server accepted malicious request. (This might be a good thing!)", OCSPRespBuilder.SUCCESSFUL, response.getStatus());
-		log.trace("<test20MaliciousOcspRequest");
-	}
+        } catch (IOException e) {
+        }
+        // Try sneaking through a payload that is just under the limit. The
+        // responder will answer politely, but log a warning.
+        buf = new byte[LimitLengthASN1Reader.MAX_REQUEST_SIZE - validOcspReq.length];
+        Arrays.fill(buf, (byte) 123);
+        buf = concatByteArrays(validOcspReq, buf);
+        response = sendRawRequestToOcsp(buf.length, buf, false);
+        assertEquals("Server accepted malicious request. (This might be a good thing!)", OCSPRespBuilder.SUCCESSFUL, response.getStatus());
+        log.trace("<test20MaliciousOcspRequest");
+    }
 
-	/**
-	 * Tests ocsp message
-	 *
-	 * @throws Exception
-	 *			 error
-	 */
-	@Test
-	public void test50OcspUnknownMayBeGood() throws Exception {
-		log.trace(">test50OcspUnknownMayBeGood()");
-		loadUserCert(this.caid);
-		// An OCSP request for an unknown certificate (not exist in db)
-		this.helper.verifyStatusUnknown( this.caid, this.cacert, new BigInteger("1") );
-		final String bad1 = "Bad";
-		final String bad2 = "Ugly";
-		final String good1 = "Good";
-		final String good2 = "Beautiful";
-		{
-			final Map<String,String> map = new HashMap<String, String>();
-			map.put(OcspConfiguration.NONE_EXISTING_IS_GOOD, "true");
-			map.put(OcspConfiguration.NONE_EXISTING_IS_BAD_URI+'1', ".*"+bad1+"$");
-			map.put(OcspConfiguration.NONE_EXISTING_IS_BAD_URI+'2', ".*"+bad2+"$");
-			map.put(OcspConfiguration.NONE_EXISTING_IS_GOOD_URI+'1', ".*"+good1+"$");
-			map.put(OcspConfiguration.NONE_EXISTING_IS_GOOD_URI+'2', ".*"+good2+"$");
-			this.helper.alterConfig(map);
-		}
-	    this.helper.reloadKeys();
-		this.helper.verifyStatusGood( this.caid, this.cacert, new BigInteger("1") );
-		this.helper.setURLEnding(bad1);
-		this.helper.verifyStatusUnknown( this.caid, this.cacert, new BigInteger("1") );
-		this.helper.setURLEnding(bad2);
-		this.helper.verifyStatusUnknown( this.caid, this.cacert, new BigInteger("1") );
-		{
-			final Map<String,String> map = new HashMap<String, String>();
-			map.put(OcspConfiguration.NONE_EXISTING_IS_GOOD, "false");
-			this.helper.alterConfig(map);
-		}
-		this.helper.setURLEnding("");
-		this.helper.verifyStatusUnknown( this.caid, this.cacert, new BigInteger("1") );
-		this.helper.setURLEnding(good1);
-		this.helper.verifyStatusGood( this.caid, this.cacert, new BigInteger("1") );
-		this.helper.setURLEnding(good2);
-		this.helper.verifyStatusGood( this.caid, this.cacert, new BigInteger("1") );
-		log.trace("<test50OcspUnknownMayBeGood()");
-	}
-	
-	/**
+    /**
+     * Tests ocsp message
+     *
+     * @throws Exception
+     *           error
+     */
+    @Test
+    public void test50OcspUnknownMayBeGood() throws Exception {
+        log.trace(">test50OcspUnknownMayBeGood()");
+        loadUserCert(this.caid);
+        // An OCSP request for an unknown certificate (not exist in db)
+        this.helper.verifyStatusUnknown( this.caid, this.cacert, new BigInteger("1") );
+        final String bad1 = "Bad";
+        final String bad2 = "Ugly";
+        final String good1 = "Good";
+        final String good2 = "Beautiful";
+        {
+            final Map<String,String> map = new HashMap<String, String>();
+            map.put(OcspConfiguration.NONE_EXISTING_IS_GOOD, "true");
+            map.put(OcspConfiguration.NONE_EXISTING_IS_BAD_URI+'1', ".*"+bad1+"$");
+            map.put(OcspConfiguration.NONE_EXISTING_IS_BAD_URI+'2', ".*"+bad2+"$");
+            map.put(OcspConfiguration.NONE_EXISTING_IS_GOOD_URI+'1', ".*"+good1+"$");
+            map.put(OcspConfiguration.NONE_EXISTING_IS_GOOD_URI+'2', ".*"+good2+"$");
+            this.helper.alterConfig(map);
+        }
+        this.helper.reloadKeys();
+        this.helper.verifyStatusGood( this.caid, this.cacert, new BigInteger("1") );
+        this.helper.setURLEnding(bad1);
+        this.helper.verifyStatusUnknown( this.caid, this.cacert, new BigInteger("1") );
+        this.helper.setURLEnding(bad2);
+        this.helper.verifyStatusUnknown( this.caid, this.cacert, new BigInteger("1") );
+        {
+            final Map<String,String> map = new HashMap<String, String>();
+            map.put(OcspConfiguration.NONE_EXISTING_IS_GOOD, "false");
+            this.helper.alterConfig(map);
+        }
+        this.helper.setURLEnding("");
+        this.helper.verifyStatusUnknown( this.caid, this.cacert, new BigInteger("1") );
+        this.helper.setURLEnding(good1);
+        this.helper.verifyStatusGood( this.caid, this.cacert, new BigInteger("1") );
+        this.helper.setURLEnding(good2);
+        this.helper.verifyStatusGood( this.caid, this.cacert, new BigInteger("1") );
+        log.trace("<test50OcspUnknownMayBeGood()");
+    }
+    
+    /**
      * This test tests the feature of extensions of setting a '*' in front of the value in ocsp.extensionoid
      * forces that extension to be used for all requests.
      * 
@@ -877,379 +859,379 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         }
     }
 
-	/**
-	 * removes DSA CA
-	 *
-	 * @throws Exception
-	 *			 error
-	 */
-	public void removeDSACA() throws Exception {
-		log.trace(">test98RemoveDSACA()");
-		assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
-				.getResponseCode() == 200);
-		try {
-	        final int cryptoTokenId = caSession.getCAInfo(admin, "CN=OCSPDSATEST".hashCode()).getCAToken().getCryptoTokenId();
-	        CryptoTokenManagementSessionTest.removeCryptoToken(admin, cryptoTokenId);
+    /**
+     * removes DSA CA
+     *
+     * @throws Exception
+     *           error
+     */
+    public void removeDSACA() throws Exception {
+        log.trace(">test98RemoveDSACA()");
+        assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
+                .getResponseCode() == 200);
+        try {
+            final int cryptoTokenId = caSession.getCAInfo(admin, "CN=OCSPDSATEST".hashCode()).getCAToken().getCryptoTokenId();
+            CryptoTokenManagementSessionTest.removeCryptoToken(admin, cryptoTokenId);
         } catch (Exception e) {
             log.error("",e);
         }
-		try {
-			caSession.removeCA(admin, "CN=OCSPDSATEST".hashCode());
-		} catch (Exception e) {
-			log.info("Could not remove CA with SubjectDN CN=OCSPDSATEST");
-		}
-		try {
-			caSession.removeCA(admin, "CN=OCSPDSAIMPCATEST".hashCode());
-		} catch (Exception e) {
-			log.info("Could not remove CA with SubjectDN CN=OCSPDSAIMPCATEST");
-		}
-		log.trace("<test98RemoveDSACA()");
-	} // test98OcspDsaGood
+        try {
+            caSession.removeCA(admin, "CN=OCSPDSATEST".hashCode());
+        } catch (Exception e) {
+            log.info("Could not remove CA with SubjectDN CN=OCSPDSATEST");
+        }
+        try {
+            caSession.removeCA(admin, "CN=OCSPDSAIMPCATEST".hashCode());
+        } catch (Exception e) {
+            log.info("Could not remove CA with SubjectDN CN=OCSPDSAIMPCATEST");
+        }
+        log.trace("<test98RemoveDSACA()");
+    } // test98OcspDsaGood
 
-	/**
-	 * removes ECDSA CA
-	 *
-	 * @throws Exception
-	 *			 error
-	 */
-	public void removeECDSACA() throws Exception {
-		assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
-				.getResponseCode() == 200);
-		try {
-			caSession.removeCA(admin, "CN=OCSPECDSATEST".hashCode());
-		} catch (Exception e) {
-			log.info("Could not remove CA with SubjectDN CN=OCSPECDSATEST");
-		}
-		try {
-			caSession.removeCA(admin, "CN=OCSPECDSAIMPCATEST".hashCode());
-		} catch (Exception e) {
-			log.info("Could not remove CA with SubjectDN CN=OCSPECDSAIMPCATEST");
-		}
-	}
+    /**
+     * removes ECDSA CA
+     *
+     * @throws Exception
+     *           error
+     */
+    public void removeECDSACA() throws Exception {
+        assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
+                .getResponseCode() == 200);
+        try {
+            caSession.removeCA(admin, "CN=OCSPECDSATEST".hashCode());
+        } catch (Exception e) {
+            log.info("Could not remove CA with SubjectDN CN=OCSPECDSATEST");
+        }
+        try {
+            caSession.removeCA(admin, "CN=OCSPECDSAIMPCATEST".hashCode());
+        } catch (Exception e) {
+            log.info("Could not remove CA with SubjectDN CN=OCSPECDSAIMPCATEST");
+        }
+    }
 
-	//
-	// Private helper methods
-	//
+    //
+    // Private helper methods
+    //
 
-	/**
-	 * Generate a simple OCSP Request object
-	 */
-	private byte[] getValidOcspRequest() throws Exception {
-		// Get user and ocspTestCert that we know...
-		loadUserCert(caid);
-		// And an OCSP request
-		OCSPReqBuilder gen = new OCSPReqBuilder();
-		gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
-		Extension[] extensions = new Extension[1];
-		extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
-		gen.setRequestExtensions(new Extensions(extensions));
-		OCSPReq req = gen.build();
-		return req.getEncoded();
-	}
+    /**
+     * Generate a simple OCSP Request object
+     */
+    private byte[] getValidOcspRequest() throws Exception {
+        // Get user and ocspTestCert that we know...
+        loadUserCert(caid);
+        // And an OCSP request
+        OCSPReqBuilder gen = new OCSPReqBuilder();
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
+        Extension[] extensions = new Extension[1];
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+        gen.setRequestExtensions(new Extensions(extensions));
+        OCSPReq req = gen.build();
+        return req.getEncoded();
+    }
 
-	/**
-	 * Sends the payload to the OCSP Servlet using TCP. Can be used for testing
-	 * malformed or malicious requests.
-	 *
-	 * @param contentLength
-	 *			The HTTP 'Content-Length' header to send to the server.
-	 * @return the OCSP Response from the server
-	 * @throws IOException
-	 *			 if the is a IO problem
-	 */
-	private OCSPResp sendRawRequestToOcsp(int contentLength, byte[] payload, boolean writeByteByByte) throws IOException {
-		// Create the HTTP header
-		String headers = "POST " + "/ejbca/" + resourceOcsp + " HTTP/1.1\r\n" + "Host: 127.0.0.1\r\n" + "Content-Type: application/ocsp-request\r\n"
-				+ "Content-Length: " + contentLength + "\r\n" + "\r\n";
-		// Merge the HTTP headers, the OCSP request and the raw data into one
-		// package.
-		byte[] input = concatByteArrays(headers.getBytes(), payload);
-		log.debug("HTTP request headers: " + headers);
-		log.debug("HTTP headers size: " + headers.getBytes().length);
-		log.debug("Size of data to send: " + input.length);
-		// Create the socket.
-		Socket socket = new Socket(InetAddress.getByName("127.0.0.1"), Integer.parseInt(httpPort));
-		// Send data byte for byte.
-		OutputStream os = socket.getOutputStream();
-		if (writeByteByByte) {
-			int i = 0;
-			try {
-				for (i = 0; i < input.length; i++) {
-					os.write(input[i]);
-				}
-			} catch (IOException e) {
-				log.info("Socket wrote " + i + " bytes before throwing an IOException.");
-			}
-		} else {
-			try {
-				os.write(input);
-			} catch (IOException e) {
-				log.info("Could not write to TCP Socket " + e.getMessage());
-			}
-		}
-		// Reading the response.
-		byte rawResponse[] = getHttpResponse(socket.getInputStream());
-		log.info("Response contains: " + rawResponse.length + " bytes.");
-		socket.close();
-		return new OCSPResp(rawResponse);
-	}
+    /**
+     * Sends the payload to the OCSP Servlet using TCP. Can be used for testing
+     * malformed or malicious requests.
+     *
+     * @param contentLength
+     *          The HTTP 'Content-Length' header to send to the server.
+     * @return the OCSP Response from the server
+     * @throws IOException
+     *           if the is a IO problem
+     */
+    private OCSPResp sendRawRequestToOcsp(int contentLength, byte[] payload, boolean writeByteByByte) throws IOException {
+        // Create the HTTP header
+        String headers = "POST " + "/ejbca/" + resourceOcsp + " HTTP/1.1\r\n" + "Host: 127.0.0.1\r\n" + "Content-Type: application/ocsp-request\r\n"
+                + "Content-Length: " + contentLength + "\r\n" + "\r\n";
+        // Merge the HTTP headers, the OCSP request and the raw data into one
+        // package.
+        byte[] input = concatByteArrays(headers.getBytes(), payload);
+        log.debug("HTTP request headers: " + headers);
+        log.debug("HTTP headers size: " + headers.getBytes().length);
+        log.debug("Size of data to send: " + input.length);
+        // Create the socket.
+        Socket socket = new Socket(InetAddress.getByName("127.0.0.1"), Integer.parseInt(httpPort));
+        // Send data byte for byte.
+        OutputStream os = socket.getOutputStream();
+        if (writeByteByByte) {
+            int i = 0;
+            try {
+                for (i = 0; i < input.length; i++) {
+                    os.write(input[i]);
+                }
+            } catch (IOException e) {
+                log.info("Socket wrote " + i + " bytes before throwing an IOException.");
+            }
+        } else {
+            try {
+                os.write(input);
+            } catch (IOException e) {
+                log.info("Could not write to TCP Socket " + e.getMessage());
+            }
+        }
+        // Reading the response.
+        byte rawResponse[] = getHttpResponse(socket.getInputStream());
+        log.info("Response contains: " + rawResponse.length + " bytes.");
+        socket.close();
+        return new OCSPResp(rawResponse);
+    }
 
-	/**
-	 * Read the payload of a HTTP response as a byte array.
-	 */
-	private byte[] getHttpResponse(InputStream ins) throws IOException {
-		byte buf[] = inputStreamToBytes(ins);
-		int i = 0;
-		// Removing the HTTP headers. The HTTP headers end at the last
-		// occurrence of "\r\n".
-		for (i = buf.length - 1; i > 0; i--) {
-			if ((buf[i] == 0x0A) && (buf[i - 1] == 0x0D)) {
-				break;
-			}
-		}
-		byte[] header = ArrayUtils.subarray(buf, 0, i + 1);
-		log.debug("HTTP reponse header: " + new String(header));
-		log.debug("HTTP reponse header size: " + header.length);
-		log.debug("Stream length: " + buf.length);
-		log.debug("HTTP payload length: " + (buf.length - header.length));
-		return ArrayUtils.subarray(buf, header.length, buf.length);
-	}
+    /**
+     * Read the payload of a HTTP response as a byte array.
+     */
+    private byte[] getHttpResponse(InputStream ins) throws IOException {
+        byte buf[] = inputStreamToBytes(ins);
+        int i = 0;
+        // Removing the HTTP headers. The HTTP headers end at the last
+        // occurrence of "\r\n".
+        for (i = buf.length - 1; i > 0; i--) {
+            if ((buf[i] == 0x0A) && (buf[i - 1] == 0x0D)) {
+                break;
+            }
+        }
+        byte[] header = ArrayUtils.subarray(buf, 0, i + 1);
+        log.debug("HTTP reponse header: " + new String(header));
+        log.debug("HTTP reponse header size: " + header.length);
+        log.debug("Stream length: " + buf.length);
+        log.debug("HTTP payload length: " + (buf.length - header.length));
+        return ArrayUtils.subarray(buf, header.length, buf.length);
+    }
 
-	/**
-	 * For small streams only.
-	 */
-	private static byte[] inputStreamToBytes(InputStream in) throws IOException {
-		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		while ( true ) {
-			final int b = in.read();
-			if ( b<0 ) {
-				break;
-			}
-			baos.write(b);
-		}
-		baos.flush();
-		in.close();
-		return  baos.toByteArray();
-	}
+    /**
+     * For small streams only.
+     */
+    private static byte[] inputStreamToBytes(InputStream in) throws IOException {
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        while ( true ) {
+            final int b = in.read();
+            if ( b<0 ) {
+                break;
+            }
+            baos.write(b);
+        }
+        baos.flush();
+        in.close();
+        return  baos.toByteArray();
+    }
 
-	/**
-	 * @return a new byte array with the two arguments concatenated.
-	 */
-	private byte[] concatByteArrays(byte[] array1, byte[] array2) {
-		byte[] ret = new byte[array1.length + array2.length];
-		System.arraycopy(array1, 0, ret, 0, array1.length);
-		System.arraycopy(array2, 0, ret, array1.length, array2.length);
-		return ret;
-	}
+    /**
+     * @return a new byte array with the two arguments concatenated.
+     */
+    private byte[] concatByteArrays(byte[] array1, byte[] array2) {
+        byte[] ret = new byte[array1.length + array2.length];
+        System.arraycopy(array1, 0, ret, 0, array1.length);
+        System.arraycopy(array2, 0, ret, array1.length, array2.length);
+        return ret;
+    }
 
-	/**
-	 * adds a CA Using ECDSA keys to the database.
-	 *
-	 * It also checks that the CA is stored correctly.
-	 *
-	 * @throws Exception
-	 *			 error
-	 */
-	private CAInfo addECDSACA(String dn, String keySpec) throws Exception {
-		log.trace(">addECDSACA()");
-		boolean ret = false;
-		int cryptoTokenId = 0;
-		CAInfo info = null;
-		try {
-	        cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(admin, dn, keySpec);
-	        final CAToken catoken = CaSessionTest.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-			// Create and active OSCP CA Service.
-			List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
-			extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-			extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-			extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-			List<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
-			policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
+    /**
+     * adds a CA Using ECDSA keys to the database.
+     *
+     * It also checks that the CA is stored correctly.
+     *
+     * @throws Exception
+     *           error
+     */
+    private CAInfo addECDSACA(String dn, String keySpec) throws Exception {
+        log.trace(">addECDSACA()");
+        boolean ret = false;
+        int cryptoTokenId = 0;
+        CAInfo info = null;
+        try {
+            cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(admin, dn, keySpec);
+            final CAToken catoken = CaSessionTest.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            // Create and active OSCP CA Service.
+            List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
+            extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+            extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+            extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+            List<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
+            policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
 
-			X509CAInfo cainfo = new X509CAInfo(dn, dn, CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365, null, // Expiretime
-					CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catoken, "JUnit ECDSA CA", -1, null, policies, // PolicyId
-					24, // CRLPeriod
-					0, // CRLIssueInterval
-					10, // CRLOverlapTime
-					0, // DeltaCRLPeriod
-					new ArrayList<Integer>(), true, // Authority Key Identifier
-					false, // Authority Key Identifier Critical
-					true, // CRL Number
-					false, // CRL Number Critical
-					null, // defaultcrldistpoint
-					null, // defaultcrlissuer
-					null, // defaultocsplocator
-					null, // Authority Information Access
-					null, // defaultfreshestcrl
-					true, // Finish User
-					extendedcaservices, false, // use default utf8 settings
-					new ArrayList<Integer>(), // Approvals Settings
-					1, // Number of Req approvals
-					false, // Use UTF8 subject DN by default
-					true, // Use LDAP DN order by default
-					false, // Use CRL Distribution Point on CRL
-					false, // CRL Distribution Point on CRL critical
-					true, // Include in Health Check
-					true, // isDoEnforceUniquePublicKeys
-					true, // isDoEnforceUniqueDistinguishedName
-					false, // isDoEnforceUniqueSubjectDNSerialnumber
-					true, // useCertReqHistory
-					true, // useUserStorage
-					true, // useCertificateStorage
-					null //cmpRaAuthSecret
-			);
+            X509CAInfo cainfo = new X509CAInfo(dn, dn, CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365, null, // Expiretime
+                    CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catoken, "JUnit ECDSA CA", -1, null, policies, // PolicyId
+                    24, // CRLPeriod
+                    0, // CRLIssueInterval
+                    10, // CRLOverlapTime
+                    0, // DeltaCRLPeriod
+                    new ArrayList<Integer>(), true, // Authority Key Identifier
+                    false, // Authority Key Identifier Critical
+                    true, // CRL Number
+                    false, // CRL Number Critical
+                    null, // defaultcrldistpoint
+                    null, // defaultcrlissuer
+                    null, // defaultocsplocator
+                    null, // Authority Information Access
+                    null, // defaultfreshestcrl
+                    true, // Finish User
+                    extendedcaservices, false, // use default utf8 settings
+                    new ArrayList<Integer>(), // Approvals Settings
+                    1, // Number of Req approvals
+                    false, // Use UTF8 subject DN by default
+                    true, // Use LDAP DN order by default
+                    false, // Use CRL Distribution Point on CRL
+                    false, // CRL Distribution Point on CRL critical
+                    true, // Include in Health Check
+                    true, // isDoEnforceUniquePublicKeys
+                    true, // isDoEnforceUniqueDistinguishedName
+                    false, // isDoEnforceUniqueSubjectDNSerialnumber
+                    true, // useCertReqHistory
+                    true, // useUserStorage
+                    true, // useCertificateStorage
+                    null //cmpRaAuthSecret
+            );
 
-			caAdminSession.createCA(admin, cainfo);
+            caAdminSession.createCA(admin, cainfo);
 
-			info = caSession.getCAInfo(admin, dn);
+            info = caSession.getCAInfo(admin, dn);
 
-			X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
-			assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals(dn));
-			assertTrue("Creating CA failed", info.getSubjectDN().equals(dn));
-			// Make BC cert instead to make sure the public key is BC provider type (to make our test below easier)
-			X509Certificate bccert = (X509Certificate)CertTools.getCertfromByteArray(cert.getEncoded());
-			PublicKey pk = bccert.getPublicKey();
-			if (pk instanceof JCEECPublicKey) {
-				JCEECPublicKey ecpk = (JCEECPublicKey) pk;
-				assertEquals(ecpk.getAlgorithm(), "EC");
-				org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
-				if (StringUtils.equals(keySpec, "implicitlyCA")) {
-					assertNull("ImplicitlyCA must have null spec", spec);
-				} else {
-					assertNotNull("secp256r1 must not have null spec", spec);
-				}
-			} else if (pk instanceof BCECPublicKey) {
-			    BCECPublicKey ecpk = (BCECPublicKey) pk;
+            X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
+            assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals(dn));
+            assertTrue("Creating CA failed", info.getSubjectDN().equals(dn));
+            // Make BC cert instead to make sure the public key is BC provider type (to make our test below easier)
+            X509Certificate bccert = (X509Certificate)CertTools.getCertfromByteArray(cert.getEncoded());
+            PublicKey pk = bccert.getPublicKey();
+            if (pk instanceof JCEECPublicKey) {
+                JCEECPublicKey ecpk = (JCEECPublicKey) pk;
                 assertEquals(ecpk.getAlgorithm(), "EC");
                 org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
                 if (StringUtils.equals(keySpec, "implicitlyCA")) {
                     assertNull("ImplicitlyCA must have null spec", spec);
                 } else {
                     assertNotNull("secp256r1 must not have null spec", spec);
-                }			    
-			} else {
-				assertTrue("Public key is not EC: "+pk.getClass().getName(), false);
-			}
+                }
+            } else if (pk instanceof BCECPublicKey) {
+                BCECPublicKey ecpk = (BCECPublicKey) pk;
+                assertEquals(ecpk.getAlgorithm(), "EC");
+                org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
+                if (StringUtils.equals(keySpec, "implicitlyCA")) {
+                    assertNull("ImplicitlyCA must have null spec", spec);
+                } else {
+                    assertNotNull("secp256r1 must not have null spec", spec);
+                }               
+            } else {
+                assertTrue("Public key is not EC: "+pk.getClass().getName(), false);
+            }
 
-			ret = true;
-		} catch (CAExistsException pee) {
-			log.info("CA exists.");
-		}
-		assertTrue("Creating ECDSA CA failed", ret);
-		log.trace("<addECDSACA()");
-		return info;
-	}
+            ret = true;
+        } catch (CAExistsException pee) {
+            log.info("CA exists.");
+        }
+        assertTrue("Creating ECDSA CA failed", ret);
+        log.trace("<addECDSACA()");
+        return info;
+    }
 
-	/**
-	 * adds a CA Using DSA keys to the database.
-	 *
-	 * It also checks that the CA is stored correctly.
-	 *
-	 * @throws Exception
-	 *			 error
-	 */
-	private X509Certificate addDSACA(String dn, String keySpec) throws Exception {
-		log.trace(">addDSACA()");
-		boolean ret = false;
-		X509Certificate cacert = null;
-		int cryptoTokenId = 0;
-		try {
+    /**
+     * adds a CA Using DSA keys to the database.
+     *
+     * It also checks that the CA is stored correctly.
+     *
+     * @throws Exception
+     *           error
+     */
+    private X509Certificate addDSACA(String dn, String keySpec) throws Exception {
+        log.trace(">addDSACA()");
+        boolean ret = false;
+        X509Certificate cacert = null;
+        int cryptoTokenId = 0;
+        try {
             cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(admin, dn, keySpec);
             final CAToken catoken = CaSessionTest.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_DSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-			// Create and active OSCP CA Service.
-			final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
-			extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-			extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-			extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-			final List<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
-			policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
+            // Create and active OSCP CA Service.
+            final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
+            extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+            extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+            extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+            final List<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
+            policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
 
-			X509CAInfo cainfo = new X509CAInfo(dn, dn, CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365, null, // Expiretime
-					CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catoken, "JUnit DSA CA", -1, null, policies, // PolicyId
-					24, // CRLPeriod
-					0, // CRLIssueInterval
-					10, // CRLOverlapTime
-					0, // DeltaCRLPeriod
-					new ArrayList<Integer>(), true, // Authority Key Identifier
-					false, // Authority Key Identifier Critical
-					true, // CRL Number
-					false, // CRL Number Critical
-					null, // defaultcrldistpoint
-					null, // defaultcrlissuer
-					null, // defaultocsplocator
-					null, // Authority Information Access
-					null, // defaultfreshestcrl
-					true, // Finish User
-					extendedcaservices, false, // use default utf8 settings
-					new ArrayList<Integer>(), // Approvals Settings
-					1, // Number of Req approvals
-					false, // Use UTF8 subject DN by default
-					true, // Use LDAP DN order by default
-					false, // Use CRL Distribution Point on CRL
-					false, // CRL Distribution Point on CRL critical
-					true, // Include in Health Check
-					true, // isDoEnforceUniquePublicKeys
-					true, // isDoEnforceUniqueDistinguishedName
-					false, // isDoEnforceUniqueSubjectDNSerialnumber
-					true, // useCertReqHistory
-					true, // useUserStorage
-					true, // useCertificateStorage
-					null //cmpRaAuthSecret
-			);
+            X509CAInfo cainfo = new X509CAInfo(dn, dn, CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365, null, // Expiretime
+                    CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catoken, "JUnit DSA CA", -1, null, policies, // PolicyId
+                    24, // CRLPeriod
+                    0, // CRLIssueInterval
+                    10, // CRLOverlapTime
+                    0, // DeltaCRLPeriod
+                    new ArrayList<Integer>(), true, // Authority Key Identifier
+                    false, // Authority Key Identifier Critical
+                    true, // CRL Number
+                    false, // CRL Number Critical
+                    null, // defaultcrldistpoint
+                    null, // defaultcrlissuer
+                    null, // defaultocsplocator
+                    null, // Authority Information Access
+                    null, // defaultfreshestcrl
+                    true, // Finish User
+                    extendedcaservices, false, // use default utf8 settings
+                    new ArrayList<Integer>(), // Approvals Settings
+                    1, // Number of Req approvals
+                    false, // Use UTF8 subject DN by default
+                    true, // Use LDAP DN order by default
+                    false, // Use CRL Distribution Point on CRL
+                    false, // CRL Distribution Point on CRL critical
+                    true, // Include in Health Check
+                    true, // isDoEnforceUniquePublicKeys
+                    true, // isDoEnforceUniqueDistinguishedName
+                    false, // isDoEnforceUniqueSubjectDNSerialnumber
+                    true, // useCertReqHistory
+                    true, // useUserStorage
+                    true, // useCertificateStorage
+                    null //cmpRaAuthSecret
+            );
 
-			caAdminSession.createCA(admin, cainfo);
+            caAdminSession.createCA(admin, cainfo);
 
-			CAInfo info = caSession.getCAInfo(admin, dn);
+            CAInfo info = caSession.getCAInfo(admin, dn);
 
-			X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
-			assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals(dn));
-			assertTrue("Creating CA failed", info.getSubjectDN().equals(dn));
-			assertTrue(cert.getPublicKey() instanceof DSAPublicKey);
+            X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
+            assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals(dn));
+            assertTrue("Creating CA failed", info.getSubjectDN().equals(dn));
+            assertTrue(cert.getPublicKey() instanceof DSAPublicKey);
 
-			ret = true;
-			Collection<Certificate> coll = info.getCertificateChain();
-			Object[] certs = coll.toArray();
-			cacert = (X509Certificate) certs[0];
-		} catch (CAExistsException pee) {
-			log.info("CA exists.");
-		}
-		assertTrue("Creating DSA CA failed", ret);
-		log.trace("<addDSACA()");
-		return cacert;
-	}
+            ret = true;
+            Collection<Certificate> coll = info.getCertificateChain();
+            Object[] certs = coll.toArray();
+            cacert = (X509Certificate) certs[0];
+        } catch (CAExistsException pee) {
+            log.info("CA exists.");
+        }
+        assertTrue("Creating DSA CA failed", ret);
+        log.trace("<addDSACA()");
+        return cacert;
+    }
 
-	protected void loadUserCert(int caid) throws Exception {
-		createUserCert(caid);
-	}
+    protected void loadUserCert(int caid) throws Exception {
+        createUserCert(caid);
+    }
 
-	private KeyPair createUserCert(int caid) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ApprovalException,
-			WaitingForApprovalException, Exception, ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException,
-			CADoesntExistsException {
-	    final String USERNAME = "ocsptest";
-		if (!endEntityManagementSession.existsUser(USERNAME)) {
+    private KeyPair createUserCert(int caid) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ApprovalException,
+            WaitingForApprovalException, Exception, ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException,
+            CADoesntExistsException {
+        final String USERNAME = "ocsptest";
+        if (!endEntityManagementSession.existsUser(USERNAME)) {
 
-			endEntityManagementSession.addUser(admin, USERNAME, "foo123", "C=SE,O=AnaTom,CN=OCSPTest", null, "ocsptest@anatom.se", false,
-					SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0, caid);
-			log.debug("created user: ocsptest, foo123, C=SE, O=AnaTom, CN=OCSPTest");
+            endEntityManagementSession.addUser(admin, USERNAME, "foo123", "C=SE,O=AnaTom,CN=OCSPTest", null, "ocsptest@anatom.se", false,
+                    SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0, caid);
+            log.debug("created user: ocsptest, foo123, C=SE, O=AnaTom, CN=OCSPTest");
 
-		} else {
-			log.debug("User ocsptest already exists.");
-			EndEntityInformation userData = new EndEntityInformation(USERNAME, "C=SE,O=AnaTom,CN=OCSPTest",
-					caid, null, "ocsptest@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
-					SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
-					null);
-			userData.setPassword("foo123");
-			endEntityManagementSession.changeUser(admin, userData, false);
-			log.debug("Reset status to NEW");
-		}
-		// Generate certificate for the new user
-		KeyPair keys = KeyTools.genKeys("512", "RSA");
+        } else {
+            log.debug("User ocsptest already exists.");
+            EndEntityInformation userData = new EndEntityInformation(USERNAME, "C=SE,O=AnaTom,CN=OCSPTest",
+                    caid, null, "ocsptest@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
+                    SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
+                    null);
+            userData.setPassword("foo123");
+            endEntityManagementSession.changeUser(admin, userData, false);
+            log.debug("Reset status to NEW");
+        }
+        // Generate certificate for the new user
+        KeyPair keys = KeyTools.genKeys("512", "RSA");
 
-		// user that we know exists...
-		ocspTestCert = (X509Certificate) signSession.createCertificate(admin, USERNAME, "foo123", keys.getPublic());
-		assertNotNull("Failed to create new certificate", ocspTestCert);
-		return keys;
-	}
+        // user that we know exists...
+        ocspTestCert = (X509Certificate) signSession.createCertificate(admin, USERNAME, "foo123", keys.getPublic());
+        assertNotNull("Failed to create new certificate", ocspTestCert);
+        return keys;
+    }
 
     /** Checks the signature on an OCSP request and checks that it is signed by an allowed CA.
      * Does not check for revocation of the signer certificate
@@ -1349,5 +1331,5 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         
         return signercert;
     }
-	
+    
 }
