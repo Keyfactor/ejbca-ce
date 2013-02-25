@@ -1566,7 +1566,7 @@ function checkallfields(){
         <td width="49%" valign="top" align="right">&nbsp;</td>
         <td width="51%" valign="top">
             <% if (cabean.isCaExportable(cainfo)) { %>
-            <%= ejbcawebbean.getText("EXPORTCAHELP") %><br/>
+            <%= ejbcawebbean.getText("EXPORTCA_AUTHCODE") %><br/>
             <form name="exportca" action="<%= globalconfiguration.getCaPath() + "/exportca" %>" method="post">
 		        <input type="hidden" name='<%= org.ejbca.ui.web.admin.cainterface.CAExportServlet.HIDDEN_CANAME %>' value='<c:out value="<%= cainfo.getName() %>"/>'/>
                 <input type="password" name="<%= org.ejbca.ui.web.admin.cainterface.CAExportServlet.TEXTFIELD_EXPORTCA_PASSWORD %>"  value="" />
