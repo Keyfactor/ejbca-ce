@@ -741,7 +741,7 @@ function checkallfields(){
 
     <tr id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <strong><%= ejbcawebbean.getText("CERT_VALIDITY") %></strong> <%= ejbcawebbean.getText("YEARMONTHDAYTIME") %> <%= ejbcawebbean.getText("ORENDDATE") %>
+        <strong><%= ejbcawebbean.getText("CERT_VALIDITY") %></strong> <%= ejbcawebbean.getText("FORMAT_TIME_YMD") %> <%= ejbcawebbean.getText("ORENDDATE") %>
         <%= ejbcawebbean.getHelpReference("/userguide.html#Validity") %> <br />
       </td>
       <td width="50%"> 
@@ -774,7 +774,7 @@ function checkallfields(){
               <span class="dn"><c:out value="<%= cainfo.getSubjectDN() %>"/></span>
           <% } else { %>
         <% /* Maxlength for the CA subject DN is based on 250 chars MySQL String mapping minus the "CN=xxxxSignerCertificate," string that is added for services. */ %>
-        <input type="text" name="<%=TEXTFIELD_SUBJECTDN%>" size="45" maxlength="225" value="CN=<%= caname %>">
+        <input type="text" name="<%=TEXTFIELD_SUBJECTDN%>" size="45" maxlength="225" value="CN=<%= caname %>" title="<%= ejbcawebbean.getText("FORMAT_DN") %>">
         <% } %>
       </td>
     </tr>
@@ -1085,13 +1085,13 @@ function checkallfields(){
 
    <tr id="Row<%=row%2%>"> 
      <td width="50%"  align="right"> 
-       <%= ejbcawebbean.getText("CRL_CA_CRLPERIOD") + " " + ejbcawebbean.getText("COMBINETIMEFORMAT") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
+       <%= ejbcawebbean.getText("CRL_CA_CRLPERIOD") + " " + ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
      </td>
      <td width="50%">
           <% if (isexternal) {
                out.write(CombineTime.getInstance(cainfo.getCRLPeriod()).toString(CombineTime.TYPE_MINUTES));
              } else { %>
-        <input type="text" name="<%=TEXTFIELD_CRLPERIOD%>" size="20" maxlength="255"
+        <input type="text" name="<%=TEXTFIELD_CRLPERIOD%>" size="20" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %>"
           <%   if (editca) { out.write(" value='" + CombineTime.getInstance(cainfo.getCRLPeriod()).toString(CombineTime.TYPE_MINUTES) + "'"); }
                else { out.write(" value='1"+CombineTime.TYPE_DAYS+"'"); } %>>
           <% } %>
@@ -1101,13 +1101,13 @@ function checkallfields(){
 
    <tr id="Row<%=row%2%>"> 
      <td width="50%"  align="right"> 
-       <%= ejbcawebbean.getText("CRL_CA_ISSUEINTERVAL") + " " + ejbcawebbean.getText("COMBINETIMEFORMAT") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
+       <%= ejbcawebbean.getText("CRL_CA_ISSUEINTERVAL") + " " + ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
      </td>
      <td width="50%">
           <% if (isexternal) {
                out.write(CombineTime.getInstance(cainfo.getCRLIssueInterval()).toString(CombineTime.TYPE_MINUTES));
              } else { %>
-        <input type="text" name="<%=TEXTFIELD_CRLISSUEINTERVAL%>" size="20" maxlength="255"
+        <input type="text" name="<%=TEXTFIELD_CRLISSUEINTERVAL%>" size="20" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %>"
           <%   if (editca) { out.write(" value='" + CombineTime.getInstance(cainfo.getCRLIssueInterval()).toString(CombineTime.TYPE_MINUTES) + "'"); }
                else { out.write(" value='0"+CombineTime.TYPE_MINUTES+"'"); } %>>
           <% } %> 
@@ -1117,13 +1117,13 @@ function checkallfields(){
 
    <tr id="Row<%=row%2%>"> 
      <td width="50%"  align="right"> 
-       <%= ejbcawebbean.getText("CRL_CA_OVERLAPTIME") + " " + ejbcawebbean.getText("COMBINETIMEFORMAT") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
+       <%= ejbcawebbean.getText("CRL_CA_OVERLAPTIME") + " " + ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
      </td>
      <td width="50%">
           <% if (isexternal) {
                out.write(CombineTime.getInstance(cainfo.getCRLOverlapTime()).toString(CombineTime.TYPE_MINUTES));
              } else { %>
-        <input type="text" name="<%=TEXTFIELD_CRLOVERLAPTIME%>" size="20" maxlength="255"
+        <input type="text" name="<%=TEXTFIELD_CRLOVERLAPTIME%>" size="20" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %>"
           <%   if (editca) { out.write(" value='" + CombineTime.getInstance(cainfo.getCRLOverlapTime()).toString(CombineTime.TYPE_MINUTES) + "'"); }
                else {out.write(" value='10"+CombineTime.TYPE_MINUTES+"'"); } %>>
           <% } %> 
@@ -1133,13 +1133,13 @@ function checkallfields(){
 
    <tr id="Row<%=row++%2%>"> 
      <td width="50%"  align="right"> 
-       <%= ejbcawebbean.getText("CRL_CA_DELTACRLPERIOD") + " " + ejbcawebbean.getText("COMBINETIMEFORMAT") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
+       <%= ejbcawebbean.getText("CRL_CA_DELTACRLPERIOD") + " " + ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
      </td>
      <td width="50%">
           <% if (isexternal) {
                out.write("" + CombineTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(CombineTime.TYPE_MINUTES));
              } else { %>
-        <input type="text" name="<%=TEXTFIELD_DELTACRLPERIOD%>" size="20" maxlength="255"
+        <input type="text" name="<%=TEXTFIELD_DELTACRLPERIOD%>" size="20" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %>"
           <%   if (editca) { out.write(" value='" + CombineTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(CombineTime.TYPE_MINUTES) + "'"); }
                else { out.write(" value='0"+CombineTime.TYPE_MINUTES+"'");} %>>
           <% } %> 

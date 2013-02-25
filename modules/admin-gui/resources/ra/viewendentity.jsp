@@ -181,7 +181,7 @@
          %>
        <tr id="Row<%=(viewendentityhelper.row++)%2%>">
 	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(viewendentityhelper.fielddata[EndEntityProfile.FIELDTYPE])) %></td>
-	 <td><span class="attribute"><% if(viewendentityhelper.fieldvalue != null) {%> <c:out value="<%= viewendentityhelper.fieldvalue %>"/><%}%></span>
+	 <td><span class="attribute"><% if(viewendentityhelper.fieldvalue != null) {%><c:out value="<%= viewendentityhelper.fieldvalue %>"/><%}%></span>
          </td>
        </tr>
        <% } %>

@@ -14,7 +14,7 @@
 		<h:outputText value="#{web.text.ENDUSERSUBJECT}"/>
 	</h:panelGroup>
 	<h:panelGroup>				
-		<h:inputText id="certCheckEndUserSubjectTextField" value="#{editService.notifyingType.endUserSubject}" size="45" />
+		<h:inputText id="certCheckEndUserSubjectTextField" value="#{editService.notifyingType.endUserSubject}" size="45" title="#{web.text.FORMAT_STRING}" />
 	</h:panelGroup>	
 
 	<h:panelGroup>
@@ -39,7 +39,7 @@
 		<h:outputText value="#{web.text.ADMINSUBJECT}"/>
 	</h:panelGroup>
 	<h:panelGroup>				
-		<h:inputText id="certCheckAdminSubjectTextField" value="#{editService.notifyingType.adminSubject}" size="45"/>
+		<h:inputText id="certCheckAdminSubjectTextField" value="#{editService.notifyingType.adminSubject}" size="45" title="#{web.text.FORMAT_STRING}" />
 	</h:panelGroup>	
 
 	<h:panelGroup>

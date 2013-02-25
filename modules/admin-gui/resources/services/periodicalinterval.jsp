@@ -12,7 +12,7 @@
 		<h:outputText value="#{web.text.PERIOD}"/>
 	</h:panelGroup>
 	<h:panelGroup>				
-		<h:inputText id="periodicalValueTextField" value="#{editService.periodicalIntervalType.value}" size="5" /><f:verbatim> </f:verbatim>
+		<h:inputText id="periodicalValueTextField" value="#{editService.periodicalIntervalType.value}" size="5" title="#{web.text.FORMAT_INTEGER}"/><f:verbatim> </f:verbatim>
 		<h:selectOneMenu id="periodicalUnitSelect" value="#{editService.periodicalIntervalType.unit}">
 		  <f:selectItems value="#{editService.periodicalIntervalType.availableUnits}"/>
 	    </h:selectOneMenu>		

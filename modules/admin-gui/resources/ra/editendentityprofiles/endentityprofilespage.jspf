@@ -88,7 +88,7 @@
     </tr>
     <tr> 
       <td width="100%"> 
-        <input type="text" name="<%=TEXTFIELD_PROFILENAME%>" size="40" maxlength="255">   
+        <input type="text" name="<%=TEXTFIELD_PROFILENAME%>" size="40" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_ID_STR") %>">
         <input type="submit" name="<%= BUTTON_ADD_PROFILE%>" onClick='return checkfieldforlegalchars("document.editprofiles.<%=TEXTFIELD_PROFILENAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS",true) %>")' value="<%= ejbcawebbean.getText("ADD") %>">&nbsp;&nbsp;&nbsp;
         <input type="submit" name="<%= BUTTON_RENAME_PROFILE%>" onClick='return checkfieldforlegalchars("document.editprofiles.<%=TEXTFIELD_PROFILENAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS",true) %>")' value="<%= ejbcawebbean.getText("RENAMESELECTED") %>">&nbsp;&nbsp;&nbsp;
         <input type="submit" name="<%= BUTTON_CLONE_PROFILE%>" onClick='return checkfieldforlegalchars("document.editprofiles.<%=TEXTFIELD_PROFILENAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS",true) %>")' value="<%= ejbcawebbean.getText("USESELECTEDASTEMPLATE") %>">

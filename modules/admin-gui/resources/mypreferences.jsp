@@ -115,7 +115,7 @@
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"DEFAULTLANGUAGETOUSE\") %>" /></p>
       </td>
       <td width="50%" valign="top"> 
-        <select name="<%= LIST_PREFEREDLANGUAGE %>">
+        <select name="<%= LIST_PREFEREDLANGUAGE %>" class="acronym">
           <% String[] availablelanguages = ejbcawebbean.getAvailableLanguages();                                    
              int preferedlanguage = dup.getPreferedLanguage();
              for(int i = 0; i < availablelanguages.length; i++){
@@ -165,7 +165,7 @@
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"THENUMBEROFRECORDSTO\") %>" /></p>
       </td>
       <td width="51%" valign="top"> 
-        <select name="<%= LIST_ENTIESPERPAGE %>">
+        <select name="<%= LIST_ENTIESPERPAGE %>" class="number">
           <% String[] possibleentriesperpage = globalconfiguration.getPossibleEntiresPerPage();                                    
              int entriesperpage = Integer.parseInt(ejbcawebbean.getCleanOption(String.valueOf(dup.getEntriesPerPage()), possibleentriesperpage));
              for(int i = 0; i < possibleentriesperpage.length; i++){

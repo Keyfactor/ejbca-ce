@@ -1239,7 +1239,7 @@ function checkallfields(){
                 %>
            </select>
            <% }else{ %> 
-             <input type="text" name="<%= TEXTFIELD_USERNAME %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%= profile.getValue(EndEntityProfile.USERNAME,0) %>"/>'>
+             <input type="text" name="<%= TEXTFIELD_USERNAME %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%= profile.getValue(EndEntityProfile.USERNAME,0) %>"/>' title="<%= ejbcawebbean.getText("FORMAT_ID_STR") %>">
            <% } %>
 
         </td>
@@ -1304,7 +1304,7 @@ function checkallfields(){
         		} catch(NumberFormatException ignored) {}
        		%>   
        		 <input type="radio" name="<%= RADIO_MAXFAILEDLOGINS %>" value="<%= RADIO_MAXFAILEDLOGINS_VAL_SPECIFIED %>" onclick="maxFailedLoginsSpecified()" <% if(maxLoginAttempts != -1) { out.write("checked"); } %> <% if(!profile.isModifyable(EndEntityProfile.MAXFAILEDLOGINS,0)) { out.write("readonly"); } %>>
-             <input type="text" name="<%= TEXTFIELD_MAXFAILEDLOGINS %>" size="5" maxlength="255" tabindex="<%=tabindex++%>" value='<% if(maxLoginAttempts != -1) { out.write(""+maxLoginAttempts); } %>' <% if(maxLoginAttempts == -1) { out.write("disabled"); } %> <% if(!profile.isModifyable(EndEntityProfile.MAXFAILEDLOGINS,0)) { out.write(" readonly"); } %>>
+             <input type="text" name="<%= TEXTFIELD_MAXFAILEDLOGINS %>" size="5" maxlength="255" tabindex="<%=tabindex++%>" value='<% if(maxLoginAttempts != -1) { out.write(""+maxLoginAttempts); } %>' <% if(maxLoginAttempts == -1) { out.write("disabled"); } %> <% if(!profile.isModifyable(EndEntityProfile.MAXFAILEDLOGINS,0)) { out.write(" readonly"); } %> title="<%= ejbcawebbean.getText("FORMAT_INTEGER") %>">
              
              <input type="radio" name="<%= RADIO_MAXFAILEDLOGINS %>" value="<%= RADIO_MAXFAILEDLOGINS_VAL_UNLIMITED %>" onclick="maxFailedLoginsUnlimited()" <% if(maxLoginAttempts == -1) { out.write("checked"); } %> <% if(!profile.isModifyable(EndEntityProfile.MAXFAILEDLOGINS,0)) { out.write(" readonly"); } %>
              id="<%=RADIO_MAXFAILEDLOGINS%>unlimited">
@@ -1355,7 +1355,7 @@ function checkallfields(){
                 <% } %>
               <% } %>
            <% }else{ %> 
-             <input type="text" name="<%= TEXTFIELD_EMAILDOMAIN %>" size="20" maxlength="255" tabindex="<%=tabindex++%>"  value='<c:out value="<%= profile.getValue(EndEntityProfile.EMAIL,0) %>"/>'>
+             <input type="text" name="<%= TEXTFIELD_EMAILDOMAIN %>" size="15" maxlength="255" tabindex="<%=tabindex++%>"  value='<c:out value="<%= profile.getValue(EndEntityProfile.EMAIL,0) %>"/>' title="<%= ejbcawebbean.getText("FORMAT_DOMAINNAME") %>">
            <% } %>
         </td>
 	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_EMAIL %>" value="<%= CHECKBOX_VALUE %>"  disabled="disabled" <% if(profile.isRequired(EndEntityProfile.EMAIL,0)) out.write(" CHECKED "); %>></td>
@@ -1482,7 +1482,7 @@ function checkallfields(){
 						value='<c:out value="<%= rfc822NameArray[0] %>"/>' /> @
 				<%	}
             		if ( modifyable ) { %>
-					<input type="text" name="<%= TEXTFIELD_SUBJECTALTNAME + i %>" size="20" maxlength="255" tabindex="<%=tabindex++%>"
+					<input type="text" name="<%= TEXTFIELD_SUBJECTALTNAME + i %>" size="15" maxlength="255" tabindex="<%=tabindex++%>" title="<%= ejbcawebbean.getText("FORMAT_DOMAINNAME") %>"
 						value='<c:out value="<%= rfc822NameArray[1] %>"/>' />
 				<%	} else {
 						String[] options = rfc822NameString.split(EndEntityProfile.SPLITCHAR); %>
@@ -1541,7 +1541,7 @@ function checkallfields(){
 					// Display modifyable subject altname fields
 	               	if(EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.UPN)) { %>
 						<input type="text" name="<%= TEXTFIELD_UPNNAME+i %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" > @
-						<input type="text" name="<%= TEXTFIELD_SUBJECTALTNAME + i %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%= profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]) %>"/>'>
+						<input type="text" name="<%= TEXTFIELD_SUBJECTALTNAME + i %>" size="15" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%= profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]) %>"/>' title="<%= ejbcawebbean.getText("FORMAT_DOMAINNAME") %>">
 				<%	} else { %>
 						<input type="text" name="<%= TEXTFIELD_SUBJECTALTNAME + i %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%= profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]) %>"/>'>
 				<%	} %>
@@ -1733,7 +1733,7 @@ function checkallfields(){
 				%>:<%= ejbcawebbean.getText("HOURS").toLowerCase() %>:<%= ejbcawebbean.getText("MINUTES").toLowerCase() %>)</p>
 			</td>
 			<td> 
-				<input type="text" name="<%= TEXTFIELD_STARTTIME %>" size="20" maxlength="40" tabindex="<%=tabindex++%>"
+				<input type="text" name="<%= TEXTFIELD_STARTTIME %>" size="25" maxlength="40" tabindex="<%=tabindex++%>" title="<%= ejbcawebbean.getText("FORMAT_ISO8601") %> <%= ejbcawebbean.getText("OR") %> (<%= ejbcawebbean.getText("DAYS").toLowerCase() %>:<%= ejbcawebbean.getText("HOURS").toLowerCase() %>:<%= ejbcawebbean.getText("MINUTES").toLowerCase() %>)"
 					<%	String startTime = ejbcawebbean.getISO8601FromImpliedUTCOrRelative(profile.getValue(EndEntityProfile.STARTTIME, 0)); %>
 					value='<c:out value="<%= startTime %>"/>'
 					<%	if ( !profile.isModifyable(EndEntityProfile.STARTTIME, 0) ) { %>
@@ -1760,7 +1760,7 @@ function checkallfields(){
 				%>:<%= ejbcawebbean.getText("HOURS").toLowerCase() %>:<%= ejbcawebbean.getText("MINUTES").toLowerCase() %>)</p>
 			</td>
 			<td> 
-				<input type="text" name="<%= TEXTFIELD_ENDTIME %>" size="20" maxlength="40" tabindex="<%=tabindex++%>"
+				<input type="text" name="<%= TEXTFIELD_ENDTIME %>" size="25" maxlength="40" tabindex="<%=tabindex++%>" title="<%= ejbcawebbean.getText("FORMAT_ISO8601") %> <%= ejbcawebbean.getText("OR") %> (<%= ejbcawebbean.getText("DAYS").toLowerCase() %>:<%= ejbcawebbean.getText("HOURS").toLowerCase() %>:<%= ejbcawebbean.getText("MINUTES").toLowerCase() %>)"
 					value='<c:out value="<%= ejbcawebbean.getISO8601FromImpliedUTCOrRelative(profile.getValue(EndEntityProfile.ENDTIME, 0)) %>"/>'
 					<%	if ( !profile.isModifyable(EndEntityProfile.ENDTIME, 0) ) { %>
 					readonly="true"
@@ -1781,7 +1781,7 @@ function checkallfields(){
 		<tr id="Row<%=(row++)%2%>">
 			<td align="right"><c:out value="<%= ejbcawebbean.getText(\"CARDNUMBER\") %>"/></td>
 			<td>
-				<input type="text" name="<%= TEXTFIELD_CARDNUMBER %>" size="20" maxlength="40" tabindex="<%=tabindex++%>" value='<c:out value="<%=oldcardnumber%>"/>'>
+				<input type="text" name="<%= TEXTFIELD_CARDNUMBER %>" size="20" maxlength="40" tabindex="<%=tabindex++%>" value='<c:out value="<%=oldcardnumber%>"/>' title="<%= ejbcawebbean.getText("FORMAT_STRING") %>">
 			</td>
 			<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_CARDNUMBER %>" value="<%= CHECKBOX_VALUE %>"  disabled="disabled" <% if(profile.isRequired(EndEntityProfile.CARDNUMBER,0)) out.write(" CHECKED "); %>></td>
 		</tr>

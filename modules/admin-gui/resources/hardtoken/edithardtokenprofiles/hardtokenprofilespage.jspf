@@ -82,7 +82,7 @@
     </tr>
     <tr> 
       <td width="100%"> 
-        <input type="text" name="<%= edithardtokenprofile.TEXTFIELD_HARDTOKENPROFILESNAME%>" size="40" maxlength="255">   
+        <input type="text" name="<%= edithardtokenprofile.TEXTFIELD_HARDTOKENPROFILESNAME%>" size="40" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_ID_STR") %>"> 
         <input type="submit" name="<%= edithardtokenprofile.BUTTON_ADD_HARDTOKENPROFILES%>" onClick='return checkfieldforlegalchars("document.editprofiles.<%=edithardtokenprofile.TEXTFIELD_HARDTOKENPROFILESNAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") %>")' value="<%= ejbcawebbean.getText("ADD") %>">&nbsp;&nbsp;&nbsp;
         <input type="submit" name="<%= edithardtokenprofile.BUTTON_RENAME_HARDTOKENPROFILES%>" onClick='return checkfieldforlegalchars("document.editprofiles.<%=edithardtokenprofile.TEXTFIELD_HARDTOKENPROFILESNAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") %>")' value="<%= ejbcawebbean.getText("RENAMESELECTED") %>">&nbsp;&nbsp;&nbsp;
         <input type="submit" name="<%= edithardtokenprofile.BUTTON_CLONE_HARDTOKENPROFILES%>" onClick='return checkfieldforlegalchars("document.editprofiles.<%=edithardtokenprofile.TEXTFIELD_HARDTOKENPROFILESNAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") %>")' value="<%= ejbcawebbean.getText("USESELECTEDASTEMPLATE") %>">
