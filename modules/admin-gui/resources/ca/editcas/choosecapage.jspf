@@ -122,10 +122,10 @@
               <input class=buttonstyle type="submit" onClick="return confirm('<%= ejbcawebbean.getText("AREYOUSURETODELETECA", true) %>');" name="<%= BUTTON_DELETE_CA %>" value="<%= ejbcawebbean.getText("DELETECA") %>">
             </td>
             <td width="25%" align="left">
-              <input type="submit" name="<%= BUTTON_IMPORTCA%>" value="<%= ejbcawebbean.getText("IMPORTCA")+"..." %>">
+              <input type="submit" name="<%= BUTTON_IMPORTCA%>" value="<%= ejbcawebbean.getText("IMPORTCA_KEYSTORE")+"..." %>">
             </td>
             <td width="25%" align="right">
-              <input type="submit" name="<%= BUTTON_IMPORTCACERT%>" value="<%= ejbcawebbean.getText("IMPORTCACERT")+"..." %>">
+              <input type="submit" name="<%= BUTTON_IMPORTCACERT%>" value="<%= ejbcawebbean.getText("IMPORTCA_CERTIFICATE")+"..." %>">
             </td>
           </tr>
         </table> 

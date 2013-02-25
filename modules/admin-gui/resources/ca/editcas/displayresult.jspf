@@ -18,41 +18,37 @@
     pkcs7link = globalconfiguration.getCaPath() + "/editcas/cacertreq?cmd=certpkcs7";
   }
 %>
-<body > 
+<body> 
 <div align="center">   
    <h2><%= ejbcawebbean.getText(headlines[filemode]) %></h2>
    <h3><%= ejbcawebbean.getText("CANAME")+ " : " + caname %></h3>
 </div>
-  <table width="100%" border="0" cellspacing="3" cellpadding="3">
+
+  <table class="view" width="100%" border="0" cellspacing="3" cellpadding="3">
     <tr id="Row<%=row++%2%>"> 
-      <td width="50%" valign="top"> 
-        <div align="left"> 
-          <h3>&nbsp;</h3>
-        </div>
+      <td width="20%" valign="top"> 
+          &nbsp;
       </td>
-      <td width="50%" valign="top"> 
-        <div align="right">
-        <a href="<%=THIS_FILENAME %>"><u><%= ejbcawebbean.getText("BACKTOCAS") %></u></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        </div>
+      <td width="80%" valign="top" align="right"> 
+        <a href="<%=THIS_FILENAME %>"><%= ejbcawebbean.getText("BACKTOCAS") %></a>
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 
-      <td width="20%" valign="top" align="right"></td>
+      <td width="20%" valign="top" align="right">nbsp;</td>
       <td width="80%" valign="top">     
         <form>
-           <TEXTAREA rows='13' cols='100'><%=resultstring%></TEXTAREA>   
+           <textarea rows='13' cols='100'><%=resultstring%></textarea>   
         </form>        
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 
-      <td width="20%" valign="top" align="right"></td>
+      <td width="20%" valign="top" align="right">nbsp;</td>
       <td width="80%" valign="top">     
-        <A href="<%=pemlink%>"><u><%= ejbcawebbean.getText("DOWNLOADPEM") %></u></A><br />
-        <A href="<%=binarylink%>"><u><%= ejbcawebbean.getText("DOWNLOADBINARY") %></u></A><br />
+        <a href="<%=pemlink%>"><%= ejbcawebbean.getText("DOWNLOADPEM") %></a><br />
+        <a href="<%=binarylink%>"><%= ejbcawebbean.getText("DOWNLOADBINARY") %></a><br />
       <% if(filemode == CERTGENMODE){ %>
-        <A href="<%=pkcs7link%>"><u><%= ejbcawebbean.getText("DOWNLOADPEMASPKCS7") %></u></A><br /><br />
+        <a href="<%=pkcs7link%>"><%= ejbcawebbean.getText("DOWNLOADPEMASPKCS7") %></a>
       <% } %>        
-        <A href="<%=THIS_FILENAME %>"><u><%= ejbcawebbean.getText("BACKTOCAS") %></u></A>
       </td>
     </tr>
   </table>
