@@ -46,11 +46,11 @@ function checkUseEndUserNotification(){
 	<h:panelGroup>
 		<h:outputText value="#{web.text.CASTOCHECK}"/>
 	</h:panelGroup>
-	<h:panelGroup>							
+	<h:panelGroup>
 		<h:selectManyListbox id="certCheckCASelect" value="#{editService.notifyingType.selectedCANamesToCheck}" size="10">
 			<f:selectItems value="#{editService.availableCAsWithAnyOption}" />
-		</h:selectManyListbox>		
-	</h:panelGroup>	
+		</h:selectManyListbox>
+	</h:panelGroup>
 	
 	<h:panelGroup>
 		<h:outputText value="#{web.text.CERTIFICATEPROFILESTOCHECK}"/><f:verbatim> </f:verbatim>
@@ -58,13 +58,13 @@ function checkUseEndUserNotification(){
 	<h:panelGroup>							
 		<h:selectManyListbox id="certCheckCertificateProfileSelect" value="#{editService.baseWorkerType.selectedCertificateProfilesToCheck}" size="10">
 			<f:selectItems value="#{editService.certificateProfiles}"/>
-		</h:selectManyListbox>		
-	</h:panelGroup>	
+		</h:selectManyListbox>
+	</h:panelGroup>
 
 	<h:panelGroup>
 		<h:outputText value="#{web.text.TIMEBEFOREEXPIRATION}"/>
 	</h:panelGroup>
-	<h:panelGroup>				
+	<h:panelGroup>
 			<h:inputText id="certCheckTimeValueTextField" value="#{editService.notifyingType.timeValue}" size="5" title="#{web.text.FORMAT_INTEGER}"/><f:verbatim> </f:verbatim>
 			<h:selectOneMenu id="certCheckTimeUnitSelect" value="#{editService.notifyingType.timeUnit}">
 			  <f:selectItems value="#{editService.notifyingType.availableUnits}"/>
@@ -72,4 +72,3 @@ function checkUseEndUserNotification(){
 	</h:panelGroup>	
 	
 	<jsp:include page="mailsendingworker.jsp"/>
-	

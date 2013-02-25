@@ -11,27 +11,26 @@
 	<h:panelGroup>
 		<h:outputText value="#{web.text.CASTOCHECK}"/>
 	</h:panelGroup>
-	<h:panelGroup>							
+	<h:panelGroup>
 		<h:selectManyListbox id="certCheckCASelect" value="#{editService.notifyingType.selectedCANamesToCheck}" size="10">
 			<f:selectItems value="#{editService.availableCAs}"/>
-		</h:selectManyListbox>		
-	</h:panelGroup>	
+		</h:selectManyListbox>
+	</h:panelGroup>
 
 	<h:panelGroup>
 		<h:outputText value="#{web.text.TIMERENEWBEFOREREXPIRE}"/>
 	</h:panelGroup>
-	<h:panelGroup>				
+	<h:panelGroup>
 		<h:inputText id="certCheckTimeValueTextField" value="#{editService.notifyingType.timeValue}" size="5" title="#{web.text.FORMAT_INTEGER}"/><f:verbatim> </f:verbatim>
 		<h:selectOneMenu id="certCheckTimeUnitSelect" value="#{editService.notifyingType.timeUnit}">
 		  <f:selectItems value="#{editService.notifyingType.availableUnits}"/>
-	    </h:selectOneMenu>		
-	</h:panelGroup>	
+	    </h:selectOneMenu>
+	</h:panelGroup>
 
 	<h:panelGroup>
 		<h:outputText value="#{web.text.RENEWKEYS}"/>
 	</h:panelGroup>
-	<h:panelGroup>				
+	<h:panelGroup>
 		<h:selectBooleanCheckbox id="renewKeys" value="#{editService.renewType.renewKeys}"/>
-	</h:panelGroup>	
-
-	
+		<h:outputLabel for="renewKeys" value="#{web.text.ACTIVATE}" />
+	</h:panelGroup>

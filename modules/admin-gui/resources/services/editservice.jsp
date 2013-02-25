@@ -30,13 +30,13 @@
 
 
 <f:view>
-<body>
+<body id="service">
 
 <h2><%= ejbcawebbean.getText("EDITSERVICE") %></h2>
 
 <h3><%= ejbcawebbean.getText("SERVICE")+ " : " %><h:outputText value="#{editService.serviceName}" /></h3>
 
-<h:form id="edit"> 
+<h:form id="edit">
 
 <h:panelGrid styleClass="edit" width="100%" columns="2" rowClasses="Row0,Row1" columnClasses="label,field">
 	<h:panelGroup>
@@ -116,8 +116,8 @@
 		<f:verbatim><strong></f:verbatim><h:outputText value="#{web.text.ACTIVE}"/><f:verbatim></strong></f:verbatim>
 	</h:panelGroup>
 	<h:panelGroup>
-		<h:outputText value="#{web.text.ACTIVE}"/>
 		<h:selectBooleanCheckbox id="activeCheckbox" value="#{editService.serviceConfigurationView.active}"/>
+		<h:outputLabel for="activeCheckbox" value="#{web.text.ACTIVE}" />
 	</h:panelGroup>
 	<h:panelGroup>
 		<h:outputText value="#{web.text.PINTONODES}"/>
