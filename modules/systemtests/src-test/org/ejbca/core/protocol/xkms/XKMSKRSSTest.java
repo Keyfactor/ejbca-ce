@@ -38,10 +38,8 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
@@ -115,7 +113,7 @@ import org.w3._2002._03.xkms_.UseKeyWithType;
 
 /**
  * To Run this test, there must be a CA with DN
- * "CN=TestCA", and it must have XKMS service enabled.
+ * "CN=AdminCA1,O=EJBCA Sample,C=SE", and it must have XKMS service enabled.
  * Also you have to enable XKMS in conf/xkms.properties.
  * 
  * @version $Id$
@@ -141,8 +139,8 @@ public class XKMSKRSSTest {
     private static String username2;
     private static String username3;
 
-    private final static String issuerdn = "CN=TestCA";
-    private final static int caid = issuerdn.hashCode();
+    private static String issuerdn;
+    private static int caid;
 
     private static String dn1;
     private static String dn2;
@@ -158,8 +156,7 @@ public class XKMSKRSSTest {
     private static String certprofilename2;
     private static String endentityprofilename;
 
-	private static CAInfo orgCaInfo;
-    private CA testx509ca;
+    private static CAInfo orgCaInfo;
 
     private static DocumentBuilderFactory dbf;
     private static Random ran;
@@ -177,22 +174,17 @@ public class XKMSKRSSTest {
     @Before
     public void setUp() throws Exception {
         try {
-            orgCaInfo = caSession.getCAInfo(administrator, "TestCA");
-        } catch (CADoesntExistsException e) {            
-            
-            int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
-            testx509ca = CaSessionTest.createTestX509CA(issuerdn, null, false, keyusage);
-            caSession.addCA(administrator, testx509ca);
-            
-
-            
-            orgCaInfo = caSession.getCAInfo(administrator, "TestCA");
+            orgCaInfo = caSession.getCAInfo(administrator, "AdminCA1");
+        } catch(CADoesntExistsException e) {
+            orgCaInfo = caSession.getCAInfo(administrator, "ManagementCA");
         }
+        issuerdn = orgCaInfo.getSubjectDN();
+        caid = issuerdn.hashCode();
     }
     
-	@BeforeClass
+    @BeforeClass
     public static void setupDatabaseAndInvoker() throws Exception {
-	    xKMSInvoker = new XKMSInvoker("http://localhost:" + HTTPPORT + "/ejbca/xkms/xkms", null);
+        xKMSInvoker = new XKMSInvoker("http://localhost:" + HTTPPORT + "/ejbca/xkms/xkms", null);
 
         org.apache.xml.security.Init.init();
         try {
@@ -222,26 +214,25 @@ public class XKMSKRSSTest {
             log.error("Error initializing RequestAbstractTypeResponseGenerator", e);
             throw new Error(e);
         }
-	    
-	    CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
-	    CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-	    CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
-	    EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
-	    EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
-	    GlobalConfigurationProxySessionRemote globalConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-	    GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
-	    EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-
+        
+        CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+        CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+        CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+        EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
+        EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
+        GlobalConfigurationProxySessionRemote globalConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+        GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+        EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
         
         CAInfo caInfo = null;
         try {
-            caInfo = caSession.getCAInfo(administrator, "TestCA");
+            caInfo = caSession.getCAInfo(administrator, "AdminCA1");
         } catch (CADoesntExistsException e) {
-            int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
-            CA testCA = CaSessionTest.createTestX509CA(issuerdn, null, false, keyusage);
-            caSession.addCA(administrator, testCA);
-            caInfo = caSession.getCAInfo(administrator, "TestCA");
+            caInfo = caSession.getCAInfo(administrator, "ManagementCA");
         }
+        issuerdn = caInfo.getSubjectDN();
+        caid = issuerdn.hashCode();
+        
         // make sure same keys for different users is prevented
         caInfo.setDoEnforceUniquePublicKeys(true);
         // make sure same DN for different users is prevented
@@ -335,11 +326,11 @@ public class XKMSKRSSTest {
 
     }
 
-	@Test
+    @Test
     public void test01SimpleRegistration() throws Exception {
         cert1 = simpleRegistration(dn1, false);
     }
-	
+    
     private Certificate simpleRegistration(String dn, boolean willFail) throws Exception {
 
         RegisterRequestType registerRequestType = xKMSObjectFactory.createRegisterRequestType();
@@ -402,7 +393,7 @@ public class XKMSKRSSTest {
         return null;
     }
 
-	@Test
+    @Test
     public void test02ServerGenRegistration() throws Exception {
         RegisterRequestType registerRequestType = xKMSObjectFactory.createRegisterRequestType();
         registerRequestType.setId("601");
@@ -459,7 +450,7 @@ public class XKMSKRSSTest {
 
     }
 
-	@Test
+    @Test
     public void test03RegisterWithWrongDN() throws Exception {
         RegisterRequestType registerRequestType = xKMSObjectFactory.createRegisterRequestType();
         registerRequestType.setId("602");
@@ -490,7 +481,7 @@ public class XKMSKRSSTest {
 
     }
 
-	@Test
+    @Test
     public void test04RegisterWithWrongStatus() throws Exception {
         KeyPair keys = genKeys();
         RegisterRequestType registerRequestType = xKMSObjectFactory.createRegisterRequestType();
@@ -522,7 +513,7 @@ public class XKMSKRSSTest {
 
     }
 
-	@Test
+    @Test
     public void test05RegisterWithWrongPassword() throws Exception {
         KeyPair keys = genKeys();
         RegisterRequestType registerRequestType = xKMSObjectFactory.createRegisterRequestType();
@@ -554,7 +545,7 @@ public class XKMSKRSSTest {
 
     }
 
-	@Test
+    @Test
     public void test06RegisterWithNoPOP() throws Exception {
         KeyPair keys = genKeys();
         RegisterRequestType registerRequestType = xKMSObjectFactory.createRegisterRequestType();
@@ -585,7 +576,7 @@ public class XKMSKRSSTest {
 
     }
 
-	@Test
+    @Test
     public void test07RegisterWithBasicAuthentication() throws Exception {
         KeyPair keys = genKeys();
         RegisterRequestType registerRequestType = xKMSObjectFactory.createRegisterRequestType();
@@ -626,7 +617,7 @@ public class XKMSKRSSTest {
 
     }
 
-	@Test
+    @Test
     public void test08SimpleReissue() throws Exception {
         simpleReissue(username1, dn1);
         simpleReissue(username1, dn1); // could be repeated any number of times
@@ -686,7 +677,7 @@ public class XKMSKRSSTest {
         }
     }
 
-	@Test
+    @Test
     public void test09ReissueWrongPassword() throws Exception {
         endEntityManagementSession.setUserStatus(administrator, username1, 10);
         endEntityManagementSession.setClearTextPassword(administrator, username1, "ReissuePassword");
@@ -719,7 +710,7 @@ public class XKMSKRSSTest {
 
     }
 
-	@Test
+    @Test
     public void test10ReissueWrongStatus() throws Exception {
         endEntityManagementSession.setUserStatus(administrator, username1, 40);
         endEntityManagementSession.setClearTextPassword(administrator, username1, "ReissuePassword");
@@ -751,7 +742,7 @@ public class XKMSKRSSTest {
         assertTrue(reissueResultType.getResultMinor().equals(XKMSConstants.RESULTMINOR_REFUSED));
     }
 
-	@Test
+    @Test
     public void test11ReissueWrongCert() throws Exception {
 
         endEntityManagementSession.setUserStatus(administrator, username1, 10);
@@ -784,7 +775,7 @@ public class XKMSKRSSTest {
         assertTrue(reissueResultType.getResultMinor().equals(XKMSConstants.RESULTMINOR_REFUSED));
     }
 
-	@Test
+    @Test
     public void test12SimpleRecover() throws Exception {
         endEntityManagementSession.prepareForKeyRecovery(administrator, username2, endEntityProfileSession.getEndEntityProfileId(endentityprofilename), cert2);
         endEntityManagementSession.setClearTextPassword(administrator, username2, "RerecoverPassword");
@@ -846,7 +837,7 @@ public class XKMSKRSSTest {
 
     }
 
-	@Test
+    @Test
     public void test13RecoverWrongPassword() throws Exception {
         endEntityManagementSession.prepareForKeyRecovery(administrator, username2, endEntityProfileSession.getEndEntityProfileId(endentityprofilename), cert2);
         endEntityManagementSession.setClearTextPassword(administrator, username2, "RerecoverPassword");
@@ -880,7 +871,7 @@ public class XKMSKRSSTest {
 
     }
 
-	@Test
+    @Test
     public void test14RecoverWrongStatus() throws Exception {
         endEntityManagementSession.setUserStatus(administrator, username2, 10);
         endEntityManagementSession.setClearTextPassword(administrator, username2, "RerecoverPassword");
@@ -914,7 +905,7 @@ public class XKMSKRSSTest {
 
     }
 
-	@Test
+    @Test
     public void test15RecoverWrongCert() throws Exception {
         endEntityManagementSession.setUserStatus(administrator, username2, EndEntityConstants.STATUS_KEYRECOVERY);
         endEntityManagementSession.setClearTextPassword(administrator, username2, "RerecoverPassword");
@@ -948,7 +939,7 @@ public class XKMSKRSSTest {
 
     }
 
-	@Test
+    @Test
    public void test16CertNotMarked() throws Exception {
         keyRecoverySession.unmarkUser(administrator, username2);
         endEntityManagementSession.setUserStatus(administrator, username2, 40);
@@ -983,7 +974,7 @@ public class XKMSKRSSTest {
 
     }
 
-	@Test
+    @Test
     public void test17SimpleRevoke() throws Exception {
         RevokeRequestType revokeRequestType = xKMSObjectFactory.createRevokeRequestType();
         revokeRequestType.setId("800");
@@ -1008,7 +999,7 @@ public class XKMSKRSSTest {
 
     }
 
-	@Test
+    @Test
     public void test18RevokeWrongPassword() throws Exception {
         RevokeRequestType revokeRequestType = xKMSObjectFactory.createRevokeRequestType();
         revokeRequestType.setId("801");
@@ -1034,7 +1025,7 @@ public class XKMSKRSSTest {
         assertTrue(revokeResultType.getResultMinor().equals(XKMSConstants.RESULTMINOR_NOAUTHENTICATION));
     }
 
-	@Test
+    @Test
     public void test19RevokeWithResult() throws Exception {
         RevokeRequestType revokeRequestType = xKMSObjectFactory.createRevokeRequestType();
         revokeRequestType.setId("802");
@@ -1063,8 +1054,8 @@ public class XKMSKRSSTest {
         keyBindingType = revokeResultType.getKeyBinding().get(0);
         // All Values: http://www.w3.org/2002/03/xkms#IssuerTrust, RevocationStatus, ValidityInterval, Signature
         // Should be: http://www.w3.org/2002/03/xkms#ValidityInterval, IssuerTrust, Signature
-        assertEquals("Wrong number of ValidReason in KeyBinding: ", 3, keyBindingType.getStatus().getValidReason().size());	// TODO: Was 3 in EJBCA 3.11?? Why has this changed?
-        assertEquals("Wrong number of InvalidReason in KeyBinding: ", 1, keyBindingType.getStatus().getInvalidReason().size());	// TODO: Was 1 in EJBCA 3.11?? Why has this changed?
+        assertEquals("Wrong number of ValidReason in KeyBinding: ", 3, keyBindingType.getStatus().getValidReason().size()); // TODO: Was 3 in EJBCA 3.11?? Why has this changed?
+        assertEquals("Wrong number of InvalidReason in KeyBinding: ", 1, keyBindingType.getStatus().getInvalidReason().size()); // TODO: Was 1 in EJBCA 3.11?? Why has this changed?
 
         @SuppressWarnings("unchecked")
         JAXBElement<X509DataType> jAXBX509Data = (JAXBElement<X509DataType>) keyBindingType.getKeyInfo().getContent().get(0);
@@ -1083,7 +1074,7 @@ public class XKMSKRSSTest {
         }
     }
 
-	@Test
+    @Test
     public void test20RevokeAlreadyRevoked() throws Exception {
         RevokeRequestType revokeRequestType = xKMSObjectFactory.createRevokeRequestType();
         revokeRequestType.setId("804");
@@ -1109,7 +1100,7 @@ public class XKMSKRSSTest {
         assertTrue(revokeResultType.getResultMinor().equals(XKMSConstants.RESULTMINOR_REFUSED));
     }
 
-	@Test
+    @Test
     public void test21RevocationApprovals() throws Exception {
         final String APPROVINGADMINNAME = "superadmin";
         final String ERRORNOTSENTFORAPPROVAL = "The request was never sent for approval.";
@@ -1207,7 +1198,7 @@ public class XKMSKRSSTest {
         }
     } // test21RevocationApprovals
 
-	@Test
+    @Test
     public void test22SimpleRegistrationSameKeyDifferentUsers() throws Exception {
         final String usernameX = baseUsername + 'X';
         final String dnX = "C=SE, O=AnaTom, CN=" + usernameX;
@@ -1216,7 +1207,7 @@ public class XKMSKRSSTest {
         endEntityManagementSession.deleteUser(administrator, usernameX);
     }
 
-	@Test
+    @Test
    public void test23SimpleRegistrationSameSubjcectDifferentUsers() throws Exception {
         endEntityManagementSession.deleteUser(administrator, username1);
         final String usernameX = baseUsername + 'X';
@@ -1225,15 +1216,15 @@ public class XKMSKRSSTest {
         endEntityManagementSession.deleteUser(administrator, usernameX);
     }
 
-	@AfterClass
+    @AfterClass
     public static void cleanDatabase() throws Exception {
-    	AuthenticationToken administrator = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
-    	CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
-    	CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
-    	EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
-    	EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-    	
-    	endEntityManagementSession.deleteUser(administrator, username2);
+        AuthenticationToken administrator = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+        CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+        CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+        EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
+        EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+        
+        endEntityManagementSession.deleteUser(administrator, username2);
         endEntityManagementSession.deleteUser(administrator, username3);
 
         endEntityProfileSession.removeEndEntityProfile(administrator, endentityprofilename);

@@ -34,13 +34,9 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.certificates.ca.CA;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.certificates.ca.CaSessionTest;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -49,7 +45,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRem
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -91,7 +86,7 @@ import org.w3._2002._03.xkms_.ValidateResultType;
 
 /**
  * To Run this test, there must be a CA with DN
- * "CN=TestCA", and it must have XKMS service enabled.
+ * "CN=AdminCA1,O=EJBCA Sample,C=SE", and it must have XKMS service enabled.
  * Also you have to enable XKMS in conf/xkms.properties.
  * 
  * @author Philip Vendil 2006 sep 27
@@ -103,7 +98,7 @@ import org.w3._2002._03.xkms_.ValidateResultType;
 public class XKMSKISSTest {
 
     private static Logger log = Logger.getLogger(XKMSKISSTest.class);
-    private final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+    private final static AuthenticationToken administrator = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 
     static {
         org.apache.xml.security.Init.init();
@@ -122,11 +117,10 @@ public class XKMSKISSTest {
     private static String username2 = null;
     private static String username3 = null;
 
-    private static final String issuerdn = "CN=TestCA";
-    private final int caid = issuerdn.hashCode();
+    private static String issuerdn;
+    private int caid;
 
     private int userNo;
-    private CA testx509ca;
 
     private static X509Certificate cert1;
     private static X509Certificate cert2;
@@ -141,8 +135,7 @@ public class XKMSKISSTest {
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
-    private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-
+    
     @BeforeClass
     public static void beforeClass() {
         CryptoProviderTools.installBCProviderIfNotAvailable();
@@ -153,14 +146,16 @@ public class XKMSKISSTest {
     @Before
     public void setUp() throws Exception {
         log.trace(">setUp()");    
-        
-        try {
-            caSession.getCAInfo(admin, "TestCA");
-        } catch (CADoesntExistsException e) {
-            int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
-            testx509ca = CaSessionTest.createTestX509CA(issuerdn, null, false, keyusage);
-            caSession.addCA(admin, testx509ca);
+    
+        CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+        List<String> canames = caSession.getAvailableCANames(administrator);
+        if(canames.contains("AdminCA1")) {
+            issuerdn = "CN=AdminCA1,O=EJBCA Sample,C=SE";
+        } else if(canames.contains("ManagementCA")) {
+            issuerdn = "CN=ManagementCA,O=EJBCA Sample,C=SE";
         }
+        caid = issuerdn.hashCode();
+        
         Random ran = new Random();
         if (baseUsername == null) {
             baseUsername = "xkmstestuser" + (ran.nextInt() % 1000) + "-";
@@ -170,13 +165,11 @@ public class XKMSKISSTest {
 
     @After
     public void tearDown() throws Exception {
-        CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
-        caSession.removeCA(admin, caid);
     }
 
-	@Test
+    @Test
     public void test00SetupDatabase() throws Exception {
-    	AuthenticationToken administrator = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+        AuthenticationToken administrator = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 
         // Setup with two new Certificate profiles.
         CertificateProfile profile1 = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
@@ -261,7 +254,7 @@ public class XKMSKISSTest {
         log.debug("username3: \"" + username3 + "\" dn3: \"" + dn3 + "\"");
     }
 
-	@Test
+    @Test
     public void test01AbstractType() throws Exception {
         LocateRequestType abstractRequestType = xKMSObjectFactory.createLocateRequestType();
         abstractRequestType.setId("123");
@@ -283,7 +276,7 @@ public class XKMSKISSTest {
 
     }
 
-	@Test
+    @Test
     public void test02TimeInstantNotSupported() throws Exception {
         LocateRequestType localteRequestType = xKMSObjectFactory.createLocateRequestType();
         localteRequestType.setId("124");
@@ -303,7 +296,7 @@ public class XKMSKISSTest {
 
     }
 
-	@Test
+    @Test
     public void test03Locate() throws Exception {
 
         // Test simple locate
@@ -325,7 +318,7 @@ public class XKMSKISSTest {
         assertTrue(locateResultType.getUnverifiedKeyBinding().size() > 0);
     }
 
-	@Test
+    @Test
     public void test04LocateAndUseKeyWith() throws Exception {
 
         // Locate by URI
@@ -473,7 +466,7 @@ public class XKMSKISSTest {
         assertTrue(locateResultType.getUnverifiedKeyBinding().size() == 1);
     }
 
-	@Test
+    @Test
     public void test05LocateAndReturnWith() throws Exception {
         // Test with returnwith values, first check that certificate is
         // returning
@@ -862,7 +855,7 @@ public class XKMSKISSTest {
 
     }
 
-	@Test
+    @Test
     public void test06LocateAndKeyUsage() throws Exception {
         // request with Signature and expect signature
         LocateRequestType locateRequestType = xKMSObjectFactory.createLocateRequestType();
@@ -1043,7 +1036,7 @@ public class XKMSKISSTest {
 
     }
 
-	@Test
+    @Test
     public void test07LocateAndResponseLimit() throws Exception {
         // request with 3 and expect 3
         LocateRequestType locateRequestType = xKMSObjectFactory.createLocateRequestType();
@@ -1088,7 +1081,7 @@ public class XKMSKISSTest {
             + "9w0BAQUFAAOBgQA1cB6wWzC2rUKBjFAzfkLvDUS3vEMy7ntYMqqQd6+5s1LHCoPw" + "eaR42kMWCxAbdSRgv5ATM0JU3Q9jWbLO54FkJDzq+vw2TaX+Y5T+UL1V0o4TPKxp"
             + "nKuay+xl5aoUcVEs3h3uJDjcpgMAtyusMEyv4d+RFYvWJWFzRTKDueyanw==").getBytes());
 
-	@Test
+    @Test
     public void test09Validate() throws Exception {
 
         // Test simple validate
@@ -1196,15 +1189,15 @@ public class XKMSKISSTest {
 
     }
 
-	@AfterClass
+    @AfterClass
     public static void cleanDatabase() throws Exception {
-    	AuthenticationToken administrator = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+        AuthenticationToken administrator = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
         
-    	CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
-    	EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
-    	EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-    	
-    	endEntityManagementSession.deleteUser(administrator, username1);
+        CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+        EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
+        EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+        
+        endEntityManagementSession.deleteUser(administrator, username1);
         endEntityManagementSession.deleteUser(administrator, username2);
         endEntityManagementSession.deleteUser(administrator, username3);
 

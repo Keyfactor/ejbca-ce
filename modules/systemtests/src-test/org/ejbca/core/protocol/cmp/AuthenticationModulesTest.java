@@ -190,6 +190,20 @@ public class AuthenticationModulesTest extends CmpTestCase {
         updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, "TestCA");
 
     }
+    
+    @After
+    public void tearDown() throws Exception {
+        super.tearDown();
+
+        CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
+        caSession.removeCA(ADMIN, caid);
+        
+        boolean cleanUpOk = true;
+        if (!confSession.restoreConfiguration()) {
+            cleanUpOk = false;
+        }
+        assertTrue("Unable to clean up properly.", cleanUpOk);
+    }
 
     @Test
     public void test01HMACModule() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException, IOException,
@@ -1606,20 +1620,6 @@ public class AuthenticationModulesTest extends CmpTestCase {
         } catch (Exception e) {
         }
 
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        super.tearDown();
-
-        CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
-        caSession.removeCA(ADMIN, caid);
-        
-        boolean cleanUpOk = true;
-        if (!confSession.restoreConfiguration()) {
-            cleanUpOk = false;
-        }
-        assertTrue("Unable to clean up properly.", cleanUpOk);
     }
    
     private CMPCertificate getCMPCert(Certificate cert) throws CertificateEncodingException, IOException {
