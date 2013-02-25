@@ -104,7 +104,7 @@ function checkselected(){
         &nbsp;
       </td>
       <td width="*"> 
-        <input type="text" name="<%=TEXTFIELD_ALIAS%>" size="40" maxlength="255">
+        <input type="text" name="<%=TEXTFIELD_ALIAS%>" size="40" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_ID_STR") %>">
       </td>
     </tr> 
     <tr>

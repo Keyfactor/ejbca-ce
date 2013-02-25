@@ -396,7 +396,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         <c:out value="<%= ejbcawebbean.getText(\"USERNAME\") %>" />
       </td>
       <td width="50%" valign="top"> 
-        <input type="text" name="<%=TEXTFIELD_USERNAME%>" size="45" maxlength="1024" 
+        <input type="text" name="<%=TEXTFIELD_USERNAME%>" size="45" maxlength="1024" title="<%= ejbcawebbean.getText("FORMAT_ID_STR") %>"
            value="<c:out value="<%= profiledata.getValue(EndEntityProfile.USERNAME,0) %>"/>">
       </td>
     </tr>
@@ -437,7 +437,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
             <% } %>
         </select>
         <span style="white-space: nowrap;">&nbsp;<c:out value="<%= ejbcawebbean.getText(\"OFLENGTH\") %>" />
-        <select name="<%=SELECT_AUTOPASSWORDLENGTH %>" size="1" <% if(used) out.write("DISABLED"); %> >
+        <select name="<%=SELECT_AUTOPASSWORDLENGTH %>" size="1" <% if(used) out.write("DISABLED"); %> class="number">
             <% for (int currectPasswordLength=4; currectPasswordLength<=16; currectPasswordLength++) { %>
             <option  value='<%= currectPasswordLength %>'
             <% if (Integer.toString(currectPasswordLength).equals(profiledata.getValue(EndEntityProfile.AUTOGENPASSWORDLENGTH,0))) out.write(" SELECTED "); %>
@@ -456,7 +456,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
 		<%= ejbcawebbean.getHelpReference("/userguide.html#Password%20Fields") %>
       </td>
       <td width="50%"> 
-        <input type="text" name="<%= TEXTFIELD_MINPWDSTRENGTH %>" size="5" maxlength="10" value="<c:out value="<%= profiledata.getMinPwdStrength() %>"/>"/>
+        <input type="text" name="<%= TEXTFIELD_MINPWDSTRENGTH %>" size="5" maxlength="10" value="<c:out value="<%= profiledata.getMinPwdStrength() %>"/>" title="<%= ejbcawebbean.getText("UNIT_BITS") %>"/>
       </td>
     </tr>
 
@@ -1568,7 +1568,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         <c:out value="<%= ejbcawebbean.getText(\"NOTIFICATIONSENDER\") %>" />
       </td>
       <td width="50%" valign="top">
-        <input type="text" name="<%=TEXTFIELD_NOTIFICATIONSENDER%>" size="45" maxlength="255" <% if(!used) out.write(" disabled "); %>/>
+        <input type="text" name="<%=TEXTFIELD_NOTIFICATIONSENDER%>" size="45" maxlength="255" <% if(!used) out.write(" disabled "); %> title="<%= ejbcawebbean.getText("FORMAT_EMAILADDRESS") %>"/>
       </td>
     </tr>
     <tr  id="Row<%=row%2%>">       
@@ -1579,7 +1579,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         <c:out value="<%= ejbcawebbean.getText(\"NOTIFICATIONRECIPIENT\") %>" />
       </td>
       <td width="50%" valign="top">
-        <input type="text" name="<%=TEXTFIELD_NOTIFICATIONRCPT%>" size="45" maxlength="255" value="USER" <% if(!used) out.write(" disabled "); %>/>
+        <input type="text" name="<%=TEXTFIELD_NOTIFICATIONRCPT%>" size="45" maxlength="255" value="USER" <% if(!used) out.write(" disabled "); %> title="<%= ejbcawebbean.getText("FORMAT_EMAILADDRESS") %>"/>
       </td>
     </tr>
     <tr  id="Row<%=row%2%>"> 
@@ -1615,7 +1615,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         <%= ejbcawebbean.getHelpReference("/adminguide.html#Dynamic%20Substitution%20Variables") %>
       </td>
       <td width="50%" valign="top">
-        <input type="text" name="<%=TEXTFIELD_NOTIFICATIONSUBJECT%>" size="45" maxlength="1024" <%=profiledata.getUse(EndEntityProfile.SENDNOTIFICATION,0) ? "" : "disabled"%>/>
+        <input type="text" name="<%=TEXTFIELD_NOTIFICATIONSUBJECT%>" size="45" maxlength="1024" <%=profiledata.getUse(EndEntityProfile.SENDNOTIFICATION,0) ? "" : "disabled"%> title="<%= ejbcawebbean.getText("FORMAT_STRING") %>"/>
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 
@@ -1733,6 +1733,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
          &nbsp;
       </td>
       <td width="40%" align="right"> 
+         &nbsp;
       </td>
       <td width="50%" valign="top"> 
         <input type="submit" name="<%= BUTTON_SAVE %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE") %>" >

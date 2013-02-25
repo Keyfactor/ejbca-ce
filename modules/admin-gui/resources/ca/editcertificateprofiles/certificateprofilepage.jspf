@@ -550,12 +550,13 @@ function checkallfields(){
 
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <c:out value="<%= ejbcawebbean.getText(\"CERT_VALIDITY\") %>" /> <c:out value="<%= ejbcawebbean.getText(\"YEARMONTHDAYTIME\") %>" /> <c:out value="<%= ejbcawebbean.getText(\"ORENDDATE\") %>" />
+        <c:out value="<%= ejbcawebbean.getText(\"CERT_VALIDITY\") %>" /> <c:out value="<%= ejbcawebbean.getText(\"FORMAT_TIME_YMD\") %>" /> <c:out value="<%= ejbcawebbean.getText(\"ORENDDATE\") %>" />
         <%= ejbcawebbean.getHelpReference("/userguide.html#Validity") %>
       </td>
       <td width="50%"> 
-        <input type="text" name="<%=TEXTFIELD_VALIDITY%>" size="20" maxlength="255" 
-           value="<%= ValidityDate.getString(certificateprofiledata.getValidity())  %>"><br />
+        <input type="text" name="<%=TEXTFIELD_VALIDITY%>" size="25" maxlength="255" 
+           value="<%= ValidityDate.getString(certificateprofiledata.getValidity())  %>"
+           title="<%= ejbcawebbean.getText("FORMAT_TIME_YMD") %> <%= ejbcawebbean.getText("OR") %> <%= ejbcawebbean.getText("FORMAT_ISO8601") %>"><br />
            <c:out value="<%= ejbcawebbean.getText(\"DATE_INFO\") %>" /> <c:out value="<%= ejbcawebbean.getDateExample()  %>" />
       </td>
     </tr>
@@ -950,7 +951,7 @@ function checkallfields(){
            <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_CDP_URI\") %>" />
          </td>
          <td width="50%">
-           <input type="text" name="<%=TEXTFIELD_CRLDISTURI%>" size="45" maxlength="4096" 
+           <input type="text" name="<%=TEXTFIELD_CRLDISTURI%>" size="45" maxlength="4096" title="<%= ejbcawebbean.getText("FORMAT_URI") %>" 
            <%       if(!certificateprofiledata.getUseCRLDistributionPoint() || certificateprofiledata.getUseDefaultCRLDistributionPoint())
                       out.write(" disabled "); 
                     else 
@@ -966,7 +967,7 @@ function checkallfields(){
              <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_CDP_CRLISSUER\") %>" /> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Issuer") %>
            </td>
            <td width="50%">
-           <input type="text" name="<%=TEXTFIELD_CRLISSUER%>" size="45" maxlength="255" 
+           <input type="text" name="<%=TEXTFIELD_CRLISSUER%>" size="45" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_DN") %>"
            <%       if(!certificateprofiledata.getUseCRLDistributionPoint() || certificateprofiledata.getUseDefaultCRLDistributionPoint()) {
                       out.write(" disabled "); 
                     } else {
@@ -1019,7 +1020,7 @@ function checkallfields(){
            <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_FCRL_URI\") %>" />
          </td>
          <td width="50%">
-           <input type="text" name="<%=TEXTFIELD_FRESHESTCRLURI%>" size="45" maxlength="255" 
+           <input type="text" name="<%=TEXTFIELD_FRESHESTCRLURI%>" size="45" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_URI") %>"
            <%       if(!certificateprofiledata.getUseFreshestCRL() || certificateprofiledata.getUseCADefinedFreshestCRL())
                       out.write(" disabled "); 
                     else 
@@ -1099,7 +1100,7 @@ function checkallfields(){
  	            <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_CP_POLICYID\") %>" />
  	      </td>
  	      <td width="50%">
- 	        <input type="text" name="<%=TEXTFIELD_CERTIFICATEPOLICYID%>" size="20" maxlength="255" <%=certificateprofiledata.getUseCertificatePolicies() ? "" : "disabled"%>/>
+ 	        <input type="text" name="<%=TEXTFIELD_CERTIFICATEPOLICYID%>" size="20" maxlength="255" <%=certificateprofiledata.getUseCertificatePolicies() ? "" : "disabled"%> title="<%= ejbcawebbean.getText("FORMAT_OID") %>"/>
  	      </td>
  	    </tr>
  	    <tr id="Row<%=row%2%>">
@@ -1107,7 +1108,7 @@ function checkallfields(){
  	            <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_CP_USERNOTICE\") %>" />
  	      </td>
  	      <td width="50%">
- 	        <input type="text" name="<%=TEXTAREA_POLICYNOTICE_UNOTICE%>" size="45" maxlength="255" <%=certificateprofiledata.getUseCertificatePolicies() ? "" : "disabled"%>/>
+ 	        <input type="text" name="<%=TEXTAREA_POLICYNOTICE_UNOTICE%>" size="45" maxlength="255" <%=certificateprofiledata.getUseCertificatePolicies() ? "" : "disabled"%> title="<%= ejbcawebbean.getText("FORMAT_STRING") %>"/>
  	      </td>
  	    </tr>    
     <tr id="Row<%=row++%2%>">
@@ -1115,7 +1116,7 @@ function checkallfields(){
         <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_CP_CPSURI\") %>" />
       </td>
       <td width="50%">
-        <input type="text" name="<%=TEXTFIELD_POLICYNOTICE_CPSURL%>" size="45" maxlength="255" <%=certificateprofiledata.getUseCertificatePolicies() ? "" : "disabled"%>/>
+        <input type="text" name="<%=TEXTFIELD_POLICYNOTICE_CPSURL%>" size="45" maxlength="255" <%=certificateprofiledata.getUseCertificatePolicies() ? "" : "disabled"%> title="<%= ejbcawebbean.getText("FORMAT_URI") %>"/>
       </td>
     </tr>
     
@@ -1154,7 +1155,7 @@ function checkallfields(){
  	        <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_AIA_OCSP_URI\") %>" /> <%= ejbcawebbean.getHelpReference("/userguide.html#OCSP%20Service%20Locator") %>
  	      </td>
  	      <td width="50%">
-           <input type="text" name="<%=TEXTFIELD_OCSPSERVICELOCATOR%>" size="45" maxlength="255" 
+           <input type="text" name="<%=TEXTFIELD_OCSPSERVICELOCATOR%>" size="45" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_URI") %>"
            <%       if(!certificateprofiledata.getUseAuthorityInformationAccess() || certificateprofiledata.getUseDefaultOCSPServiceLocator())
                       out.write(" disabled "); 
                     else {
@@ -1180,7 +1181,7 @@ function checkallfields(){
         <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_AIA_CAISSUERS_URI\") %>" />
       </td>
       <td width="50%">
-        <input readonly type="text" name="<%= TEXTFIELD_CAISSUERURI + i %>" value="<c:out value="<%= uri %>"/>" size="45" maxlength="255"/>
+        <input readonly type="text" name="<%= TEXTFIELD_CAISSUERURI + i %>" value="<c:out value="<%= uri %>"/>" size="45" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_URI") %>"/>
       </td>
     </tr>
         <% }
@@ -1207,9 +1208,9 @@ function checkallfields(){
 	    <input name="<%=CHECKBOX_USEPRIVKEYUSAGEPERIODNOTBEFORE%>" onclick="checkprivkeyusageperiodnotbeforefield()" type="checkbox" value="<%=CHECKBOX_VALUE%>" <%=certificateprofiledata.isUsePrivateKeyUsagePeriodNotBefore() ? "CHECKED" : ""%>
 	    id="<%=CHECKBOX_USEPRIVKEYUSAGEPERIODNOTBEFORE%>">
 	    <label for="<%=CHECKBOX_USEPRIVKEYUSAGEPERIODNOTBEFORE%>"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_PKUP_STARTOFFSET\") %>" /></label>
-	    <c:out value="<%= ejbcawebbean.getText(\"YEARMONTHDAYTIME\") %>" />
+	    <c:out value="<%= ejbcawebbean.getText(\"FORMAT_TIME_YMD\") %>" />
 	    &nbsp;
-	    <input type="text" name="<%=TEXTFIELD_PRIVKEYUSAGEPERIODSTARTOFFSET%>" size="20" maxlength="255" <%=certificateprofiledata.isUsePrivateKeyUsagePeriodNotBefore() ? "" : "disabled"%> value="<%=certificateprofiledata.isUsePrivateKeyUsagePeriodNotBefore() ? ValidityDate.getString(certificateprofiledata.getPrivateKeyUsagePeriodStartOffset() / (24 * 3600)) : ""%>" />
+	    <input type="text" name="<%=TEXTFIELD_PRIVKEYUSAGEPERIODSTARTOFFSET%>" size="20" maxlength="255" <%=certificateprofiledata.isUsePrivateKeyUsagePeriodNotBefore() ? "" : "disabled"%> value="<%=certificateprofiledata.isUsePrivateKeyUsagePeriodNotBefore() ? ValidityDate.getString(certificateprofiledata.getPrivateKeyUsagePeriodStartOffset() / (24 * 3600)) : ""%>" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMD") %>" />
 	  </td>
 	</tr>
 	
@@ -1221,9 +1222,9 @@ function checkallfields(){
 	    <input name="<%=CHECKBOX_USEPRIVKEYUSAGEPERIODNOTAFTER%>" onclick="checkprivkeyusageperiodnotafterfield()" type="checkbox" value="<%=CHECKBOX_VALUE%>" <%=certificateprofiledata.isUsePrivateKeyUsagePeriodNotAfter() ? "CHECKED" : ""%>
 	    id="<%=CHECKBOX_USEPRIVKEYUSAGEPERIODNOTAFTER%>">
 	    <label for="<%=CHECKBOX_USEPRIVKEYUSAGEPERIODNOTAFTER%>"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_PKUP_PERIODLENGTH\") %>" /></label>
-	    <c:out value="<%= ejbcawebbean.getText(\"YEARMONTHDAYTIME\") %>" />
+	    <c:out value="<%= ejbcawebbean.getText(\"FORMAT_TIME_YMD\") %>" />
 	    &nbsp;
-	    <input type="text" name="<%=TEXTFIELD_PRIVKEYUSAGEPERIODLENGTH%>" size="20" maxlength="255" <%=certificateprofiledata.isUsePrivateKeyUsagePeriodNotAfter() ? "" : "disabled"%> value="<%=certificateprofiledata.isUsePrivateKeyUsagePeriodNotAfter() ? ValidityDate.getString(certificateprofiledata.getPrivateKeyUsagePeriodLength() / (24 * 3600)) : ""%>" />
+	    <input type="text" name="<%=TEXTFIELD_PRIVKEYUSAGEPERIODLENGTH%>" size="20" maxlength="255" <%=certificateprofiledata.isUsePrivateKeyUsagePeriodNotAfter() ? "" : "disabled"%> value="<%=certificateprofiledata.isUsePrivateKeyUsagePeriodNotAfter() ? ValidityDate.getString(certificateprofiledata.getPrivateKeyUsagePeriodLength() / (24 * 3600)) : ""%>" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMD") %>" />
 	  </td>
 	</tr>
 
@@ -1277,7 +1278,7 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row%2%>"> 
       <td width="50%" valign="top" align="right"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_QCS_SEMANTICSID\") %>" /> </td>
-      <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCSSEMANTICSID %>" size="20" maxlength="255" 
+      <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCSSEMANTICSID %>" size="20" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_OID") %>"
            <%       if(!certificateprofiledata.getUseQCStatement()) {
                       out.write(" disabled "); 
                     } else {%> 
@@ -1287,7 +1288,7 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row%2%>"> 
       <td width="50%" valign="top" align="right"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_QCS_NAMERA\") %>" /> </td>
-      <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCSTATEMENTRANAME %>" size="45" maxlength="255" 
+      <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCSTATEMENTRANAME %>" size="45" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>"
            <%       if(!certificateprofiledata.getUseQCStatement()) {
                       out.write(" disabled "); 
                     } else { %> 
@@ -1397,7 +1398,7 @@ function checkallfields(){
            <label for="<%=CHECKBOX_USEQCCUSTOMSTRING%>"><c:out value="<%= ejbcawebbean.getText(\"ADD\") %>" /></label>
            :&nbsp;
            <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_QCS_CUSTOMSTR_OID\") %>" />
-           <input type="text" name="<%=TEXTFIELD_QCCUSTOMSTRINGOID %>" size="20" maxlength="255"
+           <input type="text" name="<%=TEXTFIELD_QCCUSTOMSTRINGOID %>" size="20" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_OID") %>"
            <%       if(!certificateprofiledata.getUseQCStatement() || !certificateprofiledata.getUseQCCustomString()) {
                       out.write(" disabled "); 
                     } else {%> 
@@ -1407,7 +1408,7 @@ function checkallfields(){
     </tr>     
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" valign="top" align="right"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_QCS_CUSTOMSTR_TEXT\") %>" /> </td>
-      <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCCUSTOMSTRINGTEXT %>" size="45" maxlength="255" 
+      <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCCUSTOMSTRINGTEXT %>" size="45" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>"
            <%       if(!certificateprofiledata.getUseQCStatement() || !certificateprofiledata.getUseQCCustomString()) {
                       out.write(" disabled "); 
                     } else {%> 
@@ -1538,7 +1539,7 @@ function checkallfields(){
            <label for="<%=CHECKBOX_USECNPOSTFIX%>"><c:out value="<%= ejbcawebbean.getText(\"ADD\") %>" /></label>
            :&nbsp;
            <c:out value="<%= ejbcawebbean.getText(\"VALUE\") %>" />
-           <input type="text" name="<%=TEXTFIELD_CNPOSTFIX%>" size="20" maxlength="255"
+           <input type="text" name="<%=TEXTFIELD_CNPOSTFIX%>" size="20" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>"
            <%       if(!certificateprofiledata.getUseCNPostfix()) {
                       out.write(" disabled "); 
                     } else {%> 

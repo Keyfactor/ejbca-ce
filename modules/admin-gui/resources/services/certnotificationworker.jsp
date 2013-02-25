@@ -65,7 +65,7 @@ function checkUseEndUserNotification(){
 		<h:outputText value="#{web.text.TIMEBEFOREEXPIRATION}"/>
 	</h:panelGroup>
 	<h:panelGroup>				
-			<h:inputText id="certCheckTimeValueTextField" value="#{editService.notifyingType.timeValue}" size="5"/><f:verbatim> </f:verbatim>
+			<h:inputText id="certCheckTimeValueTextField" value="#{editService.notifyingType.timeValue}" size="5" title="#{web.text.FORMAT_INTEGER}"/><f:verbatim> </f:verbatim>
 			<h:selectOneMenu id="certCheckTimeUnitSelect" value="#{editService.notifyingType.timeUnit}">
 			  <f:selectItems value="#{editService.notifyingType.availableUnits}"/>
 		    </h:selectOneMenu>		

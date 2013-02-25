@@ -12,13 +12,13 @@
 		<h:outputText value="#{web.text.MAILACTIONSENDERADDRESS}"/>
 	</h:panelGroup>
 	<h:panelGroup>
-			<h:inputText id="mailActionSenderAddressTextField" value="#{editService.mailActionType.senderAddress}" size="45"/>		
+			<h:inputText id="mailActionSenderAddressTextField" value="#{editService.mailActionType.senderAddress}" size="45" title="#{web.text.FORMAT_EMAILADDRESS}"/>	
 	</h:panelGroup>
 
 	<h:panelGroup>
 		<h:outputText value="#{web.text.MAILACTIONRECIEVERADDRESS}"/>
 	</h:panelGroup>
 	<h:panelGroup>
-			<h:inputText id="mailActionRecieverAddressTextField" value="#{editService.mailActionType.recieverAddress}" size="45"/>
+			<h:inputText id="mailActionRecieverAddressTextField" value="#{editService.mailActionType.recieverAddress}" size="45" title="#{web.text.FORMAT_EMAILADDRESS}"/>
 	</h:panelGroup>
 
