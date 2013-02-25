@@ -93,14 +93,14 @@ org.ejbca.util.HTMLTools
 function viewcacert(caid){   
     var link = "<%=VIEWCERTIFICATE_LINK%>?caid="+caid;
     link = encodeURI(link);     
-    win_popup = window.open(link, 'view_cert','height=600,width=750,scrollbars=yes,toolbar=no,resizable=1');
+    win_popup = window.open(link, 'view_cert','height=650,width=750,scrollbars=yes,toolbar=no,resizable=1');
     win_popup.focus();
 } 
 
 function viewcainfo(caid){        
     var link = "<%=VIEWINFO_LINK%>?caid="+caid;
     link = encodeURI(link);
-    win_popup = window.open(link, 'view_info','height=550,width=750,scrollbars=yes,toolbar=no,resizable=1');
+    win_popup = window.open(link, 'view_info','height=600,width=750,scrollbars=yes,toolbar=no,resizable=1');
     win_popup.focus();
 }
 
