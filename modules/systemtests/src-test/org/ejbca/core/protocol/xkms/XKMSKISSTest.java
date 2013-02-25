@@ -38,6 +38,7 @@ import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.CaSessionTest;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -153,10 +154,13 @@ public class XKMSKISSTest {
     public void setUp() throws Exception {
         log.trace(">setUp()");    
         
-        int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
-        testx509ca = CaSessionTest.createTestX509CA(issuerdn, null, false, keyusage);
-        caSession.addCA(admin, testx509ca);
-        
+        try {
+            caSession.getCAInfo(admin, "TestCA");
+        } catch (CADoesntExistsException e) {
+            int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
+            testx509ca = CaSessionTest.createTestX509CA(issuerdn, null, false, keyusage);
+            caSession.addCA(admin, testx509ca);
+        }
         Random ran = new Random();
         if (baseUsername == null) {
             baseUsername = "xkmstestuser" + (ran.nextInt() % 1000) + "-";

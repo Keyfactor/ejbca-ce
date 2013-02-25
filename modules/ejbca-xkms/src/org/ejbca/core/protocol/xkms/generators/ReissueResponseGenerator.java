@@ -79,32 +79,30 @@ public class ReissueResponseGenerator extends KRSSResponseGenerator {
 				resultMinor = XKMSConstants.RESULTMINOR_MESSAGENOTSUPPORTED;
 			}
 			if(resultMajor == null){ 
-				if(resultMajor == null){ 
-					X509Certificate cert = (X509Certificate) getPublicKeyInfo(req, false);
-					isCertValid = certIsValid(cert);
-					if(isCertValid && confirmPOP(cert.getPublicKey())){						
-						userData = findUserData(cert);
-						if(userData != null){
-							boolean encryptedPassword = isPasswordEncrypted(req);
-							if(isCertValid && XKMSConfig.isAutomaticReissueAllowed()){
-								password = setUserStatusToNew(userData);
-							}else{							
-								if(encryptedPassword){
-									password = getEncryptedPassword(requestDoc, userData.getPassword());
-								}else{
-									password = getClearPassword(req, userData.getPassword());
-								}
-							}
-							if(password != null ){
-								newCert = registerReissueOrRecover(false,true, result, userData,password, cert.getPublicKey(), null);
-								if(newCert != null){
-									KeyBindingAbstractType keyBinding = getResponseValues(req.getReissueKeyBinding(), newCert, false, true);
-									result.getKeyBinding().add((KeyBindingType) keyBinding);
-								}
-							}
-						}
-					}
-				}
+			    X509Certificate cert = (X509Certificate) getPublicKeyInfo(req, false);
+			    isCertValid = certIsValid(cert);
+			    if(isCertValid && confirmPOP(cert.getPublicKey())){
+			        userData = findUserData(cert);
+			        if(userData != null){
+			            boolean encryptedPassword = isPasswordEncrypted(req);
+			            if(isCertValid && XKMSConfig.isAutomaticReissueAllowed()){
+			                password = setUserStatusToNew(userData);
+			            }else{							
+			                if(encryptedPassword){
+			                    password = getEncryptedPassword(requestDoc, userData.getPassword());
+			                }else{
+			                    password = getClearPassword(req, userData.getPassword());
+			                }
+			            }
+			            if(password != null ){
+			                newCert = registerReissueOrRecover(false,true, result, userData,password, cert.getPublicKey(), null);
+			                if(newCert != null){
+			                    KeyBindingAbstractType keyBinding = getResponseValues(req.getReissueKeyBinding(), newCert, false, true);
+			                    result.getKeyBinding().add((KeyBindingType) keyBinding);
+			                }
+			            }
+			        }
+			    }
 			}
 		}
 		if (log.isDebugEnabled()) {

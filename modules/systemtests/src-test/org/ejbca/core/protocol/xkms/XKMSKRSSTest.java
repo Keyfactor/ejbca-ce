@@ -42,6 +42,7 @@ import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.CaSessionTest;
@@ -175,10 +176,18 @@ public class XKMSKRSSTest {
 
     @Before
     public void setUp() throws Exception {
-        int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
-        testx509ca = CaSessionTest.createTestX509CA(issuerdn, null, false, keyusage);
-        caSession.addCA(administrator, testx509ca);
-        orgCaInfo = caSession.getCAInfo(administrator, "TestCA");
+        try {
+            orgCaInfo = caSession.getCAInfo(administrator, "TestCA");
+        } catch (CADoesntExistsException e) {            
+            
+            int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
+            testx509ca = CaSessionTest.createTestX509CA(issuerdn, null, false, keyusage);
+            caSession.addCA(administrator, testx509ca);
+            
+
+            
+            orgCaInfo = caSession.getCAInfo(administrator, "TestCA");
+        }
     }
     
 	@BeforeClass
@@ -222,8 +231,17 @@ public class XKMSKRSSTest {
 	    GlobalConfigurationProxySessionRemote globalConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 	    GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
 	    EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-	    
-        final CAInfo caInfo = caSession.getCAInfo(administrator, "TestCA");
+
+        
+        CAInfo caInfo = null;
+        try {
+            caInfo = caSession.getCAInfo(administrator, "TestCA");
+        } catch (CADoesntExistsException e) {
+            int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
+            CA testCA = CaSessionTest.createTestX509CA(issuerdn, null, false, keyusage);
+            caSession.addCA(administrator, testCA);
+            caInfo = caSession.getCAInfo(administrator, "TestCA");
+        }
         // make sure same keys for different users is prevented
         caInfo.setDoEnforceUniquePublicKeys(true);
         // make sure same DN for different users is prevented
