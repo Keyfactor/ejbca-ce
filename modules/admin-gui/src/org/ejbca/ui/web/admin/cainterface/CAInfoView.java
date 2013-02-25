@@ -46,7 +46,7 @@ public class CAInfoView implements Serializable, Cloneable {
    public static final int SUBJECTALTNAME          = 2;
    public static final int CATYPE                  = 3;
    
-   private static final int CASPACER               = 4;
+   private static final int SECTION_CA             = 4;
    
    public static final int EXPIRETIME              = 5;
    public static final int STATUS                  = 6;
@@ -54,7 +54,7 @@ public class CAInfoView implements Serializable, Cloneable {
    public static final int CATOKEN_STATUS          = 7;
    public static final int DESCRIPTION             = 8;
    
-   private static final int CRLSPACER              = 9;
+   private static final int SECTION_CRL            = 9;
    
    public static final int CRLPERIOD               = 10;
    public static final int CRLISSUEINTERVAL        = 11;
@@ -62,23 +62,30 @@ public class CAInfoView implements Serializable, Cloneable {
    public static final int DELTACRLPERIOD          = 13;
    public static final int CRLPUBLISHERS           = 14;
    
-   private static final int OCSPSPACER             = 15;
+   private static final int SECTION_SERVICE        = 15;
    
    public static final int OCSP                    = 16;
   
     
    /** A info text strings must contain:
-    * CANAME, CERT_SUBJECTDN, EXT_PKIX_SUBJECTALTNAME, CATYPE, EXPIRES, STATUS, CATOKENSTATUS, DESCRIPTION, CRL_CA_CRLPERIOD, CRL_CA_ISSUEINTERVAL, CRL_CA_OVERLAPTIME, CRL_CA_DELTACRLPERIOD
-    * It must also have "" in pos nr 4 (CASPACER) 
-    * It must also have "" in pos nr 9 (CRLSPACER) 
+    * CANAME, CERT_SUBJECTDN, EXT_ABBR_SUBJECTALTNAME, CATYPE, EXPIRES, STATUS, CATOKENSTATUS, DESCRIPTION, CRL_CA_CRLPERIOD, CRL_CA_ISSUEINTERVAL, CRL_CA_OVERLAPTIME, CRL_CA_DELTACRLPERIOD
+    * It must also have CADATA in position n° 4 (CA data) 
+    * It must also have CRLSPECIFICDATA in position n° 9 (CRL Specific Data) 
+    * It must also have SERVICES in position n° 15 (Services), if exists 
     */
-   public static String[] X509CA_CAINFODATATEXTS = {"CANAME","CERT_SUBJECTDN","EXT_PKIX_SUBJECTALTNAME","CATYPE","",
-                                                    "EXPIRES","STATUS",/*"CATOKENSTATUS"*/ "","DESCRIPTION","", "CRL_CA_CRLPERIOD", 
-                                                    "CRL_CA_ISSUEINTERVAL", "CRL_CA_OVERLAPTIME", "CRL_CA_DELTACRLPERIOD", "PUBLISHERS", "", "OCSPSERVICE"};
+   public static String[] X509CA_CAINFODATATEXTS = {"CANAME","CERT_SUBJECTDN","EXT_ABBR_SUBJECTALTNAME","CATYPE",
+       "CADATA",               /* CA data */
+       "EXPIRES","STATUS","CATOKENSTATUS","DESCRIPTION",
+       "CRLSPECIFICDATA",      /* CRL Specific Data */
+       "CRL_CA_CRLPERIOD","CRL_CA_ISSUEINTERVAL","CRL_CA_OVERLAPTIME","CRL_CA_DELTACRLPERIOD","PUBLISHERS",
+       "SERVICES",             /* Services */
+       "OCSPSERVICE"};
 
-   public static String[] CVCCA_CAINFODATATEXTS = {"NAME","CERT_SUBJECTDN","","CATYPE","",
-       "EXPIRES","STATUS",/*"CATOKENSTATUS"*/ "","DESCRIPTION","", "CRL_CA_CRLPERIOD", 
-       "CRL_CA_ISSUEINTERVAL", "CRL_CA_OVERLAPTIME", "CRL_CA_DELTACRLPERIOD"};
+public static String[] CVCCA_CAINFODATATEXTS = {"NAME","CERT_SUBJECTDN","","CATYPE",
+      "CADATA",                /* CA data */
+      "EXPIRES","STATUS","CATOKENSTATUS","DESCRIPTION",
+      "CRLSPECIFICDATA",       /* CRL Specific Data */
+      "CRL_CA_CRLPERIOD","CRL_CA_ISSUEINTERVAL","CRL_CA_OVERLAPTIME","CRL_CA_DELTACRLPERIOD"};
 
    private String[] cainfodata = null;
    private String[] cainfodatatexts = null;
@@ -105,11 +112,11 @@ public class CAInfoView implements Serializable, Cloneable {
 			cainfodata[CRLPUBLISHERS] = cainfodata[CRLPUBLISHERS] + ", " + (String) publishersidtonamemap.get(publisherIds.next());
         }
         
-		cainfodata[OCSPSPACER]          = "&nbsp;"; // blank line
+		cainfodata[SECTION_SERVICE]          = "&nbsp;"; // Section row
 		
 		boolean active = false;		
 		Iterator<ExtendedCAServiceInfo> extendedServiceInfoIterator = ((X509CAInfo) cainfo).getExtendedCAServiceInfos().iterator();
-		while(publisherIds.hasNext()){
+		while(extendedServiceInfoIterator.hasNext()){
 	      ExtendedCAServiceInfo next = extendedServiceInfoIterator.next();
 	      if(next instanceof OCSPCAServiceInfo){
 	      	active = next.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE;
@@ -148,7 +155,7 @@ public class CAInfoView implements Serializable, Cloneable {
         } else {
             cainfodata[CATYPE]     = ejbcawebbean.getText("X509");        	
         }
-        cainfodata[CASPACER]          = "&nbsp;"; // blank line
+        cainfodata[SECTION_CA]          = "&nbsp;"; // Section row
         if(cainfo.getExpireTime() == null) {
 		  cainfodata[EXPIRETIME] = "";
         } else {
@@ -182,7 +189,7 @@ public class CAInfoView implements Serializable, Cloneable {
         
         cainfodata[DESCRIPTION] = HTMLTools.htmlescape(cainfo.getDescription());
         
-		cainfodata[CRLSPACER]          = "&nbsp;"; // blank line
+		cainfodata[SECTION_CRL]          = "&nbsp;"; // Section row
 
         cainfodata[CRLPERIOD] = SimpleTime.getInstance(cainfo.getCRLPeriod()).toString(SimpleTime.TYPE_MINUTES);
         cainfodata[CRLISSUEINTERVAL] = SimpleTime.getInstance(cainfo.getCRLIssueInterval()).toString(SimpleTime.TYPE_MINUTES);

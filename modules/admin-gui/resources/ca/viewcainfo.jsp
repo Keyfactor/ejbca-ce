@@ -48,24 +48,29 @@ java.security.cert.X509Certificate
     <% } else { %>
     <form name="viewcainfo" action="<%= THIS_FILENAME %>" method="post">
         <input type="hidden" name='<%= viewcainfohelper.CA_PARAMETER %>' value='<%=viewcainfohelper.caid %>'>
-        <table border="0" cellpadding="0" cellspacing="2" width="100%">
+        <table class="view" border="0" cellpadding="0" cellspacing="2" width="100%">
+
+	    <!-- ---------- Data ---------- -->
 
         <% for(int i=0; i < viewcainfohelper.cainfo.getCAInfoData().length; i++){ %>
-            <tr id="Row<%=(row++)%2%>"<% if(i==0){ %> class="title"<% } %>>
-		        <td align="right" width="<%=columnwidth%>"><% if(i==0||i==1){ %><strong><% } %><%= viewcainfohelper.cainfo.getCAInfoDataText()[i] %><% if(i==0||i==1){ %></strong><% } %></td>
+         <tr id="Row<%=(row++)%2%>"<% if(i==0){ %> class="title"<% } %><% if(i==4||i==9||i==15){ %> class="section"<% } %>>
+		   <td align="right" width="<%=columnwidth%>"><% if(i==0||i==1||i==4||i==9||i==15){ %><strong><% } %><%= viewcainfohelper.cainfo.getCAInfoDataText()[i] %><% if(i==0||i==1||i==4||i==9||i==15){ %></strong><% } %></td>
 		        <td><% if(i==0||i==1){ %><strong><% } %><% 
 		        String datatext = viewcainfohelper.cainfo.getCAInfoData()[i];
 		        if (datatext == null) {
 		            datatext = "";
 		        }
-			/*	CAInfoView will escape potentially dangerous fields for us
+			%><%=datatext%><% if(i==0||i==1){ %></strong><% } %></td>
+      </tr>    
+			<%-- CAInfoView will escape potentially dangerous fields for us
 				we can't easily use c:out here, since empty fields will contain "&nbsp;"
 				as set by CAInfoView, and I don't want to risk breaking other views by changing that 
 				behavior too much... 
-			 */%>
-			    <%=datatext%><% if(i==0||i==1){ %></strong><% } %></td>
-            </tr>
+			--%>
         <% } %>
+
+        <!-- ---------- Actions ---------- -->
+
             <tr id="Row<%=(row++)%2%>">
   	            <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("INCLUDEINHEALTHCHECK") %></td>
         	    <td>
@@ -75,11 +80,13 @@ java.security.cert.X509Certificate
                 </td>
             </tr> 
             <tr id="Row<%=(row++)%2%>">
-                <td width="<%=columnwidth%>"></td>
-                <td align="right" style="vertical-align: bottom;">
-                    <input type="button" name="<%= viewcainfohelper.BUTTON_CLOSE %>" value="<%= ejbcawebbean.getText("CLOSE") %>" 
-                    onClick='self.close()'>
-                </td>
+				<td width="<%=columnwidth%>">
+					&nbsp;
+				</td>
+			    <td align="right" style="vertical-align: bottom;">
+		             <input type="button" name="<%= viewcainfohelper.BUTTON_CLOSE %>" value="<%= ejbcawebbean.getText("CLOSE") %>" 
+		                    onClick='self.close()'>
+		        </td>
             </tr>
         </table> 
     </form>
