@@ -1135,7 +1135,7 @@ function checkUseInBatch(){
    				}
        		%>   
              <input type="radio" name="<%= RADIO_MAXFAILEDLOGINS %>" value="<%= RADIO_MAXFAILEDLOGINS_VAL_SPECIFIED %>" onclick="maxFailedLoginsSpecified()" <% if(maxLoginAttempts != -1) { out.write("checked"); } %> <% if(!profile.isModifyable(EndEntityProfile.MAXFAILEDLOGINS,0)) { out.write("readonly"); } %>>
-             <input type="text" name="<%= TEXTFIELD_MAXFAILEDLOGINS %>" size="5" maxlength="255" tabindex="<%=tabindex++%>" value='<% if(maxLoginAttempts != -1) { out.write(""+maxLoginAttempts); } %>' <% if(maxLoginAttempts == -1) { out.write("disabled"); } %> <% if(!profile.isModifyable(EndEntityProfile.MAXFAILEDLOGINS,0)) { out.write(" readonly"); } %>>
+             <input type="text" name="<%= TEXTFIELD_MAXFAILEDLOGINS %>" size="5" maxlength="255" tabindex="<%=tabindex++%>" value='<% if(maxLoginAttempts != -1) { out.write(""+maxLoginAttempts); } %>' <% if(maxLoginAttempts == -1) { out.write("disabled"); } %> <% if(!profile.isModifyable(EndEntityProfile.MAXFAILEDLOGINS,0)) { out.write(" readonly"); } %> title="<%= ejbcawebbean.getText("FORMAT_INTEGER") %>">
              
              <input type="radio" name="<%= RADIO_MAXFAILEDLOGINS %>" value="<%= RADIO_MAXFAILEDLOGINS_VAL_UNLIMITED %>" onclick="maxFailedLoginsUnlimited()" <% if(maxLoginAttempts == -1) { out.write("checked"); } %> <% if(!profile.isModifyable(EndEntityProfile.MAXFAILEDLOGINS,0)) { out.write("readonly"); } %>
                  id="<%=RADIO_MAXFAILEDLOGINS%>unlimited">
@@ -1182,7 +1182,7 @@ function checkUseInBatch(){
        <tr id="Row<%=(row++)%2%>">	 
 	 <td align="right"><%= ejbcawebbean.getText("EMAIL") %></td>
 	 <td>      
-           <input type="text" name="<%= TEXTFIELD_EMAIL %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%= emailname %>"/>'> @
+           <input type="text" name="<%= TEXTFIELD_EMAIL %>" size="15" maxlength="255" tabindex="<%=tabindex++%>" value="<c:out value="<%= emailname %>"/>" title="<%= ejbcawebbean.getText("FORMAT_DOMAINNAME") %>"> @
           <% if(!profile.isModifyable(EndEntityProfile.EMAIL,0)){ 
                  String[] options = profile.getValue(EndEntityProfile.EMAIL, 0).split(EndEntityProfile.SPLITCHAR);
                %>
@@ -1346,7 +1346,7 @@ function checkUseInBatch(){
 	                <% } %>
 	              <% } %>
              <%  }else{ %> 
-                 <input type="text" name="<%= TEXTFIELD_SUBJECTALTNAME + i %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value="<c:out value="<%= domain %>"/>">
+                 <input type="text" name="<%= TEXTFIELD_SUBJECTALTNAME + i %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value="<c:out value="<%= domain %>"/>" title="<%= ejbcawebbean.getText("FORMAT_DOMAINNAME") %>">
              <% }
               }else{    
                if(!profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){ 
@@ -1532,6 +1532,7 @@ function checkUseInBatch(){
 		<tr  id="Row<%=(row++)%2%>"> 
 			<td align="right"> 
 				<%= ejbcawebbean.getText("CERT_SERIALNUMBER_HEXA") %>
+				(<%= ejbcawebbean.getText("EXAMPLE").toLowerCase() %> : 1234567890ABCDEF)
 			</td>
 			<td> 
 				<input type="text" name="<%= TEXTFIELD_CERTSERIALNUMBER %>" size="20" maxlength="40" tabindex="<%=tabindex++%>" title="<%= ejbcawebbean.getText("FORMAT_HEXA") %>" class="hexa"
@@ -1556,7 +1557,7 @@ function checkUseInBatch(){
 			<td align="right"> 
 				<%= ejbcawebbean.getText("TIMEOFSTART") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Certificate%20Validity") %>
 			</td><td> 
-				<input type="text" name="<%= TEXTFIELD_STARTTIME %>" size="20" maxlength="40" tabindex="<%=tabindex++%>"
+				<input type="text" name="<%= TEXTFIELD_STARTTIME %>" size="25" maxlength="40" tabindex="<%=tabindex++%>" title="<%= ejbcawebbean.getText("FORMAT_ISO8601") %> <%= ejbcawebbean.getText("OR") %> (<%= ejbcawebbean.getText("DAYS").toLowerCase() %>:<%= ejbcawebbean.getText("HOURS").toLowerCase() %>:<%= ejbcawebbean.getText("MINUTES").toLowerCase() %>)"
 					<%	ExtendedInformation ei = userdata.getExtendedInformation();
 						String startTime = null;
 						if ( ei != null ) {
@@ -1625,7 +1626,7 @@ function checkUseInBatch(){
         <%= ejbcawebbean.getText("CARDNUMBER") %>
       </td>
       <td > 
-        <input type="text" name="<%=TEXTFIELD_CARDNUMBER%>" size="20" maxlength="40" tabindex="<%=tabindex++%>" value="<c:out value="<%= userdata.getCardNumber() %>"/>"> 
+        <input type="text" name="<%=TEXTFIELD_CARDNUMBER%>" size="20" maxlength="40" tabindex="<%=tabindex++%>" value="<c:out value="<%= userdata.getCardNumber() %>"/>" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>">  
       </td>
 	  <td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_CARDNUMBER %>" value="<%= CHECKBOX_VALUE %>"  disabled="disabled" <% if(profile.isRequired(EndEntityProfile.CARDNUMBER,0)) out.write(" CHECKED "); %>></td>
     </tr>
