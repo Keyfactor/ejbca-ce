@@ -76,7 +76,7 @@
       <td width="100%"> 
         <input type="text" name="<%= publisherhelper.TEXTFIELD_PUBLISHERNAME%>" size="40" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_ID_STR") %>"> 
         <input type="submit" name="<%= publisherhelper.BUTTON_ADD_PUBLISHER%>" onClick='return checkfieldforlegalchars("document.editpublishers.<%=publisherhelper.TEXTFIELD_PUBLISHERNAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS",true) %>")' value="<%= ejbcawebbean.getText("ADD") %>">&nbsp;&nbsp;&nbsp;
-        <input type="submit" name="<%= publisherhelper.BUTTON_RENAME_PUBLISHER%>" onClick='return checkfieldforlegalchars("document.editpublishers.<%=publisherhelper.TEXTFIELD_PUBLISHERNAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS",true) %>")' value="<%= ejbcawebbean.getText("RENAMESELECTED") %>">&nbsp;&nbsp;&nbsp;
+        <input type="submit" name="<%= publisherhelper.BUTTON_RENAME_PUBLISHER%>" onClick='return checkfieldforlegalchars("document.editpublishers.<%=publisherhelper.TEXTFIELD_PUBLISHERNAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS",true) %>")' value="<%= ejbcawebbean.getText("RENAME") %>">&nbsp;&nbsp;&nbsp;
         <input type="submit" name="<%= publisherhelper.BUTTON_CLONE_PUBLISHER%>" onClick='return checkfieldforlegalchars("document.editpublishers.<%=publisherhelper.TEXTFIELD_PUBLISHERNAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS",true) %>")' value="<%= ejbcawebbean.getText("USESELECTEDASTEMPLATE") %>">
       </td>
     </tr>
