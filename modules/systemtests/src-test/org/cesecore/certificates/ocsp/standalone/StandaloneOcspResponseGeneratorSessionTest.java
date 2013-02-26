@@ -100,14 +100,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         String curDir = System.getProperty("user.dir");
         System.out.println(curDir);
 
-        CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-        List<String> canames = caSession.getAvailableCANames(authenticationToken);
-        if(canames.contains("AdminCA1")) {
-            CA_DN = "CN=AdminCA1,O=EJBCA Sample,C=SE";
-        } else if(canames.contains("ManagementCA")) {
-            CA_DN = "CN=ManagementCA,O=EJBCA Sample,C=SE";
-        }
-        
+        CA_DN = OcspConfiguration.getDefaultResponderId();
         caCertificate = (X509Certificate) new ArrayList<Certificate>(certificateStoreSession.findCertificatesBySubject(CA_DN)).get(0); 
 
         // Store a root certificate in the database.
