@@ -539,7 +539,7 @@
 	<!-- Target that setups a user with cert as required by ProtocolOcspHttpStandaloneTest -->
 	<target name="runocsp.setuptest" depends="assert-appserverrunning">
 		<antcall target="ejbca-cli">
-			<param name="ejbca-cli.arg" value="ra adduser ocspTest foo123 CN=ocspTest null ManagementCA null 1 P12"/>
+			<param name="ejbca-cli.arg" value="ra adduser ocspTest foo123 CN=ocspTest null AdminCA1 null 1 P12"/>
 		</antcall>
 		<antcall target="ejbca-cli">
 			<param name="ejbca-cli.arg" value="ra setuserstatus ocspTest 10"/>
@@ -564,7 +564,7 @@
 		</antcall>
 		<!-- Generate an OCSP signer keystore -->
 		<antcall target="ejbca-cli">
-			<param name="ejbca-cli.arg" value="ra adduser ocspTestSigner foo123 CN=ocspTestSigner null ManagementCA null 1 P12 OCSPSIGNER"/>
+			<param name="ejbca-cli.arg" value="ra adduser ocspTestSigner foo123 CN=ocspTestSigner null AdminCA1 null 1 P12 OCSPSIGNER"/>
 		</antcall>
 		<antcall target="ejbca-cli">
 			<param name="ejbca-cli.arg" value="ra setuserstatus ocspTestSigner 10"/>
@@ -579,7 +579,7 @@
 		<copy file="${ejbca.home}/p12/ocspTestSigner.p12" todir="${build.dir}/keys" failonerror="false"/>
 		<echo>
 			Configure ocsp.properties:
-			 ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
+			 ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
 			 ocsp.keys.dir=${build.dir}/keys
 			 ocsp.keys.storePassword=foo123
 			 ocsp.untilNextUpdate=5
