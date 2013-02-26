@@ -49,6 +49,7 @@ import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -79,13 +80,13 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         //super.setUp(); We don't want to initialize roles etc, since this is a standalone test!
         CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
         AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ProtocolOcspHttpStandaloneTest"));
-        List<String> canames = caSession.getAvailableCANames(admin);
-        if(canames.contains("AdminCA1")) {
+        try {
+            caSession.getCAInfo(admin, "AdminCA1");
             issuerDN = "CN=AdminCA1,O=EJBCA Sample,C=SE";
-        } else if(canames.contains("ManagementCA")) {
+        } catch (CADoesntExistsException e) {
             issuerDN = "CN=ManagementCA,O=EJBCA Sample,C=SE";
         }
- 
+        
         caid = issuerDN.hashCode();
         unknowncacert = (X509Certificate) CertTools.getCertfromByteArray(unknowncacertBytes);
     }
