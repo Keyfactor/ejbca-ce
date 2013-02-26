@@ -47,9 +47,14 @@ import org.bouncycastle.cert.ocsp.SingleResp;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -65,8 +70,6 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
 
     private static final Logger log = Logger.getLogger(ProtocolOcspHttpStandaloneTest.class);
 
-    private static final int myCaId = issuerDN.hashCode();
-
     public ProtocolOcspHttpStandaloneTest() throws MalformedURLException, URISyntaxException {
     	super("http", "127.0.0.1", 8080, "ejbca", "publicweb/status/ocsp");
     }
@@ -74,7 +77,16 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
     @Before
     public void setUp() throws Exception {
         //super.setUp(); We don't want to initialize roles etc, since this is a standalone test!
-        caid = myCaId;
+        CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+        AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ProtocolOcspHttpStandaloneTest"));
+        List<String> canames = caSession.getAvailableCANames(admin);
+        if(canames.contains("AdminCA1")) {
+            issuerDN = "CN=AdminCA1,O=EJBCA Sample,C=SE";
+        } else if(canames.contains("ManagementCA")) {
+            issuerDN = "CN=ManagementCA,O=EJBCA Sample,C=SE";
+        }
+ 
+        caid = issuerDN.hashCode();
         unknowncacert = (X509Certificate) CertTools.getCertfromByteArray(unknowncacertBytes);
     }
 
