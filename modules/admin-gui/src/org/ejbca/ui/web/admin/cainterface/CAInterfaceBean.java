@@ -790,7 +790,7 @@ public class CAInterfaceBean implements Serializable {
                 extendedServiceSignatureKeyType = AlgorithmConstants.KEYALGORITHM_DSA;
             } else if (extendedServiceSignatureKeySpec.startsWith(AlgorithmConstants.KEYSPECPREFIX_ECGOST3410)) {
                 extendedServiceSignatureKeyType = AlgorithmConstants.KEYALGORITHM_ECGOST3410;
-            } else if (extendedServiceSignatureKeySpec.startsWith(CesecoreConfiguration.getOidDstu4145())) {
+            } else if (AlgorithmTools.isDstu4145Enabled() && extendedServiceSignatureKeySpec.startsWith(CesecoreConfiguration.getOidDstu4145())) {
                 extendedServiceSignatureKeyType = AlgorithmConstants.KEYALGORITHM_DSTU4145;
             } else {
                 extendedServiceSignatureKeyType = AlgorithmConstants.KEYALGORITHM_ECDSA;
