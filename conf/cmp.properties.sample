@@ -187,7 +187,7 @@
 # The endEntityProfile to be used when adding users in RA mode. 
 # Possible values are:
 # The name of a End Entity Profile
-# KeyId - use a End Entity Profile with the same name as the KeyId sent in the CMP request (UTF-8 encoding is used)
+# KeyId - use a End Entity Profile with the same name as the KeyId (PKIHeader.senderKID) sent in the CMP request (UTF-8 encoding is used)
 #
 # Default: EMPTY
 #cmp.ra.endentityprofile=EMPTY
@@ -196,7 +196,7 @@
 # Possible values are:
 # The name of a Certificate Profile
 # ProfileDefault - use the default certificate profile of the end entity profile used
-# KeyId - use a Certificate Profile with the same name as the KeyId sent in the CMP request (UTF-8 encoding is used)
+# KeyId - use a Certificate Profile with the same name as the KeyId (PKIHeader.senderKID) sent in the CMP request (UTF-8 encoding is used)
 #
 # Default: ENDUSER
 #cmp.ra.certificateprofile=ENDUSER
@@ -205,7 +205,7 @@
 # Possible values are:
 # The name of a CA
 # ProfileDefault - use the default CA of the end entity profile used
-# KeyId - use a CA with the same name as the KeyId sent in the CMP request (UTF-8 encoding is used)
+# KeyId - use a CA with the same name as the KeyId (PKIHeader.senderKID) sent in the CMP request (UTF-8 encoding is used)
 #
 # Default: ManagementCA
 #cmp.ra.caname=ManagementCA
