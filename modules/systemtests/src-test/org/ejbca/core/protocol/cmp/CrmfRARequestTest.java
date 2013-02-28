@@ -265,7 +265,7 @@ public class CrmfRARequestTest extends CmpTestCase {
             crmfHttpUserTest(
                     "CN=SameDNUser,O=EJBCA Sample,C=SE",
                     key4,
-                    "User 'SameDNUser' is not allowed to use same subject DN as the user(s) 'samednuser1' is/are using (even if CN postfix is used). See setting for 'Enforce unique DN' in Edit Certificate Authorities.", null);
+                    "User 'SameDNUser' is not allowed to use same subject DN as the user(s) 'samednuser1' is/are using (even if CN postfix is used). See setting for 'Enforce unique DN' in the section Certification Authorities.", null);
             
         } finally {
             try {
