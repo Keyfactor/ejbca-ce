@@ -54,8 +54,10 @@ new TWTR.Widget({
 <a style="color:white; padding:1.8em;" href="http://www.primekey.se/Company/Register+to+Receive/Gov+eID+%26+ePassports/" target="pk">Free eID &amp; ePassport booklet</a>
 </div>
 <div class="content">
+<!-- 
 <a href="https://ae.rsaconference.com/US13/portal/newreg.ww" target="rsa"><img src="./images/RSAC-2013_623px.png" alt="Visit PrimeKey at RSA 2013. Free Expo Pass Code." class="banner"/></a>
     <hr/>
+ -->    
   <p><strong>EJBCA 5.0.8 is now out!</strong>
   <br />Visit the <a href="download.html">download</a> section. There is also a LiveCD!
   <br />
