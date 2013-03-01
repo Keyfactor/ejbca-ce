@@ -67,6 +67,11 @@ public final class ProtectedDataConfiguration {
      * Map of keyids and key labels, identifying which key label in a specific crypto token is used for a protection keyid
      */
     private final Map<Integer, String> keyLabels = new HashMap<Integer, String>();
+    
+    /**
+     * Map of keyids and signature algorithms, mapping keyids to e.g. SHA256WithRSA or SHA384WithECDSA
+     */
+    private final Map<Integer, String> sigAlgs = new HashMap<Integer, String>();
 
     /**
      * Map of keyids and protect version, identifying which protect verison (hmac/dig sig etc) in a specific crypto token is used for a protection keyid
@@ -96,6 +101,14 @@ public final class ProtectedDataConfiguration {
     public String getKeyLabel(final int keyid) {
     	return keyLabels.get(Integer.valueOf(keyid));
 	}
+    
+    public String getSigAlg(final int keyid) {
+        String sigalg = sigAlgs.get(Integer.valueOf(keyid));
+        if (sigalg == null && getProtectVersion(keyid) == 2) {
+            sigalg = "SHA256WithRSA";
+        }
+        return sigalg;
+    }
 
     public Integer getProtectVersion(final int keyid) {
     	Integer ret = protectVersions.get(Integer.valueOf(keyid));
@@ -158,6 +171,7 @@ public final class ProtectedDataConfiguration {
     	final String datastr = "databaseprotection.data.";
     	final String pinstr = "databaseprotection.tokenpin.";
     	final String versionstr = "databaseprotection.version.";
+    	final String sigalgstr = "databaseprotection.sigalg.";
     	for (int i = 0; i < 255; i++) {
     		final String keyid = conf.getString(keyidstr+i);
     		if (keyid != null) {
@@ -173,6 +187,11 @@ public final class ProtectedDataConfiguration {
     					final String version = conf.getString(versionstr+i);
     					if (StringUtils.isNotEmpty(version)) {
     						protectVersions.put(Integer.parseInt(keyid), Integer.parseInt(version));
+    					}
+    					// Get sigalg, there is a default
+    					final String sigalg = conf.getString(sigalgstr+i);
+    					if (StringUtils.isNotEmpty(sigalg)) {
+    						sigAlgs.put(Integer.parseInt(keyid), sigalg);
     					}
     					// Get classname, must exist
     					final String classname = conf.getString(classtr+i);
