@@ -16,7 +16,17 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.cert.CertificateException;
+import java.security.spec.AlgorithmParameterSpec;
 import java.util.Collection;
+import java.util.Properties;
 
 import org.junit.Test;
 
@@ -38,7 +48,7 @@ public class CryptoTokenFactoryTest {
 		// A token with the same classpath but different name should count as the same
 		AvailableCryptoToken token4 = new AvailableCryptoToken(SoftCryptoToken.class.getName(), "FOO", true, true);
 		// A token that should not exist, but with a real classpath
-		AvailableCryptoToken token5 = new AvailableCryptoToken(DummyCryptoToken.class.getName(), "FOO", true, true);
+		AvailableCryptoToken token5 = new AvailableCryptoToken(MockCryptoToken.class.getName(), "FOO", true, true);
 		// A token that should not exist, with a non existing classpath
 		AvailableCryptoToken token6 = new AvailableCryptoToken("foo.bar.CryptoToken", "FOO", true, true);
 		assertTrue(tokens.contains(token1));
@@ -48,7 +58,7 @@ public class CryptoTokenFactoryTest {
 		assertFalse(tokens.contains(token5));
 		assertFalse(tokens.contains(token6));
 		// Add the missing tokens
-		mgr.addAvailableCryptoToken(DummyCryptoToken.class.getName(), "FOO", true, true);
+		mgr.addAvailableCryptoToken(MockCryptoToken.class.getCanonicalName(), "FOO", true, true);
 		// The one with non existing classpath should not be added
 		mgr.addAvailableCryptoToken("foo.bar.CryptoToken", "FOO", true, true);
 		tokens = mgr.getAvailableCryptoTokens();
@@ -62,4 +72,7 @@ public class CryptoTokenFactoryTest {
 		assertFalse(tokens.contains(token6));
 	}
 
+	
 }
+
+

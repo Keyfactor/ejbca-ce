@@ -257,8 +257,7 @@ public class SoftCryptoToken extends BaseCryptoToken {
     }
 
     @Override
-    public void generateKeyPair(final String keySpec, final String alias) throws NoSuchAlgorithmException, NoSuchProviderException,
-            InvalidAlgorithmParameterException, InvalidKeyException, SignatureException, KeyStoreException, CertificateException, IOException,
+    public void generateKeyPair(final String keySpec, final String alias) throws InvalidAlgorithmParameterException,
             CryptoTokenOfflineException {
         if (StringUtils.isNotEmpty(alias)) {
             KeyStoreTools cont = new KeyStoreTools(getKeyStore(), getSignProviderName());
@@ -306,9 +305,8 @@ public class SoftCryptoToken extends BaseCryptoToken {
     }
 
     @Override
-    public void generateKeyPair(final AlgorithmParameterSpec spec, final String alias) throws NoSuchAlgorithmException, NoSuchProviderException,
-            InvalidAlgorithmParameterException, InvalidKeyException, SignatureException, KeyStoreException, CertificateException, IOException,
-            CryptoTokenOfflineException {
+    public void generateKeyPair(final AlgorithmParameterSpec spec, final String alias) throws InvalidAlgorithmParameterException, CertificateException,
+    IOException, CryptoTokenOfflineException {
         if (StringUtils.isNotEmpty(alias)) {
             KeyStoreTools cont = new KeyStoreTools(getKeyStore(), getSignProviderName());
             cont.generateKeyPair(spec, alias);

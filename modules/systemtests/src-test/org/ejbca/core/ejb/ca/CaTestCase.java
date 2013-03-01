@@ -366,17 +366,17 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     }
 
     /** @return the caid of the test CA */
-    public int getTestCAId() {
+    public static int getTestCAId() {
         return getTestCAId(getTestCAName());
     }
 
     /** @return the CA certificate */
-    public Certificate getTestCACert() throws CADoesntExistsException, AuthorizationDeniedException {
+    public static Certificate getTestCACert() throws CADoesntExistsException, AuthorizationDeniedException {
         return getTestCACert(getTestCAName());
     }
 
     /** @return the CA certificate */
-    public Certificate getTestCACert(String caName) throws CADoesntExistsException, AuthorizationDeniedException {
+    public static Certificate getTestCACert(String caName) throws CADoesntExistsException, AuthorizationDeniedException {
         Certificate cacert = null;
         final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaTestCase"));
         CAInfo cainfo = CaTestCase.getCaSession().getCAInfo(admin, getTestCAId(caName));
@@ -397,7 +397,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     }
 
     /** @return the caid of a test CA with subject DN CN=caName */
-    public int getTestCAId(String caName) {
+    public static int getTestCAId(String caName) {
         return ("CN=" + caName).hashCode();
     }
 
@@ -408,7 +408,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
      * @throws AuthorizationDeniedException
      * @throws CADoesntExistsException
      */
-    protected static void removeTestCA() throws AuthorizationDeniedException {
+    public static void removeTestCA() throws AuthorizationDeniedException {
         removeTestCA(getTestCAName());
     }
 

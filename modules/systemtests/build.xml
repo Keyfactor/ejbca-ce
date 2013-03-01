@@ -72,6 +72,10 @@
 	<path id="systemtests-va.classpath">
 		<path refid="systemtests.classpath"/>
 		<pathelement location="${mod.va-ejb-interface.lib}"/>
+		<pathelement location="${test-va-interface.jar}"/>
+		<pathelement location="${test-va.jar}"/>
+		<pathelement location="${mod.va-ejb-interface.lib}" />
+		<pathelement location="${mod.va-ejb.lib}" />
 	</path>
 
 	<path id="interfaces.classpath">
@@ -79,8 +83,19 @@
 		<pathelement location="${mod.ejbca-entity.lib}" />
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.jee.classpath"/>
+		<path refid="lib.bouncycastle.classpath"/>
 	</path>
 
+	<path id="interfaces-va.classpath">
+		<path refid="lib.ejbca-common-web.classpath"/>
+		<pathelement location="${mod.va-ejb-interface.lib}" />
+		<pathelement location="${mod.va-ejb.lib}" />
+		<path refid="lib.log4j.classpath"/>
+		<path refid="lib.jee.classpath"/>
+		<path refid="lib.bouncycastle.classpath"/>
+	</path>
+	
+	
 	<path id="compile-ejb.classpath">
 		<path refid="lib.cert-cvc.classpath" />
 		<path refid="lib.bouncycastle.classpath" />
@@ -113,7 +128,7 @@
 
 	<target name="build" description="Build this module" depends="va-ejbca-war, build-libs, compile-tests" /> 
 	
-	<target name="build-va" description="Build this module" depends="build-libs, compile-tests-va" />
+	<target name="build-va" description="Build this module" depends="va-ejbca-war, build-libs-va, compile-tests-va" />
 
 	<target name="clean" description="Clean up this module">
 		<delete dir="${build.dir}" />
@@ -130,9 +145,10 @@
 	<target name="systemtest-compile-interfaces-va" depends="ejbca-properties">
 			<mkdir dir="${build.interface.dir}" />
 			<javac srcdir="${src.interface.dir}" destdir="${build.interface.dir}" debug="on" includeantruntime="no"
-		        	encoding="iso8859-1" classpathref="interfaces.classpath" target="${java.target.version}">
+		        	encoding="iso8859-1" classpathref="interfaces-va.classpath" target="${java.target.version}">
 				<include name="org/cesecore/configuration/CesecoreConfigurationProxySession*.java"/>
-				<include name="org/ejbca/core/protocol/ocsp/standalone/OcspKeyRenewalProxySession*.java" />
+				<include name="org/ejbca/core/protocol/ocsp/standalone/OcspKeyRenewalProxySession*.java" />			
+				<include name="org/cesecore/certificates/ocsp/standalone/*.java" />
 			</javac>
 		</target>
 
@@ -141,6 +157,7 @@
 		<javac srcdir="${src.dir}" destdir="${build.src.dir}" debug="on" includeantruntime="no"
 			        	encoding="iso8859-1" classpathref="compile-ejb.classpath" target="${java.target.version}">
 			<exclude name="org/ejbca/core/protocol/ocsp/standalone/OcspKeyRenewalProxySessionBean.java" />
+			<exclude name="org/cesecore/certificates/ocsp/standalone/*.java" />
 		</javac>
 	</target>
 	
@@ -150,6 +167,8 @@
 					        	encoding="iso8859-1" classpathref="compile-ejb-va.classpath" target="${java.target.version}">
 			<include name="org/cesecore/mock/authentication/tokens/TestAlwaysAllowLocalAuthenticationToken.java"/>
 			<include name="org/cesecore/configuration/CesecoreConfigurationProxySessionBean.java"/>
+			<include name="org/cesecore/certificates/ocsp/standalone/*.java" />
+			<include name="org/cesecore/keys/token/DummyCryptoToken.java" />
 			<include name="org/ejbca/core/protocol/ocsp/standalone/OcspKeyRenewalProxySessionBean.java" />
 		</javac>
 	</target>
@@ -162,18 +181,23 @@
 	</target>
 	
 	<target name="build-libs-va" depends="check-inproduction" unless="in-production-mode">
+		<ant antfile="${mod.ejbca-ejb-interface.path}/build.xml" target="build-va" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<antcall target="systemtest-compile-interfaces-va"/>
 		<antcall target="systemtest-compile-src-va"/>
 		<delete file="${test-va-interface.jar}" quiet="true"/>
 		<jar destfile="${test-va-interface.jar}" basedir="${build.interface.dir}">
 			<include name="org/cesecore/configuration/CesecoreConfigurationProxySession*.class"/>
 			<include name="org/ejbca/core/protocol/ocsp/standalone/OcspKeyRenewalProxySession*.class" />
+			<include name="org/cesecore/certificates/ocsp/standalone/*.class" />
 		</jar>
 		<delete file="${test-va.jar}" quiet="true"/>
 		<jar destfile="${test-va.jar}" basedir="${build.src.va.dir}">
+			<include name="org/cesecore/keys/token/DummyCryptoToken.class" />
 			<include name="org/cesecore/mock/authentication/tokens/TestAlwaysAllowLocalAuthenticationToken.class"/>
 			<include name="org/cesecore/configuration/CesecoreConfigurationProxySessionBean.class"/>
 			<include name="org/ejbca/core/protocol/ocsp/standalone/OcspKeyRenewalProxySession*.class" />
+			<include name="org/cesecore/certificates/ocsp/standalone/*.class" />
+			
 		</jar>
 	</target>
 
@@ -186,7 +210,7 @@
 			<exclude name="org/ejbca/core/protocol/ocsp/OcspKeyRenewalTest.java"/>
 		</javac>
 		<javac srcdir="${src.test.dir}" destdir="${build.test.dir}" debug="on" includeantruntime="no" includejavaruntime="true"
-        	encoding="iso8859-1" classpathref="systemtests-va.classpath" target="${java.target.version}">
+        	encoding="iso8859-1" classpathref="systemtests.classpath" target="${java.target.version}">
 			<include name="org/ejbca/core/protocol/xkms/**" if="xkms.enabled.true"/>
 			<classpath path="${build.test.dir}"/>
 		</javac>
@@ -207,18 +231,13 @@
 				<include name="org/ejbca/core/protocol/ocsp/ProtocolOcspHttpStandaloneTest.java" />
 				<include name="org/ejbca/ui/web/pub/cluster/WebOcspHealthCheckTest.java" />	
 			</javac>
-			<javac srcdir="${src.test.dir}" destdir="${build.test.dir}" debug="on" includeantruntime="no" includejavaruntime="true"
-	        	encoding="iso8859-1" classpathref="systemtests-va.classpath" target="${java.target.version}">
-				<include name="org/ejbca/core/protocol/xkms/**" if="xkms.enabled.true"/>
-				<classpath path="${build.test.dir}"/>
-			</javac>
 			<copy file="${log4j.test.file}" tofile="${build.test.dir}/log4j.xml" failonerror="true"/>
 			<!-- jndi.properties needs to be in the classpath, if it exists (not for glassfish) -->
 			<copy file="${jndi.properties.file}" todir="${build.dir}" failonerror="false"/>
 			<copy file="${jboss-ejb-client.properties}" todir="${build.dir}" failonerror="false"/>
 			<!-- needed by the cesecore tests -->
 			<copy todir="${build.test.dir}" file="${ejbca.home}/src/java/defaultvalues.properties"/>
-		</target>
+	</target>
 
 	<target name="assert-notinproduction">
 		<fail message="You cannot run system tests in a production environment.">
@@ -539,7 +558,7 @@
 	<!-- Target that setups a user with cert as required by ProtocolOcspHttpStandaloneTest -->
 	<target name="runocsp.setuptest" depends="assert-appserverrunning">
 		<antcall target="ejbca-cli">
-			<param name="ejbca-cli.arg" value="ra adduser ocspTest foo123 CN=ocspTest null AdminCA1 null 1 P12"/>
+			<param name="ejbca-cli.arg" value="ra adduser ocspTest foo123 CN=ocspTest null ManagementCA null 1 P12"/>
 		</antcall>
 		<antcall target="ejbca-cli">
 			<param name="ejbca-cli.arg" value="ra setuserstatus ocspTest 10"/>
@@ -564,7 +583,7 @@
 		</antcall>
 		<!-- Generate an OCSP signer keystore -->
 		<antcall target="ejbca-cli">
-			<param name="ejbca-cli.arg" value="ra adduser ocspTestSigner foo123 CN=ocspTestSigner null AdminCA1 null 1 P12 OCSPSIGNER"/>
+			<param name="ejbca-cli.arg" value="ra adduser ocspTestSigner foo123 CN=ocspTestSigner null ManagementCA null 1 P12 OCSPSIGNER"/>
 		</antcall>
 		<antcall target="ejbca-cli">
 			<param name="ejbca-cli.arg" value="ra setuserstatus ocspTestSigner 10"/>
@@ -579,7 +598,7 @@
 		<copy file="${ejbca.home}/p12/ocspTestSigner.p12" todir="${build.dir}/keys" failonerror="false"/>
 		<echo>
 			Configure ocsp.properties:
-			 ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
+			 ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 			 ocsp.keys.dir=${build.dir}/keys
 			 ocsp.keys.storePassword=foo123
 			 ocsp.untilNextUpdate=5

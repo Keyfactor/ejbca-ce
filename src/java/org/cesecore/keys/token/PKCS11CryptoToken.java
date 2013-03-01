@@ -16,14 +16,12 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.security.KeyStore;
 import java.security.KeyStore.PasswordProtection;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Provider;
-import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.Properties;
@@ -201,8 +199,7 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
     }
 
     @Override
-    public void generateKeyPair(final String keySpec, final String alias) throws NoSuchAlgorithmException, NoSuchProviderException,
-            InvalidAlgorithmParameterException, InvalidKeyException, SignatureException, KeyStoreException, CertificateException, IOException,
+    public void generateKeyPair(final String keySpec, final String alias) throws InvalidAlgorithmParameterException,
             CryptoTokenOfflineException {
         if (StringUtils.isNotEmpty(alias)) {
             KeyStoreTools cont = new KeyStoreTools(getKeyStore(), getSignProviderName());
@@ -213,8 +210,8 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
     }
 
     @Override
-    public void generateKeyPair(final AlgorithmParameterSpec spec, final String alias) throws NoSuchAlgorithmException, NoSuchProviderException,
-            InvalidAlgorithmParameterException, InvalidKeyException, SignatureException, KeyStoreException, CertificateException, IOException,
+    public void generateKeyPair(final AlgorithmParameterSpec spec, final String alias) throws 
+            InvalidAlgorithmParameterException, CertificateException, IOException,
             CryptoTokenOfflineException {
         if (StringUtils.isNotEmpty(alias)) {
             KeyStoreTools cont = new KeyStoreTools(getKeyStore(), getSignProviderName());

@@ -17,10 +17,8 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.SecureRandom;
-import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -340,79 +338,53 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         final CryptoToken cryptoToken = getAndAssertAuthorizationAndExistence(authenticationToken, cryptoTokenId, CryptoTokenRules.GENERATE_KEYS.resource()+"/"+cryptoTokenId);
         // Check if alias is already in use
         assertAliasNotInUse(cryptoToken, alias);
-        try {
-            // Support "RSAnnnn" and convert it to the legacy format "nnnn"
-            final String keySpecification;
-            if (keySpecificationParam.startsWith(AlgorithmConstants.KEYALGORITHM_RSA)) {
-                keySpecification = keySpecificationParam.substring(AlgorithmConstants.KEYALGORITHM_RSA.length());
-            } else {
-                keySpecification = keySpecificationParam;
-            }
-            // Check if keySpec is valid
-            KeyTools.checkValidKeyLength(keySpecification);
-            // Audit log before generation. If the token is an HSM the merge will not make a difference.
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", "Generated new keypair in CryptoToken " + cryptoTokenId);
-            details.put("keyAlias", alias);
-            details.put("keySpecification", keySpecification);
-            securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_GEN_KEYPAIR, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE, authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, details);
-            cryptoToken.generateKeyPair(keySpecification, alias);
-            cryptoToken.testKeyPair(alias);
-            // Merge is important for soft tokens where the data is persisted in the database, but will also update lastUpdate
-            cryptoTokenSession.mergeCryptoToken(cryptoToken);
-        } catch (NoSuchProviderException e) {
-            // If the BC provider is gone we are in trouble..
-            throw new RuntimeException(e);
-        } catch (NoSuchAlgorithmException e) {
-            throw new InvalidAlgorithmParameterException(e);
-        } catch (SignatureException e) {
-            throw new InvalidKeyException(e);
-        } catch (KeyStoreException e) {
-            throw new InvalidKeyException(e);
-        } catch (CertificateException e) {
-            throw new InvalidKeyException(e);
-        } catch (IOException e) {
-            throw new InvalidKeyException(e);
+
+        // Support "RSAnnnn" and convert it to the legacy format "nnnn"
+        final String keySpecification;
+        if (keySpecificationParam.startsWith(AlgorithmConstants.KEYALGORITHM_RSA)) {
+            keySpecification = keySpecificationParam.substring(AlgorithmConstants.KEYALGORITHM_RSA.length());
+        } else {
+            keySpecification = keySpecificationParam;
         }
+        // Check if keySpec is valid
+        KeyTools.checkValidKeyLength(keySpecification);
+        // Audit log before generation. If the token is an HSM the merge will not make a difference.
+        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        details.put("msg", "Generated new keypair in CryptoToken " + cryptoTokenId);
+        details.put("keyAlias", alias);
+        details.put("keySpecification", keySpecification);
+        securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_GEN_KEYPAIR, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
+                authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, details);
+        cryptoToken.generateKeyPair(keySpecification, alias);
+        cryptoToken.testKeyPair(alias);
+        // Merge is important for soft tokens where the data is persisted in the database, but will also update lastUpdate
+        cryptoTokenSession.mergeCryptoToken(cryptoToken);
     }
 
     @Override
     public void createKeyPairWithSameKeySpec(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String currentAlias, final String newAlias)
             throws AuthorizationDeniedException, CryptoTokenOfflineException, InvalidKeyException, InvalidAlgorithmParameterException {
-        final CryptoToken cryptoToken = getAndAssertAuthorizationAndExistence(authenticationToken, cryptoTokenId, CryptoTokenRules.GENERATE_KEYS.resource()+"/"+cryptoTokenId);
+        final CryptoToken cryptoToken = getAndAssertAuthorizationAndExistence(authenticationToken, cryptoTokenId,
+                CryptoTokenRules.GENERATE_KEYS.resource() + "/" + cryptoTokenId);
         assertAliasNotInUse(cryptoToken, newAlias);
-        try {
-            final PublicKey publicKey = cryptoToken.getPublicKey(currentAlias);
-            final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(publicKey);
-            final String keySpecification;
-            if (AlgorithmConstants.KEYALGORITHM_DSA.equals(keyAlgorithm)) {
-                keySpecification = AlgorithmConstants.KEYALGORITHM_DSA + AlgorithmTools.getKeySpecification(publicKey);
-            } else {
-                keySpecification = AlgorithmTools.getKeySpecification(publicKey);
-            }
-            KeyTools.checkValidKeyLength(keySpecification);
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", "Generated new keypair in CryptoToken " + cryptoTokenId);
-            details.put("keyAlias", newAlias);
-            details.put("keySpecification", keySpecification);
-            securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_GEN_KEYPAIR, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE, authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, details);
-            cryptoToken.generateKeyPair(keySpecification, newAlias);
-            cryptoToken.testKeyPair(newAlias);
-            cryptoTokenSession.mergeCryptoToken(cryptoToken);
-        } catch (NoSuchProviderException e) {
-            // If the BC provider is gone we are in trouble..
-            throw new RuntimeException(e);
-        } catch (NoSuchAlgorithmException e) {
-            throw new InvalidAlgorithmParameterException(e);
-        } catch (SignatureException e) {
-            throw new InvalidKeyException(e);
-        } catch (KeyStoreException e) {
-            throw new InvalidKeyException(e);
-        } catch (CertificateException e) {
-            throw new InvalidKeyException(e);
-        } catch (IOException e) {
-            throw new InvalidKeyException(e);
+        final PublicKey publicKey = cryptoToken.getPublicKey(currentAlias);
+        final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(publicKey);
+        final String keySpecification;
+        if (AlgorithmConstants.KEYALGORITHM_DSA.equals(keyAlgorithm)) {
+            keySpecification = AlgorithmConstants.KEYALGORITHM_DSA + AlgorithmTools.getKeySpecification(publicKey);
+        } else {
+            keySpecification = AlgorithmTools.getKeySpecification(publicKey);
         }
+        KeyTools.checkValidKeyLength(keySpecification);
+        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        details.put("msg", "Generated new keypair in CryptoToken " + cryptoTokenId);
+        details.put("keyAlias", newAlias);
+        details.put("keySpecification", keySpecification);
+        securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_GEN_KEYPAIR, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
+                authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, details);
+        cryptoToken.generateKeyPair(keySpecification, newAlias);
+        cryptoToken.testKeyPair(newAlias);
+        cryptoTokenSession.mergeCryptoToken(cryptoToken);
     }
 
     /** @return true if there is a private, public or symmetric entry with this alias in the CryptoToken */
@@ -475,13 +447,9 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     @Override
     public void testKeyPair(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String alias)
             throws AuthorizationDeniedException, CryptoTokenOfflineException, InvalidKeyException {
-        final CryptoToken cryptoToken = getAndAssertAuthorizationAndExistence(authenticationToken, cryptoTokenId, CryptoTokenRules.TEST_KEYS.resource()+"/"+cryptoTokenId);
-        try {
-            cryptoToken.testKeyPair(alias);
-        } catch (NoSuchProviderException e) {
-            // If the BC provider is gone we are in trouble..
-            throw new RuntimeException(e);
-        }
+        final CryptoToken cryptoToken = getAndAssertAuthorizationAndExistence(authenticationToken, cryptoTokenId,
+                CryptoTokenRules.TEST_KEYS.resource() + "/" + cryptoTokenId);
+        cryptoToken.testKeyPair(alias);
     }
 
     /** @return a CryptoToken for the requested Id of authorized and it exists. Never returns null. */

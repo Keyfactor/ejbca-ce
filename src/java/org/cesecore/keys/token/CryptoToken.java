@@ -96,8 +96,8 @@ public interface CryptoToken extends Serializable {
     /** Returns the public key (if possible) of token.
     *
     * @param alias the key alias to retrieve from the token
-    * @throws CryptoTokenOfflineException if Crypto Token is not available or connected, or key with alias does not exist.
-    * @return PublicKey object
+    * @throws CryptoTokenOfflineException if Crypto Token is not available or connected
+    * @return the public key, or null if key with the alias does not exist.
     */
     PublicKey getPublicKey(String alias) throws CryptoTokenOfflineException;
 
@@ -125,9 +125,8 @@ public interface CryptoToken extends Serializable {
      * @param keySpec all decimal digits RSA key length, otherwise name of ECC curve or DSA key using syntax DSAnnnn
      * @param alias the name of the key pair in the crypto token
      */
-    void generateKeyPair( final String keySpec, final String alias) throws NoSuchAlgorithmException,
-		NoSuchProviderException, InvalidAlgorithmParameterException, InvalidKeyException, SignatureException, KeyStoreException,
-		CertificateException, IOException, CryptoTokenOfflineException;
+    void generateKeyPair(final String keySpec, final String alias) throws InvalidAlgorithmParameterException,
+            CryptoTokenOfflineException;
 
     /** Generates a key pair (asymmetric keys) in the crypto token. This method is used when you have an existing PublicKey and
      * want to generate a key of the same type. You can use KeyTools to get the AlgorithmParameterSpec from an existing PublicKey.
@@ -138,9 +137,8 @@ public interface CryptoToken extends Serializable {
      * @param spec AlgorithmParameterSpec describing the key pair to be generated
      * @param alias the name of the key pair in the crypto token
      */
-    void generateKeyPair( final AlgorithmParameterSpec spec, final String alias) throws NoSuchAlgorithmException,
-	    NoSuchProviderException, InvalidAlgorithmParameterException, InvalidKeyException, SignatureException, KeyStoreException,
-	    CertificateException, IOException, CryptoTokenOfflineException;
+    void generateKeyPair(final AlgorithmParameterSpec spec, final String alias) throws InvalidAlgorithmParameterException, CertificateException,
+            IOException, CryptoTokenOfflineException;
 
     /** Generates a symmetric key.
      *
@@ -216,12 +214,12 @@ public interface CryptoToken extends Serializable {
 
     /** Testing a keypair to see that it is usable
      *
-     * @param alias
-     * @throws InvalidKeyException
-     * @throws NoSuchProviderException
-     * @throws CryptoTokenOfflineException 
+     * @param alias the alias of the key pair to test
+     * @throws InvalidKeyException if the public key can not be used to verify a string signed by the private key, because the key is wrong or the 
+     * signature operation fails for other reasons such as a NoSuchAlgorithmException or SignatureException.
+     * @throws CryptoTokenOfflineException if the crypto token is offline
      */
-    void testKeyPair(String alias) throws InvalidKeyException, NoSuchProviderException, CryptoTokenOfflineException; // NOPMD:this is not a junit test
+    void testKeyPair(String alias) throws InvalidKeyException, CryptoTokenOfflineException; // NOPMD:this is not a junit test
 
     /**
      * This method extracts a PrivateKey from the keystore and wraps it, using a symmetric encryption key

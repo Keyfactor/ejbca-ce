@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  CESeCore: CE Security Core                                           *
+ *  EJBCA: The OpenSource Certificate Authority                          *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -9,50 +9,45 @@
  *                                                                       *
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
- *************************************************************************/ 
+ *************************************************************************/
 package org.cesecore.keys.token;
 
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.Properties;
-
 
 /** This class is used only for testing.
  * 
  * @version $Id$
  */
-public class DummyCryptoToken extends BaseCryptoToken {
+public class MockCryptoToken extends BaseCryptoToken {
 
     private static final long serialVersionUID = -6136504057204777472L;
     
     private int id;
-    
-    public DummyCryptoToken() throws InstantiationException {
-    }
+   
 
     @Override
     public void init(Properties properties, byte[] data, int id) throws Exception {
-    	this.id = id;
-    	// Do nothing
+        this.id = id;
+        // Do nothing
     }
 
     @Override
     public int getId() {
-    	return this.id;
+        return this.id;
     }
     
     @Override
     public Properties getProperties(){
-    	return new Properties();
+        return new Properties();
     }
    
     @Override
@@ -66,19 +61,15 @@ public class DummyCryptoToken extends BaseCryptoToken {
     }
 
     @Override
-    public void deleteEntry(final String alias) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {    	
+    public void deleteEntry(final String alias) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {     
     }
 
     @Override
-    public void generateKeyPair( final String keySpec, final String alias) throws NoSuchAlgorithmException, 
-    	NoSuchProviderException, InvalidAlgorithmParameterException, InvalidKeyException, SignatureException, KeyStoreException, 
-    	CertificateException, IOException {
+    public void generateKeyPair( final String keySpec, final String alias) throws InvalidAlgorithmParameterException {
     }
     
     @Override
-    public void generateKeyPair( final AlgorithmParameterSpec spec, final String alias) throws NoSuchAlgorithmException, 
-    	NoSuchProviderException, InvalidAlgorithmParameterException, InvalidKeyException, SignatureException, KeyStoreException, 
-    	CertificateException, IOException, CryptoTokenOfflineException {
+    public void generateKeyPair( final AlgorithmParameterSpec spec, final String alias) throws InvalidAlgorithmParameterException, CertificateException, IOException, CryptoTokenOfflineException {
     }
 
     @Override
@@ -86,19 +77,18 @@ public class DummyCryptoToken extends BaseCryptoToken {
     }
 
     @Override
-	public void activate(char[] authenticationcode) {
-		// Do Nothing		
-	}
+    public void activate(char[] authenticationcode) {
+        // Do Nothing       
+    }
 
     @Override
-	public void deactivate() {
+    public void deactivate() {
        // Do Nothing
-	}
+    }
 
     @Override
-	public byte[] getTokenData() {
-    	return null;
-	}
+    public byte[] getTokenData() {
+        return null;
+    }
 
 }
-

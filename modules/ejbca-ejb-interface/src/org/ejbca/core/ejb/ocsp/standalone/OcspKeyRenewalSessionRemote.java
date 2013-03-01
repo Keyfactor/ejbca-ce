@@ -12,29 +12,13 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ocsp.standalone;
 
-import javax.ejb.Local;
-
-import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
+import javax.ejb.Remote;
 
 /**
  * @version $Id$
  *
  */
-@Local
-public interface StandaloneOcspKeyRenewalSessionLocal {
-
-    static final String RENEW_ALL_KEYS = "all";
-    
-    /**
-     * This method causes the standalone OCSP responder to renew its keystores. 
-     * 
-     * @param signerSubjectDN subject DN of the signing key to be renewed. The string "all" (as represented by the constant 
-     * TokenAndChainCache.RENEW_ALL_KEYS) will result 
-     * 
-     */
-    void renewKeyStores(String signerSubjectDN);
-    
-
-    void setEjbcaWs(EjbcaWS ejbcaWS);
+@Remote
+public interface OcspKeyRenewalSessionRemote {
 
 }

@@ -175,6 +175,7 @@
         	encoding="iso8859-1" target="${java.target.version}" classpathref="va-compile.classpath">
         	<include name="org/cesecore/certificates/certificate/CertificateData.java"/>
         	<include name="org/cesecore/certificates/crl/CRLData.java"/>
+        	<include name="org/cesecore/keys/token/CryptoTokenData.java" />
         	<src path="${src.dir}"/>
         </javac>
     </target>

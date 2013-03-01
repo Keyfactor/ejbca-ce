@@ -12,13 +12,18 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp.cache;
 
+import java.io.IOException;
 import java.io.Serializable;
-import java.security.KeyPair;
-import java.security.KeyStoreException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 
+import org.bouncycastle.asn1.DERSet;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.CertTools;
@@ -31,7 +36,7 @@ import org.cesecore.util.CertTools;
  */
 public class CryptoTokenAndChain implements Serializable {
 
-    private static final long serialVersionUID = 1269603699779500195L;
+    private static final long serialVersionUID = -4091605336832090454L;
     private CryptoToken cryptoToken;
     private X509Certificate[] chain;
     private String privateKeyAlias;
@@ -52,6 +57,25 @@ public class CryptoTokenAndChain implements Serializable {
         }
     }
 
+    /**
+     * Generates a new keypair in the crypto token wrapped by this object
+     * 
+     * @throws CryptoTokenOfflineException crypto token wrapped by this object was offline
+     * @throws InvalidKeyException if the public key can not be used to verify a string signed by the private key, because the key is wrong or the 
+     * signature operation fails for other reasons such as a NoSuchAlgorithmException or SignatureException.
+     */
+    public void generateKeyPair() throws CryptoTokenOfflineException, InvalidKeyException {
+        String keySpecification;
+        try {
+            keySpecification = AlgorithmTools.getKeySpecification(cryptoToken.getPublicKey(privateKeyAlias));
+            cryptoToken.generateKeyPair(keySpecification, privateKeyAlias);
+            cryptoToken.testKeyPair(privateKeyAlias);
+        } catch (InvalidAlgorithmParameterException e) {
+            throw new IllegalStateException("Existing keypair was based on an invalid algorithm parameter.", e);
+        } 
+
+    }
+    
     /**
      * 
      * @return the public key from this crypto token
@@ -85,8 +109,26 @@ public class CryptoTokenAndChain implements Serializable {
         return chain;
     }
     
+    public void setChain(X509Certificate[] chain) {
+        this.chain = chain;
+    }
+    
     public X509Certificate getCaCertificate() {
        return chain[caCertPosition];
+    }
+    
+    public String getAlias() {
+        return privateKeyAlias;
+    }
+    
+    
+    public int getCryptoTokenId() {
+        return cryptoToken.getId();
+    }
+    
+    public PKCS10CertificationRequest getPKCS10CertificationRequest(String signatureAlgorithm) throws OperatorCreationException, IOException, CryptoTokenOfflineException  {
+        return CertTools.genPKCS10CertificationRequest(signatureAlgorithm, CertTools.stringToBcX500Name("CN=NOUSED"), cryptoToken.getPublicKey(privateKeyAlias),
+                new DERSet(), cryptoToken.getPrivateKey(privateKeyAlias), cryptoToken.getSignProviderName());
     }
     
     /**
@@ -99,10 +141,10 @@ public class CryptoTokenAndChain implements Serializable {
      * 
      * @throws KeyStoreException if keystore for this crypto token has not been initialized
      */
-    public void renewTokenAndChain(KeyPair keyPair, X509Certificate[] chain, char[] password) throws KeyStoreException {
-        cryptoToken.storeKey(privateKeyAlias, keyPair.getPrivate(), chain, password);
+    /*public void renewTokenAndChain(KeyPair keyPair, X509Certificate[] chain, char[] password) throws KeyStoreException {
+        //cryptoToken.storeKey(privateKeyAlias, keyPair.getPrivate(), chain, password);
         this.chain = chain;
-    }
+    }*/
 
 
 }

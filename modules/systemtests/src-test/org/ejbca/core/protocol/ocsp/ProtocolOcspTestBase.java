@@ -52,7 +52,6 @@ import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.core.ejb.ca.CaTestCase;
 import org.junit.After;
 
 import com.gargoylesoftware.htmlunit.WebClient;
@@ -65,7 +64,7 @@ import com.gargoylesoftware.htmlunit.WebResponse;
  * @version $Id$
  *
  */
-public abstract class ProtocolOcspTestBase extends CaTestCase {
+public abstract class ProtocolOcspTestBase {
 
     private static final Logger log = Logger.getLogger(ProtocolOcspTestBase.class);
 
