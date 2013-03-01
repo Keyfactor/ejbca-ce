@@ -90,6 +90,10 @@ deprecated by) web.properties. You should migrate these configuration changes.
 You will be warned during build if you are using these options and have not
 migrated them.
 
+NOTE: batchtool.properties is no longer searched for in bin/ but in conf/
+instead. Note that everything in this file is commented out by default, so it
+can be removed if it hasn't been modified.
+
 NOTE: In EJBCA 5.1.0 new versions of BouncyCastle jars are included. If you have
 been copying ejbca/lib/bc*.jar files to JBoss (jboss/server/default/lib), you
 must remove the old jars from JBoss and copy new jars from EJBCA.
