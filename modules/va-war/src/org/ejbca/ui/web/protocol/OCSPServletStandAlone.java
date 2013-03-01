@@ -14,6 +14,9 @@
 package org.ejbca.ui.web.protocol;
 
 import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.KeyStoreException;
+import java.security.cert.CertificateException;
 import java.util.Set;
 
 import javax.ejb.EJB;
@@ -30,8 +33,9 @@ import org.cesecore.certificates.ocsp.cache.OcspConfigurationCache;
 import org.cesecore.certificates.ocsp.standalone.StandaloneOcspResponseGeneratorSessionLocal;
 import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.config.OcspConfiguration;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.core.ejb.ocsp.standalone.StandaloneOcspKeyRenewalSessionLocal;
+import org.ejbca.core.ejb.ocsp.standalone.OcspKeyRenewalSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.util.HTMLTools;
 
@@ -58,7 +62,7 @@ public class OCSPServletStandAlone extends BaseOcspServlet {
     @EJB
     private StandaloneOcspResponseGeneratorSessionLocal standaloneOcspResponseGeneratorSession;
     @EJB
-    private StandaloneOcspKeyRenewalSessionLocal ocspKeyRenewalSession;
+    private OcspKeyRenewalSessionLocal ocspKeyRenewalSession;
 
     @Override
     public void init(ServletConfig config) throws ServletException {
@@ -162,7 +166,21 @@ public class OCSPServletStandAlone extends BaseOcspServlet {
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
                     return;
                 }
-                renewKeyStore(keyrenewalSignerDn);
+                try {
+                    renewKeyStore(keyrenewalSignerDn);
+                } catch (KeyStoreException e) {
+                    log.info( intres.getLocalizedMessage("ocsp.rekey.keystore.notactivated", remote) );
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                    return;
+                } catch (CryptoTokenOfflineException e) {
+                    log.info( intres.getLocalizedMessage("ocsp.rekey.cryptotoken.notactivated", remote) );
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                    return;
+                } catch (InvalidKeyException e) {                   
+                    log.info( intres.getLocalizedMessage("ocsp.rekey.invalid.key", remote) );
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                    return;
+                }
                 return;
             }
             processOcspRequest(request, response);
@@ -227,8 +245,13 @@ public class OCSPServletStandAlone extends BaseOcspServlet {
     
     /**
      * Manually renews this OCSP responder's keystores.
+     * @throws KeyStoreException if key store hasn't been activated.
+     * @throws CryptoTokenOfflineException 
+     * @throws InvalidKeyException if the public key can not be used to verify a string signed by the private key, because the key is wrong or the 
+     * signature operation fails for other reasons such as a NoSuchAlgorithmException or SignatureException.
+     * @throws CertificateException 
      */
-    public void renewKeyStore(String keyrenewalSignerDn) {
+    public void renewKeyStore(String keyrenewalSignerDn) throws KeyStoreException, CryptoTokenOfflineException, InvalidKeyException {
        
         ocspKeyRenewalSession.renewKeyStores(keyrenewalSignerDn);
     }

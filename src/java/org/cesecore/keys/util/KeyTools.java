@@ -150,13 +150,19 @@ public final class KeyTools {
      * @throws InvalidAlgorithmParameterException
      * @see org.cesecore.certificates.util.core.model.AlgorithmConstants#KEYALGORITHM_RSA
      */
-    public static KeyPair genKeys(final String keySpec, final AlgorithmParameterSpec algSpec, final String keyAlg) throws NoSuchAlgorithmException,
-            NoSuchProviderException, InvalidAlgorithmParameterException {
+    public static KeyPair genKeys(final String keySpec, final AlgorithmParameterSpec algSpec, final String keyAlg) throws InvalidAlgorithmParameterException {
         if (log.isTraceEnabled()) {
             log.trace(">genKeys(" + keySpec + ", " + keyAlg + ")");
         }
 
-        final KeyPairGenerator keygen = KeyPairGenerator.getInstance(keyAlg, "BC");
+        KeyPairGenerator keygen;
+        try {
+            keygen = KeyPairGenerator.getInstance(keyAlg, "BC");
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("Algorithm " + keyAlg + "was not recognized.", e);
+         } catch (NoSuchProviderException e) {
+             throw new IllegalStateException("BouncyCastle was not found as a provider.", e);
+         }
         if (StringUtils.equals(keyAlg, AlgorithmConstants.KEYALGORITHM_ECDSA)) {
             AlgorithmParameterSpec ecSpec = null;
             if ((keySpec != null) && !StringUtils.equals(keySpec, "implicitlyCA")) {
@@ -226,9 +232,8 @@ public final class KeyTools {
     /**
      * @see KeyTools#genKeys(String,AlgorithmParameterSpec,String)
      */
-    public static KeyPair genKeys(final String keySpec, final String keyAlg) throws NoSuchAlgorithmException, NoSuchProviderException,
-            InvalidAlgorithmParameterException {
-        return genKeys(keySpec, null, keyAlg);
+    public static KeyPair genKeys(final String keySpec, final String keyAlg) throws InvalidAlgorithmParameterException {
+       return genKeys(keySpec, null, keyAlg);
     }
 
     /**
@@ -1114,7 +1119,7 @@ public final class KeyTools {
      * @throws NoSuchProviderException
      *             if the provider is not installed.
      */
-    public static void testKey(final PrivateKey priv, final PublicKey pub, final String provider) throws InvalidKeyException, NoSuchProviderException { // NOPMD:this is not a junit test
+    public static void testKey(final PrivateKey priv, final PublicKey pub, final String provider) throws InvalidKeyException { // NOPMD:this is not a junit test
         final byte input[] = "Lillan gick pa vagen ut, motte dar en katt...".getBytes();
         final byte signBV[];
         final String testSigAlg;
@@ -1148,7 +1153,12 @@ public final class KeyTools {
                 }
             }
             {
-                final Signature signature = Signature.getInstance(testSigAlg, "BC");
+                Signature signature;
+                try {
+                    signature = Signature.getInstance(testSigAlg, "BC");
+                } catch (NoSuchProviderException e) {
+                    throw new IllegalStateException("BouncyCastle was not found as a provider.", e);
+                }
                 signature.initVerify(pub);
                 signature.update(input);
                 if (!signature.verify(signBV)) {
@@ -1230,8 +1240,7 @@ public final class KeyTools {
         return false;
     }
 
-    public static void checkValidKeyLength(String keyspec) throws InvalidKeyException, NoSuchAlgorithmException,
-    NoSuchProviderException, InvalidAlgorithmParameterException {
+    public static void checkValidKeyLength(String keyspec) throws InvalidKeyException, InvalidAlgorithmParameterException {
         final String keyAlg = keyspecToKeyalg(keyspec);
         final int len;
         if (keyAlg.equals(AlgorithmConstants.KEYALGORITHM_RSA)) {

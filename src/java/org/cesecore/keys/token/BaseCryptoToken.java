@@ -132,7 +132,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
     }
 
     @Override
-    public void testKeyPair(final String alias) throws InvalidKeyException, NoSuchProviderException, CryptoTokenOfflineException { // NOPMD:this is not a junit test
+    public void testKeyPair(final String alias) throws InvalidKeyException, CryptoTokenOfflineException { // NOPMD:this is not a junit test
         final PrivateKey privateKey = getPrivateKey(alias);
         final PublicKey publicKey = getPublicKey(alias);
         if (log.isDebugEnabled()) {

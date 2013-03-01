@@ -914,7 +914,9 @@ public class EjbcaWS implements IEjbcaWS {
 			final String hardTokenSN, final String responseType, final IPatternLogger logger) throws EjbcaException, CesecoreException, CADoesntExistsException, AuthorizationDeniedException {
 		byte[] retval = null;
 		try {
-			final EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, hardTokenSession, endEntityManagementSession, webAuthenticationSession, cryptoTokenManagementSession);
+            final EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, certificateProfileSession,
+                    certificateStoreSession, endEntityAccessSession, endEntityProfileSession, hardTokenSession, endEntityManagementSession,
+                    webAuthenticationSession, cryptoTokenManagementSession);
 			final AuthenticationToken admin = ejbhelper.getAdmin();			  
             logAdminName(admin,logger);
 			// check authorization to CAID

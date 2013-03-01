@@ -97,15 +97,13 @@ public class CachedCryptoToken implements CryptoToken {
     }
 
     @Override
-    public void generateKeyPair(String keySpec, String alias) throws NoSuchAlgorithmException, NoSuchProviderException,
-            InvalidAlgorithmParameterException, InvalidKeyException, SignatureException, KeyStoreException, CertificateException,
-            IOException, CryptoTokenOfflineException {
+    public void generateKeyPair(String keySpec, String alias) throws InvalidAlgorithmParameterException,
+            CryptoTokenOfflineException {
         wrappedCryptoToken.generateKeyPair(keySpec, alias);
     }
 
     @Override
-    public void generateKeyPair(AlgorithmParameterSpec spec, String alias) throws NoSuchAlgorithmException, NoSuchProviderException,
-            InvalidAlgorithmParameterException, InvalidKeyException, SignatureException, KeyStoreException, CertificateException,
+    public void generateKeyPair(AlgorithmParameterSpec spec, String alias) throws InvalidAlgorithmParameterException, CertificateException,
             IOException, CryptoTokenOfflineException {
         wrappedCryptoToken.generateKeyPair(spec, alias);
     }
@@ -190,7 +188,7 @@ public class CachedCryptoToken implements CryptoToken {
     }
 
     @Override
-    public void testKeyPair(final String alias) throws InvalidKeyException, NoSuchProviderException, CryptoTokenOfflineException {
+    public void testKeyPair(final String alias) throws InvalidKeyException, CryptoTokenOfflineException {
         wrappedCryptoToken.testKeyPair(alias);
     }
 

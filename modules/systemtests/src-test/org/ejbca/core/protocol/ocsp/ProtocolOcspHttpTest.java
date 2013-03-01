@@ -112,6 +112,7 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
@@ -239,20 +240,20 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 
     @Before
     public void setUp() throws Exception {
-        super.setUp();
+        CaTestCase.removeTestCA();
+        CaTestCase.createTestCA();
         unknowncacert = (X509Certificate) CertTools.getCertfromByteArray(unknowncacertBytes);
 
         log.debug("httpReqPath=" + httpReqPath);
         assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
                 .getResponseCode() == 200);
-        cacert = (X509Certificate) getTestCACert();
-        caid = getTestCAId();
+        cacert = (X509Certificate) CaTestCase.getTestCACert();
+        caid = CaTestCase.getTestCAId();
     }
 
     @After
     public void tearDown() throws Exception {
-        super.tearDown();
-        cacert = null;
+        CaTestCase.removeTestCA();
         removeDSACA();
         removeECDSACA();
         assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
