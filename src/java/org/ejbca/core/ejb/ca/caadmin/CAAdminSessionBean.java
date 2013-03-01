@@ -1786,15 +1786,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             IllegalCryptoTokenException, CADoesntExistsException, AuthorizationDeniedException, CAExistsException {
         Certificate cacert = signatureCertChain[0];
         int caId = StringTools.strip(CertTools.getSubjectDN(cacert)).hashCode();
-        // Just convert string properties in a standard way...
-        Properties caTokenProperties = new Properties();
-        if (catokenproperties != null) {
-            try {
-                caTokenProperties.load(new ByteArrayInputStream(catokenproperties.getBytes()));
-            } catch (IOException e) {
-                log.warn("Unexpected potential problem.", e);
-            }
-        }
+        Properties caTokenProperties = CAToken.getPropertiesFromString(catokenproperties);
         // Create the CryptoToken
         final int cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, "ImportedCryptoToken"+caId, PKCS11CryptoToken.class.getName(),
                 caTokenProperties, null, catokenpassword.toCharArray());

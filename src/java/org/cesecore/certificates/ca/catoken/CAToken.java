@@ -238,6 +238,10 @@ public class CAToken extends UpgradeableDataHashMap {
         if (data != null) {
             propertyStr = (String) data.get(CAToken.PROPERTYDATA);
         }
+        return getPropertiesFromString(propertyStr);
+    }
+    
+    public static Properties getPropertiesFromString(String propertyStr) {
         final Properties prop = new Properties();
         if (StringUtils.isNotEmpty(propertyStr)) {
             try {
@@ -245,6 +249,12 @@ public class CAToken extends UpgradeableDataHashMap {
 				// Otherwise properties.load will parse it as an escaped character, and that is not good
 				propertyStr = StringUtils.replace(propertyStr, "\\", "\\\\");
                 prop.load(new ByteArrayInputStream(propertyStr.getBytes()));
+                // Trim whitespace in values
+                for (Object keyObj : prop.keySet()) {
+                    String key = (String)keyObj;
+                    String value = prop.getProperty(key);
+                    prop.setProperty(key, value.trim());
+                }
             } catch (IOException e) {
                 log.error("Error getting PCKS#11 token properties: ", e);
             }
