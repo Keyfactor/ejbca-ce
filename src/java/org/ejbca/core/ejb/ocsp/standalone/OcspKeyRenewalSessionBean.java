@@ -16,20 +16,16 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.InvalidParameterException;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
+import java.security.KeyStoreException;
 import java.security.PublicKey;
-import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.RSAKeyGenParameterSpec;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -45,7 +41,6 @@ import javax.security.auth.x500.X500Principal;
 import javax.xml.namespace.QName;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Base64;
@@ -71,11 +66,11 @@ import org.ejbca.util.query.BasicMatch;
  * @version $Id$
  *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "StandaloneOcspKeyRenewalSessionRemote")
+@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "OcspKeyRenewalSessionRemote")
 @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-public class StandaloneOcspKeyRenewalSessionBean implements StandaloneOcspKeyRenewalSessionLocal, StandaloneOcspKeyRenewalSessionRemote  {
+public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, OcspKeyRenewalSessionRemote  {
 
-    private static final Logger log = Logger.getLogger(StandaloneOcspKeyRenewalSessionBean.class);
+    private static final Logger log = Logger.getLogger(OcspKeyRenewalSessionBean.class);
 
     private static final InternalResources intres = InternalResources.getInstance();
 
@@ -91,8 +86,15 @@ public class StandaloneOcspKeyRenewalSessionBean implements StandaloneOcspKeyRen
        ejbcaWS = getEjbcaWS();
     }
     
+    
+    
     @Override
-    public void renewKeyStores(String signerSubjectDN) {
+    public void renewKeyStores(String signerSubjectDN) throws KeyStoreException, CryptoTokenOfflineException, InvalidKeyException {
+        renewKeyStores(signerSubjectDN, OcspConfiguration.getP11Password());
+    }
+    
+    @Override
+    public void renewKeyStores(String signerSubjectDN, String p11Password) throws KeyStoreException, CryptoTokenOfflineException, InvalidKeyException {
         if (ejbcaWS == null) {
             return;
         }
@@ -100,7 +102,6 @@ public class StandaloneOcspKeyRenewalSessionBean implements StandaloneOcspKeyRen
         try {
             target = signerSubjectDN.trim().toLowerCase().equals(RENEW_ALL_KEYS) ? null : new X500Principal(signerSubjectDN);
         } catch (IllegalArgumentException e) {
-            //TODO: ADD ocsp.rekey.triggered.dn.not.valid to intresources
             log.error(intres.getLocalizedMessage("ocsp.rekey.triggered.dn.not.valid", signerSubjectDN));
             return;
         }
@@ -130,65 +131,32 @@ public class StandaloneOcspKeyRenewalSessionBean implements StandaloneOcspKeyRen
                     log.info("Could not rekey " + src.getName() + ". Only RSA keys may be rekeyed");
                     continue;
                 }
-                final KeyPair keyPair = generateRSAKeyPair(algorithmParameterSpec, tokenAndChain.getSignProviderName());
                 //Sign the new keypair
-                X509Certificate signedCertificate = signCertificateByCa(tokenAndChain, keyPair);
+                tokenAndChain.generateKeyPair();
+                X509Certificate signedCertificate = signCertificateByCa(tokenAndChain);
                 //Construct the new certificate chain
-                final List<X509Certificate> lCertChain = Arrays.asList(tokenAndChain.getChain());
-                lCertChain.add(0, signedCertificate);
+                final List<X509Certificate> lCertChain = new ArrayList<X509Certificate>(Arrays.asList(tokenAndChain.getChain()));
+                lCertChain.set(0, signedCertificate);
                 final X509Certificate certChain[] = lCertChain.toArray(new X509Certificate[0]);
-              //  tokenAndChain.renewTokenAndChain(keyPair, certChain);
+                tokenAndChain.setChain(certChain);
             } catch (KeyRenewalFailedException e) {
+                String msg = intres.getLocalizedMessage("ocsp.rekey.failed.unknown.reason", target, e.getLocalizedMessage());
+                log.error(msg, e);
                 //TODO: Audit log
                 continue;
             } catch (IOException e) {
-                log.error(e.getLocalizedMessage(), e);
+              //TODO: Audit log
+                String msg = intres.getLocalizedMessage("ocsp.rekey.failed.unknown.reason", target, e.getLocalizedMessage());
+                log.error(msg, e);
             }
-
         }
         if (matched.length() < 1) {
-            //TODO: ADD ocsp.rekey.triggered.dn.not.existing to intresources
             log.error(intres.getLocalizedMessage("ocsp.rekey.triggered.dn.not.existing", target.getName(), unMatched));
             return;
         }
-        //TODO: ADD ocsp.rekey.triggered.dn.not.existing to intresources
         log.info(intres.getLocalizedMessage("ocsp.rekey.triggered", matched));
-
-        //Caches need to be reloaded
-        standaloneOcspResponseGeneratorSession.reloadTokenAndChainCache();
     }
-
-    /**
-     * This simple utility method constructs a RSA keypair. Any other keypair type will be rejected.
-     * 
-     * @param spec an {@link AlgorithmParameterSpec} that describes the keypair type. Can be derived from the public key.
-     * @param providerName The name of the provider
-     * @return a brand new keystore
-     * @throws KeyRenewalFailedException if any error occurs.
-     */
-    private KeyPair generateRSAKeyPair(final AlgorithmParameterSpec spec, final String providerName) throws KeyRenewalFailedException {
-        /* Developer's note: I know that there already are 4-5 examples of this method spread
-         * around the codebase, but most of them are way too general. Since only RSA keys can be 
-         * renamed, this variant is quick and easy.
-         */
-        if (!(spec instanceof RSAKeyGenParameterSpec)) {
-            log.error("Only RSA keys could be renewed.");
-            throw new IllegalArgumentException("Only RSA keys can be renewed.");
-        }
-        KeyPairGenerator kpg;
-        try {
-            kpg = KeyPairGenerator.getInstance("RSA", providerName);
-            kpg.initialize(spec);
-            return kpg.generateKeyPair();
-        } catch (NoSuchAlgorithmException e) {
-            throw new KeyRenewalFailedException("Algorithm RSA was not recognized", e);
-        } catch (NoSuchProviderException e) {
-            throw new IllegalArgumentException("Provider " + providerName + " was not found.", e);
-        } catch (InvalidAlgorithmParameterException e) {
-            throw new KeyRenewalFailedException("Algorithm Parameter Specification was not of RSA type.", e);
-        }
-    }
-
+    
     /**
      * Get user data for the EJBCA user that will be used when creating the cert for the new key.
      * @param ejbcaWS from {@link #getEjbcaWS()}
@@ -235,11 +203,10 @@ public class StandaloneOcspKeyRenewalSessionBean implements StandaloneOcspKeyRen
      * @return the name
      */
     private String getCAName(int caId) {
-
         final Map<Integer, String> mCA = new HashMap<Integer, String>();
         try {
             for (NameAndId nameAndId : ejbcaWS.getAvailableCAs()) {
-                mCA.put(new Integer(nameAndId.getId()), nameAndId.getName());
+                mCA.put(Integer.valueOf(nameAndId.getId()), nameAndId.getName());
                 log.debug("CA. id: " + nameAndId.getId() + " name: " + nameAndId.getName());
             }
         } catch (Exception e) {
@@ -253,13 +220,13 @@ public class StandaloneOcspKeyRenewalSessionBean implements StandaloneOcspKeyRen
      * This method sends a keypair off to be signed by the CA that issued the original keychain.
      * 
      * @param tokenAndChain the {@link CryptoTokenAndChain} object destined to have a new keypair
-     * @param keyPair the {@link KeyPair} to sign
      * @return a certificate that has been signed by the CA. 
      * @throws KeyRenewalFailedException if any error occurs during signing
      * @throws IOException 
+     * @throws CryptoTokenOfflineException 
      */
     @SuppressWarnings("unchecked")
-    private X509Certificate signCertificateByCa(CryptoTokenAndChain tokenAndChain, KeyPair keyPair) throws KeyRenewalFailedException, IOException {
+    private X509Certificate signCertificateByCa(CryptoTokenAndChain tokenAndChain) throws KeyRenewalFailedException, IOException, CryptoTokenOfflineException {
         /* Construct a certification request in order to have the new keystore certified by the CA. 
          */
         final int caId = CertTools.stringToBCDNString(tokenAndChain.getCaCertificate().getSubjectDN().toString()).hashCode();
@@ -272,28 +239,7 @@ public class StandaloneOcspKeyRenewalSessionBean implements StandaloneOcspKeyRen
         }
         final PKCS10CertificationRequest pkcs10;
         try {
-            pkcs10 = CertTools.genPKCS10CertificationRequest(SIGNATURE_ALGORITHM, CertTools.stringToBcX500Name("CN=NOUSED"), keyPair.getPublic(),
-                    new DERSet(), keyPair.getPrivate(), tokenAndChain.getSignProviderName());
-
-        } catch (NoSuchAlgorithmException e) {
-            //TODO: Audit log 
-            final String msg = "Signature algorithm " + SIGNATURE_ALGORITHM + " was not valid.";
-            log.error(msg, e);
-            throw new KeyRenewalFailedException(msg, e);
-        } catch (NoSuchProviderException e) {
-            //TODO: Audit log that provider from crypto token wasn't found.
-            final String msg = "Provider from crypto token wasn't found";
-            log.error(msg, e);
-            throw new KeyRenewalFailedException(msg, e);
-        } catch (InvalidKeyException e) {
-            final String msg = "Private key was invalid";
-            log.error(msg, e);
-            //TODO: Audit log 
-            throw new KeyRenewalFailedException(msg, e);
-        } catch (SignatureException e) {
-            final String msg = "Signature algorithm " + SIGNATURE_ALGORITHM + " was not valid. Could not create signature.";
-            log.error(msg, e);
-            throw new KeyRenewalFailedException("Private key was invalid", e);
+            pkcs10 = tokenAndChain.getPKCS10CertificationRequest(SIGNATURE_ALGORITHM);
         } catch (OperatorCreationException e) {
             final String msg = "Could not create a ContentSigner";
             log.error(msg, e);
@@ -323,13 +269,13 @@ public class StandaloneOcspKeyRenewalSessionBean implements StandaloneOcspKeyRen
         X509Certificate signedCertificate = null;
         for(X509Certificate certificate : certificates) {
             try {
-                certificate.verify(tokenAndChain.getChain()[0].getPublicKey());
+                certificate.verify(tokenAndChain.getCaCertificate().getPublicKey());
             } catch (Exception e) {
                 //Ugly, but inherited from legacy code
                 signedCertificate = null;
                 continue;
             }
-            if ( keyPair.getPublic().equals(certificate.getPublicKey()) ) {
+            if ( tokenAndChain.getPublicKey().equals(certificate.getPublicKey()) ) {
                 signedCertificate = certificate;
                 break;
             }           

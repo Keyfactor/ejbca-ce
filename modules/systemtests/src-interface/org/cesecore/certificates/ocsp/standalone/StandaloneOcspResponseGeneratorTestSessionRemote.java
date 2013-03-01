@@ -10,15 +10,32 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.ocsp.standalone;
+package org.cesecore.certificates.ocsp.standalone;
+
+import java.security.cert.CertificateEncodingException;
+import java.util.Collection;
+import java.util.Map;
 
 import javax.ejb.Remote;
+
+import org.bouncycastle.cert.ocsp.OCSPException;
+import org.cesecore.certificates.ocsp.cache.CryptoTokenAndChain;
 
 /**
  * @version $Id$
  *
  */
 @Remote
-public interface StandaloneOcspKeyRenewalSessionRemote {
+public interface StandaloneOcspResponseGeneratorTestSessionRemote {
 
+    /**
+     * Replaces the contents of the cache with the parameter given
+     * 
+     * @param newCache
+     * @throws CertificateEncodingException
+     * @throws OCSPException
+     */
+    void replaceTokenAndChainCache(Map<Integer, CryptoTokenAndChain> newCache) throws CertificateEncodingException, OCSPException;
+ 
+    Collection<CryptoTokenAndChain> getCacheValues();
 }

@@ -3087,7 +3087,7 @@ public class CertTools {
     }
     
     /**
-     * Generates a PKCS10CertificateRequest
+     * Generates a PKCS10CertificationRequest
      * 
      * Code Example:
      * -------------
@@ -3127,14 +3127,10 @@ public class CertTools {
      * @param provider
      * @return a PKCS10CertificateRequest based on the input parameters.
      * @throws IOException
-     * @throws NoSuchAlgorithmException
-     * @throws NoSuchProviderException
-     * @throws InvalidKeyException
-     * @throws SignatureException
      * @throws OperatorCreationException 
      */
     public static PKCS10CertificationRequest genPKCS10CertificationRequest(String signatureAlgorithm, X500Name subject, PublicKey publickey, ASN1Set attributes, 
-            PrivateKey signingKey, String provider) throws IOException, NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException, OperatorCreationException {
+            PrivateKey signingKey, String provider) throws IOException, OperatorCreationException {
     
         ASN1Sequence seq = (ASN1Sequence)ASN1Primitive.fromByteArray(publickey.getEncoded());
         SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo(seq);

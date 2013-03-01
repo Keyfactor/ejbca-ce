@@ -302,9 +302,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             cryptoToken.testKeyPair(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYTEST));
         } catch (InvalidKeyException e1) {
             throw new RuntimeException("The CA's test key alias points to an invalid key.", e1);
-        } catch (NoSuchProviderException e1) {
-            throw new RuntimeException("The CA's CryptoToken provider is now unavailable.", e1);
-        }
+        } 
         // Store CA in database, so we can generate keys using the ca token session.
         try {
             caSession.addCA(admin, ca);

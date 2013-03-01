@@ -14,6 +14,8 @@ package org.cesecore.keys.token;
 
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyPair;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -23,68 +25,85 @@ import java.security.cert.CertificateException;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.Properties;
 
+import org.cesecore.keys.util.KeyTools;
 
-/** This class is used as crypto Token for virtual CAs that does not have a keystore, such as external SubCAs.
+
+/** This class is used only for testing.
  * 
  * @version $Id$
  */
-public class NullCryptoToken extends BaseCryptoToken {
+public class DummyCryptoToken extends BaseCryptoToken {
 
-    private static final long serialVersionUID = -1L;
-
-    private int id;
-
-    public NullCryptoToken() {
-    	super();
+    private static final long serialVersionUID = -6136504057204777472L;
+    
+    private int id = 4711;
+    
+    private PublicKey publicKey = null;
+    private PrivateKey privateKey = null;
+    
+    public DummyCryptoToken() throws InstantiationException {
+        try {
+            KeyPair keypair = KeyTools.genKeys("512", "RSA");
+            this.publicKey = keypair.getPublic();
+            this.privateKey = keypair.getPrivate();
+           } catch (InvalidAlgorithmParameterException e) {
+         // Ignore
+        }
+       
     }
 
     @Override
     public void init(Properties properties, byte[] data, int id) throws Exception {
-    	// We only need to set JCA provider, if JCE provider is the same (which is the common case)
-    	setJCAProviderName("BC");
     	this.id = id;
+    	// Do nothing
     }
 
     @Override
     public int getId() {
     	return this.id;
     }
-
+    
     @Override
     public Properties getProperties(){
     	return new Properties();
     }
-
+   
     @Override
     public PrivateKey getPrivateKey(String alias){
-      return null;        
+      return privateKey;
     }
 
     @Override
     public PublicKey getPublicKey(String alias){    
-      return null;        
+      return publicKey;  
+    }
+
+    @Override
+    public void deleteEntry(final String alias) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {    	
+    }
+
+    @Override
+    public void generateKeyPair( final String keySpec, final String alias) throws InvalidAlgorithmParameterException {     
+        KeyPair keypair = KeyTools.genKeys("512", "RSA");
+        this.publicKey = keypair.getPublic();
+        this.privateKey = keypair.getPrivate();
     }
     
     @Override
-    public void deleteEntry(final String alias) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, CryptoTokenOfflineException {    	
-    }
-
-    @Override
-    public void generateKeyPair(final String keySpec, final String alias) throws InvalidAlgorithmParameterException,
-            CryptoTokenOfflineException {
-    }
-
-    @Override
     public void generateKeyPair(final AlgorithmParameterSpec spec, final String alias) throws InvalidAlgorithmParameterException,
             CertificateException, IOException, CryptoTokenOfflineException {
+        KeyPair keypair = KeyTools.genKeys("512", "RSA");
+        this.publicKey = keypair.getPublic();
+        this.privateKey = keypair.getPrivate();
     }
 
     @Override
     public void generateKey(final String algorithm, final int keysize, final String alias) throws NoSuchAlgorithmException, NoSuchProviderException, KeyStoreException, CryptoTokenOfflineException {
+        
     }
 
     @Override
-	public void activate(char[] authenticationcode) throws CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException {
+	public void activate(char[] authenticationcode) {
 		// Do Nothing		
 	}
 
@@ -97,6 +116,11 @@ public class NullCryptoToken extends BaseCryptoToken {
 	public byte[] getTokenData() {
     	return null;
 	}
+
+    @Override
+    public void testKeyPair(final String alias) throws InvalidKeyException, CryptoTokenOfflineException {
+      //Do nothing.
+    }
 
 }
 

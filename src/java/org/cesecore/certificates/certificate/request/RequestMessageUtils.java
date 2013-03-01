@@ -200,7 +200,9 @@ public class RequestMessageUtils {
 		return buffer;
 	}
 
-	public static RequestMessage getSimpleRequestMessageFromType(final String username, final String password, final String req, final int reqType) throws SignRequestSignatureException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, IOException, SignatureException, InvalidKeySpecException, ParseException, ConstructionException, NoSuchFieldException {
+    public static RequestMessage getSimpleRequestMessageFromType(final String username, final String password, final String req, final int reqType)
+            throws SignRequestSignatureException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, IOException,
+            SignatureException, InvalidKeySpecException, ParseException, ConstructionException, NoSuchFieldException {
 	    RequestMessage ret = null;
         if (reqType == CertificateConstants.CERT_REQ_TYPE_PKCS10) {
             final RequestMessage pkcs10req = RequestMessageUtils.genPKCS10RequestMessage(req.getBytes());

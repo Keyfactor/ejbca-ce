@@ -131,21 +131,16 @@ public class PublicCryptoToken implements CryptoToken {
 
 	@Override
 	public void generateKeyPair(String keySpec, String alias)
-			throws NoSuchAlgorithmException, NoSuchProviderException,
-			InvalidAlgorithmParameterException, InvalidKeyException,
-			SignatureException, KeyStoreException, CertificateException,
-			IOException, CryptoTokenOfflineException {
+			throws InvalidAlgorithmParameterException,
+			CryptoTokenOfflineException {
 		// static do nothing
 	}
 
-	@Override
-	public void generateKeyPair(AlgorithmParameterSpec spec, String alias)
-			throws NoSuchAlgorithmException, NoSuchProviderException,
-			InvalidAlgorithmParameterException, InvalidKeyException,
-			SignatureException, KeyStoreException, CertificateException,
-			IOException, CryptoTokenOfflineException {
-		// static do nothing
-	}
+    @Override
+    public void generateKeyPair(AlgorithmParameterSpec spec, String alias) throws InvalidAlgorithmParameterException, CertificateException,
+            IOException, CryptoTokenOfflineException {
+        // static do nothing
+    }
 
 	@Override
 	public void generateKey(String algorithm, int keysize, String alias)
@@ -244,7 +239,7 @@ public class PublicCryptoToken implements CryptoToken {
     }
     
     @Override
-    public void testKeyPair(final String alias) throws InvalidKeyException, NoSuchProviderException, CryptoTokenOfflineException {
+    public void testKeyPair(final String alias) throws InvalidKeyException, CryptoTokenOfflineException {
         // be positive.. NOT!
         throw new CryptoTokenOfflineException("Implementation does not contain any private keys to use for test.");
     }

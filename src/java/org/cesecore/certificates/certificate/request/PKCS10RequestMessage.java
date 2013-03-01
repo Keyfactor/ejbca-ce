@@ -129,15 +129,7 @@ public class PKCS10RequestMessage implements RequestMessage {
         pkcs10 = new PKCS10CertificationRequest(p10msg);
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     *
-     * @throws InvalidKeyException DOCUMENT ME!
-     * @throws NoSuchAlgorithmException DOCUMENT ME!
-     * @throws NoSuchProviderException DOCUMENT ME!
-     */
+    @Override
     public PublicKey getRequestPublicKey()
             throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
         try {
@@ -152,17 +144,14 @@ public class PKCS10RequestMessage implements RequestMessage {
         return pkcs10.getPublicKey();
     }
 
-    /** force a password, i.e. ignore the challenge password in the request
+    /** 
+     * force a password, i.e. ignore the challenge password in the request
      */
     public void setPassword(String pwd) {
         this.password = pwd;
     }
 
-    /**
-     * Returns the challenge password from the certificattion request.
-     *
-     * @return challenge password from certification request or null if none exist in the request.
-     */
+    @Override
     public String getPassword() {
         if (password != null) {
             return password;
@@ -242,18 +231,14 @@ public class PKCS10RequestMessage implements RequestMessage {
         return ret;
     }
 
-    /** force a username, i.e. ignore the DN/username in the request
+    /** 
+     * force a username, i.e. ignore the DN/username in the request
      */
     public void setUsername(String username) {
         this.username = username;
     }
 
-    /**
-     * Returns the string representation of the CN field from the DN of the certification request,
-     * to be used as username.
-     *
-     * @return username, which is the CN field from the subject DN in certification request.
-     */
+    @Override
     public String getUsername() {
         if (username != null) {
             return username;
@@ -291,49 +276,28 @@ public class PKCS10RequestMessage implements RequestMessage {
         }
         return ret;
     }
-
-    /**
-     * Gets the issuer DN if contained in the request (the CA the request is targeted at).
-     *
-     * @return issuerDN of receiving CA or null.
-     */
+ 
+    @Override
     public String getIssuerDN() {
         return null;
     }
 
-    /**
-     * Gets the number (of CA cert) from IssuerAndSerialNumber. Combined with getIssuerDN to identify
-     * the CA-certificate of the CA the request is targeted for.
-     *
-     * @return serial number of CA certificate for CA issuing CRL or null.
-     */
+    @Override
     public BigInteger getSerialNo() {
     	return null;
     }
     
-    /**
-     * Gets the issuer DN (of CA cert) from IssuerAndSerialNumber when this is a CRL request.
-     *
-     * @return issuerDN of CA issuing CRL.
-     */
+    @Override
     public String getCRLIssuerDN() {
         return null;
     }
 
-    /**
-     * Gets the number (of CA cert) from IssuerAndSerialNumber when this is a CRL request.
-     *
-     * @return serial number of CA certificate for CA issuing CRL.
-     */
+    @Override
     public BigInteger getCRLSerialNo() {
         return null;
     }
 
-    /**
-     * Returns the string representation of the subject DN from the certification request.
-     *
-     * @return subject DN from certification request or null.
-     */
+    @Override
     public String getRequestDN() {
     	String ret = null;
     	X500Name name = getRequestX500Name();
@@ -354,9 +318,7 @@ public class PKCS10RequestMessage implements RequestMessage {
         return ret;
     }
 
-    /**
-     * @see RequestMessage#getRequestX500Name()
-     */
+    @Override
     public X500Name getRequestX500Name() {
         try {
             if (pkcs10 == null) {
@@ -380,6 +342,7 @@ public class PKCS10RequestMessage implements RequestMessage {
         return ret;
     }
     
+    @Override
     public String getRequestAltNames() {
         String ret = null;
         try {
@@ -403,23 +366,17 @@ public class PKCS10RequestMessage implements RequestMessage {
         return ret;
     }
 
-    /**
-     * @see org.cesecore.certificates.certificate.request.RequestMessage.protocol.IRequestMessage
-     */
+    @Override
 	public Date getRequestValidityNotBefore() {
 		return null;
 	}
 	
-    /**
-     * @see org.cesecore.certificates.certificate.request.RequestMessage.protocol.IRequestMessage
-     */
+    @Override
 	public Date getRequestValidityNotAfter() {
 		return null;
 	}
 	
-    /**
-     * @see org.cesecore.certificates.certificate.request.RequestMessage.protocol.IRequestMessage
-     */
+    @Override
 	public Extensions getRequestExtensions() {
         try {
             if (pkcs10 == null) {
@@ -482,19 +439,12 @@ public class PKCS10RequestMessage implements RequestMessage {
         return pkcs10;
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     *
-     * @throws InvalidKeyException DOCUMENT ME!
-     * @throws NoSuchAlgorithmException DOCUMENT ME!
-     * @throws NoSuchProviderException DOCUMENT ME!
-     */
+    @Override
     public boolean verify()
     throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
         return verify(null);
     }
+    
     public boolean verify(PublicKey pubKey)
             throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
     	if (log.isTraceEnabled()) {
@@ -524,100 +474,62 @@ public class PKCS10RequestMessage implements RequestMessage {
         return ret;
     }
 
-    /**
-     * indicates if this message needs recipients public and private key to verify, decrypt etc. If
-     * this returns true, setKeyInfo() should be called.
-     *
-     * @return True if public and private key is needed.
-     */
+    @Override
     public boolean requireKeyInfo() {
         return false;
     }
 
-    /**
-     * Sets the public and private key needed to decrypt/verify the message. Must be set if
-     * requireKeyInfo() returns true.
-     *
-     * @param cert certificate containing the public key.
-     * @param key private key.
-     * @param provider the provider to use, if the private key is on a HSM you must use a special provider. If null is given, the default BC provider is used.
-     *
-     * @see #requireKeyInfo()
-     */
+    @Override
     public void setKeyInfo(Certificate cert, PrivateKey key, String Provider) {
     }
 
-    /**
-     * Returns an error number after an error has occured processing the request
-     *
-     * @return class specific error number
-     */
+    @Override
     public int getErrorNo() {
         return error;
     }
 
-    /**
-     * Returns an error message after an error has occured processing the request
-     *
-     * @return class specific error message
-     */
+    @Override
     public String getErrorText() {
         return errorText;
     }
 
-    /**
-     * Returns a senderNonce if present in the request
-     *
-     * @return senderNonce
-     */
+    @Override
     public String getSenderNonce() {
         return null;
     }
 
-    /**
-     * Returns a transaction identifier if present in the request
-     *
-     * @return transaction id
-     */
+    @Override
     public String getTransactionId() {
         return null;
     }
 
-    /**
-     * Returns requesters key info, key id or similar
-     *
-     * @return request key info
-     */
+    @Override
     public byte[] getRequestKeyInfo() {
         return null;
     }
     
-    /** @see org.cesecore.certificates.certificate.request.RequestMessage.protocol.IRequestMessage
-     */
+    @Override
     public String getPreferredDigestAlg() {
     	return preferredDigestAlg;
     }
-    /** @see org.cesecore.certificates.certificate.request.RequestMessage.protocol.IRequestMessage
-     */
+    
+    @Override
     public boolean includeCACert() {
     	return includeCACert;
     }
 
-    /** @see org.cesecore.certificates.certificate.request.RequestMessage.protocol.IRequestMessage
-     */
+    @Override
     public int getRequestType() {
     	return 0;
     }
     
-    /** @see org.cesecore.certificates.certificate.request.RequestMessage.protocol.IRequestMessage
-     */
+    @Override
     public int getRequestId() {
     	return 0;
     }
     
-    /** @see org.cesecore.certificates.certificate.request.RequestMessage.protocol.IRequestMessage
-     */
+    @Override
     public CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass, RequestMessage req, Certificate cert, PrivateKey signPriv, String provider) {
     	return RequestMessageUtils.createResponseMessage(responseClass, req, cert, signPriv, provider);
     }
-} // PKCS10RequestMessage
+} 
