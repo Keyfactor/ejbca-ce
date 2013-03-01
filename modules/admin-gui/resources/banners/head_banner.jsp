@@ -16,7 +16,7 @@
 
 <body id="header">
 	<div id="banner">
-		<img src="<%= ejbcawebbean.getImagefileInfix("banner_"+org.ejbca.config.InternalConfiguration.getAppNameLower()+"-admin.png") %>" alt="<c:out value="<%= globalconfiguration.getEjbcaTitle() %>" />" />
+		<a href="<%= ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() %>" target="_top"><img src="<%= ejbcawebbean.getImagefileInfix("banner_"+org.ejbca.config.InternalConfiguration.getAppNameLower()+"-admin.png") %>" alt="<c:out value="<%= globalconfiguration.getEjbcaTitle() %>" />" /></a>
 	</div>
 </body>
 </html>
