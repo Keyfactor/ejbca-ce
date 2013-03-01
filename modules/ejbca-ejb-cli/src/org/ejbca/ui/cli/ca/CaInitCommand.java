@@ -224,7 +224,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             }
             final String keyspec = args[5];
             final String keytype = args[6];
-            final int validity = Integer.parseInt(args[7]);
+            final long validity = Long.parseLong(args[7]);
             String policyId = args[8];
             final ArrayList<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
             if ((policyId != null) && (policyId.toLowerCase().trim().equals("null"))) {

@@ -1121,7 +1121,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA :
                 CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA;
         String subjectdn = CertTools.getSubjectDN(caCertificate);
-        int validity = 0;
+        long validity = 0;
         int signedby = CertTools.isSelfSigned(caCertificate) ? CAInfo.SELFSIGNED : CAInfo.SIGNEDBYEXTERNALCA;
         String description = "CA created by certificate import.";
         log.info("Preparing to import of CA with Subject DN " + subjectdn);

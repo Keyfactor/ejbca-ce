@@ -131,7 +131,7 @@ public class CAInfo implements Serializable {
     public void setSignedBy(int signedby) {this.signedby = signedby;}
     
     public long getValidity() { return validity;}
-    public void setValidity(int validity) { this.validity = validity; }
+    public void setValidity(long validity) { this.validity = validity; }
     
     public Date getExpireTime() {return this.expiretime;}
     public void setExpireTime(final Date expiretime) {
