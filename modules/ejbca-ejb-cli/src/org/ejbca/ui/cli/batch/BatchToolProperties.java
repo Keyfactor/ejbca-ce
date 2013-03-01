@@ -57,13 +57,23 @@ public class BatchToolProperties {
 	}
 
 	
-	
+	private boolean tryLoadFile(String filename) throws IOException {
+		try {
+			FileInputStream fis = new FileInputStream(filename);
+			batchToolProperties.load(fis);
+			return true;
+		} catch (FileNotFoundException e) {
+			return false;
+		}
+	}
 	
 	/**
 	 * Method that tries to read the property file 'batchtool.properties'
 	 * in the home directory then in the current directory and finally 
-	 * in the bin\batchtool.properties 
+	 * in the conf/batchtool.properties.
 	 *
+	 * It will also try the old location in bin/ and print a deprecation
+	 * warning if it exists there.
 	 */
 	private void load(){
         File file = new File( System.getProperty("user.home"),
@@ -72,17 +82,13 @@ public class BatchToolProperties {
         	try{
 			FileInputStream fis = new FileInputStream(file);
 			batchToolProperties.load(fis);
-		    } catch (FileNotFoundException e) {
-		    	try{
-		    		FileInputStream fis = new FileInputStream("batchtool.properties");
-		    		batchToolProperties.load(fis);
-		    	}catch (FileNotFoundException e1) {
-		    		try{
-		    			FileInputStream fis = new FileInputStream("conf/batchtool.properties");
-		    			batchToolProperties.load(fis);
-		    		}catch (FileNotFoundException e2) {
-		    			log.info("Could not find any batchtool property file, default values will be used.");
-		    			log.debug(e);
+		    } catch (FileNotFoundException e1) {
+		    	if (!tryLoadFile("batchtool.properties") && !tryLoadFile("conf/batchtool.properties")) {
+		    		if (tryLoadFile("bin/batchtool.properties")) {
+		    			log.info("The batchtool.properties file exists in bin/. It should be moved to conf/");
+		    		} else {
+		    			log.debug("Could not find any batchtool property file, default values will be used.");
+		    			log.debug(e1);
 		    		}
 		    	}
 		    }
