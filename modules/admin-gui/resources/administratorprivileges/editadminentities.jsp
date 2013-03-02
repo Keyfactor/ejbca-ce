@@ -40,16 +40,19 @@
 </head>
 
 <body>
-<div align="center">
 
-	<h2><h:outputText value="#{web.text.ADMINSINROLE} #{rolesManagedBean.currentRole}"
-  			rendered="#{not empty rolesManagedBean.currentRole}"/></h2>
+<div align="center">
+	<h2><h:outputText value="#{web.text.EDITADMINS}"/></h2>
+	<h3><h:outputText value="#{web.text.ADMINSINROLE} #{rolesManagedBean.currentRole}"
+  			rendered="#{not empty rolesManagedBean.currentRole}"/></h3>
 
 	<h:outputText value="#{web.text.AUTHORIZATIONDENIED}" rendered="#{empty rolesManagedBean.currentRole && !rolesManagedBean.authorizedToRole}"/>
+</div>
+
+
 	<h:panelGroup rendered="#{not empty rolesManagedBean.currentRole && rolesManagedBean.authorizedToRole}">
  
-	<div align="right">
-	<h:panelGrid columns="1" style="text-align: right;">
+	<h:panelGrid styleClass="edit-top" width="100%" columns="1" rowClasses="Row0,Row1" style="text-align: right;">
 		<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/administratorprivileges.jsf"
 			title="#{web.text.BACKTOROLES}">
 			<h:outputText value="#{web.text.BACKTOROLES}"/>
@@ -63,7 +66,6 @@
 			<h:outputText value="#{web.text.EDITACCESSRULES}"/>
 		</h:outputLink>
 	</h:panelGrid>
-	</div>
   
 	<div align="center">
 	<h:messages layout="table" errorClass="alert"/>
@@ -142,10 +144,10 @@
 		</h:column>
 	</h:dataTable>
 	</h:form >
+
 	<h:outputText value="#{web.text.NOADMINSDEFINED}" rendered="#{empty rolesManagedBean.admins}"/>
 	</div>
 	</h:panelGroup>
-</div>
  
 <%	// Include Footer 
 	String footurl = globalconfiguration.getFootBanner(); %>

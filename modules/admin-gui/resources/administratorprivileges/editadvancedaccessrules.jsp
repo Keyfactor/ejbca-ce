@@ -43,12 +43,15 @@
  
  <div align="center">
 
-	<h2><h:outputText value="#{web.text.ACCESSRULESFORROLE} #{rolesManagedBean.currentRole}" /></h2>
+	<h2><h:outputText value="#{web.text.EDITACCESSRULES}" /></h2>
+	<h3><h:outputText value="#{web.text.ADMINSINROLE} #{rolesManagedBean.currentRole}" /></h3>
 
 	<h:outputText value="#{web.text.AUTHORIZATIONDENIED}" rendered="#{!rolesManagedBean.authorizedToRole}"/>
+</div>	
+
 	<h:panelGroup rendered="#{rolesManagedBean.authorizedToRole}">
  
-	<p><h:messages layout="table" errorClass="alert"/></p>
+	<h:messages layout="table" errorClass="alert"/>
  
 	<h:panelGrid styleClass="edit-top" width="100%" columns="1" rowClasses="Row0,Row1" style="text-align: right;">
 		<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/administratorprivileges.jsf"
@@ -112,8 +115,6 @@
 	
 	</h:panelGroup>
 	
-</div>
-
 <%	// Include Footer 
 	String footurl = globalconfiguration.getFootBanner(); %>
 	<jsp:include page="<%= footurl %>" />

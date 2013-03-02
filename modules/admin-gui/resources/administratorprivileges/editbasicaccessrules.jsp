@@ -208,13 +208,16 @@ function checkallfields(){
 
 <div align="center">
 
-	<h2><h:outputText value="#{web.text.ACCESSRULESFORROLE} #{rolesManagedBean.currentRole}" /></h2>
-	
+	<h2><h:outputText value="#{web.text.EDITACCESSRULES}" /></h2>
+	<h3><h:outputText value="#{web.text.ADMINSINROLE} #{rolesManagedBean.currentRole}" /></h3>
+
 	<h:outputText value="#{web.text.AUTHORIZATIONDENIED}" rendered="#{!rolesManagedBean.authorizedToRole}"/>
+
+</div>
 	
 	<h:panelGroup rendered="#{rolesManagedBean.authorizedToRole}">
-	<p><h:outputText styleClass="alert" value="#{web.text.ADVANCEDMODEREQUIRED}" rendered="#{rolesManagedBean.basicRuleSet.forceAdvanced}" /></p>
-	<p><h:messages layout="table" errorClass="alert"/></p>
+	<div><h:outputText styleClass="alert" value="#{web.text.ADVANCEDMODEREQUIRED}" rendered="#{rolesManagedBean.basicRuleSet.forceAdvanced}" /></div>
+	<h:messages layout="table" errorClass="alert"/>
   
 	<h:panelGroup rendered="#{!rolesManagedBean.basicRuleSet.forceAdvanced}">
  
@@ -290,7 +293,6 @@ function checkallfields(){
 	</h:form>
 	</h:panelGroup>
 	</h:panelGroup>
-</div>
 
 <%	// Include Footer 
 	String footurl = globalconfiguration.getFootBanner(); %>
