@@ -37,7 +37,7 @@
                 <a href="../">Public Web home</a>
               </li>
               <li>
-                <a href="../adminweb/index.jsp">Administration</a>
+                <a href="../adminweb/">Administration</a>
               </li>
               <% if (!"disabled".equalsIgnoreCase(org.ejbca.config.WebConfiguration.getDocBaseUri())) {
                   if ("internal".equalsIgnoreCase(org.ejbca.config.WebConfiguration.getDocBaseUri())) { %>
