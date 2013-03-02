@@ -20,7 +20,7 @@
   <body>
     <div id="header">
 		<div id="banner">
-			<a href="index.jsp"><img src="images/ejbca_pki_by_primekey_logo.png" alt="EJBCA PKI by PrimeKey" /></a>
+			<a href="."><img src="images/ejbca_pki_by_primekey_logo.png" alt="EJBCA PKI by PrimeKey" /></a>
 		</div>
     </div>
     <div class="menucontainer">
@@ -85,7 +85,7 @@
               <li>
                 <% java.net.URL adminURL = new java.net.URL("https",request.getServerName(),
                 		org.ejbca.config.WebConfiguration.getExternalPrivateHttpsPort(),
-                		"/"+org.ejbca.config.InternalConfiguration.getAppNameLower()+"/adminweb/index.jsp");  %>
+                		"/"+org.ejbca.config.InternalConfiguration.getAppNameLower()+"/adminweb/");  %>
                 <a href="<%=adminURL.toString() %>">Administration</a>
               </li>
               <% if (!"disabled".equalsIgnoreCase(org.ejbca.config.WebConfiguration.getDocBaseUri())) {

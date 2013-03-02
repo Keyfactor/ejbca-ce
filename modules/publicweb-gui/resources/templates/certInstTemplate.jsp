@@ -15,7 +15,7 @@
   <body>
     <div id="header">
 		<div id="banner">
-			<a href="index.jsp"><img src="images/ejbca_pki_by_primekey_logo.png" alt="EJBCA" /></a>
+			<a href="."><img src="images/ejbca_pki_by_primekey_logo.png" alt="EJBCA" /></a>
 		</div>
     </div>
     <div class="menucontainer">
@@ -56,7 +56,7 @@
                 <a href="retrieve/check_status.jsp">Check Certificate Status</a>
               </li>
               <li>
-              <a href="adminweb/index.jsp">Administration</a>
+              <a href="adminweb/">Administration</a>
             </li>
             </ul>
           </li>  
