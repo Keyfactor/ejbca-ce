@@ -209,7 +209,7 @@ function checkallfields(){
 <div align="center">
 
 	<h2><h:outputText value="#{web.text.EDITACCESSRULES}" /></h2>
-	<h3><h:outputText value="#{web.text.ADMINSINROLE} #{rolesManagedBean.currentRole}" /></h3>
+	<h3><h:outputText value="#{web.text.ADMINROLE} : #{rolesManagedBean.currentRole}" /></h3>
 
 	<h:outputText value="#{web.text.AUTHORIZATIONDENIED}" rendered="#{!rolesManagedBean.authorizedToRole}"/>
 
