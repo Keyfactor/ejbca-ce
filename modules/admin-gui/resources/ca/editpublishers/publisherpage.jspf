@@ -145,25 +145,25 @@ function checkallfields(){
 -->
 
 </script>
-<div align="center"> 
+<div align="center">
   <h2><%= ejbcawebbean.getText("EDITPUBLISHER") %></h2>
   <h3><%= ejbcawebbean.getText("PUBLISHER")+ " : "%><c:out value="<%= publisherhelper.publishername %>"/></h3>
 <% if(publisherhelper.connectionmessage){
      publisherhelper.connectionmessage = false;
      if(publisherhelper.connectionsuccessful){
         publisherhelper.connectionsuccessful = false;
-        out.write("<H3>" + ejbcawebbean.getText("CONTESTEDSUCESSFULLY") +"</H3>");
+        out.write("<h3>" + ejbcawebbean.getText("CONTESTEDSUCESSFULLY") +"</h3>");
      }else{
-       out.write("<H3>" + ejbcawebbean.getText("ERRORCONNECTINGTOPUB") + " : ");%> <c:out value="<%= publisherhelper.connectionerrormessage %>"/></H3>
+       out.write("<h3>" + ejbcawebbean.getText("ERRORCONNECTINGTOPUB") + " : ");%> <c:out value="<%= publisherhelper.connectionerrormessage %>"/></h3>
      <%}
    } %>
 </div>
   <table class="edit-top" width="100%" border="0" cellspacing="3" cellpadding="3">
     <tr id="Row<%=row++%2%>"> 
-      <td width="50%" valign="top" align="left"> 
+      <td width="45%" valign="top" align="left"> 
         &nbsp;
       </td>
-      <td width="50%" valign="top" align="right"> 
+      <td width="55%" valign="top" align="right"> 
         <a href="<%=THIS_FILENAME %>"><%= ejbcawebbean.getText("BACKTOPUBLISHERS") %></a>
         <!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         <a onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ca_help.html") + "#publishers"%>")'>
@@ -171,10 +171,10 @@ function checkallfields(){
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 
-      <td width="50%"  align="right"> 
+      <td width="45%"  align="right"> 
         <strong><%= ejbcawebbean.getText("NAME") %></strong>
       </td>
-      <td width="50%"> 
+      <td width="55%"> 
         <strong><c:out value="<%= publisherhelper.publishername %>"/></strong>
       </td>
     </tr>
@@ -182,10 +182,10 @@ function checkallfields(){
       <input type="hidden" name='<%= EditPublisherJSPHelper.ACTION %>' value='<%=EditPublisherJSPHelper.ACTION_CHANGE_PUBLISHERTYPE %>'>
       <input type="hidden" name='<%= EditPublisherJSPHelper.HIDDEN_PUBLISHERNAME %>' value='<c:out value="<%= publisherhelper.publishername %>"/>'>
     <tr  id="Row<%=row++%2%>"> 
-      <td width="50%"  align="right"> 
+      <td width="45%"  align="right"> 
         <%= ejbcawebbean.getText("PUBLISHERTYPE") %>
       </td>
-      <td width="50%">
+      <td width="55%">
         <select name="<%=EditPublisherJSPHelper.SELECT_PUBLISHERTYPE%>" size="1" onchange='document.publishertype.submit()'>
            <%  int currenttype = publisherhelper.getPublisherType(); 
                for(int i=0; i<publishertypes.length;i++){ %>
@@ -225,21 +225,21 @@ function checkallfields(){
     <%-- Publisher queue --%>
     
     <tr  id="Row<%=row++%2%>" class="section"> 
-      <td width="50%"  align="right">         
+      <td width="45%"  align="right">         
          <strong><%= ejbcawebbean.getText("PUBLISHERQUEUE") %></strong>
          <%= ejbcawebbean.getHelpReference("/adminguide.html#Publisher%20Queue%20and%20failures") %>
       </td>
-      <td width="50%">
+      <td width="55%">
          &nbsp;  
       </td>
     </tr>
     <tr id="Row<%=row++%2%>"> 
-      <td width="50%" valign="top"> 
+      <td width="45%" valign="top"> 
         <div align="right"> 
           <%= ejbcawebbean.getText("CURRENTQUEUELENGTH") %>
         </div>
       </td>
-      <td width="50%" valign="top"> 
+      <td width="55%" valign="top"> 
            <%
            		int[] times = publisherhelper.getPublisherQueueLength(new int[]{0, 1*60, 10*60, 60*60}, new int[]{1*60, 10*60, 60*60, -1});
  				for(int i = 0; i < times.length; i++) {
@@ -252,74 +252,78 @@ function checkallfields(){
       </td>
     </tr>
     <tr id="Row<%=row++%2%>"> 
-      <td width="50%" valign="top"> 
+      <td width="45%" valign="top"> 
         <div align="right"> 
           <%= ejbcawebbean.getText("ONLYUSEQUEUE") %>
         </div>
       </td>
-      <td width="50%" valign="top"> 
+      <td width="55%" valign="top"> 
           <input type="checkbox" name="<%= EditPublisherJSPHelper.CHECKBOX_ONLYUSEQUEUE %>" value="<%=EditPublisherJSPHelper.CHECKBOX_VALUE %>" 
            <%  if(publisherdata.getOnlyUseQueue()) {
                  out.write(" CHECKED ");
-           } %>>
+           } %> id="<%=EditPublisherJSPHelper.CHECKBOX_ONLYUSEQUEUE%>" />
+          <label for="<%=EditPublisherJSPHelper.CHECKBOX_ONLYUSEQUEUE%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
       </td>
     </tr>
     <tr id="Row<%=row++%2%>"> 
-      <td width="50%" valign="top"> 
+      <td width="45%" valign="top"> 
         <div align="right"> 
           <%= ejbcawebbean.getText("KEEPPUBLISHEDINQUEUE") %>
         </div>
       </td>
-      <td width="50%" valign="top"> 
+      <td width="55%" valign="top"> 
           <input type="checkbox" name="<%= EditPublisherJSPHelper.CHECKBOX_KEEPPUBLISHEDINQUEUE %>" value="<%=EditPublisherJSPHelper.CHECKBOX_VALUE %>" 
            <%  if(publisherdata.getKeepPublishedInQueue()) {
                  out.write(" CHECKED ");
-           } %>>
+           } %> id="<%=EditPublisherJSPHelper.CHECKBOX_KEEPPUBLISHEDINQUEUE%>" />
+          <label for="<%=EditPublisherJSPHelper.CHECKBOX_KEEPPUBLISHEDINQUEUE%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
       </td>
     </tr>
     <tr id="Row<%=row++%2%>"> 
-      <td width="50%" valign="top"> 
+      <td width="45%" valign="top"> 
         <div align="right"> 
           <%= ejbcawebbean.getText("USEQUEUEFORCRLS") %>
         </div>
       </td>
-      <td width="50%" valign="top"> 
+      <td width="55%" valign="top"> 
           <input type="checkbox" name="<%= EditPublisherJSPHelper.CHECKBOX_USEQUEUEFORCRLS %>" value="<%=EditPublisherJSPHelper.CHECKBOX_VALUE %>" 
            <%  if(publisherdata.getUseQueueForCRLs()) {
                  out.write(" CHECKED ");
-           } %>>
+           } %> id="<%=EditPublisherJSPHelper.CHECKBOX_USEQUEUEFORCRLS%>" />
+          <label for="<%=EditPublisherJSPHelper.CHECKBOX_USEQUEUEFORCRLS%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
       </td>
     </tr>
     <tr id="Row<%=row++%2%>"> 
-      <td width="50%" valign="top"> 
+      <td width="45%" valign="top"> 
         <div align="right"> 
           <%= ejbcawebbean.getText("USEQUEUEFORCERTIFICATES") %>
         </div>
       </td>
-      <td width="50%" valign="top"> 
+      <td width="55%" valign="top"> 
           <input type="checkbox" name="<%= EditPublisherJSPHelper.CHECKBOX_USEQUEUEFORCERTIFICATES %>" value="<%=EditPublisherJSPHelper.CHECKBOX_VALUE %>" 
            <%  if(publisherdata.getUseQueueForCertificates()) {
                  out.write(" CHECKED ");
-           } %>>
+           } %> id="<%=EditPublisherJSPHelper.CHECKBOX_USEQUEUEFORCERTIFICATES%>" />
+          <label for="<%=EditPublisherJSPHelper.CHECKBOX_USEQUEUEFORCERTIFICATES%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
       </td>
     </tr>
     
     <%-- General settings --%>
     
     <tr  id="Row<%=row++%2%>" class="title"> 
-      <td width="50%"  align="right">         
+      <td width="45%"  align="right">         
          <strong><%= ejbcawebbean.getText("GENERALSETTINGS") %></strong>
       </td>
-      <td width="50%">
+      <td width="55%">
          &nbsp;  
       </td>
     </tr>
     
     <tr  id="Row<%=row++%2%>">
-      <td width="50%"  align="right">         
+      <td width="45%"  align="right">         
          <%= ejbcawebbean.getText("DESCRIPTION") %> 
       </td>
-      <td width="50%">        
+      <td width="55%">        
         <textarea name="<%=EditPublisherJSPHelper.TEXTAREA_DESCRIPTION%>" cols="45" rows="2"><c:out value="<%= publisherdata.getDescription() %>"/></textarea>
       </td>
     </tr>
@@ -327,8 +331,8 @@ function checkallfields(){
     <%-- Form buttons --%>
     
     <tr  id="Row<%=row++%2%>"> 
-      <td width="49%" valign="top">&nbsp;</td>
-      <td width="51%" valign="top"> 
+      <td width="45%" valign="top">&nbsp;</td>
+      <td width="55%" valign="top"> 
         <input type="submit" name="<%= EditPublisherJSPHelper.BUTTON_TESTCONNECTION %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVEANDTESTCONNECTION") %>">
         <input type="submit" name="<%= EditPublisherJSPHelper.BUTTON_SAVE %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE") %>">
         &nbsp;&nbsp;&nbsp;
