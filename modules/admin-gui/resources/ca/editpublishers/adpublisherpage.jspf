@@ -12,31 +12,23 @@
                                     "MATCHDNSERIALNUMBER","MATCHGIVENNAME", "MATCHSURNAME"}; 
 
 %> 
-   <tr id="Row<%=row++%2%>"> 
-      <td width="50%" valign="top" align="right"> 
-         &nbsp;
-      </td>
-      <td width="50%" valign="top"> 
-         &nbsp;
-      </td>
-   </tr>
    
    <%-- Active Directory settings --%>
    
     <tr id="Row<%=row++%2%>" class="title">
-      <td width="50%" valign="top" align="right"> 
+      <td width="45%" valign="top" align="right"> 
          <strong><%= ejbcawebbean.getText("ADSETTINGS") %></strong>
       </td>
-      <td width="50%" valign="top"> 
+      <td width="55%" valign="top"> 
          &nbsp;
       </td>
     </tr>  
 <%--
     <tr id="Row<%=row++%2%>"> 
-      <td width="50%" valign="top" align="right"> 
+      <td width="45%" valign="top" align="right"> 
          <%= ejbcawebbean.getText("USERACCOUNTCONTROL") %>         
       </td>
-      <td width="50%" valign="top">   
+      <td width="55%" valign="top">   
         <select name="<%=EditPublisherJSPHelper.SELECT_ADUSERACCOUNTCONTROL%>" size="1"  >       
             <% int currentuac = adpublisher.getUserAccountControl();
                for(int i=0;i < useraccountcontrol.length; i++){ %>                                  
@@ -48,10 +40,10 @@
       </td>
     </tr>
     <tr id="Row<%=row++%2%>"> 
-      <td width="50%" valign="top" align="right"> 
+      <td width="45%" valign="top" align="right"> 
          <%= ejbcawebbean.getText("SETUSERPASSWORD") %>
       </td>
-      <td width="50%" valign="top"> 
+      <td width="55%" valign="top"> 
         <input type="checkbox" name="<%= EditPublisherJSPHelper.CHECKBOX_ADUSEPASSWORD %>" value="<%=EditPublisherJSPHelper.CHECKBOX_VALUE %>" 
            <%  if(adpublisher.getUseUserPassword())
                  out.write(" CHECKED ");
@@ -60,10 +52,10 @@
     </tr>
 --%>    
     <tr id="Row<%=row++%2%>"> 
-      <td width="50%" valign="top" align="right"> 
+      <td width="45%" valign="top" align="right"> 
          <%= ejbcawebbean.getText("SAMACCOUNTNAME") %>         
       </td>
-      <td width="50%" valign="top">   
+      <td width="55%" valign="top">   
         <select name="<%=EditPublisherJSPHelper.SELECT_ADSAMACCOUNTNAME%>" size="1"  >       
             <% int currentsan = adpublisher.getSAMAccountName();
                for(int i=0;i < samaccountname.length; i++){ %>                                  
@@ -75,10 +67,10 @@
       </td>
     </tr>
     <tr id="Row<%=row++%2%>"> 
-      <td width="50%" valign="top" align="right"> 
+      <td width="45%" valign="top" align="right"> 
          <%= ejbcawebbean.getText("USERDESCRIPTION") %>
       </td>
-      <td width="50%" valign="top"> 
+      <td width="55%" valign="top"> 
          <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_ADUSERDESCRIPTION%>" size="45" maxlength="255" 
                value='<c:out value="<%= adpublisher.getUserDescription() %>"/>'> 
       </td>
