@@ -140,7 +140,7 @@ public class FindUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
                         	getPrintStream().println("  Email: "+next.getEmail());
                         }                        
                         getPrintStream().println("  CA Name: "+next.getCaName());                        
-                        getPrintStream().println("  Type: "+getType(next));
+                        getPrintStream().println("  Type: "+getType(next).getHexValue());
                         getPrintStream().println("  Token: "+next.getTokenType());
                         getPrintStream().println("  Status: "+ getStatus(next.getStatus()));
                         getPrintStream().println("  Certificate profile: "+next.getCertificateProfileName());
