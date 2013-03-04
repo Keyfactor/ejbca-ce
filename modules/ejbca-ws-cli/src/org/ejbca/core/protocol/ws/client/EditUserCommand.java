@@ -133,7 +133,7 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
             getPrintStream().println("Subject Altname: "+userdata.getSubjectAltName());
             getPrintStream().println("Email: "+userdata.getEmail());
             getPrintStream().println("CA Name: "+userdata.getCaName());                        
-            getPrintStream().println("Type: "+type);
+            getPrintStream().println("Type: "+type.getHexValue());
             getPrintStream().println("Token: "+userdata.getTokenType());
             getPrintStream().println("Status: "+userdata.getStatus());
             getPrintStream().println("End entity profile: "+userdata.getEndEntityProfileName());

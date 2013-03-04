@@ -154,7 +154,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 			if (subjectAltName != null) {
 				getLogger().info("SubjectAltName: " + subjectAltName);
 			}
-			getLogger().info("Type: " + endEntityType);
+			getLogger().info("Type: " + endEntityType.getHexValue());
 			
 			getLogger().debug("Loading/updating user " + username);
 			if (userdata == null) {
