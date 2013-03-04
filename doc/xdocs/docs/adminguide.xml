@@ -322,7 +322,7 @@ Since SCEP uses encryption, you must install the 'Unlimited Strength Jurisdictio
 The policy files can be found at the same place as the JDK download. Further information on this can be found in 
 the Oracle documentation on the JCE.
 </p><p>
-There are some compatibility issues with SCEP, one being if the CA certificate should be returned in a SCEP enrollment
+There are some compatibility issues with SCEP, one being if the CA certificate should be returned in an SCEP enrollment
 response or not. The CA certificate is optional but some, Cisco VPN client, seems to require it while others, Juniper, 
 seems to dislike it. Therefore EJBCA has two SCEP URLs.
 </p><p>
@@ -374,7 +374,7 @@ The most common errors should be wrong username/password or wrong status (not NE
 <subsubsection name="RA mode (ExtRA API 3.4.2)">
 <p>
 EJBCA supports the SCEP 'polling' RA model using the <a href="externalra.html">External RA API</a>.
-Using this a SCEP client can send a request to the External RA, and then wait, polling the RA for updates. 
+Using this, an SCEP client can send a request to the External RA, and then wait, polling the RA for updates. 
 When the request is processed by the CA, which fetches the pkcs10 request from the External RA, the certificate is sent back to the External RA. 
 When the certificate is complete on the External RA, the RA sends back the SCEP certificate response the next time the SCEP client
 polls the RA. This feature is very useful to securely insulate the CA from the SCEP clients throughout the network.
@@ -387,7 +387,7 @@ EJBCA will not send back proper SCEP error messages in all cases of failure. The
 <subsection name="Tested devices">
 <subsubsection name="iPhone/iOS">
 <p>
-You can enroll certificates for the iOS directly with EJBCA using SCEP. There is a SCEP profile in the iPhone that you can use for this.
+You can enroll certificates for the iOS directly with EJBCA using SCEP. There is an SCEP profile in the iPhone that you can use for this.
 <a href="http://www.primekey.se/">PrimeKey</a> has created a detailed howto that you can <a href="http://www.primekey.se/PKI+shop/">purchase easily</a>.
 </p>
 </subsubsection>
@@ -469,7 +469,7 @@ has been approved in the CA and the certificate has been generated.
 When using <a href="http://www.cs.auckland.ac.nz/~pgut001/cryptlib/">Cryptlib</a>, the CA certificate must have 
 KeyUsage 'Key Encipherment' in addition to the usual key usage flags. This is reasonable, since SCEP requires the CA
 to actually encrypt data (which generally is a bad thing, since a special encryption certificate should be used for that).
-<br></br>Key usage for a ScepCA should be: Certificate Sign, CRL Sign, Digital Signature, Key Encipherment
+<br></br>Key usage for an ScepCA should be: Certificate Sign, CRL Sign, Digital Signature, Key Encipherment
 </p>
 <p>
 Use the complete path as for the Cisco VPN client below as server name.
@@ -481,7 +481,7 @@ Tested with version 4.0.2 and 5.0.
 To enroll using the Cisco VPN client use:
 <ul>
 <li>CA URL='http://127.0.0.1:8080/ejbca/publicweb/apply/scep/pkiclient.exe'</li>
-<li>CA Domain=you CAs name in EJBCA</li>
+<li>CA Domain=your CAs name in EJBCA</li>
 <li>In the DN screen simply enter the username (as added in EJBCA) as 'Name [CN]'</li>
 </ul>
 </p>
