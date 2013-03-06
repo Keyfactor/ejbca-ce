@@ -198,7 +198,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
         	// ignore, use default digest algo
         	log.error("CMSException trying to get preferred digest algorithm: ", e);
         }
-        // Parse and verify the entegrity of the PKIOperation message PKCS#7
+        // Parse and verify the integrity of the PKIOperation message PKCS#7
         /* If this would have been done using the newer CMS it would have made me so much happier... */
         ASN1Sequence seq = (ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(scepmsg)).readObject();
         ContentInfo ci = new ContentInfo(seq);
