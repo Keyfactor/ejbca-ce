@@ -17,6 +17,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.OutputStream;
 import java.math.BigInteger;
@@ -27,7 +28,6 @@ import java.net.URL;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
-import java.util.Iterator;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
@@ -68,7 +68,6 @@ public abstract class ProtocolOcspTestBase {
 
     private static final Logger log = Logger.getLogger(ProtocolOcspTestBase.class);
 
-    protected static String issuerDN;// = "CN=AdminCA1,O=EJBCA Sample,C=SE";
     protected static final byte[] unknowncacertBytes = Base64.decode(("MIICLDCCAZWgAwIBAgIIbzEhUVZYO3gwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
             + "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAyMDcw" + "OTEyNDc1OFoXDTA0MDgxNTEyNTc1OFowLzEPMA0GA1UEAxMGVGVzdENBMQ8wDQYD"
             + "VQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMIGdMA0GCSqGSIb3DQEBAQUAA4GLADCB" + "hwKBgQDZlACHRwJnQKlgpMqlZQmxvCrJPpPFyhxvjDHlryhp/AQ6GCm+IkGUVlwL"
@@ -78,6 +77,7 @@ public abstract class ProtocolOcspTestBase {
             + "FgrCpX5kBKVbbQLO6TjJKCjX29CfoJ2TbP1QQ6UbBAY=").getBytes());
 
 
+    protected String issuerDN;
     final protected String httpPort;
     final protected String httpReqPath;
     final protected String resourceOcsp;
@@ -397,18 +397,17 @@ public abstract class ProtocolOcspTestBase {
     protected X509Certificate getTestCert(boolean isRevoked) {
         try {
             Collection<Certificate> certs = certificateStoreOnlyDataSession.findCertificatesByUsername("ocspTest");
-            Iterator<Certificate> i = certs.iterator();
-            while (i.hasNext()) {
-                X509Certificate cert = (X509Certificate) i.next();
+            for (Certificate cert : certs) {
                 CertificateStatus cs = certificateStoreOnlyDataSession.getStatus(issuerDN, CertTools.getSerialNumber(cert));
                 if (isRevoked == cs.equals(CertificateStatus.REVOKED)) {
-                    return cert;
+                    return (X509Certificate) cert;
                 }
             }
         } catch (Exception e) {
             log.debug("", e);
         }
-        assertNotNull("To run this test you must have at least one active and one revoked end user cert in the database. (Could not fetch certificate.)", null);
+        fail("To run this test you must have at least one active and one revoked end user cert in the database. (Could not fetch certificate for issuer "
+                + issuerDN + ".)");
         return null;
     }
 
