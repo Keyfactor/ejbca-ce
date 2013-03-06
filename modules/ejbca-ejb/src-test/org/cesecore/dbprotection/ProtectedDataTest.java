@@ -71,7 +71,7 @@ public class ProtectedDataTest extends ProtectedData {
     }
 
     @Test
-    public void testProtectionDigSig() throws Exception {
+    public void testProtectionRSASig() throws Exception {
     	ConfigurationHolder.updateConfiguration("databaseprotection.enablesign", "false");
     	ConfigurationHolder.updateConfiguration("databaseprotection.enableverify", "false");
     	assertNull(getRowProtection());
@@ -102,6 +102,42 @@ public class ProtectedDataTest extends ProtectedData {
     	} catch (DatabaseProtectionError e) {
     		// NOPMD
     	}
+    }
+    
+    @Test
+    public void testProtectionECDSASig() throws Exception {
+        ConfigurationHolder.updateConfiguration("databaseprotection.enablesign", "false");
+        ConfigurationHolder.updateConfiguration("databaseprotection.enableverify", "false");
+        assertNull(getRowProtection());
+        protectData();
+        assertNull(getRowProtection());
+        ConfigurationHolder.updateConfiguration("databaseprotection.enablesign", "true");
+        ConfigurationHolder.updateConfiguration("databaseprotection.enableverify", "true");
+        ConfigurationHolder.updateConfiguration("databaseprotection.erroronverifyfail", "true");
+        ConfigurationHolder.updateConfiguration("databaseprotection.keyid", "345");
+        ConfigurationHolder.updateConfiguration("databaseprotection.keyid.0", "345");
+        ConfigurationHolder.updateConfiguration("databaseprotection.keylabel.0","test");
+        ConfigurationHolder.updateConfiguration("databaseprotection.classname.0","org.cesecore.keys.token.SoftCryptoToken");
+        ConfigurationHolder.updateConfiguration("databaseprotection.properties.0",null);
+        ConfigurationHolder.updateConfiguration("databaseprotection.data.0","MIIEFQIBAzCCA9sGCSqGSIb3DQEHAaCCA8wEggPIMIIDxDCCAqcGCSqGSIb3DQEHBqCCApgwggKUAgEAMIICjQYJKoZIhvcNAQcBMBwGCiqGSIb3DQEMAQYwDgQIY0aRn+52P1cCAggAgIICYCiu9Qs4zHVjteUg8fGixRUC1+V8xUFTgsuvKDvxDc81umuImByxHrRsLOTKcUC6laGtugmBiVIEb4qd/ViGk283CW08tGj12N2HV9mrkOMXxkvLnjKzKubeb2TKdGHZ0KHqkJhqR6ApH8mCm/zeg/iy7WBNXoOrAHCoHXdyQ767rsWiatxQJPvx7Qn9IxEsbn1Iy9otcDEgxdjTUvOOQK4soSQQh0GSEAr4gnBVaVW9+1oTa0dZt30m2jhY+HCc46F9y6RGNP0JOEY0g/JmHnZjQXkW4748ZBr5YqIAA+qAmQu26chrs5jdS8Xy+ahAzhlxpLC/CPi1WE1XclUlmmHiINY3qjHFK7mXQXWrlsrU/HShsXnwOB699biSl4vUUheqW4cFpLkctMn12bkiAzS4Q/g+dUtKrce7Ws4TbJ0COENWoNU2oLM98u9QmHEEvjT9b2aaopV8n7q9LUDmJeXwKz87ORTzPH2bqC02FHaxuYDuifAuQORy7jmBigkDn9kRfVyOFJh2yfWOvJVEp1O38pDgxepk6K/5rWrm/gVPF7VdjOhgzK3k0BU3Yidn+gUoaHQ5YrEuzKnKUJzWDHT9gUNeQRiemlXwMHb6D11pf4mzHgvo6lmZa/YoMuw9gOv3IuKrNEtrGh/tawrRlOBcf//8hLfVUGB3PXVOrWx6XCQUCuDXdOa058F0O9E/IkUulxg26dHDXGf1/JKS4P4Vd2bu3pnVR68XwWT1rSumlfml4kZxNBL9Gtso9rc+5Q8T7rpje8pyHXfIqXWONQPEQ0pfLXMFWzq0r5fhDO6XMIIBFQYJKoZIhvcNAQcBoIIBBgSCAQIwgf8wgfwGCyqGSIb3DQEMCgECoIGsMIGpMBwGCiqGSIb3DQEMAQMwDgQI7WGQrD949s0CAggABIGI8IV1LQQ26QREdHC2RAMabIX4dOzb9cP2NEtHvn+0luXKRsJLMAvcoBC0cJTx3VcmUYl2j7ooko7+E2dvxEkSbPwxPUX6a4BA4712DVe6Dl116dkZlE1KGL6LZHJSbaqINXjgfLoZyS0TuIvQR5k6/1MsRxz+RHTNpjG9YXbpzhAQed2Vk7s8GDE+MBcGCSqGSIb3DQEJFDEKHggAdABlAHMAdDAjBgkqhkiG9w0BCRUxFgQUS1b1LGz5LGsGn9QNoN4z2lIY2LswMTAhMAkGBSsOAwIaBQAEFB/o+p9o89oAGjTcv+mVD84uOk4zBAhldvniMPnqKAICCAA=");
+        ConfigurationHolder.updateConfiguration("databaseprotection.tokenpin.0","userpin1");
+        ConfigurationHolder.updateConfiguration("databaseprotection.version.0","2");
+        ConfigurationHolder.updateConfiguration("databaseprotection.sigalg.0","SHA256WithECDSA");
+        ProtectedDataConfiguration.reload();
+        protectData();
+        assertNotNull(getRowProtection());
+        assertTrue("Does not start with: 1:2:345", getRowProtection().contains("1:2:345"));
+        assertTrue("Length "+getRowProtection().length(), getRowProtection().length() > 120);
+        assertTrue("Length "+getRowProtection().length(), getRowProtection().length() < 180);
+        verifyData(); // will throw if fails
+        // Alter the data
+        protectString = protectString + ", and malicous data";
+        try {
+            verifyData(); // will throw if fails
+            assertTrue("Should throw", false);
+        } catch (DatabaseProtectionError e) {
+            // NOPMD
+        }
     }
 
     //
