@@ -454,7 +454,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 	        log.trace("<getCAInternal: " + caid + ", " + name);
 	    }
 	    if (ca==null) {
-	        throw new CADoesntExistsException();
+	        throw new CADoesntExistsException("Could not find CA with name " + name + " and ID " + caid);
 	    }
 	    return ca;
 	}
