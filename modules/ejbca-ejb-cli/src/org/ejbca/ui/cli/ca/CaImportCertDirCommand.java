@@ -248,7 +248,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 				getLogger().info(constraintViolation + " certificates violated the end entity constraints (STATUS_CONSTRAINTVIOLATION)");
 			}
 			if ( generalImportError > 0) {
-				getLogger().info(generalImportError + " certificates were not imported due to other errors (STATUS_GENERALIMPORTERROR");
+				getLogger().info(generalImportError + " certificates were not imported due to other errors (STATUS_GENERALIMPORTERROR)");
 			}
 		} catch (Exception e) {
 			getLogger().error("ERROR: " + e.getMessage());
