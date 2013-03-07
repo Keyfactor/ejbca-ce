@@ -74,7 +74,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
     private static final String P12_FILENAME = "ocspTestSigner.p12";
     private static final String PASSWORD = "foo123";
     private static final String OCSP_ALIAS = "ocspTestSigner";// "OCSP Signer";
-    
+    private static final String CA_DN = "CN=OcspDefaultTestCA"; //"CN=AdminCA1,O=EJBCA Sample,C=SE";
 
     private StandaloneOcspResponseGeneratorSessionRemote standaloneOcspResponseGeneratorSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(StandaloneOcspResponseGeneratorSessionRemote.class);
@@ -84,7 +84,6 @@ public class StandaloneOcspResponseGeneratorSessionTest {
 
     private X509Certificate caCertificate;
     private X509Certificate p12Certificate;
-    private String caDn;
 
     private AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(StandaloneOcspResponseGeneratorSessionTest.class.getSimpleName()));
     
@@ -95,11 +94,14 @@ public class StandaloneOcspResponseGeneratorSessionTest {
 
     @Before
     public void setUp() throws Exception {
-        caDn = OcspConfiguration.getDefaultResponderId();
-        caCertificate = (X509Certificate) new ArrayList<Certificate>(certificateStoreSession.findCertificatesBySubject(caDn)).get(0); 
+       // final URL url = StandaloneOcspResponseGeneratorSessionTest.class.getResource(P12_DIR);
+        String curDir = System.getProperty("user.dir");
+        System.out.println(curDir);
+
+        caCertificate = (X509Certificate) new ArrayList<Certificate>(certificateStoreSession.findCertificatesBySubject(CA_DN)).get(0);  
 
         // Store a root certificate in the database.
-        if (certificateStoreSession.findCertificatesBySubject(caDn).isEmpty()) {
+        if (certificateStoreSession.findCertificatesBySubject(CA_DN).isEmpty()) {
             certificateStoreSession.storeCertificate(authenticationToken, caCertificate, "foo", "1234", CertificateConstants.CERT_ACTIVE,
                     CertificateConstants.CERTTYPE_ROOTCA, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "footag", new Date().getTime());
         }

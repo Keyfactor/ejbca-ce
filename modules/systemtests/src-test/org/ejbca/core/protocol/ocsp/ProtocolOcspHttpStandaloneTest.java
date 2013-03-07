@@ -48,7 +48,6 @@ import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
-import org.cesecore.config.OcspConfiguration;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.junit.Before;
@@ -65,6 +64,8 @@ import org.junit.Test;
 public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
 
     private static final Logger log = Logger.getLogger(ProtocolOcspHttpStandaloneTest.class);
+    
+    private static final int myCaId = issuerDN.hashCode();
 
     public ProtocolOcspHttpStandaloneTest() throws MalformedURLException, URISyntaxException {
     	super("http", "127.0.0.1", 8080, "ejbca", "publicweb/status/ocsp");
@@ -73,8 +74,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
     @Before
     public void setUp() throws Exception {
         //super.setUp(); We don't want to initialize roles etc, since this is a standalone test!
-        issuerDN = OcspConfiguration.getDefaultResponderId();
-        caid = issuerDN.hashCode();
+        caid = myCaId;
         unknowncacert = (X509Certificate) CertTools.getCertfromByteArray(unknowncacertBytes);
     }
 
@@ -147,32 +147,38 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
 
     @Test
     public void test04OcspUnknown() throws Exception {
+        log.trace(">test04OcspUnknown()");
         loadUserCert(caid);
         super.test04OcspUnknown();
     }
 
     @Test
     public void test05OcspUnknownCA() throws Exception {
+        log.trace(">test05OcspUnknownCA()");
         super.test05OcspUnknownCA();
     }
 
     @Test
     public void test06OcspSendWrongContentType() throws Exception {
+        log.trace(">test06OcspSendWrongContentType()");
         super.test06OcspSendWrongContentType();
     }
 
     @Test
     public void test10MultipleRequests() throws Exception {
+        log.trace(">test10MultipleRequests()");
         super.test10MultipleRequests();
     }
 
     @Test
     public void test11MalformedRequest() throws Exception {
+        log.trace(">test11MalformedRequest()");
         super.test11MalformedRequest();
     }
 
     @Test
     public void test12CorruptRequests() throws Exception {
+        log.trace(">test12CorruptRequests()");
         super.test12CorruptRequests();
     }
 
@@ -181,6 +187,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
      */
     @Test
     public void test13GetRequests() throws Exception {
+        log.trace(">test13GetRequests()");
         super.test13GetRequests();
         // See if the OCSP Servlet can also read escaped requests
         final String urlEncReq = httpReqPath
@@ -217,11 +224,13 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
 
     @Test
     public void test14CorruptGetRequests() throws Exception {
+        log.trace(">test14CorruptGetRequests()");
         super.test14CorruptGetRequests();
     }
 
     @Test
     public void test15MultipleGetRequests() throws Exception {
+        log.trace(">test15MultipleGetRequests()");
         super.test15MultipleGetRequests();
     }
 
@@ -231,6 +240,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
      */
     @Test
     public void test17VerifyHttpGetHeaders() throws Exception {
+        log.error(">test17VerifyHttpGetHeaders()");
         loadUserCert(caid);
         // An OCSP request, ocspTestCert is already created in earlier tests
         OCSPReqBuilder gen = new OCSPReqBuilder();
@@ -304,6 +314,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
      */
     @Test
     public void test18NextUpdateThisUpdate() throws Exception {
+        log.trace(">test18NextUpdateThisUpdate()");
         loadUserCert(caid);
         // And an OCSP request
         OCSPReqBuilder gen = new OCSPReqBuilder();
