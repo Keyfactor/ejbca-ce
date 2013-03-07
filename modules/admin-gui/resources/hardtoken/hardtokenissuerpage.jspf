@@ -51,9 +51,6 @@ function checkallfields(){
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 
-      <td width="5%" valign="top">
-        &nbsp;
-      </td>
       <td width="30%"  align="right"> 
         <%= ejbcawebbean.getText("ROLE") %> 
       </td>
