@@ -27,7 +27,9 @@ import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.cert.X509Certificate;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -76,6 +78,12 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         //super.setUp(); We don't want to initialize roles etc, since this is a standalone test!
         caid = myCaId;
         unknowncacert = (X509Certificate) CertTools.getCertfromByteArray(unknowncacertBytes);
+        
+        Map<String, String> confmap = new HashMap<String, String>();
+        confmap.put("ocsp.defaultresponder", issuerDN);
+        helper.alterConfig(confmap);       
+        helper.reloadKeys();
+        
     }
 
     public String getRoleName() {
