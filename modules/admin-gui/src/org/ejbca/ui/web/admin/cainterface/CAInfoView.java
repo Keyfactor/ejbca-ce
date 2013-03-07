@@ -68,14 +68,14 @@ public class CAInfoView implements Serializable, Cloneable {
   
     
    /** A info text strings must contain:
-    * CANAME, CERT_SUBJECTDN, EXT_ABBR_SUBJECTALTNAME, CATYPE, EXPIRES, STATUS, CATOKENSTATUS, DESCRIPTION, CRL_CA_CRLPERIOD, CRL_CA_ISSUEINTERVAL, CRL_CA_OVERLAPTIME, CRL_CA_DELTACRLPERIOD
+    * CANAME, CERT_SUBJECTDN, EXT_ABBR_SUBJECTALTNAME, CATYPE, EXPIRES, STATUS, DESCRIPTION, CRL_CA_CRLPERIOD, CRL_CA_ISSUEINTERVAL, CRL_CA_OVERLAPTIME, CRL_CA_DELTACRLPERIOD
     * It must also have CADATA in position n° 4 (CA data) 
     * It must also have CRLSPECIFICDATA in position n° 9 (CRL Specific Data) 
     * It must also have SERVICES in position n° 15 (Services), if exists 
     */
    public static String[] X509CA_CAINFODATATEXTS = {"CANAME","CERT_SUBJECTDN","EXT_ABBR_SUBJECTALTNAME","CATYPE",
        "CADATA",               /* CA data */
-       "EXPIRES","STATUS","CATOKENSTATUS","DESCRIPTION",
+       "EXPIRES","STATUS",/*"CATOKENSTATUS"*/ "","DESCRIPTION",
        "CRLSPECIFICDATA",      /* CRL Specific Data */
        "CRL_CA_CRLPERIOD","CRL_CA_ISSUEINTERVAL","CRL_CA_OVERLAPTIME","CRL_CA_DELTACRLPERIOD","PUBLISHERS",
        "SERVICES",             /* Services */
@@ -83,7 +83,7 @@ public class CAInfoView implements Serializable, Cloneable {
 
 public static String[] CVCCA_CAINFODATATEXTS = {"NAME","CERT_SUBJECTDN","","CATYPE",
       "CADATA",                /* CA data */
-      "EXPIRES","STATUS","CATOKENSTATUS","DESCRIPTION",
+      "EXPIRES","STATUS",/*"CATOKENSTATUS"*/ "","DESCRIPTION",
       "CRLSPECIFICDATA",       /* CRL Specific Data */
       "CRL_CA_CRLPERIOD","CRL_CA_ISSUEINTERVAL","CRL_CA_OVERLAPTIME","CRL_CA_DELTACRLPERIOD"};
 
