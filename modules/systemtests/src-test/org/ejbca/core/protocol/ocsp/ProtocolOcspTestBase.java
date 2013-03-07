@@ -68,6 +68,7 @@ public abstract class ProtocolOcspTestBase {
 
     private static final Logger log = Logger.getLogger(ProtocolOcspTestBase.class);
 
+    protected static final String issuerDN = "CN=OcspDefaultTestCA";// = "CN=AdminCA1,O=EJBCA Sample,C=SE";
     protected static final byte[] unknowncacertBytes = Base64.decode(("MIICLDCCAZWgAwIBAgIIbzEhUVZYO3gwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
             + "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAyMDcw" + "OTEyNDc1OFoXDTA0MDgxNTEyNTc1OFowLzEPMA0GA1UEAxMGVGVzdENBMQ8wDQYD"
             + "VQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMIGdMA0GCSqGSIb3DQEBAQUAA4GLADCB" + "hwKBgQDZlACHRwJnQKlgpMqlZQmxvCrJPpPFyhxvjDHlryhp/AQ6GCm+IkGUVlwL"
@@ -77,7 +78,6 @@ public abstract class ProtocolOcspTestBase {
             + "FgrCpX5kBKVbbQLO6TjJKCjX29CfoJ2TbP1QQ6UbBAY=").getBytes());
 
 
-    protected String issuerDN;
     final protected String httpPort;
     final protected String httpReqPath;
     final protected String resourceOcsp;
