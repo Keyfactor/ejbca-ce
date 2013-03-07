@@ -108,7 +108,7 @@ public class DsaSignSessionTest extends SignSessionCommon {
         X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, dsakeys.getPrivate(), dsakeys.getPublic(),
                 AlgorithmConstants.SIGALG_SHA1_WITH_DSA, false);
         X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, DSA_USERNAME, "foo123", selfcert);
-        assertNotNull("Misslyckades skapa cert", cert);
+        assertNotNull("Failed to create cert", cert);
         log.debug("Cert=" + cert.toString());
         PublicKey pk = cert.getPublicKey();
         if (pk instanceof DSAPublicKey) {
