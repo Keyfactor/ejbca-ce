@@ -42,7 +42,7 @@
               </li>
               <% if(org.ejbca.config.WebConfiguration.getRenewalEnabled()) { %>
               <li>
-                <a href="renew/index.jsp">Renew Browser Certificate</a>
+                <a href="renew/">Renew Browser Certificate</a>
               </li>
               <% } %>
             </ul>

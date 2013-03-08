@@ -11,7 +11,7 @@
 <%@page import="org.ejbca.config.WebConfiguration"%><html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=<%= org.ejbca.config.WebConfiguration.getWebContentEncoding() %>" />
-    <title>${THIS_TITLE} - <%= org.ejbca.config.InternalConfiguration.getAppNameCapital() %></title>
+    <title>Certificate enrol - <%= org.ejbca.config.InternalConfiguration.getAppNameCapital() %></title>
 	<link rel="shortcut icon" href="../images/favicon.png" type="image/png" />
     <link rel="stylesheet" href="../styles.css" type="text/css" />
     <script type="text/javascript" src="../scripts/functions.js"></script>
@@ -43,7 +43,7 @@
               </li>
               <% if(org.ejbca.config.WebConfiguration.getRenewalEnabled()) { %>
               <li>
-                <a href="../renew/index.jsp">Renew Browser Certificate</a>
+                <a href="../renew/">Renew Browser Certificate</a>
               </li>
               <% } %>
             </ul>
