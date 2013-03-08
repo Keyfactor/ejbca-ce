@@ -43,7 +43,7 @@
 		&nbsp;
 	</h:panelGroup>
 	<h:panelGroup>
-	  	<h:commandLink id="backToServices" action="listservices" immediate="true" style="text-align: right">
+	  	<h:commandLink id="backToServices" action="listservices" immediate="true" style="text-align: right;">
 			<h:outputText value="#{web.text.BACKTOSERVICES}" style="text-align: right;"/>
 		</h:commandLink>
 	</h:panelGroup>
@@ -51,7 +51,7 @@
 	<h:panelGroup>
 		<h:outputText value="#{web.text.SELECTWORKER}"/><f:verbatim> </f:verbatim><h:outputText><%= ejbcawebbean.getHelpReference("/adminguide.html#Services%20Framework") %></h:outputText>
 	</h:panelGroup>
-	<h:panelGroup>
+	<h:panelGroup style="white-space: nowrap;">>
 		<h:selectOneMenu value="#{editService.serviceConfigurationView.selectedWorker}" valueChangeListener="#{editService.changeWorker}"
 		                 onchange="document.getElementById('edit:updateButton').click();">
 			<f:selectItems value="#{editService.serviceConfigurationView.availableWorkers}"/>
