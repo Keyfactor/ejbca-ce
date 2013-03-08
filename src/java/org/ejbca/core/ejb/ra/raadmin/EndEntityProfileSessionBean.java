@@ -353,10 +353,14 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     public int getEndEntityProfileId(final String profilename) throws EndEntityProfileNotFoundException {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">getEndEntityProfileId(" + profilename + ")");
-        };
+        }
         final Integer id = profileCache.getNameIdMapCache(entityManager).get(profilename.trim());
         if (id != null) {
-            return id.intValue();
+            int result = id.intValue();
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("<getEndEntityProfileId(" + profilename + "): " + result);
+            }
+            return result;
         } else {
             throw new EndEntityProfileNotFoundException("End Entity Profile of name \"" + profilename + "\" was not found");
         }
