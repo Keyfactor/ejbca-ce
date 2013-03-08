@@ -27,7 +27,7 @@
           <li><div class="menuheader">Enroll</div>
             <ul>
               <li>
-                <a href="index.jsp">Renew Browser Certificate</a>
+                <a href=".">Renew Browser Certificate</a>
               </li>
             </ul>
           </li>  
