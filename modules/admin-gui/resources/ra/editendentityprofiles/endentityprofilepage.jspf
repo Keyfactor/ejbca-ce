@@ -612,7 +612,9 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       </td>
       <td width="50%">         
       	<input type="checkbox" name="<%=CHECKBOX_ALLOW_MERGEDN_WEBSERVICES %>" value="<%=CHECKBOX_VALUE %>"                
-           <% if(profiledata.getAllowMergeDnWebServices()) out.write("CHECKED"); %>>
+           <% if(profiledata.getAllowMergeDnWebServices()) out.write("CHECKED"); %>
+           id="<%=CHECKBOX_ALLOW_MERGEDN_WEBSERVICES%>">
+        <label for="<%=CHECKBOX_ALLOW_MERGEDN_WEBSERVICES%>"><c:out value="<%= ejbcawebbean.getText(\"ALLOW\") %>" /></label>           
       </td>
 	</tr>
 
