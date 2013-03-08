@@ -51,7 +51,7 @@
 	<h:panelGroup>
 		<h:outputText value="#{web.text.SELECTWORKER}"/><f:verbatim> </f:verbatim><h:outputText><%= ejbcawebbean.getHelpReference("/adminguide.html#Services%20Framework") %></h:outputText>
 	</h:panelGroup>
-	<h:panelGroup style="white-space: nowrap;">>
+	<h:panelGroup style="white-space: nowrap;">
 		<h:selectOneMenu value="#{editService.serviceConfigurationView.selectedWorker}" valueChangeListener="#{editService.changeWorker}"
 		                 onchange="document.getElementById('edit:updateButton').click();">
 			<f:selectItems value="#{editService.serviceConfigurationView.availableWorkers}"/>
