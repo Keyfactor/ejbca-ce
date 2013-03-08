@@ -112,7 +112,7 @@
     <tr  id="Row1"> 
       <td width="50%" valign="top"> 
         <h3><c:out value="<%= ejbcawebbean.getText(\"PREFEREDLANGUAGE\") %>" /></h3>
-        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"DEFAULTLANGUAGETOUSE\") %>" /></p>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"PREFEREDLANGUAGE_HELP\") %>" /></p>
       </td>
       <td width="50%" valign="top"> 
         <select name="<%= LIST_PREFEREDLANGUAGE %>" class="acronym">
@@ -128,7 +128,7 @@
     <tr id="Row1"> 
       <td width="50%" valign="top"> 
         <h3><c:out value="<%= ejbcawebbean.getText(\"SECONDARYLANGUAGE\") %>" /></h3>
-        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"LANGUAGETOUSEWHEN\") %>" /></p>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"SECONDARYLANGUAGE_HELP\") %>" /></p>
       </td>
       <td width="50%" valign="top"> 
         <select name="<%= LIST_SECONDARYLANGUAGE %>">
@@ -144,7 +144,7 @@
     <tr  id="Row0"> 
       <td width="50%" valign="top"> 
         <h3><c:out value="<%= ejbcawebbean.getText(\"THEME\") %>" /></h3>
-        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"THEADMINSTHEMEOFFONTS\") %>" /></p>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"THEME_HELP\") %>" /></p>
       </td>
       <td width="50%" valign="top"> 
         <select name="<%= LIST_THEME %>">
@@ -162,7 +162,7 @@
     <tr  id="Row1"> 
       <td width="49%" valign="top"> 
         <h3><c:out value="<%= ejbcawebbean.getText(\"NUMBEROFRECORDSPERPAGE\") %>" /></h3>
-        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"THENUMBEROFRECORDSTO\") %>" /></p>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"NUMBEROFRECORDSPERPAGE_HELP\") %>" /></p>
       </td>
       <td width="51%" valign="top"> 
         <select name="<%= LIST_ENTIESPERPAGE %>" class="number">
@@ -177,8 +177,8 @@
     </tr>
     <tr  id="Row0"> 
       <td width="49%" valign="top"> 
-        <h3><c:out value="<%= ejbcawebbean.getText(\"CASTATUSONFRONTPAGE\") %>" /></h3>
-        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"IFCASTATUSSHOULDBEDISP\") %>" /></p>
+        <h3><c:out value="<%= ejbcawebbean.getText(\"CASTATUSONHOMEPAGE\") %>" /></h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CASTATUSONHOMEPAGE_HELP\") %>" /></p>
       </td>
       <td width="51%" valign="top"> 
         <input name="<%= CHECKBOX_CASTATUSFIRSTPAGE %>" type="checkbox" value="<%=CHECKBOX_VALUE%>" <%=dup.getFrontpageCaStatus() ? "checked=\"checked\"" : ""%>
@@ -189,7 +189,7 @@
     <tr  id="Row0"> 
       <td width="49%" valign="top"> 
         <h3><c:out value="<%= ejbcawebbean.getText(\"PUBLISHERQUEUESTATUSON\") %>" /></h3>
-        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"IFPUBLISHERQUEUESSHOULD\") %>" /></p>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"PUBLISHERQUEUESTATUSON_HELP\") %>" /></p>
       </td>
       <td width="51%" valign="top"> 
         <input name="<%= CHECKBOX_PUBQSTATUSFIRSTPAGE %>" type="checkbox" value="<%=CHECKBOX_VALUE%>" <%=dup.getFrontpagePublisherQueueStatus() ? "checked=\"checked\"" : ""%>
