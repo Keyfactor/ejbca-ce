@@ -6,7 +6,7 @@
   </properties>
 
 <body>
-  <section name="News and Info">
+  <section name="PKI News">
 
 
 <table class="promotion"><!--AC table for twitterwidget and Note area-->
@@ -64,7 +64,7 @@ new TWTR.Widget({
   <span class="date"> Date: 2012-03-14</span>  
   </p>  
   <p>
-  <strong>Another EJBCA User Guide!</strong><br />The latest addition is a CMP 3GPP manual. Buy it at the <a href="http://www.primekey.se/PKI+shop/">Prime PKI Shop!</a>
+  <strong>Another EJBCA User Guide!</strong><br />The latest addition is a CMP 3GPP manual. Order it at the <a href="http://www.primekey.se/PKI+shop/">Prime PKI Shop!</a>
   <br />
   <span class="date"> Date: 2012-05-25</span>
   </p>
@@ -89,16 +89,16 @@ new TWTR.Widget({
 
   </section>
 
-<section name="EJBCA Enterprise PKI">
+<section name="EJBCA Enterprise PKI CA">
 <p>
-EJBCA is an enterprise class PKI Certificate Authority built on JEE technology. 
+EJBCA is an enterprise class PKI Certificate Authority software, built using Java (JEE) technology. 
 It is a robust, high performance, platform independent, flexible, and component based CA to be used 
 stand-alone or integrated in other JEE applications.
 </p>
 <p>
-EJBCA is an enterprise class PKI, meaning that you can use EJBCA to build a complete PKI infrastructure for your organization.
+An enterprise class PKI CA, EJBCA can be used to build a complete PKI infrastructure for your organization.
 If you only want to issue a few single certificates for testing, there are probably options that will get you started quicker, 
-but if you want a serious PKI we recommend EJBCA. EJBCA is:
+but if you want a serious PKI CA we recommend EJBCA. EJBCA is:
 </p>
 <ul>
 <li>A <a href="docs/installation.html">Certificate Authority</a> (link to documentation site).</li>
@@ -111,9 +111,9 @@ but if you want a serious PKI we recommend EJBCA. EJBCA is:
 You can use EJBCA to issue certificates for different purposes such as:
 <ul>
 <li>Strong authentication for users accessing your intranet/extranet/internet resources.</li>
-<li>Secure communication with SSL servers and SSL clients.</li>
+<li>Secure communication with SSL/TLS servers and SSL/TLS clients. EJBCA is an excellent SSL PKI.</li>
 <li><a href="howto.html#Microsoft smart card logon">Smart card logon</a> to Windows and/or Linux.</li>
-<li>Signing and encrypting email.</li>
+<li>Signing and encrypting email (SMIME).</li>
 <li>VPN connections by issuing certificates to your VPN routers such as OpenVPN, Cisco, Juniper etc.</li>
 <li>Client VPN access with certificates in users VPN clients.</li>
 <li>Single sign-on by using a single certificate to secure logon to web applications.</li>

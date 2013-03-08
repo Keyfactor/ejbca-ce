@@ -22,6 +22,7 @@
 <li>Support for X.509 certificates and Card Verifiable certificates (CVC BSI TR-03110 used by <a href="guides.html#Using%20CVC%20CAs%20for%20EU%20EAC%20ePassports">EU EAC ePassports</a>).</li> 
 <li>Support for Hardware Security Modules (HSMs). Built in support for Thales/nCipher, SafeNet Luna, SafeNet ProtectServer, Utimaco CryptoServer, AEP Keyper, ARX CoSign, PrimeCardHSM and other HSMs with a good PKCS#11 library.</li>
 <li>Individual enrollment or batch production of certificates.</li>
+<li>Issues SSL/TLS certificates that work with all common servers.</li>
 <li>Server and client certificates can be exported as PKCS12, JKS or PEM.</li>
 <li>Browser enrollment with Firefox, IE, etc.</li>
 <li>Enrollment for other applications through open APIs and tools.</li>
@@ -30,7 +31,7 @@
 <li><a href="http://www.3gpp.org/">3GPP</a>, i.e. LTE/4G, compatible PKI.</li>
 <li>Revocation and Certificate Revocation Lists (CRLs).</li>
 <li>CRL creation and URL-based CRLDistribution Points according to RFC5280.</li> 
-<li>Smart card logon certificates.</li>
+<li>Smart card logon certificates for Windows, Linux and Mac OS X.</li>
 <li>Configurable certificate profiles for different types and contents of certificates.</li>
 <li>Standard and custom certificate extensions supported.</li>
 <li>Supports the Simple Certificate Enrollment Protocol (<a href="docs/adminguide.html#Scep">SCEP</a>).</li>
@@ -93,15 +94,16 @@
   </subsection>
   <subsection name="System features">
 <ul>
+<li>Written in pure Java, running in a JEE application server. Interfaces with Hardware Security Modules using standard PKCS#11 interface.</li>
 <li>High performance and capacity, issue hundreds of certificates per second, store hundreds of millions of certificates.</li>
 <li>Stress test and performance measuring tools in <a href="docs/userguide.html#EJBCA%20client%20toolbox">client toolbox</a>.</li>
-<li>Using standard, high performance RDBMS for storage.</li>
+<li>Using standard, high performance RDBMS for storage. Easy to understand and manage.</li>
 <li>Supports different architectures; all-in-one, clustered, external RA, external OCSP, etc.</li>
 <li>Possible to integrate into large java applications for optimal integration into business process.</li>
 <li>Deploys easily in a clustered, high availability environment.</li>
 <li>Health check monitoring service to support efficient clustering and monitoring.</li>
 <li>Supports multiple application servers: JBoss, Glassfish and to some extent WebLogic</li>
-<li>Supports multiple databases: Hypersoniq, MySQL, PostgreSQL, Oracle, DB2, Ingres, MS SQL Server, Derby, Sybase, Informix.</li>
+<li>Supports multiple databases: Hypersoniq, MySQL, PostgreSQL, Oracle, DB2, MS SQL Server, Derby, Sybase, Informix.</li>
 <li>Unique possibility to configure either as fully audited CA or as high speed <a href="docs/adminguide.html#Throw%20away%20CA">certificate factory</a>, with the same level of management features.</li>
 </ul>
   </subsection>
