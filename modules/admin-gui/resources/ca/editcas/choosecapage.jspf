@@ -91,7 +91,7 @@
     </tr>
   <% } %>
     <tr> 
-      <td width="40%"><h3><%= ejbcawebbean.getText("CURRENTCAS") %></h3></td>
+      <td width="40%"><h3><%= ejbcawebbean.getText("LISTOFCAS") %></h3></td>
       <td width="60%"></td>
     </tr>
     <tr> 
