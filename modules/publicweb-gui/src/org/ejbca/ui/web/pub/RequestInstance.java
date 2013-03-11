@@ -76,10 +76,10 @@ public class RequestInstance {
 	private static final Logger log = Logger.getLogger(RequestInstance.class);
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 	
-    private class IncomatibleTokenTypeExtension extends EjbcaException {
+    private class IncomatibleTokenTypeException extends EjbcaException {
         private static final long serialVersionUID = 5435852400591856793L;
 
-        public IncomatibleTokenTypeExtension() {
+        public IncomatibleTokenTypeException() {
             super(ErrorCode.BAD_USER_TOKEN_TYPE);
         }
     }
@@ -327,7 +327,7 @@ public class RequestInstance {
 			    // If the user is configured for a server generated token, but submitted a CSR, it is most likely an administrative error.
 			    // The RA admin should probably have set token type usergenerated instead.
 			    if (hasCSRInRequest()) {
-			        throw new IncomatibleTokenTypeExtension();
+			        throw new IncomatibleTokenTypeException();
 			    }
 				KeyStore ks = tgen.generateOrKeyRecoverToken(administrator, username, password, data.getCAId(), keylength, keyalg, false, loadkeys, savekeys, reusecertificate, endEntityProfileId);
 				if (StringUtils.equals(openvpn, "on")) {            	  
@@ -340,7 +340,7 @@ public class RequestInstance {
                 // If the user is configured for a server generated token, but submitted a CSR, it is most likely an administrative error.
                 // The RA admin should probably have set token type usergenerated instead.
                 if (hasCSRInRequest()) {
-                    throw new IncomatibleTokenTypeExtension();
+                    throw new IncomatibleTokenTypeException();
                 }
 				KeyStore ks = tgen.generateOrKeyRecoverToken(administrator, username, password, data.getCAId(), keylength, keyalg, true, loadkeys, savekeys, reusecertificate, endEntityProfileId);
 				sendJKSToken(ks, username, password, response);
@@ -349,7 +349,7 @@ public class RequestInstance {
                 // If the user is configured for a server generated token, but submitted a CSR, it is most likely an administrative error.
                 // The RA admin should probably have set token type usergenerated instead.
                 if (hasCSRInRequest()) {
-                    throw new IncomatibleTokenTypeExtension();
+                    throw new IncomatibleTokenTypeException();
                 }
 				KeyStore ks = tgen.generateOrKeyRecoverToken(administrator, username, password, data.getCAId(), keylength, keyalg, false, loadkeys, savekeys, reusecertificate, endEntityProfileId);
 				sendPEMTokens(ks, username, password, response);
@@ -486,7 +486,7 @@ public class RequestInstance {
 			iErrorMessage = intres.getLocalizedMessage("certreq.wrongstatus");
 		} catch (AuthLoginException ale) {
 			iErrorMessage = intres.getLocalizedMessage("certreq.wrongpassword");
-        } catch (IncomatibleTokenTypeExtension re) {
+        } catch (IncomatibleTokenTypeException re) {
             iErrorMessage = intres.getLocalizedMessage("certreq.csrreceivedforservergentoken");
 		} catch (SignRequestException re) {
 			iErrorMessage = intres.getLocalizedMessage("certreq.invalidreq", re.getMessage());
