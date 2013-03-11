@@ -753,15 +753,13 @@ function checkallfields(){
               }
            }else{ %>
         <input type="text" name="<%=TEXTFIELD_VALIDITY%>" size="25" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMD") %> <%= ejbcawebbean.getText("OR") %> <%= ejbcawebbean.getText("FORMAT_ISO8601") %>"
-           <% if (editca) {
-        	      out.write("value=\"" + ValidityDate.getString(cainfo.getValidity()) + "\""); %> />
-        	      &nbsp;
-        	      <span class="help"><%= ejbcawebbean.getText("CERT_VALIDITY_CA_HELP") %></span>
-            <% } else {
-                  out.write(" value=\"10y\""); %> />
-            <% } %>
-           <p class="help"><%= ejbcawebbean.getText("DATE_HELP") %> <%= ejbcawebbean.getDateExample() %></p>
+           <% if(editca) out.write("value=\"" + ValidityDate.getString(cainfo.getValidity()) + "\""); %> />
+           <% if(editca) { %>
+        &nbsp;
+        <span class="help"><%= ejbcawebbean.getText("CERT_VALIDITY_CA_HELP") %></span>
+           <% } %>
         <% } %>
+        <p class="help"><%= ejbcawebbean.getText("DATE_HELP") %> <%= ejbcawebbean.getDateExample() %></p>
       </td>
     </tr>
 
@@ -894,7 +892,7 @@ function checkallfields(){
                 }
               }
             } else {  %>  
-         <input type="text" name="<%=TEXTFIELD_POLICYID%>" size="20" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_OID") %>">
+         <input type="text" name="<%=TEXTFIELD_POLICYID%>" size="20" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_OID") %>"/>
          <% } %>
          <% if(!editca) out.write("<p class=\"help\">" + ejbcawebbean.getText("EXT_PKIX_CP_POLICYID_HELP") + "</p>"); %>
       </td>
@@ -1041,11 +1039,10 @@ function checkallfields(){
                 <c:out value="<%= x509cainfo.getDefaultCRLDistPoint() %>"/>
               <%}else{ %>
          <input type="text" name="<%=TEXTFIELD_DEFAULTCRLDISTPOINT%>" size="40" maxlength="4096" title="<%= ejbcawebbean.getText("FORMAT_URI") %>"
-         <% if(editca){%>value="<c:out value="<%= x509cainfo.getDefaultCRLDistPoint() %>"/>"<%}%>>
+         <% if(editca){%>value="<c:out value="<%= x509cainfo.getDefaultCRLDistPoint() %>"/>"<%}%> />
          <% } %> 
-           <input type="button" name="<%=BUTTON_GENDEFAULTCRLDISTPOINT%>" onClick="gendefaultcrldistpoint()" value="<%= ejbcawebbean.getText("GENERATE") %>" >
-           <br />
-           <c:out value="<%= ejbcawebbean.getText(\"SERVICE_CA_DEFAULTURI_HELP\") %>" />
+           <input type="button" name="<%=BUTTON_GENDEFAULTCRLDISTPOINT%>" onClick="gendefaultcrldistpoint()" value="<%= ejbcawebbean.getText("GENERATE") %>" />
+		   <p class="help"><c:out value="<%= ejbcawebbean.getText(\"SERVICE_CA_DEFAULTURI_HELP\") %>" /></p>
       </td>
     </tr>
 
@@ -1075,11 +1072,10 @@ function checkallfields(){
                 <c:out value="<%= x509cainfo.getCADefinedFreshestCRL() %>"/>
               <%}else{ %>
          <input type="text" name="<%=TEXTFIELD_CADEFINEDFRESHESTCRL%>" size="40" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_URI") %>"
-         <% if(editca && (x509cainfo.getCADefinedFreshestCRL() != null)){%>value="<c:out value="<%= x509cainfo.getCADefinedFreshestCRL() %>"/>"<%}%>>
+         <% if(editca && (x509cainfo.getCADefinedFreshestCRL() != null)){%>value="<c:out value="<%= x509cainfo.getCADefinedFreshestCRL() %>"/>"<%}%> />
            <% } %>
-           <input type="button" name="<%=BUTTON_GENCADEFINEDFRESHESTCRL%>" onClick="gencadefinedfresherstcrl()" value="<%= ejbcawebbean.getText("GENERATE") %>" >
-           <br />
-           <c:out value="<%= ejbcawebbean.getText(\"SERVICE_CA_DEFAULTURI_HELP\") %>" />
+           <input type="button" name="<%=BUTTON_GENCADEFINEDFRESHESTCRL%>" onClick="gencadefinedfresherstcrl()" value="<%= ejbcawebbean.getText("GENERATE") %>" />
+           <p class="help"><c:out value="<%= ejbcawebbean.getText(\"SERVICE_CA_DEFAULTURI_HELP\") %>" /></p>
       </td>
     </tr>
 
@@ -1141,11 +1137,10 @@ function checkallfields(){
              } else { %>
         <input type="text" name="<%=TEXTFIELD_DELTACRLPERIOD%>" size="20" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %>"
           <%   if (editca) { out.write(" value='" + CombineTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(CombineTime.TYPE_MINUTES) + "'"); }
-               else { out.write(" value='0"+CombineTime.TYPE_MINUTES+"'");} %>>
+               else { out.write(" value='0"+CombineTime.TYPE_MINUTES+"'");} %> />
           <% } %> 
           &nbsp; <%= ejbcawebbean.getText("YEAR365DAYS") + ", " + ejbcawebbean.getText("MO30DAYS") %>
-          <br/>
-          <c:out value="<%= ejbcawebbean.getText(\"CRL_CA_DELTACRLPERIOD_HELP\") %>" />
+          <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CRL_CA_DELTACRLPERIOD_HELP\") %>" /></p>
      </td>
    </tr>
 
@@ -1216,10 +1211,10 @@ function checkallfields(){
                 <c:out value="<%= x509cainfo.getDefaultOCSPServiceLocator() %>"/>
              <% }else{ %>
          <input type="text" name="<%=TEXTFIELD_DEFAULTOCSPLOCATOR%>" size="40" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_URI") %>"
-         <% if(editca){ %>value="<c:out value="<%= x509cainfo.getDefaultOCSPServiceLocator() %>"/>"<%}%>>
-           <% } %> <input type="button" name="<%=BUTTON_GENDEFAULTOCSPLOCATOR%>" onClick="gendefaultocsplocator()" value="<%= ejbcawebbean.getText("GENERATE") %>" >
+         <% if(editca){ %>value="<c:out value="<%= x509cainfo.getDefaultOCSPServiceLocator() %>"/>"<%}%> />
+           <% } %> <input type="button" name="<%=BUTTON_GENDEFAULTOCSPLOCATOR%>" onClick="gendefaultocsplocator()" value="<%= ejbcawebbean.getText("GENERATE") %>" />
            <br />
-           <c:out value="<%= ejbcawebbean.getText(\"SERVICE_CA_DEFAULTURI_HELP\") %>" />
+           <p class="help"><c:out value="<%= ejbcawebbean.getText(\"SERVICE_CA_DEFAULTURI_HELP\") %>" /></p>
       </td>
     </tr>
 

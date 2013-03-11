@@ -50,7 +50,7 @@ function check()
 		<tr id="Row<%=row++%2%>"> 
 			<td width="45%" valign="top" align="right"><%= ejbcawebbean.getText("IMPORTCA_SIGNKEYALIAS") %></td>
 			<td width="55%" valign="top">
-					<input type="text" name='<%= TEXTFIELD_IMPORTCA_SIGKEYALIAS %>' value='SignatureKeyAlias' size="20">
+					<input type="text" name='<%= TEXTFIELD_IMPORTCA_SIGKEYALIAS %>' value='SignatureKeyAlias' size="20" />
 					&nbsp;
 				<span class="help"><%= ejbcawebbean.getText("IMPORTCA_SIGNKEYALIAS_HELP") %></span>
 			</td>
@@ -58,7 +58,7 @@ function check()
 		<tr id="Row<%=row++%2%>"> 
 			<td width="45%" valign="top" align="right"><%= ejbcawebbean.getText("IMPORTCA_ENCKEYALIAS") %></td>
 			<td width="55%" valign="top">
-					<input type="text" name='<%= TEXTFIELD_IMPORTCA_ENCKEYALIAS %>' value='EncryptionKeyAlias' size="20">
+					<input type="text" name='<%= TEXTFIELD_IMPORTCA_ENCKEYALIAS %>' value='EncryptionKeyAlias' size="20" />
 					&nbsp;
 					<span class="help"><%= ejbcawebbean.getText("IMPORTCA_ENCKEYALIAS_HELP") %></span>
 			</td>

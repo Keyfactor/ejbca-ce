@@ -556,8 +556,8 @@ function checkallfields(){
       <td width="50%"> 
         <input type="text" name="<%=TEXTFIELD_VALIDITY%>" size="25" maxlength="255" 
            value="<%= ValidityDate.getString(certificateprofiledata.getValidity())  %>"
-           title="<%= ejbcawebbean.getText("FORMAT_TIME_YMD") %> <%= ejbcawebbean.getText("OR") %> <%= ejbcawebbean.getText("FORMAT_ISO8601") %>"><br />
-           <c:out value="<%= ejbcawebbean.getText(\"DATE_HELP\") %>" /> <c:out value="<%= ejbcawebbean.getDateExample()  %>" />
+           title="<%= ejbcawebbean.getText("FORMAT_TIME_YMD") %> <%= ejbcawebbean.getText("OR") %> <%= ejbcawebbean.getText("FORMAT_ISO8601") %>" />
+           <p class="help"><c:out value="<%= ejbcawebbean.getText(\"DATE_HELP\") %>" /> <c:out value="<%= ejbcawebbean.getDateExample()  %>" /></p>
       </td>
     </tr>
 
@@ -1455,8 +1455,8 @@ function checkallfields(){
            <%   } %> 
            </select>
            <br />
-           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-           <c:out value="<%= ejbcawebbean.getText(\"EXT_MS_TEMPLATE_HELP\") %>" />
+           <p class="help">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+           <c:out value="<%= ejbcawebbean.getText(\"EXT_MS_TEMPLATE_HELP\") %>" /></p>
       </td>
     </tr>
 
@@ -1546,8 +1546,8 @@ function checkallfields(){
                       value="<c:out value="<%= certificateprofiledata.getCNPostfix() %>"/>"
                     <%}%> >
            <br />
- 	           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
- 	           <c:out value="<%= ejbcawebbean.getText(\"CERT_SUBJECTDN_CNPF_HELP\") %>" />                    
+           <p class="help">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+           <c:out value="<%= ejbcawebbean.getText(\"CERT_SUBJECTDN_CNPF_HELP\") %>" /></p>
       </td>
     </tr>
 
