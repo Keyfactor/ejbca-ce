@@ -21,7 +21,7 @@ function checkselected(){
    returnval = document.editissuers.<%= SELECT_ISSUER %>.options.selectedIndex != -1
  
    if(!returnval)
-     alert("<%= ejbcawebbean.getText("ONECURRENTISSUERMUSTBESEL", true)%>");
+     alert("<%= ejbcawebbean.getText("ONEISSUERMUSTBESELECTED", true)%>");
 
    return returnval;
 }
@@ -52,7 +52,7 @@ function checkselected(){
     </tr>
   <% } %>
     <tr> 
-      <td width="40%"><h3><%= ejbcawebbean.getText("CURRENTHARDTOKENISSUERS") %></h3></td>
+      <td width="40%"><h3><%= ejbcawebbean.getText("LISTOFHARDTOKENISSUERS") %></h3></td>
       <td width="60%"></td>
     </tr>
     <tr> 

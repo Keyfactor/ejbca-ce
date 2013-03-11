@@ -121,7 +121,7 @@
     <% } %>
    <% } %>
     <tr> 
-      <td width="40%"><h3><%= ejbcawebbean.getText("CURRENTCERTIFICATEPROFILES") %></h3></td>
+      <td width="40%"><h3><%= ejbcawebbean.getText("LISTOFCERTIFICATEPROFILES") %></h3></td>
       <td width="60%"></td>
     </tr>
     <tr> 

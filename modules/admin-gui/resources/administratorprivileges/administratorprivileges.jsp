@@ -56,7 +56,7 @@
 	<h:dataTable value="#{rolesManagedBean.roles}" var="role"
 		headerClass="listHeader" rowClasses="Row0,Row1">
 		<f:facet name="header">
-			<h:outputText value="#{web.text.CURRENTROLES}" />
+			<h:outputText value="#{web.text.LISTOFROLES}" />
 		</f:facet>
 		<h:column>
 			<h:outputText value="#{role.roleName}"/>
