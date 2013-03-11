@@ -46,7 +46,7 @@
       </td>
       <td width="55%" valign="top"> 
          <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_LDAPBASEDN%>" size="45" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_DN") %>"
-               value='<c:out value="<%= ldappublisher.getBaseDN() %>"/>'> 
+               value='<c:out value="<%= ldappublisher.getBaseDN() %>"/>' /> 
          <p class="help"><%= ejbcawebbean.getText("BASEDN_HELP") %></p>
       </td>
     </tr>
