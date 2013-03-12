@@ -1662,7 +1662,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         profile.setReUseKeyRecoveredCertificate(true);
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         endEntityProfileSession.addEndEntityProfile(intAdmin, "KEYRECOVERY", profile);
-        assertTrue("Unable to kreate KEYRECOVERY end entity profile.", endEntityProfileSession.getEndEntityProfile("KEYRECOVERY") != null);
+        assertTrue("Unable to create KEYRECOVERY end entity profile.", endEntityProfileSession.getEndEntityProfile("KEYRECOVERY") != null);
 
         // Add a new user, set token to P12, status to new and end entity
         // profile to key recovery
@@ -1687,7 +1687,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         Enumeration<String> en = ks.aliases();
         String alias = en.nextElement();
         X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
-        assertEquals(cert.getSubjectDN().toString(), "CN=WSTESTUSERKEYREC1");
+        assertEquals("CN=WSTESTUSERKEYREC1", cert.getSubjectDN().toString());
         PrivateKey privK = (PrivateKey) ks.getKey(alias, "foo456".toCharArray());
 
         // This should work now
