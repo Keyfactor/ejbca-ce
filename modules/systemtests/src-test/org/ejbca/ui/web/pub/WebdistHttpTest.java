@@ -34,6 +34,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -48,25 +49,32 @@ import com.gargoylesoftware.htmlunit.WebResponse;
 public class WebdistHttpTest {
 
     final private static Logger log = Logger.getLogger(WebdistHttpTest.class);
+    final private AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("WebdistHttpTest"));
+
 
     private String httpPort;
+    private CA testx509ca;
 
     private ConfigurationSessionRemote configurationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         httpPort = configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP);
-    }
-
-    @Test
-    public void testJspCompile() throws Exception {
         
-        AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("WebdistHttpTest"));
-        CA testx509ca;
-        CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
         int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
         testx509ca = CaSessionTest.createTestX509CA("CN=TestCA", null, false, keyusage);
         caSession.addCA(admin, testx509ca);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
+        caSession.removeCA(admin, testx509ca.getCAId());
+    }
+    
+    @Test
+    public void testJspCompile() throws Exception {
         
         // We hit the pages and see that they return a 200 value, so we know
         // they at least compile correctly
@@ -83,9 +91,6 @@ public class WebdistHttpTest {
         settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceName1));
         resp = con.getResponse(settings);
         assertEquals("Response code", 200, resp.getStatusCode());
-
-        CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
-        caSession.removeCA(admin, testx509ca.getCAId());
     }
 
     @Test
@@ -137,14 +142,13 @@ public class WebdistHttpTest {
         assertEquals("Response code", 200, resp.getStatusCode());
 
     }
-
+    
     @SuppressWarnings("unchecked")
     @Test
     public void testPublicWebChainDownload() throws Exception {
     	
-    	// This test assumes we have a default ManagementCA installed with CAId=-1688117755
-        String httpReqPathPem = "http://localhost:" + httpPort + "/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=-1688117755&format=pem";
-        String httpReqPathJks = "http://localhost:" + httpPort + "/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=-1688117755&format=jks";
+        String httpReqPathPem = "http://localhost:" + httpPort + "/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=" + testx509ca.getCAId() + "&format=pem";        
+        String httpReqPathJks = "http://localhost:" + httpPort + "/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=" + testx509ca.getCAId() + "&format=jks";
 
         final WebClient webClient = new WebClient();
         WebConnection con = webClient.getWebConnection();
@@ -164,7 +168,7 @@ public class WebdistHttpTest {
         		found = true;
         	}
         }
-        assertTrue("Unable find ManagementCA in certificate chain or parsing the response wrong.", found);
+        assertTrue("Unable find TestCA in certificate chain or parsing the response wrong.", found);
 
         settings = new WebRequestSettings(new URL(httpReqPathJks));
         resp = con.getResponse(settings);
