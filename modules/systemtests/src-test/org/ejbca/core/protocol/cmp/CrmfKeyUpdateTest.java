@@ -498,27 +498,20 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         String expectedErrMsg = "CA does not exist: " + fakeUserDN.hashCode();
         assertEquals(expectedErrMsg, errMsg);
 
-        // sending another renewal request with a certificate issued by an existing CA but the certificate itself is not in the database
-        
-        // A certificate, not in the database, issued by AdminCA1
-        byte[] fakecertBytes = Base64.decode( ("MIIDXDCCAkSgAwIBAgIIRC/jVeNAbfQwDQYJKoZIhvcNAQEFBQAwNzELMAkGA1UE" +
-                "BhMCU0UxFTATBgNVBAoTDEVKQkNBIFNhbXBsZTERMA8GA1UEAxMIQWRtaW5DQTEw" +
-                "HhcNMTMwMTI0MTAzNjQ1WhcNMTUwMTI0MTAzNjQ1WjAkMRUwEwYDVQQDDAxmYWtl" +
-                "dXNlcm5hbWUxCzAJBgNVBAYTAlNFMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIB" +
-                "CgKCAQEA1S468v2pzIw+27kQQ/+wACnMaEYqvBr8Zv3ozp15ojNuXuv/WB/AtFOa" +
-                "khHrE23bDv/0m232Ax/njEz6XuNs3nx9O79cJ77gYRFKW2CWBfdr8P60nmS9CgE5" +
-                "W04XQLlFPNfoS1BfuCGA5UjuSvbt/5v1+dDxyFdOaJcgDpqhbyWbnJ47qUpERb1V" +
-                "ptVxAHW8m9w1cyNcA6MHhL39kP/OUJX26SwfUsUJJ0mkaqT1Gzd4jpGHRGWFUnF9" +
-                "s6e115a2pVx9oj8h6JwemL0ao8WXebCIgV16xny+eGMl3U1SJzMtdGxQyYOyGeXU" +
-                "9n5A0Yxc6LqNKWdyW9is8TD7jrfZiQIDAQABo38wfTAdBgNVHQ4EFgQURPEY5Hhr" +
-                "QBZqHOjxgj84PN4y3dIwDAYDVR0TAQH/BAIwADAfBgNVHSMEGDAWgBTPD2/ZscpO" +
-                "wTkwLrvJdqpEMQ6h3DAOBgNVHQ8BAf8EBAMCBeAwHQYDVR0lBBYwFAYIKwYBBQUH" +
-                "AwIGCCsGAQUFBwMEMA0GCSqGSIb3DQEBBQUAA4IBAQBZ6jdvQ3lA/73Szlu8ooGz" +
-                "RKPC0fkmcEXwcwhOPKqTIQgb3BLuLTPCaGFwr/w2sFUXyhO9bE8p/56NvjqtyXd0" +
-                "xHWYFW5Q8IcNtcpO9vMNcmI6cgFFxWeU6pEV3KvCGFSeHHiWH9haRxYg7JdirqIU" +
-                "E9s3eBou6HBWkY/zATaIIezIaURCt/osldqU0fq1j2JZJqhQiQDaVayEFP1b2N2X" +
-                "Bc6RJcOugw6Q4cWemgCQkUmEncUKlv4OSRQ/k9qk27jWfjzkbDr4OxdohHL5Cpll" +
-                "5zqAWESvmozu4bA+CZK01IPEIRkOKrMc8sZBsVwhp8I5j8ro/8TRFxNRv55bAZzG").getBytes() );
+        // sending another renewal request with a certificate issued by an existing CA but the certificate itself is not in the database        
+        // A certificate, not in the database, issued by TestCA
+        byte[] fakecertBytes = Base64.decode( (
+                "MIIB6TCCAVKgAwIBAgIIIKF3bEBbbyQwDQYJKoZIhvcNAQELBQAwETEPMA0GA1UE" +
+                "AwwGVGVzdENBMB4XDTEzMDMxMjExMTcyMVoXDTEzMDMyMjExMjcyMFowIDERMA8G" +
+                "A1UEAwwIZmFrZXVzZXIxCzAJBgNVBAYTAlNFMFwwDQYJKoZIhvcNAQEBBQADSwAw" +
+                "SAJBAKZlXrI3TwziiDK9/E1V4n6PCXhpRERSLWPEpRvRPWfpvazpq7R2UZZRq5i2" +
+                "hrqKDbfLdAouh2J7AIlUZG3cdJECAwEAAaN/MH0wHQYDVR0OBBYEFCb2tsZTXOh7" +
+                "FjjVXpSxkJ79P3tJMAwGA1UdEwEB/wQCMAAwHwYDVR0jBBgwFoAURmtK3gFt81Bp" +
+                "3z+YZuzBm65Ja6IwDgYDVR0PAQH/BAQDAgXgMB0GA1UdJQQWMBQGCCsGAQUFBwMC" +
+                "BggrBgEFBQcDBDANBgkqhkiG9w0BAQsFAAOBgQAmclw6cwuQkiPSN4bHOP5S7bdU" +
+                "+UKXLIkk1L84q0WQfblNzYkcDXMsxwJ1dv2Yd/dxIjtVjrhVIUrRMA70jtWs31CH" +
+                "t9ofdgncIdtzZo49mLRQDwhTCApoLf0BCNb2rWpzCPWQTa97y0u5T65m7DAkBTV/" +
+                "JAkFQIZCLSAci++qPA==").getBytes() );
         fakeCert = CertTools.getCertfromByteArray(fakecertBytes);
         
         req = genRenewalReq(fakeUserDN, cacert, nonce, transid, keys, false, null, null, pAlg, new DEROctetString(nonce));

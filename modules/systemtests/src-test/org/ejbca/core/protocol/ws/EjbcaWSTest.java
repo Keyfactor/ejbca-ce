@@ -745,8 +745,11 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         assertNotNull(keyStore);
         Enumeration<String> en = keyStore.aliases();
         String alias = en.nextElement();
+        if(!keyStore.isKeyEntry(alias)) {
+            alias = en.nextElement();
+        }
         X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);
-
+        
         String resultingSubjectDN = cert.getSubjectDN().toString();
         assertEquals(requestedSubjectDN + " was transformed into " + resultingSubjectDN + " (not the expected " + expectedSubjectDN + ")", expectedSubjectDN,
                 resultingSubjectDN);
