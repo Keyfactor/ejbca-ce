@@ -443,6 +443,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             if (availableCryptoToken.getClassPath().equals(PKCS11CryptoToken.class.getName())) {
                 // Special case: Never expose the PKCS11CryptoToken when creating new tokens if no libraries are detected
                 if (!isAnyP11LibraryAvailable()) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("No known PKCS#11 libraries are available, not enabling PKCS#11 support in GUI. See web.properties for configuration of new PKCS#11 libraries.");
+                    }
                     continue;
                 }
             }
