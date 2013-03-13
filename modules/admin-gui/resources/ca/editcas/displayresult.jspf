@@ -34,7 +34,7 @@
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 
-      <td width="20%" valign="top" align="right">nbsp;</td>
+      <td width="20%" valign="top" align="right">&nbsp;</td>
       <td width="80%" valign="top">     
         <form>
            <textarea rows='13' cols='100'><%=resultstring%></textarea>   
@@ -42,7 +42,7 @@
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 
-      <td width="20%" valign="top" align="right">nbsp;</td>
+      <td width="20%" valign="top" align="right">&nbsp;</td>
       <td width="80%" valign="top">     
         <a href="<%=pemlink%>"><%= ejbcawebbean.getText("DOWNLOADPEM") %></a><br />
         <a href="<%=binarylink%>"><%= ejbcawebbean.getText("DOWNLOADBINARY") %></a><br />
