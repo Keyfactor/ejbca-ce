@@ -5173,7 +5173,7 @@ When setup you can connect to any of the EJBCA application nodes, and use load b
 <p>A note of caution. Setting up and managing a fully HA database can be very difficult and/or expensive. You may consider different variants of HA databases, such as replication with manual or automatic failover. 
 The possibilities are virtually unlimited, only your requirements and imagination can decide what type of configuration works best for you.
 </p><p>
-The upgrade EJBCA without downtime, you can use the 'app.version.effective' property in conf/ejbca.properties.
+The upgrade EJBCA without downtime, you can make use of a few properties to enforce backwards compatibility during node upgrades. See doc/UPGRADE for all version you upgrade between for details.
 </p>
 </section>
 
