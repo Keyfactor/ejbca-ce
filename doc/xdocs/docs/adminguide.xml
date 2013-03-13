@@ -2453,6 +2453,7 @@ See org.ejbca.core.model.services.actions.DummyAction for an example implementat
 EJBCA have support for several HSMs. Each HSM has it's own interface for key generation and maintenance, specific
 to the HSM and independent of EJBCA. You should make sure you are familiar with how your HSM works.
 </p>
+<subsection name="Configuring HSMs">
 <p>
 When configuring a CA to use a HSM in the administration GUI it is a property field where properties unique to this very HSM is specified. All implemented HSM modules are using the same property keywords to define the identity and the purpose of the keys to be used. These keywords are:
 <ul>
@@ -2488,6 +2489,26 @@ Since EJBCA 3.6 the recommended HSM connector is to use the PKCS#11 interface. O
 <p>
 PrimeKey Solutions is selling a module called PrimeCardHSM that implements a flexible HSM using low cost smart cards. 
 </p>
+</subsection>
+<subsection name="HSM modules available in the Admin GUI">
+<p>
+Since EJBCA 5.2 you can manage crypto tokens fully in the Admin GUI or EJBCA. The admin GUI tries to be user friendly and automatically show you the HSMsavailable in your system.
+When creating a new Crypto Token (CryptoTokens-&gt;Create New) you can select between Soft and PKCS#11 crypto tokens. 
+</p>
+<ul>
+<li>The PKCS#11 option is only available if EJBCA can find any known PKCS#11 modules in the file system.</li>
+</ul>
+<p>
+If EJBCA finds any available known PKCS#11 modules in the file system, you can select PKCS#11 as <i>Type</i>. As <i>(PKCS#11) Library</i> there is a
+list of the available known HSMs found in the file system.
+</p>
+<p>If the PKCS#11 option is not available or your desired HSM is not in the list of available Libraries there are a few options to configure:
+</p>
+<ul>
+<li>If you are using JBoss 7 you must make the java PKCS#11 classes exportable. See <a href="installation.html#JBoss">JBoss specific installation notes</a>.</li>
+<li>You can configure PKCS#11 modules that are not already known to EJBCA in conf/web.properties. See conf/web.properties.sample how to add new known modules and override existing (overriding should not be needed since you can add new locations with the same name).</li>
+</ul>
+</subsection>
 <subsection name="Testing PKCS#11 keys for use by EJBCA">
 <p>
 To test keys on the HSM for use by EJBCA you can use the <a href="userguide.html#EJBCA%20client%20toolbox">EJBCA Client Toolbox</a>. 
