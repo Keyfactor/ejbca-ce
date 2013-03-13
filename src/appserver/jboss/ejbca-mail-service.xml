@@ -49,6 +49,12 @@ $Id$
           <!-- Enable debugging output from the javamail classes -->
           <property name="mail.debug" value="${mail.debug}"/>
 
+		  <!-- TLS operations, not STARTTLS -->
+		  <!-- 
+          <property name="mail.smtp.tls.enable" value="true"/>
+          <property name="mail.smtp.socketFactory.class" value="javax.net.ssl.SSLSocketFactory"/>
+           -->
+           
           <!-- Set to true to upgrade the connection to TLS -->
           <property name="mail.smtp.starttls.enable" value="${mail.smtp.starttls.enable}"/>
        </configuration>

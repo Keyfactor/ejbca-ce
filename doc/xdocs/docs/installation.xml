@@ -631,6 +631,24 @@ If this is not done you will get SSL errors about missing client certificate, or
 </p>
 </subsubsection>
 
+<subsubsection name="JBoss Mail TLS configuration">
+<p>
+There are at least two ways to use TLS for SMTP connection:
+</p>
+<ul>
+<li>SMTP STARTTLS</li>
+<li>TLS required</li>
+</ul>
+<p>The first method can be configured with the setting <i>mail.smtp.starttls.enable</i> in conf/mail.properties.
+Since mail configuration is done differently in different versions of JBoss we only provide guidance for the second version. There are two options that might be needed:
+</p>
+<ul>
+<li>mail.smtp.tls.enable=true</li>
+<li>mail.smtp.socketFactory.class=javax.net.ssl.SSLSocketFactory</li>
+</ul>
+<p>For JBoss 5 these are added, commented out in src/appserver/jboss/ejbca-mail-service.xml, for JBoss 7 they should be set using the JBoss command line admin tool.</p>
+</subsubsection>
+
 </subsection>
 
 <subsection name="Glassfish">
