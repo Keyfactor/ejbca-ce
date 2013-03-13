@@ -1686,6 +1686,9 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         assertNotNull(ks);
         Enumeration<String> en = ks.aliases();
         String alias = en.nextElement();
+        if(!ks.isKeyEntry(alias)) {
+            alias = en.nextElement();
+        }
         X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
         assertEquals("CN=WSTESTUSERKEYREC1", cert.getSubjectDN().toString());
         PrivateKey privK = (PrivateKey) ks.getKey(alias, "foo456".toCharArray());
@@ -1709,6 +1712,9 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         assertNotNull(ks2);
         en = ks2.aliases();
         alias = (String) en.nextElement();
+        if(!ks2.isKeyEntry(alias)) {
+            alias = (String) en.nextElement();
+        }
         X509Certificate cert2 = (X509Certificate) ks2.getCertificate(alias);
         assertEquals(cert2.getSubjectDN().toString(), "CN=WSTESTUSERKEYREC1");
         PrivateKey privK2 = (PrivateKey) ks2.getKey(alias, "foo456".toCharArray());
