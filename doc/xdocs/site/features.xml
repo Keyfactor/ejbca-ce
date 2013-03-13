@@ -8,7 +8,7 @@
 <body>
   <section name="Features">
       
-  <subsection name="PKI features">
+  <subsection name="PKI system features">
 <ul>
 <li>Multiple CAs and levels of CAs, build a complete infrastructure (or several) within one instance of EJBCA.</li>
 <li>Unlimited number of Root CAs and SubCAs. Request cross certificates and bridge certificates from other CAs and Bridge CAs. Issue cross certificates to other CAs.</li>
