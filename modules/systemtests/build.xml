@@ -603,7 +603,7 @@
 		<copy file="${ejbca.home}/p12/ocspTestSigner.p12" todir="${build.dir}/keys" failonerror="false"/>
 		<echo>
 			Configure ocsp.properties:
-			 ocsp.defaultresponder=CN=OcspDefaultTestCA,O=EJBCA Sample,C=SE
+			 ocsp.defaultresponder=CN=OcspDefaultTestCA
 			 ocsp.keys.dir=${build.dir}/keys
 			 ocsp.keys.storePassword=foo123
 			 ocsp.untilNextUpdate=5
