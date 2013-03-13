@@ -29,7 +29,7 @@ All database upgrades require CREATE and ALTER TABLE privileges besides the regu
 INSERT and DELETE. The SQL executed by database upgrades code is available in
 "src/upgrade/<oldversion>_<newversion>/<oldversion>_<newversion>-upgrade-<database>.sql".
 
-From EJBCA 5.0.x to EJBCA 5.1.x
+From EJBCA 5.0.x to EJBCA 5.2.x
 -------------------------------
 See release notes for more details on changes.
 
@@ -40,10 +40,13 @@ activation are clearly separated. Upgrades are made during first startup.
 Older EJBCA nodes will continue to function during a 100% up-time upgrade, as
 long as newer instances has been deployed with "db.keepinternalcakeystores" set to true
 For 100% upgrade, or possibility to back out of upgrade, set db.keepinternalcakeystores to true (default is false). 
+Settings relevant for 100% upgrades are:
+- db.keepinternalcakeystores (5.0->5.2)
+- db.keepjbossserialization (4.0->5.0)
+- app.version.effective (3.11->4.0)
 
 PKCS#11 libraries for presentation in the AdminGUI are autodetected. If you have a library that is not automatically detected by 
-EJBCA you can add it to the configuration.
-See web.properties.sample for PKCS#11 library auto-detection configuration.
+EJBCA you can add it to the configuration. See web.properties.sample for PKCS#11 library auto-detection configuration.
 
 The class CliAuthenticationToken and associated classes have been moved from the CLI module to reside next to the other 
 authentication classes under src. This means that approval requests using the CliAuthenticationToken created in 5.0.x will not 
