@@ -23,6 +23,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.KeyPair;
@@ -31,6 +32,7 @@ import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.SignatureException;
 import java.security.cert.CertStore;
+import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -101,6 +103,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -141,6 +144,7 @@ import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
+import org.ejbca.core.protocol.ws.client.gen.EndEntityProfileNotFoundException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ErrorCode;
 import org.ejbca.core.protocol.ws.client.gen.ExtendedInformationWS;
 import org.ejbca.core.protocol.ws.client.gen.HardTokenDataWS;
@@ -380,7 +384,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
     private void editUser(String userName, String caName) throws ApprovalException_Exception, AuthorizationDeniedException_Exception,
             CADoesntExistsException_Exception, EjbcaException_Exception, UserDoesntFullfillEndEntityProfile_Exception,
-            WaitingForApprovalException_Exception, IllegalQueryException_Exception {
+            WaitingForApprovalException_Exception, IllegalQueryException_Exception, EndEntityProfileNotFoundException_Exception {
    // Test to add a user.
         final UserDataVOWS user = new UserDataVOWS();
         user.setUsername(userName);
@@ -493,7 +497,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             CryptoTokenAuthenticationFailedException, InvalidAlgorithmException, AuthorizationDeniedException, ApprovalException_Exception,
             AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, EjbcaException_Exception,
             UserDoesntFullfillEndEntityProfile_Exception, WaitingForApprovalException_Exception, IllegalQueryException_Exception,
-            CertificateProfileExistsException {
+            CertificateProfileExistsException, EndEntityProfileNotFoundException_Exception {
         createTestCA(CA1);
         createTestCA(CA2);
         // Create suitable EE prof
@@ -1806,12 +1810,20 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
     } // test24GetAvailableCAsInProfile
 
-    protected void createCRL() throws Exception {
-
+    protected void createAndGetCRL() throws Exception {
         String caname = getAdminCAName();
         // This will throw exception if it fails
+        byte[] crlbytes = ejbcaraws.getLatestCRL(caname, false);
+        X509CRL crl = CertTools.getCRLfromByteArray(crlbytes);
+        BigInteger crlnumber1 = CrlExtensions.getCrlNumber(crl);
+        // Generate a new CRL
         ejbcaraws.createCRL(caname);
-    } // test25CreateCRL
+        // After generation the CRL number should have increased by one
+        crlbytes = ejbcaraws.getLatestCRL(caname, false);
+        crl = CertTools.getCRLfromByteArray(crlbytes);
+        BigInteger crlnumber2 = CrlExtensions.getCrlNumber(crl);
+        assertEquals("CRL number of newly generated CRL should be exactly one more than for the previous CRL.", crlnumber1.intValue()+1, crlnumber2.intValue());
+    } // createAndGetCRL
 
     protected void cvcRequest(String rootcadn, String rootcaname, String subcadn, String subcaname, String username, String keyspec, String keyalg,
             String signalg) throws Exception {

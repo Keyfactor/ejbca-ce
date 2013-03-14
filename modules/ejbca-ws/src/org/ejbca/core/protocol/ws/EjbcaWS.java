@@ -98,6 +98,7 @@ import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.CrlCreateSessionLocal;
+import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -225,6 +226,8 @@ public class EjbcaWS implements IEjbcaWS {
     private CertificateRequestSessionLocal certificateRequestSession;
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
+    @EJB
+    private CrlStoreSessionLocal crlStoreSession;
     @EJB
     private CertificateProfileSessionLocal certificateProfileSession;
     @EJB
@@ -2293,11 +2296,7 @@ public class EjbcaWS implements IEjbcaWS {
 		return ejbhelper.convertTreeMapToArray(ret);
 	}
 
-	/**
-	 * @throws CAOfflineException 
-	 * @throws CryptoTokenOfflineException 
-	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#createCRL(String)
-	 */
+	@Override
 	public void createCRL(String caname) throws CADoesntExistsException, ApprovalException, EjbcaException, ApprovalRequestExpiredException, CryptoTokenOfflineException, CAOfflineException{
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
 		try {
@@ -2316,6 +2315,26 @@ public class EjbcaWS implements IEjbcaWS {
             logger.flush();
         }
 	}
+
+	@Override
+    public byte[] getLatestCRL(final String caname, final boolean deltaCRL) throws CADoesntExistsException, EjbcaException {
+        final IPatternLogger logger = TransactionLogger.getPatternLogger();
+        try {
+            EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, hardTokenSession, endEntityManagementSession, webAuthenticationSession, cryptoTokenManagementSession);
+            AuthenticationToken admin = ejbhelper.getAdmin(true);
+            logAdminName(admin,logger);
+            CAInfo cainfo = caSession.getCAInfo(admin, caname);
+            byte[] ret = crlStoreSession.getLastCRL(cainfo.getSubjectDN(), deltaCRL);
+            return ret;
+        } catch (AuthorizationDeniedException e) {
+            throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.NOT_AUTHORIZED, Level.ERROR);
+        } catch (RuntimeException e) {  // EJBException, ...
+            throw EjbcaWSHelper.getInternalException(e, logger);
+        } finally {
+            logger.writeln();
+            logger.flush();
+        }
+    }
 
 	/**
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#getEjbcaVersion()
