@@ -364,6 +364,11 @@ public class OcspKeyRenewalProxySessionBean implements OcspKeyRenewalProxySessio
         }
 
         @Override
+        public byte[] getLatestCRL(final String caname, final boolean deltaCRL) throws CADoesntExistsException_Exception, EjbcaException_Exception {
+            return null;
+        }
+        
+        @Override
         public String getEjbcaVersion() {
             return null;
         }
