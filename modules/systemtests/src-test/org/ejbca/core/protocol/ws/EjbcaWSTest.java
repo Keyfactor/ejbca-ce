@@ -427,10 +427,9 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     }
     
     @Test
-    public void test25GreateCRL() throws Exception {
-        createCRL();
+    public void test25CreateandGetCRL() throws Exception {
+        createAndGetCRL();
     }
-
     
     @Test
     public void test26_1CvcRequestRSA() throws Exception {

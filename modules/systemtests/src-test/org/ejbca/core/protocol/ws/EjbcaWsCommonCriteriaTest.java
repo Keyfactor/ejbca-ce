@@ -60,7 +60,7 @@ public class EjbcaWsCommonCriteriaTest {
     
     @Test
     public void testCrlIssuance() throws Exception {
-        test.test25GreateCRL();
+        test.test25CreateandGetCRL();
     }
     
     @Test
