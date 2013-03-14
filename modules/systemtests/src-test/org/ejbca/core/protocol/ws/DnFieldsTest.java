@@ -45,6 +45,7 @@ import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.CADoesntExistsException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
+import org.ejbca.core.protocol.ws.client.gen.EndEntityProfileNotFoundException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.IllegalQueryException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.NotFoundException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
@@ -127,7 +128,7 @@ public class DnFieldsTest extends CommonEjbcaWS {
     public void testEmailInBothSanAndDn() throws NoSuchAlgorithmException, NoSuchProviderException,
             InvalidAlgorithmParameterException, AuthorizationDeniedException_Exception, EjbcaException_Exception, IllegalQueryException_Exception,
             InvalidKeyException, SignatureException, ApprovalException_Exception, CADoesntExistsException_Exception, NotFoundException_Exception,
-            UserDoesntFullfillEndEntityProfile_Exception, WaitingForApprovalException_Exception, IOException, OperatorCreationException {
+            UserDoesntFullfillEndEntityProfile_Exception, WaitingForApprovalException_Exception, IOException, OperatorCreationException, EndEntityProfileNotFoundException_Exception {
 
         UserMatch um = new UserMatch(UserMatch.MATCH_WITH_USERNAME, UserMatch.MATCH_TYPE_EQUALS, "tomcat");
         for (UserDataVOWS ud : ejbcaraws.findUser(um)) {

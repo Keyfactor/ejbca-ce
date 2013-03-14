@@ -103,6 +103,7 @@ import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Except
 import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
+import org.ejbca.core.protocol.ws.client.gen.EndEntityProfileNotFoundException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.IllegalQueryException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.NameAndId;
 import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
@@ -1167,6 +1168,8 @@ public class BatchEnrollmentGUIView extends FrameView {
             } catch (AuthorizationDeniedException_Exception ex) {
                 result = ex;
             } catch (IllegalQueryException_Exception ex) {
+                result = ex;
+            } catch (EndEntityProfileNotFoundException_Exception ex) {
                 result = ex;
             } catch (EjbcaException_Exception ex) {
                 result = ex;
