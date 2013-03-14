@@ -55,82 +55,60 @@ public abstract class HardTokenProfileWithPINEnvelope extends HardTokenProfile i
       
     }
 
-    // Public Methods mostly used by PrimeCard
+    // Public Methods
     
-    /** 
-	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IPINEnvelopeSettings#getPINEnvelopeType()
-	 */
+    @Override
 	public int getPINEnvelopeType() {
 		return ((Integer) data.get(PINENVELOPETYPE)).intValue();
 	}
 
-	/**
-	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IPINEnvelopeSettings#setPINEnvelopeType(int)
-	 */
+    @Override
 	public void setPINEnvelopeType(int type) {
 	  data.put(PINENVELOPETYPE, Integer.valueOf(type));		
 	}
 
-	/**
-	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IPINEnvelopeSettings#getPINEnvelopeTemplateFilename()
-	 */
+    @Override
 	public String getPINEnvelopeTemplateFilename() {		
 		return (String) data.get(PINENVELOPEFILENAME);
 	}
 
-	/**
-	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IPINEnvelopeSettings#setPINEnvelopeTemplateFilename(java.lang.String)
-	 */
+    @Override
 	public void setPINEnvelopeTemplateFilename(String filename) {
 	  data.put(PINENVELOPEFILENAME, filename);		
 	}
 
-	/**
-	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IPINEnvelopeSettings#getPINEnvelopeData()
-	 */
+    @Override
 	public String getPINEnvelopeData() {		
 		return (String) data.get(PINENVELOPEDATA);
 	}
 
-	/**
-	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IPINEnvelopeSettings#setPINEnvelopeData(java.lang.String)
-	 */
+    @Override
 	public void setPINEnvelopeData(String templatedata) {
 	  data.put(PINENVELOPEDATA, templatedata);	
 	}
 
-	/**
-	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IPINEnvelopeSettings#getNumberOfPINEnvelopeCopies()
-	 */
+    @Override
 	public int getNumberOfPINEnvelopeCopies() {		
 		return ((Integer) data.get(PINENVELOPECOPIES)).intValue();
 	}
 
-	/**
-	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IPINEnvelopeSettings#setNumberOfPINEnvelopeCopies(int)
-	 */
+    @Override
 	public void setNumberOfPINEnvelopeCopies(int copies) {		
 	  data.put(PINENVELOPECOPIES, Integer.valueOf(copies));	
 	}
 
-	/**
-	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IPINEnvelopeSettings#getVisualValidity()
-	 */
+    @Override
 	public int getVisualValidity(){
 	  return ((Integer) data.get(VISUALVALIDITY)).intValue();	
 	}
 
-	/**
-	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IPINEnvelopeSettings#setVisualValidity(int)
-	 */
+    @Override
 	public void setVisualValidity(int validity){
 	  data.put(VISUALVALIDITY, Integer.valueOf(validity));	
 	}
 
 
-	/**
-	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IPINEnvelopeSettings#printPINEnvelope(org.ejbca.core.model.ra.UserDataVO, java.lang.String[], java.lang.String[], java.lang.String, java.lang.String)
-	 */
+    @Override
 	public Printable printPINEnvelope(EndEntityInformation userdata, String[] pincodes, String[] pukcodes, String hardtokensn, String copyoftokensn) throws IOException, PrinterException{
 		Printable returnval = null;
 

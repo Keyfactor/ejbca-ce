@@ -55,9 +55,7 @@ public abstract class HardTokenProfileWithAdressLabel extends HardTokenProfileWi
       
     }
 
-    // Public Methods mostly used by PrimeCard
-    
-    
+    @Override
     public void upgrade(){
       // Perform upgrade functionality
     	
@@ -76,70 +74,55 @@ public abstract class HardTokenProfileWithAdressLabel extends HardTokenProfileWi
     
 
     
-	/* (non-Javadoc)
-	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IAdressLabelSettings#getNumberOfAdressLabelCopies()
-	 */
+    @Override
 	public int getNumberOfAdressLabelCopies() {
 		return ((Integer) data.get(ADRESSLABELCOPIES)).intValue();
 	}
-	/* (non-Javadoc)
-	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IAdressLabelSettings#getAdressLabelData()
-	 */
+    @Override
 	public String getAdressLabelData() {
 		return (String) data.get(ADRESSLABELDATA);
 	}
-	/* (non-Javadoc)
-	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IAdressLabelSettings#getAdressLabelTemplateFilename()
-	 */
+    @Override
 	public String getAdressLabelTemplateFilename() {
 		return (String) data.get(ADRESSLABELFILENAME);
 	}
-	/* (non-Javadoc)
-	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IAdressLabelSettings#getAdressLabeltype()
-	 */
+    @Override
 	public int getAdressLabelType() {
 		return ((Integer) data.get(ADRESSLABELTYPE)).intValue();
 	}
-	/* (non-Javadoc)
-	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IAdressLabelSettings#printAdressLabel(org.ejbca.core.model.ra.UserDataVO, java.lang.String[], java.lang.String[], java.lang.String, java.lang.String)
-	 */
-	public Printable printAdressLabel(EndEntityInformation userdata, String[] pincodes,
-			String[] pukcodes, String hardtokensn, String copyoftokensn) throws IOException, PrinterException {
-		Printable returnval = null;
-
-		if(getAdressLabelData() != null){
-			if(adresslabelsvgimagemanipulator == null) {
-				adresslabelsvgimagemanipulator = new SVGImageManipulator(new StringReader(getAdressLabelData()),
-						getVisualValidity(),
-						getHardTokenSNPrefix()); 
-			}
-			returnval = adresslabelsvgimagemanipulator.print(userdata, pincodes, pukcodes, hardtokensn, copyoftokensn); 														
-		}
-
-		return returnval;	
-	}
-	/* (non-Javadoc)
-	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IAdressLabelSettings#setNumberOfAdressLabelCopies(int)
-	 */
+    @Override
 	public void setNumberOfAdressLabelCopies(int copies) {
 		  data.put(ADRESSLABELCOPIES, Integer.valueOf(copies));	
 	}
-	/* (non-Javadoc)
-	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IAdressLabelSettings#setAdressLabelData(java.lang.String)
-	 */
+    @Override
 	public void setAdressLabelData(String templatedata) {
 		data.put(ADRESSLABELDATA, templatedata);	
 	}
-	/* (non-Javadoc)
-	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IAdressLabelSettings#setAdressLabelTemplateFilename(java.lang.String)
-	 */
+    @Override
 	public void setAdressLabelTemplateFilename(String filename) {
 		  data.put(ADRESSLABELFILENAME, filename);		
 	}
-	/* (non-Javadoc)
-	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IAdressLabelSettings#setAdressLabeltype(int)
-	 */
+    @Override
 	public void setAdressLabelType(int type) {
 		data.put(ADRESSLABELTYPE, Integer.valueOf(type));
 	}
+    /**
+     * Method that parses the template, replaces the userdata
+     * and returning a printable byte array 
+     */  
+    public Printable printAdressLabel(EndEntityInformation userdata, String[] pincodes,
+            String[] pukcodes, String hardtokensn, String copyoftokensn) throws IOException, PrinterException {
+        Printable returnval = null;
+
+        if(getAdressLabelData() != null){
+            if(adresslabelsvgimagemanipulator == null) {
+                adresslabelsvgimagemanipulator = new SVGImageManipulator(new StringReader(getAdressLabelData()),
+                        getVisualValidity(),
+                        getHardTokenSNPrefix()); 
+            }
+            returnval = adresslabelsvgimagemanipulator.print(userdata, pincodes, pukcodes, hardtokensn, copyoftokensn);                                                         
+        }
+
+        return returnval;   
+    }
 }
