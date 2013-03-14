@@ -25,7 +25,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 
 /**
  * HardTokenProfileWithVisualLayout is a basic class that should be inherited by all types
- * of hardtokenprofiles in the system that need PIN envelope and visual layout printing funtionality.
+ * of hardtokenprofiles in the system that need PIN envelope and visual layout printing functionality.
  * 
  * It used to customize the information generated on hard tokens when they are 
  * processed. This information could be PIN-type number of certificates, 
@@ -53,53 +53,39 @@ public abstract class HardTokenProfileWithVisualLayout extends HardTokenProfileW
       setVisualLayoutTemplateFilename("");      
     }
 
-    // Public Methods mostly used by PrimeCard
+    // Public Methods 
 
-	/**
-	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IVisualLayoutSettings#getVisualLayoutType()
-	 */
+    @Override
 	public int getVisualLayoutType() {	
 	  return ((Integer) data.get(VISUALLAYOUTTYPE)).intValue();
 	}
 
-	/**
-	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IVisualLayoutSettings#setVisualLayoutType(int)
-	 */
+    @Override
 	public void setVisualLayoutType(int type) {		
 	  data.put(VISUALLAYOUTTYPE, Integer.valueOf(type));	
 	}
 
-	/**
-	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IVisualLayoutSettings#getVisualLayoutTemplateFilename()
-	 */
+    @Override
 	public String getVisualLayoutTemplateFilename() {		
 		return (String) data.get(VISUALLAYOUTFILENAME);
 	}
 
-	/**
-	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IVisualLayoutSettings#setVisualLayoutTemplateFilename(java.lang.String)
-	 */
+    @Override
 	public void setVisualLayoutTemplateFilename(String filename) {
       data.put(VISUALLAYOUTFILENAME, filename);
 	}
 
-	/**
-	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IVisualLayoutSettings#getVisualLayoutData()
-	 */
+    @Override
 	public String getVisualLayoutData() {		
 	  return (String) data.get(VISUALLAYOUTDATA);
 	}
 
-	/**
-	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IVisualLayoutSettings#setVisualLayoutData(java.lang.String)
-	 */
+    @Override
 	public void setVisualLayoutData(String templatedata) {		
 	  data.put(VISUALLAYOUTDATA, templatedata);	
 	}
 
-	/**
-	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IVisualLayoutSettings#printVisualValidity(org.ejbca.core.model.ra.UserDataVO, java.lang.String[], java.lang.String[], java.lang.String, java.lang.String)
-	 */
+	@Override
 	public Printable printVisualValidity(EndEntityInformation userdata, String[] pincodes, String[] pukcodes, String hardtokensn, String copyoftokensn) throws IOException, PrinterException{
 		Printable returnval = null;
 

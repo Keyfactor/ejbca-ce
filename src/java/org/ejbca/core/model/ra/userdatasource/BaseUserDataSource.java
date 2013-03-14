@@ -69,7 +69,7 @@ public abstract class BaseUserDataSource extends UpgradeableDataHashMap implemen
   
     }
 
-    // Public Methods mostly used by PrimeCard
+    // Public Methods
     /**
      * Returns the description of publisher
      */
@@ -184,12 +184,14 @@ public abstract class BaseUserDataSource extends UpgradeableDataHashMap implemen
     public abstract void testConnection(AuthenticationToken admin) throws UserDataSourceConnectionException;
     
 
+    @Override
     public abstract Object clone() throws CloneNotSupportedException;
 
     
+    @Override
     public abstract float getLatestVersion();
 
-    
+    @Override
     public void upgrade(){
     	// Performing upgrade rutines
     }

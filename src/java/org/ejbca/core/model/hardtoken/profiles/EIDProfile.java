@@ -59,7 +59,7 @@ public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
             
     }
 
-    // Public Methods mostly used by PrimeCard
+    // Public Methods
     /**
      * Indicates which certificate profileid that should be requested when
      * generating certificate of given certusage.

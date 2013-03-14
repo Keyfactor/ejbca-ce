@@ -62,7 +62,7 @@ public abstract class HardTokenProfile extends UpgradeableDataHashMap implements
       setGenerateIdenticalPINForCopies(true);  
     }
 
-    // Public Methods mostly used by PrimeCard
+    // Public Methods
     /**
      * Number of Copies indicates how many card for the samt user that should be generated.
      * Generally this means, the PIN and PUK codes and encryption keys are identical. This
@@ -144,12 +144,13 @@ public abstract class HardTokenProfile extends UpgradeableDataHashMap implements
 		((List<Integer>) data.get(MINIMUMPINLENGTH)).set(certusage, Integer.valueOf(length));		
 	}
 
+    @Override
     public abstract Object clone() throws CloneNotSupportedException;
-
     
+    @Override
     public abstract float getLatestVersion();
-
     
+    @Override
     public void upgrade(){
     	// Performing upgrade rutines
     }

@@ -55,9 +55,9 @@ public abstract class HardTokenProfileWithReceipt extends HardTokenProfileWithVi
       
     }
 
-    // Public Methods mostly used by PrimeCard
+    // Public Methods
     
-    
+    @Override
     public void upgrade(){
       // Perform upgrade functionality
     	
@@ -76,33 +76,23 @@ public abstract class HardTokenProfileWithReceipt extends HardTokenProfileWithVi
     
 
     
-	/* (non-Javadoc)
-	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IReceiptSettings#getNumberOfReceiptCopies()
-	 */
+    @Override
 	public int getNumberOfReceiptCopies() {
 		return ((Integer) data.get(RECEIPTCOPIES)).intValue();
 	}
-	/* (non-Javadoc)
-	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IReceiptSettings#getReceiptData()
-	 */
+    @Override
 	public String getReceiptData() {
 		return (String) data.get(RECEIPTDATA);
 	}
-	/* (non-Javadoc)
-	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IReceiptSettings#getReceiptTemplateFilename()
-	 */
+    @Override
 	public String getReceiptTemplateFilename() {
 		return (String) data.get(RECEIPTFILENAME);
 	}
-	/* (non-Javadoc)
-	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IReceiptSettings#getReceipttype()
-	 */
+    @Override
 	public int getReceiptType() {
 		return ((Integer) data.get(RECEIPTTYPE)).intValue();
 	}
-	/* (non-Javadoc)
-	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IReceiptSettings#printReceipt(org.ejbca.core.model.ra.UserDataVO, java.lang.String[], java.lang.String[], java.lang.String, java.lang.String)
-	 */
+    @Override
 	public Printable printReceipt(EndEntityInformation userdata, String[] pincodes,
 			String[] pukcodes, String hardtokensn, String copyoftokensn) throws IOException, PrinterException {
 		Printable returnval = null;
@@ -117,27 +107,19 @@ public abstract class HardTokenProfileWithReceipt extends HardTokenProfileWithVi
 		return returnval;	
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IReceiptSettings#setNumberOfReceiptCopies(int)
-	 */
+    @Override
 	public void setNumberOfReceiptCopies(int copies) {
 		  data.put(RECEIPTCOPIES, Integer.valueOf(copies));	
 	}
-	/* (non-Javadoc)
-	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IReceiptSettings#setReceiptData(java.lang.String)
-	 */
+    @Override
 	public void setReceiptData(String templatedata) {
 		data.put(RECEIPTDATA, templatedata);	
 	}
-	/* (non-Javadoc)
-	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IReceiptSettings#setReceiptTemplateFilename(java.lang.String)
-	 */
+    @Override
 	public void setReceiptTemplateFilename(String filename) {
 		  data.put(RECEIPTFILENAME, filename);		
 	}
-	/* (non-Javadoc)
-	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IReceiptSettings#setReceipttype(int)
-	 */
+    @Override
 	public void setReceiptType(int type) {
 		data.put(RECEIPTTYPE, Integer.valueOf(type));
 	}
