@@ -57,7 +57,7 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
       setOnlyUseQueue(DEFAULT_ONLYUSEQUEUE);
     }
 
-    // Public Methods mostly used by PrimeCard
+    // Public Methods
     /**
      * Returns the description of publisher
      */
@@ -185,12 +185,14 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
     public abstract void testConnection() throws PublisherConnectionException; // NOPMD: this is not a JUnit test
     
 
+    @Override
     public abstract Object clone() throws CloneNotSupportedException;
 
     
+    @Override
     public abstract float getLatestVersion();
 
-    
+    @Override
     public void upgrade(){
     	// Performing upgrade routines
     }
