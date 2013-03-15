@@ -307,7 +307,16 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
                     if (crlData == null) {
                         throw new FinderException();
                     }
-                    published = publisherQueueSession.storeCRLNonTransactional(publisher, admin, crlData.getCRLBytes(), crlData.getCaFingerprint(), crlData.getCrlNumber(), userDataDN);
+                    try {
+                        published = publisherQueueSession.storeCRLNonTransactional(publisher, admin, crlData.getCRLBytes(), crlData.getCaFingerprint(), crlData.getCrlNumber(), userDataDN);
+                    } catch (EJBException e) {
+                        final Throwable t = e.getCause();
+                        if (t instanceof PublisherException) {
+                            throw (PublisherException) t;
+                        } else {
+                            throw e;
+                        }
+                    }
                 } else {
                     String msg = intres.getLocalizedMessage("publisher.unknowntype", publishType);
                     log.error(msg);
