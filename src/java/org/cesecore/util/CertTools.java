@@ -1857,6 +1857,9 @@ public class CertTools {
                     int tag = gn.getTagNo();
                     ASN1Encodable name = gn.getName();
                     String str = CertTools.getGeneralNameString(tag, name);
+                    if ( str==null ) {
+                        continue;
+                    }
                     if (altName == null) {
                         altName = str;
                     } else {
