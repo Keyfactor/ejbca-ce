@@ -32,6 +32,7 @@ import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
+import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.cmp.PKIFailureInfo;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
@@ -482,15 +483,29 @@ public class CrmfRARequestTest extends CmpTestCase {
         }        
     }
     
+    /**
+     * Send a CMP request with SubjectAltName containing OIDs that are not defined by Ejbca.
+     * Expected to pass and a certificate containing the unsupported OIDs is returned.
+     * 
+     * @throws Exception
+     */
     @Test
     public void test04UsingOtherNameInSubjectAltName() throws Exception {
 
         ASN1EncodableVector vec = new ASN1EncodableVector();
         ASN1EncodableVector v = new ASN1EncodableVector();
-        v.add(new DERObjectIdentifier("2.5.5.6"));
-        v.add(new DERTaggedObject(true, 0, new DERIA5String( "2.16.528.1.1007.99.8-1-993000027-N-99300011-00.000-00000000" )));
+        
+        v.add(new DERObjectIdentifier(CertTools.UPN_OBJECTID));
+        v.add(new DERTaggedObject(true, 0, new DERUTF8String("boo@bar")));
         GeneralName gn = GeneralName.getInstance(new DERTaggedObject(false, 0, new DERSequence(v)));
         vec.add(gn);
+        
+        v = new ASN1EncodableVector();
+        v.add(new DERObjectIdentifier("2.5.5.6"));
+        v.add(new DERTaggedObject(true, 0, new DERIA5String( "2.16.528.1.1007.99.8-1-993000027-N-99300011-00.000-00000000" )));
+        gn = GeneralName.getInstance(new DERTaggedObject(false, 0, new DERSequence(v)));
+        vec.add(gn);
+        
         GeneralNames san = GeneralNames.getInstance(new DERSequence(vec));
         
         ExtensionsGenerator gen = new ExtensionsGenerator();
@@ -521,6 +536,9 @@ public class CrmfRARequestTest extends CmpTestCase {
             checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
             X509Certificate cert = checkCmpCertRepMessage(userDN, cacert, resp, reqId);
             fingerprint = CertTools.getFingerprintAsString(cert);
+            
+            String sln = CertTools.getSubjectAlternativeName(cert);
+            log.error("---------------------- returned subjectAltName: " + sln);
             
         } finally {
             try {
