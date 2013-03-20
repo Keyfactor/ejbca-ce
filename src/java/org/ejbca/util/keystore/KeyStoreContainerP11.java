@@ -42,14 +42,16 @@ public class KeyStoreContainerP11 extends KeyStoreContainerBase {
     }
 
     /** Use KeyStoreContainer.getInstance to get an instance of this class
+     * @param privateKeyLabel 
      * @see KeyStoreContainer#getInstance(String, String, String, String)
      */
     static KeyStoreContainer getInstance(final String slot,
                                          final String libName,
                                          final boolean isIx,
                                          final String attributesFile,
-                                         final KeyStore.ProtectionParameter protectionParameter) throws Exception, IOException {
-        Provider provider = KeyTools.getP11Provider(slot, libName, isIx, attributesFile);
+                                         final KeyStore.ProtectionParameter protectionParameter,
+                                         final String privateKeyLabel) throws Exception, IOException {
+        final Provider provider = KeyTools.getP11Provider(slot, libName, isIx, attributesFile, privateKeyLabel);
         final String providerName = provider.getName();
         log.debug("Adding provider with name: "+providerName);
         if (Security.getProvider(providerName) == null) {

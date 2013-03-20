@@ -472,7 +472,7 @@ public final class KeyTools {
             chain = null;
         } else {
             chain = new Certificate[cacerts.size()];
-            chain = (Certificate[]) cacerts.toArray(chain);
+            chain = cacerts.toArray(chain);
         }
         return createP12(alias, privKey, cert, chain);
     } // createP12
@@ -631,7 +631,7 @@ public final class KeyTools {
 
         // Add the root cert as trusted
         if (cachain != null) {
-            if (!CertTools.isSelfSigned((X509Certificate) cachain[cachain.length - 1])) {
+            if (!CertTools.isSelfSigned(cachain[cachain.length - 1])) {
                 throw new IllegalArgumentException("Root cert is not self-signed.");
             }
             store.setCertificateEntry(caAlias, cachain[cachain.length - 1]);
@@ -789,10 +789,10 @@ public final class KeyTools {
             }
             return certchain;
         } else if (certchain.length > 0) {
-            if (CertTools.isSelfSigned((X509Certificate) certchain[certchain.length - 1])) {
+            if (CertTools.isSelfSigned(certchain[certchain.length - 1])) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Issuer='" + CertTools.getIssuerDN((X509Certificate) certchain[certchain.length - 1]) + "'.");
-                    log.debug("Subject='" + CertTools.getSubjectDN((X509Certificate) certchain[certchain.length - 1]) + "'.");
+                    log.debug("Issuer='" + CertTools.getIssuerDN(certchain[certchain.length - 1]) + "'.");
+                    log.debug("Subject='" + CertTools.getSubjectDN(certchain[certchain.length - 1]) + "'.");
                 }
                 if (log.isTraceEnabled()) {
                     log.trace("<getCertChain: alias='" + privateKeyAlias + "', retlength=" + certchain.length);
@@ -831,7 +831,7 @@ public final class KeyTools {
                     array.add(chain1[j]);
 
                     // If one cert is slefsigned, we have found a root certificate, we don't need to go on anymore
-                    if (CertTools.isSelfSigned((X509Certificate) chain1[j])) {
+                    if (CertTools.isSelfSigned(chain1[j])) {
                         stop = true;
                     }
                 }
@@ -841,10 +841,10 @@ public final class KeyTools {
         final Certificate[] ret = new Certificate[array.size()];
 
         for (int i = 0; i < ret.length; i++) {
-            ret[i] = (X509Certificate) array.get(i);
+            ret[i] = array.get(i);
             if (log.isDebugEnabled()) {
-                log.debug("Issuer='" + CertTools.getIssuerDN((X509Certificate) ret[i]) + "'.");
-                log.debug("Subject='" + CertTools.getSubjectDN((X509Certificate) ret[i]) + "'.");
+                log.debug("Issuer='" + CertTools.getIssuerDN(ret[i]) + "'.");
+                log.debug("Subject='" + CertTools.getSubjectDN(ret[i]) + "'.");
             }
         }
         if (log.isTraceEnabled()) {
@@ -881,6 +881,14 @@ public final class KeyTools {
     } // createSubjectKeyId
 
     /**
+     * Calls {@link #getP11Provider(String, String, boolean, String, String)} with privateKeyLabel set to null
+     */
+    public static Provider getP11Provider(final String slot, final String fileName, final boolean isIndex, final String attributesFile)
+            throws IOException {
+        return getP11Provider(slot, fileName, isIndex, attributesFile, null);
+    }
+
+    /**
      * Creates a SUN or IAIK PKCS#11 provider using the passed in pkcs11 library. First we try to see if the IAIK provider is available, because it
      * supports more algorithms. If the IAIK provider is not available in the classpath, we try the SUN provider.
      * 
@@ -899,12 +907,14 @@ public final class KeyTools {
      *            attributes(generate,CKO_PRIVATE_KEY,*) = { CKA_PRIVATE = true CKA_SIGN = true CKA_DECRYPT = true CKA_TOKEN = true }
      * 
      *            See also html documentation for PKCS#11 HSMs in EJBCA.
+     * @param privateKeyLabel
+     *            The private key label to be set to generated keys. null means no label.
      * 
      * @return AuthProvider of type "sun.security.pkcs11.SunPKCS11" or
      * @throws IOException
      *             if the pkcs11 library can not be found, or the PKCS11 provider can not be created.
      */
-    public static Provider getP11Provider(final String slot, final String fileName, final boolean isIndex, final String attributesFile)
+    public static Provider getP11Provider(final String slot, final String fileName, final boolean isIndex, final String attributesFile, final String privateKeyLabel)
             throws IOException {
         if (StringUtils.isEmpty(fileName)) {
             throw new IOException("A file name must be supplied.");
@@ -913,26 +923,70 @@ public final class KeyTools {
         if (!libFile.isFile() || !libFile.canRead()) {
             throw new IOException("The file " + fileName + " can't be read.");
         }
-        if (slot == null) {
-            return getP11Provider(new FileInputStream(fileName), null);
+        // We will construct the PKCS11 provider (sun.security..., or iaik...) using reflection, because
+        // the sun class does not exist on all platforms in jdk5, and we want to be able to compile everything.
+
+        if ( slot==null || slot.length()<1 ) {// no slot. It must be Sun with all config in the file named 'fileName'
+            return getSunP11Provider(new FileInputStream(libFile));
         }
+        try {
+            Integer.parseInt(slot);
+        } catch (NumberFormatException e) {
+            throw new IOException("Slot nr " + slot + " not an integer.");
+        }
+        {// We will first try to construct the more competent IAIK provider, if it exists in the classpath
+            final Provider prov = getIAIKP11Provider(slot, libFile, isIndex);
+            if ( prov!=null ) {
+                return prov;
+            }
+        }
+        {// if that does not exist, we will revert back to use the SUN provider
+            final Provider prov = getSunP11Provider(slot, libFile, isIndex, attributesFile, privateKeyLabel);
+            if ( prov!=null ) {
+                return prov;
+            }
+        }
+        log.error("No provider available.");
+        return null;
+    }
+    private static Provider getIAIKP11Provider(final String slot, final File libFile, final boolean isIndex) throws IOException {
+        // Properties for the IAIK PKCS#11 provider
+        final Properties prop = new Properties();
+        prop.setProperty("PKCS11_NATIVE_MODULE", libFile.getCanonicalPath());
+        // If using Slot Index it is denoted by brackets in iaik
+        prop.setProperty("SLOT_ID", isIndex ? ("[" + slot + "]") : slot);
+        if (log.isDebugEnabled()) {
+            log.debug(prop.toString());
+        }
+        Provider ret = null;
+        try {
+            @SuppressWarnings("unchecked")
+            final Class<? extends Provider> implClass = (Class<? extends Provider>) Class.forName(IAIKPKCS11CLASS);
+            log.info("Using IAIK PKCS11 provider: " + IAIKPKCS11CLASS);
+            // iaik PKCS11 has Properties as constructor argument
+            ret = implClass.getConstructor(Properties.class).newInstance(new Object[] { prop });
+            // It's not enough just to add the p11 provider. Depending on algorithms we may have to install the IAIK JCE provider as well in order
+            // to support algorithm delegation
+            @SuppressWarnings("unchecked")
+            final Class<? extends Provider> jceImplClass = (Class<? extends Provider>) Class.forName(KeyTools.IAIKJCEPROVIDERCLASS);
+            Provider iaikProvider = jceImplClass.getConstructor().newInstance();
+            if (Security.getProvider(iaikProvider.getName()) == null) {
+                log.info("Adding IAIK JCE provider for Delegation: " + KeyTools.IAIKJCEPROVIDERCLASS);
+                Security.addProvider(iaikProvider);
+            }
+        } catch (Exception e) {
+            // do nothing here. Sun provider is tested below.
+        }
+        return ret;
+    }
+    private static Provider getSunP11Provider(final String slot, final File libFile, final boolean isIndex, final String attributesFile, String privateKeyLabel) throws IOException {
+
         // Properties for the SUN PKCS#11 provider
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         final PrintWriter pw = new PrintWriter(baos);
         pw.println("name = " + libFile.getName() + "-slot" + slot);
         pw.println("library = " + libFile.getCanonicalPath());
-
-        final int slotNr;
-        try {
-            if (slot.length() > 0) {
-                slotNr = Integer.parseInt(slot);
-            } else {
-                slotNr = -1;
-            }
-        } catch (NumberFormatException e) {
-            throw new IOException("Slot nr " + slot + " not an integer.");
-        }
-        if (slotNr >= 0) {
+        if ( slot!=null ) {
             pw.println("slot" + (isIndex ? "ListIndex" : "") + " = " + slot);
         }
         if (attributesFile != null) {
@@ -947,7 +1001,7 @@ public final class KeyTools {
             pw.println("  CKA_ENCRYPT = true");
             pw.println("  CKA_VERIFY = true");
             pw.println("  CKA_WRAP = true");// no harm allowing wrapping of keys. created private keys can not be wrapped anyway since CKA_EXTRACTABLE
-                                            // is false.
+            // is false.
             pw.println("}");
             pw.println("attributes(*, CKO_PRIVATE_KEY, *) = {");
             pw.println("  CKA_PRIVATE = true"); // always require logon with password to use the key
@@ -955,6 +1009,10 @@ public final class KeyTools {
             pw.println("  CKA_EXTRACTABLE = false"); // not possible to wrap the key with another key
             pw.println("  CKA_DECRYPT = true");
             pw.println("  CKA_SIGN = true");
+            if ( privateKeyLabel!=null && privateKeyLabel.length()>0 ) {
+                pw.print("  CKA_LABEL = 0h");
+                pw.println(new String(Hex.encode(privateKeyLabel.getBytes())));
+            }
             pw.println("  CKA_UNWRAP = true");// for unwrapping of session keys,
             pw.println("}");
             pw.println("attributes(*, CKO_SECRET_KEY, *) = {");
@@ -973,74 +1031,7 @@ public final class KeyTools {
         if (log.isDebugEnabled()) {
             log.debug(baos.toString());
         }
-
-        // Properties for the IAIK PKCS#11 provider
-        final Properties prop = new Properties();
-        prop.setProperty("PKCS11_NATIVE_MODULE", libFile.getCanonicalPath());
-        // If using Slot Index it is denoted by brackets in iaik
-        prop.setProperty("SLOT_ID", isIndex ? ("[" + slot + "]") : slot);
-        if (log.isDebugEnabled()) {
-            log.debug(prop.toString());
-        }
-        return getP11Provider(new ByteArrayInputStream(baos.toByteArray()), prop);
-    }
-
-    /**
-     * 
-     * @param is
-     *            for the SUN PKCS#11 provider
-     * @param prop
-     *            for the IAIK PKCS#11 provider
-     * @return Java security Provider for a PCKS#11 token
-     * @throws IOException
-     *             if neither the IAIK or the SUN provider can be created
-     */
-
-    private static Provider getP11Provider(final InputStream is, final Properties prop) throws IOException {
-
-        // We will construct the PKCS11 provider (sun.security..., or iaik...) using reflection, because
-        // the sun class does not exist on all platforms in jdk5, and we want to be able to compile everything.
-        // The below code replaces the single line (for the SUN provider):
-        // return new SunPKCS11(new ByteArrayInputStream(baos.toByteArray()));
-
-        // We will first try to construct the more competent IAIK provider, if it exists in the classpath
-        // if that does not exist, we will revert back to use the SUN provider
-        Provider ret = null;
-        if (prop != null) {
-            try {
-                @SuppressWarnings("unchecked")
-                final Class<? extends Provider> implClass = (Class<? extends Provider>) Class.forName(IAIKPKCS11CLASS);
-                log.info("Using IAIK PKCS11 provider: " + IAIKPKCS11CLASS);
-                // iaik PKCS11 has Properties as constructor argument
-                ret = implClass.getConstructor(Properties.class).newInstance(new Object[] { prop });
-                // It's not enough just to add the p11 provider. Depending on algorithms we may have to install the IAIK JCE provider as well in order
-                // to support algorithm delegation
-                @SuppressWarnings("unchecked")
-                final Class<? extends Provider> jceImplClass = (Class<? extends Provider>) Class.forName(KeyTools.IAIKJCEPROVIDERCLASS);
-                Provider iaikProvider = jceImplClass.getConstructor().newInstance();
-                if (Security.getProvider(iaikProvider.getName()) == null) {
-                    log.info("Adding IAIK JCE provider for Delegation: " + KeyTools.IAIKJCEPROVIDERCLASS);
-                    Security.addProvider(iaikProvider);
-                }
-            } catch (Exception e) {
-                // do nothing here. Sun provider is tested below.
-            }
-        }
-        if (ret == null) {
-            try {
-                // Sun PKCS11 has InputStream as constructor argument
-                @SuppressWarnings("unchecked")
-                final Class<? extends Provider> implClass = (Class<? extends Provider>) Class.forName(SUNPKCS11CLASS);
-                log.info("Using SUN PKCS11 provider: " + SUNPKCS11CLASS);
-                ret = implClass.getConstructor(InputStream.class).newInstance(new Object[] { is });
-            } catch (Exception e) {
-                log.error("Error constructing pkcs11 provider: " + e.getMessage());
-                final IOException ioe = new IOException("Error constructing pkcs11 provider: " + e.getMessage());
-                ioe.initCause(e);
-                throw ioe;
-            }
-        }
-        return ret;
+        return getSunP11Provider( new ByteArrayInputStream(baos.toByteArray()) );
     }
 
     /**
@@ -1050,7 +1041,20 @@ public final class KeyTools {
      * @throws IOException
      */
     public static Provider getSunP11Provider(final InputStream is) throws IOException {
-        return getP11Provider(is, null);
+        // The below code replaces the single line (for the SUN provider):
+        // return new SunPKCS11(is);
+        try {
+            // Sun PKCS11 has InputStream as constructor argument
+            @SuppressWarnings("unchecked")
+            final Class<? extends Provider> implClass = (Class<? extends Provider>) Class.forName(SUNPKCS11CLASS);
+            log.info("Using SUN PKCS11 provider: " + SUNPKCS11CLASS);
+            return implClass.getConstructor(InputStream.class).newInstance(new Object[] { is });
+        } catch (Exception e) {
+            log.error("Error constructing pkcs11 provider: " + e.getMessage());
+            final IOException ioe = new IOException("Error constructing pkcs11 provider: " + e.getMessage());
+            ioe.initCause(e);
+            throw ioe;
+        }
     }
 
     /**

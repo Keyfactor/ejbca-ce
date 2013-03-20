@@ -16,12 +16,15 @@ package org.ejbca.ui.cli;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.security.Security;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.Date;
 import java.util.List;
-
+import java.util.Map.Entry;
+import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.bouncycastle.cms.CMSEnvelopedGenerator;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -47,6 +50,7 @@ public class HSMKeyTool extends ClientToolBox {
     private static final String VERIFY_SWITCH = "verify";
     private static final String GENERATE_SWITCH = "generate";
     private static final String GENERATE_MODULE_SWITCH = GENERATE_SWITCH+"module";
+    private static final String GENERATE_BATCH_SWITCH = "batchgenerate";
     private static final String DELETE_SWITCH = "delete";
     private static final String TEST_SWITCH = "test";
     private static final String CREATE_KEYSTORE_SWITCH = "createkeystore";
@@ -99,7 +103,7 @@ public class HSMKeyTool extends ClientToolBox {
     void setModuleProtection() {
         return;
     }
-    private String commandString(String[] sa) {
+    private static String commandString(String[] sa) {
         String s = "";
         for ( int i=0; i<sa.length; i++) {
             s += sa[i];
@@ -109,10 +113,39 @@ public class HSMKeyTool extends ClientToolBox {
         }
         return s;
     }
-    private void tooFewArguments(String[] args) {
-        log.error("Too few arguments in command: '"+commandString(args)+'\'');
+    private static void tooFewArguments(String[] args) {
+        System.err.println("Too few arguments in command: '"+commandString(args)+'\'');
         System.exit(3); // NOPMD, it's not a JEE app
     }
+    private static void generateBatch( final String batchFile, final KeyStoreContainer keyStoreContainer ) throws Exception {
+        final Properties p = new Properties();
+        {
+            final InputStream is = new FileInputStream(batchFile);
+            try {
+                p.load(is);
+            } finally {
+                is.close();
+            }
+        }
+        for ( final Entry<Object, Object> entry : p.entrySet() ) {
+            final String alias = (String)entry.getKey();
+            final String keySpec = (String)entry.getValue();
+            if ( alias==null || alias.trim().length()<1 ) {
+                continue;
+            }
+            if ( keySpec==null || keySpec.trim().length()<1 ) {
+                System.err.println("No key specification for alias '"+alias+"'.");
+                continue;
+            }
+            try {
+                keyStoreContainer.generate(keySpec, alias);
+                log.info("Key with specification '"+keySpec+"' generated for alias '"+alias+"'.");
+            } catch( Exception e ) {
+                log.error("Failed to generate key for alias '"+alias+"' with key specification '"+keySpec+"'.", e);
+            }
+        }
+    }
+    final static String KEY_SPEC_DESC = "all decimal digits RSA key with specified length, otherwise name of ECC curve or DSA key using syntax DSAnnnn";
     private boolean doIt(String[] args) throws Exception {
         final String commandStringNoSharedLib = args[0]+" "+args[1]+" ";
         final String commandString = commandStringNoSharedLib+getProviderParameterDescription()+" ";
@@ -126,17 +159,34 @@ public class HSMKeyTool extends ClientToolBox {
             }
             return true;
         } else */
+        if ( args[1].toLowerCase().trim().contains(GENERATE_BATCH_SWITCH) ) {
+            if ( args.length < 6 ) {
+                System.err.println(commandString + "<name of batch file> " + '['+'<'+getKeyStoreDescription()+'>'+']');
+                generateComment();
+                System.err.println("The batch file is a file which specifies alias and key specification for each key to be generated.");
+                System.err.println("Each row is starting with a key alias then the key specification is following.");
+                System.err.println("The specification of the key is done like this: "+KEY_SPEC_DESC);
+                tooFewArguments(args);
+                return true;
+            }
+            if ( args[1].toLowerCase().trim().contains(GENERATE_MODULE_SWITCH) ) {
+                setModuleProtection();
+            }
+            final KeyStoreContainer store = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args.length>6 ? args[6] : null, null, null, "batch-"+new Date().getTime());
+            generateBatch(args[5], store);
+            return true;
+        }
         if ( args[1].toLowerCase().trim().contains(GENERATE_SWITCH) ) {
             if ( args.length < 6 ) {
-                System.err.println(commandString + "<all decimal digits RSA key with specified length, otherwise name of ECC curve or DSA key using syntax DSAnnnn> <key entry name> " + '['+'<'+getKeyStoreDescription()+'>'+']');
+                System.err.println(commandString + '<' + KEY_SPEC_DESC + "> <key entry name> [<"+getKeyStoreDescription()+">]");
                 generateComment();
                 tooFewArguments(args);
             } else {
                 if ( args[1].toLowerCase().trim().contains(GENERATE_MODULE_SWITCH) ) {
                     setModuleProtection();
                 }
-                KeyStoreContainer store = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args.length>7 ? args[7] : null, null, null);
-                String keyEntryName = args.length>6 ? args[6] :"myKey";
+                final String keyEntryName = args.length>6 ? args[6] :"myKey";
+                final KeyStoreContainer store = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args.length>7 ? args[7] : null, null, null, "priv-"+keyEntryName);
                 store.generate(args[5], keyEntryName);
                 System.err.println("Created certificate with entry "+keyEntryName+'.');
             }
@@ -307,6 +357,7 @@ public class HSMKeyTool extends ClientToolBox {
             pw.println("Use one of following commands: ");
 //            pw.println("  "+args[0]+" "+CREATE_CA_SWITCH);
             pw.println("  "+args[0]+" "+GENERATE_SWITCH);
+            pw.println("  "+args[0]+" "+GENERATE_BATCH_SWITCH);
             if ( doModuleProtection() ) {
                 pw.println("  "+args[0]+" "+GENERATE_MODULE_SWITCH);
             }
