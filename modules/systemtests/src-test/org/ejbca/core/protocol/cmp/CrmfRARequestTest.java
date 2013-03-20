@@ -537,9 +537,6 @@ public class CrmfRARequestTest extends CmpTestCase {
             X509Certificate cert = checkCmpCertRepMessage(userDN, cacert, resp, reqId);
             fingerprint = CertTools.getFingerprintAsString(cert);
             
-            String sln = CertTools.getSubjectAlternativeName(cert);
-            log.error("---------------------- returned subjectAltName: " + sln);
-            
         } finally {
             try {
                 endEntityManagementSession.revokeAndDeleteUser(admin, "TestAltNameUser", RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
