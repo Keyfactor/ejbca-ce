@@ -8,6 +8,25 @@ EJBCA 5.1.0
 -----------
 Internal work that never made a release.
 
+EJBCA 5.0.9
+-----------
+This is a maintenance release with improvements and bug fixes. In all 14 issues have been fixed.
+This release contains a minor security fix.
+
+* Noteworthy changes:
+- New ClientToolbox sub-command: 'batchgenerate'
+- CMP vendor certificate authorization
+- Cache for publishers
+- EJBCA compiles and runs on JDK7
+- Fixed upgrade failure
+- Fixed revocation not performing as expected in all circumstances 
+- Fixed renewal not always persisting the keys
+- Minor bugfixes and improvements
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE.
+Please notice the upgrade of BC jars if you are using Oracle JDK.
+
 EJBCA 5.0.8
 -----------
 This is a maintenance release with improvements and bug fixes. In all 12 issues have been fixed.
