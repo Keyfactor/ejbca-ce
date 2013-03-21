@@ -1,3 +1,29 @@
+EJBCA 5.0.9, 2013-03-21
+---
+Bug
+
+    [ECA-2915] - EJBCA DB CLI verify reports error if multiple nodes are logging
+    [ECA-2922] - Upgrade fails because not all aspects are migrated
+    [ECA-2929] - Revocation does not perform as expected in all circumstances
+    [ECA-2937] - Unable to create new CA with soft CA token without auto-activation
+    [ECA-2938] - Key renewal with soft CA token does not always persist the new keys
+    [ECA-2950] - Unsupported SubjectAltName object from a certificate request encoded to the string "null"
+    [ECA-2954] - lastUpdate and tryCounter columns in PublisherQueueData do not get updated in case of CRL publisher failures
+
+Improvement
+
+    [ECA-2859] - CMP end entity certificate authentication requires clear text password set for user
+    [ECA-2882] - Do not store active certificates in queue for ValidationAuthorityPublisher that only publish revoked
+    [ECA-2904] - Compile and run on JDK7
+    [ECA-2913] - CMP: Need better error message when a request is not signed by the sender
+    [ECA-2960] - ClientToolbox key generation enhancement.
+
+New Feature
+
+    [ECA-2901] - CMP vendor certificate authorization
+    [ECA-2907] - Add cache for Publishers
+
+
 EJBCA 5.0.8, 2012-12-18
 --- 
 Bug
