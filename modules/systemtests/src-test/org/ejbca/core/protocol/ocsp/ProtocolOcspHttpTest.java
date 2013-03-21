@@ -249,10 +249,12 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
                 .getResponseCode() == 200);
         cacert = (X509Certificate) CaTestCase.getTestCACert();
         caid = CaTestCase.getTestCAId();
+        CaTestCase.createTestCA("OcspDefaultTestCA");
     }
 
     @After
     public void tearDown() throws Exception {
+        CaTestCase.removeTestCA("OcspDefaultTestCA");
         CaTestCase.removeTestCA();
         removeDSACA();
         removeECDSACA();
