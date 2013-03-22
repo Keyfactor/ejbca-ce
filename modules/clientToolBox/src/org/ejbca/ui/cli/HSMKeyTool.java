@@ -18,6 +18,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.security.KeyStore;
 import java.security.Security;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -159,6 +160,20 @@ public class HSMKeyTool extends ClientToolBox {
             }
             return true;
         } else */
+        // Get and remove optional switches
+        final List<String> argsList = CliTools.getAsModifyableList(args);
+        for (String arg : argsList) {
+            System.err.println("arg = " + arg);
+        }
+        System.err.println("size = " + argsList.size());
+        KeyStore.ProtectionParameter protectionParameter = null;
+        final String password = CliTools.getAndRemoveParameter("-password", argsList);
+        System.err.println("password = " + password);
+        if (password != null) {
+            protectionParameter = new KeyStore.PasswordProtection(password.toCharArray());
+        }
+        args = CliTools.getAsArgs(argsList);
+        System.err.println("length = " + args.length);
         if ( args[1].toLowerCase().trim().contains(GENERATE_BATCH_SWITCH) ) {
             if ( args.length < 6 ) {
                 System.err.println(commandString + "<name of batch file> " + '['+'<'+getKeyStoreDescription()+'>'+']');
@@ -172,7 +187,7 @@ public class HSMKeyTool extends ClientToolBox {
             if ( args[1].toLowerCase().trim().contains(GENERATE_MODULE_SWITCH) ) {
                 setModuleProtection();
             }
-            final KeyStoreContainer store = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args.length>6 ? args[6] : null, null, null, "batch-"+new Date().getTime());
+            final KeyStoreContainer store = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args.length>6 ? args[6] : null, null, protectionParameter, "batch-"+new Date().getTime());
             generateBatch(args[5], store);
             return true;
         }
@@ -186,7 +201,7 @@ public class HSMKeyTool extends ClientToolBox {
                     setModuleProtection();
                 }
                 final String keyEntryName = args.length>6 ? args[6] :"myKey";
-                final KeyStoreContainer store = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args.length>7 ? args[7] : null, null, null, "priv-"+keyEntryName);
+                final KeyStoreContainer store = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args.length>7 ? args[7] : null, null, protectionParameter, "priv-"+keyEntryName);
                 store.generate(args[5], keyEntryName);
                 System.err.println("Created certificate with entry "+keyEntryName+'.');
             }
@@ -205,14 +220,14 @@ public class HSMKeyTool extends ClientToolBox {
         }
         if ( args[1].toLowerCase().trim().equals(CERT_REQ)) {
         	// First we check if we have a switch for "-explicitecc" for explicit ecc parameters used in ICAO epassports.
-    		List<String> argsList = CliTools.getAsModifyableList(args);
-    		boolean explicitEccParameters = argsList.remove("-explicitecc");
-    		args = argsList.toArray(new String[argsList.size()]);
+    		List<String> argsListLocal = CliTools.getAsModifyableList(args);
+    		boolean explicitEccParameters = argsListLocal.remove("-explicitecc");
+    		args = argsListLocal.toArray(new String[argsListLocal.size()]);
             if ( args.length < 7 ) {
                 System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <key entry name> [<CN>] -explicitecc");
                 tooFewArguments(args);
             } else {
-                KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, null).generateCertReq(args[6], args.length>7 ? args[7] : null, explicitEccParameters);
+                KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, protectionParameter).generateCertReq(args[6], args.length>7 ? args[7] : null, explicitEccParameters);
             }
             return true;
         }
@@ -221,7 +236,7 @@ public class HSMKeyTool extends ClientToolBox {
                 System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <certificate chain in PEM format>");
                 tooFewArguments(args);
             } else {
-                KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, null).installCertificate(args[6]);
+                KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, protectionParameter).installCertificate(args[6]);
             }
             return true;
         }
@@ -230,7 +245,7 @@ public class HSMKeyTool extends ClientToolBox {
                 System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <trusted root certificate in PEM format>");
                 tooFewArguments(args);
             } else {
-                KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, null).installTrustedRoot(args[6]);
+                KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, protectionParameter).installTrustedRoot(args[6]);
             }
             return true;
         }
@@ -257,7 +272,7 @@ public class HSMKeyTool extends ClientToolBox {
                     symmAlgOid = args[9];
                 }
                 System.err.println("Using symmstric encryption algorithm: "+symmAlgOid);
-                KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, null).encrypt(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8], symmAlgOid);
+                KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, protectionParameter).encrypt(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8], symmAlgOid);
             }
             return true;
         }
@@ -266,7 +281,7 @@ public class HSMKeyTool extends ClientToolBox {
                 System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <input file> <output file> <key alias>");
                 tooFewArguments(args);
             } else {
-                KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, null).decrypt(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8]);
+                KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, protectionParameter).decrypt(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8]);
             }
             return true;
         }
@@ -275,7 +290,7 @@ public class HSMKeyTool extends ClientToolBox {
                 System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <input file> <output file> <key alias>");
                 tooFewArguments(args);
             } else {
-                KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, null).sign(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8]);
+                KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, protectionParameter).sign(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8]);
             }
             return true;
         }
@@ -292,7 +307,7 @@ public class HSMKeyTool extends ClientToolBox {
                 final X509Certificate cert = (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(new BufferedInputStream(new FileInputStream(args[6])));
                 verifyResult = CMS.verify(new FileInputStream(args[2]), new FileOutputStream(args[5]), cert);
             } else {
-                verifyResult = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, null).verify(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8]);
+                verifyResult = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, protectionParameter).verify(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8]);
             }
             if ( verifyResult==null ) {
                 System.out.println("Not possible to parse signed file.");
@@ -319,7 +334,7 @@ public class HSMKeyTool extends ClientToolBox {
                 System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <old key alias> <new key alias>");
                 tooFewArguments(args);
             } else {
-                KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, null).renameAlias(args[6], args[7]);
+                KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, protectionParameter).renameAlias(args[6], args[7]);
             }
             return true;
         }
@@ -331,7 +346,7 @@ public class HSMKeyTool extends ClientToolBox {
                 String fromId = args[5];                    
                 String toId = args[6];
                 System.err.println("Moving entry with alias '"+fromId+"' to alias '"+toId+'.');
-                KeyStoreContainerBase.move(args[2], args[3], args[4], fromId, toId, null);
+                KeyStoreContainerBase.move(args[2], args[3], args[4], fromId, toId, protectionParameter);
             }
             return true;
         }
@@ -339,7 +354,7 @@ public class HSMKeyTool extends ClientToolBox {
             if( args[1].toLowerCase().trim().contains(CREATE_KEYSTORE_MODULE_SWITCH)) {
                 setModuleProtection();
             }
-            KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], null, null, null).storeKeyStore();
+            KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], null, null, protectionParameter).storeKeyStore();
             return true;
         }
         return false;
