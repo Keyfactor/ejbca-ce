@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.util;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
@@ -92,4 +93,22 @@ public abstract class ValueExtractor {
         return ret;
     }
 
+    /**
+     * MariaDB on JBoss AS 7.1.1.Final returns a byte array for VARCHARs (binary string).
+     * @return always a String (using UTF-8 encoding if the underlying value was byte[]).
+     */
+    public static String extractStringValue(Object object) {
+        if (object == null) {
+            return null;
+        } else if (object instanceof String) {
+            return (String) object;
+        } else if (object instanceof byte[]) {
+            try {
+                return new String((byte[])object, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        throw new RuntimeException("Database driver returned a an unknown value when we expected a String. Type was: " + object.getClass().getCanonicalName());
+    }
 }

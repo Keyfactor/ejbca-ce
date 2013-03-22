@@ -27,6 +27,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.util.ValueExtractor;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
@@ -138,8 +139,8 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
                     for (Object[] next : fingerprintUsernameList) {
                         count++;
                         // For each certificate update status.
-                        String fingerprint = (String) next[0];
-                        String username = (String) next[1];
+                        String fingerprint = ValueExtractor.extractStringValue(next[0]);
+                        String username = ValueExtractor.extractStringValue(next[1]);
                         // Get the certificate through a session bean
                         log.debug("Found a certificate we should notify. Username=" + username + ", fp=" + fingerprint);
                         Certificate cert = certificateStoreSession.findCertificateByFingerprint(fingerprint);
