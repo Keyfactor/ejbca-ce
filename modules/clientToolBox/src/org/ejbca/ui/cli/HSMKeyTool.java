@@ -162,18 +162,12 @@ public class HSMKeyTool extends ClientToolBox {
         } else */
         // Get and remove optional switches
         final List<String> argsList = CliTools.getAsModifyableList(args);
-        for (String arg : argsList) {
-            System.err.println("arg = " + arg);
-        }
-        System.err.println("size = " + argsList.size());
         KeyStore.ProtectionParameter protectionParameter = null;
         final String password = CliTools.getAndRemoveParameter("-password", argsList);
-        System.err.println("password = " + password);
         if (password != null) {
             protectionParameter = new KeyStore.PasswordProtection(password.toCharArray());
         }
         args = CliTools.getAsArgs(argsList);
-        System.err.println("length = " + args.length);
         if ( args[1].toLowerCase().trim().contains(GENERATE_BATCH_SWITCH) ) {
             if ( args.length < 6 ) {
                 System.err.println(commandString + "<name of batch file> " + '['+'<'+getKeyStoreDescription()+'>'+']');
