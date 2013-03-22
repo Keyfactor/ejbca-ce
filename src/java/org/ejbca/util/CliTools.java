@@ -39,4 +39,24 @@ public class CliTools {
     	}
     	return list;
     }
+    
+    /** 
+     * Returns the next string after the specified parameter if the switch exists and null otherwise.
+     * The switch and the following value is removed from the supplied list.
+     */
+    public static String getAndRemoveParameter(String parameter, List<String> modifyableList) {
+        String ret = null;
+        int index = modifyableList.indexOf(parameter);
+        if (index > -1) {
+            ret = modifyableList.get(index + 1);
+            modifyableList.remove(index + 1);
+            modifyableList.remove(index);
+        }
+        return ret;
+    }
+    
+    /** @return the remaining list as a regular args[] array */
+    public static String[] getAsArgs(List<String> modifyableList) {
+        return modifyableList.toArray(new String[0]);
+    }
 }
