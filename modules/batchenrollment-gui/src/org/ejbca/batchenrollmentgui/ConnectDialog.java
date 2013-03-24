@@ -60,9 +60,9 @@ import sun.security.pkcs11.SunPKCS11;
 /**
  * Dialog for connection and authentication settings.
  * 
- * @author markus
  * @version $Id$
  */
+@SuppressWarnings("PMD.UnusedFormalParameter")
 public class ConnectDialog extends javax.swing.JDialog {
 
     private static final long serialVersionUID = -6727893196486472985L;
@@ -359,11 +359,11 @@ public class ConnectDialog extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//NOPMD //GEN-FIRST:event_cancelButtonActionPerformed
+    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//NOPMD//GEN-FIRST:event_cancelButtonActionPerformed
         dispose();
     }//GEN-LAST:event_cancelButtonActionPerformed
 
-    private void connectButtonActionPerformed(java.awt.event.ActionEvent evt) {//NOPMD //GEN-FIRST:event_connectButtonActionPerformed
+    private void connectButtonActionPerformed(java.awt.event.ActionEvent evt) {//NOPMD//GEN-FIRST:event_connectButtonActionPerformed
         settings = new ConnectSettings();
         settings.setUrl(urlTextField.getText());
         settings.setTruststoreType((String) truststoreTypeComboBox.getSelectedItem());
@@ -417,26 +417,53 @@ public class ConnectDialog extends javax.swing.JDialog {
                 });
 
                 final KeyStore keystore;
+                final KeyManagerFactory kKeyManagerFactory = KeyManagerFactory.getInstance("SunX509");
 
                 if (settings.getKeystoreType().contains("Windows")) {
                     // CSP
                     keystore = getLoadedKeystoreCSP(settings.getKeystoreType(), pp);
+                    kKeyManagerFactory.init(keystore, null);
                 } else if (settings.getKeystoreType().equals("PKCS11")) {
                     // PKCS11
                     keystore = getLoadedKeystorePKCS11("PKCS11",
                             settings.getKeystoreFile(),
                             settings.getKeystorePassword(), pp);
-                } else if (settings.getKeystoreType().equals("PKCS12")) {
-                    // PKCS12
-                    keystore = getLoadedKeystorePKCS12(settings.getKeystoreFile());
+                    kKeyManagerFactory.init(keystore, null);
                 } else {
+                    // PKCS12 must use BC as provider but not JKS
+                    final String provider;
+                    if (settings.getKeystoreType().equals("PKCS12")) {
+                        provider = "BC";
+                    } else {
+                        provider = null;
+                    }
+                    
+                    // Ask for password
+                    char[] authcode;
+                    passwordLabel.setText("Enter password for keystore:");
+                    passwordField.setText("");
+                    JOptionPane.showMessageDialog(
+                            ConnectDialog.this, passwordPanel,
+                            "Connect", JOptionPane.PLAIN_MESSAGE);
+                    if (passwordField.getPassword() != null) {
+                        authcode = passwordField.getPassword();
+                    } else {
+                        authcode = null;
+                    }
+    
                     // Other keystores for instance JKS
-                    keystore = getLoadedKeystore(settings.getKeystoreType(),
-                            settings.getKeystoreFile());
+                    keystore = getLoadedKeystore(settings.getKeystoreFile(),
+                            authcode,
+                            settings.getKeystoreType(),
+                            provider);
+                 
+                    // JKS has password on keys and need to be inited with password
+                    if (settings.getKeystoreType().equals("JKS")) {
+                        kKeyManagerFactory.init(keystore, authcode);
+                    } else {
+                        kKeyManagerFactory.init(keystore, null);
+                    }
                 }
-
-                final KeyManagerFactory kKeyManagerFactory = KeyManagerFactory.getInstance("SunX509");
-                kKeyManagerFactory.init(keystore, null);
 
                 final KeyStore keystoreTrusted;
                 if (TRUSTSTORE_TYPE_PEM.equals(settings.getTruststoreType())) {
@@ -505,12 +532,12 @@ public class ConnectDialog extends javax.swing.JDialog {
                   ejbcaWS = service.getEjbcaWSPort();
             dispose();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            LOG.error("Connection failed", ex);
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Connect", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_connectButtonActionPerformed
 
-    private void truststoreBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//NOPMD //GEN-FIRST:event_truststoreBrowseButtonActionPerformed
+    private void truststoreBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//NOPMD//GEN-FIRST:event_truststoreBrowseButtonActionPerformed
         final JFileChooser chooser = new JFileChooser();
         chooser.setSelectedFile(new File(truststoreFilePathTextField.getText()));
         final int result  = chooser.showOpenDialog(this);
@@ -520,7 +547,7 @@ public class ConnectDialog extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_truststoreBrowseButtonActionPerformed
 
-    private void keystoreBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//NOPMD //GEN-FIRST:event_keystoreBrowseButtonActionPerformed
+    private void keystoreBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//NOPMD//GEN-FIRST:event_keystoreBrowseButtonActionPerformed
         final JFileChooser chooser = new JFileChooser();
         chooser.setSelectedFile(new File(keystoreFilePathTextField.getText()));
         final int result  = chooser.showOpenDialog(this);
@@ -530,11 +557,11 @@ public class ConnectDialog extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_keystoreBrowseButtonActionPerformed
 
-    private void defaultsButtonActionPerformed(java.awt.event.ActionEvent evt) {//NOPMD //GEN-FIRST:event_defaultsButtonActionPerformed
+    private void defaultsButtonActionPerformed(java.awt.event.ActionEvent evt) {//NOPMD//GEN-FIRST:event_defaultsButtonActionPerformed
         loadSettingsFromFile(DEFAULT_CONNECT_FILE);
     }//GEN-LAST:event_defaultsButtonActionPerformed
 
-    private void truststoreTypeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//NOPMD //GEN-FIRST:event_truststoreTypeComboBoxActionPerformed
+    private void truststoreTypeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//NOPMD//GEN-FIRST:event_truststoreTypeComboBoxActionPerformed
         final String type = (String) truststoreTypeComboBox.getSelectedItem();
         truststorePasswordField.setEnabled(!TRUSTSTORE_TYPE_PEM.equals(type)
                 && !TRUSTSTORE_TYPE_KEYSTORE.equals(type));
@@ -643,45 +670,29 @@ public class ConnectDialog extends javax.swing.JDialog {
         return keystore;
     }
 
-    private KeyStore getLoadedKeystorePKCS12(final String fileName) throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException, NoSuchProviderException {
-        char[] authcode;
-
-        passwordLabel.setText("Enter password for keystore:");
-        passwordField.setText("");
-
-        JOptionPane.showMessageDialog(
-                ConnectDialog.this, passwordPanel,
-                "Connect", JOptionPane.PLAIN_MESSAGE);
-
-        if (passwordField.getPassword() != null) {
-            authcode = passwordField.getPassword();
+    private KeyStore getLoadedKeystore(final String fileName, final char[] authcode, final String storeType,
+            final String provider) throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException, NoSuchProviderException {
+        
+        final KeyStore keystore;
+        if (provider == null) {
+            keystore = KeyStore.getInstance(storeType);
         } else {
-            authcode = null;
+            keystore = KeyStore.getInstance(storeType, provider);
         }
-
-        final KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
-        keystore.load(new FileInputStream(new File(fileName)), authcode);
-
-        return keystore;
-    }
-
-    private static KeyStore getLoadedKeystore(final String storeType,
-            final String fileName) throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException, NoSuchProviderException {
-        char[] authcode;
-
-        String pin = JOptionPane.showInputDialog(null, "Enter password for keystore");
-        if (pin != null) {
-            authcode = pin.toCharArray();
-        } else {
-            authcode = null;
-        }
-        final KeyStore keystore = KeyStore.getInstance(storeType);
 
         InputStream in = null;
-        if (fileName != null && !fileName.isEmpty()) {
-            in = new FileInputStream(fileName);
+        try {
+            if (fileName != null && !fileName.isEmpty()) {
+                in = new FileInputStream(fileName);
+            }
+            keystore.load(in, authcode);
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException ignored) {} // NOPMD
+            }
         }
-        keystore.load(in, authcode);
 
         return keystore;
     }
