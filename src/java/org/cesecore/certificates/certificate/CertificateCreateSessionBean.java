@@ -260,7 +260,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         CA ca = null;
         // See if we can get issuerDN directly from request
         if (req.getIssuerDN() != null) {
-            String dn = getCADnFromRequest(req, certificateStoreSession);
+            String dn = CADnHelper.getCADnFromRequest(req, certificateStoreSession);
             ca = caSession.getCA(admin, dn.hashCode());
             if (log.isDebugEnabled()) {
                 log.debug("Using CA (from issuerDN) with id: " + ca.getCAId() + " and DN: " + ca.getSubjectDN());
@@ -275,35 +275,6 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         }
         return ca;
     }
-
-	/** Tries to get an issuerDN/serialNumber pair from the request, and see if we have that CA certificate in the certificate store. If we have
-	 * the CA dn, in CESeCore normalized for is returned. 
-	 * @param req the request message that might contain an issued DN
-	 * @return issuer DN or null if it does not exist in the 
-	 */
-	public static final String getCADnFromRequest(final RequestMessage req, final CertificateStoreSession certificateStoreSession) {
-		String dn = req.getIssuerDN();
-		if (log.isDebugEnabled()) {
-		    log.debug("Got an issuerDN: " + dn);
-		}
-		// If we have issuer and serialNo, we must find the CA certificate, to get the CAs subject name
-		// If we don't have a serialNumber, we take a chance that it was actually the subjectDN (for example a RootCA)
-		final BigInteger serno = req.getSerialNo();
-		if (serno != null) {
-		    if (log.isDebugEnabled()) {
-		        log.debug("Got a serialNumber: " + serno.toString(16));
-		    }
-
-		    final Certificate cert = certificateStoreSession.findCertificateByIssuerAndSerno(dn, serno);
-		    if (cert != null) {
-		        dn = CertTools.getSubjectDN(cert);
-		    }
-		}
-		if (log.isDebugEnabled()) {
-		    log.debug("Using DN: " + dn);
-		}
-		return dn;
-	}
 
     @Override
     public Certificate createCertificate(final AuthenticationToken admin, final EndEntityInformation data, final CA ca,
