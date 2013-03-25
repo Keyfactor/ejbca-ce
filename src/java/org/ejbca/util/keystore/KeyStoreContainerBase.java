@@ -362,6 +362,7 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
     }
     @Override
     public void installCertificate(final String fileName) throws Exception {
+        log.info("Installing " + fileName + ": ");
         final X509Certificate chain[] = ((Collection<?>)CertTools.getCertsFromPEM(new FileInputStream(fileName))).toArray(new X509Certificate[0]);
         final Enumeration<String> eAlias = this.keyStore.aliases();
         boolean notFound = true;
