@@ -17,6 +17,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.security.KeyPair;
+import java.security.KeyStore.ProtectionParameter;
 import java.security.KeyStoreException;
 import java.security.PrivateKey;
 import java.security.ProviderException;
@@ -61,13 +62,15 @@ class KeyStoreContainerTest {
                      final String storeID,
                      final int nrOfTests,
                      final String alias,
-                     final String typeOfOperation) throws Exception {
+                     final String typeOfOperation,
+                     final ProtectionParameter protectionParameter) throws Exception {
         if ( alias==null ) {
             startNormal(providerClassName,
                         encryptProviderClassName,
                         keyStoreType,
                         storeID,
-                        nrOfTests);
+                        nrOfTests,
+                        protectionParameter);
             return;
         }
         startStress(providerClassName,
@@ -76,7 +79,8 @@ class KeyStoreContainerTest {
                     storeID,
                     nrOfTests,
                     alias,
-                    typeOfOperation==null || typeOfOperation.toLowerCase().indexOf("sign")>=0);
+                    typeOfOperation==null || typeOfOperation.toLowerCase().indexOf("sign")>=0,
+                    protectionParameter);
     }
     private static NormalTest[] getTests(final KeyStoreContainer keyStore) throws Exception {
         Enumeration<String> e = keyStore.getKeyStore().aliases();
@@ -109,11 +113,12 @@ class KeyStoreContainerTest {
                                     final String encryptProviderClassName,
                                     final String keyStoreType,
                                     final String storeID,
-                                    final int nrOfTests) throws Exception {
+                                    final int nrOfTests,
+                                    final ProtectionParameter protectionParameter) throws Exception {
         termOut.println("Test of keystore with ID "+storeID+'.');
         NormalTest tests[] = null;
         final KeyStoreContainer keyStore = getKeyStore(providerClassName, encryptProviderClassName,
-                                                           keyStoreType, storeID);
+                                                           keyStoreType, storeID, protectionParameter);
         for (int i = 0; i<nrOfTests || nrOfTests<1; i++) {
             try {
                 if ( tests==null || nrOfTests==-5 ) {
@@ -135,9 +140,10 @@ class KeyStoreContainerTest {
                                     final String storeID,
                                     final int numberOfThreads,
                                     final String alias,
-                                    final boolean isSign) throws Exception {
+                                    final boolean isSign,
+                                    final ProtectionParameter protectionParameter) throws Exception {
         final KeyStoreContainer keyStore = getKeyStore(providerClassName, encryptProviderClassName,
-                                                       keyStoreType, storeID);
+                                                       keyStoreType, storeID, protectionParameter);
         if ( keyStore.getKeyStore().isKeyEntry(alias) ) {
             PrivateKey privateKey = (PrivateKey)keyStore.getKey(alias);
             new KeyStoreContainerTest.StressTest(alias,
@@ -153,12 +159,13 @@ class KeyStoreContainerTest {
     static private KeyStoreContainer getKeyStore(final String providerName,
                                                  final String encryptProviderClassName,
                                                  final String keyStoreType,
-                                                 final String storeID) throws Exception {
+                                                 final String storeID,
+                                                 final ProtectionParameter protectionParameter) throws Exception {
         KeyStoreContainer keyStore = null;
         while( keyStore==null ) {
             try {
                 keyStore = KeyStoreContainerFactory.getInstance(keyStoreType, providerName,
-                                                   encryptProviderClassName, storeID, null, null);
+                                                   encryptProviderClassName, storeID, null, protectionParameter);
             } catch( Throwable t ) { // NOPMD: dealing with HSMs we really want to catch all
                 t.printStackTrace(termErr);
                 termErr.println("Not possible to load keys. Maybe a smart card should be inserted or maybe you just typed the wrong PIN. Press enter when the problem is fixed.");
