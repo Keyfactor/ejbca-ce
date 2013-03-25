@@ -22,7 +22,10 @@ import java.security.KeyStore;
 import java.security.Security;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.Collections;
 import java.util.Date;
+import java.util.Enumeration;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -216,21 +219,53 @@ public class HSMKeyTool extends ClientToolBox {
         	// First we check if we have a switch for "-explicitecc" for explicit ecc parameters used in ICAO epassports.
     		List<String> argsListLocal = CliTools.getAsModifyableList(args);
     		boolean explicitEccParameters = argsListLocal.remove("-explicitecc");
-    		args = argsListLocal.toArray(new String[argsListLocal.size()]);
-            if ( args.length < 7 ) {
-                System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <key entry name> [<CN>] -explicitecc");
+                final boolean forAllKeys = argsListLocal.remove("-all");
+    		args = argsListLocal.toArray(new String[0]);
+            if ( args.length < 6 || (args.length < 7 && !forAllKeys) ) {
+                System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <key entry name> [<CN>] [-explicitecc]");
+                System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " [-all] [-explicitecc]");
                 tooFewArguments(args);
             } else {
-                KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, protectionParameter).generateCertReq(args[6], args.length>7 ? args[7] : null, explicitEccParameters);
+                final KeyStoreContainer container = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, protectionParameter);
+                final List<String> entries;
+                if (forAllKeys) {
+                    entries = new LinkedList<String>();
+                    final KeyStore ks = container.getKeyStore();
+                    final Enumeration<String> aliases = ks.aliases();
+                    while (aliases.hasMoreElements()) {
+                        final String alias = aliases.nextElement();
+                        if (ks.isKeyEntry(alias)) {
+                            entries.add(alias);
+                        }
+                    }
+                } else {
+                    entries = Collections.singletonList(args[6]);
+                }
+                
+                for (String entry : entries) {
+                    container.generateCertReq(entry, args.length>7 ? args[7] : null, explicitEccParameters);
+                }
             }
             return true;
         }
         if ( args[1].toLowerCase().trim().equals(INSTALL_CERT)) {
             if ( args.length < 7 ) {
-                System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <certificate chain in PEM format>");
+                System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <certificate chains in PEM format...>");
                 tooFewArguments(args);
             } else {
-                KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, protectionParameter).installCertificate(args[6]);
+                final KeyStoreContainer container = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, protectionParameter);
+                boolean failure = false;
+                for (int i = 6; i < args.length; i++) {
+                    try {
+                        container.installCertificate(args[i]);
+                    } catch (Exception ex) {
+                        failure = true;
+                        log.error("Failed: " + ex.getMessage());
+                    }
+                }
+                if (failure) {
+                    throw new Exception("At least one certificate could not be installed");
+                }
             }
             return true;
         }
