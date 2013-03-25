@@ -354,7 +354,9 @@ public class HSMKeyTool extends ClientToolBox {
                 tooFewArguments(args);
             } else {
                 KeyStoreContainerTest.test(args[2], args[3], args[4], args[5],
-                                           args.length>6 ? Integer.parseInt(args[6].trim()) : 1, args.length>7 ? args[7].trim() : null, args.length>8 ? args[8].trim() : null);
+                                           args.length>6 ? Integer.parseInt(args[6].trim()) : 1,
+                                           args.length>7 ? args[7].trim() : null, args.length>8 ? args[8].trim() : null,
+                                           protectionParameter);
             }
             return true;
         }
@@ -421,6 +423,7 @@ public class HSMKeyTool extends ClientToolBox {
             pw.println("  "+args[0]+" "+SIGN_SWITCH);
             pw.println("  "+args[0]+" "+VERIFY_SWITCH);
             pw.println("  "+args[0]+" "+MOVE_SWITCH);
+            pw.println("  The optional -password <password> switch can be specified as a last argument for scripting any of these commands.");
             pw.flush();
             if (args.length > 1) {
                 // Don't print this if it is only a general usage message
