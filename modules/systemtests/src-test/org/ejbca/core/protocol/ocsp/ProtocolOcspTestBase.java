@@ -68,7 +68,7 @@ public abstract class ProtocolOcspTestBase {
 
     private static final Logger log = Logger.getLogger(ProtocolOcspTestBase.class);
 
-    protected static final String issuerDN = "CN=OcspDefaultTestCA";// = "CN=AdminCA1,O=EJBCA Sample,C=SE";
+    protected static String issuerDN = "CN=TEST"; //"CN=OcspDefaultTestCA";// = "CN=AdminCA1,O=EJBCA Sample,C=SE";
     protected static final byte[] unknowncacertBytes = Base64.decode(("MIICLDCCAZWgAwIBAgIIbzEhUVZYO3gwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
             + "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAyMDcw" + "OTEyNDc1OFoXDTA0MDgxNTEyNTc1OFowLzEPMA0GA1UEAxMGVGVzdENBMQ8wDQYD"
             + "VQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMIGdMA0GCSqGSIb3DQEBAQUAA4GLADCB" + "hwKBgQDZlACHRwJnQKlgpMqlZQmxvCrJPpPFyhxvjDHlryhp/AQ6GCm+IkGUVlwL"
@@ -165,7 +165,7 @@ public abstract class ProtocolOcspTestBase {
     protected void test10MultipleRequests() throws Exception { // NOPMD, this is not a test class itself
         // Tests that we handle multiple requests in one OCSP request message
 
-        loadUserCert(this.caid);
+        //loadUserCert(this.caid);
         // An OCSP request for a certificate from an unknown CA
         OCSPReqBuilder gen = new OCSPReqBuilder();
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), unknowncacert, new BigInteger("1")));
@@ -191,9 +191,9 @@ public abstract class ProtocolOcspTestBase {
 
         SingleResp singleResp2 = singleResps[1];
         certId = singleResp2.getCertID();
-        assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
+        assertEquals("Serno in response does not match serno in request.", ocspTestCert.getSerialNumber(), certId.getSerialNumber());
         status = singleResp2.getCertStatus();
-        assertEquals("Status is not null (good)", status, null);
+        assertEquals("Status is not null (good)", null, status);
 
     }
 

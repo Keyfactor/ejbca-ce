@@ -116,6 +116,7 @@ import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
@@ -243,18 +244,21 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         CaTestCase.removeTestCA();
         CaTestCase.createTestCA();
         unknowncacert = (X509Certificate) CertTools.getCertfromByteArray(unknowncacertBytes);
-
+        helper.reloadKeys();
         log.debug("httpReqPath=" + httpReqPath);
         assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
                 .getResponseCode() == 200);
         cacert = (X509Certificate) CaTestCase.getTestCACert();
         caid = CaTestCase.getTestCAId();
-        CaTestCase.createTestCA("OcspDefaultTestCA");
+        
+        Map<String, String> config = new HashMap<String, String>();
+        config.put("ocsp.defaultresponder", CaTestCase.getTestCAName());
+        helper.alterConfig(config);
+
     }
 
     @After
     public void tearDown() throws Exception {
-        CaTestCase.removeTestCA("OcspDefaultTestCA");
         CaTestCase.removeTestCA();
         removeDSACA();
         removeECDSACA();
