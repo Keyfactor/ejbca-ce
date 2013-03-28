@@ -67,7 +67,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
 
     private static final Logger log = Logger.getLogger(ProtocolOcspHttpStandaloneTest.class);
     
-    private static final int myCaId = issuerDN.hashCode();
+    //private static final int myCaId = issuerDN.hashCode();
 
     public ProtocolOcspHttpStandaloneTest() throws MalformedURLException, URISyntaxException {
     	super("http", "127.0.0.1", 8080, "ejbca", "publicweb/status/ocsp");
@@ -76,14 +76,9 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
     @Before
     public void setUp() throws Exception {
         //super.setUp(); We don't want to initialize roles etc, since this is a standalone test!
-        caid = myCaId;
+        issuerDN = "CN=OcspDefaultTestCA";// = "CN=AdminCA1,O=EJBCA Sample,C=SE";
+        caid = issuerDN.hashCode();
         unknowncacert = (X509Certificate) CertTools.getCertfromByteArray(unknowncacertBytes);
-        
-        Map<String, String> confmap = new HashMap<String, String>();
-        confmap.put("ocsp.defaultresponder", issuerDN);
-        helper.alterConfig(confmap);       
-        helper.reloadKeys();
-        
     }
 
     public String getRoleName() {
@@ -362,4 +357,5 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         assertTrue("nextUpdate cannot be before thisUpdate.", !nextUpdate.before(thisUpdate));
         assertTrue("producedAt cannot be before thisUpdate.", !producedAt.before(thisUpdate));
     }
+
 }
