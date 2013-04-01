@@ -116,7 +116,6 @@ import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
-import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;

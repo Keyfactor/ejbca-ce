@@ -144,7 +144,7 @@ public class OcspKeyRenewalProxySessionBean implements OcspKeyRenewalProxySessio
              UserDataVOWS resultValue = new UserDataVOWS();
              resultValue.setUsername("ocspTestSigner");
              resultValue.setPassword("foo123");
-             resultValue.setCaName("ManagementCA");
+             resultValue.setCaName("OcspDefaultTestCA");
              result.add(resultValue);
              
              return result;
@@ -338,7 +338,7 @@ public class OcspKeyRenewalProxySessionBean implements OcspKeyRenewalProxySessio
         @Override
         public List<NameAndId> getAvailableCAs() throws AuthorizationDeniedException_Exception, EjbcaException_Exception {
             List<NameAndId> result = new ArrayList<NameAndId>();
-            result.add(new NameAndId("ManagementCA", 1652389506));
+            result.add(new NameAndId("OcspDefaultTestCA", "CN=OcspDefaultTestCA".hashCode()));
             return result;
         }
 

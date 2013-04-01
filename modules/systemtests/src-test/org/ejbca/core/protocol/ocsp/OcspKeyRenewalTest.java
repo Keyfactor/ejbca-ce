@@ -92,7 +92,7 @@ public class OcspKeyRenewalTest {
         CryptoToken dummyCryptoToken = new DummyCryptoToken();
         KeyPair caKeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         //Generate a fake CA Certificate
-        String caDn = "CN=ManagementCA,O=EJBCA Sample,C=SE";
+        String caDn = "CN=OcspDefaultTestCA";
         X509Certificate caCert = CertTools.genSelfCert(caDn, 365, null, caKeys.getPrivate(), caKeys.getPublic(),
                 AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
         //Generate the signer certificate
