@@ -27,9 +27,7 @@ import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.cert.X509Certificate;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -67,8 +65,6 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
 
     private static final Logger log = Logger.getLogger(ProtocolOcspHttpStandaloneTest.class);
     
-    //private static final int myCaId = issuerDN.hashCode();
-
     public ProtocolOcspHttpStandaloneTest() throws MalformedURLException, URISyntaxException {
     	super("http", "127.0.0.1", 8080, "ejbca", "publicweb/status/ocsp");
     }
@@ -76,7 +72,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
     @Before
     public void setUp() throws Exception {
         //super.setUp(); We don't want to initialize roles etc, since this is a standalone test!
-        issuerDN = "CN=OcspDefaultTestCA";// = "CN=AdminCA1,O=EJBCA Sample,C=SE";
+        issuerDN = "CN=OcspDefaultTestCA";
         caid = issuerDN.hashCode();
         unknowncacert = (X509Certificate) CertTools.getCertfromByteArray(unknowncacertBytes);
     }
