@@ -38,11 +38,16 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.EjbcaConfiguration;
+import org.ejbca.config.ScepConfiguration;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
@@ -80,6 +85,15 @@ public class ScepServlet extends HttpServlet {
     private SignSessionLocal signsession;
     @EJB
     private CaSessionLocal casession;
+    @EJB
+    private EndEntityProfileSessionLocal endEntityProfileSession;
+    @EJB
+    private CertificateProfileSessionLocal certProfileSession;
+    @EJB
+    private EndEntityManagementSessionLocal endEntityManagementSession;    
+    @EJB
+    private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
+    
 
     /**
      * Inits the SCEP servlet
@@ -175,6 +189,19 @@ public class ScepServlet extends HttpServlet {
                 return;
             }
             
+            boolean isRAModeOK = false;
+            String servletName = getServletName();
+            if(StringUtils.equals(servletName, "ScepServletRA") || StringUtils.equals(servletName, "ScepServletRANoCACert")) {
+                if(ScepConfiguration.getAddOrEditUser()) {
+                    isRAModeOK = true;
+                } else {
+                    String errMsg = "RA mode is disabled. Cannot use the RA specific URL when ra mode is disabled.";
+                    log.error(errMsg);
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN, errMsg);
+                    return;
+                }
+            }
+            
 			final AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ScepServlet: "+remoteAddr));
             //Admin administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, remoteAddr);
             log.debug("Got request '" + operation + "'");
@@ -189,14 +216,15 @@ public class ScepServlet extends HttpServlet {
                     return;
                 }
                 byte[] scepmsg = Base64.decode(message.getBytes());
-                ScepPkiOpHelper helper = new ScepPkiOpHelper(administrator, signsession);
+                ScepPkiOpHelper helper = new ScepPkiOpHelper(administrator, signsession, casession, endEntityProfileSession, certProfileSession, 
+                                    endEntityManagementSession, cryptoTokenManagementSession);
                 
                 // Read the message end get the cert, this also checksauthorization
                 boolean includeCACert = true;
                 if (StringUtils.equals("0", getInitParameter("includeCACert"))) {
                 	includeCACert = false;
                 }
-                byte[] reply = helper.scepCertRequest(scepmsg, includeCACert);
+                byte[] reply = helper.scepCertRequest(scepmsg, includeCACert, isRAModeOK);
                 if (reply == null) {
                     // This is probably a getCert message?
                     response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED, "Can not handle request");
@@ -325,4 +353,5 @@ public class ScepServlet extends HttpServlet {
         }
         return message;
     }
+    
 } // ScepServlet

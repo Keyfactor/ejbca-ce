@@ -349,6 +349,10 @@
 		<include name="org/ejbca/core/model/approval/approvalrequests/EditEndEntityApprovalRequest.java"/>
 		<include name="org/ejbca/core/protocol/cmp/CrmfRequestMessage.java"/>
 		<include name="org/ejbca/core/protocol/cmp/CmpResponseMessage.java"/>
+		<!-- Dependecies from SCEP -->
+		<include name="org/ejbca/config/ScepConfiguration.java"/>
+		<include name="org/ejbca/core/model/ra/UsernameGenerator.java"/>
+
 	</fileset>
 	<pathconvert refid="source.fileset.ejbca-common-web" pathsep=" " property="source.fileset.ejbca-common-web.files">
 		<map from="${src.dir}/" to=""/>
