@@ -25,6 +25,22 @@
             <param-value>0</param-value>
         </init-param>
     </servlet>
+    <servlet>
+        <servlet-name>ScepServletRA</servlet-name>
+        <servlet-class>org.ejbca.ui.web.protocol.ScepServlet</servlet-class>
+        <init-param>
+            <param-name>includeCACert</param-name>
+            <param-value>1</param-value>
+        </init-param>
+    </servlet>
+        <servlet>
+        <servlet-name>ScepServletRANoCACert</servlet-name>
+        <servlet-class>org.ejbca.ui.web.protocol.ScepServlet</servlet-class>
+        <init-param>
+            <param-name>includeCACert</param-name>
+            <param-value>0</param-value>
+        </init-param>
+    </servlet>
  
     <servlet-mapping>
       <servlet-name>ScepServlet</servlet-name>
@@ -33,6 +49,14 @@
     <servlet-mapping>
       <servlet-name>ScepServletNoCACert</servlet-name>
       <url-pattern>/scep/noca/pkiclient.exe</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+      <servlet-name>ScepServletRA</servlet-name>
+      <url-pattern>/scep/ra/pkiclient.exe</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+      <servlet-name>ScepServletRANoCACert</servlet-name>
+      <url-pattern>/scep/ra/noca/pkiclient.exe</url-pattern>
     </servlet-mapping>
 
 <!--  

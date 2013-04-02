@@ -15,14 +15,40 @@ package org.ejbca.ui.web.protocol;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.catoken.CAToken;
+import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.cesecore.keys.token.CryptoToken;
+import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.util.CertTools;
+import org.ejbca.config.CmpConfiguration;
+import org.ejbca.config.ScepConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
+import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.ra.UsernameGenerator;
+import org.ejbca.core.model.ra.UsernameGeneratorParams;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.protocol.scep.ScepRequestMessage;
 
 
@@ -34,7 +60,14 @@ import org.ejbca.core.protocol.scep.ScepRequestMessage;
 public class ScepPkiOpHelper {
     private static Logger log = Logger.getLogger(ScepPkiOpHelper.class);
     private AuthenticationToken admin = null;
+    
     private SignSessionLocal signsession;
+    private CaSessionLocal caSession;
+    private EndEntityProfileSessionLocal endEntityProfileSession;
+    private CertificateProfileSessionLocal certProfileSession;
+    private EndEntityManagementSessionLocal endEntityManagementSession;    
+    private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
+    
 
     /**
      * Creates a new ScepPkiOpHelper object.
@@ -42,12 +75,19 @@ public class ScepPkiOpHelper {
      * @param admin administrator performing this
      * @param signsession signsession used to request certificates
      */
-    public ScepPkiOpHelper(AuthenticationToken admin, SignSessionLocal signsession) {
+    public ScepPkiOpHelper(AuthenticationToken admin, SignSessionLocal signsession, CaSessionLocal caSession, EndEntityProfileSessionLocal endEntityProfileSession, 
+                    CertificateProfileSessionLocal certProfileSession, EndEntityManagementSessionLocal endEntityManagementSession, 
+                    CryptoTokenManagementSessionLocal cryptoTokenManagementSession) {
     	if (log.isTraceEnabled()) {
     		log.trace(">ScepPkiOpHelper");
     	}
         this.admin = admin;
         this.signsession = signsession;
+        this.caSession = caSession;
+        this.endEntityProfileSession = endEntityProfileSession;
+        this.certProfileSession = certProfileSession;
+        this.endEntityManagementSession = endEntityManagementSession;
+        this.cryptoTokenManagementSession = cryptoTokenManagementSession;
     	if (log.isTraceEnabled()) {
     		log.trace("<ScepPkiOpHelper");
     	}
@@ -62,12 +102,13 @@ public class ScepPkiOpHelper {
      * @throws AuthorizationDeniedException 
      * @throws CesecoreException 
      */
-    public byte[] scepCertRequest(byte[] msg, boolean includeCACert)
+    public byte[] scepCertRequest(byte[] msg, boolean includeCACert, boolean ramode)
             throws EjbcaException, CesecoreException, AuthorizationDeniedException {
         byte[] ret = null;
         if (log.isTraceEnabled()) {
         	log.trace(">getRequestMessage(" + msg.length + " bytes)");
         }
+        
         try {
             final ScepRequestMessage reqmsg = new ScepRequestMessage(msg, includeCACert);
 
@@ -76,6 +117,19 @@ public class ScepPkiOpHelper {
                 return null;
             }
             if (reqmsg.getMessageType() == ScepRequestMessage.SCEP_TYPE_PKCSREQ) {
+            	
+                if(log.isDebugEnabled()) {
+                    log.debug("SCEP is operating in RA mode: " + ramode);
+                }
+                
+                if(ramode) {
+                    if(!addOrEditUser(reqmsg)) {
+                        String errmsg = "Error. Failed to add or edit user: " + reqmsg.getUsername();
+                        log.error(errmsg);
+                        return null;
+                    }
+                }
+                
                 // Get the certificate
                 ResponseMessage resp = signsession.createCertificate(admin, reqmsg, org.ejbca.core.protocol.scep.ScepResponseMessage.class, null);
                 if (resp != null) {
@@ -100,4 +154,124 @@ public class ScepPkiOpHelper {
         }
         return ret;
     }
+    
+    private boolean addOrEditUser(ScepRequestMessage reqmsg) {
+        
+        // Verify the request
+        String authPwd = ScepConfiguration.getRAAuthPwd();
+        if (StringUtils.isNotEmpty(authPwd) && !StringUtils.equals(authPwd, "none")) {
+            if (log.isDebugEnabled()) {
+                log.debug("Requiring authPwd in order to precess SCEP requests");
+            }
+            String pwd = reqmsg.getPassword();
+            if (!StringUtils.equals(authPwd, pwd)) {
+                log.error("Wrong auth password received in SCEP request: "+pwd);
+                return false;
+            }
+            if (log.isDebugEnabled()) {
+                log.debug("Request passed authPwd test.");
+            }
+        } else {
+            if (log.isDebugEnabled()) {
+                log.debug("Not requiring authPwd in order to precess SCEP requests");
+            }
+        }
+        
+        // Try to find the CA name from the issuerDN, if we can't find it (i.e. not defined in web.xml) we use the default
+        String caName = getCAName(CertTools.stringToBCDNString(reqmsg.getIssuerDN()));
+        if(StringUtils.isEmpty(caName)) {
+            log.error("No CA was set in the scep.propeties file.");
+            return false;
+        }
+        
+        CAInfo cainfo;
+        CA ca;
+        try {
+            cainfo = caSession.getCAInfo(admin, caName);
+            ca = caSession.getCA(admin, caName);
+        } catch (CADoesntExistsException e1) {
+            log.error("Could not find CA: " + caName);
+            log.error(e1.getLocalizedMessage(), e1);
+            return false;
+        } catch (AuthorizationDeniedException e1) {
+            log.error("Administator is not authorized for CA: " + caName);
+            log.error(e1.getLocalizedMessage(), e1);
+            return false;
+        }
+        final CAToken catoken = cainfo.getCAToken();
+        final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(catoken.getCryptoTokenId());
+        
+        try {
+            reqmsg.setKeyInfo(ca.getCACertificate(), cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)), cryptoToken.getSignProviderName());
+        } catch (CryptoTokenOfflineException e1) {
+            log.error(e1.getLocalizedMessage(), e1);
+            return false;
+        }
+        
+        //Creating the user
+        UsernameGeneratorParams usernameGenParams = new UsernameGeneratorParams();
+        usernameGenParams.setMode(CmpConfiguration.getRANameGenerationScheme());
+        usernameGenParams.setDNGeneratorComponent(CmpConfiguration.getRANameGenerationParameters());
+        usernameGenParams.setPrefix(CmpConfiguration.getRANameGenerationPrefix());
+        usernameGenParams.setPostfix(CmpConfiguration.getRANameGenerationPostfix());
+        
+        X500Name dnname = new X500Name(reqmsg.getRequestDN());
+        final UsernameGenerator gen = UsernameGenerator.getInstance(usernameGenParams);
+        final String username = gen.generateUsername(dnname.toString());
+        final String pwd = "foo123";
+        
+        // AltNames may be in the request template
+        final String altNames = reqmsg.getRequestAltNames();
+        final String email;
+        final List<String> emails = CertTools.getEmailFromDN(altNames);
+        emails.addAll(CertTools.getEmailFromDN(dnname.toString()));
+        if (!emails.isEmpty()) {
+            email = emails.get(0); // Use rfc822name or first SubjectDN email address as user email address if available
+        } else {
+            email = null;
+        }
+        
+        int eeProfileId = 0;
+        try {
+            eeProfileId = endEntityProfileSession.getEndEntityProfileId(ScepConfiguration.getRAEndEntityProfile());
+        } catch (EndEntityProfileNotFoundException e) {
+            log.error("Could not find the end entity profile: " + ScepConfiguration.getRAEndEntityProfile());
+            log.error(e.getLocalizedMessage(), e);
+            return false;
+        }
+        int certProfileId = certProfileSession.getCertificateProfileId(ScepConfiguration.getRACertProfile());
+        
+        final EndEntityInformation userdata = new EndEntityInformation(username, dnname.toString(), cainfo.getCAId(), altNames, email, EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), eeProfileId, certProfileId, null, null, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
+        userdata.setPassword(pwd);
+
+        try {
+            if(endEntityManagementSession.existsUser(username) ){
+                endEntityManagementSession.changeUser(admin, userdata, true);
+                endEntityManagementSession.setUserStatus(admin, username, EndEntityConstants.STATUS_NEW);
+            } else {
+                endEntityManagementSession.addUser(admin, userdata, true);
+            }
+        } catch(Exception e) {
+            log.error("Failed to add or edit user: " + username);
+            log.error(e.getLocalizedMessage(), e);
+            return false;
+        }
+        
+        return true;
+    }
+    
+    private String getCAName(String issuerDN) {
+        String caName = null;
+        try {
+            caName = caSession.getCA(admin, issuerDN.hashCode()).getName();
+            if (log.isDebugEnabled()) {
+                log.debug("Found a CA name '"+caName+"' from issuerDN: "+issuerDN);
+            }
+        } catch(Exception e) {
+            caName = ScepConfiguration.getRADefaultCA();
+            log.info("Did not find a CA name from issuerDN: "+issuerDN+", using the default CA '"+caName+"'");
+        }
+        return caName;
+    }
+    
 }

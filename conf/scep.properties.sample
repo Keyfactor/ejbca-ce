@@ -17,10 +17,10 @@
 # You can put a scep.properties file in your "app server runtime home"/conf directory
 # to override these values. To find out which this directory is, it is logged during startup as for example:
 # [ExtraConfiguration] Added file to configuration source: /opt/jboss-4.2.2.GA/bin/conf/scep.properties
-# This file is re-read if changes so changes can be made in runtime.
+# This file is re-read if changed so changes can be made in runtime.
 #
 # You can put a /etc/ejbca/conf/extra/scep.properties file to override these values.
-# This file is re-read if changes so changes can be made in runtime.
+# This file is re-read if changed so changes can be made in runtime.
 #
 # Finally you can override anything by setting system properties for your appserver, for example:
 # java -Dscep.ra.authpwd=mysecret
@@ -64,9 +64,42 @@ scep.ra.keyStorePassword.1=foo123
 # approve the request in the CA Admin-GUI before a certificate is issued. 
 scep.ra.authPwd=none
 
-# Defines if a request to the RA will create a new user, 
-# or edit an existing in EJBCA. If false users must be 
-# pre-registered in EJBCA with a pwd.
+# Which generation scheme should be used, RANDOM, DN or USERNAME for base username. FIXED to have a fixed username.
+# Random will generate a 12 character long random username.
+# DN will take a part of the request DN, which part is defined by cmp.ra.namegenerationparameters, and use as the username.
+# USERNAME will use the request DN as username.
+# If the same username is constructed (for example UID) as an already existing user, the existing user will be modified with
+# new values for profile etc, and a new certificate will be issued for that user.
+#
+# Default: DN
+scep.ra.namegenerationscheme=DN
+
+# Parameters for name generation, for DN it can be for example CN, UID or SN. 
+# Either the CN or the UID from the request can be used. 
+# You can add several in order to have fall-back in case the first does not exist in the DN, for example UID;SN;CN. First try UID, 
+#if it does not exist try SN (SerialNumber) etc. 
+# For FIXED namegenerationscheme the username will be the value specified here.
+#
+# Default: CN
+scep.ra.namegenerationparameters=CN
+
+# Prefix to generated name, a string that can contain the markup ${RANDOM} to insert 10 random chars.
+# Example: 'MyPrefix - ${RANDOM}-' using RANDOM password generation will create a username like 'MyPrefix - DGR89NN54QW-GDHR473NH87Q
+#
+# Default: empty
+#scep.ra.namegenerationprefix=
+
+# Postfix to generated name, a string that can contain the markup ${RANDOM} to insert 10 random chars.
+# Example: MyPostfix - ${RANDOM}
+#
+# Default: empty
+#scep.ra.namegenerationpostfix=
+
+# Defines if a request to the RA will create a new user, or edit an existing in EJBCA. If false users must be 
+# pre-registered in EJBCA with a pwd. 
+# Note that even when the SCEP request is sent to the RA specific URL, if this option is set to 'false', no users will be added or edited
+#
+# Default: false
 scep.ra.createOrEditUser=false
 
 # The Certificate profile used to register new SCEP users, if createOrEditUser=true.
