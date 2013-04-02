@@ -753,16 +753,16 @@ public class CertificateData extends ProtectedData implements Serializable {
         if (!resultList.isEmpty()) {
             Object[] fields = resultList.get(0);
             // The order of the results are defined by the SqlResultSetMapping annotation
-            String fingerprint = ValueExtractor.extractStringValue(fields[0]);
-            String subjectDN = ValueExtractor.extractStringValue(fields[1]);
-            String cafp = ValueExtractor.extractStringValue(fields[2]);
+            String fingerprint = (String) fields[0];
+            String subjectDN = (String) fields[1];
+            String cafp = (String) fields[2];
             int status = ValueExtractor.extractIntValue(fields[3]);
             int type = ValueExtractor.extractIntValue(fields[4]);
             long expireDate = ValueExtractor.extractLongValue(fields[5]);
             long revocationDate = ValueExtractor.extractLongValue(fields[6]);
             int revocationReason = ValueExtractor.extractIntValue(fields[7]);
-            String username = ValueExtractor.extractStringValue(fields[8]);
-            String tag = ValueExtractor.extractStringValue(fields[9]);
+            String username = (String) fields[8];
+            String tag = (String) fields[9];
             int cProfId = ValueExtractor.extractIntValue(fields[10]);
             long updateTime;
             if (fields[11] == null) {
@@ -924,8 +924,8 @@ public class CertificateData extends ProtectedData implements Serializable {
         final List<RevokedCertInfo> revokedCertInfos = new ArrayList<RevokedCertInfo>();
         for (final Object[] current : incompleteCertificateDatas) {
             // The order of the results are defined by the SqlResultSetMapping annotation
-            final byte[] fingerprint = (ValueExtractor.extractStringValue(current[0])).getBytes();
-            final byte[] serialNumber = new BigInteger(ValueExtractor.extractStringValue(current[1])).toByteArray();
+            final byte[] fingerprint = ((String)current[0]).getBytes();
+            final byte[] serialNumber = new BigInteger((String)current[1]).toByteArray();
             final long expireDate = ValueExtractor.extractLongValue(current[2]);
             final long revocationDate = ValueExtractor.extractLongValue(current[3]);
             final int revocationReason = ValueExtractor.extractIntValue(current[4]);
@@ -1003,17 +1003,17 @@ public class CertificateData extends ProtectedData implements Serializable {
         if (!resultList.isEmpty()) {
             Object[] fields = resultList.get(0);
             // The order of the results are defined by the SqlResultSetMapping annotation
-            String issuerDN = ValueExtractor.extractStringValue(fields[0]);
-            String subjectDN = ValueExtractor.extractStringValue(fields[1]);
-            String cafp = ValueExtractor.extractStringValue(fields[2]);
+            String issuerDN = (String) fields[0];
+            String subjectDN = (String) fields[1];
+            String cafp = (String) fields[2];
             int status = ValueExtractor.extractIntValue(fields[3]);
             int type = ValueExtractor.extractIntValue(fields[4]);
-            String serno = ValueExtractor.extractStringValue(fields[5]);
+            String serno = (String) fields[5];
             long expireDate = ValueExtractor.extractLongValue(fields[6]);
             long revocationDate = ValueExtractor.extractLongValue(fields[7]);
             int revocationReason = ValueExtractor.extractIntValue(fields[8]);
-            String username = ValueExtractor.extractStringValue(fields[9]);
-            String tag = ValueExtractor.extractStringValue(fields[10]);
+            String username = (String) fields[9];
+            String tag = (String) fields[10];
             int cProfId = ValueExtractor.extractIntValue(fields[11]);
             long updateTime;
             if (fields[12] == null) {
