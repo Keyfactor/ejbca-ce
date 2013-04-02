@@ -14,7 +14,6 @@
 package org.ejbca.core.ejb.hardtoken;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -34,7 +33,6 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.Base64;
 import org.cesecore.util.JBossUnmarshaller;
 import org.cesecore.util.StringTools;
-import org.cesecore.util.ValueExtractor;
 
 /**
  * Representation of a hard token.
@@ -201,17 +199,14 @@ public class HardTokenData extends ProtectedData implements Serializable {
     }
 
 	/** @return return a List<String> of all usernames where the searchPattern matches the token serial number. */
+    @SuppressWarnings("unchecked")
     public static List<String> findUsernamesByHardTokenSerialNumber(EntityManager entityManager, String searchPattern, int maxResults) {
         Query query = entityManager.createNativeQuery("SELECT DISTINCT a.username FROM HardTokenData a WHERE tokenSN LIKE :search");
         // To use parameterized values in LIKE queries we must put the % in the parameter
         final String parameter = "%" + searchPattern + "%";
         query.setParameter("search", parameter);
     	query.setMaxResults(maxResults);
-    	List<String> ret = new ArrayList<String>();
-    	for (Object obj : query.getResultList()) {
-    	    ret.add(ValueExtractor.extractStringValue(obj));
-    	}
-    	return ret;
+    	return query.getResultList();
 	}
 
 	/** @return return the query results as a List. */
