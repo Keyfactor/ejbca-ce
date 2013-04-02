@@ -251,9 +251,9 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         caid = CaTestCase.getTestCAId();
         
         Map<String, String> config = new HashMap<String, String>();
-        config.put("ocsp.defaultresponder", CaTestCase.getTestCAName());
+        config.put("ocsp.defaultresponder", CertTools.getSubjectDN(CaTestCase.getTestCACert()));
         helper.alterConfig(config);
-
+        helper.reloadKeys();
     }
 
     @After
@@ -319,12 +319,13 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
     @Test
     public void test04OcspUnknown() throws Exception {
         super.test04OcspUnknown();
-    }
-
+    }    
+    
     @Test
     public void test05OcspUnknownCA() throws Exception {
         super.test05OcspUnknownCA();
     }
+
 
     @Test
     public void test06OcspSendWrongContentType() throws Exception {
