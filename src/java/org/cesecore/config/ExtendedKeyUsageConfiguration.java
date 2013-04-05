@@ -87,12 +87,10 @@ public final class ExtendedKeyUsageConfiguration {
     			} else {
     				log.error("Found extended key usage oid "+oid+", but no name defined. Not adding to list of extended key usages.");
     			}
-    		} else {
-    			// No eku with that number = no more ekus so break,
-    			log.debug("Read "+i+" extended key usages.");
-    			break;
-    		}
+    		} 
+    		// No eku with a certain number == continue trying next, we will try 0-255.
     	}
+        log.debug("Read "+map.size()+" extended key usages.");
     	extendedKeyUsageOids = map.asList();
     	if ((extendedKeyUsageOids == null) || (extendedKeyUsageOids.size() == 0)) {
     		log.error("Extended key usage OIDs is null or zero length, there is a serious error with extendedkeyusage.properties");
