@@ -658,6 +658,24 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     	return crlBytes;
     }
 
+    /**
+     * Store the created CRL.
+     * 
+     * This method is invoked when a new CRL has been created and can be 
+     * overriden by extending classes wanting to add functionality for 
+     * instance to store/publish the CRL at additional places.
+     * 
+     * @param admin administrator performing the task
+     * @param ca the CA this operation regards
+     * @param cafp Fingerprint (hex) of the CAs certificate.
+     * @param crl The CRL to store
+     * @param crlBytes The DER coded CRL to be stored.
+     * @param nextCrlNumber CRL number.
+     * @param deltaCRL If this is a delta CRL
+     * @throws CrlStoreException if an error occured storing the CRL
+     * @throws AuthorizationDeniedException if admin was not authorized to store CRL
+     * @throws CesecoreException if an error occured
+     */
     protected void storeCRL(final AuthenticationToken admin, final CA ca, final String cafp, final X509CRLHolder crl, final byte[] crlBytes, final int nextCrlNumber, final boolean deltaCRL) throws CrlStoreException, AuthorizationDeniedException, CesecoreException {
         crlSession.storeCRL(admin, crlBytes, cafp, nextCrlNumber, crl.getIssuer().toString(), crl.toASN1Structure().getThisUpdate().getDate(), crl.toASN1Structure().getNextUpdate().getDate(), (deltaCRL ? 1 : -1));
     }
