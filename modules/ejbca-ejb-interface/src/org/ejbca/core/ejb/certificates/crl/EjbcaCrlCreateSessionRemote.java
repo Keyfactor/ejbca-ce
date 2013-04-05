@@ -14,7 +14,7 @@ package org.ejbca.core.ejb.certificates.crl;
 
 import javax.ejb.Remote;
 
-import org.cesecore.certificates.crl.CrlCreateSession;
+import org.cesecore.certificates.crl.CrlCreateSessionRemote;
 
 /**
  * Remote interface for CrlCreateSession in EJBCA.
@@ -26,6 +26,6 @@ import org.cesecore.certificates.crl.CrlCreateSession;
  *
  */
 @Remote
-public interface EjbcaCrlCreateSessionRemote extends CrlCreateSession {
+public interface EjbcaCrlCreateSessionRemote extends CrlCreateSessionRemote {
 
 }

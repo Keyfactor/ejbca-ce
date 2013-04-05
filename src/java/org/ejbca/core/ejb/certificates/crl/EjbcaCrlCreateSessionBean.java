@@ -12,7 +12,10 @@
  *************************************************************************/
 package org.ejbca.core.ejb.certificates.crl;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import javax.ejb.EJB;
+import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -24,8 +27,10 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.crl.CrlCreateSessionBean;
+import org.cesecore.certificates.crl.CrlCreateSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreException;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 
 /**
@@ -45,7 +50,7 @@ public class EjbcaCrlCreateSessionBean extends CrlCreateSessionBean implements E
 
     @EJB
     private PublisherSessionLocal publisherSession;
-
+    
     
     /**
      * Override the CRL storing in CESeCore also adding storing using 
