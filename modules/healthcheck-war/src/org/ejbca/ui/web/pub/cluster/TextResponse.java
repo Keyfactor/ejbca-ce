@@ -44,6 +44,9 @@ public class TextResponse implements IHealthResponse {
             } else {
             	// Check if we return a static error message or the more informative
             	final String customErrorMessage = EjbcaConfiguration.getCustomErrorMessage();
+                if (log.isDebugEnabled()) {
+                    log.debug("Healthcheck returned error. Status='"+status+"', customErrorMessage='"+customErrorMessage+"'.");
+                }
                 if (customErrorMessage != null) {
                     status = customErrorMessage;
                 }
