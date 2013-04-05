@@ -97,7 +97,7 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     @EJB
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
 
-    protected CrlCreateSessionLocal crlCreateSession;	// Used to run methods using different transaction attributes
+    private CrlCreateSessionLocal crlCreateSession;	// Used to run methods using different transaction attributes
 
     @PostConstruct
     public void postConstruct() {

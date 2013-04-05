@@ -14,7 +14,7 @@ package org.ejbca.core.ejb.certificates.crl;
 
 import javax.ejb.Local;
 
-import org.cesecore.certificates.crl.CrlCreateSessionLocal;
+import org.cesecore.certificates.crl.CrlCreateSession;
 
 /**
  * Local interface for CrlCreateSession in EJBCA.
@@ -26,6 +26,6 @@ import org.cesecore.certificates.crl.CrlCreateSessionLocal;
  *
  */
 @Local
-public interface EjbcaCrlCreateSessionLocal extends CrlCreateSessionLocal {
+public interface EjbcaCrlCreateSessionLocal extends CrlCreateSession {
 
 }
