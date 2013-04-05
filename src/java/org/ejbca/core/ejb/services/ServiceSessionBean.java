@@ -67,6 +67,7 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
+import org.ejbca.core.ejb.certificates.crl.EjbcaCrlCreateSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
@@ -132,7 +133,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
-    private CrlCreateSessionLocal crlCreateSession;
+    private EjbcaCrlCreateSessionLocal crlCreateSession;
     @EJB
     private EndEntityAccessSessionLocal endEntityAccessSession;
     @EJB
@@ -596,7 +597,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             ejbs.put(CaSessionLocal.class, caSession);
             ejbs.put(CertificateProfileSessionLocal.class, certificateProfileSession);
             ejbs.put(CertificateStoreSessionLocal.class, certificateStoreSession);
-            ejbs.put(CrlCreateSessionLocal.class, crlCreateSession);
+            ejbs.put(CrlCreateSessionLocal.class, crlCreateSession); // For backwards compatibility only (see next line for newer interface)
+            ejbs.put(EjbcaCrlCreateSessionLocal.class, crlCreateSession);
             ejbs.put(EndEntityProfileSessionLocal.class, endEntityProfileSession);
             ejbs.put(HardTokenSessionLocal.class, hardTokenSession);
             ejbs.put(InternalSecurityEventsLoggerSessionLocal.class, auditSession);

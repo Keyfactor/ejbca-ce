@@ -38,7 +38,6 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
-import org.cesecore.certificates.crl.CrlCreateSessionRemote;
 import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
@@ -46,6 +45,7 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionRemote;
+import org.ejbca.core.ejb.certificates.crl.EjbcaCrlCreateSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.ui.cli.BaseCommand;
 
@@ -130,18 +130,18 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
             if (issuerdn != null) {
                 CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), issuerdn.hashCode());
                 if (!deltaCRL) {
-                    ejb.getRemoteSession(CrlCreateSessionRemote.class).forceCRL(getAdmin(cliUserName, cliPassword), cainfo.getCAId());
+                    ejb.getRemoteSession(EjbcaCrlCreateSessionRemote.class).forceCRL(getAdmin(cliUserName, cliPassword), cainfo.getCAId());
                     int number = ejb.getRemoteSession(CrlStoreSessionRemote.class).getLastCRLNumber(issuerdn, false);
                     getLogger().info("CRL with number " + number + " generated.");
                 } else {
-                    ejb.getRemoteSession(CrlCreateSessionRemote.class).forceDeltaCRL(getAdmin(cliUserName, cliPassword), cainfo.getCAId());
+                    ejb.getRemoteSession(EjbcaCrlCreateSessionRemote.class).forceDeltaCRL(getAdmin(cliUserName, cliPassword), cainfo.getCAId());
                     int number = ejb.getRemoteSession(CrlStoreSessionRemote.class).getLastCRLNumber(issuerdn, true);
                     getLogger().info("Delta CRL with number " + number + " generated.");
                 }
             } else {
-                int createdcrls = ejb.getRemoteSession(CrlCreateSessionRemote.class).createCRLs(getAdmin(cliUserName, cliPassword));
+                int createdcrls = ejb.getRemoteSession(EjbcaCrlCreateSessionRemote.class).createCRLs(getAdmin(cliUserName, cliPassword));
                 getLogger().info("  " + createdcrls + " CRLs have been created.");
-                int createddeltacrls = ejb.getRemoteSession(CrlCreateSessionRemote.class).createDeltaCRLs(getAdmin(cliUserName, cliPassword));
+                int createddeltacrls = ejb.getRemoteSession(EjbcaCrlCreateSessionRemote.class).createDeltaCRLs(getAdmin(cliUserName, cliPassword));
                 getLogger().info("  " + createddeltacrls + " delta CRLs have been created.");
             }
         } catch (Exception e) {

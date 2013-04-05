@@ -97,7 +97,6 @@ import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
-import org.cesecore.certificates.crl.CrlCreateSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -123,6 +122,7 @@ import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
+import org.ejbca.core.ejb.certificates.crl.EjbcaCrlCreateSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
@@ -233,7 +233,7 @@ public class EjbcaWS implements IEjbcaWS {
     @EJB
     private CertReqHistorySessionLocal certreqHistorySession;
     @EJB
-    private CrlCreateSessionLocal crlCreateSession;
+    private EjbcaCrlCreateSessionLocal crlCreateSession;
     @EJB
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     @EJB

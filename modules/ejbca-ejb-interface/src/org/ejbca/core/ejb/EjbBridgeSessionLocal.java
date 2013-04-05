@@ -41,6 +41,7 @@ import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
+import org.ejbca.core.ejb.certificates.crl.EjbcaCrlCreateSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenBatchJobSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
@@ -81,7 +82,7 @@ public interface EjbBridgeSessionLocal {
 	RevocationSessionLocal getRevocationSession();
 	CmpMessageDispatcherSessionLocal getCmpMessageDispatcherSession();
 	CrlStoreSessionLocal getCrlStoreSession();
-	CrlCreateSessionLocal getCrlCreateSession();
+	EjbcaCrlCreateSessionLocal getCrlCreateSession();
     EjbcaAuditorSessionLocal getEjbcaAuditorSession();
 	EndEntityAuthenticationSessionLocal getEndEntityAuthenticationSession();
 	EndEntityAccessSessionLocal getEndEntityAccessSession();

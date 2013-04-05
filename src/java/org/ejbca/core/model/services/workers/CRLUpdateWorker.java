@@ -17,7 +17,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.crl.CrlCreateSessionLocal;
+import org.ejbca.core.ejb.certificates.crl.EjbcaCrlCreateSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
@@ -45,7 +45,7 @@ public class CRLUpdateWorker extends BaseWorker {
 	 * @see org.ejbca.core.model.services.IWorker#work()
 	 */
 	public void work(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
-        final CrlCreateSessionLocal crlCreateSession = ((CrlCreateSessionLocal)ejbs.get(CrlCreateSessionLocal.class));
+        final EjbcaCrlCreateSessionLocal crlCreateSession = ((EjbcaCrlCreateSessionLocal)ejbs.get(EjbcaCrlCreateSessionLocal.class));
 		// A semaphore used to not run parallel CRL generation jobs if it is slow
 		// in generating CRLs, and this job runs very often
 		if (!running) {

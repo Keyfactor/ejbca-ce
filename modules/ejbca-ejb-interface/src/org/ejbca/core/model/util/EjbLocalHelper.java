@@ -28,7 +28,6 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
-import org.cesecore.certificates.crl.CrlCreateSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
@@ -46,6 +45,7 @@ import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
+import org.ejbca.core.ejb.certificates.crl.EjbcaCrlCreateSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenBatchJobSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
@@ -121,7 +121,7 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
 	@Override public ComplexAccessControlSessionLocal getComplexAccessControlSession() { return getEjbLocal().getComplexAccessControlSession(); }
 	@Override public RevocationSessionLocal getRevocationSession() { return getEjbLocal().getRevocationSession(); }
 	@Override public CmpMessageDispatcherSessionLocal getCmpMessageDispatcherSession() { return getEjbLocal().getCmpMessageDispatcherSession(); }
-	@Override public CrlCreateSessionLocal getCrlCreateSession() { return getEjbLocal().getCrlCreateSession(); }
+	@Override public EjbcaCrlCreateSessionLocal getCrlCreateSession() { return getEjbLocal().getCrlCreateSession(); }
 	@Override public CrlStoreSessionLocal getCrlStoreSession() { return getEjbLocal().getCrlStoreSession(); }
     @Override public EjbcaAuditorSessionLocal getEjbcaAuditorSession() { return getEjbLocal().getEjbcaAuditorSession(); }
 	@Override public EndEntityAccessSessionLocal getEndEntityAccessSession() { return getEjbLocal().getEndEntityAccessSession(); }
