@@ -41,6 +41,11 @@ public class CryptoTokenCreateCommand extends BaseCryptoTokenCommand {
     }
 
     @Override
+    protected boolean failIfCryptoTokenMissing() {
+        return false;   // Since we are about to create the CryptoToken, it does not yet exist
+    }
+
+    @Override
     public void executeCommand(Integer cryptoTokenId, String[] args) {
         if (args.length < 6) {
             getLogger().info("Description: " + getDescription());

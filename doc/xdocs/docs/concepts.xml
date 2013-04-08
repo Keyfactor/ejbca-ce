@@ -84,7 +84,7 @@ A CryptoToken can be configured per CA or multiple CAs can share a CryptoToken.
 The different forms that are stored in the database are:
 <ul>
 <li>Soft token PKCS#12 files protected by a password.</li>
-<li>Hardware token configuration, usually a Hardware Security Module accessed using the PKCS#11 API</li>
+<li>Hardware token configuration, usually referencing a Hardware Security Module accessed using the PKCS#11 API</li>
 </ul>
 </p>
 </subsection>

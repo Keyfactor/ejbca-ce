@@ -69,7 +69,7 @@ org.cesecore.authorization.control.CryptoTokenRules
 		</h:column>
 		<h:column>
    			<f:facet name="header"><h:outputText value="#{web.text.CRYPTOTOKEN_NAME}"/></f:facet>
-			<h:outputLink value="adminweb/cryptotoken/cryptotoken.jsf?cryptoTokenId=#{cryptoTokenGuiInfo.cryptoTokenId}">
+			<h:outputLink value="adminweb/cryptotoken/cryptotoken.jsf?cryptoTokenId=#{cryptoTokenGuiInfo.cryptoTokenId}&ref=cryptotokens">
 				<h:outputText value="#{cryptoTokenGuiInfo.tokenName}" title="#{web.text.CRYPTOTOKEN_VIEWWITH} #{cryptoTokenGuiInfo.cryptoTokenId}"/>
 			</h:outputLink>
 		</h:column>

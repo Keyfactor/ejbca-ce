@@ -190,8 +190,6 @@ java.security.InvalidAlgorithmParameterException
   static final String SELECT_NUMOFREQUIREDAPPROVALS               = "numofrequiredapprovals";
 
   static final String FILE_RECIEVEFILE                            = "filerecievefile";
-  static final String FILE_CACERTFILE                             = "filecacertfile";
-  static final String FILE_REQUESTFILE                            = "filerequestfile";   
   static final String FILE_RECIEVEFILE_MAKEREQUEST                = "filerecievefilemakerequest";
   static final String FILE_RECIEVEFILE_RECEIVEREQUEST             = "filerecievefilerecieverequest";
 

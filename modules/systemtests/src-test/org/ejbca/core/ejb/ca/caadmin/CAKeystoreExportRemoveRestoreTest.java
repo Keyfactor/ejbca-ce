@@ -180,7 +180,7 @@ public class CAKeystoreExportRemoveRestoreTest {
             final X509CAInfo cainfo2 = getNewCAInfo(CANAME2, catoken2);
             // This CA uses RSA but with 1024 bits
             final String CANAME3 = "TestExportRemoveRestoreCA3";
-            cryptoTokenId3 = CryptoTokenManagementSessionTest.createCryptoTokenForCA(internalAdmin, CANAME2, "1024");
+            cryptoTokenId3 = CryptoTokenManagementSessionTest.createCryptoTokenForCA(internalAdmin, CANAME3, "1024");
             final CAToken catoken3 = CaSessionTest.createCaToken(cryptoTokenId3, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             final X509CAInfo cainfo3 = getNewCAInfo(CANAME3, catoken3);
             // Remove CAs if they already exists

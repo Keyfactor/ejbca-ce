@@ -249,7 +249,7 @@ This field allows selection of the key specifications to use for these soft keys
 <li>Cryptographic Message Syntax (CMS, superseded PKCS#7): A soft key pair in the database will be used.</li>
 <li>XML Key Management Specification (XKMS): A soft key pair in the database will be used.</li>
 </ul>
-If you don't plan on using CMS or XKMS with any special requirements, you safely use the default value here.
+If you don't plan on using CMS or XKMS with any special requirements, you can safely use the default value here.
 </p>
 </subsubsection>
 

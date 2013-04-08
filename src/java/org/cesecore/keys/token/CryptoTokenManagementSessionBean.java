@@ -130,7 +130,8 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     
     @Override
     public int createCryptoToken(final AuthenticationToken authenticationToken, final String tokenName, final String className, final Properties properties,
-            final byte[] data, final char[] authenticationCode) throws AuthorizationDeniedException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException {
+            final byte[] data, final char[] authenticationCode) throws AuthorizationDeniedException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
+            CryptoTokenNameInUseException {
         if (log.isTraceEnabled()) {
             log.trace(">createCryptoToken: "+tokenName+", "+className);
         }
@@ -171,7 +172,8 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     }
     
     @Override
-    public void saveCryptoToken(AuthenticationToken authenticationToken, int cryptoTokenId, String tokenName, Properties properties, char[] authenticationCode) throws AuthorizationDeniedException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException {
+    public void saveCryptoToken(AuthenticationToken authenticationToken, int cryptoTokenId, String tokenName, Properties properties, char[] authenticationCode)
+            throws AuthorizationDeniedException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException {
         if (log.isTraceEnabled()) {
             log.trace(">saveCryptoToken: "+tokenName+", "+cryptoTokenId);
         }
@@ -358,7 +360,11 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         cryptoToken.generateKeyPair(keySpecification, alias);
         cryptoToken.testKeyPair(alias);
         // Merge is important for soft tokens where the data is persisted in the database, but will also update lastUpdate
-        cryptoTokenSession.mergeCryptoToken(cryptoToken);
+        try {
+            cryptoTokenSession.mergeCryptoToken(cryptoToken);
+        } catch (CryptoTokenNameInUseException e) {
+            throw new RuntimeException(e);  // We have not changed the name of the CrytpoToken here, so this should never happen
+        }
     }
 
     @Override
@@ -384,7 +390,11 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
                 authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, details);
         cryptoToken.generateKeyPair(keySpecification, newAlias);
         cryptoToken.testKeyPair(newAlias);
-        cryptoTokenSession.mergeCryptoToken(cryptoToken);
+        try {
+            cryptoTokenSession.mergeCryptoToken(cryptoToken);
+        } catch (CryptoTokenNameInUseException e) {
+            throw new RuntimeException(e);  // We have not changed the name of the CrytpoToken here, so this should never happen
+        }
     }
 
     /** @return true if there is a private, public or symmetric entry with this alias in the CryptoToken */
@@ -441,7 +451,11 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         assertAliasNotInUse(cryptoToken, alias);
         log.debug("cryptoTokenSession.mergeCryptoToken");
         // Merge is important for soft tokens where the data is persisted in the database, but will also update lastUpdate
-        cryptoTokenSession.mergeCryptoToken(cryptoToken);
+        try {
+            cryptoTokenSession.mergeCryptoToken(cryptoToken);
+        } catch (CryptoTokenNameInUseException e) {
+            throw new RuntimeException(e);  // We have not changed the name of the CrytpoToken here, so this should never happen
+        }
     }
 
     @Override

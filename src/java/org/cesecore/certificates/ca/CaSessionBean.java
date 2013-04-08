@@ -59,6 +59,7 @@ import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
+import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.keys.token.PKCS11CryptoToken;
@@ -222,25 +223,25 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     }
 
 	/** Ensure that the caller is authorized to the CA we are about to edit and that the CA name and subjectDN matches. */
-	private void assertAuthorizationAndTarget(AuthenticationToken admin, final String name, final String subjectDN, final int cryptoTokenId, final CA orgca)
+	private void assertAuthorizationAndTarget(AuthenticationToken admin, final String name, final String subjectDN, final int cryptoTokenId, final CA ca)
 			throws CADoesntExistsException, AuthorizationDeniedException {
         // Check if we are authorized to edit CA and authorization to specific CA
-        if (cryptoTokenId == orgca.getCAToken().getCryptoTokenId() || cryptoTokenId==0) {
+        if (cryptoTokenId == ca.getCAToken().getCryptoTokenId() || cryptoTokenId==0) {
             if (!accessSession.isAuthorized(admin, StandardRules.CAEDIT.resource(), StandardRules.CAACCESS.resource())) {
-                String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoeditca", admin.toString(), Integer.valueOf(orgca.getCAId()));
+                String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoeditca", admin.toString(), Integer.valueOf(ca.getCAId()));
                 throw new AuthorizationDeniedException(msg);
             }
         } else {
             // We only need to check usage authorization if we change CryptoToken reference (and not to 0 which means "removed").
             if (!accessSession.isAuthorized(admin, StandardRules.CAEDIT.resource(), StandardRules.CAACCESS.resource(), CryptoTokenRules.USE.resource() + "/" + cryptoTokenId)) {
-                String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoeditca", admin.toString(), Integer.valueOf(orgca.getCAId()));
+                String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoeditca", admin.toString(), Integer.valueOf(ca.getCAId()));
                 throw new AuthorizationDeniedException(msg);
             }
         }
 		// The CA needs the same name and subject DN in order to store it
 		if (name == null || subjectDN == null) {
 		    throw new CADoesntExistsException("Null CA name or SubjectDN");
-		} else if (!StringUtils.equals(name, orgca.getName()) || !StringUtils.equals(subjectDN, orgca.getSubjectDN())) {
+		} else if (!StringUtils.equals(name, ca.getName()) || !StringUtils.equals(subjectDN, ca.getSubjectDN())) {
 		    throw new CADoesntExistsException("Not same CA name and subject DN.");            	
 		}
 	}
@@ -718,7 +719,11 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         }
         if (cryptoTokenId == 0) {
             final String cryptoTokenName = "Upgraded CA CryptoToken for " + caName;
-            cryptoTokenId = cryptoTokenSession.mergeCryptoToken(CryptoTokenFactory.createCryptoToken(classpath, prop, keyStoreData, caid, cryptoTokenName));
+            try {
+                cryptoTokenId = cryptoTokenSession.mergeCryptoToken(CryptoTokenFactory.createCryptoToken(classpath, prop, keyStoreData, caid, cryptoTokenName));
+            } catch (CryptoTokenNameInUseException e) {
+                throw new RuntimeException(e);  // Since we have a constraint on CA names to be unique, this should never happen
+            }
         }
         tokendata.put(CAToken.CRYPTOTOKENID, String.valueOf(cryptoTokenId));
         // Note: We did not remove the keystore in the CA properties here, so old versions running in parallel will still work

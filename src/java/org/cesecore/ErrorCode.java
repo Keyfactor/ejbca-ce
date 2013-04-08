@@ -75,6 +75,7 @@ public class ErrorCode implements Serializable {
 	private static final String _FIELD_VALUE_NOT_VALID = "_FIELD_VALUE_NOT_VALID";
 	private static final String _REVOKE_BACKDATE_NOT_ALLOWED = "REVOKE_BACKDATE_NOT_ALLOWED";
 	private static final String _DATE_NOT_VALID = "DATE_NOT_VALID";
+	private static final String _CRYPTOTOKEN_NAME_IN_USE = "CRYPTOTOKEN_NAME_IN_USE"; // A CryptoToken with the name already exists
 
     /** Default constructor. */
     private ErrorCode() {}
@@ -164,6 +165,7 @@ public class ErrorCode implements Serializable {
 	public static final ErrorCode FIELD_VALUE_NOT_VALID = new ErrorCode(_FIELD_VALUE_NOT_VALID);
 	public static final ErrorCode REVOKE_BACKDATE_NOT_ALLOWED = new ErrorCode(_REVOKE_BACKDATE_NOT_ALLOWED);
 	public static final ErrorCode DATE_NOT_VALID = new ErrorCode(_DATE_NOT_VALID);
+    public static final ErrorCode CRYPTOTOKEN_NAME_IN_USE = new ErrorCode(_CRYPTOTOKEN_NAME_IN_USE);
 
     /** Get the internal error code. */
     public String getInternalErrorCode() {

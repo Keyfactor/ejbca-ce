@@ -478,6 +478,7 @@
 					<include name="org/ejbca/core/model/ca/store/CertReqHistory*.java"/>
 					<include name="org/cesecore/keys/token/KeyPairInfo.java"/>
 					<include name="org/cesecore/keys/token/CryptoTokenInfo.java"/>
+					<include name="org/cesecore/keys/token/CryptoTokenNameInUseException.java"/>
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/certstore" destdir="${build-temp.dir}/certstore" debug="on" includeantruntime="no"

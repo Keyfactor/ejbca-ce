@@ -127,11 +127,11 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     public abstract String getRoleName();
 
     protected void setUp() throws Exception { // NOPMD: this is a base class
+        log.trace(">CaTestCase.setUp()");
         super.setUpAuthTokenAndRole(getRoleName());
         removeTestCA(); // We can't be sure this CA was not left over from
         createTestCA();
         addDefaultRole();
-      
     }
     
     protected void addDefaultRole() throws RoleExistsException, AuthorizationDeniedException, AccessRuleNotFoundException, RoleNotFoundException {
@@ -163,6 +163,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     }
 
     protected void tearDown() throws Exception { // NOPMD: this is a base class
+        log.trace(">CaTestCase.tearDown()");
         super.tearDownRemoveRole();
         removeTestCA();
         removeDefaultRole();
@@ -300,6 +301,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         }
         
         final int cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(internalAdmin, caName, String.valueOf(keyStrength));
+        log.debug("Creating CryptoToken with id " + cryptoTokenId + " to be used by CA " + caName);
         final CAToken catoken = CaSessionTest.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         // Create and active OSCP CA Service.
         final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
@@ -426,6 +428,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
             //Ignore
         }
         final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
+        log.debug("Deleting CryptoToken with id " + cryptoTokenId + " last used by CA " + caName);
         cryptoTokenManagementSession.deleteCryptoToken(internalAdmin, cryptoTokenId);
     }
 
@@ -443,6 +446,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
             //Ignore
         }
         final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
+        log.debug("Deleting CryptoToken with id " + cryptoTokenId + " last used by CA " + caId);
         cryptoTokenManagementSession.deleteCryptoToken(internalAdmin, cryptoTokenId);
     }
 

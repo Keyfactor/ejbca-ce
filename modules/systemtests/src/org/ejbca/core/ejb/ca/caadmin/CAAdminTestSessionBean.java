@@ -29,7 +29,6 @@ import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.jndi.JndiConstants;
@@ -50,8 +49,6 @@ public class CAAdminTestSessionBean implements CAAdminTestSessionRemote {
 
     @PersistenceContext(unitName="ejbca")
     private EntityManager entityManager;
-    @EJB
-    private CaSessionLocal caSession;
     @EJB
     private CryptoTokenSessionLocal cryptoTokenSession;
     

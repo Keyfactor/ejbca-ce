@@ -47,7 +47,7 @@ public abstract class BaseCryptoTokenCommand extends BaseCommand {
             return;
         }
         Integer cryptoTokenId = null;
-        if (args.length>=2) {
+        if (failIfCryptoTokenMissing() && args.length>=2) {
             final String cryptoTokenName = args[1];
             cryptoTokenId = ejb.getRemoteSession(CryptoTokenManagementSessionRemote.class).getIdFromName(cryptoTokenName);
             if (cryptoTokenId==null) {
@@ -65,6 +65,10 @@ public abstract class BaseCryptoTokenCommand extends BaseCommand {
             getLogger().info("Operation failed: " + e.getMessage());
             getLogger().debug("", e);
         }
+    }
+    
+    protected boolean failIfCryptoTokenMissing() {
+        return true;
     }
     
     /** @return the EJB CLI admin */

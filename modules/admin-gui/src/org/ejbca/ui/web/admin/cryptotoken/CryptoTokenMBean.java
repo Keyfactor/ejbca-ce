@@ -456,6 +456,11 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         return ret;
     }
 
+    /** Used to draw the back link. No white-listing to the calling method must be careful to only use this for branching. */
+    public String getParamRef() {
+        return FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("ref");        
+    }
+    
     /** @return the id of the CryptoToken that is subject to view or edit */
     public int getCurrentCryptoTokenId() {
         // Get the HTTP GET/POST parameter named "cryptoTokenId"

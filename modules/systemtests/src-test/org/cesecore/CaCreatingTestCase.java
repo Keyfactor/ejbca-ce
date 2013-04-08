@@ -61,7 +61,6 @@ public abstract class CaCreatingTestCase extends RoleUsingTestCase {
         caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
         caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
         caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
-        // Set key generation property, since we have no old keys to generate the same sort
         CAToken catoken = new CAToken(cryptoToken.getId(), caTokenProperties);
         // Set key sequence so that next sequence will be 00001 (this is the default though so not really needed here)
         catoken.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
