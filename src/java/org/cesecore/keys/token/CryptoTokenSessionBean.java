@@ -28,6 +28,7 @@ import javax.persistence.Query;
 
 import org.apache.log4j.Logger;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.internal.InternalResources;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.QueryResultWrapper;
 
@@ -41,6 +42,7 @@ import org.cesecore.util.QueryResultWrapper;
 public class CryptoTokenSessionBean implements CryptoTokenSessionLocal {
 
     private static final Logger log = Logger.getLogger(CryptoTokenSessionBean.class);
+    private static final InternalResources intres = InternalResources.getInstance();
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
@@ -104,7 +106,7 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal {
     }
 
     @Override
-    public int mergeCryptoToken(final CryptoToken cryptoToken) {
+    public int mergeCryptoToken(final CryptoToken cryptoToken) throws CryptoTokenNameInUseException {
         if (log.isDebugEnabled()) {
             log.debug(">addCryptoToken " + cryptoToken.getTokenName() + " " + cryptoToken.getClass().getName());
         }
@@ -122,8 +124,15 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal {
         final byte[] tokenDataAsBytes = cryptoToken.getTokenData();
         CryptoTokenData cryptoTokenData = entityManager.find(CryptoTokenData.class, cryptoTokenId);
         if (cryptoTokenData == null) {
+            // The cryptoToken does not exist in the database, before we add it we want to check that the name is not in use
+            if (isCryptoTokenNameUsed(tokenName)) {
+                throw new CryptoTokenNameInUseException(intres.getLocalizedMessage("token.nameisinuse", tokenName));
+            }
             cryptoTokenData = new CryptoTokenData(cryptoTokenId, tokenName, tokenType, lastUpdate, tokenProperties, tokenDataAsBytes);
         } else {
+            if (!isCryptoTokenNameUsedByIdOnly(tokenName, cryptoTokenId)) {
+                throw new CryptoTokenNameInUseException(intres.getLocalizedMessage("token.nameisinuse", tokenName));
+            }
             // It might be the case that the calling transaction has already loaded a reference to this token
             // and hence we need to get the same one and perform updates on this object instead of trying to
             // merge a new object.
@@ -151,6 +160,29 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal {
     @Override
     public Map<String,Integer> getCachedNameToIdMap() {
         return CryptoTokenCache.INSTANCE.getNameToIdMap();
+    }
+    
+    @Override
+    public boolean isCryptoTokenNameUsed(final String cryptoTokenName) {
+        final Query query = entityManager.createQuery("SELECT a FROM CryptoTokenData a WHERE a.tokenName=:tokenName");
+        query.setParameter("tokenName", cryptoTokenName);
+        return !query.getResultList().isEmpty();
+    }
+
+    @Override
+    public boolean isCryptoTokenNameUsedByIdOnly(final String cryptoTokenName, final int cryptoTokenId) {
+        final Query query = entityManager.createQuery("SELECT a FROM CryptoTokenData a WHERE a.tokenName=:tokenName");
+        query.setParameter("tokenName", cryptoTokenName);
+        List<CryptoTokenData> cryptoTokenDatas = query.getResultList();
+        if (cryptoTokenDatas.size() != 1) {
+            return false;
+        }
+        for (CryptoTokenData cryptoTokenData: cryptoTokenDatas) {
+            if (cryptoTokenData.getId() != cryptoTokenId) {
+                return false;
+            }
+        }
+        return true;
     }
 
     //

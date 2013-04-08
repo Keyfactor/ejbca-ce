@@ -657,6 +657,7 @@ public class CrmfRARequestTest extends CmpTestCase {
             issuerDN = oldIssuerDN;
             cacert = oldCaCert;
             updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, "TestCA");
+            removeTestCA("TESTECDSA");
         }
     }
 

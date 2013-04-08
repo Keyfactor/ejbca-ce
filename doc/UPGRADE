@@ -33,14 +33,14 @@ From EJBCA 5.0.x to EJBCA 5.2.x
 -------------------------------
 See release notes for more details on changes.
 
-100% upgrade notes:
+100% up-time upgrade notes:
 The CryptoToken concept has extended the internal CA Token concept. CA's now
 reference a named set of keys in a CryptoToken and CA Service and CryptoToken
 activation are clearly separated. Upgrades are made during first startup.
 Older EJBCA nodes will continue to function during a 100% up-time upgrade, as
 long as newer instances has been deployed with "db.keepinternalcakeystores" set to true
-For 100% upgrade, or possibility to back out of upgrade, set db.keepinternalcakeystores to true (default is false). 
-Settings relevant for 100% upgrades are:
+For 100% up-time upgrade, or possibility to back out of upgrade, set db.keepinternalcakeystores to true (default is false). 
+Settings relevant for 100% up-time upgrades are:
 - db.keepinternalcakeystores (5.0->5.2)
 - db.keepjbossserialization (4.0->5.0)
 - app.version.effective (3.11->4.0)
@@ -130,9 +130,9 @@ In EJBCA 5.0.6 new versions of BouncyCastle jars are included. If you have been 
  
 From EJBCA 4.0.x to EJBCA 5.0.x
 --------------------------------
-100% upgrade notes:
+100% up-time upgrade notes:
 For some serialized classes serialization is changed to a portable format. 
-For 100% upgrade, or possibility to back out of upgrade, set db.keepjbossserialization to true (default is false). 
+For 100% up-time upgrade, or possibility to back out of upgrade, set db.keepjbossserialization to true (default is false). 
 After all nodes have been upgraded, db.keepjbossserialization can be set to false again.
 
 Support for the old LogEntryData has been dropped in EJBCA 5.0 and is replaced by a new AuditRecordData. 

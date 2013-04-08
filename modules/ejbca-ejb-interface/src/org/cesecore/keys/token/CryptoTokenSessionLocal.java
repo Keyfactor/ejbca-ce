@@ -28,7 +28,7 @@ public interface CryptoTokenSessionLocal {
     CryptoToken getCryptoToken(int cryptoTokenId);
 
     /** Add the specified CryptoToken to the database and return the id used to store it */
-    int mergeCryptoToken(CryptoToken cryptoToken);
+    int mergeCryptoToken(CryptoToken cryptoToken) throws CryptoTokenNameInUseException;
 
     /** Remove the specified CryptoToken from the database. */
     void removeCryptoToken(final int cryptoTokenId);
@@ -41,4 +41,10 @@ public interface CryptoTokenSessionLocal {
 
     /** Clears the CryptoToken cache. */
     void flushCache();
+
+    /** @return true if the specified name is already in use by another CryptoToken (checks the database, not the cache) */
+    boolean isCryptoTokenNameUsed(String cryptoTokenName);
+
+    /** @return true if the specified name is used by exactly one CryptoToken and that cryptoToken has the same id (checks the database, not the cache) */
+    boolean isCryptoTokenNameUsedByIdOnly(String cryptoTokenName, int cryptoTokenId);
 }

@@ -47,7 +47,7 @@ org.ejbca.core.model.authorization.AccessRulesConstants
 	<h:dataTable value="#{cAActivationMBean.authorizedTokensAndCas}" var="tokenAndCa" styleClass="actCas" footerClass="actCasFooter" headerClass="actCasHeader">
 		<h:column>
    			<f:facet name="header"><h:panelGroup><h:outputText value="#{web.text.CRYPTOTOKEN}"/><br/><h:outputText value="#{web.text.ACTIVATECAS_NAME}"/></h:panelGroup></f:facet>
-			<h:outputLink rendered="#{tokenAndCa.first && tokenAndCa.cryptoToken.existing}" value="adminweb/cryptotoken/cryptotoken.jsf?cryptoTokenId=#{tokenAndCa.cryptoToken.cryptoTokenId}">
+			<h:outputLink rendered="#{tokenAndCa.first && tokenAndCa.cryptoToken.existing}" value="adminweb/cryptotoken/cryptotoken.jsf?cryptoTokenId=#{tokenAndCa.cryptoToken.cryptoTokenId}&ref=caactivation">
 				<h:outputText value="#{tokenAndCa.cryptoToken.cryptoTokenName}"/>
 			</h:outputLink>
 			<h:outputText rendered="#{!tokenAndCa.first}" value="#{tokenAndCa.cryptoToken.cryptoTokenName}"/>

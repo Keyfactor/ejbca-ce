@@ -149,7 +149,6 @@ public class CAsTest extends CaTestCase {
     @Before
     public void setUp() throws Exception {
         addDefaultRole();
-
     }
 
     @After
@@ -188,14 +187,10 @@ public class CAsTest extends CaTestCase {
     /** Adds a CA using RSA keys to the database. It also checks that the CA is stored correctly. */
     @Test
     public void test01AddRSACA() throws Exception {
+        log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName() + "()");
         final String caName = getTestCAName();
         // Preemptively remove the CA if it exists.
-        try {
-            CA ca = caTestSession.getCA(admin, caName);
-            caSession.removeCA(admin, ca.getCAId());
-        } catch (CADoesntExistsException e) {
-            // All is well, do go on.
-        }
+        removeTestCA(caName);
         final CAToken catoken = createCaToken("test01", "1024", AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         // Create and active OSCP CA Service.
         final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
@@ -370,6 +365,7 @@ public class CAsTest extends CaTestCase {
     /** Adds a CA using DSTU4510 keys to the database. It also checks that the CA is stored correctly. */
     @Test
     public void test04bisAddDSTU4510() throws Exception {
+        log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName() + "()");
         assumeTrue(AlgorithmTools.isDstu4145Enabled());
         boolean ret = false;
         try {
@@ -813,6 +809,7 @@ public class CAsTest extends CaTestCase {
      */
     @Test
     public void test10AddCVCCAECC() throws Exception {
+        log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName() + "()");
         removeOldCa("TESTCVCAECC");
         removeOldCa("TESTDVECC-D");
         removeOldCa("TESTDVECC-F");
@@ -1099,6 +1096,7 @@ public class CAsTest extends CaTestCase {
      */
     @Test
     public void test11RSASignedByExternal() throws Exception {
+        log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName() + "()");
         removeOldCa("TESTSIGNEDBYEXTERNAL");
 
         List<Certificate> toremove = new ArrayList<Certificate>();
@@ -1264,6 +1262,7 @@ public class CAsTest extends CaTestCase {
      */
     @Test
     public void test12AddDSACA() throws Exception {
+        log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName() + "()");
         boolean ret = false;
 
         removeTestCA(TEST_DSA_CA_NAME); // We cant be sure this CA was not left
@@ -1383,6 +1382,7 @@ public class CAsTest extends CaTestCase {
 
     @Test
     public void test14RevokeCA() throws Exception {
+        log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName() + "()");
         final String caname = "TestRevokeCA";
         removeTestCA(caname);
         createTestCA(caname);
@@ -1449,6 +1449,7 @@ public class CAsTest extends CaTestCase {
 
     @Test
     public void test15ExternalExpiredCA() throws Exception {
+        log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName() + "()");
         final String caname = "TestExternalExpiredCA";
         byte[] testcert = Base64.decode(("MIICDjCCAXegAwIBAgIIaXCEunuPDowwDQYJKoZIhvcNAQEFBQAwFzEVMBMGA1UE"
                 + "AwwMc2hvcnQgZXhwaXJlMB4XDTExMDIwNTE3MjI1MloXDTExMDIwNTE4MjIxM1ow"
@@ -1616,6 +1617,7 @@ public class CAsTest extends CaTestCase {
 
     @Test
     public void test20BadCaReceiveResponse() throws Exception {
+        log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName() + "()");
         Set<Principal> principals = new HashSet<Principal>();
         principals.add(new X500Principal("C=SE,O=UnlovedUser,CN=UnlovedUser"));
         AuthenticationToken unpriviledgedUser = simpleAuthenticationProvider.authenticate(new AuthenticationSubject(principals, null));
@@ -1680,6 +1682,7 @@ public class CAsTest extends CaTestCase {
     */
    @Test
    public void test22IllegalKeyLengths() throws Exception {
+       log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName() + "()");
        // TODO: These tests should be moved to another class and are just here because they replaces older tests with similar purpose
        final Properties cryptoTokenProperties = new Properties();
        cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, "foo1234");

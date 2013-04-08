@@ -52,11 +52,13 @@ public interface CryptoTokenManagementSession {
 
     /** @return the ID of a newly persisted CryptoToken from the supplied parameters. */
     int createCryptoToken(AuthenticationToken authenticationToken, String tokenName, String className, Properties properties, byte[] data,
-            char[] authenticationCode) throws AuthorizationDeniedException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException;
+            char[] authenticationCode) throws AuthorizationDeniedException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
+            CryptoTokenNameInUseException;
 
     /** Update the CryptoToken with the specified ID. The authentication code can be omitted (null) if auto-activation is used. */
     void saveCryptoToken(AuthenticationToken authenticationToken, int cryptoTokenId, String tokenName, Properties properties,
-            char[] authenticationCode) throws AuthorizationDeniedException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException;
+            char[] authenticationCode) throws AuthorizationDeniedException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
+            CryptoTokenNameInUseException;
 
     /** @return value object with non-sensitive information about the CryptoToken for UI use or similar. */
     CryptoTokenInfo getCryptoTokenInfo(AuthenticationToken authenticationToken, int cryptoTokenId) throws AuthorizationDeniedException;
