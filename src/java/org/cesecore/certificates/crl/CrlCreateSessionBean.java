@@ -66,6 +66,7 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 
 /**
  * Business class for CRL actions, i.e. running CRLs. CRUD operations can be found in CrlSession.
@@ -94,6 +95,8 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
     private CrlStoreSessionLocal crlSession;
+    @EJB
+    private PublisherSessionLocal publisherSession;
     @EJB
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
 
@@ -624,7 +627,14 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     			    log.debug("Finished encoding CRL to byte array. Free memory="+Runtime.getRuntime().freeMemory());
     				log.debug("Storing CRL in certificate store.");
     			}
-    			storeCRL(admin, ca, cafp, crl, tmpcrlBytes, nextCrlNumber, deltaCRL);
+    			crlSession.storeCRL(admin, tmpcrlBytes, cafp, nextCrlNumber, crl.getIssuer().toString(), crl.toASN1Structure().getThisUpdate().getDate(), crl.toASN1Structure().getNextUpdate().getDate(), (deltaCRL ? 1 : -1));
+    			// TODO: publishing below is something that is NOT included in CESeCore.
+    			// It is an add-on for EJBCA put here because we did not want to refactor all references to CrlCreateSessionBean in the last minute.
+    			// Hard and error-prone to do that.
+    			if (log.isDebugEnabled()) {
+    			    log.debug("Storing CRL in publishers");
+    			}
+                this.publisherSession.storeCRL(admin, ca.getCRLPublishers(), tmpcrlBytes, cafp, nextCrlNumber, ca.getSubjectDN());
                 
     			String msg = intres.getLocalizedMessage("createcrl.createdcrl", Integer.valueOf(nextCrlNumber), ca.getName(), ca.getSubjectDN());
     			Map<String, Object> details = new LinkedHashMap<String, Object>();
@@ -656,28 +666,6 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     		log.trace("<createCRL(Collection)");
     	}
     	return crlBytes;
-    }
-
-    /**
-     * Store the created CRL.
-     * 
-     * This method is invoked when a new CRL has been created and can be 
-     * overriden by extending classes wanting to add functionality for 
-     * instance to store/publish the CRL at additional places.
-     * 
-     * @param admin administrator performing the task
-     * @param ca the CA this operation regards
-     * @param cafp Fingerprint (hex) of the CAs certificate.
-     * @param crl The CRL to store
-     * @param crlBytes The DER coded CRL to be stored.
-     * @param nextCrlNumber CRL number.
-     * @param deltaCRL If this is a delta CRL
-     * @throws CrlStoreException if an error occured storing the CRL
-     * @throws AuthorizationDeniedException if admin was not authorized to store CRL
-     * @throws CesecoreException if an error occured
-     */
-    protected void storeCRL(final AuthenticationToken admin, final CA ca, final String cafp, final X509CRLHolder crl, final byte[] crlBytes, final int nextCrlNumber, final boolean deltaCRL) throws CrlStoreException, AuthorizationDeniedException, CesecoreException {
-        crlSession.storeCRL(admin, crlBytes, cafp, nextCrlNumber, crl.getIssuer().toString(), crl.toASN1Structure().getThisUpdate().getDate(), crl.toASN1Structure().getNextUpdate().getDate(), (deltaCRL ? 1 : -1));
     }
 
     private void authorizedToCreateCRL(final AuthenticationToken admin, final int caid) throws AuthorizationDeniedException {
