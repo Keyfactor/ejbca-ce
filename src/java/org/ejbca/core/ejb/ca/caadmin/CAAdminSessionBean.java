@@ -123,6 +123,7 @@ import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
+import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
@@ -1736,7 +1737,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
             // Now we have the PKCS12 keystore, from this we can create the CAToken
             final Properties cryptoTokenProperties = new Properties();
-            final int cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, "ImportedCryptoToken"+caId, SoftCryptoToken.class.getName(), cryptoTokenProperties,
+            int cryptoTokenId = createCryptoTokenWithUniqueName(authenticationToken, "ImportedCryptoToken"+caId, SoftCryptoToken.class.getName(), cryptoTokenProperties,
                     baos.toByteArray(), authCode);
             final CAToken catoken = new CAToken(cryptoTokenId, caTokenProperties);
             // If this is a CVC CA we need to find out the sequence
@@ -1788,7 +1789,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         int caId = StringTools.strip(CertTools.getSubjectDN(cacert)).hashCode();
         Properties caTokenProperties = CAToken.getPropertiesFromString(catokenproperties);
         // Create the CryptoToken
-        final int cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, "ImportedCryptoToken"+caId, PKCS11CryptoToken.class.getName(),
+        int cryptoTokenId = createCryptoTokenWithUniqueName(authenticationToken, "ImportedCryptoToken"+caId, PKCS11CryptoToken.class.getName(),
                 caTokenProperties, null, catokenpassword.toCharArray());
         final CAToken catoken = new CAToken(cryptoTokenId, caTokenProperties);
         // Set a lot of properties on the crypto token
@@ -1824,6 +1825,31 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         importCA(authenticationToken, caname, catokenpassword, signatureCertChain, catoken, keyAlgorithm, keySpecification);
     }
 
+    /** Wrapper for CryptoToken creation that tries to find a unique CryptoTokenName */
+    private int createCryptoTokenWithUniqueName(AuthenticationToken authenticationToken, String basename, String className,
+            Properties cryptoTokenProperties, byte[] data, char[] authCode) throws CryptoTokenOfflineException,
+            CryptoTokenAuthenticationFailedException, AuthorizationDeniedException {
+        int cryptoTokenId = 0;
+        final int maxTriesToFindUnusedCryptoTokenName = 25;
+        for (int i=0; cryptoTokenId==0 && i<maxTriesToFindUnusedCryptoTokenName; i++) {
+            String postFix = "";
+            String cryptoTokenName = basename + postFix;
+            try {
+                cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, cryptoTokenName, className, cryptoTokenProperties,
+                        data, authCode);
+            } catch (CryptoTokenNameInUseException e) {
+                log.info("CryptoToken with name '" + "' could not be created since the name exists. Trying another name.");
+                postFix = "_" + i;
+            }
+        }
+        if (cryptoTokenId==0) {
+            final String msg = "Failed to create a CryptoToken with a unique name after " + maxTriesToFindUnusedCryptoTokenName;
+            log.error(msg);
+            throw new RuntimeException(msg);
+        }
+        return cryptoTokenId;
+    }
+    
     /**
      * @param keyAlgorithm keyalgorithm for extended CA services, OCSP, XKMS, CMS. Example AlgorithmConstants.KEYALGORITHM_RSA
      * @param keySpecification keyspecification for extended CA services, OCSP, XKMS, CMS. Example 2048
@@ -2156,7 +2182,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 throw new RuntimeException(e);
             }
         } else {
-            final String detailsMsg = intres.getLocalizedMessage("caadmin.errornotoffline", ca.getName());
+            final String detailsMsg = intres.getLocalizedMessage("caadmin.errornotonline", ca.getName());
             auditSession.log(EventTypes.CA_SERVICEDEACTIVATE, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(),
                     String.valueOf(caid), null, null, detailsMsg);
             throw new RuntimeException(detailsMsg);

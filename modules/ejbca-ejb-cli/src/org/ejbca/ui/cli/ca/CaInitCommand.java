@@ -345,17 +345,17 @@ public class CaInitCommand extends BaseCaAdminCommand {
                 caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, certSignValue);
             }
             final String hardTokenEncAlias = cryptoTokenProperties.getProperty(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT_STRING);
-            if (defaultAlias != null) {
+            if (hardTokenEncAlias != null) {
                 caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT_STRING, hardTokenEncAlias);
                 cryptoTokenProperties.remove(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT_STRING);
             }
             final String keyEncAlias = cryptoTokenProperties.getProperty(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING);
-            if (defaultAlias != null) {
+            if (keyEncAlias != null) {
                 caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING, keyEncAlias);
                 cryptoTokenProperties.remove(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING);
             }
             final String testKeyAlias = cryptoTokenProperties.getProperty(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING);
-            if (defaultAlias != null) {
+            if (testKeyAlias != null) {
                 caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING, testKeyAlias);
                 cryptoTokenProperties.remove(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING);
             }
