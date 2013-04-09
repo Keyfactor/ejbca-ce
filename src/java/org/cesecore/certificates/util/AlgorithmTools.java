@@ -572,4 +572,14 @@ public final class AlgorithmTools {
     public static boolean isDstu4145Enabled() {
         return CesecoreConfiguration.getOidDstu4145() != null;
     }
+
+    public static boolean isSigAlgEnabled(String sigAlg) {
+        if (AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410.equals(sigAlg)) {
+            return isGost3410Enabled();
+        } else if (AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145.equals(sigAlg)) {
+            return isDstu4145Enabled();
+        } else {
+            return true;
+        }
+    }
 }
