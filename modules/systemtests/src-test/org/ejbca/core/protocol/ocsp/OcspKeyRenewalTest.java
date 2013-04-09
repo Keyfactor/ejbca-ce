@@ -67,16 +67,25 @@ import org.junit.Test;
  */
 public class OcspKeyRenewalTest {
 
+    private static final String CA_DN = "CN=OcspDefaultTestCA";
+
     private OcspKeyRenewalProxySessionRemote ocspKeyRenewalProxySession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(OcspKeyRenewalProxySessionRemote.class);
     private StandaloneOcspResponseGeneratorTestSessionRemote standaloneOcspResponseGeneratorTestSession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(StandaloneOcspResponseGeneratorTestSessionRemote.class);
+        .getRemoteSession(StandaloneOcspResponseGeneratorTestSessionRemote.class);
 
+    private static KeyPair caKeys;
+    private static X509Certificate caCertificate;
+    
+    
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProviderIfNotAvailable();
+        caKeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        caCertificate =  CertTools.genSelfCert(CA_DN, 365, null, caKeys.getPrivate(), caKeys.getPublic(),
+                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
     }
-  
+
     /**
      * This is the most basic sanity test possible. Key renewal is tested with a DummyCryptoToken in place of a PKCS11, and the web service 
      * is replaced by a mock (as defined in OcspKeyRenewalProxySessionBean) that parrots the expected reply. 
@@ -85,51 +94,9 @@ public class OcspKeyRenewalTest {
     @Test
     public void testKeyRenewal() throws KeyStoreException, CryptoTokenOfflineException, InstantiationException, OCSPException,
             NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, SignatureException, IllegalStateException,
-            NoSuchProviderException, OperatorCreationException, CertificateException, IOException {
-        //Set a mock CryptoToken in the cache
-        final String testAlias = "testAlias";
-        Map<Integer, CryptoTokenAndChain> newCache = new HashMap<Integer, CryptoTokenAndChain>();
-        CryptoToken dummyCryptoToken = new DummyCryptoToken();
-        KeyPair caKeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        //Generate a fake CA Certificate
-        String caDn = "CN=OcspDefaultTestCA";
-        X509Certificate caCert = CertTools.genSelfCert(caDn, 365, null, caKeys.getPrivate(), caKeys.getPublic(),
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
-        //Generate the signer certificate
-        Date firstDate = new Date();
-        // Set starting date to tomorrow
-        firstDate.setTime(firstDate.getTime() + (24 * 3600 * 1000));
-        Date lastDate = new Date();
-        // Set Expiry in two days
-        lastDate.setTime(lastDate.getTime() + ((2 * 24 * 60 * 60 * 1000)));
-        BigInteger serno = SernoGeneratorRandom.instance().getSerno();
-        SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo((ASN1Sequence)ASN1Primitive.fromByteArray(caKeys.getPublic().getEncoded()));
-        final X509NameEntryConverter converter = new X509DefaultEntryConverter();
-        X500Name caName =  CertTools.stringToBcX500Name(caDn, converter, false);
-        ocspKeyRenewalProxySession.setManagementCaKeyPair(caKeys);
-        ocspKeyRenewalProxySession.setCaDn(caDn);
-        X500Name signerName = CertTools.stringToBcX500Name("CN=ocspTestSigner", converter, false);
-        final X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(caName, serno, firstDate, lastDate, signerName, pkinfo);
-        final ContentSigner signer = new JcaContentSignerBuilder(AlgorithmConstants.SIGALG_SHA1_WITH_RSA).build(caKeys.getPrivate());
-        final X509CertificateHolder certHolder = certbuilder.build(signer);
-        final X509Certificate cert = (X509Certificate)CertTools.getCertfromByteArray(certHolder.getEncoded());     
-        
-        X509Certificate[] certchain = {cert, caCert};
-        try {
-            cert.verify(caCert.getPublicKey());
-        } catch (SignatureException e) {
-            throw new RuntimeException();
-        }
-        CryptoTokenAndChain testTokenAndChain = new CryptoTokenAndChain(dummyCryptoToken, certchain, testAlias);
-        newCache.put(Integer.valueOf(1337), testTokenAndChain);
-        standaloneOcspResponseGeneratorTestSession.replaceTokenAndChainCache(newCache);
+            NoSuchProviderException, OperatorCreationException, CertificateException, IOException, SecurityException, IllegalArgumentException, NoSuchFieldException, IllegalAccessException {        
+        X509Certificate cert = setupMockKeyStore();
         Collection<CryptoTokenAndChain> oldValues = standaloneOcspResponseGeneratorTestSession.getCacheValues();
-        if(oldValues.size() < 1) {
-            throw new RuntimeException("Cache contains no values. Something is messed up.");
-        }
-        if(oldValues.size() > 1) {
-            throw new RuntimeException("Cache contains more than one value. Something is messed up.");
-        }
         ocspKeyRenewalProxySession.renewKeyStores("CN=ocspTestSigner");
         List<CryptoTokenAndChain> newValues = new ArrayList<CryptoTokenAndChain>(standaloneOcspResponseGeneratorTestSession.getCacheValues());
         //Make sure that cache contains one and only one value
@@ -140,10 +107,92 @@ public class OcspKeyRenewalTest {
                 newSigningCertificate.getSerialNumber());
         //Make sure that the new certificate is signed by the CA certificate
         try {
-            newSigningCertificate.verify(caCert.getPublicKey());
+            newSigningCertificate.verify(caCertificate.getPublicKey());
         } catch (SignatureException e) {
             fail("The new signing certificate was not signed correctly.");
         }
     }
+    
+    /**
+     * Test Key renewal using the automated update process. 
+     */
+    @Test
+    public void testAutomaticKeyRenewal() throws InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException,
+            SignatureException, IllegalStateException, NoSuchProviderException, OperatorCreationException, CertificateException, IOException,
+            InstantiationException, OCSPException, InterruptedException, SecurityException, IllegalArgumentException, NoSuchFieldException, IllegalAccessException {
+        X509Certificate cert = setupMockKeyStore();
+        Collection<CryptoTokenAndChain> oldValues = standaloneOcspResponseGeneratorTestSession.getCacheValues();
+        ocspKeyRenewalProxySession.setTimerToFireInOneSecond();
+        Thread.sleep(2000);
+        //Timer should have fired, and we should see some new stuff.
+        List<CryptoTokenAndChain> newValues = new ArrayList<CryptoTokenAndChain>(standaloneOcspResponseGeneratorTestSession.getCacheValues());
+        //Make sure that cache contains one and only one value
+        assertEquals("Cache contains a different amount of values after rekeying than before. This indicates a test failure", oldValues.size(), newValues.size());
+        //Make check that the certificate has changed (sanity check)
+        X509Certificate newSigningCertificate = newValues.get(0).getChain()[0];
+        assertNotEquals("The same certificate was returned after the renewal process. Key renewal failed", cert.getSerialNumber(),
+                newSigningCertificate.getSerialNumber());
+        //Make sure that the new certificate is signed by the CA certificate
+        try {
+            newSigningCertificate.verify(caCertificate.getPublicKey());
+        } catch (SignatureException e) {
+            fail("The new signing certificate was not signed correctly.");
+        }
+ }
+    
+    /**
+     * 
+     * @return the ocsp signing certificate
+     * @throws IllegalAccessException 
+     * @throws NoSuchFieldException 
+     * @throws IllegalArgumentException 
+     * @throws SecurityException 
+     */
+    private X509Certificate setupMockKeyStore() throws InvalidAlgorithmParameterException, InvalidKeyException, NoSuchAlgorithmException, SignatureException,
+            IllegalStateException, NoSuchProviderException, OperatorCreationException, CertificateException, IOException, InstantiationException,
+            OCSPException, SecurityException, IllegalArgumentException, NoSuchFieldException, IllegalAccessException {
+        //Set a mock CryptoToken in the cache
+        final String testAlias = "testAlias";
+        Map<Integer, CryptoTokenAndChain> newCache = new HashMap<Integer, CryptoTokenAndChain>();
+        CryptoToken dummyCryptoToken = new DummyCryptoToken();
+         
+        //Generate the signer certificate
+        Date firstDate = new Date();
+        // Set starting date to tomorrow
+        firstDate.setTime(firstDate.getTime());
+        Date lastDate = new Date();
+        // Set expiration to five minutes
+        lastDate.setTime(lastDate.getTime() + (60 * 5 * 1000));
+        BigInteger serno = SernoGeneratorRandom.instance().getSerno();
+        SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo((ASN1Sequence) ASN1Primitive.fromByteArray(caKeys.getPublic().getEncoded()));
+        final X509NameEntryConverter converter = new X509DefaultEntryConverter();
+        X500Name caName = CertTools.stringToBcX500Name(CA_DN, converter, false);
+        ocspKeyRenewalProxySession.setManagementCaKeyPair(caKeys);
+        ocspKeyRenewalProxySession.setCaDn(CA_DN);
+        ocspKeyRenewalProxySession.setMockWebServiceObject();
+        X500Name signerName = CertTools.stringToBcX500Name("CN=ocspTestSigner", converter, false);
+        final X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(caName, serno, firstDate, lastDate, signerName, pkinfo);
+        final ContentSigner signer = new JcaContentSignerBuilder(AlgorithmConstants.SIGALG_SHA1_WITH_RSA).build(caKeys.getPrivate());
+        final X509CertificateHolder certHolder = certbuilder.build(signer);
+        final X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(certHolder.getEncoded());
 
+        X509Certificate[] certchain = { cert, caCertificate };
+        try {
+            cert.verify(caCertificate.getPublicKey());
+        } catch (SignatureException e) {
+            throw new RuntimeException();
+        }
+        CryptoTokenAndChain testTokenAndChain = new CryptoTokenAndChain(dummyCryptoToken, certchain, testAlias);
+        newCache.put(Integer.valueOf(1337), testTokenAndChain);
+        standaloneOcspResponseGeneratorTestSession.replaceTokenAndChainCache(newCache);
+        Collection<CryptoTokenAndChain> oldValues = standaloneOcspResponseGeneratorTestSession.getCacheValues();
+        if (oldValues.size() < 1) {
+            throw new RuntimeException("Cache contains no values. Something is messed up.");
+        }
+        if (oldValues.size() > 1) {
+            throw new RuntimeException("Cache contains more than one value. Something is messed up.");
+        }
+        return cert;
+    }
+    
 }
