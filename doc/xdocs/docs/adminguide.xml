@@ -5222,7 +5222,7 @@ This is very useful in a cluster when you can take cluster nodes in and out of r
 <li>healthcheck.maintenancefile, default: not set - location of file containing information about maintenance.</li>
 <li>healthcheck.maintenancepropertyname, default: DOWN_FOR_MAINTENANCE - the healthcheck.maintenancefile should contain a single line like this 'DOWN_FOR_MAINTENANCE=true'.</li>
 </ul>
-<p>The following parameters confiugure what message or HTTP error code the health service returns.
+<p>The following parameters configure what message or HTTP error code the health service returns.
 </p> 
 <ul>
 <li>healthcheck.okmessage, default: 'ALLOK' - Text string used to say that every thing is ok with this node.</li>
