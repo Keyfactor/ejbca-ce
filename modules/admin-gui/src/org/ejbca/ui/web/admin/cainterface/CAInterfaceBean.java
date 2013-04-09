@@ -740,6 +740,12 @@ public class CAInterfaceBean implements Serializable {
             } else if (AlgorithmConstants.KEYALGORITHM_ECDSA.equals(caSignKeyAlgo)) {
                 caSignKeySpec = "prime256v1";
                 extendedServiceSignatureKeySpec = caSignKeySpec;
+            } else if (AlgorithmTools.isGost3410Enabled() && AlgorithmConstants.KEYALGORITHM_ECGOST3410.equals(caSignKeyAlgo)) {
+                caSignKeySpec = CesecoreConfiguration.getExtraAlgSubAlgName("gost3410", "B");
+                extendedServiceSignatureKeySpec = caSignKeySpec;
+            } else if (AlgorithmTools.isDstu4145Enabled() && AlgorithmConstants.KEYALGORITHM_DSTU4145.equals(caSignKeyAlgo)) {
+                caSignKeySpec = CesecoreConfiguration.getExtraAlgSubAlgName("dstu4145", "233");
+                extendedServiceSignatureKeySpec = caSignKeySpec;
             }
             cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, keyAliasCertSignKey, caSignKeySpec);
 	    }
