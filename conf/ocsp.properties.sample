@@ -228,6 +228,16 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 # Default: -1 
 #ocsp.rekeying.renewTimeBeforeCertExpiresInSeconds=86400
 
+# Specifies how often the signing certificates should be checked. Default value is 3600 seconds, but consider lowering this value if signing certificates are expected
+# to be valid less than 24h 
+#ocsp.rekeying.update.time.in.seconds=
+
+# Specifies how much safety margin a certificate should have before it's updated, i.e when it should be considered a candidate for renewal. The effective
+# validity time for a signing certificate is it's actual validity minus this value. Timer will output warnings if this value is less than the update time.
+#
+# The default for this value is 24h 
+#ocsp.rekeying.safety.margin.in.seconds=
+
 # Keystore of soft key and certificate to be used as the SSL WS client when connecting to EJBCA.
 # Do not define this property if you want to use the HSM to store the client WS key.
 # If not defined a key in the used P11 slot will be used as client key.

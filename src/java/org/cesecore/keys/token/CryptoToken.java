@@ -278,5 +278,5 @@ public interface CryptoToken extends Serializable {
 
     /** @return true if there is an auto activation PIN stored in the token */
     boolean isAutoActivationPinPresent();
-
+    
 }

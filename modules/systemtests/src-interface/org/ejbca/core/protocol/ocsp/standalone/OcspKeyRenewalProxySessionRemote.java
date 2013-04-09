@@ -18,7 +18,6 @@ import java.security.KeyStoreException;
 
 import javax.ejb.Remote;
 
-import org.bouncycastle.asn1.x500.X500Name;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 
 /**
@@ -48,5 +47,13 @@ public interface OcspKeyRenewalProxySessionRemote {
     void setManagementCaKeyPair(KeyPair caKeyPair);
     
     void setCaDn(String caName);
+    
+    /**
+     * Commands the key renewal timer to fire in 1 second, waits for that time, then resets. 
+     * @throws InterruptedException 
+     */
+    void setTimerToFireInOneSecond() throws InterruptedException;
 
+    
+    void setMockWebServiceObject() throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException;
 }

@@ -68,10 +68,12 @@ public class OCSPServletStandAlone extends BaseOcspServlet {
     public void init(ServletConfig config) throws ServletException {
 
         // Log with warn priority so it will be visible in strict production configurations  
-	    m_versionLog.warn("Init, "+GlobalConfiguration.EJBCA_VERSION+" OCSP startup");
-	    if (!OcspConfiguration.getDoNotStorePasswordsInMemory()) {
+        m_versionLog.warn("Init, " + GlobalConfiguration.EJBCA_VERSION + " OCSP startup");
+        if (!OcspConfiguration.getDoNotStorePasswordsInMemory()) {
             standaloneOcspResponseGeneratorSession.reloadTokenAndChainCache();
-        } 
+        }
+        //Start initial rekeying timer.
+        ocspKeyRenewalSession.startTimer();
     }
     
     /**

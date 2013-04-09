@@ -34,6 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
+import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.Timeout;
@@ -139,11 +140,13 @@ public class StandaloneOcspResponseGeneratorSessionBean extends OcspResponseSess
      */
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void timeoutHandler(Timer timer) {
-
         reloadTokenAndChainCache();
-
-        Integer timerInfo = (Integer) timer.getInfo();
-        addTimer(OcspConfiguration.getSignTrustValidTimeInSeconds(), timerInfo);
+        try {
+            Integer timerInfo = (Integer) timer.getInfo();
+            addTimer(OcspConfiguration.getSignTrustValidTimeInSeconds(), timerInfo);
+        } catch (NoSuchObjectLocalException e) {
+            log.info("Timer was canceled.");
+        }
     }
 
     /**
