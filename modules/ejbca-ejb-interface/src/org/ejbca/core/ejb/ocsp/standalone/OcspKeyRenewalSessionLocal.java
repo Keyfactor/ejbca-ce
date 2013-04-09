@@ -49,7 +49,7 @@ public interface OcspKeyRenewalSessionLocal {
      * This method causes the standalone OCSP responder to renew its keystores. 
      * 
      * @param signerSubjectDN signerSubjectDN subject DN of the signing key to be renewed. The string "all" (as represented by the constant 
-     * TokenAndChainCache.RENEW_ALL_KEYS) will result 
+     * TokenAndChainCache.RENEW_ALL_KEYS) will result in all keys being renewed
      * @param p11Password password to the p11 key store.
      * @throws KeyStoreException if p11 key store hasn't been activated
      * @throws CryptoTokenOfflineException 
@@ -60,6 +60,18 @@ public interface OcspKeyRenewalSessionLocal {
     void renewKeyStores(String signerSubjectDN, String p11Password) throws KeyStoreException, CryptoTokenOfflineException, CertificateException, InvalidKeyException;
     
 
+    /**
+     * Sets the EjbcaWS object used in this class, if the default one isn't meant to be used. This method is used mainly for testing purposes,
+     * in order to insert a mock object. 
+     * 
+     * @param ejbcaWS 
+     */
     void setEjbcaWs(EjbcaWS ejbcaWS);
+    
+    /**
+     * Cancels all running timers and starts the initial timer. This method should be called from a servlet and be used to start the rekeying 
+     * timer at startup.
+     */
+    void startTimer();
 
 }

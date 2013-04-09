@@ -38,7 +38,6 @@ public class OcspConfiguration {
     public static final String SIGNATUREREQUIRED = "ocsp.signaturerequired";
     public static final String STORE_PASSWORD = "ocsp.keys.storePassword";
     public static final String CARD_PASSWORD = "ocsp.keys.cardPassword";
-    public static final String RENEW_TIME_BEFORE_CERT_EXPIRES_IN_SECONDS = "ocsp.rekeying.renewTimeBeforeCertExpiresInSeconds";
     public static final String REKEYING_WSURL = "ocsp.rekeying.wsurl";
     public static final String P11_PASSWORD = "ocsp.p11.p11password";
     public static final String DO_NOT_STORE_PASSWORDS_IN_MEMORY = "ocsp.activation.doNotStorePasswordsInMemory";
@@ -49,9 +48,11 @@ public class OcspConfiguration {
     public static final String NONE_EXISTING_IS_GOOD = "ocsp.nonexistingisgood";
     public static final String NONE_EXISTING_IS_GOOD_URI = NONE_EXISTING_IS_GOOD+".uri.";
     public static final String NONE_EXISTING_IS_BAD_URI = "ocsp.nonexistingisbad.uri.";
-    private static final String REKEYING_TRIGGERING_HOSTS =  "ocsp.rekeying.trigging.hosts";
-    private static final String REKEYING_TRIGGERING_PASSWORD = "ocsp.rekeying.trigging.password";
-
+    public static final String REKEYING_TRIGGERING_HOSTS =  "ocsp.rekeying.trigging.hosts";
+    public static final String REKEYING_TRIGGERING_PASSWORD = "ocsp.rekeying.trigging.password";
+    public static final String REKEYING_UPDATE_TIME_IN_SECONDS = "ocsp.rekeying.update.time.in.seconds";
+    public static final String REKEYING_SAFETY_MARGIN_IN_SECONDS = "ocsp.rekeying.safety.margin.in.seconds";
+    
     public static final int RESTRICTONISSUER = 0;
     public static final int RESTRICTONSIGNER = 1;
 
@@ -65,6 +66,22 @@ public class OcspConfiguration {
         return ConfigurationHolder.getString("ocsp.signaturealgorithm");
     }
 
+    /**
+     * 
+     * @return How often the standalone OCSP certificate cache should be checked for expiring certificates. Default value i 1 hour
+     */
+    public static long getRekeyingUpdateTimeInSeconds() {
+        return Long.parseLong(ConfigurationHolder.getString(REKEYING_UPDATE_TIME_IN_SECONDS));
+    }
+    
+    /**
+     * 
+     * @return How long from true expiry time that a certificate should be renewed. Default value is 1 day
+     */
+    public static long getRekeyingSafetyMarginInSeconds() {
+        return Long.parseLong(ConfigurationHolder.getString(REKEYING_SAFETY_MARGIN_IN_SECONDS));
+    }
+    
     /**
      * The interval on which new OCSP signing certificates are loaded in seconds
      */
@@ -451,22 +468,7 @@ public class OcspConfiguration {
     public static String getRekeyingTriggingPassword() {
         return ConfigurationHolder.getString(REKEYING_TRIGGERING_PASSWORD);
     }
-    
-    /**
-     * @return time before the experation of the OCSP signing cert that the signing key should be renewed.
-     */
-    public static int getRenewTimeBeforeCertExpiresInSeconds() {
-        final String sValue = ConfigurationHolder.getString(RENEW_TIME_BEFORE_CERT_EXPIRES_IN_SECONDS);
-        if (sValue == null || sValue.length() < 1) {
-            return -1;
-        }
-        try {
-            return Integer.parseInt(sValue);
-        } catch (NumberFormatException e) {
-            log.error("Could not parse value of " + RENEW_TIME_BEFORE_CERT_EXPIRES_IN_SECONDS + " to integer.", e);
-        }
-        return -1;
-    }
+   
 
     /**
      * @return EJBCA web service URL

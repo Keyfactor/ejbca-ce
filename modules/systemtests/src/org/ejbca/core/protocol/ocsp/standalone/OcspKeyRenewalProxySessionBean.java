@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -43,6 +42,8 @@ import org.cesecore.certificates.ca.internal.SernoGeneratorRandom;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.config.ConfigurationHolder;
+import org.cesecore.config.OcspConfiguration;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.CertTools;
@@ -93,26 +94,40 @@ public class OcspKeyRenewalProxySessionBean implements OcspKeyRenewalProxySessio
 
     @EJB
     private OcspKeyRenewalSessionLocal ocspKeyRenewalSession;
-   
-    private KeyPair caKeyPair;
-    private String caDn;
+  
     
-    @PostConstruct
+    @Override
     public void setMockWebServiceObject() throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
         EjbcaWSMock ejbcaWSMock = new EjbcaWSMock();
         ocspKeyRenewalSession.setEjbcaWs(ejbcaWSMock);
 
     }
     
+    
+    
     @Override
     public void setManagementCaKeyPair(KeyPair caKeyPair) {
-        this.caKeyPair = caKeyPair;
+        SharedInformation.INSTANCE.setCaKeyPair(caKeyPair);
         
     }
     
     @Override
     public void setCaDn(String caDn) {
-        this.caDn = caDn;
+        SharedInformation.INSTANCE.setCaDn(caDn);
+    }
+    
+    @Override
+    public void setTimerToFireInOneSecond() throws InterruptedException {
+        long oldValue = OcspConfiguration.getRekeyingUpdateTimeInSeconds();
+        ConfigurationHolder.updateConfiguration(OcspConfiguration.REKEYING_UPDATE_TIME_IN_SECONDS, "1");
+        try {
+            ocspKeyRenewalSession.startTimer();
+            //Sleep for a second before killing the timer. 
+            Thread.sleep(1000);
+        } finally {
+            ConfigurationHolder.updateConfiguration(OcspConfiguration.REKEYING_UPDATE_TIME_IN_SECONDS, Long.toString(oldValue));
+            ocspKeyRenewalSession.startTimer();
+        }
     }
     
     
@@ -165,7 +180,6 @@ public class OcspKeyRenewalProxySessionBean implements OcspKeyRenewalProxySessio
         public CertificateResponse crmfRequest(String arg0, String arg1, String arg2, String arg3, String arg4)
                 throws AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, CesecoreException_Exception,
                 EjbcaException_Exception, NotFoundException_Exception {
-            // TODO Auto-generated method stub
             return null;
         }
 
@@ -214,9 +228,12 @@ public class OcspKeyRenewalProxySessionBean implements OcspKeyRenewalProxySessio
                 SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo((ASN1Sequence)ASN1Primitive.fromByteArray(pubKey.getEncoded()));
                 final X509NameEntryConverter converter = new X509DefaultEntryConverter();
                 X500Name signerName = CertTools.stringToBcX500Name("CN=ocspTestSigner", converter, false);
-                X500Name caName = CertTools.stringToBcX500Name(caDn, converter, false);
+                if( SharedInformation.INSTANCE.getCaDn() == null) {
+                    throw new IllegalStateException("caDn is null, can not proceed.");
+                }
+                X500Name caName = CertTools.stringToBcX500Name(SharedInformation.INSTANCE.getCaDn(), converter, false);
                 final X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(caName, serno, firstDate, lastDate, signerName, pkinfo);
-                final ContentSigner signer = new JcaContentSignerBuilder(AlgorithmConstants.SIGALG_SHA1_WITH_RSA).build(caKeyPair.getPrivate());
+                final ContentSigner signer = new JcaContentSignerBuilder(AlgorithmConstants.SIGALG_SHA1_WITH_RSA).build(SharedInformation.INSTANCE.getCaKeyPair().getPrivate());
                 final X509CertificateHolder certHolder = certbuilder.build(signer);
                 final X509Certificate cert = (X509Certificate)CertTools.getCertfromByteArray(certHolder.getEncoded());
                 
@@ -400,4 +417,36 @@ public class OcspKeyRenewalProxySessionBean implements OcspKeyRenewalProxySessio
 
     }
 
+    private static enum SharedInformation {
+        INSTANCE;
+
+        private KeyPair caKeyPair;
+        private String caDn;
+        /**
+         * @return the caKeyPair
+         */
+        public KeyPair getCaKeyPair() {
+            return caKeyPair;
+        }
+        /**
+         * @param caKeyPair the caKeyPair to set
+         */
+        public void setCaKeyPair(KeyPair caKeyPair) {
+            this.caKeyPair = caKeyPair;
+        }
+        /**
+         * @return the caDn
+         */
+        public String getCaDn() {
+            return caDn;
+        }
+        /**
+         * @param caDn the caDn to set
+         */
+        public void setCaDn(String caDn) {
+            this.caDn = caDn;
+        }
+    }
+    
 }
+
