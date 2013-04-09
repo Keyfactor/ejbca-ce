@@ -1831,8 +1831,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             CryptoTokenAuthenticationFailedException, AuthorizationDeniedException {
         int cryptoTokenId = 0;
         final int maxTriesToFindUnusedCryptoTokenName = 25;
+        String postFix = "";
         for (int i=0; cryptoTokenId==0 && i<maxTriesToFindUnusedCryptoTokenName; i++) {
-            String postFix = "";
             String cryptoTokenName = basename + postFix;
             try {
                 cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, cryptoTokenName, className, cryptoTokenProperties,
