@@ -425,6 +425,9 @@ function checkallfields(){
                 	    signatureAlgorithmParam = AlgorithmConstants.AVAILABLE_SIGALGS[0];
             	    }
                     for (final String current : AlgorithmConstants.AVAILABLE_SIGALGS) {
+                        if (!AlgorithmTools.isSigAlgEnabled(current)) {
+                            continue; // e.g. GOST3410 if not configured
+                        }
                     	final boolean selectCurrent = current.equals(signatureAlgorithmParam);
                         final String entrySelected = selectCurrent ? "selected" : "";
                         %>
