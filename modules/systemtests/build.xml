@@ -145,7 +145,7 @@
 	<target name="systemtest-compile-interfaces-va" depends="ejbca-properties">
 			<mkdir dir="${build.interface.dir}" />
 			<javac srcdir="${src.interface.dir}" destdir="${build.interface.dir}" debug="on" includeantruntime="no"
-		        	encoding="iso8859-1" classpathref="interfaces-va.classpath" target="${java.target.version}">
+		        	encoding="iso8859-1" classpathref="interfaces-va.classpath" target="${java.target.version}">			
 				<include name="org/cesecore/configuration/CesecoreConfigurationProxySession*.java"/>
 				<include name="org/ejbca/core/protocol/ocsp/standalone/OcspKeyRenewalProxySession*.java" />			
 				<include name="org/cesecore/certificates/ocsp/standalone/*.java" />

@@ -41,8 +41,6 @@ public class OcspConfiguration {
     public static final String REKEYING_WSURL = "ocsp.rekeying.wsurl";
     public static final String P11_PASSWORD = "ocsp.p11.p11password";
     public static final String DO_NOT_STORE_PASSWORDS_IN_MEMORY = "ocsp.activation.doNotStorePasswordsInMemory";
-    public static final String WSSWKEYSTOREPATH = "ocsp.rekeying.swKeystorePath";
-    public static final String WSSWKEYSTOREPASSWORD = "ocsp.rekeying.swKeystorePassword";
     public static final String WARNING_BEFORE_EXPERATION_TIME = "ocsp.warningBeforeExpirationTime";
     public static final String OCSP_KEYS_DIR= "ocsp.keys.dir";
     public static final String NONE_EXISTING_IS_GOOD = "ocsp.nonexistingisgood";
@@ -517,33 +515,6 @@ public class OcspConfiguration {
             return false;
         }
         return true;
-    }
-
-    /**
-     * Path of the file to be used as SW keystore for the client certificate in the WS session when rekeying.
-     * 
-     * @return null if SW keystore should not be used.
-     */
-    public static String getWsSwKeystorePath() {
-        return ConfigurationHolder.getString(WSSWKEYSTOREPATH);
-    }
-
-    /**
-     * @return password for the SW keystore
-     */
-    public static String getWsSwKeystorePassword() {
-        return ConfigurationHolder.getString(WSSWKEYSTOREPASSWORD);
-    }
-
-    /**
-     * @return alias for keys that could be used as signer keys. null means all keys
-     */
-    public static String[] getKeyAlias() {
-        final String sConf = ConfigurationHolder.getString("ocsp.rekeying.listOfAliases");
-        if (sConf == null) {
-            return null;
-        }
-        return StringUtils.split(sConf.trim(), ';');
     }
 
     /**

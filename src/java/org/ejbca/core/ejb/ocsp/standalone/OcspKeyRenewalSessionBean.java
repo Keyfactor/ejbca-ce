@@ -108,9 +108,18 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
     private TimerService timerService;
 
     @PostConstruct
-    public void postConstruct() {
+    /**
+     * Performs postconstruct actions on this class
+     * 
+     * @throws KeyRenewalFailedException if WebService object could not be created, making rekeying impossible. 
+     */
+    public void postConstruct() throws KeyRenewalFailedException {
         if (ejbcaWS == null) {
-            ejbcaWS = getEjbcaWS();
+            synchronized (this.getClass()) {
+                if (ejbcaWS == null) {
+                    ejbcaWS = getEjbcaWS();
+                }
+            }
         }
         timerService = sessionContext.getTimerService();
         //Just do this once
@@ -123,24 +132,18 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
             }
         }
     }
-
-    @Override
-    public void renewKeyStores(String signerSubjectDN) throws KeyStoreException, CryptoTokenOfflineException, InvalidKeyException {
-        renewKeyStores(signerSubjectDN, OcspConfiguration.getP11Password());
-    }
     
     /**
      * 
      * 
      * @param signerSubjectDN signerSubjectDN subject DN of the signing key to be renewed. The string "all" (as represented by the constant 
      * TokenAndChainCache.RENEW_ALL_KEYS) will result in all keys being renewed
-     * @param p11Password password to the p11 key store.
      * @param safetyMargin the number of seconds before actual expiration that a keystore should be renewed
      * @throws CryptoTokenOfflineException if Crypto Token is not available or connected, or key with alias does not exist.
      * @throws InvalidKeyException if the public key in the tokenAndChain can not be used to verify a string signed by the private key, because the key 
      * is wrong or the signature operation fails for other reasons such as a NoSuchAlgorithmException or SignatureException.
      */
-    private synchronized void renewKeyStores(String signerSubjectDN, String p11Password, long safetyMargin) throws InvalidKeyException,
+    private synchronized void renewKeyStores(String signerSubjectDN, long safetyMargin) throws InvalidKeyException,
             CryptoTokenOfflineException {
         //Cancel all running timers
         cancelTimers();
@@ -194,14 +197,14 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
     }
 
     @Override
-    public synchronized void renewKeyStores(String signerSubjectDN, String p11Password) throws KeyStoreException, CryptoTokenOfflineException,
+    public synchronized void renewKeyStores(String signerSubjectDN) throws KeyStoreException, CryptoTokenOfflineException,
             InvalidKeyException {
-        renewKeyStores(signerSubjectDN, p11Password, NO_SAFETY_MARGIN);
+        renewKeyStores(signerSubjectDN, NO_SAFETY_MARGIN);
     }
 
     /**
      * 
-     * @param tokenAndChain
+     * @param tokenAndChain The CryptoTokenAndChain containing the keystore to renew.
      * @throws InvalidKeyException if the public key in the tokenAndChain can not be used to verify a string signed by the private key, because the key is wrong or 
      * the signature operation fails for other reasons such as a NoSuchAlgorithmException or SignatureException.
      * @throws CryptoTokenOfflineException if Crypto Token is not available or connected, or key with alias does not exist.
@@ -425,7 +428,7 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
     public void timeoutHandler(Timer timer) {
         long rekeyingUpdateTime = OcspConfiguration.getRekeyingUpdateTimeInSeconds();
         try {
-            renewKeyStores(RENEW_ALL_KEYS, OcspConfiguration.getP11Password(), OcspConfiguration.getRekeyingSafetyMarginInSeconds());
+            renewKeyStores(RENEW_ALL_KEYS, OcspConfiguration.getRekeyingSafetyMarginInSeconds());
         } catch (InvalidKeyException e) {
             log.error("A cached crypto token contains an invalid key pair.", e);
         } catch (CryptoTokenOfflineException e) {

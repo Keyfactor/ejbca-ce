@@ -287,6 +287,10 @@ public class OcspJunitHelper {
 		servletGetWithParam("restoreConfig=");
 	}
 
+	public void renewAllKeys() throws IOException, URISyntaxException {
+	    servletGetWithParam("renewSigner=all\\&password=foo123");
+	}
+	
 	public void alterConfig(final Map<String, String> config) throws IOException, URISyntaxException {
 		if ( config==null || config.size()<1 ) {
 			return;
