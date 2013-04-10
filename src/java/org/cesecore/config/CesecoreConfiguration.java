@@ -146,59 +146,41 @@ public final class CesecoreConfiguration {
         return TRUE.equalsIgnoreCase(ConfigurationHolder.getString("development.provider.installation"));
     }
 
-    /**
-     * Parameter to specify if retrieving CAInfo and CA from CAAdminSession should be cached, and in that case for how long.
-     */
+    /** Parameter to specify if retrieving CAInfo and CA from CAAdminSession should be cached, and in that case for how long. */
     public static long getCacheCaTimeInCaSession() {
-        final String value = ConfigurationHolder.getString("cainfo.cachetime");
-        long time = 10000L; // Cache for 10 seconds is the default (Changed 2013-02-14 under ECA-2801.)
-        try {
-            if (value!=null) {
-                time = Long.valueOf(value);
-            }
-        } catch (NumberFormatException e) {
-            log.error("Invalid value in cainfo.cachetime, must be decimal number (milliseconds to cache CA info): " + e.getMessage());
-        }
-        return time;
+        // Cache for 10 seconds is the default (Changed 2013-02-14 under ECA-2801.)
+        return getLongValue("cainfo.cachetime", 10000L, "milliseconds to cache CA info");
     }
 
     /** @return configuration for when cached CryptoTokens are considered stale and will be refreshed from the database. */
     public static long getCacheTimeCryptoToken() {
-        final String value = ConfigurationHolder.getString("cryptotoken.cachetime");
-        long time = 10000L; // Cache for 10 seconds is the default
+        return getLongValue("cryptotoken.cachetime", 10000L, "milliseconds");
+    }
+
+    /** @return configuration for when cached SignersMapping are considered stale and will be refreshed from the database. */
+    public static long getCacheTimeSignerMapping() {
+        return getLongValue("signermapping.cachetime", 10000L, "milliseconds");
+    }
+
+    /** Parameter to specify if retrieving Certificate profiles in StoreSession should be cached, and in that case for how long. */
+    public static long getCacheCertificateProfileTime() {
+        return getLongValue("certprofiles.cachetime", 1000L, "milliseconds to cache Certificate profiles");
+    }
+
+    /** Parameter to specify if retrieving Authorization Access Rules (in AuthorizationSession) should be cached, and in that case for how long. */
+    public static long getCacheAuthorizationTime() {
+        return getLongValue("certprofiles.cachetime", 30000L, "milliseconds to cache authorization");
+    }
+
+    private static long getLongValue(final String propertyName, final long defaultValue, final String unit) {
+        final String value = ConfigurationHolder.getString(propertyName);
+        long time = defaultValue;
         try {
             if (value!=null) {
                 time = Long.valueOf(value);
             }
         } catch (NumberFormatException e) {
-            log.error("Invalid value in cryptotoken.cachetime, must be decimal number (milliseconds): " + e.getMessage());
-        }
-        return time;
-    }
-
-    /**
-     * Parameter to specify if retrieving Certificate profiles in StoreSession should be cached, and in that case for how long.
-     */
-    public static long getCacheCertificateProfileTime() {
-        long time = 1000; // cache 1 second is the default
-        try {
-            time = Long.valueOf(ConfigurationHolder.getString("certprofiles.cachetime"));
-        } catch (NumberFormatException e) {
-            log.error("Invalid value in certprofiles.cachetime, must be decimal number (milliseconds to cache Certificate profiles): "
-                    + e.getMessage());
-        }
-        return time;
-    }
-
-    /**
-     * Parameter to specify if retrieving Authorization Access Rules (in AuthorizationSession) should be cached, and in that case for how long.
-     */
-    public static long getCacheAuthorizationTime() {
-        long time = 30000; // cache 30 seconds is the default
-        try {
-            time = Long.valueOf(ConfigurationHolder.getString("authorization.cachetime"));
-        } catch (NumberFormatException e) {
-            log.error("Invalid value in authorization.cachetime, must be decimal number (milliseconds to cache authorization): " + e.getMessage());
+            log.error("Invalid value for " + propertyName + ". Using default " + defaultValue + ". Value must be decimal number (" + unit + "): " + e.getMessage());
         }
         return time;
     }
