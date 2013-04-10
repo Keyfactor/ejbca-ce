@@ -147,7 +147,7 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
                     ksenv = this.ejbcaraws.softTokenRequest(user, null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
                 } catch (Exception e) {
                     final String message = e.getMessage();
-                    log.debug("Message when there is allready a certificate in the DB: "+message);
+                    log.debug("Message when there is already a certificate in the DB: "+message);
                     assertTrue("Unexpected Exception." ,
                             message.startsWith("There is already a certificate stored in 'CertificateData' with the serial number") ||
                             message.startsWith("Transaction rolled back"));
