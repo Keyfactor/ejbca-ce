@@ -108,3 +108,6 @@
 #authorization.cachetime=157680000000
 #authorization.cachetime=-1
 
+# TODO
+# Default: 10000 (10 seconds)
+#signermapping.cachetime=10000
