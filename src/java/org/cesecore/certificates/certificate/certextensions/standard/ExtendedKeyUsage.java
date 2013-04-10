@@ -14,8 +14,6 @@ package org.cesecore.certificates.certificate.certextensions.standard;
 
 import java.security.PublicKey;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;

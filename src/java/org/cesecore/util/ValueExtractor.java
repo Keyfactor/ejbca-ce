@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.cesecore.util;
 
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
