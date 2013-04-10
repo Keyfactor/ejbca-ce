@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <java version="1.6.0_18" class="java.beans.XMLDecoder">
- <object class="org.ejbca.core.model.ra.UserDataVO">
+ <object class="org.cesecore.certificates.endentity.EndEntityInformation">
   <void property="CAId">
    <int>-1916092745</int>
   </void>

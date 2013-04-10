@@ -22,7 +22,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 
 /**
  * Class used to represent userdata in the WebService API.
- * Is used instead of UserDataVO because of profilenames is used instead of id's.<br>
+ * Is used instead of EndEntityInformation because of profilenames is used instead of id's.<br>
  * Example code:<pre>
  *   UserDataVOWS user = new UserDataVOWS ();
  *   user.setUsername ("tester");

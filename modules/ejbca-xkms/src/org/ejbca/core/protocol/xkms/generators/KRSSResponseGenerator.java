@@ -199,21 +199,21 @@ public class KRSSResponseGenerator extends
      * @param revocationCode The code used later by the user to revoke, it it is allowed by the XKMS Service
      * @return the generated certificate or null if generation failed
      */
-    protected X509Certificate registerReissueOrRecover(boolean recover, boolean reissue, ResultType response, EndEntityInformation userDataVO, String password,  
+    protected X509Certificate registerReissueOrRecover(boolean recover, boolean reissue, ResultType response, EndEntityInformation endEntityInformation, String password,  
     		                                  PublicKey publicKey, String revocationCode) {
 		X509Certificate retval = null;
     	
 		// Check the status of the user
-		if((!recover && userDataVO.getStatus() == EndEntityConstants.STATUS_NEW) || (recover && userDataVO.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY)){
+		if((!recover && endEntityInformation.getStatus() == EndEntityConstants.STATUS_NEW) || (recover && endEntityInformation.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY)){
 				
 			try{		
 				boolean usekeyrecovery = !reissue && globalConfigurationSession.getCachedGlobalConfiguration().getEnableKeyRecovery();
 
-				boolean savekeys = userDataVO.getKeyRecoverable() && usekeyrecovery &&  (userDataVO.getStatus() != EndEntityConstants.STATUS_KEYRECOVERY);
-				boolean loadkeys = (userDataVO.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY) && usekeyrecovery;
+				boolean savekeys = endEntityInformation.getKeyRecoverable() && usekeyrecovery &&  (endEntityInformation.getStatus() != EndEntityConstants.STATUS_KEYRECOVERY);
+				boolean loadkeys = (endEntityInformation.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY) && usekeyrecovery;
 
 				// get users Token Type.
-				int tokentype = userDataVO.getTokenType();
+				int tokentype = endEntityInformation.getTokenType();
 
 				PublicKey certKey = null;
 				PrivateKey privKey = null;
@@ -221,17 +221,17 @@ public class KRSSResponseGenerator extends
 				KeyRecoveryData keyData = null;
 				boolean reusecertificate = false;
 				if(loadkeys){
-					EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(userDataVO.getEndEntityProfileId());
+					EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(endEntityInformation.getEndEntityProfileId());
 					reusecertificate = endEntityProfile.getReUseKeyRecoveredCertificate();
 
 					// used saved keys.
-					keyData = keyRecoverySession.recoverKeys(pubAdmin, userDataVO.getUsername(), userDataVO.getEndEntityProfileId());
+					keyData = keyRecoverySession.recoverKeys(pubAdmin, endEntityInformation.getUsername(), endEntityInformation.getEndEntityProfileId());
 					keyPair = keyData.getKeyPair();
 					certKey = keyPair.getPublic();
 					privKey = keyPair.getPrivate();
 
 					if(reusecertificate){
-					    keyRecoverySession.unmarkUser(pubAdmin,userDataVO.getUsername());
+					    keyRecoverySession.unmarkUser(pubAdmin,endEntityInformation.getUsername());
 					}
 				}
 				else{
@@ -251,21 +251,21 @@ public class KRSSResponseGenerator extends
 					cert = (X509Certificate) keyData.getCertificate();	             
 					boolean finishUser = casession.getCAInfo(pubAdmin,CertTools.getIssuerDN(cert).hashCode()).getFinishUser();
 					if(finishUser){	           	  
-					    authenticationSession.finishUser(userDataVO);
+					    authenticationSession.finishUser(endEntityInformation);
 					}
 
 				}else{        	 
-					cert = (X509Certificate) signSession.createCertificate(pubAdmin, userDataVO.getUsername(), password, certKey);	 
+					cert = (X509Certificate) signSession.createCertificate(pubAdmin, endEntityInformation.getUsername(), password, certKey);	 
 				}
 
 				if (savekeys) {
 					// Save generated keys to database.	             
-				    keyRecoverySession.addKeyRecoveryData(pubAdmin, cert, userDataVO.getUsername(), keyPair);
+				    keyRecoverySession.addKeyRecoveryData(pubAdmin, cert, endEntityInformation.getUsername(), keyPair);
 				}
 
 				// Save the revocation code
 				if(revocationCode != null && !recover){
-					EndEntityInformation data = endEntityAccessSession.findUser(pubAdmin, userDataVO.getUsername());
+					EndEntityInformation data = endEntityAccessSession.findUser(pubAdmin, endEntityInformation.getUsername());
 					ExtendedInformation ei = data.getExtendedinformation();
 					if (ei == null) {
 						ei = new ExtendedInformation();
@@ -291,7 +291,7 @@ public class KRSSResponseGenerator extends
 			}
 			
 		}else{
-			log.error(intres.getLocalizedMessage("xkms.errorinreqwrongstatus",Integer.valueOf(userDataVO.getStatus()),userDataVO.getUsername()));			
+			log.error(intres.getLocalizedMessage("xkms.errorinreqwrongstatus",Integer.valueOf(endEntityInformation.getStatus()),endEntityInformation.getUsername()));			
 			resultMajor = XKMSConstants.RESULTMAJOR_SENDER;
 			resultMinor = XKMSConstants.RESULTMINOR_REFUSED;
 		}

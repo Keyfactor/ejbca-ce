@@ -346,7 +346,7 @@ public class EjbcaWSHelper {
 
         useEI = EjbcaWSHelper.setExtendedInformationFromUserDataVOWS(userdata, ei) || useEI;
 
-        final EndEntityInformation userdatavo = new EndEntityInformation(userdata.getUsername(),
+        final EndEntityInformation endEntityInformation = new EndEntityInformation(userdata.getUsername(),
                 userdata.getSubjectDN(),
                 caid,
                 userdata.getSubjectAltName(),
@@ -361,10 +361,10 @@ public class EjbcaWSHelper {
                 hardtokenissuerid,
                 useEI ? ei : null);
         
-        userdatavo.setPassword(userdata.getPassword());
-        userdatavo.setCardNumber(userdata.getCardNumber());
+        endEntityInformation.setPassword(userdata.getPassword());
+        endEntityInformation.setCardNumber(userdata.getCardNumber());
         
-        return userdatavo;
+        return endEntityInformation;
 	}
 
 	       
@@ -444,10 +444,10 @@ public class EjbcaWSHelper {
 		return useEI;
 	}
 
-	protected static UserDataVOWS convertUserDataVO(final EndEntityInformation userdata, final String caname, final String endentityprofilename, 
+	protected static UserDataVOWS convertEndEntityInformation(final EndEntityInformation endEntityInformation, final String caname, final String endentityprofilename, 
 	        final String certificateprofilename, final String hardtokenissuername, final String tokenname) throws EjbcaException, ClassCastException, CADoesntExistsException, AuthorizationDeniedException {
         final UserDataVOWS dataWS = new UserDataVOWS();
-        dataWS.setUsername(userdata.getUsername());
+        dataWS.setUsername(endEntityInformation.getUsername());
         dataWS.setCaName(caname);
         dataWS.setEndEntityProfileName(endentityprofilename);
         dataWS.setCertificateProfileName(certificateprofilename);
@@ -456,13 +456,13 @@ public class EjbcaWSHelper {
 
         dataWS.setPassword(null);
         dataWS.setClearPwd(false);
-        dataWS.setSubjectDN(userdata.getDN());
-        dataWS.setSubjectAltName(userdata.getSubjectAltName());
-        dataWS.setEmail(userdata.getEmail());
-        dataWS.setStatus(userdata.getStatus());
-        dataWS.setCardNumber(userdata.getCardNumber());
+        dataWS.setSubjectDN(endEntityInformation.getDN());
+        dataWS.setSubjectAltName(endEntityInformation.getSubjectAltName());
+        dataWS.setEmail(endEntityInformation.getEmail());
+        dataWS.setStatus(endEntityInformation.getStatus());
+        dataWS.setCardNumber(endEntityInformation.getCardNumber());
 
-        final ExtendedInformation ei = userdata.getExtendedinformation();
+        final ExtendedInformation ei = endEntityInformation.getExtendedinformation();
         if(ei != null) {
             String startTime = ei.getCustomData(ExtendedInformation.CUSTOM_STARTTIME);
             if (startTime!=null && startTime.length()>0 && !startTime.matches("^\\d+:\\d?\\d:\\d?\\d$")) {
@@ -503,36 +503,36 @@ public class EjbcaWSHelper {
 
         return dataWS;
 	}
-	protected UserDataVOWS convertUserDataVO(final EndEntityInformation userdata) throws EjbcaException, ClassCastException, CADoesntExistsException, AuthorizationDeniedException {
-        final String username = userdata.getUsername();
+	protected UserDataVOWS convertEndEntityInformation(final EndEntityInformation endEntityInformation) throws EjbcaException, ClassCastException, CADoesntExistsException, AuthorizationDeniedException {
+        final String username = endEntityInformation.getUsername();
 		// No need to check CA authorization here, we are only converting the user input. The actual authorization check in CA is done when 
 		// trying to add/edit the user
-		final String caname = caSession.getCAInfoInternal(userdata.getCAId(), null, true).getName();
+		final String caname = caSession.getCAInfoInternal(endEntityInformation.getCAId(), null, true).getName();
 		if (caname == null) {
-			final String message = "Error CA id " + userdata.getCAId() + " does not exist. User: "+username;
+			final String message = "Error CA id " + endEntityInformation.getCAId() + " does not exist. User: "+username;
 			log.error(message);
 			throw new EjbcaException(ErrorCode.CA_NOT_EXISTS, message);
 		}		
 
-		final String endentityprofilename = endEntityProfileSession.getEndEntityProfileName(userdata.getEndEntityProfileId());
+		final String endentityprofilename = endEntityProfileSession.getEndEntityProfileName(endEntityInformation.getEndEntityProfileId());
 		if(endentityprofilename == null){
-			final String message = "Error End Entity profile id " + userdata.getEndEntityProfileId() + " does not exist. User: "+username;
+			final String message = "Error End Entity profile id " + endEntityInformation.getEndEntityProfileId() + " does not exist. User: "+username;
 			log.error(message);
 			throw new EjbcaException(ErrorCode.EE_PROFILE_NOT_EXISTS, message);
 		}
 
-        final String certificateprofilename = certificateProfileSession.getCertificateProfileName(userdata.getCertificateProfileId());
+        final String certificateprofilename = certificateProfileSession.getCertificateProfileName(endEntityInformation.getCertificateProfileId());
 		if(certificateprofilename == null){
-		    final String message = "Error Certificate profile id " + userdata.getCertificateProfileId() + " does not exist. User: "+username;
+		    final String message = "Error Certificate profile id " + endEntityInformation.getCertificateProfileId() + " does not exist. User: "+username;
 			log.error(message);
 			throw new EjbcaException(ErrorCode.CERT_PROFILE_NOT_EXISTS, message);
 		}
 		
 		final String hardtokenissuername;
-		if(userdata.getHardTokenIssuerId() != 0){
-		   hardtokenissuername = hardTokenSession.getHardTokenIssuerAlias(userdata.getHardTokenIssuerId());
+		if(endEntityInformation.getHardTokenIssuerId() != 0){
+		   hardtokenissuername = hardTokenSession.getHardTokenIssuerAlias(endEntityInformation.getHardTokenIssuerId());
 		   if(hardtokenissuername == null){
-		       final String message = "Error Hard Token Issuer id " + userdata.getHardTokenIssuerId() + " does not exist. User: "+username;
+		       final String message = "Error Hard Token Issuer id " + endEntityInformation.getHardTokenIssuerId() + " does not exist. User: "+username;
 			   log.error(message);
 			   throw new EjbcaException(ErrorCode.HARD_TOKEN_ISSUER_NOT_EXISTS, message);
 		   }
@@ -540,13 +540,13 @@ public class EjbcaWSHelper {
 		    hardtokenissuername = null;
 		}
 		
-		final String tokenname = getTokenName(userdata.getTokenType());
+		final String tokenname = getTokenName(endEntityInformation.getTokenType());
 		if(tokenname == null){
-		    final String message = "Error Token Type id " + userdata.getTokenType() + " does not exist. User: "+username;
+		    final String message = "Error Token Type id " + endEntityInformation.getTokenType() + " does not exist. User: "+username;
 			log.error(message);
 			throw new EjbcaException(ErrorCode.UNKOWN_TOKEN_TYPE, message);
 		}
-		return convertUserDataVO(userdata, caname, endentityprofilename, certificateprofilename, hardtokenissuername, tokenname);
+		return convertEndEntityInformation(endEntityInformation, caname, endentityprofilename, certificateprofilename, hardtokenissuername, tokenname);
 	}
 
 	XMLGregorianCalendar dateToXMKGregorianCalendar (Date date) throws DatatypeConfigurationException {

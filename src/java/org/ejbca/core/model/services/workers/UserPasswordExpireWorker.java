@@ -61,27 +61,27 @@ public class UserPasswordExpireWorker extends EmailSendingWorker {
         List<EndEntityInformation> userDataList = endEntityManagementSession.findUsers(new ArrayList<Integer>(getCAIdsToCheck(false)),
                 timeModified, EndEntityConstants.STATUS_NEW);
 
-        for (EndEntityInformation userDataVO : userDataList) {
-            userDataVO.setStatus(EndEntityConstants.STATUS_GENERATED);
-            userDataVO.setPassword(null);
+        for (EndEntityInformation endEntityInformation : userDataList) {
+            endEntityInformation.setStatus(EndEntityConstants.STATUS_GENERATED);
+            endEntityInformation.setPassword(null);
             try {
-            	endEntityManagementSession.changeUser(getAdmin(), userDataVO, false);
+            	endEntityManagementSession.changeUser(getAdmin(), endEntityInformation, false);
                 if (isSendToEndUsers()) {
-                	if (userDataVO.getEmail() == null || userDataVO.getEmail().trim().equals("")) {
-                		String msg = intres.getLocalizedMessage("services.errorworker.errornoemail", userDataVO.getUsername());
+                	if (endEntityInformation.getEmail() == null || endEntityInformation.getEmail().trim().equals("")) {
+                		String msg = intres.getLocalizedMessage("services.errorworker.errornoemail", endEntityInformation.getUsername());
                 		log.info(msg);
                 	} else {
                 		// Populate end user message
-                		String message = new UserNotificationParamGen(userDataVO).interpolate(getEndUserMessage());
-                		MailActionInfo mailActionInfo = new MailActionInfo(userDataVO.getEmail(), getEndUserSubject(), message);
-                		userEmailQueue.add(new EmailCertData(userDataVO.getUsername(), mailActionInfo));
+                		String message = new UserNotificationParamGen(endEntityInformation).interpolate(getEndUserMessage());
+                		MailActionInfo mailActionInfo = new MailActionInfo(endEntityInformation.getEmail(), getEndUserSubject(), message);
+                		userEmailQueue.add(new EmailCertData(endEntityInformation.getUsername(), mailActionInfo));
                 	}
                 }
                 if (isSendToAdmins()) {
                 	// Populate admin message
-                	String message = new UserNotificationParamGen(userDataVO).interpolate(getAdminMessage());
+                	String message = new UserNotificationParamGen(endEntityInformation).interpolate(getAdminMessage());
                 	MailActionInfo mailActionInfo = new MailActionInfo(null, getAdminSubject(), message);
-                	adminEmailQueue.add(new EmailCertData(userDataVO.getUsername(), mailActionInfo));
+                	adminEmailQueue.add(new EmailCertData(endEntityInformation.getUsername(), mailActionInfo));
                 }
             } catch (Exception e) {
                 log.error("Error running service work: ", e);

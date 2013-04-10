@@ -605,9 +605,9 @@ public class UserDataTest extends CaTestCase {
             endEntityManagementSession.deleteUser(admin, username1);
             assertTrue("Database (mapping) is not case sensitive!", false);
         }
-        EndEntityInformation userDataVO1 = endEntityAccessSession.findUser(admin, username1);
-        EndEntityInformation userDataVO2 = endEntityAccessSession.findUser(admin, username2);
-        assertFalse("Returned the same user object for different usernames.", userDataVO1.getUsername().equals(userDataVO2.getUsername()));
+        EndEntityInformation endEntityInformation1 = endEntityAccessSession.findUser(admin, username1);
+        EndEntityInformation endEntityInformation2 = endEntityAccessSession.findUser(admin, username2);
+        assertFalse("Returned the same user object for different usernames.", endEntityInformation1.getUsername().equals(endEntityInformation2.getUsername()));
         endEntityManagementSession.deleteUser(admin, username1);
         endEntityManagementSession.deleteUser(admin, username2);
     }

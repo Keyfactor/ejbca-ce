@@ -284,17 +284,17 @@ public class EjbcaWS implements IEjbcaWS {
         	final EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, hardTokenSession, endEntityManagementSession, webAuthenticationSession, cryptoTokenManagementSession);
         	final AuthenticationToken admin = ejbhelper.getAdmin();
         	logAdminName(admin,logger);
-        	final EndEntityInformation userdatavo = ejbhelper.convertUserDataVOWS(admin, userdata);
-            if (endEntityManagementSession.existsUser(userdatavo.getUsername())) {
+        	final EndEntityInformation endEntityInformation = ejbhelper.convertUserDataVOWS(admin, userdata);
+            if (endEntityManagementSession.existsUser(endEntityInformation.getUsername())) {
             	if (log.isDebugEnabled()) {
             		log.debug("User " + userdata.getUsername() + " exists, update the userdata. New status of user '"+userdata.getStatus()+"'." );				  
             	}
-            	endEntityManagementSession.changeUser(admin,userdatavo,userdata.isClearPwd(), true);
+            	endEntityManagementSession.changeUser(admin,endEntityInformation,userdata.isClearPwd(), true);
             } else {
             	if (log.isDebugEnabled()) {
             		log.debug("New User " + userdata.getUsername() + ", adding userdata. New status of user '"+userdata.getStatus()+"'." );
             	}
-            	endEntityManagementSession.addUserFromWS(admin,userdatavo,userdata.isClearPwd());
+            	endEntityManagementSession.addUserFromWS(admin,endEntityInformation,userdata.isClearPwd());
             }
 		} catch (UserDoesntFullfillEndEntityProfile e) {
 			log.debug(e.toString());
@@ -336,7 +336,7 @@ public class EjbcaWS implements IEjbcaWS {
         	if (result.size() > 0) {
         		retval = new ArrayList<UserDataVOWS>(result.size());
         		for (final EndEntityInformation userdata : result) {
-        			retval.add(ejbhelper.convertUserDataVO(userdata));
+        			retval.add(ejbhelper.convertEndEntityInformation(userdata));
         		}
         	}
         } catch (CesecoreException e) {
@@ -1407,7 +1407,7 @@ public class EjbcaWS implements IEjbcaWS {
 			    final Iterator<UserDataSourceVO> iter = userDataSourceSession.fetch(admin, userDataSourceIds, searchString).iterator();
 			    while(iter.hasNext()){
 			        UserDataSourceVO next = iter.next();
-			        retval.add(new UserDataSourceVOWS(ejbhelper.convertUserDataVO(next.getUserDataVO()),next.getIsFieldModifyableSet()));
+			        retval.add(new UserDataSourceVOWS(ejbhelper.convertEndEntityInformation(next.getEndEntityInformation()),next.getIsFieldModifyableSet()));
 			    }
 			}
         } catch (CADoesntExistsException e) {	// EJBException, ClassCastException, ...
@@ -1450,9 +1450,9 @@ public class EjbcaWS implements IEjbcaWS {
 					logger, ErrorCode.CA_NOT_EXISTS, null);
 		}
 		
-		EndEntityInformation userDataVO = endEntityAccessSession.findUser(intAdmin, userDataWS.getUsername());
-		if(userDataVO != null){
-			endEntityProfileId = userDataVO.getEndEntityProfileId();
+		EndEntityInformation endEntityInformation = endEntityAccessSession.findUser(intAdmin, userDataWS.getUsername());
+		if(endEntityInformation != null){
+			endEntityProfileId = endEntityInformation.getEndEntityProfileId();
 			userExists = true;
 		}else{
 		    try {
@@ -2394,7 +2394,7 @@ public class EjbcaWS implements IEjbcaWS {
 	    	final EjbcaWSHelper ejbcawshelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, hardTokenSession, endEntityManagementSession, webAuthenticationSession, cryptoTokenManagementSession);
 	    	final AuthenticationToken admin = ejbcawshelper.getAdmin(false);
 	    	logAdminName(admin,logger);
-	        final EndEntityInformation userdatavo = ejbcawshelper.convertUserDataVOWS(admin, userdata);
+	        final EndEntityInformation endEntityInformation = ejbcawshelper.convertUserDataVOWS(admin, userdata);
 	        int responseTypeInt = CertificateConstants.CERT_RES_TYPE_CERTIFICATE;
 	        if (!responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_CERTIFICATE)) {
 		        if (responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7)) {
@@ -2408,7 +2408,7 @@ public class EjbcaWS implements IEjbcaWS {
 		        }
 	        }
 
-	        return new CertificateResponse(responseType, certificateRequestSession.processCertReq(admin, userdatavo, requestData, requestType, hardTokenSN, responseTypeInt));
+	        return new CertificateResponse(responseType, certificateRequestSession.processCertReq(admin, endEntityInformation, requestData, requestType, hardTokenSN, responseTypeInt));
         } catch( CADoesntExistsException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw new EjbcaException(t);
@@ -2472,9 +2472,9 @@ public class EjbcaWS implements IEjbcaWS {
 	    	final EjbcaWSHelper ejbcawshelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, hardTokenSession, endEntityManagementSession, webAuthenticationSession, cryptoTokenManagementSession);
 	    	final AuthenticationToken admin = ejbcawshelper.getAdmin(false);
 	    	logAdminName(admin,logger);
-	        final EndEntityInformation userdatavo = ejbcawshelper.convertUserDataVOWS(admin, userdata);
+	        final EndEntityInformation endEntityInformation = ejbcawshelper.convertUserDataVOWS(admin, userdata);
 	        final boolean createJKS = userdata.getTokenType().equals(UserDataVOWS.TOKEN_TYPE_JKS);
-	        final byte[] encodedKeyStore = certificateRequestSession.processSoftTokenReq(admin, userdatavo, hardTokenSN, keyspec, keyalg, createJKS);
+	        final byte[] encodedKeyStore = certificateRequestSession.processSoftTokenReq(admin, endEntityInformation, hardTokenSN, keyspec, keyalg, createJKS);
 	        // Convert encoded KeyStore to the proper return type
 	        final java.security.KeyStore ks;
 	        if (createJKS) {

@@ -171,7 +171,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
             if (!authorizedToCA(admin, data.getCaId())) {
                 continue;
             }
-            returnval.add(data.toUserDataVO());
+            returnval.add(data.toEndEntityInformation());
         }
         if (log.isTraceEnabled()) {
             log.trace("<findUserByEmail(" + email + ")");
@@ -205,7 +205,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
                     throw new AuthorizationDeniedException(msg);
                 }
             }
-            return data.toUserDataVO();
+            return data.toEndEntityInformation();
         }
         return null;
     }

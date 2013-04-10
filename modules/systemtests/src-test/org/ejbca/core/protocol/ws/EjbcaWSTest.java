@@ -533,32 +533,32 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     	log.debug("oldTimeFormat=" + oldTimeFormat);
     	log.debug("newTimeFormatStorage=" + newTimeFormatStorage);
     	log.debug("newTimeFormatRequest=" + newTimeFormatRequest);
-    	// Convert from UserDataVOWS with US Locale DateFormat to UserDataVO
+    	// Convert from UserDataVOWS with US Locale DateFormat to endEntityInformation
     	final org.ejbca.core.protocol.ws.objects.UserDataVOWS userDataVoWs = new org.ejbca.core.protocol.ws.objects.UserDataVOWS("username", "password", false, "CN=User U", "CA1", null, null, 10, "P12", "EMPTY", "ENDUSER", null);
     	userDataVoWs.setStartTime(oldTimeFormat);
     	userDataVoWs.setEndTime(oldTimeFormat);
-    	final EndEntityInformation userDataVo1 = EjbcaWSHelper.convertUserDataVOWS(userDataVoWs, 1, 2, 3, 4, 5);
-    	assertEquals("CUSTOM_STARTTIME in old format was not correctly handled (VOWS to VO).", newTimeFormatStorage, userDataVo1.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_STARTTIME));
-    	assertEquals("CUSTOM_ENDTIME in old format was not correctly handled (VOWS to VO).", newTimeFormatStorage, userDataVo1.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_ENDTIME));
-    	// Convert from UserDataVOWS with standard DateFormat to UserDataVO
+    	final EndEntityInformation endEntityInformation1 = EjbcaWSHelper.convertUserDataVOWS(userDataVoWs, 1, 2, 3, 4, 5);
+    	assertEquals("CUSTOM_STARTTIME in old format was not correctly handled (VOWS to VO).", newTimeFormatStorage, endEntityInformation1.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_STARTTIME));
+    	assertEquals("CUSTOM_ENDTIME in old format was not correctly handled (VOWS to VO).", newTimeFormatStorage, endEntityInformation1.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_ENDTIME));
+    	// Convert from UserDataVOWS with standard DateFormat to endEntityInformation
     	userDataVoWs.setStartTime(newTimeFormatRequest);
     	userDataVoWs.setEndTime(newTimeFormatRequest);
-    	final EndEntityInformation userDataVo2 = EjbcaWSHelper.convertUserDataVOWS(userDataVoWs, 1, 2, 3, 4, 5);
-    	assertEquals("ExtendedInformation.CUSTOM_STARTTIME in new format was not correctly handled.", newTimeFormatStorage, userDataVo2.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_STARTTIME));
-    	assertEquals("ExtendedInformation.CUSTOM_ENDTIME in new format was not correctly handled.", newTimeFormatStorage, userDataVo2.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_ENDTIME));
-    	// Convert from UserDataVOWS with relative date format to UserDataVO
+    	final EndEntityInformation endEntityInformation2 = EjbcaWSHelper.convertUserDataVOWS(userDataVoWs, 1, 2, 3, 4, 5);
+    	assertEquals("ExtendedInformation.CUSTOM_STARTTIME in new format was not correctly handled.", newTimeFormatStorage, endEntityInformation2.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_STARTTIME));
+    	assertEquals("ExtendedInformation.CUSTOM_ENDTIME in new format was not correctly handled.", newTimeFormatStorage, endEntityInformation2.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_ENDTIME));
+    	// Convert from UserDataVOWS with relative date format to endEntityInformation
     	userDataVoWs.setStartTime(relativeTimeFormat);
     	userDataVoWs.setEndTime(relativeTimeFormat);
-        final EndEntityInformation userDataVo3 = EjbcaWSHelper.convertUserDataVOWS(userDataVoWs, 1, 2, 3, 4, 5);
-    	assertEquals("ExtendedInformation.CUSTOM_STARTTIME in relative format was not correctly handled.", relativeTimeFormat, userDataVo3.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_STARTTIME));
-    	assertEquals("ExtendedInformation.CUSTOM_ENDTIME in relative format was not correctly handled.", relativeTimeFormat, userDataVo3.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_ENDTIME));
-    	// Convert from UserDataVO with standard DateFormat to UserDataVOWS
-    	final org.ejbca.core.protocol.ws.objects.UserDataVOWS userDataVoWs1 = EjbcaWSHelper.convertUserDataVO(userDataVo1, "CA1", "EEPROFILE", "CERTPROFILE", "HARDTOKENISSUER", "P12");
+        final EndEntityInformation endEntityInformation3 = EjbcaWSHelper.convertUserDataVOWS(userDataVoWs, 1, 2, 3, 4, 5);
+    	assertEquals("ExtendedInformation.CUSTOM_STARTTIME in relative format was not correctly handled.", relativeTimeFormat, endEntityInformation3.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_STARTTIME));
+    	assertEquals("ExtendedInformation.CUSTOM_ENDTIME in relative format was not correctly handled.", relativeTimeFormat, endEntityInformation3.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_ENDTIME));
+    	// Convert from endEntityInformation with standard DateFormat to UserDataVOWS
+    	final org.ejbca.core.protocol.ws.objects.UserDataVOWS userDataVoWs1 = EjbcaWSHelper.convertEndEntityInformation(endEntityInformation1, "CA1", "EEPROFILE", "CERTPROFILE", "HARDTOKENISSUER", "P12");
     	// We expect that the server will respond using UTC
     	assertEquals("CUSTOM_STARTTIME in new format was not correctly handled (VO to VOWS).", newTimeFormatResponse, userDataVoWs1.getStartTime());
     	assertEquals("CUSTOM_ENDTIME in new format was not correctly handled (VO to VOWS).", newTimeFormatResponse, userDataVoWs1.getEndTime());
-    	// Convert from UserDataVO with relative date format to UserDataVOWS
-    	final org.ejbca.core.protocol.ws.objects.UserDataVOWS userDataVoWs3 = EjbcaWSHelper.convertUserDataVO(userDataVo3, "CA1", "EEPROFILE", "CERTPROFILE", "HARDTOKENISSUER", "P12");
+    	// Convert from EndEntityInformation with relative date format to UserDataVOWS
+    	final org.ejbca.core.protocol.ws.objects.UserDataVOWS userDataVoWs3 = EjbcaWSHelper.convertEndEntityInformation(endEntityInformation3, "CA1", "EEPROFILE", "CERTPROFILE", "HARDTOKENISSUER", "P12");
     	assertEquals("CUSTOM_STARTTIME in relative format was not correctly handled (VO to VOWS).", relativeTimeFormat, userDataVoWs3.getStartTime());
     	assertEquals("CUSTOM_ENDTIME in relative format was not correctly handled (VO to VOWS).", relativeTimeFormat, userDataVoWs3.getEndTime());
     	// Try some invalid start time date format

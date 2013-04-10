@@ -56,7 +56,7 @@ public abstract class DNFieldsUtil {
 	 * Example: "CN=abc,CN=,O=,CN=def,O=,O=abc,O=" will become "CN=abc,CN=def,O=abc".
 	 * 
 	 * Since the algorithms are very similar for these two it makes sense to calculate them both at
-	 * the same time for use in UserDataVO.
+	 * the same time for use in EndEntityInformation.
 	 * 
 	 * @param sDN the String to clean.
 	 * @param processTrailing true is removedTrailingEmpties should be considered.

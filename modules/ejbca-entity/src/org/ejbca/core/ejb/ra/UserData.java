@@ -473,7 +473,7 @@ public class UserData extends ProtectedData implements Serializable {
     /**
      * Non-searchable information about a user.
      */
-    public EndEntityInformation toUserDataVO() {
+    public EndEntityInformation toEndEntityInformation() {
         final EndEntityInformation data = new EndEntityInformation();
         data.setUsername(getUsername());
         data.setCAId(getCaId());

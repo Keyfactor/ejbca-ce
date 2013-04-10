@@ -40,18 +40,18 @@ public class CertReqHistory implements Serializable{
      * @param issuerDN DN of the CA issuing the certificate
      * @param username of the user used in the certificate request.
      * @param timestamp when the certicate was created.
-     * @param userDataVO the userdata used to create the certificate.
+     * @param endEntityInformation the userdata used to create the certificate.
      */
     public CertReqHistory(String fingerprint, String serialNumber,
             String issuerDN, String username, Date timestamp,
-            EndEntityInformation userDataVO) {
+            EndEntityInformation endEntityInformation) {
         super();
         this.fingerprint = fingerprint;
         this.serialNumber = serialNumber;
         this.issuerDN = issuerDN;
         this.username = username;
         this.timestamp = timestamp;
-        this.endEntityInformation = userDataVO;
+        this.endEntityInformation = endEntityInformation;
     }
     /**
      * @return Returns the issuerDN.
