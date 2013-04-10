@@ -193,8 +193,6 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 
 
 #------------------- PKCS#11 keys used by external OCSP responder------------------------------
-# Note that the PKCS#11 keys will not be updated by the periodical update defined by 'ocsp.signingCertsValidTime' method
-# if 'ocsp.rekeying.wsurl' or 'ocsp.activation.doNotStorePasswordsInMemory' is defined.
 
 # P11 shared library path name. 
 # Must not be used if ocsp.p11.sunConfigurationFile is used.
@@ -219,14 +217,14 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 # When this feature is enabled a new signing key will automatically be generated a specified time before the certificate of the used key expires.
 # A certificate for the new key will be fetched by WS from EJBCA.
 
+# Password for rekeying via the servlet. 
+# Default: null
+#ocsp.rekeying.trigging.password
+
 # URL to webservice from which the certificate for a newly generated OCSP responder key should be fetched.
 # The automatic re-keying feature is disabled if this property is not defined.
 # Default: null
 #ocsp.rekeying.wsurl = https://milton:8443/ejbca/ejbcaws/ejbcaws
-
-# Renew time before certificate expires. Specifies how long time before a certificate expires that a new key should be generated. <0 means that no keys are automatically generated.
-# Default: -1 
-#ocsp.rekeying.renewTimeBeforeCertExpiresInSeconds=86400
 
 # Specifies how often the signing certificates should be checked. Default value is 3600 seconds, but consider lowering this value if signing certificates are expected
 # to be valid less than 24h 
@@ -238,25 +236,9 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 # The default for this value is 24h 
 #ocsp.rekeying.safety.margin.in.seconds=
 
-# Keystore of soft key and certificate to be used as the SSL WS client when connecting to EJBCA.
-# Do not define this property if you want to use the HSM to store the client WS key.
-# If not defined a key in the used P11 slot will be used as client key.
-# The certificate of the P11 key must have "Key usage" set to "Digital Signature" and "Extended Key Usage" set to "Client Authentication".
-# Default: null
-#ocsp.rekeying.swKeystorePath = wsKeyStore.jks
-
-# The password of the SW keystore defined above.
-# Default: null
-#ocsp.rekeying.swKeystorePassword = foo123
-
-# Limits the available keys on the slot to those defined in this list.
-# The aliases are separated by ';'.
-# Use this if you have several responders charing the same HSM and want each responder to have its own keys.
-# Using this makes it possible to have rekeying running on all responders.
-# Do not define this property if you want to use all available keys.
-# Default: null
-#ocsp.rekeying.listOfAliases=reponder2key1;responder2key2;responder2key3
-
+# Limits what hosts may request a manual rekeying via web service. 
+# Default: 127.0.0.1
+#ocsp.rekeying.trigging.hosts=
 
 #------------------- External OCSP responder activation------------------------------
 # 'ocsp.keys.storePassword' and 'ocsp.p11.p11password' and 'ocsp.keys.cardPassword' should not be defined if you are using the activation feature.

@@ -50,6 +50,8 @@ import org.cesecore.certificates.ca.internal.SernoGeneratorRandom;
 import org.cesecore.certificates.ocsp.cache.CryptoTokenAndChain;
 import org.cesecore.certificates.ocsp.standalone.StandaloneOcspResponseGeneratorTestSessionRemote;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.config.OcspConfiguration;
+import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.DummyCryptoToken;
@@ -58,6 +60,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.protocol.ocsp.standalone.OcspKeyRenewalProxySessionRemote;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -69,7 +72,9 @@ public class OcspKeyRenewalTest {
 
     private static final String CA_DN = "CN=OcspDefaultTestCA";
 
-    private OcspKeyRenewalProxySessionRemote ocspKeyRenewalProxySession = EjbRemoteHelper.INSTANCE
+    private CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(CesecoreConfigurationProxySessionRemote.class);
+   private OcspKeyRenewalProxySessionRemote ocspKeyRenewalProxySession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(OcspKeyRenewalProxySessionRemote.class);
     private StandaloneOcspResponseGeneratorTestSessionRemote standaloneOcspResponseGeneratorTestSession = EjbRemoteHelper.INSTANCE
         .getRemoteSession(StandaloneOcspResponseGeneratorTestSessionRemote.class);
@@ -86,6 +91,12 @@ public class OcspKeyRenewalTest {
                 AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
     }
 
+    @Before
+    public void setup() {
+        //Dummy value to get past an assert
+        cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.REKEYING_WSURL, "https://localhost:8443/ejbca/ejbcaws/ejbcaws");
+    }
+    
     /**
      * This is the most basic sanity test possible. Key renewal is tested with a DummyCryptoToken in place of a PKCS11, and the web service 
      * is replaced by a mock (as defined in OcspKeyRenewalProxySessionBean) that parrots the expected reply. 

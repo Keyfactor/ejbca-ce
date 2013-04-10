@@ -162,10 +162,7 @@ wget http://va.example.com:8080/ejbca/publicweb/status/ocsp?renewSigner=CN=OCSP\
 If a specific OCSP subject DN is provided, the OCSP responder will look amongst its keystores/HSM slots for matching certificate and its associated keys. If the specified subject DN is not found, an ERROR message will be output to the server log files specifying the searched subject DN and the available subject DN's. If you're having problems with manual re-keying when providing a specific subject DN, make sure to check the logs and verify that the proper subject DN was specified for the "renewSigner" parameter. Ordering of subject components matters. You can also copy/paste the subject DN from the log to make sure the spelling and ordering is right (i.e. that it matches with what can be found on-disk or in HSM).
 </p>
 <p>
-For re-keying to work, the OCSP signer certificaes need to be issued to separate end entities on the EJBCA ca (i.e. you can't re-use the same end entity for multiple OCSP signer certificates for different CA's).
-</p>
-<p>
-When testing the automatic re-keying it is desirable to set the maximum expiration time to be as short as possible. This can be achieved by setting it to a value that's close to the validity time of the OCSP certificate. For example, in case the validity of OCSP certificate is 730 days, the ocsp.rekeying.renewTimeBeforeCertExpiresInSeconds value should be set to (730*24*60-14)*60 = 63071160 seconds. This will force re-keying to happen every 4th minute (EJBCA issues certificates which are valid 10 minutes before they were issued in order to compensate for clock inaccuracies in systems using the certificates).
+For re-keying to work, the OCSP signer certificates need to be issued to separate end entities on the EJBCA ca (i.e. you can't re-use the same end entity for multiple OCSP signer certificates for different CA's).
 </p>
 <p>
 Be aware that the re-keying operation has not been tested on all of the application servers. Some of the application servers may have problematic client web-service implementations. The following application servers have been tested and confirmed to work as expected for OCSP signer re-keying:
@@ -179,15 +176,6 @@ Be aware that the re-keying operation has not been tested on all of the applicat
 <subsection name="No password in memory">
 <p>
 With this feature enabled no password are kept in memory. If it is enabled you must not define any passwords in ocsp.properties.
-</p>
-<p>
-Defining this feature makes it impossible to do "key updating".
-</p>
-</subsection>
-<subsection name="Several responders using same HSM">
-<p>
-If several responders should share the same HSM and rekeying should be enabled on all of them then each responder must use different keys.
-To be able to define this set of keys that should be used there is a property called 'ocsp.rekeying.listOfAliases' in the ocsp.properties file.
 </p>
 </subsection>
 </section>

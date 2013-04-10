@@ -14,9 +14,11 @@
 package org.ejbca.core.protocol.ocsp;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -25,7 +27,10 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.security.MessageDigest;
+import java.security.SignatureException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -48,8 +53,13 @@ import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
+import org.cesecore.certificates.ocsp.cache.CryptoTokenAndChain;
+import org.cesecore.certificates.ocsp.standalone.StandaloneOcspResponseGeneratorTestSessionRemote;
+import org.cesecore.config.OcspConfiguration;
+import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -65,7 +75,12 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
 
     private static final Logger log = Logger.getLogger(ProtocolOcspHttpStandaloneTest.class);
     
-    public ProtocolOcspHttpStandaloneTest() throws MalformedURLException, URISyntaxException {
+    private CesecoreConfigurationProxySessionRemote configurationSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(CesecoreConfigurationProxySessionRemote.class);
+    private StandaloneOcspResponseGeneratorTestSessionRemote standaloneOcspResponseGeneratorTestSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(StandaloneOcspResponseGeneratorTestSessionRemote.class);
+
+   public ProtocolOcspHttpStandaloneTest() throws MalformedURLException, URISyntaxException {
     	super("http", "127.0.0.1", 8080, "ejbca", "publicweb/status/ocsp");
     }
     // Required to override check in baseclass
@@ -75,10 +90,6 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         issuerDN = "CN=OcspDefaultTestCA";
         caid = issuerDN.hashCode();
         unknowncacert = (X509Certificate) CertTools.getCertfromByteArray(unknowncacertBytes);
-    }
-
-    public String getRoleName() {
-        return this.getClass().getSimpleName(); 
     }
     
     @Test
@@ -352,6 +363,44 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         assertNotNull("producedAt was not set.", producedAt);
         assertTrue("nextUpdate cannot be before thisUpdate.", !nextUpdate.before(thisUpdate));
         assertTrue("producedAt cannot be before thisUpdate.", !producedAt.before(thisUpdate));
+    }
+    
+    @Test
+    public void testKeyRenewal() throws Exception {
+        //Add localhost to list of rekeying triggering hosts.
+        Set<String> originalHosts = OcspConfiguration.getRekeyingTriggingHosts();
+        String originalRekeyingPassword = OcspConfiguration.getRekeyingTriggingPassword();
+        configurationSession.setConfigurationValue(OcspConfiguration.REKEYING_TRIGGERING_HOSTS, "127.0.0.1");
+        configurationSession.setConfigurationValue(OcspConfiguration.REKEYING_TRIGGERING_PASSWORD, "foo123");
+        Collection<CryptoTokenAndChain> oldValues = standaloneOcspResponseGeneratorTestSession.getCacheValues();
+        try {
+            X509Certificate cert = getTestCert(false);
+            X509Certificate caCertificate = getCaCert(cert);
+
+            helper.renewAllKeys();
+            List<CryptoTokenAndChain> newValues = new ArrayList<CryptoTokenAndChain>(standaloneOcspResponseGeneratorTestSession.getCacheValues());
+            //Make sure that cache contains one and only one value
+            assertEquals("Cache contains a different amount of values after rekeying than before. This indicates a test failure", oldValues.size(),
+                    newValues.size());
+            //Make check that the certificate has changed (sanity check)
+            X509Certificate newSigningCertificate = newValues.get(0).getChain()[0];
+            assertNotEquals("The same certificate was returned after the renewal process. Key renewal failed", cert.getSerialNumber(),
+                    newSigningCertificate.getSerialNumber());
+            //Make sure that the new certificate is signed by the CA certificate
+            try {
+                newSigningCertificate.verify(caCertificate.getPublicKey());
+            } catch (SignatureException e) {
+                fail("The new signing certificate was not signed correctly.");
+            }
+
+        } finally {
+            StringBuilder originalHostsString = new StringBuilder();
+            for (String host : originalHosts.toArray(new String[originalHosts.size()])) {
+                originalHostsString.append(host + ";");
+            }
+            configurationSession.setConfigurationValue(OcspConfiguration.REKEYING_TRIGGERING_HOSTS, originalHostsString.toString());
+            configurationSession.setConfigurationValue(OcspConfiguration.REKEYING_TRIGGERING_PASSWORD, originalRekeyingPassword);
+        }
     }
 
 }
