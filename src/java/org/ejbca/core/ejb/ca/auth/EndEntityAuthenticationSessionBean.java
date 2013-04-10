@@ -102,7 +102,7 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
             	if (log.isTraceEnabled()) {
                     log.trace("<authenticateUser("+username+", hiddenpwd)");
             	}
-                return data.toUserDataVO();
+                return data.toEndEntityInformation();
             }
         	final String msg = intres.getLocalizedMessage("authentication.wrongstatus", EndEntityConstants.getStatusText(status), Integer.valueOf(status), username);
         	log.info(msg);

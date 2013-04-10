@@ -164,7 +164,7 @@ public class UserDataSourceTest extends CaTestCase {
 
         Iterator<UserDataSourceVO> iter = ret.iterator();
         UserDataSourceVO next = iter.next();
-        assertTrue("Didn't get epected user data", next.getUserDataVO().getUsername().equals("PER"));
+        assertTrue("Didn't get epected user data", next.getEndEntityInformation().getUsername().equals("PER"));
         log.trace("<test05FetchFromDummy()");
     }
 

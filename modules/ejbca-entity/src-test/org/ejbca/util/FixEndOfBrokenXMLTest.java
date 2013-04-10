@@ -124,7 +124,7 @@ public class FixEndOfBrokenXMLTest {
 		log.trace(">test02MissingLastStartOfString");
 		final String BROKEN_XML_2_PART1 =
 			"<?xml version=\"1.0\" encoding=\"UTF-8\"?><java version=\"1.6.0_18\" class=\"java.beans.XMLDecoder\">"
-			+ "<object class=\"org.ejbca.core.model.ra.UserDataVO\">"
+			+ "<object class=\"org.cesecore.certificates.endentity.EndEntityInformation\">"
 			// ...
 			+ "<void property=\"email\"><string>null@null.com</string></void>";
 			// ...

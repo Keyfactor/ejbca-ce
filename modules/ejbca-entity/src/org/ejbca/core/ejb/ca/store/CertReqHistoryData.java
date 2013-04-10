@@ -49,7 +49,7 @@ import org.ejbca.util.FixEndOfBrokenXML;
  * 
  * the information is currently used to:
  * - list request history for a user
- * - find issuing User DN (UserDataVO) when republishing a certificate (in case the userDN for the user changed)
+ * - find issuing User DN (EndEntityInformation) when republishing a certificate (in case the userDN for the user changed)
  * 
  * @version $Id$
  */ 
@@ -65,7 +65,7 @@ public class CertReqHistoryData extends ProtectedData implements Serializable {
 	private String fingerprint;
 	private String serialNumber;
 	private long timestamp;
-	private String userDataVO;
+	private String EndEntityInformation;
 	private String username;
 	private int rowVersion = 0;
 	private String rowProtection;
@@ -75,7 +75,7 @@ public class CertReqHistoryData extends ProtectedData implements Serializable {
 	 * 
 	 * @param incert the certificate issued
 	 * @param issuerDN should be the same as CertTools.getIssuerDN(incert)
-	 * @param UserDataVO, the data used to issue the certificate. 
+	 * @param endEntityInformation the data used to issue the certificate. 
 	 */
 	public CertReqHistoryData(Certificate incert, String issuerDN, EndEntityInformation endEntityInformation) {
 		// Exctract fields to store with the certificate.
@@ -87,9 +87,9 @@ public class CertReqHistoryData extends ProtectedData implements Serializable {
         setSerialNumber(CertTools.getSerialNumber(incert).toString());
         setTimestamp(new Date().getTime());
 		setUsername(endEntityInformation.getUsername());
-		storeUserDataVO(endEntityInformation);
+		storeEndEntityInformation(endEntityInformation);
 	}
-	private void storeUserDataVO(EndEntityInformation endEntityInformation) {
+	private void storeEndEntityInformation(EndEntityInformation endEntityInformation) {
 		try {
 			// Save the user admin data in xml encoding.
 			final ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -98,9 +98,9 @@ public class CertReqHistoryData extends ProtectedData implements Serializable {
 			encoder.close();
 			final String s = baos.toString("UTF-8");
 			if (log.isDebugEnabled()) {
-				log.debug(printUserDataVOXML("endEntityInformation:",s));
+				log.debug(printEndEntityInformationXML("endEntityInformation:",s));
 			}
-			setUserDataVO(s);
+			setEndEntityInformation(s);
 		} catch (UnsupportedEncodingException e) {
 			log.error("", e);
 			throw new RuntimeException(e);    	                                              
@@ -167,19 +167,19 @@ public class CertReqHistoryData extends ProtectedData implements Serializable {
 	public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
 
 	/**
-	 * UserDataVO in xmlencoded String format
+	 * EndEntityInformation in xmlencoded String format
 	 * Should not be used outside of entity bean, use getCertReqHistory instead
-	 * @return  xmlencoded encoded UserDataVO
+	 * @return  xmlencoded encoded EndEntityInformation
 	 */
 	//@Column @Lob
-	public String getUserDataVO() { return userDataVO; }
+	public String getEndEntityInformation() { return EndEntityInformation; }
 
 	/**
-	 * UserDataVO in  xmlencoded String format
+	 * EndEntityInformation in  xmlencoded String format
 	 * Shouldn't be set after creation.
-	 * @param userDataVO xmlencoded encoded UserDataVO
+	 * @param EndEntityInformation xmlencoded encoded UserDataVO
 	 */
-	public void setUserDataVO(String userDataVO) { this.userDataVO = userDataVO; }
+	public void setEndEntityInformation(String endEntityInformation) { this.EndEntityInformation = endEntityInformation; }
 
 	/**
 	 * username in database
@@ -226,7 +226,7 @@ public class CertReqHistoryData extends ProtectedData implements Serializable {
 
 		return new CertReqHistory(this.getFingerprint(),this.getSerialNumber(),
 		                          this.getIssuerDN(),this.getUsername(),new Date(this.getTimestamp()),
-		                          decodeXML(getUserDataVO(), false));
+		                          decodeXML(getEndEntityInformation(), false));
 	}
 	
 	/** just used internally in the this class to indicate that the XML can not be fixed.
@@ -280,32 +280,32 @@ public class CertReqHistoryData extends ProtectedData implements Serializable {
 				if ( sFixedXML==null ) {
 					throw new NotPossibleToFixXML();					
 				}
-				final EndEntityInformation userDataVO = decodeXML(sFixedXML, true);
-				if ( userDataVO==null ) {
+				endEntityInformation = decodeXML(sFixedXML, true);
+				if ( endEntityInformation==null ) {
 					throw new NotPossibleToFixXML();
 				}
-				storeUserDataVO(userDataVO); // store it right so it does not have to be repaired again.
-				log.warn(printUserDataVOXML("XML has been repaired. Trailing tags fixed. DB updated with correct XML.", sXML));
-				return userDataVO;
+				storeEndEntityInformation(endEntityInformation); // store it right so it does not have to be repaired again.
+				log.warn(printEndEntityInformationXML("XML has been repaired. Trailing tags fixed. DB updated with correct XML.", sXML));
+				return endEntityInformation;
 			} catch ( NotPossibleToFixXML e ) {
-				log.error(printUserDataVOXML("Not possible to decode UserDataVO. No way to fix the XML.", sXML), t);
+				log.error(printEndEntityInformationXML("Not possible to decode EndEntityInformation. No way to fix the XML.", sXML), t);
 				return null;
 			}
 		} finally {
 			decoder.close();
 		}
 		if (log.isTraceEnabled() ) {
-			log.trace(printUserDataVOXML("Successfully decoded UserDataVO XML.",sXML));
+			log.trace(printEndEntityInformationXML("Successfully decoded EndEntityInformation XML.",sXML));
 		}
 		/* Code that fixes broken XML that has actually been parsed. It seems that the decoder is not checking for the java end tag.
 		 * Currently this is left out in order to not mess with working but broken XML.
 		if ( sXML.indexOf("<java")>0 && sXML.indexOf("</java>")<0 ) {
-			storeUserDataVO(endEntityInformation); // store it right				
+			storeEndEntityInformation(endEntityInformation); // store it right				
 		}
 		 */
 		return endEntityInformation;
 	}
-	private String printUserDataVOXML(String sComment, String sXML) {
+	private String printEndEntityInformationXML(String sComment, String sXML) {
 		final StringWriter sw = new StringWriter();
 		final PrintWriter pw = new PrintWriter(sw);
 		pw.println(sComment);
@@ -330,7 +330,7 @@ public class CertReqHistoryData extends ProtectedData implements Serializable {
     protected String getProtectString(final int version) {
         final ProtectionStringBuilder build = new ProtectionStringBuilder();
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
-        build.append(getFingerprint()).append(getIssuerDN()).append(getSerialNumber()).append(getTimestamp()).append(getUserDataVO()).append(getUsername());
+        build.append(getFingerprint()).append(getIssuerDN()).append(getSerialNumber()).append(getTimestamp()).append(getEndEntityInformation()).append(getUsername());
         return build.toString();
     }
 

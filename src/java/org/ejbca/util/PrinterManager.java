@@ -95,7 +95,7 @@ public class PrinterManager {
 	 * @param sVGData the actual SVG data.
 	 * @param copies number of copies to print
 	 * @param visualVaildity the visual validity use 0 if not used
-	 * @param userDataVO the userdata
+	 * @param endEntityInformation the userdata
 	 * @param pINs the PINS (or password)
 	 * @param pUKs the PUKS, optional
 	 * @param hardTokenSerialPrefix the prefix of the hardtoken, optional
@@ -105,11 +105,11 @@ public class PrinterManager {
 	 */
 	public static void print(String printerName, String svtTemplateName, 
 			String sVGData, int copies,
-			int visualVaildity,  EndEntityInformation userDataVO, 
+			int visualVaildity,  EndEntityInformation endEntityInformation, 
 			String[] pINs, String[] pUKs, String hardTokenSerialPrefix,
 			String hardTokenSN, String copyOfHardTokenSN) throws PrinterException{
 	    if (log.isTraceEnabled()) {
-            log.trace(">print: "+userDataVO.getUsername()+", "+printerName);
+            log.trace(">print: "+endEntityInformation.getUsername()+", "+printerName);
 	    }
 		if(currentService == null 
 		   || currentPrinterName == null 
@@ -140,10 +140,10 @@ public class PrinterManager {
 				paper.setImageableArea(0.0,0.0,pf.getWidth(), pf.getHeight());				
 
 				pf.setPaper(paper);	   	  
-				job.setPrintable(sVGImagemanipulator.print(userDataVO,pINs,pUKs,hardTokenSN, copyOfHardTokenSN),pf);	   	  
+				job.setPrintable(sVGImagemanipulator.print(endEntityInformation,pINs,pUKs,hardTokenSN, copyOfHardTokenSN),pf);	   	  
                 job.setCopies(copies);
 				job.print();
-				log.info("Sent print job for end entity '"+userDataVO.getUsername()+"' to printer '"+currentService.getName()+"'.");
+				log.info("Sent print job for end entity '"+endEntityInformation.getUsername()+"' to printer '"+currentService.getName()+"'.");
 			}else{
 				throw new PrinterException("Error, couldn't find the right printer");		  	   	
 			}	
@@ -152,7 +152,7 @@ public class PrinterManager {
 			throw new PrinterException("Error occured when processing the SVG data :" + e.getMessage());		
 		}
         if (log.isTraceEnabled()) {
-            log.trace("<print: "+userDataVO.getUsername()+", "+printerName);
+            log.trace("<print: "+endEntityInformation.getUsername()+", "+printerName);
         }
 	}
 }
