@@ -211,7 +211,7 @@ public class HSMKeyTool extends ClientToolBox {
             } else {
                 String alias = args.length>6 ? args[6] : null;
                 System.err.println("Deleting certificate with alias "+alias+'.');
-                KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, null).delete(alias);
+                KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, protectionParameter).delete(alias);
             }
             return true;
         }
