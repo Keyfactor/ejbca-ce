@@ -186,7 +186,7 @@ public abstract class EJBCAWSRABaseCommand implements P11SlotUser {
     /**
      * Method creating a connection to the webservice
      * using the information stored in the property files.
-     * If a connection allready is establiched this connection will be used
+     * If a connection already is established this connection will be used
      * @throws ServiceException 
      * @throws IOException 
      * @throws FileNotFoundException 
