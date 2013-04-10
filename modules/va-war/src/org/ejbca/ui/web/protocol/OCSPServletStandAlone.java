@@ -16,7 +16,6 @@ package org.ejbca.ui.web.protocol;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.KeyStoreException;
-import java.security.cert.CertificateException;
 import java.util.Set;
 
 import javax.ejb.EJB;
@@ -55,9 +54,7 @@ public class OCSPServletStandAlone extends BaseOcspServlet {
      */
     private static final Logger m_versionLog = Logger.getLogger("org.ejbca.version.log");
 
-    private static final Logger log = Logger.getLogger(OCSPServletStandAlone.class);
-    private final Set<String> rekeyingTriggeringHosts = OcspConfiguration.getRekeyingTriggingHosts();
-    private final String rekeyingTriggingPassword = OcspConfiguration.getRekeyingTriggingPassword();
+    private static final Logger log = Logger.getLogger(OCSPServletStandAlone.class); 
 
     @EJB
     private StandaloneOcspResponseGeneratorSessionLocal standaloneOcspResponseGeneratorSession;
@@ -101,23 +98,19 @@ public class OCSPServletStandAlone extends BaseOcspServlet {
                 log.trace(">doGet()");
             }
             final String keyRenewalSignerDN =  request.getParameter("renewSigner");
-            final boolean performKeyRenewal = keyRenewalSignerDN!=null && keyRenewalSignerDN.length()>0;
-            
+            final boolean performKeyRenewal = keyRenewalSignerDN!=null && keyRenewalSignerDN.length()>0;           
             // We have a command to force reloading of keys that can only be run from localhost
             final boolean doReload = StringUtils.equals(request.getParameter("reloadkeys"), "true");
             final String newConfig = request.getParameter("newConfig");
             final boolean doNewConfig = newConfig != null && newConfig.length() > 0;
             final boolean doRestoreConfig = request.getParameter("restoreConfig") != null;
-            final String remote;
+            final String remote = request.getRemoteAddr();
             if (doReload || doNewConfig || doRestoreConfig) {
-                remote = request.getRemoteAddr();
                 if (!StringUtils.equals(remote, "127.0.0.1")) {
                     log.info("Got reloadkeys or updateConfig of restoreConfig command from unauthorized ip: " + remote);
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
                     return;
                 }
-            } else {
-                remote = null;
             }
             if (doReload) {
                 log.info(intres.getLocalizedMessage("ocsp.reloadkeys", remote));
@@ -151,19 +144,21 @@ public class OCSPServletStandAlone extends BaseOcspServlet {
                 return;
             }
             if ( performKeyRenewal ) {
-                if ( !this.rekeyingTriggeringHosts.contains(remote) ) {
+                final Set<String> rekeyingTriggeringHosts = OcspConfiguration.getRekeyingTriggingHosts();
+                if ( !rekeyingTriggeringHosts.contains(remote) ) {
                     log.info( intres.getLocalizedMessage("ocsp.rekey.triggered.unauthorized.ip", remote) );
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
                     return;
                 }
-                if ( this.rekeyingTriggingPassword==null ) {
+                final String rekeyingTriggingPassword = OcspConfiguration.getRekeyingTriggingPassword();
+                if ( rekeyingTriggingPassword==null ) {
                     log.info( intres.getLocalizedMessage("ocsp.rekey.triggered.not.enabled",remote) );
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
                     return;
                 }
                 final String requestPassword = request.getParameter("password");
                 final String keyrenewalSignerDn =  request.getParameter("renewSigner");
-                if ( !this.rekeyingTriggingPassword.equals(requestPassword) ) {
+                if ( !rekeyingTriggingPassword.equals(requestPassword) ) {
                     log.info( intres.getLocalizedMessage("ocsp.rekey.triggered.wrong.password", remote) );
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
                     return;
@@ -247,14 +242,13 @@ public class OCSPServletStandAlone extends BaseOcspServlet {
     
     /**
      * Manually renews this OCSP responder's keystores.
+     * 
      * @throws KeyStoreException if key store hasn't been activated.
-     * @throws CryptoTokenOfflineException 
+     * @throws CryptoTokenOfflineException if Crypto Token is not available or connected, or key with alias does not exist.
      * @throws InvalidKeyException if the public key can not be used to verify a string signed by the private key, because the key is wrong or the 
      * signature operation fails for other reasons such as a NoSuchAlgorithmException or SignatureException.
-     * @throws CertificateException 
      */
-    public void renewKeyStore(String keyrenewalSignerDn) throws KeyStoreException, CryptoTokenOfflineException, InvalidKeyException {
-       
+    public void renewKeyStore(String keyrenewalSignerDn) throws KeyStoreException, CryptoTokenOfflineException, InvalidKeyException {     
         ocspKeyRenewalSession.renewKeyStores(keyrenewalSignerDn);
     }
 

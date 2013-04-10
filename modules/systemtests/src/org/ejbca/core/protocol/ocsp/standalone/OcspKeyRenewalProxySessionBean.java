@@ -101,9 +101,7 @@ public class OcspKeyRenewalProxySessionBean implements OcspKeyRenewalProxySessio
         EjbcaWSMock ejbcaWSMock = new EjbcaWSMock();
         ocspKeyRenewalSession.setEjbcaWs(ejbcaWSMock);
 
-    }
-    
-    
+    }  
     
     @Override
     public void setManagementCaKeyPair(KeyPair caKeyPair) {
