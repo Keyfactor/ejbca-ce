@@ -430,8 +430,9 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
         try {
             renewKeyStores(RENEW_ALL_KEYS, OcspConfiguration.getRekeyingSafetyMarginInSeconds());
         } catch (InvalidKeyException e) {
-            log.error("A cached crypto token contains an invalid key pair.", e);
+            log.error("A cached crypto token contains an invalid key pair. Stopping timers.", e);
         } catch (CryptoTokenOfflineException e) {
+            //Rescheduling is handled in a finally clause in OcspKeyRenewalSessionBean.renewKeyStores(String, long)
             log.error("Crypto token was offline or unavailable during automatic update. Rescheduling a new timer in " + rekeyingUpdateTime + " seconds.", e);
         }    
         
