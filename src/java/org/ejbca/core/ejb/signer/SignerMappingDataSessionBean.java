@@ -12,9 +12,11 @@
  *************************************************************************/
 package org.ejbca.core.ejb.signer;
 
+import java.security.SecureRandom;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -32,7 +34,7 @@ import org.cesecore.internal.InternalResources;
 import org.cesecore.util.QueryResultWrapper;
 
 /**
- * @see org.ejbca.core.ejb.signer.SignerDataSessionLocal
+ * @see org.ejbca.core.ejb.signer.SignerMappingDataSessionLocal
  * @version $Id$
  */
 @Stateless  //(mappedName = JndiConstants.APP_JNDI_PREFIX + "SignerMappingDataSessionRemote")
@@ -41,6 +43,7 @@ public class SignerMappingDataSessionBean implements SignerMappingDataSessionLoc
 
     private static final Logger log = Logger.getLogger(SignerMappingDataSessionBean.class);
     private static final InternalResources intres = InternalResources.getInstance();
+    private static final Random rnd = new SecureRandom();
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
@@ -103,7 +106,7 @@ public class SignerMappingDataSessionBean implements SignerMappingDataSessionLoc
         if (log.isDebugEnabled()) {
             log.debug(">addCryptoToken " + signerMapping.getName() + " " + signerMapping.getClass().getName());
         }
-        final int signerMappingId = signerMapping.getId();
+        int signerMappingId = signerMapping.getId();
         final String name = signerMapping.getName();
         final SignerMappingStatus status = signerMapping.getStatus();
         final String type = SignerMappingFactory.INSTANCE.getTypeFromImplementation(signerMapping);
@@ -111,7 +114,26 @@ public class SignerMappingDataSessionBean implements SignerMappingDataSessionLoc
         final int cryptoTokenId = signerMapping.getCryptoTokenId();
         final String keyPairAlias = signerMapping.getKeyPairAlias();
         final LinkedHashMap<Object,Object> dataMap = signerMapping.getDataMapToPersist();
-        SignerMappingData signerMappingData = entityManager.find(SignerMappingData.class, signerMappingId);
+        // Allocate a new signerMappingId if we create the SignerMapping
+        SignerMappingData signerMappingData = null;
+        if (signerMappingId == 0) {
+            final List<Integer> allUsedIds = getSignerMappingIds(null);
+            Integer signerMappingIdAllocation = null;
+            for (int i=0; i<100; i++) {
+                final int current = Integer.valueOf(rnd.nextInt());
+                if (!allUsedIds.contains(current)) {
+                    signerMappingIdAllocation = current;
+                    break;
+                }
+            }
+            if (signerMappingIdAllocation == null) {
+                throw new RuntimeException("Failed to allocate a new signerMappingId.");
+            }
+            signerMappingId = signerMappingIdAllocation.intValue();
+        } else {
+            // The one invoking the method has specified an signerMappingId and expects the SignerMapping to exist
+            signerMappingData = entityManager.find(SignerMappingData.class, signerMappingId);
+        }
         if (signerMappingData == null) {
             // The cryptoToken does not exist in the database, before we add it we want to check that the name is not in use
             if (isSignerMappingNameUsed(name)) {
@@ -144,16 +166,19 @@ public class SignerMappingDataSessionBean implements SignerMappingDataSessionLoc
     }
 
     @Override
-    public void removeSignerMapping(final int signerMappingId) {
-        deleteSignerMappingData(signerMappingId);
+    public boolean removeSignerMapping(final int signerMappingId) {
+        final boolean ret = deleteSignerMappingData(signerMappingId);
         SignerMappingCache.INSTANCE.updateWith(signerMappingId, 0, null, null);
+        return ret;
     }
     
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public Map<String,Integer> getCachedNameToIdMap() {
         return SignerMappingCache.INSTANCE.getNameToIdMap();
     }
     
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public boolean isSignerMappingNameUsed(final String signerMappingName) {
         final Query query = entityManager.createQuery("SELECT a FROM SignerMappingData a WHERE a.name=:signerMappingName");
@@ -161,6 +186,7 @@ public class SignerMappingDataSessionBean implements SignerMappingDataSessionLoc
         return !query.getResultList().isEmpty();
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public boolean isSignerMappingNameUsedByIdOnly(final String signerMappingName, final int signerMappingId) {
         final Query query = entityManager.createQuery("SELECT a FROM SignerMappingData a WHERE a.name=:signerMappingName");
@@ -198,9 +224,16 @@ public class SignerMappingDataSessionBean implements SignerMappingDataSessionLoc
     }
 
     @SuppressWarnings("unchecked")
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public List<Integer> getSignerMappingIds() {
-        return entityManager.createQuery("SELECT a.id FROM SignerMappingData a").getResultList();
+    public List<Integer> getSignerMappingIds(String signerMappingType) {
+        if (signerMappingType == null) {
+            return entityManager.createQuery("SELECT a.id FROM SignerMappingData a").getResultList();
+        } else {
+            final Query query = entityManager.createQuery("SELECT a.id FROM SignerMappingData a WHERE a.signerType=:signerType");
+            query.setParameter("signerType", signerMappingType);
+            return query.getResultList();
+        }
     }
 
 }

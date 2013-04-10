@@ -25,17 +25,17 @@ import javax.ejb.Local;
 @Local
 public interface SignerMappingDataSessionLocal {
 
-    /** @return the specified Signer */
+    /** @return the specified SignerMapping */
     SignerMapping getSignerMapping(int signerMappingId);
 
-    /** Add the specified Signer to the database and return the id used to store it */
+    /** Add the specified SignerMapping to the database and return the id used to store it */
     int mergeSignerMapping(SignerMapping signerMapping) throws SignerMappingNameInUseException;
 
-    /** Remove the specified Signer from the database. */
-    void removeSignerMapping(final int signerMappingId);
+    /** @return true if the SignerMapper existed before removal of the specified SignerMapping from the database. */
+    boolean removeSignerMapping(int signerMappingId);
 
-    /** @return a list of all Signer identifiers in the database. */
-    List<Integer> getSignerMappingIds();
+    /** @return a list of all SignerMapping identifiers for the specified type from the database. If the type is null, all SignerMappings will be returned. */
+    List<Integer> getSignerMappingIds(String type);
 
     /** @return a (copy of a) name to id lookup table */
     Map<String, Integer> getCachedNameToIdMap();
