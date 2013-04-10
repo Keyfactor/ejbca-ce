@@ -22,24 +22,24 @@ import org.apache.log4j.Logger;
 
 /**
  * Class used to manage the batch tool property file.
- * 
+ *
  * @author Philip Vendil 2006 sep 19
  *
  * @version $Id$
  */
 public class BatchToolProperties {
-	
+
 	private static final String PROPERTY_KEYSPEC          = "keys.spec";
 	private static final String PROPERTY_KEYALG           = "keys.alg";
-	
+
 
 	Properties batchToolProperties = new Properties();
 	private static final Logger log = Logger.getLogger(BatchToolProperties.class);
-	
+
 	BatchToolProperties(){
 		load();
 	}
-	
+
 	/**
 	 * Returns the configured keysize
 	 * Default is 1024
@@ -47,7 +47,7 @@ public class BatchToolProperties {
 	public String getKeySpec(){
 		return batchToolProperties.getProperty(PROPERTY_KEYSPEC,"1024");
 	}
-	
+
 	/**
 	 * Returns the configured key algorithm
 	 * Default is RSA, can be ECDSA
@@ -56,48 +56,44 @@ public class BatchToolProperties {
 		return batchToolProperties.getProperty(PROPERTY_KEYALG,"RSA");
 	}
 
-	
+
 	private boolean tryLoadFile(String filename) throws IOException {
-		try {
-			FileInputStream fis = new FileInputStream(filename);
+		File file = new File(filename);
+		if (file.exists()) {
+			FileInputStream fis = new FileInputStream(file);
 			batchToolProperties.load(fis);
 			return true;
-		} catch (FileNotFoundException e) {
+		} else {
 			return false;
 		}
 	}
-	
+
 	/**
 	 * Method that tries to read the property file 'batchtool.properties'
-	 * in the home directory then in the current directory and finally 
+	 * in the home directory then in the current directory and finally
 	 * in the conf/batchtool.properties.
 	 *
 	 * It will also try the old location in bin/ and print a deprecation
 	 * warning if it exists there.
 	 */
 	private void load(){
-        File file = new File( System.getProperty("user.home"),
-                "batchtool.properties");
         try {
-        	try{
-			FileInputStream fis = new FileInputStream(file);
-			batchToolProperties.load(fis);
-		    } catch (FileNotFoundException e1) {
-		    	if (!tryLoadFile("batchtool.properties") && !tryLoadFile("conf/batchtool.properties")) {
-		    		if (tryLoadFile("bin/batchtool.properties")) {
-		    			log.info("The batchtool.properties file exists in bin/. It should be moved to conf/");
-		    		} else {
-		    			log.debug("Could not find any batchtool property file, default values will be used.");
-		    			log.debug(e1);
-		    		}
-		    	}
-		    }
+        	if (!tryLoadFile(System.getProperty("user.home") + "/batchtool.properties") &&
+        	    !tryLoadFile("batchtool.properties") &&
+        	    !tryLoadFile("conf/batchtool.properties")) {
+        	    // Not found
+			    if (tryLoadFile("bin/batchtool.properties")) {
+			    	log.info("The batchtool.properties file exists in bin/. It should be moved to conf/");
+			    } else {
+			    	log.debug("Could not find any batchtool property file, default values will be used.");
+			    }
+			}
 		} catch (IOException e) {
 			log.error("Error reading batchtool property file ");
 			log.debug(e);
 		}
 	}
-	
-	
-	
+
+
+
 }
