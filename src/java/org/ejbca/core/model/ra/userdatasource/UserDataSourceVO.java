@@ -22,11 +22,10 @@ import org.cesecore.certificates.util.DNFieldExtractor;
  * UserDataSourceVO is a value object returned from the fetch method
  * of a user data source.
  * 
- * Contains two things one is the UserDataVO and the other is
+ * Contains two things one is the EndEntityInformationand the other is
  * a set of contants indicating which fields that should be modifyable by the RA.
  * 
  *  
- * @author Philip Vendil
  * @version $Id$
  */
 public class UserDataSourceVO implements Serializable {    
@@ -59,16 +58,16 @@ public class UserDataSourceVO implements Serializable {
     	DNFieldExtractor.COUNTRYOFRESIDENCE 
     };
 
-    private EndEntityInformation userDataVO = null;
+    private EndEntityInformation endEntityInformation = null;
     private Set<Integer> isModifyableSet = null;
 	
     /**
 	 * Constuctor that should be used from the User Data Source Implementations
-	 * @param userDataVO
+	 * @param endEntityInformation
 	 */
-	public UserDataSourceVO(EndEntityInformation userDataVO) {
+	public UserDataSourceVO(EndEntityInformation endEntityInformation) {
 		super();
-		this.userDataVO = userDataVO;
+		this.endEntityInformation = endEntityInformation;
 	}
 	
 	/**
@@ -80,10 +79,10 @@ public class UserDataSourceVO implements Serializable {
 	}
 	
 	/**
-	 * Method that returns the users userdatavo.
+	 * Method that returns the users EndEntityInformation.
 	 */
-	public EndEntityInformation getUserDataVO(){
-		return userDataVO;
+	public EndEntityInformation getEndEntityInformation(){
+		return endEntityInformation;
 	}
 	
 	/**

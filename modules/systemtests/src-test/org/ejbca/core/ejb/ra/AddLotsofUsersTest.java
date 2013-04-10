@@ -110,8 +110,8 @@ public class AddLotsofUsersTest extends CaTestCase {
     @Test
     public void test02FindAllBatchUsersByStatusWithLimit() {
         log.trace(">test02FindAllBatchUsersByStatusWithLimit()");
-    	List<EndEntityInformation> userDataVOs = endEntityManagementSession.findAllBatchUsersByStatusWithLimit(EndEntityConstants.STATUS_NEW);
-    	assertEquals("Did not returned the maximum hardcoded limit in query.", EndEntityManagementConstants.MAXIMUM_QUERY_ROWCOUNT, userDataVOs.size());
+    	List<EndEntityInformation> endEntityInformations = endEntityManagementSession.findAllBatchUsersByStatusWithLimit(EndEntityConstants.STATUS_NEW);
+    	assertEquals("Did not returned the maximum hardcoded limit in query.", EndEntityManagementConstants.MAXIMUM_QUERY_ROWCOUNT, endEntityInformations.size());
         log.trace("<test02FindAllBatchUsersByStatusWithLimit()");
     }
 }

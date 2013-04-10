@@ -314,7 +314,7 @@ public class DatabaseSchemaTest {
         entity.setSerialNumber(VARCHAR_250B);
         //setPrivateField(entity, "serialNumber", VARCHAR_250B);
         entity.setTimestamp(0L);
-        entity.setUserDataVO(CLOB_1MiB);
+        entity.setEndEntityInformation(CLOB_1MiB);
         entity.setUsername(VARCHAR_250B);
         //setPrivateField(entity, "username", VARCHAR_250B);
         storeAndRemoveEntity(entity);

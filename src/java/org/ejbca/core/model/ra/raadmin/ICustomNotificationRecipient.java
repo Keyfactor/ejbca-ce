@@ -19,14 +19,13 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
  * Implement this interface and put "CUSTOM:you.plugin.full.classname" as the recipient for 
  * user notifications.
  * 
- * @author Tomas Gustavsson
  * @version $Id$
  */
 public interface ICustomNotificationRecipient {
 
 	/** Returns a comma separated list of recipient email addresses.
 	 * 
-	 * @param user UserDataVO of the user that will be notified
+	 * @param user EndEntityInformation of the user that will be notified
 	 * @return a comma separated list of email addresses
 	 */
 	public String getRecipientEmails(EndEntityInformation user);

@@ -52,7 +52,7 @@ public class DummyCustomUserDataSource implements ICustomUserDataSource{
 	}
 
 	/**
-	 * A dummy fetch implementation that returns a UserDataVO if the searchstring "per" is given
+	 * A dummy fetch implementation that returns a EndEntityInformation if the searchstring "per" is given
 	 * Othervise a empty collection is returned.
 	 * 
 	 * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource
@@ -61,8 +61,8 @@ public class DummyCustomUserDataSource implements ICustomUserDataSource{
 
 		List<UserDataSourceVO> result = new ArrayList<UserDataSourceVO>();
 		if(searchstring.equalsIgnoreCase("per")){
-			EndEntityInformation userDataVO = new EndEntityInformation("PER","CN=PER,C=SE",1,"RFC822NAME=per@test.com", "per@test.com",0,new EndEntityType(EndEntityTypes.ENDUSER),1,1,null,null,SecConst.TOKEN_SOFT_BROWSERGEN,0,null);
-			result.add(new UserDataSourceVO(userDataVO));
+			EndEntityInformation endEntityInformation = new EndEntityInformation("PER","CN=PER,C=SE",1,"RFC822NAME=per@test.com", "per@test.com",0,new EndEntityType(EndEntityTypes.ENDUSER),1,1,null,null,SecConst.TOKEN_SOFT_BROWSERGEN,0,null);
+			result.add(new UserDataSourceVO(endEntityInformation));
 		}
 		
 		return result;

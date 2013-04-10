@@ -69,7 +69,7 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
     		try {
     			List<UserData> userDataList = UserData.findNewOrKeyrecByHardTokenIssuerId(entityManager, hardTokenIssuerId, 0);
     			if (!userDataList.isEmpty()) {
-    				returnval = userDataList.get(0).toUserDataVO();
+    				returnval = userDataList.get(0).toEndEntityInformation();
     				if (log.isDebugEnabled()) {    					
     					log.debug("found user" + returnval.getUsername());
     				}
@@ -96,9 +96,9 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
     		try {
     			List<UserData> userDataList = UserData.findNewOrKeyrecByHardTokenIssuerId(entityManager, hardTokenIssuerId, MAX_RETURNED_QUEUE_SIZE);
     			for (UserData userData : userDataList) {
-    				EndEntityInformation userDataVO = userData.toUserDataVO();
-    				hardTokenSession.getIsHardTokenProfileAvailableToIssuer(hardTokenIssuerId, userDataVO);
-    				returnval.add(userDataVO);
+    				EndEntityInformation endEntityInformation = userData.toEndEntityInformation();
+    				hardTokenSession.getIsHardTokenProfileAvailableToIssuer(hardTokenIssuerId, endEntityInformation);
+    				returnval.add(endEntityInformation);
     				String msg = intres.getLocalizedMessage("hardtoken.userdatasent", alias);
     				log.info(msg);
     			}
@@ -125,7 +125,7 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
     		try {
     			List<UserData> userDataList = UserData.findNewOrKeyrecByHardTokenIssuerId(entityManager, hardTokenIssuerId, 0);
     			if (userDataList.size()>(index-1)) {
-    				returnval = userDataList.get(index-1).toUserDataVO();
+    				returnval = userDataList.get(index-1).toEndEntityInformation();
     				hardTokenSession.getIsHardTokenProfileAvailableToIssuer(hardTokenIssuerId, returnval);
     				String msg = intres.getLocalizedMessage("hardtoken.userdatasent", alias);
     				log.info(msg);
