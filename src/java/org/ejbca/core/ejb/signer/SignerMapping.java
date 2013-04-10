@@ -29,6 +29,13 @@ public interface SignerMapping extends Serializable {
     
     /** Return the non-changeable alias for this implementation. E.g. "DummySignerMapping". */
     String getSignerMappingAlias();
+    
+    /**
+     * IMPORTANT: The validation must be done properly to avoid unintended certificate import.
+     * 
+     * @throws CertificateImportException if the provided certificate is not compatible with this type of SignerMapping
+     */
+    void assertCertificateCompatability(byte[] derEncodedCertificate) throws CertificateImportException;
 
     /** @return the non-changeable id of this SignerMapping */
     int getId();
@@ -43,7 +50,7 @@ public interface SignerMapping extends Serializable {
     /** Sets the current human friendly name of this SignerMapping */
     void setStatus(SignerMappingStatus status);
 
-    /** @return the fingerprint of the certificate currently in use */
+    /** @return the fingerprint of the certificate currently in use or null if none is referenced */
     String getCertificateId();
     /** Sets the fingerprint of the certificate currently in use */
     void setCertificateId(String certificateId);

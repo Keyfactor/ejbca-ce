@@ -325,7 +325,7 @@
             <basic fetch="EAGER" name="name"><column name="name" column-definition="VARCHAR(250) BINARY" nullable="false"/></basic>
             <basic fetch="EAGER" name="status"><column name="status" column-definition="VARCHAR(250) BINARY" nullable="false"/></basic>
             <basic fetch="EAGER" name="signerType"><column name="signerType" column-definition="VARCHAR(250) BINARY" nullable="false"/></basic>
-            <basic fetch="EAGER" name="certificateId"><column name="certificateId" column-definition="VARCHAR(250) BINARY" nullable="false"/></basic>
+            <basic fetch="EAGER" name="certificateId"><column name="certificateId" column-definition="VARCHAR(250) BINARY" nullable="true"/></basic>
             <basic fetch="EAGER" name="cryptoTokenId"><column name="cryptoTokenId" column-definition="INT(11)" nullable="false"/></basic>
             <basic fetch="EAGER" name="keyPairAlias"><column name="keyPairAlias" column-definition="VARCHAR(250) BINARY" nullable="false"/></basic>
             <basic fetch="EAGER" name="rawData"><column name="rawData" column-definition="LONGTEXT"/><lob/></basic>

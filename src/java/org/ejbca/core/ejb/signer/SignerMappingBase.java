@@ -77,6 +77,8 @@ public abstract class SignerMappingBase extends UpgradeableDataHashMap implement
     
     @Override
     public abstract float getLatestVersion();
+    @Override
+    public abstract void assertCertificateCompatability(byte[] derEncodedCertificate) throws CertificateImportException;
 
     @Override
     public void upgrade() {
