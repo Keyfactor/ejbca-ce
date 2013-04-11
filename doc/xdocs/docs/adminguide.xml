@@ -3984,203 +3984,6 @@ The CA certificate must also be imported into Windows properly.
 </p>
 </subsubsection>
 
-<subsubsection name="Configure OpenLDAP">
-<p>
-The objectclass 'inetOrgPerson' is used by default to store certificates.
-</p><p>
-Example:
-</p>
-<source>
-dn: cn=Mike Jackson,ou=people,dc=company,dc=com
-objectclass: top
-objectclass: person
-objectclass: organizationalPerson
-objectclass: inetOrgPerson
-cn: Mike Jackson
-sn: Jackson
-userCertificate;binary::
-</source>
-<p>
-CAs are published in the form:
-</p>
-<source>
-dn: cn=ejbca,dc=jackson,dc=net
-objectClass: top
-objectClass: applicationProcess
-objectClass: certificationAuthority
-cn: ejbca
-cACertificate;binary:
-certificateRevocationList;binary:
-authorityRevocationList;binary:
-</source>
-<p>
-To configure OpenLDAP (version 2.2.5) to include the 'inetOrgPerson' you
-must add the following lines to slapd.conf. This is already the default in recent releases:
-</p>
-<source>
-include         /etc/ldap/schema/cosine.schema
-include         /etc/ldap/schema/inetorgperson.schema
-</source>
-<p>
-Don't forget to add the top object by creating an LDIF file (org.ldif):
-</p>
-<source>
-dn: o=AnaTom,c=SE
-objectclass: dcObject
-objectclass: organization
-o: AnaTom
-dc: AnaTom
-
-dn: cn=Admin,o=AnaTom,c=SE
-objectclass: organizationalRole
-cn: Admin
-</source>
-<p>
-And using the command:
-</p>
-<source>
-ldapadd -x -D "cn=Admin,o=AnaTom,c=SE" -W -f org.ldif
-</source>
-<p>
-Check what you have in the LDAP by:
-</p>
-<source>
-ldapsearch -x -b 'o=AnaTom,c=SE' '(objectclass=*)'
-</source>
-</subsubsection>
-
-<subsubsection name="Configure SSL">
-<p>
-Create a user in ejbca (this example is for adding a user with the cli
-interface, adding a user with the admin-GUI works just as fine).
-In the mail ejbca directory type (use simply 'ra' on windows):
-</p>
-<source>
-bin/ejbca.sh ra adduser ldap foo123 "C=SE,O=Foo,CN=ldap" null ManagementCA null 1 PEM SERVER
-bin/ejbca.sh ra setclearpwd ldap foo123
-</source>
-<p>
-Where foo123 is the ldap users password, C=SE... is the users DN and
-ManagementCA is the name you chose for your CA. The user type is end-user (1), keystore type is PEM, and
-if using the admin-GUI check 'use batch').
-Batch generate the PEM keystore:
-</p>
-<source>
-bin/ejbca.sh batch
-</source>
-<p>
-Copy the resulting files p12/pem/ldap.pem, p12/pem/ldap-CA.pem and
-p12/pem/ldap-Key.pem to your LDAP server. In this example the slapd.conf is located in
-/etc/ldap so we copy the files to that directory. 
-Protect theses files so they are only readable by the LDAP server.
-
-Add the following to your slapd.conf:
-</p>
-<source>
-# Use SSL
-TLSCipherSuite HIGH:MEDIUM:+SSLv3
-TLSCertificateFile /etc/ldap/ldap.pem
-TLSCertificateKeyFile /etc/ldap/ldap-Key.pem
-TLSCACertificateFile /etc/ldap/ldap-CA.pem
-</source>
-<p>
-Restart slapd:
-</p>
-<source>
-./slapd -h "ldap:/// ldaps:///"
-</source>
-<p>
-and check that it is running with 'ps -ef|grep slapd'.
-</p><p>
-On SuSE, if using the builtin OpenLDAP you have to enable ldaps in
-/etc/sysconfig/openldap:
-</p>
-<source>
-OPENLDAP_START_LDAPS="yes"
-</source>
-<p>
-and then run
-</p>
-<source>
-SuSEconfig
-</source>
-<p>
-and then
-</p>
-<source>
-rcldap start
-</source>
-<p>
-Configure your LDAP publisher in EJBCA to use SSL by checking the checkbox
-'Use SSL', the port should change to port 636.
-</p><p>
-Note! The CA certificate of the (root)CA used to sign the ldap server
-certificate must be present in the java trust cert store 
-($JAVA_HOME/jre/lib/security/cacerts).
-Otherwise you will have to add it using something like:
-First get the CA cert:
-</p>
-<source>
-bin/ejbca.sh ca getrootcert MyCA myca.der -der
-</source>
-<p>
-Then add it to the java trust store:
-</p>
-<source>
-keytool -import -trustcacert -alias MyCA -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass changeit -file myca.der
-</source>
-<p>
-You have to re-start JBoss after adding anything to the java trust store.
-</p>
-<p>
-A guide for configuring OpenLDAP on Solaris can be found at
-<a href="http://www.bolthole.com/solaris/LDAP.html">bolthole.com</a>
-</p>
-</subsubsection>
-
-<subsubsection name="Sample Ubuntu installation">
-<source>
-- sudo apt-get install slapd ldap-utils
-- sudo dpkg-reconfigure slapd
-  Configure slapd with your domain and admin password (primekey.se in this case).
-- sudo /etc/init.d/slapd restart
-- 'ps -ef|grep slap' 
-  should show a slapd running
-- ldapsearch -x -b 'dc=primekey,dc=se' '(objectclass=*)'
-  To look at the results
-- slapcat -l backup.ldif
-  Make backup
-- slapadd -l backup.ldif
-- /etc/init.d/slapd restart
-  Restore backup
-</source>
-<p>
-Command to add new LDAP nodes:  
-</p>
-<source>
-- ldapadd -x -D "cn=admin,dc=PrimeKey,dc=com" -W -f primekey.ldif
-  where primekey.ldif is:
-
-dn: dc=PrimeKey,dc=com
-dc: PrimeKey
-objectclass: dcObject
-objectclass: organization
-o: PrimeKey Solutions AB
-description: Parent Object for PrimeKey LDAP Directory
-
-dn: ou=Standard,dc=PrimeKey,dc=com
-ou: Standard
-objectClass: top
-objectClass: organizationalUnit
-description: Parent Object for all Standard Certificates
-
-dn: ou=High,dc=PrimeKey,dc=com
-ou: High
-objectClass: top
-objectClass: organizationalUnit
-description: Parent Object for all High Certificates
-</source>
-</subsubsection>
 
 </subsection>
 
@@ -4455,6 +4258,237 @@ The attributes that EJBCA creates or replaces are:
 </ul>
 </subsubsection>
 
+</subsection>
+
+<subsection name="Configure OpenLDAP">
+<p>
+The objectclass 'inetOrgPerson' is used by default to store certificates.
+</p><p>
+Example:
+</p>
+<source>
+dn: cn=Mike Jackson,ou=people,dc=company,dc=com
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectclass: inetOrgPerson
+cn: Mike Jackson
+sn: Jackson
+userCertificate;binary::
+</source>
+<p>
+CAs are published in the form:
+</p>
+<source>
+dn: cn=ejbca,dc=jackson,dc=net
+objectClass: top
+objectClass: applicationProcess
+objectClass: certificationAuthority
+cn: ejbca
+cACertificate;binary:
+certificateRevocationList;binary:
+authorityRevocationList;binary:
+</source>
+<p>
+To configure OpenLDAP (version 2.2.5) to include the 'inetOrgPerson' you
+must add the following lines to slapd.conf. This is already the default in recent releases:
+</p>
+<source>
+include         /etc/ldap/schema/cosine.schema
+include         /etc/ldap/schema/inetorgperson.schema
+</source>
+<p>
+Don't forget to add the top object by creating an LDIF file (org.ldif):
+</p>
+<source>
+dn: o=AnaTom,c=SE
+objectclass: dcObject
+objectclass: organization
+o: AnaTom
+dc: AnaTom
+
+dn: cn=Admin,o=AnaTom,c=SE
+objectclass: organizationalRole
+cn: Admin
+</source>
+<p>
+And using the command:
+</p>
+<source>
+ldapadd -x -D "cn=Admin,o=AnaTom,c=SE" -W -f org.ldif
+</source>
+<p>
+Check what you have in the LDAP by:
+</p>
+<source>
+ldapsearch -x -b 'o=AnaTom,c=SE' '(objectclass=*)'
+</source>
+
+<subsubsection name="Configure SSL">
+<p>
+Create a user in ejbca (this example is for adding a user with the cli
+interface, adding a user with the admin-GUI works just as fine).
+In the mail ejbca directory type (use simply 'ra' on windows):
+</p>
+<source>
+bin/ejbca.sh ra adduser ldap foo123 "C=SE,O=Foo,CN=ldap" null ManagementCA null 1 PEM SERVER
+bin/ejbca.sh ra setclearpwd ldap foo123
+</source>
+<p>
+Where foo123 is the ldap users password, C=SE... is the users DN and
+ManagementCA is the name you chose for your CA. The user type is end-user (1), keystore type is PEM, and
+if using the admin-GUI check 'use batch').
+Batch generate the PEM keystore:
+</p>
+<source>
+bin/ejbca.sh batch
+</source>
+<p>
+Copy the resulting files p12/pem/ldap.pem, p12/pem/ldap-CA.pem and
+p12/pem/ldap-Key.pem to your LDAP server. In this example the slapd.conf is located in
+/etc/ldap so we copy the files to that directory. 
+Protect theses files so they are only readable by the LDAP server.
+
+Add the following to your slapd.conf:
+</p>
+<source>
+# Use SSL
+TLSCipherSuite HIGH:MEDIUM:+SSLv3
+TLSCertificateFile /etc/ldap/ldap.pem
+TLSCertificateKeyFile /etc/ldap/ldap-Key.pem
+TLSCACertificateFile /etc/ldap/ldap-CA.pem
+</source>
+<p>
+Restart slapd:
+</p>
+<source>
+./slapd -h "ldap:/// ldaps:///"
+</source>
+<p>
+and check that it is running with 'ps -ef|grep slapd'.
+</p><p>
+On SuSE, if using the builtin OpenLDAP you have to enable ldaps in
+/etc/sysconfig/openldap:
+</p>
+<source>
+OPENLDAP_START_LDAPS="yes"
+</source>
+<p>
+and then run
+</p>
+<source>
+SuSEconfig
+</source>
+<p>
+and then
+</p>
+<source>
+rcldap start
+</source>
+<p>
+Configure your LDAP publisher in EJBCA to use SSL by checking the checkbox
+'Use SSL', the port should change to port 636.
+</p><p>
+Note! The CA certificate of the (root)CA used to sign the ldap server
+certificate must be present in the java trust cert store 
+($JAVA_HOME/jre/lib/security/cacerts).
+Otherwise you will have to add it using something like:
+First get the CA cert:
+</p>
+<source>
+bin/ejbca.sh ca getrootcert MyCA myca.der -der
+</source>
+<p>
+Then add it to the java trust store:
+</p>
+<source>
+keytool -import -trustcacert -alias MyCA -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass changeit -file myca.der
+</source>
+<p>
+You have to re-start JBoss after adding anything to the java trust store.
+</p>
+<p>
+A guide for configuring OpenLDAP on Solaris can be found at
+<a href="http://www.bolthole.com/solaris/LDAP.html">bolthole.com</a>
+</p>
+</subsubsection>
+
+<subsubsection name="Sample Ubuntu installation">
+<source>
+- sudo apt-get install slapd ldap-utils
+- sudo dpkg-reconfigure slapd
+  Configure slapd with your domain and admin password (primekey.se in this case).
+- sudo /etc/init.d/slapd restart
+- 'ps -ef|grep slap' 
+  should show a slapd running
+- ldapsearch -x -b 'dc=primekey,dc=se' '(objectclass=*)'
+  To look at the results
+- slapcat -l backup.ldif
+  Make backup
+- slapadd -l backup.ldif
+- /etc/init.d/slapd restart
+  Restore backup
+</source>
+<p>
+Command to add new LDAP nodes:  
+</p>
+<source>
+- ldapadd -x -D "cn=admin,dc=PrimeKey,dc=com" -W -f primekey.ldif
+  where primekey.ldif is:
+
+dn: dc=PrimeKey,dc=com
+dc: PrimeKey
+objectclass: dcObject
+objectclass: organization
+o: PrimeKey Solutions AB
+description: Parent Object for PrimeKey LDAP Directory
+
+dn: ou=Standard,dc=PrimeKey,dc=com
+ou: Standard
+objectClass: top
+objectClass: organizationalUnit
+description: Parent Object for all Standard Certificates
+
+dn: ou=High,dc=PrimeKey,dc=com
+ou: High
+objectClass: top
+objectClass: organizationalUnit
+description: Parent Object for all High Certificates
+</source>
+</subsubsection>
+</subsection>
+
+<subsection name="OpenDJ">
+<p>OpenDJ is a modern, standards compliant, java based, LDAP server that is easy to set up and use. It also comes with GUI tools to manage and query.
+</p>
+<subsubsection name="Installing OpenDJ">
+<p>This install guide uses OpenDJ 2.5.0 as an example, but other versions should worksimilarly.
+<ul>
+<li>unzip OpenDJ-2.5.0-Xpress1.zip</li>
+<li>cd OpenDJ-2.5.0-Xpress1</li>
+<li>./setup</li>
+<ul>
+<li>This launches graphical setup, another mode for servers without GUI is posible.</li>
+<li>Use default Root User DN: cn=Directory Manager</li>
+<li>Directory Base DN: dc=example,dc=com)</li>
+</ul>
+<li>You can end by starting Launch Control Panel, or you can start it later with bin/control-panel.</li>
+</ul>
+A EJBCA publisher for a default installation is then configured with:
+<ul>
+<li>Base DN: dc=example,dc=com</li>
+<li>Administrator: cn=Directory Manager</li>
+</ul> 
+</p>
+</subsubsection>
+<p>
+The graphical LDAP browser is accessible from the Control Panel->Manage Entries.
+You can start/stop OpenDJ from within the Control Panel or with bin/start-ds and stop-ds.
+</p>
+<p>Management tasks such as creating new attributes and object types are easy to do in the Control Panel GUI.
+</p><p>
+OpenDJ listens to port 1389 by default, but it also occupies other ports stopping it from running on the same server as JBoss.
+</p>
 </subsection>
 
 <subsection name="Extra device schema">
