@@ -12,12 +12,12 @@
  *************************************************************************/
 package org.ejbca.core.ejb.signer;
 
-import javax.ejb.Local;
-
-/**
- * @see SignerMappingMgmtSession
+/** 
+ * Status representation of an InternalKeyBinding 
+ * 
  * @version $Id$
+ *
  */
-@Local
-public interface SignerMappingMgmtSessionLocal extends SignerMappingMgmtSession {
+public enum InternalKeyBindingStatus {
+    ACTIVE, DISABLED;
 }

@@ -31,21 +31,21 @@ import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.Base64PutHashMap;
 
 /**
- * Database representation of a SignerMapping.
+ * Database representation of an InternalKeyBinding.
  * 
  * @version $Id$
  */
 @Entity
-@Table(name = "SignerMappingData")
-public class SignerMappingData extends ProtectedData implements Serializable {
+@Table(name = "InternalKeyBindingData")
+public class InternalKeyBindingData extends ProtectedData implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    //private static final Logger log = Logger.getLogger(SignerMappingData.class);
+    //private static final Logger log = Logger.getLogger(InternalKeyBindingData.class);
 
     private int id;                 // Internal and static over time representation when referencing this object
     private String name;            // A human friendly representation of this object
-    private String status;          // The status of this SignerMapping as a String constant
-    private String signerType;      // Mapped to implementation class
+    private String status;          // The status as a String constant of InternalKeyBindingStatus
+    private String keyBindingType;  // Mapped to implementation class
     private String certificateId;   // Reference to a Certificate currently in use by the implementation
     private int cryptoTokenId;      // Reference to a CryptoToken currently in use by the implementation
     private String keyPairAlias;    // Reference to an alias in the CryptoToken currently in use by the implementation
@@ -54,12 +54,12 @@ public class SignerMappingData extends ProtectedData implements Serializable {
     private int rowVersion = 0;     // JPA Optimistic locking requirement
     private String rowProtection;   // Row integrity protection
 
-    public SignerMappingData(final int id, final String name, final SignerMappingStatus status, final String signerType, final String certificateId,
+    public InternalKeyBindingData(final int id, final String name, final InternalKeyBindingStatus status, final String keyBindingType, final String certificateId,
             final int cryptoTokenId, final String keyPairAlias, final LinkedHashMap<Object, Object> dataMap) {
         setId(id);
         setName(name);
         setStatusEnum(status);
-        setSignerType(signerType);
+        setKeyBindingType(keyBindingType);
         setCertificateId(certificateId);
         setCryptoTokenId(cryptoTokenId);
         setKeyPairAlias(keyPairAlias);
@@ -67,7 +67,7 @@ public class SignerMappingData extends ProtectedData implements Serializable {
         setLastUpdate(System.currentTimeMillis());
     }
 
-    public SignerMappingData() {}
+    public InternalKeyBindingData() {}
 
     // @Id @Column
     public int getId() { return id; }
@@ -84,8 +84,8 @@ public class SignerMappingData extends ProtectedData implements Serializable {
     public void setStatus(String status) { this.status = status; }
 
     // @Column
-    public String getSignerType() { return signerType; }
-    public void setSignerType(String signerType) { this.signerType = signerType; }
+    public String getKeyBindingType() { return keyBindingType; }
+    public void setKeyBindingType(String keyBindingType) { this.keyBindingType = keyBindingType; }
 
     // @Column
     public String getCertificateId() { return certificateId; }
@@ -128,7 +128,7 @@ public class SignerMappingData extends ProtectedData implements Serializable {
         final ProtectionStringBuilder build = new ProtectionStringBuilder(1024);
         // What is important to protect here is the data that we define
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
-        build.append(getId()).append(getName()).append(getStatus()).append(getSignerType());
+        build.append(getId()).append(getName()).append(getStatus()).append(getKeyBindingType());
         build.append(getCertificateId()).append(String.valueOf(getCryptoTokenId())).append(getKeyPairAlias());
         build.append(getRawData()).append(String.valueOf(getLastUpdate()));
         return build.toString();
@@ -196,11 +196,11 @@ public class SignerMappingData extends ProtectedData implements Serializable {
     }
     
     @Transient
-    public SignerMappingStatus getStatusEnum() {
-        return SignerMappingStatus.valueOf(getStatus());
+    public InternalKeyBindingStatus getStatusEnum() {
+        return InternalKeyBindingStatus.valueOf(getStatus());
     }
     @Transient
-    public void setStatusEnum(SignerMappingStatus status) {
+    public void setStatusEnum(InternalKeyBindingStatus status) {
         setStatus(status.name());
     }
 }

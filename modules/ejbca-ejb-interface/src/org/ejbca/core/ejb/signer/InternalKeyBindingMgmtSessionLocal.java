@@ -12,12 +12,12 @@
  *************************************************************************/
 package org.ejbca.core.ejb.signer;
 
-import javax.ejb.Remote;
+import javax.ejb.Local;
 
 /**
- * @see SignerMappingMgmtSession
+ * @see InternalKeyBindingMgmtSession
  * @version $Id$
  */
-@Remote
-public interface SignerMappingMgmtSessionRemote extends SignerMappingMgmtSession {
+@Local
+public interface InternalKeyBindingMgmtSessionLocal extends InternalKeyBindingMgmtSession {
 }

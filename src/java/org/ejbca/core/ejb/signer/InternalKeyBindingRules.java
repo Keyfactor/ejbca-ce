@@ -10,14 +10,32 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
+
 package org.ejbca.core.ejb.signer;
 
-/** 
- * Status representation of a SignerMapping 
+/**
+ * Authorization Rules for InternalKeyBindings.
  * 
  * @version $Id$
- *
  */
-public enum SignerMappingStatus {
-    ACTIVE, DISABLED;
+public enum InternalKeyBindingRules {
+    BASE("/internalkeybinding"),
+    DELETE(BASE.resource() + "/delete"),
+    MODIFY(BASE.resource() + "/modify"),
+    VIEW(BASE.resource() + "/view"),
+    ;
+
+    private final String resource;
+    
+    private InternalKeyBindingRules(String resource) {
+        this.resource = resource;
+    }
+
+    public String resource() {
+        return this.resource;
+    }
+
+    public String toString() {
+        return this.resource;
+    }
 }

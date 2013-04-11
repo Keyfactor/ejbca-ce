@@ -110,4 +110,4 @@
 
 # TODO
 # Default: 10000 (10 seconds)
-#signermapping.cachetime=10000
+#internalkeybinding.cachetime=10000
