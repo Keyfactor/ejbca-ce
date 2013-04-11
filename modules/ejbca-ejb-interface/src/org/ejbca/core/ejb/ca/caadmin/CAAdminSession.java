@@ -421,7 +421,7 @@ public interface CAAdminSession {
      * Method used to create a new CA.
      * 
      * The cainfo parameter should at least contain the following information.
-     * SubjectDN Name (if null then is subjectDN used). Validity a CATokenInfo
+     * SubjectDN Name (if null then is subjectDN used).
      * Description (optional) Status (SecConst.CA_ACTIVE or
      * SecConst.CA_WAITING_CERTIFICATE_RESPONSE) SignedBy (CAInfo.SELFSIGNED,
      * CAInfo.SIGNEDBYEXTERNALCA or CAId of internal CA)

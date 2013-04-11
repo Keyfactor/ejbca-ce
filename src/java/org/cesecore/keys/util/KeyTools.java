@@ -1071,8 +1071,7 @@ public final class KeyTools {
      * 
      * @param privateKey
      *            the private key
-     * @param signatureAlgorithm
-     *            e.g. as returned by caToken.getCATokenInfo().getSignatureAlgorithm()
+     * @param signatureAlgorithm a valid signature algorithm
      * @param data
      *            the data to sign
      * @return the signature
@@ -1090,8 +1089,7 @@ public final class KeyTools {
      * 
      * @param publicKey
      *            the public key
-     * @param signatureAlgorithm
-     *            e.g. as returned by caToken.getCATokenInfo().getSignatureAlgorithm()
+     * @param signatureAlgorithm a valid signature algorithm
      * @param data
      *            the data to verify
      * @param signature

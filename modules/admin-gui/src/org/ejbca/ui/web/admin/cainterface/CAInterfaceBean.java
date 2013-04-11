@@ -1049,7 +1049,7 @@ public class CAInterfaceBean implements Serializable {
 	        String caDefinedFreshestCrl, boolean useutf8policytext, boolean useprintablestringsubjectdn, boolean useldapdnorder, boolean usecrldistpointoncrl,
 	        boolean crldistpointoncrlcritical, boolean serviceOcspActive, boolean serviceXkmsActive, boolean serviceCmsActive, String sharedCmpRaSecret
 	        ) throws Exception {
-        // We need to pick up the old CATokenInfo, so we don't overwrite with default values when we save the CA further down
+        // We need to pick up the old CAToken, so we don't overwrite with default values when we save the CA further down
         CAInfoView infoView = cadatahandler.getCAInfo(caid);  
         CAToken catoken = infoView.getCAToken();
         if (catoken == null) {
