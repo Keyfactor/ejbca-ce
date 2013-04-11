@@ -4471,6 +4471,7 @@ description: Parent Object for all High Certificates
 <li>This launches graphical setup, another mode for servers without GUI is posible.</li>
 <li>Use default Root User DN: cn=Directory Manager</li>
 <li>Directory Base DN: dc=example,dc=com)</li>
+<li>If you want to be able to run OpenDJ on the same server as JBoss/EJBCA, choose another port for management, i.e. 5555 instead of 4444.</li>
 </ul>
 <li>You can end by starting Launch Control Panel, or you can start it later with bin/control-panel.</li>
 </ul>
@@ -4488,6 +4489,8 @@ You can start/stop OpenDJ from within the Control Panel or with bin/start-ds and
 <p>Management tasks such as creating new attributes and object types are easy to do in the Control Panel GUI.
 </p><p>
 OpenDJ listens to port 1389 by default, but it also occupies other ports stopping it from running on the same server as JBoss.
+<br/>
+If you want to change the management port (default 4444) after installation you can edit confif/config.ldif and config/tools.properties.
 </p>
 
 <subsubsection name="Configure SSL/TLS">
