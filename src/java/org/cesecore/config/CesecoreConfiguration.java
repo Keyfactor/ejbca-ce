@@ -158,8 +158,8 @@ public final class CesecoreConfiguration {
     }
 
     /** @return configuration for when cached SignersMapping are considered stale and will be refreshed from the database. */
-    public static long getCacheTimeSignerMapping() {
-        return getLongValue("signermapping.cachetime", 10000L, "milliseconds");
+    public static long getCacheTimeInternalKeyBinding() {
+        return getLongValue("internalkeybinding.cachetime", 10000L, "milliseconds");
     }
 
     /** Parameter to specify if retrieving Certificate profiles in StoreSession should be cached, and in that case for how long. */

@@ -23,14 +23,14 @@ import org.cesecore.internal.CommonCacheBase;
  * 
  * @version $Id$
  */
-public enum SignerMappingCache implements CommonCache<SignerMapping> {
+public enum InternalKeyBindingCache implements CommonCache<InternalKeyBinding> {
     INSTANCE;
 
-    final private CommonCache<SignerMapping> signerMappingCache = new CommonCacheBase<SignerMapping>() {
+    final private CommonCache<InternalKeyBinding> internalKeyBindingCache = new CommonCacheBase<InternalKeyBinding>() {
         @Override
         protected long getCacheTime() {
             // We never disable storage of Signers in the cache completely
-            return Math.max(CesecoreConfiguration.getCacheTimeSignerMapping(), 0);
+            return Math.max(CesecoreConfiguration.getCacheTimeInternalKeyBinding(), 0);
         }
         @Override
         protected long getMaxCacheLifeTime() {
@@ -40,37 +40,37 @@ public enum SignerMappingCache implements CommonCache<SignerMapping> {
     };
 
     @Override
-    public SignerMapping getEntry(final int signerId) {
-        return signerMappingCache.getEntry(signerId);
+    public InternalKeyBinding getEntry(final int signerId) {
+        return internalKeyBindingCache.getEntry(signerId);
     }
 
     @Override
     public boolean shouldCheckForUpdates(final int signerId) {
-        return signerMappingCache.shouldCheckForUpdates(signerId);
+        return internalKeyBindingCache.shouldCheckForUpdates(signerId);
     }
     
     @Override
-    public void updateWith(int signerId, int digest, String name, SignerMapping object) {
-        signerMappingCache.updateWith(signerId, digest, name, object);
+    public void updateWith(int signerId, int digest, String name, InternalKeyBinding object) {
+        internalKeyBindingCache.updateWith(signerId, digest, name, object);
     }
 
     @Override
     public void removeEntry(int signerId) {
-        signerMappingCache.removeEntry(signerId);
+        internalKeyBindingCache.removeEntry(signerId);
     }
     
     @Override
     public String getName(int id) {
-        return signerMappingCache.getName(id);
+        return internalKeyBindingCache.getName(id);
     }
 
     @Override
     public Map<String,Integer> getNameToIdMap() {
-        return signerMappingCache.getNameToIdMap();
+        return internalKeyBindingCache.getNameToIdMap();
     }
     
     @Override
     public void flush() {
-        signerMappingCache.flush();
+        internalKeyBindingCache.flush();
     }
 }

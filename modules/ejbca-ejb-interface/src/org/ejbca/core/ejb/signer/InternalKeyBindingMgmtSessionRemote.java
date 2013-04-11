@@ -10,33 +10,14 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.ejbca.core.ejb.signer;
 
+import javax.ejb.Remote;
+
 /**
- * 
+ * @see InternalKeyBindingMgmtSession
  * @version $Id$
- *
  */
-
-public enum SignerMappingRules {
-    BASE("/signermapping"),
-    DELETE(BASE.resource() + "/delete"),
-    MODIFY(BASE.resource() + "/modify"),
-    VIEW(BASE.resource() + "/view"),
-    ;
-
-    private final String resource;
-    
-    private SignerMappingRules(String resource) {
-        this.resource = resource;
-    }
-
-    public String resource() {
-        return this.resource;
-    }
-
-    public String toString() {
-        return this.resource;
-    }
+@Remote
+public interface InternalKeyBindingMgmtSessionRemote extends InternalKeyBindingMgmtSession {
 }

@@ -17,68 +17,68 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.signer.impl.OcspSignerMapping;
+import org.ejbca.core.ejb.signer.impl.OcspKeyBinding;
 
 /**
- * Factory class with an internal registry of known Signer implementations.
+ * Factory class with an internal registry of known implementations.
  * 
  * @version $Id$
  */
-public enum SignerMappingFactory {
+public enum InternalKeyBindingFactory {
     INSTANCE;
     
-    private final Logger log = Logger.getLogger(SignerMappingFactory.class);
+    private final Logger log = Logger.getLogger(InternalKeyBindingFactory.class);
     private final Map<String,String> aliasToImplementationMap = new HashMap<String,String>();
     private final Map<String,String> implementationToAliasMap = new HashMap<String,String>();
     
-    private SignerMappingFactory() {
-        addSignerMapping(OcspSignerMapping.class);
+    private InternalKeyBindingFactory() {
+        addImplementation(OcspKeyBinding.class);
         // Use ServiceLoader framework to find additional available implementations
-        // We add these after the built in ones, so the built in SignerMappings can be overridden
+        // We add these after the built in ones, so the built in implementations can be overridden
         // TODO ...
     }
 
-    public SignerMapping createSignerMapping(final String type, final int signerMappingId, final String name, final SignerMappingStatus status, final String certificateId,
+    public InternalKeyBinding create(final String type, final int id, final String name, final InternalKeyBindingStatus status, final String certificateId,
             final int cryptoTokenId, final String keyPairAlias, final LinkedHashMap<Object, Object> dataMap) {
         final String implementationClassName = aliasToImplementationMap.get(type);
-        SignerMapping signerMapping = null;
+        InternalKeyBinding internalKeyBinding = null;
         if (implementationClassName == null) {
             log.error("Unable to create Signer. Implementation for type '" + type + "' not found.");
         } else {
             try {
-                signerMapping = (SignerMapping) Class.forName(implementationClassName).newInstance();
-                signerMapping.init(signerMappingId, name, status, certificateId, cryptoTokenId, keyPairAlias, dataMap);
+                internalKeyBinding = (InternalKeyBinding) Class.forName(implementationClassName).newInstance();
+                internalKeyBinding.init(id, name, status, certificateId, cryptoTokenId, keyPairAlias, dataMap);
             } catch (InstantiationException e) {
-                log.error("Unable to create SignerMapping. Could not be instantiate implementation '" + implementationClassName + "'.", e);
+                log.error("Unable to create InternalKeyBinding. Could not be instantiate implementation '" + implementationClassName + "'.", e);
             } catch (IllegalAccessException e) {
-                log.error("Unable to create SignerMapping. Not allowed to instantiate implementation '" + implementationClassName + "'.", e);
+                log.error("Unable to create InternalKeyBinding. Not allowed to instantiate implementation '" + implementationClassName + "'.", e);
             } catch (ClassNotFoundException e) {
-                log.error("Unable to create SignerMapping. Could not find implementation '" + implementationClassName + "'.", e);
+                log.error("Unable to create InternalKeyBinding. Could not find implementation '" + implementationClassName + "'.", e);
             }
         }
-        return signerMapping;
+        return internalKeyBinding;
     }
 
     /** @return the registered alias for the provided Signer or "null" if this is an unknown implementation. */
-    public String getTypeFromImplementation(final SignerMapping signerMapping) {
-        return String.valueOf(implementationToAliasMap.get(signerMapping.getClass().getName()));
+    public String getTypeFromImplementation(final InternalKeyBinding internalKeyBinding) {
+        return String.valueOf(implementationToAliasMap.get(internalKeyBinding.getClass().getName()));
     }
     
-    private void addSignerMapping(final Class<? extends SignerMapping> c) {
-        final String alias = getSignerMappingAlias(c);
+    private void addImplementation(final Class<? extends InternalKeyBinding> c) {
+        final String alias = getImplementationAlias(c);
         if (alias != null) {
             aliasToImplementationMap.put(alias, c.getName());
             implementationToAliasMap.put(c.getName(), alias);
         }
     }
     
-    private String getSignerMappingAlias(final Class<? extends SignerMapping> c) {
+    private String getImplementationAlias(final Class<? extends InternalKeyBinding> c) {
         try {
-            return c.newInstance().getSignerMappingAlias();
+            return c.newInstance().getImplementationAlias();
         } catch (InstantiationException e) {
-            log.error("Unable to create SignerMapping. Could not be instantiate implementation '" + c.getName() + "'.", e);
+            log.error("Unable to create InternalKeyBinding. Could not be instantiate implementation '" + c.getName() + "'.", e);
         } catch (IllegalAccessException e) {
-            log.error("Unable to create SignerMapping. Not allowed to instantiate implementation '" + c.getName() + "'.", e);
+            log.error("Unable to create InternalKeyBinding. Not allowed to instantiate implementation '" + c.getName() + "'.", e);
         }
         return null;
     }

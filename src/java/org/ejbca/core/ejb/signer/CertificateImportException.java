@@ -16,7 +16,7 @@ import org.cesecore.ErrorCode;
 import org.ejbca.core.EjbcaException;
 
 /**
- * An exception thrown when someone tries to import a Certificate that is not compatible with a SignerMapping.
+ * An exception thrown when someone tries to import a Certificate that is not compatible with an InternalKeyBinding implementation.
  *
  * @version $Id$
  */

@@ -18,30 +18,30 @@ import java.util.LinkedHashMap;
 import org.cesecore.internal.UpgradeableDataHashMap;
 
 /**
- * Holder of general signer mapping relevant properties.
+ * Holder of general InternalKeyBinding relevant properties.
  * 
  * @version $Id$
  */
-public abstract class SignerMappingBase extends UpgradeableDataHashMap implements SignerMapping {
+public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap implements InternalKeyBinding {
 
     private static final long serialVersionUID = 1L;
     private static final String PROP_NEXT_KEY_PAIR_ALIAS = "nextKeyPairAlias";
     private static final String PROP_NEXT_KEY_PAIR_COUNTER = "nextKeyPairCounter";
     
-    private int signerMappingId;
+    private int internalKeyBindingId;
     private String name;
-    private SignerMappingStatus status;
+    private InternalKeyBindingStatus status;
     private String certificateId;
     private int cryptoTokenId;
     private String keyPairAlias;
     
-    protected SignerMappingBase() {
+    protected InternalKeyBindingBase() {
         super();
     }
 
     @Override
-    public void init(int signerMappingId, String name, SignerMappingStatus status, String certificateId, int cryptoTokenId, String keyPairAlias, LinkedHashMap<Object, Object> dataMap) {
-        this.signerMappingId = signerMappingId;
+    public void init(int internalKeyBindingId, String name, InternalKeyBindingStatus status, String certificateId, int cryptoTokenId, String keyPairAlias, LinkedHashMap<Object, Object> dataMap) {
+        this.internalKeyBindingId = internalKeyBindingId;
         setName(name);
         setStatus(status);
         setCertificateId(certificateId);
@@ -51,15 +51,15 @@ public abstract class SignerMappingBase extends UpgradeableDataHashMap implement
     }
 
     @Override
-    public int getId() { return signerMappingId; }
+    public int getId() { return internalKeyBindingId; }
     @Override
     public String getName() { return name; }
     @Override
     public void setName(final String name) { this.name = name; }
     @Override
-    public SignerMappingStatus getStatus() { return status; }
+    public InternalKeyBindingStatus getStatus() { return status; }
     @Override
-    public void setStatus(final SignerMappingStatus status) { this.status = status; }
+    public void setStatus(final InternalKeyBindingStatus status) { this.status = status; }
     @Override
     public String getCertificateId() { return certificateId; }
     @Override
