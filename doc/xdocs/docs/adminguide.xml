@@ -4459,7 +4459,7 @@ description: Parent Object for all High Certificates
 </subsection>
 
 <subsection name="OpenDJ">
-<p>OpenDJ is a modern, standards compliant, java based, LDAP server that is easy to set up and use. It also comes with GUI tools to manage and query.
+<p><a href="http://opendj.forgerock.org/">OpenDJ</a> is a modern, standards compliant, java based, LDAP server that is easy to set up and use. It also comes with GUI tools to manage and query.
 </p>
 <subsubsection name="Installing OpenDJ">
 <p>This install guide uses OpenDJ 2.5.0 as an example, but other versions should worksimilarly.
@@ -4489,6 +4489,11 @@ You can start/stop OpenDJ from within the Control Panel or with bin/start-ds and
 </p><p>
 OpenDJ listens to port 1389 by default, but it also occupies other ports stopping it from running on the same server as JBoss.
 </p>
+
+<subsubsection name="Configure SSL/TLS">
+<p>How to configure SSL/TLS with OpenDJ is well described in the <a href="http://opendj.forgerock.org/doc/admin-guide/index/chap-listeners.html">OpenDJ documentation</a>.</p>
+</subsubsection>
+
 </subsection>
 
 <subsection name="Extra device schema">
