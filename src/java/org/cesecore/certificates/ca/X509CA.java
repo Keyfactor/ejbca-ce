@@ -432,7 +432,6 @@ public class X509CA extends CA implements Serializable {
             gen.addCertificatesAndCRLs(certs);
             CMSSignedData s = null;
             CAToken catoken = getCAToken();
-            //CATokenInfo tokeninfo = getCAInfo().getCATokenInfo();
             if (catoken != null && !(cryptoToken instanceof NullCryptoToken)) {
                 log.debug("createPKCS7: Provider=" + cryptoToken.getSignProviderName() + " using algorithm "
                         + privateKey.getAlgorithm());
