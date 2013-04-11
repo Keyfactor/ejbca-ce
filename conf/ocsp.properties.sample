@@ -236,7 +236,7 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 # The default for this value is 24h 
 #ocsp.rekeying.safety.margin.in.seconds=
 
-# Limits what hosts may request a manual rekeying via web service. 
+# Limits what hosts may request a manual rekeying via web service. Multiple hosts may be separated with a semicolon. 
 # Default: 127.0.0.1
 #ocsp.rekeying.trigging.hosts=
 
