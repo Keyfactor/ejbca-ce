@@ -13,6 +13,7 @@
 package org.ejbca.core.ejb.signer;
 
 import java.io.Serializable;
+import java.security.cert.Certificate;
 import java.util.LinkedHashMap;
 
 /**
@@ -30,12 +31,21 @@ public interface SignerMapping extends Serializable {
     /** Return the non-changeable alias for this implementation. E.g. "DummySignerMapping". */
     String getSignerMappingAlias();
     
+    /** @return the next key pair's alias t be used */
+    String getNextKeyPairAlias();
+
+    /** Uses the next key alias as current key alias and updates the certificateId */
+    void updateCertificateIdAndCurrentKeyAlias(String certificateId);
+
+    /** Generates a next key pair alias based on the current one using a simple counter as postfix */
+    void generateNextKeyPairAlias();
+
     /**
      * IMPORTANT: The validation must be done properly to avoid unintended certificate import.
      * 
      * @throws CertificateImportException if the provided certificate is not compatible with this type of SignerMapping
      */
-    void assertCertificateCompatability(byte[] derEncodedCertificate) throws CertificateImportException;
+    void assertCertificateCompatability(Certificate certificate) throws CertificateImportException;
 
     /** @return the non-changeable id of this SignerMapping */
     int getId();
@@ -64,5 +74,4 @@ public interface SignerMapping extends Serializable {
     String getKeyPairAlias();
     /** Sets the key pair alias currently in use */
     void setKeyPairAlias(String keyPairAlias);
-
 }

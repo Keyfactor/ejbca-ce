@@ -39,6 +39,7 @@ import org.bouncycastle.jce.netscape.NetscapeCertRequest;
 import org.bouncycastle.util.encoders.DecoderException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.FileTools;
@@ -272,12 +273,7 @@ public class RequestMessageUtils {
                     throw new IOException("Base64 decode fails, message not base64 encoded: " + de.getMessage());
                 }
             }
-            final ASN1InputStream in = new ASN1InputStream(request);
-            final SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfo.getInstance(in.readObject());
-            final AlgorithmIdentifier keyAlg = keyInfo.getAlgorithm();
-            final X509EncodedKeySpec xKeySpec = new X509EncodedKeySpec(new DERBitString(keyInfo).getBytes());
-            final KeyFactory keyFact = KeyFactory.getInstance(keyAlg.getAlgorithm().getId(), "BC");
-            final PublicKey pubKey = keyFact.generatePublic(xKeySpec);
+            final PublicKey pubKey = KeyTools.getPublicKeyFromBytes(request);
             ret = new SimpleRequestMessage(pubKey, username, password);
         } else if (reqType == CertificateConstants.CERT_REQ_TYPE_CVC) {
             CVCObject parsedObject = CertificateParser.parseCVCObject(Base64.decode(req.getBytes()));

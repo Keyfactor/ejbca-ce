@@ -875,4 +875,18 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         }
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public Certificate findMostRecentlyUpdatedActiveCertificate(byte[] subjectKeyId) {
+        final Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.subjectKeyId=:subjectKeyId AND a.status=:status ORDER BY a.updateTime DESC");
+        query.setParameter("subjectKeyId", new String(Base64.encode(subjectKeyId, false)));
+        query.setParameter("status", CertificateConstants.CERT_ACTIVE);
+        query.setMaxResults(1);
+        final List<CertificateData> resultList = query.getResultList();
+        if (resultList.size() == 1) {
+            return resultList.get(0).getCertificate();
+        }
+        return null;
+    }
+
 }

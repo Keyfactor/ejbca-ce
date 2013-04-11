@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.ejb.signer.impl;
 
+import java.security.cert.Certificate;
+
 import org.ejbca.core.ejb.signer.CertificateImportException;
 import org.ejbca.core.ejb.signer.SignerMappingBase;
 
@@ -42,7 +44,7 @@ public class OcspSignerMapping extends SignerMappingBase {
     }
     
     @Override
-    public void assertCertificateCompatability(byte[] derEncodedCertificate) throws CertificateImportException {
+    public void assertCertificateCompatability(Certificate certificate) throws CertificateImportException {
         throw new CertificateImportException("No validation yet.");
     }
 

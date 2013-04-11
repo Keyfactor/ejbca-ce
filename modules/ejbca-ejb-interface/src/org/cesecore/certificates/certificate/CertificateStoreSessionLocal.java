@@ -90,4 +90,7 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * @return true if there is no other end entity under this issuer with the same subjectKeyId or subjectDN
      */
     boolean isOnlyUsernameForSubjectKeyIdOrDnAndIssuerDN(String issuerDN, byte[] subjectKeyId, String subjectDN, String username);
+
+    /** @return null or the certificate which is active, matches the argument and has the latest updateTime */
+    Certificate findMostRecentlyUpdatedActiveCertificate(byte[] subjectKeyId);
 }

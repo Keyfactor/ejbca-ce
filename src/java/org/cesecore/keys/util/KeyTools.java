@@ -61,6 +61,7 @@ import java.security.spec.EllipticCurve;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.RSAKeyGenParameterSpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -75,7 +76,9 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERBMPString;
+import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
@@ -1303,5 +1306,33 @@ public final class KeyTools {
         } else {
             return AlgorithmConstants.KEYALGORITHM_ECDSA;
         }
+    }
+
+    /** @return the ASN.1 encoded PublicKey as a Java Object */
+    public static PublicKey getPublicKeyFromBytes(byte[] asn1EncodedPublicKey) {
+        final PublicKey pubKey = null;
+        final ASN1InputStream in = new ASN1InputStream(asn1EncodedPublicKey);
+        try {
+            final SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfo.getInstance(in.readObject());
+            final AlgorithmIdentifier keyAlg = keyInfo.getAlgorithm();
+            final X509EncodedKeySpec xKeySpec = new X509EncodedKeySpec(new DERBitString(keyInfo).getBytes());
+            final KeyFactory keyFact = KeyFactory.getInstance(keyAlg.getAlgorithm().getId(), "BC");
+            keyFact.generatePublic(xKeySpec);
+        } catch (IOException e) {
+            log.debug("Unable to decode PublicKey.", e);
+        } catch (NoSuchAlgorithmException e) {
+            log.debug("Unable to decode PublicKey.", e);
+        } catch (NoSuchProviderException e) {
+            log.debug("Unable to decode PublicKey.", e);
+        } catch (InvalidKeySpecException e) {
+            log.debug("Unable to decode PublicKey.", e);
+        } finally {
+            try {
+                in.close();
+            } catch (IOException e) {
+                log.debug("Unable to close input stream.");
+            }
+        }
+        return pubKey;
     }
 }

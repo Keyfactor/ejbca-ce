@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.ejb.signer;
 
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.util.List;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -50,6 +52,15 @@ public interface SignerMappingMgmtSession {
      */
     byte[] getNextPublicKeyForSignerMapping(AuthenticationToken authenticationToken, int signerMappingId) throws AuthorizationDeniedException, CryptoTokenOfflineException;
 
+    // The normal EJBCA way of doing it would be to just publish issued certificates.
+    /** 
+     * Update the key mapping if there is a newer certificate in the database or a certificate matching the nextKey.
+     * This could normally be used in a setup where the certificate is published or made available be other means
+     * in the database for this EJBCA instance.
+     */
+    void updateCertificateForSignerMapping(AuthenticationToken authenticationToken, int signerMappingId) throws AuthorizationDeniedException,
+            CertificateImportException, CryptoTokenOfflineException;
+
     /**
      * Imports the certificate provided in DER format to the database and updates the SignerMapping reference.
      * If the the certificates public key matches the current SignerMapping's keyPairAlias, the keyPairAlias will not be updated.
@@ -61,4 +72,8 @@ public interface SignerMappingMgmtSession {
     void importCertificateForSignerMapping(AuthenticationToken authenticationToken, int signerMappingId, byte[] certificate)
         throws AuthorizationDeniedException, CertificateImportException;
 
+    /** Creates a new key pair with the same key specification as the current and a new alias. */
+    void generateNextKeyPair(AuthenticationToken authenticationToken, int signerMappingId) throws AuthorizationDeniedException,
+            CryptoTokenOfflineException, InvalidKeyException, InvalidAlgorithmParameterException;
 }
+
