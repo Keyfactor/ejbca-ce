@@ -15,22 +15,22 @@ package org.ejbca.core.ejb.signer.impl;
 import java.security.cert.Certificate;
 
 import org.ejbca.core.ejb.signer.CertificateImportException;
-import org.ejbca.core.ejb.signer.SignerMappingBase;
+import org.ejbca.core.ejb.signer.InternalKeyBindingBase;
 
 /**
- * Holder of "external" OCSP signer mapping relevant properties.
+ * Holder of "external" (e.g. non-CA signing key) OCSP InternalKeyBinding properties.
  * 
  * @version $Id$
  */
-public class OcspSignerMapping extends SignerMappingBase {
+public class OcspKeyBinding extends InternalKeyBindingBase {
     
     private static final long serialVersionUID = 1L;
 
     public static final String PROPERTY_NON_EXISTING_GOOD = "nonExistingGood";
     
     @Override
-    public String getSignerMappingAlias() {
-        return "OcspSignerMapping";
+    public String getImplementationAlias() {
+        return "OcspKeyBinding";
     }
     
     @Override

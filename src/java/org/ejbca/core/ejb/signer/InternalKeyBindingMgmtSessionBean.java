@@ -46,15 +46,15 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 
 /**
- * Generic Management implementation for SignerMappings.
+ * Generic Management implementation for InternalKeyBindings.
  * 
  * @version $Id$
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "SignerMappingMgmtSessionRemote")
+@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "InternalKeyBindingMgmtSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
-public class SignerMappingMgmtSessionBean implements SignerMappingMgmtSessionLocal, SignerMappingMgmtSessionRemote {
+public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmtSessionLocal, InternalKeyBindingMgmtSessionRemote {
 
-    private static final Logger log = Logger.getLogger(SignerMappingDataSessionBean.class);
+    private static final Logger log = Logger.getLogger(InternalKeyBindingMgmtSessionBean.class);
     private static final InternalResources intres = InternalResources.getInstance();
 
     @EJB
@@ -68,15 +68,15 @@ public class SignerMappingMgmtSessionBean implements SignerMappingMgmtSessionLoc
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
-    private SignerMappingDataSessionLocal signerMappingDataSession;
+    private InternalKeyBindingDataSessionLocal internalKeyBindingDataSession;
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public List<Integer> getSignerMappingIds(AuthenticationToken authenticationToken, String signerMappingType) {
-        final List<Integer> allIds = signerMappingDataSession.getSignerMappingIds(signerMappingType);
+    public List<Integer> getInternalKeyBindingIds(AuthenticationToken authenticationToken, String internalKeyBindingType) {
+        final List<Integer> allIds = internalKeyBindingDataSession.getIds(internalKeyBindingType);
         final List<Integer> authorizedIds = new ArrayList<Integer>();
         for (final Integer current : allIds) {
-            if (accessControlSessionSession.isAuthorizedNoLogging(authenticationToken, SignerMappingRules.VIEW.resource()+"/"+current.toString())) {
+            if (accessControlSessionSession.isAuthorizedNoLogging(authenticationToken, InternalKeyBindingRules.VIEW.resource()+"/"+current.toString())) {
                 authorizedIds.add(current);
             }
         }
@@ -85,75 +85,75 @@ public class SignerMappingMgmtSessionBean implements SignerMappingMgmtSessionLoc
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public SignerMapping getSignerMapping(AuthenticationToken authenticationToken, int signerMappingId) throws AuthorizationDeniedException {
-        if (!accessControlSessionSession.isAuthorized(authenticationToken, SignerMappingRules.VIEW.resource()+"/"+signerMappingId)) {
-            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", SignerMappingRules.VIEW.resource(), authenticationToken.toString());
+    public InternalKeyBinding getInternalKeyBinding(AuthenticationToken authenticationToken, int id) throws AuthorizationDeniedException {
+        if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.VIEW.resource()+"/"+id)) {
+            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.VIEW.resource(), authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
         }
-        return signerMappingDataSession.getSignerMapping(signerMappingId);
+        return internalKeyBindingDataSession.getInternalKeyBinding(id);
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public Integer getIdFromName(String signerMappingName) {
-        if (signerMappingName==null) {
+    public Integer getIdFromName(String internalKeyBindingName) {
+        if (internalKeyBindingName==null) {
             return null;
         }
-        final Map<String, Integer> cachedNameToIdMap = signerMappingDataSession.getCachedNameToIdMap();
-        Integer signerMappingId = cachedNameToIdMap.get(signerMappingName);
-        if (signerMappingId == null) {
+        final Map<String, Integer> cachedNameToIdMap = internalKeyBindingDataSession.getCachedNameToIdMap();
+        Integer internalKeyBindingId = cachedNameToIdMap.get(internalKeyBindingName);
+        if (internalKeyBindingId == null) {
             // Ok.. so it's not in the cache.. look for it the hard way..
-            for (final Integer currentId : signerMappingDataSession.getSignerMappingIds(null)) {
+            for (final Integer currentId : internalKeyBindingDataSession.getIds(null)) {
                 // Don't lookup CryptoTokens we already have in the id to name cache
                 if (!cachedNameToIdMap.keySet().contains(currentId)) {
-                    final SignerMapping current = signerMappingDataSession.getSignerMapping(currentId.intValue());
+                    final InternalKeyBinding current = internalKeyBindingDataSession.getInternalKeyBinding(currentId.intValue());
                     final String currentName = current == null ? null : current.getName();
-                    if (signerMappingName.equals(currentName)) {
-                        signerMappingId = currentId;
+                    if (internalKeyBindingName.equals(currentName)) {
+                        internalKeyBindingId = currentId;
                         break;
                     }
                 }
             }
         }
-        return signerMappingId;
+        return internalKeyBindingId;
     }
 
     @Override
-    public int persistSignerMapping(AuthenticationToken authenticationToken, SignerMapping signerMapping)
-            throws AuthorizationDeniedException, SignerMappingNameInUseException {
-        if (!accessControlSessionSession.isAuthorized(authenticationToken, SignerMappingRules.MODIFY.resource()+"/"+signerMapping.getId(),
-                CryptoTokenRules.USE.resource()+"/"+signerMapping.getCryptoTokenId())) {
-            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", SignerMappingRules.MODIFY.resource(), authenticationToken.toString());
+    public int persistInternalKeyBinding(AuthenticationToken authenticationToken, InternalKeyBinding internalKeyBinding)
+            throws AuthorizationDeniedException, InternalKeyBindingNameInUseException {
+        if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.MODIFY.resource()+"/"+internalKeyBinding.getId(),
+                CryptoTokenRules.USE.resource()+"/"+internalKeyBinding.getCryptoTokenId())) {
+            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.MODIFY.resource(), authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
         }
-        return signerMappingDataSession.mergeSignerMapping(signerMapping);
+        return internalKeyBindingDataSession.mergeInternalKeyBinding(internalKeyBinding);
     }
 
     @Override
-    public boolean deleteSignerMapping(AuthenticationToken authenticationToken, int signerMappingId) throws AuthorizationDeniedException {
-        if (!accessControlSessionSession.isAuthorized(authenticationToken, SignerMappingRules.DELETE.resource() + "/" + signerMappingId)) {
-            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", SignerMappingRules.DELETE.resource(), authenticationToken.toString());
+    public boolean deleteInternalKeyBinding(AuthenticationToken authenticationToken, int internalKeyBindingId) throws AuthorizationDeniedException {
+        if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.DELETE.resource() + "/" + internalKeyBindingId)) {
+            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.DELETE.resource(), authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
         }
-        return signerMappingDataSession.removeSignerMapping(signerMappingId);
+        return internalKeyBindingDataSession.removeInternalKeyBinding(internalKeyBindingId);
     }
 
     @Override
-    public void generateNextKeyPair(AuthenticationToken authenticationToken, int signerMappingId) throws AuthorizationDeniedException,
+    public void generateNextKeyPair(AuthenticationToken authenticationToken, int internalKeyBindingId) throws AuthorizationDeniedException,
             CryptoTokenOfflineException, InvalidKeyException, InvalidAlgorithmParameterException {
-        if (!accessControlSessionSession.isAuthorized(authenticationToken, SignerMappingRules.MODIFY.resource() + "/" + signerMappingId)) {
-            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", SignerMappingRules.MODIFY.resource(), authenticationToken.toString());
+        if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.MODIFY.resource() + "/" + internalKeyBindingId)) {
+            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.MODIFY.resource(), authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
         }
-        final SignerMapping signerMapping = signerMappingDataSession.getSignerMapping(signerMappingId);
-        final int cryptoTokenId = signerMapping.getCryptoTokenId();
-        final String currentKeyPairAlias = signerMapping.getKeyPairAlias();
-        signerMapping.generateNextKeyPairAlias();
-        final String nextKeyPairAlias = signerMapping.getNextKeyPairAlias();
+        final InternalKeyBinding internalKeyBinding = internalKeyBindingDataSession.getInternalKeyBinding(internalKeyBindingId);
+        final int cryptoTokenId = internalKeyBinding.getCryptoTokenId();
+        final String currentKeyPairAlias = internalKeyBinding.getKeyPairAlias();
+        internalKeyBinding.generateNextKeyPairAlias();
+        final String nextKeyPairAlias = internalKeyBinding.getNextKeyPairAlias();
         cryptoTokenManagementSession.createKeyPairWithSameKeySpec(authenticationToken, cryptoTokenId, currentKeyPairAlias, nextKeyPairAlias);
         try {
-            signerMappingDataSession.mergeSignerMapping(signerMapping);
-        } catch (SignerMappingNameInUseException e) {
+            internalKeyBindingDataSession.mergeInternalKeyBinding(internalKeyBinding);
+        } catch (InternalKeyBindingNameInUseException e) {
             // This would be very strange if it happened, since we use the same name and id as for the existing one
             throw new RuntimeException(e);
         }
@@ -161,17 +161,17 @@ public class SignerMappingMgmtSessionBean implements SignerMappingMgmtSessionLoc
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public byte[] getNextPublicKeyForSignerMapping(AuthenticationToken authenticationToken, int signerMappingId) throws AuthorizationDeniedException, CryptoTokenOfflineException {
-        if (!accessControlSessionSession.isAuthorized(authenticationToken, SignerMappingRules.VIEW.resource() + "/" + signerMappingId)) {
-            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", SignerMappingRules.VIEW.resource(), authenticationToken.toString());
+    public byte[] getNextPublicKeyForInternalKeyBinding(AuthenticationToken authenticationToken, int internalKeyBindingId) throws AuthorizationDeniedException, CryptoTokenOfflineException {
+        if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.VIEW.resource() + "/" + internalKeyBindingId)) {
+            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.VIEW.resource(), authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
         }
-        final SignerMapping signerMapping = signerMappingDataSession.getSignerMapping(signerMappingId);
-        final int cryptoTokenId = signerMapping.getCryptoTokenId();
-        final String nextKeyPairAlias = signerMapping.getNextKeyPairAlias();
+        final InternalKeyBinding internalKeyBinding = internalKeyBindingDataSession.getInternalKeyBinding(internalKeyBindingId);
+        final int cryptoTokenId = internalKeyBinding.getCryptoTokenId();
+        final String nextKeyPairAlias = internalKeyBinding.getNextKeyPairAlias();
         final String keyPairAlias;
         if (nextKeyPairAlias == null) {
-            keyPairAlias = signerMapping.getKeyPairAlias();
+            keyPairAlias = internalKeyBinding.getKeyPairAlias();
         } else {
             keyPairAlias = nextKeyPairAlias;
         }
@@ -180,15 +180,15 @@ public class SignerMappingMgmtSessionBean implements SignerMappingMgmtSessionLoc
     }
 
     @Override
-    public void updateCertificateForSignerMapping(AuthenticationToken authenticationToken, int signerMappingId)
+    public void updateCertificateForInternalKeyBinding(AuthenticationToken authenticationToken, int internalKeyBindingId)
             throws AuthorizationDeniedException, CertificateImportException {
-        if (!accessControlSessionSession.isAuthorized(authenticationToken, SignerMappingRules.MODIFY.resource() + "/" + signerMappingId)) {
-            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", SignerMappingRules.MODIFY.resource(), authenticationToken.toString());
+        if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.MODIFY.resource() + "/" + internalKeyBindingId)) {
+            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.MODIFY.resource(), authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
         }
-        final SignerMapping signerMapping = signerMappingDataSession.getSignerMapping(signerMappingId);
-        final int cryptoTokenId = signerMapping.getCryptoTokenId();
-        final String nextKeyPairAlias = signerMapping.getNextKeyPairAlias();
+        final InternalKeyBinding internalKeyBinding = internalKeyBindingDataSession.getInternalKeyBinding(internalKeyBindingId);
+        final int cryptoTokenId = internalKeyBinding.getCryptoTokenId();
+        final String nextKeyPairAlias = internalKeyBinding.getNextKeyPairAlias();
         boolean updated = false;
         if (nextKeyPairAlias == null) {
             // If a nextKeyPairAlias is present we assume that this is the one we want to find a certificate for
@@ -208,11 +208,11 @@ public class SignerMappingMgmtSessionBean implements SignerMappingMgmtSessionLoc
                 final Certificate certificate = certificateStoreSession.findMostRecentlyUpdatedActiveCertificate(subjectKeyId);
                 if (certificate != null) {
                     // Verify that this is an accepted type of certificate to import for the current implementation
-                    assertCertificateIsOkToImport(certificate, signerMapping);
-                    // If current key matches next public key -> import and update nextKey + signerMapping.certificateId
+                    assertCertificateIsOkToImport(certificate, internalKeyBinding);
+                    // If current key matches next public key -> import and update nextKey + certificateId
                     String fingerprint = CertTools.getFingerprintAsString(certificate);
-                    if (!fingerprint.equals(signerMapping.getCertificateId())) {
-                        signerMapping.updateCertificateIdAndCurrentKeyAlias(fingerprint);
+                    if (!fingerprint.equals(internalKeyBinding.getCertificateId())) {
+                        internalKeyBinding.updateCertificateIdAndCurrentKeyAlias(fingerprint);
                         updated = true;
                     } else {
                         log.debug("The latest available certificate was already in use.");
@@ -222,7 +222,7 @@ public class SignerMappingMgmtSessionBean implements SignerMappingMgmtSessionLoc
         }
         if (!updated) {
             // We failed to find a matching certificate for the next key, so we instead try to do the same for the current key pair
-            final String currentKeyPairAlias = signerMapping.getKeyPairAlias();
+            final String currentKeyPairAlias = internalKeyBinding.getKeyPairAlias();
             PublicKey currentPublicKey;
             try {
                 currentPublicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, currentKeyPairAlias);
@@ -239,17 +239,17 @@ public class SignerMappingMgmtSessionBean implements SignerMappingMgmtSessionLoc
                 final Certificate certificate = certificateStoreSession.findMostRecentlyUpdatedActiveCertificate(subjectKeyId);
                 if (certificate != null) {
                     // Verify that this is an accepted type of certificate to import for the current implementation
-                    assertCertificateIsOkToImport(certificate, signerMapping);
+                    assertCertificateIsOkToImport(certificate, internalKeyBinding);
                     String fingerprint = CertTools.getFingerprintAsString(certificate);
-                    signerMapping.setCertificateId(fingerprint);
+                    internalKeyBinding.setCertificateId(fingerprint);
                     updated = true;
                 }
             }
         }
         if (updated) {
             try {
-                signerMappingDataSession.mergeSignerMapping(signerMapping);
-            } catch (SignerMappingNameInUseException e) {
+                internalKeyBindingDataSession.mergeInternalKeyBinding(internalKeyBinding);
+            } catch (InternalKeyBindingNameInUseException e) {
                 // This would be very strange if it happened, since we use the same name and id as for the existing one
                 throw new CertificateImportException(e);
             }
@@ -259,13 +259,13 @@ public class SignerMappingMgmtSessionBean implements SignerMappingMgmtSessionLoc
     }
 
     @Override
-    public void importCertificateForSignerMapping(AuthenticationToken authenticationToken, int signerMappingId, byte[] derEncodedCertificate)
+    public void importCertificateForInternalKeyBinding(AuthenticationToken authenticationToken, int internalKeyBindingId, byte[] derEncodedCertificate)
             throws AuthorizationDeniedException, CertificateImportException {
-        if (!accessControlSessionSession.isAuthorized(authenticationToken, SignerMappingRules.MODIFY.resource() + "/" + signerMappingId)) {
-            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", SignerMappingRules.MODIFY.resource(), authenticationToken.toString());
+        if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.MODIFY.resource() + "/" + internalKeyBindingId)) {
+            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.MODIFY.resource(), authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
         }
-        final SignerMapping signerMapping = signerMappingDataSession.getSignerMapping(signerMappingId);
+        final InternalKeyBinding internalKeyBinding = internalKeyBindingDataSession.getInternalKeyBinding(internalKeyBindingId);
         // UnDERify
         final Certificate certificate;
         try {
@@ -274,25 +274,25 @@ public class SignerMappingMgmtSessionBean implements SignerMappingMgmtSessionLoc
             throw new CertificateImportException(e);
         }
         // Verify that this is an accepted type of certificate to import for the current implementation
-        assertCertificateIsOkToImport(certificate, signerMapping);
-        final int cryptoTokenId = signerMapping.getCryptoTokenId();
-        final String currentKeyPairAlias = signerMapping.getKeyPairAlias();
+        assertCertificateIsOkToImport(certificate, internalKeyBinding);
+        final int cryptoTokenId = internalKeyBinding.getCryptoTokenId();
+        final String currentKeyPairAlias = internalKeyBinding.getKeyPairAlias();
         boolean updated = false;
         try {
             final PublicKey currentPublicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, currentKeyPairAlias);
             if (currentPublicKey != null && KeyTools.createSubjectKeyId(currentPublicKey).equals(KeyTools.createSubjectKeyId(certificate.getPublicKey()))) {
-                // If current key matches current public key -> import + update signerMapping.certificateId
-                storeCertificate(authenticationToken, signerMapping, certificate);
-                signerMapping.setCertificateId(CertTools.getFingerprintAsString(certificate));
+                // If current key matches current public key -> import + update certificateId
+                storeCertificate(authenticationToken, internalKeyBinding, certificate);
+                internalKeyBinding.setCertificateId(CertTools.getFingerprintAsString(certificate));
                 updated = true;
             } else {
-                final String nextKeyPairAlias = signerMapping.getNextKeyPairAlias();
+                final String nextKeyPairAlias = internalKeyBinding.getNextKeyPairAlias();
                 if (nextKeyPairAlias == null) {
                     final PublicKey nextPublicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, nextKeyPairAlias);
                     if (nextPublicKey != null && KeyTools.createSubjectKeyId(nextPublicKey).equals(KeyTools.createSubjectKeyId(certificate.getPublicKey()))) {
-                        // If current key matches next public key -> import and update nextKey + signerMapping.certificateId
-                        storeCertificate(authenticationToken, signerMapping, certificate);
-                        signerMapping.updateCertificateIdAndCurrentKeyAlias(CertTools.getFingerprintAsString(certificate));
+                        // If current key matches next public key -> import and update nextKey + certificateId
+                        storeCertificate(authenticationToken, internalKeyBinding, certificate);
+                        internalKeyBinding.updateCertificateIdAndCurrentKeyAlias(CertTools.getFingerprintAsString(certificate));
                         updated = true;
                     }
                 }
@@ -302,8 +302,8 @@ public class SignerMappingMgmtSessionBean implements SignerMappingMgmtSessionLoc
         }
         if (updated) {
             try {
-                signerMappingDataSession.mergeSignerMapping(signerMapping);
-            } catch (SignerMappingNameInUseException e) {
+                internalKeyBindingDataSession.mergeInternalKeyBinding(internalKeyBinding);
+            } catch (InternalKeyBindingNameInUseException e) {
                 // This would be very strange if it happened, since we use the same name and id as for the existing one
                 throw new CertificateImportException(e);
             }
@@ -314,21 +314,21 @@ public class SignerMappingMgmtSessionBean implements SignerMappingMgmtSessionLoc
     }
     
     /** Asserts that it is not a CA certificate and that the implementation finds it acceptable.  */
-    private void assertCertificateIsOkToImport(Certificate certificate, SignerMapping signerMapping) throws CertificateImportException {
+    private void assertCertificateIsOkToImport(Certificate certificate, InternalKeyBinding internalKeyBinding) throws CertificateImportException {
         // Do some general sanity checks that this is not a CA certificate
         if (CertTools.isCA(certificate)) {
             throw new CertificateImportException("Import of CA certificates is not allowed using this operation.");
         }
         // Check that this is an accepted type of certificate from the one who knows (the implementation)
-        signerMapping.assertCertificateCompatability(certificate);
+        internalKeyBinding.assertCertificateCompatability(certificate);
     }
     
     /** Imports the certificate to the database */
-    private void storeCertificate(AuthenticationToken authenticationToken, SignerMapping signerMapping, Certificate certificate)
+    private void storeCertificate(AuthenticationToken authenticationToken, InternalKeyBinding internalKeyBinding, Certificate certificate)
             throws AuthorizationDeniedException, CertificateImportException {
         // Set some values for things we cannot know
         final int certificateProfileId = 0;
-        final String username = "IMPORTED_SignerMapping_" + signerMapping.getId();
+        final String username = "IMPORTED_InternalKeyBinding_" + internalKeyBinding.getId();
         // Find caFingerprint through ca(Admin?)Session
         final List<Integer> availableCaIds = caSession.getAvailableCAs();
         final String issuerDn = CertTools.getIssuerDN(certificate);
