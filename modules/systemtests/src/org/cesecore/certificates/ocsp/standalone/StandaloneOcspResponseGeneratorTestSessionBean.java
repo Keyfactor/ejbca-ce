@@ -41,7 +41,7 @@ import org.cesecore.jndi.JndiConstants;
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "StandaloneOcspResponseGeneratorTestSessionRemote")
 @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 public class StandaloneOcspResponseGeneratorTestSessionBean extends StandaloneOcspResponseGeneratorSessionBean implements
-        StandaloneOcspResponseGeneratorTestSessionRemote, StandaloneOcspResponseGeneratorSessionLocal {
+        StandaloneOcspResponseGeneratorTestSessionRemote, StandaloneOcspResponseGeneratorTestSessionLocal {
 
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
