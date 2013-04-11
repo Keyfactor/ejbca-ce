@@ -12,7 +12,12 @@
  *************************************************************************/
 package org.ejbca.core.ejb.signer;
 
-/** Status representation of a SignerMapping */
+/** 
+ * Status representation of a SignerMapping 
+ * 
+ * @version $Id$
+ *
+ */
 public enum SignerMappingStatus {
     ACTIVE, DISABLED;
 }
