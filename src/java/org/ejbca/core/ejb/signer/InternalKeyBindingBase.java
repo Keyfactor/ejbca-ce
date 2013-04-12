@@ -27,6 +27,8 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     private static final long serialVersionUID = 1L;
     private static final String PROP_NEXT_KEY_PAIR_ALIAS = "nextKeyPairAlias";
     private static final String PROP_NEXT_KEY_PAIR_COUNTER = "nextKeyPairCounter";
+    private static final String BASECLASS_PREFIX = "BASECLASS_";
+    public static final String SUBCLASS_PREFIX = "SUBCLASS_";
     
     private int internalKeyBindingId;
     private String name;
@@ -47,6 +49,10 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
         setCertificateId(certificateId);
         setCryptoTokenId(cryptoTokenId);
         setKeyPairAlias(keyPairAlias);
+        if (dataMap.get(VERSION) == null) {
+            // If we are creating a new object we need a version
+            dataMap.put(VERSION, new Float(getLatestVersion()));
+        }
         loadData(dataMap);
     }
 
@@ -116,6 +122,7 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     }
     
     @Override
+    @SuppressWarnings("unchecked")
     public LinkedHashMap<Object, Object> getDataMapToPersist() {
         return (LinkedHashMap<Object, Object>) saveData();
     }
@@ -136,23 +143,25 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
 
     /** Store data in the undelying map. Encourages use of String valued keys. */
     protected void putData(final String key, final Object value) {
-        data.put("SUBCLASS_" + key, value);
+        data.put(SUBCLASS_PREFIX + key, value);
     }
 
     /** @return data from the undelying map. Encourages use of String valued keys. */
+    @SuppressWarnings("unchecked")
     protected <T> T getData(final String key, final T defaultValue) {
-        final T ret = (T) data.get("SUBCLASS_" + key);
+        final T ret = (T) data.get(SUBCLASS_PREFIX + key);
         return ret==null ? defaultValue : ret;
     }
 
     /** Store data in the undelying map. Encourages use of String valued keys. */
     private void putDataInternal(final String key, final Object value) {
-        data.put("BASECLASS_" + key, value);
+        data.put(BASECLASS_PREFIX + key, value);
     }
 
     /** @return data from the undelying map. Encourages use of String valued keys. */
+    @SuppressWarnings("unchecked")
     private <T> T getDataInternal(final String key, final T defaultValue) {
-        final T ret = (T) data.get("BASECLASS_" + key);
+        final T ret = (T) data.get(BASECLASS_PREFIX + key);
         return ret==null ? defaultValue : ret;
     }
 }

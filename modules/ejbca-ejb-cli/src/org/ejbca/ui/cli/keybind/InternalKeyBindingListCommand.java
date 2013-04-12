@@ -14,7 +14,6 @@ package org.ejbca.ui.cli.keybind;
 
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -28,7 +27,7 @@ import org.ejbca.core.ejb.signer.InternalKeyBinding;
 import org.ejbca.core.ejb.signer.InternalKeyBindingMgmtSessionRemote;
 
 /**
- * List InternalKeyBindings.
+ * See getDescription().
  * 
  * @version $Id$
  */
@@ -43,17 +42,13 @@ public class InternalKeyBindingListCommand extends BaseInternalKeyBindingCommand
     public String getDescription() {
         return "List all available InternalKeyBindings";
     }
-
+    
     @Override
     public void executeCommand(Integer internalKeyBindingId, String[] args) throws AuthorizationDeniedException, CryptoTokenOfflineException, Exception {
         final InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = ejb.getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
         final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = ejb.getRemoteSession(CryptoTokenManagementSessionRemote.class);
         final CertificateStoreSessionRemote certificateStoreSession = ejb.getRemoteSession(CertificateStoreSessionRemote.class);
-        final List<Integer> ids = internalKeyBindingMgmtSession.getInternalKeyBindingIds(getAdmin(), null);
-        final List<InternalKeyBinding> internalKeyBindings = new LinkedList<InternalKeyBinding>();
-        for (Integer id : ids) {
-            internalKeyBindings.add(internalKeyBindingMgmtSession.getInternalKeyBinding(getAdmin(), id.intValue()));
-        }
+        final List<? extends InternalKeyBinding> internalKeyBindings = internalKeyBindingMgmtSession.getInternalKeyBindingInfos(getAdmin(), null);
         // Sort by type and name
         Collections.sort(internalKeyBindings, new Comparator<InternalKeyBinding>(){
             @Override
@@ -65,7 +60,11 @@ public class InternalKeyBindingListCommand extends BaseInternalKeyBindingCommand
                 return o1.getName().compareTo(o2.getName());
             }
         });
-        getLogger().info(" Type\t\"Name\" (id), Status, IssuerDN, SerialNumber, \"CryptoTokenName\" (id), KeyPairAlias, {Implementations specific properties}");
+        if (internalKeyBindings.size()==0) {
+            getLogger().info(" No InternalKeyBindings available or you are not authorized to view any.");
+        } else {
+            getLogger().info(" Type\t\"Name\" (id), Status, IssuerDN, SerialNumber, \"CryptoTokenName\" (id), KeyPairAlias, {Implementations specific properties}");
+        }
         for (final InternalKeyBinding internalKeyBinding : internalKeyBindings) {
             final StringBuilder sb = new StringBuilder();
             sb.append(' ').append(internalKeyBinding.getImplementationAlias());
@@ -73,14 +72,20 @@ public class InternalKeyBindingListCommand extends BaseInternalKeyBindingCommand
             sb.append(" (").append(internalKeyBinding.getId()).append(')');            
             sb.append(", ").append(internalKeyBinding.getStatus().name());
             final CertificateInfo certificateInfo = certificateStoreSession.getCertificateInfo(internalKeyBinding.getCertificateId());
-            sb.append(", ").append(certificateInfo.getIssuerDN()).append(" ").append(certificateInfo.getSerialNumber().toString(16).toUpperCase());
+            String issuerDn = "n/a";
+            String serialNumber = "n/a";
+            if (certificateInfo != null) {
+                issuerDn = certificateInfo.getIssuerDN();
+                serialNumber = certificateInfo.getSerialNumber().toString(16).toUpperCase();
+            }
+            sb.append(", ").append(issuerDn).append(" ").append(serialNumber);
             final int cryptoTokenId = internalKeyBinding.getCryptoTokenId();
             final String cryptoTokenName = cryptoTokenManagementSession.getCryptoTokenInfo(getAdmin(), cryptoTokenId).getName();
             sb.append(", \"").append(cryptoTokenName).append("\" (").append(cryptoTokenId).append(')');
             sb.append(", ").append(internalKeyBinding.getKeyPairAlias());
             sb.append(", {");
-            final Set<Entry<Object,Object>> entrySet = internalKeyBinding.getDataMapToPersist().entrySet();
-            for (final Entry<Object,Object> entry : entrySet) {
+            final Set<Entry<String,String>> entrySet = internalKeyBinding.getImplementationSpecificProperties().entrySet();
+            for (final Entry<String,String> entry : entrySet) {
                 sb.append(entry.getKey()).append('=').append(entry.getValue()).append(',');
             }
             if (entrySet.size() > 0) {
@@ -88,9 +93,6 @@ public class InternalKeyBindingListCommand extends BaseInternalKeyBindingCommand
             }
             sb.append("}");
             getLogger().info(sb);
-        }
-        if (internalKeyBindings.size()==0) {
-            getLogger().info(" No InternalKeyBindings available or you are not authorized to view any.");
         }
     }
 }

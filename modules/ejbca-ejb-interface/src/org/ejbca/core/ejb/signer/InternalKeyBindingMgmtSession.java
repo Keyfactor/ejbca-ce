@@ -15,6 +15,7 @@ package org.ejbca.core.ejb.signer;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.util.List;
+import java.util.Map;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -27,6 +28,9 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
  */
 public interface InternalKeyBindingMgmtSession {
 
+    /** @return a map where each entry is a registered implementation type and the value is a list of implementation specific properties for the type */
+    Map<String, List<String>> getAvailableTypesAndPropertyKeys(AuthenticationToken authenticationToken);
+
     /** @return a list of IDs for the specific type and that the caller is authorized to view */
     List<Integer> getInternalKeyBindingIds(AuthenticationToken authenticationToken, String internalKeyBindingType);
 
@@ -35,6 +39,11 @@ public interface InternalKeyBindingMgmtSession {
 
     /** @return the internalKeyBindingId from the more user friendly name. Return null of there is no such InternalKeyBinding. */
     Integer getIdFromName(String internalKeyBindingName);
+
+    /** Creates a new InternalKeyBinding using the factory on the server side.  */
+    int createInternalKeyBinding(AuthenticationToken authenticationToken, String type, String name, InternalKeyBindingStatus status, String certificateId,
+            int cryptoTokenId, String keyPairAlias, Map<Object, Object> dataMap) throws AuthorizationDeniedException, CryptoTokenOfflineException,
+            InternalKeyBindingNameInUseException;
 
     /**
      * Create new (when the provided InternalKeyBinding has id 0) or merge existing InternalKeyBinding.
@@ -74,5 +83,11 @@ public interface InternalKeyBindingMgmtSession {
     /** Creates a new key pair with the same key specification as the current and a new alias. */
     void generateNextKeyPair(AuthenticationToken authenticationToken, int internalKeyBindingId) throws AuthorizationDeniedException,
             CryptoTokenOfflineException, InvalidKeyException, InvalidAlgorithmParameterException;
+
+    /**
+     * Suitable for remote invocation where the implementation might not be available.
+     * @return a list of InternalKeyBindings that extend a non-mutable general class.
+     */
+    List<InternalKeyBindingInfo> getInternalKeyBindingInfos(AuthenticationToken authenticationToken, String internalKeyBindingType);
 }
 
