@@ -79,6 +79,11 @@
 #cmp.authenticationparameters=UID;ManagementCA
 #cmp.authenticationparameters=-;O;-
 
+# The path to the catalog where the RA-certificate is stored. The RA certificate is used to verify
+# the RA signature in the NestedMessageContent
+# Default:
+#cmp.racertificatepath=/tmp/racerts
+
 # This option works in combination with the authentication module 'EndEntityCertificate' in client mode. Normally, the certificate attached in
 # the 'extraCerts' field in the PKIMessage has to be present in Ejbca's database in order for the PKIMessage to authenticate. But when vendor certificate
 # mode is activated, aka. this option is set to 'true', the certificate in 'extraCerts' does not need to be present in the database, however, 
@@ -143,13 +148,6 @@
 #
 # Default: DN
 #cmp.ra.namegenerationscheme=DN
-
-# The path to the catalog where the RA-certificate is stored. The RA certificate is used to verify
-# the RA signature in the NestedMessageContent
-
-# Default:
-#cmp.racertificatepath=/tmp/racerts
-
 
 # Parameters for name generation, for DN it can be for example CN, UID or SN. 
 # Either the CN or the UID from the request can be used. 
