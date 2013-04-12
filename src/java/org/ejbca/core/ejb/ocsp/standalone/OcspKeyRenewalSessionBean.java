@@ -254,7 +254,9 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
 
     /**
      * Get user data for the EJBCA user that will be used when creating the cert for the new key.
-     * @param ejbcaWS from {@link #getEjbcaWS()}
+     * @param signingCertificate The OCSP signing certificate to get the end entity for
+     * @param caId the ID of the OCSP signing certificate issuing CA
+     * 
      * @return the data
      */
     private UserDataVOWS getUserDataVOWS(final X509Certificate signingCertificate, final int caId) {
@@ -295,6 +297,9 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
 
     /**
      * Get the CA name
+     * 
+     * @param caId The ID of the sought CA
+     * 
      * @return the name
      */
     private String getCAName(int caId) {
@@ -447,7 +452,7 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
     /**
      * Adds a timer to the bean
      * 
-     * @param id the id of the timer
+     * @param intervalInSeconds the time from now for the next timer to fire
      */
     // We don't want the appserver to persist/update the timer in the same transaction if they are stored in different non XA DataSources. This method
     // should not be run from within a transaction.
