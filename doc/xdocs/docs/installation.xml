@@ -685,6 +685,8 @@ If you run services very often this can under some circumstances fill up the mem
 </p><p>
 JBoss 7 does not use the in memory database to persist timers, but instead stores them in <i>jboss/standalone/data/timer-service-data/ejbca.ejbca-ejb.ServiceSessionBean</i>.
 This is supposed to ensure that it will not fill up the memory as in JBoss 5.
+<br/>
+If persisted timers needs to be removed in JBoss 7 the directory <i>jboss/standalone/data/timer-service-data</i> can simply be deleted.
 </p>
 </subsubsection>
 
