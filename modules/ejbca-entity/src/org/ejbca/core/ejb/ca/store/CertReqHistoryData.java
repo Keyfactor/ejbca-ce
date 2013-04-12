@@ -65,7 +65,7 @@ public class CertReqHistoryData extends ProtectedData implements Serializable {
 	private String fingerprint;
 	private String serialNumber;
 	private long timestamp;
-	private String EndEntityInformation;
+	private String userDataVO;
 	private String username;
 	private int rowVersion = 0;
 	private String rowProtection;
@@ -100,7 +100,7 @@ public class CertReqHistoryData extends ProtectedData implements Serializable {
 			if (log.isDebugEnabled()) {
 				log.debug(printEndEntityInformationXML("endEntityInformation:",s));
 			}
-			setEndEntityInformation(s);
+			setUserDataVO(s);
 		} catch (UnsupportedEncodingException e) {
 			log.error("", e);
 			throw new RuntimeException(e);    	                                              
@@ -167,19 +167,19 @@ public class CertReqHistoryData extends ProtectedData implements Serializable {
 	public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
 
 	/**
-	 * EndEntityInformation in xmlencoded String format
-	 * Should not be used outside of entity bean, use getCertReqHistory instead
-	 * @return  xmlencoded encoded EndEntityInformation
-	 */
-	//@Column @Lob
-	public String getEndEntityInformation() { return EndEntityInformation; }
+     * UserDataVO in xmlencoded String format
+     * Should not be used outside of entity bean, use getCertReqHistory instead
+     * @return  xmlencoded encoded UserDataVO
+     */
+    //@Column @Lob
+    public String getUserDataVO() { return userDataVO; }
 
-	/**
-	 * EndEntityInformation in  xmlencoded String format
-	 * Shouldn't be set after creation.
-	 * @param EndEntityInformation xmlencoded encoded UserDataVO
-	 */
-	public void setEndEntityInformation(String endEntityInformation) { this.EndEntityInformation = endEntityInformation; }
+    /**
+     * UserDataVO in  xmlencoded String format
+     * Shouldn't be set after creation.
+     * @param userDataVO xmlencoded encoded UserDataVO
+     */
+    public void setUserDataVO(String userDataVO) { this.userDataVO = userDataVO; }
 
 	/**
 	 * username in database
@@ -226,7 +226,7 @@ public class CertReqHistoryData extends ProtectedData implements Serializable {
 
 		return new CertReqHistory(this.getFingerprint(),this.getSerialNumber(),
 		                          this.getIssuerDN(),this.getUsername(),new Date(this.getTimestamp()),
-		                          decodeXML(getEndEntityInformation(), false));
+		                          decodeXML(getUserDataVO(), false));
 	}
 	
 	/** just used internally in the this class to indicate that the XML can not be fixed.
@@ -330,7 +330,7 @@ public class CertReqHistoryData extends ProtectedData implements Serializable {
     protected String getProtectString(final int version) {
         final ProtectionStringBuilder build = new ProtectionStringBuilder();
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
-        build.append(getFingerprint()).append(getIssuerDN()).append(getSerialNumber()).append(getTimestamp()).append(getEndEntityInformation()).append(getUsername());
+        build.append(getFingerprint()).append(getIssuerDN()).append(getSerialNumber()).append(getTimestamp()).append(getUserDataVO()).append(getUsername());
         return build.toString();
     }
 
