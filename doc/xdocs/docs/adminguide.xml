@@ -4468,7 +4468,7 @@ description: Parent Object for all High Certificates
 <li>cd OpenDJ-2.5.0-Xpress1</li>
 <li>./setup</li>
 <ul>
-<li>This launches graphical setup, another mode for servers without GUI is posible.</li>
+<li>This launches graphical setup, you can run 'setup --cli' to install without GUI.</li>
 <li>Use default Root User DN: cn=Directory Manager</li>
 <li>Directory Base DN: dc=example,dc=com)</li>
 <li>If you want to be able to run OpenDJ on the same server as JBoss/EJBCA, choose another port for management, i.e. 5555 instead of 4444.</li>
@@ -4495,6 +4495,7 @@ If you want to change the management port (default 4444) after installation you 
 
 <subsubsection name="Configure SSL/TLS">
 <p>How to configure SSL/TLS with OpenDJ is well described in the <a href="http://opendj.forgerock.org/doc/admin-guide/index/chap-listeners.html">OpenDJ documentation</a>.</p>
+<p>If you run setup using the command line (--cli) you will be prompted with TLS questions, having the possibility to set up TLS directly.</p>
 </subsubsection>
 
 </subsection>
