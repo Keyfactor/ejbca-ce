@@ -398,7 +398,7 @@ It is not enough to pass JEE validation in order to run onn all application serv
 <subsection name="JBoss">
 <note>JBoss 5 and 7 are the official well tested platforms for EJBCA 5.x. Most of the development is done against JBoss.</note>
 
-<subsubsection name="JBoss and OracleJVM bug">
+<subsubsection name="JBoss 5 and OracleJVM bug">
 <p>
 If you are using Oracle's JDK and JBoss 5.1.x you need to copy EJBCA_HOME/lib/bc*.jar to JBOSS_HOME/server/default/lib/.
 Remember this when it's time for upgrades! This is a bug tracked by JBoss as <a href="https://issues.jboss.org/browse/JBAS-7882">JBAS-7882</a>. 
@@ -434,35 +434,6 @@ for configuration instructions. Tracked by JBoss as <a href="https://issues.jbos
 This should be resolved in JBoss EAP 5.1.
 </p>
 </subsubsection>
-<subsubsection name="JBoss 6 logging">
-<p>
-On JBoss 6 logging is not included in the regular server.log file (because JBoss does not use log4j anymore).
-<br/>Configure <i>conf/log4j-jboss6-xml</i> for logging level and log file locations (default works as well). A sample file is provided.
-</p>
-</subsubsection>
-<subsubsection name="JBoss 6 WS warning during startup">
-<p>
-On JBoss 6 some warnings related to WebServices are logged during startup.
-</p>
-<source>
-...duplicate class definition bug occured? Please report this...
-</source>
-<p>This is harmless and dure to a bug in OpenJDK/Jax-WS. See <a href="https://jira.primekey.se/browse/ECA-2163">ECA-2163</a>.
-</p>
-</subsubsection>
-<subsubsection name="JBoss 6 Schema validation">
-<p>By default JBoss (at least 6.0.0) tries to validate schemas when deploying for example web services (XKMS is notorious). 
-If you don't have an internet connection this will obviously not work if the appserver does not have all schema built in (it does not for XKMS).
-You can luckily turn of schema validation. Here is RedHat's <a href="http://docs.redhat.com/docs/en-US/JBoss_Enterprise_Web_Platform/5/html/Installation_Guide/migration.apps.html">description</a>.
-</p>
-<p>Edit file <i>server/default/deployers/ear-deployer-jboss-beans.xml</i> and look for the following sections:</p>
-<source>
-&lt;!-- uncomment to disable xml validation
-&lt;property name="useValidation"&gt;false&lt;/property --&gt;
-&lt;!-- in case xml validation is disabled, it's also better to turn off schema validation
-&lt;property name="useSchemaValidation"&gt;false&lt;/property --&gt;
-</source>
-</subsubsection>
 <subsubsection name="JBoss 5/6 Memory configuration">
 <p>
 The memory parameters for Java is by default configured very low, for JBoss it is set by default to allow
@@ -484,6 +455,35 @@ improve performance.
 </p><p>
 See documentation in src/appserver/tomcat60jboss5, and the JBoss documentation for installing the native connector.
 </p> 
+</subsubsection>
+<subsubsection name="JBoss 6 logging">
+<p>
+On JBoss 6 logging is not included in the regular server.log file (because JBoss does not use log4j anymore).
+<br/>Configure <i>conf/log4j-jboss6-xml</i> for logging level and log file locations (default works as well). A sample file is provided.
+</p>
+</subsubsection>
+<subsubsection name="JBoss 6 WS warning during startup">
+<p>
+On JBoss 6 some warnings related to WebServices are logged during startup.
+</p>
+<source>
+...duplicate class definition bug occured? Please report this...
+</source>
+<p>This is harmless and due to a bug in OpenJDK/JAX-WS. See <a href="https://jira.primekey.se/browse/ECA-2163">ECA-2163</a>.
+</p>
+</subsubsection>
+<subsubsection name="JBoss 6 Schema validation">
+<p>By default JBoss (at least 6.0.0) tries to validate schemas when deploying for example web services (XKMS is notorious). 
+If you don't have an internet connection this will obviously not work if the appserver does not have all schema built in (it does not for XKMS).
+You can luckily turn of schema validation. Here is RedHat's <a href="http://docs.redhat.com/docs/en-US/JBoss_Enterprise_Web_Platform/5/html/Installation_Guide/migration.apps.html">description</a>.
+</p>
+<p>Edit file <i>server/default/deployers/ear-deployer-jboss-beans.xml</i> and look for the following sections:</p>
+<source>
+&lt;!-- uncomment to disable xml validation
+&lt;property name="useValidation"&gt;false&lt;/property --&gt;
+&lt;!-- in case xml validation is disabled, it's also better to turn off schema validation
+&lt;property name="useSchemaValidation"&gt;false&lt;/property --&gt;
+</source>
 </subsubsection>
 
 <subsubsection name="JBoss 7/EAP 6 General Notes">
@@ -647,6 +647,45 @@ Since mail configuration is done differently in different versions of JBoss we o
 <li>mail.smtp.socketFactory.class=javax.net.ssl.SSLSocketFactory</li>
 </ul>
 <p>For JBoss 5 these are added, commented out in src/appserver/jboss/ejbca-mail-service.xml, for JBoss 7 they should be set using the JBoss command line admin tool.</p>
+</subsubsection>
+
+<subsubsection name="JBoss Service Timer persistence">
+<p>EJBCA uses EJB timers to run services regularly (if you have services configured). By default JBoss persists timers in an internal, in memory, database. 
+If you run services very often this can under some circumstances fill up the memory causing the server to be non-operational due to out ofmemory errors.</p>
+<p>EJBCA does not need persistent timers since they are initialized during startup. Therefore it isrecommended to run JBoss with non-persistent timers, something that can be configured.
+</p>
+<p>
+<u>JBoss 5 configuration</u>:
+<br/>
+<ul>
+<li>Edit jboss/server/default/deploy/ejb2-timer-service.xml</li>
+<li>Remove the commenting around the following line, so the NoopPersistencePolicy is enabled:<br/>
+<pre>
+&lt;mbean code="org.jboss.ejb.txtimer.NoopPersistencePolicy" name="jboss.ejb:service=EJBTimerService,persistencePolicy=noop"/&gt;
+</pre>
+</li>
+<li>Edit the EJBTimerService and change 'PersistencePolicy' from database to noop.
+<br/>
+<pre>
+&lt;mbean code="org.jboss.ejb.txtimer.EJBTimerServiceImpl" name="jboss.ejb:service=EJBTimerService"&gt;
+  &lt;attribute name="TimerIdGeneratorClassName">org.jboss.ejb.txtimer.UUIDTimerIdGenerator&lt;/attribute&gt;
+  &lt;attribute name="TimedObjectInvokerClassName">org.jboss.ejb.txtimer.TimedObjectInvokerImpl&lt;/attribute&gt;
+  &lt;depends optional-attribute-name="RetryPolicy">jboss.ejb:service=EJBTimerService,retryPolicy=fixedDelay&lt;/depends&gt;
+  &lt;depends optional-attribute-name="PersistencePolicy">jboss.ejb:service=EJBTimerService,persistencePolicy=noop&lt;/depends&gt;
+  &lt;depends optional-attribute-name="TransactionManagerFactory" proxy-type="org.jboss.tm.TransactionManagerFactory"&gt;
+    jboss:service=TransactionManager
+  &lt;/depends&gt;
+&lt;/mbean&gt;
+</pre>
+</li>
+</ul>
+</p>
+<p>
+<u>JBoss 7/EAP6 configuration</u>:
+</p><p>
+JBoss 7 does not use the in memory database to persist timers, but instead stores them in <i>jboss/standalone/data/timer-service-data/ejbca.ejbca-ejb.ServiceSessionBean</i>.
+This is supposed to ensure that it will not fill up the memory as in JBoss 5.
+</p>
 </subsubsection>
 
 </subsection>
