@@ -13,6 +13,10 @@
 package org.ejbca.core.ejb.signer.impl;
 
 import java.security.cert.Certificate;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.ejbca.core.ejb.signer.CertificateImportException;
 import org.ejbca.core.ejb.signer.InternalKeyBindingBase;
@@ -53,5 +57,19 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     }
     public void setNonExistingGood(boolean nonExistingGood) {
         putData(PROPERTY_NON_EXISTING_GOOD, Boolean.valueOf(nonExistingGood).toString());
+    }
+
+    @Override
+    public List<String> getImplementationPropertyKeys() {
+        return Arrays.asList(new String[] {PROPERTY_NON_EXISTING_GOOD});
+    }
+
+    @Override
+    public Map<String, String> getImplementationSpecificProperties() {
+        final Map<String, String> map = new HashMap<String,String>();
+        for (String key : getImplementationPropertyKeys()) {
+            map.put(key, String.valueOf(getData(key, null)));
+        }
+        return map;
     }
 }

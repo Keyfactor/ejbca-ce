@@ -12,8 +12,10 @@
  *************************************************************************/
 package org.ejbca.core.ejb.signer;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -30,7 +32,8 @@ public enum InternalKeyBindingFactory {
     private final Logger log = Logger.getLogger(InternalKeyBindingFactory.class);
     private final Map<String,String> aliasToImplementationMap = new HashMap<String,String>();
     private final Map<String,String> implementationToAliasMap = new HashMap<String,String>();
-    
+    private final Map<String, List<String>> implementationPropertyKeysMap = new HashMap<String,List<String>>();
+
     private InternalKeyBindingFactory() {
         addImplementation(OcspKeyBinding.class);
         // Use ServiceLoader framework to find additional available implementations
@@ -65,21 +68,25 @@ public enum InternalKeyBindingFactory {
     }
     
     private void addImplementation(final Class<? extends InternalKeyBinding> c) {
-        final String alias = getImplementationAlias(c);
-        if (alias != null) {
-            aliasToImplementationMap.put(alias, c.getName());
-            implementationToAliasMap.put(c.getName(), alias);
-        }
-    }
-    
-    private String getImplementationAlias(final Class<? extends InternalKeyBinding> c) {
+        String alias = null;
+        List<String> implementationPropertyKeys = null;
         try {
-            return c.newInstance().getImplementationAlias();
+            final InternalKeyBinding temporaryInstance = c.newInstance();
+            alias = temporaryInstance.getImplementationAlias();
+            implementationPropertyKeys = temporaryInstance.getImplementationPropertyKeys();
         } catch (InstantiationException e) {
             log.error("Unable to create InternalKeyBinding. Could not be instantiate implementation '" + c.getName() + "'.", e);
         } catch (IllegalAccessException e) {
             log.error("Unable to create InternalKeyBinding. Not allowed to instantiate implementation '" + c.getName() + "'.", e);
         }
-        return null;
+        if (alias != null) {
+            aliasToImplementationMap.put(alias, c.getName());
+            implementationToAliasMap.put(c.getName(), alias);
+            implementationPropertyKeysMap.put(alias, Collections.unmodifiableList(implementationPropertyKeys));
+        }
+    }
+
+    public Map<String, List<String>> getAvailableTypesAndPropertyKeys() {
+        return Collections.unmodifiableMap(implementationPropertyKeysMap);
     }
 }

@@ -19,8 +19,10 @@ import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJB;
@@ -42,6 +44,7 @@ import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.token.KeyPairInfo;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 
@@ -69,7 +72,14 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
     private InternalKeyBindingDataSessionLocal internalKeyBindingDataSession;
-    
+
+
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public Map<String, List<String>> getAvailableTypesAndPropertyKeys(AuthenticationToken authenticationToken) {
+        return InternalKeyBindingFactory.INSTANCE.getAvailableTypesAndPropertyKeys();
+    }
+
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<Integer> getInternalKeyBindingIds(AuthenticationToken authenticationToken, String internalKeyBindingType) {
@@ -81,6 +91,18 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             }
         }
         return authorizedIds;
+    }
+
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public List<InternalKeyBindingInfo> getInternalKeyBindingInfos(AuthenticationToken authenticationToken, String internalKeyBindingType) {
+        final List<Integer> authorizedIds = getInternalKeyBindingIds(authenticationToken, internalKeyBindingType);
+        final List<InternalKeyBindingInfo> authorizedInternalKeyBindingInfos = new ArrayList<InternalKeyBindingInfo>(authorizedIds.size());
+        for (final Integer current : authorizedIds) {
+            final InternalKeyBinding internalKeyBindingInstance = internalKeyBindingDataSession.getInternalKeyBinding(current.intValue());
+            authorizedInternalKeyBindingInfos.add(new InternalKeyBindingInfo(internalKeyBindingInstance));
+        }
+        return authorizedInternalKeyBindingInfos;
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -116,6 +138,39 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             }
         }
         return internalKeyBindingId;
+    }
+
+    @Override
+    public int createInternalKeyBinding(AuthenticationToken authenticationToken, String type, String name, InternalKeyBindingStatus status, String certificateId,
+            int cryptoTokenId, String keyPairAlias, Map<Object, Object> dataMap) throws AuthorizationDeniedException, CryptoTokenOfflineException,
+            InternalKeyBindingNameInUseException {
+        if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.MODIFY.resource(),
+                CryptoTokenRules.USE.resource() + "/" + cryptoTokenId)) {
+            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.MODIFY.resource(), authenticationToken.toString());
+            throw new AuthorizationDeniedException(msg);
+        }
+        // Convert supplied properties using a prefix to ensure that the caller can't mess with internal ones
+        final LinkedHashMap<Object,Object> initDataMap = new LinkedHashMap<Object,Object>();
+        for (final Entry<Object,Object> entry: dataMap.entrySet()) {
+            String key = String.valueOf(entry.getKey());
+            if (key.startsWith(InternalKeyBindingBase.SUBCLASS_PREFIX)) {
+                initDataMap.put(key, entry.getValue());
+            } else {
+                initDataMap.put(InternalKeyBindingBase.SUBCLASS_PREFIX + key, entry.getValue());
+            }
+        }
+        // Check that CryptoToken and alias exists (and that the user is authorized to see it)
+        final KeyPairInfo keyPairInfo = cryptoTokenManagementSession.getKeyPairInfo(authenticationToken, cryptoTokenId, keyPairAlias);
+        if (keyPairInfo == null) {
+            throw new CryptoTokenOfflineException("Unable to access keyPair with alias " + keyPairAlias + " in CryptoToken with id " + cryptoTokenId);
+        }
+        // If we created a new InternalKeyBinding without a certificate reference (e.g. will be uploaded later) we will not allow the status to be anything but "DISABLED"
+        if (certificateId == null || certificateStoreSession.findCertificateByFingerprint(certificateId) == null) {
+            status = InternalKeyBindingStatus.DISABLED;
+        }
+        // Finally, try to create an instance of this type and persist it
+        final InternalKeyBinding internalKeyBinding = InternalKeyBindingFactory.INSTANCE.create(type, 0, name, status, certificateId, cryptoTokenId, keyPairAlias, initDataMap);
+        return internalKeyBindingDataSession.mergeInternalKeyBinding(internalKeyBinding);
     }
 
     @Override
