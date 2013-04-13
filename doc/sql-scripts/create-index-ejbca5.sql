@@ -18,6 +18,7 @@ CREATE UNIQUE INDEX cadata_idx1 ON CAData (name);
 CREATE INDEX certificatedata_idx2 ON CertificateData (username);
 CREATE INDEX certificatedata_idx4 ON CertificateData (subjectDN);
 CREATE INDEX certificatedata_idx5 ON CertificateData (type);
+CREATE INDEX certificatedata_idx6 ON CertificateData (issuerDN,status);
 CREATE INDEX certificatedata_idx7 ON CertificateData(certificateProfileId);
 CREATE INDEX certificatedata_idx11 ON CertificateData (subjectKeyId);
 -- UNIQUE increases certainty the no two certificate with the same issuer and serial number can be issued
