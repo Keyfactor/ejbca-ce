@@ -65,10 +65,7 @@ public class ECGOST3410SignSessionTest extends SignSessionCommon {
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 
-    private static final String RSA_USERNAME = "RsaUser";
     private static final String ECGOST3410_USERNAME = "Ecgost3410User";
-    private static final String DEFAULT_EE_PROFILE = "ECGOST3410EEPROFILE";
-    private static final String DEFAULT_CERTIFICATE_PROFILE = "ECGOST3410CERTPROFILE";
     
     private static KeyPair gostkeys;
     
@@ -77,13 +74,8 @@ public class ECGOST3410SignSessionTest extends SignSessionCommon {
         if (AlgorithmTools.isGost3410Enabled()) {
             // Install BouncyCastle provider
             CryptoProviderTools.installBCProviderIfNotAvailable();
-    
-            CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-            createTestCA();
+
             createECGOST3410Ca();
-            
-            int rsacaid = caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId();
-            createEndEntity(RSA_USERNAME, DEFAULT_EE_PROFILE, DEFAULT_CERTIFICATE_PROFILE, rsacaid);
             createEcgost3410EndEntity();
             
             final String keyspec = CesecoreConfiguration.getExtraAlgSubAlgName("gost3410", "B");
@@ -95,9 +87,7 @@ public class ECGOST3410SignSessionTest extends SignSessionCommon {
     public static void afterClass() throws Exception {
         if (AlgorithmTools.isGost3410Enabled()) {
             EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-            cleanUpEndEntity(RSA_USERNAME);
             userAdminSession.deleteUser(internalAdmin, ECGOST3410_USERNAME);
-            removeTestCA();
             removeTestCA(TEST_ECGOST3410_CA_NAME);
         }
     }
@@ -108,7 +98,6 @@ public class ECGOST3410SignSessionTest extends SignSessionCommon {
         log.trace(">test14SignSessionECGOST3410WithECGOST3410CA()");
         userAdminSession.setUserStatus(internalAdmin, ECGOST3410_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of '" + ECGOST3410_USERNAME + "' to NEW");
-        // user that we know exists...
 
         X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, gostkeys.getPrivate(), gostkeys.getPublic(),
                 AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410, false);
@@ -136,7 +125,7 @@ public class ECGOST3410SignSessionTest extends SignSessionCommon {
         assumeTrue(AlgorithmTools.isGost3410Enabled());
         log.trace(">test15TestBCPKCS10ECGOST3410WithECGOST3410CA()");
         userAdminSession.setUserStatus(internalAdmin, ECGOST3410_USERNAME, EndEntityConstants.STATUS_NEW);
-        log.debug("Reset status of 'foo' to NEW");
+        log.debug("Reset status of '" + ECGOST3410_USERNAME + "' to NEW");
         // Create certificate request
         PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("GOST3411withECGOST3410", CertTools.stringToBcX500Name("C=SE, O=AnaTom, CN="
                 + ECGOST3410_USERNAME), gostkeys.getPublic(), new DERSet(), gostkeys.getPrivate(), null);
