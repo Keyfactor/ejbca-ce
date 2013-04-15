@@ -117,6 +117,12 @@ public class X509CATest {
 	    assumeTrue(AlgorithmTools.isGost3410Enabled());
         doTestX509CABasicOperations(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410);
     }
+    
+    @Test
+    public void testX509CABasicOperationsDSTU() throws Exception {
+        assumeTrue(AlgorithmTools.isDstu4145Enabled());
+        doTestX509CABasicOperations(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145);
+    }
 	
     private void doTestX509CABasicOperations(String algName) throws Exception {
 	    final CryptoToken cryptoToken = getNewCryptoToken();
@@ -381,6 +387,12 @@ public class X509CATest {
         assumeTrue(AlgorithmTools.isGost3410Enabled());
         doTestStoreAndLoad(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410);
     }
+    
+    @Test
+    public void testStoreAndLoadDSTU() throws Exception {
+        assumeTrue(AlgorithmTools.isDstu4145Enabled());
+        doTestStoreAndLoad(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145);
+    }
 	
 	private void doTestStoreAndLoad(String algName) throws Exception {
         final CryptoToken cryptoToken = getNewCryptoToken();
@@ -504,6 +516,12 @@ public class X509CATest {
     public void testWrongCAKeyGOST() throws Exception {
         assumeTrue(AlgorithmTools.isGost3410Enabled());
         doTestWrongCAKey(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410);
+    }
+	
+	@Test
+    public void testWrongCAKeyDSTU() throws Exception {
+        assumeTrue(AlgorithmTools.isDstu4145Enabled());
+        doTestWrongCAKey(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145);
     }
 	
 	public void doTestWrongCAKey(String algName) throws Exception {
@@ -710,9 +728,12 @@ public class X509CATest {
     }
     
     private static KeyPair genTestKeyPair(String algName) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
-        if(algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410)) {
+        if (algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410)) {
             final String keyspec = CesecoreConfiguration.getExtraAlgSubAlgName("gost3410", "B");
             return KeyTools.genKeys(keyspec, AlgorithmConstants.KEYALGORITHM_ECGOST3410);
+        } else if(algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145)) {
+            final String keyspec = CesecoreConfiguration.getExtraAlgSubAlgName("dstu4145", "233");
+            return KeyTools.genKeys(keyspec, AlgorithmConstants.KEYALGORITHM_DSTU4145);
         } else {
             return KeyTools.genKeys("512", "RSA");
         }
@@ -720,7 +741,8 @@ public class X509CATest {
     
     /** @return Algorithm name for test key pair */
     private static String getTestKeyPairAlgName(String algName) {
-        if(algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410)) {
+        if (algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410) ||
+            algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145)) {
             return algName;
         } else {
             return "SHA256withRSA";
@@ -728,8 +750,10 @@ public class X509CATest {
     }
     
     private static String getTestKeySpec(String algName) {
-        if(algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410)) {
+        if (algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410)) {
             return CesecoreConfiguration.getExtraAlgSubAlgName("gost3410", "B");
+        } else if (algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145)) {
+            return CesecoreConfiguration.getExtraAlgSubAlgName("dstu4145", "233");
         } else {
             return "512"; // Assume RSA
         }
