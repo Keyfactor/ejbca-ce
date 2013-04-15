@@ -36,7 +36,7 @@ public abstract class BaseInternalKeyBindingCommand extends BaseCommand {
      * Overridable CryptoToken-specific execution methods that will parse and interpret the first parameter
      * (when present) as the name of a CryptoToken and lookup its cryptoTokenId.
      */
-    public abstract void executeCommand(Integer cryptoTokenId, String[] args) throws AuthorizationDeniedException, CryptoTokenOfflineException, Exception;
+    public abstract void executeCommand(Integer internalKeyBindingId, String[] args) throws AuthorizationDeniedException, CryptoTokenOfflineException, Exception;
     
     @Override
     public void execute(String[] args) throws ErrorAdminCommandException {

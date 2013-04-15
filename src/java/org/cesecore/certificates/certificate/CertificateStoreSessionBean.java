@@ -878,8 +878,10 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public Certificate findMostRecentlyUpdatedActiveCertificate(byte[] subjectKeyId) {
+        String subjectKeyIdString = new String(Base64.encode(subjectKeyId, false));
+        log.debug("Searching for subjectKeyIdString " + subjectKeyIdString);
         final Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.subjectKeyId=:subjectKeyId AND a.status=:status ORDER BY a.updateTime DESC");
-        query.setParameter("subjectKeyId", new String(Base64.encode(subjectKeyId, false)));
+        query.setParameter("subjectKeyId", subjectKeyIdString);
         query.setParameter("status", CertificateConstants.CERT_ACTIVE);
         query.setMaxResults(1);
         final List<CertificateData> resultList = query.getResultList();
