@@ -91,13 +91,9 @@ public class ExtraAlgorithmsPKCS12Test {
         String keyspec = CesecoreConfiguration.getExtraAlgSubAlgName("dstu4145", "233");
         assertNotNull("curve 233 is not configued!", keyspec);
         
-        String sigalg = CesecoreConfiguration.getExtraAlgSubAlgName("dstu4145", "233");
-        assertNotNull(sigalg);
-        sigalg = AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145;
-        
         AlgorithmParameterSpec spec = KeyTools.dstuOidToAlgoParams(keyspec);
         assertNotNull(spec);
-        testAlgorithm("DSTU4145", AlgorithmConstants.KEYALGORITHM_DSTU4145, sigalg, spec);
+        testAlgorithm("DSTU4145", AlgorithmConstants.KEYALGORITHM_DSTU4145, AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145, spec);
         
         log.trace("<testP12KeystoreDSTU4145()");
     }
