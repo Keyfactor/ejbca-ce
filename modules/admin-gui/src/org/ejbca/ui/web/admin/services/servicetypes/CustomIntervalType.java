@@ -18,6 +18,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Properties;
 
+import org.ejbca.core.model.services.IInterval;
+import org.ejbca.ui.web.admin.CustomLoader;
+
 /**
  * Class used to populate the fields in the custominterval.jsp subview page. 
  * 
@@ -35,7 +38,8 @@ public class CustomIntervalType extends IntervalType {
 		super("custominterval.jsp", NAME, true);
 	}
 
-	private String classPath;
+	private String autoClassPath;
+    private String manualClassPath;
 	
 	private String propertyText;
 
@@ -53,16 +57,39 @@ public class CustomIntervalType extends IntervalType {
 		this.propertyText = propertyText;
 	}
 
-	/**
-	 * @param classPath the classPath to set
-	 */
-	public void setClassPath(String classPath) {
-		this.classPath = classPath;
-	}
+/**
+     * Sets the class path, and detects if it is an auto-detected class
+     * or a manually specified class.
+     */
+    public void setClassPath(String classPath) {
+        if (CustomLoader.isAutoClass(classPath, IInterval.class)) {
+            autoClassPath = classPath;
+            manualClassPath = "";
+        } else {
+            autoClassPath = "";
+            manualClassPath = classPath;
+        }
+    }
 
-	public String getClassPath() {
-		return classPath;
-	}
+    public String getClassPath() {
+        return !autoClassPath.isEmpty() ? autoClassPath : manualClassPath;
+    }
+    
+    public void setAutoClassPath(String classPath) {
+        autoClassPath = classPath;
+    }
+
+    public String getAutoClassPath() {
+        return autoClassPath;
+    }
+    
+    public void setManualClassPath(String classPath) {
+        manualClassPath = classPath;
+    }
+
+    public String getManualClassPath() {
+        return manualClassPath;
+    }
 
 	public Properties getProperties(ArrayList<String> errorMessages) throws IOException{
 		Properties retval = new Properties();

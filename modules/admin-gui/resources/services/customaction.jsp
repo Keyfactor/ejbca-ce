@@ -12,7 +12,26 @@
 		<h:outputText value="#{web.text.CUSTOMACTIONCLASSPATH}"/>
 	</h:panelGroup>
 	<h:panelGroup>
-			<h:inputText id="actionClassPathTextField" value="#{editService.customActionType.classPath}" size="45"/>		
+        <h:selectOneMenu id="actionClassPathSelect" value="#{editService.customActionType.autoClassPath}"
+                         onchange="document.getElementById('edit:actionClassPathTextField').disabled = (this.value != &quot;&quot;); return true">
+            <f:selectItems value="#{editService.serviceConfigurationView.availableCustomActionItems}" />
+            <f:selectItem itemValue="" itemLabel="#{web.text.MANUALCLASSPATH}" />
+        </h:selectOneMenu>
+        
+        <f:verbatim><br></f:verbatim>
+        <h:inputText id="actionClassPathTextField" value="#{editService.customActionType.manualClassPath}" size="45"/>
+        
+        <f:verbatim>
+            <script type="text/javascript">
+            <!--
+            {
+                var textCustomClass = document.getElementById('edit:actionClassPathTextField');
+                var selectClass = document.getElementById('edit:actionClassPathSelect');
+                textCustomClass.disabled = (selectClass.value != "");
+            }
+            //-->
+            </script>
+        </f:verbatim>		
 	</h:panelGroup>
 
 	<h:panelGroup>

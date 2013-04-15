@@ -12,7 +12,26 @@
 		<h:outputText value="#{web.text.CUSTOMINTERVALCLASSPATH}"/>
 	</h:panelGroup>
 	<h:panelGroup>
-		<h:inputText id="intervalClassPathTextField" value="#{editService.customIntervalType.classPath}" size="45"/>		
+        <h:selectOneMenu id="intervalClassPathSelect" value="#{editService.customIntervalType.autoClassPath}"
+                         onchange="document.getElementById('edit:intervalClassPathTextField').disabled = (this.value != &quot;&quot;); return true">
+            <f:selectItems value="#{editService.serviceConfigurationView.availableCustomIntervalItems}" />
+            <f:selectItem itemValue="" itemLabel="#{web.text.MANUALCLASSPATH}" />
+        </h:selectOneMenu>
+        
+        <f:verbatim><br></f:verbatim>
+        <h:inputText id="intervalClassPathTextField" value="#{editService.customIntervalType.manualClassPath}" size="45"/>
+        
+        <f:verbatim>
+            <script type="text/javascript">
+            <!--
+            {
+                var textCustomClass = document.getElementById('edit:intervalClassPathTextField');
+                var selectClass = document.getElementById('edit:intervalClassPathSelect');
+                textCustomClass.disabled = (selectClass.value != "");
+            }
+            //-->
+            </script>
+        </f:verbatim>		
 	</h:panelGroup>
 
 	<h:panelGroup>
