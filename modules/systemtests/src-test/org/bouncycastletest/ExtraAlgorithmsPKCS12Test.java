@@ -181,7 +181,6 @@ public class ExtraAlgorithmsPKCS12Test {
         }
         
         SubjectPublicKeyInfo spki = new SubjectPublicKeyInfo(spkiAsn1);
-        SubjectPublicKeyInfo apki = new SubjectPublicKeyInfo(spkiAsn1);
         
         
         // Start building the certificate
@@ -198,7 +197,7 @@ public class ExtraAlgorithmsPKCS12Test {
         
         // Subject and Authority key identifier is always non-critical and MUST be present for certificates to verify in Firefox.
         SubjectKeyIdentifier ski = new SubjectKeyIdentifier(spki.getEncoded());
-        AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(apki.getEncoded());
+        AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(spki.getEncoded());
         certbuild.addExtension(X509Extension.subjectKeyIdentifier, false, ski);
         certbuild.addExtension(X509Extension.authorityKeyIdentifier, false, aki);
         
