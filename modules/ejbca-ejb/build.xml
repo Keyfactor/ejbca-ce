@@ -49,6 +49,8 @@
 		<path refid="lib.ejbca-common-web.classpath"/>
 		<path location="${mod.ejbca-entity.lib}"/>
 		<path refid="lib.quickserver.classpath"/>
+		<pathelement location="${mod.ejbca-ws-cli.lib}"/>
+		<pathelement location="${mod.ejbca-ws.lib}"/>
 	</path>
 
 	<path id="compile-va-ejb.classpath">
@@ -370,9 +372,6 @@
 		<exclude name="org/ejbca/core/ejb/ca/store/CertificateStoreOnlyDataSessionBean.java" />
 		<exclude name="org/cesecore/core/ejb/ca/crl/CrlStandAloneSessionBean.java" />
 		<exclude name="org/ejbca/cesecoreintegration/StandAloneVaMockSessionBean.java" />
-		<exclude name="org/cesecore/certificates/ocsp/standalone/**/*.java" />
-		<exclude name="org/ejbca/core/ejb/ocsp/standalone/**/*.java" />
-		<exclude name="org/ejbca/core/protocol/ocsp/standalone/**.java" />
 		<!-- Samples should never be included.. -->
 		<exclude name="org/ejbca/samples/**/*.java" />
 		<!-- Some common classes used by various components.. TODO: If possible, move to the only component using the class.. -->

@@ -15,6 +15,7 @@
 	<path id="compile.classpath">
 		<path refid="lib.ejbca-util.classpath"/>
 		<pathelement location="${mod.ejbca-entity.lib}" />
+		<pathelement location="${mod.ejbca-ws-cli.lib}"/>
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
@@ -32,7 +33,7 @@
 	</path>
 
     <target name="build" description="Build this module" depends="compile-ejb3">
-  	 	<jar destfile="${mod.ejbca-ejb-interface.lib}" basedir="${ejb3.build.dir}" excludes="org/cesecore/certificates/ocsp/standalone/StandaloneOcspResponseGeneratorSession*.class">
+  	 	<jar destfile="${mod.ejbca-ejb-interface.lib}" basedir="${ejb3.build.dir}" >
   	 	</jar>
     </target>
 
@@ -75,8 +76,6 @@
         <mkdir dir="${ejb3.build.dir}" />
         <javac srcdir="${src.dir}" destdir="${ejb3.build.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
         	classpathref="compile.classpath">	
-        	<exclude name="org/cesecore/certificates/ocsp/standalone/StandaloneOcspResponseGeneratorSession*.java"/>
-        	<exclude name="org/ejbca/core/ejb/ocsp/standalone/OcspKeyRenewalSession*.java" />
         </javac>
     </target>
 	
