@@ -221,6 +221,9 @@ public class CertTools {
     public static final String END_CERTIFICATE = "-----END CERTIFICATE-----";
 	public static final String BEGIN_PUBLIC_KEY                   = "-----BEGIN PUBLIC KEY-----";
 	public static final String END_PUBLIC_KEY                     = "-----END PUBLIC KEY-----";
+    public static final String BEGIN_X509_CRL_KEY = "-----BEGIN X509 CRL-----";
+    public static final String END_X509_CRL_KEY = "-----END X509 CRL-----";
+
 
     /**
      * See stringToBcX500Name(String, X509NameEntryConverter, boolean), this method uses the default BC converter (X509DefaultEntryConverter) and ldap
@@ -1096,42 +1099,49 @@ public class CertTools {
      * @exception CertificateException if the stream does not contain a correct certificate.
      */
     public static byte[] getPEMFromCerts(Collection<Certificate> certs) throws CertificateException {
-        ByteArrayOutputStream ostr = new ByteArrayOutputStream();
-        PrintStream opstr = new PrintStream(ostr);
-        Iterator<Certificate> iter = certs.iterator();
-        while (iter.hasNext()) {
-            Certificate cert = (Certificate) iter.next();
-            byte[] certbuf = Base64.encode(cert.getEncoded());
-            opstr.println("Subject: " + CertTools.getSubjectDN(cert));
-            opstr.println("Issuer: " + CertTools.getIssuerDN(cert));
-            opstr.println(CertTools.BEGIN_CERTIFICATE);
-            opstr.println(new String(certbuf));
-            opstr.println(CertTools.END_CERTIFICATE);
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final PrintStream printStream = new PrintStream(baos);
+        for (final Certificate certificate : certs) {
+            printStream.println("Subject: " + CertTools.getSubjectDN(certificate));
+            printStream.println("Issuer: " + CertTools.getIssuerDN(certificate));
+            writeAsPemEncoded(printStream, certificate.getEncoded(), BEGIN_CERTIFICATE, END_CERTIFICATE);
         }
-        opstr.close();
-        byte[] ret = ostr.toByteArray();
-        return ret;
+        printStream.close();
+        return baos.toByteArray();
     }
 
-    /**
-     * Returns a CRL in PEM-format.
-     * 
-     * @param crlbytes the der encoded crl bytes to convert to PEM
-     * @return byte array containing PEM CRL
-     * @exception IOException if the stream cannot be read.
-     */
-    public static byte[] getPEMFromCrl(byte[] crlbytes) {
-        String beginKey = "-----BEGIN X509 CRL-----";
-        String endKey = "-----END X509 CRL-----";
-        ByteArrayOutputStream ostr = new ByteArrayOutputStream();
-        PrintStream opstr = new PrintStream(ostr);
-        byte[] crlb64 = Base64.encode(crlbytes);
-        opstr.println(beginKey);
-        opstr.println(new String(crlb64));
-        opstr.println(endKey);
-        opstr.close();
-        byte[] ret = ostr.toByteArray();
-        return ret;
+    /** @return a CRL in PEM-format as a byte array. */
+    public static byte[] getPEMFromCrl(byte[] crlBytes) {
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final PrintStream printStream = new PrintStream(baos);
+        writeAsPemEncoded(printStream, crlBytes, BEGIN_X509_CRL_KEY, END_X509_CRL_KEY);
+        printStream.close();
+        return baos.toByteArray();
+    }
+
+    /** @return a PublicKey in PEM-format as a byte array. */
+    public static byte[] getPEMFromPublicKey(final byte[] publicKeyBytes) {
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final PrintStream printStream = new PrintStream(baos);
+        writeAsPemEncoded(printStream, publicKeyBytes, BEGIN_PUBLIC_KEY, END_PUBLIC_KEY);
+        printStream.close();
+        return baos.toByteArray();
+    }
+    
+    /** @return a PublicKey in PEM-format as a byte array. */
+    public static byte[] getPEMFromCertificateRequest(final byte[] certificateRequestBytes) {
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final PrintStream printStream = new PrintStream(baos);
+        writeAsPemEncoded(printStream, certificateRequestBytes, BEGIN_CERTIFICATE_REQUEST, END_CERTIFICATE_REQUEST);
+        printStream.close();
+        return baos.toByteArray();
+    }
+    
+    /** Write the supplied bytes to the printstream as Base64 using beginKey and endKey around it. */
+    private static void writeAsPemEncoded(PrintStream printStream, byte[] unencodedData, String beginKey, String endKey) {
+        printStream.println(beginKey);
+        printStream.println(new String(Base64.encode(unencodedData)));
+        printStream.println(endKey);
     }
 
     /**

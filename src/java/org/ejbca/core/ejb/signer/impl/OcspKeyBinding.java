@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.signer.CertificateImportException;
 import org.ejbca.core.ejb.signer.InternalKeyBindingBase;
 
@@ -29,6 +30,7 @@ import org.ejbca.core.ejb.signer.InternalKeyBindingBase;
 public class OcspKeyBinding extends InternalKeyBindingBase {
     
     private static final long serialVersionUID = 1L;
+    private static final Logger log = Logger.getLogger(OcspKeyBinding.class);
 
     public static final String PROPERTY_NON_EXISTING_GOOD = "nonExistingGood";
     
@@ -49,7 +51,8 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     
     @Override
     public void assertCertificateCompatability(Certificate certificate) throws CertificateImportException {
-        throw new CertificateImportException("No validation yet.");
+        log.warn("CERTIFICATE VALIDATION HAS NOT BEEN IMPLEMENTED YET!");
+        //throw new CertificateImportException("No validation yet.");
     }
 
     public boolean getNonExistingGood() {

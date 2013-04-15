@@ -34,6 +34,7 @@ public interface InternalKeyBindingMgmtSession {
     /** @return a list of IDs for the specific type and that the caller is authorized to view */
     List<Integer> getInternalKeyBindingIds(AuthenticationToken authenticationToken, String internalKeyBindingType);
 
+    // TODO: Move to local interface
     /** @return the InternalKeyBinding for the requested Id or null if none was found */
     InternalKeyBinding getInternalKeyBinding(AuthenticationToken authenticationToken, int internalKeyBindingId) throws AuthorizationDeniedException;
 
@@ -55,18 +56,27 @@ public interface InternalKeyBindingMgmtSession {
     /** @return true if the InternalKeyBinding existed before deletion */
     boolean deleteInternalKeyBinding(AuthenticationToken authenticationToken, int internalKeyBindingId) throws AuthorizationDeniedException;
     
+    // TODO: We can probably make this local instead and only use it for internal renewal
     /**
      * @return the public key of the requested InternalKeyBinding in DER format 
      * @throws CryptoTokenOfflineException if the public key could not be retrieved from the referenced CryptoToken
      */
     byte[] getNextPublicKeyForInternalKeyBinding(AuthenticationToken authenticationToken, int internalKeyBindingId) throws AuthorizationDeniedException, CryptoTokenOfflineException;
 
+    /**
+     * @return the a new PKCS#10 request for the InternalKeyBinding
+     * @throws CryptoTokenOfflineException if the key pair is not available
+     */
+    byte[] generateCsrForNextKey(AuthenticationToken authenticationToken, int internalKeyBindingId) throws AuthorizationDeniedException,
+            CryptoTokenOfflineException;
+
     /** 
      * Update the key mapping if there is a newer certificate in the database or a certificate matching the nextKey.
      * This could normally be used in a setup where the certificate is published or made available be other means
      * in the database for this EJBCA instance.
+     * @return the Certificate's fingerprint if a change was made or null otherwise
      */
-    void updateCertificateForInternalKeyBinding(AuthenticationToken authenticationToken, int internalKeyBindingId) throws AuthorizationDeniedException,
+    String updateCertificateForInternalKeyBinding(AuthenticationToken authenticationToken, int internalKeyBindingId) throws AuthorizationDeniedException,
             CertificateImportException, CryptoTokenOfflineException;
 
     /**
@@ -80,8 +90,11 @@ public interface InternalKeyBindingMgmtSession {
     void importCertificateForInternalKeyBinding(AuthenticationToken authenticationToken, int internalKeyBindingId, byte[] certificate)
         throws AuthorizationDeniedException, CertificateImportException;
 
-    /** Creates a new key pair with the same key specification as the current and a new alias. */
-    void generateNextKeyPair(AuthenticationToken authenticationToken, int internalKeyBindingId) throws AuthorizationDeniedException,
+    /**
+     * Creates a new key pair with the same key specification as the current and a new alias.
+     * @return the new key pair alias
+     */
+    String generateNextKeyPair(AuthenticationToken authenticationToken, int internalKeyBindingId) throws AuthorizationDeniedException,
             CryptoTokenOfflineException, InvalidKeyException, InvalidAlgorithmParameterException;
 
     /**
@@ -89,5 +102,15 @@ public interface InternalKeyBindingMgmtSession {
      * @return a list of InternalKeyBindings that extend a non-mutable general class.
      */
     List<InternalKeyBindingInfo> getInternalKeyBindingInfos(AuthenticationToken authenticationToken, String internalKeyBindingType);
+
+    /**
+     * Suitable for remote invocation where the implementation might not be available.
+     * @return a list of InternalKeyBindings that extend a non-mutable general class.
+     */
+    InternalKeyBindingInfo getInternalKeyBindingInfo(AuthenticationToken authenticationToken, int id) throws AuthorizationDeniedException;
+
+    /** @return true if the status was modified */
+    boolean setStatus(AuthenticationToken authenticationToken, int internalKeyBindingId, InternalKeyBindingStatus status)
+            throws AuthorizationDeniedException;
 }
 
