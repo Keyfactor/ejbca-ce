@@ -26,7 +26,12 @@ import java.util.Set;
 import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.model.ca.publisher.ICustomPublisher;
+import org.ejbca.core.model.services.IAction;
+import org.ejbca.core.model.services.IInterval;
+import org.ejbca.core.model.services.IWorker;
 import org.ejbca.core.model.services.ServiceConfiguration;
+import org.ejbca.ui.web.admin.CustomLoader;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.admin.services.servicetypes.ActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.CustomActionType;
@@ -321,6 +326,26 @@ public class ServiceConfigurationView implements Serializable{
 		}		
 		return retval;
 	}
+	
+	private List<SelectItem> stringsToItems(List<String> stringList) {
+	   List<SelectItem> itemList = new ArrayList<SelectItem>(stringList.size());
+	   for (String s : stringList) {
+	       itemList.add(new SelectItem(s, s));
+	   }
+	   return itemList;
+	}
+	
+	public List<SelectItem> getAvailableCustomWorkerItems() {
+	   return stringsToItems(CustomLoader.getCustomClasses(IWorker.class));
+	}
+	
+	public List<SelectItem> getAvailableCustomIntervalItems() {
+       return stringsToItems(CustomLoader.getCustomClasses(IInterval.class));
+    }
+    
+    public List<SelectItem> getAvailableCustomActionItems() {
+       return stringsToItems(CustomLoader.getCustomClasses(IAction.class));
+    }
 	
 	/** returns this sessions service type manager */
 	public ServiceTypeManager getServiceTypeManager(){

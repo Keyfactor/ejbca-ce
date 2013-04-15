@@ -25,7 +25,6 @@ public class BasicAccessRuleSet implements Serializable {
     private static final long serialVersionUID = 7733775825127915269L;
 
 	public static final int ROLE_NONE                  = 0;
-    public static final int ROLE_SUPERADMINISTRATOR    = 1;
     public static final int ROLE_CAADMINISTRATOR       = 2;
     public static final int ROLE_RAADMINISTRATOR       = 3;
     public static final int ROLE_SUPERVISOR            = 4;

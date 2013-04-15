@@ -125,7 +125,8 @@ function checkallfields(){
     }
  <% } %>
  <% if( publisherdata instanceof CustomPublisherContainer){ %>
-    if(document.editpublisher.<%=EditPublisherJSPHelper.TEXTFIELD_CUSTOMCLASSPATH%>.value == ""){
+    if(document.editpublisher.<%=EditPublisherJSPHelper.SELECT_CUSTOMCLASS%>.value == "" &&
+       document.editpublisher.<%=EditPublisherJSPHelper.TEXTFIELD_CUSTOMCLASSPATH%>.value == ""){
       alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("CLASSPATH", true)%>");
       illegalfields++;
     }

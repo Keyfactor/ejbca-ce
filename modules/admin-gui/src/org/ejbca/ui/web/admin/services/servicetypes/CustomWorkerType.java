@@ -19,6 +19,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Properties;
 
+import org.ejbca.core.model.services.IWorker;
+import org.ejbca.ui.web.admin.CustomLoader;
+import org.ejbca.ui.web.admin.services.ServiceConfigurationView;
+
 /**
  * Class used to populate the fields in the customworker.jsp subview page. 
  * 
@@ -33,7 +37,8 @@ public class CustomWorkerType extends WorkerType {
 	private static final long serialVersionUID = 1790314768357040269L;
     public static final String NAME = "CUSTOMWORKER";
 	
-    private String classPath;   
+    private String autoClassPath;
+    private String manualClassPath;
     private String propertyText;
     private Collection<String> compatibleActionTypeNames = new ArrayList<String>();
     private Collection<String> compatibleIntervalTypeNames = new ArrayList<String>();
@@ -64,15 +69,38 @@ public class CustomWorkerType extends WorkerType {
 	}
 
 	/**
-	 * @param classPath the classPath to set
+	 * Sets the class path, and detects if it is an auto-detected class
+	 * or a manually specified class.
 	 */
 	public void setClassPath(String classPath) {
-		this.classPath = classPath;
+	    if (CustomLoader.isAutoClass(classPath, IWorker.class)) {
+            autoClassPath = classPath;
+            manualClassPath = "";
+	    } else {
+            autoClassPath = "";
+            manualClassPath = classPath;
+	    }
 	}
 
 	public String getClassPath() {
-		return classPath;
+		return !autoClassPath.isEmpty() ? autoClassPath : manualClassPath;
 	}
+	
+	public void setAutoClassPath(String classPath) {
+        autoClassPath = classPath;
+    }
+
+    public String getAutoClassPath() {
+        return autoClassPath;
+    }
+    
+    public void setManualClassPath(String classPath) {
+        manualClassPath = classPath;
+    }
+
+    public String getManualClassPath() {
+        return manualClassPath;
+    }
 
 	public Properties getProperties(ArrayList<String> errorMessages) throws IOException{
 		Properties retval = new Properties();
