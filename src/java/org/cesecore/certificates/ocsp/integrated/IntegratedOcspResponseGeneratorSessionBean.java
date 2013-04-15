@@ -96,7 +96,7 @@ public class IntegratedOcspResponseGeneratorSessionBean extends OcspResponseSess
     private CryptoTokenSessionLocal cryptoTokenSession;
 
     @PostConstruct
-    public void init() throws AuthorizationDeniedException {
+    public void init() {
         if (OcspConfiguration.getLogSafer() == true) {
             SaferDailyRollingFileAppender.addSubscriber(this);
             log.info("added us as subscriber" + SaferDailyRollingFileAppender.class.getCanonicalName());
