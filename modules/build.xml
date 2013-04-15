@@ -98,7 +98,7 @@
 		<ant antfile="${mod.ejbca-entity.path}/build.xml" target="build-va" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
 
-	<target name="ejbca-ejb-interface" depends="ejbca-entity" description="Build EJBCA EJB interfaces library">
+	<target name="ejbca-ejb-interface" depends="ejbca-entity, ejbca-ws-cli" description="Build EJBCA EJB interfaces library">
 		<ant antfile="${mod.ejbca-ejb-interface.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
@@ -302,7 +302,7 @@
 		<ant antfile="${mod.webdist-war.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
-	<target name="ejbca-ejb" depends="ejbca-common-web, ejbca-properties" description="Build EJBCA EJB module">
+	<target name="ejbca-ejb" depends="ejbca-common-web, ejbca-properties, ejbca-ws-cli" description="Build EJBCA EJB module">
 		<ant antfile="${mod.ejbca-ejb.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
