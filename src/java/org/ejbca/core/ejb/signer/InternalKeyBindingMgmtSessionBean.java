@@ -15,10 +15,12 @@ package org.ejbca.core.ejb.signer;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +33,9 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.DERSet;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -40,8 +45,10 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.KeyPairInfo;
@@ -113,6 +120,16 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             throw new AuthorizationDeniedException(msg);
         }
         return internalKeyBindingDataSession.getInternalKeyBinding(id);
+    }
+
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public InternalKeyBindingInfo getInternalKeyBindingInfo(AuthenticationToken authenticationToken, int id) throws AuthorizationDeniedException {
+        if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.VIEW.resource()+"/"+id)) {
+            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.VIEW.resource(), authenticationToken.toString());
+            throw new AuthorizationDeniedException(msg);
+        }
+        return new InternalKeyBindingInfo(internalKeyBindingDataSession.getInternalKeyBinding(id));
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -194,7 +211,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     }
 
     @Override
-    public void generateNextKeyPair(AuthenticationToken authenticationToken, int internalKeyBindingId) throws AuthorizationDeniedException,
+    public String generateNextKeyPair(AuthenticationToken authenticationToken, int internalKeyBindingId) throws AuthorizationDeniedException,
             CryptoTokenOfflineException, InvalidKeyException, InvalidAlgorithmParameterException {
         if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.MODIFY.resource() + "/" + internalKeyBindingId)) {
             final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.MODIFY.resource(), authenticationToken.toString());
@@ -212,6 +229,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             // This would be very strange if it happened, since we use the same name and id as for the existing one
             throw new RuntimeException(e);
         }
+        return nextKeyPairAlias;
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -234,8 +252,42 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         return publicKey.getEncoded();
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public void updateCertificateForInternalKeyBinding(AuthenticationToken authenticationToken, int internalKeyBindingId)
+    public byte[] generateCsrForNextKey(AuthenticationToken authenticationToken, int internalKeyBindingId) throws AuthorizationDeniedException, CryptoTokenOfflineException {
+        if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.VIEW.resource() + "/" + internalKeyBindingId)) {
+            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.VIEW.resource(), authenticationToken.toString());
+            throw new AuthorizationDeniedException(msg);
+        }
+        final InternalKeyBinding internalKeyBinding = internalKeyBindingDataSession.getInternalKeyBinding(internalKeyBindingId);
+        final int cryptoTokenId = internalKeyBinding.getCryptoTokenId();
+        final String nextKeyPairAlias = internalKeyBinding.getNextKeyPairAlias();
+        final String keyPairAlias;
+        if (nextKeyPairAlias == null) {
+            keyPairAlias = internalKeyBinding.getKeyPairAlias();
+        } else {
+            keyPairAlias = nextKeyPairAlias;
+        }
+        final PublicKey publicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, keyPairAlias);
+        // Chose first available signature algorithm
+        final Collection<String> availableSignatureAlgorithms = AlgorithmTools.getSignatureAlgorithms(publicKey);
+        final String signatureAlgorithm = availableSignatureAlgorithms.iterator().next();
+        final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(cryptoTokenId);
+        final PrivateKey privateKey = cryptoToken.getPrivateKey(keyPairAlias);
+        final X500Name x500Name = CertTools.stringToBcX500Name("CN=Should be ignore by CA");
+        final String providerName = cryptoToken.getSignProviderName();
+        try {
+            return CertTools.genPKCS10CertificationRequest(signatureAlgorithm, x500Name, publicKey, new DERSet(), privateKey, providerName).getEncoded();
+        } catch (OperatorCreationException e) {
+            log.info("CSR generation failed. internalKeyBindingId=" + internalKeyBindingId + ", cryptoTokenId=" + cryptoTokenId + ", keyPairAlias=" + keyPairAlias + ". " + e.getMessage());
+        } catch (IOException e) {
+            log.info("CSR generation failed. internalKeyBindingId=" + internalKeyBindingId + ", cryptoTokenId=" + cryptoTokenId + ", keyPairAlias=" + keyPairAlias + ". " + e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
+    public String updateCertificateForInternalKeyBinding(AuthenticationToken authenticationToken, int internalKeyBindingId)
             throws AuthorizationDeniedException, CertificateImportException {
         if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.MODIFY.resource() + "/" + internalKeyBindingId)) {
             final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.MODIFY.resource(), authenticationToken.toString());
@@ -244,8 +296,9 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         final InternalKeyBinding internalKeyBinding = internalKeyBindingDataSession.getInternalKeyBinding(internalKeyBindingId);
         final int cryptoTokenId = internalKeyBinding.getCryptoTokenId();
         final String nextKeyPairAlias = internalKeyBinding.getNextKeyPairAlias();
+        log.debug("nextKeyPairAlias: " + nextKeyPairAlias);
         boolean updated = false;
-        if (nextKeyPairAlias == null) {
+        if (nextKeyPairAlias != null) {
             // If a nextKeyPairAlias is present we assume that this is the one we want to find a certificate for
             PublicKey nextPublicKey;
             try {
@@ -254,14 +307,12 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                 throw new CertificateImportException("Operation is not available when CryptoToken is offline.", e);
             }
             if (nextPublicKey != null) {
-                final byte[] subjectKeyId;
-                try {
-                    subjectKeyId = KeyTools.createSubjectKeyId(nextPublicKey).getEncoded();
-                } catch (IOException e) {
-                    throw new CertificateImportException(e);
-                }
+                final byte[] subjectKeyId = KeyTools.createSubjectKeyId(nextPublicKey).getKeyIdentifier();
                 final Certificate certificate = certificateStoreSession.findMostRecentlyUpdatedActiveCertificate(subjectKeyId);
-                if (certificate != null) {
+                if (certificate == null) {
+                    log.debug("No certificate found for " + nextKeyPairAlias);
+                } else {
+                    log.debug("Certificate found for " + nextKeyPairAlias);
                     // Verify that this is an accepted type of certificate to import for the current implementation
                     assertCertificateIsOkToImport(certificate, internalKeyBinding);
                     // If current key matches next public key -> import and update nextKey + certificateId
@@ -269,15 +320,19 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                     if (!fingerprint.equals(internalKeyBinding.getCertificateId())) {
                         internalKeyBinding.updateCertificateIdAndCurrentKeyAlias(fingerprint);
                         updated = true;
+                        log.debug("New certificate with fingerprint " + fingerprint + " matching " + nextKeyPairAlias + " will be used.");
                     } else {
                         log.debug("The latest available certificate was already in use.");
                     }
                 }
+            } else {
+                log.debug("There was no public key for the referenced alias " + nextKeyPairAlias);
             }
         }
         if (!updated) {
             // We failed to find a matching certificate for the next key, so we instead try to do the same for the current key pair
             final String currentKeyPairAlias = internalKeyBinding.getKeyPairAlias();
+            log.debug("currentKeyPairAlias: " + currentKeyPairAlias);
             PublicKey currentPublicKey;
             try {
                 currentPublicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, currentKeyPairAlias);
@@ -285,20 +340,25 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                 throw new CertificateImportException("Operation is not available when CryptoToken is offline.", e);
             }
             if (currentPublicKey != null) {
-                final byte[] subjectKeyId;
-                try {
-                    subjectKeyId = KeyTools.createSubjectKeyId(currentPublicKey).getEncoded();
-                } catch (IOException e) {
-                    throw new CertificateImportException(e);
-                }
+                final byte[] subjectKeyId = KeyTools.createSubjectKeyId(currentPublicKey).getKeyIdentifier();
                 final Certificate certificate = certificateStoreSession.findMostRecentlyUpdatedActiveCertificate(subjectKeyId);
-                if (certificate != null) {
+                if (certificate == null) {
+                    log.debug("No certificate found for " + currentKeyPairAlias);
+                } else {
+                    log.debug("Certificate found for " + currentKeyPairAlias);
                     // Verify that this is an accepted type of certificate to import for the current implementation
                     assertCertificateIsOkToImport(certificate, internalKeyBinding);
-                    String fingerprint = CertTools.getFingerprintAsString(certificate);
-                    internalKeyBinding.setCertificateId(fingerprint);
-                    updated = true;
+                    final String fingerprint = CertTools.getFingerprintAsString(certificate);
+                    if (!fingerprint.equals(internalKeyBinding.getCertificateId())) {
+                        internalKeyBinding.setCertificateId(fingerprint);
+                        updated = true;
+                        log.debug("Certificate with fingerprint " + fingerprint + " matching " + currentKeyPairAlias + " will be used.");
+                    } else {
+                        log.debug("The latest available certificate was already in use.");
+                    }
                 }
+            } else {
+                log.debug("There was no public key for the referenced alias " + currentKeyPairAlias);
             }
         }
         if (updated) {
@@ -308,9 +368,29 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                 // This would be very strange if it happened, since we use the same name and id as for the existing one
                 throw new CertificateImportException(e);
             }
-        } else {
-            throw new CertificateImportException("No certificate matching the keys were found.");
+            if (log.isDebugEnabled()) {
+                log.debug("No certificate found for " + nextKeyPairAlias);
+            }
+            return internalKeyBinding.getCertificateId();
         }
+        return null;
+    }
+
+
+    @Override
+    public boolean setStatus(AuthenticationToken authenticationToken, int internalKeyBindingId, InternalKeyBindingStatus status) throws AuthorizationDeniedException {
+        final InternalKeyBinding internalKeyBinding = getInternalKeyBinding(authenticationToken, internalKeyBindingId);
+        if (status == internalKeyBinding.getStatus()) {
+            return false;
+        }
+        internalKeyBinding.setStatus(status);
+        try {
+            persistInternalKeyBinding(authenticationToken, internalKeyBinding);
+        } catch (InternalKeyBindingNameInUseException e) {
+            // This would be very strange if it happened, since we use the same name and id as for the existing one
+            throw new RuntimeException(e);
+        }
+        return true;
     }
 
     @Override
@@ -365,7 +445,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         } else {
             throw new CertificateImportException("No keys matching the certificate were found.");
         }
-        throw new UnsupportedOperationException("Not yet fully implemented!");
+        //throw new UnsupportedOperationException("Not yet fully implemented!");
     }
     
     /** Asserts that it is not a CA certificate and that the implementation finds it acceptable.  */

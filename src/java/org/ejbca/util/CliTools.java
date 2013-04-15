@@ -55,6 +55,16 @@ public class CliTools {
         return ret;
     }
     
+    /** @return true if the parameter was present and removes it from the list. */
+    public static boolean getAndRemoveSwitch(final String parameter, List<String> modifyableList) {
+        final int index = modifyableList.indexOf(parameter);
+        if (index > -1) {
+            modifyableList.remove(index);
+            return true;
+        }
+        return false;
+    }
+    
     /** @return the remaining list as a regular args[] array */
     public static String[] getAsArgs(List<String> modifyableList) {
         return modifyableList.toArray(new String[0]);
