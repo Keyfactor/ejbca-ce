@@ -15,6 +15,7 @@ package org.ejbca.ui.web.admin.cainterface;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -23,6 +24,7 @@ import org.cesecore.authorization.control.StandardRules;
 import org.ejbca.core.model.ca.publisher.ActiveDirectoryPublisher;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
+import org.ejbca.core.model.ca.publisher.ICustomPublisher;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.LdapSearchPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
@@ -31,6 +33,7 @@ import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.core.model.ca.publisher.ValidationAuthorityPublisher;
 import org.ejbca.ui.web.RequestHelper;
+import org.ejbca.ui.web.admin.CustomLoader;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 
 
@@ -89,6 +92,7 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
     public static final String SELECT_APPLICABLECAS      = "selectapplicablecas";
     public static final String TEXTAREA_DESCRIPTION      = "textareadescription";
 
+    public static final String SELECT_CUSTOMCLASS        = "selectcustomclass";
     public static final String TEXTFIELD_CUSTOMCLASSPATH = "textfieldcustomclasspath";
     public static final String TEXTAREA_CUSTOMPROPERTIES = "textareacustomproperties";
 
@@ -284,9 +288,13 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
                         	publisherdata.setUseQueueForCertificates(value != null && value.equals(CHECKBOX_VALUE));
 
                             if(publisherdata instanceof CustomPublisherContainer){
-                                value = request.getParameter(TEXTFIELD_CUSTOMCLASSPATH);
-                                if(value != null){
-                                    value = value.trim();
+                                String customClass = request.getParameter(TEXTFIELD_CUSTOMCLASSPATH);
+                                String selectClass = request.getParameter(SELECT_CUSTOMCLASS);
+                                if(selectClass != null && !selectClass.isEmpty()) {
+                                    value = selectClass.trim();
+                                    ((CustomPublisherContainer) publisherdata).setClassPath(value);
+                                } else {
+                                    value = customClass.trim();
                                     ((CustomPublisherContainer) publisherdata).setClassPath(value);
                                 }
                                 value = request.getParameter(TEXTAREA_CUSTOMPROPERTIES);
@@ -613,6 +621,10 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
     }
     public int[] getPublisherQueueLength(String publishername, int[] intervalLower, int[] intervalUpper) {
     	return cabean.getPublisherQueueLength(cabean.getPublisherDataHandler().getPublisherId(publishername), intervalLower, intervalUpper);
+    }
+    
+    public <T> List<String> getCustomClasses() {
+        return CustomLoader.getCustomClasses(ICustomPublisher.class);
     }
 
     // Private fields.
