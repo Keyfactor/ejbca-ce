@@ -117,6 +117,7 @@
 		<path location="${mod.ejbca-entity.lib}" />
 		<path refid="lib.quickserver.classpath" />
 		<path location="${build.interface.dir}" />
+		<pathelement location="${mod.ejbca-ws-cli.lib}"/>
 	</path>
 	
 	<path id="compile-ejb-va.classpath">
@@ -155,7 +156,7 @@
 	<target name="systemtest-compile-src" depends="ejbca-properties, ejbca-ejb">
 		<mkdir dir="${build.src.dir}" />
 		<javac srcdir="${src.dir}" destdir="${build.src.dir}" debug="on" includeantruntime="no"
-			        	encoding="iso8859-1" classpathref="compile-ejb.classpath" target="${java.target.version}">
+			        	encoding="iso8859-1" classpathref="compile-ejb.classpath" target="${java.target.version}">	
 			<exclude name="org/ejbca/core/protocol/ocsp/standalone/OcspKeyRenewalProxySessionBean.java" />
 			<exclude name="org/cesecore/certificates/ocsp/standalone/*.java" />
 		</javac>

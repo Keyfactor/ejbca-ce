@@ -458,6 +458,7 @@
                 <include name="ejbca-entity.jar" />
         		<include name="ejbca-extensions.jar" />
                 <include name="ejbca-properties.jar" />
+           		<include name="ejbca-ws-cli.jar" />
                 <include name="log4jconfig.jar" />
         		<include name="${in-test-mode-include}systemtests-interfaces.jar"/>
         	</zipfileset>
