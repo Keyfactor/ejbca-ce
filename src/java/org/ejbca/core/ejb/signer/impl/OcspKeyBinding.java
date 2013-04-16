@@ -12,15 +12,15 @@
  *************************************************************************/
 package org.ejbca.core.ejb.signer.impl;
 
+import java.io.Serializable;
 import java.security.cert.Certificate;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.signer.CertificateImportException;
 import org.ejbca.core.ejb.signer.InternalKeyBindingBase;
+import org.ejbca.core.ejb.signer.InternalKeyBindingProperty;
 
 /**
  * Holder of "external" (e.g. non-CA signing key) OCSP InternalKeyBinding properties.
@@ -32,7 +32,18 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(OcspKeyBinding.class);
 
-    public static final String PROPERTY_NON_EXISTING_GOOD = "nonExistingGood";
+    private static final String PROPERTY_NON_EXISTING_GOOD = "nonExistingGood";
+    private static final String PROPERTY_TRUSTED_CA_IDS = "trustedCaIds";
+    
+    @SuppressWarnings("serial")
+    private static final List<InternalKeyBindingProperty<? extends Serializable>> PROPERTIES = new ArrayList<InternalKeyBindingProperty<? extends Serializable>>() {{
+        add(new InternalKeyBindingProperty<Boolean>(PROPERTY_NON_EXISTING_GOOD, Boolean.FALSE));
+        add(new InternalKeyBindingProperty<ArrayList<Integer>>(PROPERTY_TRUSTED_CA_IDS, new ArrayList<Integer>()));
+    }};
+
+    public OcspKeyBinding() {
+        super(PROPERTIES);
+    }
     
     @Override
     public String getImplementationAlias() {
@@ -52,27 +63,12 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     @Override
     public void assertCertificateCompatability(Certificate certificate) throws CertificateImportException {
         log.warn("CERTIFICATE VALIDATION HAS NOT BEEN IMPLEMENTED YET!");
-        //throw new CertificateImportException("No validation yet.");
     }
 
     public boolean getNonExistingGood() {
-        return Boolean.valueOf(getData(PROPERTY_NON_EXISTING_GOOD, Boolean.FALSE.toString())).booleanValue();
+        return (Boolean) getProperty(PROPERTY_NON_EXISTING_GOOD).getValue();
     }
     public void setNonExistingGood(boolean nonExistingGood) {
-        putData(PROPERTY_NON_EXISTING_GOOD, Boolean.valueOf(nonExistingGood).toString());
-    }
-
-    @Override
-    public List<String> getImplementationPropertyKeys() {
-        return Arrays.asList(new String[] {PROPERTY_NON_EXISTING_GOOD});
-    }
-
-    @Override
-    public Map<String, String> getImplementationSpecificProperties() {
-        final Map<String, String> map = new HashMap<String,String>();
-        for (String key : getImplementationPropertyKeys()) {
-            map.put(key, String.valueOf(getData(key, null)));
-        }
-        return map;
+        setProperty(PROPERTY_NON_EXISTING_GOOD, Boolean.valueOf(nonExistingGood));
     }
 }

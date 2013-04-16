@@ -12,11 +12,10 @@
  *************************************************************************/
 package org.ejbca.core.ejb.signer;
 
+import java.io.Serializable;
 import java.security.cert.Certificate;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.naming.OperationNotSupportedException;
 
@@ -37,7 +36,7 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
     final int cryptoTokenId;
     final String keyPairAlias;
     final String nextKeyPairAlias;
-    final Map<String, String> implementationProperties;
+    final List<InternalKeyBindingProperty<? extends Serializable>> properties;
     
     public InternalKeyBindingInfo(InternalKeyBinding internalKeyBinding) {
         this.implementationAlias = internalKeyBinding.getImplementationAlias();
@@ -48,7 +47,7 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
         this.cryptoTokenId = internalKeyBinding.getCryptoTokenId();
         this.keyPairAlias = internalKeyBinding.getKeyPairAlias();
         this.nextKeyPairAlias = internalKeyBinding.getNextKeyPairAlias();
-        this.implementationProperties = internalKeyBinding.getImplementationSpecificProperties();
+        this.properties = internalKeyBinding.getCopyOfProperties();
     }
     
     @Override
@@ -143,12 +142,22 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
     }
 
     @Override
-    public Map<String, String> getImplementationSpecificProperties() {
-        return implementationProperties;
+    public InternalKeyBindingProperty<? extends Serializable> getProperty(String name) {
+        for (InternalKeyBindingProperty<? extends Object> current : properties) {
+            if (current.getName().equals(name)) {
+                return current;
+            }
+        }
+        return null;
     }
 
     @Override
-    public List<String> getImplementationPropertyKeys() {
-        return Arrays.asList(implementationProperties.keySet().toArray(new String[0]));
+    public void setProperty(String name, Serializable value) {
+        throw new RuntimeException(new OperationNotSupportedException());
+    }
+
+    @Override
+    public List<InternalKeyBindingProperty<? extends Serializable>> getCopyOfProperties() {
+        return properties;
     }
 }
