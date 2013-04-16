@@ -158,7 +158,7 @@
 #cmp.ra.namegenerationparameters=CN
 
 # Prefix to generated name, a string that can contain the markup ${RANDOM} to insert 10 random chars.
-# Example: 'MyPrefix - ${RANDOM}-' using RANDOM password generation will create a username like 'MyPrefix - DGR89NN54QW-GDHR473NH87Q
+# Example: 'MyPrefix - ${RANDOM}-' and also using RANDOM username generation will create a username like 'MyPrefix - DGR89NN54QW-GDHR473NH87Q
 #
 # Default: empty
 #cmp.ra.namegenerationprefix=
@@ -184,7 +184,7 @@
 
 # The endEntityProfile to be used when adding users in RA mode. 
 # Possible values are:
-# The name of a End Entity Profile
+# The fixed name of a End Entity Profile
 # KeyId - use a End Entity Profile with the same name as the KeyId (PKIHeader.senderKID) sent in the CMP request (UTF-8 encoding is used)
 #
 # Default: EMPTY
@@ -192,7 +192,7 @@
 
 # The certificateProfile to be used when adding users in RA mode. 
 # Possible values are:
-# The name of a Certificate Profile
+# The fixed name of a Certificate Profile
 # ProfileDefault - use the default certificate profile of the end entity profile used
 # KeyId - use a Certificate Profile with the same name as the KeyId (PKIHeader.senderKID) sent in the CMP request (UTF-8 encoding is used)
 #
