@@ -254,13 +254,6 @@ public class KeyStoreTools {
     
     private void generateDSTU4145(final String name, final String keyEntryName) throws
             InvalidAlgorithmParameterException {
-    /*
-         * XXX This doesn't work because JcaContentSignerBuilder uses
-         * DefaultSignatureAlgorithmIdentifierFinder, which doesn't
-         * support it. See:
-         * 
-         * http://stackoverflow.com/questions/8778531/bouncycastle-does-not-find-algorithms-that-it-provides
-         */
         generateExtraEC(name, keyEntryName, AlgorithmConstants.KEYALGORITHM_DSTU4145, AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145);
     }
 
