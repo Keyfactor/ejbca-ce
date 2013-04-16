@@ -12,8 +12,13 @@
  *************************************************************************/
 package org.ejbca.core.ejb.signer;
 
+import java.io.Serializable;
 import java.security.cert.Certificate;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.cesecore.internal.UpgradeableDataHashMap;
 
@@ -37,8 +42,36 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     private int cryptoTokenId;
     private String keyPairAlias;
     
-    protected InternalKeyBindingBase() {
+    private final Map<String,InternalKeyBindingProperty<? extends Serializable>> propertyTemplates = new HashMap<String,InternalKeyBindingProperty<? extends Serializable>>();
+    
+    protected InternalKeyBindingBase(List<InternalKeyBindingProperty<? extends Serializable>> implementationProperties) {
         super();
+        for (final InternalKeyBindingProperty<? extends Serializable> property : implementationProperties) {
+            propertyTemplates.put(property.getName(), property);
+        }
+    }
+
+    @Override
+    public List<InternalKeyBindingProperty<? extends Serializable>> getCopyOfProperties() {
+        List<InternalKeyBindingProperty<? extends Serializable>> ret = new ArrayList<InternalKeyBindingProperty<? extends Serializable>>();
+        for (InternalKeyBindingProperty<? extends Serializable> current : propertyTemplates.values()) {
+            InternalKeyBindingProperty<? extends Serializable> copy = new InternalKeyBindingProperty<Serializable>(current.getName(), current.getDefaultValue());
+            copy.setValue(getData(current.getName(), current.getDefaultValue()));
+            ret.add(copy);
+        }
+        return ret;
+    }
+
+    @Override
+    public InternalKeyBindingProperty<? extends Serializable> getProperty(final String name) {
+        final InternalKeyBindingProperty<? extends Serializable> property = propertyTemplates.get(name);
+        property.setValue(getData(name, property.getDefaultValue()));
+        return property;
+    }
+
+    @Override
+    public void setProperty(final String name, Serializable value) {
+        putData(name, value);
     }
 
     @Override
@@ -142,13 +175,13 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     protected abstract void upgrade(final float latestVersion, final float currentVersion);
 
     /** Store data in the undelying map. Encourages use of String valued keys. */
-    protected void putData(final String key, final Object value) {
+    private void putData(final String key, final Object value) {
         data.put(SUBCLASS_PREFIX + key, value);
     }
 
     /** @return data from the undelying map. Encourages use of String valued keys. */
     @SuppressWarnings("unchecked")
-    protected <T> T getData(final String key, final T defaultValue) {
+    private <T> T getData(final String key, final T defaultValue) {
         final T ret = (T) data.get(SUBCLASS_PREFIX + key);
         return ret==null ? defaultValue : ret;
     }
