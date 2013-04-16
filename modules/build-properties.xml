@@ -42,7 +42,7 @@
     <property name="mod.ejbca-properties.lib" location="${mod.dist.path}/ejbca-properties.jar" />
     <property name="mod.ejbca-properties.path" location="${mod.path}/ejbca-properties" />
     <property name="mod.ejbca-ws-cli.dist" location="${ejbca.dist.path}/ejbca-ws-cli" />
-    <property name="mod.ejbca-ws-cli.lib" location="${mod.dist.path}/ejbca-ws-cli.jar" />
+	<property name="mod.ejbca-ws-cli.lib" location="${mod.ejbca-ws-cli.dist}/ejbca-ws-cli.jar" />
     <property name="mod.ejbca-ws-cli.path" location="${mod.path}/ejbca-ws-cli" />
     <property name="mod.ejbca-ws-ejb.jar" location="${mod.dist.path}/ejbca-ws-ejb.jar" />
     <property name="mod.ejbca-ws.path" location="${mod.path}/ejbca-ws" />
