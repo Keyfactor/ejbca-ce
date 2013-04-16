@@ -21,7 +21,10 @@ import java.util.Collection;
 
 import org.apache.log4j.Logger;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.roles.RoleData;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -33,6 +36,18 @@ import org.junit.Test;
 public class AccessTreeCacheTest {
 
     private static final Logger log = Logger.getLogger(AccessTreeCacheTest.class);
+    
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+        // These tests are time-sensitive, so pre-load the configuration
+        log.debug("loading configuration");
+        ConfigurationHolder.instance();
+        log.debug("configuration loaded"); // logs time also!
+    }
+
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+    }
     
     /**
      * Tests the needsUpdate method.
