@@ -14,10 +14,8 @@ package org.ejbca.core.ejb.signer;
 
 import java.io.Serializable;
 import java.security.cert.Certificate;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Interface for the InternalKeyBindings.
@@ -78,9 +76,12 @@ public interface InternalKeyBinding extends Serializable {
     /** Sets the key pair alias currently in use */
     void setKeyPairAlias(String keyPairAlias);
 
-    /** @return a Map of all properties/data specific to this implementation */
-    public Map<String, String> getImplementationSpecificProperties();
+    /** Set an implementation specific property */
+    void setProperty(String name, Serializable value);
 
-    /** @return a List of all properties/data keys specific to this implementation */
-    List<String> getImplementationPropertyKeys();
+    /** @return an implementation specific property or the default */
+    InternalKeyBindingProperty<? extends Serializable> getProperty(String name);
+
+    /** @return a Map of all properties/data specific to this implementation */
+    List<InternalKeyBindingProperty<? extends Serializable>> getCopyOfProperties();
 }

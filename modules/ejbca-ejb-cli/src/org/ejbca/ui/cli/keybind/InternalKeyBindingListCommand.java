@@ -12,11 +12,10 @@
  *************************************************************************/
 package org.ejbca.ui.cli.keybind;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.Set;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateInfo;
@@ -25,6 +24,7 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.ejb.signer.InternalKeyBinding;
 import org.ejbca.core.ejb.signer.InternalKeyBindingMgmtSessionRemote;
+import org.ejbca.core.ejb.signer.InternalKeyBindingProperty;
 
 /**
  * See getDescription().
@@ -84,14 +84,14 @@ public class InternalKeyBindingListCommand extends BaseInternalKeyBindingCommand
             sb.append(", \"").append(cryptoTokenName).append("\" (").append(cryptoTokenId).append(')');
             sb.append(", ").append(internalKeyBinding.getKeyPairAlias());
             sb.append(", {");
-            final Set<Entry<String,String>> entrySet = internalKeyBinding.getImplementationSpecificProperties().entrySet();
-            for (final Entry<String,String> entry : entrySet) {
-                sb.append(entry.getKey()).append('=').append(entry.getValue()).append(',');
+            final List<InternalKeyBindingProperty<? extends Serializable>> properties = internalKeyBinding.getCopyOfProperties();
+            for (final InternalKeyBindingProperty<? extends Serializable> property : properties) {
+                sb.append("\n\t").append(property.getName()).append('=').append(property.getValue()).append(" [").append(property.getType()).append(',').append(property.getDefaultValue()).append("],");
             }
-            if (entrySet.size() > 0) {
+            if (properties.size() > 0) {
                 sb.deleteCharAt(sb.length()-1);
             }
-            sb.append("}");
+            sb.append("\n }");
             getLogger().info(sb);
         }
     }

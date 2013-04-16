@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.ejb.signer;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -73,7 +75,11 @@ public enum InternalKeyBindingFactory {
         try {
             final InternalKeyBinding temporaryInstance = c.newInstance();
             alias = temporaryInstance.getImplementationAlias();
-            implementationPropertyKeys = temporaryInstance.getImplementationPropertyKeys();
+             List<InternalKeyBindingProperty<? extends Serializable>> properties = temporaryInstance.getCopyOfProperties();
+             implementationPropertyKeys = new ArrayList<String>();
+             for (InternalKeyBindingProperty<? extends Serializable> property : properties) {
+                 implementationPropertyKeys.add(property.getName());    
+             }
         } catch (InstantiationException e) {
             log.error("Unable to create InternalKeyBinding. Could not be instantiate implementation '" + c.getName() + "'.", e);
         } catch (IllegalAccessException e) {
