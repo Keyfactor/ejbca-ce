@@ -307,7 +307,7 @@ public class KeyStoreTools {
 
         if (keySpec.toUpperCase().startsWith("DSA")) {
             generateDSA(Integer.parseInt(keySpec.substring(3).trim()), keyEntryName);
-        } else if (keySpec.startsWith(AlgorithmConstants.KEYSPECPREFIX_ECGOST3410)) {
+        } else if (AlgorithmTools.isGost3410Enabled() && keySpec.startsWith(AlgorithmConstants.KEYSPECPREFIX_ECGOST3410)) {
             generateGOST3410(keySpec, keyEntryName);
         } else if (AlgorithmTools.isDstu4145Enabled() && keySpec.startsWith(CesecoreConfiguration.getOidDstu4145() + ".")) {
             generateDSTU4145(keySpec, keyEntryName);
