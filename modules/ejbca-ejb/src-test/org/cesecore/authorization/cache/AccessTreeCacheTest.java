@@ -19,6 +19,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.apache.log4j.Logger;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.roles.RoleData;
 import org.junit.Test;
@@ -31,6 +32,8 @@ import org.junit.Test;
  */
 public class AccessTreeCacheTest {
 
+    private static final Logger log = Logger.getLogger(AccessTreeCacheTest.class);
+    
     /**
      * Tests the needsUpdate method.
      * 
@@ -41,11 +44,12 @@ public class AccessTreeCacheTest {
      */
     @Test
     public void testNeedsUpdate() {
-
+        log.debug(">testNeedsUpdate");
         AccessTreeCache accessTreeCache = new AccessTreeCache();
         assertNull(accessTreeCache.getAccessTree());
         // Check that we get false before AccessTreeCache has had a chance to build a AccessTree.
         assertTrue("AccessTreeCache didn't answer that an update was required when accessTree == null", accessTreeCache.needsUpdate());
+        log.debug("<testNeedsUpdate");
     }
 
     /**
@@ -58,22 +62,32 @@ public class AccessTreeCacheTest {
      */
     @Test
     public void testUpdateAccessTree() throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+        log.debug(">testUpdateAccessTree");
         int authorizationTreeUpdateNumber = 0;
         // Now build the access tree, make sure that it's not null but not ripe to be updated.
         AccessTreeCache accessTreeCache = new AccessTreeCache();
         Collection<RoleData> roles = new ArrayList<RoleData>();
         accessTreeCache.updateAccessTree(roles, authorizationTreeUpdateNumber++);
-        assertTrue(accessTreeCache.getAccessTree() != null && !accessTreeCache.needsUpdate());
+        
+        assertTrue("getAccessTree returns null", accessTreeCache.getAccessTree() != null);
+        assertTrue("access tree cache shouldn't need update", !accessTreeCache.needsUpdate());
 
-        // Now, using satanic magic and/or reflection, set the timervalue back a smidge and test again.
+        // Now, using reflection, set the timervalue back a smidge and test again.
         Field lastUpdateTimeField = accessTreeCache.getClass().getDeclaredField("lastUpdateTime");
         lastUpdateTimeField.setAccessible(true);
         long newUpdateTime = lastUpdateTimeField.getLong(accessTreeCache) - CesecoreConfiguration.getCacheAuthorizationTime();
         lastUpdateTimeField.set(accessTreeCache, newUpdateTime);
+        
         // And run the same test again, expecting a different result.
-        assertTrue(accessTreeCache.getAccessTree() != null && accessTreeCache.needsUpdate());
+        assertTrue("getAccessTree returns null", accessTreeCache.getAccessTree() != null);
+        assertTrue("access tree cache should need update", accessTreeCache.needsUpdate());
+        
         accessTreeCache.updateAccessTree(roles, authorizationTreeUpdateNumber++);
-        assertTrue(accessTreeCache.getAccessTree() != null && !accessTreeCache.needsUpdate());
+        
+        assertTrue("getAccessTree returns null", accessTreeCache.getAccessTree() != null);
+        assertTrue("access tree cache shouldn't need update", !accessTreeCache.needsUpdate());
+        
+        log.debug("<testUpdateAccessTree");
     }
 
 }
