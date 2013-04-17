@@ -150,6 +150,11 @@ public class WebConfiguration {
     public static boolean isProxiedAuthenticationEnabled(){
         return Boolean.TRUE.toString().equalsIgnoreCase(EjbcaConfigurationHolder.getString("web.enableproxiedauth"));
     }
+    
+    /** @return true if the user is allowed to enter class names manually in the Publishers and Services pages */
+    public static boolean isManualClassPathsEnabled() {
+        return Boolean.TRUE.toString().equalsIgnoreCase(EjbcaConfigurationHolder.getString("web.manualclasspathsenabled"));
+    }
 
     private static Map<String,String> availableP11LibraryToAliasMap = null;
     /** @return a (cached) mapping between the PKCS#11 libraries and their display names */

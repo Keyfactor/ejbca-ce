@@ -1,5 +1,6 @@
 <%@ taglib uri="http://java.sun.com/jsf/html" prefix="h" %>
 <%@ taglib uri="http://java.sun.com/jsf/core" prefix="f" %>
+<%@page import="org.ejbca.config.WebConfiguration"%>
 
 	<h:panelGroup>
 		<f:verbatim><strong></f:verbatim><h:outputText value="#{web.text.CUSTOMACTIONSETTINGS}"/><f:verbatim></strong></f:verbatim>
@@ -12,6 +13,10 @@
 		<h:outputText value="#{web.text.CUSTOMACTIONCLASSPATH}"/>
 	</h:panelGroup>
 	<h:panelGroup>
+<%
+// we can't use the rendered="..." attribute because then we get duplicate IDs
+if (WebConfiguration.isManualClassPathsEnabled()) {
+%>
         <h:selectOneMenu id="actionClassPathSelect" value="#{editService.customActionType.autoClassPath}"
                          onchange="document.getElementById('edit:actionClassPathTextField').disabled = (this.value != &quot;&quot;); return true">
             <f:selectItems value="#{editService.serviceConfigurationView.availableCustomActionItems}" />
@@ -31,7 +36,17 @@
             }
             //-->
             </script>
-        </f:verbatim>		
+        </f:verbatim>
+<%
+} else {
+%>
+        <h:selectOneMenu id="actionClassPathSelect" value="#{editService.customActionType.autoClassPath}">
+            <f:selectItem itemValue="" itemLabel="#{web.text.PLEASE_SELECT}" />
+            <f:selectItems value="#{editService.serviceConfigurationView.availableCustomActionItems}" />
+        </h:selectOneMenu>
+<%
+}
+%>
 	</h:panelGroup>
 
 	<h:panelGroup>
