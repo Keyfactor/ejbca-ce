@@ -26,7 +26,6 @@ import java.util.Set;
 import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.model.ca.publisher.ICustomPublisher;
 import org.ejbca.core.model.services.IAction;
 import org.ejbca.core.model.services.IInterval;
 import org.ejbca.core.model.services.IWorker;
