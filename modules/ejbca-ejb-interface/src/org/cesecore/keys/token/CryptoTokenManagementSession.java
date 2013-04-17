@@ -107,4 +107,18 @@ public interface CryptoTokenManagementSession {
 
     /** @return the public key of the key pair with the the specified alias in the CryptoToken. */
     PublicKey getPublicKey(AuthenticationToken authenticationToken, int cryptoTokenId, String alias) throws AuthorizationDeniedException, CryptoTokenOfflineException;
+
+    /**
+     * Set the auto-activation PIN for a CryptoToken.
+     * For soft CryptoTokens this will change the pin of the underlying soft keystore as well.
+     * For PKCS#11 CryptoTokens this will only modify the auto-activation setting.
+     * @param authenticationToken must be authorized to modify the CryptoToken
+     * @param cryptoTokenId is the CryptoToken to operate on
+     * @param currentAuthenticationCode is the pin that can currently be used to auto-activate (or manually active it if no auto-activation is used) this CryptoToken
+     * @param newAuthenticationCode is the new pin to use or null to remove the current auto-activation pin
+     * @param updateOnly if true, will only modify the auto-activation setting if already present. Soft CryptoTokens will still have a password change.
+     * @return true if the CryptoToken is auto-activated after call
+     */
+    boolean updatePin(AuthenticationToken authenticationToken, Integer cryptoTokenId, char[] currentAuthenticationCode, char[] newAuthenticationCode,
+            boolean updateOnly) throws AuthorizationDeniedException, CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException;
 }

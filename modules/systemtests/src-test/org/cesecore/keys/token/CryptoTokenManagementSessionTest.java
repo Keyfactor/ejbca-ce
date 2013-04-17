@@ -13,6 +13,7 @@
 package org.cesecore.keys.token;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -212,6 +213,68 @@ public class CryptoTokenManagementSessionTest extends RoleUsingTestCase {
         } catch (RuntimeException e) {
             log.debug("", e);
             assertEquals(InvalidKeyException.class.getName(), e.getCause().getClass().getName());
+        }
+    }
+
+    @Test
+    public void modifyPin() throws Exception {
+        final boolean UPDATE_ONLY = true;
+        final boolean SET_ALWAYS = false;
+        final char[] PIN_ORG = "foo1234".toCharArray();
+        final char[] PIN_SECOND = "foo123".toCharArray();
+        final char[] PIN_WRONG = "wrong".toCharArray();
+        int cryptoTokenId = 0;
+        try {
+            cryptoTokenId = createCryptoTokenForCA(roleMgmgToken, "modifyPin", "RSA1024");
+            // Note the secondary testing of pin changes is the calls below
+            final boolean usesAutoActivation1 = cryptoTokenManagementSession.updatePin(alwaysAllowToken, cryptoTokenId, PIN_ORG, PIN_SECOND, UPDATE_ONLY);
+            assertTrue("Updating soft keystore pin should not remove auto activation", usesAutoActivation1);
+            final boolean usesAutoActivation2 = cryptoTokenManagementSession.updatePin(alwaysAllowToken, cryptoTokenId, PIN_SECOND, PIN_ORG, SET_ALWAYS);
+            assertTrue("Updating soft keystore pin should not remove auto activation", usesAutoActivation2);
+            final boolean usesAutoActivation3 = cryptoTokenManagementSession.updatePin(alwaysAllowToken, cryptoTokenId, PIN_ORG, null, SET_ALWAYS);
+            assertFalse("Auto activation should not be in use after removing 'auto activation pin'", usesAutoActivation3);
+            final boolean usesAutoActivation4 = cryptoTokenManagementSession.updatePin(alwaysAllowToken, cryptoTokenId, PIN_ORG, PIN_SECOND, UPDATE_ONLY);
+            assertFalse("Auto activation should not be in use when it was not before and we only update when present.", usesAutoActivation4);
+            final boolean usesAutoActivation5 = cryptoTokenManagementSession.updatePin(alwaysAllowToken, cryptoTokenId, PIN_ORG, PIN_ORG, SET_ALWAYS);
+            assertTrue("Auto activation should be in use when it was not before and we force it.", usesAutoActivation5);
+            try {
+                cryptoTokenManagementSession.updatePin(alwaysAllowToken, cryptoTokenId, PIN_WRONG, PIN_SECOND, UPDATE_ONLY);
+                fail("It should not be possible to update a keystore pin using the wrong current pin.");
+            } catch (CryptoTokenAuthenticationFailedException e) {
+                // Expected
+            }
+            try {
+                cryptoTokenManagementSession.updatePin(alwaysAllowToken, cryptoTokenId, PIN_WRONG, PIN_SECOND, SET_ALWAYS);
+                fail("It should not be possible to update a keystore pin using the wrong current pin.");
+            } catch (CryptoTokenAuthenticationFailedException e) {
+                // Expected
+            }
+            try {
+                cryptoTokenManagementSession.updatePin(alwaysAllowToken, cryptoTokenId, PIN_WRONG, null, UPDATE_ONLY);
+                fail("It should not be possible to remove the auto-activation pin using the wrong current pin.");
+            } catch (CryptoTokenAuthenticationFailedException e) {
+                // Expected
+            }
+            try {
+                cryptoTokenManagementSession.updatePin(alwaysAllowToken, cryptoTokenId, PIN_WRONG, null, SET_ALWAYS);
+                fail("It should not be possible to remove the auto-activation pin using the wrong current pin.");
+            } catch (CryptoTokenAuthenticationFailedException e) {
+                // Expected
+            }
+            try {
+                cryptoTokenManagementSession.updatePin(alwaysAllowToken, cryptoTokenId, null, PIN_SECOND, UPDATE_ONLY);
+                fail("It should not be possible to update a keystore pin without the current pin.");
+            } catch (CryptoTokenAuthenticationFailedException e) {
+                // Expected
+            }
+            try {
+                cryptoTokenManagementSession.updatePin(alwaysAllowToken, cryptoTokenId, null, PIN_SECOND, SET_ALWAYS);
+                fail("It should not be possible to update a keystore pin without the current pin.");
+            } catch (CryptoTokenAuthenticationFailedException e) {
+                // Expected
+            }
+        } finally {
+            removeCryptoToken(roleMgmgToken, cryptoTokenId);
         }
     }
 
