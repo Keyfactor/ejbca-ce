@@ -1310,14 +1310,14 @@ public final class KeyTools {
 
     /** @return the ASN.1 encoded PublicKey as a Java Object */
     public static PublicKey getPublicKeyFromBytes(byte[] asn1EncodedPublicKey) {
-        final PublicKey pubKey = null;
+        PublicKey pubKey = null;
         final ASN1InputStream in = new ASN1InputStream(asn1EncodedPublicKey);
         try {
             final SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfo.getInstance(in.readObject());
             final AlgorithmIdentifier keyAlg = keyInfo.getAlgorithm();
             final X509EncodedKeySpec xKeySpec = new X509EncodedKeySpec(new DERBitString(keyInfo).getBytes());
             final KeyFactory keyFact = KeyFactory.getInstance(keyAlg.getAlgorithm().getId(), "BC");
-            keyFact.generatePublic(xKeySpec);
+            pubKey = keyFact.generatePublic(xKeySpec);
         } catch (IOException e) {
             log.debug("Unable to decode PublicKey.", e);
         } catch (NoSuchAlgorithmException e) {
