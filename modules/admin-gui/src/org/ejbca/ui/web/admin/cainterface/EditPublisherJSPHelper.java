@@ -293,9 +293,12 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
                                 if(selectClass != null && !selectClass.isEmpty()) {
                                     value = selectClass.trim();
                                     ((CustomPublisherContainer) publisherdata).setClassPath(value);
-                                } else {
+                                } else if (customClass != null && !customClass.isEmpty()) {
                                     value = customClass.trim();
                                     ((CustomPublisherContainer) publisherdata).setClassPath(value);
+                                } else {
+                                    // can happen if the user has Javascript turned off
+                                    throw new IllegalArgumentException("No class path selected");
                                 }
                                 value = request.getParameter(TEXTAREA_CUSTOMPROPERTIES);
                                 if(value != null){
