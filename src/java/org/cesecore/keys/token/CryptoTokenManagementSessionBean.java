@@ -12,15 +12,19 @@
  *************************************************************************/
 package org.cesecore.keys.token;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -49,6 +53,7 @@ import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.CryptoProviderTools;
 
 /**
  * @see CryptoTokenManagementSession
@@ -253,6 +258,95 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_DEACTIVATE, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE, authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null,
                 "Activated CryptoToken '" + cryptoToken.getTokenName() + "' with id " + cryptoTokenId);
         cryptoToken.deactivate();
+    }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
+    public boolean updatePin(AuthenticationToken authenticationToken, Integer cryptoTokenId, char[] currentAuthenticationCode,
+            char[] newAuthenticationCode, boolean updateOnly) throws AuthorizationDeniedException, CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException {
+        final String[] requiredAuthorization = new String[] {
+                CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource()+"/"+cryptoTokenId,
+                CryptoTokenRules.ACTIVATE.resource()+"/"+cryptoTokenId,
+                CryptoTokenRules.DEACTIVATE.resource()+"/"+cryptoTokenId
+        };
+        if (!accessControlSessionSession.isAuthorized(authenticationToken,requiredAuthorization)) {
+            final String msg = INTRES.getLocalizedMessage("authorization.notuathorizedtoresource", Arrays.toString(requiredAuthorization), authenticationToken.toString());
+            throw new AuthorizationDeniedException(msg);
+        }
+        CryptoToken cryptoToken = getCryptoToken(cryptoTokenId);
+        final Properties cryptoTokenProperties = cryptoToken.getProperties();
+        // Get current auto-activation pin (if any)
+        final String oldAutoActivationPin = BaseCryptoToken.getAutoActivatePin(cryptoTokenProperties);
+        if (oldAutoActivationPin==null && (updateOnly || newAuthenticationCode==null)) {
+            // This is a NOOP call that will not lead to any change
+            return false;
+        }
+        if (SoftCryptoToken.class.getName().equals(cryptoToken.getClass().getName())) {
+            CryptoProviderTools.installBCProviderIfNotAvailable();
+            final KeyStore keystore;
+            try {
+                keystore = KeyStore.getInstance("PKCS12", "BC");
+                keystore.load(new ByteArrayInputStream(cryptoToken.getTokenData()), currentAuthenticationCode);
+            } catch (Exception e) {
+                final String msg = "Failed to use supplied current PIN." + " " + e;
+                log.info(msg);
+                throw new CryptoTokenAuthenticationFailedException(msg);
+            }
+            if (newAuthenticationCode == null) {
+                // When no new pin is supplied, we will not modify the key-store and just remove the current auto-activation pin
+                cryptoTokenProperties.remove(CryptoToken.AUTOACTIVATE_PIN_PROPERTY);
+                cryptoToken.setProperties(cryptoTokenProperties);
+            } else {
+                try {
+                    final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    keystore.store(baos, newAuthenticationCode);
+                    baos.close();
+                    if (oldAutoActivationPin!=null || !updateOnly) {
+                        BaseCryptoToken.setAutoActivatePin(cryptoTokenProperties, new String(newAuthenticationCode), true);
+                    } else {
+                        log.debug("Auto-activation will not be used. Only changing pin for soft CryptoToken keystore.");
+                    }
+                    cryptoToken = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), cryptoTokenProperties, baos.toByteArray(), cryptoTokenId, cryptoToken.getTokenName());
+                } catch (Exception e) {
+                    log.info("Unable to store soft keystore with new PIN: " + e);
+                    throw new CryptoTokenAuthenticationFailedException("Unable to store soft keystore with new PIN");
+                }
+            }
+        } else {
+                if (oldAutoActivationPin!=null) {
+                    if (!oldAutoActivationPin.toCharArray().equals(currentAuthenticationCode)) {
+                        final String msg = "Failed to use supplied current PIN.";
+                        log.info(msg);
+                        throw new CryptoTokenAuthenticationFailedException(msg);
+                    } else {
+                        log.debug("Successfully verified the PIN for non-soft CryptoToken by comparing current auto-activation pin.");
+                    }
+                } else {
+                    // If we don't have an auto-activation pin we need to verify that we can activate using it
+                    final boolean wasInactive = !isCryptoTokenStatusActive(authenticationToken, cryptoTokenId);
+                    cryptoToken.deactivate();
+                    cryptoToken.activate(currentAuthenticationCode);
+                    if (wasInactive) {
+                        // Note that there is a small glitch here where the token was active, but we have no other options to verify the pin
+                        cryptoToken.deactivate();
+                    }
+                }
+                if (newAuthenticationCode == null) {
+                    cryptoTokenProperties.remove(CryptoToken.AUTOACTIVATE_PIN_PROPERTY);
+                } else {
+                    BaseCryptoToken.setAutoActivatePin(cryptoTokenProperties, new String(newAuthenticationCode), true);
+                }
+                cryptoToken.setProperties(cryptoTokenProperties);
+        }
+        // Save the modified CryptoToken
+        try {
+            cryptoTokenSession.mergeCryptoToken(cryptoToken);
+        } catch (CryptoTokenNameInUseException e) {
+            // This should not happen here since we use the same name and id
+            throw new RuntimeException(e);
+        }
+        // Return the current auto-activation state
+        return BaseCryptoToken.getAutoActivatePin(cryptoTokenProperties) != null;
     }
 
     @Override
