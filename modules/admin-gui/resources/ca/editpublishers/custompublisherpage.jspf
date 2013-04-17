@@ -19,36 +19,49 @@
       <td width="55%" valign="top"> 
 
         <select name="<%=EditPublisherJSPHelper.SELECT_CUSTOMCLASS%>" id="<%=EditPublisherJSPHelper.SELECT_CUSTOMCLASS%>" size="1"
-            onchange="document.getElementById('<%=EditPublisherJSPHelper.TEXTFIELD_CUSTOMCLASSPATH%>').disabled = (this.value != &quot;&quot;); return true">
+            <% if (org.ejbca.config.WebConfiguration.isManualClassPathsEnabled()) { %>
+                onchange="document.getElementById('<%=EditPublisherJSPHelper.TEXTFIELD_CUSTOMCLASSPATH%>').disabled = (this.value != &quot;&quot;); return true"
+            <% } %>
+            >
+            
            <% 
+           
+              if (!org.ejbca.config.WebConfiguration.isManualClassPathsEnabled()) {
+                  %><option value=""><%= ejbcawebbean.getText("PLEASE_SELECT") %></option><%
+              }
+              
               String currentClass = custompublisher.getClassPath();
               boolean customClassChoice = true;
               for (String klass : publisherhelper.getCustomClasses()) { %>
-           <option value="<c:out value="<%=klass%>"/>"
-              <% if(klass.equals(currentClass) || currentClass == null || currentClass.isEmpty()) {
-                    out.write(" selected ");
-                    customClassChoice = false;
-                    currentClass = klass;
-                 } %> >
-              <c:out value="<%=klass%>"/>
-           </option>
-           <%   } %>
-           
-           <option value="" <% if (customClassChoice) { %>selected="selected"<% } %>><%= ejbcawebbean.getText("MANUALCLASSPATH") %></option>
+                  <option value="<c:out value="<%=klass%>"/>"
+                     <% if(klass.equals(currentClass) || currentClass == null || currentClass.isEmpty()) {
+                           out.write(" selected ");
+                           customClassChoice = false;
+                           currentClass = klass;
+                        } %> >
+                     <c:out value="<%=klass%>"/>
+                  </option>
+              <% }
+              
+              if (org.ejbca.config.WebConfiguration.isManualClassPathsEnabled()) {
+                  %><option value="" <% if (customClassChoice) { %>selected="selected"<% } %>><%= ejbcawebbean.getText("MANUALCLASSPATH") %></option><%
+              } %>
         </select>
         
-        <br>
-        <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_CUSTOMCLASSPATH%>" id="<%=EditPublisherJSPHelper.TEXTFIELD_CUSTOMCLASSPATH%>" size="45" maxlength="255"
-               value='<c:out value="<%= customClassChoice ? currentClass : &quot;&quot; %>"/>'>
-        
-        <% if (!customClassChoice) { %>
-            <script type="text/javascript">
-            <!--
-            var textCustomClass = document.getElementById('<%=EditPublisherJSPHelper.TEXTFIELD_CUSTOMCLASSPATH%>');
-            var selectClass = document.getElementById('<%=EditPublisherJSPHelper.SELECT_CUSTOMCLASS%>');
-            textCustomClass.disabled = (selectClass.value != "");
-            //-->
-            </script>
+        <% if (org.ejbca.config.WebConfiguration.isManualClassPathsEnabled()) { %>
+            <br>
+            <input type="text" name="<%=EditPublisherJSPHelper.TEXTFIELD_CUSTOMCLASSPATH%>" id="<%=EditPublisherJSPHelper.TEXTFIELD_CUSTOMCLASSPATH%>" size="45" maxlength="255"
+                   value='<c:out value="<%= customClassChoice ? currentClass : &quot;&quot; %>"/>'>
+            
+            <% if (!customClassChoice) { %>
+                <script type="text/javascript">
+                <!--
+                var textCustomClass = document.getElementById('<%=EditPublisherJSPHelper.TEXTFIELD_CUSTOMCLASSPATH%>');
+                var selectClass = document.getElementById('<%=EditPublisherJSPHelper.SELECT_CUSTOMCLASS%>');
+                textCustomClass.disabled = (selectClass.value != "");
+                //-->
+                </script>
+            <% } %>
         <% } %> 
         
       </td>
