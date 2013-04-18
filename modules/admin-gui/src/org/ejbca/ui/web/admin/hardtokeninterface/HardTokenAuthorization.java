@@ -25,7 +25,7 @@ import org.cesecore.roles.RoleData;
 import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.hardtoken.HardTokenIssuerData;
+import org.ejbca.core.model.hardtoken.HardTokenIssuerInformation;
 
 /**
  * A class that looks up the which Hard Token Issuers the administrator is authorized to view and edit
@@ -36,7 +36,7 @@ public class HardTokenAuthorization implements Serializable {
 
     private static final long serialVersionUID = 164749645578145734L;
   
-    private TreeMap<String, HardTokenIssuerData> hardtokenissuers = null;
+    private TreeMap<String, HardTokenIssuerInformation> hardtokenissuers = null;
     private TreeMap<String, Integer> hardtokenprofiles = null;
     private HashMap<Integer, String>  hardtokenprofilesnamemap = null;
     private Collection<RoleData> authissueingadmgrps = null;
@@ -60,16 +60,16 @@ public class HardTokenAuthorization implements Serializable {
      * the administrator is authorized to view and edit
      * @return A TreeMap Hard Token Alias (String) -> HardTokenIssuerData
      */    
-    public TreeMap<String, HardTokenIssuerData> getHardTokenIssuers() {
+    public TreeMap<String, HardTokenIssuerInformation> getHardTokenIssuers() {
         if (hardtokenissuers == null) {
-            hardtokenissuers = new TreeMap<String, HardTokenIssuerData>();
+            hardtokenissuers = new TreeMap<String, HardTokenIssuerInformation>();
             HashSet<Integer> authRoleIds = new HashSet<Integer>();
             for (RoleData next : roleManagementSession.getAllRolesAuthorizedToEdit(admin)) {
                 authRoleIds.add(Integer.valueOf(next.getPrimaryKey()));
             }
-            TreeMap<String, HardTokenIssuerData> allhardtokenissuers = this.hardtokensession.getHardTokenIssuers(admin);
+            TreeMap<String, HardTokenIssuerInformation> allhardtokenissuers = this.hardtokensession.getHardTokenIssuers(admin);
             for (String alias : allhardtokenissuers.keySet()) {
-                if (authRoleIds.contains(Integer.valueOf(((HardTokenIssuerData) allhardtokenissuers.get(alias)).getRoleDataId()))) {
+                if (authRoleIds.contains(Integer.valueOf(((HardTokenIssuerInformation) allhardtokenissuers.get(alias)).getRoleDataId()))) {
                     hardtokenissuers.put(alias, allhardtokenissuers.get(alias));
                 }
             }

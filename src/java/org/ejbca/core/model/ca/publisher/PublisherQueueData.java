@@ -48,7 +48,7 @@ public class PublisherQueueData implements java.io.Serializable {
     private int publishType;
     private String fingerprint;
     private int publisherId;
-    private PublisherQueueVolatileData volatileData;
+    private PublisherQueueVolatileInformation volatileData;
             
     
     // Public constants
@@ -57,7 +57,7 @@ public class PublisherQueueData implements java.io.Serializable {
     
 	public PublisherQueueData(String pk, Date timeCreated, Date lastUpdate,
 			int publishStatus, int tryCounter, int publishType, String fingerprint,
-			int publisherId, PublisherQueueVolatileData volatileData) {
+			int publisherId, PublisherQueueVolatileInformation volatileData) {
 		super();
 		this.pk = pk;
 		this.timeCreated = timeCreated;
@@ -120,10 +120,10 @@ public class PublisherQueueData implements java.io.Serializable {
 	public void setPublisherId(int publisherId) {
 		this.publisherId = publisherId;
 	}
-	public PublisherQueueVolatileData getVolatileData() {
+	public PublisherQueueVolatileInformation getVolatileData() {
 		return volatileData;
 	}
-	public void setVolatileData(PublisherQueueVolatileData volatileData) {
+	public void setVolatileData(PublisherQueueVolatileInformation volatileData) {
 		this.volatileData = volatileData;
 	}   
 }

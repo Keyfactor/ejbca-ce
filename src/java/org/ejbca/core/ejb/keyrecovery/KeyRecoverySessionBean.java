@@ -54,7 +54,7 @@ import org.ejbca.core.model.approval.approvalrequests.KeyRecoveryApprovalRequest
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceResponse;
-import org.ejbca.core.model.keyrecovery.KeyRecoveryData;
+import org.ejbca.core.model.keyrecovery.KeyRecoveryInformation;
 
 /**
  * Stores key recovery data.
@@ -278,16 +278,16 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
     }
 
     @Override
-    public KeyRecoveryData keyRecovery(AuthenticationToken admin, String username, int endEntityProfileId) throws AuthorizationDeniedException {
+    public KeyRecoveryInformation keyRecovery(AuthenticationToken admin, String username, int endEntityProfileId) throws AuthorizationDeniedException {
         return recoverKeys(admin, username, endEntityProfileId);
     }
     
     @Override
-    public KeyRecoveryData recoverKeys(AuthenticationToken admin, String username, int endEntityProfileId) throws AuthorizationDeniedException {
+    public KeyRecoveryInformation recoverKeys(AuthenticationToken admin, String username, int endEntityProfileId) throws AuthorizationDeniedException {
     	if (log.isTraceEnabled()) {
             log.trace(">keyRecovery(user: " + username + ")");
     	}
-        KeyRecoveryData returnval = null;
+        KeyRecoveryInformation returnval = null;
         org.ejbca.core.ejb.keyrecovery.KeyRecoveryData krd = null;
         X509Certificate certificate = null;
         if (authorizedToKeyRecover(admin, endEntityProfileId)) { 
@@ -305,7 +305,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
         						new KeyRecoveryCAServiceRequest(KeyRecoveryCAServiceRequest.COMMAND_DECRYPTKEYS, krd.getKeyDataAsByteArray()));
         				KeyPair keys = response.getKeyPair();
         				certificate = (X509Certificate) certificateStoreSession.findCertificateByIssuerAndSerno(krd.getIssuerDN(), krd.getCertificateSN());
-        				returnval = new KeyRecoveryData(krd.getCertificateSN(), krd.getIssuerDN(),
+        				returnval = new KeyRecoveryInformation(krd.getCertificateSN(), krd.getIssuerDN(),
         						krd.getUsername(), krd.getMarkedAsRecoverable(), keys, certificate);
                 		certSerialNumber = CertTools.getSerialNumberAsString(certificate);
         			}

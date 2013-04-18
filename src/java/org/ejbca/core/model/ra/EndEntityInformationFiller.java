@@ -33,13 +33,12 @@ import org.ejbca.util.dn.DistinguishedName;
 
 /** This class gives facilities to populate user data with default values from profile.
  *
- * @author David Galichet
  * @version $Id$
  */
-public class UserDataFiller {
+public class EndEntityInformationFiller {
 
     /** For log purpose. */
-    private static final Logger log = Logger.getLogger(UserDataFiller.class.getName());
+    private static final Logger log = Logger.getLogger(EndEntityInformationFiller.class.getName());
 
     /** This method fill user data with the default values from the specified profile.
      * 

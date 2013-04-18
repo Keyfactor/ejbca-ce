@@ -16,7 +16,7 @@ import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSession;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
-import org.ejbca.core.model.keyrecovery.KeyRecoveryData;
+import org.ejbca.core.model.keyrecovery.KeyRecoveryInformation;
 
 /** Class that has helper methods to generate tokens for users in ejbca. 
  * Generating tokens can often depend on the ejb services (local interfaces), for example for key recovery.
@@ -63,7 +63,7 @@ public class GenerateToken {
         if (log.isTraceEnabled()) {
             log.trace(">generateOrKeyRecoverToken");
         }
-    	KeyRecoveryData keyData = null;
+    	KeyRecoveryInformation keyData = null;
     	KeyPair rsaKeys = null;
     	if (loadkeys) {
     	    if (log.isDebugEnabled()) {

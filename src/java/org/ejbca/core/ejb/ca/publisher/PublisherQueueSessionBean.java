@@ -44,7 +44,7 @@ import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
-import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileData;
+import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
 
 /**
  * Manages publisher queues which contains data to be republished, either because publishing failed or because publishing is done asynchronously.
@@ -74,7 +74,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
     }
 
     @Override
-    public void addQueueData(int publisherId, int publishType, String fingerprint, PublisherQueueVolatileData queueData, int publishStatus) throws CreateException {
+    public void addQueueData(int publisherId, int publishType, String fingerprint, PublisherQueueVolatileInformation queueData, int publishStatus) throws CreateException {
     	if (log.isTraceEnabled()) {
             log.trace(">addQueueData(publisherId: " + publisherId + ")");
     	}
@@ -249,7 +249,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
                 log.debug("Publishing from queue to publisher: " + publisherId + ", fingerprint: " + fingerprint + ", pk: " + pqd.getPk()
                         + ", type: " + publishType);
             }
-            PublisherQueueVolatileData voldata = pqd.getVolatileData();
+            PublisherQueueVolatileInformation voldata = pqd.getVolatileData();
             String username = null;
             String password = null;
             ExtendedInformation ei = null;

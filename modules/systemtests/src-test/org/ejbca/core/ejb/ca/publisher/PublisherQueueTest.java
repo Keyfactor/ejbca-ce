@@ -46,7 +46,7 @@ import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
-import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileData;
+import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
 import org.ejbca.core.model.ca.publisher.ValidationAuthorityPublisher;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -107,7 +107,7 @@ public class PublisherQueueTest {
 
         String xxpk = d.getPk(); // Keep for later so we can set to success
 
-        PublisherQueueVolatileData vd = new PublisherQueueVolatileData();
+        PublisherQueueVolatileInformation vd = new PublisherQueueVolatileInformation();
         vd.setUsername("foo");
         vd.setPassword("bar");
         ExtendedInformation ei = new ExtendedInformation();
@@ -134,7 +134,7 @@ public class PublisherQueueTest {
                 assertEquals(PublisherConst.PUBLISH_TYPE_CRL, d.getPublishType());
                 assertEquals(PublisherConst.STATUS_PENDING, d.getPublishStatus());
                 assertEquals(0, d.getTryCounter());
-                PublisherQueueVolatileData v = d.getVolatileData();
+                PublisherQueueVolatileInformation v = d.getVolatileData();
                 assertEquals("bar", v.getPassword());
                 assertEquals("foo", v.getUsername());
                 ExtendedInformation e = v.getExtendedInformation();

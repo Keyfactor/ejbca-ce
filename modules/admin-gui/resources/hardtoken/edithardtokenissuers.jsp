@@ -1,9 +1,10 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ page pageEncoding="ISO-8859-1"%>
-<% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
+<%
+    response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding());
+%>
 <%@page errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.config.GlobalConfiguration, org.ejbca.core.model.SecConst
-               ,org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, org.ejbca.core.model.hardtoken.HardTokenIssuer, org.ejbca.core.model.hardtoken.HardTokenIssuerData, org.ejbca.core.model.hardtoken.HardTokenIssuerExistsException,
-               org.ejbca.core.model.hardtoken.HardTokenIssuerDoesntExistsException, org.cesecore.roles.RoleData, org.ejbca.ui.web.CertificateView, org.ejbca.core.model.authorization.AccessRulesConstants"%>
+               ,org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, org.ejbca.core.model.hardtoken.HardTokenIssuer,org.ejbca.core.model.hardtoken.HardTokenIssuerInformation,org.ejbca.core.model.hardtoken.HardTokenIssuerExistsException,org.ejbca.core.model.hardtoken.HardTokenIssuerDoesntExistsException,org.cesecore.roles.RoleData,org.ejbca.ui.web.CertificateView,org.ejbca.core.model.authorization.AccessRulesConstants"%>
 
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
@@ -11,7 +12,7 @@
 <jsp:useBean id="tokenbean" scope="session" class="org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean" />
 <jsp:useBean id="cabean" scope="session" class="org.ejbca.ui.web.admin.cainterface.CAInterfaceBean" />
 
-<%! // Declarations 
+<%!// Declarations 
   static final String ACTION                        = "action";
   static final String ACTION_EDIT_ISSUERS           = "editissuers";
   static final String ACTION_EDIT_ISSUER            = "editissuer";
@@ -42,11 +43,9 @@
 
   static final String SELECT_TYPE                         = "selecttype";
   String alias = null;
-  String certsn = null;
-%>
-<% 
-
-  // Initialize environment
+  String certsn = null;%>
+<%
+    // Initialize environment
   String includefile = "hardtokenissuerspage.jspf";
 
   boolean  issuerexists             = false;
@@ -56,25 +55,25 @@
   HardTokenIssuer issuer=null;     
 
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.HARDTOKEN_EDITHARDTOKENISSUERS); 
-                                            tokenbean.initialize(request, ejbcawebbean);
-                                            cabean.initialize(request, ejbcawebbean); 
+                                    tokenbean.initialize(request, ejbcawebbean);
+                                    cabean.initialize(request, ejbcawebbean); 
 
   String THIS_FILENAME                    = globalconfiguration.getHardTokenPath() + "/edithardtokenissuers.jsp";
 
-  Map caidtonamemap = cabean.getCAIdToNameMap(); 
+  Map caidtonamemap = cabean.getCAIdToNameMap();
 %>
  
 <head>
-  <title><c:out value="<%= globalconfiguration.getEjbcaTitle() %>" /></title>
-  <base href="<%= ejbcawebbean.getBaseUrl() %>" />
-  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>" />
-  <script type="text/javascript" src="<%= globalconfiguration .getAdminWebPath() %>ejbcajslib.js"></script>
+  <title><c:out value="<%=globalconfiguration.getEjbcaTitle()%>" /></title>
+  <base href="<%=ejbcawebbean.getBaseUrl()%>" />
+  <link rel="stylesheet" type="text/css" href="<%=ejbcawebbean.getCssFile()%>" />
+  <script type="text/javascript" src="<%=globalconfiguration .getAdminWebPath()%>ejbcajslib.js"></script>
 </head>
 
 <body>
 
-<%  
-  RequestHelper.setDefaultCharacterEncoding(request);
+<%
+    RequestHelper.setDefaultCharacterEncoding(request);
 
    // Determine action 
   if( request.getParameter(ACTION) != null){
@@ -84,10 +83,10 @@
          alias = request.getParameter(SELECT_ISSUER);
          if(alias != null){
            if(!alias.trim().equals("")){
-             includefile="hardtokenissuerpage.jspf"; 
+     includefile="hardtokenissuerpage.jspf"; 
            } 
            else{ 
-            alias= null;
+    alias= null;
           } 
         }
         if(alias == null){   
@@ -98,9 +97,9 @@
           // Delete profile and display profilespage. 
           alias = request.getParameter(SELECT_ISSUER);
           if(alias != null){
-            if(!alias.trim().equals("")){
-              issuerdeletefailed = !tokenbean.removeHardTokenIssuer(alias);
-            }
+    if(!alias.trim().equals("")){
+      issuerdeletefailed = !tokenbean.removeHardTokenIssuer(alias);
+    }
           }
           includefile="hardtokenissuerspage.jspf";          
       }
@@ -113,9 +112,9 @@
        if(oldalias != null && newalias != null){
          if(!newalias.trim().equals("") && !oldalias.trim().equals("")){
            try{
-             tokenbean.renameHardTokenIssuer(oldalias,newalias.trim(), roleId);
+     tokenbean.renameHardTokenIssuer(oldalias,newalias.trim(), roleId);
            }catch( HardTokenIssuerExistsException e){
-             issuerexists=true;
+     issuerexists=true;
            }        
          }
        }      
@@ -127,11 +126,11 @@
          int roleId = Integer.parseInt(request.getParameter(SELECT_ROLE));
          if(alias != null){
            if(!alias.trim().equals("")){
-             try{              
-               tokenbean.addHardTokenIssuer(alias.trim(), roleId);
-             }catch( HardTokenIssuerExistsException e){
-               issuerexists=true;
-             }
+     try{              
+       tokenbean.addHardTokenIssuer(alias.trim(), roleId);
+     }catch( HardTokenIssuerExistsException e){
+       issuerexists=true;
+     }
            }      
          }
          includefile="hardtokenissuerspage.jspf"; 
@@ -143,11 +142,11 @@
        int roleId = Integer.parseInt(request.getParameter(SELECT_ROLE));
        if(oldalias != null && newalias != null){
          if(!oldalias.trim().equals("") && !newalias.trim().equals("")){
-             try{ 
-               tokenbean.cloneHardTokenIssuer(oldalias.trim(),newalias.trim(), roleId);
-             }catch( HardTokenIssuerExistsException e){
-               issuerexists=true;
-             }
+     try{ 
+       tokenbean.cloneHardTokenIssuer(oldalias.trim(),newalias.trim(), roleId);
+     }catch( HardTokenIssuerExistsException e){
+       issuerexists=true;
+     }
          }
        }      
        includefile="hardtokenissuerspage.jspf"; 
@@ -159,31 +158,31 @@
        if(alias != null){
          if(!alias.trim().equals("")){
            if(request.getParameter(BUTTON_SAVE) != null){
-             issuer = tokenbean.getHardTokenIssuerData(alias).getHardTokenIssuer();
-             // Save changes.
-             ArrayList availableprofiles = new ArrayList();
+     issuer = tokenbean.getHardTokenIssuerInformation(alias).getHardTokenIssuer();
+     // Save changes.
+     ArrayList availableprofiles = new ArrayList();
  
-             String[] values = request.getParameterValues(SELECT_AVAILABLEHARDTOKENPROFILES);
-             
-             if(values!= null){
-               for(int i=0; i< values.length; i++){
-                 availableprofiles.add(Integer.valueOf(values[i]));                     
-               }
-             } 
-             issuer.setAvailableHardTokenProfiles(availableprofiles);
-                      
-             String description = request.getParameter(TEXTFIELD_DESCRIPTION);
-             if(description == null)
-               description = "";
-             issuer.setDescription(description);
+     String[] values = request.getParameterValues(SELECT_AVAILABLEHARDTOKENPROFILES);
+     
+     if(values!= null){
+       for(int i=0; i< values.length; i++){
+         availableprofiles.add(Integer.valueOf(values[i]));                     
+       }
+     } 
+     issuer.setAvailableHardTokenProfiles(availableprofiles);
+              
+     String description = request.getParameter(TEXTFIELD_DESCRIPTION);
+     if(description == null)
+       description = "";
+     issuer.setDescription(description);
 
 
-             tokenbean.changeHardTokenIssuer(alias,issuer);
-             includefile="hardtokenissuerspage.jspf";
+     tokenbean.changeHardTokenIssuer(alias,issuer);
+     includefile="hardtokenissuerspage.jspf";
            }
            if(request.getParameter(BUTTON_CANCEL) != null){
-              // Don't save changes.
-             includefile="hardtokenissuerspage.jspf";
+      // Don't save changes.
+     includefile="hardtokenissuerspage.jspf";
            }
          }
       }
@@ -194,10 +193,13 @@
   Map adminidtonamemap = ejbcawebbean.getInformationMemory().getRoleIdToNameMap();
 
  // Include page
-  if( includefile.equals("hardtokenissuerspage.jspf")){ %>
+  if( includefile.equals("hardtokenissuerspage.jspf")){
+%>
    <%@ include file="hardtokenissuerspage.jspf" %>
-<%}
-  if( includefile.equals("hardtokenissuerpage.jspf")){ %>
+<%
+    }
+  if( includefile.equals("hardtokenissuerpage.jspf")){
+%>
    <%@ include file="hardtokenissuerpage.jspf" %> 
 <%}
 

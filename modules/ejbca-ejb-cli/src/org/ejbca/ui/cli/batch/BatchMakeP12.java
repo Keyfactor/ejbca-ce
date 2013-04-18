@@ -46,7 +46,7 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.keyrecovery.KeyRecoveryData;
+import org.ejbca.core.model.keyrecovery.KeyRecoveryInformation;
 import org.ejbca.core.model.ra.EndEntityManagementConstants;
 import org.ejbca.ui.cli.BaseCommand;
 import org.ejbca.ui.cli.CliUsernameException;
@@ -374,7 +374,7 @@ public class BatchMakeP12 extends BaseCommand {
             boolean reusecertificate = ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfile(data.getEndEntityProfileId()).getReUseKeyRecoveredCertificate();
             // Recover Keys
 
-            KeyRecoveryData recoveryData = ejb.getRemoteSession(KeyRecoverySessionRemote.class).recoverKeys(getAdmin(cliUserName, cliPassword), data.getUsername(), data.getEndEntityProfileId());
+            KeyRecoveryInformation recoveryData = ejb.getRemoteSession(KeyRecoverySessionRemote.class).recoverKeys(getAdmin(cliUserName, cliPassword), data.getUsername(), data.getEndEntityProfileId());
             if (reusecertificate) {
                 ejb.getRemoteSession(KeyRecoverySessionRemote.class).unmarkUser(getAdmin(cliUserName, cliPassword), data.getUsername());
             }

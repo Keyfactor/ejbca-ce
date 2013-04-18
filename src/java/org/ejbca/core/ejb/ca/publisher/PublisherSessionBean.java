@@ -59,7 +59,7 @@ import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
-import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileData;
+import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
 import org.ejbca.core.model.ca.publisher.ValidationAuthorityPublisher;
 
 /**
@@ -159,7 +159,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                     if ((publishStatus != PublisherConst.STATUS_SUCCESS || publ.getKeepPublishedInQueue())
                             && publ.getUseQueueForCertificates()) {
                         // Write to the publisher queue either for audit reasons or to be able try again
-                        PublisherQueueVolatileData pqvd = new PublisherQueueVolatileData();
+                        PublisherQueueVolatileInformation pqvd = new PublisherQueueVolatileInformation();
                         pqvd.setUsername(username);
                         pqvd.setPassword(password);
                         pqvd.setExtendedInformation(extendedinformation);
@@ -252,7 +252,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                         && publ.getUseQueueForCRLs()) {
                     // Write to the publisher queue either for audit reasons or
                     // to be able try again
-                    final PublisherQueueVolatileData pqvd = new PublisherQueueVolatileData();
+                    final PublisherQueueVolatileInformation pqvd = new PublisherQueueVolatileInformation();
                     pqvd.setUserDN(issuerDn);
                     String fp = CertTools.getFingerprintAsString(incrl);
                     try {

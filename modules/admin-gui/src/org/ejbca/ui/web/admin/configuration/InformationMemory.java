@@ -48,7 +48,7 @@ import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSession;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.hardtoken.HardTokenIssuerData;
+import org.ejbca.core.model.hardtoken.HardTokenIssuerInformation;
 import org.ejbca.core.model.ra.RAAuthorization;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ui.web.admin.cainterface.CAAuthorization;
@@ -374,7 +374,7 @@ public class InformationMemory implements Serializable {
     /**
      * @see org.ejbca.ui.web.admin.hardtokeninterface.HardTokenAuthorization.java
      */
-    public TreeMap<String, HardTokenIssuerData> getHardTokenIssuers() {
+    public TreeMap<String, HardTokenIssuerInformation> getHardTokenIssuers() {
         return hardtokenauthorization.getHardTokenIssuers();
     }
 

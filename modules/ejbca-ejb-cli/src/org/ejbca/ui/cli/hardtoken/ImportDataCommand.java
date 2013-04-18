@@ -21,7 +21,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
-import org.ejbca.core.model.hardtoken.HardTokenData;
+import org.ejbca.core.model.hardtoken.HardTokenInformation;
 import org.ejbca.core.model.hardtoken.HardTokenExistsException;
 import org.ejbca.ui.cli.BaseCommand;
 import org.ejbca.ui.cli.CliUsernameException;
@@ -87,7 +87,7 @@ public class ImportDataCommand extends BaseCommand {
         	}
         	IHardTokenImporter importer =  (IHardTokenImporter) Thread.currentThread().getContextClassLoader().loadClass(props.getProperty("importer.classpath")).newInstance();
         	importer.startImport(props);
-        	HardTokenData htd;
+        	HardTokenInformation htd;
         	try{
         	  while((htd = importer.readHardTokenData()) != null){
         		  try{

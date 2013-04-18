@@ -60,9 +60,9 @@ import org.junit.Test;
  * @version $Id$
  *
  */
-public class EllipticCurveDsaSignSessionTest extends SignSessionCommon {
+public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
 
-    private static final Logger log = Logger.getLogger(EllipticCurveDsaSignSessionTest.class);
+    private static final Logger log = Logger.getLogger(SignSessionWithEllipticCurveDsaTest.class);
 
     private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
             "EllipticCurveDsaSignSessionTest"));
@@ -389,7 +389,7 @@ public class EllipticCurveDsaSignSessionTest extends SignSessionCommon {
 
     @Override
     public String getRoleName() {
-        return EllipticCurveDsaSignSessionTest.class.getSimpleName();
+        return SignSessionWithEllipticCurveDsaTest.class.getSimpleName();
     }
 
     private static void createEcdsaEndEntity() throws Exception {

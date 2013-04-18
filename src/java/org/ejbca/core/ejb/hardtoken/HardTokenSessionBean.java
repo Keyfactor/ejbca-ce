@@ -72,11 +72,11 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceResponse;
-import org.ejbca.core.model.hardtoken.HardTokenData;
+import org.ejbca.core.model.hardtoken.HardTokenInformation;
 import org.ejbca.core.model.hardtoken.HardTokenDoesntExistsException;
 import org.ejbca.core.model.hardtoken.HardTokenExistsException;
 import org.ejbca.core.model.hardtoken.HardTokenIssuer;
-import org.ejbca.core.model.hardtoken.HardTokenIssuerData;
+import org.ejbca.core.model.hardtoken.HardTokenIssuerInformation;
 import org.ejbca.core.model.hardtoken.HardTokenProfileExistsException;
 import org.ejbca.core.model.hardtoken.UnavailableTokenException;
 import org.ejbca.core.model.hardtoken.profiles.EIDProfile;
@@ -543,7 +543,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
 
     @Override
     public boolean isAuthorizedToEditHardTokenIssuer(AuthenticationToken token, String alias) {
-        TreeMap<String, HardTokenIssuerData>  authorizedIssuers = getHardTokenIssuers(token);
+        TreeMap<String, HardTokenIssuerInformation>  authorizedIssuers = getHardTokenIssuers(token);
         return authorizationSession.isAuthorizedNoLogging(token, AccessRulesConstants.HARDTOKEN_EDITHARDTOKENISSUERS) && authorizedIssuers.containsKey(alias);
     }
     
@@ -591,16 +591,16 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public Collection<HardTokenIssuerData> getHardTokenIssuerDatas(AuthenticationToken admin) {
+    public Collection<HardTokenIssuerInformation> getHardTokenIssuerDatas(AuthenticationToken admin) {
         log.trace(">getHardTokenIssuerDatas()");
-        ArrayList<HardTokenIssuerData> returnval = new ArrayList<HardTokenIssuerData>();
+        ArrayList<HardTokenIssuerInformation> returnval = new ArrayList<HardTokenIssuerInformation>();
         Collection<Integer> authorizedhardtokenprofiles = getAuthorizedHardTokenProfileIds(admin);
         Collection<org.ejbca.core.ejb.hardtoken.HardTokenIssuerData> result = org.ejbca.core.ejb.hardtoken.HardTokenIssuerData.findAll(entityManager);
         Iterator<org.ejbca.core.ejb.hardtoken.HardTokenIssuerData> i = result.iterator();
         while (i.hasNext()) {
             org.ejbca.core.ejb.hardtoken.HardTokenIssuerData htih = i.next();
             if (authorizedhardtokenprofiles.containsAll(htih.getHardTokenIssuer().getAvailableHardTokenProfiles())) {
-                returnval.add(new HardTokenIssuerData(htih.getId(), htih.getAlias(), htih.getAdminGroupId(), htih.getHardTokenIssuer()));
+                returnval.add(new HardTokenIssuerInformation(htih.getId(), htih.getAlias(), htih.getAdminGroupId(), htih.getHardTokenIssuer()));
             }
         }
         Collections.sort(returnval);
@@ -627,16 +627,16 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public TreeMap<String, HardTokenIssuerData> getHardTokenIssuers(AuthenticationToken admin) {
+    public TreeMap<String, HardTokenIssuerInformation> getHardTokenIssuers(AuthenticationToken admin) {
         log.trace(">getHardTokenIssuers()");
         Collection<Integer> authorizedhardtokenprofiles = getAuthorizedHardTokenProfileIds(admin);
-        TreeMap<String, HardTokenIssuerData> returnval = new TreeMap<String, HardTokenIssuerData>();
+        TreeMap<String, HardTokenIssuerInformation> returnval = new TreeMap<String, HardTokenIssuerInformation>();
         Collection<org.ejbca.core.ejb.hardtoken.HardTokenIssuerData> result = org.ejbca.core.ejb.hardtoken.HardTokenIssuerData.findAll(entityManager);
         Iterator<org.ejbca.core.ejb.hardtoken.HardTokenIssuerData> i = result.iterator();
         while (i.hasNext()) {
             org.ejbca.core.ejb.hardtoken.HardTokenIssuerData htih = i.next();
             if (authorizedhardtokenprofiles.containsAll(htih.getHardTokenIssuer().getAvailableHardTokenProfiles())) {
-                returnval.put(htih.getAlias(), new HardTokenIssuerData(htih.getId(), htih.getAlias(), htih.getAdminGroupId(), htih
+                returnval.put(htih.getAlias(), new HardTokenIssuerInformation(htih.getId(), htih.getAlias(), htih.getAdminGroupId(), htih
                         .getHardTokenIssuer()));
             }
         }
@@ -645,28 +645,28 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public HardTokenIssuerData getHardTokenIssuerData(String alias) {
+    public HardTokenIssuerInformation getHardTokenIssuerInformation(String alias) {
         if (log.isTraceEnabled()) {
             log.trace(">getHardTokenIssuerData(alias: " + alias + ")");
         }
-        HardTokenIssuerData returnval = null;
+        HardTokenIssuerInformation returnval = null;
         org.ejbca.core.ejb.hardtoken.HardTokenIssuerData htih = org.ejbca.core.ejb.hardtoken.HardTokenIssuerData.findByAlias(entityManager, alias);
         if (htih != null) {
-            returnval = new HardTokenIssuerData(htih.getId(), htih.getAlias(), htih.getAdminGroupId(), htih.getHardTokenIssuer());
+            returnval = new HardTokenIssuerInformation(htih.getId(), htih.getAlias(), htih.getAdminGroupId(), htih.getHardTokenIssuer());
         }
         log.trace("<getHardTokenIssuerData()");
         return returnval;
     }
 
     @Override
-    public HardTokenIssuerData getHardTokenIssuerData(int id) {
+    public HardTokenIssuerInformation getHardTokenIssuerInformation(int id) {
         if (log.isTraceEnabled()) {
             log.trace(">getHardTokenIssuerData(id: " + id + ")");
         }
-        HardTokenIssuerData returnval = null;
+        HardTokenIssuerInformation returnval = null;
         org.ejbca.core.ejb.hardtoken.HardTokenIssuerData htih = org.ejbca.core.ejb.hardtoken.HardTokenIssuerData.findByPK(entityManager, Integer.valueOf(id));
         if (htih != null) {
-            returnval = new HardTokenIssuerData(htih.getId(), htih.getAlias(), htih.getAdminGroupId(), htih.getHardTokenIssuer());
+            returnval = new HardTokenIssuerInformation(htih.getId(), htih.getAlias(), htih.getAdminGroupId(), htih.getHardTokenIssuer());
         }
         log.trace("<getHardTokenIssuerData()");
         return returnval;
@@ -719,7 +719,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             log.trace(">getIsTokenTypeAvailableToIssuer(issuerid: " + issuerid + ", tokentype: " + userdata.getTokenType() + ")");
         }
         boolean returnval = false;
-        ArrayList<Integer> availabletokentypes = getHardTokenIssuerData(issuerid).getHardTokenIssuer().getAvailableHardTokenProfiles();
+        ArrayList<Integer> availabletokentypes = getHardTokenIssuerInformation(issuerid).getHardTokenIssuer().getAvailableHardTokenProfiles();
         for (int i = 0; i < availabletokentypes.size(); i++) {
             if (availabletokentypes.get(i).intValue() == userdata.getTokenType()) {
                 returnval = true;
@@ -839,11 +839,11 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public HardTokenData getHardToken(AuthenticationToken admin, String tokensn, boolean includePUK) throws AuthorizationDeniedException {
+    public HardTokenInformation getHardToken(AuthenticationToken admin, String tokensn, boolean includePUK) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">getHardToken(tokensn :" + tokensn + ")");
         }
-        HardTokenData returnval = null;
+        HardTokenInformation returnval = null;
         org.ejbca.core.ejb.hardtoken.HardTokenData htd = org.ejbca.core.ejb.hardtoken.HardTokenData.findByTokenSN(entityManager, tokensn);
         if (htd != null) {
             // Find Copyof
@@ -866,7 +866,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
                 }
             }
             if (htd != null) {
-                returnval = new HardTokenData(htd.getTokenSN(), htd.getUsername(), htd.getCreateTime(), htd.getModifyTime(), htd.getTokenType(), htd
+                returnval = new HardTokenInformation(htd.getTokenSN(), htd.getUsername(), htd.getCreateTime(), htd.getModifyTime(), htd.getTokenType(), htd
                         .getSignificantIssuerDN(), getHardToken(admin, globalConfigurationSession.getCachedGlobalConfiguration().getHardTokenEncryptCA(),
                         includePUK, htd.getData()), copyof, copies);
                 int caid = htd.getSignificantIssuerDN().hashCode();
@@ -887,11 +887,11 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public Collection<HardTokenData> getHardTokens(AuthenticationToken admin, String username, boolean includePUK) {
+    public Collection<HardTokenInformation> getHardTokens(AuthenticationToken admin, String username, boolean includePUK) {
         if (log.isTraceEnabled()) {
             log.trace("<getHardToken(username :" + username + ")");
         }
-        final ArrayList<HardTokenData> returnval = new ArrayList<HardTokenData>();
+        final ArrayList<HardTokenInformation> returnval = new ArrayList<HardTokenInformation>();
         final Collection<org.ejbca.core.ejb.hardtoken.HardTokenData> result = org.ejbca.core.ejb.hardtoken.HardTokenData.findByUsername(entityManager, username);
         for (org.ejbca.core.ejb.hardtoken.HardTokenData htd : result) {
             // Find Copyof
@@ -913,7 +913,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
                     }
                 }
             }
-            returnval.add(new HardTokenData(htd.getTokenSN(), htd.getUsername(), htd.getCreateTime(), htd.getModifyTime(), htd.getTokenType(), htd
+            returnval.add(new HardTokenInformation(htd.getTokenSN(), htd.getUsername(), htd.getCreateTime(), htd.getModifyTime(), htd.getTokenType(), htd
                     .getSignificantIssuerDN(), getHardToken(admin, globalConfigurationSession.getCachedGlobalConfiguration().getHardTokenEncryptCA(),
                     includePUK, htd.getData()), copyof, copies));
             int caid = htd.getSignificantIssuerDN().hashCode();

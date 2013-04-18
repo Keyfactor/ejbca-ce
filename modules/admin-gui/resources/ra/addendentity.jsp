@@ -1,18 +1,18 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ page pageEncoding="ISO-8859-1"%>
-<% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
+<%
+    response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding());
+%>
 <%@page  errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.config.GlobalConfiguration, org.ejbca.ui.web.admin.rainterface.UserView,
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.ui.web.admin.rainterface.EndEntityProfileDataHandler, org.ejbca.core.model.ra.raadmin.EndEntityProfile, org.cesecore.certificates.endentity.EndEntityConstants,
                  javax.ejb.CreateException, org.cesecore.certificates.util.DNFieldExtractor, org.ejbca.core.model.ra.ExtendedInformationFields, org.cesecore.certificates.endentity.EndEntityInformation, org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, 
-                 org.ejbca.core.model.hardtoken.HardTokenIssuer, org.ejbca.core.model.hardtoken.HardTokenIssuerData,   org.ejbca.core.model.SecConst, org.cesecore.util.StringTools, org.cesecore.certificates.util.DnComponents,
-                 org.apache.commons.lang.time.DateUtils, org.cesecore.certificates.endentity.ExtendedInformation, org.cesecore.certificates.crl.RevokedCertInfo, org.cesecore.ErrorCode, org.ejbca.util.query.*, java.math.BigInteger,
-                 org.cesecore.authorization.AuthorizationDeniedException, org.ejbca.core.model.authorization.AccessRulesConstants" %>
+                 org.ejbca.core.model.hardtoken.HardTokenIssuer,org.ejbca.core.model.hardtoken.HardTokenIssuerInformation,org.ejbca.core.model.SecConst,org.cesecore.util.StringTools,org.cesecore.certificates.util.DnComponents,org.apache.commons.lang.time.DateUtils,org.cesecore.certificates.endentity.ExtendedInformation,org.cesecore.certificates.crl.RevokedCertInfo,org.cesecore.ErrorCode,org.ejbca.util.query.*,java.math.BigInteger,org.cesecore.authorization.AuthorizationDeniedException,org.ejbca.core.model.authorization.AccessRulesConstants" %>
 <html> 
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />
 <jsp:useBean id="tokenbean" scope="session" class="org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean" />
 <jsp:useBean id="editendentitybean" scope="page" class="org.ejbca.ui.web.admin.rainterface.EditEndEntityBean" />
-<%! // Declarations
+<%!// Declarations
 
   static final String ACTION                   = "action";
   static final String ACTION_ADDUSER           = "adduser";
@@ -89,15 +89,13 @@
   static final String SUBJECTDN_PARAMETER      = "subjectdnparameter";
 
   static final String HIDDEN_USERNAME           = "hiddenusername";
-  static final String HIDDEN_PROFILE            = "hiddenprofile";
-	
-%><%
-  // Initialize environment.
+  static final String HIDDEN_PROFILE            = "hiddenprofile";%><%
+    // Initialize environment.
 
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_CREATEENDENTITY); 
-                                            rabean.initialize(request, ejbcawebbean);
-                                            if(globalconfiguration.getIssueHardwareTokens())
-                                              tokenbean.initialize(request, ejbcawebbean);
+                                    rabean.initialize(request, ejbcawebbean);
+                                    if(globalconfiguration.getIssueHardwareTokens())
+                                      tokenbean.initialize(request, ejbcawebbean);
 
   final String VIEWUSER_LINK            = ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath()  + "/viewendentity.jsp";
   final String EDITUSER_LINK            = ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath()  + "/editendentity.jsp";
@@ -185,11 +183,11 @@
            // Check that adminsitrator is authorized to given profileid
            boolean authorizedtoprofile = false;
            for(int i=0 ; i< profilenames.length; i++){
-             if(oldprofileid == rabean.getEndEntityProfileId(profilenames[i]))
-               authorizedtoprofile=true;
+     if(oldprofileid == rabean.getEndEntityProfileId(profilenames[i]))
+       authorizedtoprofile=true;
            }
            if(!authorizedtoprofile)
-             throw new Exception("Error when trying to add user to non authorized profile");
+     throw new Exception("Error when trying to add user to non authorized profile");
          }
          
 
@@ -206,30 +204,30 @@
          		ei = new ExtendedInformation();
          		newuser.setExtendedInformation(ei);
          	}
-                editendentitybean.setExtendedInformation(ei);
-                
-                // Save the new value if the profile allows it
-                if (oldprofile.getUseExtensiondata()) {
-                    editendentitybean.setExtensionData(value);
-                }
+        editendentitybean.setExtendedInformation(ei);
+        
+        // Save the new value if the profile allows it
+        if (oldprofile.getUseExtensiondata()) {
+            editendentitybean.setExtensionData(value);
+        }
          }
 
          value = request.getParameter(TEXTFIELD_USERNAME);
          if(value !=null){
            value=value.trim(); 
            if(!value.equals("")){
-             newuser.setUsername(value);
-             oldprofile.setValue(EndEntityProfile.USERNAME,0,value);
-             addedusername = value;
+     newuser.setUsername(value);
+     oldprofile.setValue(EndEntityProfile.USERNAME,0,value);
+     addedusername = value;
            }
          }
 
          value = request.getParameter(SELECT_USERNAME);
           if(value !=null){
            if(!value.equals("")){
-             newuser.setUsername(value);
-             lastselectedusername = value;
-             addedusername = value;
+     newuser.setUsername(value);
+     lastselectedusername = value;
+     addedusername = value;
            }
          } 
 
@@ -237,29 +235,29 @@
          if(value !=null){
            value=value.trim(); 
            if(!value.equals("")){
-             newuser.setPassword(value);
-             oldprofile.setValue(EndEntityProfile.PASSWORD, 0, value);            
+     newuser.setPassword(value);
+     oldprofile.setValue(EndEntityProfile.PASSWORD, 0, value);            
            }
          }
 
          value = request.getParameter(SELECT_PASSWORD);
           if(value !=null){
            if(!value.equals("")){
-             newuser.setPassword(value);
-             lastselectedpassword = value;
+     newuser.setPassword(value);
+     lastselectedpassword = value;
            }
          } 
 
          value = request.getParameter(CHECKBOX_CLEARTEXTPASSWORD);
          if(value !=null){
            if(value.equals(CHECKBOX_VALUE)){
-             newuser.setClearTextPassword(true);
-             oldprofile.setValue(EndEntityProfile.CLEARTEXTPASSWORD, 0, EndEntityProfile.TRUE);             
+     newuser.setClearTextPassword(true);
+     oldprofile.setValue(EndEntityProfile.CLEARTEXTPASSWORD, 0, EndEntityProfile.TRUE);             
            }
            else{
-               newuser.setClearTextPassword(false);
-               oldprofile.setValue(EndEntityProfile.CLEARTEXTPASSWORD, 0, EndEntityProfile.FALSE);    
-             }
+       newuser.setClearTextPassword(false);
+       oldprofile.setValue(EndEntityProfile.CLEARTEXTPASSWORD, 0, EndEntityProfile.FALSE);    
+     }
            }
 
          value = request.getParameter(RADIO_MAXFAILEDLOGINS);
@@ -282,131 +280,131 @@
  
            value = request.getParameter(TEXTFIELD_EMAIL);
            if(value !=null){
-             value=value.trim(); 
-             oldemail = value;
-             if(!value.equals("")){
-               String emaildomain = request.getParameter(TEXTFIELD_EMAILDOMAIN);
-               if(emaildomain !=null){
-                 emaildomain=emaildomain.trim(); 
-                 if(!emaildomain.equals("")){
-                   newuser.setEmail(value + "@" + emaildomain);
-                   oldprofile.setValue(EndEntityProfile.EMAIL, 0,  emaildomain); 
-                 }
-               }
+     value=value.trim(); 
+     oldemail = value;
+     if(!value.equals("")){
+       String emaildomain = request.getParameter(TEXTFIELD_EMAILDOMAIN);
+       if(emaildomain !=null){
+         emaildomain=emaildomain.trim(); 
+         if(!emaildomain.equals("")){
+           newuser.setEmail(value + "@" + emaildomain);
+           oldprofile.setValue(EndEntityProfile.EMAIL, 0,  emaildomain); 
+         }
+       }
 
-               emaildomain = request.getParameter(SELECT_EMAILDOMAIN);
-               if(emaildomain !=null){
-                 if(!emaildomain.equals("")){
-                   newuser.setEmail(value + "@" + emaildomain);
-                   lastselectedemaildomain = emaildomain;
-                 }
-               }
-             }
+       emaildomain = request.getParameter(SELECT_EMAILDOMAIN);
+       if(emaildomain !=null){
+         if(!emaildomain.equals("")){
+           newuser.setEmail(value + "@" + emaildomain);
+           lastselectedemaildomain = emaildomain;
+         }
+       }
+     }
            }
            
            value = request.getParameter(TEXTFIELD_CARDNUMBER);
            if(value !=null){
         	   value=value.trim(); 
         	 oldcardnumber= value;
-             if(!value.equals("")){
-                   newuser.setCardNumber(value);
-                   oldprofile.setValue(EndEntityProfile.CARDNUMBER,0,value);
-                 }
-               }
+     if(!value.equals("")){
+           newuser.setCardNumber(value);
+           oldprofile.setValue(EndEntityProfile.CARDNUMBER,0,value);
+         }
+       }
            
            String subjectdn = "";
            int numberofsubjectdnfields = oldprofile.getSubjectDNFieldOrderLength();
            for(int i=0; i < numberofsubjectdnfields; i++){
-             value=null;
-             fielddata = oldprofile.getSubjectDNFieldsInOrder(i); 
+     value=null;
+     fielddata = oldprofile.getSubjectDNFieldsInOrder(i); 
 
-             if (!EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.DNEMAIL)) {
-               value = request.getParameter(TEXTFIELD_SUBJECTDN+i);
+     if (!EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.DNEMAIL)) {
+       value = request.getParameter(TEXTFIELD_SUBJECTDN+i);
+     } else {
+       if ( oldprofile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]) ||
+       		(request.getParameter(CHECKBOX_SUBJECTDN+i)!=null &&
+       		request.getParameter(CHECKBOX_SUBJECTDN+i).equals(CHECKBOX_VALUE)) )
+           value = newuser.getEmail();
+     }
+     if(value !=null){
+       value= value.trim(); 
+    	     if(EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.SN)) {
+    	    	 serialnumber = value;
+    	     }
+    		 oldprofile.setValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER], value);   
+    		 final String field = DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]), DNFieldExtractor.TYPE_SUBJECTDN) +value;
+             final String dnPart;
+             if ( field.charAt(field.length()-1)!='=' ) {
+                 dnPart = org.ietf.ldap.LDAPDN.escapeRDN(field);
              } else {
-               if ( oldprofile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]) ||
-               		(request.getParameter(CHECKBOX_SUBJECTDN+i)!=null &&
-               		request.getParameter(CHECKBOX_SUBJECTDN+i).equals(CHECKBOX_VALUE)) )
-                   value = newuser.getEmail();
+                 dnPart = field;
              }
-             if(value !=null){
-               value= value.trim(); 
-            	     if(EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.SN)) {
-            	    	 serialnumber = value;
-            	     }
-            		 oldprofile.setValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER], value);   
-            		 final String field = DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]), DNFieldExtractor.TYPE_SUBJECTDN) +value;
-                     final String dnPart;
-                     if ( field.charAt(field.length()-1)!='=' ) {
-                         dnPart = org.ietf.ldap.LDAPDN.escapeRDN(field);
-                     } else {
-                         dnPart = field;
-                     }
-            		 if(subjectdn.equals(""))
-            			 subjectdn = dnPart;
-            		 else
-            			 subjectdn += ", " + dnPart;
-              }
-             
-             value = request.getParameter(SELECT_SUBJECTDN+i);
-             if(value !=null){
-            	 value = value.trim();
-            	 if(!value.equals("")){
-            		 lastselectedsubjectdns[i] = value;
-            		 value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]), DNFieldExtractor.TYPE_SUBJECTDN) +value);
-            		 if(subjectdn.equals(""))
-            			subjectdn = value;
-            		 else
-            			subjectdn += ", " + value;
-            	 }
-             }
+    		 if(subjectdn.equals(""))
+    			 subjectdn = dnPart;
+    		 else
+    			 subjectdn += ", " + dnPart;
+      }
+     
+     value = request.getParameter(SELECT_SUBJECTDN+i);
+     if(value !=null){
+    	 value = value.trim();
+    	 if(!value.equals("")){
+    		 lastselectedsubjectdns[i] = value;
+    		 value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]), DNFieldExtractor.TYPE_SUBJECTDN) +value);
+    		 if(subjectdn.equals(""))
+    			subjectdn = value;
+    		 else
+    			subjectdn += ", " + value;
+    	 }
+     }
            }
            newuser.setSubjectDN(subjectdn);
 
            String subjectaltname = "";
            int numberofsubjectaltnamefields = oldprofile.getSubjectAltNameFieldOrderLength();
            for(int i=0; i < numberofsubjectaltnamefields; i++){
-             fielddata = oldprofile.getSubjectAltNameFieldsInOrder(i); 
-             value=null;               
-             if ( EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME) ) {
-             	if ( oldprofile.getUse(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]) ) {
+     fielddata = oldprofile.getSubjectAltNameFieldsInOrder(i); 
+     value=null;               
+     if ( EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME) ) {
+     	if ( oldprofile.getUse(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]) ) {
 					if ( oldprofile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]) ||
 						(request.getParameter(CHECKBOX_SUBJECTALTNAME+i) != null &&
 						request.getParameter(CHECKBOX_SUBJECTALTNAME+i).equals(CHECKBOX_VALUE)) ) {
 						value = newuser.getEmail();
 					}
-             	} else {
+     	} else {
 					if ( request.getParameter(TEXTFIELD_SUBJECTALTNAME+i) != null && !request.getParameter(TEXTFIELD_SUBJECTALTNAME+i).equals("") &&
 							request.getParameter(TEXTFIELD_RFC822NAME+i) != null && !request.getParameter(TEXTFIELD_RFC822NAME+i).equals("") ) {
 						value = request.getParameter(TEXTFIELD_RFC822NAME+i) + "@" + request.getParameter(TEXTFIELD_SUBJECTALTNAME+i);
 					}
-             	}
-             } else {
-               if(EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.UPN)){
-                  if(request.getParameter(TEXTFIELD_SUBJECTALTNAME+i) != null && !request.getParameter(TEXTFIELD_SUBJECTALTNAME+i).equals("") 
+     	}
+     } else {
+       if(EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.UPN)){
+          if(request.getParameter(TEXTFIELD_SUBJECTALTNAME+i) != null && !request.getParameter(TEXTFIELD_SUBJECTALTNAME+i).equals("") 
 		             && request.getParameter(TEXTFIELD_UPNNAME+i) != null && !request.getParameter(TEXTFIELD_UPNNAME+i).equals("")){
-                    value = request.getParameter(TEXTFIELD_UPNNAME+i) + "@" + 
-                            request.getParameter(TEXTFIELD_SUBJECTALTNAME+i);
-                  }
-               }else{
-                 value = request.getParameter(TEXTFIELD_SUBJECTALTNAME+i);
-               }
-             }
-             if(value !=null){
-               value=value.trim(); 
-               if(!value.equals("")){
-                 oldprofile.setValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER], value);   
-                 value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]), DNFieldExtractor.TYPE_SUBJECTALTNAME) +value);
-                 if(subjectaltname.equals(""))
-                   subjectaltname = value;
-                 else
-                   subjectaltname += ", " +value;
+            value = request.getParameter(TEXTFIELD_UPNNAME+i) + "@" + 
+                    request.getParameter(TEXTFIELD_SUBJECTALTNAME+i);
+          }
+       }else{
+         value = request.getParameter(TEXTFIELD_SUBJECTALTNAME+i);
+       }
+     }
+     if(value !=null){
+       value=value.trim(); 
+       if(!value.equals("")){
+         oldprofile.setValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER], value);   
+         value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]), DNFieldExtractor.TYPE_SUBJECTALTNAME) +value);
+         if(subjectaltname.equals(""))
+           subjectaltname = value;
+         else
+           subjectaltname += ", " +value;
 
-               }
-             }
-             value = request.getParameter(SELECT_SUBJECTALTNAME+i);
-             if(value !=null){
-               if(!value.equals("")){
-                 lastselectedsubjectaltnames[i] = value;
+       }
+     }
+     value = request.getParameter(SELECT_SUBJECTALTNAME+i);
+     if(value !=null){
+       if(!value.equals("")){
+         lastselectedsubjectaltnames[i] = value;
 	             if ( EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME) ) {
 	             	if ( !oldprofile.getUse(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]) ) {
 						if ( request.getParameter(SELECT_SUBJECTALTNAME+i) != null && !request.getParameter(SELECT_SUBJECTALTNAME+i).equals("") &&
@@ -417,52 +415,52 @@
 						}
 	             	}
 	             }
-                 if(EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.UPN)){
-                   if(request.getParameter(TEXTFIELD_UPNNAME+i) != null){
-                     value = request.getParameter(TEXTFIELD_UPNNAME+i)+ "@" + value;
-                   } 
-                 }
-                 if ( value != null ) {
+         if(EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.UPN)){
+           if(request.getParameter(TEXTFIELD_UPNNAME+i) != null){
+             value = request.getParameter(TEXTFIELD_UPNNAME+i)+ "@" + value;
+           } 
+         }
+         if ( value != null ) {
 	                 value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]), DNFieldExtractor.TYPE_SUBJECTALTNAME) +value);
 	                 if(subjectaltname.equals(""))
     	               subjectaltname = value;
         	         else
-            	       subjectaltname += ", " + value;
-                 }
-              }
-             }
+    	       subjectaltname += ", " + value;
+         }
+      }
+     }
            }
            newuser.setSubjectAltName(subjectaltname);
  
            String subjectdirattr = "";
            int numberofsubjectdirattrfields = oldprofile.getSubjectDirAttrFieldOrderLength();
            for(int i=0; i < numberofsubjectdirattrfields; i++){
-               fielddata = oldprofile.getSubjectDirAttrFieldsInOrder(i); 
-               value = request.getParameter(TEXTFIELD_SUBJECTDIRATTR+i);
-             if(value !=null){
-               value=value.trim(); 
-               if(!value.equals("")){
-                 oldprofile.setValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER], value);   
-                 value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]), DNFieldExtractor.TYPE_SUBJECTDIRATTR) +value);
-                 if(subjectdirattr.equals(""))
-                   subjectdirattr = value;
-                 else
-                   subjectdirattr += ", " +value;
+       fielddata = oldprofile.getSubjectDirAttrFieldsInOrder(i); 
+       value = request.getParameter(TEXTFIELD_SUBJECTDIRATTR+i);
+     if(value !=null){
+       value=value.trim(); 
+       if(!value.equals("")){
+         oldprofile.setValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER], value);   
+         value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]), DNFieldExtractor.TYPE_SUBJECTDIRATTR) +value);
+         if(subjectdirattr.equals(""))
+           subjectdirattr = value;
+         else
+           subjectdirattr += ", " +value;
 
-               }
-             }
-             value = request.getParameter(SELECT_SUBJECTDIRATTR+i);
-             if(value !=null){
-               if(!value.equals("")){
-                 lastselectedsubjectdirattrs[i] = value;
-                 value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]), DNFieldExtractor.TYPE_SUBJECTDIRATTR) +value);
-                 if(subjectdirattr.equals(""))
-                   subjectdirattr = value;
-                 else
-                   subjectdirattr += ", " + value;
-                 
-              }
-             }
+       }
+     }
+     value = request.getParameter(SELECT_SUBJECTDIRATTR+i);
+     if(value !=null){
+       if(!value.equals("")){
+         lastselectedsubjectdirattrs[i] = value;
+         value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]), DNFieldExtractor.TYPE_SUBJECTDIRATTR) +value);
+         if(subjectdirattr.equals(""))
+           subjectdirattr = value;
+         else
+           subjectdirattr += ", " + value;
+         
+      }
+     }
            }
            newuser.setSubjectDirAttributes(subjectdirattr);
 
@@ -477,39 +475,39 @@
            }
            value = request.getParameter(CHECKBOX_KEYRECOVERABLE);
            if(value !=null){
-             if(value.equals(CHECKBOX_VALUE)){
-               newuser.setKeyRecoverable(true);   
-               oldprofile.setValue(EndEntityProfile.KEYRECOVERABLE, 0, EndEntityProfile.TRUE);                          
-             }
-             else{
-               newuser.setKeyRecoverable(false);   
-               oldprofile.setValue(EndEntityProfile.KEYRECOVERABLE, 0, EndEntityProfile.FALSE);               
-             }
+     if(value.equals(CHECKBOX_VALUE)){
+       newuser.setKeyRecoverable(true);   
+       oldprofile.setValue(EndEntityProfile.KEYRECOVERABLE, 0, EndEntityProfile.TRUE);                          
+     }
+     else{
+       newuser.setKeyRecoverable(false);   
+       oldprofile.setValue(EndEntityProfile.KEYRECOVERABLE, 0, EndEntityProfile.FALSE);               
+     }
            }  
 
            value = request.getParameter(CHECKBOX_SENDNOTIFICATION);
            if(value !=null){
-             if(value.equals(CHECKBOX_VALUE)){
-               newuser.setSendNotification(true);   
-               oldprofile.setValue(EndEntityProfile.SENDNOTIFICATION, 0, EndEntityProfile.TRUE);                          
-             }
-             else{
-               newuser.setSendNotification(false);   
-               oldprofile.setValue(EndEntityProfile.SENDNOTIFICATION, 0, EndEntityProfile.FALSE);               
-             }
+     if(value.equals(CHECKBOX_VALUE)){
+       newuser.setSendNotification(true);   
+       oldprofile.setValue(EndEntityProfile.SENDNOTIFICATION, 0, EndEntityProfile.TRUE);                          
+     }
+     else{
+       newuser.setSendNotification(false);   
+       oldprofile.setValue(EndEntityProfile.SENDNOTIFICATION, 0, EndEntityProfile.FALSE);               
+     }
            } 
            value = request.getParameter(CHECKBOX_PRINT);
            if(value !=null){
-             if(value.equals(CHECKBOX_VALUE)){
-               newuser.setPrintUserData(true);   
-               oldprofile.setPrintingDefault(true);                          
-             }
-             else{
-               newuser.setPrintUserData(false);   
-               oldprofile.setPrintingDefault(false);               
-             }
+     if(value.equals(CHECKBOX_VALUE)){
+       newuser.setPrintUserData(true);   
+       oldprofile.setPrintingDefault(true);                          
+     }
+     else{
+       newuser.setPrintUserData(false);   
+       oldprofile.setPrintingDefault(false);               
+     }
            }            
-            
+    
            // Issuance revocation reason, what state a newly issued certificate will have
 			if ( oldprofile.getUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0) ) {
 				value = request.getParameter(SELECT_ISSUANCEREVOCATIONREASON);
@@ -550,9 +548,9 @@
 
            int hardtokenissuer = SecConst.NO_HARDTOKENISSUER;
            if(tokentype > SecConst.TOKEN_SOFT && request.getParameter(SELECT_HARDTOKENISSUER) != null){
-             value = request.getParameter(SELECT_HARDTOKENISSUER);
-             hardtokenissuer = Integer.parseInt(value);  
-             oldprofile.setValue(EndEntityProfile.DEFAULTTOKENISSUER, 0, value);  
+     value = request.getParameter(SELECT_HARDTOKENISSUER);
+     hardtokenissuer = Integer.parseInt(value);  
+     oldprofile.setValue(EndEntityProfile.DEFAULTTOKENISSUER, 0, value);  
            }
            lastselectedhardtokenissuer = hardtokenissuer;
            newuser.setHardTokenIssuerId(lastselectedhardtokenissuer);   
@@ -605,32 +603,32 @@
            
            // See if user already exists
            if(rabean.userExist(newuser.getUsername())){
-             userexists = true;
-             useoldprofile = true;   
+     userexists = true;
+     useoldprofile = true;   
            } else{
-             if( request.getParameter(BUTTON_RELOAD) != null ){
-              useoldprofile = true;   
-             }else{
-               try{
-                 rabean.addUser(newuser); 
-                 useradded=true;
-               }catch(org.ejbca.core.model.approval.ApprovalException e){
-            	   approvalmessage = ejbcawebbean.getText("THEREALREADYEXISTSAPPROVAL");
-               }catch(org.ejbca.core.model.approval.WaitingForApprovalException e){
-            	   approvalmessage = ejbcawebbean.getText("REQHAVEBEENADDEDFORAPPR");
-               }catch(org.ejbca.core.EjbcaException e){
-            	   if(e.getErrorCode().equals(ErrorCode.SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS)){
-            		   approvalmessage = ejbcawebbean.getText("SERIALNUMBERALREADYEXISTS");
-            	   }
-            	   if(e.getErrorCode().equals(ErrorCode.CA_NOT_EXISTS)){
-            		   approvalmessage = ejbcawebbean.getText("CADOESNTEXIST");
-            	   }
-            	   if(e.getErrorCode().equals(ErrorCode.FIELD_VALUE_NOT_VALID)){
-            		   approvalmessage = e.getMessage();
-            	   }
-               }
-               
-             }
+     if( request.getParameter(BUTTON_RELOAD) != null ){
+      useoldprofile = true;   
+     }else{
+       try{
+         rabean.addUser(newuser); 
+         useradded=true;
+       }catch(org.ejbca.core.model.approval.ApprovalException e){
+    	   approvalmessage = ejbcawebbean.getText("THEREALREADYEXISTSAPPROVAL");
+       }catch(org.ejbca.core.model.approval.WaitingForApprovalException e){
+    	   approvalmessage = ejbcawebbean.getText("REQHAVEBEENADDEDFORAPPR");
+       }catch(org.ejbca.core.EjbcaException e){
+    	   if(e.getErrorCode().equals(ErrorCode.SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS)){
+    		   approvalmessage = ejbcawebbean.getText("SERIALNUMBERALREADYEXISTS");
+    	   }
+    	   if(e.getErrorCode().equals(ErrorCode.CA_NOT_EXISTS)){
+    		   approvalmessage = ejbcawebbean.getText("CADOESNTEXIST");
+    	   }
+    	   if(e.getErrorCode().equals(ErrorCode.FIELD_VALUE_NOT_VALID)){
+    		   approvalmessage = e.getMessage();
+    	   }
+       }
+       
+     }
            }
          }
       }
@@ -691,17 +689,17 @@
         tokenissuers = new ArrayList[availabletokens.length];
         for(int i=0;i < availabletokens.length;i++){
           if(Integer.parseInt(availabletokens[i]) > SecConst.TOKEN_SOFT){
-            tokenissuers[i] = new ArrayList();
-            for(int j=0; j < availablehardtokenissuers.length; j++){
-              HardTokenIssuerData issuerdata = tokenbean.getHardTokenIssuerData(Integer.parseInt(availablehardtokenissuers[j]));
-              if(issuerdata !=null){
-                Iterator iter = issuerdata.getHardTokenIssuer().getAvailableHardTokenProfiles().iterator();
-                while(iter.hasNext()){
-                  if(Integer.parseInt(availabletokens[i]) == ((Integer) iter.next()).intValue())
-                    tokenissuers[i].add(Integer.valueOf(availablehardtokenissuers[j]));
-                }
-              }
-            }
+    tokenissuers[i] = new ArrayList();
+    for(int j=0; j < availablehardtokenissuers.length; j++){
+      HardTokenIssuerInformation issuerdata = tokenbean.getHardTokenIssuerInformation(Integer.parseInt(availablehardtokenissuers[j]));
+      if(issuerdata !=null){
+        Iterator iter = issuerdata.getHardTokenIssuer().getAvailableHardTokenProfiles().iterator();
+        while(iter.hasNext()){
+          if(Integer.parseInt(availabletokens[i]) == ((Integer) iter.next()).intValue())
+            tokenissuers[i].add(Integer.valueOf(availablehardtokenissuers[j]));
+        }
+      }
+    }
           }  
         } 
       }
@@ -716,7 +714,7 @@
           authcas = profile.getAvailableCAs();
           // If we have selected 'Any CA' we will display all authorized CAs (wich should be all for a superadmin)
           if (authcas.contains(String.valueOf(SecConst.ALLCAS))) {
-              authcas = ejbcawebbean.getAuthorizedCAIds();
+      authcas = ejbcawebbean.getAuthorizedCAIds();
           }
           if ((lastselectedca == null) || lastselectedca.equals("")) {
         	  lastselectedca = String.valueOf(profile.getDefaultCA());

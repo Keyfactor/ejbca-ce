@@ -17,7 +17,7 @@ import java.util.Collection;
 import java.util.Date;
 
 import org.cesecore.util.StringTools;
-import org.ejbca.core.model.hardtoken.HardTokenData;
+import org.ejbca.core.model.hardtoken.HardTokenInformation;
 import org.ejbca.core.model.hardtoken.types.HardToken;
 
 
@@ -33,10 +33,10 @@ public class HardTokenView implements java.io.Serializable, Cloneable {
 
     // Public constants.
     public HardTokenView() {
-        this.tokendata = new HardTokenData();        
+        this.tokendata = new HardTokenInformation();        
     }
 
-    public HardTokenView(HardTokenData newtokendata) {
+    public HardTokenView(HardTokenInformation newtokendata) {
         tokendata = newtokendata;        
     }
 
@@ -116,5 +116,5 @@ public class HardTokenView implements java.io.Serializable, Cloneable {
 
     // Private constants.
     // Private methods.
-    private HardTokenData tokendata;    
+    private HardTokenInformation tokendata;    
 }

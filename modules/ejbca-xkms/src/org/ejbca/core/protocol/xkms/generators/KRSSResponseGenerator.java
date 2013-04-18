@@ -72,7 +72,7 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.keyrecovery.KeyRecoveryData;
+import org.ejbca.core.model.keyrecovery.KeyRecoveryInformation;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.core.protocol.xkms.common.XKMSUtil;
@@ -218,7 +218,7 @@ public class KRSSResponseGenerator extends
 				PublicKey certKey = null;
 				PrivateKey privKey = null;
 				KeyPair keyPair = null;
-				KeyRecoveryData keyData = null;
+				KeyRecoveryInformation keyData = null;
 				boolean reusecertificate = false;
 				if(loadkeys){
 					EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(endEntityInformation.getEndEntityProfileId());

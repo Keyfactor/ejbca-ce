@@ -109,7 +109,7 @@ import org.ejbca.core.model.ra.FieldValidator;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RAAuthorization;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
-import org.ejbca.core.model.ra.UserDataFiller;
+import org.ejbca.core.model.ra.EndEntityInformationFiller;
 import org.ejbca.core.model.ra.UserNotificationParamGen;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.ICustomNotificationRecipient;
@@ -245,7 +245,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         final int profileId = userdata.getEndEntityProfileId();
         final EndEntityProfile profile = endEntityProfileSession.getEndEntityProfileNoClone(profileId);
         if (profile.getAllowMergeDnWebServices()) {
-            userdata = UserDataFiller.fillUserDataWithDefaultValues(userdata, profile);
+            userdata = EndEntityInformationFiller.fillUserDataWithDefaultValues(userdata, profile);
         }
         addUser(admin, userdata, clearpwd);
     }

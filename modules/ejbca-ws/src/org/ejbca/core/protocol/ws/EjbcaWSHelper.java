@@ -81,7 +81,7 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.hardtoken.HardTokenConstants;
-import org.ejbca.core.model.hardtoken.HardTokenData;
+import org.ejbca.core.model.hardtoken.HardTokenInformation;
 import org.ejbca.core.model.hardtoken.types.EnhancedEIDHardToken;
 import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
 import org.ejbca.core.model.hardtoken.types.TurkishEIDHardToken;
@@ -560,7 +560,7 @@ public class EjbcaWSHelper {
 	 * @param data
 	 * @throws EjbcaException 
 	 */
-	protected HardTokenDataWS convertHardTokenToWS(HardTokenData data, Collection<java.security.cert.Certificate> certificates, boolean includePUK) throws EjbcaException {
+	protected HardTokenDataWS convertHardTokenToWS(HardTokenInformation data, Collection<java.security.cert.Certificate> certificates, boolean includePUK) throws EjbcaException {
 		HardTokenDataWS retval = new HardTokenDataWS();
 		retval.setHardTokenSN(data.getTokenSN());
 		retval.setLabel(data.getHardToken().getLabel());

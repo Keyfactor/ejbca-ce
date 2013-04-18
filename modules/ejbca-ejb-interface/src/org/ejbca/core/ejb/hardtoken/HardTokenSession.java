@@ -22,11 +22,11 @@ import java.util.TreeMap;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.ejbca.core.model.hardtoken.HardTokenData;
+import org.ejbca.core.model.hardtoken.HardTokenInformation;
 import org.ejbca.core.model.hardtoken.HardTokenDoesntExistsException;
 import org.ejbca.core.model.hardtoken.HardTokenExistsException;
 import org.ejbca.core.model.hardtoken.HardTokenIssuer;
-import org.ejbca.core.model.hardtoken.HardTokenIssuerData;
+import org.ejbca.core.model.hardtoken.HardTokenIssuerInformation;
 import org.ejbca.core.model.hardtoken.HardTokenProfileExistsException;
 import org.ejbca.core.model.hardtoken.UnavailableTokenException;
 import org.ejbca.core.model.hardtoken.profiles.HardTokenProfile;
@@ -167,7 +167,7 @@ public interface HardTokenSession {
      * Returns the available hard token issuers authorized to the administrator.
      * @return A collection of available HardTokenIssuerData.
      */
-    Collection<HardTokenIssuerData> getHardTokenIssuerDatas(AuthenticationToken admin);
+    Collection<HardTokenIssuerInformation> getHardTokenIssuerDatas(AuthenticationToken admin);
 
     /**
      * Returns the available hard token issuer aliases authorized to the
@@ -181,13 +181,13 @@ public interface HardTokenSession {
      * Returns the available hard token issuers authorized to the administrator.
      * @return A TreeMap of available hard token issuers.
      */
-    TreeMap<String, HardTokenIssuerData> getHardTokenIssuers(AuthenticationToken admin);
+    TreeMap<String, HardTokenIssuerInformation> getHardTokenIssuers(AuthenticationToken admin);
 
     /** @return the hard token issuer data or null if it doesn't exist. */
-    org.ejbca.core.model.hardtoken.HardTokenIssuerData getHardTokenIssuerData(String alias);
+    org.ejbca.core.model.hardtoken.HardTokenIssuerInformation getHardTokenIssuerInformation(String alias);
 
     /** @return the hard token issuer data or null if it doesn't exist. */
-    org.ejbca.core.model.hardtoken.HardTokenIssuerData getHardTokenIssuerData(int id);
+    org.ejbca.core.model.hardtoken.HardTokenIssuerInformation getHardTokenIssuerInformation(int id);
 
     /** @return the number of available hard token issuers. */
     int getNumberOfHardTokenIssuers(AuthenticationToken admin);
@@ -264,7 +264,7 @@ public interface HardTokenSession {
      * @param tokensn The serial number of token.
      * @return the hard token data or null if tokensn does not exist in database.
      */
-    HardTokenData getHardToken(AuthenticationToken admin, String tokensn, boolean includePUK) throws AuthorizationDeniedException;
+    HardTokenInformation getHardToken(AuthenticationToken admin, String tokensn, boolean includePUK) throws AuthorizationDeniedException;
 
     /**
      * Returns hard token data for the specified user.
@@ -273,7 +273,7 @@ public interface HardTokenSession {
      * @param username The username owning the tokens.
      * @return a Collection of all hard token user data.
      */
-    Collection<HardTokenData> getHardTokens(AuthenticationToken admin, String username, boolean includePUK);
+    Collection<HardTokenInformation> getHardTokens(AuthenticationToken admin, String username, boolean includePUK);
 
     /**
      * Method that searches the database for a tokensn. It returns all
