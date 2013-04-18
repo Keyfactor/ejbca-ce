@@ -41,7 +41,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.hardtoken.HardTokenIssuer;
-import org.ejbca.core.model.hardtoken.HardTokenIssuerData;
+import org.ejbca.core.model.hardtoken.HardTokenIssuerInformation;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -81,7 +81,7 @@ public class HardTokenIssuerTest {
         issuer.setDescription("TEST");
         ret = hardTokenSession.addHardTokenIssuer(internalAdmin, "TEST", 3, issuer);
         assertTrue("Creating Hard Token Issuer failed", ret);
-        HardTokenIssuerData data = hardTokenSession.getHardTokenIssuerData("TEST");
+        HardTokenIssuerInformation data = hardTokenSession.getHardTokenIssuerInformation("TEST");
         assertEquals("TEST", data.getHardTokenIssuer().getDescription());
         log.trace("<test01AddHardTokenIssuer()");
     }
@@ -92,9 +92,9 @@ public class HardTokenIssuerTest {
         boolean ret = false;
         ret = hardTokenSession.renameHardTokenIssuer(internalAdmin, "TEST", "TEST2", 4);
         assertTrue("Renaming Hard Token Issuer failed", ret);
-        HardTokenIssuerData data = hardTokenSession.getHardTokenIssuerData("TEST2");
+        HardTokenIssuerInformation data = hardTokenSession.getHardTokenIssuerInformation("TEST2");
         assertEquals("TEST", data.getHardTokenIssuer().getDescription());
-        data = hardTokenSession.getHardTokenIssuerData("TEST");
+        data = hardTokenSession.getHardTokenIssuerInformation("TEST");
         assertNull(data);
         log.trace("<test02RenameHardTokenIssuer()");
     }
@@ -115,9 +115,9 @@ public class HardTokenIssuerTest {
         boolean ret = false;
         ret = hardTokenSession.cloneHardTokenIssuer(internalAdmin, "TEST2", "TEST", 4);
         assertTrue("Cloning hard token issuer failed", ret);
-        HardTokenIssuerData data = hardTokenSession.getHardTokenIssuerData("TEST2");
+        HardTokenIssuerInformation data = hardTokenSession.getHardTokenIssuerInformation("TEST2");
         assertEquals("TEST", data.getHardTokenIssuer().getDescription());
-        data = hardTokenSession.getHardTokenIssuerData("TEST");
+        data = hardTokenSession.getHardTokenIssuerInformation("TEST");
         assertEquals("TEST", data.getHardTokenIssuer().getDescription());
 
         log.trace("<test03CloneHardTokenIssuer()");
@@ -128,12 +128,12 @@ public class HardTokenIssuerTest {
     public void test04EditHardTokenIssuer() throws Exception {
         log.trace(">test04EditHardTokenIssuer()");
         boolean ret = false;
-        HardTokenIssuerData issuerdata = hardTokenSession.getHardTokenIssuerData("TEST");
+        HardTokenIssuerInformation issuerdata = hardTokenSession.getHardTokenIssuerInformation("TEST");
         assertTrue("Retrieving HardTokenIssuer failed", issuerdata.getHardTokenIssuer().getDescription().equals("TEST"));
         issuerdata.getHardTokenIssuer().setDescription("TEST2");
         ret = hardTokenSession.changeHardTokenIssuer(internalAdmin, "TEST", issuerdata.getHardTokenIssuer());
         assertTrue("Editing HardTokenIssuer failed", ret);
-        HardTokenIssuerData data = hardTokenSession.getHardTokenIssuerData("TEST");
+        HardTokenIssuerInformation data = hardTokenSession.getHardTokenIssuerInformation("TEST");
         assertEquals("TEST2", data.getHardTokenIssuer().getDescription());
         log.trace("<test04EditHardTokenIssuer()");
     }

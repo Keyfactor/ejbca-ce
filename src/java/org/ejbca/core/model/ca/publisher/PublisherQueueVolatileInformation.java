@@ -13,6 +13,7 @@
  
 package org.ejbca.core.model.ca.publisher;
 
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -28,25 +29,15 @@ import org.ejbca.core.model.InternalEjbcaResources;
  * The model holds additional data needed to be able to republish a certificate or CRL after publishing have failed.
  * This data will be stored in PublicFailQueueData. 
  *
- * @author Tomas Gustavsson
  * @version $Id$
  */
-public class PublisherQueueVolatileData extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
+public class PublisherQueueVolatileInformation extends UpgradeableDataHashMap implements Serializable, Cloneable {
 
-	private static final Logger log = Logger.getLogger(PublisherQueueVolatileData.class);
+	private static final long serialVersionUID = 3423544212169635898L;
+    private static final Logger log = Logger.getLogger(PublisherQueueVolatileInformation.class);
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
-    /**
-     * Determines if a de-serialized file is compatible with this class.
-     *
-     * Maintainers must change this value if and only if the new version
-     * of this class is not compatible with old versions. See Sun docs
-     * for <a href=http://java.sun.com/products/jdk/1.1/docs/guide
-     * /serialization/spec/version.doc.html> details. </a>
-     *
-     */
-    private static final long serialVersionUID = 100L;
     
     public static final float LATEST_VERSION = 1;    
 
@@ -68,7 +59,7 @@ public class PublisherQueueVolatileData extends UpgradeableDataHashMap implement
 
     // Public methods.
     /** Creates a new instance of EndEntity Profile */
-    public PublisherQueueVolatileData() {
+    public PublisherQueueVolatileInformation() {
     }
 
     public String getUsername(){ 
@@ -137,7 +128,7 @@ public class PublisherQueueVolatileData extends UpgradeableDataHashMap implement
     
     @SuppressWarnings("unchecked")
     public Object clone() throws CloneNotSupportedException {
-      PublisherQueueVolatileData clone = new PublisherQueueVolatileData();
+      PublisherQueueVolatileInformation clone = new PublisherQueueVolatileInformation();
       @SuppressWarnings("rawtypes")
     HashMap clonedata = (HashMap) clone.saveData();
 

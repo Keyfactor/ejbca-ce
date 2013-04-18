@@ -63,7 +63,7 @@ public class UserDataFillerTest {
     	userData.setSendNotification(true);
     	userData.setPassword("userPassword");
     	String expectedUserDn="CN=userName,O=linagora,C=fr";
-    	UserDataFiller.fillUserDataWithDefaultValues(userData, profile);
+    	EndEntityInformationFiller.fillUserDataWithDefaultValues(userData, profile);
     	assertEquals("userName", userData.getUsername());
     	assertTrue(userData.getSendNotification());
     	assertEquals("user@linagora.com", userData.getEmail());
@@ -76,7 +76,7 @@ public class UserDataFillerTest {
 	@Test
     public void testFillUserDataWithDefaultValuesUserName() {
     	userData.setUsername("");
-    	UserDataFiller.fillUserDataWithDefaultValues(userData, profile);
+    	EndEntityInformationFiller.fillUserDataWithDefaultValues(userData, profile);
     	assertTrue(!userData.getUsername().equals("userName"));
     	assertEquals("defaultUserName", userData.getUsername());
     }
@@ -86,7 +86,7 @@ public class UserDataFillerTest {
 	@Test
    public void testFillUserDataWithDefaultValuesSendNotification() {
     	profile.setValue(EndEntityProfile.SENDNOTIFICATION, 0, "true");
-    	UserDataFiller.fillUserDataWithDefaultValues(userData, profile);
+    	EndEntityInformationFiller.fillUserDataWithDefaultValues(userData, profile);
     	assertTrue(userData.getSendNotification());
     }
     /**
@@ -95,12 +95,12 @@ public class UserDataFillerTest {
 	@Test
     public void testFillUserDataWithDefaultValuesEmail() {
     	userData.setEmail("");
-    	UserDataFiller.fillUserDataWithDefaultValues(userData, profile);
+    	EndEntityInformationFiller.fillUserDataWithDefaultValues(userData, profile);
     	assertEquals("defaultMail@linagora.com", userData.getEmail());
     	userData.setEmail("");
     	//Email is not merged because profile's email is not a valid email
     	profile.setValue(EndEntityProfile.EMAIL, 0, "@linagora.com");
-    	UserDataFiller.fillUserDataWithDefaultValues(userData, profile);
+    	EndEntityInformationFiller.fillUserDataWithDefaultValues(userData, profile);
     	//@linagora.com is not a valid e-mail address, no merge
     	assertTrue(userData.getEmail().equals(""));
     	
@@ -110,7 +110,7 @@ public class UserDataFillerTest {
      */
 	@Test
     public void testFillUserDataWithDefaultValuesPassword() {
-    	UserDataFiller.fillUserDataWithDefaultValues(userData, profile);
+    	EndEntityInformationFiller.fillUserDataWithDefaultValues(userData, profile);
     	assertEquals("defaultPassword", userData.getPassword());
     }
 }

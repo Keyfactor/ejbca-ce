@@ -55,9 +55,9 @@ import org.junit.Test;
  * @version $Id$
  *
  */
-public class DsaSignSessionTest extends SignSessionCommon {
+public class SignSessionWithDsaTest extends SignSessionCommon {
 
-    private static final Logger log = Logger.getLogger(DsaSignSessionTest.class);
+    private static final Logger log = Logger.getLogger(SignSessionWithDsaTest.class);
     
     private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("DsaSignSessionTest"));
     private static final String DSA_USERNAME = "DsaUser";
@@ -178,6 +178,6 @@ public class DsaSignSessionTest extends SignSessionCommon {
     
     @Override
     public String getRoleName() {
-        return DsaSignSessionTest.class.getSimpleName();
+        return SignSessionWithDsaTest.class.getSimpleName();
     }
 }

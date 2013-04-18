@@ -17,7 +17,7 @@ package org.ejbca.ui.cli.hardtoken.importer;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.ejbca.core.model.hardtoken.HardTokenData;
+import org.ejbca.core.model.hardtoken.HardTokenInformation;
 
 
 
@@ -50,7 +50,7 @@ public interface IHardTokenImporter {
 	 * @param null, if this is the last entry in the database.
 	 *
 	 */
-	HardTokenData readHardTokenData() throws IOException;
+	HardTokenInformation readHardTokenData() throws IOException;
 	
 	/**
 	 * Method reponsible for finalizing the importer.

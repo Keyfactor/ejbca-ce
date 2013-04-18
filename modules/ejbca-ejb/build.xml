@@ -216,13 +216,13 @@
 		<include name="org/ejbca/core/model/ca/publisher/PublisherQueueData.java"/>
 		<include name="org/ejbca/core/model/ca/publisher/Publisher*Exception.java"/>
 		<include name="org/ejbca/core/model/ca/IllegalKeyException.java"/>
-		<include name="org/ejbca/core/model/hardtoken/HardTokenIssuerData.java"/>
+		<include name="org/ejbca/core/model/hardtoken/HardTokenIssuerInformation.java"/>
 		<include name="org/ejbca/core/model/hardtoken/UnavailableTokenException.java"/>
-		<include name="org/ejbca/core/model/hardtoken/HardTokenData.java"/>
+		<include name="org/ejbca/core/model/hardtoken/HardTokenInformation.java"/>
 		<include name="org/ejbca/core/model/hardtoken/HardTokenDoesntExistsException.java"/>
 		<include name="org/ejbca/core/model/hardtoken/HardTokenExistsException.java"/>
 		<include name="org/ejbca/core/model/hardtoken/HardTokenProfileExistsException.java"/>
-		<include name="org/ejbca/core/model/keyrecovery/KeyRecoveryData.java"/>
+		<include name="org/ejbca/core/model/keyrecovery/KeyRecoveryInformation.java"/>
 		<include name="org/ejbca/core/model/ra/AlreadyRevokedException.java"/>
        	<include name="org/ejbca/core/model/ra/RevokeBackDateNotAllowedForProfileException.java"/>
 		<include name="org/ejbca/core/model/ra/NotFoundException.java"/>

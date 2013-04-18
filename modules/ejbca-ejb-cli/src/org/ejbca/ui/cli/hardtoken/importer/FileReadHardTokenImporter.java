@@ -18,7 +18,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.ejbca.core.model.hardtoken.HardTokenData;
+import org.ejbca.core.model.hardtoken.HardTokenInformation;
 
 /**
  * A abstract base class that should be used by all
@@ -54,7 +54,7 @@ public abstract class FileReadHardTokenImporter implements IHardTokenImporter {
 	/**
 	 * @see org.ejbca.ui.cli.hardtoken.importer.IHardTokenImporter#readHardTokenData()
 	 */
-	public abstract HardTokenData readHardTokenData() throws IOException ;
+	public abstract HardTokenInformation readHardTokenData() throws IOException ;
 
 
 	/**

@@ -26,7 +26,7 @@ import java.io.Serializable;
  * 
  * @version $Id$
  */
-public class HardTokenIssuerData implements Serializable, Comparable<HardTokenIssuerData> {
+public class HardTokenIssuerInformation implements Serializable, Comparable<HardTokenIssuerInformation> {
 
     private static final long serialVersionUID = 4736415526364602434L;
 
@@ -35,7 +35,7 @@ public class HardTokenIssuerData implements Serializable, Comparable<HardTokenIs
     private int roleDataId;
     private HardTokenIssuer hardtokenissuer;
 
-    public HardTokenIssuerData(int hardtokenissuerid, String alias, int roleDataId, HardTokenIssuer hardtokenissuer) {
+    public HardTokenIssuerInformation(int hardtokenissuerid, String alias, int roleDataId, HardTokenIssuer hardtokenissuer) {
         this.hardtokenissuerid = hardtokenissuerid;
         this.alias = alias;
         this.roleDataId = roleDataId;
@@ -74,7 +74,7 @@ public class HardTokenIssuerData implements Serializable, Comparable<HardTokenIs
         this.hardtokenissuer = hardtokenissuer;
     }
 
-    public int compareTo(HardTokenIssuerData obj) {
+    public int compareTo(HardTokenIssuerInformation obj) {
         return this.alias.compareTo(obj.getAlias());
     }
 

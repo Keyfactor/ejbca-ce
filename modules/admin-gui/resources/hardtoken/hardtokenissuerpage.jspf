@@ -1,4 +1,4 @@
-<% HardTokenIssuerData issuerdata = tokenbean.getHardTokenIssuerData(alias);
+<% HardTokenIssuerInformation issuerdata = tokenbean.getHardTokenIssuerInformation(alias);
    
    TreeMap hardtokenprofiles = ejbcawebbean.getInformationMemory().getHardTokenProfiles();
 

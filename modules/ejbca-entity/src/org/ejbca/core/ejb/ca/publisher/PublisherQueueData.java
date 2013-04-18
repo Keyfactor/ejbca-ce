@@ -37,7 +37,7 @@ import org.cesecore.util.Base64PutHashMap;
 import org.cesecore.util.GUIDGenerator;
 import org.cesecore.util.ValueExtractor;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
-import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileData;
+import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
 
 /**
  * Entity Bean representing publisher failure data. Data is stored here when
@@ -83,7 +83,7 @@ public class PublisherQueueData extends ProtectedData implements Serializable {
      *            is one of PublishQueueData.PUBLISH_TYPE_CERT or CRL
      * @return null
      */
-    public PublisherQueueData(int publisherId, int publishType, String fingerprint, PublisherQueueVolatileData queueData, int publishStatus) {
+    public PublisherQueueData(int publisherId, int publishType, String fingerprint, PublisherQueueVolatileInformation queueData, int publishStatus) {
         String pk = GUIDGenerator.generateGUID(this);
         setPk(pk);
         setTimeCreated(new Date().getTime());
@@ -165,8 +165,8 @@ public class PublisherQueueData extends ProtectedData implements Serializable {
      * @return VolatileData is optional in publisher queue data
      */
     @Transient
-    public PublisherQueueVolatileData getPublisherQueueVolatileData() {
-        PublisherQueueVolatileData ret = null;
+    public PublisherQueueVolatileInformation getPublisherQueueVolatileData() {
+        PublisherQueueVolatileInformation ret = null;
         try {
             String vd = getVolatileData();
             if ((vd != null) && (vd.length() > 0)) {
@@ -177,7 +177,7 @@ public class PublisherQueueData extends ProtectedData implements Serializable {
                 decoder.close();
                 // Handle Base64 encoded string values
                 HashMap<?, ?> data = new Base64GetHashMap(h);
-                ret = new PublisherQueueVolatileData();
+                ret = new PublisherQueueVolatileInformation();
                 ret.loadData(data);
                 if (ret.isUpgraded()) {
                     setPublisherQueueVolatileData(ret);
@@ -196,7 +196,7 @@ public class PublisherQueueData extends ProtectedData implements Serializable {
      *            is optional in publisher queue data
      */
     @SuppressWarnings("unchecked")
-    public void setPublisherQueueVolatileData(PublisherQueueVolatileData qd) {
+    public void setPublisherQueueVolatileData(PublisherQueueVolatileInformation qd) {
         if (qd != null) {
             // We must base64 encode string for UTF safety
             HashMap<Object, Object> a = new Base64PutHashMap();
