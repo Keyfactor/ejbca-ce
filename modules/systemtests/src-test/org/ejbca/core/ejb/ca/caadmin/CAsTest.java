@@ -1233,12 +1233,12 @@ public class CAsTest extends CaTestCase {
             final String fp1 = CertTools.getFingerprintAsString(iter.next());
             certinfo = certificateStoreSession.getCertificateInfo(fp1);
             assertEquals("Certificate should have status REVOKED", CertificateConstants.CERT_REVOKED, certinfo.getStatus());
-            assertEquals("Revocation reason should be CACOMPROMISE", RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION, certinfo.getRevocationReason());
+            assertEquals("Revocation reason should be CESSATIONOFOPERATION", RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION, certinfo.getRevocationReason());
             final String fp2 = CertTools.getFingerprintAsString(iter.next());
             assertFalse(fp1.equals(fp2));
             certinfo = certificateStoreSession.getCertificateInfo(fp2);
             assertEquals("Certificate should have status REVOKED", CertificateConstants.CERT_REVOKED, certinfo.getStatus());            
-            assertEquals("Revocation reason should be CACOMPROMISE", RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION, certinfo.getRevocationReason());
+            assertEquals("Revocation reason should be CESSATIONOFOPERATION", RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION, certinfo.getRevocationReason());
             
         } catch (CAExistsException pee) {
             log.info("CA exists: ", pee);
@@ -1430,12 +1430,12 @@ public class CAsTest extends CaTestCase {
             final String fp1 = CertTools.getFingerprintAsString(iter.next());
             certinfo = certificateStoreSession.getCertificateInfo(fp1);
             assertEquals("Certificate should have status REVOKED", CertificateConstants.CERT_REVOKED, certinfo.getStatus());
-            assertEquals("Revocation reason should be CACOMPROMISE", RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION, certinfo.getRevocationReason());
+            assertEquals("Revocation reason should be CESSATIONOFOPERATION", RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION, certinfo.getRevocationReason());
             final String fp2 = CertTools.getFingerprintAsString(iter.next());
             assertFalse(fp1.equals(fp2));
             certinfo = certificateStoreSession.getCertificateInfo(fp2);
             assertEquals("Certificate should have status REVOKED", CertificateConstants.CERT_REVOKED, certinfo.getStatus());            
-            assertEquals("Revocation reason should be CACOMPROMISE", RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION, certinfo.getRevocationReason());
+            assertEquals("Revocation reason should be CESSATIONOFOPERATION", RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION, certinfo.getRevocationReason());
         } finally {
             // Remove the test CA
             removeTestCA(caname);
