@@ -31,9 +31,9 @@ import org.ejbca.core.ejb.hardtoken.HardTokenBatchJobSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
-import org.ejbca.core.model.hardtoken.HardTokenData;
+import org.ejbca.core.model.hardtoken.HardTokenInformation;
 import org.ejbca.core.model.hardtoken.HardTokenIssuer;
-import org.ejbca.core.model.hardtoken.HardTokenIssuerData;
+import org.ejbca.core.model.hardtoken.HardTokenIssuerInformation;
 import org.ejbca.core.model.hardtoken.HardTokenIssuerDoesntExistsException;
 import org.ejbca.core.model.hardtoken.HardTokenIssuerExistsException;
 import org.ejbca.core.model.util.EjbLocalHelper;
@@ -88,8 +88,8 @@ public class HardTokenInterfaceBean implements Serializable {
     /** Returns the first found hard token for the given username. */
     public HardTokenView getHardTokenViewWithUsername(String username, boolean includePUK) {
         this.result = null;
-        Collection<HardTokenData> res = hardtokensession.getHardTokens(admin, username, includePUK);
-        Iterator<HardTokenData> iter = res.iterator();
+        Collection<HardTokenInformation> res = hardtokensession.getHardTokens(admin, username, includePUK);
+        Iterator<HardTokenInformation> iter = res.iterator();
         if (res.size() > 0) {
             this.result = new HardTokenView[res.size()];
             for (int i = 0; iter.hasNext(); i++) {
@@ -126,7 +126,7 @@ public class HardTokenInterfaceBean implements Serializable {
     public HardTokenView getHardTokenView(String tokensn, boolean includePUK) throws AuthorizationDeniedException {
         HardTokenView returnval = null;
         this.result = null;
-        HardTokenData token = hardtokensession.getHardToken(admin, tokensn, includePUK);
+        HardTokenInformation token = hardtokensession.getHardToken(admin, tokensn, includePUK);
         if (token != null) {
             returnval = new HardTokenView(token);
         }
@@ -146,12 +146,12 @@ public class HardTokenInterfaceBean implements Serializable {
         return hardtokensession.getHardTokenIssuerId(alias);
     }
 
-    public HardTokenIssuerData getHardTokenIssuerData(String alias) {
-        return hardtokensession.getHardTokenIssuerData(alias);
+    public HardTokenIssuerInformation getHardTokenIssuerInformation(String alias) {
+        return hardtokensession.getHardTokenIssuerInformation(alias);
     }
 
-    public HardTokenIssuerData getHardTokenIssuerData(int id) {
-        return hardtokensession.getHardTokenIssuerData(id);
+    public HardTokenIssuerInformation getHardTokenIssuerInformation(int id) {
+        return hardtokensession.getHardTokenIssuerInformation(id);
     }
 
     public void addHardTokenIssuer(String alias, int roleId) throws HardTokenIssuerExistsException, AuthorizationDeniedException {

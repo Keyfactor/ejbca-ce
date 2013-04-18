@@ -54,9 +54,9 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class ECGOST3410SignSessionTest extends SignSessionCommon {
+public class SignSessionWithECGOST3410Test extends SignSessionCommon {
 
-    private static final Logger log = Logger.getLogger(ECGOST3410SignSessionTest.class);
+    private static final Logger log = Logger.getLogger(SignSessionWithECGOST3410Test.class);
 
     private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
             "ECGOST3410SignSessionTest"));
@@ -187,7 +187,7 @@ public class ECGOST3410SignSessionTest extends SignSessionCommon {
     
     @Override
     public String getRoleName() {
-        return ECGOST3410SignSessionTest.class.getSimpleName();
+        return SignSessionWithECGOST3410Test.class.getSimpleName();
     }
 
     private static void createEcgost3410EndEntity() throws Exception {

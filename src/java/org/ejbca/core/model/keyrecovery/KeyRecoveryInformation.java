@@ -14,6 +14,7 @@
 package org.ejbca.core.model.keyrecovery;
 
 
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.cert.Certificate;
@@ -25,14 +26,13 @@ import org.cesecore.util.StringTools;
  * This is a value class containing the data relating to key saved for recovery for a user, sent
  * between server and clients.
  *
- * @author TomSelleck
  * @version $Id$
  */
-public class KeyRecoveryData implements java.io.Serializable {
+public class KeyRecoveryInformation implements Serializable {
 
-	private static final long serialVersionUID = 6876139737538684832L;
+    private static final long serialVersionUID = -7473386427889757839L;
     // Public Constructors
-    public KeyRecoveryData(BigInteger certificatesn, String issuerdn, String username,
+    public KeyRecoveryInformation(BigInteger certificatesn, String issuerdn, String username,
                            boolean markedasrecoverable, KeyPair keypair, Certificate certificate) {
         this.certificatesn = certificatesn;
         this.issuerdn = issuerdn;
@@ -45,7 +45,7 @@ public class KeyRecoveryData implements java.io.Serializable {
     /**
      * Creates a new KeyRecoveryData object.
      */
-    public KeyRecoveryData() {
+    public KeyRecoveryInformation() {
     }
 
     // Public Methods

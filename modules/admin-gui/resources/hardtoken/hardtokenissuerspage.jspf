@@ -61,7 +61,7 @@ function checkselected(){
           <% Iterator i = issuerdatas.keySet().iterator();
              while(i.hasNext()){  
                String curalias = (String) i.next();
-               HardTokenIssuerData data = (HardTokenIssuerData) issuerdatas.get(curalias);
+               HardTokenIssuerInformation data = (HardTokenIssuerInformation) issuerdatas.get(curalias);
                 %>
             <option value='<c:out value="<%=curalias%>"/>'>
                 <c:out value='<%= curalias + ", "+ adminidtonamemap.get(new Integer(data.getRoleDataId()))%>'/>

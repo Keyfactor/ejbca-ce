@@ -73,7 +73,7 @@ public interface KeyRecoverySession {
      * @return the marked keyrecovery data or null if none can be found.
      * @deprecated since 5.1.0 Use org.ejbca.core.ejb.keyrecovery.KeyRecoverySession.recoverKeys(AuthenticationToken, String, int) instead 
      */
-    org.ejbca.core.model.keyrecovery.KeyRecoveryData keyRecovery(AuthenticationToken admin, String username, int endEntityProfileId)
+    org.ejbca.core.model.keyrecovery.KeyRecoveryInformation keyRecovery(AuthenticationToken admin, String username, int endEntityProfileId)
             throws AuthorizationDeniedException;
 
     /**
@@ -83,7 +83,7 @@ public interface KeyRecoverySession {
      * @param endentityprofileid the end entity profile id the user belongs to.
      * @return the marked keyrecovery data or null if none can be found.
      */
-    org.ejbca.core.model.keyrecovery.KeyRecoveryData recoverKeys(AuthenticationToken admin, String username, int endEntityProfileId)
+    org.ejbca.core.model.keyrecovery.KeyRecoveryInformation recoverKeys(AuthenticationToken admin, String username, int endEntityProfileId)
             throws AuthorizationDeniedException;
 
     /**

@@ -19,7 +19,7 @@ import javax.ejb.CreateException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
-import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileData;
+import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
 
 /**
  * @version $Id$
@@ -35,7 +35,7 @@ public interface PublisherQueueSession {
      * @throws CreateException if the entry can not be created
      */
     public void addQueueData(int publisherId, int publishType, String fingerprint,
-            PublisherQueueVolatileData queueData, int publishStatus) throws CreateException;
+            PublisherQueueVolatileInformation queueData, int publishStatus) throws CreateException;
 
     /** Removes an entry from the publisher queue. */
     public void removeQueueData(java.lang.String pk);

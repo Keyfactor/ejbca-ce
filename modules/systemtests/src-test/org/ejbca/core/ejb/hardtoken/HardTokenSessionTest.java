@@ -39,7 +39,7 @@ import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.config.GlobalConfigurationProxySessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.hardtoken.HardTokenData;
+import org.ejbca.core.model.hardtoken.HardTokenInformation;
 import org.ejbca.core.model.hardtoken.HardTokenDoesntExistsException;
 import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
 import org.ejbca.core.model.hardtoken.types.TurkishEIDHardToken;
@@ -127,7 +127,7 @@ public class HardTokenSessionTest extends CaTestCase {
 
         boolean ret = false;
 
-        HardTokenData token = hardTokenSessionRemote.getHardToken(internalAdmin, "1234", true);
+        HardTokenInformation token = hardTokenSessionRemote.getHardToken(internalAdmin, "1234", true);
 
         SwedishEIDHardToken swe = (SwedishEIDHardToken) token.getHardToken();
 
@@ -171,7 +171,7 @@ public class HardTokenSessionTest extends CaTestCase {
         boolean ret = false;
 
         // Make sure the old data can be read
-        HardTokenData token = hardTokenSessionRemote.getHardToken(internalAdmin, "1234", true);
+        HardTokenInformation token = hardTokenSessionRemote.getHardToken(internalAdmin, "1234", true);
 
         SwedishEIDHardToken swe = (SwedishEIDHardToken) token.getHardToken();
 

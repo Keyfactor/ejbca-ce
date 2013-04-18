@@ -49,7 +49,7 @@ import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.keyrecovery.KeyRecoveryData;
+import org.ejbca.core.model.keyrecovery.KeyRecoveryInformation;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -144,7 +144,7 @@ public class KeyRecoveryTest extends CaTestCase {
             assertFalse("Couldn't mark user for recovery in database", keyRecoverySession.isUserMarked(user));
             endEntityManagementSession.prepareForKeyRecovery(internalAdmin, user, SecConst.EMPTY_ENDENTITYPROFILE, cert);
             assertTrue("Couldn't mark user for recovery in database", keyRecoverySession.isUserMarked(user));
-            KeyRecoveryData data = keyRecoverySession.recoverKeys(admin, user, SecConst.EMPTY_ENDENTITYPROFILE);
+            KeyRecoveryInformation data = keyRecoverySession.recoverKeys(admin, user, SecConst.EMPTY_ENDENTITYPROFILE);
 
             assertTrue("Couldn't recover keys from database",
                     Arrays.equals(data.getKeyPair().getPrivate().getEncoded(), keypair.getPrivate().getEncoded()));

@@ -25,13 +25,13 @@ import org.ejbca.core.model.hardtoken.types.HardToken;
  *  This is a value class containing the data relating to a hard token sent between
  *  server and clients.
  *
- * @author  TomSelleck
  * @version $Id$
  */
 
-public class HardTokenData implements Serializable, Comparable<HardTokenData> {
+public class HardTokenInformation implements Serializable, Comparable<HardTokenInformation> {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2801790818906276161L;
+
     // Public Constructors
 	/** 
 	 * Constructor of a hard token data.
@@ -47,7 +47,7 @@ public class HardTokenData implements Serializable, Comparable<HardTokenData> {
 	 * @param copies Collection of tokensn of tokens copied from this token, null if no copies have been made.
 	 * 
 	 */
-    public HardTokenData(String tokensn, String username, Date createtime,  Date modifytime, 
+    public HardTokenInformation(String tokensn, String username, Date createtime,  Date modifytime, 
                          int tokentype, String significantIssuerDN, HardToken hardtoken, String copyof,
                          Collection<String> copies){
       this.tokensn=tokensn;
@@ -61,7 +61,7 @@ public class HardTokenData implements Serializable, Comparable<HardTokenData> {
       this.copies=copies;
     }
 
-    public HardTokenData(){
+    public HardTokenInformation(){
     }
 
     // Public Methods
@@ -122,7 +122,7 @@ public class HardTokenData implements Serializable, Comparable<HardTokenData> {
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
 	@Override
-	public int compareTo(HardTokenData o) {
+	public int compareTo(HardTokenInformation o) {
 		if ( this.createtime.equals(o)) {
 			return 0;
 		}

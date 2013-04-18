@@ -147,7 +147,7 @@ import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.hardtoken.HardTokenConstants;
-import org.ejbca.core.model.hardtoken.HardTokenData;
+import org.ejbca.core.model.hardtoken.HardTokenInformation;
 import org.ejbca.core.model.hardtoken.HardTokenDoesntExistsException;
 import org.ejbca.core.model.hardtoken.HardTokenExistsException;
 import org.ejbca.core.model.hardtoken.types.EnhancedEIDHardToken;
@@ -1550,7 +1550,7 @@ public class EjbcaWS implements IEjbcaWS {
 				if(overwriteExistingSN){
 					// fetch all old certificates and revoke them.
 					Collection<java.security.cert.Certificate> currentCertificates = hardTokenSession.findCertificatesInHardToken(hardTokenDataWS.getHardTokenSN());
-					HardTokenData currentHardToken = hardTokenSession.getHardToken(admin, hardTokenDataWS.getHardTokenSN(), false);
+					HardTokenInformation currentHardToken = hardTokenSession.getHardToken(admin, hardTokenDataWS.getHardTokenSN(), false);
 					Iterator<java.security.cert.Certificate> iter = currentCertificates.iterator();
 					while(iter.hasNext()){
 						java.security.cert.X509Certificate nextCert = (java.security.cert.X509Certificate) iter.next();
@@ -1810,7 +1810,7 @@ public class EjbcaWS implements IEjbcaWS {
 		boolean isApprovedStep0 = false;
 		boolean isRejectedStep0 = false;
 
-		HardTokenData hardTokenData = null;
+		HardTokenInformation hardTokenData = null;
 		final IPatternLogger logger = TransactionLogger.getPatternLogger();
         logAdminName(admin,logger);
         try {
@@ -1966,10 +1966,10 @@ public class EjbcaWS implements IEjbcaWS {
 		try {
 			ejbhelper.isAuthorizedToHardTokenData(admin, username, viewPUKData);
 
-			Collection<HardTokenData> hardtokens = hardTokenSession.getHardTokens(admin, username, viewPUKData);
-			Iterator<HardTokenData> iter = hardtokens.iterator();
+			Collection<HardTokenInformation> hardtokens = hardTokenSession.getHardTokens(admin, username, viewPUKData);
+			Iterator<HardTokenInformation> iter = hardtokens.iterator();
 			while(iter.hasNext()){
-				HardTokenData next = (HardTokenData) iter.next();
+				HardTokenInformation next = (HardTokenInformation) iter.next();
 				int caid = next.getSignificantIssuerDN().hashCode();
 				caSession.verifyExistenceOfCA(caid);
 				if(!authorizationSession.isAuthorizedNoLogging(admin, StandardRules.CAACCESS.resource() + caid)) {

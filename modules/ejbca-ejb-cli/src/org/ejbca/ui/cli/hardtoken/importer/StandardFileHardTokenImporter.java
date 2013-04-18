@@ -18,7 +18,7 @@ import java.util.Date;
 import java.util.Properties;
 
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.hardtoken.HardTokenData;
+import org.ejbca.core.model.hardtoken.HardTokenInformation;
 import org.ejbca.core.model.hardtoken.types.EnhancedEIDHardToken;
 import org.ejbca.core.model.hardtoken.types.HardToken;
 import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
@@ -135,8 +135,8 @@ public class StandardFileHardTokenImporter extends FileReadHardTokenImporter {
 	/**
 	 * @see org.ejbca.ui.cli.hardtoken.importer.FileReadHardTokenImporter#readHardTokenData()
 	 */
-	public HardTokenData readHardTokenData() throws IOException {
-		HardTokenData retval = null;
+	public HardTokenInformation readHardTokenData() throws IOException {
+		HardTokenInformation retval = null;
 		
 		
 		String line = bufferedReader.readLine();
@@ -184,7 +184,7 @@ public class StandardFileHardTokenImporter extends FileReadHardTokenImporter {
 				tokenType = SecConst.TOKEN_ENHANCEDEID;				
 			}
 			HardToken ht = getHardTokenType(basicPIN, basicPUK, signaturePIN, signaturePUK);
-			retval = new HardTokenData(tokenSN,null,new Date(),new Date(), tokenType,null, ht,null,null);
+			retval = new HardTokenInformation(tokenSN,null,new Date(),new Date(), tokenType,null, ht,null,null);
 		}
 		
 		

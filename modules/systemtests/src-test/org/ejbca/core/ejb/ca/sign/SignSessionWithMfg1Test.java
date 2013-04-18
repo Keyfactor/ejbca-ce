@@ -53,9 +53,9 @@ import org.junit.Test;
  * @version $Id$
  *
  */
-public class Mfg1SignSessionTest extends SignSessionCommon {
+public class SignSessionWithMfg1Test extends SignSessionCommon {
 
-    private static final Logger log = Logger.getLogger(Mfg1SignSessionTest.class);
+    private static final Logger log = Logger.getLogger(SignSessionWithMfg1Test.class);
 
     private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Mfg1SignSessionTest"));
 
@@ -197,7 +197,7 @@ public class Mfg1SignSessionTest extends SignSessionCommon {
 
     @Override
     public String getRoleName() {
-        return Mfg1SignSessionTest.class.getSimpleName();
+        return SignSessionWithMfg1Test.class.getSimpleName();
     }
 
 }
