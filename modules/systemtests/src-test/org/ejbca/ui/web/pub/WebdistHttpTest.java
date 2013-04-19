@@ -164,7 +164,7 @@ public class WebdistHttpTest {
         	NameValuePair pair = iter.next();
         	log.debug(pair.getName() + ": " + pair.getValue());
         	if (StringUtils.equalsIgnoreCase("Content-disposition", pair.getName())) {
-        		assertEquals("attachment; filename=\"AdminCA1-chain.pem\"", pair.getValue());
+        		assertEquals("attachment; filename=\"TestCA-chain.pem\"", pair.getValue());
         		found = true;
         	}
         }
