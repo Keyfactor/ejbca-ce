@@ -29,13 +29,17 @@ Follow the installation instructions in the User's Guide, either built above, or
 
 PDF
 ---
-A good set of commands to generate a nice PDF version of the User's Guide is:
- ant doc
+A good set of commands to generate a nice PDF version of the Admin and User Guide is:
  apt-get install htmldoc
- htmldoc --footer "  /"  --toclevels 4 -t pdf14 tmp/htdocs/docs/adminguide.html -f adminguide.pdf
- htmldoc --footer "  /"  --toclevels 4 -t pdf14 tmp/htdocs/docs/userguide.html -f userguide.pdf
+ ant doc
+ cd tmp/htdocs/docs
+ htmldoc --no-links --footer "  /"  --toclevels 4 -t pdf14 adminguide.html -f adminguide.pdf
+ htmldoc --no-links --footer "  /"  --toclevels 4 -t pdf14 userguide.html -f userguide.pdf
 
-You can fix the look of the document by removing a h1 header and moving (replace) h3->h1, h4->h2 and h5 to h3.
+You can make a nice, deliverable, document by:
+- replace all <h3> with <h2> and </h3> with </h2>
+- Edit <pre> formatted text commands for line breaks by adding "\" and a space as first char on the next line.
+  These commands work very good to copy-paste into a Linux shell.
 
 Release notes and upgrade
 -------------------------
