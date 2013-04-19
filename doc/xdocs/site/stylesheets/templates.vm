@@ -246,7 +246,7 @@
 
 #macro (footer)
       <p class="copyright">
-        Copyright &copy; 2001-2011&nbsp;EJBCA team. All rights reserved.
+        Copyright &copy; 2001-2013&nbsp;EJBCA team. All rights reserved.
         <script type="text/javascript"><!--
                 document.write(" - "+"Last Published: " + document.lastModified);
               //  -->
