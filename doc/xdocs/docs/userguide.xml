@@ -1600,9 +1600,8 @@ used.
  </p>
     <p>Below is an example using 'OpenSSL'; 'ca.pem' is the PEM format CA certificate and logexport.p7m is the file downloaded from the logging interface.</p>
     <source>
-jboss@livecd $ openssl smime -verify -nodetach -CAfile ca.pem -inform DER -in logexport.p7m -out logexport.xml
+$ openssl smime -verify -nodetach -CAfile ca.pem -inform DER -in logexport.p7m -out logexport.xml
 Verification successful
-jboss@livecd $
    </source>
     </subsection>
 </section>

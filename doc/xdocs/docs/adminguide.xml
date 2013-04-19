@@ -63,25 +63,25 @@ To export a CA named "TestCA" to the PKCS#12-file "/path/TestCA.p12" with passwo
 from the $EJBCA_HOME directory:
 </p>
 <source>
-[user@host ejbca]$ bin/ejbca.sh ca exportca TestCA ./TestCA.p12
+$ bin/ejbca.sh ca exportca TestCA ./TestCA.p12
 Using JBoss JNDI provider...
 Enter keystore password: foo123
-[user@host ejbca]$ 
+$ 
 </source>
 <p>
 To import the backup keys for "TestCA" later, enter the following from the $EJBCA_HOME directory:
 </p>
 <source>
-[user@host ejbca]$ bin/ejbca.sh ca importca TestCA /path/TestCA.p12 SignatureKeyAlias EncryptionKeyAlias
+$ bin/ejbca.sh ca importca TestCA /path/TestCA.p12 SignatureKeyAlias EncryptionKeyAlias
 Using JBoss JNDI provider...
 Enter keystore password: foo123
-[user@host ejbca]$ 
+$ 
 </source>
 <p>
 Enter the command:
 </p>
 <source>
-[user@host ejbca]$ bin/ejbca.sh ca importca
+$ bin/ejbca.sh ca importca
 </source>
 <p>
 to get usage instructions how to import HSM CAs.
@@ -125,19 +125,19 @@ restore it later. See the section 'Export and import CAs'
 To remove the catoken keys for "TestCA", enter the following from the $EJBCA_HOME directory: 
 </p>
 <source>
-[user@host ejbca]$ bin/ejbca.sh ca removekeystore TestCA
+$ bin/ejbca.sh ca removekeystore TestCA
 Using JBoss JNDI provider...
-[user@host ejbca]$ 
+$ 
 </source>
 <p>
 To restore the catoken keys again for "TestCA" with the keystore exported as "TestCA-exported.p12", enter
 the following from the $EJBCA_HOME directory:
 </p>
 <source>
-[user@host ejbca]$ bin/ejbca.sh ca restorekeystore TestCA /path/TestCA-exported.p12 SignatureKeyAlias EncryptionKeyAlias
+$ bin/ejbca.sh ca restorekeystore TestCA /path/TestCA-exported.p12 SignatureKeyAlias EncryptionKeyAlias
 Using JBoss JNDI provider...
 Enter keystore password: foo123
-[user@host ejbca]$ 
+$ 
 </source>
 </subsection>
 
@@ -2913,13 +2913,12 @@ Module #1:
  version serial       24
  rec. LongJobs queue  8
  SEE machine type     gen1AIF
-nfast@donny:/home/lars/work$
 </source>
 <p>
 Create the security world with the command :
 </p>
 <source>
-nfast@donny:/home/lars/work$ /opt/nfast/bin/new-world -i -Q 1/1
+$ /opt/nfast/bin/new-world -i -Q 1/1
 15:04:50 WARNING: Module #1: preemptively erasing module to see its slots!
 
 Create Security World:
@@ -2930,7 +2929,7 @@ Create Security World:
 Card writing complete.
 
 security world generated on module #0; hknso = 6807e0b031c4f797b739ec33ca7dba05279cf54f
-nfast@donny:/home/lars/work$
+$
 </source>
 <p>
 The '-Q K/N' option tells how many administration cards that are created N. K of these cards will be needed to restore a module with a backup of the security world.
@@ -2949,7 +2948,7 @@ Check with 'enquiry' that the mode have changed to 'Operational'
 Example on creation of operator cards:
 </p>
 <source>
-nfast@donny:/home/lars/work$ /opt/nfast/bin/createocs -m 1 -Q 2/3 -N ejbca -M -p -T 0
+$ /opt/nfast/bin/createocs -m 1 -Q 2/3 -N ejbca -M -p -T 0
 
 Creating Cardset:
  Module 1: 0 cards of 3 written
@@ -2971,7 +2970,7 @@ New passphrases do not match; please try again.
 Card writing complete.
 
 cardset created; hkltu = 8d30f2ab5bdccacd8a4333aefed2c0ea1ff0e6db
-nfast@donny:/home/lars/work$
+$
 </source>
 <p>
 This will generate 3 cards of the card set named 'ejbca'. Any 2 of these cards will be needed when generating keys and starting ejbca. Different card sets could be used for different CAs.
@@ -2986,7 +2985,7 @@ preload as another user, such as root or nfast.
 Load the card set so that keys protected by the card set could be generated:
 </p>
 <source>
-jboss@donny:~$ /opt/nfast/bin/preload -c ejbca pause
+$ /opt/nfast/bin/preload -c ejbca pause
 Loading cardsets:
 ejbca on modules 1
 
@@ -3025,28 +3024,29 @@ An ECC key could not be used with preload (at least not the curve secp160r1). Su
 Now 3 keys protected by the key set 'ejbca' are created like this:
 </p>
 <source>
-jboss@donny:~/work/test/keygen$ ~nfast/bin/preload -c ejbca $EJBCA_HOME/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/nfast/toolkits/pkcs11/libcknfast.so 4096 defaultRoot i1
-Executing /home/lars/work/java/ejbca/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/nfast/toolkits/pkcs11/libcknfast.so 4096 defaultRoot i1
+$ ~nfast/bin/preload -c ejbca $EJBCA_HOME/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/nfast/toolkits/pkcs11/libcknfast.so 4096 defaultRoot i1
+Executing ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/nfast/toolkits/pkcs11/libcknfast.so 4096 defaultRoot i1
 PKCS11 Token [SunPKCS11-NFastJava] Password: 
 Creating certificate with entry default.
-jboss@donny:~/work/test/keygen$ ~nfast/bin/preload -c ejbca $EJBCA_HOME/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/nfast/toolkits/pkcs11/libcknfast.so 2048 cryptRoot i1
+
+$ ~nfast/bin/preload -c ejbca $EJBCA_HOME/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/nfast/toolkits/pkcs11/libcknfast.so 2048 cryptRoot i1
 Loaded pkcs11 uc17cfc7c330e613af5709789ff823a476177e233c-d165e440baa8dc9963780c682836ba17513e8cbf key (RSAPrivate) on modules 1
-Executing /home/lars/work/java/ejbca/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/nfast/toolkits/pkcs11/libcknfast.so 2048 cryptRoot i1
+Executing ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/nfast/toolkits/pkcs11/libcknfast.so 2048 cryptRoot i1
 PKCS11 Token [SunPKCS11-NFastJava] Password: 
 Creating certificate with entry crypt.
-jboss@donny:~/work/test/keygen$ ~nfast/bin/preload -c ejbca $EJBCA_HOME/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/nfast/toolkits/pkcs11/libcknfast.so 1024 test i1
+
+$ ~nfast/bin/preload -c ejbca $EJBCA_HOME/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/nfast/toolkits/pkcs11/libcknfast.so 1024 test i1
 Loaded pkcs11 uc17cfc7c330e613af5709789ff823a476177e233c-27cfdae84bf4298f2dde83cd00980a81bcf095bf key (RSAPrivate) on modules 1
-Executing /home/lars/work/java/ejbca/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/nfast/toolkits/pkcs11/libcknfast.so 1024 test i1
+Executing ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/nfast/toolkits/pkcs11/libcknfast.so 1024 test i1
 PKCS11 Token [SunPKCS11-NFastJava] Password: 
 Creating certificate with entry test.
-jboss@donny:~/work/test/keygen$ 
 </source>
 <strong>Step 4. Start EJBCA with nShield HSM</strong>
 <p>
 To start EJBCA, preload must be running with the required key stores loaded. In this example this was done in step 2. Preload is now used to start jboss:
 </p>
 <source>
-jboss@donny:~/work/test/ca$ ~nfast/bin/preload -c ejbca $APPSRV_HOME/bin/run.sh
+$ ~nfast/bin/preload -c ejbca $APPSRV_HOME/bin/run.sh
 </source>
 <strong>Step 5. Create a new CA in the web GUI of EJBCA</strong>
 <p>
@@ -3107,7 +3107,7 @@ The key to get this working is to set the environment variable <strong>CKNFAST_L
 To get a list of all available slots do:
 </p>
 <source>
-lars@milton:~/work/test/nCipher$ CKNFAST_LOADSHARING=1 ~nfast/bin/ckinfo
+$ CKNFAST_LOADSHARING=1 ~nfast/bin/ckinfo
 PKCS#11 library CK_INFO
        interface version 2.01
                    flags 0
@@ -3230,11 +3230,11 @@ To make the OCS persistent use the "-p" argument at "createocs" time, if this is
 </p><p>
 When using k/n OCS where k>1 you got to load all OCSs to be used with preload and then start the application server also with preload. Example:
 </p><source>
-lars@milton:~/work/test/nCipher$ ~nfast/bin/preload -c 2of3_0 pause
+$ ~nfast/bin/preload -c 2of3_0 pause
 -- follow instruction to insert cards and enter pins. --
 -- then press ctr-z --
-lars@milton:~/work/test/nCipher$ bg 
-lars@milton:~/work/test/nCipher$ ~nfast/bin/preload -c 2of3_1 exit
+$ bg 
+$ ~nfast/bin/preload -c 2of3_1 exit
 -- follow instruction to insert cards and enter pins. --
 </source><p>
 When the application server then is started with preload, CAs defined for slot list index 2 and 4 could be activated. When activating a CA when running preload no PIN has to be given. Also when the application server is started with preload then only CAs of preloaded slots could be activated (not preloaded 1/n slots could not be used).
@@ -3320,7 +3320,7 @@ dr-xr-xr-x 2 lars lars   4096 28 nov 14.28 include
 lars@maud:~/work/test/ca$ LD_LIBRARY_PATH=../../bullInstall/linux ../../java/jboss/bin/run.sh
 </source>
 <source>
-lars@maud:~/work/test/keygen$ LD_LIBRARY_PATH=~/work/bullInstall/linux ../../PWE/ejbca/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ../../bullInstall/linux/libgpkcs11cc2000.so 2048 defaultkey i0
+$ LD_LIBRARY_PATH=~/work/bullInstall/linux $EJBCA/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ../../bullInstall/linux/libgpkcs11cc2000.so 2048 defaultkey i0
 </source>
 </subsection>
 
@@ -3346,18 +3346,18 @@ lunash:>partition changePolicy -partition partition1 -policy 22 -value 1
 You don't have to be in the '/usr/LunaSA/bin' directory as the documentation says. We think it is preferable to be in a directory owned by yourself so you don't have to use sudo.
 Example of running in your own directory:
 </p><source>
-lars@milton:~/work/test/luna$ /usr/lunasa/bin/ctp admin@lunasa.int.primekey.se:server.pem .
+$ /usr/lunasa/bin/ctp admin@lunasa.int.primekey.se:server.pem .
 </source><p>
 Example of occasions when sudo must be used is registration of server and adding client certificates (root owned files and directories are used and updated):
 </p><source>
-lars@milton:~/work/test/luna$ sudo /usr/lunasa/bin/vtl addServer -n lunasa.int.primekey.se -c server.pem
-lars@milton:~/work/test/luna$ sudo /usr/lunasa/bin/vtl createCert -n milton
+$ sudo /usr/lunasa/bin/vtl addServer -n lunasa.int.primekey.se -c server.pem
+$ sudo /usr/lunasa/bin/vtl createCert -n milton
 </source><p>
 <strong>Step 7:</strong>
 Each partition assigned to a client will be represented by a PKCS#11 slot for this client. It seems that each new added partition will be put last in the slot list and the number of a slot will be slot list index plus 1 (list index starting with 0 and slot number starting with 1).
 To get the partition slot mapping on the client do:
 </p><source>
-lars@milton:~/work/test/luna$ /usr/lunasa/bin/vtl verify
+$ /usr/lunasa/bin/vtl verify
 
 The following Luna SA Slots/Partitions were found: 
 
@@ -3381,11 +3381,11 @@ The password is from the configuration step 4. See above.
 </subsubsection>
 <subsubsection name="Generate keys on a slot">
 <source>
-lars@milton:~/work/test/luna$ ~/work/PWE/ejbca/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /usr/lunasa/lib/libCryptoki2_64.so 2048 rsa2048_1 1
+$ ./ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /usr/lunasa/lib/libCryptoki2_64.so 2048 rsa2048_1 1
 0    [main] INFO  org.ejbca.util.keystore.KeyTools  - Using SUN PKCS11 provider: sun.security.pkcs11.SunPKCS11
 PKCS11 Token [SunPKCS11-Luna] Password: 
 Created certificate with entry rsa2048_1.
-lars@milton:~/work/test/luna$ ~/work/PWE/ejbca/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /usr/lunasa/lib/libCryptoki2_64.so secp160r1 secp160r1_1 1
+$ ./ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /usr/lunasa/lib/libCryptoki2_64.so secp160r1 secp160r1_1 1
 0    [main] INFO  org.ejbca.util.keystore.KeyTools  - Using SUN PKCS11 provider: sun.security.pkcs11.SunPKCS11
 PKCS11 Token [SunPKCS11-Luna] Password: 
 Created certificate with entry secp160r1_1.
@@ -3395,7 +3395,7 @@ The password btqx-EFGH-3456-7/K9 (see above) is used.
 </subsubsection>
 <subsubsection name="List and test all keys that could be used by EJBCA">
 <source>
-lars@milton:~/work/test/luna$ ~/work/PWE/ejbca/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool test /usr/lunasa/lib/libCryptoki2_64.so 1
+$ ./ejbcaClientToolBox.sh PKCS11HSMKeyTool test /usr/lunasa/lib/libCryptoki2_64.so 1
 Test of keystore with ID 1.
 0    [main] INFO  org.ejbca.util.keystore.KeyTools  - Using SUN PKCS11 provider: sun.security.pkcs11.SunPKCS11
 PKCS11 Token [SunPKCS11-libCryptoki2_64.so-slot2] Password: 
@@ -3482,9 +3482,9 @@ LD_LIBRARY_PATH=/opt/PTK/lib /opt/PTK/bin/ctkmu t -s5 -lroot
 </subsubsection>
 <subsubsection name="Generate keys on slot 5">
 <source>
-$EJBCA_HOME/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/PTK/lib/libcryptoki.so 2048 defaultSign 5
-$EJBCA_HOME/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/PTK/lib/libcryptoki.so 2048 default 5
-$EJBCA_HOME/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/PTK/lib/libcryptoki.so 512 test 5
+./ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/PTK/lib/libcryptoki.so 2048 defaultSign 5
+./ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/PTK/lib/libcryptoki.so 2048 default 5
+./ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /opt/PTK/lib/libcryptoki.so 512 test 5
 </source>
 <p>If JBoss was started you have to restart JBoss before the keys becomes available in EJBCA.</p>
 </subsubsection>
@@ -3501,7 +3501,7 @@ slot=5
 </subsubsection>
 <subsubsection name="Test and list keys on slot 5">
 <source>
-$EJBCA_HOME/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool test /opt/PTK/lib/libcryptoki.so 5
+./ejbcaClientToolBox.sh PKCS11HSMKeyTool test /opt/PTK/lib/libcryptoki.so 5
 ...
 Testing of key: test
 SunJCE version 1.7SunPKCS11-libcryptoki.so-slot3 version 1.7; modulus length: 2048; byte length 53. The docoded byte string is equal to the original!
@@ -5594,7 +5594,7 @@ the "jarsigner" command and the CA-certificate. This example will output any
 unsigned file or file with a bad signature: 
 </p>
 <source>
-jboss@server:~/ejbca$ jarsigner -verify -keystore p12/truststore.jks -verbose ../ejbca_x_y_z.zip | grep -v "^smk" | grep -v "^ *0"
+$ jarsigner -verify -keystore p12/truststore.jks -verbose ../ejbca_x_y_z.zip | grep -v "^smk" | grep -v "^ *0"
 
       246809 Tue Oct 21 13:28:48 CEST 2008 META-INF/MANIFEST.MF
       246930 Tue Oct 21 13:28:48 CEST 2008 META-INF/RELEASES.SF
@@ -5612,9 +5612,9 @@ OpenSSL can be used to sign and verify an entire archive, but requires the
 public key from the signing certificate:
 </p>
 <source>
-jboss@server:~/ejbca$ openssl dgst -sha1 -sign p12/pem/releasesigner-Key.pem -out ../ejbca_x_y_z.zip.SHA1withRSA ../ejbca_x_y_z.zip
-jboss@server:~/ejbca$ openssl x509 -inform pem -in p12/pem/releasesigner.pem -pubkey -noout > p12/pem/releasesigner-Pub.pem
-jboss@server:~/ejbca$ openssl dgst -sha1 -verify p12/pem/releasesigner-Pub.pem -signature ../ejbca_x_y_z.zip.SHA1withRSA ../ejbca_x_y_z.zip
+$ openssl dgst -sha1 -sign p12/pem/releasesigner-Key.pem -out ../ejbca_x_y_z.zip.SHA1withRSA ../ejbca_x_y_z.zip
+$ openssl x509 -inform pem -in p12/pem/releasesigner.pem -pubkey -noout > p12/pem/releasesigner-Pub.pem
+$ openssl dgst -sha1 -verify p12/pem/releasesigner-Pub.pem -signature ../ejbca_x_y_z.zip.SHA1withRSA ../ejbca_x_y_z.zip
 Verified OK
 </source>
 </section>
