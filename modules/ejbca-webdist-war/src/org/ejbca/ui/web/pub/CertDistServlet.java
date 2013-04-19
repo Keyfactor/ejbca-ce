@@ -358,7 +358,14 @@ public class CertDistServlet extends HttpServlet {
                 return;
             }
         } else if (command.equalsIgnoreCase(COMMAND_CACHAIN) && ( issuerdn != null || caid != 0)) {
-        	handleCaChainCommands(administrator, issuerdn, caid, format, res);
+            // Full certificate chain for CA was requested.
+            try {
+                handleCaChainCommands(administrator, issuerdn, caid, format, res);
+            } catch (NoSuchFieldException e) {
+                log.debug("Error getting certificates for '"+caid+"' for "+remoteAddr+": ", e);
+                res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting certificates.");
+                return;
+            }
         } else if (command.equalsIgnoreCase(COMMAND_REVOKED)) {
             String dn = req.getParameter(ISSUER_PROPERTY);
             if (dn == null) {
@@ -417,12 +424,17 @@ public class CertDistServlet extends HttpServlet {
 		return chain;
 	}
 
-	private void handleCaChainCommands(AuthenticationToken administrator, String issuerdn, int caid, String format, HttpServletResponse res) throws IOException {
+	private void handleCaChainCommands(AuthenticationToken administrator, String issuerdn, int caid, String format, HttpServletResponse res) throws IOException, NoSuchFieldException {
 			try {
 				Certificate[] chain = getCertificateChain(administrator, caid, issuerdn);
-				// This one gets it in the wrong order for a chain file...so reverse it
+				// Reverse the chain to get proper ordering for chain file
+				// (top-level CA first, requested CA last).
 				ArrayUtils.reverse(chain);
-				String filename = "chain.pem";
+
+				// Construct the filename based on requested CA. Fail-back to
+				// name "ca-chain.EXT".
+				String filename = RequestHelper.getFileNameFromCertNoEnding(chain[chain.length-1], "ca") + "-chain." + format.toLowerCase();
+
 				byte[] outbytes = new byte[0];
 				// Encode and send back
 				if ((format == null) || StringUtils.equalsIgnoreCase(format, "pem")) {
@@ -434,7 +446,6 @@ public class CertDistServlet extends HttpServlet {
 					}
 					outbytes = out.toString().getBytes();
 				} else {
-					filename = "chain.jks";
 					// Create a JKS truststore with the CA certificates in
 			        final KeyStore store = KeyStore.getInstance("JKS");
 			        store.load(null, null);
