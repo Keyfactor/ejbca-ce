@@ -101,7 +101,7 @@ public class InternalKeyBindingDataSessionBean implements InternalKeyBindingData
     }
 
     @Override
-    public int mergeInternalKeyBinding(final InternalKeyBinding internalKeyBinding) throws InternalKeyBindingNameInUseException {
+    public int mergeInternalKeyBinding(InternalKeyBinding internalKeyBinding) throws InternalKeyBindingNameInUseException {
         if (log.isDebugEnabled()) {
             log.debug(">addCryptoToken " + internalKeyBinding.getName() + " " + internalKeyBinding.getClass().getName());
         }
@@ -129,6 +129,12 @@ public class InternalKeyBindingDataSessionBean implements InternalKeyBindingData
                 throw new RuntimeException("Failed to allocate a new internalKeyBindingId.");
             }
             internalKeyBindingId = allocatedId.intValue();
+            // We need to replace this object with an object that has the correct ID if we are going to cache it later
+            internalKeyBinding = InternalKeyBindingFactory.INSTANCE.create(type, internalKeyBindingId, name,
+                    status, certificateId, cryptoTokenId, keyPairAlias, dataMap);
+            if (log.isDebugEnabled()) {
+                log.debug("Allocated a new internalKeyBindingId: " + internalKeyBindingId);
+            }
         } else {
             // The one invoking the method has specified an id and expects the object to exist
             internalKeyBindingData = entityManager.find(InternalKeyBindingData.class, internalKeyBindingId);
@@ -136,11 +142,17 @@ public class InternalKeyBindingDataSessionBean implements InternalKeyBindingData
         if (internalKeyBindingData == null) {
             // The cryptoToken does not exist in the database, before we add it we want to check that the name is not in use
             if (isNameUsed(name)) {
+                if (log.isDebugEnabled()) {
+                    log.debug("isNameUsed("+name+")");
+                }
                 throw new InternalKeyBindingNameInUseException(intres.getLocalizedMessage("internalkeybinding.nameisinuse", name));
             }
             internalKeyBindingData = new InternalKeyBindingData(internalKeyBindingId, name, status, type, certificateId, cryptoTokenId, keyPairAlias, dataMap);
         } else {
             if (!isNameUsedByIdOnly(name, internalKeyBindingId)) {
+                if (log.isDebugEnabled()) {
+                    log.debug("!isNameUsedByIdOnly("+name+", "+internalKeyBindingId+")");
+                }
                 throw new InternalKeyBindingNameInUseException(intres.getLocalizedMessage("internalkeybinding.nameisinuse", name));
             }
             // It might be the case that the calling transaction has already loaded a reference to this token
