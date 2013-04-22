@@ -32,8 +32,9 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(OcspKeyBinding.class);
 
-    private static final String PROPERTY_NON_EXISTING_GOOD = "nonExistingGood";
-    private static final String PROPERTY_TRUSTED_CA_IDS = "trustedCaIds";
+    public static final String IMPLEMENTATION_ALIAS = "OcspKeyBinding"; // This should not change, even if we rename the class in EJBCA 5.3+..
+    public static final String PROPERTY_NON_EXISTING_GOOD = "nonExistingGood";
+    public static final String PROPERTY_TRUSTED_CA_IDS = "trustedCaIds";
     
     @SuppressWarnings("serial")
     private static final List<InternalKeyBindingProperty<? extends Serializable>> PROPERTIES = new ArrayList<InternalKeyBindingProperty<? extends Serializable>>() {{
@@ -47,7 +48,7 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     
     @Override
     public String getImplementationAlias() {
-        return "OcspKeyBinding";
+        return IMPLEMENTATION_ALIAS;
     }
     
     @Override
