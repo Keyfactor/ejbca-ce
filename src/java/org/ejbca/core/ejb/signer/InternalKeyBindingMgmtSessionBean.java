@@ -168,12 +168,14 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         }
         // Convert supplied properties using a prefix to ensure that the caller can't mess with internal ones
         final LinkedHashMap<Object,Object> initDataMap = new LinkedHashMap<Object,Object>();
-        for (final Entry<Object,Object> entry: dataMap.entrySet()) {
-            String key = String.valueOf(entry.getKey());
-            if (key.startsWith(InternalKeyBindingBase.SUBCLASS_PREFIX)) {
-                initDataMap.put(key, entry.getValue());
-            } else {
-                initDataMap.put(InternalKeyBindingBase.SUBCLASS_PREFIX + key, entry.getValue());
+        if (dataMap != null) {
+            for (final Entry<Object,Object> entry: dataMap.entrySet()) {
+                String key = String.valueOf(entry.getKey());
+                if (key.startsWith(InternalKeyBindingBase.SUBCLASS_PREFIX)) {
+                    initDataMap.put(key, entry.getValue());
+                } else {
+                    initDataMap.put(InternalKeyBindingBase.SUBCLASS_PREFIX + key, entry.getValue());
+                }
             }
         }
         // Check that CryptoToken and alias exists (and that the user is authorized to see it)
@@ -296,7 +298,9 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         final InternalKeyBinding internalKeyBinding = internalKeyBindingDataSession.getInternalKeyBinding(internalKeyBindingId);
         final int cryptoTokenId = internalKeyBinding.getCryptoTokenId();
         final String nextKeyPairAlias = internalKeyBinding.getNextKeyPairAlias();
-        log.debug("nextKeyPairAlias: " + nextKeyPairAlias);
+        if (log.isDebugEnabled()) {
+            log.debug("nextKeyPairAlias: " + nextKeyPairAlias);
+        }
         boolean updated = false;
         if (nextKeyPairAlias != null) {
             // If a nextKeyPairAlias is present we assume that this is the one we want to find a certificate for
@@ -310,9 +314,13 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                 final byte[] subjectKeyId = KeyTools.createSubjectKeyId(nextPublicKey).getKeyIdentifier();
                 final Certificate certificate = certificateStoreSession.findMostRecentlyUpdatedActiveCertificate(subjectKeyId);
                 if (certificate == null) {
-                    log.debug("No certificate found for " + nextKeyPairAlias);
+                    if (log.isDebugEnabled()) {
+                        log.debug("No certificate found for " + nextKeyPairAlias);
+                    }
                 } else {
-                    log.debug("Certificate found for " + nextKeyPairAlias);
+                    if (log.isDebugEnabled()) {
+                        log.debug("Certificate found for " + nextKeyPairAlias);
+                    }
                     // Verify that this is an accepted type of certificate to import for the current implementation
                     assertCertificateIsOkToImport(certificate, internalKeyBinding);
                     // If current key matches next public key -> import and update nextKey + certificateId
@@ -320,13 +328,19 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                     if (!fingerprint.equals(internalKeyBinding.getCertificateId())) {
                         internalKeyBinding.updateCertificateIdAndCurrentKeyAlias(fingerprint);
                         updated = true;
-                        log.debug("New certificate with fingerprint " + fingerprint + " matching " + nextKeyPairAlias + " will be used.");
+                        if (log.isDebugEnabled()) {
+                            log.debug("New certificate with fingerprint " + fingerprint + " matching " + nextKeyPairAlias + " will be used.");
+                        }
                     } else {
-                        log.debug("The latest available certificate was already in use.");
+                        if (log.isDebugEnabled()) {
+                            log.debug("The latest available certificate was already in use.");
+                        }
                     }
                 }
             } else {
-                log.debug("There was no public key for the referenced alias " + nextKeyPairAlias);
+                if (log.isDebugEnabled()) {
+                    log.debug("There was no public key for the referenced alias " + nextKeyPairAlias);
+                }
             }
         }
         if (!updated) {
@@ -343,22 +357,32 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                 final byte[] subjectKeyId = KeyTools.createSubjectKeyId(currentPublicKey).getKeyIdentifier();
                 final Certificate certificate = certificateStoreSession.findMostRecentlyUpdatedActiveCertificate(subjectKeyId);
                 if (certificate == null) {
-                    log.debug("No certificate found for " + currentKeyPairAlias);
+                    if (log.isDebugEnabled()) {
+                        log.debug("No certificate found for " + currentKeyPairAlias);
+                    }
                 } else {
-                    log.debug("Certificate found for " + currentKeyPairAlias);
+                    if (log.isDebugEnabled()) {
+                        log.debug("Certificate found for " + currentKeyPairAlias);
+                    }
                     // Verify that this is an accepted type of certificate to import for the current implementation
                     assertCertificateIsOkToImport(certificate, internalKeyBinding);
                     final String fingerprint = CertTools.getFingerprintAsString(certificate);
                     if (!fingerprint.equals(internalKeyBinding.getCertificateId())) {
                         internalKeyBinding.setCertificateId(fingerprint);
                         updated = true;
-                        log.debug("Certificate with fingerprint " + fingerprint + " matching " + currentKeyPairAlias + " will be used.");
+                        if (log.isDebugEnabled()) {
+                            log.debug("Certificate with fingerprint " + fingerprint + " matching " + currentKeyPairAlias + " will be used.");
+                        }
                     } else {
-                        log.debug("The latest available certificate was already in use.");
+                        if (log.isDebugEnabled()) {
+                            log.debug("The latest available certificate was already in use.");
+                        }
                     }
                 }
             } else {
-                log.debug("There was no public key for the referenced alias " + currentKeyPairAlias);
+                if (log.isDebugEnabled()) {
+                    log.debug("There was no public key for the referenced alias " + currentKeyPairAlias);
+                }
             }
         }
         if (updated) {
@@ -414,11 +438,16 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         final String currentKeyPairAlias = internalKeyBinding.getKeyPairAlias();
         boolean updated = false;
         try {
+            String certificateId = CertTools.getFingerprintAsString(certificate);
             final PublicKey currentPublicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, currentKeyPairAlias);
             if (currentPublicKey != null && KeyTools.createSubjectKeyId(currentPublicKey).equals(KeyTools.createSubjectKeyId(certificate.getPublicKey()))) {
                 // If current key matches current public key -> import + update certificateId
-                storeCertificate(authenticationToken, internalKeyBinding, certificate);
-                internalKeyBinding.setCertificateId(CertTools.getFingerprintAsString(certificate));
+                if (isCertificateAlreadyInDatabase(certificateId)) {
+                    log.info("Certificate with fingerprint " + certificateId + " was already present in the database. Only InternalKeyBinding reference will be updated.");
+                } else {
+                    storeCertificate(authenticationToken, internalKeyBinding, certificate);
+                }
+                internalKeyBinding.setCertificateId(certificateId);
                 updated = true;
             } else {
                 final String nextKeyPairAlias = internalKeyBinding.getNextKeyPairAlias();
@@ -426,8 +455,12 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                     final PublicKey nextPublicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, nextKeyPairAlias);
                     if (nextPublicKey != null && KeyTools.createSubjectKeyId(nextPublicKey).equals(KeyTools.createSubjectKeyId(certificate.getPublicKey()))) {
                         // If current key matches next public key -> import and update nextKey + certificateId
-                        storeCertificate(authenticationToken, internalKeyBinding, certificate);
-                        internalKeyBinding.updateCertificateIdAndCurrentKeyAlias(CertTools.getFingerprintAsString(certificate));
+                        if (isCertificateAlreadyInDatabase(certificateId)) {
+                            log.info("Certificate with fingerprint " + certificateId + " was already present in the database. Only InternalKeyBinding reference will be updated.");
+                        } else {
+                            storeCertificate(authenticationToken, internalKeyBinding, certificate);
+                        }
+                        internalKeyBinding.updateCertificateIdAndCurrentKeyAlias(certificateId);
                         updated = true;
                     }
                 }
@@ -456,6 +489,11 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         }
         // Check that this is an accepted type of certificate from the one who knows (the implementation)
         internalKeyBinding.assertCertificateCompatability(certificate);
+    }
+    
+    /** @return true if a certificate with the specified certificateId (fingerprint) already exists in the database */
+    private boolean isCertificateAlreadyInDatabase(String certificateId) {
+        return certificateStoreSession.findCertificateByFingerprint(certificateId) != null;
     }
     
     /** Imports the certificate to the database */
@@ -487,7 +525,11 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             certificateStoreSession.storeCertificate(authenticationToken, certificate, username, caFingerprint,
                     CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY, certificateProfileId, null, System.currentTimeMillis());
         } catch (CreateException e) {
-            throw new CertificateImportException(e);
+            // Just pass on the message, in case this is a remote invocation where the underlying class is not available.
+            if (log.isDebugEnabled()) {
+                log.debug("", e);
+            }
+            throw new CertificateImportException(e.getMessage());
         }
     }
 }
