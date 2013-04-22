@@ -87,6 +87,11 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
     @Before
     public void setUp() throws Exception {
         //super.setUp(); We don't want to initialize roles etc, since this is a standalone test!
+        
+        // We are not using the same testCA set in ProtocolOcspTestBase.java because this will cause this test to fail.
+        // This could possibly be due to the fact that the OCSP system tests and the OCSP standalone tests create 
+        // a new testCA (The standalone tests does that through 'ant runocsp.setuptest') and a conflict occurs when
+        // both tests try to create the same testCA twice. 
         issuerDN = "CN=OcspDefaultTestCA";
         caid = issuerDN.hashCode();
         unknowncacert = (X509Certificate) CertTools.getCertfromByteArray(unknowncacertBytes);
