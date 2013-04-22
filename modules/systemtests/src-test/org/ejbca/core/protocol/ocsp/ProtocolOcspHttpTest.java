@@ -263,7 +263,6 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         removeECDSACA();
         assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
                 .getResponseCode() == 200);
-        helper.restoreConfig();
     }
 
     public String getRoleName() {
