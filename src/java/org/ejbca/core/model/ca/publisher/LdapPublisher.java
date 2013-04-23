@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
+ 
 package org.ejbca.core.model.ca.publisher;
 
 import java.io.UnsupportedEncodingException;
@@ -18,7 +18,6 @@ import java.security.cert.CRLException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509CRL;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -51,11 +50,12 @@ import com.novell.ldap.LDAPModification;
 import com.novell.ldap.LDAPSearchConstraints;
 
 /**
- * LdapPublisher is a class handling a publishing to various v3 LDAP catalogs.
+ * LdapPublisher is a class handling a publishing to various v3 LDAP catalogs.  
  *
  * @version $Id$
  */
 public class LdapPublisher extends BasePublisher {
+
 
     private static final long serialVersionUID = -584431431033065114L;
     private static final Logger log = Logger.getLogger(LdapPublisher.class);
@@ -63,7 +63,7 @@ public class LdapPublisher extends BasePublisher {
 	private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
 	public static final float LATEST_VERSION = 11;
-
+	
 	// Create some constraints used when connecting, disconnecting, reading and storing in LDAP servers
 	/** Use a time limit for generic (non overridden) LDAP operations */
 	protected LDAPConstraints ldapConnectionConstraints = new LDAPConstraints();
@@ -77,7 +77,7 @@ public class LdapPublisher extends BasePublisher {
 	protected LDAPSearchConstraints ldapSearchConstraints = new LDAPSearchConstraints();
 
 	/** The normal ldap publisher will modify attributes in LDAP.
-	 * If you don't want attributes modified, use the LdapSearchPublisher to
+	 * If you don't want attributes modified, use the LdapSearchPublisher to 
 	 * store certificates in already existing entries. Can be overridden in constructor
 	 * of subclasses.
 	 */
@@ -109,9 +109,9 @@ public class LdapPublisher extends BasePublisher {
 	protected static final String READTIMEOUT              = "readtimeout";
 	protected static final String STORETIMEOUT             = "storetimeout";
 	protected static final String CREATENONEXISTING        = "createnonexisting";
-	protected static final String MODIFYEXISTING           = "modifyexisting";
-	protected static final String ADDNONEXISTINGATTR       = "addnonexistingattr";
-	protected static final String MODIFYEXISTINGATTR       = "modifyexistingattr";
+	protected static final String MODIFYEXISTING           = "modifyexisting"; 
+	protected static final String ADDNONEXISTINGATTR       = "addnonexistingattr"; 
+	protected static final String MODIFYEXISTINGATTR       = "modifyexistingattr"; 
 	protected static final String USEROBJECTCLASS          = "userobjectclass";
 	protected static final String CAOBJECTCLASS            = "caobjectclass";
 	protected static final String USERCERTATTRIBUTE        = "usercertattribute";
@@ -121,11 +121,11 @@ public class LdapPublisher extends BasePublisher {
 	protected static final String ARLATTRIBUTE             = "arlattribute";
 	protected static final String USEFIELDINLDAPDN         = "usefieldsinldapdn";
 	protected static final String ADDMULTIPLECERTIFICATES  = "addmultiplecertificates";
-	protected static final String REMOVEREVOKED            = "removerevoked";
-	protected static final String REMOVEUSERONCERTREVOKE   = "removeusersoncertrevoke";
+	protected static final String REMOVEREVOKED            = "removerevoked";    
+	protected static final String REMOVEUSERONCERTREVOKE   = "removeusersoncertrevoke";    
 	protected static final String CREATEINTERMEDIATENODES  = "createintermediatenodes";
 	protected static final String SETUSERPASSWORD          = "setuserpasssword";
-
+	
 	/** Arrays used to extract attributes to store in LDAP */
 	protected static final String[] MATCHINGEXTRAATTRIBUTES    = {"CN","L","OU"};
 	protected static final String[] MATCHINGPERSONALATTRIBUTES = {"ST","O","uid","initials","title","postalCode","businessCategory","postalAddress","telephoneNumber"};
@@ -144,7 +144,7 @@ public class LdapPublisher extends BasePublisher {
 		int connectiontimeout = getConnectionTimeOut();
 		setConnectionTimeOut(connectiontimeout);
 		setCreateNonExistingUsers(true);
-		setModifyExistingUsers(true);
+		setModifyExistingUsers(true);     
 		setModifyExistingAttributes(false);
 		setAddNonExistingAttributes(true);
 		setUserObjectClass(DEFAULT_USEROBJECTCLASS);
@@ -153,7 +153,7 @@ public class LdapPublisher extends BasePublisher {
 		setCACertAttribute(DEFAULT_CACERTATTRIBUTE);
 		setCRLAttribute(DEFAULT_CRLATTRIBUTE);
 		setDeltaCRLAttribute(DEFAULT_DELTACRLATTRIBUTE);
-		setARLAttribute(DEFAULT_ARLATTRIBUTE);
+		setARLAttribute(DEFAULT_ARLATTRIBUTE);     
 		setUseFieldInLdapDN(new ArrayList<Integer>());
 		// By default use only one certificate for each user
 		setAddMultipleCertificates(false);
@@ -164,7 +164,12 @@ public class LdapPublisher extends BasePublisher {
 	// Public Methods
 
 
-	@Override
+	/**
+	 * Publishes certificate in LDAP, if the certificate is not revoked. If the certificate is revoked, nothing is done
+	 * and the publishing is counted as successful (i.e. returns true).
+	 * 
+	 * @see org.ejbca.core.model.ca.publisher.BasePublisher#storeCertificate
+	 */    
 	public boolean storeCertificate(AuthenticationToken admin, Certificate incert, String username, String password, String userDN, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) throws PublisherException{
 		if (log.isTraceEnabled()) {
 			log.trace(">storeCertificate(username="+username+")");
@@ -182,36 +187,32 @@ public class LdapPublisher extends BasePublisher {
     		final String dn;
     		final String certdn;
     		try {
-                // Extract the users DN from the cert. Keep the ordering, X500 or LDAP
-    		    if (incert instanceof X509Certificate) {
-    		        certdn = ((X509Certificate)incert).getSubjectDN().toString();
-    		    } else {
-    		        // Might be CVC or some other certificate
-    		        certdn = CertTools.getSubjectDN(incert);
-    		    }
+    			// Extract the users DN from the cert.
+    			certdn = CertTools.getSubjectDN(incert);
     			if (log.isDebugEnabled()) {
     				log.debug( "Constructing DN for: " + username);
     			}
-    			dn = constructLDAPDN(certdn, userDN, incert);
+    			dn = constructLDAPDN(certdn, userDN);
     			if (log.isDebugEnabled()) {
     				log.debug("LDAP DN for user " +username +" is '" + dn+"'");
     			}
     		} catch (Exception e) {
     			String msg = intres.getLocalizedMessage("publisher.errorldapdecode", "certificate");
-    			log.error(msg, e);
-    			throw new PublisherException(msg);
+    			log.error(msg, e);            
+    			throw new PublisherException(msg);            
     		}
 
     		// Extract the users email from the cert.
     		String email = CertTools.getEMailAddress(incert);
 
     		// Check if the entry is already present, we will update it with the new certificate.
-    		// To work well with the LdapSearchPublisher we need to pass the full certificate DN to the
-    		// search function, and not only the LDAP DN. The regular publisher should only use the LDAP DN though,
+    		// To work well with the LdapSearchPublisher we need to pass the full certificate DN to the 
+    		// search function, and not only the LDAP DN. The regular publisher should only use the LDAP DN though, 
     		// but the searchOldEntity function will take care of that.
-    		LDAPEntry oldEntry = searchOldEntity(username, ldapVersion, lc, certdn, userDN, email, incert);
+    		LDAPEntry oldEntry = searchOldEntity(username, ldapVersion, lc, certdn, userDN, email);
 
-    		// PART 2: Create LDAP entry attribute sets
+    		// PART 2: Create LDAP entry
+    		LDAPEntry newEntry = null;
     		ArrayList<LDAPModification> modSet = new ArrayList<LDAPModification>();
     		LDAPAttributeSet attributeSet = null;
     		String attribute = null;
@@ -222,10 +223,10 @@ public class LdapPublisher extends BasePublisher {
     				log.debug("Publishing end user certificate to first available server of " + getHostnames());
     			}
     			if (oldEntry != null) {
-                    modSet = getModificationSet(oldEntry, null, certdn, email, ADD_MODIFICATION_ATTRIBUTES, true, password);
+    				modSet = getModificationSet(oldEntry, certdn, email, ADD_MODIFICATION_ATTRIBUTES, true, password);
     			} else {
     				objectclass = getUserObjectClass(); // just used for logging
-                    attributeSet = getAttributeSet(incert, null, getUserObjectClass(), certdn, email, true, true, password, extendedinformation);
+    				attributeSet = getAttributeSet(incert, getUserObjectClass(), certdn, email, true, true, password, extendedinformation);
     			}
 
     			try {
@@ -234,12 +235,12 @@ public class LdapPublisher extends BasePublisher {
     				if (oldEntry != null) {
     					String oldDn = oldEntry.getDN();
     					if (getAddMultipleCertificates()) {
-    						modSet.add(new LDAPModification(LDAPModification.ADD, certAttr));
+    						modSet.add(new LDAPModification(LDAPModification.ADD, certAttr));                        
     						if (log.isDebugEnabled()) {
     							log.debug("Appended new certificate in user entry; " + username+": "+oldDn);
     						}
     					} else {
-    						modSet.add(new LDAPModification(LDAPModification.REPLACE, certAttr));
+    						modSet.add(new LDAPModification(LDAPModification.REPLACE, certAttr));                                            
     						if (log.isDebugEnabled()) {
     							log.debug("Replaced certificate in user entry; " + username+": "+oldDn);
     						}
@@ -253,153 +254,134 @@ public class LdapPublisher extends BasePublisher {
     			} catch (CertificateEncodingException e) {
     				String msg = intres.getLocalizedMessage("publisher.errorldapencodestore", "certificate");
     				log.error(msg, e);
-    				throw new PublisherException(msg);
+    				throw new PublisherException(msg);                
     			}
     		} else if (type == CertificateConstants.CERTTYPE_SUBCA ||
-    		        type == CertificateConstants.CERTTYPE_ROOTCA) {
-    		    if (log.isDebugEnabled()) {
-    		        log.debug("Publishing CA certificate to first available server of " + getHostnames());
-    		    }
-    		    if (oldEntry != null) {
-                    modSet = getModificationSet(oldEntry, null, certdn, null, false, false, password);
-    		    } else {
-    		        objectclass = getCAObjectClass(); // just used for logging
-                    attributeSet = getAttributeSet(incert, null, getCAObjectClass(), certdn, null, true, false, password, extendedinformation);
-    		    }
-    		    try {
-    		        attribute = getCACertAttribute();
-    		        LDAPAttribute certAttr = new LDAPAttribute(getCACertAttribute(), incert.getEncoded());
-    		        if (oldEntry != null) {
-    		            modSet.add(new LDAPModification(LDAPModification.REPLACE, certAttr));
-    		        } else {
-    		            attributeSet.add(certAttr);
-    		            // Also create using the crlattribute, it may be required
-    		            LDAPAttribute crlAttr = new LDAPAttribute(getCRLAttribute(), getFakeCRL());
-    		            attributeSet.add(crlAttr);
-    		            // Also create using the arlattribute, it may be required
-    		            LDAPAttribute arlAttr = new LDAPAttribute(getARLAttribute(), getFakeCRL());
-    		            attributeSet.add(arlAttr);
-    		            if (log.isDebugEnabled()) {
-    		                log.debug("Added (fake) attribute for CRL and ARL.");
-    		            }
-    		        }
-    		    } catch (CertificateEncodingException e) {
-    		        String msg = intres.getLocalizedMessage("publisher.errorldapencodestore", "certificate");
-    		        log.error(msg, e);
-    		        throw new PublisherException(msg);
-    		    }
+    		           type == CertificateConstants.CERTTYPE_ROOTCA) {
+    			if (log.isDebugEnabled()) {
+    				log.debug("Publishing CA certificate to first available server of " + getHostnames());
+    			}
+    			if (oldEntry != null) {
+    				modSet = getModificationSet(oldEntry, certdn, null, false, false, password);
+    			} else {
+    				objectclass = getCAObjectClass(); // just used for logging
+    				attributeSet = getAttributeSet(incert, getCAObjectClass(), certdn, null, true, false, password, extendedinformation);
+    			}
+    			try {
+    				attribute = getCACertAttribute();
+    				LDAPAttribute certAttr = new LDAPAttribute(getCACertAttribute(), incert.getEncoded());
+    				if (oldEntry != null) {
+    					modSet.add(new LDAPModification(LDAPModification.REPLACE, certAttr));
+    				} else {
+    					attributeSet.add(certAttr);
+    					// Also create using the crlattribute, it may be required
+    					LDAPAttribute crlAttr = new LDAPAttribute(getCRLAttribute(), getFakeCRL());
+    					attributeSet.add(crlAttr);
+    					// Also create using the arlattribute, it may be required
+    					LDAPAttribute arlAttr = new LDAPAttribute(getARLAttribute(), getFakeCRL());
+    					attributeSet.add(arlAttr);
+    					if (log.isDebugEnabled()) {
+    						log.debug("Added (fake) attribute for CRL and ARL.");
+    					}
+    				}
+    			} catch (CertificateEncodingException e) {
+    				String msg = intres.getLocalizedMessage("publisher.errorldapencodestore", "certificate");
+    				log.error(msg, e);
+    				throw new PublisherException(msg);            
+    			}
     		} else {
     			String msg = intres.getLocalizedMessage("publisher.notpubltype", Integer.valueOf(type));
     			log.info(msg);
-    			throw new PublisherException(msg);
+    			throw new PublisherException(msg);                      
     		}
 
-            // PART 3: MODIFICATION AND ADDITION OF NEW USERS
-    		writeCertEntryToLDAP(incert, ldapVersion, lc, dn, oldEntry, modSet, attributeSet, attribute, objectclass);
+    		// PART 3: MODIFICATION AND ADDITION OF NEW USERS
+    		// Try all the listed servers
+    		Iterator<String> servers = getHostnameList().iterator();
+    		boolean connectionFailed;
+    		do {
+    			connectionFailed = false;
+    			String currentServer = servers.next();
+    			try {
+    				TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getConnectionTimeOut());	// Avoid waiting for halfdead-servers
+    				lc.connect(currentServer, Integer.parseInt(getPort()));
+    				// authenticate to the server
+    				lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"), ldapBindConstraints);            
+    				// Add or modify the entry
+    				if (oldEntry != null && getModifyExistingUsers()) {
+    					LDAPModification[] mods = new LDAPModification[modSet.size()]; 
+    					mods = (LDAPModification[])modSet.toArray(mods);
+    					String oldDn = oldEntry.getDN();
+    					if (log.isDebugEnabled()) {
+    						log.debug("Writing modification to DN: "+oldDn);
+    					}
+    					lc.modify(oldDn, mods, ldapStoreConstraints);
+    					String msg = intres.getLocalizedMessage("publisher.ldapmodify", "CERT", oldDn);
+    					log.info(msg);  
+    				} else {
+    					if(this.getCreateNonExistingUsers()){     
+    						if (oldEntry == null) {           
+    							// Check if the intermediate parent node is present, and if it is not
+    							// we can create it, of allowed to do so by the publisher configuration
+    							if(getCreateIntermediateNodes()) {
+    								final String parentDN = new String(dn.substring(dn.indexOf(',') + 1));
+    								try {
+    									lc.read(parentDN, ldapSearchConstraints);
+    								} catch(LDAPException e) {
+    									if(e.getResultCode() == LDAPException.NO_SUCH_OBJECT) {
+    										this.createIntermediateNodes(lc, dn);
+    										String msg = intres.getLocalizedMessage("publisher.ldapaddedintermediate", "CERT", parentDN);
+    										log.info(msg);
+    									}
+    								}
+    							}
+    							newEntry = new LDAPEntry(dn, attributeSet);
+    							if (log.isDebugEnabled()) {
+    								log.debug("Adding DN: "+dn);
+    							}
+    							lc.add(newEntry, ldapStoreConstraints);
+    							String msg = intres.getLocalizedMessage("publisher.ldapadd", "CERT", dn);
+    							log.info(msg);
+    						}
+    					}  
+    				}
+    			} catch (LDAPException e) {
+    				connectionFailed = true;
+    				// If multiple certificates are allowed per entity, and the certificate is already published, 
+    				// an exception will be thrown. Catch this type of exception and just log an informational message.
+    				if (e.getResultCode() == LDAPException.ATTRIBUTE_OR_VALUE_EXISTS) {
+                        final String msg = intres.getLocalizedMessage("publisher.certalreadyexists", CertTools.getFingerprintAsString(incert), dn, e.getMessage());
+    				    log.info(msg);
+    				} else if (servers.hasNext()) {
+    					log.warn("Failed to publish to " + currentServer + ". Trying next in list.");
+    				} else {
+    					String msg = intres.getLocalizedMessage("publisher.errorldapstore", "certificate", attribute, objectclass, dn, e.getMessage());
+    					log.error(msg, e);  
+    					throw new PublisherException(msg);            
+    				}
+    			} catch (UnsupportedEncodingException e) {
+    				String msg = intres.getLocalizedMessage("publisher.errorpassword", getLoginPassword());
+    				log.error(msg, e);
+    				throw new PublisherException(msg);            
+    			} finally {
+    				// disconnect with the server
+    				try {
+    					lc.disconnect(ldapDisconnectConstraints);
+    				} catch (LDAPException e) {
+    					String msg = intres.getLocalizedMessage("publisher.errordisconnect", getLoginPassword());
+    					log.error(msg, e);
+    				}
+    			}
+    		} while (connectionFailed && servers.hasNext()) ;
         } else {
 			String msg = intres.getLocalizedMessage("publisher.notpublwithstatus", Integer.valueOf(status));
-			log.info(msg);
+			log.info(msg);        	
         }
 		if (log.isTraceEnabled()) {
 			log.trace("<storeCertificate()");
 		}
 		return true;
 	}
-
-    protected void writeCertEntryToLDAP(Certificate incert, int ldapVersion, LDAPConnection lc, final String dn, LDAPEntry oldEntry,
-            ArrayList<LDAPModification> modSet, LDAPAttributeSet attributeSet, String attribute, String objectclass) throws PublisherException {
-        if ((attributeSet == null) && modSet.isEmpty()) {
-            if (log.isDebugEnabled()) {
-              log.debug("Not publishing certificates because attributes are empty");
-            }
-        } else {
-            // Try all the listed servers
-            Iterator<String> servers = getHostnameList().iterator();
-            boolean connectionFailed;
-            do {
-                connectionFailed = false;
-                String currentServer = servers.next();
-                try {
-                    TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getConnectionTimeOut());    // Avoid waiting for halfdead-servers
-                    lc.connect(currentServer, Integer.parseInt(getPort()));
-                    // authenticate to the server
-                    lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"), ldapBindConstraints);
-                    // Add or modify the entry
-                    if (oldEntry != null && getModifyExistingUsers()) {
-                        LDAPModification[] mods = new LDAPModification[modSet.size()];
-                        mods = (LDAPModification[])modSet.toArray(mods);
-                        String oldDn = oldEntry.getDN();
-                        if (log.isDebugEnabled()) {
-                            log.debug("Writing modification to DN: "+oldDn);
-                        }
-                        lc.modify(oldDn, mods, ldapStoreConstraints);
-                        String msg = intres.getLocalizedMessage("publisher.ldapmodify", "CERT", oldDn);
-                        log.info(msg);
-                    } else {
-                        if(this.getCreateNonExistingUsers()){
-                            if (oldEntry == null) {
-                                // Check if the intermediate parent node is present, and if it is not
-                                // we can create it, of allowed to do so by the publisher configuration
-                                if(getCreateIntermediateNodes()) {
-                                    final String parentDN = new String(dn.substring(dn.indexOf(',') + 1));
-                                    try {
-                                        lc.read(parentDN, ldapSearchConstraints);
-                                    } catch(LDAPException e) {
-                                        if(e.getResultCode() == LDAPException.NO_SUCH_OBJECT) {
-                                            this.createIntermediateNodes(lc, dn);
-                                            String msg = intres.getLocalizedMessage("publisher.ldapaddedintermediate", "CERT", parentDN);
-                                            log.info(msg);
-                                        }
-                                    }
-                                }
-                                LDAPEntry newEntry = new LDAPEntry(dn, attributeSet);
-                                if (log.isDebugEnabled()) {
-                                    log.debug("Adding DN: "+dn);
-                                }
-                                lc.add(newEntry, ldapStoreConstraints);
-                                String msg = intres.getLocalizedMessage("publisher.ldapadd", "CERT", dn);
-                                log.info(msg);
-                            } else {
-                                if (log.isDebugEnabled()) {
-                                    log.debug("Not adding new user because oldEntry exists.");
-                                }
-                            }
-                        } else {
-                            if (log.isDebugEnabled()) {
-                                log.debug("Not adding new user because configured to not create non-existing users.");
-                            }
-                        }
-                    }
-                } catch (LDAPException e) {
-                    connectionFailed = true;
-                    // If multiple certificates are allowed per entity, and the certificate is already published,
-                    // an exception will be thrown. Catch this type of exception and just log an informational message.
-                    if (e.getResultCode() == LDAPException.ATTRIBUTE_OR_VALUE_EXISTS) {
-                        final String msg = intres.getLocalizedMessage("publisher.certalreadyexists", CertTools.getFingerprintAsString(incert), dn, e.getMessage());
-                        log.info(msg);
-                    } else if (servers.hasNext()) {
-                        log.warn("Failed to publish to " + currentServer + ". Trying next in list.");
-                    } else {
-                        String msg = intres.getLocalizedMessage("publisher.errorldapstore", "certificate", attribute, objectclass, dn, e.getMessage());
-                        log.error(msg, e);
-                        throw new PublisherException(msg);
-                    }
-                } catch (UnsupportedEncodingException e) {
-                    String msg = intres.getLocalizedMessage("publisher.errorpassword", getLoginPassword());
-                    log.error(msg, e);
-                    throw new PublisherException(msg);
-                } finally {
-                    // disconnect with the server
-                    try {
-                        lc.disconnect(ldapDisconnectConstraints);
-                    } catch (LDAPException e) {
-                        String msg = intres.getLocalizedMessage("publisher.errordisconnect", getLoginPassword());
-                        log.error(msg, e);
-                    }
-                }
-            } while (connectionFailed && servers.hasNext()) ;
-        }
-    }
 
 	/**
 	 * Creates intermediate nodes to host an LDAP entry at <code>dn</code>.
@@ -435,7 +417,7 @@ public class LdapPublisher extends BasePublisher {
 					} catch(LDAPException e1) {
 						String msg = intres.getLocalizedMessage("publisher.ldapaddedintermediate", dnFragment);
 						log.error(msg, e1);
-						throw new PublisherException(msg);
+						throw new PublisherException(msg);            
 					}
 				}
 			}
@@ -449,7 +431,7 @@ public class LdapPublisher extends BasePublisher {
 	 * <code>OU</code> (organizationalUnit).</p>
 	 *
 	 * @param field A DN field (case-insensitive). Only <code>O</code> and
-	 * <code>OU</code> are allowed.
+	 * <code>OU</code> are allowed. 
 	 * @return LDAPAttribute initialized with the LDAP object class definition
 	 * that corresponds to a DN <code>field</code>.
 	 */
@@ -466,7 +448,9 @@ public class LdapPublisher extends BasePublisher {
 		}
 	}
 
-    @Override
+	/**
+	 * @see org.ejbca.core.model.ca.publisher.BasePublisher#storeCRL
+	 */    
 	public boolean storeCRL(AuthenticationToken admin, byte[] incrl, String cafp, int number, String userDN) throws PublisherException{
 		if (log.isTraceEnabled()) {
 			log.trace(">storeCRL");
@@ -477,9 +461,9 @@ public class LdapPublisher extends BasePublisher {
 		final String crldn;
 		final boolean isDeltaCRL;
 		try {
-			// Extract the users DN from the crl. Keep the ordering, X500 or LDAP
+			// Extract the users DN from the crl. Use the least number of encodings...
 			final X509CRL crl = CertTools.getCRLfromByteArray(incrl);
-			crldn = crl.getIssuerDN().toString();
+			crldn = CertTools.stringToBCDNString(crl.getIssuerDN().toString());
 			// Is it a delta CRL?
 			if (crl.getExtensionValue(Extension.deltaCRLIndicator.getId()) != null) {
 				isDeltaCRL = true;
@@ -487,95 +471,74 @@ public class LdapPublisher extends BasePublisher {
 				isDeltaCRL = false;
 			}
 			// Construct the DN used for the LDAP object entry
-			dn = constructLDAPDN(crldn, userDN, null);
+			dn = constructLDAPDN(crldn, userDN);
 		} catch (Exception e) {
 			String msg = intres.getLocalizedMessage("publisher.errorldapdecode", "CRL");
-			log.error(msg, e);
-			throw new PublisherException(msg);
+			log.error(msg, e);        	
+			throw new PublisherException(msg);            
 		}
 
 		LDAPConnection lc = createLdapConnection();
 
 		// Check if the entry is already present, we will update it with the new CRL.
-		LDAPEntry oldEntry = searchOldEntity(null, ldapVersion, lc, crldn, userDN, null, null);
+		LDAPEntry oldEntry = searchOldEntity(null, ldapVersion, lc, crldn, userDN, null);
 
 		LDAPEntry newEntry = null;
 		ArrayList<LDAPModification> modSet = new ArrayList<LDAPModification>();
 		LDAPAttributeSet attributeSet = null;
 
 		if (oldEntry != null) {
-            modSet = getModificationSet(oldEntry, incrl, crldn, null, false, false, null);
+			modSet = getModificationSet(oldEntry, crldn, null, false, false, null);
 		} else {
-            attributeSet = getAttributeSet(null, incrl, this.getCAObjectClass(), crldn, null, true, false, null,null);
+			attributeSet = getAttributeSet(null, this.getCAObjectClass(), crldn, null, true, false, null,null);
 		}
 
 		if(isDeltaCRL) {
 			// It's a delta CRL.
-            LDAPAttribute attr = new LDAPAttribute(getDeltaCRLAttribute(), incrl);
-            if (oldEntry != null) {
-                modSet.add(new LDAPModification(LDAPModification.REPLACE, attr));
-            } else {
-                attributeSet.add(attr);
-            }
-        } else {
-            // It's a CRL
-            LDAPAttribute crlAttr = new LDAPAttribute(getCRLAttribute(), incrl);
-            if (oldEntry != null) {
-                modSet.add(new LDAPModification(LDAPModification.REPLACE, crlAttr));
-            } else {
-                attributeSet.add(crlAttr);
-            }
-            if (StringUtils.isNotEmpty(getARLAttribute())) {
-                LDAPAttribute arlAttr = new LDAPAttribute(getARLAttribute(), incrl);
-                if (oldEntry != null) {
-                    modSet.add(new LDAPModification(LDAPModification.REPLACE, arlAttr));
-                } else {
-                    attributeSet.add(arlAttr);
-                }
-            }
+			LDAPAttribute attr = new LDAPAttribute(getDeltaCRLAttribute(), incrl);
+			if (oldEntry != null) {
+				modSet.add(new LDAPModification(LDAPModification.REPLACE, attr));
+			} else {
+				attributeSet.add(attr);
+			}
+		} else {
+			// It's a CRL
+			LDAPAttribute crlAttr = new LDAPAttribute(getCRLAttribute(), incrl);
+			LDAPAttribute arlAttr = new LDAPAttribute(getARLAttribute(), incrl);
+			if (oldEntry != null) {
+				modSet.add(new LDAPModification(LDAPModification.REPLACE, crlAttr));
+				modSet.add(new LDAPModification(LDAPModification.REPLACE, arlAttr));
+			} else {
+				attributeSet.add(crlAttr);
+				attributeSet.add(arlAttr);
+			}
 		}
 		if (oldEntry == null) {
 			newEntry = new LDAPEntry(dn, attributeSet);
 		}
-		// Finally write the object
-        writeCrlEntryToLDAP(ldapVersion, dn, lc, oldEntry, newEntry, modSet, false);
-		if (log.isTraceEnabled()) {
-			log.trace("<storeCRL");
-		}
-		return true;
-	}
-
-    protected void writeCrlEntryToLDAP(int ldapVersion, final String dn, LDAPConnection lc, LDAPEntry oldEntry, LDAPEntry newEntry,
-            ArrayList<LDAPModification> modSet, boolean deleteInsteadOfModifyOldEntry) throws PublisherException {
-        // Try all the listed servers
+		// Try all the listed servers
 		Iterator<String> servers = getHostnameList().iterator();
 		boolean connectionFailed;
 		do {
 			connectionFailed = false;
 			String currentServer = servers.next();
 			try {
-                TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getConnectionTimeOut());    // Avoid waiting for halfdead-servers
+				TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getConnectionTimeOut());	// Avoid waiting for halfdead-servers
 				// connect to the server
 				lc.connect(currentServer, Integer.parseInt(getPort()));
 				// authenticate to the server
 				lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"), ldapBindConstraints);
-                // Add modify or delete the entry
-                if (oldEntry != null && !deleteInsteadOfModifyOldEntry) {
-					LDAPModification[] mods = new LDAPModification[modSet.size()];
+				// Add or modify the entry
+				if (oldEntry != null) {
+					LDAPModification[] mods = new LDAPModification[modSet.size()]; 
 					mods = (LDAPModification[])modSet.toArray(mods);
 					lc.modify(dn, mods, ldapStoreConstraints);
 					String msg = intres.getLocalizedMessage("publisher.ldapmodify", "CRL", dn);
-					log.info(msg);
+					log.info(msg);  
 				} else {
-                    if (oldEntry != null && deleteInsteadOfModifyOldEntry) {
-                        lc.delete(oldEntry.getDN(), ldapStoreConstraints);
-                        String msg = intres.getLocalizedMessage("publisher.ldapremove", oldEntry.getDN());
-                        log.info(msg);
-                    }
-
 					lc.add(newEntry, ldapStoreConstraints);
-                    String msg = intres.getLocalizedMessage("publisher.ldapadd", "CRL", dn);
-					log.info(msg);
+					String msg = intres.getLocalizedMessage("publisher.ldapadd", "CRL", dn);
+					log.info(msg);  
 				}
 			} catch (LDAPException e) {
 				connectionFailed = true;
@@ -583,13 +546,13 @@ public class LdapPublisher extends BasePublisher {
 					log.warn("Failed to publish to " + currentServer + ". Trying next in list.");
 				} else {
 					String msg = intres.getLocalizedMessage("publisher.errorldapstore", "CRL", getCRLAttribute(), getCAObjectClass(), dn, e.getMessage());
-					log.error(msg, e);
-					throw new PublisherException(msg);
+					log.error(msg, e);  
+					throw new PublisherException(msg);            
 				}
 			} catch (UnsupportedEncodingException e) {
 				String msg = intres.getLocalizedMessage("publisher.errorpassword", getLoginPassword());
 				log.error(msg, e);
-				throw new PublisherException(msg);
+				throw new PublisherException(msg);            
 			} finally {
 				// disconnect with the server
 				try {
@@ -600,17 +563,21 @@ public class LdapPublisher extends BasePublisher {
 				}
 			}
 		} while (connectionFailed && servers.hasNext()) ;
-    }
+		if (log.isTraceEnabled()) {
+			log.trace("<storeCRL");
+		}
+		return true;
+	}
 
 	/**
 	 * Revokes a certificate, which means for LDAP that we may remove the certificate or the whole user entry.
-	 *
+	 * 
      * @param cert The certificate to be revoked.
      * @param username Username of end entity owning the certificate.
      * @param reason reason for revocation from RevokedCertInfo, RevokedCertInfo.NOT_REVOKED if not revoked.
      * @param userDN if an DN object is not found in the certificate use object from user data instead.
-	 */
-	private void revokeCertificate(AuthenticationToken admin, Certificate cert, String username, int reason, String userDN) throws PublisherException {
+	 */    
+	public void revokeCertificate(AuthenticationToken admin, Certificate cert, String username, int reason, String userDN) throws PublisherException {
 		if (log.isTraceEnabled()) {
 			log.trace(">revokeCertificate()");
 		}
@@ -637,14 +604,17 @@ public class LdapPublisher extends BasePublisher {
 		int ldapVersion = LDAPConnection.LDAP_V3;
 		LDAPConnection lc = createLdapConnection();
 
+		final String dn;
 		final String certdn;
-        // Extract the users DN from the cert. Keep the ordering, X500 or LDAP
-        if (cert instanceof X509Certificate) {
-            certdn = ((X509Certificate)cert).getSubjectDN().toString();
-        } else {
-            // Might be CVC or some other certificate
-            certdn = CertTools.getSubjectDN(cert);
-        }
+		try {
+			// Extract the users DN from the cert.
+			certdn = CertTools.getSubjectDN(cert);
+			dn = constructLDAPDN(certdn, userDN);
+		} catch (Exception e) {
+			String msg = intres.getLocalizedMessage("publisher.errorldapdecode", "certificate");
+			log.error(msg, e);            
+			throw new PublisherException(msg);            
+		}
 
 		// Extract the users email from the cert.
 		String email = CertTools.getEMailAddress(cert);
@@ -655,22 +625,22 @@ public class LdapPublisher extends BasePublisher {
 		ArrayList<LDAPModification> modSet = null;
 
 		if (!CertTools.isCA(cert)) {
-			oldEntry = searchOldEntity(username, ldapVersion, lc, certdn, userDN, email, cert);
+			oldEntry = searchOldEntity(username, ldapVersion, lc, certdn, userDN, email);
 			if (log.isDebugEnabled()) {
 				log.debug("Removing end user certificate from first available server of " + getHostnames());
 			}
-			if (oldEntry != null) {
+			if (oldEntry != null) {          
 				if (removecert) {
 					// Don't try to remove the cert if there does not exist any
 					LDAPAttribute oldAttr = oldEntry.getAttribute(getUserCertAttribute());
 					if (oldAttr != null) {
-                        modSet = getModificationSet(oldEntry, null, certdn, null, false, true, null);
+						modSet = getModificationSet(oldEntry, certdn, null, false, true, null);
 						LDAPAttribute attr = new LDAPAttribute(getUserCertAttribute());
-						modSet.add(new LDAPModification(LDAPModification.DELETE, attr));
+						modSet.add(new LDAPModification(LDAPModification.DELETE, attr));                    
 					} else {
 						String msg = intres.getLocalizedMessage("publisher.inforevokenocert");
 						log.info(msg);
-					}
+					}            		
 				}
 			} else {
 				String msg = intres.getLocalizedMessage("publisher.errorrevokenoentry");
@@ -688,38 +658,38 @@ public class LdapPublisher extends BasePublisher {
 		final Iterator<String> servers = getHostnameList().iterator();
 		boolean isConnectionNotDone = true;
         if (log.isDebugEnabled() && (oldEntry == null)) {
-            log.debug("Not modifying LDAP entry because there is no existing entry.");
+            log.debug("Not modifying LDAP entry because there is no existing entry.");                      
         }
 		while ( oldEntry!=null && isConnectionNotDone && servers.hasNext()) {
 			isConnectionNotDone = false;
-			String currentServer = servers.next();
+			String currentServer = servers.next(); 
 			if (log.isDebugEnabled()) {
 				log.debug("currentServer: "+currentServer);
 			}
 			try {
-                TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getConnectionTimeOut());    // Avoid waiting for halfdead-servers
+				TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getConnectionTimeOut());	// Avoid waiting for halfdead-servers
 				lc.connect(currentServer, Integer.parseInt(getPort()));
 				// authenticate to the server
-				lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"), ldapBindConstraints);
+				lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"), ldapBindConstraints);            
 				// Add or modify the entry
 				if (modSet != null && getModifyExistingUsers()) {
 					if (removecert) {
-						LDAPModification[] mods = new LDAPModification[modSet.size()];
+						LDAPModification[] mods = new LDAPModification[modSet.size()]; 
 						mods = (LDAPModification[])modSet.toArray(mods);
-						lc.modify(oldEntry.getDN(), mods, ldapStoreConstraints);
+						lc.modify(oldEntry.getDN(), mods, ldapStoreConstraints);            		
 					}
 					if (removeuser) {
-						lc.delete(oldEntry.getDN(), ldapStoreConstraints);
+						lc.delete(oldEntry.getDN(), ldapStoreConstraints);            		
 					}
-					String msg = intres.getLocalizedMessage("publisher.ldapremove", certdn);
-					log.info(msg);
+					String msg = intres.getLocalizedMessage("publisher.ldapremove", dn);
+					log.info(msg);  
 				} else {
 					if (log.isDebugEnabled()) {
 						if (modSet == null) {
-							log.debug("Not modifying LDAP entry because we don't have anything to modify.");
+							log.debug("Not modifying LDAP entry because we don't have anything to modify.");						
 						}
 						if (!getModifyExistingUsers()) {
-							log.debug("Not modifying LDAP entry because we're not configured to do so.");
+							log.debug("Not modifying LDAP entry because we're not configured to do so.");						
 						}
 					}
 				}
@@ -728,14 +698,14 @@ public class LdapPublisher extends BasePublisher {
 				if (servers.hasNext()) {
 					log.warn("Failed to publish to " + currentServer + ". Trying next in list.");
 				} else {
-					String msg = intres.getLocalizedMessage("publisher.errorldapremove", certdn);
-					log.error(msg, e);
-					throw new PublisherException(msg);
+					String msg = intres.getLocalizedMessage("publisher.errorldapremove", dn);
+					log.error(msg, e);  
+					throw new PublisherException(msg);            
 				}
 			} catch (UnsupportedEncodingException e) {
 				String msg = intres.getLocalizedMessage("publisher.errorpassword", getLoginPassword());
 				log.error(msg, e);
-				throw new PublisherException(msg);
+				throw new PublisherException(msg);            
 			} finally {
 				// disconnect with the server
 				try {
@@ -751,22 +721,12 @@ public class LdapPublisher extends BasePublisher {
 		}
 	}
 
-    /**
-     * SearchOldEntity is the only method differing between regular ldap and ldap search publishers.
-     * This method is kept for backwards compatibility.
-     *  @param certDN subjectDN from Certificate or CRL, can be used to extract search information or a LDAP DN, using correct DN order (X500 or LDAP)
-     */
-    protected LDAPEntry searchOldEntity(String username, int ldapVersion, LDAPConnection lc, String certDN, String userDN, String email) throws PublisherException {
-        return searchOldEntity(username, ldapVersion, lc, certDN, userDN, email, null);
-    }
-
 	/** SearchOldEntity is the only method differing between regular ldap and ldap search publishers.
 	 *  Apart from how they find existing users, the publishing works the same.
-	 *
-	 *  @param certDN subjectDN from Certificate or CRL, can be used to extract search information or a LDAP DN, using correct DN order (X500 or LDAP)
-	 *  @param cert users certificate if it is a certificate entry, or null
+	 *  
+	 *  @param dn the DN from the certificate, can be used to extract search information or a LDAP DN
 	 */
-	protected LDAPEntry searchOldEntity(String username, int ldapVersion, LDAPConnection lc, String certDN, String userDN, String email, Certificate cert) throws PublisherException {
+	protected LDAPEntry searchOldEntity(String username, int ldapVersion, LDAPConnection lc, String certDN, String userDN, String email) throws PublisherException {
 		LDAPEntry oldEntry = null; // return value
 		// Try all the listed servers
 		final Iterator<String> servers = getHostnameList().iterator();
@@ -777,14 +737,9 @@ public class LdapPublisher extends BasePublisher {
 			if (log.isDebugEnabled()) {
 				log.debug("Current server is: "+currentServer);
 			}
-			String ldapdn = constructLDAPDN(certDN.toString(), userDN, cert);
-			// If we could not construct anything, use the same as passed in
-			if (StringUtils.isEmpty(ldapdn)) {
-			    log.info("Could not contruct an LDAP DN, so we use the certDN that was passed to us.");
-			    ldapdn = certDN.toString();
-			}
+			final String ldapdn = constructLDAPDN(certDN, userDN);
 			try {
-                TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getConnectionTimeOut());    // Avoid waiting for halfdead-servers
+				TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getConnectionTimeOut());	// Avoid waiting for halfdead-servers
 				// connect to the server
 				lc.connect(currentServer, Integer.parseInt(getPort()));
 				// authenticate to the server
@@ -799,7 +754,7 @@ public class LdapPublisher extends BasePublisher {
 						log.debug("Found an old entry with DN '" + ldapdn+"'");
 					} else {
 						log.debug("Did not find an old entry with DN '" + ldapdn+"'");
-					}
+					}					
 				}
 			} catch (LDAPException e) {
 				if (e.getResultCode() == LDAPException.NO_SUCH_OBJECT) {
@@ -813,12 +768,12 @@ public class LdapPublisher extends BasePublisher {
 					} else {
 						String msg = intres.getLocalizedMessage("publisher.errorldapbind", e.getMessage());
 						log.error(msg, e);
-						throw new PublisherException(msg);
+						throw new PublisherException(msg);                                
 					}
 				}
 			} catch (UnsupportedEncodingException e) {
 				String msg = intres.getLocalizedMessage("publisher.errorpassword", getLoginPassword());
-				throw new PublisherException(msg);
+				throw new PublisherException(msg);            
 			} finally {
 				// disconnect with the server
 				try {
@@ -832,7 +787,9 @@ public class LdapPublisher extends BasePublisher {
 		return oldEntry;
 	}
 
-    @Override
+	/**
+	 * @see org.ejbca.core.model.ca.publisher.BasePublisher#testConnection()
+	 */    
 	public void testConnection() throws PublisherConnectionException {
 		int ldapVersion = LDAPConnection.LDAP_V3;
 		LDAPConnection lc = createLdapConnection();
@@ -844,7 +801,7 @@ public class LdapPublisher extends BasePublisher {
 			String currentServer = servers.next();
 			LDAPEntry entry = null;
 			try {
-                TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getConnectionTimeOut());    // Avoid waiting for halfdead-servers
+				TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getConnectionTimeOut());	// Avoid waiting for halfdead-servers
 				// connect to the server
 				lc.connect(currentServer, Integer.parseInt(getPort()));
 				// authenticate to the server
@@ -854,7 +811,7 @@ public class LdapPublisher extends BasePublisher {
 				if (log.isDebugEnabled()) {
 					log.debug("Trying to read top node '"+baseDN+"'");
 				}
-				entry = lc.read(baseDN, ldapSearchConstraints);
+				entry = lc.read(baseDN, ldapSearchConstraints);			
 				if(entry == null) {
 					String msg = intres.getLocalizedMessage("publisher.errornobinddn");
 					throw new PublisherConnectionException(msg);
@@ -869,12 +826,12 @@ public class LdapPublisher extends BasePublisher {
 				} else {
 					String msg = intres.getLocalizedMessage("publisher.errorldapbind", e.getMessage());
 					log.error(msg, e);
-					throw new PublisherConnectionException(msg);
+					throw new PublisherConnectionException(msg);                            
 				}
 			} catch (UnsupportedEncodingException e) {
 				String msg = intres.getLocalizedMessage("publisher.errorpassword", getLoginPassword());
 				log.error(msg, e);
-				throw new PublisherConnectionException(msg);
+				throw new PublisherConnectionException(msg);            
 			} finally {
 				// disconnect with the server
 				try {
@@ -885,12 +842,12 @@ public class LdapPublisher extends BasePublisher {
 				}
 			}
 		} while (connectionFailed && servers.hasNext()) ;
-	}
+	} 
 
 	protected LDAPConnection createLdapConnection() {
 		// Set timeouts
 		int connectiontimeout = getConnectionTimeOut();
-		ldapBindConstraints.setTimeLimit(connectiontimeout);
+		ldapBindConstraints.setTimeLimit(connectiontimeout); 
 		ldapDisconnectConstraints.setTimeLimit(connectiontimeout);
 		ldapConnectionConstraints.setTimeLimit(connectiontimeout);
 		ldapSearchConstraints.setTimeLimit(getReadTimeOut());
@@ -914,9 +871,9 @@ public class LdapPublisher extends BasePublisher {
 
 	/**
 	 *  Returns the hostnames of ldap server.
-	 */
+	 */    
 	public List<String> getHostnameList(){
-		List<String> ret = new ArrayList<String>();
+		List<String> ret = new ArrayList<String>();	
 		String[] hostnames = getHostnames().split(";");
 		for (int i=0; i<hostnames.length; i++) {
 			ret.add(hostnames[i]);
@@ -926,214 +883,214 @@ public class LdapPublisher extends BasePublisher {
 
 	/**
 	 *  Returns the hostnames of ldap server.
-	 */
+	 */    
 	public String getHostnames(){
 		return (String) data.get(HOSTNAMES);
 	}
 
 	/**
 	 *  Sets the hostname of ldap server.
-	 */
+	 */        
 	public void setHostnames(String hostnames){
-		data.put(HOSTNAMES, hostnames);
+		data.put(HOSTNAMES, hostnames);	
 	}
 
 	/**
 	 *  Returns true if SSL connetion should be used.
-	 */
+	 */    
 	public boolean getUseSSL (){
 		return ((Boolean) data.get(USESSL)).booleanValue();
 	}
 
 	/**
 	 *  Sets if SSL connetion should be used.
-	 */
+	 */        
 	public void setUseSSL (boolean usessl){
-		data.put(USESSL, Boolean.valueOf(usessl));
+		data.put(USESSL, Boolean.valueOf(usessl));	
 	}
 
 	/**
 	 *  Returns the port of ldap server.
-	 */
+	 */    
 	public String getPort (){
 		return (String) data.get(PORT);
 	}
 
 	/**
 	 *  Sets the port of ldap server.
-	 */
+	 */        
 	public void setPort(String port){
-		data.put(PORT, port);
+		data.put(PORT, port);	
 	}
 
 	/**
 	 *  Returns the basedn of ldap server.
-	 */
+	 */    
 	public String getBaseDN(){
 		return (String) data.get(BASEDN);
 	}
 
 	/**
 	 *  Sets the basedn of ldap server.
-	 */
+	 */        
 	public void setBaseDN(String basedn){
-		data.put(BASEDN, basedn);
+		data.put(BASEDN, basedn);	
 	}
 
 	/**
 	 *  Returns the logindn to the ldap server.
-	 */
+	 */    
 	public String getLoginDN(){
 		return (String) data.get(LOGINDN);
 	}
 
 	/**
 	 *  Sets the logindn to the ldap server.
-	 */
+	 */        
 	public void setLoginDN(String logindn){
-		data.put(LOGINDN, logindn);
+		data.put(LOGINDN, logindn);	
 	}
 
 	/**
 	 *  Returns the loginpwd to the ldap server.
-	 */
+	 */    
 	public String getLoginPassword(){
 		return (String) data.get(LOGINPASSWORD);
 	}
 
 	/**
 	 *  Sets the loginpwd to the ldap server.
-	 */
+	 */        
 	public void setLoginPassword(String loginpwd){
-		data.put(LOGINPASSWORD, loginpwd);
+		data.put(LOGINPASSWORD, loginpwd);	
 	}
 
 	/**
 	 *  Returns true if nonexisting users should be created
-	 */
+	 */    
 	public boolean getCreateNonExistingUsers (){
 		return ((Boolean) data.get(CREATENONEXISTING)).booleanValue();
 	}
 
 	/**
 	 *  Sets if nonexisting users should be created.
-	 */
+	 */        
 	public void setCreateNonExistingUsers (boolean createnonexistingusers){
-		data.put(CREATENONEXISTING, Boolean.valueOf(createnonexistingusers));
+		data.put(CREATENONEXISTING, Boolean.valueOf(createnonexistingusers));	
 	}
 
 	/**
 	 *  Returns true if existing users should be modified.
-	 */
+	 */    
 	public boolean getModifyExistingUsers (){
 		return ((Boolean) data.get(MODIFYEXISTING)).booleanValue();
 	}
 
 	/**
 	 *  Sets if existing users should be modified.
-	 */
+	 */        
 	public void setModifyExistingUsers (boolean modifyexistingusers){
-		data.put(MODIFYEXISTING, Boolean.valueOf(modifyexistingusers));
+		data.put(MODIFYEXISTING, Boolean.valueOf(modifyexistingusers));	
 	}
 
 	/**
 	 *  Returns true if existing user attributes should be modified.
-	 */
+	 */    
 	public boolean getModifyExistingAttributes (){
 		return ((Boolean) data.get(MODIFYEXISTINGATTR)).booleanValue();
-
+		
 	}
 
 	/**
 	 *  Sets if existing user attributes should be modified.
-	 */
+	 */        
 	public void setModifyExistingAttributes (boolean modifyexistingattributes){
-		data.put(MODIFYEXISTINGATTR, Boolean.valueOf(modifyexistingattributes));
+		data.put(MODIFYEXISTINGATTR, Boolean.valueOf(modifyexistingattributes));	
 	}
 
 	/**
 	 *  Returns true if existing user attributes should be added.
-	 */
+	 */    
 	public boolean getAddNonExistingAttributes (){
 		return ((Boolean) data.get(ADDNONEXISTINGATTR)).booleanValue();
 	}
 
 	/**
 	 *  Sets if existing user attributes should be added.
-	 */
+	 */        
 	public void setAddNonExistingAttributes (boolean modifyexistingusers){
-		data.put(ADDNONEXISTINGATTR, Boolean.valueOf(modifyexistingusers));
+		data.put(ADDNONEXISTINGATTR, Boolean.valueOf(modifyexistingusers));	
 	}
 
 
 	/**
 	 *  Returns the user object class in the ldap instance
-	 */
+	 */    
 	public String getUserObjectClass(){
 		return (String) data.get(USEROBJECTCLASS);
 	}
 
 	/**
 	 *  Sets the user object class in the ldap instance
-	 */
+	 */        
 	public void setUserObjectClass(String userobjectclass){
-		data.put(USEROBJECTCLASS, userobjectclass);
+		data.put(USEROBJECTCLASS, userobjectclass);	
 	}
 
 	/**
 	 *  Returns the CA object class in the ldap instance
-	 */
+	 */    
 	public String getCAObjectClass(){
 		return (String) data.get(CAOBJECTCLASS);
 	}
 
 	/**
 	 *  Sets the CA object class in the ldap instance
-	 */
+	 */        
 	public void setCAObjectClass(String caobjectclass){
-		data.put(CAOBJECTCLASS, caobjectclass);
+		data.put(CAOBJECTCLASS, caobjectclass);	
 	}
 
 	/**
 	 *  Returns the user cert attribute in the ldap instance
-	 */
+	 */    
 	public String getUserCertAttribute(){
 		return (String) data.get(USERCERTATTRIBUTE);
 	}
 
 	/**
 	 *  Sets the user cert attribute in the ldap instance
-	 */
+	 */        
 	public void setUserCertAttribute(String usercertattribute){
-		data.put(USERCERTATTRIBUTE, usercertattribute);
+		data.put(USERCERTATTRIBUTE, usercertattribute);	
 	}
 
 	/**
 	 *  Returns the ca cert attribute in the ldap instance
-	 */
+	 */    
 	public String getCACertAttribute(){
 		return (String) data.get(CACERTATTRIBUTE);
 	}
 
 	/**
 	 *  Sets the ca cert attribute in the ldap instance
-	 */
+	 */        
 	public void setCACertAttribute(String cacertattribute){
-		data.put(CACERTATTRIBUTE, cacertattribute);
+		data.put(CACERTATTRIBUTE, cacertattribute);	
 	}
 
 	/**
 	 *  Returns the CRL attribute in the ldap instance
-	 */
+	 */    
 	public String getCRLAttribute(){
 		return (String) data.get(CRLATTRIBUTE);
 	}
 
 	/**
 	 *  Sets the CRL attribute in the ldap instance
-	 */
+	 */        
 	public void setCRLAttribute(String crlattribute){
-		data.put(CRLATTRIBUTE, crlattribute);
+		data.put(CRLATTRIBUTE, crlattribute);	
 	}
 
 	/**  Returns the delta CRL attribute in the ldap instance
@@ -1151,31 +1108,31 @@ public class LdapPublisher extends BasePublisher {
 	 *  Sets the delta CRL attribute in the ldap instance
 	 */
 	public void setDeltaCRLAttribute(String deltacrlattribute){
-		data.put(DELTACRLATTRIBUTE, deltacrlattribute);
+		data.put(DELTACRLATTRIBUTE, deltacrlattribute);   
 	}
 
 	/**
 	 *  Returns the ARL attribute in the ldap instance
-	 */
+	 */    
 	public String getARLAttribute(){
 		return (String) data.get(ARLATTRIBUTE);
 	}
 
 	/**
 	 *  Sets the ARL attribute in the ldap instance
-	 */
+	 */        
 	public void setARLAttribute(String arlattribute){
-		data.put(ARLATTRIBUTE, arlattribute);
+		data.put(ARLATTRIBUTE, arlattribute);	
 	}
 
 	/**
 	 * Method getting a collection of DNFieldExtractor constants indicating which
 	 * fields of the x509 certificate DN that should be used in the LDAP DN.
-	 *
-	 * Valid values are  DNFieldExtractor.E, .UID, .CN, .SN, .GIVENNAME, .SURNAME, .T, .OU, .L
+	 * 
+	 * Valid values are  DNFieldExtractor.E, .UID, .CN, .SN, .GIVENNAME, .SURNAME, .T, .OU, .L 
 	 * Other values should be defined in baseDN instead.
 	 * If there exists multiple fields of the same type, then will all fields be mappen to LDAP dn.
-	 *
+	 * 
 	 * @return Collection of (Integer) containing DNFieldExtractor constants.
 	 */
 	@SuppressWarnings("unchecked")
@@ -1186,32 +1143,32 @@ public class LdapPublisher extends BasePublisher {
 	/**
 	 * Method setting a collection of DNFieldExtractor constants indicating which
 	 * fields of the x509 certificate DN that should be used in the LDAP DN.
-	 *
-	 * Valid values are  DNFieldExtractor.E, .UID, .CN, .SN, .GIVENNAME, .SURNAME, .T, .OU, .L
+	 * 
+	 * Valid values are  DNFieldExtractor.E, .UID, .CN, .SN, .GIVENNAME, .SURNAME, .T, .OU, .L 
 	 * Other values should be defined in baseDN instead.
 	 * If there exists multiple fields of the same type, then will all fields be mappen to LDAP dn.
-	 *
+	 * 
 	 * @return Collection of (Integer) containing DNFieldExtractor constants.
 	 */
 	public void setUseFieldInLdapDN(Collection<Integer> usefieldinldapdn){
 		data.put(USEFIELDINLDAPDN, usefieldinldapdn);
-	}
+	}    
 
 	/**
 	 *  Returns true if multiple certificates should be appended to existing user entries, instead of replacing.
-	 */
+	 */    
 	public boolean getAddMultipleCertificates (){
 		return ((Boolean) data.get(ADDMULTIPLECERTIFICATES)).booleanValue();
 	}
 	/**
 	 *  Sets if multiple certificates should be appended to existing user entries, instead of replacing.
-	 */
+	 */        
 	public void setAddMultipleCertificates (boolean appendcerts){
-		data.put(ADDMULTIPLECERTIFICATES, Boolean.valueOf(appendcerts));
+		data.put(ADDMULTIPLECERTIFICATES, Boolean.valueOf(appendcerts)); 
 	}
 
 	public void setRemoveRevokedCertificates( boolean removerevoked ){
-		data.put(REMOVEREVOKED, Boolean.valueOf(removerevoked));
+		data.put(REMOVEREVOKED, Boolean.valueOf(removerevoked));  
 	}
 
 	public boolean getRemoveRevokedCertificates(){
@@ -1223,7 +1180,7 @@ public class LdapPublisher extends BasePublisher {
 	}
 
 	public void setRemoveUsersWhenCertRevoked( boolean removeuser ){
-		data.put(REMOVEUSERONCERTREVOKE, Boolean.valueOf(removeuser));
+		data.put(REMOVEUSERONCERTREVOKE, Boolean.valueOf(removeuser));  
 	}
 
 	public boolean getRemoveUsersWhenCertRevoked(){
@@ -1235,7 +1192,7 @@ public class LdapPublisher extends BasePublisher {
 	}
 
 	public void setCreateIntermediateNodes( boolean createnodes ){
-		data.put(CREATEINTERMEDIATENODES, Boolean.valueOf(createnodes));
+		data.put(CREATEINTERMEDIATENODES, Boolean.valueOf(createnodes));  
 	}
 
 	public boolean getCreateIntermediateNodes(){
@@ -1247,7 +1204,7 @@ public class LdapPublisher extends BasePublisher {
 	}
 
 	public void setUserPassword( boolean userpassword ){
-		data.put(SETUSERPASSWORD, Boolean.valueOf(userpassword));
+		data.put(SETUSERPASSWORD, Boolean.valueOf(userpassword));  
 	}
 
 	public boolean getSetUserPassword(){
@@ -1282,30 +1239,30 @@ public class LdapPublisher extends BasePublisher {
 		}
 		return timeout;
 	}
-
+	
 	/** Set timout in milliseconds */
 	public void setConnectionTimeOut(int timeout) {
-		data.put(TIMEOUT, Integer.toString(timeout));
+		data.put(TIMEOUT, Integer.toString(timeout));  
 		ldapBindConstraints.setTimeLimit(timeout);
 		ldapConnectionConstraints.setTimeLimit(timeout);
 		ldapDisconnectConstraints.setTimeLimit(timeout);
 	}
 	/** Set timout in milliseconds */
 	public void setReadTimeOut(int timeout) {
-		data.put(READTIMEOUT, Integer.toString(timeout));
+		data.put(READTIMEOUT, Integer.toString(timeout));  
 		ldapSearchConstraints.setTimeLimit(timeout);
 	}
 	/** Set timout in milliseconds */
 	public void setStoreTimeOut(int timeout) {
-		data.put(STORETIMEOUT, Integer.toString(timeout));
+		data.put(STORETIMEOUT, Integer.toString(timeout)); 
 		ldapStoreConstraints.setTimeLimit(timeout);
 	}
 
-	// Private methods
+	// Private methods   
 	/**
 	 * Returns a list of attributes found in DN
 	 * Can only be used when the same attribute string is used in EJBCA and LDAP
-	 *
+	 *  
 	 * @param dn The DN to search
 	 * @param attributes Strings to search for in the DN
 	 * @return An LDAPAttributeSet containing all attributes found int the DN
@@ -1324,7 +1281,7 @@ public class LdapPublisher extends BasePublisher {
 	/**
 	 * Returns a list containing LDAPModification's
 	 * Can only be used when the same attribute string is used in EJBCA and LDAP
-	 *
+	 * 
 	 * @param dn The DN to search
 	 * @param oldDn the old DN
 	 * @param attributes Strings to search for in the DN
@@ -1355,7 +1312,6 @@ public class LdapPublisher extends BasePublisher {
 
 	/**
 	 * Creates an LDAPAttributeSet.
-     * This method is kept for backwards compatibility.
 	 *
 	 * @param cert the certificate to use or null if no cert involved.
 	 * @param objectclass the objectclass the attribute set should be of.
@@ -1370,28 +1326,8 @@ public class LdapPublisher extends BasePublisher {
 	 */
 	protected LDAPAttributeSet getAttributeSet(Certificate cert, String objectclass, String dn, String email, boolean extra, boolean person,
 			String password, ExtendedInformation extendedinformation) {
-        return getAttributeSet(cert, null, objectclass, dn, email, extra, person, password, extendedinformation);
-    }
-
-    /**
-     * Creates an LDAPAttributeSet.
-     *
-     * @param cert the certificate to use or null if no cert involved.
-     * @param crl the CRL to use or null if no crl involved.
-     * @param objectclass the objectclass the attribute set should be of.
-     * @param dn dn of the LDAP entry.
-     * @param email email address for entry, or null
-     * @param extra if we should add extra attributes except the objectclass to the attributeset.
-     * @param person true if this is a person-entry, false if it is a CA.
-     * @param password, users password, to be added into SecurityObjects, and AD
-     * @param extendedinformation, for future use...
-     *
-     * @return LDAPAtributeSet created...
-     */
-    protected LDAPAttributeSet getAttributeSet(Certificate cert, byte[] crl, String objectclass, String dn, String email, boolean extra, boolean person,
-            String password, ExtendedInformation extendedinformation) {
 		if (log.isTraceEnabled()) {
-			log.trace(">getAttributeSet(dn="+dn+", email="+email+")");
+			log.trace(">getAttributeSet(dn="+dn+", email="+email+")");			
 		}
 		LDAPAttributeSet attributeSet = new LDAPAttributeSet();
 		LDAPAttribute attr = new LDAPAttribute("objectclass");
@@ -1413,14 +1349,14 @@ public class LdapPublisher extends BasePublisher {
 		 *   -- Call the LDAPConnection add method to add it to the directory
 		 */
 		if (extra) {
-		    attributeSet.addAll(getAttributesFromDN(dn, MATCHINGEXTRAATTRIBUTES));
+			attributeSet.addAll(getAttributesFromDN(dn, MATCHINGEXTRAATTRIBUTES));
 
-			// Only persons have (normally) all these extra attributes.
+			// Only persons have (normally) all these extra attributes. 
 			// A CA might have them if you don't use the default objectClass, but we don't
 			// handle that case.
 			if (person) {
-                // First get the easy ones where LDAP and EJBCA spelling is the same
-                attributeSet.addAll(getAttributesFromDN(dn, MATCHINGPERSONALATTRIBUTES));
+				// First get the easy ones where LDAP and EJBCA spelling is the same
+				attributeSet.addAll(getAttributesFromDN(dn, MATCHINGPERSONALATTRIBUTES));
 				// sn means surname in LDAP, and is required for persons
 				String cn = CertTools.getPartFromDN(dn, "CN");
 				String sn = CertTools.getPartFromDN(dn, "SURNAME");
@@ -1445,50 +1381,50 @@ public class LdapPublisher extends BasePublisher {
 				// gn means givenname in LDAP, and is required for persons
 				String gn = CertTools.getPartFromDN(dn, "GIVENNAME");
 				if ( (gn == null) && (cn != null) ) {
-				    // Only construct this if we are the standard object class
-				    if (getUserObjectClass().endsWith("inetOrgPerson")) {
-				        // Take givenname to be the first part of the cn
-				        int index = cn.indexOf(' ');
-				        if (index <=0) {
-				            // If there is no natural gn/sn, ignore gn if we are using sn
-				            if (sn == null) {
-				                gn = cn;
-				            }
-				        } else {
-				            gn = new String(cn.substring(0, index));
-				        }
-				    }
+					// Only construct this if we are the standard object class
+					if (getUserObjectClass().endsWith("inetOrgPerson")) {
+						// Take givenname to be the first part of the cn
+						int index = cn.indexOf(' ');
+						if (index <=0) {
+							// If there is no natural gn/sn, ignore gn if we are using sn
+							if (sn == null) {
+								gn = cn;
+							}
+						} else {
+							gn = new String(cn.substring(0, index));
+						}
+					}
 				}
 				if (gn != null) {
-				    attributeSet.add(new LDAPAttribute("givenName", gn));
+					attributeSet.add(new LDAPAttribute("givenName", gn));
 				}
 				String title = CertTools.getPartFromDN(dn, "T");
 				if (title != null) {
-				    attributeSet.add(new LDAPAttribute("title", title));
+					attributeSet.add(new LDAPAttribute("title", title));
 				}
 				if (email != null) {
-				    attributeSet.add(new LDAPAttribute("mail", email));
+					attributeSet.add(new LDAPAttribute("mail", email));											
 				}
-
+				
 				// If we have selected to use the SN (serialNUmber DN field, we will also add it as an attribute
 				// This is not present in the normal objectClass (inetOrgPerson)
 				// Modifying the schema is as simple as adding serialNumber as MAY in the inetOrgPerson object class in inetorgperson.schema.
 				Collection<Integer> usefields = getUseFieldInLdapDN();
 				if (usefields.contains(Integer.valueOf(DNFieldExtractor.SN))) {
-				    String serno = CertTools.getPartFromDN(dn, "SN");
-				    if (serno != null) {
-				        attributeSet.add(new LDAPAttribute("serialNumber", serno));
-				    }
+					String serno = CertTools.getPartFromDN(dn, "SN");
+					if (serno != null) {
+						attributeSet.add(new LDAPAttribute("serialNumber", serno));
+					}            		
 				}
-
+				
 				// If this is an objectClass which is a SecurityObject, such as simpleSecurityObject, we will add the password as well, if not null.
 				if (getSetUserPassword() && (password != null)) {
-				    if (log.isDebugEnabled()) {
-				        log.debug("Adding userPassword attribute");
-				    }
-				    attributeSet.add(new LDAPAttribute("userPassword", password));
+					if (log.isDebugEnabled()) {
+						log.debug("Adding userPassword attribute");
+					}
+					attributeSet.add(new LDAPAttribute("userPassword", password));
 				}
-
+				
 			}
 		}
 		if (log.isTraceEnabled()) {
@@ -1500,7 +1436,6 @@ public class LdapPublisher extends BasePublisher {
 
 	/**
 	 * Creates an LDAPModificationSet.
-     * This method is kept for backwards compatibility.
 	 *
 	 * @param oldEntry the objectclass the attribute set should be of.
 	 * @param dn dn of the LDAP entry.
@@ -1514,27 +1449,8 @@ public class LdapPublisher extends BasePublisher {
 	 * @return List of LDAPModification created...
 	 */
 	protected ArrayList<LDAPModification> getModificationSet(LDAPEntry oldEntry, String dn, String email, boolean extra, boolean person, String password) {
-        return getModificationSet(oldEntry, null, dn, email, extra, person, password);
-    }
-
-    /**
-     * Creates an LDAPModificationSet.
-     *
-     * @param oldEntry the objectclass the attribute set should be of.
-     * @param crl CRL or null
-     * @param dn dn of the LDAP entry.
-     * @param email email address for entry, or null
-     * @param extra if we should add extra attributes except the objectclass to the
-     *        modificationset.
-     * @param pserson true if this is a person-entry, false if it is a CA.
-     * @param password, users password, to be added into SecurityObjects, and AD
-     * @param overwrite if true then old attributes in LDAP will be overwritten, otherwise not.
-     *
-     * @return List of LDAPModification created...
-     */
-    protected ArrayList<LDAPModification> getModificationSet(LDAPEntry oldEntry, byte[] crl, String dn, String email, boolean extra, boolean person, String password) {
 		if (log.isTraceEnabled()) {
-			log.trace(">getModificationSet(dn="+dn+", email="+email+")");
+			log.trace(">getModificationSet(dn="+dn+", email="+email+")");			
 		}
 		boolean modifyExisting = getModifyExistingAttributes();
 		boolean addNonExisting = getAddNonExistingAttributes();
@@ -1546,7 +1462,7 @@ public class LdapPublisher extends BasePublisher {
 				log.debug("Adding extra attributes to modificationSet");
 			}
 			modSet.addAll(getModificationSetFromDN(dn, oldEntry, MATCHINGEXTRAATTRIBUTES));
-			// Only persons have (normally) all these extra attributes.
+			// Only persons have (normally) all these extra attributes. 
 			// A CA might have them if you don't use the default objectClass, but we don't
 			// handle that case.
 			if (person) {
@@ -1577,34 +1493,34 @@ public class LdapPublisher extends BasePublisher {
 				String gn = CertTools.getPartFromDN(dn, "GIVENNAME");
 				LDAPAttribute oldgn = oldEntry.getAttribute("GIVENNAME");
 				if ( (gn == null) && (cn != null) ) {
-				    // Only construct this if we are the standard object class
-				    if (getUserObjectClass().endsWith("inetOrgPerson")) {
-				        // Take givenname to be the first part of the cn
-				        int index = cn.indexOf(' ');
-				        if (index <=0) {
-				            // If there is no natural gn/sn, ignore gn if we are using sn
-				            if (sn == null) {
-				                gn = cn;
-				            }
-				        } else {
-				            gn = new String(cn.substring(0, index));
-				        }
-				    }
-				    if ( ( ((gn != null) && (oldgn == null)) && addNonExisting) || ( ((gn != null) && (oldgn != null )) && modifyExisting) ) {
-				        LDAPAttribute attr = new LDAPAttribute("givenName", gn);
-				        modSet.add(new LDAPModification(LDAPModification.REPLACE, attr));
-				    }
+					// Only construct this if we are the standard object class
+					if (getUserObjectClass().endsWith("inetOrgPerson")) {
+						// Take givenname to be the first part of the cn
+						int index = cn.indexOf(' ');
+						if (index <=0) {
+							// If there is no natural gn/sn, ignore gn if we are using sn
+							if (sn == null) {
+								gn = cn;
+							}
+						} else {
+							gn = new String(cn.substring(0, index));
+						}
+					}
+					if ( ( ((gn != null) && (oldgn == null)) && addNonExisting) || ( ((gn != null) && (oldgn != null )) && modifyExisting) ) {
+						LDAPAttribute attr = new LDAPAttribute("givenName", gn);
+						modSet.add(new LDAPModification(LDAPModification.REPLACE, attr));
+					}
 				}
 				String title = CertTools.getPartFromDN(dn, "T");
 				LDAPAttribute oldTitle = oldEntry.getAttribute("Title");
 				if ( ( (title != null) && (oldTitle == null) && addNonExisting) || ( (title != null) && (oldTitle != null ) && modifyExisting) ) {
-				    LDAPAttribute attr = new LDAPAttribute("givenName", title);
-				    modSet.add(new LDAPModification(LDAPModification.REPLACE, attr));
+					LDAPAttribute attr = new LDAPAttribute("givenName", title);
+					modSet.add(new LDAPModification(LDAPModification.REPLACE, attr));
 				}
 				LDAPAttribute oldEmail = oldEntry.getAttribute("mail");
 				if ( ( (email != null) && (oldEmail == null) && addNonExisting) || ( (email != null) && (oldEmail != null ) && modifyExisting) ) {
-				    LDAPAttribute mailAttr = new LDAPAttribute("mail", email);
-				    modSet.add(new LDAPModification(LDAPModification.REPLACE, mailAttr));
+					LDAPAttribute mailAttr = new LDAPAttribute("mail", email);
+					modSet.add(new LDAPModification(LDAPModification.REPLACE, mailAttr));											
 				}
 
 				// All generic personal attributes
@@ -1613,21 +1529,21 @@ public class LdapPublisher extends BasePublisher {
 				// This is not present in the normal objectClass (inetOrgPerson)
 				Collection<Integer> usefields = getUseFieldInLdapDN();
 				if (usefields.contains(Integer.valueOf(DNFieldExtractor.SN))) {
-				    String serno = CertTools.getPartFromDN(dn, "SN");
-				    LDAPAttribute oldserno = oldEntry.getAttribute("SN");
-				    if (((serno != null) && (oldserno == null) && addNonExisting) || ( (serno != null) && (oldserno != null ) && modifyExisting)) {
-				        LDAPAttribute attr = new LDAPAttribute("serialNumber", serno);
-				        modSet.add(new LDAPModification(LDAPModification.REPLACE, attr));
-				    }
+					String serno = CertTools.getPartFromDN(dn, "SN");
+					LDAPAttribute oldserno = oldEntry.getAttribute("SN");
+					if (((serno != null) && (oldserno == null) && addNonExisting) || ( (serno != null) && (oldserno != null ) && modifyExisting)) {
+						LDAPAttribute attr = new LDAPAttribute("serialNumber", serno);
+						modSet.add(new LDAPModification(LDAPModification.REPLACE, attr));
+					}            		
 				}
-
+				
 				// If this is an objectClass which is a SecurityObject, such as simpleSecurityObject, we will add the password as well, if not null
 				if ( (getSetUserPassword() && (password != null)) && (addNonExisting || modifyExisting) ) {
-				    if (log.isDebugEnabled()) {
-				        log.debug("Modifying userPassword attribute");
-				    }
-				    LDAPAttribute attr = new LDAPAttribute("userPassword", password);
-				    modSet.add(new LDAPModification(LDAPModification.REPLACE, attr));
+					if (log.isDebugEnabled()) {
+						log.debug("Modifying userPassword attribute");
+					}
+					LDAPAttribute attr = new LDAPAttribute("userPassword", password);
+					modSet.add(new LDAPModification(LDAPModification.REPLACE, attr));
 				}
 			}
 		}
@@ -1638,18 +1554,6 @@ public class LdapPublisher extends BasePublisher {
 	} // getModificationSet
 
 	/**
-     * Constructs the LDAP DN for a certificate to be published.
-     * This method is kept for backwards compatibility.
-     * @param certDN certificate DN
-     * @param userDataDN user data DN
-     * @return LDAP DN to be used.
-     * @see LdapPublisher#constructLDAPDN(java.lang.String, java.lang.String, java.security.cert.Certificate)
-     */
-    protected String constructLDAPDN(String certDN, String userDataDN) {
-        return constructLDAPDN(certDN, userDataDN, null);
-    }
-
-    /**
 	 * Constructs the LDAP DN for a certificate to be published. Only DN objects defined by the publisher is used.
 	 * For each DN object to be published:
 	 *  First the certificate DN is search for this object.
@@ -1657,10 +1561,9 @@ public class LdapPublisher extends BasePublisher {
 	 *  If no such userdata object either the object will not be a part of the LDAP DN.
 	 * @param certDN certificate DN
 	 * @param userDataDN user data DN
-	 * @param user certificate or null
 	 * @return LDAP DN to be used.
 	 */
-	protected String constructLDAPDN(String certDN, String userDataDN, Certificate cert) {
+	protected String constructLDAPDN(String certDN, String userDataDN){
 		if (log.isDebugEnabled()) {
 			log.debug("DN in certificate '"+certDN+"'. DN in user data '"+userDataDN+"'.");
 		}
@@ -1670,38 +1573,36 @@ public class LdapPublisher extends BasePublisher {
 
 		Collection<Integer> usefields = getUseFieldInLdapDN();
 		if(usefields instanceof List<?>){
-		    Collections.sort((List<Integer>) usefields);
+			Collections.sort((List<Integer>) usefields);
 		}
-		Iterator<Integer> iter = usefields.iterator();
+		Iterator<Integer> iter = usefields.iterator(); 
 		while(iter.hasNext()){
-		    Integer next = iter.next();
-		    String dnField = certExtractor.getFieldString(next.intValue());
-		    if ( StringUtils.isEmpty(dnField) && userDataExtractor!=null ) {
-		        dnField = userDataExtractor.getFieldString(next.intValue());
-		    }
-		    if (StringUtils.isNotEmpty(dnField)) {
-		        if (dnField.startsWith("SN")) {
-		            // This is SN in Bouncycastle, but it should be serialNumber in LDAP
-		            dnField = "serialNumber"+new String(dnField.substring(2));
-		        }
-		        if (dnField.startsWith("E")) {
-		            // This is E in Bouncycastle, but it should be mail in LDAP
-		            dnField = "mail"+new String(dnField.substring(1));
-		        }
-		        if(retval.length() == 0) {
-		            retval += dnField; // first item, don't start with a comma
-		        } else {
-		            retval += "," + dnField;
-		        }
-		    }
+			Integer next = iter.next();
+			String dnField = certExtractor.getFieldString(next.intValue());
+			if ( StringUtils.isEmpty(dnField) && userDataExtractor!=null ) {
+				dnField = userDataExtractor.getFieldString(next.intValue());
+			}
+			if (StringUtils.isNotEmpty(dnField)) {
+				if (dnField.startsWith("SN")) {
+					// This is SN in Bouncycastle, but it should be serialNumber in LDAP
+					dnField = "serialNumber"+new String(dnField.substring(2));
+				}
+				if (dnField.startsWith("E")) {
+					// This is E in Bouncycastle, but it should be mail in LDAP
+					dnField = "mail"+new String(dnField.substring(1));
+				}
+				if(retval.length() == 0) {
+					retval += dnField; // first item, don't start with a comma
+				} else {
+					retval += "," + dnField;
+				}
+			}
 		}
-		if (StringUtils.isNotEmpty(retval)) {
-		    retval = retval + "," + this.getBaseDN();
-		}
+		retval = retval + "," + this.getBaseDN();
 		if (log.isDebugEnabled()) {
 			log.debug("LdapPublisher: constructed DN: " + retval );
 		}
-		return retval;
+		return retval;	
 	}
 
 	protected static byte[] fakecrlbytes = Base64.decode(
@@ -1725,11 +1626,10 @@ public class LdapPublisher extends BasePublisher {
 		return fakecrl;
 	}
 
-	/**
+	/** 
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher#clone()
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-    @Override
     public Object clone() throws CloneNotSupportedException {
 		LdapPublisher clone = new LdapPublisher();
 		HashMap clonedata = (HashMap) clone.saveData();
@@ -1740,21 +1640,19 @@ public class LdapPublisher extends BasePublisher {
 			clonedata.put(key, data.get(key));
 		}
 		clone.loadData(clonedata);
-		return clone;
+		return clone;	
 	}
 
 	/* *
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher#getLatestVersion()
 	 */
-    @Override
-	public float getLatestVersion() {
+	public float getLatestVersion() {		
 		return LATEST_VERSION;
 	}
 
-	/**
-	 * Implemtation of UpgradableDataHashMap function upgrade.
+	/** 
+	 * Implemtation of UpgradableDataHashMap function upgrade. 
 	 */
-    @Override
 	public void upgrade() {
 		log.trace(">upgrade");
 		if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
@@ -1762,13 +1660,13 @@ public class LdapPublisher extends BasePublisher {
 			String msg = intres.getLocalizedMessage("publisher.upgrade", new Float(getVersion()));
 			log.info(msg);
 			if(data.get(ADDMULTIPLECERTIFICATES) == null) {
-				setAddMultipleCertificates(false);
+				setAddMultipleCertificates(false);                
 			}
 			if(data.get(REMOVEREVOKED) == null) {
-				setRemoveRevokedCertificates(true);
+				setRemoveRevokedCertificates(true);                
 			}
 			if(data.get(REMOVEUSERONCERTREVOKE) == null) {
-				setRemoveUsersWhenCertRevoked(false);
+				setRemoveUsersWhenCertRevoked(false);                
 			}
 			if(data.get(CREATEINTERMEDIATENODES) == null) {
 				setCreateIntermediateNodes(false); // v6
@@ -1781,13 +1679,13 @@ public class LdapPublisher extends BasePublisher {
 				setAddNonExistingAttributes(true);
 			}
 			if (getVersion() < 9) {
-                setConnectionTimeOut(getConnectionTimeOut());   // v9
+				setConnectionTimeOut(getConnectionTimeOut());	// v9
 			}
 			if(data.get(SETUSERPASSWORD) == null) {
-                setUserPassword(false); // v10
+				setUserPassword(false);	// v10
 			}
 			if (data.get(READTIMEOUT) == null) {
-                setStoreTimeOut(getStoreTimeOut()); // v11
+				setStoreTimeOut(getStoreTimeOut());	// v11
 				setReadTimeOut(getReadTimeOut());
 			}
 
