@@ -497,12 +497,14 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                             log.error("Service worker execution failed.", e);
                         }
                     } else {
-                        Object o = timerInfo;
-                        if (serviceName != null) {
-                            o = serviceName;
+                        if (log.isDebugEnabled()) {
+                            Object o = timerInfo;
+                            if (serviceName != null) {
+                                o = serviceName;
+                            }
+                            final String msg = intres.getLocalizedMessage("services.servicerunonothernode", o);
+                            log.debug(msg);
                         }
-                        final String msg = intres.getLocalizedMessage("services.servicerunonothernode", o);
-                        log.info(msg);
                     }
                     if (new Date().getTime() - startOfTimeOut > serviceInterval * 1000) {
                         log.warn("Service '" + serviceName + "' took longer than it's configured service interval."
@@ -512,7 +514,9 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                 }
             }
         }
-        log.trace("<ejbTimeout");
+        if (log.isTraceEnabled()) {
+            log.trace("<ejbTimeout");
+        }
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
@@ -613,17 +617,10 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             ejbs.put(ComplexAccessControlSessionLocal.class, complexAccessControlSession);
             worker.work(ejbs);
             final String msg = intres.getLocalizedMessage("services.serviceexecuted", serviceName);
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);
-            auditSession.log(EjbcaEventTypes.SERVICE_EXECUTED, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA,
-                    intAdmin.toString(), null, null, null, details);
+            log.info(msg);
         } catch (ServiceExecutionFailedException e) {
             final String msg = intres.getLocalizedMessage("services.serviceexecutionfailed", serviceName);
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);
-            details.put("error", e.getMessage());
-            auditSession.log(EjbcaEventTypes.SERVICE_EXECUTED, EventStatus.FAILURE, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA,
-                    intAdmin.toString(), null, null, null, details);
+            log.info(msg, e);
         }
     }
 
