@@ -412,6 +412,16 @@
   </fieldset>
 </form>
 
+<div class="message">
+  <div class="label">Note</div>
+  <div class="content">
+    <p>
+    If you are using Windows 8 and IE10, please note that certificate enrollment only works in IE10 for the Desktop. 
+    Certificate enrollment in Metro mode is disabled.
+    </p>
+  </div>
+</div>
+
 <script type="text/vbscript" defer="true">
 <!--
 	If InStr(Navigator.UserAgent, "Windows NT 6") <> 0 Then
