@@ -56,6 +56,7 @@ import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.util.SlotList;
 
 /**
  * JavaServer Faces Managed Bean for managing CryptoTokens.
@@ -108,7 +109,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         private boolean autoActivate = false;
         private boolean allowExportPrivateKey = false;
         private String p11Library = "";
-        private String p11Slot = "0";
+        private String p11Slot = WebConfiguration.getDefaultP11SlotNumber();
         private String p11AttributeFile = "default";
         private boolean active = false;
         private boolean referenced = false;
@@ -296,8 +297,10 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 String className = null;
                 if (PKCS11CryptoToken.class.getSimpleName().equals(getCurrentCryptoToken().getType())) {
                     className = PKCS11CryptoToken.class.getName();
-                    properties.setProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY, getCurrentCryptoToken().getP11Library());
-                    String slotPropertyValue = getCurrentCryptoToken().getP11Slot().trim();
+                    String library = getCurrentCryptoToken().getP11Library();
+                    properties.setProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY, library);
+                    String slotTextValue = getCurrentCryptoToken().getP11Slot().trim();
+                    String slotPropertyValue = slotTextValue;
                     String slotPropertyName = PKCS11CryptoToken.SLOT_LABEL_KEY;
                     if (slotPropertyValue.startsWith("i")) {
                         slotPropertyValue = slotPropertyValue.substring(1);
@@ -305,6 +308,11 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                     }
                     // Verify that it is a valid number
                     Integer.parseInt(slotPropertyValue);
+                    // Verify that it is allowed
+                    SlotList allowedSlots = getP11SlotList();
+                    if (allowedSlots != null && !allowedSlots.contains(slotTextValue)) {
+                        throw new IllegalArgumentException("Slot number "+slotTextValue+" is not allowed. Allowed slots are: "+allowedSlots);
+                    }
                     properties.setProperty(slotPropertyName, slotPropertyValue);
                     // The default should be null, but we will get a value "default" from the GUI code in this case..
                     final String p11AttributeFile = getCurrentCryptoToken().getP11AttributeFile();
@@ -353,6 +361,8 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 msg = e.getMessage();
             } catch (NumberFormatException e) {
                 msg = "Slot must be an absolute number or use prefix 'i' for indexed slots.";
+            } catch (IllegalArgumentException e) {
+                msg = e.getMessage();
             } catch (Throwable e) {
                 msg = e.getMessage();
                 log.info("", e);
@@ -377,8 +387,8 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     /** @return a list of library SelectItems sort by display name for detected P11 libraries. */
     public List<SelectItem> getAvailableCryptoTokenP11Libraries() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
-        for (Entry<String, String> entry: WebConfiguration.getAvailableP11LibraryToAliasMap().entrySet()) {
-            ret.add(new SelectItem(entry.getKey(), entry.getValue()));
+        for (Entry<String, WebConfiguration.P11LibraryInfo> entry : WebConfiguration.getAvailableP11LibraryToAliasMap().entrySet()) {
+            ret.add(new SelectItem(entry.getKey(), entry.getValue().getAlias()));
         }
         // Sort by display name
         Collections.sort(ret, new Comparator<SelectItem>() {
@@ -395,11 +405,12 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         if (library == null) {
             return "";
         }
-        String ret = WebConfiguration.getAvailableP11LibraryToAliasMap().get(library);
-        if (ret == null || ret.length()==0) {
-            ret = library;
-        }
-        return ret;
+        
+        WebConfiguration.P11LibraryInfo libinfo = WebConfiguration.getAvailableP11LibraryToAliasMap().get(library);
+        if (libinfo == null) return library;
+        String alias = libinfo.getAlias();
+        if (alias == null || alias.isEmpty()) return library;
+        return alias;
     }
 
     /** @return a list of library SelectItems sort by display name for detected P11 libraries. */
@@ -705,5 +716,14 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             }
         }
         flushCaches();
+    }
+    
+    /** @return A SlotList that contains the allowed slots numbers and indexes, or null if there's no such restriction */
+    private SlotList getP11SlotList() {
+        String library = currentCryptoToken.getP11Library();
+        if (library == null) return null;
+        WebConfiguration.P11LibraryInfo libinfo = WebConfiguration.getAvailableP11LibraryToAliasMap().get(library);
+        if (libinfo == null) return null;
+        return libinfo.getSlotList();
     }
 }
