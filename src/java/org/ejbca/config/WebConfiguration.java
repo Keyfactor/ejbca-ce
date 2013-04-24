@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.ejbca.util.SlotList;
 
 /**
  * This file handles configuration from web.properties
@@ -155,16 +156,35 @@ public class WebConfiguration {
     public static boolean isManualClassPathsEnabled() {
         return Boolean.TRUE.toString().equalsIgnoreCase(EjbcaConfigurationHolder.getString("web.manualclasspathsenabled"));
     }
+    
+    /** @return the default slot in the "New CryptoToken" page */
+    public static String getDefaultP11SlotNumber() {
+        String s = EjbcaConfigurationHolder.getString("cryptotoken.p11.defaultslot");
+        return (s != null && !s.trim().isEmpty() ? s : "0");
+    }
+    
+    
+    public static final class P11LibraryInfo {
+        private final String alias;
+        private final SlotList slotList;
+        public P11LibraryInfo(String alias, SlotList slotList) {
+            this.alias = alias;
+            this.slotList = slotList;
+        }
+        public String getAlias() { return alias; }
+        public SlotList getSlotList() { return slotList; }
+    }
 
-    private static Map<String,String> availableP11LibraryToAliasMap = null;
+    private static Map<String,P11LibraryInfo> availableP11LibraryToAliasMap = null;
     /** @return a (cached) mapping between the PKCS#11 libraries and their display names */
-    public static Map<String,String> getAvailableP11LibraryToAliasMap() {
+    public static Map<String,P11LibraryInfo> getAvailableP11LibraryToAliasMap() {
         if (availableP11LibraryToAliasMap==null) {
-            final Map<String,String> ret = new HashMap<String,String>();
+            final Map<String,P11LibraryInfo> ret = new HashMap<String,P11LibraryInfo>();
             for (int i=0; i<256; i++) {
                 String fileName = EjbcaConfigurationHolder.getString("cryptotoken.p11.lib." + i + ".file");
                 if (fileName!=null) {
                     String displayName = EjbcaConfigurationHolder.getString("cryptotoken.p11.lib." + i + ".name");
+                    SlotList slotList = SlotList.fromString(EjbcaConfigurationHolder.getString("cryptotoken.p11.lib." + i + ".slotlist"));
                     final File file = new File(fileName);
                     if (file.exists()) {
                         fileName = file.getAbsolutePath();
@@ -174,7 +194,7 @@ public class WebConfiguration {
                         if (log.isDebugEnabled()) {
                             log.info("Adding PKCS#11 library " + fileName + " with display name " + displayName);
                         }
-                        ret.put(fileName, displayName);
+                        ret.put(fileName, new P11LibraryInfo(displayName, slotList));
                     } else {
                         if (log.isDebugEnabled()) {
                             log.info("PKCS#11 library " + fileName + " was not detected in file system and will not be available.");

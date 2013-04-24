@@ -191,6 +191,15 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 # You can add your own values with an available number, or override numbers from defaults...
 #cryptotoken.p11.lib.255.name=P11 Proxy
 #cryptotoken.p11.lib.255.file=/home/user/local/p11proxy/dist/p11proxy.so
+#
+# If you would like to restrict the accessible slots, you can use the following property:
+# (you can use ranges, and if you omit the low or high number it means "no limit")
+#cryptotoken.p11.lib.30.slotlist=1-100
+#cryptotoken.p11.lib.30.slotlist=0,1,65537
+#cryptotoken.p11.lib.30.slotlist=i1-i
+# To change the default slot (e.g. if you have disabled access to slot 0)
+#cryptotoken.p11.defaultslot=1
+#cryptotoken.p11.defaultslot=i1
 
 # Available PKCS#11 CryptoToken attribute files and their display names
 # Use if the default PKCS#11 attributes are not good for the PKCS#11 module and if needs specific attributes 
