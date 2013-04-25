@@ -161,20 +161,24 @@ public abstract class BaseCryptoToken implements CryptoToken {
      * @throws CryptoTokenOfflineException if Crypto Token is not available or connected.
      */
     protected PublicKey readPublicKey(String alias) throws KeyStoreException, CryptoTokenOfflineException {
-        Certificate cert = getKeyStore().getCertificate(alias);
-        PublicKey pubk = null;
-        if (cert != null) {
-            pubk = cert.getPublicKey();
-        } else {
-            log.warn(intres.getLocalizedMessage("token.nopublic", alias));
-            if (log.isDebugEnabled()) {
-                Enumeration<String> en = getKeyStore().aliases();
-                while (en.hasMoreElements()) {
-                    log.debug("Existing alias: " + en.nextElement());
+        try {
+            Certificate cert = getKeyStore().getCertificate(alias);
+            PublicKey pubk = null;
+            if (cert != null) {
+                pubk = cert.getPublicKey();
+            } else {
+                log.warn(intres.getLocalizedMessage("token.nopublic", alias));
+                if (log.isDebugEnabled()) {
+                    Enumeration<String> en = getKeyStore().aliases();
+                    while (en.hasMoreElements()) {
+                        log.debug("Existing alias: " + en.nextElement());
+                    }
                 }
             }
+            return pubk;
+        } catch (ProviderException e) {
+            throw new CryptoTokenOfflineException(e);
         }
-        return pubk;
     }
 
     /**
@@ -449,6 +453,8 @@ public abstract class BaseCryptoToken implements CryptoToken {
             throw new CryptoTokenOfflineException(e);
         } catch (NoSuchAlgorithmException e) {
             throw new CryptoTokenOfflineException(e);
+        } catch (ProviderException e) {
+            throw new CryptoTokenOfflineException(e);
         }
     }
 
@@ -494,6 +500,8 @@ public abstract class BaseCryptoToken implements CryptoToken {
         } catch (UnrecoverableKeyException e) {
             throw new CryptoTokenOfflineException(e);
         } catch (NoSuchAlgorithmException e) {
+            throw new CryptoTokenOfflineException(e);
+        } catch (ProviderException e) {
             throw new CryptoTokenOfflineException(e);
         }
     }
