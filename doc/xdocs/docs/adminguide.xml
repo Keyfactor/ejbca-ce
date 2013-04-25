@@ -2443,7 +2443,7 @@ com.example.ejbca.MyWorker
 com.example.ejbca.MyOtherWorker
 </source>
 <p>
-Note that it is not be possible to hot-redeploy EJBCA when customized services are
+Note that it is not possible to hot-redeploy EJBCA when customized services are
 used.  
 </p>
 <subsection name="CustomWorker">
