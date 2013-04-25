@@ -272,6 +272,7 @@
 					<include name="org/ejbca/config/*.java"/>			
 					<include name="org/ejbca/core/model/authorization/*.java"/>
                     <include name="org/ejbca/core/model/ra/NotFoundException*.java"/>							
+					<include name="org/ejbca/util/SlotList.java"/>
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/authorization" destdir="${build-temp.dir}/authorization" debug="on" includeantruntime="no"
@@ -329,6 +330,7 @@
 					<!-- GlobalConfiguration is more of RA/AdminGUI component, but is hard to get rid of w/o database changes.. -->
 					<include name="org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java"/>
 					<include name="org/ejbca/config/WebConfiguration.java"/>                
+					<include name="org/ejbca/util/SlotList.java"/>
 					<!-- Exclude RA approval requests.. org.ejbca.core.model.ra.approvalrequests would be a better location for these -->
 					<exclude name="org/ejbca/core/model/approval/approvalrequests/EditEndEntityApprovalRequest.java"/>
 					<exclude name="org/ejbca/core/model/approval/approvalrequests/AddEndEntityApprovalRequest.java"/>
@@ -1090,6 +1092,7 @@
 					<include name="org/ejbca/ui/web/pub/ServletDebug.java"/>
 					<include name="org/ejbca/ui/web/pub/ServletUtils.java"/>
 					<include name="org/ejbca/config/WebConfiguration.java"/>
+					<include name="org/ejbca/util/SlotList.java"/>
 					<include name="org/cesecore/authorization/AuthorizationDeniedException.java"/>
 				</fileset>
 			</copy>
