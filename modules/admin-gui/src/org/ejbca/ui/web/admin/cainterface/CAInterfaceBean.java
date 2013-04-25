@@ -1170,24 +1170,49 @@ public class CAInterfaceBean implements Serializable {
                 if (accessControlSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.USE.resource() + '/' + cryptoTokenInfo.getCryptoTokenId())
                         && cryptoTokenInfo.isActive()) {
 	                final int cryptoTokenId = cryptoTokenInfo.getCryptoTokenId();
-	                // Fetch a list of all keys and their specs
-	                final List<KeyPairInfo> cryptoTokenKeyPairInfos = cryptoTokenManagementSession.getKeyPairInfos(authenticationToken, cryptoTokenId);
-	                // Only allow tokens with at least one keypair
-	                if (cryptoTokenKeyPairInfos.size()>0) {
-	                    for (final KeyPairInfo cryptoTokenKeyPairInfo : cryptoTokenKeyPairInfos) {
-	                        String requiredKeyAlgorithm = AlgorithmTools.getKeyAlgorithmFromSigAlg(caSigingAlgorithm);
-	                        if (requiredKeyAlgorithm.equals(cryptoTokenKeyPairInfo.getKeyAlgorithm())) {
-	                            // We have at least on key in this token with the right key algorithm mathing the CA's singing algorithm, so add the token!
-	                            availableCryptoTokens.add(new AbstractMap.SimpleEntry<String,String>(Integer.toString(cryptoTokenId), cryptoTokenInfo.getName()));
-	                            break; // This token is fine, proceed with next token
-	                        }
-	                    }
+	                try {
+    	                // Fetch a list of all keys and their specs
+    	                final List<KeyPairInfo> cryptoTokenKeyPairInfos = cryptoTokenManagementSession.getKeyPairInfos(authenticationToken, cryptoTokenId);
+    	                // Only allow tokens with at least one keypair
+    	                if (cryptoTokenKeyPairInfos.size()>0) {
+    	                    for (final KeyPairInfo cryptoTokenKeyPairInfo : cryptoTokenKeyPairInfos) {
+    	                        String requiredKeyAlgorithm = AlgorithmTools.getKeyAlgorithmFromSigAlg(caSigingAlgorithm);
+    	                        if (requiredKeyAlgorithm.equals(cryptoTokenKeyPairInfo.getKeyAlgorithm())) {
+    	                            // We have at least on key in this token with the right key algorithm mathing the CA's singing algorithm, so add the token!
+    	                            availableCryptoTokens.add(new AbstractMap.SimpleEntry<String,String>(Integer.toString(cryptoTokenId), cryptoTokenInfo.getName()));
+    	                            break; // This token is fine, proceed with next token
+    	                        }
+    	                    }
+    	                }
+	                } catch (CryptoTokenOfflineException ctoe) {
+	                   // The CryptoToken might have timed out
 	                }
 	            }
 	        }
 	    }
 	    return availableCryptoTokens;
 	}
+	
+	public List<Entry<String, String>> getFailedCryptoTokens(final String caSigingAlgorithm) throws AuthorizationDeniedException, KeyStoreException, CryptoTokenOfflineException {
+        final List<Entry<String, String>> failedCryptoTokens = new ArrayList<Entry<String, String>>();
+        if (caSigingAlgorithm != null && caSigingAlgorithm.length()>0) {
+            final List<CryptoTokenInfo> cryptoTokenInfos = cryptoTokenManagementSession.getCryptoTokenInfos(authenticationToken);
+            for (final CryptoTokenInfo cryptoTokenInfo : cryptoTokenInfos) {
+                // Make sure we may use it
+                if (accessControlSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.USE.resource() + '/' + cryptoTokenInfo.getCryptoTokenId())
+                        && cryptoTokenInfo.isActive()) {
+                    final int cryptoTokenId = cryptoTokenInfo.getCryptoTokenId();
+                    try {
+                        // Try to access to keys
+                        cryptoTokenManagementSession.getKeyPairInfos(authenticationToken, cryptoTokenId);
+                    } catch (CryptoTokenOfflineException ctoe) {
+                       failedCryptoTokens.add(new AbstractMap.SimpleEntry<String,String>(Integer.toString(cryptoTokenId), cryptoTokenInfo.getName()));
+                    }
+                }
+            }
+        }
+        return failedCryptoTokens;
+    }
 
     /** @return a list of key pair aliases that can be used for either signing or encryption under the supplied CA signing algorithm */
     public List<String> getAvailableCryptoTokenMixedAliases(int cryptoTokenId, final String caSigingAlgorithm) throws KeyStoreException, CryptoTokenOfflineException, AuthorizationDeniedException {

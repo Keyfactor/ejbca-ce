@@ -472,6 +472,17 @@ function checkallfields(){
 	            <%/* When JavaScript is not available, we show a "Reload" image. */%>
 	            <input id="changecatokentypeUpdateButton" type="image" src="reload.png" alt="Reload"/>
                 <script>document.getElementById('changecatokentypeUpdateButton').style.display = 'none';</script>
+                
+                <%  
+                    final List<Entry<String, String>> failedCryptoTokens = cabean.getFailedCryptoTokens(signatureAlgorithmParam);
+                    if (failedCryptoTokens.size() != 0) {
+                        %><p><strong>Failed to access these CryptoTokens:</strong><br /><%
+                        for (final Entry<String, String> entry : failedCryptoTokens) {
+                            %><a href="<%= ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "cryptotoken/cryptotoken.jsf?cryptoTokenId=" + entry.getKey() %>"><c:out value="<%= entry.getValue() %>"/></a><br /><% 
+                        }
+                        %></p><%
+                    }
+                %>
             </form>
             </td>	
         </tr>
