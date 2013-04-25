@@ -74,7 +74,7 @@ public class SlotList {
             r.remove(lower);
         }
         
-        // Check for overlap with lower numbers
+        // Check for overlap with higher numbers
         final Range higher = r.ceiling(toAdd);
         if (higher != null && (higher.min <= max+1 || higher.min <= max)) {
             if (higher.min <= min) return; // complete overlap
