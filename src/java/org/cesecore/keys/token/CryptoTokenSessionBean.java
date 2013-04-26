@@ -173,11 +173,8 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal {
     public boolean isCryptoTokenNameUsedByIdOnly(final String cryptoTokenName, final int cryptoTokenId) {
         final Query query = entityManager.createQuery("SELECT a FROM CryptoTokenData a WHERE a.tokenName=:tokenName");
         query.setParameter("tokenName", cryptoTokenName);
-        List<CryptoTokenData> cryptoTokenDatas = query.getResultList();
-        if (cryptoTokenDatas.size() != 1) {
-            return false;
-        }
-        for (CryptoTokenData cryptoTokenData: cryptoTokenDatas) {
+        final List<CryptoTokenData> cryptoTokenDatas = query.getResultList();
+        for (final CryptoTokenData cryptoTokenData: cryptoTokenDatas) {
             if (cryptoTokenData.getId() != cryptoTokenId) {
                 return false;
             }
