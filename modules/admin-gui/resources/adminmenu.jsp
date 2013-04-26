@@ -6,7 +6,8 @@ org.cesecore.authorization.AuthorizationDeniedException,
 org.cesecore.authorization.control.AuditLogRules,
 org.cesecore.authorization.control.CryptoTokenRules,
 org.ejbca.config.GlobalConfiguration,
-org.ejbca.core.model.authorization.AccessRulesConstants
+org.ejbca.core.model.authorization.AccessRulesConstants,
+org.ejbca.core.ejb.signer.InternalKeyBindingRules
 "%>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
@@ -52,6 +53,7 @@ org.ejbca.core.model.authorization.AccessRulesConstants
                                                     + "/configuration.jsp";
     
     final String SERVICES_LINK            =   ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "services/listservices.jsf";
+    final String INTERNALKEYBINDING_LINK  = ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "keybind/keybindings.jsf";
     
     final String ADMINISTRATORPRIV_LINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAuthorizationPath() 
                                                     + "/administratorprivileges.jsf";
@@ -81,6 +83,7 @@ org.ejbca.core.model.authorization.AccessRulesConstants
     final String LOGVIEW_RESOURCE                       = AuditLogRules.VIEW.resource(); 
     final String SYSTEMCONFIGURATION_RESOURCE           = AccessRulesConstants.REGULAR_EDITSYSTEMCONFIGURATION;
     final String SERVICES_RESOURCE                      = "/super_administrator";
+    final String INTERNALKEYBINDING_RESOURCE            = InternalKeyBindingRules.BASE.resource();
     final String ADMINPRIVILEGES_RESOURCE               = "/system_functionality/edit_administrator_privileges";
  %>
 <%  
@@ -315,17 +318,28 @@ org.ejbca.core.model.authorization.AccessRulesConstants
 				<li><a href="<%= SERVICES_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_SERVICES") %></a></li>
 <%   }
   }catch(AuthorizationDeniedException e){} 
+   
+   // If authorized to edit authorizations then display related links.
+   try{
+     if(ejbcawebbean.isAuthorizedNoLog(INTERNALKEYBINDING_RESOURCE)){
+       if(!systemheaderprinted){
+         out.write("<li id=\"cat7\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_INTERNALKEYBINDINGS")+"</strong><ul>"); 
+         systemheaderprinted=true;
+         }  %>
+				<li><a href="<%= INTERNALKEYBINDING_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_KEYBINDINGS") %></a></li>
+<%   }
+  }catch(AuthorizationDeniedException e){}
 
-    // If authorized to edit authorizations then display related links.
-    try{
-      if(ejbcawebbean.isAuthorizedNoLog(ADMINPRIVILEGES_RESOURCE)){
-        if(!systemheaderprinted){
-          out.write("<li id=\"cat7\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMFUNCTIONS")+"</strong><ul>"); 
-          systemheaderprinted=true;
-          }  %>
+   // If authorized to edit authorizations then display related links.
+   try{
+     if(ejbcawebbean.isAuthorizedNoLog(ADMINPRIVILEGES_RESOURCE)){
+       if(!systemheaderprinted){
+         out.write("<li id=\"cat7\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMFUNCTIONS")+"</strong><ul>"); 
+         systemheaderprinted=true;
+         }  %>
 				<li><a href="<%= ADMINISTRATORPRIV_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_ROLES") %></a></li>
 <%   }
-   }catch(AuthorizationDeniedException e){}
+  }catch(AuthorizationDeniedException e){}
 
     // If authorized to edit user preferences then display related links.
     try{

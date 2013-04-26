@@ -13,7 +13,9 @@
 package org.ejbca.core.ejb.signer;
 
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.security.cert.Certificate;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -28,15 +30,17 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
 
     private static final long serialVersionUID = 1L;
 
-    final String implementationAlias;
-    final int id;
-    final String name;
-    final InternalKeyBindingStatus status;
-    final String certificateId;
-    final int cryptoTokenId;
-    final String keyPairAlias;
-    final String nextKeyPairAlias;
-    final List<InternalKeyBindingProperty<? extends Serializable>> properties;
+    final private String implementationAlias;
+    final private int id;
+    final private String name;
+    final private InternalKeyBindingStatus status;
+    final private String certificateId;
+    final private int cryptoTokenId;
+    final private String keyPairAlias;
+    final private String nextKeyPairAlias;
+    final private List<InternalKeyBindingProperty<? extends Serializable>> properties;
+    final private List<SimpleEntry<Integer,BigInteger>> trustedCertificateReferences;
+    final private String signatureAlgorithm;
     
     public InternalKeyBindingInfo(InternalKeyBinding internalKeyBinding) {
         this.implementationAlias = internalKeyBinding.getImplementationAlias();
@@ -48,6 +52,8 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
         this.keyPairAlias = internalKeyBinding.getKeyPairAlias();
         this.nextKeyPairAlias = internalKeyBinding.getNextKeyPairAlias();
         this.properties = internalKeyBinding.getCopyOfProperties();
+        this.trustedCertificateReferences = internalKeyBinding.getTrustedCertificateReferences();
+        this.signatureAlgorithm = internalKeyBinding.getSignatureAlgorithm();
     }
     
     @Override
@@ -159,5 +165,25 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
     @Override
     public List<InternalKeyBindingProperty<? extends Serializable>> getCopyOfProperties() {
         return properties;
+    }
+
+    @Override
+    public List<SimpleEntry<Integer, BigInteger>> getTrustedCertificateReferences() {
+        return trustedCertificateReferences;
+    }
+
+    @Override
+    public void setTrustedCertificateReferences(List<SimpleEntry<Integer, BigInteger>> trustedCertificateReferences) {
+        throw new RuntimeException(new OperationNotSupportedException());
+    }
+
+    @Override
+    public String getSignatureAlgorithm() {
+        return signatureAlgorithm;
+    }
+
+    @Override
+    public void setSignatureAlgorithm(String signatureAlgorithm) {
+        throw new RuntimeException(new OperationNotSupportedException());
     }
 }
