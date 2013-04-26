@@ -182,7 +182,10 @@ org.cesecore.authorization.control.CryptoTokenRules
 			</h:outputLink>
 		</h:column>
 	</h:dataTable>
-	<h:outputText value="#{web.text.CRYPTOTOKEN_KPM_NOPAIRS}" rendered="#{cryptoTokenMBean.keyPairGuiListEmpty}"/>
+	<h:panelGroup rendered="#{cryptoTokenMBean.keyPairGuiListFailed}">
+	    <div class="message"><table><tr><td class="alert"><h:outputText value="#{cryptoTokenMBean.keyPairGuiListError}"/></td></tr></table></div>
+    </h:panelGroup>
+	<h:outputText value="#{web.text.CRYPTOTOKEN_KPM_NOPAIRS}" rendered="#{cryptoTokenMBean.keyPairGuiListEmpty && !cryptoTokenMBean.keyPairGuiListFailed}"/>
 	<h:panelGrid columns="3">
 		<h:panelGroup rendered="#{!cryptoTokenMBean.keyPairGuiListEmpty && cryptoTokenMBean.allowedToKeyRemoval}"/>
 		<h:panelGroup rendered="#{!cryptoTokenMBean.keyPairGuiListEmpty && cryptoTokenMBean.allowedToKeyRemoval}"/>

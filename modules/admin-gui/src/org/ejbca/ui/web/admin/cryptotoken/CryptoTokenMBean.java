@@ -175,6 +175,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     private ListDataModel cryptoTokenGuiList = null;
     private List<KeyPairGuiInfo> keyPairGuiInfos = new ArrayList<KeyPairGuiInfo>();
     private ListDataModel keyPairGuiList = null;
+    private String keyPairGuiListError = null;
     private int currentCryptoTokenId = 0;
     private CurrentCryptoTokenGuiInfo currentCryptoToken = null;
     private boolean currentCryptoTokenEditMode = true;  // currentCryptoTokenId==0 from start
@@ -183,10 +184,6 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     private final AccessControlSessionLocal accessControlSession = getEjbcaWebBean().getEjb().getAccessControlSession();
     private final AuthenticationToken authenticationToken = getAdmin();
     private final CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
-
-    public CryptoTokenMBean() throws AuthorizationDeniedException {
-        preloadKeyPairGuiList();
-    }
 
     /** Force reload from underlying (cache) layer */
     private void flushCaches() {
@@ -632,31 +629,41 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     }
 
     public boolean isKeyPairGuiListEmpty() throws AuthorizationDeniedException {
-        return keyPairGuiList.getRowCount()==0;
+        return getKeyPairGuiList().getRowCount()==0;
     }
     
-    public void preloadKeyPairGuiList() throws AuthorizationDeniedException {
-        keyPairGuiInfos = new ArrayList<KeyPairGuiInfo>();
-        if (getCurrentCryptoToken().isActive()) {
-            try {
-                for (KeyPairInfo keyPairInfo : cryptoTokenManagementSession.getKeyPairInfos(getAdmin(), getCurrentCryptoTokenId())) {
-                    keyPairGuiInfos.add(new KeyPairGuiInfo(keyPairInfo));
-                }
-            } catch (CryptoTokenOfflineException ctoe) {
-                super.addNonTranslatedErrorMessage("Failed to load key pairs from CryptoToken: "+ctoe.getMessage());
-            }
-        }
-        Collections.sort(keyPairGuiInfos, new Comparator<KeyPairGuiInfo>() {
-            @Override
-            public int compare(KeyPairGuiInfo keyPairInfo1, KeyPairGuiInfo keyPairInfo2) {
-                return keyPairInfo1.getAlias().compareTo(keyPairInfo2.getAlias());
-            }
-        });
-        keyPairGuiList = new ListDataModel(keyPairGuiInfos);
+    public boolean isKeyPairGuiListFailed() throws AuthorizationDeniedException {
+        getKeyPairGuiList(); // ensure loaded
+        return keyPairGuiListError!=null;
     }
-
+    
+    public String getKeyPairGuiListError() throws AuthorizationDeniedException {
+        getKeyPairGuiList(); // ensure loaded
+        return keyPairGuiListError;
+    }
+    
     /** @return a list of all the keys in the current CryptoToken. */
-    public ListDataModel getKeyPairGuiList() {
+    public ListDataModel getKeyPairGuiList() throws AuthorizationDeniedException {
+        if (keyPairGuiList==null) {
+            final List<KeyPairGuiInfo> ret = new ArrayList<KeyPairGuiInfo>();
+            if (getCurrentCryptoToken().isActive()) {
+                try {
+                    for (KeyPairInfo keyPairInfo : cryptoTokenManagementSession.getKeyPairInfos(getAdmin(), getCurrentCryptoTokenId())) {
+                        ret.add(new KeyPairGuiInfo(keyPairInfo));
+                    }
+                } catch (CryptoTokenOfflineException ctoe) {
+                    keyPairGuiListError = "Failed to load key pairs from CryptoToken: "+ctoe.getMessage();
+                }
+            }
+            Collections.sort(ret, new Comparator<KeyPairGuiInfo>() {
+                @Override
+                public int compare(KeyPairGuiInfo keyPairInfo1, KeyPairGuiInfo keyPairInfo2) {
+                    return keyPairInfo1.getAlias().compareTo(keyPairInfo2.getAlias());
+                }
+            });
+            keyPairGuiInfos = ret;
+            keyPairGuiList = new ListDataModel(keyPairGuiInfos);
+        }
         return keyPairGuiList;
     }
 
