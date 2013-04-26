@@ -34,7 +34,8 @@ public enum InternalKeyBindingFactory {
     private final Logger log = Logger.getLogger(InternalKeyBindingFactory.class);
     private final Map<String,String> aliasToImplementationMap = new HashMap<String,String>();
     private final Map<String,String> implementationToAliasMap = new HashMap<String,String>();
-    private final Map<String, List<String>> implementationPropertyKeysMap = new HashMap<String,List<String>>();
+    private final Map<String, List<InternalKeyBindingProperty<? extends Serializable>>> implementationPropertiesMap =
+            new HashMap<String,List<InternalKeyBindingProperty<? extends Serializable>>>();
 
     private InternalKeyBindingFactory() {
         addImplementation(OcspKeyBinding.class);
@@ -72,14 +73,15 @@ public enum InternalKeyBindingFactory {
     private void addImplementation(final Class<? extends InternalKeyBinding> c) {
         String alias = null;
         List<String> implementationPropertyKeys = null;
+        List<InternalKeyBindingProperty<? extends Serializable>> implementationProperties= null;
         try {
             final InternalKeyBinding temporaryInstance = c.newInstance();
             alias = temporaryInstance.getImplementationAlias();
-             List<InternalKeyBindingProperty<? extends Serializable>> properties = temporaryInstance.getCopyOfProperties();
-             implementationPropertyKeys = new ArrayList<String>();
-             for (InternalKeyBindingProperty<? extends Serializable> property : properties) {
-                 implementationPropertyKeys.add(property.getName());    
-             }
+            implementationProperties = temporaryInstance.getCopyOfProperties();
+            implementationPropertyKeys = new ArrayList<String>();
+            for (InternalKeyBindingProperty<? extends Serializable> property : implementationProperties) {
+                implementationPropertyKeys.add(property.getName());    
+            }
         } catch (InstantiationException e) {
             log.error("Unable to create InternalKeyBinding. Could not be instantiate implementation '" + c.getName() + "'.", e);
         } catch (IllegalAccessException e) {
@@ -88,11 +90,11 @@ public enum InternalKeyBindingFactory {
         if (alias != null) {
             aliasToImplementationMap.put(alias, c.getName());
             implementationToAliasMap.put(c.getName(), alias);
-            implementationPropertyKeysMap.put(alias, Collections.unmodifiableList(implementationPropertyKeys));
+            implementationPropertiesMap.put(alias, Collections.unmodifiableList(implementationProperties));
         }
     }
 
-    public Map<String, List<String>> getAvailableTypesAndPropertyKeys() {
-        return Collections.unmodifiableMap(implementationPropertyKeysMap);
+    public Map<String, List<InternalKeyBindingProperty<? extends Serializable>>> getAvailableTypesAndProperties() {
+        return Collections.unmodifiableMap(implementationPropertiesMap);
     }
 }

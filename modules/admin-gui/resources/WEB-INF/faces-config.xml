@@ -59,6 +59,11 @@
     	<managed-bean-class>org.ejbca.ui.web.admin.cryptotoken.CryptoTokenMBean</managed-bean-class>
     	<managed-bean-scope>session</managed-bean-scope>
   </managed-bean>
+  <managed-bean>
+    	<managed-bean-name>internalKeyBindingMBean</managed-bean-name>
+    	<managed-bean-class>org.ejbca.ui.web.admin.keybind.InternalKeyBindingMBean</managed-bean-class>
+    	<managed-bean-scope>session</managed-bean-scope>
+  </managed-bean>
   
   <validator>
         <validator-id>legalCharsValidator</validator-id>

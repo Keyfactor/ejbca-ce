@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.cli.keybind;
 
+import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +22,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.ejb.signer.InternalKeyBindingMgmtSessionRemote;
+import org.ejbca.core.ejb.signer.InternalKeyBindingProperty;
 import org.ejbca.core.ejb.signer.InternalKeyBindingStatus;
 import org.ejbca.util.CliTools;
 
@@ -53,13 +55,13 @@ public class InternalKeyBindingCreateCommand extends BaseInternalKeyBindingComma
             getLogger().info("Description: " + getDescription());
             getLogger().info("Usage: " + getCommand() + " <name> <type> <status> <certificate fingerprint> <crypto token name> <key pair alias> [--property key1=value1 --property key2=value2 ...]");
             // List available types and their properties
-            Map<String,List<String>> typesAndPropertyKeys = internalKeyBindingMgmtSession.getAvailableTypesAndPropertyKeys(getAdmin());
+            Map<String, List<InternalKeyBindingProperty<? extends Serializable>>> typesAndProperties = internalKeyBindingMgmtSession.getAvailableTypesAndProperties(getAdmin());
             getLogger().info(" Registered implementation types and implemention specific properties:");
-            for (Entry<String, List<String>> entry : typesAndPropertyKeys.entrySet()) {
+            for (Entry<String, List<InternalKeyBindingProperty<? extends Serializable>>> entry : typesAndProperties.entrySet()) {
                 final StringBuilder sb = new StringBuilder();
                 sb.append("  ").append(entry.getKey()).append(" {");
-                for (String propertyKey : entry.getValue()) {
-                    sb.append(propertyKey).append(",");
+                for (InternalKeyBindingProperty<? extends Serializable> property : entry.getValue()) {
+                    sb.append(property.getName()).append(",");
                 }
                 sb.deleteCharAt(sb.length()-1).append("}");
                 getLogger().info(sb.toString());

@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.signer;
 
+import java.io.Serializable;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.util.List;
@@ -29,7 +30,7 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 public interface InternalKeyBindingMgmtSession {
 
     /** @return a map where each entry is a registered implementation type and the value is a list of implementation specific properties for the type */
-    Map<String, List<String>> getAvailableTypesAndPropertyKeys(AuthenticationToken authenticationToken);
+    Map<String, List<InternalKeyBindingProperty<? extends Serializable>>> getAvailableTypesAndProperties(AuthenticationToken authenticationToken);
 
     /** @return a list of IDs for the specific type and that the caller is authorized to view */
     List<Integer> getInternalKeyBindingIds(AuthenticationToken authenticationToken, String internalKeyBindingType);

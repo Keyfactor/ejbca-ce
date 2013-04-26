@@ -12,7 +12,12 @@
  *************************************************************************/
 package org.ejbca.core.ejb.signer;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.PrivateKey;
@@ -80,11 +85,24 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     @EJB
     private InternalKeyBindingDataSessionLocal internalKeyBindingDataSession;
 
-
+    @SuppressWarnings("unchecked")
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public Map<String, List<String>> getAvailableTypesAndPropertyKeys(AuthenticationToken authenticationToken) {
-        return InternalKeyBindingFactory.INSTANCE.getAvailableTypesAndPropertyKeys();
+    public Map<String, List<InternalKeyBindingProperty<? extends Serializable>>> getAvailableTypesAndProperties(AuthenticationToken authenticationToken) {
+        // Perform deep cloning (this will work since we know that the property types extend Serializable)
+        final Map<String, List<InternalKeyBindingProperty<? extends Serializable>>> clone;
+        try {
+            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            final ObjectOutputStream oos = new ObjectOutputStream(baos);
+            oos.writeObject(InternalKeyBindingFactory.INSTANCE.getAvailableTypesAndProperties());
+            oos.close();
+            final ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(baos.toByteArray()));
+            clone = (Map<String, List<InternalKeyBindingProperty<? extends Serializable>>>) ois.readObject();
+            ois.close();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return clone;
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)

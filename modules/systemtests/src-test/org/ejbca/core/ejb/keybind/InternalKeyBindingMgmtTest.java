@@ -13,8 +13,10 @@
 package org.ejbca.core.ejb.keybind;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.Serializable;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.util.LinkedHashMap;
@@ -46,6 +48,7 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.signer.InternalKeyBindingMgmtSession;
 import org.ejbca.core.ejb.signer.InternalKeyBindingMgmtSessionRemote;
+import org.ejbca.core.ejb.signer.InternalKeyBindingProperty;
 import org.ejbca.core.ejb.signer.InternalKeyBindingStatus;
 import org.ejbca.core.ejb.signer.impl.OcspKeyBinding;
 import org.ejbca.util.TraceLogMethodsRule;
@@ -124,10 +127,18 @@ public class InternalKeyBindingMgmtTest {
     @Test
     public void assertTestPreRequisites() throws Exception {
         // Request all available implementations from server and verify that the implementation we intend to use exists
-        final Map<String, List<String>> availableTypesAndPropertyKeys = internalKeyBindingMgmtSession.getAvailableTypesAndPropertyKeys(alwaysAllowToken);
-        assertTrue("Expected " + KEYBINDING_TYPE_ALIAS + " to exist on the server for this test.", availableTypesAndPropertyKeys.containsKey(KEYBINDING_TYPE_ALIAS));
+        final Map<String, List<InternalKeyBindingProperty<? extends Serializable>>> availableTypesAndProperties = internalKeyBindingMgmtSession.getAvailableTypesAndProperties(alwaysAllowToken);
+        final List<InternalKeyBindingProperty<? extends Serializable>> availableProperties = availableTypesAndProperties.get(KEYBINDING_TYPE_ALIAS);
+        assertNotNull("Expected " + KEYBINDING_TYPE_ALIAS + " to exist on the server for this test.", availableProperties);
         // Verify that a property we intend to modify exists for our key binding implementation
-        assertTrue("Expected " + KEYBINDING_TYPE_ALIAS + " to exist on the server for this test.", availableTypesAndPropertyKeys.get(KEYBINDING_TYPE_ALIAS).contains(PROPERTY_ALIAS));
+        boolean exists = false;
+        for (final InternalKeyBindingProperty<? extends Serializable> property : availableProperties) {
+            if (property.getName().equals(PROPERTY_ALIAS)) {
+                exists = true;
+                break;
+            }
+        }
+        assertTrue("Expected property " + PROPERTY_ALIAS + " in " + KEYBINDING_TYPE_ALIAS + " to exist on the server for this test.", exists);
     }
     
     @Test

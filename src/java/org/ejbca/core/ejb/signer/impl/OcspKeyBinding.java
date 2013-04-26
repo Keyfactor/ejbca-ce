@@ -15,7 +15,6 @@ package org.ejbca.core.ejb.signer.impl;
 import java.io.Serializable;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.signer.CertificateImportException;
@@ -33,17 +32,31 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     private static final Logger log = Logger.getLogger(OcspKeyBinding.class);
 
     public static final String IMPLEMENTATION_ALIAS = "OcspKeyBinding"; // This should not change, even if we rename the class in EJBCA 5.3+..
-    public static final String PROPERTY_NON_EXISTING_GOOD = "nonExistingGood";
-    public static final String PROPERTY_TRUSTED_CA_IDS = "trustedCaIds";
+    public static final String PROPERTY_NON_EXISTING_GOOD = "nonexistingisgood";
+    public static final String PROPERTY_INCLUDE_CERT_IN_CHAIN = "includecertchain";
+    public static final String PROPERTY_RESPONDER_ID_TYPE = "responderidtype";  // keyhash, name
+    public static final String PROPERTY_RESPONDER_ID_TYPE_VKEYHASH = "keyhash"; 
+    public static final String PROPERTY_RESPONDER_ID_TYPE_VNAME = "name";
+    public static final String PROPERTY_REQUIRE_TRUSTED_SIGNATURE = "requireTrustedSignature";
+    public static final String PROPERTY_UNTIL_NEXT_UPDATE = "untilNextUpdate";
+    public static final String PROPERTY_MAX_AGE = "maxAge";
+    //signaturealgorithm -> base class
+    //signaturerequired, false -> PROPERTY_REQUIRE_TRUSTED_SIGNATURE + empty trust list
+    //restrictsignaturesbyissuer, false -> PROPERTY_REQUIRE_TRUSTED_SIGNATURE + trust list
+    //restrictsignaturesbysigner, false -> PROPERTY_REQUIRE_TRUSTED_SIGNATURE + trust list
+    //untilNextUpdate, 0, -> per cert profile still in config file, if set here it would override global but not per cert profile setting
+    //maxAge, 30 -> as untilNextUpdate
     
     @SuppressWarnings("serial")
-    private static final List<InternalKeyBindingProperty<? extends Serializable>> PROPERTIES = new ArrayList<InternalKeyBindingProperty<? extends Serializable>>() {{
-        add(new InternalKeyBindingProperty<Boolean>(PROPERTY_NON_EXISTING_GOOD, Boolean.FALSE));
-        add(new InternalKeyBindingProperty<ArrayList<Integer>>(PROPERTY_TRUSTED_CA_IDS, new ArrayList<Integer>()));
-    }};
-
     public OcspKeyBinding() {
-        super(PROPERTIES);
+        super(new ArrayList<InternalKeyBindingProperty<? extends Serializable>>() {{
+            add(new InternalKeyBindingProperty<Boolean>(PROPERTY_NON_EXISTING_GOOD, Boolean.FALSE));
+            add(new InternalKeyBindingProperty<Boolean>(PROPERTY_INCLUDE_CERT_IN_CHAIN, Boolean.TRUE));
+            add(new InternalKeyBindingProperty<String>(PROPERTY_RESPONDER_ID_TYPE, PROPERTY_RESPONDER_ID_TYPE_VKEYHASH, PROPERTY_RESPONDER_ID_TYPE_VKEYHASH, PROPERTY_RESPONDER_ID_TYPE_VNAME));
+            add(new InternalKeyBindingProperty<Boolean>(PROPERTY_REQUIRE_TRUSTED_SIGNATURE, Boolean.FALSE));
+            add(new InternalKeyBindingProperty<Integer>(PROPERTY_UNTIL_NEXT_UPDATE, 0));
+            add(new InternalKeyBindingProperty<Integer>(PROPERTY_MAX_AGE, 30));
+        }});
     }
     
     @Override
