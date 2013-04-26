@@ -176,6 +176,7 @@
 		<include name="org/cesecore/certificates/certificate/CertificateInfo.java"/>
 		<include name="org/ejbca/core/ejb/signer/InternalKeyBinding.java"/>
 		<include name="org/ejbca/core/ejb/signer/InternalKeyBindingInfo.java"/>
+		<include name="org/ejbca/core/ejb/signer/InternalKeyBindingRules.java"/>
 		<include name="org/ejbca/config/EjbcaConfiguration.java"/>
 		<include name="org/ejbca/core/model/approval/ApprovalException.java"/>
 		<include name="org/ejbca/core/model/approval/ApprovalRequestExpiredException.java"/>

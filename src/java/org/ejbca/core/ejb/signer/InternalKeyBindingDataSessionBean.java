@@ -149,7 +149,7 @@ public class InternalKeyBindingDataSessionBean implements InternalKeyBindingData
             }
             internalKeyBindingData = new InternalKeyBindingData(internalKeyBindingId, name, status, type, certificateId, cryptoTokenId, keyPairAlias, dataMap);
         } else {
-            if (!isNameUsedByIdOnly(name, internalKeyBindingId)) {
+            if (!isNameUsedByIdOnly(internalKeyBindingData.getName(), internalKeyBindingId)) {
                 if (log.isDebugEnabled()) {
                     log.debug("!isNameUsedByIdOnly("+name+", "+internalKeyBindingId+")");
                 }
@@ -202,11 +202,8 @@ public class InternalKeyBindingDataSessionBean implements InternalKeyBindingData
     public boolean isNameUsedByIdOnly(final String name, final int id) {
         final Query query = entityManager.createQuery("SELECT a FROM InternalKeyBindingData a WHERE a.name=:name");
         query.setParameter("name", name);
-        List<InternalKeyBindingData> internalKeyBindingDatas = query.getResultList();
-        if (internalKeyBindingDatas.size() != 1) {
-            return false;
-        }
-        for (InternalKeyBindingData internalKeyBindingData: internalKeyBindingDatas) {
+        final List<InternalKeyBindingData> internalKeyBindingDatas = query.getResultList();
+        for (final InternalKeyBindingData internalKeyBindingData: internalKeyBindingDatas) {
             if (internalKeyBindingData.getId() != id) {
                 return false;
             }

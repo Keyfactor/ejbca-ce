@@ -13,7 +13,9 @@
 package org.ejbca.core.ejb.signer;
 
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.security.cert.Certificate;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -32,6 +34,8 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     private static final long serialVersionUID = 1L;
     private static final String PROP_NEXT_KEY_PAIR_ALIAS = "nextKeyPairAlias";
     private static final String PROP_NEXT_KEY_PAIR_COUNTER = "nextKeyPairCounter";
+    private static final String PROP_TRUSTED_CERTIFICATE_REFERENCES = "trustedCertificateReferences";
+    private static final String PROP_SIGNATURE_ALGORITHM = "signatureAlgorithm";
     private static final String BASECLASS_PREFIX = "BASECLASS_";
     public static final String SUBCLASS_PREFIX = "SUBCLASS_";
     
@@ -41,6 +45,8 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     private String certificateId;
     private int cryptoTokenId;
     private String keyPairAlias;
+    private List<SimpleEntry<Integer,BigInteger>> trustedCertificateReferences;
+    private String signatureAlgorithm;
     
     private final Map<String,InternalKeyBindingProperty<? extends Serializable>> propertyTemplates = new HashMap<String,InternalKeyBindingProperty<? extends Serializable>>();
     
@@ -53,11 +59,9 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
 
     @Override
     public List<InternalKeyBindingProperty<? extends Serializable>> getCopyOfProperties() {
-        List<InternalKeyBindingProperty<? extends Serializable>> ret = new ArrayList<InternalKeyBindingProperty<? extends Serializable>>();
+        final List<InternalKeyBindingProperty<? extends Serializable>> ret = new ArrayList<InternalKeyBindingProperty<? extends Serializable>>();
         for (InternalKeyBindingProperty<? extends Serializable> current : propertyTemplates.values()) {
-            InternalKeyBindingProperty<? extends Serializable> copy = new InternalKeyBindingProperty<Serializable>(current.getName(), current.getDefaultValue());
-            copy.setValue(getData(current.getName(), current.getDefaultValue()));
-            ret.add(copy);
+            ret.add(current.clone());
         }
         return ret;
     }
@@ -65,7 +69,7 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     @Override
     public InternalKeyBindingProperty<? extends Serializable> getProperty(final String name) {
         final InternalKeyBindingProperty<? extends Serializable> property = propertyTemplates.get(name);
-        property.setValue(getData(name, property.getDefaultValue()));
+        property.setValueGeneric(getData(name, property.getDefaultValue()));
         return property;
     }
 
@@ -152,6 +156,37 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
         }
         setNextKeyPairAlias(nextKeyPairAlias);
         setNextKeyPairCounter(nextKeyPairCounter);
+    }
+
+    @Override
+    public List<SimpleEntry<Integer,BigInteger>> getTrustedCertificateReferences() {
+        if (trustedCertificateReferences == null) {
+            trustedCertificateReferences = getDataInternal(PROP_TRUSTED_CERTIFICATE_REFERENCES, new ArrayList<SimpleEntry<Integer,BigInteger>>());
+        }
+        return trustedCertificateReferences;
+    }
+
+    @Override
+    public void setTrustedCertificateReferences(final List<SimpleEntry<Integer,BigInteger>> trustedCertificateReferences) {
+        this.trustedCertificateReferences = trustedCertificateReferences;
+        // Always save it as an ArrayList that we know is Serializable
+        final ArrayList<SimpleEntry<Integer,BigInteger>> arrayList = new ArrayList<SimpleEntry<Integer,BigInteger>>(trustedCertificateReferences.size());
+        arrayList.addAll(trustedCertificateReferences);
+        putDataInternal(PROP_TRUSTED_CERTIFICATE_REFERENCES, arrayList);
+    }
+
+    @Override
+    public String getSignatureAlgorithm() {
+        if (signatureAlgorithm == null) {
+            signatureAlgorithm = getDataInternal(PROP_SIGNATURE_ALGORITHM, null);
+        }
+        return signatureAlgorithm;
+    }
+
+    @Override
+    public void setSignatureAlgorithm(String signatureAlgorithm) {
+        this.signatureAlgorithm = signatureAlgorithm;
+        putDataInternal(PROP_SIGNATURE_ALGORITHM, signatureAlgorithm);
     }
     
     @Override

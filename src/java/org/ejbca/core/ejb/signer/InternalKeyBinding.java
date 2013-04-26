@@ -13,7 +13,9 @@
 package org.ejbca.core.ejb.signer;
 
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.security.cert.Certificate;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -84,4 +86,16 @@ public interface InternalKeyBinding extends Serializable {
 
     /** @return a Map of all properties/data specific to this implementation */
     List<InternalKeyBindingProperty<? extends Serializable>> getCopyOfProperties();
+
+    /** @return a list of trusted certificates references in the form (CA Id, Certificate serial number). An undefined (null) serialnumber means ANY serialnumber. */
+    List<SimpleEntry<Integer, BigInteger>> getTrustedCertificateReferences();
+
+    /** Set the list of trusted certificates references in the form (CA Id, Certificate serial number). An undefined (null) serialnumber means ANY serialnumber. */
+    void setTrustedCertificateReferences(List<SimpleEntry<Integer, BigInteger>> trustedCertificateReferences);
+
+    /** @return the currently used signature algorithm */
+    String getSignatureAlgorithm();
+
+    /** Set the currently used signature algorithm (it is up to the caller to ensure that this is compatible with the current keyspec). */
+    void setSignatureAlgorithm(String signatureAlgorithm);
 }

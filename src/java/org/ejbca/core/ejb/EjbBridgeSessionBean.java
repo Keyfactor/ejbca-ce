@@ -54,6 +54,7 @@ import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
+import org.ejbca.core.ejb.signer.InternalKeyBindingMgmtSessionLocal;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 
 /**
@@ -91,6 +92,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@EJB GlobalConfigurationSessionLocal globalConfigurationSession;
 	@EJB HardTokenBatchJobSessionLocal hardTokenBatchJobSession;
 	@EJB HardTokenSessionLocal hardTokenSession;
+    @EJB InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession;
 	@EJB KeyRecoverySessionLocal keyRecoverySession;
 	@EJB PublisherQueueSessionLocal publisherQueueSession;
 	@EJB PublisherSessionLocal publisherSession;
@@ -128,6 +130,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@Override public GlobalConfigurationSessionLocal getGlobalConfigurationSession() { return globalConfigurationSession; }
 	@Override public HardTokenBatchJobSessionLocal getHardTokenBatchJobSession() { return hardTokenBatchJobSession; }
 	@Override public HardTokenSessionLocal getHardTokenSession() { return hardTokenSession; }
+    @Override public InternalKeyBindingMgmtSessionLocal getInternalKeyBindingMgmtSession() { return internalKeyBindingMgmtSession; }
 	@Override public KeyRecoverySessionLocal getKeyRecoverySession() { return keyRecoverySession; }
 	@Override public PublisherQueueSessionLocal getPublisherQueueSession() { return publisherQueueSession; }
 	@Override public PublisherSessionLocal getPublisherSession() { return publisherSession; }
