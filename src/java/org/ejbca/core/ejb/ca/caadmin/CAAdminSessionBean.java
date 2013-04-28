@@ -1301,6 +1301,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             log.info("Renewing CA using " + caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
             final PublicKey caPublicKey = cryptoToken.getPublicKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
             ca.setCAToken(caToken);
+            final CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(ca.getCertificateProfileId());
             if (ca.getSignedBy() == CAInfo.SELFSIGNED) {
                 // create selfsigned certificate
                 String subjectAltName = null;
@@ -1311,7 +1312,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 EndEntityInformation cainfodata = new EndEntityInformation("nobody", ca.getSubjectDN(), ca.getSubjectDN().hashCode(),
                         subjectAltName, null, 0, new EndEntityType(EndEntityTypes.INVALID), 0, ca.getCertificateProfileId(), null, null, 0, 0, null);
 
-                CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(ca.getCertificateProfileId());
                 // get from CAtoken to make sure it is fresh
                 String sequence = caToken.getKeySequence();
                 cacertificate = ca.generateCertificate(cryptoToken, cainfodata, caPublicKey, -1, customNotBefore, ca.getValidity(), certprofile, sequence);
@@ -1335,7 +1335,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     EndEntityInformation cainfodata = new EndEntityInformation("nobody", ca.getSubjectDN(), ca.getSubjectDN().hashCode(),
                             subjectAltName, null, 0, new EndEntityType(EndEntityTypes.INVALID), 0, ca.getCertificateProfileId(), null, null, 0, 0, null);
 
-                    CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(ca.getCertificateProfileId());
                     String sequence = caToken.getKeySequence(); // get from CAtoken to make sure it is fresh
                     CryptoToken signCryptoToken = cryptoTokenSession.getCryptoToken(signca.getCAToken().getCryptoTokenId());
                     cacertificate = signca.generateCertificate(signCryptoToken, cainfodata, caPublicKey, -1,
@@ -1352,7 +1351,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             ca.setStatus(CAConstants.CA_ACTIVE);
             // Set the new certificate chain that we have created above
             ca.setCertificateChain(cachain);
-            ca.createOrRemoveLinkCertificate(cryptoToken, createLinkCertificate);
+            ca.createOrRemoveLinkCertificate(cryptoToken, createLinkCertificate, certprofile);
             // We need to save all this, audit logging that the CA is changed
             caSession.editCA(authenticationToken, ca, true);
 

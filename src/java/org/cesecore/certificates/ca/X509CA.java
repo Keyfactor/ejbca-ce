@@ -511,7 +511,7 @@ public class X509CA extends CA implements Serializable {
     }
 
     @Override
-    public void createOrRemoveLinkCertificate(final CryptoToken cryptoToken, final boolean createLinkCertificate) throws CryptoTokenOfflineException {
+    public void createOrRemoveLinkCertificate(final CryptoToken cryptoToken, final boolean createLinkCertificate, final CertificateProfile certProfile) throws CryptoTokenOfflineException {
         byte[] ret = null;
         if (createLinkCertificate) {
             try {
@@ -524,11 +524,6 @@ public class X509CA extends CA implements Serializable {
                 final X509CAInfo info = (X509CAInfo) getCAInfo();
                 final EndEntityInformation cadata = new EndEntityInformation("nobody", info.getSubjectDN(), info.getSubjectDN().hashCode(), info.getSubjectAltName(), null,
                         0, new EndEntityType(EndEntityTypes.INVALID), 0, info.getCertificateProfileId(), null, null, 0, 0, null);
-                final CertificateProfile certProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
-                if ((info.getPolicies() != null) && (info.getPolicies().size() > 0)) {
-                    certProfile.setUseCertificatePolicies(true);
-                    certProfile.setCertificatePolicies(info.getPolicies());
-                }
                 final PublicKey previousCaPublicKey = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS));
                 final PrivateKey previousCaPrivateKey = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS));
                 final String provider = cryptoToken.getSignProviderName();
