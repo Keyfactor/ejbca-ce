@@ -884,7 +884,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     public abstract boolean upgradeExtendedCAServices();
 
     /** Create a certificate with all the current CA certificate info, but signed by the old issuer */
-    public abstract void createOrRemoveLinkCertificate(CryptoToken cryptoToken, boolean createLinkCertificate) throws CryptoTokenOfflineException;
+    public abstract void createOrRemoveLinkCertificate(CryptoToken cryptoToken, boolean createLinkCertificate, CertificateProfile certProfile) throws CryptoTokenOfflineException;
 
     /** Store the latest link certificate in this object. */
     protected void updateLatestLinkCertificate(byte[] encodedLinkCertificate) {

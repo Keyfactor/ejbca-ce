@@ -256,7 +256,7 @@ public class CVCCA extends CA implements Serializable {
     }
 
 	@Override
-	public void createOrRemoveLinkCertificate(final CryptoToken cryptoToken, final boolean createLinkCertificate) throws CryptoTokenOfflineException {
+	public void createOrRemoveLinkCertificate(final CryptoToken cryptoToken, final boolean createLinkCertificate, final CertificateProfile certProfile) throws CryptoTokenOfflineException {
 	    byte[] ret = null;
 	    if (createLinkCertificate) {
 	        try {
