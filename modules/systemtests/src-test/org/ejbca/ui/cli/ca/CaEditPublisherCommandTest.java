@@ -42,6 +42,9 @@ public class CaEditPublisherCommandTest {
     private static final String GCP_PUBLISHER_NAME = "1327GCPpublisher3";
     private static final String[] HAPPY_PATH_ARGS = { "editpublisher", PUBLISHER_NAME, "hostnames=myhost.com" };
     private static final String[] HAPPY_PATH_GCP_ARGS = { "editpublisher", GCP_PUBLISHER_NAME, "propertyData=primekey http://www.primekey.se" };
+    private static final String[] HAPPY_PATH_WITH_TYPE_ARGS = { "editpublisher", PUBLISHER_NAME, "-paramType", "boolean", "AddMultipleCertificates=true" };
+    private static final String[] HAPPY_PATH_GETVALUE_ARGS = { "editpublisher", PUBLISHER_NAME, "-getValue", "AddMultipleCertificates" };
+    private static final String[] HAPPY_PATH_LISTFIELDS_ARGS = { "editpublisher", PUBLISHER_NAME, "-listFields" };
     private static final String[] MISSING_ARGS = { "editpublisher", PUBLISHER_NAME };
     private static final String[] INVALID_FIELD_ARGS = { "editpublisher", PUBLISHER_NAME, "hostname=myhost.com" };
 
@@ -73,6 +76,14 @@ public class CaEditPublisherCommandTest {
             // Check that we edited
             LdapPublisher pub2 = (LdapPublisher)publisherSession.getPublisher(PUBLISHER_NAME);
             assertEquals("Hostnames was not changed as it should", "myhost.com", pub2.getHostnames());
+            command.execute(HAPPY_PATH_WITH_TYPE_ARGS);
+            // Check that we edited
+            pub2 = (LdapPublisher)publisherSession.getPublisher(PUBLISHER_NAME);
+            assertEquals("AddMultipleCertificates was not changed as it should", true, pub2.getAddMultipleCertificates());
+
+            // Try to get value and list fields without exceptions...
+            command.execute(HAPPY_PATH_GETVALUE_ARGS);
+            command.execute(HAPPY_PATH_LISTFIELDS_ARGS);
         } finally {
             publisherProxySession.removePublisher(admin, PUBLISHER_NAME);
         }
