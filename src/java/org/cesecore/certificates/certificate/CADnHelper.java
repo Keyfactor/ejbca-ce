@@ -29,7 +29,7 @@ public class CADnHelper {
     private static final Logger log = Logger.getLogger(CADnHelper.class);
     
     /** Tries to get an issuerDN/serialNumber pair from the request, and see if we have that CA certificate in the certificate store. If we have
-     * the CA dn, in CESeCore normalized for is returned. 
+     * the CA dn, in CESeCore normalized form, is returned. 
      * @param req the request message that might contain an issued DN
      * @return issuer DN or null if it does not exist in the 
      */
