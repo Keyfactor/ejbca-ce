@@ -27,20 +27,18 @@ import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
  * (non parameterized queries that is).
  * 
  * @version $Id$
- *
  */
-public class LegalCharsValidator implements Validator{
+public class LegalCharsValidator implements Validator {
 	private static final Logger log = Logger.getLogger(LegalCharsValidator.class);
 
 	public void validate(FacesContext facesContext, UIComponent uIComponent, Object object) throws ValidatorException {
-		String textFieldValue = (String)object;
+		final String textFieldValue = (String)object;
 		if (log.isDebugEnabled()) {
 			log.debug("Validating component " + uIComponent.getClientId(facesContext) + " with value \"" + textFieldValue + "\"");
 		}
 		if (StringTools.hasSqlStripChars(textFieldValue)) {
-			FacesMessage message = new FacesMessage();
-			message.setSummary(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("INVALIDCHARS"));
-			throw new ValidatorException(message);
+		    final String msg = EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("INVALIDCHARS");
+			throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, null));
 		}
 	}
 }
