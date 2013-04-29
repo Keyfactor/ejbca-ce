@@ -383,31 +383,48 @@ function checkallfields(){
             <td>
             <% if (cabean.isCryptoTokenPresent(catoken.getCryptoTokenId())) { %>
             <a href="<%= ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "cryptotoken/cryptotoken.jsf?cryptoTokenId=" + catoken.getCryptoTokenId() %>">
-                <%= cabean.getCryptoTokenName(catoken.getCryptoTokenId()) %>
+                <c:out value="<%= cabean.getCryptoTokenName(catoken.getCryptoTokenId()) %>"/>
             </a>
             <% } else { %>
-                <%= cabean.getCryptoTokenName(catoken.getCryptoTokenId()) %>
+                <c:out value="<%= cabean.getCryptoTokenName(catoken.getCryptoTokenId()) %>"/>
             <% } %>
             </td>	
         </tr>
             <% if (cabean.isCryptoTokenPresent(catoken.getCryptoTokenId())) { %>
         <tr id="Row<%=row%2%>">
-            <td width="50%" align="right">defaultKey:</td><td><%= catoken.getAliasFromPurpose(0) %></td>	
+            <td width="50%" align="right">defaultKey:</td>
+                <td><c:out value="<%= catoken.getAliasFromPurpose(0) %>"/>
+            </td>
         </tr>
         <tr id="Row<%=row%2%>">
-            <td width="50%" align="right">certSignKey:</td><td><%= catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN) %></td>	
+            <td width="50%" align="right">certSignKey:</td>
+            <td>
+                <c:out value="<%= catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN) %>"/>
+            </td>
         </tr>
         <tr id="Row<%=row%2%>">
-            <td width="50%" align="right">crlSignKey:</td><td><%= catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN) %></td>	
+            <td width="50%" align="right">crlSignKey:</td>
+            <td>
+                <c:out value="<%= catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN) %>"/>
+            </td>
         </tr>
         <tr id="Row<%=row%2%>">
-            <td width="50%" align="right">keyEncryptKey:</td><td><%= catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT) %></td>	
+            <td width="50%" align="right">keyEncryptKey:</td>
+            <td>
+                <c:out value="<%= catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT) %>"/>
+            </td>
         </tr>
         <tr id="Row<%=row%2%>">
-            <td width="50%" align="right">hardTokenEncrypt:</td><td><%= catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT) %></td>	
+            <td width="50%" align="right">hardTokenEncrypt:</td>
+            <td>
+                <c:out value="<%= catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT) %>"/>
+            </td>
         </tr>
         <tr id="Row<%=row%2%>">
-            <td width="50%" align="right">testKey:</td><td><%= catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYTEST) %></td>	
+            <td width="50%" align="right">testKey:</td>
+            <td>
+                <c:out value="<%= catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYTEST) %>"/>
+            </td>
         </tr>
             <% } %>
         <% } else { %>
@@ -431,7 +448,7 @@ function checkallfields(){
                     	final boolean selectCurrent = current.equals(signatureAlgorithmParam);
                         final String entrySelected = selectCurrent ? "selected" : "";
                         %>
-                    <option value="<%= current %>" <%= entrySelected %> ><%= current %></option>  
+                    <option value='<c:out value="<%= current %>"/>' <%= entrySelected %> ><c:out value="<%= current %>"/></option>  
                 <%  } %> 
 	            </select>
 	            <%/* When JavaScript is not available, we show a "Reload" image. */%>
@@ -465,7 +482,7 @@ function checkallfields(){
                     	currentCryptoTokenId = Integer.parseInt(entry.getKey());
                     }
             %>
-                    <option value="<%=entry.getKey() %>" <%= entrySelected %> ><%= entry.getValue() %></option>
+                    <option value="<%=entry.getKey() %>" <%= entrySelected %> ><c:out value="<%= entry.getValue() %>"/></option>
             <%  } %>
 	            </select>
             <%  } %>
@@ -511,9 +528,9 @@ function checkallfields(){
 	            <select name="<%= SELECT_CRYPTOTOKEN_DEFAULTKEY %>" size="1">
                 <%  for (final String alias : cabean.getAvailableCryptoTokenMixedAliases(currentCryptoTokenId, signatureAlgorithmParam)) {
                 	    if (CAToken.SOFTPRIVATEDECKEYALIAS.equals(alias) || alias.contains("default") || alias.contains("Default")) { %>
-                            <option selected="selected" value="<%=alias %>"><%= alias %></option>
+                            <option selected="selected" value='<c:out value="<%=alias %>"/>'><c:out value="<%= alias %>"/></option>
                 <%      } else { %>
-                            <option value="<%=alias %>"><%= alias %></option>
+                            <option value='<c:out value="<%=alias %>"/>'><c:out value="<%= alias %>"/></option>
                 <%      }
                     } %>
 	            </select>
@@ -527,9 +544,9 @@ function checkallfields(){
                 <%  for (final String alias : cabean.getAvailableCryptoTokenAliases(currentCryptoTokenId, signatureAlgorithmParam)) {
             	        // If we come accross the (legacy) default signing key alias we use it as selected 
                 	    if (CAToken.SOFTPRIVATESIGNKEYALIAS.equals(alias) || alias.contains("sign") || alias.contains("Sign")) { %>
-                            <option selected="selected" value="<%=alias %>"><%= alias %></option>
+                            <option selected="selected" value='<c:out value="<%=alias %>"/>'><c:out value="<%= alias %>"/></option>
                 <%      } else { %>
-                            <option value="<%=alias %>"><%= alias %></option>
+                            <option value='<c:out value="<%=alias %>"/>'><c:out value="<%= alias %>"/></option>
                 <%      }
                     } %>
 	            </select>
@@ -543,7 +560,7 @@ function checkallfields(){
 	            <select name="< %= SELECT_CRYPTOTOKEN_CRLSIGNKEY % >" size="1">
                     <option value="">- Use default key</option>
                 < %  for (final String alias : cabean.getAvailableCryptoTokenAliases(currentCryptoTokenId, signatureAlgorithmParam)) { % >
-                    <option value="< %=alias % >">< %= alias % ></option>
+                <option value='<c:out value="< %=alias % >"/>'><c:out value="< %= alias % >"/></option>
                 < %  } % >
 	            </select>
             </td>	
@@ -555,7 +572,7 @@ function checkallfields(){
 	            <select name="<%= SELECT_CRYPTOTOKEN_KEYENCRYPTKEY %>" size="1">
                     <option value="">- Use default key</option>
                 <%  for (final String alias : cabean.getAvailableCryptoTokenEncryptionAliases(currentCryptoTokenId, signatureAlgorithmParam)) { %>
-                    <option value="<%=alias %>"><%= alias %></option>
+                    <option value='<c:out value="<%=alias %>"/>'><c:out value="<%= alias %>"/></option>
                 <%  } %>
 	            </select>
             </td>	
@@ -566,7 +583,7 @@ function checkallfields(){
 	            <select name="<%= SELECT_CRYPTOTOKEN_HARDTOKENENCRYPTKEY %>" size="1">
                     <option value="">- Use default key</option>
                 <%  for (final String alias : cabean.getAvailableCryptoTokenEncryptionAliases(currentCryptoTokenId, signatureAlgorithmParam)) { %>
-                    <option value="<%=alias %>"><%= alias %></option>
+                    <option value='<c:out value="<%=alias %>"/>'><c:out value="<%= alias %>"/></option>
                 <%  } %>
 	            </select>
             </td>
@@ -578,9 +595,9 @@ function checkallfields(){
                     <option value="">- Use default key</option>
                 <%  for (final String alias : cabean.getAvailableCryptoTokenAliases(currentCryptoTokenId, signatureAlgorithmParam)) {
                 	    if (alias.contains("test") || alias.contains("Test")) { %>
-                            <option selected="selected" value="<%=alias %>"><%= alias %></option>
+                            <option selected="selected" value='<c:out value="<%=alias %>"/>'><c:out value="<%= alias %>"/></option>
                 <%      } else { %>
-                            <option value="<%=alias %>"><%= alias %></option>
+                    <option value='<c:out value="<%=alias %>"/>'><c:out value="<%= alias %>"/></option>
                 <%      }
                     } %>
 	            </select>
@@ -1434,7 +1451,7 @@ function checkallfields(){
                                 final boolean selected = alias.equals(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
                                 final String entrySelected = selected ? "selected" : "";
                             %>
-                                <option value="<%=alias %>" <%=entrySelected %>><%= alias %></option>
+                                <option value='<c:out value="<%=alias %>"/>' <%=entrySelected %>><c:out value="<%= alias %>"/></option>
                             <%  } %>
                             </select>
                         </td>
@@ -1509,7 +1526,7 @@ function checkallfields(){
                                 final boolean selected = alias.equals(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
                                 final String entrySelected = selected ? "selected" : "";
                         %>
-                                <option value="<%=alias %>" <%=entrySelected %>><%= alias %></option>
+                                <option value='<c:out value="<%=alias %>"/>' <%=entrySelected %>><c:out value="<%= alias %>"/></option>
                         <%  } %>
                             </select>
                         </td>
@@ -1538,7 +1555,7 @@ function checkallfields(){
                                 final boolean selected = alias.equals(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
                                 final String entrySelected = selected ? "selected" : "";
                                 %>
-                                <option value="<%=alias %>" <%=entrySelected %>><%= alias %></option>
+                                <option value='<c:out value="<%=alias %>"/>' <%=entrySelected %>><c:out value="<%= alias %>"/></option>
                         <%  } %>
                             </select>
                         </td>

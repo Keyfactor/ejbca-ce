@@ -93,7 +93,9 @@ org.cesecore.authorization.control.CryptoTokenRules
 		<h:outputText value="#{cryptoTokenMBean.currentCryptoTokenId}" rendered="#{cryptoTokenMBean.currentCryptoTokenId != 0}"/>
 		<h:outputLabel for="currentCryptoTokenName" value="#{web.text.CRYPTOTOKEN_NAME}:"/>
 		<h:panelGroup id="currentCryptoTokenName">
-	    	<h:inputText  value="#{cryptoTokenMBean.currentCryptoToken.name}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+	    	<h:inputText  value="#{cryptoTokenMBean.currentCryptoToken.name}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}">
+	    		<f:validator validatorId="legalCharsValidator"/>
+	    	</h:inputText>
 	    	<h:outputText value="#{cryptoTokenMBean.currentCryptoToken.name}" rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
 		</h:panelGroup>
 		<h:outputLabel for="currentCryptoTokenType" value="#{web.text.CRYPTOTOKEN_TYPE}:"/>
@@ -191,7 +193,9 @@ org.cesecore.authorization.control.CryptoTokenRules
 		<h:panelGroup rendered="#{!cryptoTokenMBean.keyPairGuiListEmpty && cryptoTokenMBean.allowedToKeyRemoval}"/>
 	    <h:commandButton value="#{web.text.CRYPTOTOKEN_KPM_REMOVESEL}" action="#{cryptoTokenMBean.removeSelectedKeyPairs}"
 	    	rendered="#{!cryptoTokenMBean.keyPairGuiListEmpty && cryptoTokenMBean.allowedToKeyRemoval}" onclick="return confirm('#{web.text.CRYPTOTOKEN_KPM_CONF_REMS}')"/>
-		<h:inputText value="#{cryptoTokenMBean.newKeyPairAlias}" rendered="#{cryptoTokenMBean.allowedToKeyGeneration}"/>
+		<h:inputText value="#{cryptoTokenMBean.newKeyPairAlias}" rendered="#{cryptoTokenMBean.allowedToKeyGeneration}">
+			<f:validator validatorId="legalCharsValidator"/>
+		</h:inputText>
 		<h:selectOneMenu value="#{cryptoTokenMBean.newKeyPairSpec}" rendered="#{cryptoTokenMBean.allowedToKeyGeneration}">
 			<f:selectItems value="#{cryptoTokenMBean.availbleKeySpecs}"/>
 		</h:selectOneMenu>
