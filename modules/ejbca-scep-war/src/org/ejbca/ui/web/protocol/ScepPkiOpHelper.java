@@ -39,7 +39,6 @@ import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.CertTools;
-import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
@@ -50,6 +49,8 @@ import org.ejbca.core.model.ra.UsernameGenerator;
 import org.ejbca.core.model.ra.UsernameGeneratorParams;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.protocol.scep.ScepRequestMessage;
+import org.ejbca.util.passgen.IPasswordGenerator;
+import org.ejbca.util.passgen.PasswordGeneratorFactory;
 
 
 /**
@@ -177,7 +178,7 @@ public class ScepPkiOpHelper {
             }
         }
         
-        // Try to find the CA name from the issuerDN, if we can't find it (i.e. not defined in web.xml) we use the default
+        // Try to find the CA name from the issuerDN in the request. If we can't find it, we use the default
         String caName = getCAName(CertTools.stringToBCDNString(reqmsg.getIssuerDN()));
         if(StringUtils.isEmpty(caName)) {
             log.error("No CA was set in the scep.propeties file.");
@@ -204,21 +205,23 @@ public class ScepPkiOpHelper {
         try {
             reqmsg.setKeyInfo(ca.getCACertificate(), cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)), cryptoToken.getSignProviderName());
         } catch (CryptoTokenOfflineException e1) {
+            log.error("Failed to set the new private key in the SCEP message");
             log.error(e1.getLocalizedMessage(), e1);
             return false;
         }
         
         //Creating the user
         UsernameGeneratorParams usernameGenParams = new UsernameGeneratorParams();
-        usernameGenParams.setMode(CmpConfiguration.getRANameGenerationScheme());
-        usernameGenParams.setDNGeneratorComponent(CmpConfiguration.getRANameGenerationParameters());
-        usernameGenParams.setPrefix(CmpConfiguration.getRANameGenerationPrefix());
-        usernameGenParams.setPostfix(CmpConfiguration.getRANameGenerationPostfix());
+        usernameGenParams.setMode(ScepConfiguration.getRANameGenerationScheme());
+        usernameGenParams.setDNGeneratorComponent(ScepConfiguration.getRANameGenerationParameters());
+        usernameGenParams.setPrefix(ScepConfiguration.getRANameGenerationPrefix());
+        usernameGenParams.setPostfix(ScepConfiguration.getRANameGenerationPostfix());
         
         X500Name dnname = new X500Name(reqmsg.getRequestDN());
         final UsernameGenerator gen = UsernameGenerator.getInstance(usernameGenParams);
         final String username = gen.generateUsername(dnname.toString());
-        final String pwd = "foo123";
+        final IPasswordGenerator pwdgen = PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_ALLPRINTABLE);
+        final String pwd = pwdgen.getNewPassword(12, 12);
         
         // AltNames may be in the request template
         final String altNames = reqmsg.getRequestAltNames();
@@ -243,6 +246,8 @@ public class ScepPkiOpHelper {
         
         final EndEntityInformation userdata = new EndEntityInformation(username, dnname.toString(), cainfo.getCAId(), altNames, email, EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), eeProfileId, certProfileId, null, null, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
         userdata.setPassword(pwd);
+        reqmsg.setUsername(username);
+        reqmsg.setPassword(pwd);
 
         try {
             if(endEntityManagementSession.existsUser(username) ){
