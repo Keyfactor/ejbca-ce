@@ -314,15 +314,17 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
             }
         } else {
                 if (oldAutoActivationPin!=null) {
-                    if (!oldAutoActivationPin.toCharArray().equals(currentAuthenticationCode)) {
-                        final String msg = "Failed to use supplied current PIN.";
+                    // If we have an old auto-activation pin we will compare the "current" with this value to avoid deactivating the token
+                    if (!oldAutoActivationPin.equals(new String(currentAuthenticationCode))) {
+                        final String msg = "Supplied PIN did not match auto-activation PIN.";
                         log.info(msg);
                         throw new CryptoTokenAuthenticationFailedException(msg);
                     } else {
-                        log.debug("Successfully verified the PIN for non-soft CryptoToken by comparing current auto-activation pin.");
+                        log.debug("Successfully verified the PIN for non-soft CryptoToken by comparing supplied PIN to auto-activation PIN.");
                     }
                 } else {
-                    // If we don't have an auto-activation pin we need to verify that we can activate using it
+                    // If we don't have an auto-activation pin to compare the supplied PIN to, we need to verify the supplied
+                    // PIN can be used in a de-activation/activation cycle.
                     final boolean wasInactive = !isCryptoTokenStatusActive(authenticationToken, cryptoTokenId);
                     cryptoToken.deactivate();
                     cryptoToken.activate(currentAuthenticationCode);

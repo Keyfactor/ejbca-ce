@@ -13,6 +13,7 @@
 package org.ejbca.ui.cli.cryptotoken;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 
 /**
@@ -42,11 +43,21 @@ public class CryptoTokenActivateCommand extends BaseCryptoTokenCommand {
         final char[] authenticationCode = getAuthenticationCode(args[2]);
         try {
             final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = ejb.getRemoteSession(CryptoTokenManagementSessionRemote.class);
+            final CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(getAdmin(), cryptoTokenId.intValue());
+            final boolean usingAutoActivation = cryptoTokenInfo.isAutoActivation();
             cryptoTokenManagementSession.activate(getAdmin(), cryptoTokenId, authenticationCode);
             if (cryptoTokenManagementSession.isCryptoTokenStatusActive(getAdmin(), cryptoTokenId)) {
-                getLogger().info("CryptoToken activated successfully.");
+                if (usingAutoActivation) {
+                    getLogger().info("CryptoToken activated successfully using auto-activation PIN. (The supplied PIN was ignored.)");
+                } else {
+                    getLogger().info("CryptoToken activated successfully using supplied PIN.");
+                }
             } else {
-                getLogger().warn("CryptoToken still not active even though request was processed successfully.");
+                if (usingAutoActivation) {
+                    getLogger().error("Failed to activate CryptoToken using auto-activation PIN even though request was process successfully. (The supplied PIN was ignored.)");
+                } else {
+                    getLogger().warn("CryptoToken still not active even though request was processed successfully.");
+                }
             }
         } catch (AuthorizationDeniedException e) {
             getLogger().info(e.getMessage());
