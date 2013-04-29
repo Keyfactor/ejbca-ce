@@ -16,6 +16,8 @@ package org.ejbca.ui.cli.ca;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
@@ -24,6 +26,7 @@ import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSet;
@@ -48,6 +51,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.ui.cli.BaseCommand;
+import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
  * Base for CA commands, contains common functions for CA operations
@@ -229,4 +233,139 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
 		}
 		return existingCas.toString();
     }
+    
+    /** Lists methods in a class the has "setXyz", and prints them as "Xyz".
+     * Ignores (does not list) Type (setType) and Version (setVersion).
+     * 
+     * @param clazz the class where to look for setMethods
+     */
+    protected void listSetMethods(final Class<?> clazz) {
+        Method[] methods = clazz.getDeclaredMethods();
+        for (Method method : methods) {
+            // Only print fields that are settable and exclude some special types
+            if (method.getName().startsWith("set") && !method.getName().equals("setType") && !method.getName().equals("setVersion")) {
+                System.out.print(method.getName().substring(3));
+                Class<?>[] params = method.getParameterTypes();
+                if (params.length > 0) {
+                    System.out.print("(");
+                }
+                for (int i = 0; i < params.length; i++) {
+                    Class<?> class1 = params[i];
+                    if (i > 0) {
+                        System.out.print(", ");                                    
+                    }
+                    System.out.print(class1.getName());
+                }
+                if (params.length > 0) {
+                    System.out.println(")");
+                }
+            }
+        }
+    }
+    
+    /**
+     * Method that tries to in a generic way set fields in a class using setXyz method. 
+     * 
+     * @param object The Object on which to invoke setter method
+     * @param paramType the parameter type, java.lang.String, boolean, int, ...
+     * @param fieldValue the, human readable, value to set, used for logging only
+     * @param setmethodName the setMethod to invoke
+     * @param getMethodName the getMethod to invoke to check that the value was set
+     * @param value The value object to set, see getType
+     * @return Method of the getMethodName used to verify the value
+     * @throws ErrorAdminCommandException
+     * @throws IllegalAccessException
+     * @throws InvocationTargetException
+     * @throws ClassNotFoundException
+     */
+    protected Method setFieldInBeanClass(final Object object, final String paramType, final String fieldValue,
+            final String setmethodName, final String getMethodName, Object value) throws ErrorAdminCommandException, IllegalAccessException,
+            InvocationTargetException, ClassNotFoundException {
+        getLogger().info("Trying to find method '"+getMethodName+"' in class "+object.getClass());
+        final Method modMethod = getGetterMethod(object, getMethodName);
+        getLogger().info("Invoking method '"+getMethodName+"' with no parameters.");
+        Object o = modMethod.invoke(object);
+        getLogger().info("Old value for '"+getMethodName+"' is '"+o+"'.");
+        getLogger().info("Trying to find method '"+setmethodName+"' with paramType '"+paramType+"' in class "+object.getClass());
+        final Method method;
+        Class<?> type = getType(paramType);                
+        try {
+            method = object.getClass().getMethod(setmethodName, type);
+        } catch (NoSuchMethodException e) {
+            throw new ErrorAdminCommandException("Method '"+setmethodName+"' with parameter of type "+type.getName()+" does not exist. Did you use correct case for every character of the field?");
+        }
+        getLogger().info("Invoking method '"+setmethodName+"' with parameter value '"+fieldValue+"' of type '"+value.getClass().getName()+"'.");
+        method.invoke(object, value);
+        return modMethod;
+    }
+
+    /** Gets a Method for the method with name 'getmethodname' taking no arguments
+     * 
+     * @param object The object where we want to find the Method
+     * @param getMethodName The method name
+     * @return Method to be invoked
+     * @throws ErrorAdminCommandException
+     */
+    protected Method getGetterMethod(final Object object, final String getMethodName) throws ErrorAdminCommandException {
+        final Method modMethod;
+        try {
+            modMethod = object.getClass().getMethod(getMethodName);                    
+        } catch (NoSuchMethodException e) {
+            throw new ErrorAdminCommandException("Method '"+getMethodName+"' does not exist. Did you use correct case for every character of the field?");
+        }
+        return modMethod;
+    }
+    
+    /**
+     * Gets a desired field value as an object
+     * 
+     * @param fieldValue the value, "foo", "true" etc
+     * @param clazz The class to load the value in, for example java.lang.String or boolean, see getClassFromType
+     * @return Object that can be passed to setFieldInBeanClass
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws InvocationTargetException
+     * @throws NoSuchMethodException
+     */
+    protected Object getFieldValueAsObject(final String fieldValue, Class<?> clazz) throws InstantiationException, IllegalAccessException,
+            InvocationTargetException, NoSuchMethodException {
+        Object value = fieldValue;
+        if (clazz.getName().equals(List.class.getName())) {
+            ArrayList<String> list = new ArrayList<String>();
+            list.add(fieldValue);
+            value = list;
+        } else if (!clazz.getName().equals("java.lang.String")) {
+            value = clazz.getConstructor(String.class).newInstance(fieldValue);
+        }
+        return value;
+    }
+    
+    protected Class<?> getClassFromType(final String type) throws ClassNotFoundException {
+        String className = type;
+        if (type.equals("boolean")) {
+            className = Boolean.class.getName();
+        } else if (type.equals("long")) {
+            className = Long.class.getName();
+        } else if (type.equals("int")) {
+            className = Integer.class.getName();
+        }
+        Class<?> clazz = Class.forName(className);
+        return clazz;
+    }
+
+    protected Class<?> getType(final String type) throws ClassNotFoundException {
+        Class<?> ret;
+        if (type.equals("boolean")) {
+            ret = Boolean.TYPE;
+        } else if (type.equals("long")) {
+            ret = Long.TYPE;
+        } else if (type.equals("int")) {
+            ret = Integer.TYPE;
+        } else {
+            ret = getClassFromType(type);
+        }
+        return ret;
+    }
+
+
 }

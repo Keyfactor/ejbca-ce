@@ -40,6 +40,10 @@ public class CaEditCertificateProfileCommandTest {
     private static final String PROFILE_NAME = "1327profile2";
     private static final String[] HAPPY_PATH_ARGS1 = { "editcertificateprofile", PROFILE_NAME, "CRLDistributionPointURI=http://my-crl-distp.com/my.crl" };
     private static final String[] HAPPY_PATH_ARGS2 = { "editcertificateprofile", PROFILE_NAME, "-paramType", "java.util.List", "CaIssuers=http://my-ca.issuer.com/ca"};
+    private static final String[] HAPPY_PATH_ARGS3 = { "editcertificateprofile", PROFILE_NAME, "-paramType", "boolean", "UseOcspNoCheck=true"};
+    private static final String[] HAPPY_PATH_ARGS4 = { "editcertificateprofile", PROFILE_NAME, "-paramType", "int", "NumOfReqApprovals=5"};
+    private static final String[] HAPPY_PATH_GETVALUE_ARGS = { "editcertificateprofile", PROFILE_NAME, "-getValue", "CaIssuers" };
+    private static final String[] HAPPY_PATH_LISTFIELDS_ARGS = { "editcertificateprofile", PROFILE_NAME, "-listFields" };
     private static final String[] MISSING_ARGS = { "editcertificateprofile", PROFILE_NAME };
     private static final String[] INVALID_FIELD_ARGS = { "editcertificateprofile", PROFILE_NAME, "hostname=myhost.com" };
 
@@ -70,12 +74,21 @@ public class CaEditCertificateProfileCommandTest {
             CertificateProfile profile1 = profileSession.getCertificateProfile(PROFILE_NAME);
             assertEquals("storing cert profile with values failed", "http://crl1.foo.com/crl1.crl", profile1.getCRLDistributionPointURI());
             assertEquals("storing cert profile with values failed", "ldap://caissuer.foo.com/ca1.der", profile1.getCaIssuers().get(0));
+            assertEquals("changing cert profile with values failed", false, profile1.getUseOcspNoCheck());
+            assertEquals("changing cert profile with values failed", 1, profile1.getNumOfReqApprovals());
             command.execute(HAPPY_PATH_ARGS1);
             command.execute(HAPPY_PATH_ARGS2);
+            command.execute(HAPPY_PATH_ARGS3);
+            command.execute(HAPPY_PATH_ARGS4);
             // Check that we edited
             CertificateProfile profile2 = profileSession.getCertificateProfile(PROFILE_NAME);
             assertEquals("changing cert profile with values failed", "http://my-crl-distp.com/my.crl", profile2.getCRLDistributionPointURI());
             assertEquals("changing cert profile with values failed", "http://my-ca.issuer.com/ca", profile2.getCaIssuers().get(0));
+            assertEquals("changing cert profile with values failed", true, profile2.getUseOcspNoCheck());
+            assertEquals("changing cert profile with values failed", 5, profile2.getNumOfReqApprovals());
+            // Try to get value and list fields without exceptions...
+            command.execute(HAPPY_PATH_GETVALUE_ARGS);
+            command.execute(HAPPY_PATH_LISTFIELDS_ARGS);
         } finally {
             profileSession.removeCertificateProfile(admin, PROFILE_NAME);
         }

@@ -14,7 +14,6 @@
 package org.ejbca.ui.cli.ca;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -40,11 +39,20 @@ public class CaEditCertificateProfileCommand extends BaseCaAdminCommand {
         if (args.length < 3) {
             getLogger().info("Description: " + getDescription());
             getLogger().info("Usage: " + getCommand() + " <profile name> <field name>=<field value>\n"+
-                    "Only String value fields can be modified in this version.\n\n"+
-            "Fields that can be set are derived from setFieldName of the CertificateProfile java code. If there is a 'setFieldName(String)' method, the values to use in this command should be 'fieldName=value'\n"+
+                    "\n"+
+            "Fields that can be set are derived from setFieldName of the CertificateProfile java code. If there is a 'setFieldName(type)' method, the values to use in this command should be 'fieldName=value'\n"+
             "To set a parameter of type List<String>, add the -paramType=java.util.List\n"+
             "Example: ca editcertificateprofile CertProfileName CRLDistributionPointURI=http://my-crl-distp.com/my.crl\n"+
-            "Example: ca editcertificateprofile CertProfileName -paramType java.util.List CaIssuers=http://my-ca.issuer.com/ca");
+            "Example: ca editcertificateprofile CertProfileName -paramType java.util.List CaIssuers=http://my-ca.issuer.com/ca\n"+
+            "Example: ca editcertificateprofile CertProfileLdap -paramType boolean UseOcspNoCheck=true\n"+
+            "Example: ca editcertificateprofile CertProfileLdap -paramType int NumOfReqApprovals=1\n"+
+            "\n"+
+            "Use the option -listFields to only list available fields in the certificate profile.\n"+
+            "Example: ca editcertificateprofile CertProfileName -listFields\n"+
+            "\n"+
+            "Use the option -getValue to only get the value of a field in the certificate profile.\n"+
+            "Example: ca editcertificateprofile CertProfileName -getValue CaIssuers");
+            
             return;
         }
         try {
@@ -56,21 +64,50 @@ public class CaEditCertificateProfileCommand extends BaseCaAdminCommand {
             CryptoProviderTools.installBCProvider();
             List<String> argsList = CliTools.getAsModifyableList(args);
             int index;
-            // See if we have defined what type of parameter we shoul dhave to the method
+            // See if we have defined what type of parameter we should have to the method
             String paramType = "java.lang.String";
             if ((index = argsList.indexOf("-paramType")) != -1) {
                 paramType = argsList.get(index + 1);
                 argsList.remove(index + 1);
                 argsList.remove(index);
-                args = argsList.toArray(new String[argsList.size()]);
             }
-
+            boolean listOnly = false;
+            if ((index = argsList.indexOf("-listFields")) != -1) {
+                argsList.remove(index);
+                // Only list fields available
+                listOnly = true;
+            }
+            boolean getOnly = false;
+            if ((index = argsList.indexOf("-getValue")) != -1) {
+                argsList.remove(index);
+                // Only get value of a field
+                getOnly = true;
+            }
+            args = argsList.toArray(new String[argsList.size()]);
+            
             final String name = args[1];
-            final String fieldEdit = args[2];
+            final String fieldEdit;
+            if (args.length > 2) {
+                fieldEdit = args[2];
+            } else {
+                fieldEdit = null;
+            }
             final CertificateProfile profile = ejb.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfile(name);
             if (profile == null) {
                 getLogger().info("Certificate profile '"+name+"' does not exist.");
             } else {
+                if (listOnly) {
+                    listSetMethods(profile.getClass());
+                    return;
+                }
+                if (getOnly) {
+                    final String getMethodName = "get"+String.valueOf(fieldEdit.charAt(0)).toUpperCase()+fieldEdit.substring(1);
+                    final Method modMethod = getGetterMethod(profile, getMethodName);
+                    final Object gotValue = modMethod.invoke(profile);
+                    getLogger().info(getMethodName+" returned value '"+gotValue+"'.");
+                    return;
+                }
+                
                 final String[] fieldArray = StringUtils.split(fieldEdit, "=", 2);
                 if ((fieldArray == null) || (fieldArray.length == 0) || (fieldArray.length < 2)) {
                     getLogger().info("No fields found, enter field and modifyer like 'CRLDistributionPointURI=http://my-crl-distp.com/my.crl'");
@@ -81,34 +118,13 @@ public class CaEditCertificateProfileCommand extends BaseCaAdminCommand {
                 char firstChar = field.charAt(0);
                 final String setmethodName = "set"+String.valueOf(firstChar).toUpperCase()+field.substring(1);
                 final String getMethodName = "get"+String.valueOf(firstChar).toUpperCase()+field.substring(1);
-                getLogger().info("Modified publisher '"+name+"'...");
-                getLogger().info("Trying to find method '"+getMethodName+"' in class "+profile.getClass());
-                final Method modMethod;
-                try {
-                    modMethod = profile.getClass().getMethod(getMethodName);                    
-                } catch (NoSuchMethodException e) {
-                    throw new ErrorAdminCommandException("Method '"+getMethodName+"' does not exist. Did you use correct case for every character of the field?");
-                }
-                getLogger().info("Invoking method '"+getMethodName+"' vith no parameters.");
-                Object o = modMethod.invoke(profile);
-                getLogger().info("Old value for '"+field+"' is '"+o+"'.");
-                getLogger().info("Trying to find method '"+setmethodName+"' in class "+profile.getClass());
-                Class<?> clazz = Class.forName(paramType);
-                final Method method;
-                try {
-                    method = profile.getClass().getMethod(setmethodName, clazz);
-                } catch (NoSuchMethodException e) {
-                    throw new ErrorAdminCommandException("Method '"+setmethodName+"' with parameter of type "+clazz.getName()+" does not exist. Did you use correct case for every character of the field?");
-                }
-                Object value = fieldValue;
-                if (clazz.getName().equals(List.class.getName())) {
-                    ArrayList<String> list = new ArrayList<String>();
-                    list.add(fieldValue);
-                    value = list;
-                }
-                getLogger().info("Invoking method '"+setmethodName+"' vith parameter value '"+fieldValue+"'.");
-                method.invoke(profile, value);
-                getLogger().info("Storing modified publisher '"+name+"'...");
+                getLogger().info("Modifying certificate profile '"+name+"'...");
+
+                Class<?> clazz = getClassFromType(paramType);
+                Object value = getFieldValueAsObject(fieldValue, clazz);
+                final Method modMethod = setFieldInBeanClass(profile, paramType, fieldValue, setmethodName, getMethodName, value);
+                
+                getLogger().info("Storing modified profile '"+name+"'...");
                 ejb.getRemoteSession(CertificateProfileSessionRemote.class).changeCertificateProfile(getAdmin(cliUserName, cliPassword), name, profile);
                 // Verify our new value
                 getLogger().info("Reading modified value for verification...");
