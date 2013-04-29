@@ -58,12 +58,14 @@ public class CryptoTokenUpdatePinCommand extends BaseCryptoTokenCommand {
         final char[] newAuthenticationCode = removeAuto ? null : getAuthenticationCode(args[3]);
         try {
             final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = ejb.getRemoteSession(CryptoTokenManagementSessionRemote.class);
-            boolean result = cryptoTokenManagementSession.updatePin(getAdmin(), cryptoTokenId, currentAuthenticationCode, newAuthenticationCode, updateOnly);
+            boolean result = cryptoTokenManagementSession.updatePin(getAdmin(), cryptoTokenId.intValue(), currentAuthenticationCode, newAuthenticationCode, updateOnly);
             if (result) {
                 getLogger().info("Auto-activation is now in use for this CryptoToken.");
             } else {
                 getLogger().info("Auto-activation is now not in use for this CryptoToken.");
             }
+            final boolean isActive = cryptoTokenManagementSession.isCryptoTokenStatusActive(getAdmin(), cryptoTokenId.intValue());
+            getLogger().info("CryptoToken is " + (isActive ? "active" : "deactivated") + ".");
         } catch (AuthorizationDeniedException e) {
             getLogger().info(e.getMessage());
         } catch (Exception e) {

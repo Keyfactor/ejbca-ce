@@ -13,6 +13,7 @@
 package org.ejbca.ui.cli.cryptotoken;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 
 /**
@@ -41,11 +42,23 @@ public class CryptoTokenDeactivateCommand extends BaseCryptoTokenCommand {
         }
         try {
             final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = ejb.getRemoteSession(CryptoTokenManagementSessionRemote.class);
-            cryptoTokenManagementSession.deactivate(getAdmin(), cryptoTokenId);
-            if (cryptoTokenManagementSession.isCryptoTokenStatusActive(getAdmin(), cryptoTokenId)) {
-                getLogger().warn("CryptoToken is still active after deactivation request (expected outcome for auto-activated CryptoTokens).");
+            final CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(getAdmin(), cryptoTokenId.intValue());
+            final boolean usingAutoActivation = cryptoTokenInfo.isAutoActivation();
+            cryptoTokenManagementSession.deactivate(getAdmin(), cryptoTokenId.intValue());
+            if (cryptoTokenManagementSession.isCryptoTokenStatusActive(getAdmin(), cryptoTokenId.intValue())) {
+                final String msg = "CryptoToken is still active after deactivation request.";
+                if (usingAutoActivation) {
+                    getLogger().info(msg);
+                    getLogger().info("This is the expected outcome since the CryptoTokens is instantly auto-activated after the deactivation request.");
+                } else {
+                    getLogger().error(msg);
+                }
             } else {
-                getLogger().info("CryptoToken deactivated successfully.");
+                if (usingAutoActivation) {
+                    getLogger().error("CryptoTokens was deactivated despite auto-activation being used. This is an unexpected outcome.");
+                } else {
+                    getLogger().info("CryptoToken deactivated successfully.");
+                }
             }
         } catch (AuthorizationDeniedException e) {
             getLogger().info(e.getMessage());
