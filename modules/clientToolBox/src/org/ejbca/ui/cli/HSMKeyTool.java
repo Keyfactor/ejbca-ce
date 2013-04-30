@@ -250,7 +250,7 @@ public class HSMKeyTool extends ClientToolBox {
         }
         if ( args[1].toLowerCase().trim().equals(INSTALL_CERT)) {
             if ( args.length < 7 ) {
-                System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <certificate chains in PEM format...>");
+                System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <certificate chain files in PEM format (one chain per file)>");
                 tooFewArguments(args);
             } else {
                 final KeyStoreContainer container = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, protectionParameter);
