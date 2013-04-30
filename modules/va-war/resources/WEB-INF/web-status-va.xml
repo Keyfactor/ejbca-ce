@@ -9,22 +9,6 @@
 
     <description><![CDATA[OCSP responder standalone]]></description>
 
-    <servlet>
-        <description><![CDATA[Answers OCSP requests]]></description>
-        <display-name>OCSPServletStandAlone</display-name>
-        <servlet-name>OCSP</servlet-name>
-        <servlet-class>org.ejbca.ui.web.protocol.OCSPServletStandAlone</servlet-class>
-        <load-on-startup>1</load-on-startup>
-    </servlet>
-    
-        <servlet>
-        <description><![CDATA[Answers OCSP Health check requests]]></description>
-        <display-name>StandAloneOcspHealthCheckServlet</display-name>
-        <servlet-name>OCSPHealthCheck</servlet-name>
-        <servlet-class>org.ejbca.ui.web.protocol.StandAloneOcspHealthCheckServlet</servlet-class>
-        <load-on-startup>1</load-on-startup>
-    </servlet>
-
     <servlet-mapping>
         <servlet-name>OCSP</servlet-name>
         <url-pattern>/ocsp</url-pattern>

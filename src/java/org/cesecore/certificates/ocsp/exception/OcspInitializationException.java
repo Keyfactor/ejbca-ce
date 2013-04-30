@@ -10,15 +10,32 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.certificates.ocsp.standalone;
+package org.cesecore.certificates.ocsp.exception;
 
-import javax.ejb.Remote;
-
-/**  
+/**
+ * Thrown when an error is encountered while starting OCSP.  
+ * 
  * @version $Id$
  *
  */
-@Remote
-public interface StandaloneOcspResponseGeneratorSessionRemote extends StandAloneOcspResponseGeneratorSession {
+public class OcspInitializationException extends RuntimeException {
+
+    private static final long serialVersionUID = -7920696456058508107L;
+
+    public OcspInitializationException() {
+        super();
+    }
+
+    public OcspInitializationException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public OcspInitializationException(String message) {
+        super(message);
+    }
+
+    public OcspInitializationException(Throwable cause) {
+        super(cause);
+    }
 
 }

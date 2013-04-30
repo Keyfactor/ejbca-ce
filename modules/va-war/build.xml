@@ -119,8 +119,6 @@
 		<javac destdir="${build-status-va.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
 			classpathref="compile-va.classpath">
 			<include name="org/cesecore/certificates/ocsp/extension/OCSPExtension.java" />
-			<include name="org/ejbca/ui/web/protocol/OCSPServletStandAlone.java"/>	
-			<include name="org/ejbca/ui/web/protocol/StandAloneOcspHealthCheckServlet.java"/>	
 			<include name="org/ejbca/core/protocol/ocsp/*Extension.java"/>
 			<include name="org/ejbca/core/protocol/ocsp/extension/**/*.java"/>
 			<src path="${src.dir}"/>

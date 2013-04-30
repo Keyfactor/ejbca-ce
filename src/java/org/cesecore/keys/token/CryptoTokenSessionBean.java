@@ -17,8 +17,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -46,8 +44,6 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal {
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
-    @Resource
-    private SessionContext sessionContext;
 
     @PostConstruct
     public void postConstruct() {
