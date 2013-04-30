@@ -4517,7 +4517,24 @@ If you want to change the management port (default 4444) after installation you 
 
 </subsection>
 
-<subsection name="Extra device schema">
+<subsection name="Custom schemas">
+<p>See doc/ldapschema for files with custom schemas and attribute types to add to your LDAP schema.</p>
+<subsubsection name="Certificate serial number">
+<p>This is an attribute and a schema extension to allow storage of certificate serial number in the inetOrgPerson LDAP object, for end user entries.
+This is done by adding an extension to inetOrgPerson called inetOrgPersonWithCertSerno with a new optional attribute called certificateSerialNumber.
+</p>
+<p>One you have installed the new schema in the LDAP server you use it by configuring the LDAP publisher with:
+<ul>
+<li>User Object Class: top;person;organizationalPerson;inetOrgPerson;inetOrgPersonWithCertSerno</li>
+</ul>
+instead of the befault value:
+<ul>
+<li>User Object Class: top;person;organizationalPerson;inetOrgPerson</li>
+</ul>
+The certificateSerialNumber attribute will then automatically be added/modified when publishing to LDAP.
+</p>
+</subsubsection>
+<subsubsection name="Extra device schema">
 <p>
 To store certificates for devices (e.g. routers, toasters etc) in LDAP it
 is no really suitable standard object class. inetOrgPerson requires surnames
@@ -4527,6 +4544,7 @@ Mike Jackson has kindly contributed additional objects that extend the
 standard device class with a certificate attribute. 
 The ejbcaDevice uses object ids from PrimeKey Solutions AB.
 </p>
+</subsubsection>
 </subsection>
 
 <subsubsection name="Installation">

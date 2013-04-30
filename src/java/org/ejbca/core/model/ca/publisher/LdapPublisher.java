@@ -223,7 +223,7 @@ public class LdapPublisher extends BasePublisher {
     				log.debug("Publishing end user certificate to first available server of " + getHostnames());
     			}
     			if (oldEntry != null) {
-    				modSet = getModificationSet(oldEntry, certdn, email, ADD_MODIFICATION_ATTRIBUTES, true, password);
+    				modSet = getModificationSet(oldEntry, certdn, email, ADD_MODIFICATION_ATTRIBUTES, true, password, incert);
     			} else {
     				objectclass = getUserObjectClass(); // just used for logging
     				attributeSet = getAttributeSet(incert, getUserObjectClass(), certdn, email, true, true, password, extendedinformation);
@@ -262,7 +262,7 @@ public class LdapPublisher extends BasePublisher {
     				log.debug("Publishing CA certificate to first available server of " + getHostnames());
     			}
     			if (oldEntry != null) {
-    				modSet = getModificationSet(oldEntry, certdn, null, false, false, password);
+    				modSet = getModificationSet(oldEntry, certdn, null, false, false, password, incert);
     			} else {
     				objectclass = getCAObjectClass(); // just used for logging
     				attributeSet = getAttributeSet(incert, getCAObjectClass(), certdn, null, true, false, password, extendedinformation);
@@ -488,7 +488,7 @@ public class LdapPublisher extends BasePublisher {
 		LDAPAttributeSet attributeSet = null;
 
 		if (oldEntry != null) {
-			modSet = getModificationSet(oldEntry, crldn, null, false, false, null);
+			modSet = getModificationSet(oldEntry, crldn, null, false, false, null, null);
 		} else {
 			attributeSet = getAttributeSet(null, this.getCAObjectClass(), crldn, null, true, false, null,null);
 		}
@@ -634,7 +634,7 @@ public class LdapPublisher extends BasePublisher {
 					// Don't try to remove the cert if there does not exist any
 					LDAPAttribute oldAttr = oldEntry.getAttribute(getUserCertAttribute());
 					if (oldAttr != null) {
-						modSet = getModificationSet(oldEntry, certdn, null, false, true, null);
+						modSet = getModificationSet(oldEntry, certdn, null, false, true, null, cert);
 						LDAPAttribute attr = new LDAPAttribute(getUserCertAttribute());
 						modSet.add(new LDAPModification(LDAPModification.DELETE, attr));                    
 					} else {
@@ -1362,7 +1362,7 @@ public class LdapPublisher extends BasePublisher {
 				String sn = CertTools.getPartFromDN(dn, "SURNAME");
 				if ( (sn == null) && (cn != null) ) {
 					// Only construct this if we are the standard object class
-					if (getUserObjectClass().endsWith("inetOrgPerson")) {
+					if (objectclass.contains("inetOrgPerson")) {
 						// Take surname to be the last part of the cn
 						int index = cn.lastIndexOf(' ');
 						if (index <=0) {
@@ -1382,7 +1382,7 @@ public class LdapPublisher extends BasePublisher {
 				String gn = CertTools.getPartFromDN(dn, "GIVENNAME");
 				if ( (gn == null) && (cn != null) ) {
 					// Only construct this if we are the standard object class
-					if (getUserObjectClass().endsWith("inetOrgPerson")) {
+					if (objectclass.contains("inetOrgPerson")) {
 						// Take givenname to be the first part of the cn
 						int index = cn.indexOf(' ');
 						if (index <=0) {
@@ -1416,7 +1416,15 @@ public class LdapPublisher extends BasePublisher {
 						attributeSet.add(new LDAPAttribute("serialNumber", serno));
 					}            		
 				}
-				
+				// If we are using the custom schema inetOrgPersonWithCertSerno, we will add the custom attribute certificateSerialNumber
+				// This is, as the name implies, the X509V3 certificate serial number, hex encoded into a printable string.
+                if (objectclass.contains("inetOrgPersonWithCertSerno") && (cert != null)) {
+                    final String certSerno = CertTools.getSerialNumberAsString(cert);
+                    if (certSerno != null) {
+                        attributeSet.add(new LDAPAttribute("certificateSerialNumber", certSerno));
+                    }
+                }
+                
 				// If this is an objectClass which is a SecurityObject, such as simpleSecurityObject, we will add the password as well, if not null.
 				if (getSetUserPassword() && (password != null)) {
 					if (log.isDebugEnabled()) {
@@ -1434,6 +1442,14 @@ public class LdapPublisher extends BasePublisher {
 	} // getAttributeSet
 
 
+	/** This method is only provided for backwards compatibility when the below method changed signature.
+	 * 
+	 * @see LdapPublisher#getModificationSet(LDAPEntry, String, String, boolean, boolean, String, Certificate)
+	 * @since 4.0.15, 5.0.10, 5.2.0
+	 */
+	protected ArrayList<LDAPModification> getModificationSet(LDAPEntry oldEntry, String dn, String email, boolean extra, boolean person, String password) {
+	    return getModificationSet(oldEntry, dn, email, extra, person, password, null);
+	}
 	/**
 	 * Creates an LDAPModificationSet.
 	 *
@@ -1445,15 +1461,17 @@ public class LdapPublisher extends BasePublisher {
 	 * @param pserson true if this is a person-entry, false if it is a CA.
 	 * @param password, users password, to be added into SecurityObjects, and AD
 	 * @param overwrite if true then old attributes in LDAP will be overwritten, otherwise not.
+	 * @param cert the Certificate we are publishing, or null
 	 *
 	 * @return List of LDAPModification created...
 	 */
-	protected ArrayList<LDAPModification> getModificationSet(LDAPEntry oldEntry, String dn, String email, boolean extra, boolean person, String password) {
+	protected ArrayList<LDAPModification> getModificationSet(LDAPEntry oldEntry, String dn, String email, boolean extra, boolean person, String password, Certificate cert) {
 		if (log.isTraceEnabled()) {
 			log.trace(">getModificationSet(dn="+dn+", email="+email+")");			
 		}
 		boolean modifyExisting = getModifyExistingAttributes();
 		boolean addNonExisting = getAddNonExistingAttributes();
+		final String objectclass = getUserObjectClass();
 		ArrayList<LDAPModification> modSet = new ArrayList<LDAPModification>();
 		// We get this, because we can not modify attributes that are present in the original DN
 		// i.e. if the ldap entry have a DN, we are not allowed to modify that
@@ -1471,7 +1489,7 @@ public class LdapPublisher extends BasePublisher {
 				String sn = CertTools.getPartFromDN(dn, "SURNAME");
 				if ( (sn == null) && (cn != null) ) {
 					// Only construct this if we are the standard object class
-					if (getUserObjectClass().endsWith("inetOrgPerson")) {
+                    if (objectclass.contains("inetOrgPerson")) {
 						// Take surname to be the last part of the cn
 						int index = cn.lastIndexOf(' ');
 						if (index <=0) {
@@ -1494,7 +1512,7 @@ public class LdapPublisher extends BasePublisher {
 				LDAPAttribute oldgn = oldEntry.getAttribute("GIVENNAME");
 				if ( (gn == null) && (cn != null) ) {
 					// Only construct this if we are the standard object class
-					if (getUserObjectClass().endsWith("inetOrgPerson")) {
+					if (objectclass.contains("inetOrgPerson")) {
 						// Take givenname to be the first part of the cn
 						int index = cn.indexOf(' ');
 						if (index <=0) {
@@ -1536,6 +1554,15 @@ public class LdapPublisher extends BasePublisher {
 						modSet.add(new LDAPModification(LDAPModification.REPLACE, attr));
 					}            		
 				}
+                // If we are using the custom schema inetOrgPersonWithCertSerno, we will add the custom attribute certificateSerialNumber
+                // This is, as the name implies, the X509V3 certificate serial number, hex encoded into a printable string.
+                if (objectclass.contains("inetOrgPersonWithCertSerno") && (cert != null)) {
+                    final String certSerno = CertTools.getSerialNumberAsString(cert);
+                    if (certSerno != null) {
+                        LDAPAttribute attr = new LDAPAttribute("certificateSerialNumber", certSerno);
+                        modSet.add(new LDAPModification(LDAPModification.REPLACE, attr));
+                    }
+                }
 				
 				// If this is an objectClass which is a SecurityObject, such as simpleSecurityObject, we will add the password as well, if not null
 				if ( (getSetUserPassword() && (password != null)) && (addNonExisting || modifyExisting) ) {
