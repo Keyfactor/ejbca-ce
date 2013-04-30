@@ -1896,10 +1896,13 @@ ${DATE} or ${current.DATE}      = The current date
 Variables used with userdata:
 <ul>
 <li>
-  ${USERNAME} or ${user.USERNAME} = The user's username
+  ${USERNAME} or ${user.USERNAME} = The user's username.
 </li>
 <li>
-  ${PASSWORD} or ${user.PASSWORD} = The user's password
+  ${PASSWORD} or ${user.PASSWORD} = The user's password.
+</li>
+<li>
+  ${UID} or ${user.UID}           = The user's unique identifier.
 </li>
 <li>
   ${CN} or ${user.CN}             = The common name of the user.
@@ -1908,24 +1911,24 @@ Variables used with userdata:
   ${SN} or ${user.SN}             = The serial number (in DN) of the user.
 </li>
 <li>
-  ${O} or ${user.O}               = The user's organization
+  ${O} or ${user.O}               = The user's organization.
 </li>
 <li>
-  ${OU} or ${user.OU}             = The user's organizational unit
+  ${OU} or ${user.OU}             = The user's organizational unit.
 </li>
 <li>
-  ${C} or ${user.C}               = The user's country
+  ${C} or ${user.C}               = The user's country.
 </li>
 <li>
-  ${user.E}                       = The user's email address from Subject DN
+  ${user.E}                       = The user's email address from Subject DN.
 </li>
-<li>${user.EE.EMAIL}				= Ther user's email address from the End Entity data</li>
-<li>${user.SAN.EMAIL}			  	= The user's email address from Subject Alternative Name, RFC822Name field</li>
-<li>${user.TIMECREATED}             = The time the user was created</li>
-<li>${user.TIMEMODIFIED}            = The time the user was modified</li>
-<li>${requestAdmin.CN}				= The common name of the requesting administrator</li>
-<li>${requestAdmin.EE.EMAIL}		= The email address of the administrator adding the end entity according to the administrator's End Entity data</li>
-<li>${requestAdmin.SAN.EMAIL}		= The email address of the administrator adding the end entity according to the administrator's Subject Alternative Name, RFC822Name field</li>
+<li>${user.EE.EMAIL}				= Ther user's email address from the End Entity data.</li>
+<li>${user.SAN.EMAIL}			  	= The user's email address from Subject Alternative Name, RFC822Name field.</li>
+<li>${user.TIMECREATED}             = The time the user was created.</li>
+<li>${user.TIMEMODIFIED}            = The time the user was modified.</li>
+<li>${requestAdmin.CN}				= The common name of the requesting administrator.</li>
+<li>${requestAdmin.EE.EMAIL}		= The email address of the administrator adding the end entity according to the administrator's End Entity data.</li>
+<li>${requestAdmin.SAN.EMAIL}		= The email address of the administrator adding the end entity according to the administrator's Subject Alternative Name, RFC822Name field.</li>
 <li>${approvalAdmin.XX} variables from below can be used to get the administrator who adds an end entity.</li>
 </ul>
 </p><p>
