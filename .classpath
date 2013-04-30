@@ -2,7 +2,6 @@
 <classpath>
 	<classpathentry kind="src" path="src/java"/>
 	<classpathentry kind="src" path="modules/admin-gui/src"/>
-	<classpathentry kind="src" path="modules/appserver-ext/src"/>
 	<classpathentry kind="src" path="modules/clearcache-war/src"/>
 	<classpathentry kind="src" path="modules/clientToolBox/src"/>
 	<classpathentry kind="src" path="modules/cmpProxy/src"/>
@@ -48,6 +47,7 @@
 	<classpathentry kind="lib" path="lib/ldap.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.16.jar"/>
 	<classpathentry kind="lib" path="lib/myfaces/tomahawk-1.1.6.jar"/>
+	<classpathentry kind="lib" path="lib/commons-beanutils-1.8.3.jar"/>
 	<classpathentry kind="lib" path="lib/commons-collections-3.2.jar"/>
 	<classpathentry kind="lib" path="lib/commons-fileupload-1.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang-2.5.jar"/>
@@ -88,19 +88,13 @@
 	<classpathentry kind="lib" path="lib/ext/easymock/easymock-3.0.jar"/>
 	<classpathentry kind="lib" path="lib/ext/easymock/cglib-nodep-2.2.jar"/>
 	<classpathentry kind="lib" path="lib/ext/easymock/objenesis-1.2.jar"/>
-	<classpathentry kind="var" path="JBOSS5_HOME"/>
-	<classpathentry kind="var" path="JBOSS5_HOME/client/jbossall-client.jar"/>
-	<classpathentry kind="var" path="JBOSS5_HOME/client/activation.jar"/>
-	<classpathentry kind="var" path="JBOSS5_HOME/lib/jboss-system.jar"/>
-	<classpathentry kind="var" path="JBOSS5_HOME/lib/jboss-system-jmx.jar"/>
-	<classpathentry kind="var" path="JBOSS5_HOME/lib/jboss-j2se.jar"/>
-	<classpathentry kind="var" path="JBOSS5_HOME/lib/jboss-kernel.jar"/>
-	<classpathentry kind="var" path="JBOSS5_HOME/client/jboss-javaee.jar"/>
-	<classpathentry kind="var" path="JBOSS5_HOME/common/lib/servlet-api.jar"/>
-	<classpathentry kind="var" path="JBOSS5_HOME/server/default/deploy/jbossweb.sar/jsf-libs/jsf-api.jar"/>
-	<classpathentry kind="var" path="JBOSS5_HOME/server/default/deploy/jbossweb.sar/jsf-libs/jsf-impl.jar"/>
-	<classpathentry kind="var" path="JBOSS5_HOME/server/default/deploy/jbossweb.sar/jstl.jar"/>
-	<classpathentry kind="var" path="JBOSS5_HOME/client/jboss-logging-log4j.jar"/>
+	<classpathentry kind="var" path="JBOSS7_HOME/modules/javax/ejb/api/main/jboss-ejb-api_3.1_spec-1.0.1.Final.jar"/>
+	<classpathentry kind="var" path="JBOSS7_HOME/modules/org/jboss/metadata/main/jboss-metadata-ejb-7.0.1.Final.jar"/>
+	<classpathentry kind="var" path="JBOSS7_HOME/modules/javax/faces/api/main/jboss-jsf-api_2.1_spec-2.0.1.Final.jar"/>
+	<classpathentry kind="var" path="JBOSS7_HOME/modules/javax/servlet/api/main/jboss-servlet-api_3.0_spec-1.0.0.Final.jar"/>
+	<classpathentry kind="var" path="JBOSS7_HOME/modules/javax/transaction/api/main/jboss-transaction-api_1.1_spec-1.0.0.Final.jar"/>
+	<classpathentry kind="var" path="JBOSS7_HOME/modules/javax/persistence/api/main/hibernate-jpa-2.0-api-1.0.1.Final.jar"/>
+	<classpathentry kind="var" path="JBOSS7_HOME/bin/client/jboss-client.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="conf"/>
 	<classpathentry kind="var" path="ANT_HOME/lib/ant.jar"/>
