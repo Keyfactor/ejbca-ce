@@ -1896,10 +1896,10 @@ ${DATE} or ${current.DATE}      = The current date
 Variables used with userdata:
 <ul>
 <li>
-  ${USERNAME} or ${user.USERNAME} = The users username
+  ${USERNAME} or ${user.USERNAME} = The user's username
 </li>
 <li>
-  ${PASSWORD} or ${user.PASSWORD} = The users password
+  ${PASSWORD} or ${user.PASSWORD} = The user's password
 </li>
 <li>
   ${CN} or ${user.CN}             = The common name of the user.
@@ -1911,7 +1911,7 @@ Variables used with userdata:
   ${O} or ${user.O}               = The user's organization
 </li>
 <li>
-  ${OU} or ${user.OU}             = The user's organization unit
+  ${OU} or ${user.OU}             = The user's organizational unit
 </li>
 <li>
   ${C} or ${user.C}               = The user's country
