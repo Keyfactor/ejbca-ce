@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA: The OpenSource Certificate Authority                          *
+ *  CESeCore: CE Security Core                                           *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,18 +10,35 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.certificates.ocsp;
+package org.cesecore.certificates.ocsp.keys;
 
-import javax.ejb.Remote;
-
-import org.cesecore.authorization.AuthorizationDeniedException;
+import java.security.PrivateKey;
+import java.security.interfaces.RSAPublicKey;
 
 /**
+ * 
  * @version $Id$
- *
  */
-@Remote
-public interface IntegratedOcspResponseGeneratorProxySessionRemote {
+public interface CardKeys {
 
-    void reloadTokenAndChainCache() throws AuthorizationDeniedException;
+    /**
+     * @param publicKey
+     * @return
+     * @throws Exception
+     */
+    PrivateKey getPrivateKey(RSAPublicKey publicKey) throws Exception;
+
+    /**
+     * @param authCode
+     * @throws InterruptedException
+     */
+    void autenticate(String authCode) throws InterruptedException;
+
+    /**
+     * Check if key is OK (verifies PIN).
+     * 
+     * @param publicKey
+     * @return
+     */
+    boolean isOK(RSAPublicKey publicKey);
 }

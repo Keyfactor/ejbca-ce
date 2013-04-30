@@ -43,11 +43,26 @@ public final class TokenAndChainCache {
 
     }
 
+    public boolean containsKey(CertificateID certificateID) {
+        if (cache == null) {
+            throw new CacheNotInitializedException("Token and chain cache has not been initialized, this is an implementation error.");
+        } 
+        return cache.containsKey(keyFromCertificateID(certificateID));
+    }
+    
+    public boolean containsKey(Integer key) {
+        if (cache == null) {
+            throw new CacheNotInitializedException("Token and chain cache has not been initialized, this is an implementation error.");
+        } 
+        
+        return cache.containsKey(key);
+    }
+    
     /**
      * This getter calculates the key from the given certificate and returns the matching CryptoTokenAndChain, if any.
      * 
      * @param certificate a CA certificate
-     * @return the sought CryptoTokenAndChain
+     * @return the sought CryptoTokenAndChain, null if not found.
      */
     public CryptoTokenAndChain get(X509Certificate certificate) {
         if (certificate == null) {
@@ -55,7 +70,7 @@ public final class TokenAndChainCache {
         } else {
             CertificateID certId = null;
             try {
-                certId = new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(),  certificate, new BigInteger("1"));
+                certId = new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(),  certificate, certificate.getSerialNumber());
             } catch (OCSPException e) {
                 throw new OcspFailureException(e);
             } catch (CertificateEncodingException e) {
@@ -88,7 +103,7 @@ public final class TokenAndChainCache {
     }
 
     /**
-     * This method replaces the existing cache the one in the argument.
+     * This method replaces the existing cache with the one in the argument.
      * 
      * @param newCache the new cache.
      */
@@ -112,7 +127,9 @@ public final class TokenAndChainCache {
         if (certID == null) {
             return null;
         } else {
-            return Integer.valueOf(new BigInteger(certID.getIssuerNameHash()).hashCode() ^ new BigInteger(certID.getIssuerKeyHash()).hashCode());
+            Integer result =  Integer.valueOf(new BigInteger(certID.getIssuerNameHash()).hashCode() ^ new BigInteger(certID.getIssuerKeyHash()).hashCode());
+            System.err.println(certID.hashCode() + ", " + result);
+            return result;
         }
     }
 

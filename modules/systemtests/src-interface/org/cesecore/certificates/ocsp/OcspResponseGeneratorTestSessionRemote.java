@@ -12,29 +12,36 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp;
 
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
+import java.security.cert.CertificateEncodingException;
+import java.util.Collection;
+import java.util.Map;
 
-import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ocsp.integrated.IntegratedOcspResponseGeneratorSessionLocal;
-import org.cesecore.jndi.JndiConstants;
+import javax.ejb.Remote;
+
+import org.bouncycastle.cert.ocsp.OCSPException;
+import org.cesecore.certificates.ocsp.cache.CryptoTokenAndChain;
 
 /**
  * @version $Id$
  *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "IntegratedOcspResponseGeneratorProxySessionRemote")
-@TransactionAttribute(TransactionAttributeType.SUPPORTS)
-public class IntegratedOcspResponseGeneratorProxySessionBean implements IntegratedOcspResponseGeneratorProxySessionRemote {
+@Remote
+public interface OcspResponseGeneratorTestSessionRemote {
 
-    @EJB
-    private IntegratedOcspResponseGeneratorSessionLocal integratedOcspResponseGeneratorSession;
+    /**
+     * Replaces the contents of the cache with the parameter given
+     * 
+     * @param newCache
+     * @throws CertificateEncodingException
+     * @throws OCSPException
+     * @throws IllegalAccessException 
+     * @throws IllegalArgumentException 
+     * @throws NoSuchFieldException 
+     * @throws SecurityException 
+     */
+    void replaceTokenAndChainCache(Map<Integer, CryptoTokenAndChain> newCache) throws CertificateEncodingException, OCSPException, IllegalArgumentException, IllegalAccessException, SecurityException, NoSuchFieldException;
+ 
+    Collection<CryptoTokenAndChain> getCacheValues();
     
-    @Override
-    public void reloadTokenAndChainCache() throws AuthorizationDeniedException {
-        integratedOcspResponseGeneratorSession.reloadTokenAndChainCache();
-    }
-
+    void reloadTokenAndChainCache();
 }

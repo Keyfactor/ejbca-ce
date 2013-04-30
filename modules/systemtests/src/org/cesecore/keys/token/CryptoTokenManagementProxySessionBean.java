@@ -25,10 +25,17 @@ import org.cesecore.jndi.JndiConstants;
 public class CryptoTokenManagementProxySessionBean implements CryptoTokenManagementProxySessionRemote {
 
     @EJB
+    private CryptoTokenSessionLocal cryptoTokenSession;
+    @EJB
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
 
     @Override
     public CryptoToken getCryptoToken(int cryptoTokenId) {
         return cryptoTokenManagementSession.getCryptoToken(cryptoTokenId);
+    }
+
+    @Override
+    public boolean isCryptoTokenNameUsed(String cryptoTokenName) {
+        return cryptoTokenSession.isCryptoTokenNameUsed(cryptoTokenName);
     }
 }

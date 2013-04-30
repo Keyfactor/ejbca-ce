@@ -10,8 +10,9 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.certificates.ocsp.standalone;
+package org.cesecore.certificates.ocsp;
 
+import java.lang.reflect.Field;
 import java.math.BigInteger;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
@@ -26,7 +27,6 @@ import javax.ejb.TransactionAttributeType;
 import org.bouncycastle.cert.ocsp.OCSPException;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
-import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.certificates.ocsp.cache.CryptoTokenAndChain;
 import org.cesecore.certificates.ocsp.cache.TokenAndChainCache;
 import org.cesecore.config.OcspConfiguration;
@@ -38,17 +38,19 @@ import org.cesecore.jndi.JndiConstants;
  * @version $Id$
  *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "StandaloneOcspResponseGeneratorTestSessionRemote")
+@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "OcspResponseGeneratorTestSessionRemote")
 @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-public class StandaloneOcspResponseGeneratorTestSessionBean extends StandaloneOcspResponseGeneratorSessionBean implements
-        StandaloneOcspResponseGeneratorTestSessionRemote, StandaloneOcspResponseGeneratorTestSessionLocal {
+public class OcspResponseGeneratorTestSessionBean extends OcspResponseGeneratorSessionBean implements
+        OcspResponseGeneratorTestSessionRemote, OcspResponseGeneratorTestSessionLocal {
 
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
     
     @Override
-    public void replaceTokenAndChainCache(Map<Integer, CryptoTokenAndChain> newCache) throws CertificateEncodingException, OCSPException {
-        TokenAndChainCache cache = getTokenAndChainCache();
+    public void replaceTokenAndChainCache(Map<Integer, CryptoTokenAndChain> newCache) throws CertificateEncodingException, OCSPException, IllegalArgumentException, IllegalAccessException, SecurityException, NoSuchFieldException {
+        Field cacheField = OcspResponseGeneratorSessionBean.class.getDeclaredField("cache");
+        cacheField.setAccessible(true);
+        TokenAndChainCache cache = (TokenAndChainCache) cacheField.get(this);
         X509Certificate latestCertificate = certificateStoreSession.findLatestX509CertificateBySubject(OcspConfiguration.getDefaultResponderId());
         cache.updateCache(newCache, new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), latestCertificate, new BigInteger("1")));
     }
@@ -56,6 +58,11 @@ public class StandaloneOcspResponseGeneratorTestSessionBean extends StandaloneOc
     @Override
     public Collection<CryptoTokenAndChain> getCacheValues() {
         return super.getCacheValues();
+    }
+    
+    @Override
+    public void reloadTokenAndChainCache() {
+        super.reloadTokenAndChainCache();
     }
 }
 

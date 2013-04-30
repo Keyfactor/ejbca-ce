@@ -25,8 +25,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
 import org.cesecore.certificates.ocsp.cache.CryptoTokenAndChain;
-import org.cesecore.certificates.ocsp.standalone.StandaloneOcspResponseGeneratorSessionLocal;
 import org.cesecore.keys.util.KeyTools;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.protocol.ocsp.OCSPUtil;
@@ -50,7 +50,7 @@ public class StandAloneOcspHealthCheckServlet extends HttpServlet implements IHe
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     @EJB
-    private StandaloneOcspResponseGeneratorSessionLocal standaloneOcspResponseGeneratorSession;
+    private OcspResponseGeneratorSessionLocal ocspResponseGeneratorSession;
 
     @Override
     public void init(ServletConfig config) throws ServletException {
@@ -64,7 +64,7 @@ public class StandAloneOcspHealthCheckServlet extends HttpServlet implements IHe
         final StringWriter sw = new StringWriter();
         final PrintWriter pw = new PrintWriter(sw);
         try {
-            Collection<CryptoTokenAndChain> allCryptoTokenAndChainObjects = standaloneOcspResponseGeneratorSession.getCacheValues();
+            Collection<CryptoTokenAndChain> allCryptoTokenAndChainObjects = ocspResponseGeneratorSession.getCacheValues();
             if (allCryptoTokenAndChainObjects.size() == 0) {
                 final String errMsg = intres.getLocalizedMessage("ocsp.errornosignkeys");
                 pw.println();

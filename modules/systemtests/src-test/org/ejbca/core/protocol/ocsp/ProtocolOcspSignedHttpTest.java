@@ -27,8 +27,6 @@ import java.security.cert.X509Certificate;
 import javax.ejb.EJBException;
 import javax.persistence.PersistenceException;
 
-import junit.framework.TestSuite;
-
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
@@ -45,12 +43,17 @@ import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.cesecore.certificates.ocsp.OcspResponseGeneratorTestSessionRemote;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.config.OcspConfiguration;
+import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
@@ -58,20 +61,24 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
-import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.signer.InternalKeyBindingMgmtSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-/** Test requiring signed OCSP requests.
- * This test requires that the option 'ocsp.signaturerequired=true' is set in conf/ocsp-properties.
+/** 
+ * Test requiring signed OCSP requests.
+ * 
+ * @version $Id$
  **/
 public class ProtocolOcspSignedHttpTest extends CaTestCase {
     private static Logger log = Logger.getLogger(ProtocolOcspSignedHttpTest.class);
 
+    private static final String END_ENTITY_NAME = "ocsptest";
+    
     protected static byte[] unknowncacertBytes = Base64.decode(("MIICLDCCAZWgAwIBAgIIbzEhUVZYO3gwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE" +
             "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAyMDcw" +
             "OTEyNDc1OFoXDTA0MDgxNTEyNTc1OFowLzEPMA0GA1UEAxMGVGVzdENBMQ8wDQYD" +
@@ -90,16 +97,23 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
     private static X509Certificate cacert = null;
     private static X509Certificate ocspTestCert = null;
     
+    private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-    private ConfigurationSessionRemote configurationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private CesecoreConfigurationProxySessionRemote configurationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CesecoreConfigurationProxySessionRemote.class);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
-
+    private InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(InternalCertificateStoreSessionRemote.class);
+    private InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
+    private OcspResponseGeneratorTestSessionRemote ocspResponseGeneratorTestSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(OcspResponseGeneratorTestSessionRemote.class);
     private OcspJunitHelper helper = null;
-
-    public static TestSuite suite() {
-        return new TestSuite(ProtocolOcspSignedHttpTest.class);
-    }
-
+ 
+    private int internalKeyBindingId;
+    
+    private String originalSigRequiredValue;
+    
     @BeforeClass
     public static void beforeClass() {
         CryptoProviderTools.installBCProvider();
@@ -110,13 +124,21 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
         super.setUp();
         helper = new OcspJunitHelper("http://127.0.0.1:8080/ejbca", "publicweb/status/ocsp"); 
         cacert = (X509Certificate) getTestCACert();
-    	configurationSessionRemote.updateProperty(OcspConfiguration.SIGNATUREREQUIRED, "true");
+        originalSigRequiredValue =  configurationSessionRemote.getConfigurationValue(OcspConfiguration.SIGNATUREREQUIRED);
+    	configurationSessionRemote.setConfigurationValue(OcspConfiguration.SIGNATUREREQUIRED, "true");
+    	internalKeyBindingId = OcspTestUtils.createInternalKeyBinding(admin, caSession.getCAInfo(admin, getTestCAId()).getCAToken().getCryptoTokenId());
+    	ocspResponseGeneratorTestSession.reloadTokenAndChainCache();
+    	
     }
 
     @After
     public void tearDown() throws Exception {
         super.tearDown();
-    	configurationSessionRemote.restoreConfiguration();
+        configurationSessionRemote.setConfigurationValue(OcspConfiguration.SIGNATUREREQUIRED, originalSigRequiredValue);
+        for (Certificate certificate : certificateStoreSession.findCertificatesByUsername(END_ENTITY_NAME)) {
+            internalCertificateStoreSession.removeCertificate(certificate);
+        }
+        internalKeyBindingMgmtSession.deleteInternalKeyBinding(admin, internalKeyBindingId);
     }
 
     public String getRoleName() {
@@ -128,7 +150,7 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
      */
     @Test
     public void test01OcspGood() throws Exception {
-        log.trace(">test02OcspGood()");
+        log.trace(">test01OcspGood()");
 
         // find a CA (TestCA?) create a user and generate his cert
         // send OCSP req to server and get good response
@@ -139,7 +161,7 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
         // Make user that we know...
         boolean userExists = false;
         try {
-            endEntityManagementSession.addUser(admin, "ocsptest", "foo123", "C=SE,O=AnaTom,CN=OCSPTest", null, "ocsptest@anatom.se", false,
+            endEntityManagementSession.addUser(admin, END_ENTITY_NAME, "foo123", "C=SE,O=AnaTom,CN=OCSPTest", null, "ocsptest@anatom.se", false,
                     SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(),
                     SecConst.TOKEN_SOFT_PEM, 0, caid);
             log.debug("created user: ocsptest, foo123, C=SE, O=AnaTom, CN=OCSPTest");
@@ -151,7 +173,7 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
 
         if (userExists) {
             log.debug("User ocsptest already exists.");
-            EndEntityInformation userData = new EndEntityInformation("ocsptest", "C=SE,O=AnaTom,CN=OCSPTest",
+            EndEntityInformation userData = new EndEntityInformation(END_ENTITY_NAME, "C=SE,O=AnaTom,CN=OCSPTest",
                     caid, null, "ocsptest@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
                     SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
                     null);
@@ -159,6 +181,7 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
             endEntityManagementSession.changeUser(admin, userData, false);
             log.debug("Reset status to NEW");
         }
+        try {
         // Generate certificate for the new user
         KeyPair keys = KeyTools.genKeys("512", "RSA");
 
@@ -178,7 +201,7 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
         gen.setRequestorName(chain[0].getSubject());
         OCSPReq req = gen.build(new JcaContentSignerBuilder("SHA1withRSA").build(keys.getPrivate()), chain);
         //OCSPReq req = gen.generate();
-
+        
         // Send the request and receive a singleResponse
         SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", OCSPResponseStatus.SUCCESSFUL, 200);
         assertEquals("Number of of SingResps should be 1.", 1, singleResps.length);
@@ -187,7 +210,7 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
         CertificateID certId = singleResp.getCertID();
         assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
         Object status = singleResp.getCertStatus();
-        assertEquals("Status is not null (good)", status, null);
+        assertEquals("Status is not null (good)", null, status);
         
         // Try with an unsigned request, we should get a status code 5 back from the server (signature required)
         req = gen.build();
@@ -209,6 +232,9 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
         assertNull(singleResps);
 
         log.trace("<test01OcspGood()");
+        } finally {
+            endEntityManagementSession.deleteUser(roleMgmgToken, END_ENTITY_NAME);
+        }
     }
 
 

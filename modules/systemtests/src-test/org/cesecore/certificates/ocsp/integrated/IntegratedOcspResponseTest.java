@@ -69,7 +69,8 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.certificates.ocsp.IntegratedOcspResponseGeneratorProxySessionRemote;
+import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionRemote;
+import org.cesecore.certificates.ocsp.OcspResponseGeneratorTestSessionRemote;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
 import org.cesecore.certificates.ocsp.exception.OcspFailureException;
@@ -100,30 +101,31 @@ import org.junit.Test;
 
 /**
  * 
- * @version $Id$
+ * @version $Id: IntegratedOcspResponseTest.java 16152 2013-01-20 15:44:17Z anatom $
  * 
  */
 public class IntegratedOcspResponseTest extends CaCreatingTestCase {
 
     private static final String DN = "C=SE,O=Test,CN=TEST";
 
-    private IntegratedOcspResponseGeneratorSessionRemote ocspResponseGeneratorSession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(IntegratedOcspResponseGeneratorSessionRemote.class);
-    private IntegratedOcspResponseGeneratorProxySessionRemote integratedOcspResponseGeneratorProxySession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(IntegratedOcspResponseGeneratorProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-    private CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
+    
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
-    private RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
-    private InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
+    private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(CryptoTokenManagementSessionRemote.class);
     private CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CryptoTokenManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(CryptoTokenManagementSessionRemote.class);
+    private InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private OcspResponseGeneratorSessionRemote ocspResponseGeneratorSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(OcspResponseGeneratorSessionRemote.class);
+    private OcspResponseGeneratorTestSessionRemote ocspResponseGeneratorTestSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(OcspResponseGeneratorTestSessionRemote.class);
+    private RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
+    private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
     
     private X509Certificate caCertificate;
     private X509Certificate ocspCertificate;
@@ -155,9 +157,19 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
 
         final Properties cryptoTokenProperties = new Properties();
         cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, "foo123");
-        cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(roleMgmgToken, "IntegratedOcspResponseTest", SoftCryptoToken.class.getName(), cryptoTokenProperties, null, null);
-        cryptoTokenManagementSession.createKeyPair(roleMgmgToken, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS, "1024");
-        cryptoTokenManagementSession.createKeyPair(roleMgmgToken, cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS, "1024");
+        final String cryptoTokenName = "IntegratedOcspResponseTest";
+        if (!cryptoTokenManagementProxySession.isCryptoTokenNameUsed(cryptoTokenName)) {
+            cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(roleMgmgToken, cryptoTokenName, SoftCryptoToken.class.getName(),
+                    cryptoTokenProperties, null, null);
+        } else {
+            cryptoTokenId = cryptoTokenManagementSession.getIdFromName(cryptoTokenName);
+        }
+        if (!cryptoTokenManagementSession.isAliasUsedInCryptoToken(cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS)) {
+            cryptoTokenManagementSession.createKeyPair(roleMgmgToken, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS, "1024");
+        }
+        if (!cryptoTokenManagementSession.isAliasUsedInCryptoToken(cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS)) {
+            cryptoTokenManagementSession.createKeyPair(roleMgmgToken, cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS, "1024");
+        }
         /*
          * Yes, this is intentional and makes some developers sad..
          * 
@@ -193,7 +205,7 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
                 X509ResponseMessage.class)).getCertificate());
 
         // Modify the default value
-        cesecoreConfigurationProxySession.setConfigurationValue("ocsp.defaultresponder", "CN=TEST,O=Test,C=SE");
+        cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.DEFAULT_RESPONDER, "CN=TEST,O=Test,C=SE");
         cesecoreConfigurationProxySession.setConfigurationValue("ocsp.nonexistingisgood", "false");
 
     }
@@ -218,7 +230,7 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
      */
     @Test
     public void testGetOcspResponseSanity() throws Exception {
-        integratedOcspResponseGeneratorProxySession.reloadTokenAndChainCache();
+        ocspResponseGeneratorTestSession.reloadTokenAndChainCache();
         // An OCSP request
         OCSPReqBuilder gen = new OCSPReqBuilder();
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, caCertificate.getSerialNumber()));
@@ -249,7 +261,7 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
 
     @Test
     public void testGetOcspResponseWithOcspCertificate() throws Exception {
-        integratedOcspResponseGeneratorProxySession.reloadTokenAndChainCache();
+        ocspResponseGeneratorTestSession.reloadTokenAndChainCache();
 
         // An OCSP request
         OCSPReqBuilder gen = new OCSPReqBuilder();
@@ -281,7 +293,7 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
 
     @Test
     public void testGetOcspResponseWithRevokedCertificate() throws Exception {
-        integratedOcspResponseGeneratorProxySession.reloadTokenAndChainCache();
+        ocspResponseGeneratorTestSession.reloadTokenAndChainCache();
 
         // An OCSP request
         OCSPReqBuilder gen = new OCSPReqBuilder();
@@ -321,7 +333,7 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
 
     @Test
     public void testGetOcspResponseWithUnavailableCertificate() throws Exception {
-        integratedOcspResponseGeneratorProxySession.reloadTokenAndChainCache();
+        ocspResponseGeneratorTestSession.reloadTokenAndChainCache();
 
         // An OCSP request
         OCSPReqBuilder gen = new OCSPReqBuilder();
@@ -334,7 +346,7 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
 
         // Now remove the certificate
         internalCertificateStoreSession.removeCertificate(ocspCertificate.getSerialNumber());
-        integratedOcspResponseGeneratorProxySession.reloadTokenAndChainCache();
+        ocspResponseGeneratorTestSession.reloadTokenAndChainCache();
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
         // Create the transaction logger for this transaction.
         TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
@@ -396,7 +408,7 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
         // Set the validity time to a single second for testing purposes.
         cesecoreConfigurationProxySession.setConfigurationValue("ocsp.signtrustvalidtime", timeToWait.toString());
 
-        integratedOcspResponseGeneratorProxySession.reloadTokenAndChainCache();
+        ocspResponseGeneratorTestSession.reloadTokenAndChainCache();
 
         try {
 
@@ -410,7 +422,7 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
             OCSPReq req = gen.build();
 
             byte[] responseBytes;
-            integratedOcspResponseGeneratorProxySession.reloadTokenAndChainCache();
+            ocspResponseGeneratorTestSession.reloadTokenAndChainCache();
             final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
             // Create the transaction logger for this transaction.
             TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
@@ -482,7 +494,7 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
     public void testGetOcspResponseWithCertificateFromUnknownCa() throws OCSPException, AuthorizationDeniedException, IOException,
             MalformedRequestException, CADoesntExistsException, IllegalCryptoTokenException, NoSuchProviderException, CertificateEncodingException, OperatorCreationException {
 
-        integratedOcspResponseGeneratorProxySession.reloadTokenAndChainCache();
+        ocspResponseGeneratorTestSession.reloadTokenAndChainCache();
 
         // An OCSP request
         OCSPReqBuilder gen = new OCSPReqBuilder();
@@ -519,9 +531,9 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
     public void testGetOcspResponseWithIncorrectDefaultResponder() throws OCSPException, AuthorizationDeniedException, IOException,
             MalformedRequestException, CADoesntExistsException, IllegalCryptoTokenException, CertificateEncodingException {
         // Restore the default value
-        cesecoreConfigurationProxySession.setConfigurationValue("ocsp.defaultresponder", "CN=FancyPants");
+        cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.DEFAULT_RESPONDER, "CN=FancyPants");
 
-        integratedOcspResponseGeneratorProxySession.reloadTokenAndChainCache();
+        ocspResponseGeneratorTestSession.reloadTokenAndChainCache();
 
         // An OCSP request
         OCSPReqBuilder gen = new OCSPReqBuilder();

@@ -121,4 +121,13 @@ public interface CryptoTokenManagementSession {
      */
     boolean updatePin(AuthenticationToken authenticationToken, Integer cryptoTokenId, char[] currentAuthenticationCode, char[] newAuthenticationCode,
             boolean updateOnly) throws AuthorizationDeniedException, CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException;
+
+    /**
+     * Returns true if the alias is in use by the crypto token
+     * 
+     * @param cryptoTokenId id of the crypto token
+     * @param alias the alias in question
+     * @return true if the alias is in use.
+     */
+    boolean isAliasUsedInCryptoToken(int cryptoTokenId, String alias);
 }

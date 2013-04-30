@@ -24,4 +24,6 @@ public interface CryptoTokenManagementProxySessionRemote {
 
     /** @see CryptoTokenManagementSessionLocal#getCryptoToken(int) */
     CryptoToken getCryptoToken(int cryptoTokenId);
+    
+    boolean isCryptoTokenNameUsed(final String cryptoTokenName);
 }

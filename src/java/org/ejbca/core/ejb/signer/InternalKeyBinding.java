@@ -34,7 +34,7 @@ public interface InternalKeyBinding extends Serializable {
     /** Return the non-changeable alias for this implementation. E.g. "DummyKeyBinding". */
     String getImplementationAlias();
     
-    /** @return the next key pair's alias t be used */
+    /** @return the next key pair's alias to be used */
     String getNextKeyPairAlias();
 
     /** Uses the next key alias as current key alias and updates the certificateId */

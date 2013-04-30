@@ -19,15 +19,26 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SignatureException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
+import java.util.List;
+
+import javax.ejb.CreateException;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
@@ -45,10 +56,31 @@ import org.bouncycastle.cert.ocsp.OCSPRespBuilder;
 import org.bouncycastle.cert.ocsp.SingleResp;
 import org.bouncycastle.cert.ocsp.UnknownStatus;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.cesecore.CesecoreException;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateCreateException;
+import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.CustomCertSerialNumberException;
+import org.cesecore.certificates.certificate.IllegalKeyException;
+import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.request.RequestMessage;
+import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
+import org.cesecore.certificates.certificate.request.X509ResponseMessage;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
+import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.keys.util.KeyTools;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -68,7 +100,9 @@ public abstract class ProtocolOcspTestBase {
 
     private static final Logger log = Logger.getLogger(ProtocolOcspTestBase.class);
 
-    protected static String issuerDN = "CN=TEST";
+    private static final String CERTIFICATE_USERNAME = "ocspTest";
+    protected static final String ISSUER_DN = "CN=OcspDefaultTestCA";
+    private static final String REVOKED_CERT_DN = "CN=ocspTest";
     protected static final byte[] unknowncacertBytes = Base64.decode(("MIICLDCCAZWgAwIBAgIIbzEhUVZYO3gwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
             + "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAyMDcw" + "OTEyNDc1OFoXDTA0MDgxNTEyNTc1OFowLzEPMA0GA1UEAxMGVGVzdENBMQ8wDQYD"
             + "VQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMIGdMA0GCSqGSIb3DQEBAQUAA4GLADCB" + "hwKBgQDZlACHRwJnQKlgpMqlZQmxvCrJPpPFyhxvjDHlryhp/AQ6GCm+IkGUVlwL"
@@ -388,28 +422,85 @@ public abstract class ProtocolOcspTestBase {
         assertTrue("Status is not unknown", singleResps[1].getCertStatus() instanceof UnknownStatus);
     }
 
+    protected static void setupTestCertificates(int caId) throws InvalidKeyException, NoSuchAlgorithmException, SignatureException,
+            IllegalStateException, NoSuchProviderException, OperatorCreationException, CertificateException, IOException,
+            InvalidAlgorithmParameterException, CreateException, AuthorizationDeniedException, CustomCertSerialNumberException, IllegalKeyException,
+            CADoesntExistsException, CertificateCreateException, CesecoreException {
+        CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
+        CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
+        
+        AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(ProtocolOcspTestBase.class.getSimpleName());
+        KeyPair invalidCertKeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        // Issue a certificate in EJBCA for the public key
+        final EndEntityInformation revokedUser = new EndEntityInformation(CERTIFICATE_USERNAME, REVOKED_CERT_DN, caId, null, null,
+                EndEntityTypes.ENDUSER.toEndEntityType(), 0, CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER,
+                EndEntityConstants.TOKEN_USERGEN, 0, null);
+        revokedUser.setPassword("foo123");
+        RequestMessage req = new SimpleRequestMessage(invalidCertKeys.getPublic(), revokedUser.getUsername(), revokedUser.getPassword());
+        
+      
+        X509Certificate revokedCert = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(authenticationToken, revokedUser,
+                req, X509ResponseMessage.class)).getCertificate());
+        certificateStoreSession.setRevokeStatus(authenticationToken, revokedCert, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, null);
+        
+        @SuppressWarnings("unused")
+        X509Certificate activeCert = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(authenticationToken, revokedUser,
+                req, X509ResponseMessage.class)).getCertificate());
+        
+    }
+    
+    protected static void removeTestCertifices() {
+        InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
+                .getRemoteSession(InternalCertificateStoreSessionRemote.class);
+        CertificateStoreSessionRemote certificateStoreSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
+        List<Certificate> certificates = certificateStoreSessionRemote.findCertificatesByUsername(CERTIFICATE_USERNAME);
+        for (Certificate certificate : certificates) {
+            internalCertificateStoreSession.removeCertificate(certificate);
+        }
+        
+    }
 
     protected void loadUserCert(int caid) throws Exception {
-        ocspTestCert = getTestCert(false);
+        ocspTestCert = getActiveTestCert();
         cacert = getCaCert(ocspTestCert);
     }
 
-    protected X509Certificate getTestCert(boolean isRevoked) {
+    protected X509Certificate getRevokedTestCert() {
         try {
-            Collection<Certificate> certs = certificateStoreOnlyDataSession.findCertificatesByUsername("ocspTest");
+            Collection<Certificate> certs = certificateStoreOnlyDataSession.findCertificatesByUsername(CERTIFICATE_USERNAME);
             for (Certificate cert : certs) {
-                CertificateStatus cs = certificateStoreOnlyDataSession.getStatus(issuerDN, CertTools.getSerialNumber(cert));
-                if (isRevoked == cs.equals(CertificateStatus.REVOKED)) {
+                CertificateStatus cs = certificateStoreOnlyDataSession.getStatus(ISSUER_DN, CertTools.getSerialNumber(cert));
+                if (cs.equals(CertificateStatus.REVOKED)) {
                     return (X509Certificate) cert;
                 }
             }
         } catch (Exception e) {
             log.debug("", e);
         }
-        fail("To run this test you must have at least one active and one revoked end user cert in the database. (Could not fetch certificate for issuer "
-                + issuerDN + ".)");
+        fail("To run this test you must have at least one revoked end user cert in the database. (Could not fetch certificate for issuer "
+                + ISSUER_DN + ".)");
         return null;
     }
+    
+    protected X509Certificate getActiveTestCert() {
+        try {
+            Collection<Certificate> certs = certificateStoreOnlyDataSession.findCertificatesByUsername(CERTIFICATE_USERNAME);
+            for (Certificate cert : certs) {
+                CertificateStatus cs = certificateStoreOnlyDataSession.getStatus(ISSUER_DN, CertTools.getSerialNumber(cert));
+                if (cs.equals(CertificateStatus.OK)) {
+                    return (X509Certificate) cert;
+                }
+            }
+        } catch (Exception e) {
+            log.debug("", e);
+        }
+        fail("To run this test you must have at least one active end user cert in the database. (Could not fetch certificate for issuer "
+                + ISSUER_DN + ".)");
+        return null;
+    }
+    
+    
+    
 
     protected X509Certificate getCaCert(X509Certificate cert) throws Exception {
         Collection<Certificate> certs = certificateStoreOnlyDataSession.findCertificatesByType(CertificateConstants.CERTTYPE_ROOTCA, CertTools.getIssuerDN(cert));

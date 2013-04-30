@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.ocsp.standalone;
+package org.ejbca.core.ejb.ocsp;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -55,8 +55,8 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Base64;
+import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
 import org.cesecore.certificates.ocsp.cache.CryptoTokenAndChain;
-import org.cesecore.certificates.ocsp.standalone.StandaloneOcspResponseGeneratorSessionLocal;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
@@ -91,7 +91,7 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
     private static volatile Integer timerId = null;
 
     @EJB
-    private StandaloneOcspResponseGeneratorSessionLocal standaloneOcspResponseGeneratorSession;
+    private OcspResponseGeneratorSessionLocal ocspResponseGeneratorSession;
 
     @Resource
     private SessionContext sessionContext;
@@ -161,7 +161,7 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
             }
             final StringBuffer matched = new StringBuffer();
             final StringBuffer unMatched = new StringBuffer();
-            Collection<CryptoTokenAndChain> cacheValues = standaloneOcspResponseGeneratorSession.getCacheValues();
+            Collection<CryptoTokenAndChain> cacheValues = ocspResponseGeneratorSession.getCacheValues();
             for (CryptoTokenAndChain tokenAndChain : cacheValues) {
                 
                 final long timeLeftBeforeRenewal = tokenAndChain.getChain()[0].getNotAfter().getTime()-new Date().getTime();

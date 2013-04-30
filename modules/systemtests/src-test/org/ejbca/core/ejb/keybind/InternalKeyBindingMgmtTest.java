@@ -27,9 +27,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.certificates.ca.CaSessionTest;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
@@ -40,7 +38,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
-import org.cesecore.keys.token.SoftCryptoToken;
+import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
@@ -86,24 +84,8 @@ public class InternalKeyBindingMgmtTest {
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProvider();
-        x509ca = CaSessionTest.createTestX509CA("CN="+TESTCLASSNAME, "foo123".toCharArray(), false);
-        // Remove any lingering test CA before starting the tests
-        try {
-            final int oldCaCryptoTokenId = caSession.getCAInfo(alwaysAllowToken, x509ca.getCAId()).getCAToken().getCryptoTokenId();
-            cryptoTokenManagementSession.deleteCryptoToken(alwaysAllowToken, oldCaCryptoTokenId);
-        } catch (CADoesntExistsException e) {
-            // Ok. The old test run cleaned up everything properly.
-        }
-        caSession.removeCA(alwaysAllowToken, x509ca.getCAId());
-        // Now add the test CA so it is available in the tests
-        caSession.addCA(alwaysAllowToken, x509ca);
-        // Remove any old CryptoToken created by this setup
-        final Integer oldCryptoTokenId = cryptoTokenManagementSession.getIdFromName(TESTCLASSNAME);
-        if (oldCryptoTokenId != null) {
-            cryptoTokenManagementSession.deleteCryptoToken(alwaysAllowToken, oldCryptoTokenId.intValue());
-        }
-        // Create one additional CryptoToken to use from the tests below
-        cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(alwaysAllowToken, TESTCLASSNAME, SoftCryptoToken.class.getName(), null, null, "foo123".toCharArray());
+        x509ca = CryptoTokenTestUtils.createTestCA(alwaysAllowToken, "CN="+TESTCLASSNAME);
+        cryptoTokenId = CryptoTokenTestUtils.createCryptoToken(alwaysAllowToken, TESTCLASSNAME);
     }
 
     @AfterClass

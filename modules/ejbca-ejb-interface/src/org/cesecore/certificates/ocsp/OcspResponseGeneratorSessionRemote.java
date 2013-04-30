@@ -10,35 +10,18 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.certificates.ocsp.standalone.keys;
+package org.cesecore.certificates.ocsp;
 
-import java.security.PrivateKey;
-import java.security.interfaces.RSAPublicKey;
+import javax.ejb.Remote;
+
 
 /**
+ * Remote interface for OcspResponseGeneratorSession
  * 
  * @version $Id$
+ *
  */
-public interface CardKeys {
-
-    /**
-     * @param publicKey
-     * @return
-     * @throws Exception
-     */
-    PrivateKey getPrivateKey(RSAPublicKey publicKey) throws Exception;
-
-    /**
-     * @param authCode
-     * @throws InterruptedException
-     */
-    void autenticate(String authCode) throws InterruptedException;
-
-    /**
-     * Check if key is OK (verifies PIN).
-     * 
-     * @param publicKey
-     * @return
-     */
-    boolean isOK(RSAPublicKey publicKey);
+@Remote
+public interface OcspResponseGeneratorSessionRemote extends OcspResponseGeneratorSession {
+   
 }
