@@ -16,8 +16,6 @@ package org.ejbca.ui.cli.ca;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
@@ -28,6 +26,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.beanutils.ConvertingWrapDynaBean;
+import org.apache.commons.beanutils.DynaBean;
+import org.apache.commons.beanutils.DynaProperty;
+import org.apache.commons.beanutils.WrapDynaBean;
+import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.operator.ContentVerifierProvider;
@@ -51,7 +54,6 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.ui.cli.BaseCommand;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
  * Base for CA commands, contains common functions for CA operations
@@ -235,137 +237,76 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
     }
     
     /** Lists methods in a class the has "setXyz", and prints them as "Xyz".
-     * Ignores (does not list) Type (setType) and Version (setVersion).
+     * Ignores (does not list) type, version, latestVersion, upgrade and class
      * 
-     * @param clazz the class where to look for setMethods
+     * @param obj the Object where to look for setMethods
      */
-    protected void listSetMethods(final Class<?> clazz) {
-        Method[] methods = clazz.getDeclaredMethods();
-        for (Method method : methods) {
-            // Only print fields that are settable and exclude some special types
-            if (method.getName().startsWith("set") && !method.getName().equals("setType") && !method.getName().equals("setVersion")) {
-                System.out.print(method.getName().substring(3));
-                Class<?>[] params = method.getParameterTypes();
-                if (params.length > 0) {
-                    System.out.print("(");
-                }
-                for (int i = 0; i < params.length; i++) {
-                    Class<?> class1 = params[i];
-                    if (i > 0) {
-                        System.out.print(", ");                                    
-                    }
-                    System.out.print(class1.getName());
-                }
-                if (params.length > 0) {
-                    System.out.println(")");
-                }
+    protected void listSetMethods(final Object obj) {
+        DynaBean wrapper = new WrapDynaBean(obj);
+        DynaProperty[] props = wrapper.getDynaClass().getDynaProperties();
+        for (DynaProperty dynaProperty : props) {
+            if (!dynaProperty.getName().equals("type") && !dynaProperty.getName().equals("version") 
+                    && !dynaProperty.getName().equals("class") && !dynaProperty.getName().equals("latestVersion")
+                    && !dynaProperty.getName().equals("upgraded") ) {
+                System.out.println(dynaProperty.getName()+", "+dynaProperty.getType());
             }
         }
     }
     
-    /**
-     * Method that tries to in a generic way set fields in a class using setXyz method. 
+    /** gets a field value from a bean
      * 
-     * @param object The Object on which to invoke setter method
-     * @param paramType the parameter type, java.lang.String, boolean, int, ...
-     * @param fieldValue the, human readable, value to set, used for logging only
-     * @param setmethodName the setMethod to invoke
-     * @param getMethodName the getMethod to invoke to check that the value was set
-     * @param value The value object to set, see getType
-     * @return Method of the getMethodName used to verify the value
-     * @throws ErrorAdminCommandException
-     * @throws IllegalAccessException
-     * @throws InvocationTargetException
-     * @throws ClassNotFoundException
+     * @param field the field to get
+     * @param obj the bran to get the value from
+     * @return the value
      */
-    protected Method setFieldInBeanClass(final Object object, final String paramType, final String fieldValue,
-            final String setmethodName, final String getMethodName, Object value) throws ErrorAdminCommandException, IllegalAccessException,
-            InvocationTargetException, ClassNotFoundException {
-        getLogger().info("Trying to find method '"+getMethodName+"' in class "+object.getClass());
-        final Method modMethod = getGetterMethod(object, getMethodName);
-        getLogger().info("Invoking method '"+getMethodName+"' with no parameters.");
-        Object o = modMethod.invoke(object);
-        getLogger().info("Old value for '"+getMethodName+"' is '"+o+"'.");
-        getLogger().info("Trying to find method '"+setmethodName+"' with paramType '"+paramType+"' in class "+object.getClass());
-        final Method method;
-        Class<?> type = getType(paramType);                
-        try {
-            method = object.getClass().getMethod(setmethodName, type);
-        } catch (NoSuchMethodException e) {
-            throw new ErrorAdminCommandException("Method '"+setmethodName+"' with parameter of type "+type.getName()+" does not exist. Did you use correct case for every character of the field?");
-        }
-        getLogger().info("Invoking method '"+setmethodName+"' with parameter value '"+fieldValue+"' of type '"+value.getClass().getName()+"'.");
-        method.invoke(object, value);
-        return modMethod;
-    }
-
-    /** Gets a Method for the method with name 'getmethodname' taking no arguments
-     * 
-     * @param object The object where we want to find the Method
-     * @param getMethodName The method name
-     * @return Method to be invoked
-     * @throws ErrorAdminCommandException
-     */
-    protected Method getGetterMethod(final Object object, final String getMethodName) throws ErrorAdminCommandException {
-        final Method modMethod;
-        try {
-            modMethod = object.getClass().getMethod(getMethodName);                    
-        } catch (NoSuchMethodException e) {
-            throw new ErrorAdminCommandException("Method '"+getMethodName+"' does not exist. Did you use correct case for every character of the field?");
-        }
-        return modMethod;
+    protected Object getBeanValue(final String field, final Object obj) {
+        final DynaBean moddb = new WrapDynaBean(obj);
+        final Object gotValue = moddb.get(field);
+        getLogger().info(field+" returned value '"+gotValue+"'.");
+        return gotValue;
     }
     
-    /**
-     * Gets a desired field value as an object
+    /** Lists, Gets or sets fields in a Bean.
      * 
-     * @param fieldValue the value, "foo", "true" etc
-     * @param clazz The class to load the value in, for example java.lang.String or boolean, see getClassFromType
-     * @return Object that can be passed to setFieldInBeanClass
-     * @throws InstantiationException
-     * @throws IllegalAccessException
-     * @throws InvocationTargetException
-     * @throws NoSuchMethodException
+     * @param listOnly if true, fields will be listed, and nothing more will happen.
+     * @param getOnly if true (and listOnly is false), will get the value of a field and nothing else will happen
+     * @param name the name of the Bean to be modified
+     * @param field the field name to get or set
+     * @param value the value to set, of we should set a new value
+     * @param obj the Bean to list, get or set fields
+     * @return true if we only listed or got a value, i.e. if nothing was modified, false is we set a value.
      */
-    protected Object getFieldValueAsObject(final String fieldValue, Class<?> clazz) throws InstantiationException, IllegalAccessException,
-            InvocationTargetException, NoSuchMethodException {
-        Object value = fieldValue;
-        if (clazz.getName().equals(List.class.getName())) {
-            ArrayList<String> list = new ArrayList<String>();
-            list.add(fieldValue);
-            value = list;
-        } else if (!clazz.getName().equals("java.lang.String")) {
-            value = clazz.getConstructor(String.class).newInstance(fieldValue);
-        }
-        return value;
-    }
-    
-    protected Class<?> getClassFromType(final String type) throws ClassNotFoundException {
-        String className = type;
-        if (type.equals("boolean")) {
-            className = Boolean.class.getName();
-        } else if (type.equals("long")) {
-            className = Long.class.getName();
-        } else if (type.equals("int")) {
-            className = Integer.class.getName();
-        }
-        Class<?> clazz = Class.forName(className);
-        return clazz;
-    }
-
-    protected Class<?> getType(final String type) throws ClassNotFoundException {
-        Class<?> ret;
-        if (type.equals("boolean")) {
-            ret = Boolean.TYPE;
-        } else if (type.equals("long")) {
-            ret = Long.TYPE;
-        } else if (type.equals("int")) {
-            ret = Integer.TYPE;
+    protected boolean listGetOrSet(boolean listOnly, boolean getOnly, final String name, final String field, final String value, final Object obj) {
+        if (listOnly) {
+            listSetMethods(obj);
+        } else if (getOnly) {
+            getBeanValue(field, obj);
         } else {
-            ret = getClassFromType(type);
+            Object val = value;
+            getLogger().info("Modifying '"+name+"'...");
+            final ConvertingWrapDynaBean db = new ConvertingWrapDynaBean(obj);
+            DynaProperty prop = db.getDynaClass().getDynaProperty(field);
+            if (prop.getType().isInterface()) {
+                System.out.print("Converting value '"+value+"' to type '"+ArrayList.class+"', ");
+                // If the value can be converted into an integer, we will use an ArrayList<Integer>
+                // Our problem here is that the type of a collection (<Integer>, <String>) is only compile time, it can not be determined in runtime.
+                List<Object> arr = new ArrayList<Object>();
+                if (StringUtils.isNumeric(value)) {
+                    System.out.println("using Integer value.");
+                    arr.add(Integer.valueOf(value));
+                } else {
+                    // Make it into an array of String
+                    System.out.println("using String value.");
+                    arr.add(value);
+                }
+                val = arr;
+            }
+            final Object gotValue = db.get(field);
+            getLogger().info("Current value of "+field+" is '"+gotValue+"'.");
+            db.set(field, val);
         }
-        return ret;
+        // return true of we only listed
+        return listOnly || getOnly;
     }
-
 
 }
