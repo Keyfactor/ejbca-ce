@@ -1442,14 +1442,6 @@ public class LdapPublisher extends BasePublisher {
 	} // getAttributeSet
 
 
-	/** This method is only provided for backwards compatibility when the below method changed signature.
-	 * 
-	 * @see LdapPublisher#getModificationSet(LDAPEntry, String, String, boolean, boolean, String, Certificate)
-	 * @since 4.0.15, 5.0.10, 5.2.0
-	 */
-	protected ArrayList<LDAPModification> getModificationSet(LDAPEntry oldEntry, String dn, String email, boolean extra, boolean person, String password) {
-	    return getModificationSet(oldEntry, dn, email, extra, person, password, null);
-	}
 	/**
 	 * Creates an LDAPModificationSet.
 	 *
