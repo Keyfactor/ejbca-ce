@@ -16,8 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
 
-import org.ejbca.core.model.services.IWorker;
-
 /**
  * Class with utility methods to find all implementations of a given
  * interface using the ServiceLoader functionality of JRE 1.6.

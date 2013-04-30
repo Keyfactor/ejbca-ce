@@ -21,7 +21,6 @@ import java.util.Properties;
 
 import org.ejbca.core.model.services.IWorker;
 import org.ejbca.ui.web.admin.CustomLoader;
-import org.ejbca.ui.web.admin.services.ServiceConfigurationView;
 
 /**
  * Class used to populate the fields in the customworker.jsp subview page. 
