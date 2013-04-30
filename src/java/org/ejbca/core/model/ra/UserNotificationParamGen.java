@@ -29,6 +29,7 @@ import org.ejbca.core.model.approval.ApprovalNotificationParamGen;
  * ${O} or ${user.O}               = The user's organization
  * ${OU} or ${user.OU}             = The user's organization unit
  * ${C} or ${user.C}               = The user's country
+ * ${user.E}                       = The user's email address from Subject DN
  * ${user.TIMECREATED}             = The time the user was created
  * ${user.TIMEMODIFIED}            = The time the user was modified          
  * 
@@ -85,6 +86,7 @@ public class UserNotificationParamGen extends ApprovalNotificationParamGen {
 			paramPut("OU", dnfields.getField(DNFieldExtractor.OU, 0));
 			paramPut("user.OU", dnfields.getField(DNFieldExtractor.OU, 0));
 			paramPut("C", dnfields.getField(DNFieldExtractor.C, 0));
+			paramPut("user.C", dnfields.getField(DNFieldExtractor.C, 0));
 			paramPut("user.E", dnfields.getField(DNFieldExtractor.E, 0));
 
 			String time = "(time not available)";
