@@ -227,20 +227,10 @@ public class ActiveDirectoryPublisher extends LdapPublisher{
 	
 	
     /** Overrides LdapPublisher.getModificationSet
-     * 
-     * Creates an LDAPModificationSet.
-     *
-     * @param oldEntry the objectclass the attribute set should be of.
-     * @param dn dn of the LDAP entry.
-     * @param extra if we should add extra attributes except the objectclass to the
-     *        modificationset.
-     * @param pserson true if this is a person-entry, false if it is a CA.
-     *
-     * @return List of LDAPModification created...
-     * @Override
      */
-    protected ArrayList<LDAPModification> getModificationSet(LDAPEntry oldEntry, String dn, String email, boolean extra, boolean person, String password) {
-    	ArrayList<LDAPModification> modSet = super.getModificationSet(oldEntry, dn, email, false, person, null);
+    @Override
+    protected ArrayList<LDAPModification> getModificationSet(LDAPEntry oldEntry, String dn, String email, boolean extra, boolean person, String password, Certificate cert) {
+    	ArrayList<LDAPModification> modSet = super.getModificationSet(oldEntry, dn, email, false, person, null, cert);
 
 		// Modify AD specific attributes
 		

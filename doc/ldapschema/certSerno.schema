@@ -1,7 +1,5 @@
 #
-# EJBCA Schema for OpenLDAP
-#
-# Written by Mike Jackson <mj@sci.fi>
+# EJBCA Schema for LDAP
 #
 # Namespace Primekey - 1.3.6.1.4.1.22408
 #                                      |_.1 products
@@ -16,15 +14,19 @@
 #
 # 1.3.6.1.4.1.22408.1.1.1 - EJBCA Attributes
 #
+# Syntax is PrintableString (1.3.6.1.4.1.1466.115.121.1.44)
+#
 #********************************************************************
 #
 #
 #
-attributeType (
-  1.3.6.1.4.1.22408.1.1.1.1
-  NAME 'ejbcaDeviceCertificate'
-  DESC 'Certificate for devices'
-  SYNTAX 1.3.6.1.4.1.1466.115.121.1.5
+attributeType ( 
+  1.3.6.1.4.1.22408.1.1.1.2 
+  NAME 'certificateSerialNumber'
+  DESC 'Certificate serial number'
+  EQUALITY caseIgnoreMatch
+  SUBSTR caseIgnoreSubstringsMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.44{64} 
   )
 
 #
@@ -39,16 +41,15 @@ attributeType (
 # 
 # 
 #
-objectClass (
-  1.3.6.1.4.1.22408.1.1.2.1
-  NAME 'ejbcaDevice'
-  DESC 'subclass for adding certificates to devices'
-  SUP 'device'
-  AUXILIARY
-  MUST ( ejbcaDeviceCertificate )
-  MAY  ( description )
-  )	
-
+objectClass	 ( 
+  1.3.6.1.4.1.22408.1.1.2.2 
+  NAME 'inetOrgPersonWithCertSerno'
+  DESC 'inetOrgPerson with extra certificateSerialNumber attribute'
+  SUP inetOrgPerson
+  STRUCTURAL
+    MAY  ( certificateSerialNumber )
+  )
+  
 #
 #********************************************************************
 
