@@ -19,7 +19,6 @@ import java.security.SecureRandom;
 
 import org.bouncycastle.cert.ocsp.OCSPException;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ocsp.cache.TokenAndChainCache;
 import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
 import org.cesecore.certificates.ocsp.logging.AuditLogger;
 import org.cesecore.certificates.ocsp.logging.GuidHolder;
@@ -62,7 +61,7 @@ public class OcspResponseGeneratorSessionTest {
         assertTrue("MalformedRequestException was not thrown for a request > 100000 bytes.", caught);
     }
  
-    private class TestOcspResponseGeneratorSessionBean extends OcspResponseSessionBean {
+    private class TestOcspResponseGeneratorSessionBean extends OcspResponseGeneratorSessionBean {
 
         @Override
         protected void initiateIfNecessary() {
@@ -70,10 +69,14 @@ public class OcspResponseGeneratorSessionTest {
         }
 
         @Override
-        protected TokenAndChainCache getTokenAndChainCache() {
-            return null;
+        public void reloadTokenAndChainCache(String password) {
+            // Do nothing
+            
         }
 
+        @Override
+        public void reloadTokenAndChainCache(String p11Password, String p12StorePassword, String p12KeyPassword) {
+        }
         
     }
 

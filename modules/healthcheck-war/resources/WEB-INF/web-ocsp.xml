@@ -9,18 +9,6 @@
 
     <display-name>OCSP Health Check Configuration</display-name>
 
-    <servlet>
-        <display-name>ExtOCSPHealthCheckServlet</display-name>
-        <servlet-name>ExtOCSPHealthCheckServlet</servlet-name>
-        <servlet-class>org.ejbca.ui.web.pub.OCSPHealthServlet</servlet-class>     
-        <!-- 
-        <init-param>
-            <description>Uncomment this parameter if you want a static error message instead of one generated´by the HealthChecker.</description>
-            <param-name>CustomErrorMessage</param-name>
-            <param-value>EJBCANOTOK</param-value>
-        </init-param> -->
-    </servlet>
-
     <servlet-mapping>
         <servlet-name>ExtOCSPHealthCheckServlet</servlet-name>
         <url-pattern>/vahealth</url-pattern>

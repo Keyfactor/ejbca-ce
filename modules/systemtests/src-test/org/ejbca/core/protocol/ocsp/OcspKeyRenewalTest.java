@@ -47,8 +47,8 @@ import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.cesecore.certificates.ca.internal.SernoGeneratorRandom;
+import org.cesecore.certificates.ocsp.OcspResponseGeneratorTestSessionRemote;
 import org.cesecore.certificates.ocsp.cache.CryptoTokenAndChain;
-import org.cesecore.certificates.ocsp.standalone.StandaloneOcspResponseGeneratorTestSessionRemote;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
@@ -76,8 +76,8 @@ public class OcspKeyRenewalTest {
             .getRemoteSession(CesecoreConfigurationProxySessionRemote.class);
    private OcspKeyRenewalProxySessionRemote ocspKeyRenewalProxySession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(OcspKeyRenewalProxySessionRemote.class);
-    private StandaloneOcspResponseGeneratorTestSessionRemote standaloneOcspResponseGeneratorTestSession = EjbRemoteHelper.INSTANCE
-        .getRemoteSession(StandaloneOcspResponseGeneratorTestSessionRemote.class);
+    private OcspResponseGeneratorTestSessionRemote standaloneOcspResponseGeneratorTestSession = EjbRemoteHelper.INSTANCE
+        .getRemoteSession(OcspResponseGeneratorTestSessionRemote.class);
 
     private static KeyPair caKeys;
     private static X509Certificate caCertificate;

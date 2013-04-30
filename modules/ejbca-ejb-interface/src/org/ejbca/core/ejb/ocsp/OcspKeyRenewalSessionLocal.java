@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.ocsp.standalone;
+package org.ejbca.core.ejb.ocsp;
 
 import java.security.InvalidKeyException;
 import java.security.KeyStoreException;

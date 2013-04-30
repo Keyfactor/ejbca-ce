@@ -80,5 +80,24 @@
         <antcall target="deprecated:notify" />
         <antcall target="va-deploy" />
     </target>
+    	
+    <target name="va-deploy">
+        <property name="deprecated.detected" value="true" />
+        <echo message="The use of 'va-deploy' target in EJBCA is deprecated. The VA is now deployed as a standard build. This target will be removed in the next release." />
+        <antcall target="deprecated:notify" />
+        <antcall target="deploy" />
+	</target>
+	
+	<target name="runocsp.setuptest">
+	        <property name="deprecated.detected" value="true" />
+	        <echo message="The use of 'runocsp.setuptest' target in EJBCA is deprecated. OCSP tests are no longer dependent on prerun setup" />
+	        <antcall target="deprecated:notify" />
+	</target>
+	
+	<target name="runocsp">
+		<property name="deprecated.detected" value="true" />
+		<echo message="The use of 'runocsp' target in EJBCA is deprecated. OCSP are now included the main run command" />
+		<antcall target="deprecated:notify" />
+	</target>
 </project>
 

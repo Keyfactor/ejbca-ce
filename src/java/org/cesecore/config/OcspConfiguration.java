@@ -34,7 +34,9 @@ public class OcspConfiguration {
 
     private static final Logger log = Logger.getLogger(OcspConfiguration.class);
 
+    public static final String DEFAULT_RESPONDER = "ocsp.defaultresponder";
     public static final String SIGNING_CERTD_VALID_TIME = "ocsp.signingCertsValidTime";
+    public static final String SIGNING_TRUSTSTORE_VALID_TIME = "ocsp.signtrustvalidtime";
     public static final String SIGNATUREREQUIRED = "ocsp.signaturerequired";
     public static final String STORE_PASSWORD = "ocsp.keys.storePassword";
     public static final String CARD_PASSWORD = "ocsp.keys.cardPassword";
@@ -136,7 +138,7 @@ public class OcspConfiguration {
     public static int getSignTrustValidTimeInSeconds() {
         int result = 180;
         try {
-            String configValue = ConfigurationHolder.getString("ocsp.signtrustvalidtime");
+            String configValue = ConfigurationHolder.getString(SIGNING_TRUSTSTORE_VALID_TIME);
             if (configValue != null) {
                 result = Integer.parseInt(configValue);
             }
@@ -221,7 +223,7 @@ public class OcspConfiguration {
      * server.
      */
     public static String getDefaultResponderId() {
-        return ConfigurationHolder.getExpandedString("ocsp.defaultresponder");
+        return ConfigurationHolder.getExpandedString(DEFAULT_RESPONDER);
     }
 
     /**

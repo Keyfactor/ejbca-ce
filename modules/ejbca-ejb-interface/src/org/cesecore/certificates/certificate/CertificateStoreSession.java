@@ -39,6 +39,7 @@ public interface CertificateStoreSession {
     /**
      * Stores a certificate.
      * 
+     * @param admin An authentication token to authorize the action
      * @param incert The certificate to be stored.
      * @param cafp Fingerprint (hex) of the CAs certificate.
      * @param username username of end entity owning the certificate.

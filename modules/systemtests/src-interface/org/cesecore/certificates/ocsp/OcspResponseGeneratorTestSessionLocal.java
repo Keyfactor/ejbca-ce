@@ -10,15 +10,15 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.ocsp.standalone;
+package org.cesecore.certificates.ocsp;
 
-import javax.ejb.Remote;
+import javax.ejb.Local;
 
 /**
  * @version $Id$
  *
  */
-@Remote
-public interface OcspKeyRenewalSessionRemote {
-
+@Local
+public interface OcspResponseGeneratorTestSessionLocal {
+    
 }

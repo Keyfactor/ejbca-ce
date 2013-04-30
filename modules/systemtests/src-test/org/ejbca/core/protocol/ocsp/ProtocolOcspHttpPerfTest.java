@@ -68,6 +68,10 @@ import org.junit.Test;
  * 
  * Change the adress 127.0.0.1 to where you standalone OCSP server is running.
  * Change caid to the CA that ocspTest blongs to
+ * 
+ * TODO: This test is no longer confirmed to be working, since it's not part of the standard Hudson 
+ * build package. 
+ * 
  **/
 public class ProtocolOcspHttpPerfTest {
     private static final Logger log = Logger.getLogger(ProtocolOcspHttpPerfTest.class);

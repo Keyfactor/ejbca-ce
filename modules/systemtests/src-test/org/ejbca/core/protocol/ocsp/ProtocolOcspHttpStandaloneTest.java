@@ -28,6 +28,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.SignatureException;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,6 +37,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.ejb.CreateException;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
@@ -52,48 +55,95 @@ import org.bouncycastle.cert.ocsp.SingleResp;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.X509CA;
+import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.ocsp.OcspResponseGeneratorTestSessionRemote;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.certificates.ocsp.cache.CryptoTokenAndChain;
-import org.cesecore.certificates.ocsp.standalone.StandaloneOcspResponseGeneratorTestSessionRemote;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
+import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
+import org.cesecore.keys.token.CryptoTokenTestUtils;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.signer.InternalKeyBindingMgmtSessionRemote;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
-/**
- * Tests HTTP pages of a stand-alone OCSP To run this test you must create a
- * user named ocspTest that has at least two certificates and at least one of
- * them must be revoked.
- * 
- * Change the address 127.0.0.1 to where you stand-alone OCSP server is running.
- * Change myCaId to the CA that ocspTest belongs to
- **/
 public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
 
     private static final Logger log = Logger.getLogger(ProtocolOcspHttpStandaloneTest.class);
     
+    private static final String TESTCLASSNAME = ProtocolOcspHttpStandaloneTest.class.getSimpleName();
+    private static final String CA_DN = "CN=OcspDefaultTestCA";
+    
     private CesecoreConfigurationProxySessionRemote configurationSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CesecoreConfigurationProxySessionRemote.class);
-    private StandaloneOcspResponseGeneratorTestSessionRemote standaloneOcspResponseGeneratorTestSession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(StandaloneOcspResponseGeneratorTestSessionRemote.class);
+    private OcspResponseGeneratorTestSessionRemote ocspResponseGeneratorTestSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(OcspResponseGeneratorTestSessionRemote.class);
+    
 
+    private static X509CA x509ca;
+    private static int cryptoTokenId;
+    private static int internalKeyBindingId;
+    private static X509Certificate ocspSigningCertificate;
+    private static X509Certificate caCertificate;
+    
    public ProtocolOcspHttpStandaloneTest() throws MalformedURLException, URISyntaxException {
     	super("http", "127.0.0.1", 8080, "ejbca", "publicweb/status/ocsp");
     }
-    // Required to override check in baseclass
+  
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+        AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(ProtocolOcspHttpStandaloneTest.class.getSimpleName());
+        x509ca = CryptoTokenTestUtils.createTestCA(authenticationToken, CA_DN);
+        cryptoTokenId = CryptoTokenTestUtils.createCryptoToken(authenticationToken, TESTCLASSNAME);
+        internalKeyBindingId = OcspTestUtils.createInternalKeyBinding(authenticationToken, cryptoTokenId);
+        ocspSigningCertificate = OcspTestUtils.createOcspSigningCerticate(authenticationToken, internalKeyBindingId, x509ca.getCAId());
+        caCertificate = createCaCertificate(authenticationToken, x509ca.getCACertificate());
+        setupTestCertificates(x509ca.getCAId());
+
+    }
+    
+    @AfterClass
+    public static void afterClass() throws Exception {
+        removeTestCertifices();
+        InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
+                .getRemoteSession(InternalCertificateStoreSessionRemote.class);       
+        try {
+            internalCertificateStoreSession.removeCertificate(ocspSigningCertificate);
+        } catch (Exception e) {
+            //Ignore any failures.
+        }
+        try {
+            internalCertificateStoreSession.removeCertificate(caCertificate);
+        } catch (Exception e) {
+            //Ignore any failures.
+        }
+        
+        InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE
+                .getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
+        CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
+                .getRemoteSession(CryptoTokenManagementSessionRemote.class);
+        AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(ProtocolOcspHttpStandaloneTest.class.getSimpleName());
+        internalKeyBindingMgmtSession.deleteInternalKeyBinding(authenticationToken, internalKeyBindingId);
+        cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, cryptoTokenId);
+        OcspTestUtils.deleteCa(authenticationToken, x509ca);
+        
+    }
+   
     @Before
     public void setUp() throws Exception {
-        //super.setUp(); We don't want to initialize roles etc, since this is a standalone test!
-        
-        // We are not using the same testCA set in ProtocolOcspTestBase.java because this will cause this test to fail.
-        // This could possibly be due to the fact that the OCSP system tests and the OCSP standalone tests create 
-        // a new testCA (The standalone tests does that through 'ant runocsp.setuptest') and a conflict occurs when
-        // both tests try to create the same testCA twice. 
-        issuerDN = "CN=OcspDefaultTestCA";
-        caid = issuerDN.hashCode();
+        caid = ISSUER_DN.hashCode();
         unknowncacert = (X509Certificate) CertTools.getCertfromByteArray(unknowncacertBytes);
     }
     
@@ -115,7 +165,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         String subjectDnCA = CertTools.getSubjectDN(unknowncacert);
         // And an OCSP request
         OCSPReqBuilder gen = new OCSPReqBuilder();
-        final X509Certificate ocspTestCert = getTestCert(false);
+        final X509Certificate ocspTestCert = getActiveTestCert();
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), getCaCert(ocspTestCert), ocspTestCert.getSerialNumber()));
         OCSPReq req = gen.build();
         helper.reloadKeys();
@@ -139,8 +189,9 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
      */
     @Test
     public void test03OcspRevoked() throws Exception {
+       ocspResponseGeneratorTestSession.reloadTokenAndChainCache();
         log.trace(">test03OcspRevoked()");
-        final X509Certificate ocspTestCert = getTestCert(true);
+        final X509Certificate ocspTestCert = getRevokedTestCert();
         // And an OCSP request
         OCSPReqBuilder gen = new OCSPReqBuilder();
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), getCaCert(ocspTestCert), ocspTestCert.getSerialNumber()));
@@ -377,24 +428,32 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         String originalRekeyingPassword = OcspConfiguration.getRekeyingTriggingPassword();
         configurationSession.setConfigurationValue(OcspConfiguration.REKEYING_TRIGGERING_HOSTS, "127.0.0.1");
         configurationSession.setConfigurationValue(OcspConfiguration.REKEYING_TRIGGERING_PASSWORD, "foo123");
-        Collection<CryptoTokenAndChain> oldValues = standaloneOcspResponseGeneratorTestSession.getCacheValues();
+        ocspResponseGeneratorTestSession.reloadTokenAndChainCache();
+        Collection<CryptoTokenAndChain> oldValues = ocspResponseGeneratorTestSession.getCacheValues();
         try {
-            X509Certificate cert = getTestCert(false);
+            X509Certificate cert = getActiveTestCert();
             X509Certificate caCertificate = getCaCert(cert);
-
             helper.renewAllKeys();
-            List<CryptoTokenAndChain> newValues = new ArrayList<CryptoTokenAndChain>(standaloneOcspResponseGeneratorTestSession.getCacheValues());
+            ocspResponseGeneratorTestSession.reloadTokenAndChainCache();
+            List<CryptoTokenAndChain> newValues = new ArrayList<CryptoTokenAndChain>(ocspResponseGeneratorTestSession.getCacheValues());
             //Make sure that cache contains one and only one value
             assertEquals("Cache contains a different amount of values after rekeying than before. This indicates a test failure", oldValues.size(),
                     newValues.size());
             //Make check that the certificate has changed (sanity check)
-            X509Certificate newSigningCertificate = newValues.get(0).getChain()[0];
+            X509Certificate newSigningCertificate = null;
+            for(CryptoTokenAndChain tokenAndChain : newValues) {
+                if(tokenAndChain.getCaCertificate().equals(caCertificate)) {
+                    newSigningCertificate = tokenAndChain.getChain()[0];
+                    break;
+                }
+            }
             assertNotEquals("The same certificate was returned after the renewal process. Key renewal failed", cert.getSerialNumber(),
                     newSigningCertificate.getSerialNumber());
             //Make sure that the new certificate is signed by the CA certificate
             try {
                 newSigningCertificate.verify(caCertificate.getPublicKey());
             } catch (SignatureException e) {
+                log.error("Exception caught", e);
                 fail("The new signing certificate was not signed correctly.");
             }
 
@@ -406,6 +465,16 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
             configurationSession.setConfigurationValue(OcspConfiguration.REKEYING_TRIGGERING_HOSTS, originalHostsString.toString());
             configurationSession.setConfigurationValue(OcspConfiguration.REKEYING_TRIGGERING_PASSWORD, originalRekeyingPassword);
         }
+    }
+    
+    private static X509Certificate createCaCertificate(AuthenticationToken authenticationToken, Certificate certificate) throws CreateException, AuthorizationDeniedException {
+        final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE
+                .getRemoteSession(CertificateStoreSessionRemote.class);
+        X509Certificate caCertificate = (X509Certificate) certificate;
+        //Store the CA Certificate.
+        certificateStoreSession.storeCertificate(authenticationToken, caCertificate, "foo", "1234", CertificateConstants.CERT_ACTIVE,
+                CertificateConstants.CERTTYPE_ROOTCA, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "footag", new Date().getTime());
+        return caCertificate;
     }
 
 }

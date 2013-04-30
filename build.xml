@@ -676,11 +676,12 @@
         <antcall target="jee:deployear" />
         <antcall target="showtime" />
     </target>
+	<!--
     <target name="va-deploy" depends="failinproduction-va,va-ear,inputDatabasePassword,deprecated:check" description="Deploy the stand alone Verification Authority (VA)" >
         <antcall target="jee:deployva" />
         <antcall target="showtime" />
     </target>
-
+-->
     <!-- ======================================================================= -->
     <!-- Configure the web access for application servers.                       -->
     <!-- ======================================================================= -->

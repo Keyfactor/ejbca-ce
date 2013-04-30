@@ -493,6 +493,11 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         }
     }
 
+    @Override
+    public boolean isAliasUsedInCryptoToken(final int cryptoTokenId, final String alias) {
+        return isAliasUsed(getCryptoToken(cryptoTokenId), alias);
+    }
+    
     /** @return true if there is a private, public or symmetric entry with this alias in the CryptoToken */
     private boolean isAliasUsed(final CryptoToken cryptoToken, final String alias) {
         boolean aliasInUse = false;
@@ -561,7 +566,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
                 CryptoTokenRules.TEST_KEYS.resource() + "/" + cryptoTokenId);
         cryptoToken.testKeyPair(alias);
     }
-
+    
     /** @return a CryptoToken for the requested Id of authorized and it exists. Never returns null. */
     private CryptoToken getAndAssertAuthorizationAndExistence(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String resource) throws AuthorizationDeniedException {
         if (!accessControlSessionSession.isAuthorized(authenticationToken, resource)) {
