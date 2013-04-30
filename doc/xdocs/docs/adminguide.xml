@@ -4526,7 +4526,7 @@ If you want to change the management port (default 4444) after installation you 
 <p>This is an attribute and a schema extension to allow storage of certificate serial number in the inetOrgPerson LDAP object, for end user entries.
 This is done by adding an extension to inetOrgPerson called inetOrgPersonWithCertSerno with a new optional attribute called certificateSerialNumber.
 </p>
-<p>One you have installed the new schema in the LDAP server you use it by configuring the LDAP publisher with:
+<p>Once you have installed the new schema in the LDAP server you use it by configuring the LDAP publisher with:
 <ul>
 <li>User Object Class: top;person;organizationalPerson;inetOrgPerson;inetOrgPersonWithCertSerno</li>
 </ul>
