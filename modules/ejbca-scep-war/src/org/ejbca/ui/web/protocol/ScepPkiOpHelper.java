@@ -158,26 +158,6 @@ public class ScepPkiOpHelper {
     
     private boolean addOrEditUser(ScepRequestMessage reqmsg) {
         
-        // Verify the request
-        String authPwd = ScepConfiguration.getRAAuthPwd();
-        if (StringUtils.isNotEmpty(authPwd) && !StringUtils.equals(authPwd, "none")) {
-            if (log.isDebugEnabled()) {
-                log.debug("Requiring authPwd in order to precess SCEP requests");
-            }
-            String pwd = reqmsg.getPassword();
-            if (!StringUtils.equals(authPwd, pwd)) {
-                log.error("Wrong auth password received in SCEP request: "+pwd);
-                return false;
-            }
-            if (log.isDebugEnabled()) {
-                log.debug("Request passed authPwd test.");
-            }
-        } else {
-            if (log.isDebugEnabled()) {
-                log.debug("Not requiring authPwd in order to precess SCEP requests");
-            }
-        }
-        
         // Try to find the CA name from the issuerDN in the request. If we can't find it, we use the default
         String caName = getCAName(CertTools.stringToBCDNString(reqmsg.getIssuerDN()));
         if(StringUtils.isEmpty(caName)) {
@@ -208,6 +188,26 @@ public class ScepPkiOpHelper {
             log.error("Failed to set the new private key in the SCEP message");
             log.error(e1.getLocalizedMessage(), e1);
             return false;
+        }
+        
+        // Verify the request
+        String authPwd = ScepConfiguration.getRAAuthPwd();
+        if (StringUtils.isNotEmpty(authPwd) && !StringUtils.equals(authPwd, "none")) {
+            if (log.isDebugEnabled()) {
+                log.debug("Requiring authPwd in order to precess SCEP requests");
+            }
+            String pwd = reqmsg.getPassword();
+            if (!StringUtils.equals(authPwd, pwd)) {
+                log.error("Wrong auth password received in SCEP request: "+pwd);
+                return false;
+            }
+            if (log.isDebugEnabled()) {
+                log.debug("Request passed authPwd test.");
+            }
+        } else {
+            if (log.isDebugEnabled()) {
+                log.debug("Not requiring authPwd in order to precess SCEP requests");
+            }
         }
         
         //Creating the user
