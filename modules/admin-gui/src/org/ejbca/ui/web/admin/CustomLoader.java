@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
 
+import org.ejbca.config.WebConfiguration;
+
 /**
  * Class with utility methods to find all implementations of a given
  * interface using the ServiceLoader functionality of JRE 1.6.
@@ -47,10 +49,10 @@ public class CustomLoader {
     }
 
     /**
-     * Checks if the given class is present in the list of auto-detected
-     * classes from the getCustomClasses method. 
+     * Checks whether a class was displayed in the list of classes in the user interface.
      */
-    public static boolean isAutoClass(String className, Class<?> interfaceClass) {
+    public static boolean isDisplayedInList(String className, Class<?> interfaceClass) {
+        if (!WebConfiguration.isManualClassPathsEnabled()) return true; // otherwise old manual classes won't be shown in the GUI
         return getCustomClasses(interfaceClass).contains(className);
     }
 

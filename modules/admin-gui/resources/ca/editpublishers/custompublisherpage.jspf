@@ -32,6 +32,7 @@
               
               String currentClass = custompublisher.getClassPath();
               boolean customClassChoice = true;
+              boolean hasOldManualClass = false;
               for (String klass : publisherhelper.getCustomClasses()) { %>
                   <option value="<c:out value="<%=klass%>"/>"
                      <% if(klass.equals(currentClass) || currentClass == null || currentClass.isEmpty()) {
@@ -45,8 +46,16 @@
               
               if (org.ejbca.config.WebConfiguration.isManualClassPathsEnabled()) {
                   %><option value="" <% if (customClassChoice) { %>selected="selected"<% } %>><%= ejbcawebbean.getText("MANUALCLASSPATH") %></option><%
-              } %>
+              } else if (customClassChoice && currentClass != null && !currentClass.isEmpty()) {
+                  %><option value="<c:out value="<%=currentClass%>"/>" selected="selected"><c:out value="<%=currentClass%>"/>*</option><%
+                  hasOldManualClass = true;
+              }
+              %>
         </select>
+        
+        <% if (hasOldManualClass) { %>
+            <p><small><%= ejbcawebbean.getText("OLDMANUALCLASSPATHELP") %></small></p>
+        <% } %>
         
         <% if (org.ejbca.config.WebConfiguration.isManualClassPathsEnabled()) { %>
             <br>

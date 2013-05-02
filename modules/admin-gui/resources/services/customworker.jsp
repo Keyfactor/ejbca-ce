@@ -43,7 +43,12 @@ if (WebConfiguration.isManualClassPathsEnabled()) {
         <h:selectOneMenu id="workerClassPathSelect" value="#{editService.customWorkerType.autoClassPath}">
             <f:selectItem itemValue="" itemLabel="#{web.text.PLEASE_SELECT}" />
             <f:selectItems value="#{editService.serviceConfigurationView.availableCustomWorkerItems}" />
+            <f:selectItems value="#{editService.manualCustomItems.workers}" />
         </h:selectOneMenu>
+        
+        <h:panelGroup rendered="#{!empty editService.manualCustomItems.workers}">
+            <p><small><h:outputText value="#{web.text.OLDMANUALCLASSPATHELP}"/></small></p>
+        </h:panelGroup>
 <%
 }
 %>

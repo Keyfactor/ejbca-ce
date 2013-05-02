@@ -62,7 +62,7 @@ public class CustomIntervalType extends IntervalType {
      * or a manually specified class.
      */
     public void setClassPath(String classPath) {
-        if (CustomLoader.isAutoClass(classPath, IInterval.class)) {
+        if (CustomLoader.isDisplayedInList(classPath, IInterval.class)) {
             autoClassPath = classPath;
             manualClassPath = "";
         } else {
