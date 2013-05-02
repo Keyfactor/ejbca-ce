@@ -43,7 +43,12 @@ if (WebConfiguration.isManualClassPathsEnabled()) {
         <h:selectOneMenu id="intervalClassPathSelect" value="#{editService.customIntervalType.autoClassPath}">
             <f:selectItem itemValue="" itemLabel="#{web.text.PLEASE_SELECT}" />
             <f:selectItems value="#{editService.serviceConfigurationView.availableCustomIntervalItems}" />
+            <f:selectItems value="#{editService.manualCustomItems.intervals}" />
         </h:selectOneMenu>
+        
+        <h:panelGroup rendered="#{!empty editService.manualCustomItems.intervals}">
+            <p><small><h:outputText value="#{web.text.OLDMANUALCLASSPATHELP}"/></small></p>
+        </h:panelGroup>
 <%
 }
 %>

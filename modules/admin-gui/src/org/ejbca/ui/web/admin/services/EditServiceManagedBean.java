@@ -25,11 +25,15 @@ import javax.faces.el.ValueBinding;
 import javax.faces.event.ValueChangeEvent;
 import javax.faces.model.SelectItem;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.services.IAction;
+import org.ejbca.core.model.services.IInterval;
+import org.ejbca.core.model.services.IWorker;
 import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.core.model.services.workers.CRLUpdateWorker;
 import org.ejbca.core.model.services.workers.CertificateExpirationNotifierWorker;
@@ -38,6 +42,7 @@ import org.ejbca.core.model.services.workers.RenewCAWorker;
 import org.ejbca.core.model.services.workers.UserPasswordExpireWorker;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.CustomLoader;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.admin.services.servicetypes.ActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.BaseEmailNotifyingWorkerType;
@@ -331,4 +336,31 @@ public class EditServiceManagedBean extends BaseManagedBean {
 		}
 		return availablePublisherNames;		
 	}
+	
+	/** Return type used by getManualCustomActionItems */
+    public static class ManualCustomItems {
+        private final List<SelectItem> workers = new ArrayList<SelectItem>();
+        private final List<SelectItem> intervals = new ArrayList<SelectItem>();
+        private final List<SelectItem> actions = new ArrayList<SelectItem>();
+        public List<SelectItem> getWorkers() { return workers; }
+        public List<SelectItem> getIntervals() { return intervals; }
+        public List<SelectItem> getActions() { return actions; }
+    }
+    
+    public ManualCustomItems getManualCustomItems() {
+        ManualCustomItems manual = new ManualCustomItems();
+        final String workerClass = getCustomWorkerType().getAutoClassPath();
+        if (!StringUtils.isEmpty(workerClass) && !CustomLoader.getCustomClasses(IWorker.class).contains(workerClass)) {
+            manual.getWorkers().add(new SelectItem(workerClass, workerClass+"*"));
+        }
+        final String intervalClass = getCustomIntervalType().getAutoClassPath();
+        if (!StringUtils.isEmpty(intervalClass) && !CustomLoader.getCustomClasses(IInterval.class).contains(intervalClass)) {
+            manual.getIntervals().add(new SelectItem(intervalClass, intervalClass+"*"));
+        }
+        final String actionClass = getCustomActionType().getAutoClassPath();
+        if (!StringUtils.isEmpty(actionClass) && !CustomLoader.getCustomClasses(IAction.class).contains(actionClass)) {
+            manual.getActions().add(new SelectItem(actionClass, actionClass+"*"));
+        }
+        return manual;
+    }
 }

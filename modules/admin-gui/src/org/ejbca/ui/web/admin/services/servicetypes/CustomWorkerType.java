@@ -72,7 +72,7 @@ public class CustomWorkerType extends WorkerType {
 	 * or a manually specified class.
 	 */
 	public void setClassPath(String classPath) {
-	    if (CustomLoader.isAutoClass(classPath, IWorker.class)) {
+	    if (CustomLoader.isDisplayedInList(classPath, IWorker.class)) {
             autoClassPath = classPath;
             manualClassPath = "";
 	    } else {
