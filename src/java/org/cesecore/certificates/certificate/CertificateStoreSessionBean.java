@@ -252,6 +252,19 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         return CertificateData.findUsernameByIssuerDnAndSerialNumber(entityManager, issuerDn, serialNumber.toString());
     }
     
+    @SuppressWarnings("unchecked")
+    @Override
+    public String findUsernameByFingerprint(String fingerprint) {
+        final Query query = entityManager.createQuery("SELECT a.username FROM CertificateData a WHERE a.fingerprint=:fingerprint");
+        query.setParameter("fingerprint", fingerprint);
+        final List<String> usernames = query.getResultList();
+        if (usernames.isEmpty()) {
+            return null;
+        } else {
+            return usernames.get(0);
+        }
+    }
+    
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean isOnlyUsernameForSubjectKeyIdOrDnAndIssuerDN(final String issuerDN, final byte subjectKeyId[], final String subjectDN, final String username) {

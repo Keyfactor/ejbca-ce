@@ -24,7 +24,9 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -41,6 +43,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.cesecore.CesecoreException;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -49,7 +52,18 @@ import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateCreateException;
+import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.certificate.CustomCertSerialNumberException;
+import org.cesecore.certificates.certificate.IllegalKeyException;
+import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
+import org.cesecore.certificates.certificate.request.RequestMessage;
+import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
+import org.cesecore.certificates.certificate.request.X509ResponseMessage;
+import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
@@ -59,6 +73,9 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.KeyPairInfo;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
+import org.ejbca.util.passgen.IPasswordGenerator;
+import org.ejbca.util.passgen.PasswordGeneratorFactory;
 
 /**
  * Generic Management implementation for InternalKeyBindings.
@@ -84,6 +101,10 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
     private InternalKeyBindingDataSessionLocal internalKeyBindingDataSession;
+    @EJB
+    private CertificateCreateSessionLocal certificateCreateSession;
+    @EJB
+    private EndEntityAccessSessionLocal endEntityAccessSessionSession;
 
     @SuppressWarnings("unchecked")
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -260,6 +281,11 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             throw new AuthorizationDeniedException(msg);
         }
         final InternalKeyBinding internalKeyBinding = internalKeyBindingDataSession.getInternalKeyBinding(internalKeyBindingId);
+        return getNextPublicKeyForInternalKeyBinding(authenticationToken, internalKeyBinding).getEncoded();
+    }
+    
+    private PublicKey getNextPublicKeyForInternalKeyBinding(AuthenticationToken authenticationToken, InternalKeyBinding internalKeyBinding)
+            throws CryptoTokenOfflineException, AuthorizationDeniedException {
         final int cryptoTokenId = internalKeyBinding.getCryptoTokenId();
         final String nextKeyPairAlias = internalKeyBinding.getNextKeyPairAlias();
         final String keyPairAlias;
@@ -269,7 +295,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             keyPairAlias = nextKeyPairAlias;
         }
         final PublicKey publicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, keyPairAlias);
-        return publicKey.getEncoded();
+        return publicKey;
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -496,9 +522,71 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         } else {
             throw new CertificateImportException("No keys matching the certificate were found.");
         }
-        //throw new UnsupportedOperationException("Not yet fully implemented!");
+    }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @Override
+    public String renewInternallyIssuedCertificate(AuthenticationToken authenticationToken, int internalKeyBindingId)
+            throws AuthorizationDeniedException, CryptoTokenOfflineException, CertificateImportException {
+        // Assert authorization
+        assertAuthorization(authenticationToken, InternalKeyBindingRules.MODIFY.resource() + "/" + internalKeyBindingId);
+        // Find username and current data for this user
+        final InternalKeyBinding internalKeyBinding = internalKeyBindingDataSession.getInternalKeyBinding(internalKeyBindingId);
+        final String currentCertificateId = internalKeyBinding.getCertificateId();
+        if (currentCertificateId == null) {
+            throw new CertificateImportException("Can only renew certificate when there already is one.");
+        }
+        final String endEntityId = certificateStoreSession.findUsernameByFingerprint(currentCertificateId);
+        if (endEntityId == null) {
+            throw new CertificateImportException("Cannot renew certificate without an existing end entity.");
+        }
+        final EndEntityInformation endEntityInformation = endEntityAccessSessionSession.findUser(authenticationToken, endEntityId);
+        if (endEntityInformation == null) {
+            throw new CertificateImportException("Cannot renew certificate without an existing end entity.");
+        }
+        // Re-use the end entity's information with the current "next" public key to request a certificate
+        final PublicKey publicKey = getNextPublicKeyForInternalKeyBinding(authenticationToken, internalKeyBinding);
+        final IPasswordGenerator passwordGenerator = PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_ALLPRINTABLE);
+        endEntityInformation.setPassword(passwordGenerator.getNewPassword(12, 12));
+        final RequestMessage req = new SimpleRequestMessage(publicKey, endEntityInformation.getUsername(), endEntityInformation.getPassword());
+        final CertificateResponseMessage response;
+        try {
+            response = certificateCreateSession.createCertificate(authenticationToken, endEntityInformation, req, X509ResponseMessage.class);
+        } catch (CustomCertSerialNumberException e) {
+            throw new CertificateImportException(e);
+        } catch (IllegalKeyException e) {
+            throw new CertificateImportException(e);
+        } catch (CADoesntExistsException e) {
+            throw new CertificateImportException(e);
+        } catch (CertificateCreateException e) {
+            throw new CertificateImportException(e);
+        } catch (CesecoreException e) {
+            throw new CertificateImportException(e);
+        }
+        final String newCertificateId = updateCertificateForInternalKeyBinding(authenticationToken, internalKeyBindingId);
+        if (newCertificateId == null) {
+            throw new CertificateImportException("New certificate was never issued.");
+        }
+        // Sanity check that the certificate we issued is the one that is in use
+        final X509Certificate keyBindingCertificate = (X509Certificate) response.getCertificate();
+        if (!newCertificateId.equals(CertTools.getFingerprintAsString(keyBindingCertificate))) {
+            throw new CertificateImportException("Issued certificate was not found in database. Throw-away setting for issuing CA is not allowed for InternalKeyBindings.");
+        }
+        return newCertificateId;
     }
     
+    private void assertAuthorization(AuthenticationToken authenticationToken, final String...rules) throws AuthorizationDeniedException {
+        if (!accessControlSessionSession.isAuthorized(authenticationToken, rules)) {
+            if (rules.length == 1) {
+                final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", rules[0], authenticationToken.toString());
+                throw new AuthorizationDeniedException(msg);
+            } else {
+                final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", Arrays.toString(rules), authenticationToken.toString());
+                throw new AuthorizationDeniedException(msg);
+            }
+        }
+    }
+
     /** Asserts that it is not a CA certificate and that the implementation finds it acceptable.  */
     private void assertCertificateIsOkToImport(Certificate certificate, InternalKeyBinding internalKeyBinding) throws CertificateImportException {
         // Do some general sanity checks that this is not a CA certificate

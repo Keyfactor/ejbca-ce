@@ -100,6 +100,11 @@ org.ejbca.core.ejb.signer.InternalKeyBindingRules
 			<h:outputText rendered="#{!internalKeyBindingMBean.inEditMode or !internalKeyBindingMBean.cryptoTokenActive}" value="#{internalKeyBindingMBean.currentKeyPairAlias}"/>
 		</h:panelGroup>
 		<h:message for="keyPairAlias"/>
+		<h:outputLabel for="nextKeyPairAlias" value="Next Key Pair Alias:"/>
+		<h:panelGroup id="nextKeyPairAlias">
+			TODO
+		</h:panelGroup>
+		<h:message for="nextKeyPairAlias"/>
 		<h:outputLabel for="signatureAlgorithm" value="Signature Algorithm:"/>
 		<h:panelGroup id="signatureAlgorithm">
 			<h:selectOneMenu rendered="#{internalKeyBindingMBean.inEditMode and internalKeyBindingMBean.cryptoTokenActive}"

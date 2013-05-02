@@ -36,38 +36,59 @@ org.ejbca.core.ejb.signer.InternalKeyBindingRules
   <script src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
   <style type="text/css">
 		/* TODO: Move re-usable styles to included .css */
+		div.tabLinks {
+			width: inherit;
+			margin-top: 5px;
+			padding-left: 2px;
+			border-bottom: 1px solid #aaa;
+		}
 		a.tabLinkfalse {
 			/*
 			font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
 			font-variant: small-caps;
+		    text-decoration: none;
 			*/
 			font-size: 16px;
 			font-weight: bold;
-		    text-decoration: none;
 		    text-align: left;
-		    margin-left: 7px;
-		    margin-right: 7px;
+		    padding: 2px 7px 4px 7px;
 			color: #669;
+			background: #ccc;
+			border-left: 1px solid #aaa;
+			border-top: 1px solid #aaa;
+			border-right: 1px solid #aaa;
+			border-bottom: 1px solid #fff;
+			border-top-left-radius: 5px;
+			border-top-right-radius: 5px;
 		}
 		a.tabLinktrue {
 			/*
 			font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
 			font-variant: small-caps;
+		    text-decoration: none;
 			*/
 			font-size: 16px;
 			font-weight: bold;
-		    text-decoration: none;
 		    text-align: left;
-		    margin-left: 7px;
-		    margin-right: 7px;
+		    padding: 2px 7px 2px 7px;
 			color: #009;
-			/*
-			border-bottom: 2px solid #009;
-			*/
+			background: #fff;
+			border-left: 1px solid #aaa;
+			border-top: 1px solid #aaa;
+			border-right: 1px solid #aaa;
+			border-top-left-radius: 3px;
+			border-top-right-radius: 3px;
 		}
 		a.tabLinkfalse:hover, a.tabLinktrue:hover{
 			color: #009;
 			background: #eee;
+		}
+		.infoMessage {
+			font-style: italic;
+			padding: 0.5em;
+			border-radius: 0.3em;
+			background: #fcfcfc;
+			margin-bottom: 1em;
 		}
    </style>
 </head>
@@ -76,8 +97,8 @@ org.ejbca.core.ejb.signer.InternalKeyBindingRules
 		<h:outputText value="#{web.text.INTERNALKEYBINDINGS}"/>
 		<%= ejbcawebbean.getHelpReference("/userguide.html#Managing%20InternalKeyBindings") %>
 	</h1>
-	<div class="message"><h:messages layout="table" errorClass="alert"/></div>
-	<div>
+	<div class="message"><h:messages layout="table" errorClass="alert" infoClass="infoMessage"/></div>
+	<div class="tabLinks">
 		<c:forEach items="#{internalKeyBindingMBean.availableKeyBindingTypes}" var="type">
 		<span>
 			<h:outputLink value="adminweb/keybind/keybindings.jsf?type=#{type}"
@@ -110,7 +131,7 @@ org.ejbca.core.ejb.signer.InternalKeyBindingRules
 		<h:column>
    			<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_CERTIFICATESERIAL}"/></f:facet>
 			<h:outputLink value="adminweb/viewcertificate.jsp?certsernoparameter=#{guiInfo.certificateSerialNumber},#{guiInfo.certificateIssuerDn}&ref=keybindings" rendered="#{guiInfo.certificateBound}">
-				<h:outputText value="#{guiInfo.certificateSerialNumber}"/>
+				<h:outputText style="font-family: monospace; text-align: right;" value="#{guiInfo.certificateSerialNumber}"/>
 			</h:outputLink>
 			<h:outputText value="#{web.text.INTERNALKEYBINDING_NOT_PRESENT}" rendered="#{!guiInfo.certificateBound}"/>
 		</h:column>
@@ -136,15 +157,6 @@ org.ejbca.core.ejb.signer.InternalKeyBindingRules
    			<f:facet name="header">
    				<h:outputText value="#{web.text.INTERNALKEYBINDING_ACTION}"/>
    			</f:facet>
-			<h:commandButton rendered="#{guiInfo.issuedByInternalCa}" action="#{internalKeyBindingMBean.commandRenewCertificate}"
-				value="#{web.text.INTERNALKEYBINDING_RENEWCERTIFICATE_SHORT}" title="#{web.text.INTERNALKEYBINDING_RENEWCERTIFICATE_FULL}"/>
-			<h:commandButton action="#{internalKeyBindingMBean.commandReloadCertificate}"
-				value="#{web.text.INTERNALKEYBINDING_RELOADCERTIFICATE_SHORT}" title="#{web.text.INTERNALKEYBINDING_RELOADCERTIFICATE_FULL}"/>
-			<h:commandButton rendered="#{!guiInfo.nextKeyAliasAvailable and guiInfo.cryptoTokenAvailable}"
-				action="#{internalKeyBindingMBean.commandGenerateNewKey}"
-				value="#{web.text.INTERNALKEYBINDING_GENERATENEWKEY_SHORT}" title="#{web.text.INTERNALKEYBINDING_GENERATENEWKEY_FULL}"/>
-			<h:commandButton rendered="#{guiInfo.cryptoTokenAvailable}" action="#{internalKeyBindingMBean.commandGenerateRequest}"
-				value="#{web.text.INTERNALKEYBINDING_GETCSR_SHORT}" title="#{web.text.INTERNALKEYBINDING_GETCSR_FULL}"/>
 			<h:commandButton rendered="#{guiInfo.status eq 'ACTIVE'}" action="#{internalKeyBindingMBean.commandDisable}"
 				value="#{web.text.INTERNALKEYBINDING_DISABLE_SHORT}" title="#{web.text.INTERNALKEYBINDING_DISABLE_FULL}"/>
 			<h:commandButton rendered="#{guiInfo.status eq 'DISABLED'}" action="#{internalKeyBindingMBean.commandEnable}"
@@ -152,6 +164,15 @@ org.ejbca.core.ejb.signer.InternalKeyBindingRules
 			<h:commandButton action="#{internalKeyBindingMBean.commandDelete}"
 				value="#{web.text.INTERNALKEYBINDING_DELETE_SHORT}" title="#{web.text.INTERNALKEYBINDING_DELETE_FULL}"
 				onclick="return confirm('#{web.text.INTERNALKEYBINDING_CONF_DELETE}')"/>
+			<h:commandButton rendered="#{!guiInfo.nextKeyAliasAvailable and guiInfo.cryptoTokenAvailable}"
+				action="#{internalKeyBindingMBean.commandGenerateNewKey}"
+				value="#{web.text.INTERNALKEYBINDING_GENERATENEWKEY_SHORT}" title="#{web.text.INTERNALKEYBINDING_GENERATENEWKEY_FULL}"/>
+			<h:commandButton rendered="#{guiInfo.cryptoTokenAvailable}" action="#{internalKeyBindingMBean.commandGenerateRequest}"
+				value="#{web.text.INTERNALKEYBINDING_GETCSR_SHORT}" title="#{web.text.INTERNALKEYBINDING_GETCSR_FULL}"/>
+			<h:commandButton action="#{internalKeyBindingMBean.commandReloadCertificate}"
+				value="#{web.text.INTERNALKEYBINDING_RELOADCERTIFICATE_SHORT}" title="#{web.text.INTERNALKEYBINDING_RELOADCERTIFICATE_FULL}"/>
+			<h:commandButton rendered="#{guiInfo.issuedByInternalCa}" action="#{internalKeyBindingMBean.commandRenewCertificate}"
+				value="#{web.text.INTERNALKEYBINDING_RENEWCERTIFICATE_SHORT}" title="#{web.text.INTERNALKEYBINDING_RENEWCERTIFICATE_FULL}"/>
 		</h:column>
 	</h:dataTable>
 	<br/>
@@ -159,6 +180,9 @@ org.ejbca.core.ejb.signer.InternalKeyBindingRules
 		value="adminweb/keybind/keybinding.jsf?internalKeyBindingId=0&type=#{internalKeyBindingMBean.selectedInternalKeyBindingType}">
 		<h:outputText value="#{web.text.INTERNALKEYBINDING_CREATENEW}"/>
 	</h:outputLink>
+	</h:form>
+	<h:form id="uploadCertificate">
+		TODO: Upload new certificate for a selected IntenalKeyBinding
 	</h:form>
 	<%	// Include Footer 
 	String footurl = globalconfiguration.getFootBanner(); %>
