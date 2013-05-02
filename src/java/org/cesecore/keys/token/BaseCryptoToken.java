@@ -42,6 +42,7 @@ import javax.crypto.spec.IvParameterSpec;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.crypto.paddings.PKCS7Padding;
+import org.bouncycastle.jce.ECKeyUtil;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
@@ -467,8 +468,22 @@ public abstract class BaseCryptoToken implements CryptoToken {
                 final String msg = intres.getLocalizedMessage("token.errornosuchkey", alias);
                 throw new CryptoTokenOfflineException(msg);
             }
+            final String str = getProperties().getProperty(CryptoToken.EXPLICIT_ECC_PUBLICKEY_PARAMETERS);
+            final boolean explicitEccParameters = Boolean.parseBoolean(str);
+            if (publicK.getAlgorithm().equals("EC") && explicitEccParameters) {
+                log.info("Using explicit parameter encoding for ECC key.");
+                publicK = ECKeyUtil.publicToExplicitParameters(publicK, "BC");
+            } else {
+                log.info("Using named curve parameter encoding for ECC key.");
+            }
             return publicK;
         } catch (KeyStoreException e) {
+            throw new CryptoTokenOfflineException(e);
+        } catch (NoSuchProviderException e) {
+            throw new CryptoTokenOfflineException(e);
+        } catch (IllegalArgumentException e) {
+            throw new CryptoTokenOfflineException(e);
+        } catch (NoSuchAlgorithmException e) {
             throw new CryptoTokenOfflineException(e);
         }
     }
