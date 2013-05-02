@@ -78,6 +78,11 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
     }
 
     @Override
+    public void setNextKeyPairAlias(String nextKeyPairAlias) {
+        throw new RuntimeException(new OperationNotSupportedException());
+    }
+
+    @Override
     public void updateCertificateIdAndCurrentKeyAlias(String certificateId) {
         throw new RuntimeException(new OperationNotSupportedException());
     }

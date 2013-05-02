@@ -120,7 +120,8 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     public String getNextKeyPairAlias() {
         return getData(PROP_NEXT_KEY_PAIR_ALIAS, (String)null);
     }
-    private void setNextKeyPairAlias(final String nextKeyPairAlias) {
+    @Override
+    public void setNextKeyPairAlias(final String nextKeyPairAlias) {
         putData(PROP_NEXT_KEY_PAIR_ALIAS, nextKeyPairAlias);
     }
     private Long getNextKeyPairCounter() {
