@@ -77,14 +77,6 @@
     	<ant antfile="build.xml" dir="modules/systemtests" target="runcmp" />
     </target>
 
-    <target name="test:runocsp" description="run JUnit standalone OCSP system tests">
-    	<ant antfile="build.xml" dir="modules/systemtests" target="runocsp" />
-    </target>
-
-    <target name="test:runocsp.setuptest" description="setup some a basic environment for the standalone OCSP tests">
-    	<ant antfile="build.xml" dir="modules/systemtests" target="runocsp.setuptest" />
-    </target>
-
     <target name="test:logstress" description="Run log stress tests.">
     	<ant antfile="build.xml" dir="modules/systemtests" target="runlogstress" />
     </target>
