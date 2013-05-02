@@ -62,7 +62,7 @@ public class CustomActionType extends ActionType {
      * or a manually specified class.
      */
     public void setClassPath(String classPath) {
-        if (CustomLoader.isAutoClass(classPath, IAction.class)) {
+        if (CustomLoader.isDisplayedInList(classPath, IAction.class)) {
             autoClassPath = classPath;
             manualClassPath = "";
         } else {
