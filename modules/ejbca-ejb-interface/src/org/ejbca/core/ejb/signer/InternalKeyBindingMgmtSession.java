@@ -99,6 +99,15 @@ public interface InternalKeyBindingMgmtSession {
             CryptoTokenOfflineException, InvalidKeyException, InvalidAlgorithmParameterException;
 
     /**
+     * Issue a new certificate using the same end entity as the current certificate.
+     * Note that this will only work as long as the CA is internal and the user and profiles still exist.
+     * Since the user's current CA and profiles will be used, they could be changed before this call.
+     * @return the newly issued certificate's fingerprint
+     */
+    String renewInternallyIssuedCertificate(AuthenticationToken authenticationToken, int internalKeyBindingId)
+            throws AuthorizationDeniedException, CryptoTokenOfflineException, CertificateImportException;
+    
+    /**
      * Suitable for remote invocation where the implementation might not be available.
      * @return a list of InternalKeyBindings that extend a non-mutable general class.
      */

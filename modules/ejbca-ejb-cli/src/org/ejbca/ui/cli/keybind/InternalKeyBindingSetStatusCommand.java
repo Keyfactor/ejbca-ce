@@ -22,7 +22,7 @@ import org.ejbca.core.ejb.signer.InternalKeyBindingStatus;
  * 
  * @version $Id$
  */
-public class InternalKeyBindingSetStatus extends BaseInternalKeyBindingCommand {
+public class InternalKeyBindingSetStatusCommand extends BaseInternalKeyBindingCommand {
 
     @Override
     public String getSubCommand() {

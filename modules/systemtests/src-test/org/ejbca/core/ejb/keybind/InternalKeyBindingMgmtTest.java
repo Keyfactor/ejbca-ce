@@ -13,6 +13,7 @@
 package org.ejbca.core.ejb.keybind;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -22,6 +23,8 @@ import java.security.cert.X509Certificate;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.persistence.PersistenceException;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -34,6 +37,7 @@ import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
@@ -44,11 +48,14 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.signer.InternalKeyBindingMgmtSession;
 import org.ejbca.core.ejb.signer.InternalKeyBindingMgmtSessionRemote;
 import org.ejbca.core.ejb.signer.InternalKeyBindingProperty;
 import org.ejbca.core.ejb.signer.InternalKeyBindingStatus;
 import org.ejbca.core.ejb.signer.impl.OcspKeyBinding;
+import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.util.TraceLogMethodsRule;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -70,6 +77,7 @@ public class InternalKeyBindingMgmtTest {
     private static final InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
     private static final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private static final CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
+    private static final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     
     private static final String TESTCLASSNAME = InternalKeyBindingMgmtTest.class.getSimpleName();
     private static final String KEYBINDING_TYPE_ALIAS = OcspKeyBinding.IMPLEMENTATION_ALIAS;
@@ -149,12 +157,67 @@ public class InternalKeyBindingMgmtTest {
             X509Certificate keyBindingCertificate = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(alwaysAllowToken, user, req,
                     X509ResponseMessage.class)).getCertificate());
             // Ask the key binding to search the database for a new certificate matching its public key
-            String boundCertificateFingerprint = internalKeyBindingMgmtSession.updateCertificateForInternalKeyBinding(alwaysAllowToken, internalKeyBindingId);
+            final String boundCertificateFingerprint = internalKeyBindingMgmtSession.updateCertificateForInternalKeyBinding(alwaysAllowToken, internalKeyBindingId);
             // Verify that it was the right certificate it found
             assertEquals("Wrong certificate was found for InternalKeyBinding", CertTools.getFingerprintAsString(keyBindingCertificate), boundCertificateFingerprint);
             // ...so now we have a mapping between a certificate in the database and a key pair in a CryptoToken
         } finally {
             internalKeyBindingMgmtSession.deleteInternalKeyBinding(alwaysAllowToken, internalKeyBindingId);
+        }
+    }
+
+    @Test
+    public void workflowIssueCertFromCsrUpdateAndRenew() throws Exception {
+        final String TEST_METHOD_NAME = Thread.currentThread().getStackTrace()[1].getMethodName();
+        final String KEY_BINDING_NAME = TEST_METHOD_NAME;
+        final String KEY_PAIR_ALIAS = TEST_METHOD_NAME;
+        final String endEntityId = TESTCLASSNAME+"_" + TEST_METHOD_NAME;
+        // Clean up old key binding
+        removeInternalKeyBindingByName(alwaysAllowToken, TEST_METHOD_NAME);
+        int internalKeyBindingId = 0;
+        try {
+            // First create a new CryptoToken
+            cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, KEY_PAIR_ALIAS, "RSA2048");
+            // Create a new InternalKeyBinding with a implementation specific property and bind it to the previously generated key
+            final Map<Object,Object> dataMap = new LinkedHashMap<Object,Object>();
+            dataMap.put(PROPERTY_ALIAS, Boolean.FALSE);
+            internalKeyBindingId = internalKeyBindingMgmtSession.createInternalKeyBinding(alwaysAllowToken, KEYBINDING_TYPE_ALIAS,
+                    KEY_BINDING_NAME, InternalKeyBindingStatus.ACTIVE, null, cryptoTokenId, KEY_PAIR_ALIAS, dataMap);
+            // Add a user to EJBCA for the renewal later on
+            final EndEntityInformation endEntityInformation = new EndEntityInformation(endEntityId, "CN="+TESTCLASSNAME +"_" + TEST_METHOD_NAME, x509ca.getCAId(), null, null,
+                    EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER, EndEntityConstants.TOKEN_USERGEN, 0, null);
+            endEntityInformation.setPassword("foo123");
+            try {
+                endEntityManagementSession.addUser(alwaysAllowToken, endEntityInformation, false);
+            } catch (PersistenceException e) {
+                // The user might exist from a previous test run, just change it if so
+                endEntityManagementSession.changeUser(alwaysAllowToken, endEntityInformation, false);
+            }
+            // Request a CSR for the key pair
+            final byte[] csr = internalKeyBindingMgmtSession.generateCsrForNextKey(alwaysAllowToken, internalKeyBindingId);
+            RequestMessage req = new PKCS10RequestMessage(csr);
+            X509Certificate keyBindingCertificate = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(alwaysAllowToken, endEntityInformation, req,
+                    X509ResponseMessage.class)).getCertificate());
+            // Ask the key binding to search the database for a new certificate matching its public key
+            final String boundCertificateFingerprint = internalKeyBindingMgmtSession.updateCertificateForInternalKeyBinding(alwaysAllowToken, internalKeyBindingId);
+            // Verify that it was the right certificate it found
+            assertEquals("Wrong certificate was found for InternalKeyBinding", CertTools.getFingerprintAsString(keyBindingCertificate), boundCertificateFingerprint);
+            // ...so now we have a mapping between a certificate in the database and a key pair in a CryptoToken
+            // Since we no have a certificate issued by an internal CA, we should be able to renew it
+            final String renewedCertificateFingerprint = internalKeyBindingMgmtSession.renewInternallyIssuedCertificate(alwaysAllowToken, internalKeyBindingId);
+            assertNotNull("Renewal returned null which is an undefined state.", renewedCertificateFingerprint);
+            assertFalse("After certificate renewal the same certificate was returned",
+                    boundCertificateFingerprint.equals(renewedCertificateFingerprint));
+            final String actualCertificateFingerprint = internalKeyBindingMgmtSession.getInternalKeyBindingInfo(alwaysAllowToken, internalKeyBindingId).getCertificateId();
+            assertFalse("After certificate renewal the same certificate still in use.",
+                    boundCertificateFingerprint.equals(actualCertificateFingerprint));
+        } finally {
+            internalKeyBindingMgmtSession.deleteInternalKeyBinding(alwaysAllowToken, internalKeyBindingId);
+            try {
+                endEntityManagementSession.deleteUser(alwaysAllowToken, endEntityId);
+            } catch (NotFoundException e) {
+                log.debug("Clean up failed.", e);
+            }
         }
     }
 

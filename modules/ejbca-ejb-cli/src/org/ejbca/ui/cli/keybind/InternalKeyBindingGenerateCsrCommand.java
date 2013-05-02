@@ -30,7 +30,7 @@ import org.ejbca.util.CliTools;
  * 
  * @version $Id$
  */
-public class InternalKeyBindingGenerateCsr extends BaseInternalKeyBindingCommand {
+public class InternalKeyBindingGenerateCsrCommand extends BaseInternalKeyBindingCommand {
 
     @Override
     public String getSubCommand() {

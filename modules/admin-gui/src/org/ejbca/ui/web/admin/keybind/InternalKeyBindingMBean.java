@@ -12,13 +12,20 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.keybind;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.math.BigInteger;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -27,6 +34,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -40,6 +48,7 @@ import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.CertTools;
+import org.ejbca.core.ejb.signer.CertificateImportException;
 import org.ejbca.core.ejb.signer.InternalKeyBinding;
 import org.ejbca.core.ejb.signer.InternalKeyBindingInfo;
 import org.ejbca.core.ejb.signer.InternalKeyBindingMgmtSessionLocal;
@@ -133,7 +142,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             // The requested type is an existing type. Check if this is a change from the current value.
             //if (!typeHttpParam.equals(selectedInternalKeyBindingType)) {
                 // Flush caches so we reload the page content
-                flushCaches();
+                flushListCaches();
             //}
             selectedInternalKeyBindingType = typeHttpParam;
         }
@@ -152,7 +161,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         return availableKeyBindingTypes;
     }
 
-    private void flushCaches() {
+    private void flushListCaches() {
         internalKeyBindingGuiList = null;
     }
 
@@ -160,7 +169,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         if (internalKeyBindingGuiList==null) {
             // Get the current type of tokens we operate on
             final String internalKeyBindingType = getSelectedInternalKeyBindingType();
-            List<GuiInfo> internalKeyBindingList = new ArrayList<GuiInfo>();
+            List<GuiInfo> internalKeyBindingList = new LinkedList<GuiInfo>();
             for (InternalKeyBindingInfo current : internalKeyBindingSession.getInternalKeyBindingInfos(authenticationToken, internalKeyBindingType)) {
                 final int cryptoTokenId = current.getCryptoTokenId();
                 final CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(cryptoTokenId);
@@ -197,6 +206,12 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                         cryptoTokenAvailable, cryptoTokenActive, current.getKeyPairAlias(), current.getNextKeyPairAlias(),
                         current.getStatus().name(), current.getCertificateId(), certificateIssuerDn, certificateInternalCaName,
                         certificateInternalCaId, certificateSerialNumber));
+                Collections.sort(internalKeyBindingList, new Comparator<GuiInfo>() {
+                    @Override
+                    public int compare(final GuiInfo guiInfo1, final GuiInfo guiInfo2) {
+                        return guiInfo1.getName().compareToIgnoreCase(guiInfo2.getName());
+                    }
+                });
             }
             internalKeyBindingGuiList = new ListDataModel(internalKeyBindingList);
         }
@@ -206,25 +221,122 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     }
     
     public void commandRenewCertificate() {
-        notYetImplementedMessage();
+        try {
+            final GuiInfo guiInfo = (GuiInfo) internalKeyBindingGuiList.getRowData();
+            final int internalKeyBindingId = guiInfo.getInternalKeyBindingId();
+            final String certificateId = internalKeyBindingSession.renewInternallyIssuedCertificate(authenticationToken, internalKeyBindingId);
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("New certificate with fingerprint " + certificateId + " has been issed."));
+        } catch (AuthorizationDeniedException e) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+        } catch (CertificateImportException e) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+        } catch (CryptoTokenOfflineException e) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+        }
+        flushListCaches();
     }
     public void commandReloadCertificate() {
-        notYetImplementedMessage();
+        try {
+            final GuiInfo guiInfo = (GuiInfo) internalKeyBindingGuiList.getRowData();
+            final int internalKeyBindingId = guiInfo.getInternalKeyBindingId();
+            final String certificateId = internalKeyBindingSession.updateCertificateForInternalKeyBinding(authenticationToken, internalKeyBindingId);
+            if (certificateId == null) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("No new certificate for " + guiInfo.getName() + "."));
+            } else {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("New certificate found for " + guiInfo.getName() + "."));
+            }
+        } catch (AuthorizationDeniedException e) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+        } catch (CertificateImportException e) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+        } catch (CryptoTokenOfflineException e) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+        }
+        flushListCaches();
     }
+
     public void commandGenerateNewKey() {
-        notYetImplementedMessage();
+        try {
+            final GuiInfo guiInfo = (GuiInfo) internalKeyBindingGuiList.getRowData();
+            final int internalKeyBindingId = guiInfo.getInternalKeyBindingId();
+            final String nextKeyPairAlias = internalKeyBindingSession.generateNextKeyPair(authenticationToken, internalKeyBindingId);
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Generated next key with alias " + nextKeyPairAlias + "."));
+        } catch (AuthorizationDeniedException e) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+        } catch (CryptoTokenOfflineException e) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+        } catch (InvalidKeyException e) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+        } catch (InvalidAlgorithmParameterException e) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+        }
+        flushListCaches();
     }
+
     public void commandGenerateRequest() {
-        notYetImplementedMessage();
+        try {
+            final GuiInfo guiInfo = (GuiInfo) internalKeyBindingGuiList.getRowData();
+            final int internalKeyBindingId = guiInfo.getInternalKeyBindingId();
+            final byte[] pkcs10 = internalKeyBindingSession.generateCsrForNextKey(authenticationToken, internalKeyBindingId);
+            final byte[] pemEncodedPkcs10 = CertTools.getPEMFromCertificateRequest(pkcs10);
+            final HttpServletResponse response = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();
+            final OutputStream outputStream = response.getOutputStream();
+            response.setContentType("application/octet-stream");
+            response.addHeader("Content-Disposition", "attachment; filename=\""+guiInfo.getName()+".pkcs10.pem"+"\"");
+            outputStream.flush();
+            outputStream.write(pemEncodedPkcs10);
+            outputStream.close();
+            FacesContext.getCurrentInstance().responseComplete();
+        } catch (AuthorizationDeniedException e) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+        } catch (CryptoTokenOfflineException e) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+        } catch (IOException e) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+        }
     }
+
     public void commandDisable() {
-        notYetImplementedMessage();
+        changeStatus(((GuiInfo) internalKeyBindingGuiList.getRowData()).getInternalKeyBindingId(), InternalKeyBindingStatus.DISABLED);
+        flushListCaches();
     }
+
     public void commandEnable() {
-        notYetImplementedMessage();
+        changeStatus(((GuiInfo) internalKeyBindingGuiList.getRowData()).getInternalKeyBindingId(), InternalKeyBindingStatus.ACTIVE);
+        flushListCaches();
     }
+    
+    private void changeStatus(final int internalKeyBindingId, final InternalKeyBindingStatus internalKeyBindingStatus) {
+        try {
+            final InternalKeyBinding internalKeyBinding = internalKeyBindingSession.getInternalKeyBinding(authenticationToken, internalKeyBindingId);
+            if (internalKeyBinding.getCertificateId() == null && internalKeyBindingStatus.equals(InternalKeyBindingStatus.ACTIVE)) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                        "Cannot activate InternalKeyBinding that has no certificate.", null));
+            } else {
+                internalKeyBinding.setStatus(internalKeyBindingStatus);
+                internalKeyBindingSession.persistInternalKeyBinding(authenticationToken, internalKeyBinding);
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(internalKeyBinding.getName() + " status is now " + internalKeyBindingStatus.name()));
+            }
+        } catch (AuthorizationDeniedException e) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+        } catch (InternalKeyBindingNameInUseException e) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+        }
+        flushListCaches();
+    }
+    
     public void commandDelete() {
-        notYetImplementedMessage();
+        try {
+            final GuiInfo guiInfo = (GuiInfo) internalKeyBindingGuiList.getRowData();
+            if (internalKeyBindingSession.deleteInternalKeyBinding(authenticationToken, guiInfo.getInternalKeyBindingId())) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(guiInfo.getName() + " deleted."));
+            } else {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(guiInfo.getName() + " had already been deleted."));
+            }
+        } catch (AuthorizationDeniedException e) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+        }
+        flushListCaches();
     }
     
     private void flushSingleViewCache() {
