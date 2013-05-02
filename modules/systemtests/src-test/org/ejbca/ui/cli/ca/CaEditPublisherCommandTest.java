@@ -40,13 +40,13 @@ public class CaEditPublisherCommandTest {
 
     private static final String PUBLISHER_NAME = "1327publisher2";
     private static final String GCP_PUBLISHER_NAME = "1327GCPpublisher3";
-    private static final String[] HAPPY_PATH_ARGS = { "editpublisher", PUBLISHER_NAME, "hostnames=myhost.com" };
-    private static final String[] HAPPY_PATH_GCP_ARGS = { "editpublisher", GCP_PUBLISHER_NAME, "propertyData=primekey http://www.primekey.se" };
-    private static final String[] HAPPY_PATH_WITH_TYPE_ARGS = { "editpublisher", PUBLISHER_NAME, "-paramType", "boolean", "AddMultipleCertificates=true" };
-    private static final String[] HAPPY_PATH_GETVALUE_ARGS = { "editpublisher", PUBLISHER_NAME, "-getValue", "AddMultipleCertificates" };
+    private static final String[] HAPPY_PATH_ARGS = { "editpublisher", PUBLISHER_NAME, "hostnames", "myhost.com" };
+    private static final String[] HAPPY_PATH_GCP_ARGS = { "editpublisher", GCP_PUBLISHER_NAME, "propertyData", "primekey http://www.primekey.se" };
+    private static final String[] HAPPY_PATH_WITH_TYPE_ARGS = { "editpublisher", PUBLISHER_NAME, "addMultipleCertificates", "true" };
+    private static final String[] HAPPY_PATH_GETVALUE_ARGS = { "editpublisher", PUBLISHER_NAME, "-getValue", "addMultipleCertificates" };
     private static final String[] HAPPY_PATH_LISTFIELDS_ARGS = { "editpublisher", PUBLISHER_NAME, "-listFields" };
     private static final String[] MISSING_ARGS = { "editpublisher", PUBLISHER_NAME };
-    private static final String[] INVALID_FIELD_ARGS = { "editpublisher", PUBLISHER_NAME, "hostname=myhost.com" };
+    private static final String[] INVALID_FIELD_ARGS = { "editpublisher", PUBLISHER_NAME, "hostname", "myhost.com" };
 
     private CaEditPublisherCommand command;
     private AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaEditPublisherCommandTest"));
@@ -133,7 +133,7 @@ public class CaEditPublisherCommandTest {
             command.execute(INVALID_FIELD_ARGS);
             fail("This should have thrown an exception");
         } catch (ErrorAdminCommandException e) {
-            assertEquals("org.ejbca.ui.cli.ErrorAdminCommandException: Method 'getHostname' does not exist. Did you use correct case for every character of the field?", e.getMessage());
+            assertEquals("org.ejbca.ui.cli.ErrorAdminCommandException: Field 'hostname' does not exist. Did you use correct case for every character of the field?", e.getMessage());
         } finally {
             publisherProxySession.removePublisher(admin, PUBLISHER_NAME);
         }
