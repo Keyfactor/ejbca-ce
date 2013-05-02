@@ -31,7 +31,7 @@
         <H4><c:out value='<%= ejbcawebbean.getText(\"CAUSE\") + \" : \" + exception.getMessage() %>' /></H4><%
         response.setStatus(HttpServletResponse.SC_OK);
     } else if (exception instanceof ParameterError) { %>
-        <h2><c:out value="${exception.localizedMessage}" /></h2><%
+        <h2><c:out value="<%= exception.getLocalizedMessage() %>" /></h2><%
         response.setStatus(HttpServletResponse.SC_OK);
     } else if (exception instanceof org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile) { %>
         <H2><c:out value='<%= WebConfiguration.notification(ejbcawebbean.getText(\"EXCEPTIONOCCURED\")) %>' /></H2>
