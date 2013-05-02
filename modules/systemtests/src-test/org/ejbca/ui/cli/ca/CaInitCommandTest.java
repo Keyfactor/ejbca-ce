@@ -15,6 +15,9 @@ package org.ejbca.ui.cli.ca;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.security.cert.Certificate;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -25,6 +28,7 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -42,25 +46,31 @@ import org.junit.Test;
 public class CaInitCommandTest {
 
     private static final String CA_NAME = "1327ca2";
+    private static final String CA_DN = "CN=CLI Test CA 1237ca2,O=EJBCA,C=SE";
     private static final String CERTIFICATE_PROFILE_NAME = "certificateProfile1327";
-    private static final String[] HAPPY_PATH_ARGS = { "init", CA_NAME, "CN=CLI Test CA 1237ca2,O=EJBCA,C=SE", "soft", "foo123", "2048", "RSA",
+    private static final String[] HAPPY_PATH_ARGS = { "init", CA_NAME, CA_DN, "soft", "foo123", "2048", "RSA",
             "365", "null", "SHA1WithRSA" };
-    private static final String[] X509_TYPE_ARGS = { "init", CA_NAME, "CN=CLI Test CA 1237ca2,O=EJBCA,C=SE", "soft", "foo123", "2048", "RSA",
+    private static final String[] X509_TYPE_ARGS = { "init", CA_NAME, CA_DN, "soft", "foo123", "2048", "RSA",
         "365", "null", "SHA1WithRSA", "-type", "x509" };
-    private static final String[] X509_ARGS_NON_DEFULTPWD = { "init", CA_NAME, "CN=CLI Test CA 1237ca2,O=EJBCA,C=SE", "soft", "bar123", "2048", "RSA",
+    private static final String[] X509_ARGS_NON_DEFULTPWD = { "init", CA_NAME, CA_DN, "soft", "bar123", "2048", "RSA",
         "365", "1.1.1.1", "SHA1WithRSA" };
     private static final String[] CVC_TYPE_ARGS = { "init", CA_NAME, "CN=CVCCATEST,O=EJBCA,C=AZ ", "soft", "foo123", "2048", "RSA",
         "365", "null", "SHA1WithRSA", "-type", "cvc" };
-    private static final String[] ROOT_CA_ARGS = { "init", CA_NAME, "CN=CLI Test CA 1237ca2,O=EJBCA,C=SE", "soft", "foo123", "2048", "RSA",
+    private static final String[] ROOT_CA_ARGS = { "init", CA_NAME, CA_DN, "soft", "foo123", "2048", "RSA",
             "365", "null", "SHA1WithRSA", "-certprofile", "ROOTCA" };
-    private static final String[] CUSTOM_PROFILE_ARGS = { "init", CA_NAME, "CN=CLI Test CA 1237ca2,O=EJBCA,C=SE", "soft", "foo123", "2048",
+    private static final String[] CUSTOM_PROFILE_ARGS = { "init", CA_NAME, CA_DN, "soft", "foo123", "2048",
             "RSA", "365", "null", "SHA1WithRSA", "-certprofile", CERTIFICATE_PROFILE_NAME };
+    private static final String[] ECC_CA = { "init", CA_NAME, CA_DN, "soft", "foo123", "secp256r1", "ECDSA",
+        "365", "null", "SHA256withECDSA" };
+    private static final String[] ECC_CA_EXPLICIT = { "init", CA_NAME, CA_DN, "soft", "foo123", "secp256r1", "ECDSA",
+        "365", "null", "SHA256withECDSA", "-explicitecc" };
 
     private CaInitCommand caInitCommand;
     private AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaInitCommandTest"));
 
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private CertificateProfileSessionRemote certificateProfileSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+    private CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
 
     @Before
     public void setUp() throws Exception {
@@ -129,6 +139,38 @@ public class CaInitCommandTest {
 
         } finally {
             certificateProfileSessionRemote.removeCertificateProfile(admin, CERTIFICATE_PROFILE_NAME);
+        }
+    }
+
+    /** Test happy path for creating an ECDSA CA. */
+    @Test
+    public void testEccCA() throws Exception {
+        caInitCommand.execute(ECC_CA);
+        CAInfo cainfo = caSession.getCAInfo(admin, CA_NAME);
+        assertNotNull("ECC CA was not created.", cainfo);
+        Certificate cert = cainfo.getCertificateChain().iterator().next();
+        assertEquals("EC", cert.getPublicKey().getAlgorithm());
+        System.out.println(cert.getPublicKey());
+    }
+
+    /** Test happy path for creating an ECDSA CA with explicit ECC parameters. Requires some special handling. */
+    @Test
+    public void testEccCAExplicitEccParams() throws Exception {
+        try {
+            caInitCommand.execute(ECC_CA_EXPLICIT);
+            // This will throw a not serializeable exception (on java up to and including java 6)
+            try {
+                caSession.getCAInfo(admin, CA_NAME);
+                assertTrue("Should have thrown an exception with explicit ECC parameters", false);
+            } catch (RuntimeException e) {
+                // NOPMD: ignore
+            }
+        } finally {
+            // Normal remove routines do not work when it is not serializeable, we have to make some qualified guesses
+            // and remove it manually
+            caSession.removeCA(admin, CA_DN.hashCode());
+            Integer id = cryptoTokenManagementSession.getIdFromName(CA_NAME);
+            cryptoTokenManagementSession.deleteCryptoToken(admin, id);
         }
     }
 }

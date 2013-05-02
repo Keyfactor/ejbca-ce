@@ -427,7 +427,6 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         } catch (CADoesntExistsException e) {
             //Ignore
         }
-        final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
         log.debug("Deleting CryptoToken with id " + cryptoTokenId + " last used by CA " + caName);
         cryptoTokenManagementSession.deleteCryptoToken(internalAdmin, cryptoTokenId);
     }
@@ -445,7 +444,6 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         } catch (CADoesntExistsException e) {
             //Ignore
         }
-        final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
         log.debug("Deleting CryptoToken with id " + cryptoTokenId + " last used by CA " + caId);
         cryptoTokenManagementSession.deleteCryptoToken(internalAdmin, cryptoTokenId);
     }

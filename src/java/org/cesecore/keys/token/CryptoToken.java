@@ -47,6 +47,10 @@ public interface CryptoToken extends Serializable {
     static final String AUTOACTIVATE_PIN_PROPERTY = "pin";
     /** Boolean indicating if it should be allowed to extract private keys */
     static final String ALLOW_EXTRACTABLE_PRIVATE_KEY = "allow.extractable.privatekey";
+    /** Boolean indicating if explicit ECC parameters should be used, instead of named curves which is standard. 
+     *  Explicit parameters are only used by ICAO CSCA and DS certificates as defined in ICAO 9303.
+     */
+    static final String EXPLICIT_ECC_PUBLICKEY_PARAMETERS = "explicit.ecc.publickey.parameters";
     /** */
     static final String TOKENNAME_PROPERTY = "tokenName";
 
