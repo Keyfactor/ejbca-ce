@@ -97,14 +97,10 @@ org.ejbca.core.ejb.signer.InternalKeyBindingRules
 			<h:commandButton id="reloadKeyPairAlias" value="Update next" action="#{internalKeyBindingMBean.reloadKeyPairAlias}"/>
 			<script>document.getElementById('internalkeybinding:reloadKeyPairAlias').style.display = 'none';</script>
 			</h:panelGroup>
-			<h:outputText rendered="#{!internalKeyBindingMBean.inEditMode or !internalKeyBindingMBean.cryptoTokenActive}" value="#{internalKeyBindingMBean.currentKeyPairAlias}"/>
+			<h:outputText rendered="#{!internalKeyBindingMBean.inEditMode or !internalKeyBindingMBean.cryptoTokenActive}"
+				value="#{internalKeyBindingMBean.currentKeyPairAlias}"/>
 		</h:panelGroup>
 		<h:message for="keyPairAlias"/>
-		<h:outputLabel for="nextKeyPairAlias" value="Next Key Pair Alias:"/>
-		<h:panelGroup id="nextKeyPairAlias">
-			TODO
-		</h:panelGroup>
-		<h:message for="nextKeyPairAlias"/>
 		<h:outputLabel for="signatureAlgorithm" value="Signature Algorithm:"/>
 		<h:panelGroup id="signatureAlgorithm">
 			<h:selectOneMenu rendered="#{internalKeyBindingMBean.inEditMode and internalKeyBindingMBean.cryptoTokenActive}"
@@ -115,6 +111,19 @@ org.ejbca.core.ejb.signer.InternalKeyBindingRules
 				value="#{internalKeyBindingMBean.currentSignatureAlgorithm}"/>
 		</h:panelGroup>
 		<h:message for="signatureAlgorithm"/>
+		<h:outputLabel for="nextKeyPairAlias" value="Next Key Pair Alias:"
+			rendered="#{internalKeyBindingMBean.currentInternalKeyBindingId ne '0'}"/>
+		<h:panelGroup id="nextKeyPairAlias" rendered="#{internalKeyBindingMBean.currentInternalKeyBindingId ne '0'}">
+			<h:panelGroup rendered="#{internalKeyBindingMBean.inEditMode and internalKeyBindingMBean.cryptoTokenActive}">
+			<h:selectOneMenu value="#{internalKeyBindingMBean.currentNextKeyPairAlias}">
+				<f:selectItem itemValue="" itemLabel="None"/>
+				<f:selectItems value="#{internalKeyBindingMBean.availableKeyPairAliases}"/>
+			</h:selectOneMenu>
+			</h:panelGroup>
+			<h:outputText rendered="#{!internalKeyBindingMBean.inEditMode or !internalKeyBindingMBean.cryptoTokenActive}"
+				value="#{internalKeyBindingMBean.currentNextKeyPairAlias}"/>
+		</h:panelGroup>
+		<h:message for="nextKeyPairAlias" rendered="#{internalKeyBindingMBean.currentInternalKeyBindingId ne '0'}"/>
 	</h:panelGrid>
 	<h3>Trusted certificates</h3>
 	<h:outputText rendered="#{internalKeyBindingMBean.trustedCertificates.rowCount == 0}" value="Trusting ANY known CA certificate"/>

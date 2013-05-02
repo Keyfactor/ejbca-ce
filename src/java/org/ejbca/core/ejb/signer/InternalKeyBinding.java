@@ -37,6 +37,9 @@ public interface InternalKeyBinding extends Serializable {
     /** @return the next key pair's alias to be used */
     String getNextKeyPairAlias();
 
+    /** Set the next key pair's alias to be used */
+    void setNextKeyPairAlias(String currentNextKeyPairAlias);
+
     /** Uses the next key alias as current key alias and updates the certificateId */
     void updateCertificateIdAndCurrentKeyAlias(String certificateId);
 
