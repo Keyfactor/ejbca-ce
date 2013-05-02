@@ -502,6 +502,15 @@ public class RequestInstance {
 			iErrorMessage = intres.getLocalizedMessage("certreq.invalidreq");
 		} catch (org.cesecore.certificates.certificate.IllegalKeyException e) {
 			iErrorMessage = intres.getLocalizedMessage("certreq.invalidkey", e.getMessage());
+		} catch (CryptoTokenOfflineException ctoe) {
+		    String ctoeMsg = ctoe.getMessage();
+		    for (Throwable e = ctoe; e != null; e = e.getCause()) {
+		        if (e instanceof sun.security.pkcs11.wrapper.PKCS11Exception) {
+		            ctoeMsg = "PKCS11 error "+e.getMessage();
+		            break;
+		        }
+		    }
+            iErrorMessage = intres.getLocalizedMessage("certreq.catokenoffline", ctoeMsg);
 		} catch (Exception e) {
 			Throwable e1 = e.getCause();
 			if (e1 instanceof CryptoTokenOfflineException) {
