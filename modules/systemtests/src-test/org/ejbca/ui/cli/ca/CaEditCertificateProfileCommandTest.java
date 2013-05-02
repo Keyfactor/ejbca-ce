@@ -38,14 +38,14 @@ import org.junit.Test;
 public class CaEditCertificateProfileCommandTest {
 
     private static final String PROFILE_NAME = "1327profile2";
-    private static final String[] HAPPY_PATH_ARGS1 = { "editcertificateprofile", PROFILE_NAME, "CRLDistributionPointURI=http://my-crl-distp.com/my.crl" };
-    private static final String[] HAPPY_PATH_ARGS2 = { "editcertificateprofile", PROFILE_NAME, "-paramType", "java.util.List", "CaIssuers=http://my-ca.issuer.com/ca"};
-    private static final String[] HAPPY_PATH_ARGS3 = { "editcertificateprofile", PROFILE_NAME, "-paramType", "boolean", "UseOcspNoCheck=true"};
-    private static final String[] HAPPY_PATH_ARGS4 = { "editcertificateprofile", PROFILE_NAME, "-paramType", "int", "NumOfReqApprovals=5"};
-    private static final String[] HAPPY_PATH_GETVALUE_ARGS = { "editcertificateprofile", PROFILE_NAME, "-getValue", "CaIssuers" };
+    private static final String[] HAPPY_PATH_ARGS1 = { "editcertificateprofile", PROFILE_NAME, "CRLDistributionPointURI", "http://my-crl-distp.com/my.crl" };
+    private static final String[] HAPPY_PATH_ARGS2 = { "editcertificateprofile", PROFILE_NAME, "caIssuers", "http://my-ca.issuer.com/ca"};
+    private static final String[] HAPPY_PATH_ARGS3 = { "editcertificateprofile", PROFILE_NAME, "useOcspNoCheck", "true"};
+    private static final String[] HAPPY_PATH_ARGS4 = { "editcertificateprofile", PROFILE_NAME, "numOfReqApprovals", "5"};
+    private static final String[] HAPPY_PATH_GETVALUE_ARGS = { "editcertificateprofile", PROFILE_NAME, "-getValue", "caIssuers" };
     private static final String[] HAPPY_PATH_LISTFIELDS_ARGS = { "editcertificateprofile", PROFILE_NAME, "-listFields" };
     private static final String[] MISSING_ARGS = { "editcertificateprofile", PROFILE_NAME };
-    private static final String[] INVALID_FIELD_ARGS = { "editcertificateprofile", PROFILE_NAME, "hostname=myhost.com" };
+    private static final String[] INVALID_FIELD_ARGS = { "editcertificateprofile", PROFILE_NAME, "hostname", "myhost.com" };
 
     private CaEditCertificateProfileCommand command;
     private AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaEditCertificateProfileCommandTest"));
@@ -127,7 +127,7 @@ public class CaEditCertificateProfileCommandTest {
             command.execute(INVALID_FIELD_ARGS);
             fail("This should have thrown an exception");
         } catch (ErrorAdminCommandException e) {
-            assertEquals("org.ejbca.ui.cli.ErrorAdminCommandException: Method 'getHostname' does not exist. Did you use correct case for every character of the field?", e.getMessage());
+            assertEquals("org.ejbca.ui.cli.ErrorAdminCommandException: Field 'hostname' does not exist. Did you use correct case for every character of the field?", e.getMessage());
         } finally {
             profileSession.removeCertificateProfile(admin, PROFILE_NAME);
         }

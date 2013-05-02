@@ -54,6 +54,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.ui.cli.BaseCommand;
+import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
  * Base for CA commands, contains common functions for CA operations
@@ -248,7 +249,7 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
             if (!dynaProperty.getName().equals("type") && !dynaProperty.getName().equals("version") 
                     && !dynaProperty.getName().equals("class") && !dynaProperty.getName().equals("latestVersion")
                     && !dynaProperty.getName().equals("upgraded") ) {
-                System.out.println(dynaProperty.getName()+", "+dynaProperty.getType());
+                getLogger().info(dynaProperty.getName()+", "+dynaProperty.getType());
             }
         }
     }
@@ -275,8 +276,9 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
      * @param value the value to set, of we should set a new value
      * @param obj the Bean to list, get or set fields
      * @return true if we only listed or got a value, i.e. if nothing was modified, false is we set a value.
+     * @throws ErrorAdminCommandException 
      */
-    protected boolean listGetOrSet(boolean listOnly, boolean getOnly, final String name, final String field, final String value, final Object obj) {
+    protected boolean listGetOrSet(boolean listOnly, boolean getOnly, final String name, final String field, final String value, final Object obj) throws ErrorAdminCommandException {
         if (listOnly) {
             listSetMethods(obj);
         } else if (getOnly) {
@@ -286,17 +288,20 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
             getLogger().info("Modifying '"+name+"'...");
             final ConvertingWrapDynaBean db = new ConvertingWrapDynaBean(obj);
             DynaProperty prop = db.getDynaClass().getDynaProperty(field);
+            if (prop == null) {
+                throw new ErrorAdminCommandException("Field '"+field+"' does not exist. Did you use correct case for every character of the field?");
+            }
             if (prop.getType().isInterface()) {
-                System.out.print("Converting value '"+value+"' to type '"+ArrayList.class+"', ");
+                getLogger().info("Converting value '"+value+"' to type '"+ArrayList.class+"', ");
                 // If the value can be converted into an integer, we will use an ArrayList<Integer>
                 // Our problem here is that the type of a collection (<Integer>, <String>) is only compile time, it can not be determined in runtime.
                 List<Object> arr = new ArrayList<Object>();
                 if (StringUtils.isNumeric(value)) {
-                    System.out.println("using Integer value.");
+                    getLogger().info("using Integer value.");
                     arr.add(Integer.valueOf(value));
                 } else {
                     // Make it into an array of String
-                    System.out.println("using String value.");
+                    getLogger().info("using String value.");
                     arr.add(value);
                 }
                 val = arr;

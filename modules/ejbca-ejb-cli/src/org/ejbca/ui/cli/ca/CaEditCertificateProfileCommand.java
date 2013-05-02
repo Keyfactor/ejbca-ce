@@ -40,7 +40,7 @@ public class CaEditCertificateProfileCommand extends BaseCaAdminCommand {
                     "\n"+
             "Fields that can be set are derived from setFieldName of the CertificateProfile java code. If there is a 'setFieldName(type)' method, the values to use in this command should be 'fieldName value'\n"+
             "Example: ca editcertificateprofile CertProfileName CRLDistributionPointURI http://my-crl-distp.com/my.crl\n"+
-            "Example: ca editcertificateprofile CertProfileName CaIssuers http://my-ca.issuer.com/ca\n"+
+            "Example: ca editcertificateprofile CertProfileName caIssuers http://my-ca.issuer.com/ca\n"+
             "Example: ca editcertificateprofile CertProfileLdap useOcspNoCheck true\n"+
             "Example: ca editcertificateprofile CertProfileLdap numOfReqApprovals 1\n"+
             "\n"+
