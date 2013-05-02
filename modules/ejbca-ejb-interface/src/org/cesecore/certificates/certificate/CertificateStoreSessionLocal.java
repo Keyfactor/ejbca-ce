@@ -93,4 +93,7 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
 
     /** @return null or the certificate which is active, matches the argument and has the latest updateTime */
     Certificate findMostRecentlyUpdatedActiveCertificate(byte[] subjectKeyId);
+
+    /** @return the username or null if no row was found for this fingerprint */
+    String findUsernameByFingerprint(String fingerprint);
 }
