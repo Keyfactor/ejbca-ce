@@ -345,7 +345,9 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         currentCryptoToken = null;
         currentKeyPairAlias = null;
         currentSignatureAlgorithm = null;
+        currentNextKeyPairAlias = null;
         internalKeyBindingPropertyList = null;
+        inEditMode = false;
     }
     
     private String currentInternalKeyBindingId = null;
@@ -407,6 +409,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             currentCryptoToken = internalKeyBinding.getCryptoTokenId();
             currentKeyPairAlias = internalKeyBinding.getKeyPairAlias();
             currentSignatureAlgorithm = internalKeyBinding.getSignatureAlgorithm();
+            currentNextKeyPairAlias = internalKeyBinding.getNextKeyPairAlias();
             internalKeyBindingPropertyList = new ListDataModel(internalKeyBinding.getCopyOfProperties());
         }
     }
@@ -445,6 +448,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     private Integer currentCryptoToken = null;
     private String currentKeyPairAlias = null;
     private String currentSignatureAlgorithm = null;
+    private String currentNextKeyPairAlias = null;
     private ListDataModel internalKeyBindingPropertyList = null;
     
     public boolean isCreatingNew() {
@@ -457,6 +461,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             // Clear if we change CryptoToken
             currentKeyPairAlias = null;
             currentSignatureAlgorithm = null;
+            currentNextKeyPairAlias =  null;
         }
         this.currentCryptoToken = currentCryptoToken;
     }
@@ -484,6 +489,8 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     }
     public String getCurrentSignatureAlgorithm() { return currentSignatureAlgorithm; }
     public void setCurrentSignatureAlgorithm(String currentSignatureAlgorithm) { this.currentSignatureAlgorithm = currentSignatureAlgorithm; }
+    public String getCurrentNextKeyPairAlias() { return currentNextKeyPairAlias; }
+    public void setCurrentNextKeyPairAlias(String currentNextKeyPairAlias) { this.currentNextKeyPairAlias = currentNextKeyPairAlias; }
 
     public List<SelectItem/*<Integer,String>*/> getAvailableCryptoTokens() {
         final List<SelectItem> availableCryptoTokens = new ArrayList<SelectItem>();
@@ -528,6 +535,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(e.getMessage()));
             currentCryptoToken = null;
             currentKeyPairAlias = null;
+            currentNextKeyPairAlias = null;
         }
         return availableKeyPairAliases;
     }
@@ -671,6 +679,11 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                 internalKeyBinding.setCryptoTokenId(currentCryptoToken.intValue());
                 internalKeyBinding.setKeyPairAlias(currentKeyPairAlias);
                 internalKeyBinding.setSignatureAlgorithm(currentSignatureAlgorithm);
+                if (currentNextKeyPairAlias == null || currentNextKeyPairAlias.length() == 0) {
+                    internalKeyBinding.setNextKeyPairAlias(null);
+                } else {
+                    internalKeyBinding.setNextKeyPairAlias(currentNextKeyPairAlias);
+                }
             }
             internalKeyBinding.setTrustedCertificateReferences((List<SimpleEntry<Integer, BigInteger>>) trustedCertificates.getWrappedData());
             final List<InternalKeyBindingProperty<? extends Serializable>> internalKeyBindingProperties = 
