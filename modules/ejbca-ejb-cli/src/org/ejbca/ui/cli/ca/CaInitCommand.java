@@ -15,6 +15,7 @@ package org.ejbca.ui.cli.ca;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.security.InvalidParameterException;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
@@ -181,6 +182,10 @@ public class CaInitCommand extends BaseCaAdminCommand {
                     .info(" catokenproperties is a file were you define key name, password and key alias for the HSM. Same as the Hard CA Token Properties in admin gui.");
             getLogger()
                     .info(" signed by caid is the CA id of a CA that will sign this CA. If this is omitted the new CA will be self signed (i.e. a root CA).");
+            getLogger()
+                    .info("   To create a CA signed by an external CA, use the keyword 'External', this will result in a certificate request (CSR) being saved on file, to be signed by the external CA.");
+            getLogger()
+                    .info("   Requires parameter '-externalcachain <externalCA chain PEM file' with the full certificate chain of the external CA.");
             return;
         }
 
@@ -218,6 +223,13 @@ public class CaInitCommand extends BaseCaAdminCommand {
             if (explicitEccInd > -1) {
                 explicitEcc = "true";
                 argsList.remove("-explicitecc");
+            }
+            int extcachainInd = argsList.indexOf("-externalcachain");
+            String extcachainName = null;
+            if (extcachainInd > -1) {
+                extcachainName = argsList.get(extcachainInd + 1);
+                argsList.remove(extcachainInd + 1);
+                argsList.remove("-externalcachain");
             }
 
             args = argsList.toArray(new String[argsList.size()]); // new args array without the optional switches
@@ -263,7 +275,14 @@ public class CaInitCommand extends BaseCaAdminCommand {
             int signedByCAId = CAInfo.SELFSIGNED;
             if (args.length > 11) {
                 String caid = args[11];
-                signedByCAId = Integer.valueOf(caid);
+                if (StringUtils.equalsIgnoreCase("External", caid)) {
+                    signedByCAId = CAInfo.SIGNEDBYEXTERNALCA;
+                    if (extcachainName == null) {
+                        throw new ErrorAdminCommandException("Signing by external CA requires parameter -externalcachain.");
+                    }
+                } else {
+                    signedByCAId = Integer.valueOf(caid);
+                }
             }
             // Get the profile ID from the name if we specified a certain profile name
             int certificateProfileId = CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA;
@@ -322,14 +341,20 @@ public class CaInitCommand extends BaseCaAdminCommand {
                 getLogger().info("Explicit ECC public key parameters: " + explicitEcc);
                 cryptoTokenProperties.setProperty(CryptoToken.EXPLICIT_ECC_PUBLICKEY_PARAMETERS, explicitEcc);
             }
-            getLogger().info("Signed by: " + (signedByCAId == CAInfo.SELFSIGNED ? "self signed " : signedByCAId));
-            if (signedByCAId != CAInfo.SELFSIGNED) {
+            String signedByStr = "Signed by: ";
+            if ((signedByCAId != CAInfo.SELFSIGNED) && (signedByCAId != CAInfo.SIGNEDBYEXTERNALCA)) { 
                 try {
-                    EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), signedByCAId);
+                    CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), signedByCAId);
+                    signedByStr += cainfo.getName();
                 } catch (CADoesntExistsException e) {
                     throw new IllegalArgumentException("CA with id " + signedByCAId + " does not exist.");
                 }
+            } else if (signedByCAId == CAInfo.SELFSIGNED) {
+                signedByStr += "Self signed";                
+            } else if (signedByCAId == CAInfo.SIGNEDBYEXTERNALCA) {
+                signedByStr += "External CA";                
             }
+            getLogger().info(signedByStr);
 
             if (superAdminCN != null) {
                 initAuthorizationModule(getAdmin(cliUserName, cliPassword), dn.hashCode(), superAdminCN);
@@ -435,6 +460,14 @@ public class CaInitCommand extends BaseCaAdminCommand {
                 break;
             }
             getLogger().info("Creating CA...");
+            // Make an error control before starting do do something else.
+            List<Certificate> cachain = null;
+            if (cainfo.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA) {
+                cachain = CertTools.getCertsFromPEM(extcachainName);
+                if (cachain == null || cachain.isEmpty()) {
+                    throw new ErrorAdminCommandException(extcachainName + " does not seem to exist or contain any certificates in PEM format.");
+                }
+            }
             ejb.getRemoteSession(CAAdminSessionRemote.class).createCA(getAdmin(cliUserName, cliPassword), cainfo);
 
             if (StringUtils.equalsIgnoreCase(explicitEcc, "true")) {
@@ -444,12 +477,30 @@ public class CaInitCommand extends BaseCaAdminCommand {
                 int caid = newInfo.getCAId();
                 getLogger().info("CAId for created CA: " + caid);
             }
-            getLogger().info("Created and published initial CRL.");
+            if (cainfo.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA) {
+                getLogger().info("Creating a CA signed by an external CA, creating certificate request.");
+                CAInfo info = ejb.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), caname);
+                if (info.getStatus() != CAConstants.CA_WAITING_CERTIFICATE_RESPONSE) {
+                    throw new ErrorAdminCommandException("Creating a CA signed by an external CA should result in CA having status, CA_WAITING_CERTIFICATE_RESPONSE. Terminating process, please troubleshoot.");
+                }
+                byte[] request = ejb.getRemoteSession(CAAdminSessionRemote.class).makeRequest(getAdmin(cliUserName, cliPassword), info.getCAId(), cachain, info.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+                final String filename = info.getName()+"_csr.der";
+                FileOutputStream fos = new FileOutputStream(filename);
+                fos.write(request);
+                fos.close();
+                getLogger().info("Created CSR for CA, to be sent to external CA. Wrote CSR to file '"+filename+"'.");
+            } else {
+                getLogger().info("Created and published initial CRL.");
+            }
             getLogger().info("CA initialized");
             getLogger().info("Note that any open browser sessions must be restarted to interact with this CA.");
         } catch (Exception e) {
             getLogger().debug("An error occured: ", e);
-            throw new ErrorAdminCommandException(e);
+            if (e instanceof ErrorAdminCommandException) {
+                throw (ErrorAdminCommandException)e;
+            } else {
+                throw new ErrorAdminCommandException(e);
+            }
         }
     }
 
@@ -457,7 +508,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             ArrayList<CertificatePolicy> policies, ArrayList<ExtendedCAServiceInfo> extendedcaservices) {
         return new X509CAInfo(dn, caname, CAConstants.CA_ACTIVE, new Date(), "", certificateProfileId, validity, null, // Expiretime                                             
                 CAInfo.CATYPE_X509, signedByCAId, new ArrayList<Certificate>(), // empty certificate chain
-                catokeninfo, "Initial CA", -1, null, policies, // PolicyId
+                catokeninfo, caname + "created using CLI", -1, null, policies, // PolicyId
                 24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
                 0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
                 10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime

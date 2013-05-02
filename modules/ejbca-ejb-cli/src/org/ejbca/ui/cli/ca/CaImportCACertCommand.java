@@ -1,19 +1,27 @@
 package org.ejbca.ui.cli.ca;
 
 import java.io.IOException;
+import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.Collection;
 import java.util.List;
 
+import org.cesecore.CesecoreException;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.rules.AccessRuleNotFoundException;
+import org.cesecore.certificates.ca.CAConstants;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -65,13 +73,27 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
 			if (certs.size() != 1) {
 				throw new ErrorAdminCommandException("PEM file must only contain one CA certificate, this PEM file contains "+certs.size()+".");
 			}
-			if (initAuth) {
-				String subjectdn = CertTools.getSubjectDN(certs.iterator().next());
-				Integer caid = Integer.valueOf(subjectdn.hashCode());
-				initAuthorizationModule(getAdmin(cliUserName, cliPassword), caid.intValue(), superAdminCN);
-			}
-			ejb.getRemoteSession(CAAdminSessionRemote.class).importCACertificate(getAdmin(cliUserName, cliPassword), caName, certs);
-			getLogger().info("Imported CA "+caName);			
+			try {
+			    CAInfo cainfo = ejb.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), caName);
+			    if (cainfo.getStatus() == CAConstants.CA_WAITING_CERTIFICATE_RESPONSE) {
+			        getLogger().info("CA '"+caName+"' is waiting for certificate response from external CA, importing certificate as certificate response to this CA.");
+			        X509ResponseMessage resp = new X509ResponseMessage();
+			        resp.setCertificate(certs.iterator().next());
+			        ejb.getRemoteSession(CAAdminSessionRemote.class).receiveResponse(getAdmin(cliUserName, cliPassword), cainfo.getCAId(), resp, null, null);
+	                getLogger().info("Received certificate response and activated CA "+caName);                
+			    } else {
+			        throw new ErrorAdminCommandException("CA '"+caName+"' already exists and is not waiting for certificate response from an external CA.");                    
+			    }
+			} catch (CADoesntExistsException e) {
+			    // CA does not exist, we can import the certificate
+			    if (initAuth) {
+			        String subjectdn = CertTools.getSubjectDN(certs.iterator().next());
+			        Integer caid = Integer.valueOf(subjectdn.hashCode());
+			        initAuthorizationModule(getAdmin(cliUserName, cliPassword), caid.intValue(), superAdminCN);
+			    }
+			    ejb.getRemoteSession(CAAdminSessionRemote.class).importCACertificate(getAdmin(cliUserName, cliPassword), caName, certs);
+			    getLogger().info("Imported CA "+caName);
+            }
 		} catch (CertificateException e) {
 			getLogger().error(e.getMessage());
 		} catch (IOException e) {
@@ -88,6 +110,12 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
 			getLogger().error(e.getMessage());
 		} catch (RoleNotFoundException e) {
 			getLogger().error(e.getMessage());
+        } catch (CertPathValidatorException e) {
+            getLogger().error(e.getMessage());
+        } catch (EjbcaException e) {
+            getLogger().error(e.getMessage());
+        } catch (CesecoreException e) {
+            getLogger().error(e.getMessage());
 		}
 	}
 }
