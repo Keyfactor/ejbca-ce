@@ -155,22 +155,6 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 # No default value, must be set if the extension is used
 #ocsp.unidcacert=
 
-#------------------- Custom signer used by external OCSP responder------------------------------
-# The used token is referred to as "card" since smart card was the first (and is the only) token a custom signer has been implemented for.
-
-# Directory of classes implementing hardware signing of the OCSP response
-# Default ./ocspHardTokenClasses
-#ocsp.hardToken.classes=../primeCard/ocspHardTokenClasses-1.6
-
-# The class that implements card signing of the OCSP response
-# Default: se.primeKey.caToken.card.CardKeysImpl
-#ocsp.hardToken.className=se.primeKey.caToken.card.CardKeysImpl
-
-# The password for keys stored on card.
-# Default: null
-#ocsp.keys.cardPassword=foo123
-
-
 #------------------- Soft keys used by external OCSP responder------------------------------
 
 # Directory containing soft keys or certificates for keys on cards. The soft keys are in jks or p12 format.
