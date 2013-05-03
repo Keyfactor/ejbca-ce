@@ -23,7 +23,6 @@ You should first read the <a href="installation-va.html">Standalone VA installat
 All options for the OCSP responders OCSP behavior is set in conf/ocsp.properties. All options are documented in this file.
 <br/>
 The ocsp.keys.* preferences (that has no meaning for EJBCA) has also to be configured.<br/> 
-If card keys (see below) should be used then the property 'ocspHardTokenClasses' must be set to the corresponding directory of PrimeCard.
 </p>
 </subsubsection>
 <subsubsection name="Responder signing keys">
@@ -86,26 +85,6 @@ You must then define all ocsp.p11.* properties on the responder.
 Please read <a href="adminguide.html#Generic%20PKCS#11%20provider">Generic PKCS#11 provider</a> for information on the configuration file for the generate command.
 Do also try to find your HSM in <a href="adminguide.html#Hardware%20Security%20Modules%20(HSM)">Hardware Security Modules (HSM)</a>. 
 Please note the only PKCS#11 HSMs are supported.
-</p>
-</subsubsection>
-<subsubsection name="PrimeCardHSM">
-<p>
-Smart card keys are created on the card with the "create CA Token on card" tool see the HOWTO-CATokenOnCard.txt of PrimeCard.
-Select the choice for one authentication code for all keys on the card. If you want several OCSP responders with same
-keys then you may create several card with same keys. But note that no backup card is needed. If a card is lost or broken then
-simply make another one with new keys and revoke the old signing certificates.
-</p><p>
-The certificates for the the keys are then fetched from the public enrollment page of EJBCA with the certificate request. There should be one
-certificate request for each key.
-</p>
-<p>The command:
-</p>
-<source>
-changePIN.sh createCertReqs
-</source>
-<p>will create the requests, one for each key. Choose 'pem' format for
-the certificates and then just store these files in the 'ocsp.keys.dir' directory.
-The property 'ocsp.keys.cardPassword' should be set to the PIN of the card.
 </p>
 </subsubsection>
 <p>

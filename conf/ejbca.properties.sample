@@ -89,13 +89,6 @@
 # Default: deploy
 #jboss.farm.name=farm
 
-#------------------- HW token ------------------------------
-# ----- Configuration for PrimeCardHSM, ignore if not using PrimeCardHSM ----
-# The directory of the HW token classes. If this is an empty directory no HW token will be used.
-# If the directory is not existing an empty directory will be created.
-# Default: ./hwtoken
-#hwtoken_classes=../primecard/caTokenClasses-1.5-3.5
-
 #------------------- EJBCA Healthcheck settings -------------
 # Specifies the basic settings of the EJBCA Healtcheck servlet
 # for more detailed configuration edit the file src/publicweb/healthcheck/WEB-INF/web.xml

@@ -15,12 +15,6 @@
 #ejbcaws.enabled=true
 
 #------------------- JAXWS settings -------------
-# Settings indicating if a call to gethardtokendata for non-authorized users
-# should result in an approval request instead of an authorized denied exception.
-#
-# Default: true
-#jaxws.approval.gethardtoken=true
-
 # Settings indicating if a call to gentokencertificates for non-authorized users
 # should result in an approval request instead of an authorized denied exception.
 #

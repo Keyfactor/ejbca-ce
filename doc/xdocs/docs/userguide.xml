@@ -232,7 +232,7 @@ The purpose mappings are the key alias in the CryptoToken to use for what:
 <li>crlSignKey: The key to use for CRL signing. Even though it could theoretically be separate from the certSignKey according to the RFCs,
 client support is rare and the certSignKey will always be used.</li>
 <li>keyEncryptKey: Key to use for key recovery when enabled. Decrypts escrowed keys and must be RSA.</li>
-<li>hardTokenEncrypt: Key used for PUK recovery when enabled. Decrypts SmartCard PUKs and must be RSA.</li>
+<li>hardTokenEncrypt: Deprecated functionality, do not use.</li>
 <li>testKey: Key used by health-check to verify that the CryptoToken is usable. Usually a short key for speedy connection checks.</li>
 </ul>
 </p>
