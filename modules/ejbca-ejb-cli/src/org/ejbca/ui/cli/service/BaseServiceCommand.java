@@ -42,12 +42,13 @@ public abstract class BaseServiceCommand extends BaseCommand {
         int serviceId = 0;
         if (acceptsServiceName()) {
             final ServiceSessionRemote serviceSession = ejb.getRemoteSession(ServiceSessionRemote.class);
-            serviceId = serviceSession.getServiceId(args[1]);
-            if (serviceId == 0 && failIfServiceMissing()) {
-                getLogger().info("Unknown Service: " + args[1]);
-                return;
+            if (args.length >= 2) {
+                serviceId = serviceSession.getServiceId(args[1]);
+                if (serviceId == 0 && failIfServiceMissing()) {
+                    getLogger().info("Unknown Service: " + args[1]);
+                    return;
+                }
             }
-            
         }
         
         execute(args, serviceId);
