@@ -2526,9 +2526,6 @@ Supported and tested HSMs are described below, with sample configurations and HS
 </p><p>
 Since EJBCA 3.6 the recommended HSM connector is to use the PKCS#11 interface. Older JCE implementations will gradually be deprecated and removed. 
 </p>
-<p>
-PrimeKey Solutions is selling a module called PrimeCardHSM that implements a flexible HSM using low cost smart cards. 
-</p>
 </subsection>
 <subsection name="HSM modules available in the Admin GUI">
 <p>
@@ -5340,16 +5337,6 @@ You can copy the .sample files to respective .properties files and configures. M
 
 <subsection name="Other Configuration">
 <p>
-To setup an initial hard token issuer with alias 'local' and queue a superadmin user for card issuing. Card issuing using the hard 
-token issuers is normally done using PrimeCard.
-</p>
-<source>
-bin/ejbca.sh setup initializehardtokenissuing &lt;caname&gt;
-Ex: bin/ejbca.sh setup initializehardtokenissuing ManagementCA
-</source>
-<p>
-This is a utility function to quickly and easily issue an initial administration smart card using PrimeCard.
-</p><p>
 To change ports (default public http=8080, public https=8442, private https=8443) you must edit 
 conf/web.properties. Change the properties httpserver.pubhttp, httpserver.pubhttps and httpserver.privhttps.
 After making the change, run 'ant deploy', 'ant web-configure', and re-start the application server.
