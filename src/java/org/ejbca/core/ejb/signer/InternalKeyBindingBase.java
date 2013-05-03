@@ -22,6 +22,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.cesecore.internal.UpgradeableDataHashMap;
 
 /**
@@ -32,6 +33,7 @@ import org.cesecore.internal.UpgradeableDataHashMap;
 public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap implements InternalKeyBinding {
 
     private static final long serialVersionUID = 1L;
+    private static final Logger log = Logger.getLogger(InternalKeyBindingBase.class);
     private static final String PROP_NEXT_KEY_PAIR_ALIAS = "nextKeyPairAlias";
     private static final String PROP_NEXT_KEY_PAIR_COUNTER = "nextKeyPairCounter";
     private static final String PROP_TRUSTED_CERTIFICATE_REFERENCES = "trustedCertificateReferences";
@@ -61,7 +63,9 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     public List<InternalKeyBindingProperty<? extends Serializable>> getCopyOfProperties() {
         final List<InternalKeyBindingProperty<? extends Serializable>> ret = new ArrayList<InternalKeyBindingProperty<? extends Serializable>>();
         for (InternalKeyBindingProperty<? extends Serializable> current : propertyTemplates.values()) {
-            ret.add(current.clone());
+            final InternalKeyBindingProperty<? extends Serializable> clone = current.clone();
+            clone.setValueGeneric(getProperty(clone.getName()).getValue());
+            ret.add(clone);
         }
         return ret;
     }

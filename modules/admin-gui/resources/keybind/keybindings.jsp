@@ -12,7 +12,7 @@
  *                                                                       *
  *************************************************************************/
 
- // Version: $Id: cryptotokens.jsp 16546 2013-04-08 20:26:20Z jeklund $
+ // Version: $Id$
 %>
 <%@ taglib uri="http://java.sun.com/jsf/html" prefix="h" %>
 <%@ taglib uri="http://java.sun.com/jsf/core" prefix="f" %>
