@@ -19,7 +19,6 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Arrays;
 
-import org.apache.log4j.Logger;
 import org.cesecore.util.Base64;
 
 /**
@@ -30,13 +29,16 @@ import org.cesecore.util.Base64;
 public class InternalKeyBindingProperty<T extends Serializable> implements Serializable, Cloneable {
 
     private static final long serialVersionUID = 1L;
-    private static final Logger log = Logger.getLogger(InternalKeyBindingProperty.class);
+    //private static final Logger log = Logger.getLogger(InternalKeyBindingProperty.class);
 
-    private final String name;
-    private final T defaultValue;
+    private String name;
+    private T defaultValue;
     private T value;
-    private final T[] possibleValues;
+    private T[] possibleValues;
 
+    /** Constructor required by Serializable */
+    public InternalKeyBindingProperty() { }
+    
     /** Constructor. Not the T must implement toString() . */
     public InternalKeyBindingProperty(final String name, final T defaultValue, final T...possibleValues) {
         this.name = name;
@@ -92,7 +94,6 @@ public class InternalKeyBindingProperty<T extends Serializable> implements Seria
 
     @SuppressWarnings("unchecked")
     public String getAsEncodedValue(Serializable possibleValue) {
-        log.info("getSimpleName=" + possibleValue.getClass().getSimpleName());
         return new String(Base64.encode(getAsByteArray((T)possibleValue), false));
     }
 

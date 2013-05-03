@@ -12,7 +12,7 @@
  *                                                                       *
  *************************************************************************/
 
- // Version: $Id: cryptotokens.jsp 16546 2013-04-08 20:26:20Z jeklund $
+ // Version: $Id$
 %>
 <%@ taglib uri="http://java.sun.com/jsf/html" prefix="h" %>
 <%@ taglib uri="http://java.sun.com/jsf/core" prefix="f" %>
@@ -34,13 +34,28 @@ org.ejbca.core.ejb.signer.InternalKeyBindingRules
   <base href="<%= ejbcawebbean.getBaseUrl() %>" />
   <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>" />
   <script src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
+  <style type="text/css">
+		/* TODO: Move re-usable styles to included .css */
+		.infoMessage {
+			font-style: italic;
+			padding: 0.5em;
+			border-radius: 0.3em;
+			background: #fcfcfc;
+			margin-bottom: 1em;
+		}
+		.propertyTable {
+			border: 0px;
+			right: auto;
+			left: auto;
+		}
+   </style>
 </head>
 <body>
 	<h1>
 		<h:outputText value="#{web.text.INTERNALKEYBINDING}"/>
 		<%= ejbcawebbean.getHelpReference("/userguide.html#Managing%20InternalKeyBindings") %>
 	</h1>
-	<div class="message"><h:messages layout="table" errorClass="alert"/></div>
+	<div class="message"><h:messages layout="table" errorClass="alert" infoClass="infoMessage"/></div>
 	<div>
 		<h:panelGrid columns="2">
 			<h:outputLink value="adminweb/keybind/keybindings.jsf?type=#{internalKeyBindingMBean.selectedInternalKeyBindingType}">
@@ -162,14 +177,11 @@ org.ejbca.core.ejb.signer.InternalKeyBindingRules
 		</h:column>
 	</h:dataTable>
 	<h3>Properties (todo: make localizable and not look like a table)</h3>
-	<h:dataTable value="#{internalKeyBindingMBean.internalKeyBindingPropertyList}" var="property"
-		styleClass="grid" style="border-collapse: collapse; right: auto; left: auto">
+	<h:dataTable value="#{internalKeyBindingMBean.internalKeyBindingPropertyList}" var="property" styleClass="propertyTable">
 		<h:column>
-   			<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_PROPERTYNAME}"/></f:facet>
-			<h:outputText value="#{web.text[property.name]}"/>
+			<h:outputText value="#{internalKeyBindingMBean.propertyNameTranslated}:"/>
 		</h:column>
 		<h:column>
-   			<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_VALUE}"/></f:facet>
    			<h:panelGroup rendered="#{!property.multiValued}">
 	   			<h:inputText disabled="#{!internalKeyBindingMBean.inEditMode}" rendered="#{property.type.simpleName eq 'String'}" value="#{property.value}"/>
 	   			<h:inputText disabled="#{!internalKeyBindingMBean.inEditMode}" rendered="#{property.type.simpleName eq 'Integer'}" value="#{property.value}">
@@ -180,11 +192,6 @@ org.ejbca.core.ejb.signer.InternalKeyBindingRules
 			<h:selectOneMenu disabled="#{!internalKeyBindingMBean.inEditMode}" rendered="#{property.multiValued}" value="#{property.encodedValue}">
 				<f:selectItems value="#{internalKeyBindingMBean.propertyPossibleValues}"/>
 			</h:selectOneMenu>
-		</h:column>
-		<h:column rendered="true">
-   			<f:facet name="header"><h:outputText value="(DEBUG) Type"/></f:facet>
-			<h:outputText value="#{property.type.simpleName} (#{property.multiValued})"/>
-			<h:outputText value="(multi-valued)" rendered="#{property.multiValued}"/>
 		</h:column>
 	</h:dataTable>
 	<h:commandButton value="Create" action="#{internalKeyBindingMBean.createNew}" rendered="#{internalKeyBindingMBean.inEditMode and internalKeyBindingMBean.creatingNew}"/>
