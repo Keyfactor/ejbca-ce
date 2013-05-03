@@ -504,7 +504,28 @@ This can be useful if you have an HSM setup where only one set of keys can be ac
 two different, non-persistence, operator cards sets for the RootCA and the SubCA. Using the SubCA as an external CA you can still create
 the PKI but with only one CA active at a time.
 </p>
-</subsection> 
+<subsubsection name="Using the CLI">
+<p>You can also create a CA signed by an external CA using the CLI. The process is basically the same as when using the GUI. 
+</p><p>
+Create the CA generating a CSR:
+</p> 
+<source>
+bin/ejbca.sh ca init CaSignedByExteral "CN=This CA is Signed by an external CA" soft foo123 secp256r1 ECDSA 365 null SHA256withECDSA null External -externalcachain chain.pem
+</source>
+<p>
+The file chain.pem contains the certificate chain of the external CA, just as described above.
+Running the above command a CSR named 'CaSignedByExteral_csr.der' will be saved to your disk, containing a PKCS#10 CSR in binary format. Send the CSR to the external CA and get the signed sub CA certificate returned back.
+</p><p>
+Import the sub CA certificate, activating your CA:
+</p>
+<source>
+bin/ejbca.sh ca importcacert CaSignedByExteral subcacertificate.pem
+</source>
+<p>
+The file 'subcacertificate.pem' contains the received sub CA certificate.
+</p>
+</subsubsection>
+</subsection>
 <subsection name="Signing an External CA">
 <p>
 In some cases you might want to have one of your CA:s signing another external CA. This can be done in two ways:
