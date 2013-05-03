@@ -20,6 +20,7 @@ import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.ejbca.ui.cli.FieldEditor;
 import org.ejbca.util.CliTools;
 
 /**
@@ -56,6 +57,8 @@ public class CaEditPublisherCommand extends BaseCaAdminCommand {
         } catch (CliUsernameException e) {
             return;
         }
+        
+        FieldEditor fieldEditor = new FieldEditor(getLogger());
         try {
             CryptoProviderTools.installBCProvider();
             List<String> argsList = CliTools.getAsModifyableList(args);
@@ -92,7 +95,7 @@ public class CaEditPublisherCommand extends BaseCaAdminCommand {
                 getLogger().info("Publisher '"+name+"' does not exist.");
             } else {
                 // List fields, get values or set value
-                if (!listGetOrSet(listOnly, getOnly, name, field, value, pub)) {
+                if (!fieldEditor.listGetOrSet(listOnly, getOnly, name, field, value, pub)) {
                     // Store the modifies object
                     getLogger().info("Storing modified publisher '"+name+"'...");
                     ejb.getRemoteSession(PublisherSessionRemote.class).changePublisher(getAdmin(cliUserName, cliPassword), name, pub);
@@ -101,7 +104,7 @@ public class CaEditPublisherCommand extends BaseCaAdminCommand {
                     final BasePublisher modpub = ejb.getRemoteSession(PublisherSessionRemote.class).getPublisher(name);
                     
                     // Print return value
-                    getBeanValue(field, modpub);                    
+                    fieldEditor.getBeanValue(field, modpub);                    
                 }
             }
         } catch (Exception e) {
