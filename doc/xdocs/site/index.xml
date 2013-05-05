@@ -48,8 +48,7 @@ new TWTR.Widget({
 
 <td valign="top" id="news">
 <div class="frame">
-<div class="label"><a style="color:white; padding:1em;" href="http://www.primekey.se/Services/Training/EJBCA+Certification/" target="pk">EJBCA Certification</a>
-<a style="color:white; padding:1.8em;" href="http://www.primekey.se/services/training/Open+schedule" target="pk">PKI Training Schedule</a>
+<div class="label"><a style="color:white; padding:1em;" href="http://www.primekey.se/Services/Training/" target="pk">EJBCA PKI Training</a>
 <a style="color:white; padding:1em;" href="http://www.primekey.se/Services/Support/" target="pk">Enterprise Support</a>
 <a style="color:white; padding:1.8em;" href="http://www.primekey.se/Company/Register+to+Receive/Gov+eID+%26+ePassports/" target="pk">Free eID &amp; ePassport booklet</a>
 </div>
@@ -58,15 +57,15 @@ new TWTR.Widget({
 <a href="https://ae.rsaconference.com/US13/portal/newreg.ww" target="rsa"><img src="./images/RSAC-2013_623px.png" alt="Visit PrimeKey at RSA 2013. Free Expo Pass Code." class="banner"/></a>
     <hr/>
  -->    
-  <p><strong>EJBCA 5.0.8 is now out!</strong>
+  <p><strong>EJBCA 5.0.9 is now out!</strong>
   <br />Visit the <a href="download.html">download</a> section. There is also a LiveCD!
   <br />
-  <span class="date"> Date: 2012-03-14</span>  
+  <span class="date"> Date: 2013-03-21</span>  
   </p>  
   <p>
-  <strong>Another EJBCA User Guide!</strong><br />The latest addition is a CMP 3GPP manual. Order it at the <a href="http://www.primekey.se/PKI+shop/">Prime PKI Shop!</a>
+  <strong>Extended CMP User Guide!</strong><br/>The EJBCA CMP 3GPP user guide has been updated with fully interoperability tested 3GPP feature support. Order it at the <a href="http://www.primekey.se/PKI+shop/">Prime PKI Shop!</a>
   <br />
-  <span class="date"> Date: 2012-05-25</span>
+  <span class="date"> Date: 2013-05-05</span>
   </p>
 
   <p><strong>Certified PKI for Customers!</strong><br />
@@ -164,52 +163,6 @@ If you want to contribute to EJBCA, please see <i><a href="donations.html">Contr
 </p>
 </section>
 
-<section name="Sponsors">
-<p>Here is a list of some of the good organizations that have sponsored development of certain features in EJBCA.
-</p>
-    <p>
-    EJBCA 3.1 and later contains support for nCipher HSM. The development of this functionality was sponsored by 
-    Linagora, <a href="http://www.linagora.com/">www.linagora.com</a>.
-    </p>
-    <p>
-    New features in EJBCA 3.2 such as QC statement and external OCSP responders was sponsored by 
-    CTec Security Solutions, <a href="http://www.commguard.com/">http://www.commguard.com/</a>.
-    </p>
-    <p>
-    EJBCA 3.3 and later contains support for LunaHSM (SafeNet). The development of this functionality was sponsored 
-    by Atos Worldline <a href="http://www.atosworldline.com/index_FR.htm">http://www.atosworldline.com/index_FR.htm</a> and done with 
-    the support of Linagora <a href="http://www.linagora.com">http://www.linagora.com</a>.
-    </p>
-    <p>
-    New features in EJBCA 3.3 such as Internal RA Approval and Subject Directory Attributes was sponsored by 
-    Simetri Yazilim A.S., <a href="http://www.simetri.com/">http://www.simetri.com/</a>.
-    </p>
-    <p>
-    New features in EJBCA 3.4 such as CMP, XKMS, services framework and much more was sponsored by 
-    GIE Cartes Bancaires and Linagora.
-    </p>
-    <p>
-    The Marlin Trust Management Organization (MTMO) will be using EJBCA to provide key management services for the commercial 
-    adoption of Marlin DRM. EJBCA 3.4.0 supports RSA and ECC implementations of the Marlin PKI infrastructure.
-    <br/>
-    ECC implementation and other improvements were implemented with the support of the MTMO.
-    </p>
-    <p>
-    EJBCA 3.5 contains generic PKCS#11 interface to HSMs, supporting among others the Utimaco CryptoServer. 
-    This development was sponsored by <a href="http://www.utimaco.com/">Utimaco</a>.
-    </p>
-    <p>
-    New in the HSM support is the <a href="http://www.aepnetworks.com/">AEP</a> Keyper HSM. 
-    </p>
-    <p>
-    EJBCA 3.7 contains support for CVC CAs used for EU EAC ePassports. 
-    This development was sponsored and contributed by the <a href="http://www.polisen.se/">Swedish National Police Board</a>.
-    </p>
-    <p>
-    EJBCA 3.10 contains an enrollment Web GUI for the External RA. 
-    This development was sponsored by <a href="http://www.apnic.net/">APNIC</a>.
-    </p>
-</section>
 </body>
 </document>
 
