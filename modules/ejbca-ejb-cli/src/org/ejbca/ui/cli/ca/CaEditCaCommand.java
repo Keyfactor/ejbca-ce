@@ -48,7 +48,7 @@ public class CaEditCaCommand extends BaseCaAdminCommand {
             "Example: ca editca CAName -listFields\n"+
             "\n"+
             "Use the option -getValue to only get the value of a field in the CA.\n"+
-            "Example: ca editca CAName -getValue caIssuers");
+            "Example: ca editca CAName -getValue CRLPeriod");
             return;
         }
         try {
