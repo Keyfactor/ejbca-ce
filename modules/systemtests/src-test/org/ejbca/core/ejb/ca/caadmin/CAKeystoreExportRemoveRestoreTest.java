@@ -39,6 +39,7 @@ import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.SimpleTime;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -378,10 +379,10 @@ public class CAKeystoreExportRemoveRestoreTest {
                 -1, // revocationReason
                 null, // revocationDate
                 new ArrayList<CertificatePolicy>(), // PolicyId
-                24, // CRLPeriod
-                0, // CRLIssuePeriod
-                10, // CRLOverlapTime
-                0, // DeltaCRLOverlapTime
+                24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
+                0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
+                10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
+                0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
                 new ArrayList<Integer>(), // crlpublishers 
                 true, // Authority Key Identifier
                 false, // Authority Key Identifier Critical
