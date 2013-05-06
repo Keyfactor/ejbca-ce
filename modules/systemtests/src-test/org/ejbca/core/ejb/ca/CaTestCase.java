@@ -76,6 +76,7 @@ import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.SimpleTime;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -317,10 +318,10 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                 signedBy == CAInfo.SELFSIGNED ? CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA
                         : CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 3650, null, // Expiretime
                 CAInfo.CATYPE_X509, signedBy, certificateChain, catoken, "JUnit RSA CA", -1, null, null, // PolicyId
-                24, // CRLPeriod
-                0, // CRLIssueInterval
-                10, // CRLOverlapTime
-                10, // Delta CRL period
+                24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
+                0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
+                10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
+                0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
                 new ArrayList<Integer>(), true, // Authority Key Identifier
                 false, // Authority Key Identifier Critical
                 true, // CRL Number
@@ -542,10 +543,10 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                 catoken,
                 "JUnit RSA CA, we ned also a very long CA description for this CA, because we want to create a CA Data string that is more than 36000 characters or something like that. All this is because Oracle can not set very long strings with the JDBC provider and we must test that we can handle long CAs",
                 -1, null, null, // PolicyId
-                24, // CRLPeriod
-                0, // CRLIssueInterval
-                10, // CRLOverlapTime
-                0, // Delta CRL period
+                24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
+                0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
+                10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
+                0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
                 new ArrayList<Integer>(), true, // Authority Key Identifier
                 false, // Authority Key Identifier Critical
                 true, // CRL Number
@@ -600,10 +601,10 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         final X509CAInfo cainfo = new X509CAInfo(TEST_SHA256_WITH_MFG1_CA_DN, TEST_SHA256_WITH_MFG1_CA_NAME, CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA,
                 365, null, // Expiretime
                 CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catoken, "JUnit RSA CA", -1, null, null, // PolicyId
-                24, // CRLPeriod
-                0, // CRLIssueInterval
-                10, // CRLOverlapTime
-                0, // Delta CRL period
+                24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
+                0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
+                10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
+                0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
                 new ArrayList<Integer>(), true, // Authority Key Identifier
                 false, // Authority Key Identifier Critical
                 true, // CRL Number
@@ -653,10 +654,10 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                 null, // Expiretime
                 CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catoken, "JUnit ECDSA ImplicitlyCA CA", -1, null,
                 policies, // PolicyId
-                24, // CRLPeriod
-                0, // CRLIssueInterval
-                10, // CRLOverlapTime
-                0, // Delta CRL period
+                24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
+                0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
+                10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
+                0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
                 new ArrayList<Integer>(), true, // Authority Key Identifier
                 false, // Authority Key Identifier Critical
                 true, // CRL Number
@@ -703,10 +704,10 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         X509CAInfo cainfo = new X509CAInfo("CN=" + TEST_ECDSA_CA_NAME, TEST_ECDSA_CA_NAME, CAConstants.CA_ACTIVE, new Date(), "",
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365, null, // Expiretime
                 CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catoken, "JUnit ECDSA CA", -1, null, policies, // PolicyId
-                24, // CRLPeriod
-                0, // CRLIssueInterval
-                10, // CRLOverlapTime
-                0, // Delta CRL period
+                24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
+                0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
+                10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
+                0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
                 new ArrayList<Integer>(), true, // Authority Key Identifier
                 false, // Authority Key Identifier Critical
                 true, // CRL Number
@@ -755,10 +756,10 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         X509CAInfo cainfo = new X509CAInfo("CN=" + TEST_ECGOST3410_CA_NAME, TEST_ECGOST3410_CA_NAME, CAConstants.CA_ACTIVE, new Date(), "",
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365, null, // Expiretime
                 CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catoken, "JUnit GOST3410 CA", -1, null, policies, // PolicyId
-                24, // CRLPeriod
-                0, // CRLIssueInterval
-                10, // CRLOverlapTime
-                0, // Delta CRL period
+                24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
+                0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
+                10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
+                0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
                 new ArrayList<Integer>(), true, // Authority Key Identifier
                 false, // Authority Key Identifier Critical
                 true, // CRL Number
@@ -807,10 +808,10 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         X509CAInfo cainfo = new X509CAInfo("CN=" + TEST_DSTU4145_CA_NAME, TEST_DSTU4145_CA_NAME, CAConstants.CA_ACTIVE, new Date(), "",
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365, null, // Expiretime
                 CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catoken, "JUnit DSTU4145 CA", -1, null, policies, // PolicyId
-                24, // CRLPeriod
-                0, // CRLIssueInterval
-                10, // CRLOverlapTime
-                0, // Delta CRL period
+                24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
+                0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
+                10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
+                0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
                 new ArrayList<Integer>(), true, // Authority Key Identifier
                 false, // Authority Key Identifier Critical
                 true, // CRL Number
@@ -888,10 +889,10 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         X509CAInfo cainfo = new X509CAInfo("CN=TESTDSA", "TESTDSA", CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 3650,
                 null, // Expiretime
                 CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catoken, "JUnit DSA CA", -1, null, null, // PolicyId
-                24, // CRLPeriod
-                0, // CRLIssueInterval
-                10, // CRLOverlapTime
-                10, // Delta CRL period
+                24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
+                0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
+                10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
+                0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
                 new ArrayList<Integer>(), true, // Authority Key Identifier
                 false, // Authority Key Identifier Critical
                 true, // CRL Number

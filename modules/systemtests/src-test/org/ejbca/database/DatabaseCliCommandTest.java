@@ -69,6 +69,7 @@ import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.roles.RoleData;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
 import org.easymock.EasyMock;
 import org.ejbca.core.ejb.approval.ApprovalData;
@@ -316,10 +317,10 @@ public class DatabaseCliCommandTest {
         final X509CAInfo cainfo = new X509CAInfo(cadn, "TEST", CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA,
                 3650, null, // Expiretime
                 CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catoken, "JUnit RSA CA", -1, null, null, // PolicyId
-                24, // CRLPeriod
-                0, // CRLIssueInterval
-                10, // CRLOverlapTime
-                10, // Delta CRL period
+                24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
+                0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
+                10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
+                10 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
                 new ArrayList<Integer>(), true, // Authority Key Identifier
                 false, // Authority Key Identifier Critical
                 true, // CRL Number

@@ -56,6 +56,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.SimpleTime;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -438,7 +439,12 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         X509CAInfo cainfo = new X509CAInfo("CN=" + nameOfCA, nameOfCA, CAConstants.CA_ACTIVE, new Date(), "", certProfileId, 365, new Date(
                 System.currentTimeMillis() + 364 * 24 * 3600 * 1000), CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, null, catoken,
-                "Used for testing approvals", -1, null, null, 24, 0, 10, 0, new ArrayList<Integer>(), true, false, true, false, "", "", "", null, "", true,
+                "Used for testing approvals", -1, null, null, 
+                24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
+                0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
+                10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
+                0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
+                new ArrayList<Integer>(), true, false, true, false, "", "", "", null, "", true,
                 extendedcaservices, false, approvalSettings, 1, false, true, false, false, true, true, true, false, true, true,
                 true, null);
         int caID = cainfo.getCAId();
