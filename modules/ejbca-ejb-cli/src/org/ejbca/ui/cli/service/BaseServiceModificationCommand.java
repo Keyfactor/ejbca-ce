@@ -86,7 +86,7 @@ public abstract class BaseServiceModificationCommand extends BaseServiceCommand 
             Properties props;
             
             props = serviceConfig.getWorkerProperties();
-            if (props.containsKey(field)) {
+            if (props.containsKey(field) || field.startsWith("worker.")) {
                 props.setProperty(field, value);
                 getLogger().info("Updated worker property: "+field);
                 serviceConfig.setWorkerProperties(props);
@@ -94,7 +94,7 @@ public abstract class BaseServiceModificationCommand extends BaseServiceCommand 
             }
             
             props = serviceConfig.getIntervalProperties();
-            if (props.containsKey(field)) {
+            if (props.containsKey(field) || field.startsWith("interval.")) {
                 props.setProperty(field, value);
                 getLogger().info("Updated interval property: "+field);
                 serviceConfig.setIntervalProperties(props);
@@ -102,7 +102,7 @@ public abstract class BaseServiceModificationCommand extends BaseServiceCommand 
             }
             
             props = serviceConfig.getActionProperties();
-            if (props.containsKey(field)) {
+            if (props.containsKey(field) || field.startsWith("action.")) {
                 props.setProperty(field, value);
                 getLogger().info("Updated action property: "+field);
                 serviceConfig.setActionProperties(props);
