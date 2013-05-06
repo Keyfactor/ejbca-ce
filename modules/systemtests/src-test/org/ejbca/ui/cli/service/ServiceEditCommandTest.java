@@ -16,6 +16,9 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Properties;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -34,12 +37,13 @@ public class ServiceEditCommandTest extends ServiceTestCase {
     @org.junit.Rule
     public org.junit.rules.TestRule traceLogMethodsRule = new TraceLogMethodsRule();
     
+    private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ServiceEditCommandTest"));
     private ServiceEditCommand serviceEditCommand;
     private static final String SERVICE_NAME = "TestServiceCLIEdit";
     
     private static final String[] EDIT_EMPTY_ARGS = { "edit", SERVICE_NAME };
     private static final String[] EDIT_BOOL_ARGS = { "edit", SERVICE_NAME, "active=false" };
-    private static final String[] EDIT_LIST_ARGS = { "edit", SERVICE_NAME, "pinToIps=10.0.0.1,10.0.0.2" };
+    private static final String[] EDIT_LIST_ARGS = { "edit", SERVICE_NAME, "pinToNodes=10.0.0.1,10.0.0.2" };
     private static final String[] EDIT_CLASSPATH_ARGS = { "edit", SERVICE_NAME, "intervalClassPath=org.ejbca.core.model.services.intervals.PeriodicalInterval" };
     private static final String[] EDIT_PROPERTY_ARGS = { "edit", SERVICE_NAME, "worker.timebeforeexpiring=2000" };
     private static final String[] LIST_FIELDS_ARGS = { "edit", SERVICE_NAME, "-listFields" };
@@ -51,7 +55,7 @@ public class ServiceEditCommandTest extends ServiceTestCase {
     public void setUp() throws Exception {
         CryptoProviderTools.installBCProviderIfNotAvailable();
         serviceEditCommand = new ServiceEditCommand();
-        getServiceSession().removeService(getAdmin(), SERVICE_NAME);
+        getServiceSession().removeService(admin, SERVICE_NAME);
         
         ServiceConfiguration sc = new ServiceConfiguration();
         sc.setWorkerClassPath("org.ejbca.core.model.services.workers.CRLUpdateWorker");
@@ -61,12 +65,12 @@ public class ServiceEditCommandTest extends ServiceTestCase {
         props.setProperty("worker.timebeforeexpiring", "1000"); 
         props.setProperty("worker.timeunit", "DAYS");
         sc.setWorkerProperties(props);
-        getServiceSession().addService(getAdmin(), SERVICE_NAME, sc);
+        getServiceSession().addService(admin, SERVICE_NAME, sc);
     }
 
     @After
     public void tearDown() throws Exception {
-        getServiceSession().removeService(getAdmin(), SERVICE_NAME);
+        getServiceSession().removeService(admin, SERVICE_NAME);
     }
     
     @Test
@@ -83,10 +87,14 @@ public class ServiceEditCommandTest extends ServiceTestCase {
         
         ServiceConfiguration sc = getServiceSession().getService(SERVICE_NAME);
         assertEquals("active", false, sc.isActive());
+        assertEquals("workerClassPath", "org.ejbca.core.model.services.workers.CRLUpdateWorker", sc.getWorkerClassPath());
         assertEquals("intervalClassPath", "org.ejbca.core.model.services.intervals.PeriodicalInterval", sc.getIntervalClassPath());
-        assertEquals("workerClassPath", "org.ejbca.core.model.services.intervals.PeriodicalInterval", sc.getWorkerClassPath());
         Properties props = sc.getWorkerProperties();
         assertEquals("worker.timebeforeexpiring", "2000", props.getProperty("worker.timebeforeexpiring"));
+        String[] pinToNodes = sc.getPinToNodes();
+        assertEquals("pinToNodes length", 2, pinToNodes.length);
+        assertEquals("pinToNodes[0]", "10.0.0.1", pinToNodes[0]);
+        assertEquals("pinToNodes[0]", "10.0.0.2", pinToNodes[1]);
     }
     
     @Test

@@ -15,6 +15,9 @@ package org.ejbca.ui.cli.service;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -33,6 +36,7 @@ public class ServiceDeleteCommandTest extends ServiceTestCase {
     @org.junit.Rule
     public org.junit.rules.TestRule traceLogMethodsRule = new TraceLogMethodsRule();
     
+    private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ServiceDeleteCommandTest"));
     private ServiceDeleteCommand serviceDeleteCommand;
     private static final String SERVICE_NAME = "TestServiceCLIDelete";
     
@@ -44,15 +48,15 @@ public class ServiceDeleteCommandTest extends ServiceTestCase {
     public void setUp() throws Exception {
         CryptoProviderTools.installBCProviderIfNotAvailable();
         serviceDeleteCommand = new ServiceDeleteCommand();
-        getServiceSession().removeService(getAdmin(), SERVICE_NAME);
+        getServiceSession().removeService(admin, SERVICE_NAME);
         
         ServiceConfiguration sc = new ServiceConfiguration();
-        getServiceSession().addService(getAdmin(), SERVICE_NAME, sc);
+        getServiceSession().addService(admin, SERVICE_NAME, sc);
     }
 
     @After
     public void tearDown() throws Exception {
-        getServiceSession().removeService(getAdmin(), SERVICE_NAME);
+        getServiceSession().removeService(admin, SERVICE_NAME);
     }
     
     @Test
