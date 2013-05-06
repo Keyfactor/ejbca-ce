@@ -112,6 +112,7 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.SimpleTime;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionRemote;
@@ -1057,10 +1058,10 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 
             X509CAInfo cainfo = new X509CAInfo(dn, dn, CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365, null, // Expiretime
                     CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catoken, "JUnit ECDSA CA", -1, null, policies, // PolicyId
-                    24, // CRLPeriod
-                    0, // CRLIssueInterval
-                    10, // CRLOverlapTime
-                    0, // DeltaCRLPeriod
+                    24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
+                    0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
+                    10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
+                    0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
                     new ArrayList<Integer>(), true, // Authority Key Identifier
                     false, // Authority Key Identifier Critical
                     true, // CRL Number
@@ -1155,10 +1156,10 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 
             X509CAInfo cainfo = new X509CAInfo(dn, dn, CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365, null, // Expiretime
                     CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catoken, "JUnit DSA CA", -1, null, policies, // PolicyId
-                    24, // CRLPeriod
-                    0, // CRLIssueInterval
-                    10, // CRLOverlapTime
-                    0, // DeltaCRLPeriod
+                    24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
+                    0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
+                    10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
+                    0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
                     new ArrayList<Integer>(), true, // Authority Key Identifier
                     false, // Authority Key Identifier Critical
                     true, // CRL Number

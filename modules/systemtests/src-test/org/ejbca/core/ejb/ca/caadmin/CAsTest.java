@@ -92,6 +92,7 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -201,10 +202,10 @@ public class CAsTest extends CaTestCase {
 
         X509CAInfo cainfo = new X509CAInfo("CN=TEST", caName, CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 3650, null, // Expiretime
                 CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catoken, "JUnit RSA CA", -1, null, null, // PolicyId
-                24, // CRLPeriod
-                0, // CRLIssueInterval
-                10, // CRLOverlapTime
-                10, // Delta CRL period
+                24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
+                0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
+                10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
+                0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
                 new ArrayList<Integer>(), true, // Authority Key Identifier
                 false, // Authority Key Identifier Critical
                 true, // CRL Number
@@ -488,10 +489,10 @@ public class CAsTest extends CaTestCase {
                     caToken,
                     "JUnit RSA CA, we ned also a very long CA description for this CA, because we want to create a CA Data string that is more than 36000 characters or something like that. All this is because Oracle can not set very long strings with the JDBC provider and we must test that we can handle long CAs",
                     -1, null, null, // PolicyId
-                    24, // CRLPeriod
-                    0, // CRLIssueInterval
-                    10, // CRLOverlapTime
-                    0, // Delta CRL period
+                    24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
+                    0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
+                    10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
+                    0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
                     new ArrayList<Integer>(), true, // Authority Key Identifier
                     false, // Authority Key Identifier Critical
                     true, // CRL Number
@@ -1113,10 +1114,10 @@ public class CAsTest extends CaTestCase {
                     CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 1000, null, // Expiretime
                     CAInfo.CATYPE_X509, CAInfo.SIGNEDBYEXTERNALCA, // Signed by the first TEST CA we created
                     (Collection<Certificate>) null, caToken, "JUnit RSA CA Signed by external", -1, null, null, // PolicyId
-                    24, // CRLPeriod
-                    0, // CRLIssueInterval
-                    10, // CRLOverlapTime
-                    10, // Delta CRL period
+                    24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
+                    0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
+                    10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
+                    0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
                     new ArrayList<Integer>(), true, // Authority Key Identifier
                     false, // Authority Key Identifier Critical
                     true, // CRL Number
@@ -1493,10 +1494,10 @@ public class CAsTest extends CaTestCase {
         X509CAInfo cainfo = new X509CAInfo("CN=TESTFAIL", "TESTFAIL", CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 3650,
                 null, // Expiretime
                 CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, caToken, "JUnit RSA CA", -1, null, null, // PolicyId
-                24, // CRLPeriod
-                0, // CRLIssueInterval
-                10, // CRLOverlapTime
-                10, // Delta CRL period
+                24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
+                0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
+                10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
+                0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
                 new ArrayList<Integer>(), true, // Authority Key Identifier
                 false, // Authority Key Identifier Critical
                 true, // CRL Number
