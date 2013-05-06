@@ -14,6 +14,7 @@
 package org.ejbca.ui.cli.service;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.services.ServiceSessionRemote;
 import org.ejbca.ui.cli.BaseCommand;
 import org.ejbca.ui.cli.CliUsernameException;
@@ -33,6 +34,7 @@ public abstract class BaseServiceCommand extends BaseCommand {
     
     @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
+        CryptoProviderTools.installBCProvider();
         try {
             args = parseUsernameAndPasswordFromArgs(args);
         } catch (CliUsernameException e) {
