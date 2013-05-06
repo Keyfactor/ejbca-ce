@@ -35,7 +35,18 @@ public class FieldEditor {
         this.logger = logger;
     }
     
-    
+    /** List of fields that should be excluded from bean lists. This should contain fields that should never be changed by a user */
+    private static final ArrayList<String> excluded = new ArrayList<String>();
+    static {
+        excluded.add("type");
+        excluded.add("version");
+        excluded.add("class");
+        excluded.add("latestVersion");
+        excluded.add("upgraded");
+        excluded.add("CAId");
+        excluded.add("CAType");
+        excluded.add("CAToken");
+    }
     /** Lists methods in a class the has "setXyz", and prints them as "Xyz".
      * Ignores (does not list) type, version, latestVersion, upgrade and class
      * 
@@ -45,10 +56,8 @@ public class FieldEditor {
         DynaBean wrapper = new WrapDynaBean(obj);
         DynaProperty[] props = wrapper.getDynaClass().getDynaProperties();
         for (DynaProperty dynaProperty : props) {
-            if (!dynaProperty.getName().equals("type") && !dynaProperty.getName().equals("version") 
-                    && !dynaProperty.getName().equals("class") && !dynaProperty.getName().equals("latestVersion")
-                    && !dynaProperty.getName().equals("upgraded") ) {
-                logger.info(dynaProperty.getName()+", "+dynaProperty.getType());
+            if (!excluded.contains(dynaProperty.getName())) {
+                logger.info(dynaProperty.getName()+", "+dynaProperty.getType());                
             }
         }
     }
