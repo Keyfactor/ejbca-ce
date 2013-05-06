@@ -3737,8 +3737,19 @@ In some cases you need to generate the request and certificate with explicit par
 </p>
 <ul>
 <li>When generating requests with <i>clientToolBox PKCS11HSMKeyTool certreq</i> you can specify a flag to use explicit parameters instead of named curves. Named curves is the default.</li>
+<li>When creating CAs with <i>ejbca.sh ca init</i> you can specify a flag to use explicit parameters instead of named curves. Named curves is the default.</li>
 <li>When EJBCA issues certificate with public keys from certificate requests (csr's) the key in the certificate will be the same as in the csr. If the csr uses explicit parameters, so will the issued certificate.</li>
 </ul>
+<p>
+If you generate a CA with explicit ECC parameters in the CA certifiate you will not be able to run commands like 'ejbca.sh ca listcas' because Java only supports named curves when serializing certificates.
+You can resolve this by adding the BC provider as the first provider:
+</p>
+<source>
+$ sudo vi /etc/java-7-openjdk/security/java.security
+
+security.provider.1=org.bouncycastle.jce.provider.BouncyCastleProvider
+(renumber the ones below)
+</source>
 </subsection>
 <subsection name="Named curves">
 <p>
