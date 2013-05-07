@@ -64,20 +64,12 @@ public class OcspResponseGeneratorSessionTest {
     private class TestOcspResponseGeneratorSessionBean extends OcspResponseGeneratorSessionBean {
 
         @Override
-        protected void initiateIfNecessary() {
-            // Do nothing.           
-        }
-
-        @Override
         public void reloadTokenAndChainCache(String password) {
             // Do nothing
-            
         }
 
         @Override
         public void reloadTokenAndChainCache(String p11Password, String p12StorePassword, String p12KeyPassword) {
         }
-        
     }
-
 }
