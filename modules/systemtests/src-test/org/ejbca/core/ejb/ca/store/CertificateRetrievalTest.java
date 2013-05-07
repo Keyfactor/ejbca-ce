@@ -177,7 +177,7 @@ public class CertificateRetrievalTest {
                                                                null);
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() != 0);
-
+        log.debug("Query returned " + certfps.size() + " entries.");
         Iterator<Certificate> iter = certfps.iterator();
         boolean found = false;
         while (iter.hasNext()) {
@@ -190,6 +190,7 @@ public class CertificateRetrievalTest {
             String fp = CertTools.getFingerprintAsString(cert);
             if (fp.equals(subCaFp)) {
                 found = true;
+                break;
             }
         }
         assertTrue(found);
@@ -207,7 +208,7 @@ public class CertificateRetrievalTest {
                                         "CN=Subordinate CA,O=Anatom,ST=Some-State,C=SE");
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() != 0);
-
+        log.debug("Query returned " + certfps.size() + " entries.");
         Iterator<Certificate> iter = certfps.iterator();
         boolean found = false;
         while (iter.hasNext()) {
@@ -220,6 +221,7 @@ public class CertificateRetrievalTest {
             String fp = CertTools.getFingerprintAsString(cert);
             if (fp.equals(endEntityFp)) {
                 found = true;
+                break;
             }
         }
         assertTrue(found);
@@ -237,7 +239,7 @@ public class CertificateRetrievalTest {
                                                                null);
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() != 0);
-
+        log.debug("Query returned " + certfps.size() + " entries.");
         Iterator<Certificate> iter = certfps.iterator();
         boolean found = false;
         while (iter.hasNext()) {
@@ -250,6 +252,7 @@ public class CertificateRetrievalTest {
             String fp = CertTools.getFingerprintAsString(cert);
             if (fp.equals(rootCaFp)) {
                 found = true;
+                break;
             }
         }
         assertTrue(found);
@@ -324,12 +327,14 @@ public class CertificateRetrievalTest {
                                                                CertTools.getSubjectDN(rootcacert));
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() >= 1);
+        log.debug("Query returned " + certfps.size() + " entries.");
         Iterator<Certificate> iter = certfps.iterator();
         boolean found = false;
         while (iter.hasNext()) {
             Certificate cert = iter.next();
             if (subCaFp.equals(CertTools.getFingerprintAsString(cert))) {
                 found = true;
+                break;
             }
         }
         assertTrue("Unable to find all test certificates.", found);

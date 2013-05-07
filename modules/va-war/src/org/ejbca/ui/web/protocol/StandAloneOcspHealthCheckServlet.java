@@ -27,7 +27,10 @@ import javax.servlet.http.HttpServlet;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
 import org.cesecore.certificates.ocsp.cache.CryptoTokenAndChain;
+import org.cesecore.certificates.ocsp.cache.OcspSigningCache;
+import org.cesecore.certificates.ocsp.cache.OcspSigningCacheEntry;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.CertTools;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.protocol.ocsp.OCSPUtil;
 import org.ejbca.ui.web.pub.cluster.ValidationAuthorityHealthCheck;
@@ -41,6 +44,7 @@ import org.ejbca.ui.web.pub.cluster.ValidationAuthorityHealthCheck;
  * @version $Id$
  *
  */
+@Deprecated // TODO: Merge this with regular health-check
 public class StandAloneOcspHealthCheckServlet extends HttpServlet implements IHealtChecker {
 
     private static final long serialVersionUID = -3256717200117000894L;
@@ -54,7 +58,6 @@ public class StandAloneOcspHealthCheckServlet extends HttpServlet implements IHe
 
     @Override
     public void init(ServletConfig config) throws ServletException {
-
         // session must be created before health check could be done
         ValidationAuthorityHealthCheck.setHealtChecker(this);
     }
@@ -64,53 +67,51 @@ public class StandAloneOcspHealthCheckServlet extends HttpServlet implements IHe
         final StringWriter sw = new StringWriter();
         final PrintWriter pw = new PrintWriter(sw);
         try {
-            Collection<CryptoTokenAndChain> allCryptoTokenAndChainObjects = ocspResponseGeneratorSession.getCacheValues();
-            if (allCryptoTokenAndChainObjects.size() == 0) {
+            final Collection<OcspSigningCacheEntry> ocspSigningCacheEntries = OcspSigningCache.INSTANCE.getEntries();
+            if (ocspSigningCacheEntries.isEmpty()) {
                 final String errMsg = intres.getLocalizedMessage("ocsp.errornosignkeys");
                 pw.println();
                 pw.print(errMsg);
                 log.error(errMsg);
             } else {
-                for (CryptoTokenAndChain cryptoTokenAndChain : allCryptoTokenAndChainObjects) {
-                    X509Certificate[] certificateChain = cryptoTokenAndChain.getChain();
-          
-                    final String errMsg = intres.getLocalizedMessage("ocsp.errorocspkeynotusable", certificateChain[1].getSubjectDN(),
-                            certificateChain[0].getSerialNumber().toString(16));
-                    final PrivateKey privKey = cryptoTokenAndChain.getPrivateKey();
-                    if (privKey == null) {
+                for (OcspSigningCacheEntry ocspSigningCacheEntry : ocspSigningCacheEntries) {
+                    // Only verify non-CA responders
+                    final X509Certificate ocspSigningCertificate = ocspSigningCacheEntry.getOcspSigningCertificate();
+                    if (ocspSigningCertificate == null) {
+                        continue;
+                    }
+                    final String subjectDn = CertTools.getSubjectDN(ocspSigningCacheEntry.getCaCertificateChain().get(0));
+                    final String serialNumber = CertTools.getSerialNumber(ocspSigningCacheEntry.getOcspSigningCertificate()).toString(16);
+                    final String errMsg = intres.getLocalizedMessage("ocsp.errorocspkeynotusable", subjectDn, serialNumber);
+                    final PrivateKey privateKey = ocspSigningCacheEntry.getPrivateKey();
+                    if (privateKey == null) {
                         pw.println();
                         pw.print(errMsg);
                         log.error("No key available. " + errMsg);
                         continue;
                     }
-                    final String providerName = cryptoTokenAndChain.getSignProviderName();
-                    final X509Certificate entityCert = certificateChain[0]; 
-                            //signingEntity.keyContainer.getCertificate(); // must be after getKey
-         
-                    if ( doValidityTest && !OCSPUtil.isCertificateValid(entityCert) ) {
+                    final String providerName = ocspSigningCacheEntry.getSignatureProviderName();
+                    if (doValidityTest && !OCSPUtil.isCertificateValid(ocspSigningCertificate) ) {
                         pw.println();
                         pw.print(errMsg);
                         continue;
                     }
-                    
                     if (doSignTest) {
                         try {
-                            KeyTools.testKey(privKey, entityCert.getPublicKey(), providerName);
+                            KeyTools.testKey(privateKey, ocspSigningCertificate.getPublicKey(), providerName);
                         } catch (InvalidKeyException e) {
                             // thrown by testKey
                             pw.println();
                             pw.print(errMsg);
-                            log.error("Key not working. SubjectDN '"+entityCert.getSubjectDN().toString()+"'. Error comment '"+errMsg+"'. Message '"+e.getMessage());
+                            log.error("Key not working. SubjectDN '"+subjectDn+"'. Error comment '"+errMsg+"'. Message '"+e.getMessage());
                             continue;                   
                         }
                     }
                     if (log.isDebugEnabled()) {
                         log.debug("Test of \""+errMsg+"\" OK!");                          
                     }
-                    
                 }
-            }       
-
+            }
         } catch (Exception e) {
             final String errMsg = intres.getLocalizedMessage("ocsp.errorloadsigningcerts");
             log.error(errMsg, e);
@@ -119,5 +120,4 @@ public class StandAloneOcspHealthCheckServlet extends HttpServlet implements IHe
         pw.flush();
         return sw.toString();
     }
-
 }

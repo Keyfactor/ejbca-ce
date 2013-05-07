@@ -12,27 +12,17 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp;
 
-import java.util.Collection;
-
 import javax.ejb.Local;
-
-import org.cesecore.certificates.ocsp.cache.CryptoTokenAndChain;
 
 /**
  * Local interface for OcspResponseGeneratorSession
  * 
  * @version $Id: IntegratedOcspResponseGeneratorSessionLocal.java 14382 2012-03-20 11:50:54Z mikekushner $
- * 
  */
 @Local
-public interface OcspResponseGeneratorSessionLocal extends OcspResponseGeneratorSession{
+public interface OcspResponseGeneratorSessionLocal extends OcspResponseGeneratorSession {
 
-    /**
-     * 
-     * @return the contents of the token and chain cache.
-     */
-    Collection<CryptoTokenAndChain> getCacheValues();
-    
-    void reloadTokenAndChainCache();
-    
+    void reloadOcspSigningCache();
+
+    void initTimers();    
 }

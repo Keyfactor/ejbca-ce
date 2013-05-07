@@ -104,7 +104,7 @@ org.ejbca.core.ejb.signer.InternalKeyBindingRules
 		<h:message for="cryptoToken"/>
 		<h:outputLabel for="keyPairAlias" value="Key Pair Alias:"/>
 		<h:panelGroup id="keyPairAlias">
-			<h:panelGroup rendered="#{internalKeyBindingMBean.inEditMode and internalKeyBindingMBean.cryptoTokenActive}">
+			<h:panelGroup rendered="#{internalKeyBindingMBean.inEditMode and internalKeyBindingMBean.cryptoTokenActive and !internalKeyBindingMBean.boundToCertificate}">
 			<h:selectOneMenu value="#{internalKeyBindingMBean.currentKeyPairAlias}"
 				onchange="document.getElementById('internalkeybinding:reloadKeyPairAlias').click();">
 				<f:selectItems value="#{internalKeyBindingMBean.availableKeyPairAliases}"/>
@@ -112,7 +112,7 @@ org.ejbca.core.ejb.signer.InternalKeyBindingRules
 			<h:commandButton id="reloadKeyPairAlias" value="Update next" action="#{internalKeyBindingMBean.reloadKeyPairAlias}"/>
 			<script>document.getElementById('internalkeybinding:reloadKeyPairAlias').style.display = 'none';</script>
 			</h:panelGroup>
-			<h:outputText rendered="#{!internalKeyBindingMBean.inEditMode or !internalKeyBindingMBean.cryptoTokenActive}"
+			<h:outputText rendered="#{!internalKeyBindingMBean.inEditMode or !internalKeyBindingMBean.cryptoTokenActive || internalKeyBindingMBean.boundToCertificate}"
 				value="#{internalKeyBindingMBean.currentKeyPairAlias}"/>
 		</h:panelGroup>
 		<h:message for="keyPairAlias"/>
@@ -139,6 +139,12 @@ org.ejbca.core.ejb.signer.InternalKeyBindingRules
 				value="#{internalKeyBindingMBean.currentNextKeyPairAlias}"/>
 		</h:panelGroup>
 		<h:message for="nextKeyPairAlias" rendered="#{internalKeyBindingMBean.currentInternalKeyBindingId ne '0'}"/>
+		<h:outputLabel for="certificateId" value="Bound Certificate:"
+			rendered="#{internalKeyBindingMBean.boundToCertificate}"/>
+		<h:panelGroup id="certificateId" rendered="#{internalKeyBindingMBean.boundToCertificate}">
+			<h:outputText value="TODO"/>
+		</h:panelGroup>
+		<h:message for="certificateId" rendered="#{internalKeyBindingMBean.boundToCertificate}"/>
 	</h:panelGrid>
 	<h3>Trusted certificates</h3>
 	<h:outputText rendered="#{internalKeyBindingMBean.trustedCertificates.rowCount == 0}" value="Trusting ANY known CA certificate"/>

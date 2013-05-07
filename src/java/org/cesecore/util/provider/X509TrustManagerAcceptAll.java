@@ -17,6 +17,9 @@ import java.security.cert.X509Certificate;
 
 import javax.net.ssl.X509TrustManager;
 
+import org.apache.log4j.Logger;
+import org.cesecore.util.CertTools;
+
 /**
  * This trust manager may be used used by a client that does not bother to verify the TLS certificate chain of the server.
  * Could be us used when you are fetching things from the server that are signed by the server (like certificates).
@@ -26,6 +29,8 @@ import javax.net.ssl.X509TrustManager;
  */
 public class X509TrustManagerAcceptAll implements X509TrustManager {
 
+    private static final Logger log = Logger.getLogger(X509TrustManagerAcceptAll.class);
+    
     /**
      */
     public X509TrustManagerAcceptAll() {
@@ -34,22 +39,36 @@ public class X509TrustManagerAcceptAll implements X509TrustManager {
     /* (non-Javadoc)
      * @see javax.net.ssl.X509TrustManager#checkClientTrusted(java.security.cert.X509Certificate[], java.lang.String)
      */
+    @Override
     public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
         // do nothing
+        if (log.isDebugEnabled()) {
+            log.debug("checkClientTrusted: SubjectDN: " + CertTools.getSubjectDN(chain[0]));
+            log.debug("checkClientTrusted: IssuerDN:  " + CertTools.getIssuerDN(chain[0]));
+        }
     }
 
     /* (non-Javadoc)
      * @see javax.net.ssl.X509TrustManager#checkServerTrusted(java.security.cert.X509Certificate[], java.lang.String)
      */
+    @Override
     public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
         // do nothing
+        if (log.isDebugEnabled()) {
+            log.debug("checkServerTrusted: SubjectDN: " + CertTools.getSubjectDN(chain[0]));
+            log.debug("checkServerTrusted: IssuerDN:  " + CertTools.getIssuerDN(chain[0]));
+        }
     }
 
     /* (non-Javadoc)
      * @see javax.net.ssl.X509TrustManager#getAcceptedIssuers()
      */
+    @Override
     public X509Certificate[] getAcceptedIssuers() {
         // only called from server side
+        if (log.isDebugEnabled()) {
+            log.debug(">getAcceptedIssuers");
+        }
         return null;
     }
 

@@ -15,12 +15,16 @@ package org.ejbca.core.ejb.signer;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
+import java.text.SimpleDateFormat;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.cesecore.internal.UpgradeableDataHashMap;
@@ -35,7 +39,6 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(InternalKeyBindingBase.class);
     private static final String PROP_NEXT_KEY_PAIR_ALIAS = "nextKeyPairAlias";
-    private static final String PROP_NEXT_KEY_PAIR_COUNTER = "nextKeyPairCounter";
     private static final String PROP_TRUSTED_CERTIFICATE_REFERENCES = "trustedCertificateReferences";
     private static final String PROP_SIGNATURE_ALGORITHM = "signatureAlgorithm";
     private static final String BASECLASS_PREFIX = "BASECLASS_";
@@ -128,12 +131,6 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     public void setNextKeyPairAlias(final String nextKeyPairAlias) {
         putData(PROP_NEXT_KEY_PAIR_ALIAS, nextKeyPairAlias);
     }
-    private Long getNextKeyPairCounter() {
-        return getDataInternal(PROP_NEXT_KEY_PAIR_COUNTER, Long.valueOf(0L));
-    }
-    private void setNextKeyPairCounter(Long nextKeyPairCounter) {
-        putDataInternal(PROP_NEXT_KEY_PAIR_COUNTER, nextKeyPairCounter);
-    }
 
     @Override
     public void updateCertificateIdAndCurrentKeyAlias(String certificateId) {
@@ -142,25 +139,26 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
         setNextKeyPairAlias(null);
     }
 
+    private static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMddHHmmss");
+    private static Pattern DATE_FORMAT_PATTERN = Pattern.compile("_\\d{8}\\d{6}$");
+    
+    private String getNewAlias(String oldAlias) {
+        final Matcher matcher = DATE_FORMAT_PATTERN.matcher(oldAlias);
+        final String newPostFix = "_" + DATE_FORMAT.format(new Date());
+        return matcher.find() ? matcher.replaceAll(newPostFix) : oldAlias + newPostFix;
+    }
+
     @Override
     public void generateNextKeyPairAlias() {
         if (getNextKeyPairAlias() != null) {
             return;
         }
         final String currentKeyPairAlias = getKeyPairAlias();
-        String nextKeyPairAlias;
-        Long nextKeyPairCounter = getNextKeyPairCounter();
-        int indexOfPostFix = currentKeyPairAlias.lastIndexOf("_" + nextKeyPairCounter);
-        nextKeyPairCounter = Long.valueOf(nextKeyPairCounter.longValue() + 1L);
-        if (indexOfPostFix == -1) {
-            // No postfix present, append
-            nextKeyPairAlias = currentKeyPairAlias + "_" + nextKeyPairCounter.toString();
-        } else {
-            // Post fix present, replace
-            nextKeyPairAlias = currentKeyPairAlias.substring(0, indexOfPostFix) + "_" + nextKeyPairCounter.toString();
+        final String nextKeyPairAlias = getNewAlias(currentKeyPairAlias);
+        if (log.isDebugEnabled()) {
+            log.debug("nextKeyPairAlias for internalKeyBinding " + internalKeyBindingId + " will be " + nextKeyPairAlias);
         }
         setNextKeyPairAlias(nextKeyPairAlias);
-        setNextKeyPairCounter(nextKeyPairCounter);
     }
 
     @Override

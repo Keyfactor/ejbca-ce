@@ -12,25 +12,22 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp;
 
-import java.lang.reflect.Field;
-import java.math.BigInteger;
-import java.security.cert.CertificateEncodingException;
+import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
-import java.util.Collection;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
-import org.bouncycastle.cert.ocsp.OCSPException;
-import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
-import org.cesecore.certificates.ocsp.cache.CryptoTokenAndChain;
-import org.cesecore.certificates.ocsp.cache.TokenAndChainCache;
-import org.cesecore.config.OcspConfiguration;
+import org.cesecore.certificates.ocsp.cache.OcspSigningCache;
+import org.cesecore.certificates.ocsp.cache.OcspSigningCacheEntry;
 import org.cesecore.jndi.JndiConstants;
+import org.ejbca.core.ejb.signer.InternalKeyBinding;
+import org.ejbca.core.ejb.signer.impl.OcspKeyBinding;
 
 /**
  * Test session bean used to do some nasty manipulation on StandaloneOcspResponseGeneratorSessionBean
@@ -40,29 +37,40 @@ import org.cesecore.jndi.JndiConstants;
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "OcspResponseGeneratorTestSessionRemote")
 @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-public class OcspResponseGeneratorTestSessionBean extends OcspResponseGeneratorSessionBean implements
+public class OcspResponseGeneratorTestSessionBean implements
         OcspResponseGeneratorTestSessionRemote, OcspResponseGeneratorTestSessionLocal {
 
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
+    @EJB
+    private OcspResponseGeneratorSessionLocal ocspResponseGeneratorSession;
     
     @Override
-    public void replaceTokenAndChainCache(Map<Integer, CryptoTokenAndChain> newCache) throws CertificateEncodingException, OCSPException, IllegalArgumentException, IllegalAccessException, SecurityException, NoSuchFieldException {
-        Field cacheField = OcspResponseGeneratorSessionBean.class.getDeclaredField("cache");
-        cacheField.setAccessible(true);
-        TokenAndChainCache cache = (TokenAndChainCache) cacheField.get(this);
-        X509Certificate latestCertificate = certificateStoreSession.findLatestX509CertificateBySubject(OcspConfiguration.getDefaultResponderId());
-        cache.updateCache(newCache, new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), latestCertificate, new BigInteger("1")));
+    public void replaceOcspSigningCache(List<X509Certificate> caCertificateChain, X509Certificate ocspSigningCertificate, PrivateKey privateKey,
+            String signatureProviderName, InternalKeyBinding ocspKeyBinding) {
+        OcspSigningCacheEntry ocspSigningCacheEntry = new OcspSigningCacheEntry(caCertificateChain, ocspSigningCertificate, privateKey,
+                signatureProviderName, (OcspKeyBinding) ocspKeyBinding);
+        try {
+            OcspSigningCache.INSTANCE.stagingStart();
+            OcspSigningCache.INSTANCE.stagingAdd(ocspSigningCacheEntry);
+            OcspSigningCache.INSTANCE.stagingCommit();
+        } finally {
+            OcspSigningCache.INSTANCE.stagingRelease();
+        }
     }
     
     @Override
-    public Collection<CryptoTokenAndChain> getCacheValues() {
-        return super.getCacheValues();
+    public List<X509Certificate> getCacheOcspCertificates() {
+        final List<X509Certificate> certificates = new ArrayList<X509Certificate>();
+        for (OcspSigningCacheEntry entry : OcspSigningCache.INSTANCE.getEntries()) {
+            certificates.add(entry.getFullCertificateChain().get(0));
+        }
+        return certificates;
     }
-    
     @Override
-    public void reloadTokenAndChainCache() {
-        super.reloadTokenAndChainCache();
+    public void reloadOcspSigningCache() {
+        ocspResponseGeneratorSession.reloadOcspSigningCache();
     }
+
 }
 
