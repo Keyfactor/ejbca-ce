@@ -73,6 +73,7 @@ public class ServiceInfoCommand extends BaseServiceCommand {
         info("Description", serviceConfig.getDescription());
     }
     
+    /** Displays "name: value" with proper alignment */
     private void info(String name, String value) {
         if (value == null) {
             value = "null";
