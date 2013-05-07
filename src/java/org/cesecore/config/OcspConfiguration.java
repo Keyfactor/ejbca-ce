@@ -52,6 +52,7 @@ public class OcspConfiguration {
     public static final String REKEYING_TRIGGERING_PASSWORD = "ocsp.rekeying.trigging.password";
     public static final String REKEYING_UPDATE_TIME_IN_SECONDS = "ocsp.rekeying.update.time.in.seconds";
     public static final String REKEYING_SAFETY_MARGIN_IN_SECONDS = "ocsp.rekeying.safety.margin.in.seconds";
+    public static final String UNTIL_NEXT_UPDATE = "ocsp.untilNextUpdate";
     
     public static final int RESTRICTONISSUER = 0;
     public static final int RESTRICTONSIGNER = 1;
@@ -366,7 +367,7 @@ public class OcspConfiguration {
         Configuration config = ConfigurationHolder.instance();
         String key = "ocsp." + certProfileId + ".untilNextUpdate";
         if ((certProfileId == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) || (!config.containsKey(key))) {
-            key = "ocsp.untilNextUpdate";
+            key = UNTIL_NEXT_UPDATE;
         }
         try {
             value = (config.getLong(key, value) * 1000);
