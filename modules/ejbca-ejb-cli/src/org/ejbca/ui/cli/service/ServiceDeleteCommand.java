@@ -13,8 +13,6 @@
 package org.ejbca.ui.cli.service;
 
 import org.ejbca.core.ejb.services.ServiceSessionRemote;
-import org.ejbca.core.model.services.ServiceConfiguration;
-import org.ejbca.core.model.services.ServiceExistsException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
