@@ -10,12 +10,14 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.signer;
+package org.ejbca.core.ejb.keybind;
 
 import java.util.List;
 import java.util.Map;
 
 import javax.ejb.Local;
+
+import org.ejbca.core.ejb.keybind.InternalKeyBinding;
 
 /**
  * Create Read Update Delete (CRUD) interface for InternalKeyBindingData.

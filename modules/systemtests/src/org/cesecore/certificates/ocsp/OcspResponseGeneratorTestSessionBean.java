@@ -26,8 +26,8 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.ocsp.cache.OcspSigningCache;
 import org.cesecore.certificates.ocsp.cache.OcspSigningCacheEntry;
 import org.cesecore.jndi.JndiConstants;
-import org.ejbca.core.ejb.signer.InternalKeyBinding;
-import org.ejbca.core.ejb.signer.impl.OcspKeyBinding;
+import org.ejbca.core.ejb.keybind.InternalKeyBinding;
+import org.ejbca.core.ejb.keybind.impl.OcspKeyBinding;
 
 /**
  * Test session bean used to do some nasty manipulation on StandaloneOcspResponseGeneratorSessionBean

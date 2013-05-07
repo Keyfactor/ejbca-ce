@@ -124,9 +124,9 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.log.ProbableErrorHandler;
 import org.cesecore.util.log.SaferAppenderListener;
 import org.cesecore.util.log.SaferDailyRollingFileAppender;
-import org.ejbca.core.ejb.signer.InternalKeyBindingMgmtSessionLocal;
-import org.ejbca.core.ejb.signer.InternalKeyBindingStatus;
-import org.ejbca.core.ejb.signer.impl.OcspKeyBinding;
+import org.ejbca.core.ejb.keybind.InternalKeyBindingMgmtSessionLocal;
+import org.ejbca.core.ejb.keybind.InternalKeyBindingStatus;
+import org.ejbca.core.ejb.keybind.impl.OcspKeyBinding;
 
 /**
  * This SSB generates OCSP responses. 

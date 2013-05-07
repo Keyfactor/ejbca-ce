@@ -48,14 +48,14 @@ import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.CertTools;
-import org.ejbca.core.ejb.signer.CertificateImportException;
-import org.ejbca.core.ejb.signer.InternalKeyBinding;
-import org.ejbca.core.ejb.signer.InternalKeyBindingInfo;
-import org.ejbca.core.ejb.signer.InternalKeyBindingMgmtSessionLocal;
-import org.ejbca.core.ejb.signer.InternalKeyBindingNameInUseException;
-import org.ejbca.core.ejb.signer.InternalKeyBindingProperty;
-import org.ejbca.core.ejb.signer.InternalKeyBindingRules;
-import org.ejbca.core.ejb.signer.InternalKeyBindingStatus;
+import org.ejbca.core.ejb.keybind.CertificateImportException;
+import org.ejbca.core.ejb.keybind.InternalKeyBinding;
+import org.ejbca.core.ejb.keybind.InternalKeyBindingInfo;
+import org.ejbca.core.ejb.keybind.InternalKeyBindingMgmtSessionLocal;
+import org.ejbca.core.ejb.keybind.InternalKeyBindingNameInUseException;
+import org.ejbca.core.ejb.keybind.InternalKeyBindingProperty;
+import org.ejbca.core.ejb.keybind.InternalKeyBindingRules;
+import org.ejbca.core.ejb.keybind.InternalKeyBindingStatus;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
