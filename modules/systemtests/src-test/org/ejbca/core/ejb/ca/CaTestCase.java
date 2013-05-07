@@ -321,7 +321,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                 24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
                 0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
                 10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
-                0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
+                10 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
                 new ArrayList<Integer>(), true, // Authority Key Identifier
                 false, // Authority Key Identifier Critical
                 true, // CRL Number
@@ -892,7 +892,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                 24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
                 0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
                 10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
-                0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
+                10 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
                 new ArrayList<Integer>(), true, // Authority Key Identifier
                 false, // Authority Key Identifier Critical
                 true, // CRL Number
