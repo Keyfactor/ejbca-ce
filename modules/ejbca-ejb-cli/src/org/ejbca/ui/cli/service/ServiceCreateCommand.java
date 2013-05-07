@@ -40,6 +40,10 @@ public class ServiceCreateCommand extends BaseServiceModificationCommand {
             getLogger().info("Description: " + getDescription());
             getLogger().info("Usage: " + getCommand() + " <service name> <field or property>=<value>...");
             getLogger().info("   or: " + getCommand() + " <service name> -listFields|-listProperties");
+            getLogger().info("");
+            displayListFieldsHelp();
+            getLogger().info("Example usage:");
+            getLogger().info("        service create WeeklyService intervalClassPath=org.ejbca.core.model.services.intervals.PeriodicalInterval interval.periodical.unit=DAYS interval.periodical.value=7");
             return;
         }
         

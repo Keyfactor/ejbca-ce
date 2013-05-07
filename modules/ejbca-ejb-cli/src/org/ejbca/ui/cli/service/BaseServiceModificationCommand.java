@@ -154,5 +154,19 @@ public abstract class BaseServiceModificationCommand extends BaseServiceCommand 
         getLogger().info("");
         getLogger().info("Changes were NOT saved!");
     }
+    
+    /** Displays the help text about -listFields and -listProperties accepted by the "create" and "edit" commands. */
+    protected void displayListFieldsHelp() {
+        getLogger().info("Use the -listFields and -listProperties options to see which fields and");
+        getLogger().info("properties exist. The \"fields\" are related directly to the");
+        getLogger().info("service, e.g. it's description and whether it's active. The properties");
+        getLogger().info("are used by the different worker/interval/action classes.");
+        getLogger().info("");
+        getLogger().info("Note that no properties are set by default with the \"create\" command.");
+        getLogger().info("You must either use the Admin Web when creating the service OR know in");
+        getLogger().info("advance which properties are required. It is NOT possible to list");
+        getLogger().info("non-existent (but required) properties from the CLI.");
+        getLogger().info("");
+    }
 
 }
