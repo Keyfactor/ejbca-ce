@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.signer.impl;
+package org.ejbca.core.ejb.keybind.impl;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -50,9 +50,9 @@ import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.p11.P11Slot;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.provider.X509TrustManagerAcceptAll;
-import org.ejbca.core.ejb.signer.CertificateImportException;
-import org.ejbca.core.ejb.signer.InternalKeyBindingBase;
-import org.ejbca.core.ejb.signer.InternalKeyBindingProperty;
+import org.ejbca.core.ejb.keybind.CertificateImportException;
+import org.ejbca.core.ejb.keybind.InternalKeyBindingBase;
+import org.ejbca.core.ejb.keybind.InternalKeyBindingProperty;
 
 /**
  * Used when this EJBCA instance authenticates to other instances.

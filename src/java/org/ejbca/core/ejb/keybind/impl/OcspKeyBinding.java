@@ -10,16 +10,16 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.signer.impl;
+package org.ejbca.core.ejb.keybind.impl;
 
 import java.io.Serializable;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.signer.CertificateImportException;
-import org.ejbca.core.ejb.signer.InternalKeyBindingBase;
-import org.ejbca.core.ejb.signer.InternalKeyBindingProperty;
+import org.ejbca.core.ejb.keybind.CertificateImportException;
+import org.ejbca.core.ejb.keybind.InternalKeyBindingBase;
+import org.ejbca.core.ejb.keybind.InternalKeyBindingProperty;
 
 /**
  * Holder of "external" (e.g. non-CA signing key) OCSP InternalKeyBinding properties.

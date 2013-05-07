@@ -48,12 +48,8 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.keybind.impl.OcspKeyBinding;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
-import org.ejbca.core.ejb.signer.InternalKeyBindingMgmtSession;
-import org.ejbca.core.ejb.signer.InternalKeyBindingMgmtSessionRemote;
-import org.ejbca.core.ejb.signer.InternalKeyBindingProperty;
-import org.ejbca.core.ejb.signer.InternalKeyBindingStatus;
-import org.ejbca.core.ejb.signer.impl.OcspKeyBinding;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.util.TraceLogMethodsRule;

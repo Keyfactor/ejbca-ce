@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.signer;
+package org.ejbca.core.ejb.keybind;
 
 import org.cesecore.ErrorCode;
 import org.ejbca.core.EjbcaException;

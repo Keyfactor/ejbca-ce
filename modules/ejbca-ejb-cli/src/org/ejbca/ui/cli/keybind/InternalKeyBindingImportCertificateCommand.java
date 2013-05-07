@@ -22,8 +22,8 @@ import java.util.List;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.CertTools;
-import org.ejbca.core.ejb.signer.CertificateImportException;
-import org.ejbca.core.ejb.signer.InternalKeyBindingMgmtSessionRemote;
+import org.ejbca.core.ejb.keybind.CertificateImportException;
+import org.ejbca.core.ejb.keybind.InternalKeyBindingMgmtSessionRemote;
 
 /**
  * See getDescription().

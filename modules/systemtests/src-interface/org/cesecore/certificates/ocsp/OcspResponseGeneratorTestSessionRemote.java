@@ -18,7 +18,7 @@ import java.util.List;
 
 import javax.ejb.Remote;
 
-import org.ejbca.core.ejb.signer.InternalKeyBinding;
+import org.ejbca.core.ejb.keybind.InternalKeyBinding;
 
 /**
  * @version $Id$

@@ -10,14 +10,14 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.signer;
+package org.ejbca.core.ejb.keybind;
 
-import javax.ejb.Remote;
-
-/**
- * @see InternalKeyBindingMgmtSession
+/** 
+ * Status representation of an InternalKeyBinding 
+ * 
  * @version $Id$
+ *
  */
-@Remote
-public interface InternalKeyBindingMgmtSessionRemote extends InternalKeyBindingMgmtSession {
+public enum InternalKeyBindingStatus {
+    ACTIVE, DISABLED;
 }

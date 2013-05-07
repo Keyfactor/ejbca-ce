@@ -44,6 +44,7 @@ import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenBatchJobSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
+import org.ejbca.core.ejb.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
@@ -51,7 +52,6 @@ import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
-import org.ejbca.core.ejb.signer.InternalKeyBindingMgmtSessionLocal;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 
 /**

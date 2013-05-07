@@ -21,9 +21,9 @@ import java.util.Map.Entry;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.ejbca.core.ejb.signer.InternalKeyBindingMgmtSessionRemote;
-import org.ejbca.core.ejb.signer.InternalKeyBindingProperty;
-import org.ejbca.core.ejb.signer.InternalKeyBindingStatus;
+import org.ejbca.core.ejb.keybind.InternalKeyBindingMgmtSessionRemote;
+import org.ejbca.core.ejb.keybind.InternalKeyBindingProperty;
+import org.ejbca.core.ejb.keybind.InternalKeyBindingStatus;
 import org.ejbca.util.CliTools;
 
 /**
