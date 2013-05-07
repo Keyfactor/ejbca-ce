@@ -58,14 +58,14 @@ public class CaEditCommandTest {
         CaTestCase.removeTestCA(CA_NAME);
     }
 
-    /** Test trivial happy path for execute, i.e, create an ordinary CA. */
+    /** Test trivial happy path for execute, i.e, edit an ordinary CA. */
     @Test
     public void testExecuteHappyPath() throws Exception {
         CAInfo info = caSession.getCAInfo(admin, CA_NAME);
         assertEquals("CRLPeriod of a newly created default CA is incorrect, did default value change?", 86400000L, info.getCRLPeriod());
         caEditCommand.execute(HAPPY_PATH_ARGS);
         info = caSession.getCAInfo(admin, CA_NAME);
-        assertEquals("CRLPeriod of a edited CA is incorrect. Edit did ot work?", 2592000000L, info.getCRLPeriod());
+        assertEquals("CRLPeriod of a edited CA is incorrect. Edit did not work?", 2592000000L, info.getCRLPeriod());
     }
     
 }
