@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.signer;
+package org.ejbca.core.ejb.keybind;
 
 import java.security.SecureRandom;
 import java.util.LinkedHashMap;
@@ -34,7 +34,7 @@ import org.cesecore.internal.InternalResources;
 import org.cesecore.util.QueryResultWrapper;
 
 /**
- * @see org.ejbca.core.ejb.signer.InternalKeyBindingDataSessionLocal
+ * @see org.ejbca.core.ejb.keybind.InternalKeyBindingDataSessionLocal
  * @version $Id$
  */
 @Stateless  //(mappedName = JndiConstants.APP_JNDI_PREFIX + "InternalKeyBindingDataSessionRemote")

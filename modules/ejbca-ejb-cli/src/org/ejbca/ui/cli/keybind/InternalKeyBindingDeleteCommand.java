@@ -14,7 +14,7 @@ package org.ejbca.ui.cli.keybind;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.ejbca.core.ejb.signer.InternalKeyBindingMgmtSessionRemote;
+import org.ejbca.core.ejb.keybind.InternalKeyBindingMgmtSessionRemote;
 
 /**
  * See getDescription().
