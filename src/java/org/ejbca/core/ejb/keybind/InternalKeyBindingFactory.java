@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.keybind.impl.ClientSSLKeyBinding;
+import org.ejbca.core.ejb.keybind.impl.AuthenticationKeyBinding;
 import org.ejbca.core.ejb.keybind.impl.OcspKeyBinding;
 
 /**
@@ -40,7 +40,7 @@ public enum InternalKeyBindingFactory {
 
     private InternalKeyBindingFactory() {
         addImplementation(OcspKeyBinding.class);
-        addImplementation(ClientSSLKeyBinding.class);
+        addImplementation(AuthenticationKeyBinding.class);
         // Use ServiceLoader framework to find additional available implementations
         // We add these after the built in ones, so the built in implementations can be overridden
         // TODO ...
