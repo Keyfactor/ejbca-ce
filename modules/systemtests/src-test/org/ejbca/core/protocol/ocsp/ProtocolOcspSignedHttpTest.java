@@ -63,11 +63,15 @@ import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.signer.InternalKeyBindingMgmtSessionRemote;
+import org.ejbca.core.ejb.signer.impl.OcspKeyBinding;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.util.TraceLogMethodsRule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 
 /** 
  * Test requiring signed OCSP requests.
@@ -76,6 +80,8 @@ import org.junit.Test;
  **/
 public class ProtocolOcspSignedHttpTest extends CaTestCase {
     private static Logger log = Logger.getLogger(ProtocolOcspSignedHttpTest.class);
+    @Rule
+    public TestRule traceLogMethodsRule = new TraceLogMethodsRule();
 
     private static final String END_ENTITY_NAME = "ocsptest";
     
@@ -100,14 +106,15 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-    private CesecoreConfigurationProxySessionRemote configurationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CesecoreConfigurationProxySessionRemote.class);
+    private CesecoreConfigurationProxySessionRemote configurationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(
+            CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(InternalCertificateStoreSessionRemote.class);
+            .getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
     private OcspResponseGeneratorTestSessionRemote ocspResponseGeneratorTestSession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(OcspResponseGeneratorTestSessionRemote.class);
+            .getRemoteSession(OcspResponseGeneratorTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private OcspJunitHelper helper = null;
  
     private int internalKeyBindingId;
@@ -126,9 +133,9 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
         cacert = (X509Certificate) getTestCACert();
         originalSigRequiredValue =  configurationSessionRemote.getConfigurationValue(OcspConfiguration.SIGNATUREREQUIRED);
     	configurationSessionRemote.setConfigurationValue(OcspConfiguration.SIGNATUREREQUIRED, "true");
-    	internalKeyBindingId = OcspTestUtils.createInternalKeyBinding(admin, caSession.getCAInfo(admin, getTestCAId()).getCAToken().getCryptoTokenId());
-    	ocspResponseGeneratorTestSession.reloadTokenAndChainCache();
-    	
+    	internalKeyBindingId = OcspTestUtils.createInternalKeyBinding(admin, caSession.getCAInfo(admin, getTestCAId()).getCAToken().getCryptoTokenId(),
+    	        OcspKeyBinding.IMPLEMENTATION_ALIAS, ProtocolOcspSignedHttpTest.class.getSimpleName());
+    	ocspResponseGeneratorTestSession.reloadOcspSigningCache();
     }
 
     @After
