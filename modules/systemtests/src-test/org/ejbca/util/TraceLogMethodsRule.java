@@ -21,7 +21,7 @@ import org.junit.runner.Description;
  * 
  * <code>
  * @org.junit.Rule
- * public org.junit.rules.TestRule traceLogMethodsRule = new TraceLoggingTestWatcher();
+ * public org.junit.rules.TestRule traceLogMethodsRule = new TraceLogMethodsRule();
  * </code>
  *  
  * @version $Id$

@@ -68,14 +68,20 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.signer.CertificateImportException;
+import org.ejbca.core.ejb.signer.InternalKeyBindingInfo;
 import org.ejbca.core.ejb.signer.InternalKeyBindingMgmtSessionRemote;
 import org.ejbca.core.ejb.signer.InternalKeyBindingNameInUseException;
+import org.ejbca.core.ejb.signer.InternalKeyBindingStatus;
+import org.ejbca.core.ejb.signer.impl.OcspKeyBinding;
 import org.ejbca.core.protocol.ocsp.OcspTestUtils;
+import org.ejbca.util.TraceLogMethodsRule;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 
 /**
  * Functional tests for StandaloneOcspResponseGeneratorSessionBean
@@ -93,13 +99,13 @@ public class StandaloneOcspResponseGeneratorSessionTest {
     private String originalSigningTruststoreValidTime;
 
     private final CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(CesecoreConfigurationProxySessionRemote.class); 
+            .getRemoteSession(CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST); 
     private final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CertificateStoreSessionRemote.class);
     private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CryptoTokenManagementSessionRemote.class);
     private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(InternalCertificateStoreSessionRemote.class);
+            .getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
     private final OcspResponseGeneratorSessionRemote ocspResponseGeneratorSession = EjbRemoteHelper.INSTANCE
@@ -113,7 +119,10 @@ public class StandaloneOcspResponseGeneratorSessionTest {
     private int internalKeyBindingId;
     private X509Certificate ocspSigningCertificate;
     private X509Certificate caCertificate;
-    
+
+    @Rule
+    public TestRule traceLogMethodsRule = new TraceLogMethodsRule();
+
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProviderIfNotAvailable();
@@ -131,8 +140,9 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         originalSigningTruststoreValidTime = cesecoreConfigurationProxySession.getConfigurationValue(OcspConfiguration.SIGNING_TRUSTSTORE_VALID_TIME);
         //Make sure timers don't run while we debug
         cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNING_TRUSTSTORE_VALID_TIME, Integer.toString(Integer.MAX_VALUE/1000));
-        internalKeyBindingId = OcspTestUtils.createInternalKeyBinding(authenticationToken, cryptoTokenId);
-        ocspSigningCertificate = OcspTestUtils.createOcspSigningCerticate(authenticationToken, internalKeyBindingId, x509ca.getCAId());
+        internalKeyBindingId = OcspTestUtils.createInternalKeyBinding(authenticationToken, cryptoTokenId, OcspKeyBinding.IMPLEMENTATION_ALIAS,
+                TESTCLASSNAME);
+        ocspSigningCertificate = OcspTestUtils.createOcspSigningCertificate(authenticationToken, internalKeyBindingId, x509ca.getCAId());
         caCertificate = createCaCertificate();
     }
 
@@ -174,7 +184,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         if (!CertTools.getFingerprintAsString(ocspSigningCertificate).equals(ocspSigningCertificateFingerprint)) {
             throw new Error("Wrong certificate was found for InternalKeyBinding");
         }
-
+        OcspTestUtils.setInternalKeyBindingStatus(authenticationToken, internalKeyBindingId, InternalKeyBindingStatus.ACTIVE);
         ocspResponseGeneratorSession.reloadTokenAndChainCache(PASSWORD);
         // An OCSP request
         OCSPReqBuilder gen = new OCSPReqBuilder();
@@ -224,6 +234,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         if (!CertTools.getFingerprintAsString(ocspSigningCertificate).equals(ocspSigningCertificateFingerprint)) {
             throw new Error("Wrong certificate was found for InternalKeyBinding");
         }
+        OcspTestUtils.setInternalKeyBindingStatus(authenticationToken, internalKeyBindingId, InternalKeyBindingStatus.ACTIVE);
         ocspResponseGeneratorSession.reloadTokenAndChainCache(PASSWORD);
         // An OCSP request
         OCSPReqBuilder gen = new OCSPReqBuilder();
@@ -256,9 +267,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         assertEquals("Status is not null (good)", null, singleResponses[0].getCertStatus());
 
     }
-    
-  
-    
+
     private X509Certificate createCaCertificate() throws CreateException, AuthorizationDeniedException {
         X509Certificate caCertificate = (X509Certificate) x509ca.getCACertificate();
         //Store the CA Certificate.
@@ -266,6 +275,4 @@ public class StandaloneOcspResponseGeneratorSessionTest {
                 CertificateConstants.CERTTYPE_ROOTCA, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "footag", new Date().getTime());
         return caCertificate;
     }
-
-    
 }

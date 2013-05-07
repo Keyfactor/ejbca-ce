@@ -94,7 +94,6 @@ import com.gargoylesoftware.htmlunit.WebResponse;
 /**
  *
  * @version $Id$
- *
  */
 public abstract class ProtocolOcspTestBase {
 
@@ -123,7 +122,7 @@ public abstract class ProtocolOcspTestBase {
 
     protected int caid;
 
-    private CertificateStoreSessionRemote certificateStoreOnlyDataSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class); // Stand alone OCSP version..
+    private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class); // Stand alone OCSP version..
 
     ProtocolOcspTestBase(String protocol, String host, int port, String applicationPath, String _resourceOcsp) throws MalformedURLException, URISyntaxException {
         this.httpPort = Integer.toString(port);
@@ -451,7 +450,7 @@ public abstract class ProtocolOcspTestBase {
     
     protected static void removeTestCertifices() {
         InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
-                .getRemoteSession(InternalCertificateStoreSessionRemote.class);
+                .getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
         CertificateStoreSessionRemote certificateStoreSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
         List<Certificate> certificates = certificateStoreSessionRemote.findCertificatesByUsername(CERTIFICATE_USERNAME);
         for (Certificate certificate : certificates) {
@@ -467,9 +466,9 @@ public abstract class ProtocolOcspTestBase {
 
     protected X509Certificate getRevokedTestCert() {
         try {
-            Collection<Certificate> certs = certificateStoreOnlyDataSession.findCertificatesByUsername(CERTIFICATE_USERNAME);
+            Collection<Certificate> certs = certificateStoreSession.findCertificatesByUsername(CERTIFICATE_USERNAME);
             for (Certificate cert : certs) {
-                CertificateStatus cs = certificateStoreOnlyDataSession.getStatus(ISSUER_DN, CertTools.getSerialNumber(cert));
+                CertificateStatus cs = certificateStoreSession.getStatus(ISSUER_DN, CertTools.getSerialNumber(cert));
                 if (cs.equals(CertificateStatus.REVOKED)) {
                     return (X509Certificate) cert;
                 }
@@ -484,9 +483,9 @@ public abstract class ProtocolOcspTestBase {
     
     protected X509Certificate getActiveTestCert() {
         try {
-            Collection<Certificate> certs = certificateStoreOnlyDataSession.findCertificatesByUsername(CERTIFICATE_USERNAME);
+            Collection<Certificate> certs = certificateStoreSession.findCertificatesByUsername(CERTIFICATE_USERNAME);
             for (Certificate cert : certs) {
-                CertificateStatus cs = certificateStoreOnlyDataSession.getStatus(ISSUER_DN, CertTools.getSerialNumber(cert));
+                CertificateStatus cs = certificateStoreSession.getStatus(ISSUER_DN, CertTools.getSerialNumber(cert));
                 if (cs.equals(CertificateStatus.OK)) {
                     return (X509Certificate) cert;
                 }
@@ -498,14 +497,23 @@ public abstract class ProtocolOcspTestBase {
                 + ISSUER_DN + ".)");
         return null;
     }
-    
-    
-    
 
+    /** Return the latest Root CA certificate that issued the provided certificate. */
     protected X509Certificate getCaCert(X509Certificate cert) throws Exception {
-        Collection<Certificate> certs = certificateStoreOnlyDataSession.findCertificatesByType(CertificateConstants.CERTTYPE_ROOTCA, CertTools.getIssuerDN(cert));
+        Collection<Certificate> certs = certificateStoreSession.findCertificatesByType(CertificateConstants.CERTTYPE_ROOTCA, CertTools.getIssuerDN(cert));
         assertTrue("Could not determine or find the CA cert.", certs != null && !certs.isEmpty());
-        return (X509Certificate) certs.iterator().next();
+        X509Certificate latestCaCertificate = null;
+        for (final Certificate current : certs) {
+            if (current instanceof X509Certificate) {
+                final X509Certificate currentCaCertificate = (X509Certificate) current;
+                if (latestCaCertificate == null) {
+                    latestCaCertificate = currentCaCertificate;
+                } else if (currentCaCertificate.getNotBefore().after(latestCaCertificate.getNotBefore())) {
+                    latestCaCertificate = currentCaCertificate;
+                }
+            }
+        }
+        return latestCaCertificate;
     }
 
 }

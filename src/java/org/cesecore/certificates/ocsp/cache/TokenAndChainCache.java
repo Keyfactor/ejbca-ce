@@ -33,6 +33,7 @@ import org.cesecore.certificates.ocsp.exception.OcspFailureException;
  * @version $Id$
  * 
  */
+@Deprecated // TODO: Remove
 public final class TokenAndChainCache {
 
     private Map<Integer, CryptoTokenAndChain> cache;

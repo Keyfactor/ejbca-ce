@@ -43,6 +43,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.CesecoreException;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -61,9 +62,7 @@ import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
-import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
@@ -480,10 +479,17 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         assertCertificateIsOkToImport(certificate, internalKeyBinding);
         final int cryptoTokenId = internalKeyBinding.getCryptoTokenId();
         final String currentKeyPairAlias = internalKeyBinding.getKeyPairAlias();
+        if (log.isDebugEnabled()) {
+            log.debug("certificate.getPublicKey(): " + new String(Hex.encode(KeyTools.createSubjectKeyId(certificate.getPublicKey()).getKeyIdentifier())));
+            log.debug("currentKeyPairAlias: " + currentKeyPairAlias);
+        }
         boolean updated = false;
         try {
             String certificateId = CertTools.getFingerprintAsString(certificate);
             final PublicKey currentPublicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, currentKeyPairAlias);
+            if (log.isDebugEnabled()) {
+                log.debug("currentPublicKey: " + new String(Hex.encode(KeyTools.createSubjectKeyId(currentPublicKey).getKeyIdentifier())));
+            }
             if (currentPublicKey != null && KeyTools.createSubjectKeyId(currentPublicKey).equals(KeyTools.createSubjectKeyId(certificate.getPublicKey()))) {
                 // If current key matches current public key -> import + update certificateId
                 if (isCertificateAlreadyInDatabase(certificateId)) {
@@ -495,8 +501,14 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                 updated = true;
             } else {
                 final String nextKeyPairAlias = internalKeyBinding.getNextKeyPairAlias();
-                if (nextKeyPairAlias == null) {
+                if (log.isDebugEnabled()) {
+                    log.debug("nextKeyPairAlias: " + nextKeyPairAlias);
+                }
+                if (nextKeyPairAlias != null) {
                     final PublicKey nextPublicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, nextKeyPairAlias);
+                    if (log.isDebugEnabled()) {
+                        log.debug("nextPublicKey: " + new String(Hex.encode(KeyTools.createSubjectKeyId(nextPublicKey).getKeyIdentifier())));
+                    }
                     if (nextPublicKey != null && KeyTools.createSubjectKeyId(nextPublicKey).equals(KeyTools.createSubjectKeyId(certificate.getPublicKey()))) {
                         // If current key matches next public key -> import and update nextKey + certificateId
                         if (isCertificateAlreadyInDatabase(certificateId)) {

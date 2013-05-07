@@ -46,6 +46,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
 import org.cesecore.dbprotection.ProtectedDataConfiguration;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.util.CryptoProviderTools;
@@ -89,6 +90,8 @@ public class StartServicesServlet extends HttpServlet {
     private SecurityEventsLoggerSessionLocal logSession;
     @EJB
     private ComplexAccessControlSessionLocal complexAccessControlSession;
+    @EJB
+    private OcspResponseGeneratorSessionLocal ocspResponseGeneratorSession;
     
     @Resource
     private UserTransaction tx;
@@ -299,6 +302,8 @@ public class StartServicesServlet extends HttpServlet {
         } catch (ClassNotFoundException e) {
             log.error("Failure during match value initialization", e);
         }
+        // Start key reload timer
+        ocspResponseGeneratorSession.initTimers();
     }
     
     /**

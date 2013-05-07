@@ -86,7 +86,6 @@ import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Excepti
 
 /**
  * @version $Id$
- *
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "OcspKeyRenewalProxySessionRemote")
 @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
@@ -127,8 +126,7 @@ public class OcspKeyRenewalProxySessionBean implements OcspKeyRenewalProxySessio
             ocspKeyRenewalSession.startTimer();
         }
     }
-    
-    
+
     @Override
     public void renewKeyStores(String signerSubjectDN) throws KeyStoreException, CryptoTokenOfflineException, InvalidKeyException {
         ocspKeyRenewalSession.renewKeyStores(signerSubjectDN);

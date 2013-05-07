@@ -123,7 +123,7 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
     private OcspResponseGeneratorSessionRemote ocspResponseGeneratorSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(OcspResponseGeneratorSessionRemote.class);
     private OcspResponseGeneratorTestSessionRemote ocspResponseGeneratorTestSession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(OcspResponseGeneratorTestSessionRemote.class);
+            .getRemoteSession(OcspResponseGeneratorTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
     
@@ -230,7 +230,7 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
      */
     @Test
     public void testGetOcspResponseSanity() throws Exception {
-        ocspResponseGeneratorTestSession.reloadTokenAndChainCache();
+        ocspResponseGeneratorTestSession.reloadOcspSigningCache();
         // An OCSP request
         OCSPReqBuilder gen = new OCSPReqBuilder();
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, caCertificate.getSerialNumber()));
@@ -261,7 +261,7 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
 
     @Test
     public void testGetOcspResponseWithOcspCertificate() throws Exception {
-        ocspResponseGeneratorTestSession.reloadTokenAndChainCache();
+        ocspResponseGeneratorTestSession.reloadOcspSigningCache();
 
         // An OCSP request
         OCSPReqBuilder gen = new OCSPReqBuilder();
@@ -293,7 +293,7 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
 
     @Test
     public void testGetOcspResponseWithRevokedCertificate() throws Exception {
-        ocspResponseGeneratorTestSession.reloadTokenAndChainCache();
+        ocspResponseGeneratorTestSession.reloadOcspSigningCache();
 
         // An OCSP request
         OCSPReqBuilder gen = new OCSPReqBuilder();
@@ -333,7 +333,7 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
 
     @Test
     public void testGetOcspResponseWithUnavailableCertificate() throws Exception {
-        ocspResponseGeneratorTestSession.reloadTokenAndChainCache();
+        ocspResponseGeneratorTestSession.reloadOcspSigningCache();
 
         // An OCSP request
         OCSPReqBuilder gen = new OCSPReqBuilder();
@@ -346,7 +346,7 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
 
         // Now remove the certificate
         internalCertificateStoreSession.removeCertificate(ocspCertificate.getSerialNumber());
-        ocspResponseGeneratorTestSession.reloadTokenAndChainCache();
+        ocspResponseGeneratorTestSession.reloadOcspSigningCache();
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
         // Create the transaction logger for this transaction.
         TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
@@ -408,7 +408,7 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
         // Set the validity time to a single second for testing purposes.
         cesecoreConfigurationProxySession.setConfigurationValue("ocsp.signtrustvalidtime", timeToWait.toString());
 
-        ocspResponseGeneratorTestSession.reloadTokenAndChainCache();
+        ocspResponseGeneratorTestSession.reloadOcspSigningCache();
 
         try {
 
@@ -422,7 +422,7 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
             OCSPReq req = gen.build();
 
             byte[] responseBytes;
-            ocspResponseGeneratorTestSession.reloadTokenAndChainCache();
+            ocspResponseGeneratorTestSession.reloadOcspSigningCache();
             final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
             // Create the transaction logger for this transaction.
             TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
@@ -494,7 +494,7 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
     public void testGetOcspResponseWithCertificateFromUnknownCa() throws OCSPException, AuthorizationDeniedException, IOException,
             MalformedRequestException, CADoesntExistsException, IllegalCryptoTokenException, NoSuchProviderException, CertificateEncodingException, OperatorCreationException {
 
-        ocspResponseGeneratorTestSession.reloadTokenAndChainCache();
+        ocspResponseGeneratorTestSession.reloadOcspSigningCache();
 
         // An OCSP request
         OCSPReqBuilder gen = new OCSPReqBuilder();
@@ -533,7 +533,7 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
         // Restore the default value
         cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.DEFAULT_RESPONDER, "CN=FancyPants");
 
-        ocspResponseGeneratorTestSession.reloadTokenAndChainCache();
+        ocspResponseGeneratorTestSession.reloadOcspSigningCache();
 
         // An OCSP request
         OCSPReqBuilder gen = new OCSPReqBuilder();
@@ -571,7 +571,5 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
                 assertEquals("Unable to find CA certificate and key to generate OCSP response.", e4.getMessage());
             }
         }
-
     }
-
 }

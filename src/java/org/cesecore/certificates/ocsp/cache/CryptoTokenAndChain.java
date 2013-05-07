@@ -36,6 +36,7 @@ import org.cesecore.util.CertTools;
  * @version $Id$
  *
  */
+@Deprecated // TODO: Remove
 public class CryptoTokenAndChain implements Serializable {
 
     private static final long serialVersionUID = -4091605336832090454L;

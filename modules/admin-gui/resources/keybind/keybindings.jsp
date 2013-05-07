@@ -51,13 +51,14 @@ org.ejbca.core.ejb.signer.InternalKeyBindingRules
 			font-size: 16px;
 			font-weight: bold;
 		    text-align: left;
-		    padding: 2px 7px 4px 7px;
+		    padding: 2px 7px 2px 7px;
+		    margin-bottom: 2px;
 			color: #669;
-			background: #ccc;
+			background: #fbfbfb;
 			border-left: 1px solid #aaa;
 			border-top: 1px solid #aaa;
 			border-right: 1px solid #aaa;
-			border-bottom: 1px solid #fff;
+			border-bottom: 1px solid #aaa;
 			border-top-left-radius: 5px;
 			border-top-right-radius: 5px;
 		}
@@ -71,11 +72,13 @@ org.ejbca.core.ejb.signer.InternalKeyBindingRules
 			font-weight: bold;
 		    text-align: left;
 		    padding: 2px 7px 2px 7px;
+		    margin-bottom: 2px;
 			color: #009;
 			background: #fff;
 			border-left: 1px solid #aaa;
 			border-top: 1px solid #aaa;
 			border-right: 1px solid #aaa;
+			border-bottom: 1px solid #fff;
 			border-top-left-radius: 3px;
 			border-top-right-radius: 3px;
 		}

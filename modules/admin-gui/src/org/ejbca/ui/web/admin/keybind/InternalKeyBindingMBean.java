@@ -463,6 +463,10 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         final CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(currentCryptoToken);
         return cryptoTokenInfo==null || cryptoTokenInfo.isActive();
     }
+    
+    public boolean isBoundToCertificate() {
+        return false;   // TODO
+    }
 
     public void switchToEdit() {
         inEditMode = true;

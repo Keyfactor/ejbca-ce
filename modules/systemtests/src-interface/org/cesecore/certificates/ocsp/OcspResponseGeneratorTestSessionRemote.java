@@ -12,36 +12,24 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp;
 
-import java.security.cert.CertificateEncodingException;
-import java.util.Collection;
-import java.util.Map;
+import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
+import java.util.List;
 
 import javax.ejb.Remote;
 
-import org.bouncycastle.cert.ocsp.OCSPException;
-import org.cesecore.certificates.ocsp.cache.CryptoTokenAndChain;
+import org.ejbca.core.ejb.signer.InternalKeyBinding;
 
 /**
  * @version $Id$
- *
  */
 @Remote
 public interface OcspResponseGeneratorTestSessionRemote {
 
-    /**
-     * Replaces the contents of the cache with the parameter given
-     * 
-     * @param newCache
-     * @throws CertificateEncodingException
-     * @throws OCSPException
-     * @throws IllegalAccessException 
-     * @throws IllegalArgumentException 
-     * @throws NoSuchFieldException 
-     * @throws SecurityException 
-     */
-    void replaceTokenAndChainCache(Map<Integer, CryptoTokenAndChain> newCache) throws CertificateEncodingException, OCSPException, IllegalArgumentException, IllegalAccessException, SecurityException, NoSuchFieldException;
- 
-    Collection<CryptoTokenAndChain> getCacheValues();
-    
-    void reloadTokenAndChainCache();
+    void reloadOcspSigningCache();
+
+    List<X509Certificate> getCacheOcspCertificates();
+
+    void replaceOcspSigningCache(List<X509Certificate> caCertificateChain, X509Certificate ocspSigningCertificate, PrivateKey privateKey,
+            String signatureProviderName, InternalKeyBinding ocspKeyBinding);
 }
