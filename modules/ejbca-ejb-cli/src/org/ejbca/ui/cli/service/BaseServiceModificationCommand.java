@@ -139,7 +139,7 @@ public abstract class BaseServiceModificationCommand extends BaseServiceCommand 
     private void displayPropertiesHelp(Properties props) {
         for (Entry<Object,Object> prop : props.entrySet()) {
             // We don't know the types but we can display the default values so the user can figure out.
-            getLogger().info(prop.getKey()+" (current value = "+prop.getValue()+")");
+            getLogger().info(prop.getKey()+" (current value = '"+prop.getValue()+"')");
         }
     }
     
