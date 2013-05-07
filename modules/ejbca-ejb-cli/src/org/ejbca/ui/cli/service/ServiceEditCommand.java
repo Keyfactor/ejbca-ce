@@ -39,6 +39,11 @@ public class ServiceEditCommand extends BaseServiceModificationCommand {
             getLogger().info("Description: " + getDescription());
             getLogger().info("Usage: " + getCommand() + " <service name> <field or property>=<value>...");
             getLogger().info("   or: " + getCommand() + " <service name> -listFields|-listProperties");
+            getLogger().info("");
+            displayListFieldsHelp();
+            getLogger().info("Example usage:");
+            getLogger().info("        service edit TheService1 intervalClassPath=org.ejbca.core.model.services.intervals.PeriodicalInterval interval.periodical.unit=DAYS interval.periodical.value=7");
+            getLogger().info("        service edit TheService1 pinToNodes=node1.example.com,node2.example.com active=true");
             return;
         }
         
