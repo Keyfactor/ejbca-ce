@@ -42,7 +42,10 @@ public class ServiceDeleteCommand extends BaseServiceCommand {
         
         final ServiceSessionRemote serviceSession = ejb.getRemoteSession(ServiceSessionRemote.class);
         final String serviceName = serviceSession.getServiceName(serviceId);
-        serviceSession.removeService(getAdmin(), serviceName);
-        getLogger().info("Service deleted.");
+        if (serviceSession.removeService(getAdmin(), serviceName)) {
+            getLogger().info("Service deleted.");
+        } else {
+            getLogger().info("Failed to delete service: "+serviceName);
+        }
     }
 }
