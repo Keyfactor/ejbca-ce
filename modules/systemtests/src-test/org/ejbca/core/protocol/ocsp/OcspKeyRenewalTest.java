@@ -41,7 +41,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.keybind.InternalKeyBinding;
 import org.ejbca.core.ejb.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.ejbca.core.ejb.keybind.InternalKeyBindingStatus;
-import org.ejbca.core.ejb.keybind.impl.ClientSSLKeyBinding;
+import org.ejbca.core.ejb.keybind.impl.AuthenticationKeyBinding;
 import org.ejbca.core.ejb.keybind.impl.OcspKeyBinding;
 import org.ejbca.core.protocol.ocsp.standalone.OcspKeyRenewalProxySessionRemote;
 import org.ejbca.util.TraceLogMethodsRule;
@@ -89,7 +89,7 @@ public class OcspKeyRenewalTest {
     private static int ocspKeyBindingId;
     private static X509Certificate ocspSigningCertificate;
     private static X509Certificate caCertificate;
-    private static int clientSSLKeyBindingId;
+    private static int authenticationKeyBindingId;
     private static X509Certificate clientSSLCertificate;
     private static int managementCaId = 0;
 
@@ -107,7 +107,7 @@ public class OcspKeyRenewalTest {
         // Ensure that the new ocsp signing certificate is picked up by the cache
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
         // Reuse the same CryptoToken for the client SSL authentication
-        clientSSLKeyBindingId = OcspTestUtils.createInternalKeyBinding(authenticationToken, cryptoTokenId, ClientSSLKeyBinding.IMPLEMENTATION_ALIAS,
+        authenticationKeyBindingId = OcspTestUtils.createInternalKeyBinding(authenticationToken, cryptoTokenId, AuthenticationKeyBinding.IMPLEMENTATION_ALIAS,
                 TESTCLASSNAME + "-ssl");
         // We need to issue the SSL certificate from an issuer trusted by the server (AdminCA1/ManagementCA)
         try {
@@ -121,9 +121,9 @@ public class OcspKeyRenewalTest {
         }
         log.debug("SSL CA Id: " + managementCaId);
         if (managementCaId != 0) {
-            clientSSLCertificate = OcspTestUtils.createClientSSLCertificate(authenticationToken, clientSSLKeyBindingId, managementCaId);
-            OcspTestUtils.updateInternalKeyBindingCertificate(authenticationToken, clientSSLKeyBindingId);
-            OcspTestUtils.setInternalKeyBindingStatus(authenticationToken, clientSSLKeyBindingId, InternalKeyBindingStatus.ACTIVE);
+            clientSSLCertificate = OcspTestUtils.createClientSSLCertificate(authenticationToken, authenticationKeyBindingId, managementCaId);
+            OcspTestUtils.updateInternalKeyBindingCertificate(authenticationToken, authenticationKeyBindingId);
+            OcspTestUtils.setInternalKeyBindingStatus(authenticationToken, authenticationKeyBindingId, InternalKeyBindingStatus.ACTIVE);
             // Add authorization rules for this client SSL certificate
             final RoleInitializationSessionRemote roleInitSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleInitializationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
             roleInitSession.initializeAccessWithCert(authenticationToken, TESTCLASSNAME, clientSSLCertificate);
@@ -150,7 +150,7 @@ public class OcspKeyRenewalTest {
         } catch (Exception e) {
             //Ignore any failures.
         }
-        internalKeyBindingMgmtSession.deleteInternalKeyBinding(authenticationToken, clientSSLKeyBindingId);
+        internalKeyBindingMgmtSession.deleteInternalKeyBinding(authenticationToken, authenticationKeyBindingId);
         internalKeyBindingMgmtSession.deleteInternalKeyBinding(authenticationToken, ocspKeyBindingId);
         cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, cryptoTokenId);
         OcspTestUtils.deleteCa(authenticationToken, x509ca);

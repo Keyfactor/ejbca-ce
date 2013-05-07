@@ -20,7 +20,9 @@ import java.net.URL;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.InvalidParameterException;
+import java.security.KeyManagementException;
 import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
@@ -48,7 +50,12 @@ import javax.ejb.TimerService;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509KeyManager;
+import javax.net.ssl.X509TrustManager;
 import javax.security.auth.x500.X500Principal;
 import javax.xml.namespace.QName;
 
@@ -71,11 +78,13 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.KeyRenewalFailedException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.provider.X509TrustManagerAcceptAll;
 import org.ejbca.core.ejb.keybind.CertificateImportException;
 import org.ejbca.core.ejb.keybind.InternalKeyBinding;
 import org.ejbca.core.ejb.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.ejbca.core.ejb.keybind.InternalKeyBindingStatus;
-import org.ejbca.core.ejb.keybind.impl.ClientSSLKeyBinding;
+import org.ejbca.core.ejb.keybind.impl.AuthenticationKeyBinding;
+import org.ejbca.core.ejb.keybind.impl.ClientX509KeyManager;
 import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
@@ -454,30 +463,52 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
     }
     
     private SSLSocketFactory getSSLSocketFactory() {
-        List<Integer> authenticationKeyBindingIds = internalKeyBindingMgmtSession.getInternalKeyBindingIds(authenticationToken, ClientSSLKeyBinding.IMPLEMENTATION_ALIAS);
-        ClientSSLKeyBinding clientSSLKeyBinding = null;
+        final List<Integer> authenticationKeyBindingIds = internalKeyBindingMgmtSession.getInternalKeyBindingIds(authenticationToken, AuthenticationKeyBinding.IMPLEMENTATION_ALIAS);
+        AuthenticationKeyBinding authenticationKeyBinding = null;
         for (Integer internalKeyBindingId : authenticationKeyBindingIds) {
             try {
                 final InternalKeyBinding internalKeyBinding = internalKeyBindingMgmtSession.getInternalKeyBinding(authenticationToken, internalKeyBindingId);
                 if (internalKeyBinding.getStatus().equals(InternalKeyBindingStatus.ACTIVE)) {
                     // Use first active one
-                    clientSSLKeyBinding = (ClientSSLKeyBinding) internalKeyBinding;
+                    authenticationKeyBinding = (AuthenticationKeyBinding) internalKeyBinding;
                     break;
                 }
             } catch (AuthorizationDeniedException e) {
                 throw new RuntimeException(e);  // TODO: We should have an unauthenticated local call for this
             }
         }
-        if (clientSSLKeyBinding == null) {
+        if (authenticationKeyBinding == null) {
             return null;
         }
-        final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(clientSSLKeyBinding.getCryptoTokenId());
-        final X509Certificate sslCertificate = (X509Certificate) certificateStoreSession.findCertificateByFingerprint(clientSSLKeyBinding.getCertificateId());
+        final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(authenticationKeyBinding.getCryptoTokenId());
+        final X509Certificate sslCertificate = (X509Certificate) certificateStoreSession.findCertificateByFingerprint(authenticationKeyBinding.getCertificateId());
         final List<X509Certificate> chain = new ArrayList<X509Certificate>();
         chain.add(sslCertificate);
         chain.addAll(getCaCertificateChain(sslCertificate));
-        List<X509Certificate> trustedCertificates = getListOfTrustedCertificates(clientSSLKeyBinding.getTrustedCertificateReferences());
-        return clientSSLKeyBinding.getAsSSLSocketFactory(cryptoToken, chain, trustedCertificates);
+        final List<X509Certificate> trustedCertificates = getListOfTrustedCertificates(authenticationKeyBinding.getTrustedCertificateReferences());
+        final String alias = authenticationKeyBinding.getKeyPairAlias();
+        try {
+            final TrustManager trustManagers[];
+            if (trustedCertificates == null || trustedCertificates.isEmpty()) {
+                trustManagers = new X509TrustManager[] {new X509TrustManagerAcceptAll()};
+            } else {
+                throw new RuntimeException("Configurable trust not yet implemented.");
+            }
+            final KeyManager keyManagers[] = new X509KeyManager[] { new ClientX509KeyManager(alias, cryptoToken.getPrivateKey(alias), chain) };
+            // Now construct a SSLContext using these (possibly wrapped) KeyManagers, and the TrustManagers.
+            // We still use a null SecureRandom, indicating that the defaults should be used.
+            final SSLContext context = SSLContext.getInstance("TLS");
+            context.init(keyManagers, trustManagers, null);
+            // Finally, we get a SocketFactory, and pass it on.
+            return context.getSocketFactory();
+        } catch (KeyManagementException e) {
+            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (CryptoTokenOfflineException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
     
     private List<X509Certificate> getListOfTrustedCertificates(List<SimpleEntry<Integer, BigInteger>> trustedCertificateReferences) {
