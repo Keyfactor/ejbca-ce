@@ -56,8 +56,20 @@ public class AuthenticationKeyBinding extends InternalKeyBindingBase {
 
     @Override
     public void assertCertificateCompatability(Certificate certificate) throws CertificateImportException {
+        if (isClientSSLCertificate(certificate)) {
+            throw new CertificateImportException("Not a vlid Client SSL authentication certificate.");
+        }
+    }
+
+    @Override
+    protected void upgrade(float latestVersion, float currentVersion) {
+        // Nothing to do   
+    }
+
+    public static boolean isClientSSLCertificate(Certificate certificate) {
         if (!(certificate instanceof X509Certificate)) {
-            throw new CertificateImportException("Only X509 supported.");
+            log.debug("Only X509 supported.");
+            return false;
         }
         try {
             final X509Certificate x509Certificate = (X509Certificate) certificate;
@@ -70,22 +82,22 @@ public class AuthenticationKeyBinding extends InternalKeyBindingBase {
                         ExtendedKeyUsageConfiguration.getExtendedKeyUsageOidsAndNames().get(extendedKeyUsage) + ")");
             }
             if (!x509Certificate.getExtendedKeyUsage().contains("1.3.6.1.5.5.7.3.2")) {
-                throw new CertificateImportException("Client SSL authentication EKU is required.");
+                log.debug("Extended Key Usage 1.3.6.1.5.5.7.3.2 (EKU_PKIX_CLIENTAUTH) is required.");
+                return false;
             }
             if (!x509Certificate.getKeyUsage()[0]) {
-                throw new CertificateImportException("Key usage digitalSignature is required.");
+                log.debug("Key usage digitalSignature is required.");
+                return false;
             }
             if (!x509Certificate.getKeyUsage()[2]) {
-                throw new CertificateImportException("Key usage keyEncipherment is required.");
+                log.debug("Key usage keyEncipherment is required.");
+                return false;
             }
         } catch (CertificateParsingException e) {
-            throw new CertificateImportException(e);
+            log.debug(e.getMessage());
+            return false;
         }
         log.warn("CERTIFICATE VALIDATION HAS NOT BEEN PROPERLY TESTED YET!");
-    }
-
-    @Override
-    protected void upgrade(float latestVersion, float currentVersion) {
-        // Nothing to do   
+        return true;
     }
 }

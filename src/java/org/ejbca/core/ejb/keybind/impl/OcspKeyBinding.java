@@ -14,9 +14,14 @@ package org.ejbca.core.ejb.keybind.impl;
 
 import java.io.Serializable;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.apache.log4j.Logger;
+import org.cesecore.config.ExtendedKeyUsageConfiguration;
+import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.keybind.CertificateImportException;
 import org.ejbca.core.ejb.keybind.InternalKeyBindingBase;
 import org.ejbca.core.ejb.keybind.InternalKeyBindingProperty;
@@ -78,7 +83,9 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     
     @Override
     public void assertCertificateCompatability(Certificate certificate) throws CertificateImportException {
-        log.warn("CERTIFICATE VALIDATION HAS NOT BEEN IMPLEMENTED YET!");
+        if (!isOcspSigningCertificate(certificate)) {
+            throw new CertificateImportException();
+        }
     }
 
     public boolean getNonExistingGood() {
@@ -116,5 +123,37 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     }
     public void setMaxAge(int maxAge) {
         setProperty(PROPERTY_MAX_AGE, Integer.valueOf(maxAge));
+    }
+
+    public static boolean isOcspSigningCertificate(Certificate certificate) {
+        if (!(certificate instanceof X509Certificate)) {
+            log.debug("Only X509 supported.");
+            return false;
+        }
+        try {
+            final X509Certificate x509Certificate = (X509Certificate) certificate;
+            log.debug("SubjectDN: " + CertTools.getSubjectDN(x509Certificate) + " IssuerDN: " + CertTools.getIssuerDN(x509Certificate));
+            log.debug("Key usages: " + Arrays.toString(x509Certificate.getKeyUsage()));
+            log.debug("Key usage (digitalSignature): " + x509Certificate.getKeyUsage()[0]);
+            log.debug("Key usage (keyEncipherment): " + x509Certificate.getKeyUsage()[2]);
+            for (String extendedKeyUsage : x509Certificate.getExtendedKeyUsage()) {
+                log.debug("EKU: " + extendedKeyUsage + " (" +
+                        ExtendedKeyUsageConfiguration.getExtendedKeyUsageOidsAndNames().get(extendedKeyUsage) + ")");
+            }
+            if (!x509Certificate.getExtendedKeyUsage().contains("1.3.6.1.5.5.7.3.9")) {
+                log.debug("Extended Key Usage 1.3.6.1.5.5.7.3.9 (EKU_PKIX_OCSPSIGNING) is required.");
+                return false;
+            }
+            if (!x509Certificate.getKeyUsage()[0]) {
+                log.debug("Key Usage digitalSignature is required.");
+                return false;
+            }
+        } catch (CertificateParsingException e) {
+            log.debug(e.getMessage());
+            return false;
+        }
+
+        log.warn("CERTIFICATE VALIDATION HAS NOT BEEN IMPLEMENTED YET!");
+        return true;
     }
 }
