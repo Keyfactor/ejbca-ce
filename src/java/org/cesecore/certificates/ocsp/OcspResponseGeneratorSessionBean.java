@@ -1406,7 +1406,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, internalKeyBinding);
                 internalKeyBindingMgmtSession.importCertificateForInternalKeyBinding(authenticationToken, internalKeyBindingId, chain[0].getEncoded());
                 internalKeyBindingMgmtSession.setStatus(authenticationToken, internalKeyBindingId, InternalKeyBindingStatus.ACTIVE);
-            } else if (ConfigurationHolder.getString("ocsp.rekeying.swKeystorePath") == null && AuthenticationKeyBinding.isClientSSLCertificate(chain[0])) {
+            } else if (AuthenticationKeyBinding.isClientSSLCertificate(chain[0])) {
                 log.info("Alias " + keyPairAlias + " contains an SSL client certificate and will be converted.");
                 // We are looking for an SSL cert, use this to create an AuthenticationKeyBinding
                 int internalKeyBindingId = internalKeyBindingMgmtSession.createInternalKeyBinding(authenticationToken, AuthenticationKeyBinding.IMPLEMENTATION_ALIAS,
