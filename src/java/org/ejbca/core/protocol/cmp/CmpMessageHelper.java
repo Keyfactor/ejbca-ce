@@ -27,6 +27,7 @@ import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.RSAPrivateKey;
 import java.util.Date;
 import java.util.Random;
 
@@ -162,7 +163,12 @@ public class CmpMessageHelper {
     	// According to PKCS#1 AlgorithmIdentifier for RSA-PKCS#1 has null Parameters, this means a DER Null (asn.1 encoding of null), not Java null.
     	// For the RSA signature algorithms specified above RFC3447 states "...the parameters MUST be present and MUST be NULL."
     	PKIHeaderBuilder headerBuilder = getHeaderBuilder(pKIMessage.getHeader());
-    	AlgorithmIdentifier pAlg = new AlgorithmIdentifier(oid, new DERNull());
+    	AlgorithmIdentifier pAlg = null; 
+    	if(key instanceof RSAPrivateKey) {
+    	    pAlg = new AlgorithmIdentifier(oid, new DERNull());
+    	} else {
+    	    pAlg = new AlgorithmIdentifier(oid);
+    	}
 		headerBuilder.setProtectionAlg(pAlg);
 		// Most PKCS#11 providers don't like to be fed an OID as signature algorithm, so 
 		// we use BC classes to translate it into a signature algorithm name instead
