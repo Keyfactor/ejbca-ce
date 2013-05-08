@@ -24,5 +24,8 @@ public interface OcspResponseGeneratorSessionLocal extends OcspResponseGenerator
 
     void reloadOcspSigningCache();
 
-    void initTimers();    
+    void initTimers();
+
+    /** One-time load and conversion of configured keystores to CryptoTokens and OcspKeyBindings */
+    void adhocUpgradeFromPre52(char[] activationPassword);    
 }
