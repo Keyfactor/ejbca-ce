@@ -147,7 +147,8 @@ public class InternalKeyBindingMgmtTest {
             PublicKey publicKey = KeyTools.getPublicKeyFromBytes(internalKeyBindingMgmtSession.getNextPublicKeyForInternalKeyBinding(alwaysAllowToken, internalKeyBindingId));
             // Issue a certificate in EJBCA for the public key
             final EndEntityInformation user = new EndEntityInformation(TESTCLASSNAME+"_" + TEST_METHOD_NAME, "CN="+TESTCLASSNAME +"_" + TEST_METHOD_NAME, x509ca.getCAId(), null, null,
-                    EndEntityTypes.ENDUSER.toEndEntityType(), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+                    EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER,
+                    EndEntityConstants.TOKEN_USERGEN, 0, null);
             user.setPassword("foo123");
             RequestMessage req = new SimpleRequestMessage(publicKey, user.getUsername(), user.getPassword());            
             X509Certificate keyBindingCertificate = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(alwaysAllowToken, user, req,
@@ -181,7 +182,8 @@ public class InternalKeyBindingMgmtTest {
                     KEY_BINDING_NAME, InternalKeyBindingStatus.ACTIVE, null, cryptoTokenId, KEY_PAIR_ALIAS, dataMap);
             // Add a user to EJBCA for the renewal later on
             final EndEntityInformation endEntityInformation = new EndEntityInformation(endEntityId, "CN="+TESTCLASSNAME +"_" + TEST_METHOD_NAME, x509ca.getCAId(), null, null,
-                    EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER, EndEntityConstants.TOKEN_USERGEN, 0, null);
+                    EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER,
+                    EndEntityConstants.TOKEN_USERGEN, 0, null);
             endEntityInformation.setPassword("foo123");
             try {
                 endEntityManagementSession.addUser(alwaysAllowToken, endEntityInformation, false);
@@ -235,7 +237,8 @@ public class InternalKeyBindingMgmtTest {
             final byte[] csr = internalKeyBindingMgmtSession.generateCsrForNextKey(alwaysAllowToken, internalKeyBindingId);
             // Issue a certificate in EJBCA for the public key
             final EndEntityInformation user = new EndEntityInformation(TESTCLASSNAME+"_" + TEST_METHOD_NAME, "CN="+TESTCLASSNAME +"_" + TEST_METHOD_NAME, x509ca.getCAId(), null, null,
-                    EndEntityTypes.ENDUSER.toEndEntityType(), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+                    EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER,
+                    EndEntityConstants.TOKEN_USERGEN, 0, null);
             user.setPassword("foo123");
             RequestMessage req = new PKCS10RequestMessage(csr);
             X509Certificate keyBindingCertificate = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(alwaysAllowToken, user, req,
