@@ -115,6 +115,7 @@
 <li>Certified access control and authorization module, for assurance and high trust role separation.</li>
 <li>Authentication of local CLI users enabling role separation also for local CLI.</li>
 <li>Penetration tested with improved security.</li>
+<li>Support for GOST and DSTU algorithms (Russian and Ukrainian algorithms).</li>
 </ul>
   </subsection>
   </section>
