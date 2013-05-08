@@ -1,5 +1,5 @@
 EJBCA 5.0.9, 2013-03-21
----
+--- 
 Bug
 
     [ECA-2915] - EJBCA DB CLI verify reports error if multiple nodes are logging
