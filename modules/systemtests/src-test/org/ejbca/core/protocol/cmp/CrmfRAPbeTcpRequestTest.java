@@ -25,6 +25,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -196,7 +197,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpTcp(ba, 5);
-        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, PBEPASSWORD);
+        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         X509Certificate cert = checkCmpCertRepMessage(userDN, cacert, resp, reqId);
         assertNotNull(cert);
 
@@ -211,7 +212,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
         ba = bao.toByteArray();
         // Send request and receive response
         resp = sendCmpTcp(ba, 5);
-        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, PBEPASSWORD);
+        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         checkCmpPKIConfirmMessage(userDN, cacert, resp);
 
         // Now revoke the bastard using the CMPv2 CRL entry extension!
@@ -224,7 +225,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
         ba = bao.toByteArray();
         // Send request and receive response
         resp = sendCmpTcp(ba, 5);
-        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, PBEPASSWORD);
+        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         checkCmpRevokeConfirmMessage(issuerDN, userDN, cert.getSerialNumber(), cacert, resp, true);
         int reason = checkRevokeStatus(issuerDN, cert.getSerialNumber());
         assertEquals(reason, RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION);

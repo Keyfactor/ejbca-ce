@@ -35,6 +35,7 @@ import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.cmp.PKIFailureInfo;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -246,7 +247,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             byte[] ba = bao.toByteArray();
             // Send request and receive response
             byte[] resp = sendCmpHttp(ba, 200);
-            checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, PBEPASSWORD);
+            checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
             X509Certificate cert = checkCmpCertRepMessage(userDN, cacert, resp, reqId);
             // Check that validity override works
             assertTrue(cert.getNotBefore().equals(notBefore));
@@ -266,7 +267,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             ba = bao.toByteArray();
             // Send request and receive response
             resp = sendCmpHttp(ba, 200);
-            checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, PBEPASSWORD);
+            checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
             checkCmpPKIConfirmMessage(userDN, cacert, resp);
 
             // Now revoke the bastard using the CMPv1 reason code!
@@ -279,7 +280,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             ba = bao.toByteArray();
             // Send request and receive response
             resp = sendCmpHttp(ba, 200);
-            checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, PBEPASSWORD);
+            checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
             checkCmpRevokeConfirmMessage(issuerDN, userDN, cert.getSerialNumber(), cacert, resp, true);
             int reason = checkRevokeStatus(issuerDN, cert.getSerialNumber());
             assertEquals(reason, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
@@ -294,7 +295,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             ba = bao.toByteArray();
             // Send request and receive response
             resp = sendCmpHttp(ba, 200);
-            checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, PBEPASSWORD);
+            checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
             checkCmpRevokeConfirmMessage(issuerDN, userDN, cert.getSerialNumber(), cacert, resp, false);
         } finally {
             try {
@@ -378,7 +379,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             byte[] ba = bao.toByteArray();
             // Send request and receive response
             byte[] resp = sendCmpHttp(ba, 200);
-            checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, PBEPASSWORD);
+            checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
             X509Certificate cert = checkCmpCertRepMessage(userDN, cacert, resp, reqId);
             String altNames = CertTools.getSubjectAlternativeName(cert);
             assertTrue(altNames.indexOf("upn=fooupn@bar.com") != -1);
@@ -402,7 +403,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             ba = bao.toByteArray();
             // Send request and receive response
             resp = sendCmpHttp(ba, 200);
-            checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, PBEPASSWORD);
+            checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
             cert = checkCmpCertRepMessage(userDN, cacert, resp, reqId);
             altNames = CertTools.getSubjectAlternativeName(cert);
             assertNull(altNames);
@@ -485,7 +486,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             out.writeObject(revReq);
             byte[] ba = bao.toByteArray();
             byte[] resp = sendCmpHttp(ba, 200);
-            checkCmpResponseGeneral(resp, cainfo.getSubjectDN(), userdata.getDN(), newCACert, nonce, transid, false, PBEPASSWORD);
+            checkCmpResponseGeneral(resp, cainfo.getSubjectDN(), userdata.getDN(), newCACert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
             checkCmpRevokeConfirmMessage(cainfo.getSubjectDN(), userdata.getDN(), cert.getSerialNumber(), newCACert, resp, true);
             int reason = checkRevokeStatus(cainfo.getSubjectDN(), cert.getSerialNumber());
             assertEquals(reason, RevokedCertInfo.NOT_REVOKED);
@@ -502,7 +503,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             out.writeObject(revReq);
             ba = bao.toByteArray();
             resp = sendCmpHttp(ba, 200);
-            checkCmpResponseGeneral(resp, cainfo.getSubjectDN(), userdata.getDN(), newCACert, nonce, transid, false, PBEPASSWORD);
+            checkCmpResponseGeneral(resp, cainfo.getSubjectDN(), userdata.getDN(), newCACert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
             checkCmpFailMessage(resp, "The request is already awaiting approval.", CmpPKIBodyConstants.REVOCATIONRESPONSE, 0,
                     ResponseStatus.FAILURE.getValue());
             reason = checkRevokeStatus(cainfo.getSubjectDN(), cert.getSerialNumber());
@@ -525,7 +526,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             out.writeObject(revReq);
             ba = bao.toByteArray();
             resp = sendCmpHttp(ba, 200);
-            checkCmpResponseGeneral(resp, cainfo.getSubjectDN(), userdata.getDN(), newCACert, nonce, transid, false, PBEPASSWORD);
+            checkCmpResponseGeneral(resp, cainfo.getSubjectDN(), userdata.getDN(), newCACert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
             checkCmpFailMessage(resp, "Already revoked.", CmpPKIBodyConstants.REVOCATIONRESPONSE, 0, ResponseStatus.FAILURE.getValue());
         } finally {
             // Delete user
