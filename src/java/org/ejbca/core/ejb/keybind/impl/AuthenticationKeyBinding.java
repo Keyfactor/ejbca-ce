@@ -56,7 +56,7 @@ public class AuthenticationKeyBinding extends InternalKeyBindingBase {
 
     @Override
     public void assertCertificateCompatability(Certificate certificate) throws CertificateImportException {
-        if (isClientSSLCertificate(certificate)) {
+        if (!isClientSSLCertificate(certificate)) {
             throw new CertificateImportException("Not a vlid Client SSL authentication certificate.");
         }
     }
@@ -67,6 +67,10 @@ public class AuthenticationKeyBinding extends InternalKeyBindingBase {
     }
 
     public static boolean isClientSSLCertificate(Certificate certificate) {
+        if (certificate == null) {
+            log.debug("No certificate provided.");
+            return false;
+        }
         if (!(certificate instanceof X509Certificate)) {
             log.debug("Only X509 supported.");
             return false;
@@ -77,6 +81,10 @@ public class AuthenticationKeyBinding extends InternalKeyBindingBase {
             log.debug("Key usages: " + Arrays.toString(x509Certificate.getKeyUsage()));
             log.debug("Key usage (digitalSignature): " + x509Certificate.getKeyUsage()[0]);
             log.debug("Key usage (keyEncipherment): " + x509Certificate.getKeyUsage()[2]);
+            if (x509Certificate.getExtendedKeyUsage() == null) {
+                log.debug("No EKU to verify.");
+                return false;
+            }
             for (String extendedKeyUsage : x509Certificate.getExtendedKeyUsage()) {
                 log.debug("EKU: " + extendedKeyUsage + " (" +
                         ExtendedKeyUsageConfiguration.getExtendedKeyUsageOidsAndNames().get(extendedKeyUsage) + ")");
@@ -97,7 +105,6 @@ public class AuthenticationKeyBinding extends InternalKeyBindingBase {
             log.debug(e.getMessage());
             return false;
         }
-        log.warn("CERTIFICATE VALIDATION HAS NOT BEEN PROPERLY TESTED YET!");
         return true;
     }
 }
