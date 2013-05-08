@@ -74,6 +74,10 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
 				throw new ErrorAdminCommandException("PEM file must only contain one CA certificate, this PEM file contains "+certs.size()+".");
 			}
 			try {
+                // We need to check if the CA already exists to determine what to do:
+                // - If CA already exist, it might be a sub CA that waits for certificate from an external CA
+                // - If the CA does not already exist, we import the CA certificate as an "External CA" certificate in EJBCA, so we have the CA cert in EJBCA as a trust point
+                // getCAInfo throws an exception (CADoesntExistsException) if the CA does not exists, that is how we check if the CA exists 
 			    CAInfo cainfo = ejb.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), caName);
 			    if (cainfo.getStatus() == CAConstants.CA_WAITING_CERTIFICATE_RESPONSE) {
 			        getLogger().info("CA '"+caName+"' is waiting for certificate response from external CA, importing certificate as certificate response to this CA.");
