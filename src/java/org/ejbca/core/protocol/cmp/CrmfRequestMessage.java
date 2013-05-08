@@ -534,6 +534,12 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
         return preferredDigestAlg;
     }
 
+    public void setPreferredDigestAlg(String digestAlgo) {
+        if(StringUtils.isNotEmpty(digestAlgo)) {
+            preferredDigestAlg = digestAlgo;
+        }
+    }
+    
     @Override
     public boolean includeCACert() {
         return false;

@@ -37,6 +37,7 @@ import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.cmp.PKIHeaderBuilder;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.cms.CMSSignedGenerator;
@@ -176,7 +177,7 @@ public class CrmfRequestTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
 
         byte[] resp = sendCmpHttp(ba, 200);
-        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null);
+        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         checkCmpFailMessage(resp, "User " + user + " not found.", 1, reqId, 7); // Expects a CertificateResponse (reject) message with error
                                                                                 // FailInfo.INCORRECT_DATA
         log.trace("<test01CrmfHttpUnknowUser");
@@ -202,7 +203,7 @@ public class CrmfRequestTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200);
-        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null);
+        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         checkCmpFailMessage(resp, "User " + user + " not found.", 1, reqId, 7); // Expects a CertificateResponse (reject) message with error
                                                                                 // FailInfo.INCORRECT_DATA
     }
@@ -226,7 +227,7 @@ public class CrmfRequestTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200);
-        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null);
+        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         X509Certificate cert = checkCmpCertRepMessage(userDN, cacert, resp, reqId);
         String altNames = CertTools.getSubjectAlternativeName(cert);
         assertNull("AltNames was not null (" + altNames + ").", altNames);
@@ -241,7 +242,7 @@ public class CrmfRequestTest extends CmpTestCase {
         ba = bao.toByteArray();
         // Send request and receive response
         resp = sendCmpHttp(ba, 200);
-        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
+        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         checkCmpPKIConfirmMessage(userDN, cacert, resp);
 
         // Now revoke the bastard!
@@ -253,7 +254,7 @@ public class CrmfRequestTest extends CmpTestCase {
         byte[] barev = baorev.toByteArray();
         // Send request and receive response
         resp = sendCmpHttp(barev, 200);
-        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
+        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         checkCmpFailMessage(resp, "PKI Message is not athenticated properly. No HMAC protection was found.", 23, reqId, PKIFailureInfo.badMessageCheck);
         log.trace("<test03CrmfHttpOkUser");
     }
@@ -368,7 +369,7 @@ public class CrmfRequestTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200);
-        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null);
+        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         X509Certificate cert = checkCmpCertRepMessage(userDN, cacert, resp, reqId);
         
         // Now revoke the certificate!
@@ -382,7 +383,7 @@ public class CrmfRequestTest extends CmpTestCase {
         byte[] barev = baorev.toByteArray();
         // Send request and receive response
         resp = sendCmpHttp(barev, 200);
-        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
+        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         int revStatus = checkRevokeStatus(issuerDN, CertTools.getSerialNumber(cert));
         assertNotSame("Revocation request failed to revoke the certificate", RevokedCertInfo.NOT_REVOKED, revStatus);
 
@@ -399,7 +400,7 @@ public class CrmfRequestTest extends CmpTestCase {
         ba = bao.toByteArray();
         // Send request and receive response
         resp = sendCmpHttp(ba, 200);
-        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null);
+        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         cert = checkCmpCertRepMessage(userDN, cacert, resp, reqId);
         
         // Now revoke this certificate too
@@ -413,7 +414,7 @@ public class CrmfRequestTest extends CmpTestCase {
         barev = baorev.toByteArray();
         // Send request and receive response
         resp = sendCmpHttp(barev, 200);
-        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
+        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         revStatus = checkRevokeStatus(issuerDN, CertTools.getSerialNumber(cert));
         assertNotSame("Revocation request failed to revoke the certificate", RevokedCertInfo.NOT_REVOKED, revStatus);
         

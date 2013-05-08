@@ -26,6 +26,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -332,7 +333,9 @@ public class CmpResponseMessage implements CertificateResponseMessage {
 
     @Override
     public void setPreferredDigestAlg(String digest) {
-        this.digestAlg = digest;
+        if(StringUtils.isNotEmpty(digest)) { 
+            this.digestAlg = digest;
+        }
     }
 
     @Override
