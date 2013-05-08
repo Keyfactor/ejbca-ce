@@ -1731,10 +1731,10 @@ public class AuthenticationModulesTest extends CmpTestCase {
         cp.setAvailableCAs(availableCAs);
         try {
             certProfileSession.addCertificateProfile(ADMIN, "GOSTCP", cp);
-            log.debug("Added Certificate Profile 'GOSTCP'");
+            //log.debug("Added Certificate Profile 'GOSTCP'");
         } catch (CertificateProfileExistsException e) {
-            certProfileSession.changeCertificateProfile(ADMIN, "GOSTCP", cp);
-            log.debug("Certificate Profile 'GOSTCP' already exists. It has now been updated.");
+            //certProfileSession.changeCertificateProfile(ADMIN, "GOSTCP", cp);
+            //log.debug("Certificate Profile 'GOSTCP' already exists. It has now been updated.");
         }
         int cpId = certProfileSession.getCertificateProfileId("GOSTCP");
 
@@ -1751,10 +1751,10 @@ public class AuthenticationModulesTest extends CmpTestCase {
         // from "email" data
         try {
             eeProfileSession.addEndEntityProfile(ADMIN, "GOSTEEP", eep);
-            log.debug("Added End Entity Profile 'GOSTEEP'");
+            //log.debug("Added End Entity Profile 'GOSTEEP'");
         } catch (EndEntityProfileExistsException e) {
-            eeProfileSession.changeEndEntityProfile(ADMIN, "GOSTEEP", eep);
-            log.debug("End Entity Profile 'GOSTEEP' already exists. It has now been updated.");
+            //eeProfileSession.changeEndEntityProfile(ADMIN, "GOSTEEP", eep);
+            //log.debug("End Entity Profile 'GOSTEEP' already exists. It has now been updated.");
         }
         int eepId = eeProfileSession.getEndEntityProfileId("GOSTEEP");
         
@@ -1886,10 +1886,10 @@ public class AuthenticationModulesTest extends CmpTestCase {
         cp.setAvailableCAs(availableCAs);
         try {
             certProfileSession.addCertificateProfile(ADMIN, "GOSTCP", cp);
-            log.debug("Added Certificate Profile 'GOSTCP'");
+            //log.debug("Added Certificate Profile 'GOSTCP'");
         } catch (CertificateProfileExistsException e) {
-            certProfileSession.changeCertificateProfile(ADMIN, "GOSTCP", cp);
-            log.debug("Certificate Profile 'GOSTCP' already exists. It has now been updated.");
+            //certProfileSession.changeCertificateProfile(ADMIN, "GOSTCP", cp);
+            //log.debug("Certificate Profile 'GOSTCP' already exists. It has now been updated.");
         }
         int cpId = certProfileSession.getCertificateProfileId("GOSTCP");
 
@@ -1906,10 +1906,10 @@ public class AuthenticationModulesTest extends CmpTestCase {
         // from "email" data
         try {
             eeProfileSession.addEndEntityProfile(ADMIN, "GOSTEEP", eep);
-            log.debug("Added End Entity =rofile 'GOSTEEP'");
+            //log.debug("Added End Entity =rofile 'GOSTEEP'");
         } catch (EndEntityProfileExistsException e) {
-            eeProfileSession.changeEndEntityProfile(ADMIN, "GOSTEEP", eep);
-            log.debug("End Entity Profile 'GOSTEEP' already exists. It has now been updated.");
+            //eeProfileSession.changeEndEntityProfile(ADMIN, "GOSTEEP", eep);
+            //log.debug("End Entity Profile 'GOSTEEP' already exists. It has now been updated.");
         }
         int eepId = eeProfileSession.getEndEntityProfileId("GOSTEEP");
         
