@@ -72,7 +72,7 @@ public class CustomActionType extends ActionType {
     }
 
     public String getClassPath() {
-        return !autoClassPath.isEmpty() ? autoClassPath : manualClassPath;
+        return autoClassPath != null && !autoClassPath.isEmpty() ? autoClassPath : manualClassPath;
     }
     
     public void setAutoClassPath(String classPath) {
