@@ -187,6 +187,20 @@ upgrade to 5.0, verify your roles and privileges.
 Read the full Changelog for details.
 For upgrade instructions, please see UPGRADE
 
+EJBCA 4.0.15
+------------
+This is a maintenance release containing a few new features and improvements. In all 5 issues have been resolved.
+
+* Noteworthy changes: 
+- Possibility to create link certificates using the same certificate profile as the CA.
+- LDAP publisher can publish certificate serialnumber to special object class inetOrgPersonWithCertSerno.
+- Add missing variables C and UID to end user notification emails, by David Carella.
+
+Note: There is a change in the LdapPublisher class API. Custom publishers overriding the LdapPublisher must be updated.
+ 
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE.
+
 EJBCA 4.0.14
 ------------
 This is a maintenance release containing a few new features and improvements. In all 5 issues have been resolved.

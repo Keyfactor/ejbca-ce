@@ -391,6 +391,19 @@ Task
     [ECA-2320] - Merge changes from CESECORE-197
     [ECA-2324] - Merge changes from CESECORE-269 to EJBCA
 
+EJBCA 4.0.15, 2013-05-10
+---
+Bug
+    [ECA-2991] - Add the missing variable ${user.C} for e-mails
+
+Improvement
+    [ECA-1826] - Possibility to create link certificates following the certificate profile
+    [ECA-2884] - Create the variable ${user.UID} for e-mails
+    [ECA-2976] - Debug log healthcheck message
+
+New Feature
+    [ECA-2985] - Add possibility to publish cert serial to LDAP custom schema
+
 EJBCA 4.0.14, 2013-02-15
 ---
 Bug
