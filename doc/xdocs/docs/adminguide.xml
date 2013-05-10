@@ -2445,10 +2445,20 @@ should contain a list of implementing classes, one per line. For example:
 com.example.ejbca.MyWorker
 com.example.ejbca.MyOtherWorker
 </source>
+<note>
 <p>
-Note that it is not possible to hot-deploy EJBCA when customized services are
-used.
+It is not possible to hot-deploy EJBCA when customized services are used.
 </p>
+</note>
+<note>
+<p>
+Service components made for EJBCA 5.0 and earlier do not use the ServiceLoader facility and will not
+be auto-detected. To use a service component made for version 5.0 please set
+<code>web.manualclasspathsenabled</code> to true in <code>conf/web.properties</code>
+and specify the qualified class name manually (i.e. including package name).
+</p>
+</note>
+
 <subsection name="CustomWorker">
 <p>
 A Custom worker must implement the org.ejbca.core.model.services.IWorker interface. 
