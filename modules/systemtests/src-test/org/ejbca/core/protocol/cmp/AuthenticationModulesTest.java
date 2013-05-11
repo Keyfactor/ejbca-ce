@@ -1634,7 +1634,20 @@ public class AuthenticationModulesTest extends CmpTestCase {
             internalCertStoreSession.removeCertificate(fingerprint2);
         }
     }
-  
+
+    /**
+     * Tests the possibility to use different signature algorithms in CMP requests and responses if protection algorithm 
+     * is specified.
+     * 
+     * A CMP request is sent to a CA that uses ECDSA with SHA256 as signature and encryption algorithms:
+     * 
+     * 1. Send a CRMF request signed using ECDSA with SHA256 algorithm and expects a response signed by the same algorithm
+     * 2. Send a CMP Confirm message signed using ECDSA with SHA256 and expects a response signed using ECDSA and SHA1 because
+     *    no protection algorithm was specified in the Confirm message. SHA1 is the default digest algorithm.
+     * 3. Sends a CMP Revocation request signed using ECDSA with SHA256 and expects a response signed by the same algorithm.
+     * 
+     * @throws Exception
+     */
     @Test
     public void test24EECAuthWithSHA256AndECDSA() throws Exception {
         log.trace(">test24EECAuthWithSHA256AndECDSA()");
@@ -1836,6 +1849,14 @@ public class AuthenticationModulesTest extends CmpTestCase {
 
     }
 
+    /**
+     * Tests the possibility to use different signature algorithms in CMP requests and responses.
+     * 
+     * A CRMF request, signed using ECDSA with SHA1, is sent to a CA that uses RSA with SHA256 as signature algorithm.
+     * The expected response is signed by RSA with SHA1.
+     * 
+     * @throws Exception
+     */
     @Test
     public void test25EECAuthWithRSAandECDSA() throws Exception {
         log.trace(">test25EECAuthWithRSAandECDSA()");
@@ -1860,7 +1881,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             String userDN = "CN=cmpmixuser";
             byte[] nonce = CmpMessageHelper.createSenderNonce();
             byte[] transid = CmpMessageHelper.createSenderNonce();
-            AlgorithmIdentifier pAlg = new AlgorithmIdentifier(X9ObjectIdentifiers.ecdsa_with_SHA256);
+            AlgorithmIdentifier pAlg = new AlgorithmIdentifier(X9ObjectIdentifiers.ecdsa_with_SHA1);
             PKIMessage req = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, false, null, null, null, null, pAlg, null);
         
             createUser(testAdminName, testAdminDN, "foo123", true, caid, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
@@ -1870,7 +1891,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             fp = CertTools.getFingerprintAsString(admCert);
         
             CMPCertificate extraCert = getCMPCert(admCert);
-            req = CmpMessageHelper.buildCertBasedPKIProtection(req, extraCert, admkeys.getPrivate(), CMSSignedGenerator.DIGEST_SHA256, "BC");
+            req = CmpMessageHelper.buildCertBasedPKIProtection(req, extraCert, admkeys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1, "BC");
             assertNotNull(req);
         
             CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
@@ -1881,7 +1902,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             byte[] ba = bao.toByteArray();
             // Send request and receive response
             byte[] resp = sendCmpHttp(ba, 200);
-            checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+            checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
             X509Certificate cert = checkCmpCertRepMessage(userDN, cacert, resp, reqId);
             fp2 = CertTools.getFingerprintAsString(cert);
         
