@@ -24,6 +24,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.cmp.CMPObjectIdentifiers;
@@ -214,6 +215,9 @@ public class CmpRevokeResponseMessage extends BaseCmpMessage implements Response
 
 	@Override
 	public void setPreferredDigestAlg(String digest) {
+	    if(StringUtils.isNotEmpty(digest)) {
+	        this.digestAlg = digest;
+	    }
 	}
 
 	@Override

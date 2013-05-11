@@ -422,7 +422,9 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			// Username and pwd in the EndEntityInformation and the IRequestMessage must match
 			crmfreq.setUsername(username);
 			crmfreq.setPassword(pwd);
-            crmfreq.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(crmfreq.getHeader().getProtectionAlg().getAlgorithm().getId()));
+            if(msg.getHeader().getProtectionAlg() != null) {			
+                crmfreq.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(crmfreq.getHeader().getProtectionAlg().getAlgorithm().getId()));
+            }
 			// Set all protection parameters
 			CmpPbeVerifyer verifyer = null;
 			if(StringUtils.equals(authenticationModule.getName(), CmpConfiguration.AUTHMODULE_HMAC)) {
