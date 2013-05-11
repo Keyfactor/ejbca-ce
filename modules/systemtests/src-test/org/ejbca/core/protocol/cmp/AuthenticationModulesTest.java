@@ -1634,7 +1634,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             internalCertStoreSession.removeCertificate(fingerprint2);
         }
     }
-/*    
+  
     @Test
     public void test24EECAuthWithSHA256AndECDSA() throws Exception {
         log.trace(">test24EECAuthWithSHA256AndECDSA()");
@@ -1803,13 +1803,15 @@ public class AuthenticationModulesTest extends CmpTestCase {
             ba = bao.toByteArray();
             // Send request and receive response
             resp = sendCmpHttp(ba, 200);
-            checkCmpResponseGeneral(resp, ecdsaCaInfo.getSubjectDN(), userDN, ecdsaCaCert, nonce, transid, false, null, X9ObjectIdentifiers.ecdsa_with_SHA256.getId());
+            
+            //Since pAlg was not set in the ConfirmationRequest, the default DigestAlgorithm (SHA1) will be used
+            checkCmpResponseGeneral(resp, ecdsaCaInfo.getSubjectDN(), userDN, ecdsaCaCert, nonce, transid, true, null, X9ObjectIdentifiers.ecdsa_with_SHA1.getId());
             checkCmpPKIConfirmMessage(userDN, ecdsaCaCert, resp);
 
             //-------------------------  Send a CMP revocation request
             PKIMessage rev = genRevReq(ecdsaCaInfo.getSubjectDN(), userDN, cert.getSerialNumber(), ecdsaCaCert, nonce, transid, true, pAlg, null);
             assertNotNull(rev);
-            rev = CmpMessageHelper.buildCertBasedPKIProtection(rev, extraCert, admkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
+            rev = CmpMessageHelper.buildCertBasedPKIProtection(rev, extraCert, admkeys.getPrivate(), AlgorithmTools.getDigestFromSigAlg(pAlg.getAlgorithm().getId()), "BC");
             assertNotNull(rev);
 
             ByteArrayOutputStream baorev = new ByteArrayOutputStream();
@@ -1833,7 +1835,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         log.trace("<test24EECAuthWithSHA256AndECDSA()");
 
     }
-*/
+
     @Test
     public void test25EECAuthWithRSAandECDSA() throws Exception {
         log.trace(">test25EECAuthWithRSAandECDSA()");
@@ -1883,36 +1885,6 @@ public class AuthenticationModulesTest extends CmpTestCase {
             X509Certificate cert = checkCmpCertRepMessage(userDN, cacert, resp, reqId);
             fp2 = CertTools.getFingerprintAsString(cert);
         
-            /*
-            // ------------------- Send a CMP confirm message
-            String hash = "foo123";
-            PKIMessage confirm = genCertConfirm(userDN, mixcacert, nonce, transid, hash, reqId);
-            assertNotNull(confirm);
-            bao = new ByteArrayOutputStream();
-            out = new DEROutputStream(bao);
-            out.writeObject(confirm);
-            ba = bao.toByteArray();
-            // Send request and receive response
-            resp = sendCmpHttp(ba, 200);
-            checkCmpResponseGeneral(resp, mixca.getSubjectDN(), userDN, mixcacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-            checkCmpPKIConfirmMessage(userDN, mixcacert, resp);
-
-            //-------------------------  Send a CMP revocation request
-            PKIMessage rev = genRevReq(mixca.getSubjectDN(), userDN, cert.getSerialNumber(), mixcacert, nonce, transid, true, null, null);
-            assertNotNull(rev);
-            rev = CmpMessageHelper.buildCertBasedPKIProtection(rev, extraCert, admkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
-            assertNotNull(rev);
-
-            ByteArrayOutputStream baorev = new ByteArrayOutputStream();
-            DEROutputStream outrev = new DEROutputStream(baorev);
-            outrev.writeObject(rev);
-            byte[] barev = baorev.toByteArray();
-            // Send request and receive response
-            resp = sendCmpHttp(barev, 200);
-            checkCmpResponseGeneral(resp, mixca.getSubjectDN(), userDN, mixcacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-            int revStatus = checkRevokeStatus(mixca.getSubjectDN(), CertTools.getSerialNumber(cert));
-            assertNotSame("Revocation request failed to revoke the certificate", RevokedCertInfo.NOT_REVOKED, revStatus);
-            */
         } finally {
             removeAuthenticationToken(admToken, admCert, testAdminName);
             endEntityManagementSession.revokeAndDeleteUser(ADMIN, "cmpmixuser", ReasonFlags.unused);

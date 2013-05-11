@@ -50,6 +50,7 @@ import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
@@ -284,11 +285,14 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		}
 		if (StringUtils.equals(responseProtection, "pbe") && (owfAlg != null) && (macAlg != null) && (keyId != null) && (cmpRaAuthSecret != null) ) {
 		    rresp.setPbeParameters(keyId, cmpRaAuthSecret, owfAlg, macAlg, iterationCount);
-		} else {
+		} else if(StringUtils.equals(responseProtection, "signature")) {
 		    try {
 		        final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
 		        final String aliasCertSign = ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
 		        rresp.setSignKeyInfo(ca.getCACertificate(), cryptoToken.getPrivateKey(aliasCertSign), cryptoToken.getSignProviderName());
+                if(msg.getHeader().getProtectionAlg() != null) {
+                    rresp.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(msg.getHeader().getProtectionAlg().getAlgorithm().getId()));
+                }
 		    } catch (CryptoTokenOfflineException e) {
 		        LOG.error(e.getLocalizedMessage(), e);
 		    }
