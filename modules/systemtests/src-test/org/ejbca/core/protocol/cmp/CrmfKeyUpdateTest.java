@@ -1350,25 +1350,10 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
 
     
     /**
-     * A "Happy Path" test. Sends a KeyUpdateRequest and receives a new certificate.
+     * Tests the possibility to use different signature algorithms in CMP requests and responses.
      * 
-     * - Pre-configuration: Sets the operational mode to client mode (cmp.raoperationalmode=normal)
-     * - Pre-configuration: Sets cmp.allowautomaticrenewal to 'true' and tests that the resetting of configuration has worked.
-     * - Pre-configuration: Sets cmp.allowupdatewithsamekey to 'true'
-     * - Creates a new user and obtains a certificate, cert, for this user. Tests whether obtaining the certificate was successful.
-     * - Generates a CMP KeyUpdate Request and tests that such request has been created.
-     * - Signs the CMP request using cert and attaches cert to the CMP request. Tests that the CMP request is still not null
-     * - Sends the request using HTTP and receives a response.
-     * - Examines the response:
-     *      - Checks that the response is not empty or null
-     *      - Checks that the protection algorithm is sha1WithRSAEncryption
-     *      - Checks that the signer is the expected CA
-     *      - Verifies the response signature
-     *      - Checks that the response's senderNonce is 16 bytes long
-     *      - Checks that the request's senderNonce is the same as the response's recipientNonce
-     *      - Checks that the request and the response has the same transactionID
-     *      - Obtains the certificate from the response
-     *      - Checks that the obtained certificate has the right subjectDN and issuerDN
+     * A KeyUpdate request, signed using ECDSA with SHA256, is sent to a CA that uses RSA with SHA256 as signature algorithm.
+     * The expected response is signed by RSA with SHA256.
      * 
      * @throws Exception
      */
