@@ -264,8 +264,9 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                 // Set the appropriate parameters in the request
                 crmfreq.setUsername(userdata.getUsername());
                 crmfreq.setPassword(password);
-                crmfreq.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(crmfreq.getHeader().getProtectionAlg().getAlgorithm().getId()));
-                
+                if(crmfreq.getHeader().getProtectionAlg() != null) {
+                    crmfreq.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(crmfreq.getHeader().getProtectionAlg().getAlgorithm().getId()));
+                }
 
                 // Check the public key, whether it is allowed to use the old keys or not.
                 if(!CmpConfiguration.getAllowUpdateWithSameKey()) {
