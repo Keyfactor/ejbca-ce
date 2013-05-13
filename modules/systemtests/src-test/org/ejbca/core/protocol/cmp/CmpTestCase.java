@@ -391,12 +391,8 @@ public abstract class CmpTestCase extends CaTestCase {
          mout.writeObject(myCertRequest);
          mout.close();
          byte[] popoProtectionBytes = baos.toByteArray();
-         //String sigalg = PKCSObjectIdentifiers.sha1WithRSAEncryption.getId();
-         //if(pAlg != null) {
-         //    sigalg = pAlg.getAlgorithm().getId(); 
-         //}
          String sigalg = AlgorithmTools.getSignAlgOidFromDigestAndKey(null, keys.getPrivate().getAlgorithm()).getId();
-         Signature sig = Signature.getInstance(sigalg); //PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), "BC");
+         Signature sig = Signature.getInstance(sigalg);
          sig.initSign(keys.getPrivate());
          sig.update(popoProtectionBytes);
 
