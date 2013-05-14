@@ -89,6 +89,14 @@ public class LdapSearchPublisher extends LdapPublisher {
 				// connect to the server
 				log.debug("Connecting to " + currentServer);
 				lc.connect(currentServer, Integer.parseInt(getPort()));
+				// Execute a STARTTLS handshake if it was requested.
+				if (getConnectionSecurity() == ConnectionSecurity.STARTTLS) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("STARTTLS to LDAP server "+currentServer);
+                    }
+					lc.startTLS();
+				}
+
 				// authenticate to the server
 				log.debug("Logging in with BIND DN " + getLoginDN());
 				lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"), ldapBindConstraints);

@@ -3,7 +3,8 @@
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.config.GlobalConfiguration, org.ejbca.core.model.SecConst, 
               org.cesecore.authorization.AuthorizationDeniedException, org.ejbca.core.model.authorization.AccessRulesConstants,
-               org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.core.model.ca.publisher.*, org.ejbca.ui.web.admin.cainterface.EditPublisherJSPHelper, 
+               org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.core.model.ca.publisher.*, org.ejbca.core.model.ca.publisher.LdapPublisher.ConnectionSecurity,
+               org.ejbca.ui.web.admin.cainterface.EditPublisherJSPHelper, 
                org.ejbca.core.model.ca.publisher.PublisherExistsException, org.cesecore.certificates.util.DNFieldExtractor, org.cesecore.certificates.util.DnComponents, org.cesecore.authorization.control.StandardRules"%>
 
 <html>
