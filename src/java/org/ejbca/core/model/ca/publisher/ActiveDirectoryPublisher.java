@@ -197,7 +197,7 @@ public class ActiveDirectoryPublisher extends LdapPublisher{
           attributeSet.add(new LDAPAttribute("description", getUserDescription()));
         }
 
-        if(getUseSSL()  && password != null){
+        if(getConnectionSecurity() == ConnectionSecurity.SSL  && password != null){
           //Can only set password through SSL connection
         	
         	//attributeSet.add(new LDAPAttribute("userPassword", password));	
