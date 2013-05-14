@@ -1317,7 +1317,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     final int p11CryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, cryptoTokenName,
                             PKCS11CryptoToken.class.getName(), cryptoTokenProperties, null, p11password.toCharArray());
                     // Use reflection to dig out the certificate objects for each alias
-                    final Method m = PKCS11CryptoToken.class.getDeclaredMethod("getKeyStore");
+                    final Method m = KeyStore.class.getDeclaredMethod("getKeyStore");
                     m.setAccessible(true);
                     final KeyStore keyStore = (KeyStore) m.invoke(cryptoTokenManagementSession.getCryptoToken(p11CryptoTokenId));
                     createInternalKeyBindings(p11CryptoTokenId, keyStore, trustDefaults);
