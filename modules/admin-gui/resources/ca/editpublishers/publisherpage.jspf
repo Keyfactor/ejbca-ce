@@ -137,10 +137,13 @@ function checkallfields(){
 
  <% if( publisherdata instanceof LdapPublisher){ %>
  function setUseSSLPort(){
-   if(document.editpublisher.<%=EditPublisherJSPHelper.CHECKBOX_LDAPUSESSL%>.checked){
-     document.editpublisher.<%=EditPublisherJSPHelper.TEXTFIELD_LDAPPORT%>.value= <%= LdapPublisher.DEFAULT_SSLPORT%>;
-   }else{
-     document.editpublisher.<%=EditPublisherJSPHelper.TEXTFIELD_LDAPPORT%>.value= <%= LdapPublisher.DEFAULT_PORT%>;
+   for (i = 0; i < document.editpublisher.<%=EditPublisherJSPHelper.RADIO_LDAPCONNECTIONSECURITY%>.length; i++) {
+     if (document.editpublisher.<%=EditPublisherJSPHelper.RADIO_LDAPCONNECTIONSECURITY%>[i].checked &&
+         document.editpublisher.<%=EditPublisherJSPHelper.RADIO_LDAPCONNECTIONSECURITY%>[i].value == "SSL") {
+       document.editpublisher.<%=EditPublisherJSPHelper.TEXTFIELD_LDAPPORT%>.value= <%= LdapPublisher.DEFAULT_SSLPORT%>;
+     } else {
+       document.editpublisher.<%=EditPublisherJSPHelper.TEXTFIELD_LDAPPORT%>.value= <%= LdapPublisher.DEFAULT_PORT%>;
+     }
    }
   }
  <% } %>
