@@ -384,13 +384,17 @@ function confirmrepublish(){
       <tr id="Row<%=(row++)%2%>">
          <td  align="right" width="<%=columnwidth%>"> 
            &nbsp;
-           <% if(currentindex < numberofcertificates -1 ){ %>
+           <% if (!cacerts && (currentindex < numberofcertificates -1) ){ %>
            <input type="submit" name="<%= BUTTON_VIEW_OLDER %>" value="&lt; <%= ejbcawebbean.getText("VIEWOLDER") %>" tabindex="1" />
+           <% } else if (currentindex < numberofcertificates -1) {%>
+           <input type="submit" name="<%= BUTTON_VIEW_OLDER %>" value="&lt; <%= ejbcawebbean.getText("VIEWOTHERCHAIN") %>" tabindex="1" />
            <% } %>
          </td>
          <td>
-           <% if(currentindex > 0 ){ %>
+           <% if (!cacerts && (currentindex > 0) ){ %>
            <input type="submit" name="<%= BUTTON_VIEW_NEWER %>" value="<%= ejbcawebbean.getText("VIEWNEWER") %> &gt;" tabindex="2" />
+           <% } else if (currentindex > 0) {%>
+           <input type="submit" name="<%= BUTTON_VIEW_NEWER %>" value="<%= ejbcawebbean.getText("VIEWOTHERCHAIN") %> &gt;" tabindex="2" />
            <% } %>
            &nbsp;
          </td>
