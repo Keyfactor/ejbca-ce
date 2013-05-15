@@ -83,6 +83,14 @@ public enum OcspSigningCache {
                 break;
             }
         }
+        if (defaultResponderCacheEntry == null) {
+            log.info("Default OCSP responder with subject '" + OcspConfiguration.getDefaultResponderId() + "' was not found."+
+                    " OCSP requests for certificates issued by unknown CAs will fail with response code 2 (internal error).");
+            if (staging.values().size() > 0) {
+                // We could pick a responder at chance here, but it may be a feature to the user to not waste HSM signatures on Unknown responses..
+                log.info("OCSP responders are currently available. Please verify your configuration if you want to send signed OCSP responses for Unknown CAs.");
+            }
+        }
         if (log.isDebugEnabled()) {
             log.debug("Committing to the following OCSP cache:");
             for (final Integer key : staging.keySet()) {
