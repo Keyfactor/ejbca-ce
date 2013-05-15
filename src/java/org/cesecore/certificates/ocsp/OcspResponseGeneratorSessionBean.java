@@ -867,6 +867,11 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         String errMsg = intres.getLocalizedMessage("ocsp.errorfindcacert", new String(Hex.encode(certId.getIssuerNameHash())),
                                 OcspConfiguration.getDefaultResponderId());
                         log.error(errMsg);
+                        // If we are responding to multiple requests, the last found ocspSigningCacheEntry will be used in the end
+                        // so even if there are not any one now, it might be later when it is time to sign the responses.
+                        // Since we only will sign the entire response once if there is at least one valid ocspSigningCacheEntry
+                        // we might as well include the unknown requests.
+                        responseList.add(new OCSPResponseItem(certId, new UnknownStatus(), nextUpdate));
                         continue;
                     }
                 }
