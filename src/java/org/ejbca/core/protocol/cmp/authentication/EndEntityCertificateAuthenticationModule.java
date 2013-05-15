@@ -182,7 +182,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         //Check that msg is signed
         if(msg.getProtection() == null) {
             errorMessage = "PKI Message is not athenticated properly. No PKI protection is found.";
-            log.error(errorMessage);
+            log.info(errorMessage);
             return false;
         }
         
@@ -190,7 +190,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         final CMPCertificate[] extraCerts = msg.getExtraCerts();
         if ((extraCerts == null) || (extraCerts.length == 0)) {
             errorMessage = "There is no certificate in the extraCert field in the PKIMessage";
-            log.error(errorMessage);
+            log.info(errorMessage);
             return false;
         } else {
             if(log.isDebugEnabled()) {
