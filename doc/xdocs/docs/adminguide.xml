@@ -451,6 +451,9 @@ You should only use CN in the users DN (same as for PIX below).
 <a href="http://code.google.com/p/jscep/">jSCEP</a>.
 jSCEP uses EJBCA as one of the servers it is tested against.
 </p>
+<p>
+There is a <a href="https://github.com/asyd/jscep-cli-jdk6">CLI for jSCEP</a> by Bruno Bonfils.
+</p>
 </subsubsection>
 <subsubsection name="Juniper Networks NetScreen-25/NetScreen-50">
 <p>
