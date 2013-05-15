@@ -8,6 +8,7 @@ DROP INDEX crldata_idx3 ON CRLData;
 DROP INDEX certificatedata_idx2 ON CertificateData;
 DROP INDEX certificatedata_idx4 ON CertificateData;
 DROP INDEX certificatedata_idx5 ON CertificateData;
+-- DROP INDEX certificatedata_idx8 ON CertificateData;
 DROP INDEX certificatedata_idx11 ON CertificateData;
 DROP INDEX certificatedata_idx12 ON CertificateData;
 -- Only added when MySQL partition pruning is used:

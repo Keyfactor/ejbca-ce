@@ -14,6 +14,7 @@ drop table CertificateData;
 drop table CertificateProfileData;
 drop table CryptoTokenData;
 drop table EndEntityProfileData;
+drop table InternalKeyBindingData;
 drop table GlobalConfigurationData;
 drop table HardTokenCertificateMap;
 drop table HardTokenData;
