@@ -175,6 +175,21 @@ CREATE TABLE EndEntityProfileData (
     PRIMARY KEY (id)
 );
 
+CREATE TABLE InternalKeyBindingData (
+    id INT4 NOT NULL,
+    name TEXT NOT NULL,
+    status TEXT NOT NULL,
+    keyBindingType TEXT NOT NULL,
+    certificateId TEXT,
+    cryptoTokenId INT4 NOT NULL,
+    keyPairAlias TEXT NOT NULL,
+    rawData TEXT,
+    lastUpdate INT8 NOT NULL,
+    rowProtection TEXT,
+    rowVersion INT4 NOT NULL,
+    PRIMARY KEY (id)
+);
+
 CREATE TABLE GlobalConfigurationData (
     configurationId TEXT NOT NULL,
     data BYTEA NOT NULL,

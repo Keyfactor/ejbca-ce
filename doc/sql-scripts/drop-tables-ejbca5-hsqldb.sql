@@ -14,6 +14,7 @@ drop table CertificateData if exists;
 drop table CertificateProfileData if exists;
 drop table CryptoTokenData if exists;
 drop table EndEntityProfileData if exists;
+drop table InternalKeyBindingData if exists;
 drop table GlobalConfigurationData if exists;
 drop table HardTokenCertificateMap if exists;
 drop table HardTokenData if exists;

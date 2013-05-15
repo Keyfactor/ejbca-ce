@@ -14,6 +14,7 @@ drop table if exists CertificateData cascade;
 drop table if exists CertificateProfileData cascade;
 drop table if exists CryptoTokenData cascade;
 drop table if exists EndEntityProfileData cascade;
+drop table if exists InternalKeyBindingData cascade;
 drop table if exists GlobalConfigurationData cascade;
 drop table if exists HardTokenCertificateMap cascade;
 drop table if exists HardTokenData cascade;

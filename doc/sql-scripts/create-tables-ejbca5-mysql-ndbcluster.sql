@@ -177,6 +177,21 @@ CREATE TABLE EndEntityProfileData (
     PRIMARY KEY (id)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
+CREATE TABLE InternalKeyBindingData (
+    id INT(11) NOT NULL,
+    name VARCHAR(250) BINARY NOT NULL,
+    status VARCHAR(250) BINARY NOT NULL,
+    keyBindingType VARCHAR(250) BINARY NOT NULL,
+    certificateId VARCHAR(250) BINARY,
+    cryptoTokenId INT(11) NOT NULL,
+    keyPairAlias VARCHAR(250) BINARY NOT NULL,
+    rawData LONGTEXT,
+    lastUpdate BIGINT(20) NOT NULL,
+    rowProtection LONGTEXT,
+    rowVersion INT(11) NOT NULL,
+    PRIMARY KEY (id)
+) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
+
 CREATE TABLE GlobalConfigurationData (
     configurationId VARCHAR(250) BINARY NOT NULL,
     data LONGBLOB NOT NULL,
