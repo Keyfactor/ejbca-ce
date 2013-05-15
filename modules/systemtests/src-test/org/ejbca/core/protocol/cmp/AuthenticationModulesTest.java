@@ -1642,8 +1642,8 @@ public class AuthenticationModulesTest extends CmpTestCase {
      * A CMP request is sent to a CA that uses ECDSA with SHA256 as signature and encryption algorithms:
      * 
      * 1. Send a CRMF request signed using ECDSA with SHA256 algorithm and expects a response signed by the same algorithm
-     * 2. Send a CMP Confirm message signed using ECDSA with SHA256 and expects a response signed using ECDSA and SHA1 because
-     *    no protection algorithm was specified in the Confirm message. SHA1 is the default digest algorithm.
+     * 2. Send a CMP Confirm message without protection. The response is expected to be signed using ECDSA (because that's the CA's key algorithm)
+     *    and SHA1 (because that's the default digest algorithm)
      * 3. Sends a CMP Revocation request signed using ECDSA with SHA256 and expects a response signed by the same algorithm.
      * 
      * @throws Exception
