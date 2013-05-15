@@ -1307,7 +1307,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             " You should reconfigure the CryptoToken later if this is not sufficient.");
                     cryptoTokenName = "PKCS11 slot "+p11ConfigurationFileProperties.getProperty("slot", "i" + p11ConfigurationFileProperties.getProperty("slotListIndex"));
                 }
-                if (cryptoTokenName != null) {
+                if (cryptoTokenName != null && cryptoTokenManagementSession.getIdFromName(cryptoTokenName) == null) {
                     if (!globalDoNotStorePasswordsInMemory) {
                         log.info(" Auto-activation will be used.");
                         BaseCryptoToken.setAutoActivatePin(cryptoTokenProperties, new String(p11password), true);
@@ -1365,7 +1365,12 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 return;
             }
         }
-        log.info(" Processing Soft KeyStore " + file.getName());
+        
+        final String name = file.getName();
+        if (cryptoTokenManagementSession.getIdFromName(name) != null) {
+            return; // already upgraded
+        }
+        log.info(" Processing Soft KeyStore " + name);
         try {
             final ByteArrayOutputStream baos = new ByteArrayOutputStream();
             // Save the store using the same password as the keys are protected with (not the store password)
@@ -1378,7 +1383,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             } else {
                 log.info(" Auto-activation will not be used.");
             }
-            final int softCryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, file.getName(),
+            final int softCryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, name,
                     SoftCryptoToken.class.getName(), cryptoTokenProperties, baos.toByteArray(), softKeyPassword.toCharArray());
             createInternalKeyBindings(softCryptoTokenId, keyStore, trustDefaults);
         } catch (Exception e) {
