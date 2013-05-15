@@ -12,6 +12,7 @@ drop table CertificateData cascade constraints;
 drop table CertificateProfileData cascade constraints;
 drop table CryptoTokenData cascade constraints;
 drop table EndEntityProfileData cascade constraints;
+drop table InternalKeyBindingData cascade constraints;
 drop table GlobalConfigurationData cascade constraints;
 drop table HardTokenCertificateMap cascade constraints;
 drop table HardTokenData cascade constraints;
