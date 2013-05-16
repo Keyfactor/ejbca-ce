@@ -3763,6 +3763,7 @@ $ sudo vi /etc/java-7-openjdk/security/java.security
 security.provider.1=org.bouncycastle.jce.provider.BouncyCastleProvider
 (renumber the ones below)
 </source>
+<p>After editing this (make sure you edit the right file) you need to restart JBoss.</p>
 </subsection>
 <subsection name="Named curves">
 <p>
