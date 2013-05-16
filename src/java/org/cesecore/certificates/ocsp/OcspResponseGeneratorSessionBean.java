@@ -1258,7 +1258,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             return;
         }
         log.info("No OcspKeyBindings found. Processing ocsp.properties to see if we need to perform conversion.");
-        final List<SimpleEntry<Integer,BigInteger>> trustDefaults = getOcspKeyBingindTrustDefaults();
+        final List<SimpleEntry<Integer,BigInteger>> trustDefaults = getOcspKeyBindingTrustDefaults();
         // Create CryptoTokens and AuthenticationKeyBinding from:
         //  ocsp.rekeying.swKeystorePath = wsKeyStore.jks
         //  ocsp.rekeying.swKeystorePassword = foo123
@@ -1455,7 +1455,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     }
 
     /** @return a list of trusted signers or CAs */
-    private List<SimpleEntry<Integer,BigInteger>> getOcspKeyBingindTrustDefaults() {
+    private List<SimpleEntry<Integer,BigInteger>> getOcspKeyBindingTrustDefaults() {
         // Import certificates used to verify OCSP request signatures and add these to each OcspKeyBinding's trust-list
         //  ocsp.signtrustdir=signtrustdir
         //  ocsp.signtrustvalidtime should be ignored
