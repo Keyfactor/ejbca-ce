@@ -29,6 +29,7 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
+import java.security.UnrecoverableEntryException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
@@ -1354,13 +1355,16 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     private void processSoftKeystore(File file, String softStorePassword, String softKeyPassword, boolean doNotStorePasswordsInMemory,
             List<SimpleEntry<Integer,BigInteger>> trustDefaults) {
         KeyStore keyStore;
+        final char[] passwordChars = softStorePassword.toCharArray();
+        // Load keystore, and convert JKS to PKCS#12
         try {
-            keyStore = KeyStore.getInstance("JKS");
-            keyStore.load(new FileInputStream(file), softStorePassword.toCharArray());
+            final KeyStore jks = KeyStore.getInstance("JKS");
+            jks.load(new FileInputStream(file), passwordChars);
+            keyStore = convertToP12(jks, passwordChars);
         } catch (Exception e) {
             try {
                 keyStore = KeyStore.getInstance("PKCS12", "BC");
-                keyStore.load(new FileInputStream(file), softStorePassword.toCharArray());
+                keyStore.load(new FileInputStream(file), passwordChars);
             } catch (Exception e2) {
                 try {
                     log.info("Unable to process " + file.getCanonicalPath() + " as a KeyStore.");
@@ -1375,7 +1379,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         if (cryptoTokenManagementSession.getIdFromName(name) != null) {
             return; // already upgraded
         }
-        log.info(" Processing Soft KeyStore " + name);
+        log.info(" Processing Soft KeyStore '" + name + "' of type " + keyStore.getType());
         try {
             final ByteArrayOutputStream baos = new ByteArrayOutputStream();
             // Save the store using the same password as the keys are protected with (not the store password)
@@ -1394,6 +1398,27 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         } catch (Exception e) {
             log.warn(e.getMessage());
         }
+    }
+    
+    /** Creates a PKCS#12 KeyStore from an JKS file by copying the contents. */
+    private KeyStore convertToP12(KeyStore keyStore, char[] password) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException, NoSuchProviderException, CertificateException, IOException {
+        final KeyStore p12 = KeyStore.getInstance("PKCS12", "BC");
+        final KeyStore.ProtectionParameter protParam =
+            (password != null ? new KeyStore.PasswordProtection(password) : null);
+        p12.load(null, password); // initialize
+        
+        final Enumeration<String> en = keyStore.aliases();
+        while (en.hasMoreElements()) {
+            final String alias = en.nextElement();
+            try {
+                KeyStore.Entry entry = keyStore.getEntry(alias, protParam);
+                p12.setEntry(alias, entry, protParam);
+            } catch (UnsupportedOperationException uoe) {
+                KeyStore.Entry entry = keyStore.getEntry(alias, null);
+                p12.setEntry(alias, entry, null);
+            }
+        }
+        return p12;
     }
     
     /** Create InternalKeyBindings for Ocsp signing and SSL client authentication certs */
