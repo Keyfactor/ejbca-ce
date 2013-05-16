@@ -1163,6 +1163,29 @@ See EJBCA_HOME/modules/cmpProxy/resources/README for information how to build an
 </p>
 </subsection>
 
+<subsection name="CMP Response Message">
+<p>
+When a CMP request is successfull, EJBCA returns a protected CMP response message. The protection type of the response message can be configered in $EJBCA_HOME/conf/cmp.properties.
+EJBCA supports two types of response message protection: 'pbe' and 'signature'.
+</p>
+<subsubsection name="pbe">
+<p>
+This type of protection of the response message can be used only when the request was authenticaed using HMAC authentication module. The parameters used for the 'pbe' protection are based on the parameters used in the recieved HMAC authentication.
+</p>
+</subsubsection>
+<subsubsection name="signature">
+<p>
+The CA used to handle the CMP request signs the CMP response message using the same protection algorithm specified in the CMP request. If a conflict occures between the protection algorithm in the request and the CA's signature algorithm,
+the CA's key algorithm will be used in combination with a digest algorithm based on the protection algorithm in the CMP request. If a conflict occures even on the digest algorithm level, a default digest algorithm will be used.
+For example, if the CMP request uses the protection algorithm ECDSA with SHA1 and the CA's signature algorithm is RSA with SHA256, the CMP response will be signed using RSA with SHA1.
+</p>
+<p>
+The 'signature' type of response protection can be used regardless of what authentication module was used to authenticate the CMP request.
+</p>
+</subsubsection>
+<p>If a CMP request fails, EJBCA returns an unprotected, unencrypted CMP error message.</p>
+</subsection>
+
 </section>
 
 <section name="Ocsp">
