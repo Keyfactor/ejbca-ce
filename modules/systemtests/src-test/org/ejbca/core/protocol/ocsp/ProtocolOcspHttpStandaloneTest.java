@@ -220,6 +220,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
 
     @Test
     public void test05OcspUnknownCA() throws Exception {
+        configurationSession.setConfigurationValue(OcspConfiguration.DEFAULT_RESPONDER, x509ca.getSubjectDN());
         super.test05OcspUnknownCA();
     }
 
