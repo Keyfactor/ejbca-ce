@@ -44,7 +44,7 @@ function check()
 		<tr id="Row<%=row++%2%>"> 
 			<td width="45%" valign="top" align="right"><%= ejbcawebbean.getText("IMPORTCA_KEYSTOREPASSWORD") %></td>
 			<td width="55%" valign="top">
-					<input type="password" name='<%= TEXTFIELD_IMPORTCA_PASSWORD %>' value='' size="20">
+					<input type="password" autocomplete="off" name='<%= TEXTFIELD_IMPORTCA_PASSWORD %>' value='' size="20">
 			</td>
 		</tr>
 		<tr id="Row<%=row++%2%>"> 
