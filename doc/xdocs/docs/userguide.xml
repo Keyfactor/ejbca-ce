@@ -507,7 +507,7 @@ the PKI but with only one CA active at a time.
 <subsubsection name="Using the CLI">
 <p>You can also create a CA signed by an external CA using the CLI. The process is basically the same as when using the GUI. 
 </p><p>
-Create the CA generating a CSR:
+Create the CA generating a CSR (Crypto token password is set to foo123):
 </p> 
 <source>
 bin/ejbca.sh ca init CaSignedByExteral "CN=This CA is Signed by an external CA" soft foo123 secp256r1 ECDSA 365 null SHA256withECDSA null External -externalcachain chain.pem
