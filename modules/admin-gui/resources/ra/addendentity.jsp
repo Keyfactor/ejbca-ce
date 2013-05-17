@@ -1261,7 +1261,7 @@ function checkallfields(){
                 %>
            </select>
            <% }else{ %> 
-             <input type="password" name="<%= TEXTFIELD_PASSWORD %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%= profile.getValue(EndEntityProfile.PASSWORD,0) %>"/>'>
+             <input type="password" autocomplete="off" name="<%= TEXTFIELD_PASSWORD %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%= profile.getValue(EndEntityProfile.PASSWORD,0) %>"/>'>
            <% } %>
  
         </td>
@@ -1284,7 +1284,7 @@ function checkallfields(){
                 %>
            </select>
            <% }else{ %> 
-             <input type="password" name="<%= TEXTFIELD_CONFIRMPASSWORD %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%= profile.getValue(EndEntityProfile.PASSWORD,0) %>"/>'>
+             <input type="password" autocomplete="off" name="<%= TEXTFIELD_CONFIRMPASSWORD %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%= profile.getValue(EndEntityProfile.PASSWORD,0) %>"/>'>
            <% } %>
         </td>
 		<td>&nbsp;</td> 

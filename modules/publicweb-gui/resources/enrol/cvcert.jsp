@@ -19,7 +19,7 @@ or paste a PEM-formated request into the field below and click OK to fetch your 
 	<input type="text" size="40" name="user" id="user" accesskey="u" />
 	<br />
 	<label for="password">Password</label>
-	<input type="password" size="40" name="password" id="password" accesskey="p" />
+	<input type="password" autocomplete="off" size="40" name="password" id="password" accesskey="p" />
 
 	<br />
 	<br />

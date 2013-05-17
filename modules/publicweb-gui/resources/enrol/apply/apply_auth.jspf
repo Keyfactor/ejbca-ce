@@ -18,7 +18,7 @@
 	<input type="text" size="40" name="${TEXTFIELD_USERNAME}" id="${TEXTFIELD_USERNAME}" accesskey="u" />
 	<br />
     <label for="${TEXTFIELD_PASSWORD}">Password</label>
-    <input type="password" size="40" name="${TEXTFIELD_PASSWORD}" id="${TEXTFIELD_PASSWORD}" accesskey="p" />
+    <input type="password" autocomplete="off" size="40" name="${TEXTFIELD_PASSWORD}" id="${TEXTFIELD_PASSWORD}" accesskey="p" />
     <br />
     <label for="${BUTTON_SUBMIT_USERNAME}"></label>
     <input type="submit" value="OK" name="${BUTTON_SUBMIT_USERNAME}" id="${BUTTON_SUBMIT_USERNAME}" />

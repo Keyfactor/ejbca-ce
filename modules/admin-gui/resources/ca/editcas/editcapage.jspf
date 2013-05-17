@@ -1374,7 +1374,7 @@ function checkallfields(){
       </td>
       <td width="50%">
         <% String cmpRaAuthSecretValue = (editca?((X509CAInfo)cainfo).getCmpRaAuthSecret():""); %>
-        <input type="password" name="<%=TEXTFIELD_SHAREDCMPRASECRET%>" size="20" maxlength="64" value="<c:out value="<%= cmpRaAuthSecretValue %>"/>">
+        <input type="password" autocomplete="off" name="<%=TEXTFIELD_SHAREDCMPRASECRET%>" size="20" maxlength="64" value="<c:out value="<%= cmpRaAuthSecretValue %>"/>">
       </td>
     </tr>
     <% } %>
@@ -1595,7 +1595,7 @@ function checkallfields(){
             <%= ejbcawebbean.getText("EXPORTCA_AUTHCODE") %><br/>
             <form name="exportca" action="<%= globalconfiguration.getCaPath() + "/exportca" %>" method="post">
 		        <input type="hidden" name='<%= org.ejbca.ui.web.admin.cainterface.CAExportServlet.HIDDEN_CANAME %>' value='<c:out value="<%= cainfo.getName() %>"/>'/>
-                <input type="password" name="<%= org.ejbca.ui.web.admin.cainterface.CAExportServlet.TEXTFIELD_EXPORTCA_PASSWORD %>"  value="" />
+                <input type="password" autocomplete="off" name="<%= org.ejbca.ui.web.admin.cainterface.CAExportServlet.TEXTFIELD_EXPORTCA_PASSWORD %>"  value="" />
                 <input type="submit" name="<%= BUTTON_EXPORTCA %>"  value="<%= ejbcawebbean.getText("EXPORTCA")+"..." %>" />
 	        </form>
             <% } else { %>

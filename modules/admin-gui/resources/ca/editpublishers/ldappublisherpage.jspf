@@ -76,7 +76,7 @@
          <%= ejbcawebbean.getText("LOGINPWD") %>
       </td>
       <td width="55%" valign="top"> 
-         <input type="password" name="<%=EditPublisherJSPHelper.PASSWORD_LDAPLOGINPASSWORD%>" size="20" maxlength="255" 
+         <input type="password" autocomplete="off" name="<%=EditPublisherJSPHelper.PASSWORD_LDAPLOGINPASSWORD%>" size="20" maxlength="255" 
                value='<c:out value="<%= ldappublisher.getLoginPassword() %>"/>'> 
       </td>
     </tr>
@@ -85,7 +85,7 @@
          <%= ejbcawebbean.getText("CONFIRMPASSWORD") %>
       </td>
       <td width="55%" valign="top"> 
-         <input type="password" name="<%=EditPublisherJSPHelper.PASSWORD_LDAPCONFIRMLOGINPWD%>" size="20" maxlength="255" 
+         <input type="password" autocomplete="off" name="<%=EditPublisherJSPHelper.PASSWORD_LDAPCONFIRMLOGINPWD%>" size="20" maxlength="255" 
                value='<c:out value="<%= ldappublisher.getLoginPassword() %>"/>'> 
       </td>
     </tr>
