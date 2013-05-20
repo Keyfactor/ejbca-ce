@@ -137,18 +137,21 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
+import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.log.ProbableErrorHandler;
 import org.cesecore.util.log.SaferAppenderListener;
 import org.cesecore.util.log.SaferDailyRollingFileAppender;
 import org.ejbca.core.ejb.keybind.CertificateImportException;
 import org.ejbca.core.ejb.keybind.InternalKeyBinding;
+import org.ejbca.core.ejb.keybind.InternalKeyBindingInfo;
 import org.ejbca.core.ejb.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.ejbca.core.ejb.keybind.InternalKeyBindingNameInUseException;
 import org.ejbca.core.ejb.keybind.InternalKeyBindingStatus;
 import org.ejbca.core.ejb.keybind.impl.AuthenticationKeyBinding;
 import org.ejbca.core.ejb.keybind.impl.OcspKeyBinding;
 import org.ejbca.core.ejb.keybind.impl.OcspKeyBinding.ResponderIdType;
+import org.ejbca.core.protocol.ocsp.OCSPUtil;
 
 /**
  * This SSB generates OCSP responses. 
@@ -1526,6 +1529,76 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         dataMap.put(OcspKeyBinding.PROPERTY_REQUIRE_TRUSTED_SIGNATURE, Boolean.valueOf(OcspConfiguration.getEnforceRequestSigning()));
         return dataMap;
     }
+    
+    @Override
+    public String healthCheck() {
+        final StringBuilder sb = new StringBuilder();
+        // Check that there are no ACTIVE OcspKeyBindings that are not in the cache before checking usability..
+        for (InternalKeyBindingInfo internalKeyBindingInfo : internalKeyBindingMgmtSession.getInternalKeyBindingInfos(authenticationToken,
+                OcspKeyBinding.IMPLEMENTATION_ALIAS)) {
+            if (internalKeyBindingInfo.getStatus().equals(InternalKeyBindingStatus.ACTIVE)) {
+                if (OcspSigningCache.INSTANCE.getEntry(internalKeyBindingInfo.getId()) == null) {
+                    final String errMsg = intres.getLocalizedMessage("ocsp.signingkeynotincache", internalKeyBindingInfo.getName());
+                    sb.append('\n').append(errMsg);
+                    log.error(errMsg);
+                }
+            }
+        }
+        if(!sb.toString().equals("")) {
+            return sb.toString();
+        }
+        
+       
+        try {
+            final Collection<OcspSigningCacheEntry> ocspSigningCacheEntries = OcspSigningCache.INSTANCE.getEntries();
+            if (ocspSigningCacheEntries.isEmpty()) {
+                final String errMsg = intres.getLocalizedMessage("ocsp.errornosignkeys");
+                sb.append('\n').append(errMsg);
+                log.error(errMsg);
+            } else {
+                for (OcspSigningCacheEntry ocspSigningCacheEntry : ocspSigningCacheEntries) {
+                    // Only verify non-CA responders
+                    final X509Certificate ocspSigningCertificate = ocspSigningCacheEntry.getOcspSigningCertificate();
+                    if (ocspSigningCertificate == null) {
+                        continue;
+                    }
+                    final String subjectDn = CertTools.getSubjectDN(ocspSigningCacheEntry.getCaCertificateChain().get(0));
+                    final String serialNumber = CertTools.getSerialNumber(ocspSigningCacheEntry.getOcspSigningCertificate()).toString(16);
+                    final String errMsg = intres.getLocalizedMessage("ocsp.errorocspkeynotusable", subjectDn, serialNumber);
+                    final PrivateKey privateKey = ocspSigningCacheEntry.getPrivateKey();
+                    if (privateKey == null) {
+                        sb.append('\n').append(errMsg);
+                        log.error("No key available. " + errMsg);
+                        continue;
+                    }
+                    final String providerName = ocspSigningCacheEntry.getSignatureProviderName();
+                    if (OcspConfiguration.getHealthCheckCertificateValidity() && !OCSPUtil.isCertificateValid(ocspSigningCertificate) ) {
+                        sb.append('\n').append(errMsg);
+                        continue;
+                    }
+                    if (OcspConfiguration.getHealthCheckSignTest()) {
+                        try {
+                            KeyTools.testKey(privateKey, ocspSigningCertificate.getPublicKey(), providerName);
+                        } catch (InvalidKeyException e) {
+                            // thrown by testKey
+                            sb.append('\n').append(errMsg);
+                            log.error("Key not working. SubjectDN '"+subjectDn+"'. Error comment '"+errMsg+"'. Message '"+e.getMessage());
+                            continue;                   
+                        }
+                    }
+                    if (log.isDebugEnabled()) {
+                        log.debug("Test of \""+errMsg+"\" OK!");                          
+                    }
+                }
+            }
+        } catch (Exception e) {
+            final String errMsg = intres.getLocalizedMessage("ocsp.errorloadsigningcerts");
+            log.error(errMsg, e);
+            sb.append(errMsg).append(": ").append(errMsg);
+        }
+        return sb.toString();
+    }
+
 }
 
 class CardKeyHolder {
