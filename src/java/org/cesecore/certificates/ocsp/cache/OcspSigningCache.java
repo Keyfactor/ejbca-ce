@@ -43,6 +43,12 @@ public enum OcspSigningCache {
     private final ReentrantLock lock = new ReentrantLock(false);
     private final static Logger log = Logger.getLogger(OcspSigningCache.class);
     
+    /**
+     * 
+     * 
+     * @param id the ID of the sought entry
+     * @return the sought entry, null otherwise.
+     */
     public OcspSigningCacheEntry getEntry(final int id) {
         return cache.get(id);
     }
