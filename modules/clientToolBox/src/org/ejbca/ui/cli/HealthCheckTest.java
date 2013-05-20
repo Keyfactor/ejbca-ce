@@ -23,8 +23,8 @@ import org.ejbca.util.PerformanceTest.Command;
 import org.ejbca.util.PerformanceTest.CommandFactory;
 
 /**
- * Used to test the EJBCA health check servet.
- * @author primelars
+ * Used to test the EJBCA health check servlet.
+ * 
  * @version $Id$
  *
  */
