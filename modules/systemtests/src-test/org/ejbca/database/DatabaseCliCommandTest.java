@@ -110,10 +110,10 @@ public class DatabaseCliCommandTest {
         CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         CertificateProfileData certificateProfileData = new CertificateProfileData(0, PERSISTENCE_UNIT, certificateProfile);
         File exportFile = File.createTempFile("tmp", ".bin");
-        long freespaceBefore = exportFile.getFreeSpace();
+        long lengthBefore = exportFile.length();
         performExport(certificateProfileData, exportFile, PERSISTENCE_UNIT, OutputFormat.BINARY);
-        long freespaceAfter = exportFile.getFreeSpace();
-        assertTrue("Nothing was written to exportfile", freespaceAfter < freespaceBefore);
+        long lengthAfter = exportFile.length();
+        assertTrue("Nothing was written to exportfile", lengthBefore < lengthAfter);
 
         //Import the binary object again using the same technique as the Command
         final ObjectInputStream ois = new ObjectInputStream(new FileInputStream(exportFile));
@@ -126,10 +126,10 @@ public class DatabaseCliCommandTest {
         CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         CertificateProfileData certificateProfileData = new CertificateProfileData(0, PERSISTENCE_UNIT, certificateProfile);
         File exportFile = File.createTempFile("tmp", ".xml");
-        long freespaceBefore = exportFile.getFreeSpace();
+        long lengthBefore = exportFile.length();
         performExport(certificateProfileData, exportFile, PERSISTENCE_UNIT, OutputFormat.XML);
-        long freespaceAfter = exportFile.getFreeSpace();
-        assertTrue("Nothing was written to exportfile", freespaceAfter < freespaceBefore);
+        long lengthAfter = exportFile.length();
+        assertTrue("Nothing was written to exportfile", lengthBefore < lengthAfter);
         //Perform decoding
         List<CertificateProfileData> results = performImportWithGetNextBatch(exportFile);
         assertEquals("Incorrect result set, should have been one", 1, results.size());
@@ -141,10 +141,10 @@ public class DatabaseCliCommandTest {
     public void testExportTableXmlWithRoleData() throws Exception {
         RoleData roleData = new RoleData(0, "foo");
         File exportFile = File.createTempFile("tmp", ".xml");
-        long freespaceBefore = exportFile.getFreeSpace();
+        long lengthBefore = exportFile.length();
         performExport(roleData, exportFile, PERSISTENCE_UNIT, OutputFormat.XML);
-        long freespaceAfter = exportFile.getFreeSpace();
-        assertTrue("Nothing was written to exportfile", freespaceAfter < freespaceBefore);
+        long lengthAfter = exportFile.length();
+        assertTrue("Nothing was written to exportfile", lengthBefore < lengthAfter);
         List<RoleData> results = performImportWithGetNextBatch(exportFile);
         assertEquals("Incorrect result set, should have been one", 1, results.size());
         RoleData result = results.get(0);
@@ -155,10 +155,10 @@ public class DatabaseCliCommandTest {
     public void testExportTableXmlWithAccessRuleData() throws Exception {
         AccessRuleData accessRuleData = new AccessRuleData("foo", "/foo", AccessRuleState.RULE_ACCEPT, false);
         File exportFile = File.createTempFile("tmp", ".xml");
-        long freespaceBefore = exportFile.getFreeSpace();
+        long lengthBefore = exportFile.length();
         performExport(accessRuleData, exportFile, PERSISTENCE_UNIT, OutputFormat.XML);
-        long freespaceAfter = exportFile.getFreeSpace();
-        assertTrue("Nothing was written to exportfile", freespaceAfter < freespaceBefore);
+        long lengthAfter = exportFile.length();
+        assertTrue("Nothing was written to exportfile", lengthBefore < lengthAfter);
         List<AccessRuleData> results = performImportWithGetNextBatch(exportFile);
         assertEquals("Incorrect result set, should have been one", 1, results.size());
         AccessRuleData result = results.get(0);
@@ -172,10 +172,10 @@ public class DatabaseCliCommandTest {
         AccessUserAspectData accessUserAspectData = new AccessUserAspectData("foo", 0, X500PrincipalAccessMatchValue.WITH_COMMONNAME,
                 AccessMatchType.TYPE_EQUALCASE, "foo");
         File exportFile = File.createTempFile("tmp", ".xml");
-        long freespaceBefore = exportFile.getFreeSpace();
+        long lengthBefore = exportFile.length();
         performExport(accessUserAspectData, exportFile, PERSISTENCE_UNIT, OutputFormat.XML);
-        long freespaceAfter = exportFile.getFreeSpace();
-        assertTrue("Nothing was written to exportfile", freespaceAfter < freespaceBefore);
+        long lengthAfter = exportFile.length();
+        assertTrue("Nothing was written to exportfile", lengthBefore < lengthAfter);
         List<AccessUserAspectData> results = performImportWithGetNextBatch(exportFile);
         assertEquals("Incorrect result set, should have been one", 1, results.size());
         AccessUserAspectData result = results.get(0);
@@ -188,10 +188,10 @@ public class DatabaseCliCommandTest {
         adminpreference.setTheme("bar");
         AdminPreferencesData adminPreferencesData = new AdminPreferencesData("foo", adminpreference);
         File exportFile = File.createTempFile("tmp", ".xml");
-        long freespaceBefore = exportFile.getFreeSpace();
+        long lengthBefore = exportFile.length();
         performExport(adminPreferencesData, exportFile, PERSISTENCE_UNIT, OutputFormat.XML);
-        long freespaceAfter = exportFile.getFreeSpace();
-        assertTrue("Nothing was written to exportfile", freespaceAfter < freespaceBefore);
+        long lengthAfter = exportFile.length();
+        assertTrue("Nothing was written to exportfile", lengthBefore < lengthAfter);
         List<AdminPreferencesData> results = performImportWithGetNextBatch(exportFile);
         assertEquals("Incorrect result set, should have been one", 1, results.size());
         AdminPreferencesData result = results.get(0);
@@ -202,10 +202,10 @@ public class DatabaseCliCommandTest {
     public void testExportTableXmlWithApprovalData() throws Exception {
         ApprovalData approvalData = new ApprovalData(1337);
         File exportFile = File.createTempFile("tmp", ".xml");
-        long freespaceBefore = exportFile.getFreeSpace();
+        long lengthBefore = exportFile.length();
         performExport(approvalData, exportFile, PERSISTENCE_UNIT, OutputFormat.XML);
-        long freespaceAfter = exportFile.getFreeSpace();
-        assertTrue("Nothing was written to exportfile", freespaceAfter < freespaceBefore);
+        long lengthAfter = exportFile.length();
+        assertTrue("Nothing was written to exportfile", lengthBefore < lengthAfter);
         List<ApprovalData> results = performImportWithGetNextBatch(exportFile);
         assertEquals("Incorrect result set, should have been one", 1, results.size());
         ApprovalData result = results.get(0);
@@ -217,10 +217,10 @@ public class DatabaseCliCommandTest {
         AuditRecordData auditRecordData = new AuditRecordData("foo", 0L, 0L, EventTypes.ACCESS_CONTROL, EventStatus.SUCCESS,
                 "foo",ServiceTypes.CORE, ModuleTypes.ACCESSCONTROL, "foo", "foo", "foo", null);
         File exportFile = File.createTempFile("tmp", ".xml");
-        long freespaceBefore = exportFile.getFreeSpace();
+        long lengthBefore = exportFile.length();
         performExport(auditRecordData, exportFile, PERSISTENCE_UNIT, OutputFormat.XML);
-        long freespaceAfter = exportFile.getFreeSpace();
-        assertTrue("Nothing was written to exportfile", freespaceAfter < freespaceBefore);
+        long lengthAfter = exportFile.length();
+        assertTrue("Nothing was written to exportfile", lengthBefore < lengthAfter);
         List<AuditRecordData> results = performImportWithGetNextBatch(exportFile);
         assertEquals("Incorrect result set, should have been one", 1, results.size());
         AuditRecordData result = results.get(0);
@@ -232,10 +232,10 @@ public class DatabaseCliCommandTest {
         AccessTreeUpdateData accessTreeUpdateData = new AccessTreeUpdateData();
         accessTreeUpdateData.setAccessTreeUpdateNumber(1337);
         File exportFile = File.createTempFile("tmp", ".xml");
-        long freespaceBefore = exportFile.getFreeSpace();
+        long lengthBefore = exportFile.length();
         performExport(accessTreeUpdateData, exportFile, PERSISTENCE_UNIT, OutputFormat.XML);
-        long freespaceAfter = exportFile.getFreeSpace();
-        assertTrue("Nothing was written to exportfile", freespaceAfter < freespaceBefore);
+        long lengthAfter = exportFile.length();
+        assertTrue("Nothing was written to exportfile", lengthBefore < lengthAfter);
         List<AccessTreeUpdateData> results = performImportWithGetNextBatch(exportFile);
         assertEquals("Incorrect result set, should have been one", 1, results.size());
         AccessTreeUpdateData result = results.get(0);
@@ -246,10 +246,10 @@ public class DatabaseCliCommandTest {
     public void testExportTableXmlWithCaData() throws Exception {
         CAData caData = new CAData("CN=foo", "foo", 0, createTestCA("CN=foo", AlgorithmConstants.SIGALG_SHA256_WITH_RSA));
         File exportFile = File.createTempFile("tmp", ".xml");
-        long freespaceBefore = exportFile.getFreeSpace();
+        long lengthBefore = exportFile.length();
         performExport(caData, exportFile, PERSISTENCE_UNIT, OutputFormat.XML);
-        long freespaceAfter = exportFile.getFreeSpace();
-        assertTrue("Nothing was written to exportfile", freespaceAfter < freespaceBefore);
+        long lengthAfter = exportFile.length();
+        assertTrue("Nothing was written to exportfile", lengthBefore < lengthAfter);
         List<CAData> results = performImportWithGetNextBatch(exportFile);
         assertEquals("Incorrect result set, should have been one", 1, results.size());
         CAData result = results.get(0);
