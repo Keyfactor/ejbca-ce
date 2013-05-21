@@ -32,7 +32,6 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.StringTools;
-import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 
 /**
  * Servlet for download of CryptoToken related files, such as the the public key as PEM for a key pair.
@@ -46,8 +45,6 @@ public class CryptoTokenDownloadServlet extends HttpServlet {
     //private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
     private static final AuthenticationToken alwaysAllowAuthenticationToken = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CryptoTokenDownloadServlet"));
 
-    @EJB
-    private EndEntityAuthenticationSessionLocal authenticationSession;
     @EJB
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
 

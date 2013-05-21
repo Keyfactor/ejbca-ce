@@ -28,7 +28,6 @@ import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.util.StringTools;
 
 /**
@@ -99,7 +98,6 @@ public class CAToken extends UpgradeableDataHashMap {
     /** Constructor used to initialize a stored CA token, when the UpgradeableHashMap has been stored as is.
      * 
      * @param data LinkedHashMap
-     * @throws IllegalCryptoTokenException if token properties can not be loaded
      */
     @SuppressWarnings("rawtypes")
     public CAToken(final HashMap tokendata) {

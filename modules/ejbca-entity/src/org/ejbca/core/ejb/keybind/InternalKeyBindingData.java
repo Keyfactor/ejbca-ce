@@ -29,7 +29,6 @@ import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.Base64PutHashMap;
-import org.ejbca.core.ejb.keybind.InternalKeyBindingStatus;
 
 /**
  * Database representation of an InternalKeyBinding.

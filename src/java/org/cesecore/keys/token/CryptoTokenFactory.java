@@ -13,7 +13,8 @@
 package org.cesecore.keys.token;
 
 import java.util.Collection;
-import java.util.Hashtable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -33,7 +34,7 @@ public class CryptoTokenFactory {
     private static final InternalResources intres = InternalResources.getInstance();
 
     /** Registry of available hard ca token classes that can be instantiated. */
-    private Hashtable<String, AvailableCryptoToken> availabletokens = new Hashtable<String, AvailableCryptoToken>();
+    private Map<String, AvailableCryptoToken> availabletokens = new HashMap<String, AvailableCryptoToken>();
 
     /** Implementing the Singleton pattern */
     private static CryptoTokenFactory instance = null;

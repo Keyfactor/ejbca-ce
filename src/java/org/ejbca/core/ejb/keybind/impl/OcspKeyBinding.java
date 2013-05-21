@@ -73,7 +73,7 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     
     @Override
     public float getLatestVersion() {
-        return Long.valueOf(serialVersionUID).floatValue();
+        return serialVersionUID;
     }
 
     @Override
