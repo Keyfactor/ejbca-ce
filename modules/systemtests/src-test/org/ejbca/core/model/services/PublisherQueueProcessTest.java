@@ -14,6 +14,7 @@
 package org.ejbca.core.model.services;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.security.cert.Certificate;
 import java.util.Collection;
@@ -21,6 +22,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -49,6 +51,7 @@ import org.junit.Test;
  * @version $Id$
  */
 public class PublisherQueueProcessTest {
+    private static Logger log = Logger.getLogger(PublisherQueueProcessTest.class);
 
     private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("PublisherQueueProcessTest"));
 
@@ -99,19 +102,34 @@ public class PublisherQueueProcessTest {
         config.setWorkerProperties(workerprop);
 
         serviceSession.addService(admin, "TestPublishQueueProcessService12345", config);
+        // Try counter should be 0 before the service has run once
+        d = checkEntriesForTest();
+        assertEquals("Service should not have run and updated trycounter.", 0, d.getTryCounter());
         serviceSession.activateServiceTimer(admin, "TestPublishQueueProcessService12345");
 
         // The service will run...
         Thread.sleep(5000);
+        d = checkEntriesForTest();
+        if (d.getTryCounter() < 1) {
+            // If the test is about to fail,with tryCounter < 1 here it might be that the CI environment is just slow, 
+            // try to sleep another 5 seconds and try again
+            log.info("d.getTryCounter is not 1 (but is "+d.getTryCounter()+"), perhaps the test environment is very slow, sleeping for another 5 seconds and trying again.");
+            Thread.sleep(5000);            
+            d = checkEntriesForTest();
+        }
+        assertTrue("Service should have run at least one time and updated trycounter, value is "+d.getTryCounter(), d.getTryCounter() > 0);
+        assertEquals(PublisherConst.STATUS_PENDING, d.getPublishStatus());
+    }
 
+    private PublisherQueueData checkEntriesForTest() {
+        PublisherQueueData d;
         // Now the publisher 12345 will not have existed so we should have
         // updated the publish entry's tryCounter
-        c = publisherQueueSession.getEntriesByFingerprint("TestPublishQueueProcessService12345");
-        assertEquals(1, c.size());
-        i = c.iterator();
-        d = i.next();
-        assertEquals("Service should have run at least one time and updated trycounter.", 1, d.getTryCounter());
-        assertEquals(PublisherConst.STATUS_PENDING, d.getPublishStatus());
+        Collection<PublisherQueueData> entries = publisherQueueSession.getEntriesByFingerprint("TestPublishQueueProcessService12345");
+        assertEquals(1, entries.size());
+        Iterator<PublisherQueueData> iter = entries.iterator();
+        d = iter.next();
+        return d;
     }
 
     /**
