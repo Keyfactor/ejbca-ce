@@ -81,7 +81,7 @@ public class InternalKeyBindingProperty<T extends Serializable> implements Seria
                         return;
                     }
                 }
-                throw new RuntimeException(String.valueOf(object) + " is not one of " + Arrays.toString(possibleValues));
+                throw new RuntimeException(object + " is not one of " + Arrays.toString(possibleValues));
             } else {
                 this.value = (T) object;
             }
