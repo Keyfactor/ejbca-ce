@@ -4084,7 +4084,7 @@ Only the first available of the listed hosts will be used.</li>
 389. There are three choices:
   <ul>
   <li>Plaintext Connection: unencrypted connection, the easiest to get started with, and the mosts robust if network is secure.</li>
-  <li>STARTTLS Extension: this gives the server and client a chance to negotiate a TLS (encrypted) connection, if the server supports encrypted connections. It starts with a plaintext connection, and upgrades to a TLS connection. Requires configuration both on the server (TLS server key and certificate) and on the client (CA certificate in truststore).</li>
+  <li>STARTTLS Extension: this gives the server and client a chance to negotiate a TLS (encrypted) connection, if the server supports encrypted connections. It starts with a plaintext connection, and upgrades to a TLS connection using the same port as plaintext connection. Requires configuration both on the server (TLS server key and certificate) and on the client (CA certificate in truststore).</li>
   <li>TLS Connection: this always uses an encrypted TLS connection and fails if it is not available. Requires TLS configuration both on the server (TLS server key and certificate) and on the client (CA certificate in truststore).</li>
   </ul>
 </li>
