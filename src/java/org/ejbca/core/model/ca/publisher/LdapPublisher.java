@@ -965,8 +965,7 @@ public class LdapPublisher extends BasePublisher {
 			// setting for USESSL, if there is and it is set we return to use SSL.
 			Object usessl = data.get(USESSL);
 			if (usessl != null) {
-				Boolean use = (Boolean)usessl;
-				if (use.booleanValue()) {
+				if (((Boolean)usessl).booleanValue()) {
 					ret = ConnectionSecurity.SSL;
 				}
 			}
