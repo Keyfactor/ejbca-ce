@@ -1296,10 +1296,10 @@ public class CAInterfaceBean implements Serializable {
         final int[] SIZES_RSA = {1024, 1536, 2048, /*4096, 8192*/};
         final int[] SIZES_DSA = {1024};
         for (int size : SIZES_RSA) {
-            ret.add(new SimpleEntry<String,String>(String.valueOf(size), "RSA "+String.valueOf(size)));
+            ret.add(new SimpleEntry<String,String>(String.valueOf(size), "RSA "+size));
         }
         for (int size : SIZES_DSA) {
-            ret.add(new SimpleEntry<String,String>("DSA"+String.valueOf(size), "DSA "+String.valueOf(size)));
+            ret.add(new SimpleEntry<String,String>("DSA"+String.valueOf(size), "DSA "+size));
         }
         @SuppressWarnings("unchecked")
         final Enumeration<String> ecNamedCurves = ECNamedCurveTable.getNames();
@@ -1354,7 +1354,6 @@ public class CAInterfaceBean implements Serializable {
                     }
                 } 
             } else {
-                @SuppressWarnings("unchecked")
                 final Set<String> keySet = request.getParameterMap().keySet();
                 for (final String key : keySet) {
                     requestMap.put(key, request.getParameter(key));

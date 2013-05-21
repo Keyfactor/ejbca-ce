@@ -220,7 +220,7 @@ public class HSMKeyTool extends ClientToolBox {
     		List<String> argsListLocal = CliTools.getAsModifyableList(args);
     		boolean explicitEccParameters = argsListLocal.remove("-explicitecc");
                 final boolean forAllKeys = argsListLocal.remove("-all");
-    		args = argsListLocal.toArray(new String[0]);
+    		args = argsListLocal.toArray(new String[argsListLocal.size()]);
             if ( args.length < 6 || (args.length < 7 && !forAllKeys) ) {
                 System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <key entry name> [<CN>] [-explicitecc]");
                 System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " [-all] [-explicitecc]");

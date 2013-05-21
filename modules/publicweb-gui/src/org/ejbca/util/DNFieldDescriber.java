@@ -33,13 +33,10 @@ public final class DNFieldDescriber {
     /** Index in dn fields array */
     private final int index;
     private final int[] fielddata;
-    private final int fieldType;
     private final boolean fieldModifiable, fieldRequired, fieldUse;
     /** DN codes, e.g. CN, C, O */
     private final String name;
     private final String defaultValue;
-    /** DNFieldExtractor.TYPE_ constants. E.g. subjectdn or altname */
-    private final int dnAltType;
     
     private final Map<String,Boolean> allowedValuesMap; // maps to true. Used from .jsp
     private final List<String> allowedValuesList;
@@ -47,7 +44,7 @@ public final class DNFieldDescriber {
     public DNFieldDescriber(int index, int[] fielddata, EndEntityProfile eeprofile, int dnAltType) {
         this.index = index;
         this.fielddata = fielddata;
-        this.fieldType = fielddata[EndEntityProfile.FIELDTYPE];
+        final int fieldType = fielddata[EndEntityProfile.FIELDTYPE];
         final int fieldNumber = fielddata[EndEntityProfile.NUMBER];
         this.fieldModifiable = eeprofile.isModifyable(fieldType, fieldNumber);
         this.fieldRequired = eeprofile.isRequired(fieldType, fieldNumber);
@@ -77,7 +74,6 @@ public final class DNFieldDescriber {
                 allowedValuesList.add(allowed);
             }
         }
-        this.dnAltType = dnAltType;
     }
     
     private static String fieldTypeToString(int fieldType, int dnAltType) {

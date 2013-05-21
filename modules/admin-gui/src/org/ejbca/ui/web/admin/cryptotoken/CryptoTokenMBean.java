@@ -56,6 +56,7 @@ import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.cryptotoken.CryptoTokenMBean.CryptoTokenGuiInfo;
 import org.ejbca.util.SlotList;
 
 /**
@@ -172,9 +173,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     private static final Logger log = Logger.getLogger(CryptoTokenMBean.class);
 
     private List<CryptoTokenGuiInfo> cryptoTokenGuiInfos = new ArrayList<CryptoTokenGuiInfo>();
-    private ListDataModel cryptoTokenGuiList = null;
+    private ListDataModel<CryptoTokenGuiInfo> cryptoTokenGuiList = null;
     private List<KeyPairGuiInfo> keyPairGuiInfos = new ArrayList<KeyPairGuiInfo>();
-    private ListDataModel keyPairGuiList = null;
+    private ListDataModel<KeyPairGuiInfo> keyPairGuiList = null;
     private String keyPairGuiListError = null;
     private int currentCryptoTokenId = 0;
     private CurrentCryptoTokenGuiInfo currentCryptoToken = null;
@@ -212,7 +213,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     }
     
     /** Build a list sorted by name from the authorized cryptoTokens that can be presented to the user */
-    public ListDataModel getCryptoTokenGuiList() throws AuthorizationDeniedException {
+    public ListDataModel<CryptoTokenGuiInfo> getCryptoTokenGuiList() throws AuthorizationDeniedException {
         if (cryptoTokenGuiList==null) {
             final List<Integer> referencedCryptoTokenIds = getReferencedCryptoTokenIds();
             final List<CryptoTokenGuiInfo> list = new ArrayList<CryptoTokenGuiInfo>();
@@ -230,7 +231,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 });
             }
             cryptoTokenGuiInfos = list;
-            cryptoTokenGuiList = new ListDataModel(cryptoTokenGuiInfos);
+            cryptoTokenGuiList = new ListDataModel<CryptoTokenGuiInfo>(cryptoTokenGuiInfos);
         }
         // If show the list, then we are on the main page and want to flush the two caches
         flushCurrent();
@@ -541,10 +542,10 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         final int[] SIZES_RSA = {1024, 1536, 2048, 3072, 4096, 6144, 8192};
         final int[] SIZES_DSA = {1024};
         for (int size : SIZES_RSA) {
-            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_RSA+String.valueOf(size), AlgorithmConstants.KEYALGORITHM_RSA+" "+String.valueOf(size)));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_RSA+size, AlgorithmConstants.KEYALGORITHM_RSA+" "+size));
         }
         for (int size : SIZES_DSA) {
-            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_DSA+String.valueOf(size), AlgorithmConstants.KEYALGORITHM_DSA+" "+String.valueOf(size)));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_DSA+size, AlgorithmConstants.KEYALGORITHM_DSA+" "+size));
         }
         final Map<String,String> processedCurveNames = new HashMap<String,String>();
         @SuppressWarnings("unchecked")
