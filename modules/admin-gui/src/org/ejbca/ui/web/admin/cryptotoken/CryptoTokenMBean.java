@@ -56,7 +56,6 @@ import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.ui.web.admin.BaseManagedBean;
-import org.ejbca.ui.web.admin.cryptotoken.CryptoTokenMBean.CryptoTokenGuiInfo;
 import org.ejbca.util.SlotList;
 
 /**
@@ -173,9 +172,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     private static final Logger log = Logger.getLogger(CryptoTokenMBean.class);
 
     private List<CryptoTokenGuiInfo> cryptoTokenGuiInfos = new ArrayList<CryptoTokenGuiInfo>();
-    private ListDataModel<CryptoTokenGuiInfo> cryptoTokenGuiList = null;
+    private ListDataModel cryptoTokenGuiList = null;
     private List<KeyPairGuiInfo> keyPairGuiInfos = new ArrayList<KeyPairGuiInfo>();
-    private ListDataModel<KeyPairGuiInfo> keyPairGuiList = null;
+    private ListDataModel keyPairGuiList = null;
     private String keyPairGuiListError = null;
     private int currentCryptoTokenId = 0;
     private CurrentCryptoTokenGuiInfo currentCryptoToken = null;
@@ -213,7 +212,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     }
     
     /** Build a list sorted by name from the authorized cryptoTokens that can be presented to the user */
-    public ListDataModel<CryptoTokenGuiInfo> getCryptoTokenGuiList() throws AuthorizationDeniedException {
+    public ListDataModel getCryptoTokenGuiList() throws AuthorizationDeniedException {
         if (cryptoTokenGuiList==null) {
             final List<Integer> referencedCryptoTokenIds = getReferencedCryptoTokenIds();
             final List<CryptoTokenGuiInfo> list = new ArrayList<CryptoTokenGuiInfo>();
@@ -231,7 +230,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 });
             }
             cryptoTokenGuiInfos = list;
-            cryptoTokenGuiList = new ListDataModel<CryptoTokenGuiInfo>(cryptoTokenGuiInfos);
+            cryptoTokenGuiList = new ListDataModel(cryptoTokenGuiInfos);
         }
         // If show the list, then we are on the main page and want to flush the two caches
         flushCurrent();
