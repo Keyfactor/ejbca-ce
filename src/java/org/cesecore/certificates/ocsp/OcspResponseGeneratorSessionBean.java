@@ -44,7 +44,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -821,7 +820,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             OcspSigningCacheEntry ocspSigningCacheEntry = null;
             long nextUpdate = OcspConfiguration.getUntilNextUpdate(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
             // Add standard response extensions
-            Hashtable<ASN1ObjectIdentifier, Extension> responseExtensions = getStandardResponseExtensions(req);
+            Map<ASN1ObjectIdentifier, Extension> responseExtensions = getStandardResponseExtensions(req);
             // Look for extension OIDs
             final Collection<String> extensionOids = OcspConfiguration.getExtensionOids();
             // Look over the status requests
@@ -1063,8 +1062,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
      * @param req OCSPReq
      * @return a HashMap, can be empty but not null
      */
-    private Hashtable<ASN1ObjectIdentifier, Extension> getStandardResponseExtensions(OCSPReq req) {
-        Hashtable<ASN1ObjectIdentifier, Extension> result = new Hashtable<ASN1ObjectIdentifier, Extension>();
+    private Map<ASN1ObjectIdentifier, Extension> getStandardResponseExtensions(OCSPReq req) {
+        HashMap<ASN1ObjectIdentifier, Extension> result = new HashMap<ASN1ObjectIdentifier, Extension>();
         if (req.hasExtensions()) {
             // Table of extensions to include in the response
             Extension ext = req.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce);

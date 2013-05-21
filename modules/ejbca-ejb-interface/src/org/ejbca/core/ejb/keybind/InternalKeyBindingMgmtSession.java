@@ -21,11 +21,6 @@ import java.util.Map;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.ejbca.core.ejb.keybind.CertificateImportException;
-import org.ejbca.core.ejb.keybind.InternalKeyBinding;
-import org.ejbca.core.ejb.keybind.InternalKeyBindingInfo;
-import org.ejbca.core.ejb.keybind.InternalKeyBindingProperty;
-import org.ejbca.core.ejb.keybind.InternalKeyBindingStatus;
 
 /**
  * Generic Management interface for InternalKeyBinding.
