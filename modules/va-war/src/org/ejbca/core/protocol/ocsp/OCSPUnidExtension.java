@@ -23,8 +23,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
+import java.util.Map;
 import java.util.Set;
 
 import javax.ejb.EJBException;
@@ -145,7 +146,7 @@ public class OCSPUnidExtension implements OCSPExtension {
 	}
 	
 	@Override
-	public Hashtable<ASN1ObjectIdentifier, Extension> process(X509Certificate[] requestCertificates, String remoteAddress, String remoteHost,
+	public Map<ASN1ObjectIdentifier, Extension> process(X509Certificate[] requestCertificates, String remoteAddress, String remoteHost,
             X509Certificate cert, CertificateStatus status) throws IOException {
         if (m_log.isTraceEnabled()) {
             m_log.trace(">process()");            
@@ -212,7 +213,7 @@ public class OCSPUnidExtension implements OCSPExtension {
 		String errMsg = intres.getLocalizedMessage("ocsp.returnedunidresponse", remoteAddress, remoteHost, fnr, sn);
         m_log.info(errMsg);
         FnrFromUnidExtension ext = new FnrFromUnidExtension(fnr);
-        Hashtable<ASN1ObjectIdentifier, Extension> ret = new Hashtable<ASN1ObjectIdentifier, Extension>();
+        HashMap<ASN1ObjectIdentifier, Extension> ret = new HashMap<ASN1ObjectIdentifier, Extension>();
         ret.put(FnrFromUnidExtension.FnrFromUnidOid, new Extension(FnrFromUnidExtension.FnrFromUnidOid, false, new DEROctetString(ext)));
 		return ret;
 	}
