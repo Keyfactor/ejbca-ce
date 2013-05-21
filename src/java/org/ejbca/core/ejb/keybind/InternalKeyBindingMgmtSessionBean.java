@@ -45,7 +45,6 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.CesecoreException;
-import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
@@ -90,8 +89,6 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
 
     @EJB
     private AccessControlSessionLocal accessControlSessionSession;
-    @EJB
-    private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
     @EJB
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     @EJB

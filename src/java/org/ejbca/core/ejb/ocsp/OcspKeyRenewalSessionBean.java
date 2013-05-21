@@ -168,7 +168,7 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
             }
             final X500Principal target;
             try {
-                target = signerSubjectDN.trim().toLowerCase().equals(RENEW_ALL_KEYS) ? null : new X500Principal(signerSubjectDN);
+                target = signerSubjectDN.trim().equalsIgnoreCase(RENEW_ALL_KEYS) ? null : new X500Principal(signerSubjectDN);
             } catch (IllegalArgumentException e) {
                 log.error(intres.getLocalizedMessage("ocsp.rekey.triggered.dn.not.valid", signerSubjectDN));
                 return;

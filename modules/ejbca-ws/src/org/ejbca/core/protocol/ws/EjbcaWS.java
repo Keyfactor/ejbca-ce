@@ -1481,7 +1481,7 @@ public class EjbcaWS implements IEjbcaWS {
                 rules.add(AccessRulesConstants.REGULAR_CREATEENDENTITY);
                 rules.add(AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId + AccessRulesConstants.CREATE_RIGHTS);
             }
-            String[] rulesArray = rules.toArray(new String[0]);
+            String[] rulesArray = rules.toArray(new String[rules.size()]);
             if (!authorizationSession.isAuthorizedNoLogging(admin, rulesArray)) {
                 final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", Arrays.toString(rulesArray), null);
                 throw new AuthorizationDeniedException(msg);
