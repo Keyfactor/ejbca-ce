@@ -52,7 +52,6 @@ public class ProfilingTest {
             public int compare(ProfilingStat p0, ProfilingStat p1) {
                 return Long.valueOf(p1.getDurationMilliSeconds() - p0.getDurationMilliSeconds()).intValue();
             }
-            
         });
         log.info("\n\nInvocations with most consumed time:\n" + getAsString(profilingStats));
         // Sort with highest average (slowest) first
@@ -61,7 +60,6 @@ public class ProfilingTest {
             public int compare(ProfilingStat p0, ProfilingStat p1) {
                 return Long.valueOf(p1.getAverageMilliSeconds() - p0.getAverageMilliSeconds()).intValue();
             }
-            
         });
         log.info("\n\nInvocations with average highest invocation time:\n" + getAsString(profilingStats));
         // Sort with most invoked methods first
@@ -70,7 +68,6 @@ public class ProfilingTest {
             public int compare(ProfilingStat p0, ProfilingStat p1) {
                 return Long.valueOf(p1.getInvocations() - p0.getInvocations()).intValue();
             }
-            
         });
         log.info("\n\nMost invoked methods:\n" + getAsString(profilingStats));
         // Make a sanity check that the highest average invocation has not run too high
@@ -81,6 +78,7 @@ public class ProfilingTest {
         assertTrue("Highest average invocation time was " + highestAverage + "ms. Max allowed for this test to pass is " +
                 HIGEST_AVERAGE_ALLOWED_MS +" ms.", highestAverage<HIGEST_AVERAGE_ALLOWED_MS);
     }
+
     private String getAsString(final List<ProfilingStat> profilingStats) {
         final StringBuilder sb = new StringBuilder();
         sb.append(String.format("%1$-120s", "method")).append(' ');
