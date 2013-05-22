@@ -22,5 +22,5 @@ import org.cesecore.certificates.certificate.request.ResponseMessage;
  * @version $Id$
  */
 public interface CmpMessageDispatcherSession {
-	public ResponseMessage dispatch(AuthenticationToken admin, byte[] derObject) throws IOException;
+	public ResponseMessage dispatch(AuthenticationToken admin, byte[] derObject, String confAlias) throws IOException;
 }

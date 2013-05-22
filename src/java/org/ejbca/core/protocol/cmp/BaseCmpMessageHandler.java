@@ -51,15 +51,18 @@ public class BaseCmpMessageHandler {
 	protected static final int CMP_GET_CA_FROM_KEYID   = -2;
 
 	protected AuthenticationToken admin;
+	protected String confAlias;
 	protected CaSessionLocal caSession;
 	protected EndEntityProfileSessionLocal endEntityProfileSession;
 	protected CertificateProfileSession certificateProfileSession;
 
 	protected BaseCmpMessageHandler() {
+	    this.confAlias = null;
 	}
 
-	protected BaseCmpMessageHandler(final AuthenticationToken admin, CaSessionLocal caSession, EndEntityProfileSessionLocal endEntityProfileSession, CertificateProfileSession certificateProfileSession) {
+	protected BaseCmpMessageHandler(final AuthenticationToken admin, String configAlias, CaSessionLocal caSession, EndEntityProfileSessionLocal endEntityProfileSession, CertificateProfileSession certificateProfileSession) {
 		this.admin = admin;
+		this.confAlias = configAlias;
 		this.caSession = caSession;
 		this.endEntityProfileSession = endEntityProfileSession;
 		this.certificateProfileSession = certificateProfileSession;
@@ -68,8 +71,7 @@ public class BaseCmpMessageHandler {
 	/** @return the end entity profile id to use for a request based on the current configuration and keyId. 
 	 * @throws NotFoundException */
 	protected int getUsedEndEntityProfileId(final String keyId) throws NotFoundException {
-		int ret = 0;
-		String endEntityProfile = CmpConfiguration.getRAEndEntityProfile();
+		String endEntityProfile = CmpConfiguration.getRAEndEntityProfile(this.confAlias);
 		if (StringUtils.equals(endEntityProfile, "KeyId")) {
 		    if(keyId != null) {
 		        if (LOG.isDebugEnabled()) {
@@ -94,7 +96,7 @@ public class BaseCmpMessageHandler {
 	 * @throws CADoesntExistsException */
 	protected int getUsedCaId(final String keyId, final int eeProfileId) throws CADoesntExistsException, AuthorizationDeniedException {
 		int ret = 0;
-		final String caName = CmpConfiguration.getRACAName();
+		final String caName = CmpConfiguration.getRACAName(this.confAlias);
 		if (StringUtils.equals(caName, "ProfileDefault")) {
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Using default CA from End Entity Profile CA when adding users in RA mode.");
@@ -140,7 +142,7 @@ public class BaseCmpMessageHandler {
 	 */
 	protected String getUsedCertProfileName(final String keyId, final int eeProfileId) throws NotFoundException {
 	    // Get the configured string, may be a profile name or 'KeyId' or 'ProfileDefault'
-		String certificateProfile = CmpConfiguration.getRACertificateProfile();
+		String certificateProfile = CmpConfiguration.getRACertificateProfile(this.confAlias);
 		if (StringUtils.equals(certificateProfile, "ProfileDefault")) {
             // get default certificate profile id from end entity profile
             final EndEntityProfile eeProfile = endEntityProfileSession.getEndEntityProfileNoClone(eeProfileId);

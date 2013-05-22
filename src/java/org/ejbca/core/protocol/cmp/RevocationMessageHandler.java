@@ -92,12 +92,12 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
     private final WebAuthenticationProviderSessionLocal authenticationProviderSession;
     private CryptoTokenSessionLocal cryptoTokenSession;
 	
-	public RevocationMessageHandler(final AuthenticationToken admin, final EndEntityManagementSession endEntityManagementSession, final CaSessionLocal caSession, 
+	public RevocationMessageHandler(final AuthenticationToken admin, String configAlias, final EndEntityManagementSession endEntityManagementSession, final CaSessionLocal caSession, 
 	        final EndEntityProfileSessionLocal endEntityProfileSession, final CertificateProfileSession certificateProfileSession, final CertificateStoreSession certStoreSession,
 	        final AccessControlSession authSession, final EndEntityAccessSession eeAccessSession, final WebAuthenticationProviderSessionLocal authProviderSession,
 	        final CryptoTokenSessionLocal cryptoTokenSession) {
-		super(admin, caSession, endEntityProfileSession, certificateProfileSession);
-		responseProtection = CmpConfiguration.getResponseProtection();
+		super(admin, configAlias, caSession, endEntityProfileSession, certificateProfileSession);
+		responseProtection = CmpConfiguration.getResponseProtection(this.confAlias);
 		this.endEntityManagementSession = endEntityManagementSession;
         this.certificateStoreSession = certStoreSession;
         this.authorizationSession = authSession;
@@ -140,7 +140,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		String failText = null;
 
 		//Verify the authenticity of the message
-		final VerifyPKIMessage messageVerifyer = new VerifyPKIMessage(ca.getCAInfo(), admin, caSession, endEntityAccessSession, certificateStoreSession, 
+		final VerifyPKIMessage messageVerifyer = new VerifyPKIMessage(ca.getCAInfo(), this.confAlias, admin, caSession, endEntityAccessSession, certificateStoreSession, 
 		        authorizationSession, endEntityProfileSession, authenticationProviderSession, endEntityManagementSession);
 		ICMPAuthenticationModule authenticationModule = null;
 		if(messageVerifyer.verify(msg.getMessage(), null, authenticated)) {

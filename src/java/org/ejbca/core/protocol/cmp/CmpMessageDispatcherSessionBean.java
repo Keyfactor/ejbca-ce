@@ -110,10 +110,10 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 	 * @throws IOException 
 	 */
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)
-	public ResponseMessage dispatch(final AuthenticationToken admin, final byte[] ba) throws IOException {
+	public ResponseMessage dispatch(final AuthenticationToken admin, final byte[] ba, String confAlias) throws IOException {
 		//ASN1Primitive derObject = new LimitLengthASN1Reader(new ByteArrayInputStream(ba), ba.length).readObject();
 	    final ASN1Primitive derObject = getDERObject(ba);
-		return dispatch(admin, derObject, false);
+		return dispatch(admin, derObject, false, confAlias);
 	}
 
 	/** The message may have been received by any transport protocol, and is passed here in it's binary ASN.1 form.
@@ -121,7 +121,8 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 	 * @param message der encoded CMP message
 	 * @return IResponseMessage containing the CMP response message or null if there is no message to send back or some internal error has occurred
 	 */
-	private ResponseMessage dispatch(final AuthenticationToken admin, final ASN1Primitive derObject, final boolean authenticated) {
+	private ResponseMessage dispatch(final AuthenticationToken admin, final ASN1Primitive derObject, final boolean authenticated, String confAlias) {
+	    
 		final PKIMessage req;
 		try {
 			req = PKIMessage.getInstance(derObject);
@@ -152,29 +153,29 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 			switch (tagno) {
 			case 0:
 				// 0 (ir, Initialization Request) and 2 (cr, Certification Req) are both certificate requests
-				handler = new CrmfMessageHandler(admin, caSession,  certificateProfileSession, certificateRequestSession, endEntityAccessSession, endEntityProfileSession, signSession, certificateStoreSession, authSession, authenticationProviderSession, endEntityManagementSession);
-				cmpMessage = new CrmfRequestMessage(req, CmpConfiguration.getDefaultCA(), CmpConfiguration.getAllowRAVerifyPOPO(), CmpConfiguration.getExtractUsernameComponent());
+				handler = new CrmfMessageHandler(admin, confAlias, caSession,  certificateProfileSession, certificateRequestSession, endEntityAccessSession, endEntityProfileSession, signSession, certificateStoreSession, authSession, authenticationProviderSession, endEntityManagementSession);
+				cmpMessage = new CrmfRequestMessage(req, CmpConfiguration.getDefaultCA(confAlias), CmpConfiguration.getAllowRAVerifyPOPO(confAlias), CmpConfiguration.getExtractUsernameComponent(confAlias));
 				break;
 			case 2:
-				handler = new CrmfMessageHandler(admin, caSession, certificateProfileSession, certificateRequestSession, endEntityAccessSession, endEntityProfileSession, signSession, certificateStoreSession, authSession, authenticationProviderSession, endEntityManagementSession);
-				cmpMessage = new CrmfRequestMessage(req, CmpConfiguration.getDefaultCA(), CmpConfiguration.getAllowRAVerifyPOPO(), CmpConfiguration.getExtractUsernameComponent());
+				handler = new CrmfMessageHandler(admin, confAlias, caSession, certificateProfileSession, certificateRequestSession, endEntityAccessSession, endEntityProfileSession, signSession, certificateStoreSession, authSession, authenticationProviderSession, endEntityManagementSession);
+				cmpMessage = new CrmfRequestMessage(req, CmpConfiguration.getDefaultCA(confAlias), CmpConfiguration.getAllowRAVerifyPOPO(confAlias), CmpConfiguration.getExtractUsernameComponent(confAlias));
 				break;
 			case 7:
 			    // Key Update request (kur, Key Update Request)
-			    handler = new CrmfKeyUpdateHandler(admin, caSession, certificateProfileSession, endEntityAccessSession, endEntityProfileSession, signSession, certificateStoreSession, authSession, authenticationProviderSession, endEntityManagementSession);
-			    cmpMessage = new CrmfRequestMessage(req, CmpConfiguration.getDefaultCA(), CmpConfiguration.getAllowRAVerifyPOPO(), CmpConfiguration.getExtractUsernameComponent());
+			    handler = new CrmfKeyUpdateHandler(admin, confAlias, caSession, certificateProfileSession, endEntityAccessSession, endEntityProfileSession, signSession, certificateStoreSession, authSession, authenticationProviderSession, endEntityManagementSession);
+			    cmpMessage = new CrmfRequestMessage(req, CmpConfiguration.getDefaultCA(confAlias), CmpConfiguration.getAllowRAVerifyPOPO(confAlias), CmpConfiguration.getExtractUsernameComponent(confAlias));
 			    break;
 			case 19:
 				// PKI confirm (pkiconf, Confirmation)
 			case 24:
 				// Certificate confirmation (certConf, Certificate confirm)
-				handler = new ConfirmationMessageHandler(admin, caSession, endEntityProfileSession, certificateProfileSession, certificateStoreSession, authSession,
+				handler = new ConfirmationMessageHandler(admin, confAlias, caSession, endEntityProfileSession, certificateProfileSession, certificateStoreSession, authSession,
 				        endEntityAccessSession, authenticationProviderSession, cryptoTokenSession);
 				cmpMessage = new GeneralCmpMessage(req);
 				break;
 			case 11:
 				// Revocation request (rr, Revocation Request)
-				handler = new RevocationMessageHandler(admin, endEntityManagementSession, caSession, endEntityProfileSession, certificateProfileSession,
+				handler = new RevocationMessageHandler(admin, confAlias, endEntityManagementSession, caSession, endEntityProfileSession, certificateProfileSession,
 				        certificateStoreSession, authSession, endEntityAccessSession, authenticationProviderSession, cryptoTokenSession);
 				cmpMessage = new GeneralCmpMessage(req);
 				break;
@@ -184,7 +185,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
                     log.debug("Received a NestedMessageContent");
                 }
 
-                final NestedMessageContent nestedMessage = new NestedMessageContent(req);
+                final NestedMessageContent nestedMessage = new NestedMessageContent(req, confAlias);
                 if(nestedMessage.verify()) {
                     if(log.isDebugEnabled()) {
                         log.debug("The NestedMessageContent was verified successfully");
@@ -192,17 +193,17 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
                     try {
                         PKIMessages nestesMessages = (PKIMessages) nestedMessage.getPKIMessage().getBody().getContent();
                         PKIMessage msg = nestesMessages.toPKIMessageArray()[0];
-                        return dispatch(admin, msg.toASN1Primitive(), true);
+                        return dispatch(admin, msg.toASN1Primitive(), true, confAlias);
                     } catch (IllegalArgumentException e) {
                         final String errMsg = e.getLocalizedMessage();
                         log.info(errMsg, e);
-                        cmpMessage = new NestedMessageContent(req);
+                        cmpMessage = new NestedMessageContent(req, confAlias);
                         return CmpMessageHelper.createUnprotectedErrorMessage(cmpMessage, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, errMsg); 
                     }
                 } else {
                     final String errMsg = "Could not verify the RA, signature verification on NestedMessageContent failed.";
                     log.info(errMsg);
-                    cmpMessage = new NestedMessageContent(req);
+                    cmpMessage = new NestedMessageContent(req, confAlias);
                     return CmpMessageHelper.createUnprotectedErrorMessage(cmpMessage, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, errMsg);
                 }
 

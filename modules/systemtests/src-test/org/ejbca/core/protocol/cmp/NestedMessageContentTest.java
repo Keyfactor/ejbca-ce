@@ -376,7 +376,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         assertNotNull("myPKIBody is null", myPKIBody);
         assertNotNull("myPKIMessage is null", myPKIMessage);
             
-        NestedMessageContent nestedMsg = new NestedMessageContent(myPKIMessage);
+        NestedMessageContent nestedMsg = new NestedMessageContent(myPKIMessage, null);
         boolean verify = nestedMsg.verify();
         assertTrue("NestedMessageVerification failed.", verify);
         
@@ -515,7 +515,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         Certificate cert = checkCmpCertRepMessage(subjectDN, cacert, resp, reqID);
         assertNotNull("CrmfRequest did not return a certificate", cert);
         
-        NestedMessageContent nestedContent = new NestedMessageContent(myPKIMessage);
+        NestedMessageContent nestedContent = new NestedMessageContent(myPKIMessage, null);
         boolean ret = nestedContent.verify();
         assertTrue("The message verification failed, yet the a certificate was returned.", ret);
         
@@ -585,7 +585,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
         assertEquals("Wrong error message", "Could not verify the RA, signature verification on NestedMessageContent failed.", errMsg);
         
-        NestedMessageContent nestedContent = new NestedMessageContent(myPKIMessage);
+        NestedMessageContent nestedContent = new NestedMessageContent(myPKIMessage, null);
         boolean ret = nestedContent.verify();
         assertFalse("The message verification failed, yet the a certificate was returned.", ret);
         

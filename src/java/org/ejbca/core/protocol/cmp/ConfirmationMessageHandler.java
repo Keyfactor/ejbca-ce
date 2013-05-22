@@ -73,12 +73,12 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
     private CertificateStoreSession certificateStoreSession;
     private CryptoTokenSessionLocal cryptoTokenSession;
 	
-	public ConfirmationMessageHandler(AuthenticationToken admin, CaSessionLocal caSession, EndEntityProfileSessionLocal endEntityProfileSession,
+	public ConfirmationMessageHandler(AuthenticationToken admin, String configAlias, CaSessionLocal caSession, EndEntityProfileSessionLocal endEntityProfileSession,
             CertificateProfileSession certificateProfileSession, CertificateStoreSession certStoreSession, AccessControlSession authSession,
             EndEntityAccessSession eeAccessSession, WebAuthenticationProviderSessionLocal authProvSession, CryptoTokenSessionLocal cryptoTokenSession) {
 
-		super(admin, caSession, endEntityProfileSession, certificateProfileSession);
-		responseProtection = CmpConfiguration.getResponseProtection();
+		super(admin, configAlias, caSession, endEntityProfileSession, certificateProfileSession);
+		responseProtection = CmpConfiguration.getResponseProtection(this.confAlias);
 		this.caSession = caSession;
         this.endEntityAccessSession = eeAccessSession;
         this.certificateStoreSession = certStoreSession;
@@ -150,7 +150,7 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
             LOG.error("Exception during CMP processing: ", e);          
         }
             
-        final HMACAuthenticationModule hmac = new HMACAuthenticationModule(CmpConfiguration.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_HMAC) );
+        final HMACAuthenticationModule hmac = new HMACAuthenticationModule(CmpConfiguration.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_HMAC, this.confAlias), this.confAlias);
         hmac.setSession(admin, endEntityAccessSession, certificateStoreSession);
         hmac.setCaInfo(caInfo);
         if(hmac.verifyOrExtract(msg.getMessage(), null, authenticated)) {
@@ -177,10 +177,10 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
             CA ca = null;
             if (cadn == null) {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Using Default CA to sign Certificate Confirm message: "+CmpConfiguration.getDefaultCA());
+                    LOG.debug("Using Default CA to sign Certificate Confirm message: "+CmpConfiguration.getDefaultCA(this.confAlias));
                 }
-                ca = caSession.getCA(admin, CmpConfiguration.getDefaultCA());
-            } else if (CmpConfiguration.getDefaultCA() != null) {
+                ca = caSession.getCA(admin, CmpConfiguration.getDefaultCA(this.confAlias));
+            } else if (CmpConfiguration.getDefaultCA(this.confAlias) != null) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Using recipient CA to sign Certificate Confirm message: '"+cadn+"', "+cadn.hashCode());
                 }
@@ -195,7 +195,7 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
                 }
             } else {
                 if (LOG.isDebugEnabled()) {
-                    LOG.info("Could not find CA to sign Certificate Confirm, either from recipient ("+cadn+") or default ("+CmpConfiguration.getDefaultCA()+"). Not signing Certificate Confirm.");
+                    LOG.info("Could not find CA to sign Certificate Confirm, either from recipient ("+cadn+") or default ("+CmpConfiguration.getDefaultCA(this.confAlias)+"). Not signing Certificate Confirm.");
                 }
             }
         } catch (CADoesntExistsException e) {

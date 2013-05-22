@@ -135,11 +135,11 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 	 * @param authSession
 	 * @param authProviderSession
 	 */
-    public CrmfMessageHandler(final AuthenticationToken admin, CaSessionLocal caSession, CertificateProfileSession certificateProfileSession,
+    public CrmfMessageHandler(final AuthenticationToken admin, String configAlias, CaSessionLocal caSession, CertificateProfileSession certificateProfileSession,
             CertificateRequestSession certificateRequestSession, EndEntityAccessSession endEntityAccessSession,
             EndEntityProfileSessionLocal endEntityProfileSession, SignSession signSession, CertificateStoreSession certStoreSession,
             AccessControlSession authSession, WebAuthenticationProviderSessionLocal authProviderSession, EndEntityManagementSession endEntityManagementSession) {
-		super(admin, caSession, endEntityProfileSession, certificateProfileSession);
+		super(admin, configAlias, caSession, endEntityProfileSession, certificateProfileSession);
 		this.signSession = signSession;
 		this.certificateRequestSession = certificateRequestSession;
 		this.endEntityAccessSession = endEntityAccessSession;
@@ -148,16 +148,16 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 		this.authenticationProviderSession = authProviderSession;
 		this.eeManagementSession = endEntityManagementSession;
 
-		if (CmpConfiguration.getRAOperationMode()) {
+		if (CmpConfiguration.getRAOperationMode(this.confAlias)) {
 			// create UsernameGeneratorParams
 			this.usernameGenParams = new UsernameGeneratorParams();
-			this.usernameGenParams.setMode(CmpConfiguration.getRANameGenerationScheme());
-			this.usernameGenParams.setDNGeneratorComponent(CmpConfiguration.getRANameGenerationParameters());
-			this.usernameGenParams.setPrefix(CmpConfiguration.getRANameGenerationPrefix());
-			this.usernameGenParams.setPostfix(CmpConfiguration.getRANameGenerationPostfix());
-			this.userPwdParams =  CmpConfiguration.getUserPasswordParams();
-			this.allowCustomCertSerno = CmpConfiguration.getRAAllowCustomCertSerno();
-			this.responseProt = CmpConfiguration.getResponseProtection();
+			this.usernameGenParams.setMode(CmpConfiguration.getRANameGenerationScheme(this.confAlias));
+			this.usernameGenParams.setDNGeneratorComponent(CmpConfiguration.getRANameGenerationParameters(this.confAlias));
+			this.usernameGenParams.setPrefix(CmpConfiguration.getRANameGenerationPrefix(this.confAlias));
+			this.usernameGenParams.setPostfix(CmpConfiguration.getRANameGenerationPostfix(this.confAlias));
+			this.userPwdParams =  CmpConfiguration.getUserPasswordParams(this.confAlias);
+			this.allowCustomCertSerno = CmpConfiguration.getRAAllowCustomCertSerno(this.confAlias);
+			this.responseProt = CmpConfiguration.getResponseProtection(this.confAlias);
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("cmp.operationmode=ra");
 				LOG.debug("cmp.ra.allowcustomcertserno="+allowCustomCertSerno);
@@ -171,7 +171,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			this.allowCustomCertSerno = false;
 		}
 		// Checks if an extended user data hander is configured and if so, creates the handler class.
-		final String handlerClass = CmpConfiguration.getCertReqHandlerClass();
+		final String handlerClass = CmpConfiguration.getCertReqHandlerClass(this.confAlias);
 		if ( handlerClass!=null ) {
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("CertReqHandlerClass="+handlerClass);
@@ -217,7 +217,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 					
 					EndEntityInformation data = null;
 					/** Defines which component from the DN should be used as username in EJBCA. Can be DN, UID or nothing. Nothing means that the DN will be used to look up the user. */
-					final String usernameComp = CmpConfiguration.getExtractUsernameComponent();
+					final String usernameComp = CmpConfiguration.getExtractUsernameComponent(this.confAlias);
 					if (LOG.isDebugEnabled()) {
 						LOG.debug("extractUsernameComponent: "+usernameComp);
 					}
@@ -494,7 +494,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
             // the CA to issue a cert
             caInfo = this.caSession.getCAInfoInternal(caId, null, true);   
         }
-		final VerifyPKIMessage messageVerifyer = new VerifyPKIMessage(caInfo, admin, caSession, endEntityAccessSession, certStoreSession, authorizationSession, 
+		final VerifyPKIMessage messageVerifyer = new VerifyPKIMessage(caInfo, this.confAlias, admin, caSession, endEntityAccessSession, certStoreSession, authorizationSession, 
 		                endEntityProfileSession, authenticationProviderSession, eeManagementSession);
 		ICMPAuthenticationModule authenticationModule = null;
 		if(messageVerifyer.verify(crmfreq.getPKIMessage(), username, authenticated)) {
