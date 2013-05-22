@@ -18,7 +18,6 @@ import java.security.KeyStoreException;
 import javax.ejb.Local;
 
 import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
 
 /**
  * @version $Id$
@@ -44,14 +43,6 @@ public interface OcspKeyRenewalSessionLocal {
      * 
      */
     void renewKeyStores(String signerSubjectDN) throws KeyStoreException, CryptoTokenOfflineException, InvalidKeyException; 
-
-    /**
-     * Sets the EjbcaWS object used in this class, if the default one isn't meant to be used. This method is used mainly for testing purposes,
-     * in order to insert a mock object. 
-     * 
-     * @param ejbcaWS 
-     */
-    void setEjbcaWs(EjbcaWS ejbcaWS);
     
     /**
      * Cancels all running timers and starts the initial timer. This method should be called from a servlet and be used to start the rekeying 

@@ -123,7 +123,6 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
     
-
     @Resource
     private SessionContext sessionContext;
 
@@ -431,12 +430,6 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
             throw new KeyRenewalFailedException("No certificate signed by correct CA generated.");
         }
         return signedCertificate;
-    }
-
-    @Override
-    @Deprecated
-    public void setEjbcaWs(EjbcaWS ejbcaWS) {
-        //OcspKeyRenewalSessionBean.ejbcaWS = ejbcaWS;
     }
 
     /** @return the EJBCA WS object. */
