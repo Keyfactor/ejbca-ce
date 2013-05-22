@@ -281,6 +281,7 @@
 		<include name="org/ejbca/core/model/ca/certificateprofiles/CertificatePolicy.java"/>
 		<!-- Tool for tests. -->
 		<include name="org/ejbca/util/NonEjbTestTools.java"/>
+		<include name="org/ejbca/core/ejb/ProfilingStat.java"/>
 	</fileset>
 	<pathconvert refid="source.fileset.ejbca-util" pathsep=" " property="source.fileset.ejbca-util.files">
 		<map from="${src.dir}/" to=""/>
@@ -417,6 +418,10 @@
 			<map from="${mod.ejbca-common-web.lib}:" to=""/>
 		</pathconvert>
 
+		<!-- Only include the XML defined interceptors for every EJB if we are non-production mode -->
+        <condition property="include-ejb-jar-xml" value="" else="ejb-jar.xml">
+            <equals arg1="${ejbca.productionmode}" arg2="true" casesensitive="false"/>
+        </condition>
 		<jar destfile="${mod.ejbca-ejb.lib}">
 			<fileset dir="${build.dir}" excludes="${exclude.fileset.ejbca-util.files} ${exclude.fileset.ejbca-common-web.files}"/>
 			<!--
@@ -424,7 +429,7 @@
         		<exclude name="**/META-INF/**"/>
         	</fileset>
         	-->
-			<zipfileset prefix="META-INF" dir="${resources.dir}" includes="weblogic-ejb-jar.xml ibm-ejb-jar-bnd.xml jboss.xml"/>
+			<zipfileset prefix="META-INF" dir="${resources.dir}" includes="${include-ejb-jar-xml} weblogic-ejb-jar.xml ibm-ejb-jar-bnd.xml jboss.xml"/>
 		</jar>
 		<condition property="generate-stubs" value="true">
 			<equals arg1="websphere" arg2="${appserver.type}"/>

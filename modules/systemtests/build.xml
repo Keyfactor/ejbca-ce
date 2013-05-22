@@ -330,6 +330,8 @@
 					<exclude name="**/protocol/ws/*" />
 					<!-- Exclude XKMS, they are run from their own target, runxkms -->
 					<exclude name="**/XKMS*Test.class" />
+					<!-- Exclude profiling test, since we want to run it later -->
+					<exclude name="org/ejbca/core/ejb/ProfilingTest.class" />
 				</fileset>
 			</batchtest>
 			<!-- Tests that require the CMP TCP listener -->
@@ -343,6 +345,12 @@
 			<batchtest fork="yes" todir="${reports.base.dir}/run" if="cmpunid.enabled">
 				<fileset dir="${build.test.dir}">
 					<include name="org/ejbca/core/protocol/cmp/CmpRAUnidTest.class" />
+				</fileset>
+			</batchtest>
+			<!-- Run the profiling test last to get stats of all the previous tests -->
+			<batchtest fork="yes" todir="${reports.base.dir}/run">
+				<fileset dir="${build.test.dir}">
+					<include name="org/ejbca/core/ejb/ProfilingTest.class" />
 				</fileset>
 			</batchtest>
 		</junit>
