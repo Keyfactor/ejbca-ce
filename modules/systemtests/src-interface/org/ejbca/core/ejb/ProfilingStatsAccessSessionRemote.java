@@ -16,8 +16,6 @@ import java.util.List;
 
 import javax.ejb.Remote;
 
-import org.ejbca.core.ejb.ProfilingStat;
-
 /**
  * @see org.ejbca.core.ProfilingStatsAccessSessionBean
  * 

@@ -21,8 +21,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.log4j.Logger;
-
 /**
  * @see org.ejbca.core.ejb.ProfileAndTraceInterceptor
  * 
