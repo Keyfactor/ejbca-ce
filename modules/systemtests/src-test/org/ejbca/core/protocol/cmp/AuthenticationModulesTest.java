@@ -233,7 +233,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             InvalidAlgorithmParameterException, CADoesntExistsException, AuthorizationDeniedException {
 
         EjbcaConfigurationHolder.updateConfiguration(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
-        assertTrue("The CMP Authentication module was not configured correctly.", CmpConfiguration.getRAOperationMode());
+        assertTrue("The CMP Authentication module was not configured correctly.", CmpConfiguration.getRAOperationMode(null));
 
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
 
@@ -244,7 +244,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         PKIMessage req = protectPKIMessage(msg, false, "foo123", "mykeyid", 567);
         assertNotNull("Protecting PKIMessage with HMACPbe failed.", req);
 
-        HMACAuthenticationModule hmac = new HMACAuthenticationModule("foo123");
+        HMACAuthenticationModule hmac = new HMACAuthenticationModule("foo123", null);
         hmac.setCaInfo(caSession.getCAInfo(ADMIN, caid));
         hmac.setSession(ADMIN, eeAccessSession, certStoreSession);
         boolean res = hmac.verifyOrExtract(req, null, false);
@@ -267,7 +267,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         assertTrue("The CMP Authentication module was not configured correctly.",
                 confSession.verifyProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "ra"));
         EjbcaConfigurationHolder.updateConfiguration(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
-        assertTrue("The CMP Authentication module was not configured correctly.", CmpConfiguration.getRAOperationMode());
+        assertTrue("The CMP Authentication module was not configured correctly.", CmpConfiguration.getRAOperationMode(null));
 
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
 
@@ -302,7 +302,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         assertTrue("The CMP Authentication module was not configured correctly.",
                 confSession.verifyProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "ra"));
         EjbcaConfigurationHolder.updateConfiguration(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
-        assertTrue("The CMP Authentication module was not configured correctly.", CmpConfiguration.getRAOperationMode());
+        assertTrue("The CMP Authentication module was not configured correctly.", CmpConfiguration.getRAOperationMode(null));
 
         final String revUserDN = "CN=cmprevuser1,C=SE";
         final String revUsername = "cmprevuser1";
@@ -547,7 +547,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         assertTrue("The CMP Authentication module was not configured correctly.",
                 confSession.verifyProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "ra"));
         EjbcaConfigurationHolder.updateConfiguration(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
-        assertTrue("The CMP Authentication module was not configured correctly.", CmpConfiguration.getRAOperationMode());
+        assertTrue("The CMP Authentication module was not configured correctly.", CmpConfiguration.getRAOperationMode(null));
 
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
 
@@ -607,7 +607,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         assertTrue("The CMP Authentication module was not configured correctly.",
                 confSession.verifyProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "ra"));
         EjbcaConfigurationHolder.updateConfiguration(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
-        assertTrue("The CMP Authentication module was not configured correctly.", CmpConfiguration.getRAOperationMode());
+        assertTrue("The CMP Authentication module was not configured correctly.", CmpConfiguration.getRAOperationMode(null));
 
         confSession.updateProperty(CmpConfiguration.CONFIG_RESPONSEPROTECTION, "pbe");
         assertTrue("The response protection was not configured correctly.",
@@ -634,7 +634,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
                 .getValue().intValue());
         assertNotNull("Crmf request did not return a certificate", cert1);
 
-        VerifyPKIMessage verifier = new VerifyPKIMessage(caSession.getCAInfo(ADMIN, caid), ADMIN, caSession, eeAccessSession, certStoreSession,
+        VerifyPKIMessage verifier = new VerifyPKIMessage(caSession.getCAInfo(ADMIN, caid), null, ADMIN, caSession, eeAccessSession, certStoreSession,
                 authorizationSession, eeProfileSession, null, endEntityManagementSession);
         boolean verify = verifier.verify(req, null, false);
         assertTrue("Verifying PKIMessage failed", verify);
@@ -653,7 +653,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         assertTrue("The CMP Authentication module was not configured correctly.",
                 confSession.verifyProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "ra"));
         EjbcaConfigurationHolder.updateConfiguration(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
-        assertTrue("The CMP Authentication module was not configured correctly.", CmpConfiguration.getRAOperationMode());
+        assertTrue("The CMP Authentication module was not configured correctly.", CmpConfiguration.getRAOperationMode(null));
 
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
 
@@ -740,7 +740,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         assertTrue("The CMP Authentication module was not configured correctly.",
                 confSession.verifyProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "ra"));
         EjbcaConfigurationHolder.updateConfiguration(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
-        assertTrue("The CMP Authentication module was not configured correctly.", CmpConfiguration.getRAOperationMode());
+        assertTrue("The CMP Authentication module was not configured correctly.", CmpConfiguration.getRAOperationMode(null));
 
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
 
@@ -798,7 +798,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         assertTrue("The CMP Authentication module was not configured correctly.",
                 confSession.verifyProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "normal"));
         EjbcaConfigurationHolder.updateConfiguration(CmpConfiguration.CONFIG_OPERATIONMODE, "normal");
-        assertFalse("The CMP Authentication module was not configured correctly.", CmpConfiguration.getRAOperationMode());
+        assertFalse("The CMP Authentication module was not configured correctly.", CmpConfiguration.getRAOperationMode(null));
         confSession.updateProperty(CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO, "true");
 
         confSession.updateProperty(CmpConfiguration.CONFIG_RESPONSEPROTECTION, "signature");
@@ -878,7 +878,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         assertTrue("The CMP Authentication module was not configured correctly.",
                 confSession.verifyProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "normal"));
         EjbcaConfigurationHolder.updateConfiguration(CmpConfiguration.CONFIG_OPERATIONMODE, "normal");
-        assertFalse("The CMP Authentication module was not configured correctly.", CmpConfiguration.getRAOperationMode());
+        assertFalse("The CMP Authentication module was not configured correctly.", CmpConfiguration.getRAOperationMode(null));
 
         String clientUsername = "clientTestUser";
         String clientDN = "CN=" + clientUsername + ",C=SE";
@@ -893,7 +893,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         PKIMessage req = protectPKIMessage(msg, false, clientPassword, "mykeyid", 567);
         assertNotNull("Protecting PKIMessage failed", req);
 
-        HMACAuthenticationModule hmac = new HMACAuthenticationModule("foo123");
+        HMACAuthenticationModule hmac = new HMACAuthenticationModule("foo123", null);
         hmac.setCaInfo(caSession.getCAInfo(ADMIN, caid));
         hmac.setSession(ADMIN, eeAccessSession, certStoreSession);
         boolean res = hmac.verifyOrExtract(req, null, false);
@@ -924,7 +924,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         assertTrue("The CMP Authentication module was not configured correctly.",
                 confSession.verifyProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "normal"));
         EjbcaConfigurationHolder.updateConfiguration(CmpConfiguration.CONFIG_OPERATIONMODE, "normal");
-        assertFalse("The CMP Authentication module was not configured correctly.", CmpConfiguration.getRAOperationMode());
+        assertFalse("The CMP Authentication module was not configured correctly.", CmpConfiguration.getRAOperationMode(null));
 
         String clientUsername = "clientTestUser";
         String clientDN = "CN=" + clientUsername + ",C=SE";
@@ -973,7 +973,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         assertTrue("The CMP Authentication module was not configured correctly.",
                 confSession.verifyProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "normal"));
         EjbcaConfigurationHolder.updateConfiguration(CmpConfiguration.CONFIG_OPERATIONMODE, "normal");
-        assertFalse("The CMP Authentication module was not configured correctly.", CmpConfiguration.getRAOperationMode());
+        assertFalse("The CMP Authentication module was not configured correctly.", CmpConfiguration.getRAOperationMode(null));
 
         String clientUsername = "clientTestUser";
         String clientDN = "CN=" + clientUsername + ",C=SE";
@@ -998,7 +998,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
                 .getValue().intValue());
         assertNotNull("Crmf request did not return a certificate", cert1);
 
-        VerifyPKIMessage verifier = new VerifyPKIMessage(caSession.getCAInfo(ADMIN, caid), ADMIN, caSession, eeAccessSession, certStoreSession,
+        VerifyPKIMessage verifier = new VerifyPKIMessage(caSession.getCAInfo(ADMIN, caid), null, ADMIN, caSession, eeAccessSession, certStoreSession,
                 authorizationSession, eeProfileSession, null, endEntityManagementSession);
         boolean verify = verifier.verify(msg, null, false);
         assertTrue(verify);
@@ -1017,7 +1017,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         assertTrue("The CMP Authentication module was not configured correctly.",
                 confSession.verifyProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "normal"));
         EjbcaConfigurationHolder.updateConfiguration(CmpConfiguration.CONFIG_OPERATIONMODE, "normal");
-        assertFalse("The CMP Authentication module was not configured correctly.", CmpConfiguration.getRAOperationMode());
+        assertFalse("The CMP Authentication module was not configured correctly.", CmpConfiguration.getRAOperationMode(null));
 
         String clientUsername = "clientTestUser";
         String clientDN = "CN=" + clientUsername + ",C=SE";
@@ -1266,7 +1266,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         assertTrue("The CMP Authentication module was not configured correctly.",
                 confSession.verifyProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "ra"));
         EjbcaConfigurationHolder.updateConfiguration(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
-        assertTrue("The CMP Authentication module was not configured correctly.", CmpConfiguration.getRAOperationMode());
+        assertTrue("The CMP Authentication module was not configured correctly.", CmpConfiguration.getRAOperationMode(null));
 
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
 

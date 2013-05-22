@@ -80,7 +80,7 @@ public class CmpServlet extends HttpServlet {
                 }
                 output.write(buf, 0, n);
             }
-            service(output.toByteArray(), request.getRemoteAddr(), response);
+            service(output.toByteArray(), request.getRemoteAddr(), response, request.getPathInfo());
         } catch (Exception e) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
             log.info(intres.getLocalizedMessage("cmp.errornoasn1"), e);
@@ -110,7 +110,38 @@ public class CmpServlet extends HttpServlet {
         }
     }
 
-    private void service(final byte[] ba, final String remoteAddr, final HttpServletResponse response) throws IOException {
+    private void service(final byte[] ba, final String remoteAddr, final HttpServletResponse response, String pathInfo) throws IOException {
+        
+        // PathInfo contains the alias used for CMP configuration. 
+        // The CMP URL for custom configuration looks like: http://HOST:PORT/ejbca/publicweb/cmp/customconfig/*
+        // pathInfo contains what * is and should have the form "/alias<SOME IDENTIFYING TEXT>". We extract the "SOME IDENTIFYING TEXT" and that will be
+        // the CMP configuration alias.
+        String alias = null;
+        if((pathInfo != null) && (pathInfo.length() > 0) ) {
+            if(pathInfo.indexOf("/alias") == -1) {
+                log.error("Wrong CMP URL. URL should have the form '<CMP base URL>/cmp/customconfig/alias*' but was '<CMP base URL>/cmp/customconfig" + pathInfo);
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Wrong CMP URL.");
+                return;
+            } else {
+                alias = pathInfo.substring(6);
+                if(log.isDebugEnabled()) {
+                    log.debug("Using CMP configuration alias: " + alias);
+                }
+
+                if((alias == null) || (alias.length() < 1)) {
+                    log.error("Wrong CMP URL. A CMP configuration alias must be specified");
+                    response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Wrong CMP URL. Missing CMP configuration alias.");
+                    return;
+                }
+                
+                if(!isAlphanumeric(alias)) {
+                    log.error("Wrong CMP URL. A CMP configuration alias must consist of only number and/or letters");
+                    response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Wrong CMP URL. CMP configuration alias must be alphanumeric.");
+                    return;
+                }
+            }
+        }
+        
         try {
             log.info(intres.getLocalizedMessage("cmp.receivedmsg", remoteAddr));
             final long startTime = System.currentTimeMillis();
@@ -118,7 +149,7 @@ public class CmpServlet extends HttpServlet {
             try {
                 // We must use an administrator with rights to create users
                 final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CmpServlet: "+remoteAddr));
-                resp = cmpMessageDispatcherLocal.dispatch(admin, ba);
+                resp = cmpMessageDispatcherLocal.dispatch(admin, ba, alias);
             } catch (IOException e) {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
                 log.info(intres.getLocalizedMessage("cmp.errornoasn1"), e);
@@ -139,6 +170,19 @@ public class CmpServlet extends HttpServlet {
             log.error("Error in CmpServlet:", e);
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
         }
+    }
+    
+    private boolean isAlphanumeric(String str) {
+        if (str == null) {
+            return false;
+        }
+        int sz = str.length();
+        for (int i = 0; i < sz; i++) {
+            if (Character.isLetterOrDigit(str.charAt(i)) == false) {
+                return false;
+            }
+        }
+        return true;
     }
 
 }

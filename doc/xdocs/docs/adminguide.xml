@@ -713,7 +713,18 @@ configure EJBCA for 3GPP/4G/LTE networks using CMP. You can purchase it easily i
 <subsection name="Configuration">
 <p>
 Copy conf/cmp.properties.sample to conf/cmp.properties and configure. The options in the configuration file should
-be documented there.
+be documented there. These are the configurations that will be used when sending the CMP requests to the default CMP URL.
+</p>
+<p>
+To be able to use more custom CMP configurations, an alias specific URL can be used. The alias specified in the URL can be used to mark configuration 
+options in conf/cmpaliasconf.properties. Just like with the default configurations, copy conf/cmpaliasconf.properties.sample to conf/cmpaliasconf.properties 
+and configure. For example, if the alias is '123', to set the CMP operation mode to RA, the cmpaliasconf.properties file should contain: <code>cmp.123.operationmode=ra</code>
+</p>
+<p>
+The configuration alias can be any String as long as it is alphanomeric.
+</p>
+<p>
+The custom configurations can only be used when sending the CMP request over http and does not work with TCP.
 </p>
 </subsection>
 <subsection name="CMP over http">
@@ -722,6 +733,18 @@ By default EJBCA support CMP over the http transport protocol.
 The URL for the CMP servlet is:
 <br/>
 http://127.0.0.1:8080/ejbca/publicweb/cmp
+</p>
+<p>
+The URL used to apply specific CMP configuration is:
+<br/>
+http://127.0.0.1:8080/ejbca/publicweb/cmp/customconfig/aliasALIAS
+<br/>
+For example:
+<br/>
+http://127.0.0.1:8080/ejbca/publicweb/cmp/customconfig/alias123
+</p>
+<p>
+where '123' will be the alias used to exatract the relative configurations from conf/cmpaliasconf.properties
 </p>
 </subsection>
 <subsection name="CMP over TCP">

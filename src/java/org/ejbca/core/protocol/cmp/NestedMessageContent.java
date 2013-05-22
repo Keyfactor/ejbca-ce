@@ -60,15 +60,19 @@ public class NestedMessageContent extends BaseCmpMessage implements RequestMessa
     private static final Logger log = Logger.getLogger(NestedMessageContent.class);
     
     private PKIMessage raSignedMessage;
+    private String confAlias;
     
     /** Because PKIMessage is not serializable we need to have the serializable bytes save as well, so 
      * we can restore the PKIMessage after serialization/deserialization. */ 
     private byte[] pkimsgbytes = null;
 
-    public NestedMessageContent() {}
+    public NestedMessageContent() {
+        this.confAlias = null;
+    }
     
-    public NestedMessageContent(final PKIMessage pkiMsg) {
+    public NestedMessageContent(final PKIMessage pkiMsg, String configAlias) {
         this.raSignedMessage = pkiMsg;
+        this.confAlias = configAlias;
         setPKIMessageBytes(pkiMsg);
         init();
     }
@@ -125,10 +129,10 @@ public class NestedMessageContent extends BaseCmpMessage implements RequestMessa
         try {
             final List<X509Certificate> racerts = getRaCerts();
             if(log.isDebugEnabled()) {
-                log.debug("Found " + racerts.size() + " certificates in " + CmpConfiguration.getRaCertificatePath());
+                log.debug("Found " + racerts.size() + " certificates in " + CmpConfiguration.getRaCertificatePath(this.confAlias));
             }
             if(racerts.size() <= 0) {
-                String errorMessage = "No certificate files were found in " + CmpConfiguration.getRaCertificatePath();
+                String errorMessage = "No certificate files were found in " + CmpConfiguration.getRaCertificatePath(this.confAlias);
                 log.info(errorMessage);
             }
 
@@ -217,7 +221,7 @@ public class NestedMessageContent extends BaseCmpMessage implements RequestMessa
     private List<X509Certificate> getRaCerts() throws CertificateException, IOException {
             
         final List<X509Certificate> racerts = new ArrayList<X509Certificate>();
-        final String raCertsPath = CmpConfiguration.getRaCertificatePath();
+        final String raCertsPath = CmpConfiguration.getRaCertificatePath(this.confAlias);
         if(log.isDebugEnabled()) {
             log.debug("Looking for trusted RA certificate in " + raCertsPath);
         }

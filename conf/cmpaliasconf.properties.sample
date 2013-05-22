@@ -1,0 +1,228 @@
+#
+# $Id: cmpaliasconf.properties.sample 16605 2013-04-16 02:18:57Z anatom $
+#
+# This is a sample file to override properties used
+# during deployment of EJBCA
+# 
+# You should copy and rename this file to cmpaliasconf.properties
+# and customize at will.
+#
+# Developers: If you add fields in this file, make arrangements in CmpServlet.
+
+#------------------- CMP (RFC4210) settings -------------
+# 
+# Enforce a particual CA instead of taking it from the request.
+# This should be the DN of the CA, i.e.:
+# CN=ManagementCA,O=EJBCA Sample,C=SE 
+#
+# Default: empty
+#cmp.1.defaultca=
+
+# Defines which component from the DN should be used to look up username in EJBCA. 
+# Can be CN, UID or nothing. 
+# Nothing means that the DN will be used to look up the user (EJBCA will search for a user with the specified DN). 
+#
+# Default: empty
+#cmp.1.extractusernamecomponent=
+
+# If the CMP service should work in 'normal' or 'ra' mode (see docs). 
+# Normal mode means that the user must be pre-registered in EJBCA (as normal), and the EJBCA user is looked up from data in the request
+# (the DN or a part of the DN).
+# RA mode means that the CMP client will act as an RA to EJBCA and users will be created in EJBCA when a request comes in. 
+# The username that is created will be generated according to the parameters set here, it can be random or also a part of the DN, 
+# optionally with pre- and postfix appended.
+#
+# Default normal (empty value means the same)
+#cmp.1.operationmode=normal
+#cmp.1.operationmode=ra
+
+# Specify authentication module for the client mode. More than one module can be specified by separating them with a ";".
+# In case of more than one module specified, the first module will be used to for authentication testing. If the first
+# module fails, the second module will be used for authentication testing, and so on.
+#
+# There are two type of authentication modules: Password extractors and PKIMessage verifyers.
+# 
+# The password extractors are:
+# - RegTokenPwd - does not require parameters
+# - DnPartPwd - The DN part that should contain the password is given in cmp.authenticationparameters. For example, if the 
+#   subjectDN is "CN=Name,C=SE,UID=password", cmp.authenticationparameters should be set to "UID".
+# These methods extract the password from the CMP request and authenticate the sender using the extracted password
+#
+# The PKIMessage verifiers are:
+# - HMAC - an RA authentication secret can be set in cmp.authenticationparameters. If nothing was set there, the authentication secret
+#   that will be used is the one specified in cmp.ra.authenticationsecret. For client mode no authentication parameters are needed.
+# - EndEntityCertificate - requires the name of the CA that issued the EndEntity certificate to be specified in cmp.authenticationparameters.
+#                          A - here means that it can be issued by any CA.
+#
+# Default: RegTokenPwd;HMAC
+#cmp.1.authenticationmodule=RegTokenPwd
+#cmp.1.authenticationmodule=DnPartPwd
+#cmp.1.authenticationmodule=HMAC
+#cmp.1.authenticationmodule=EndEntityCertificate
+#cmp.1.authenticationmodule=DnPartPwd;EndEntityCertificate
+#cmp.1.authenticationmodule=RegTokenPwd;DnPartPwd;HMAC
+
+# Specify the parameters for the authentication module specified in cmp.authenticationmodule. In case of more than one
+# module specified, the corresponding parameters are separated with a ";". The number and order of the parameters should match
+# the number and order of the authentication modules specified. If an authentication module does not require any parameters,
+# "-" should be specified.
+#
+# Note, for the EndEntityCertificate authentication module, in RA mode, this parameter can either be set to the name of the CA 
+# that issued the endentity certificate (and this will trigger test to authenticate the CMP message), or it can be set to either "-" 
+# or "A" (and this will bypass the authentication tests, however, Ejbca will be expecting an already authenticated CMP message, for 
+# example, that the CMP request would be sent inside a signed NestedMessageContent CMP request)
+# Default:-;-
+#cmp.1.authenticationparameters=-
+#cmp.1.authenticationparameters=UID
+#cmp.1.authenticationparameters=foo123
+#cmp.1.authenticationparameters=ManagementCA
+#cmp.1.authenticationparameters=UID;ManagementCA
+#cmp.1.authenticationparameters=-;O;-
+
+# The path to the catalog where the RA-certificate is stored. The RA certificate is used to verify
+# the RA signature in the NestedMessageContent
+# Default:
+#cmp.1.racertificatepath=/tmp/racerts
+
+# This option works in combination with the authentication module 'EndEntityCertificate' in client mode. Normally, the certificate attached in
+# the 'extraCerts' field in the PKIMessage has to be present in Ejbca's database in order for the PKIMessage to authenticate. But when vendor certificate
+# mode is activated, aka. this option is set to 'true', the certificate in 'extraCerts' does not need to be present in the database, however, 
+# it has to be issued by the CA specified in 'cmp.vendorca' (which is expected to be an external CA) and this only works with the initialization and 
+# certification requests. 
+# This mode is used for initial enrollment only, so the end entity concerned has to have status NEW in order for this to work.
+#
+# Such enrollment method is used for example when following 3GPP standard. If you are not sure whether you are following 3GPP specifications or not, 
+# it is recommended that you leave this option set to 'false'.
+#
+# Default: false
+#cmp.1.vendorcertificatemode=true
+
+# Specify the name of the external CA to be used to authenticate the certificate in the 'extraCerts' field when vendor certificate mode is activated.
+#
+# Default:
+#cmp.1.vendorca=VendorCA
+
+# Shared secret between the CA and the RA used to authenticate valid RA messages.
+# Leave this commented out to be able to use a separate secret for each CA (see Edit Certificate Authorities configuration).
+#
+# Note that the cmp.authenticationparameters should be set to '-' (not specified) for the HMAC authentication module to fall 
+# back to this setting. 
+#
+# Default: empty
+#cmp.1.ra.authenticationsecret=
+
+# Allow automatic key update (certificate renewal). Setting this option to 'true' will change the end entity status to 'NEW' to allow the 
+# issuance of a new certificate. Setting it to 'false' will not go through this step, so the KeyUpdate request will fail if the status 
+# of the end entity does not allow the issuance of a new certificate. For higher security, it is recommended to set this value to 'false'.
+#
+# Default: false
+#cmp.1.allowautomatickeyupdate=true
+#cmp.1.allowautomatickeyupdate=false
+
+# Allow the use of the old keys when renewing a certificate/updating keys
+#
+# Default: true
+#cmp.1.allowupdatewithsamekey=false
+#cmp.1.allowupdatewithsamekey=true
+
+# Allow the client/RA to specify that the CA should not verify POP, 
+# set to true to allow no POP (raVerify in the rfc). 
+# Note: only set to true if cmp.operationmode=ra.
+#
+# Default: false
+#cmp.1.allowraverifypopo=false
+
+# Which sort of protection the response messages will have, the certificate response messages can be signed by the CA
+# or they can use password based mac (PBE) using the ra authenticationsecret and the same keyId and PBE algorithm that was sent in the 
+# request. PBE is currently only used in RA mode.
+# Possible values: signature, pbe
+# Default: signature
+#cmp.1.responseprotection=signature
+
+# Which generation scheme should be used, RANDOM, DN or USERNAME for base username. FIXED to have a fixed username.
+# Random will generate a 12 character long random username.
+# DN will take a part of the request DN, which part is defined by cmp.ra.namegenerationparameters, and use as the username.
+# USERNAME will use the request DN as username.
+# If the same username is constructed (for example UID) as an already existing user, the existing user will be modified with
+# new values for profile etc, and a new certificate will be issued for that user.
+#
+# Default: DN
+#cmp.1.ra.namegenerationscheme=DN
+
+# Parameters for name generation, for DN it can be for example CN, UID or SN. 
+# Either the CN or the UID from the request can be used. 
+# You can add several in order to have fall-back in case the first does not exist in the DN, for example UID;SN;CN. First try UID, if it does not exist try SN (SerialNumber) etc. 
+# For FIXED namegenerationscheme the username will be the value specified here.
+#
+# Default: CN
+#cmp.1.ra.namegenerationparameters=CN
+
+# Prefix to generated name, a string that can contain the markup ${RANDOM} to insert 10 random chars.
+# Example: 'MyPrefix - ${RANDOM}-' and also using RANDOM username generation will create a username like 'MyPrefix - DGR89NN54QW-GDHR473NH87Q
+#
+# Default: empty
+#cmp.1.ra.namegenerationprefix=
+
+# Postfix to generated name, a string that can contain the markup ${RANDOM} to insert 10 random chars.
+# Example: MyPostfix - ${RANDOM}
+#
+# Default: empty
+#cmp.1.ra.namegenerationpostfix=
+
+# Working in RA mode an internal random password is temporarily used during certificate generation. 
+# By setting this parameter you can use a fixed password instead of a random.
+# Example: foo123
+#
+# Default: random
+#cmp.1.ra.passwordgenparams=
+
+# Specifies if the CMP service, in RA mode, will look for requests for custom certificate serial number.
+# If this setting is true, a requested serial number can be passed in the non-standard field serialNumber 
+# in the CRMF certTemplate.
+# Default: false
+#cmp.1.ra.allowcustomcertserno=false
+
+# The endEntityProfile to be used when adding users in RA mode. 
+# Possible values are:
+# The fixed name of a End Entity Profile
+# KeyId - use a End Entity Profile with the same name as the KeyId (PKIHeader.senderKID) sent in the CMP request (UTF-8 encoding is used)
+#
+# Default: EMPTY
+#cmp.1.ra.endentityprofile=EMPTY
+
+# The certificateProfile to be used when adding users in RA mode. 
+# Possible values are:
+# The fixed name of a Certificate Profile
+# ProfileDefault - use the default certificate profile of the end entity profile used
+# KeyId - use a Certificate Profile with the same name as the KeyId (PKIHeader.senderKID) sent in the CMP request (UTF-8 encoding is used)
+#
+# Default: ENDUSER
+#cmp.1.ra.certificateprofile=ENDUSER
+
+# The CA to be used when adding users in RA mode. 
+# Possible values are:
+# The name of a CA
+# ProfileDefault - use the default CA of the end entity profile used
+# KeyId - use a CA with the same name as the KeyId (PKIHeader.senderKID) sent in the CMP request (UTF-8 encoding is used)
+#
+# Default: ManagementCA
+#cmp.1.ra.caname=ManagementCA
+
+# The classname of the implementation. Just uncomment to enable the FNR-UNID implementation that comes with EJBCA.
+#cmp.1.certreqhandler.class=org.ejbca.core.protocol.unid.UnidFnrHandler
+
+# The datasource of the DB where the mapping should be written. Must be defined for org.ejbca.core.protocol.unid.UnidFnrHandler
+#cmp.1.uniddatasource=java:/UnidDS
+
+
+
+# Config alias "2"
+#cmp.2.defaultca=AdminCA1
+#cmp.2.operationmode=ra
+#cmp.2.authenticationmodule=HMAC;EndEntityCertificate
+#cmp.2.authenticationparameters=-;AdminCA1
+#cmp.2.vendorcertificatemode=true
+#cmp.2.vendorca=VendorCA
+#cmp.2.ra.certificateprofile=ENDUSER
+#cmp.2.ra.endentityprofile=EMPTY
+#cmp.2.ra.caname=AdminCA1

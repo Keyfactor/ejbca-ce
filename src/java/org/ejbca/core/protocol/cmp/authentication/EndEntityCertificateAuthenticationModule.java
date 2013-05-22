@@ -76,6 +76,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     private String password;
     private String errorMessage;
     private Certificate extraCert;
+    private String confAlias;
     
     private AuthenticationToken admin;
     private CaSession caSession;
@@ -86,11 +87,12 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     private WebAuthenticationProviderSessionLocal authenticationProviderSession;
     private EndEntityManagementSession eeManagementSession;
 
-    public EndEntityCertificateAuthenticationModule(final String parameter) {
+    public EndEntityCertificateAuthenticationModule(final String parameter, String confAlias) {
         this.authenticationParameterCAName = parameter;
         password = null;
         errorMessage = null;      
         extraCert = null;
+        this.confAlias = confAlias;
         
         admin = null;
         caSession = null;
@@ -239,7 +241,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
 
         // Perform the different checks depending on the configuration and previous authentication
         if(log.isDebugEnabled()) {
-            log.debug("CMP is operating in RA mode: " + CmpConfiguration.getRAOperationMode());
+            log.debug("CMP is operating in RA mode: " + CmpConfiguration.getRAOperationMode(this.confAlias));
             log.debug("Issuer CA is set: " + isCASet);
             log.debug("CMP message already been authenticated: " + authenticated);
         }
@@ -253,7 +255,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         //                  - Check that extraCert is in the database
         //                  - Check that extraCert is valid
         //                  - Check that extraCert is active
-        if(!CmpConfiguration.getRAOperationMode() || isCASet) {
+        if(!CmpConfiguration.getRAOperationMode(this.confAlias) || isCASet) {
             
             // Get the CAInfo of the CA that should have issued extraCert 
             cainfo = getCAInfo(extraCert, isCASet, msg.getBody().getType());
@@ -292,7 +294,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
 
         }
         
-        if(CmpConfiguration.getRAOperationMode() && isCASet) {// RA mode and cmp.authenticationparameters is set to the name of extraCert issuer
+        if(CmpConfiguration.getRAOperationMode(this.confAlias) && isCASet) {// RA mode and cmp.authenticationparameters is set to the name of extraCert issuer
             
             //Check that the request sender is an authorized administrator
             try {
@@ -311,14 +313,14 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 return false;
             }
             
-        } else if(CmpConfiguration.getRAOperationMode() && !isCASet && !authenticated) { // RA mode, extraCert can be given by any CA and the CMP message has not already been authenticated (aka. is not a NestedMessageContent)
+        } else if(CmpConfiguration.getRAOperationMode(this.confAlias) && !isCASet && !authenticated) { // RA mode, extraCert can be given by any CA and the CMP message has not already been authenticated (aka. is not a NestedMessageContent)
             errorMessage = "The CMP message could not be authenticated in RA mode. No CA has been set in the configuration file and the message has not been authenticated previously";
             if(log.isDebugEnabled()) {
                 log.debug(errorMessage);
             }
             return false;            
             
-        } else if(!CmpConfiguration.getRAOperationMode()) { // client mode
+        } else if(!CmpConfiguration.getRAOperationMode(this.confAlias)) { // client mode
             
             // Check if this certificate belongs to the user
             if (username != null) {
@@ -553,7 +555,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
      * @throws NotFoundException
      */
     private int getUsedEndEntityProfileId(final DEROctetString keyId) throws NotFoundException {
-        String endEntityProfile = CmpConfiguration.getRAEndEntityProfile();
+        String endEntityProfile = CmpConfiguration.getRAEndEntityProfile(this.confAlias);
         if (StringUtils.equals(endEntityProfile, "KeyId") && (keyId != null)) {
             endEntityProfile = CmpMessageHelper.getStringFromOctets(keyId);
             if (log.isDebugEnabled()) {
@@ -628,9 +630,9 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         CAInfo cainfo = null;
         try {
             if(isVendorCertificateMode(reqType)) {
-                cainfo = caSession.getCAInfo(admin, CmpConfiguration.getVendorCA());
+                cainfo = caSession.getCAInfo(admin, CmpConfiguration.getVendorCA(this.confAlias));
                 if (log.isDebugEnabled()) {
-                    log.debug("CMP is in vendor certificate mode and the Vendor CA is '"+CmpConfiguration.getVendorCA()+"'.");
+                    log.debug("CMP is in vendor certificate mode and the Vendor CA is '"+CmpConfiguration.getVendorCA(this.confAlias)+"'.");
                 }
             } else {
                 if (isCASet) {
@@ -658,9 +660,9 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     private String getUsername(CertificateInfo certinfo, int reqType) {
         if(isVendorCertificateMode(reqType)) {
             String subjectDN = CertTools.getSubjectDN(extraCert);
-            String username = CertTools.getPartFromDN(subjectDN, CmpConfiguration.getExtractUsernameComponent());
+            String username = CertTools.getPartFromDN(subjectDN, CmpConfiguration.getExtractUsernameComponent(this.confAlias));
             if(log.isDebugEnabled()) {
-                log.debug("Username ("+username+") was extracted from the '" + CmpConfiguration.getExtractUsernameComponent() + "' part of the subjectDN of the certificate in the 'extraCerts' field.");
+                log.debug("Username ("+username+") was extracted from the '" + CmpConfiguration.getExtractUsernameComponent(this.confAlias) + "' part of the subjectDN of the certificate in the 'extraCerts' field.");
             }
             return username;
         } else {
@@ -676,7 +678,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
      * @return 'True' if authentication by vendor-issued-certificate is used. 'False' otherwise
      */
     private boolean isVendorCertificateMode(int reqType) {
-        return !CmpConfiguration.getRAOperationMode() && CmpConfiguration.getVendorCertificateMode() && (reqType == 0 || reqType == 2);
+        return !CmpConfiguration.getRAOperationMode(this.confAlias) && CmpConfiguration.getVendorCertificateMode(this.confAlias) && (reqType == 0 || reqType == 2);
     }
  
 }

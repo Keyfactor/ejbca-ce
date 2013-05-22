@@ -17,9 +17,22 @@
         <load-on-startup>99</load-on-startup>
     </servlet>
 
+    <servlet>
+        <description><![CDATA[Used to handle CMP (RFC4210) protocol messages with specific configurations]]></description>
+        <display-name>CmpAliasServlet</display-name>
+        <servlet-name>CmpAliasServlet</servlet-name>
+        <servlet-class>org.ejbca.ui.web.protocol.CmpServlet</servlet-class>
+        <load-on-startup>99</load-on-startup>
+    </servlet>
+
     <servlet-mapping>
         <servlet-name>CmpServlet</servlet-name>
         <url-pattern>/cmp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>CmpAliasServlet</servlet-name>
+        <url-pattern>/cmp/customconfig/*</url-pattern>
     </servlet-mapping>
 
     <session-config>

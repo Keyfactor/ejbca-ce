@@ -67,13 +67,15 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
     private CAInfo cainfo;
     private String password;
     private String errorMessage;
+    private String confAlias;
     
     private CmpPbeVerifyer verifyer;
         
-    public HMACAuthenticationModule(final String parameter) {
+    public HMACAuthenticationModule(final String parameter, final String confAlias) {
         this.raAuthSecret = parameter;
+        this.confAlias = confAlias;
         if(StringUtils.equals(raAuthSecret, "-")) {
-            this.raAuthSecret = CmpConfiguration.getRAAuthenticationSecret();
+            this.raAuthSecret = CmpConfiguration.getRAAuthenticationSecret(this.confAlias);
         }
         this.cainfo = null;
         this.password = null;
@@ -190,7 +192,7 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
             return false;
         }
             
-        if(CmpConfiguration.getRAOperationMode()) { //RA mode
+        if(CmpConfiguration.getRAOperationMode(this.confAlias)) { //RA mode
             if(LOG.isDebugEnabled()) {
                 LOG.debug("Verifying HMAC in RA mode");
             }

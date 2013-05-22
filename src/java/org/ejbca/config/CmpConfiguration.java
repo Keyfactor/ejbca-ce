@@ -49,121 +49,209 @@ public class CmpConfiguration {
 	 * This defines if we allows messages that has a POPO setting of raVerify. 
 	 * If this variable is true, and raVerify is the POPO defined in the message, no POPO check will be done.
 	 */
-	public static boolean getAllowRAVerifyPOPO() {
-		return "true".equalsIgnoreCase(EjbcaConfigurationHolder.getExpandedString(CONFIG_ALLOWRAVERIFYPOPO));
+	public static boolean getAllowRAVerifyPOPO(String alias) {
+	    if(StringUtils.isEmpty(alias)) {
+	        return "true".equalsIgnoreCase(EjbcaConfigurationHolder.getExpandedString(CONFIG_ALLOWRAVERIFYPOPO));
+	    } else {
+	        return CmpAliasConfiguration.getAllowRAVerifyPOPO(alias);
+	    }
     }
 
 	/**
 	 * This defines if we allow automatic renewal of a certificate by setting the end entity status to "NEW" before requesting a new certificate
 	 * If this variable is set to false, the status of the end entity will not be altered before requesting a new certificate
 	 */
-	public static boolean getAllowAutomaticKeyUpdate() {
-	    return "true".equalsIgnoreCase(EjbcaConfigurationHolder.getExpandedString(CONFIG_ALLOWAUTOMATICKEYUPDATE));
+	public static boolean getAllowAutomaticKeyUpdate(String alias) {
+        if(StringUtils.isEmpty(alias)) {
+            return "true".equalsIgnoreCase(EjbcaConfigurationHolder.getExpandedString(CONFIG_ALLOWAUTOMATICKEYUPDATE));
+        } else {
+            return CmpAliasConfiguration.getAllowAutomaticKeyUpdate(alias);
+        }
 	}
 
     /**
      * This defines if we allow the KeyUpdate (which is equivalent to certificate renewal) to be done using the same old keys
      */
-     public static boolean getAllowUpdateWithSameKey() {
-        return "true".equalsIgnoreCase(EjbcaConfigurationHolder.getExpandedString(CONFIG_ALLOWUPDATEWITHSAMEKEY));
+     public static boolean getAllowUpdateWithSameKey(String alias) {
+         if(StringUtils.isEmpty(alias)) {
+             return "true".equalsIgnoreCase(EjbcaConfigurationHolder.getExpandedString(CONFIG_ALLOWUPDATEWITHSAMEKEY));
+         } else {
+             return CmpAliasConfiguration.getAllowUpdateWithSameKey(alias);
+         }
     }
 
 	/**
 	 * The catalog containing the trusted certificates to be used to verify a NestedMessageContent 
 	 */
-    public static String getRaCertificatePath() {
-        return EjbcaConfigurationHolder.getString(CONFIG_RACERT_PATH);
+    public static String getRaCertificatePath(String alias) {
+        if(StringUtils.isEmpty(alias)) {
+            return EjbcaConfigurationHolder.getString(CONFIG_RACERT_PATH);
+        } else {
+            return CmpAliasConfiguration.getRaCertificatePath(alias);
+        }
 	}
 	
 	/** The default CA used for signing requests, if it is not given in the request itself. */
-	public static String getDefaultCA() {
-		return EjbcaConfigurationHolder.getString(CONFIG_DEFAULTCA);
+	public static String getDefaultCA(String alias) {
+        if(StringUtils.isEmpty(alias)) {
+            return EjbcaConfigurationHolder.getString(CONFIG_DEFAULTCA);
+        } else {
+            return CmpAliasConfiguration.getDefaultCA(alias);
+        }
 	}
 	
 	/**
 	 * Defines which component from the DN should be used as username in EJBCA. Can be DN, UID or nothing.
 	 * Nothing means that the DN will be used to look up the user.
 	 */
-	public static String getExtractUsernameComponent() {
-		return EjbcaConfigurationHolder.getString(CONFIG_EXTRACTUSERNAMECOMPONENT);
+	public static String getExtractUsernameComponent(String alias) {
+        if(StringUtils.isEmpty(alias)) {
+            return EjbcaConfigurationHolder.getString(CONFIG_EXTRACTUSERNAMECOMPONENT);
+        } else {
+            return CmpAliasConfiguration.getExtractUsernameComponent(alias);
+        }
 	}
 	
-	public static String getAuthenticationModule() {
-		return EjbcaConfigurationHolder.getString(CONFIG_AUTHENTICATIONMODULE);
+	public static String getAuthenticationModule(String alias) {
+        if(StringUtils.isEmpty(alias)) {
+            return EjbcaConfigurationHolder.getString(CONFIG_AUTHENTICATIONMODULE);
+        } else {
+            return CmpAliasConfiguration.getAuthenticationModule(alias);
+        }
 	}
 	
-	public static String getAuthenticationParameters() {
-		return EjbcaConfigurationHolder.getString(CONFIG_AUTHENTICATIONPARAMETERS);
+	public static String getAuthenticationParameters(String alias) {
+        if(StringUtils.isEmpty(alias)) {
+            return EjbcaConfigurationHolder.getString(CONFIG_AUTHENTICATIONPARAMETERS);
+        } else {
+            return CmpAliasConfiguration.getAuthenticationParameters(alias);
+        }
 	}
 	
-	public static String getAuthenticationParameter(String authModule) {
+	public static String getAuthenticationParameter(String authModule, String alias) {
+
+	    if(StringUtils.isEmpty(alias)) {
+	        String confModule = getAuthenticationModule(null);
+	        String confParams = getAuthenticationParameters(null);
 	    
-	    String confModule = getAuthenticationModule();
-	    String confParams = getAuthenticationParameters();
+	        String modules[] = confModule.split(";");
+	        String params[] = confParams.split(";");
 	    
-	    String modules[] = confModule.split(";");
-	    String params[] = confParams.split(";");
-	    
-	    for(int i=0; i<modules.length; i++) {
-	        if(StringUtils.equals(modules[i].trim(), authModule)) {
-	            return params[i];
+	        for(int i=0; i<modules.length; i++) {
+	            if(StringUtils.equals(modules[i].trim(), authModule)) {
+	                return params[i];
+	            }
 	        }
-	    }
 	    
-	    return "-";
+	        return "-";
+	    } else {
+	        return CmpAliasConfiguration.getAuthenticationParameter(authModule, alias);
+	    }
 
 	}
 	
-	public static boolean getRAOperationMode() {
-		return "ra".equalsIgnoreCase(EjbcaConfigurationHolder.getString(CONFIG_OPERATIONMODE));
+	public static boolean getRAOperationMode(String alias) {
+        if(StringUtils.isEmpty(alias)) {
+            return "ra".equalsIgnoreCase(EjbcaConfigurationHolder.getString(CONFIG_OPERATIONMODE));
+        } else {
+            return CmpAliasConfiguration.getRAOperationMode(alias);
+        }
 	}
 	
-	public static boolean getVendorCertificateMode() {
-	       return "true".equalsIgnoreCase(EjbcaConfigurationHolder.getString(CONFIG_VENDORCERTIFICATEMODE));
+	public static boolean getVendorCertificateMode(String alias) {
+        if(StringUtils.isEmpty(alias)) {
+            return "true".equalsIgnoreCase(EjbcaConfigurationHolder.getString(CONFIG_VENDORCERTIFICATEMODE));
+        } else {
+            return CmpAliasConfiguration.getVendorCertificateMode(alias);
+        }
 	}
 	
-    public static String getVendorCA() {
-        return EjbcaConfigurationHolder.getString(CONFIG_VENDORCA);
+    public static String getVendorCA(String alias) {
+        if(StringUtils.isEmpty(alias)) {
+            return EjbcaConfigurationHolder.getString(CONFIG_VENDORCA);
+        } else {
+            return CmpAliasConfiguration.getVendorCA(alias);
+        }
     }
     
-	public static String getRANameGenerationScheme() {
-		return EjbcaConfigurationHolder.getString(CONFIG_RA_NAMEGENERATIONSCHEME);
+	public static String getRANameGenerationScheme(String alias) {
+        if(StringUtils.isEmpty(alias)) {
+            return EjbcaConfigurationHolder.getString(CONFIG_RA_NAMEGENERATIONSCHEME);
+        } else {
+            return CmpAliasConfiguration.getRANameGenerationScheme(alias);
+        }
 	}
 	
-	public static String getRANameGenerationParameters() {
-		return EjbcaConfigurationHolder.getString(CONFIG_RA_NAMEGENERATIONPARAMS);
+	public static String getRANameGenerationParameters(String alias) {
+        if(StringUtils.isEmpty(alias)) {
+            return EjbcaConfigurationHolder.getString(CONFIG_RA_NAMEGENERATIONPARAMS);
+        } else {
+            return CmpAliasConfiguration.getRANameGenerationParameters(alias);
+        }
 	}
 	
-	public static String getRANameGenerationPrefix() {
-		return EjbcaConfigurationHolder.getString("cmp.ra.namegenerationprefix");
+	public static String getRANameGenerationPrefix(String alias) {
+        if(StringUtils.isEmpty(alias)) {
+            return EjbcaConfigurationHolder.getString("cmp.ra.namegenerationprefix");
+        } else {
+            return CmpAliasConfiguration.getRANameGenerationPrefix(alias);
+        }
 	}
 	
-	public static String getRANameGenerationPostfix() {
-		return EjbcaConfigurationHolder.getString("cmp.ra.namegenerationpostfix");
+	public static String getRANameGenerationPostfix(String alias) {
+        if(StringUtils.isEmpty(alias)) {
+            return EjbcaConfigurationHolder.getString("cmp.ra.namegenerationpostfix");
+        } else {
+            return CmpAliasConfiguration.getRANameGenerationPostfix(alias);
+        }
 	}
 	
-	public static String getUserPasswordParams() {
-		return EjbcaConfigurationHolder.getString("cmp.ra.passwordgenparams");		
+	public static String getUserPasswordParams(String alias) {
+        if(StringUtils.isEmpty(alias)) {
+            return EjbcaConfigurationHolder.getString("cmp.ra.passwordgenparams");
+        } else {
+            return CmpAliasConfiguration.getUserPasswordParams(alias);
+        }
 	}
 	
-	public static String getRAAuthenticationSecret() {
-		return EjbcaConfigurationHolder.getString(CONFIG_RA_AUTHENTICATIONSECRET);
+	public static String getRAAuthenticationSecret(String alias) {
+        if(StringUtils.isEmpty(alias)) {
+            return EjbcaConfigurationHolder.getString(CONFIG_RA_AUTHENTICATIONSECRET);
+        } else {
+            return CmpAliasConfiguration.getRAAuthenticationSecret(alias);
+        }
 	}
 	
-	public static String getRAEndEntityProfile() {
-		return EjbcaConfigurationHolder.getString(CONFIG_RA_ENDENTITYPROFILE);
+	public static String getRAEndEntityProfile(String alias) {
+        if(StringUtils.isEmpty(alias)) {
+            return EjbcaConfigurationHolder.getString(CONFIG_RA_ENDENTITYPROFILE);
+        } else {
+            return CmpAliasConfiguration.getRAEndEntityProfile(alias);
+        }
 	}
 	
-	public static String getRACertificateProfile() {
-		return EjbcaConfigurationHolder.getString(CONFIG_RA_CERTIFICATEPROFILE);
+	public static String getRACertificateProfile(String alias) {
+        if(StringUtils.isEmpty(alias)) {
+            return EjbcaConfigurationHolder.getString(CONFIG_RA_CERTIFICATEPROFILE);
+        } else {
+            return CmpAliasConfiguration.getRACertificateProfile(alias);
+        }
 	}
 	
-	public static String getRACAName() {
-		return EjbcaConfigurationHolder.getString(CONFIG_RACANAME);
+	public static String getRACAName(String alias) {
+        if(StringUtils.isEmpty(alias)) {
+            return EjbcaConfigurationHolder.getString(CONFIG_RACANAME);
+        } else {
+            return CmpAliasConfiguration.getRACAName(alias);
+        }
 	}
 	
-	public static String getResponseProtection() {
-		return EjbcaConfigurationHolder.getString(CONFIG_RESPONSEPROTECTION);
+	public static String getResponseProtection(String alias) {
+        if(StringUtils.isEmpty(alias)) {
+            return EjbcaConfigurationHolder.getString(CONFIG_RESPONSEPROTECTION);
+        } else {
+            return CmpAliasConfiguration.getResponseProtection(alias);
+        }
 	}
 	
 	public static int getTCPPortNumber() {
@@ -182,15 +270,27 @@ public class CmpConfiguration {
 		return EjbcaConfigurationHolder.getString("cmp.tcp.bindadress");
 	}
 	
-	public static boolean getRAAllowCustomCertSerno() {
-		return "true".equalsIgnoreCase(EjbcaConfigurationHolder.getString(CONFIG_RA_ALLOWCUSTOMCERTSERNO));
+	public static boolean getRAAllowCustomCertSerno(String alias) {
+        if(StringUtils.isEmpty(alias)) {
+            return "true".equalsIgnoreCase(EjbcaConfigurationHolder.getString(CONFIG_RA_ALLOWCUSTOMCERTSERNO));
+        } else {
+            return CmpAliasConfiguration.getRAAllowCustomCertSerno(alias);
+        }
 	}
 
-	public static String getUnidDataSource() {
-		return EjbcaConfigurationHolder.getString(CONFIG_UNIDDATASOURCE);
+	public static String getUnidDataSource(String alias) {
+        if(StringUtils.isEmpty(alias)) {
+            return EjbcaConfigurationHolder.getString(CONFIG_UNIDDATASOURCE);
+        } else {
+            return CmpAliasConfiguration.getUnidDataSource(alias);
+        }
 	}
 
-	public static String getCertReqHandlerClass() {
-		return EjbcaConfigurationHolder.getString(CONFIG_CERTREQHANDLER_CLASS);
+	public static String getCertReqHandlerClass(String alias) {
+        if(StringUtils.isEmpty(alias)) {
+            return EjbcaConfigurationHolder.getString(CONFIG_CERTREQHANDLER_CLASS);
+        } else {
+            return CmpAliasConfiguration.getCertReqHandlerClass(alias);
+        }
 	}
 }
