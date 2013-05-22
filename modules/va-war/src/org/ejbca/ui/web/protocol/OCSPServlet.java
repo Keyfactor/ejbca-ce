@@ -317,7 +317,6 @@ public class OCSPServlet extends HttpServlet {
      * @throws IOException In case there is no stream to read
      * @throws MalformedRequestException 
      */
-    @SuppressWarnings("resource")
     private byte[] checkAndGetRequestBytes(HttpServletRequest request) throws IOException, MalformedRequestException {
         final byte[] ret;
         // Get the request data
