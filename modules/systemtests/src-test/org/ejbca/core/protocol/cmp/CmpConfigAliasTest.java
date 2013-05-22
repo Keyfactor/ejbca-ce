@@ -190,7 +190,7 @@ public class CmpConfigAliasTest  extends CmpTestCase {
         con2.setRequestMethod("POST");
         con2.setRequestProperty("Content-type", "application/pkixcmp");
         con2.connect();
-        assertEquals("Unexpected HTTP response code.", 500, con2.getResponseCode()); // ERROR
+        assertEquals("Unexpected HTTP response code.", 400, con2.getResponseCode()); // ERROR
         
         urlString = httpReqPath + '/' + baseResource; 
         log.info("http URL: " + urlString);
@@ -200,7 +200,7 @@ public class CmpConfigAliasTest  extends CmpTestCase {
         con3.setRequestMethod("POST");
         con3.setRequestProperty("Content-type", "application/pkixcmp");
         con3.connect();
-        assertEquals("Unexpected HTTP response code.", 500, con3.getResponseCode()); // ERROR
+        assertEquals("Unexpected HTTP response code.", 400, con3.getResponseCode()); // ERROR
         
         urlString = httpReqPath + '/' + baseResource + "??!!"; 
         log.info("http URL: " + urlString);
@@ -210,7 +210,7 @@ public class CmpConfigAliasTest  extends CmpTestCase {
         con4.setRequestMethod("POST");
         con4.setRequestProperty("Content-type", "application/pkixcmp");
         con4.connect();
-        assertEquals("Unexpected HTTP response code.", 500, con4.getResponseCode()); // ERROR
+        assertEquals("Unexpected HTTP response code.", 400, con4.getResponseCode()); // ERROR
         
         log.trace("<test01Access()");
     }
