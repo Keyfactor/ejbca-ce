@@ -19,8 +19,6 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
 import org.cesecore.jndi.JndiConstants;
-import org.ejbca.core.ejb.ProfilingStat;
-import org.ejbca.core.ejb.ProfilingStats;
 
 /**
  * Proxy to make ProfilingStats accessible over RMI.
