@@ -187,6 +187,7 @@
 			<!-- JBoss 7.1.0 and EAP 6 -->
 			<include name="modules/javax/ejb/api/main/jboss-ejb-api_3.1_spec-1.0*.jar"/>
 			<include name="modules/org/jboss/metadata/main/jboss-metadata-ejb-7.0.*.jar"/>
+			<include name="modules/javax/interceptor/api/main/jboss-interceptors-api_1.1_spec-*.jar"/>
 
 			<!-- glassfish v2.1.1 -->
 			<include name="lib/javaee.jar"/>
