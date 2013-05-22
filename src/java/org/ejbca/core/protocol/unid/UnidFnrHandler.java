@@ -42,9 +42,9 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 	/**
 	 * Used by EJBCA
 	 */
-	public UnidFnrHandler(String cmpConfigAlias) {
+	public UnidFnrHandler() {
 		super();
-		this.storage = new MyStorage(cmpConfigAlias);
+		this.storage = new MyStorage();
 	}
 	/**
 	 * Used by unit test.
@@ -155,9 +155,9 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 	private static class MyStorage implements Storage {
 		private final String dataSource;
 
-		public MyStorage(String cmpConfAlias) {
+		public MyStorage() {
 			super();
-			this.dataSource = CmpConfiguration.getUnidDataSource(cmpConfAlias);
+			this.dataSource = CmpConfiguration.getUnidDataSource(null);
 			try {
 				JDBCUtil.execute(
 						"CREATE TABLE UnidFnrMapping( unid varchar(250) NOT NULL DEFAULT '', fnr varchar(250) NOT NULL DEFAULT '', PRIMARY KEY (unid) )",
