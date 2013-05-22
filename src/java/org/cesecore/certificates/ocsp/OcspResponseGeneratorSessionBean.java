@@ -1358,11 +1358,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             List<SimpleEntry<Integer,BigInteger>> trustDefaults) {
         KeyStore keyStore;
         final char[] passwordChars = softStorePassword.toCharArray();
-        // Load keystore, and convert JKS to PKCS#12
+        // Load keystore (JKS or PKCS#12)
         try {
-            final KeyStore jks = KeyStore.getInstance("JKS");
-            jks.load(new FileInputStream(file), passwordChars);
-            keyStore = convertToP12(jks, passwordChars);
+            keyStore = KeyStore.getInstance("JKS");
+            keyStore.load(new FileInputStream(file), passwordChars);
         } catch (Exception e) {
             try {
                 keyStore = KeyStore.getInstance("PKCS12", "BC");
@@ -1375,6 +1374,13 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 }
                 return;
             }
+        }
+        
+        // Strip issuer certs, etc. and convert to PKCS#12
+        try {
+            keyStore = makeKeysOnlyP12(keyStore, passwordChars);
+        } catch (Exception e) {
+            throw new RuntimeException("failed to convert keystore to P12 during keybindings upgrade", e);
         }
         
         final String name = file.getName();
@@ -1402,8 +1408,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         }
     }
     
-    /** Creates a PKCS#12 KeyStore from an JKS file by copying the contents. */
-    private KeyStore convertToP12(KeyStore keyStore, char[] password) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException, NoSuchProviderException, CertificateException, IOException {
+    /** Creates a PKCS#12 KeyStore with keys only from an JKS file (no issuer certs or trusted certs) */
+    private KeyStore makeKeysOnlyP12(KeyStore keyStore, char[] password) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableEntryException, NoSuchProviderException, CertificateException, IOException {
         final KeyStore p12 = KeyStore.getInstance("PKCS12", "BC");
         final KeyStore.ProtectionParameter protParam =
             (password != null ? new KeyStore.PasswordProtection(password) : null);
@@ -1412,12 +1418,15 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         final Enumeration<String> en = keyStore.aliases();
         while (en.hasMoreElements()) {
             final String alias = en.nextElement();
+            if (!keyStore.isKeyEntry(alias)) continue;
             try {
-                KeyStore.Entry entry = keyStore.getEntry(alias, protParam);
-                p12.setEntry(alias, entry, protParam);
+                KeyStore.PrivateKeyEntry entry = (KeyStore.PrivateKeyEntry)keyStore.getEntry(alias, protParam);
+                Certificate[] chain = new Certificate[] { entry.getCertificate() };
+                p12.setKeyEntry(alias, entry.getPrivateKey(), password, chain);
             } catch (UnsupportedOperationException uoe) {
-                KeyStore.Entry entry = keyStore.getEntry(alias, null);
-                p12.setEntry(alias, entry, null);
+                KeyStore.PrivateKeyEntry entry = (KeyStore.PrivateKeyEntry)keyStore.getEntry(alias, null);
+                Certificate[] chain = new Certificate[] { entry.getCertificate() };
+                p12.setKeyEntry(alias, entry.getPrivateKey(), null, chain);
             }
         }
         return p12;
