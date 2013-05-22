@@ -39,6 +39,13 @@ public class InternalResourcesTest {
     }
 
     @Test
+    public void testGetUnfoundMessageButPreserveParameters() {
+        InternalResources intres = new InternalResources();
+        String result = intres.getLocalizedMessage("foo", "a", "b");
+        assertEquals("foo, a, b", result);
+    }
+    
+    @Test
     public void testNonExistingLocalizedMessageString() {
         InternalResources intres = new InternalResources(TEST_RESOURCE_LOCATION);
         String res = intres.getLocalizedMessage("raadmin.foo");
