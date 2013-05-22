@@ -13,7 +13,6 @@
 package org.ejbca.core.protocol.ocsp.standalone;
 
 import java.security.InvalidKeyException;
-import java.security.KeyPair;
 import java.security.KeyStoreException;
 
 import javax.ejb.Remote;
@@ -40,20 +39,9 @@ public interface OcspKeyRenewalProxySessionRemote {
     void renewKeyStores(String signerSubjectDN) throws KeyStoreException, CryptoTokenOfflineException, InvalidKeyException;
     
     /**
-     * Sets what management CA certificate to use 
-     * 
-     * @param certificate
-     */
-    void setManagementCaKeyPair(KeyPair caKeyPair);
-    
-    void setCaDn(String caName);
-    
-    /**
      * Commands the key renewal timer to fire in 1 second, waits for that time, then resets. 
      * @throws InterruptedException 
      */
     void setTimerToFireInOneSecond() throws InterruptedException;
 
-    
-    void setMockWebServiceObject() throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException;
 }
