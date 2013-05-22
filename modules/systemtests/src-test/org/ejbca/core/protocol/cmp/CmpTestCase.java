@@ -675,7 +675,7 @@ public abstract class CmpTestCase extends CaTestCase {
 
     }
 
-    private String getProperty(String key, String defaultValue) {
+    protected String getProperty(String key, String defaultValue) {
         final String result = System.getProperty(key);
         if (result == null || result.length() < 1 || result.startsWith("$")) {
             return defaultValue;
