@@ -1734,7 +1734,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         caSession.addCA(ADMIN, ecdsaCA);
 
         //-------------- Create the EndEntityProfile and the CertificateProfile
-        List availableCAs = new ArrayList<Integer>();
+        List<Integer> availableCAs = new ArrayList<Integer>();
         availableCAs.add(ecdsaCA.getCAId());
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         cp.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
