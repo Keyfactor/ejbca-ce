@@ -194,6 +194,9 @@ public class InternalResources implements Serializable {
                 sb.append(secondaryResource.getProperty(key));
             } else {
                 sb.append(key);
+                for(Object param : params) {
+                    sb.append(", ").append(param.toString());
+                }
             }
         }
         for (int i=0; i<params.length; i++) {
