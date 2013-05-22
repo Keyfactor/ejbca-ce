@@ -198,7 +198,7 @@ appserver.home         : ${appserver.home}
 	        	</not>
         	</and>
         </condition>
-        <exec executable="${temp.keytoolhome}keytool">
+        <exec executable="${temp.keytoolhome}keytool" dir="${user.dir}">
             <arg line="@{arg}"/>
         </exec>
         </sequential>
