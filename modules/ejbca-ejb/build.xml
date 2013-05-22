@@ -368,11 +368,6 @@
        	<include name="org/cesecore/audit/impl/**/*.java"/>-->
 		<!-- Exclude appserver specific code.. -->
 		<exclude name="org/ejbca/appserver/**" />
-		<!-- Only for External VA.. -->
-		<exclude name="org/ejbca/ui/web/pub/cluster/ValidationAuthorityHealthCheck.java" />
-		<exclude name="org/ejbca/core/ejb/ca/store/CertificateStoreOnlyDataSessionBean.java" />
-		<exclude name="org/cesecore/core/ejb/ca/crl/CrlStandAloneSessionBean.java" />
-		<exclude name="org/ejbca/cesecoreintegration/StandAloneVaMockSessionBean.java" />
 		<!-- Samples should never be included.. -->
 		<exclude name="org/ejbca/samples/**/*.java" />
 		<!-- Some common classes used by various components.. TODO: If possible, move to the only component using the class.. -->
