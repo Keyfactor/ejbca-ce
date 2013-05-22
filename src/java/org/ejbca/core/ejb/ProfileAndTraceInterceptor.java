@@ -57,11 +57,10 @@ public class ProfileAndTraceInterceptor {
                 invocationDuration = (System.nanoTime() - invocationStartTime) / 1000;
                 final String fullTargetIdentifier = targetMethodClass.getName() + "." + targetMethodName;
                 ProfilingStats.INSTANCE.add(fullTargetIdentifier, invocationDuration);
-                //log.info("TMPDEBUG: fullTargetIdentifier="+fullTargetIdentifier);
             }
             if (targetLogger.isTraceEnabled()) {
                 if (returnException == null) {
-                    targetLogger.trace("<" + targetMethodName + " took " + invocationDuration + "micros, returned " + String.valueOf(returnValue));
+                    targetLogger.trace("<" + targetMethodName + " took " + invocationDuration + "micros, returned " + returnValue);
                 } else {
                     targetLogger.trace("<" + targetMethodName + " took " + invocationDuration + "micros, threw " + returnException.getClass().getName() + ": " + returnException.getMessage());
                 }
