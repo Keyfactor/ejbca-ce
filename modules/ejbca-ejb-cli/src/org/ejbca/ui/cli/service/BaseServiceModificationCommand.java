@@ -47,28 +47,23 @@ public abstract class BaseServiceModificationCommand extends BaseServiceCommand 
         }
 
         // Parse fields to modify
-        boolean modified = false;
         List<String> params = Arrays.asList(args).subList(2, args.length);
         List<String> notfound = new ArrayList<String>();
         for (String property : params) {
-            if (property.equals("-listFields")) continue;
             String[] arr = property.split("=", 2);
             String field = arr[0].trim();
             String value = arr[1].trim();
-            if (modify(serviceConfig, fieldEditor, field, value)) {
-                modified = true;
-            } else {
+            if (!modify(serviceConfig, fieldEditor, field, value)) {
                 notfound.add(field);
             }
         }
         
         if (!notfound.isEmpty()) {
             displayNotFound(notfound);
-        } else if (!modified) {
-            getLogger().info("Nothing to change.");
+            return false;
         }
         
-        return modified;
+        return true;
     }
 
     /**
@@ -123,6 +118,13 @@ public abstract class BaseServiceModificationCommand extends BaseServiceCommand 
         return found;
     }
     
+    /** Checks if the given argument list has any property assignments */
+    public boolean argListHasProperties(String[] args) {
+        return !Arrays.asList(args).contains("-listFields") && 
+            !Arrays.asList(args).contains("-listProperties") &&
+            args.length >= 3; // "edit NameOfService property..."
+    }
+    
     /** Handles the -listFields and -listProperties options. */
     private boolean handleListOptions(ServiceConfiguration serviceConfig, FieldEditor fieldEditor, String[] args) {
         boolean hasOption = false;
@@ -167,7 +169,7 @@ public abstract class BaseServiceModificationCommand extends BaseServiceCommand 
         getLogger().info("are used by the different worker/interval/action classes.");
         getLogger().info("");
         getLogger().info("Note that no properties are set by default with the \"create\" command.");
-        getLogger().info("You must either use the Admin Web when creating the service OR know in");
+        getLogger().info("You must either use the Admin Web when creating the service or know in");
         getLogger().info("advance which properties are required. It is NOT possible to list");
         getLogger().info("non-existent (but required) properties from the CLI.");
         getLogger().info("");
