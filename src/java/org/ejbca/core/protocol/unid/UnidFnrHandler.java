@@ -43,7 +43,7 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 	 */
 	public UnidFnrHandler() {
 		super();
-		this.storage = null; //new MyStorage();
+		this.storage = null;
 	}
 	/**
 	 * Used by unit test.
@@ -161,7 +161,7 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 
 		public MyStorage(String datasource) {
 			super();
-			this.dataSource = datasource; //CmpConfiguration.getUnidDataSource(null);
+			this.dataSource = datasource;
 			try {
 				JDBCUtil.execute(
 						"CREATE TABLE UnidFnrMapping( unid varchar(250) NOT NULL DEFAULT '', fnr varchar(250) NOT NULL DEFAULT '', PRIMARY KEY (unid) )",
