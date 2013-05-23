@@ -31,11 +31,9 @@ import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.util.CeSecoreNameStyle;
-import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpAliasConfiguration;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EjbcaConfigurationHolder;
-import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.protocol.ExtendedUserDataHandler.HandlerException;
 import org.ejbca.core.protocol.cmp.ICrmfRequestMessage;
 import org.ejbca.core.protocol.unid.UnidFnrHandler.Storage;
@@ -64,10 +62,7 @@ public class UnidFnrHandlerTest {
     public void test02() throws Exception {
         
         String alias = "unid";
-        ConfigurationSessionRemote confSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-        confSession.updateProperty(CmpAliasConfiguration.CONFIG_PREFIX + alias + CmpAliasConfiguration.CONFIG_CERTREQHANDLER_CLASS, "org.ejbca.core.protocol.unid.UnidFnrHandler");
         EjbcaConfigurationHolder.updateConfiguration(CmpAliasConfiguration.CONFIG_PREFIX + alias + CmpAliasConfiguration.CONFIG_CERTREQHANDLER_CLASS, "org.ejbca.core.protocol.unid.UnidFnrHandler");
-        confSession.updateProperty(CmpAliasConfiguration.CONFIG_PREFIX + alias + CmpAliasConfiguration.CONFIG_UNIDDATASOURCE, "java:/UnidDS");
         EjbcaConfigurationHolder.updateConfiguration(CmpAliasConfiguration.CONFIG_PREFIX + alias + CmpAliasConfiguration.CONFIG_UNIDDATASOURCE, "java:/UnidDS");
         
         final String unidPrefix = "1234-5678-";
