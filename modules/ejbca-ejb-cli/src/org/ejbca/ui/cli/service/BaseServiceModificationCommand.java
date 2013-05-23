@@ -47,6 +47,7 @@ public abstract class BaseServiceModificationCommand extends BaseServiceCommand 
         }
 
         // Parse fields to modify
+        boolean modified = false;
         List<String> params = Arrays.asList(args).subList(2, args.length);
         List<String> notfound = new ArrayList<String>();
         for (String property : params) {
@@ -54,17 +55,20 @@ public abstract class BaseServiceModificationCommand extends BaseServiceCommand 
             String[] arr = property.split("=", 2);
             String field = arr[0].trim();
             String value = arr[1].trim();
-            if (!modify(serviceConfig, fieldEditor, field, value)) {
+            if (modify(serviceConfig, fieldEditor, field, value)) {
+                modified = true;
+            } else {
                 notfound.add(field);
             }
         }
         
         if (!notfound.isEmpty()) {
             displayNotFound(notfound);
-            return false;
+        } else if (!modified) {
+            getLogger().info("Nothing to change.");
         }
         
-        return true;
+        return modified;
     }
 
     /**
