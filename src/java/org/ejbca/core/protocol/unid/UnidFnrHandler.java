@@ -23,7 +23,6 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.util.CeSecoreNameStyle;
-import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.protocol.ExtendedUserDataHandler;
 import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.JDBCUtil.Preparer;
@@ -37,14 +36,14 @@ import org.ejbca.util.passgen.LettersAndDigitsPasswordGenerator;
 public class UnidFnrHandler implements ExtendedUserDataHandler {
 	private static final Logger LOG = Logger.getLogger(UnidFnrHandler.class);
 	private static final Pattern onlyDecimalDigits = Pattern.compile("^[0-9]+$");
-	private final Storage storage;
+	private Storage storage;
 
 	/**
 	 * Used by EJBCA
 	 */
 	public UnidFnrHandler() {
 		super();
-		this.storage = new MyStorage();
+		this.storage = null; //new MyStorage();
 	}
 	/**
 	 * Used by unit test.
@@ -56,7 +55,12 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 	}
 	
 	@Override
-	public RequestMessage processRequestMessage(RequestMessage req, String certificateProfileName) throws HandlerException {
+	public RequestMessage processRequestMessage(RequestMessage req, String certificateProfileName, String unidDataSource) throws HandlerException {
+	    
+	    if(this.storage == null) {
+	        this.storage = new MyStorage(unidDataSource);
+	    }
+	    
 		final X500Name dn = req.getRequestX500Name();
 		if (LOG.isDebugEnabled()) {
 			LOG.debug(">processRequestMessage:'"+dn+"' and '"+certificateProfileName+"'");
@@ -155,9 +159,9 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 	private static class MyStorage implements Storage {
 		private final String dataSource;
 
-		public MyStorage() {
+		public MyStorage(String datasource) {
 			super();
-			this.dataSource = CmpConfiguration.getUnidDataSource(null);
+			this.dataSource = datasource; //CmpConfiguration.getUnidDataSource(null);
 			try {
 				JDBCUtil.execute(
 						"CREATE TABLE UnidFnrMapping( unid varchar(250) NOT NULL DEFAULT '', fnr varchar(250) NOT NULL DEFAULT '', PRIMARY KEY (unid) )",
