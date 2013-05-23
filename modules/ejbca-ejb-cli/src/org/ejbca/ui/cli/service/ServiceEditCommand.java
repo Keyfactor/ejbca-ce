@@ -51,7 +51,9 @@ public class ServiceEditCommand extends BaseServiceModificationCommand {
         final String serviceName = serviceSession.getServiceName(serviceId);
         ServiceConfiguration serviceConfig = serviceSession.getServiceConfiguration(getAdmin(), serviceId);
         
-        if (modifyFromArgs(serviceConfig, args)) {
+        if (!argListHasProperties(args)) {
+            getLogger().info("Nothing to change.");
+        } else if (modifyFromArgs(serviceConfig, args)) {
             serviceSession.changeService(getAdmin(), serviceName, serviceConfig, false);
             getLogger().info("Changes saved.");
         }
