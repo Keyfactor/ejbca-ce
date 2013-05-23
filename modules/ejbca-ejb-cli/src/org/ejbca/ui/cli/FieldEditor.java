@@ -46,6 +46,7 @@ public class FieldEditor {
         excluded.add("CAId");
         excluded.add("CAType");
         excluded.add("CAToken");
+        excluded.add("hidden");
     }
     /** Lists methods in a class the has "setXyz", and prints them as "Xyz".
      * Ignores (does not list) type, version, latestVersion, upgrade and class
