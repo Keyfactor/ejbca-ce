@@ -226,7 +226,6 @@ public class CmpConfigAliasTest  extends CmpTestCase {
         
         String alias = "123";
         
-        //updatePropertyOnServer("cmp." + alias + CmpAliasConfiguration.CONFIG_OPERATIONMODE, "ra");
         EjbcaConfigurationHolder.updateConfiguration("cmp." + alias + CmpAliasConfiguration.CONFIG_OPERATIONMODE, "ra");
         assertTrue("The CMP Authentication module was not configured correctly.", CmpConfiguration.getRAOperationMode(alias));
         
