@@ -30,7 +30,7 @@ public interface ExtendedUserDataHandler {
 	 * @return the modified request
 	 * @throws HandlerException The handle may throw this exception if some error occurs. Throwing it prevents the certificate creation.
 	 */
-	RequestMessage processRequestMessage( RequestMessage req, String otherData ) throws HandlerException;
+	RequestMessage processRequestMessage( RequestMessage req, String otherData, String unidDataSource ) throws HandlerException;
 	/**
 	 * Exception thrown by handler. No certificate should be created if this exception is thrown.
 	 *
