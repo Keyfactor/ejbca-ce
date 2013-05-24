@@ -101,7 +101,7 @@ import org.junit.Test;
 
 /**
  * 
- * @version $Id: IntegratedOcspResponseTest.java 16152 2013-01-20 15:44:17Z anatom $
+ * @version $Id$
  * 
  */
 public class IntegratedOcspResponseTest extends CaCreatingTestCase {
