@@ -50,11 +50,13 @@ public class ServiceEditCommand extends BaseServiceModificationCommand {
         final ServiceSessionRemote serviceSession = ejb.getRemoteSession(ServiceSessionRemote.class);
         final String serviceName = serviceSession.getServiceName(serviceId);
         ServiceConfiguration serviceConfig = serviceSession.getServiceConfiguration(getAdmin(), serviceId);
+        final boolean wasActive = serviceConfig.isActive();
         
         if (!argListHasProperties(args)) {
             getLogger().info("Nothing to change.");
         } else if (modifyFromArgs(serviceConfig, args)) {
             serviceSession.changeService(getAdmin(), serviceName, serviceConfig, false);
+            handleServiceActivation(serviceName, wasActive);
             getLogger().info("Changes saved.");
         }
     }
