@@ -40,11 +40,6 @@ public abstract class BaseServiceModificationCommand extends BaseServiceCommand 
      */
     protected boolean modifyFromArgs(ServiceConfiguration serviceConfig, String[] args) {
         FieldEditor fieldEditor = new FieldEditor(getLogger());
-        
-        // Check list arguments
-        if (handleListOptions(serviceConfig, fieldEditor, args)) {
-            return false;
-        }
 
         // Parse fields to modify
         List<String> params = Arrays.asList(args).subList(2, args.length);
@@ -119,14 +114,15 @@ public abstract class BaseServiceModificationCommand extends BaseServiceCommand 
     }
     
     /** Checks if the given argument list has any property assignments */
-    public boolean argListHasProperties(String[] args) {
+    protected boolean argListHasProperties(String[] args) {
         return !Arrays.asList(args).contains("-listFields") && 
             !Arrays.asList(args).contains("-listProperties") &&
             args.length >= 3; // "edit NameOfService property..."
     }
     
     /** Handles the -listFields and -listProperties options. */
-    private boolean handleListOptions(ServiceConfiguration serviceConfig, FieldEditor fieldEditor, String[] args) {
+    protected boolean handleListOptions(ServiceConfiguration serviceConfig, String[] args) {
+        final FieldEditor fieldEditor = new FieldEditor(getLogger());
         boolean hasOption = false;
         if (Arrays.asList(args).contains("-listFields")) { 
             fieldEditor.listSetMethods(serviceConfig);

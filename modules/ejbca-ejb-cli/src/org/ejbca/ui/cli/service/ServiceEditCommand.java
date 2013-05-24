@@ -52,7 +52,9 @@ public class ServiceEditCommand extends BaseServiceModificationCommand {
         ServiceConfiguration serviceConfig = serviceSession.getServiceConfiguration(getAdmin(), serviceId);
         final boolean wasActive = serviceConfig.isActive();
         
-        if (!argListHasProperties(args)) {
+        if (handleListOptions(serviceConfig, args)) {
+            // do nothing
+        } else if (!argListHasProperties(args)) {
             getLogger().info("Nothing to change.");
         } else if (modifyFromArgs(serviceConfig, args)) {
             serviceSession.changeService(getAdmin(), serviceName, serviceConfig, false);
