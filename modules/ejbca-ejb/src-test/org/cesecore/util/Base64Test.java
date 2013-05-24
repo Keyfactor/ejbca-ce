@@ -20,6 +20,7 @@ import java.security.cert.Certificate;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -277,6 +278,7 @@ public class Base64Test {
         log.trace("<setUp()");
     }
 
+    @After
     public void tearDown() throws Exception {
     }
 

@@ -16,7 +16,6 @@ package org.ejbca.core.ejb.ca.caadmin;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
@@ -2444,8 +2443,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * 
      * @param admin administrator calling the method
      * @param signcadata a CADataLocal entity object of the signer to be checked
-     * @throws UnsupportedEncodingException if there is an error getting the CA from the CADataLoca
-     * @throws IllegalCryptoTokenException if we can not read the CA, with it's keystore
      * @throws EJBException embedding a CertificateExpiredException or a CertificateNotYetValidException if the certificate has expired or is not yet
      *             valid
      */

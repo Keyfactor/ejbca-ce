@@ -313,7 +313,6 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
             Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
             assertNotNull("Failed to create certificate", cert);
             log.debug("Cert=" + cert.toString());
-            PublicKey pk = cert.getPublicKey();
             X509Certificate ecdsaimplicitlycacacert = (X509Certificate) caSession.getCAInfo(internalAdmin, TEST_ECDSA_IMPLICIT_CA_NAME)
                     .getCertificateChain().toArray()[0];
             try {

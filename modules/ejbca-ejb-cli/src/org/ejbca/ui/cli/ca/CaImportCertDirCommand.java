@@ -63,7 +63,6 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 	private static final int STATUS_OK = 0;
 	private static final int STATUS_REDUNDANT = 1;
 	private static final int STATUS_CAMISMATCH = 2;
-	private static final int STATUS_READERROR = 3;
 	private static final int STATUS_CONSTRAINTVIOLATION = 4;
 	private static final int STATUS_GENERALIMPORTERROR = 5;
 
@@ -84,7 +83,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 		// Specifies whether the import should resume in case of errors, or stop
 		// on first one. Default is stop.
 		boolean resumeOnError = argsList.remove("-resumeonerror");
-		args = argsList.toArray(new String[0]);
+		args = argsList.toArray(new String[argsList.size()]);
 
 		if (args.length != 7) {
 			usage(cliUserName, cliPassword);

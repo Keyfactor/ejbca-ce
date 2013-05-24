@@ -108,7 +108,7 @@ public class OCSPUnidExtension implements OCSPExtension {
                     byte[] bytes;
                     try {
                         bytes = FileTools.getBytesFromPEM(bFromFile, CertTools.BEGIN_CERTIFICATE, CertTools.END_CERTIFICATE);
-                    } catch( Throwable t ) {
+                    } catch( Exception t ) {
                         bytes = bFromFile; // assume binary data (.der)
                     }
                     final X509Certificate  cert = (X509Certificate) CertTools.getCertfromByteArray(bytes);

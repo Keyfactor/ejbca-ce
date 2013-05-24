@@ -57,7 +57,6 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleExistsException;
 import org.cesecore.authorization.rules.AccessRuleManagementSessionLocal;
-import org.cesecore.authorization.rules.AccessRuleNotFoundException;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.ca.CA;
@@ -359,10 +358,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * We have also added a column to the table AdminEntityData: tokenType
      * 
      * @param dbtype A string representation of the actual database.
-     * 
-     * @throws AuthorizationDeniedException 
-     * @throws RoleNotFoundException 
-     * @throws AccessRuleNotFoundException 
      * 
      */
     @SuppressWarnings("unchecked")

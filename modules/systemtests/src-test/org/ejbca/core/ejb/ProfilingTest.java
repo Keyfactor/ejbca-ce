@@ -49,7 +49,7 @@ public class ProfilingTest {
         Collections.sort(profilingStats, new Comparator<ProfilingStat>() {
             @Override
             public int compare(ProfilingStat p0, ProfilingStat p1) {
-                return Long.valueOf(p1.getDurationMilliSeconds() - p0.getDurationMilliSeconds()).intValue();
+                return (int)(p1.getDurationMilliSeconds() - p0.getDurationMilliSeconds());
             }
         });
         log.info("\n\nInvocations with most consumed time:\n" + getAsString(profilingStats));
@@ -57,7 +57,7 @@ public class ProfilingTest {
         Collections.sort(profilingStats, new Comparator<ProfilingStat>() {
             @Override
             public int compare(ProfilingStat p0, ProfilingStat p1) {
-                return Long.valueOf(p1.getAverageMilliSeconds() - p0.getAverageMilliSeconds()).intValue();
+                return (int)(p1.getAverageMilliSeconds() - p0.getAverageMilliSeconds());
             }
         });
         log.info("\n\nInvocations with average highest invocation time:\n" + getAsString(profilingStats));
@@ -65,7 +65,7 @@ public class ProfilingTest {
         Collections.sort(profilingStats, new Comparator<ProfilingStat>() {
             @Override
             public int compare(ProfilingStat p0, ProfilingStat p1) {
-                return Long.valueOf(p1.getInvocations() - p0.getInvocations()).intValue();
+                return (int)(p1.getInvocations() - p0.getInvocations());
             }
         });
         log.info("\n\nMost invoked methods:\n" + getAsString(profilingStats));

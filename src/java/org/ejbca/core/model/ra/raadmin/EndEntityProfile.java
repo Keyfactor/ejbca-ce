@@ -687,7 +687,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     
     /** @return strength in bits = log2(possible chars) * number of chars rounded down */
     private int getPasswordStrength(int numerOfDifferentChars, int passwordLength) {
-    	return Double.valueOf(Math.floor(Math.log((double)numerOfDifferentChars)/Math.log(2)) * (double)passwordLength).intValue();
+    	return (int) (Math.floor(Math.log((double)numerOfDifferentChars)/Math.log(2)) * (double)passwordLength);
     }
 
     /** @return the minimum strength that a password is allowed to have in bits */

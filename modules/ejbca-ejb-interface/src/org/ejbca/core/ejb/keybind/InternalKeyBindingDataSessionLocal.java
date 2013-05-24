@@ -17,8 +17,6 @@ import java.util.Map;
 
 import javax.ejb.Local;
 
-import org.ejbca.core.ejb.keybind.InternalKeyBinding;
-
 /**
  * Create Read Update Delete (CRUD) interface for InternalKeyBindingData.
  * 

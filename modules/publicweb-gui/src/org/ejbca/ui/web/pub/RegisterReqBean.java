@@ -74,7 +74,6 @@ public class RegisterReqBean {
     
     private String certType;
     private EndEntityProfile eeprofile; // of cert type
-    private String usernameMapping;
     
     private String username;
     private String email;
@@ -236,7 +235,7 @@ public class RegisterReqBean {
         checkConfig();
         checkCertEEProfilesExist();
         eeprofile = getEndEntityProfile();
-        usernameMapping = getUsernameMapping();
+        String usernameMapping = getUsernameMapping();
 
         // Get all fields
         @SuppressWarnings("rawtypes")

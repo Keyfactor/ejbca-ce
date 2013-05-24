@@ -16,7 +16,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.HashMap;
 
-import org.cesecore.util.GUIDGenerator;
 import org.junit.Test;
 
 

@@ -22,7 +22,6 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
-import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.ocsp.cache.OcspSigningCache;
 import org.cesecore.certificates.ocsp.cache.OcspSigningCacheEntry;
 import org.cesecore.jndi.JndiConstants;
@@ -40,8 +39,6 @@ import org.ejbca.core.ejb.keybind.impl.OcspKeyBinding;
 public class OcspResponseGeneratorTestSessionBean implements
         OcspResponseGeneratorTestSessionRemote, OcspResponseGeneratorTestSessionLocal {
 
-    @EJB
-    private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
     private OcspResponseGeneratorSessionLocal ocspResponseGeneratorSession;
     

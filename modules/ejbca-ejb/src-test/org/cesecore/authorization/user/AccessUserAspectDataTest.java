@@ -14,8 +14,6 @@ package org.cesecore.authorization.user;
 
 import static org.junit.Assert.assertTrue;
 
-import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.junit.Test;
 

@@ -241,7 +241,7 @@ public class CertificateExpireTest extends CaTestCase {
         workerprop.setProperty(EmailSendingWorkerConstants.PROP_SENDTOADMINS, "FALSE");
         workerprop.setProperty(EmailSendingWorkerConstants.PROP_SENDTOENDUSERS, "FALSE");
         //Here is the line that matters for this test
-        workerprop.setProperty(BaseWorker.PROP_CAIDSTOCHECK, Integer.valueOf(SecConst.ALLCAS).toString());
+        workerprop.setProperty(BaseWorker.PROP_CAIDSTOCHECK, String.valueOf(SecConst.ALLCAS));
         
         workerprop.setProperty(BaseWorker.PROP_TIMEBEFOREEXPIRING, String.valueOf(seconds - 5));
         workerprop.setProperty(BaseWorker.PROP_TIMEUNIT, BaseWorker.UNIT_SECONDS);
