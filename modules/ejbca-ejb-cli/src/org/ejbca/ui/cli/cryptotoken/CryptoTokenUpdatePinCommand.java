@@ -22,7 +22,7 @@ import org.ejbca.util.CliTools;
 /**
  * CryptoToken EJB CLI command. See {@link #getDescription()} implementation.
  * 
- * @version $Id: CryptoTokenActivateCommand.java 16177 2013-01-22 13:57:07Z anatom $
+ * @version $Id$
  */
 public class CryptoTokenUpdatePinCommand extends BaseCryptoTokenCommand {
 

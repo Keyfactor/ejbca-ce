@@ -30,7 +30,7 @@ import org.junit.Test;
 /**
  * System test class for CaInitCommandTest
  * 
- * @version $Id: CaInitCommandTest.java 16723 2013-05-02 15:34:40Z anatom $
+ * @version $Id$
  */
 public class CaEditCommandTest {
 

@@ -32,7 +32,7 @@ import org.cesecore.util.CertTools;
 /**
  * Hold information needed to create OCSP responses without database lookups.
  * 
- * @version $Id: CaCache.java 16262 2013-02-04 12:26:05Z anatom $
+ * @version $Id$
  */
 public enum OcspSigningCache {
     INSTANCE;
