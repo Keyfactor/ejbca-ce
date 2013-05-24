@@ -58,7 +58,9 @@ public class ServiceCreateCommand extends BaseServiceModificationCommand {
         ServiceConfiguration serviceConfig = new ServiceConfiguration();
         final boolean wasActive = false;
         
-        if (modifyFromArgs(serviceConfig, args)) {
+        if (handleListOptions(serviceConfig, args)) {
+            // do nothing
+        } else if (modifyFromArgs(serviceConfig, args)) {
             try {
                 serviceSession.addService(getAdmin(), serviceName, serviceConfig);
                 handleServiceActivation(serviceName, wasActive);
