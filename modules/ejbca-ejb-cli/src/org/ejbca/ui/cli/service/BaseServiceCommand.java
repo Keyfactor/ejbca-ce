@@ -65,4 +65,15 @@ public abstract class BaseServiceCommand extends BaseCommand {
     protected AuthenticationToken getAdmin() {
         return getAdmin(cliUserName, cliPassword);
     }
+    
+    /** Activates timers for services which change from not active to active */
+    public void handleServiceActivation(String serviceName, boolean wasActive) {
+        if (!wasActive) {
+            final ServiceSessionRemote serviceSession = ejb.getRemoteSession(ServiceSessionRemote.class);
+            final boolean isActive = serviceSession.getService(serviceName).isActive();
+            if (isActive) {
+                serviceSession.activateServiceTimer(getAdmin(), serviceName);
+            }
+        }
+    }
 }

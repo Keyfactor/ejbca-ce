@@ -56,9 +56,12 @@ public class ServiceCreateCommand extends BaseServiceModificationCommand {
         final String serviceName = args[1].trim();
         
         ServiceConfiguration serviceConfig = new ServiceConfiguration();
+        final boolean wasActive = false;
+        
         if (modifyFromArgs(serviceConfig, args)) {
             try {
                 serviceSession.addService(getAdmin(), serviceName, serviceConfig);
+                handleServiceActivation(serviceName, wasActive);
                 getLogger().info("Service created.");
             } catch (ServiceExistsException e) {
                 getLogger().info("Service exists already.");
