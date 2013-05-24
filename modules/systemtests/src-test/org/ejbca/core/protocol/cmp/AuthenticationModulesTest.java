@@ -1842,6 +1842,8 @@ public class AuthenticationModulesTest extends CmpTestCase {
             internalCertStoreSession.removeCertificate(fp2);
             eeProfileSession.removeEndEntityProfile(ADMIN, "ECDSAEEP");
             certProfileSession.removeCertificateProfile(ADMIN, "ECDSATCP");
+            
+            removeTestCA("CmpECDSATestCA");
         }
         log.trace("<test24EECAuthWithSHA256AndECDSA()");
 
