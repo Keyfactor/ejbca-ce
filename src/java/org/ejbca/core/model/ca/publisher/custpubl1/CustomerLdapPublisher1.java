@@ -13,17 +13,29 @@
 package org.ejbca.core.model.ca.publisher.custpubl1;
 
 import java.io.UnsupportedEncodingException;
+import java.security.cert.CRLException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
+import java.util.SimpleTimeZone;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.model.InternalEjbcaResources;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.util.CertTools;
+import org.ejbca.core.model.InternalEjbcaResources;
+import org.ejbca.core.model.ca.publisher.ICustomPublisher;
+import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
+import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.util.TCPTool;
 
 import com.novell.ldap.LDAPAttribute;
@@ -35,18 +47,6 @@ import com.novell.ldap.LDAPEntry;
 import com.novell.ldap.LDAPException;
 import com.novell.ldap.LDAPJSSESecureSocketFactory;
 import com.novell.ldap.LDAPSearchConstraints;
-import java.security.cert.CRLException;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.X509CRL;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Properties;
-import java.util.SimpleTimeZone;
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.certificates.certificate.CertificateConstants;
-import org.ejbca.core.model.ca.publisher.ICustomPublisher;
-import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
-import org.ejbca.core.model.ca.publisher.PublisherException;
 
 /**
  * This publisher publishes end entity certificates and CRLs according to the
@@ -184,8 +184,6 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
     private boolean logConnectionTests;
     
     private int timeout;
-    private int readTimeout;
-    private int storeTimeout;
 
     private LDAPConstraints ldapConnectionConstraints = new LDAPConstraints();
     private LDAPConstraints ldapBindConstraints = new LDAPConstraints();
@@ -209,8 +207,8 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
         this.loginPassword = properties.getProperty(PROPERTY_LOGINPASSWORD, "");
         this.logConnectionTests = Boolean.parseBoolean(properties.getProperty(PROPERTY_LOGCONNECTIONTESTS, Boolean.FALSE.toString()));
         this.timeout = Integer.parseInt(properties.getProperty(PROPERTY_CONNECTIONTIMEOUT, String.valueOf(DEFAULT_TIMEOUT)));
-        this.readTimeout = Integer.parseInt(properties.getProperty(PROPERTY_READTIMEOUT, String.valueOf(DEFAULT_TIMEOUT)));
-        this.storeTimeout = Integer.parseInt(properties.getProperty(PROPERTY_STORETIMEOUT, String.valueOf(DEFAULT_TIMEOUT)));
+        int readTimeout = Integer.parseInt(properties.getProperty(PROPERTY_READTIMEOUT, String.valueOf(DEFAULT_TIMEOUT)));
+        int storeTimeout = Integer.parseInt(properties.getProperty(PROPERTY_STORETIMEOUT, String.valueOf(DEFAULT_TIMEOUT)));
         
         ldapBindConstraints.setTimeLimit(timeout);
         ldapConnectionConstraints.setTimeLimit(timeout);
@@ -514,7 +512,7 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
         attributeSet.add(new LDAPAttribute("objectclass", LOG_OBJECTCLASSES));
         attributeSet.add(new LDAPAttribute("objectCreator", "EJBCA"));
         attributeSet.add(new LDAPAttribute("logTime", generalizedTime));
-        attributeSet.add(new LDAPAttribute("logInfo", logEntries.toArray(new String[0])));
+        attributeSet.add(new LDAPAttribute("logInfo", logEntries.toArray(new String[logEntries.size()])));
         final String dn = "logTime=" + generalizedTime + "," + LOG_GROUP + "," + baseDN;
 
         // Finally write the object

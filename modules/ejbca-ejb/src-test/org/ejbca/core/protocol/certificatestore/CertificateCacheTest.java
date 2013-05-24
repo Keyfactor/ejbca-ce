@@ -31,11 +31,11 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.EjbcaConfigurationHolder;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * @author tomas
  * @version $Id$
  */
 public class CertificateCacheTest {
@@ -46,10 +46,14 @@ public class CertificateCacheTest {
 	    CryptoProviderTools.installBCProvider();
 	}
 
+	@Before
+	public void setUp() {
+	       EjbcaConfigurationHolder.instance(); // init config
+	}
+	
 	@Test
 	public void test01CACertificates() throws Exception {
 		// Prepare the certificate cache with some test certificates
-		EjbcaConfigurationHolder.instance(); // init config
 		EjbcaConfigurationHolder.updateConfiguration("ocspSigningCertsValidTime", "15");
 		Collection<Certificate> certs = new ArrayList<Certificate>();
 		X509Certificate testrootcert = (X509Certificate)CertTools.getCertfromByteArray(testroot);
@@ -120,6 +124,7 @@ public class CertificateCacheTest {
 	}
 
 	public static Throwable threadException = null;
+	@Test
 	public void test02loadCertificates() throws Exception {
 		EjbcaConfigurationHolder.updateConfiguration("ocspSigningCertsValidTime", "1");
 		Collection<Certificate> certs = new ArrayList<Certificate>();

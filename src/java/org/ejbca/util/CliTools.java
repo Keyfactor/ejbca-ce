@@ -67,6 +67,6 @@ public class CliTools {
     
     /** @return the remaining list as a regular args[] array */
     public static String[] getAsArgs(List<String> modifyableList) {
-        return modifyableList.toArray(new String[0]);
+        return modifyableList.toArray(new String[modifyableList.size()]);
     }
 }

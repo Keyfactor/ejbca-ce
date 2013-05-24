@@ -56,7 +56,9 @@ public final class FileTools {
      */
     public static byte[] getBytesFromPEM(final byte[] inbuf, final String beginKey, final String endKey)
         throws IOException {
-        log.trace(">getBytesFromPEM");
+        if (log.isTraceEnabled()) {
+            log.trace(">getBytesFromPEM");
+        }
 
         final ByteArrayInputStream instream = new ByteArrayInputStream(inbuf);
         final BufferedReader bufRdr = new BufferedReader(new InputStreamReader(instream));
@@ -86,7 +88,9 @@ public final class FileTools {
         opstr.close();
 
         final byte[] bytes = Base64.decode(ostr.toByteArray());
-        log.trace("<getBytesFromPEM");
+        if (log.isTraceEnabled()) {
+            log.trace("<getBytesFromPEM");
+        }
         return bytes;
     } // getBytesfromPEM
 
