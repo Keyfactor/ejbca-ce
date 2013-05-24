@@ -129,20 +129,33 @@ public abstract class BaseServiceModificationCommand extends BaseServiceCommand 
             hasOption = true;
         }
         if (Arrays.asList(args).contains("-listProperties")) {
-            displayPropertiesHelp(serviceConfig.getWorkerProperties());
-            displayPropertiesHelp(serviceConfig.getIntervalProperties());
-            displayPropertiesHelp(serviceConfig.getActionProperties());
+            boolean displayedOne = false;
+            displayedOne |= displayPropertiesHelp(serviceConfig.getWorkerProperties());
+            displayedOne |= displayPropertiesHelp(serviceConfig.getIntervalProperties());
+            displayedOne |= displayPropertiesHelp(serviceConfig.getActionProperties());
+            if (!displayedOne) {
+                // No properties
+                getLogger().info("create".equals(args[0]) ?
+                    "The -listProperties option can presently only be used with the edit command." :
+                    "No properties have been set.");
+            }
             hasOption = true;
         }
         return hasOption;
     }
     
-    /** Displays all properties and their values. Used for the -listProperties option. */
-    private void displayPropertiesHelp(Properties props) {
+    /**
+     * Displays all properties and their values. Used for the -listProperties option. 
+     * @return true if at least one property was shown
+     */
+    private boolean displayPropertiesHelp(Properties props) {
+        boolean displayedOne = false;
         for (Entry<Object,Object> prop : props.entrySet()) {
             // We don't know the types but we can display the default values so the user can figure out.
             getLogger().info(prop.getKey()+" (current value = '"+prop.getValue()+"')");
+            displayedOne = true;
         }
+        return displayedOne;
     }
     
     /** Displays names of fields/properties that weren't found. */
