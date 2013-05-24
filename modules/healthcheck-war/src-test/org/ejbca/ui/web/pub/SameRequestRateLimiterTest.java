@@ -123,7 +123,7 @@ public class SameRequestRateLimiterTest {
                 // Perform common action
                 final Integer value = Integer.valueOf(getNextValue());
                 result.setValue(value);
-            } catch (Throwable t) {
+            } catch (Throwable t) { // NOPMD: we want to catch all possible strangeness
                 result.setError(t);
             }
         }

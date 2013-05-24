@@ -207,7 +207,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         CertificateID certId = singleResp.getCertID();
         assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
         Object status = singleResp.getCertStatus();
-        assertTrue("Status ("+String.valueOf(status)+") is not RevokedStatus", status instanceof RevokedStatus);
+        assertTrue("Status ("+status+") is not RevokedStatus", status instanceof RevokedStatus);
         RevokedStatus rev = (RevokedStatus) status;
         assertTrue("Status does not have reason", rev.hasRevocationReason());
     }

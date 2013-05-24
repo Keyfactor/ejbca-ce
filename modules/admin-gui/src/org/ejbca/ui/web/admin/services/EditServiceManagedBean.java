@@ -285,7 +285,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
     public List<SelectItem> getAvailableCAsWithAnyOption() {
         List<SelectItem> availableCANames = new ArrayList<SelectItem>();
         String caname = (String)EjbcaJSFHelper.getBean().getText().get("ANYCA");
-        availableCANames.add(new SelectItem(Integer.valueOf(SecConst.ALLCAS).toString(), caname));
+        availableCANames.add(new SelectItem(String.valueOf(SecConst.ALLCAS), caname));
         availableCANames.addAll(getAvailableCAs());
         return availableCANames;
     }

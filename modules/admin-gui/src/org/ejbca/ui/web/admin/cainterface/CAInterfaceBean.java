@@ -1299,7 +1299,7 @@ public class CAInterfaceBean implements Serializable {
             ret.add(new SimpleEntry<String,String>(String.valueOf(size), "RSA "+size));
         }
         for (int size : SIZES_DSA) {
-            ret.add(new SimpleEntry<String,String>("DSA"+String.valueOf(size), "DSA "+size));
+            ret.add(new SimpleEntry<String,String>("DSA"+size, "DSA "+size));
         }
         @SuppressWarnings("unchecked")
         final Enumeration<String> ecNamedCurves = ECNamedCurveTable.getNames();

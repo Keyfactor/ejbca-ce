@@ -17,7 +17,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -69,7 +69,7 @@ public class OcspCertHashExtension implements OCSPExtension{
             log.error("Could not encode certificate " + cert, e);
             throw new IllegalStateException("Could not encode certificate " + cert, e);
         }
-        Hashtable<ASN1ObjectIdentifier, Extension> result = new Hashtable<ASN1ObjectIdentifier, Extension>();
+        HashMap<ASN1ObjectIdentifier, Extension> result = new HashMap<ASN1ObjectIdentifier, Extension>();
         result.put(new ASN1ObjectIdentifier(CERT_HASH_OID), new Extension(new ASN1ObjectIdentifier(CERT_HASH_OID), false,
                 new DEROctetString(certHash)));
         return result;

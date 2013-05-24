@@ -131,7 +131,7 @@ public class HealthCheckServlet extends HttpServlet {
         if (result.isFirst()) {
             try {
                 result.setValue(doAllHealthChecks(request));
-            } catch (Throwable t) {
+            } catch (Throwable t) { // NOPMD: we want to catch all possible strangeness
                 result.setError(t);
             }
         } else if (log.isDebugEnabled()) {

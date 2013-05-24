@@ -38,7 +38,6 @@ import javax.persistence.PersistenceContext;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extensions;
-import org.bouncycastle.asn1.x509.X509Extensions;
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -629,7 +628,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @throws AuthorizationDeniedException 
      * @throws CertificateCreateException 
      * @throws IllegalKeyException 
-     * @see org.cesecore.certificates.certificate.CertificateCreateSessionLocal#createCertificate(AuthenticationToken, EndEntityInformation, CA, X500Name, PublicKey, int, Date, Date, X509Extensions, String)
+     * @see org.cesecore.certificates.certificate.CertificateCreateSessionLocal#createCertificate(AuthenticationToken, EndEntityInformation, CA, X500Name, PublicKey, int, Date, Date, Extensions, String)
      */
     private Certificate createCertificate(final AuthenticationToken admin, final EndEntityInformation data, final X500Name requestX500Name, final CA ca, final PublicKey pk,
             final int keyusage, final Date notBefore, final Date notAfter, final Extensions extensions, final String sequence) throws IllegalKeyException,

@@ -20,8 +20,6 @@ import java.util.Set;
 
 import javax.ejb.EJBException;
 
-import org.junit.Assert;
-
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -37,6 +35,8 @@ import org.ejbca.core.ejb.config.GlobalConfigurationProxySessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -70,8 +70,8 @@ public class CliCommandAuthenticationTest {
                 endEntityAccessSession.findUser(internalAdmin, EjbcaConfiguration.getCliDefaultUser()));
     }
 
+    @After
     public void tearDown() throws Exception {
-
     }
 
     @Test
