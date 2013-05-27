@@ -142,6 +142,7 @@ import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
+import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -176,11 +177,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @EJB
     private AccessControlSessionLocal accessSession;
     @EJB
-    private SecurityEventsLoggerSessionLocal auditSession;
+    private ApprovalSessionLocal approvalSession;
     @EJB
     private CaSessionLocal caSession;
-    @EJB
-    private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     @EJB
     private CertificateProfileSessionLocal certificateProfileSession;
     @EJB
@@ -188,15 +187,18 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @EJB
     private CrlStoreSessionLocal crlStoreSession;
     @EJB
-    private RevocationSessionLocal revocationSession;
+    private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     @EJB
-    private CrlCreateSessionLocal crlCreateSession;
+    private CryptoTokenSessionLocal cryptoTokenSession;
     @EJB
     private PublisherSessionLocal publisherSession;
     @EJB
-    private ApprovalSessionLocal approvalSession;
+    private PublishingCrlSessionLocal publishingCrlSession;
     @EJB
-    private CryptoTokenSessionLocal cryptoTokenSession;
+    private RevocationSessionLocal revocationSession;
+    @EJB
+    private SecurityEventsLoggerSessionLocal auditSession;
+
     @Resource
     private SessionContext sessionContext;
 
@@ -432,8 +434,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             try {
             	caSession.editCA(admin, ca, false); // store any activates CA services
             	// create initial CRLs
-                crlCreateSession.forceCRL(admin, ca.getCAId());
-                crlCreateSession.forceDeltaCRL(admin, ca.getCAId());
+            	publishingCrlSession.forceCRL(admin, ca.getCAId());
+            	publishingCrlSession.forceDeltaCRL(admin, ca.getCAId());
             } catch (CADoesntExistsException e) {
                 String msg = intres.getLocalizedMessage("caadmin.errorcreateca", cainfo.getName());
                 Map<String, Object> details = new LinkedHashMap<String, Object>();
@@ -861,8 +863,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             // Publish CA Certificate
             publishCACertificate(authenticationToken, chain, ca.getCRLPublishers(), ca.getSubjectDN());
             // Create initial CRL
-            crlCreateSession.forceCRL(authenticationToken, caid);
-            crlCreateSession.forceDeltaCRL(authenticationToken, caid);
+            publishingCrlSession.forceCRL(authenticationToken, caid);
+            publishingCrlSession.forceDeltaCRL(authenticationToken, caid);
             // All OK
             String detailsMsg = intres.getLocalizedMessage("caadmin.certrespreceived", Integer.valueOf(caid));
             auditSession.log(EventTypes.CA_EDITING, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, authenticationToken.toString(),
@@ -1356,8 +1358,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
             // Publish the new CA certificate
             publishCACertificate(authenticationToken, cachain, ca.getCRLPublishers(), ca.getSubjectDN());
-            crlCreateSession.forceCRL(authenticationToken, caid);
-            crlCreateSession.forceDeltaCRL(authenticationToken, caid);
+            publishingCrlSession.forceCRL(authenticationToken, caid);
+            publishingCrlSession.forceDeltaCRL(authenticationToken, caid);
             // Audit log
             final String detailsMsg = intres.getLocalizedMessage("caadmin.renewdca", Integer.valueOf(caid));
             auditSession.log(EjbcaEventTypes.CA_RENEWED, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, authenticationToken.toString(),
@@ -1411,7 +1413,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 certificateStoreSession.revokeAllCertByCA(admin, ca.getSubjectDN(), reason);
                 Collection<Integer> caids = new ArrayList<Integer>();
                 caids.add(Integer.valueOf(ca.getCAId()));
-                crlCreateSession.createCRLs(admin, caids, 0);
+                publishingCrlSession.createCRLs(admin, caids, 0);
             }
             ca.setRevocationReason(reason);
             ca.setRevocationDate(new Date());
@@ -1998,8 +2000,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         // Create initial CRLs
         Collection<Integer> caids = new ArrayList<Integer>();
         caids.add(ca.getCAId());
-        crlCreateSession.createCRLs(admin, caids, 0);
-        crlCreateSession.createDeltaCRLs(admin, caids, 0);
+        publishingCrlSession.createCRLs(admin, caids, 0);
+        publishingCrlSession.createDeltaCRLs(admin, caids, 0);
         return ca;
     }
 
