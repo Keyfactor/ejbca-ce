@@ -531,7 +531,7 @@ public class CertToolsTest {
         assertEquals(CertTools.getPartFromDN(dn11, "O"), "CN");
 
         String dn12 = "CN=\"foo, OU=bar\", O=baz\\\\\\, quux,C=C";
-        assertEquals(CertTools.getPartFromDN(dn12, "CN"), "foo, OU=bar");
+        assertEquals("Extraction of CN from: "+dn12, "foo, OU=bar", CertTools.getPartFromDN(dn12, "CN"));
         assertEquals(CertTools.getPartFromDN(dn12, "O"), "baz\\, quux");
         assertNull(CertTools.getPartFromDN(dn12, "OU"));
 
@@ -621,7 +621,7 @@ public class CertToolsTest {
 
         String dn20 = " CN=\"foo, OU=bar\",  O=baz\\\\\\, quux,C=SE ";
         // BC always escapes with backslash, it doesn't use quotes.
-        assertEquals(CertTools.stringToBCDNString(dn20), "CN=foo\\, OU\\=bar,O=baz\\\\\\, quux,C=SE");
+        assertEquals("Conversion of: "+dn20, "CN=foo\\, OU\\=bar,O=baz\\\\\\, quux,C=SE", CertTools.stringToBCDNString(dn20));
 
         String dn21 = "C=SE,O=Foo\\, Inc, OU=Foo\\, Dep, CN=Foo\\'";
         String bcdn21 = CertTools.stringToBCDNString(dn21);
@@ -970,7 +970,7 @@ public class CertToolsTest {
         assertEquals("CN=bar,CN=foo,O=oo,O=EJBCA,DC=DC2,DC=dc1,C=SE", CertTools.stringToBCDNString(dn19));
         String dn20 = " C=SE,CN=\"foo, OU=bar\",  O=baz\\\\\\, quux  ";
         // BC always escapes with backslash, it doesn't use quotes.
-        assertEquals("CN=foo\\, OU\\=bar,O=baz\\\\\\, quux,C=SE", CertTools.stringToBCDNString(dn20));
+        assertEquals("Conversion of: " + dn20, "CN=foo\\, OU\\=bar,O=baz\\\\\\, quux,C=SE", CertTools.stringToBCDNString(dn20));
 
         String dn21 = "C=SE,O=Foo\\, Inc, OU=Foo\\, Dep, CN=Foo\\'";
         String bcdn21 = CertTools.stringToBCDNString(dn21);
@@ -1511,8 +1511,9 @@ public class CertToolsTest {
 
     @Test
     public void testEscapedCharacters() throws Exception {
-        String dn = CertTools.stringToBCDNString("O=\\<fff\\>\\\",CN=oid,SN=12345,NAME=name,C=se");
-        assertEquals("CN=oid,Name=name,SN=12345,O=\\<fff\\>\\\",C=se", dn);
+        final String input = "O=\\<fff\\>\\\",CN=oid,SN=12345,NAME=name,C=se";
+        final String dn = CertTools.stringToBCDNString(input);
+        assertEquals("Conversion of: "+input, "CN=oid,Name=name,SN=12345,O=\\<fff\\>\\\",C=se", dn);
     }
 
     @Test

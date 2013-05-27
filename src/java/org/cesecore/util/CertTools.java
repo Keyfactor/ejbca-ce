@@ -135,6 +135,8 @@ import org.ejbca.cvc.ReferenceField;
 import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
 
+import com.novell.ldap.LDAPDN;
+
 /**
  * Tools to handle common certificate operations.
  * 
@@ -264,7 +266,7 @@ public class CertTools {
         
         while (x509NameTokenizer.hasMoreTokens()) {
             // This is a pair key=val (CN=xx)
-            final String pair = x509NameTokenizer.nextToken(); // Will escape '+' and initial '#' chars
+            final String pair = x509NameTokenizer.nextToken().trim(); // Will escape '+' and initial '#' chars
             final int index = pair.indexOf('=');
 
             if (index != -1) {
@@ -495,10 +497,10 @@ public class CertTools {
             String last = null;
             X509NameTokenizer xt = new X509NameTokenizer(dn);
             if (xt.hasMoreTokens()) {
-                first = xt.nextToken();
+                first = xt.nextToken().trim();
             }
             while (xt.hasMoreTokens()) {
-                last = xt.nextToken();
+                last = xt.nextToken().trim();
             }
             String[] dNObjects = DnComponents.getDnObjects(true);
             if ((first != null) && (last != null)) {
@@ -543,8 +545,10 @@ public class CertTools {
             dnpart += "="; // we search for 'CN=' etc.
             X509NameTokenizer xt = new X509NameTokenizer(dn);
             while (xt.hasMoreTokens()) {
-                o = xt.nextToken();
-                // log.debug("checking: "+o.substring(0,dnpart.length()));
+                o = xt.nextToken().trim();
+                if (log.isTraceEnabled()) {
+                    log.trace("checking: "+o);
+                }
                 if ((o.length() > dnpart.length()) && o.substring(0, dnpart.length()).equalsIgnoreCase(dnpart)) {
                     part = o.substring(dnpart.length());
 
@@ -577,7 +581,7 @@ public class CertTools {
             dnpart += "="; // we search for 'CN=' etc.
             X509NameTokenizer xt = new X509NameTokenizer(dn);
             while (xt.hasMoreTokens()) {
-                o = xt.nextToken();
+                o = xt.nextToken().trim();
                 if ((o.length() > dnpart.length()) && o.substring(0, dnpart.length()).equalsIgnoreCase(dnpart)) {
                     parts.add(o.substring(dnpart.length()));
                 }
@@ -608,7 +612,7 @@ public class CertTools {
             String o;
             X509NameTokenizer xt = new X509NameTokenizer(dn);
             while (xt.hasMoreTokens()) {
-                o = xt.nextToken();
+                o = xt.nextToken().trim();
                 // Try to see if it is a valid OID
                 try {
                     int i = o.indexOf('=');
@@ -1982,7 +1986,7 @@ public class CertTools {
                 }
             }
             if (log.isTraceEnabled()) {
-                log.trace("<getSubjectAlternativeName: result");
+                log.trace("<getSubjectAlternativeName: " + result);
             }
             if (StringUtils.isEmpty(result)) {
                 return null;
@@ -2025,7 +2029,8 @@ public class CertTools {
 
         final String directoryName = getDirectoryStringFromAltName(altName);
         if (directoryName != null) {
-            final X500Name x500DirectoryName = new X500Name(directoryName);
+            //final X500Name x500DirectoryName = new X500Name(directoryName);
+            final X500Name x500DirectoryName = new X500Name(LDAPDN.unescapeRDN(directoryName));
             final GeneralName gn = new GeneralName(4, x500DirectoryName);
             vec.add(gn);
         }
@@ -2741,7 +2746,7 @@ public class CertTools {
             X509NameTokenizer xt = new X509NameTokenizer(dn);
             boolean alreadyreplaced = false;
             while (xt.hasMoreTokens()) {
-                o = xt.nextToken();
+                o = xt.nextToken().trim();
                 if (!alreadyreplaced && (o.length() > 3) && o.substring(0, 3).equalsIgnoreCase("cn=")) {
                     o += cnpostfix;
                     alreadyreplaced = true;
