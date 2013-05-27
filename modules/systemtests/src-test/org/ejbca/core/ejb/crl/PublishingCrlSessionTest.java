@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.certificates.crl;
+package org.ejbca.core.ejb.crl;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -63,6 +63,8 @@ import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemo
 import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.crl.CrlStoreSessionRemote;
+import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
@@ -89,11 +91,11 @@ import org.junit.Test;
  * 
  * @version $Id$
  */
-public class CrlCreateSessionCRLTest extends RoleUsingTestCase {
+public class PublishingCrlSessionTest extends RoleUsingTestCase {
 
-    private final static Logger log = Logger.getLogger(CrlCreateSessionCRLTest.class);
+    private final static Logger log = Logger.getLogger(PublishingCrlSessionTest.class);
 
-    private static final String X509CADN = "CN=" + CrlCreateSessionCRLTest.class.getSimpleName();
+    private static final String X509CADN = "CN=" + PublishingCrlSessionTest.class.getSimpleName();
     private static CA testx509ca;
 
     private static final String USERNAME = "crltest";
@@ -106,7 +108,7 @@ public class CrlCreateSessionCRLTest extends RoleUsingTestCase {
     private CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private CrlStoreSessionRemote crlStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class);
-    private CrlCreateSessionRemote crlCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlCreateSessionRemote.class);
+    private PublishingCrlSessionRemote publishingCrlSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(PublishingCrlSessionRemote.class);
     private InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     private final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CrlCreateSessionCRLTest"));
@@ -117,7 +119,7 @@ public class CrlCreateSessionCRLTest extends RoleUsingTestCase {
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProvider();
         // Set up base role that can edit roles
-        setUpAuthTokenAndRole(CrlCreateSessionCRLTest.class.getSimpleName());
+        setUpAuthTokenAndRole(PublishingCrlSessionTest.class.getSimpleName());
         keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         testx509ca = CaSessionTest.createTestX509CA(X509CADN, null, false);
     }
@@ -170,7 +172,7 @@ public class CrlCreateSessionCRLTest extends RoleUsingTestCase {
      */
     @Test
     public void testCreateNewCRL() throws Exception {
-        crlCreateSession.forceCRL(roleMgmgToken, testx509ca.getCAId());
+        publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId());
         X509CRL x509crl = null;
 
         // Get number of last CRL
@@ -182,7 +184,7 @@ public class CrlCreateSessionCRLTest extends RoleUsingTestCase {
 
         BigInteger num = CrlExtensions.getCrlNumber(x509crl);
         // Create a new CRL again to see that the number increases
-        crlCreateSession.forceCRL(roleMgmgToken, testx509ca.getCAId());
+        publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId());
         int number1 = crlStoreSession.getLastCRLNumber(testx509ca.getSubjectDN(), false);
         assertEquals(number + 1, number1);
         byte[] crl1 = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false);
@@ -222,7 +224,7 @@ public class CrlCreateSessionCRLTest extends RoleUsingTestCase {
         X509Certificate cert = createCert();
         try {
             // Create a new CRL again...
-            assertTrue(crlCreateSession.forceCRL(roleMgmgToken, testx509ca.getCAId()));
+            assertTrue(publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId()));
             // Check that our newly signed certificate is not present in a new CRL
             byte[] crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false);
             assertNotNull("Could not get CRL", crl);
@@ -238,7 +240,7 @@ public class CrlCreateSessionCRLTest extends RoleUsingTestCase {
 
             certificateStoreSession.setRevokeStatus(roleMgmgToken, cert, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, null);
             // Create a new CRL again...
-            assertTrue(crlCreateSession.forceCRL(roleMgmgToken, testx509ca.getCAId()));
+            assertTrue(publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId()));
             // Check that our newly signed certificate IS present in a new CRL
             crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false);
             assertNotNull("Could not get CRL", crl);
@@ -259,7 +261,7 @@ public class CrlCreateSessionCRLTest extends RoleUsingTestCase {
             // Unrevoke the certificate that we just revoked
             certificateStoreSession.setRevokeStatus(roleMgmgToken, cert, RevokedCertInfo.NOT_REVOKED, null);
             // Create a new CRL again...
-            assertTrue(crlCreateSession.forceCRL(roleMgmgToken, testx509ca.getCAId()));
+            assertTrue(publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId()));
             // Check that our newly signed certificate IS NOT present in the new
             // CRL.
             crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false);
@@ -282,7 +284,7 @@ public class CrlCreateSessionCRLTest extends RoleUsingTestCase {
             assertTrue("Failed to revoke certificate!",
                     certificateStoreSession.isRevoked(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert)));
             // Create a new CRL again...
-            assertTrue(crlCreateSession.forceCRL(roleMgmgToken, testx509ca.getCAId()));
+            assertTrue(publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId()));
             // Check that our newly signed certificate IS present in a new CRL
             crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false);
             assertNotNull("Could not get CRL", crl);
@@ -303,7 +305,7 @@ public class CrlCreateSessionCRLTest extends RoleUsingTestCase {
             assertTrue("Was able to re-activate permanently revoked certificate!",
                     certificateStoreSession.isRevoked(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert)));
             // Create a new CRL again...
-            assertTrue(crlCreateSession.forceCRL(roleMgmgToken, testx509ca.getCAId()));
+            assertTrue(publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId()));
             // Check that our newly signed certificate is present in the new CRL,
             // because the revocation reason
             // was not CERTIFICATE_HOLD, we can only un-revoke certificates that are
@@ -344,7 +346,7 @@ public class CrlCreateSessionCRLTest extends RoleUsingTestCase {
             cainfo.setCRLPeriod(Long.MAX_VALUE);
             caSession.editCA(roleMgmgToken, cainfo);
             // Create new CRL's
-            assertTrue(crlCreateSession.forceCRL(roleMgmgToken, testx509ca.getCAId()));
+            assertTrue(publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId()));
             // Verify that status is not archived
             CertificateInfo certinfo = certificateStoreSession.getCertificateInfo(CertTools.getFingerprintAsString(cert));
             assertFalse("Non Expired Revoked Certificate was archived", certinfo.getStatus() == CertificateConstants.CERT_ARCHIVED);
@@ -369,7 +371,7 @@ public class CrlCreateSessionCRLTest extends RoleUsingTestCase {
         cainfo.setUseCrlDistributionPointOnCrl(true);
         cainfo.setDefaultCRLDistPoint(cdpURL);
         caSession.editCA(roleMgmgToken, cainfo);
-        crlCreateSession.forceCRL(roleMgmgToken, testx509ca.getCAId());
+        publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId());
         x509crl = CertTools.getCRLfromByteArray(crlStoreSession.getLastCRL(cainfo.getSubjectDN(), false));
         cdpDER = x509crl.getExtensionValue(Extension.issuingDistributionPoint.getId());
         assertNotNull("CRL has no distribution points", cdpDER);
@@ -386,7 +388,7 @@ public class CrlCreateSessionCRLTest extends RoleUsingTestCase {
         cainfo.setUseCrlDistributionPointOnCrl(false);
         cainfo.setDefaultCRLDistPoint("");
         caSession.editCA(roleMgmgToken, cainfo);
-        crlCreateSession.forceCRL(roleMgmgToken, testx509ca.getCAId());
+        publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId());
         x509crl = CertTools.getCRLfromByteArray(crlStoreSession.getLastCRL(cainfo.getSubjectDN(), false));
         assertNull("CRL has distribution points", x509crl.getExtensionValue(Extension.cRLDistributionPoints.getId()));
     }
@@ -406,7 +408,7 @@ public class CrlCreateSessionCRLTest extends RoleUsingTestCase {
         cainfo.setDefaultCRLDistPoint(cdpURL);
         cainfo.setCADefinedFreshestCRL(freshestCdpURL);
         caSession.editCA(roleMgmgToken, cainfo);
-        crlCreateSession.forceCRL(roleMgmgToken, testx509ca.getCAId());
+        publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId());
         x509crl = CertTools.getCRLfromByteArray(crlStoreSession.getLastCRL(cainfo.getSubjectDN(), false));
         cFreshestDpDER = x509crl.getExtensionValue(Extension.freshestCRL.getId());
         assertNotNull("CRL has no Freshest Distribution Point", cFreshestDpDER);
@@ -429,28 +431,28 @@ public class CrlCreateSessionCRLTest extends RoleUsingTestCase {
         cainfo.setDeltaCRLPeriod(1); // Issue very often..
         caSession.editCA(roleMgmgToken, cainfo);
         // make sure we have a CRL and delta CRL generated
-        crlCreateSession.forceCRL(roleMgmgToken, testx509ca.getCAId());
-        crlCreateSession.forceDeltaCRL(roleMgmgToken, testx509ca.getCAId());
+        publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId());
+        publishingCrlSessionRemote.forceDeltaCRL(roleMgmgToken, testx509ca.getCAId());
         try {
             // Now wait and test again
             Thread.sleep(1000);
             final X509CRL x509crl = CertTools.getCRLfromByteArray(crlStoreSession.getLastCRL(cainfo.getSubjectDN(), false));
-            assertTrue(crlCreateSession.createCRLs(roleMgmgToken) > 0);
+            assertTrue(publishingCrlSessionRemote.createCRLs(roleMgmgToken) > 0);
             final X509CRL x509crlAfter = CertTools.getCRLfromByteArray(crlStoreSession.getLastCRL(cainfo.getSubjectDN(), false));
             assertTrue("Did not generate a newer CRL.", x509crlAfter.getThisUpdate().after(x509crl.getThisUpdate()));
             final X509CRL x509deltaCrl = CertTools.getCRLfromByteArray(crlStoreSession.getLastCRL(cainfo.getSubjectDN(), true));
-            assertTrue(crlCreateSession.createDeltaCRLs(roleMgmgToken) > 0);
+            assertTrue(publishingCrlSessionRemote.createDeltaCRLs(roleMgmgToken) > 0);
             final X509CRL x509deltaCrlAfter = CertTools.getCRLfromByteArray(crlStoreSession.getLastCRL(cainfo.getSubjectDN(), true));
             assertTrue("Did not generate a newer Delta CRL.", x509deltaCrlAfter.getThisUpdate().after(x509deltaCrl.getThisUpdate()));
             // Try a similar thing when we specify which CA IDs to generate CRLs for
             // Compare CRL numbers instead of Dates, since these CRLs might have been generated the same second as the last ones
             final Collection<Integer> caids = new ArrayList<Integer>();
             caids.add(Integer.valueOf(testx509ca.getCAId()));
-            crlCreateSession.createCRLs(roleMgmgToken, caids, 2);
+            publishingCrlSessionRemote.createCRLs(roleMgmgToken, caids, 2);
             final X509CRL x509crlAfter2 = CertTools.getCRLfromByteArray(crlStoreSession.getLastCRL(cainfo.getSubjectDN(), false));
             assertTrue("Did not generate a newer CRL.",
                     CrlExtensions.getCrlNumber(x509crlAfter2).intValue() > CrlExtensions.getCrlNumber(x509crlAfter).intValue());
-            crlCreateSession.createDeltaCRLs(roleMgmgToken, caids, 2);
+            publishingCrlSessionRemote.createDeltaCRLs(roleMgmgToken, caids, 2);
             final X509CRL x509deltaCrlAfter2 = CertTools.getCRLfromByteArray(crlStoreSession.getLastCRL(cainfo.getSubjectDN(), true));
             assertTrue("Did not generate a newer Delta CRL.",
                     CrlExtensions.getCrlNumber(x509deltaCrlAfter2).intValue() > CrlExtensions.getCrlNumber(x509deltaCrlAfter).intValue());
@@ -479,7 +481,7 @@ public class CrlCreateSessionCRLTest extends RoleUsingTestCase {
         assertEquals(CAConstants.CA_OFFLINE, ca.getStatus());
         assertEquals(CAConstants.CA_OFFLINE, ca.getCAInfo().getStatus());
         try {
-            crlCreateSession.forceCRL(roleMgmgToken, testx509ca.getCAId());
+            publishingCrlSessionRemote.forceCRL(roleMgmgToken, testx509ca.getCAId());
             assertTrue("Trying to generate a CRL for CA with status CA_OFFLINE did not throw the CATokenOfflineException.", false);
         } catch (CAOfflineException e) {
             // Expected
