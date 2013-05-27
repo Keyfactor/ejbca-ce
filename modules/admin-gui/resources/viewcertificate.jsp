@@ -387,14 +387,14 @@ function confirmrepublish(){
            <% if (!cacerts && (currentindex < numberofcertificates -1) ){ %>
            <input type="submit" name="<%= BUTTON_VIEW_OLDER %>" value="&lt; <%= ejbcawebbean.getText("VIEWOLDER") %>" tabindex="1" />
            <% } else if (currentindex < numberofcertificates -1) {%>
-           <input type="submit" name="<%= BUTTON_VIEW_OLDER %>" value="&lt; <%= ejbcawebbean.getText("VIEWOTHERCHAIN") %>" tabindex="1" />
+           <input type="submit" name="<%= BUTTON_VIEW_OLDER %>" value="&lt; <%= ejbcawebbean.getText("VIEWISSUING") %>" tabindex="1" />
            <% } %>
          </td>
          <td>
            <% if (!cacerts && (currentindex > 0) ){ %>
            <input type="submit" name="<%= BUTTON_VIEW_NEWER %>" value="<%= ejbcawebbean.getText("VIEWNEWER") %> &gt;" tabindex="2" />
            <% } else if (currentindex > 0) {%>
-           <input type="submit" name="<%= BUTTON_VIEW_NEWER %>" value="<%= ejbcawebbean.getText("VIEWOTHERCHAIN") %> &gt;" tabindex="2" />
+           <input type="submit" name="<%= BUTTON_VIEW_NEWER %>" value="<%= ejbcawebbean.getText("VIEWSUBORDINATE") %> &gt;" tabindex="2" />
            <% } %>
            &nbsp;
          </td>
