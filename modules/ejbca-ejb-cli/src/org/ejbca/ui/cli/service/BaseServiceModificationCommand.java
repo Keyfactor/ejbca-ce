@@ -40,12 +40,18 @@ public abstract class BaseServiceModificationCommand extends BaseServiceCommand 
      */
     protected boolean modifyFromArgs(ServiceConfiguration serviceConfig, String[] args) {
         FieldEditor fieldEditor = new FieldEditor(getLogger());
+        boolean success = true;
 
         // Parse fields to modify
         List<String> params = Arrays.asList(args).subList(2, args.length);
         List<String> notfound = new ArrayList<String>();
         for (String property : params) {
             String[] arr = property.split("=", 2);
+            if (arr.length != 2) {
+                getLogger().info("ERROR: Property is missing a value (the syntax is property=value):  "+arr[0]);
+                success = false;
+                continue;
+            }
             String field = arr[0].trim();
             String value = arr[1].trim();
             if (!modify(serviceConfig, fieldEditor, field, value)) {
@@ -55,10 +61,10 @@ public abstract class BaseServiceModificationCommand extends BaseServiceCommand 
         
         if (!notfound.isEmpty()) {
             displayNotFound(notfound);
-            return false;
+            success = false;
         }
         
-        return true;
+        return success;
     }
 
     /**
