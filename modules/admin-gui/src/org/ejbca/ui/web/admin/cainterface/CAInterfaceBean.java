@@ -20,6 +20,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.KeyStoreException;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
+import java.text.SimpleDateFormat;
 import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
@@ -81,6 +82,7 @@ import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
+import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.KeyPairInfo;
 import org.cesecore.keys.token.SoftCryptoToken;
@@ -725,8 +727,15 @@ public class CAInterfaceBean implements Serializable {
 	        // First create a new soft auto-activated CryptoToken with the same name as the CA
 	        final Properties cryptoTokenProperties = new Properties();
 	        cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, CesecoreConfiguration.getCaKeyStorePass());
-	        cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, caName, SoftCryptoToken.class.getName(),
-	                cryptoTokenProperties, null, null);
+	        try {
+	            cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, caName, SoftCryptoToken.class.getName(),
+	                    cryptoTokenProperties, null, null);
+	        } catch (CryptoTokenNameInUseException e) {
+	            // If the name was already in use we simply add a timestamp to the name to manke it unique
+	            final String postfix = "_" + new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());;
+                cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, caName+postfix, SoftCryptoToken.class.getName(),
+                        cryptoTokenProperties, null, null);
+	        }
 	        // Next generate recommended RSA key pairs for decryption and test
 	        cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, keyAliasDefaultKey, AlgorithmConstants.KEYALGORITHM_RSA + "2048");
             cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, keyAliasKeyTestKey, AlgorithmConstants.KEYALGORITHM_RSA + "1024");
@@ -757,7 +766,7 @@ public class CAInterfaceBean implements Serializable {
 	    final String[] suppliedAliases = {keyAliasCertSignKey,keyAliasCrlSignKey,keyAliasHardTokenEncryptKey,keyAliasHardTokenEncryptKey,keyAliasKeyEncryptKey,keyAliasKeyTestKey};
         for (final String currentSuppliedAlias : suppliedAliases) {
             if (currentSuppliedAlias.length()>0 && !keyPairAliases.contains(currentSuppliedAlias)) {
-                log.info(authenticationToken.toString() + " attempted to createa a CA with a non-existing key alias: "+currentSuppliedAlias);
+                log.info(authenticationToken.toString() + " attempted to create a CA with a non-existing key alias: "+currentSuppliedAlias);
                 throw new Exception("Invalid key alias!");
             }
         }
