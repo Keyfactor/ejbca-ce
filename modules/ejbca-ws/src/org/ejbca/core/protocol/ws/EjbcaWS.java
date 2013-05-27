@@ -97,7 +97,6 @@ import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
-import org.cesecore.certificates.crl.CrlCreateSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -124,6 +123,7 @@ import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
+import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionLocal;
@@ -147,9 +147,9 @@ import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.hardtoken.HardTokenConstants;
-import org.ejbca.core.model.hardtoken.HardTokenInformation;
 import org.ejbca.core.model.hardtoken.HardTokenDoesntExistsException;
 import org.ejbca.core.model.hardtoken.HardTokenExistsException;
+import org.ejbca.core.model.hardtoken.HardTokenInformation;
 import org.ejbca.core.model.hardtoken.types.EnhancedEIDHardToken;
 import org.ejbca.core.model.hardtoken.types.HardToken;
 import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
@@ -233,13 +233,15 @@ public class EjbcaWS implements IEjbcaWS {
     @EJB
     private CertReqHistorySessionLocal certreqHistorySession;
     @EJB
-    private CrlCreateSessionLocal crlCreateSession;
-    @EJB
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     @EJB
     private EndEntityAccessSessionLocal endEntityAccessSession;
     @EJB
+    private EndEntityManagementSessionLocal endEntityManagementSession;
+    @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
     private HardTokenSessionLocal hardTokenSession;
     @EJB
@@ -251,11 +253,10 @@ public class EjbcaWS implements IEjbcaWS {
     @EJB
     private PublisherSessionLocal publisherSession;
     @EJB
-    private GlobalConfigurationSessionLocal globalConfigurationSession;
+    private PublishingCrlSessionLocal publishingCrlSession;
     @EJB
     private SignSessionLocal signSession;
-    @EJB
-    private EndEntityManagementSessionLocal endEntityManagementSession;
+
     @EJB
     private UserDataSourceSessionLocal userDataSourceSession;
     @EJB
@@ -2304,8 +2305,8 @@ public class EjbcaWS implements IEjbcaWS {
 			AuthenticationToken admin = ejbhelper.getAdmin(true);
             logAdminName(admin,logger);
             CAInfo cainfo = caSession.getCAInfo(admin, caname);
-			crlCreateSession.forceCRL(admin, cainfo.getCAId());
-			crlCreateSession.forceDeltaCRL(admin, cainfo.getCAId());
+            publishingCrlSession.forceCRL(admin, cainfo.getCAId());
+            publishingCrlSession.forceDeltaCRL(admin, cainfo.getCAId());
 		} catch (AuthorizationDeniedException e) {
             throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.NOT_AUTHORIZED, Level.ERROR);
         } catch (RuntimeException e) {	// EJBException, ...

@@ -15,7 +15,6 @@ package org.cesecore.certificates.ca;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -23,7 +22,6 @@ import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
-import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,7 +32,6 @@ import java.util.Set;
 
 import javax.security.auth.x500.X500Principal;
 
-import org.apache.log4j.Logger;
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -53,8 +50,6 @@ import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
-import org.cesecore.certificates.crl.CrlCreateSessionRemote;
-import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
@@ -79,9 +74,7 @@ import org.cesecore.util.StringTools;
  * @version $Id$
  */
 public class CaSessionTestBase extends RoleUsingTestCase {
-
-    private static final Logger log = Logger.getLogger(CaSessionTestBase.class);
-
+    
     private CA testx509ca;
     private CA testcvcca;
     
@@ -90,8 +83,6 @@ public class CaSessionTestBase extends RoleUsingTestCase {
     private CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
     private RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
-    private CrlCreateSessionRemote crlCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlCreateSessionRemote.class);
-    private CrlStoreSessionRemote crlStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class);
     private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
     private CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
@@ -172,10 +163,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         assertTrue("CAInfo expire time should be after now: "+ca1.getCAInfo().getExpireTime(), now.before(ca1.getCAInfo().getExpireTime()));
         assertTrue("CAInfo expire time should be after now: "+ca2.getCAInfo().getExpireTime(), now.before(ca2.getCAInfo().getExpireTime()));
 
-        // See that we can do something with the CAs to verify that everything was stored as we think
-        crlCreateSession.forceCRL(roleMgmgToken, ca1.getCAId());
-        crlCreateSession.forceCRL(roleMgmgToken, ca2.getCAId());
-        /* This is pretty messed up.. we only test that the CA is working in the client VM..*/
+         /* This is pretty messed up.. we only test that the CA is working in the client VM..*/
         EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0,
                 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
         KeyPair keypair = KeyTools.genKeys("512", "RSA");
@@ -321,10 +309,6 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         assertEquals(ca1.getCAId(), ca2.getCAId());
         assertEquals(ca1.getName(), ca2.getName());
         assertEquals(ca1.getSubjectDN(), ca2.getSubjectDN());
-
-        // See that we can do something with the CAs to verify that everything was stored as we think
-        crlCreateSession.forceCRL(roleMgmgToken, ca1.getCAId());
-        crlCreateSession.forceCRL(roleMgmgToken, ca2.getCAId());
         /* This is pretty messed up.. we only test that the CA is working in the client VM.. */
         EndEntityInformation user = new EndEntityInformation("username", "CN=User001,C=SE", 666, null, null, new EndEntityType(EndEntityTypes.ENDUSER), 0,
                 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
@@ -477,28 +461,6 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         	assertEquals(1, certs1.size());
         	Certificate cert1 = certs1.iterator().next();
             cert1.verify(pubK);
-            
-        	// Test generate a CRL as well
-        	// We should not have any CRL generated now
-        	byte[] crl = crlStoreSession.getLastCRL(ca.getSubjectDN(), false);
-        	assertNull(crl);
-        	try {
-            	// Create a CRL with this PKCS11 CA
-            	boolean result = crlCreateSession.forceCRL(roleMgmgToken, ca.getCAId());
-            	assertTrue(result);
-            	// We should now have a CRL generated
-            	crl = crlStoreSession.getLastCRL(ca.getSubjectDN(), false);
-            	assertNotNull(crl);        	
-            	// Check that it is signed by the correct public key
-            	X509CRL xcrl = CertTools.getCRLfromByteArray(crl);
-            	xcrl.verify(pubK);
-        	} catch (Exception e) {
-        		log.error("Error: ", e);
-        		assertTrue("Should not throw here", false);
-        	} finally {
-        		// Remove it to clean database
-        		internalCertStoreSession.removeCRL(roleMgmgToken, CertTools.getFingerprintAsString(crl));    		
-        	}
     	} finally {
             // Since this could be a P11 slot, we need to clean up the actual keys in the slot, not just delete the token
             int cryptoTokenId = ca.getCAToken().getCryptoTokenId();
@@ -636,5 +598,5 @@ public class CaSessionTestBase extends RoleUsingTestCase {
                 // Great! This is what we want! :D
             }
         }
-    }
+    }   
 }

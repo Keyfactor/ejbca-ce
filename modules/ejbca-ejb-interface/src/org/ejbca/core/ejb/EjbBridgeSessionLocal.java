@@ -42,6 +42,7 @@ import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
+import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenBatchJobSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keybind.InternalKeyBindingMgmtSessionLocal;
@@ -106,4 +107,5 @@ public interface EjbBridgeSessionLocal {
 	WebAuthenticationProviderSessionLocal getWebAuthenticationProviderSession();
     CryptoTokenManagementSessionLocal getCryptoTokenManagementSession();
     InternalKeyBindingMgmtSessionLocal getInternalKeyBindingMgmtSession();
+    PublishingCrlSessionLocal getPublishingCrlSession();
 }

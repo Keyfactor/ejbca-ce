@@ -17,7 +17,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.crl.CrlCreateSessionLocal;
+import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
@@ -45,7 +45,7 @@ public class CRLUpdateWorker extends BaseWorker {
 	 * @see org.ejbca.core.model.services.IWorker#work()
 	 */
 	public void work(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
-        final CrlCreateSessionLocal crlCreateSession = ((CrlCreateSessionLocal)ejbs.get(CrlCreateSessionLocal.class));
+        final PublishingCrlSessionLocal publishingCrlSession = ((PublishingCrlSessionLocal)ejbs.get(PublishingCrlSessionLocal.class));
 		// A semaphore used to not run parallel CRL generation jobs if it is slow
 		// in generating CRLs, and this job runs very often
 		if (!running) {
@@ -55,8 +55,8 @@ public class CRLUpdateWorker extends BaseWorker {
 			    // Use true here so the service works the same as before upgrade from 3.9.0 when this function of 
 			    // selecting CAs did not exist, no CA = Any CA.
 			    Collection<Integer> caids = getCAIdsToCheck(true); 
-			    crlCreateSession.createCRLs(getAdmin(), caids, polltime*1000);
-			    crlCreateSession.createDeltaCRLs(getAdmin(), caids, polltime*1000);
+			    publishingCrlSession.createCRLs(getAdmin(), caids, polltime*1000);
+			    publishingCrlSession.createDeltaCRLs(getAdmin(), caids, polltime*1000);
 			} catch (AuthorizationDeniedException e) {
 				log.info("Authorization denied executing service: ", e);
 				throw new ServiceExecutionFailedException(e);

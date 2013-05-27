@@ -71,7 +71,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExi
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.crl.CRLInfo;
-import org.cesecore.certificates.crl.CrlCreateSession;
 import org.cesecore.certificates.crl.CrlStoreSession;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.ExtendedInformation;
@@ -95,6 +94,7 @@ import org.ejbca.core.ejb.ca.publisher.PublisherQueueSession;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
+import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
@@ -152,11 +152,11 @@ public class CAInterfaceBean implements Serializable {
     private CertificateStoreSession certificatesession;
     private CertReqHistorySessionLocal certreqhistorysession;
     private CrlStoreSession crlStoreSession;
-    private CrlCreateSession crlCreateSession;
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     private EndEntityManagementSessionLocal endEntityManagementSession;
     private EndEntityProfileSession endEntityProfileSession;
     private HardTokenSession hardtokensession;
+    private PublishingCrlSessionLocal publishingCrlSession;
     private PublisherQueueSession publisherqueuesession;
     private PublisherSessionLocal publishersession;
     private ServiceSessionLocal serviceSession;
@@ -187,7 +187,6 @@ public class CAInterfaceBean implements Serializable {
           certificatesession = ejbLocalHelper.getCertificateStoreSession();
           certreqhistorysession = ejbLocalHelper.getCertReqHistorySession();
           crlStoreSession = ejbLocalHelper.getCrlStoreSession();
-          crlCreateSession = ejbLocalHelper.getCrlCreateSession();
           cryptoTokenManagementSession = ejbLocalHelper.getCryptoTokenManagementSession();
           caadminsession = ejbLocalHelper.getCaAdminSession();
           accessControlSession = ejbLocalHelper.getAccessControlSession();
@@ -199,6 +198,7 @@ public class CAInterfaceBean implements Serializable {
           publisherqueuesession = ejbLocalHelper.getPublisherQueueSession();
           certificateProfileSession = ejbLocalHelper.getCertificateProfileSession();
           endEntityProfileSession = ejbLocalHelper.getEndEntityProfileSession(); 
+          publishingCrlSession = ejbLocalHelper.getPublishingCrlSession();
           serviceSession = ejbLocalHelper.getServiceSession();
           this.informationmemory = ejbcawebbean.getInformationMemory();
           this.authenticationToken = ejbcawebbean.getAdminObject();
@@ -475,7 +475,7 @@ public class CAInterfaceBean implements Serializable {
       
     public void createCRL(String issuerdn) throws CryptoTokenOfflineException, CAOfflineException  {      
         try {
-            crlCreateSession.forceCRL(authenticationToken, issuerdn.hashCode());
+            publishingCrlSession.forceCRL(authenticationToken, issuerdn.hashCode());
         } catch (CADoesntExistsException e) {
             throw new RuntimeException(e);
         } catch (AuthorizationDeniedException e) {
@@ -485,7 +485,7 @@ public class CAInterfaceBean implements Serializable {
 
     public void createDeltaCRL(String issuerdn) throws CryptoTokenOfflineException, CAOfflineException {      
         try {
-            crlCreateSession.forceDeltaCRL(authenticationToken, issuerdn.hashCode());
+            publishingCrlSession.forceDeltaCRL(authenticationToken, issuerdn.hashCode());
         } catch (CADoesntExistsException e) {
             throw new RuntimeException(e);
         } catch (AuthorizationDeniedException e) {

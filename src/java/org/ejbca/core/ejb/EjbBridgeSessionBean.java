@@ -45,6 +45,7 @@ import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
+import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenBatchJobSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keybind.InternalKeyBindingMgmtSessionLocal;
@@ -110,6 +111,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@EJB EndEntityAuthenticationSessionLocal endEntityAuthenticationSession;
 	@EJB AccessUserAspectManagerSessionLocal accessUserAspectSession;
 	@EJB CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
+	@EJB PublishingCrlSessionLocal publishingCrlSessionLocal;
 
 	@Override public ApprovalExecutionSessionLocal getApprovalExecutionSession() { return approvalExecutionSession; }
 	@Override public ApprovalSessionLocal getApprovalSession() { return approvalSession; }
@@ -149,4 +151,5 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@Override public AccessUserAspectManagerSessionLocal getAccessUserAspectSession() { return accessUserAspectSession; }
 	@Override public EndEntityAccessSessionLocal getEndEntityAccessSession() { return endEntityAccessSession; }
     @Override public CryptoTokenManagementSessionLocal getCryptoTokenManagementSession() { return cryptoTokenManagementSession; }
+    @Override public PublishingCrlSessionLocal getPublishingCrlSession() { return publishingCrlSessionLocal; }
 }
