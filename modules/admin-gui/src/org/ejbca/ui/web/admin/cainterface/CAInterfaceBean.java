@@ -941,7 +941,18 @@ public class CAInterfaceBean implements Serializable {
 	                            useUserStorage,
 	                            useCertificateStorage,
 	                            sharedCmpRaSecret);
-	                    cadatahandler.createCA((CAInfo) x509cainfo);
+	                    try {
+	                        cadatahandler.createCA((CAInfo) x509cainfo);
+	                    } catch (Exception e) {
+	                        // If we failed during the creation we manually roll back any created soft CryptoToken
+	                        // The more proper way of doing it would be to implement a CaAdminSession call for one-shot
+	                        // CryptoToken and CA creation, but this would currently push a lot of GUI specific code
+	                        // to the business logic. Until we have a new GUI this is probably the best way of doing it.
+	                        if ("0".equals(cryptoTokenIdString)) {
+	                            cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, cryptoTokenId);
+	                        }
+	                        throw e;
+	                    }
 	                }
 
 	                if (buttonMakeRequest) {
