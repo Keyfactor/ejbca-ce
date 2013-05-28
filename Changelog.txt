@@ -1,3 +1,31 @@
+EJBCA 5.0.10, 2013-05-31
+---
+Bug
+    [ECA-1872] - Batch Enrollment GUI can not use JKS as keystore
+    [ECA-2495] - Exception in view old log
+    [ECA-2968] - IE10 browser enrollment doesn't work
+    [ECA-3009] - Unhelpful error message when changing permission rules for non-existing end entity profile in CLI
+
+Improvement
+    [ECA-1826] - Possibility to create link certificates following the certificate profile
+    [ECA-2456] - Support other CMP signature algorithms than SHA1
+    [ECA-2944] - Remove one dependency from SignSessionBean on bean implementation in CeSeCore
+    [ECA-2966] - ClientToolBox batch functionality for certreq and installcert
+    [ECA-2976] - Debug log healthcheck message
+    [ECA-2983] - Add index on CertificateData.status to index sql script
+    [ECA-2997] - Make the CA certificate chain download provide better suggestion for file name to browser
+    [ECA-3005] - Backport CMP ECC improvements to 5.0
+    [ECA-3007] - Remove service execution audit events not needed
+    [ECA-3010] - Improve CLI support for editing certificate profiles and publishers
+    [ECA-3017] - Add parameter to ca init cli to use explicit ECC parameters
+
+New Feature
+    [ECA-2241] - Support STARTTLS extension for the LDAP Publisher
+    [ECA-2985] - Add possibility to publish cert serial to LDAP custom schema
+    [ECA-3004] - Command Line Support to Create a SubCA signed by an External CA
+    [ECA-3006] - Add editca CLI command
+    [ECA-3019] - Manage Services from the CLI
+
 EJBCA 5.0.9, 2013-03-21
 --- 
 Bug
