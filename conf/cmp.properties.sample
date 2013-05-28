@@ -98,9 +98,11 @@
 #cmp.vendorcertificatemode=true
 
 # Specify the name of the external CA to be used to authenticate the certificate in the 'extraCerts' field when vendor certificate mode is activated.
-#
+# It is possible to specify more than one vendor CA. The venfor CA names should be separated by ";"
+
 # Default:
 #cmp.vendorca=VendorCA
+#cmp.vendorca=VendorCA1;VendorCA2
 
 # Shared secret between the CA and the RA used to authenticate valid RA messages.
 # Leave this commented out to be able to use a separate secret for each CA (see Edit Certificate Authorities configuration).
