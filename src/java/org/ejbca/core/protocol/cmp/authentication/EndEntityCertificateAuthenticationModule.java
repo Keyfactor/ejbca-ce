@@ -238,7 +238,8 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         
         // Determine whether the CA name is set in the 'cmp.authenticationparameters' config value
         boolean isCASet = !(StringUtils.equals("-", this.authenticationParameterCAName) || StringUtils.equalsIgnoreCase("A", this.authenticationParameterCAName));
-
+        boolean vendormode = isVendorCertificateMode(msg.getBody().getType());
+        
         // Perform the different checks depending on the configuration and previous authentication
         if(log.isDebugEnabled()) {
             log.debug("CMP is operating in RA mode: " + CmpConfiguration.getRAOperationMode(this.confAlias));
@@ -255,41 +256,31 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         //                  - Check that extraCert is in the database
         //                  - Check that extraCert is valid
         //                  - Check that extraCert is active
-        if(!CmpConfiguration.getRAOperationMode(this.confAlias) || isCASet) {
+        if( (!CmpConfiguration.getRAOperationMode(this.confAlias)|| isCASet) && !vendormode  ) {
             
             // Get the CAInfo of the CA that should have issued extraCert 
-            cainfo = getCAInfo(extraCert, isCASet, msg.getBody().getType());
+            cainfo = getCmpCAInfo(extraCert, isCASet, msg.getBody().getType());
             if ( cainfo == null ) {
                 return false;
             }
 
-            if(!isVendorCertificateMode(msg.getBody().getType())) {
-                // Check that extraCert is in the Database
-                certinfo = certSession.getCertificateInfo(fp);
-                if(certinfo == null) {
-                    errorMessage = "The certificate attached to the PKIMessage in the extraCert field could not be found in the database.";
-                    if(log.isDebugEnabled()) {
-                        log.debug(errorMessage+". Fingerprint="+fp);
-                    }
-                    return false;
+            // Check that extraCert is in the Database
+            certinfo = certSession.getCertificateInfo(fp);
+            if(certinfo == null) {
+                errorMessage = "The certificate attached to the PKIMessage in the extraCert field could not be found in the database.";
+                if(log.isDebugEnabled()) {
+                    log.debug(errorMessage+". Fingerprint="+fp);
                 }
-            
-                // Check that extraCert is valid and is not revoked
-                if(!isCertValid(fp) || !isCertActive(certinfo)) {
-                    return false;
-                }
-            } else {
-                if (log.isDebugEnabled()) {
-                    log.debug("CMP is in vendor certificate mode. Not checking that the certificate attached to the PKIMessage in the extraCert field is in the database.");
-                }
+                return false;
             }
             
-            if(!isIssuedByCA(cainfo)) {
+            // Check that extraCert is issued by the right CA, is valid and is not revoked
+            if(!isIssuedByCA(cainfo, true) || !isCertValid(fp) || !isCertActive(certinfo)) {
                 return false;
-            } else {
-                if(log.isDebugEnabled()) {
-                    log.debug("The certificate in extraCert field is correctly issued by '" + cainfo.getName() + "'");
-                }
+            }
+            
+            if(log.isDebugEnabled()) {
+                log.debug("The certificate in extraCert field is correctly issued by '" + cainfo.getName() + "'");
             }
 
         }
@@ -321,6 +312,16 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             return false;            
             
         } else if(!CmpConfiguration.getRAOperationMode(this.confAlias)) { // client mode
+            
+            if(vendormode) {
+                if (log.isDebugEnabled()) {
+                    log.debug("CMP is in vendor certificate mode. Not checking that the certificate attached to the PKIMessage in the extraCert field is in the database.");
+                }
+                
+                if(!isIssuedByVendorCA()) {
+                    return false;
+                }
+            }
             
             // Check if this certificate belongs to the user
             if (username != null) {
@@ -607,39 +608,31 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         return true;
     }
     
-    private boolean isIssuedByCA(CAInfo cainfo) {
+    private boolean isIssuedByCA(CAInfo cainfo, boolean printLog) {
         //Check that the extraCert is given by the right CA
         // Verify the signature of the client certificate as well, that it is really issued by this CA
         Certificate cacert = cainfo.getCertificateChain().iterator().next();
         try {
             extraCert.verify(cacert.getPublicKey(), "BC");
-            if(log.isDebugEnabled()) {
-                log.debug("The certificate in extraCert is issued by the right CA: "+cainfo.getName());
-            }
         } catch (Exception e) {
-            errorMessage = "The End Entity certificate attached to the PKIMessage is not issued by the CA '" + cainfo.getName() + "'";
-            if(log.isDebugEnabled()) {
-                log.debug(errorMessage+": "+e.getLocalizedMessage());
+            if(printLog) {
+                errorMessage = "The End Entity certificate attached to the PKIMessage is not issued by the CA '" + cainfo.getName() + "'";
+                if(log.isDebugEnabled()) {
+                    log.debug(errorMessage+": "+e.getLocalizedMessage());
+                }
             }
             return false;                
         }
         return true;
     }
     
-    private CAInfo getCAInfo(final Certificate extracert, boolean isCASet, int reqType) {
+    private CAInfo getCmpCAInfo(final Certificate extracert, boolean isCASet, int reqType) {
         CAInfo cainfo = null;
         try {
-            if(isVendorCertificateMode(reqType)) {
-                cainfo = caSession.getCAInfo(admin, CmpConfiguration.getVendorCA(this.confAlias));
-                if (log.isDebugEnabled()) {
-                    log.debug("CMP is in vendor certificate mode and the Vendor CA is '"+CmpConfiguration.getVendorCA(this.confAlias)+"'.");
-                }
+            if (isCASet) {
+                cainfo = caSession.getCAInfo(this.admin, this.authenticationParameterCAName);
             } else {
-                if (isCASet) {
-                    cainfo = caSession.getCAInfo(this.admin, this.authenticationParameterCAName);
-                } else {
-                    cainfo = caSession.getCAInfo(this.admin, CertTools.getIssuerDN(extracert).hashCode());
-                }
+                cainfo = caSession.getCAInfo(this.admin, CertTools.getIssuerDN(extracert).hashCode());
             }
         } catch (CADoesntExistsException e) {
             String canamelog = isCASet ? this.authenticationParameterCAName : String.valueOf(CertTools.getIssuerDN(extracert).hashCode());
@@ -655,6 +648,36 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         }
         
         return cainfo;
+    }
+    
+    private boolean isIssuedByVendorCA() {
+        String vendorCAsStr = CmpConfiguration.getVendorCA(this.confAlias);
+        String[] vendorcas = vendorCAsStr.split(";");
+        CAInfo cainfo = null;
+        for(String vendorca : vendorcas) {
+            try {
+                cainfo = caSession.getCAInfo(admin, vendorca.trim());
+                if(isIssuedByCA(cainfo, false)) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("The certificate in extraCert field is issued by the Vendor CA: " + vendorca);
+                    }
+                    return true;
+                }
+            } catch (CADoesntExistsException e) {
+                if(log.isDebugEnabled()) {
+                    log.debug("Cannot find CA: " + vendorca);
+                }
+            } catch (AuthorizationDeniedException e) {
+                if(log.isDebugEnabled()) {
+                    log.debug(e.getLocalizedMessage());
+                }
+            }
+        }
+        errorMessage = "The certificate in extraCert field is not issued by any of the configured Vendor CAs: " + vendorCAsStr;
+        if(log.isDebugEnabled()) {
+            log.debug(errorMessage);
+        }
+        return false;
     }
     
     private String getUsername(CertificateInfo certinfo, int reqType) {
