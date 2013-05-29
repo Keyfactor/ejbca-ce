@@ -41,6 +41,6 @@ public class OcspNoCheck extends StandardCertificateExtension {
     
     @Override
 	public ASN1Encodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey, CertificateValidity val ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
-		return new DERNull();
+		return DERNull.INSTANCE;
 	}	
 }

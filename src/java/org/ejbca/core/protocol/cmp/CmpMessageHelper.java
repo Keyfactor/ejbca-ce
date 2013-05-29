@@ -165,7 +165,7 @@ public class CmpMessageHelper {
     	PKIHeaderBuilder headerBuilder = getHeaderBuilder(pKIMessage.getHeader());
     	AlgorithmIdentifier pAlg = null; 
     	if(key instanceof RSAPrivateKey) {
-    	    pAlg = new AlgorithmIdentifier(oid, new DERNull());
+    	    pAlg = new AlgorithmIdentifier(oid, DERNull.INSTANCE);
     	} else {
     	    pAlg = new AlgorithmIdentifier(oid);
     	}
