@@ -289,10 +289,10 @@ public class CertTools {
                     startIndexOfPartName--;
                 }
                 currentPartName = dn.substring(startIndexOfPartName, endIndexOfPartName);
-                log.trace("startIndexOfPartName="+startIndexOfPartName+" currentPartName='"+currentPartName+"'");
+                //log.trace("startIndexOfPartName="+startIndexOfPartName+" currentPartName='"+currentPartName+"'");
                 currentStartPosition = i+1;
             }
-            log.trace("i=" + i + " startPosition="+currentStartPosition+" quoted="+quoted + " escapeNext="+escapeNext+ " current='"+current + "'");
+            //log.trace("i=" + i + " startPosition="+currentStartPosition+" quoted="+quoted + " escapeNext="+escapeNext+ " current='"+current + "'");
             // When we have found a start marker, we need to be on the lookout for the ending marker
             if (currentStartPosition!=-1 && ((!quoted && !escapeNext && (current==',' || current=='+')) || i==dn.length()-1)) {
                 int endPosition = (i==dn.length()-1) ? dn.length()-1 : i-1;
@@ -310,7 +310,7 @@ public class CertTools {
                     endPosition--;
                 }
                 String currentValue = dn.substring(currentStartPosition, endPosition+1);
-                log.trace("currentStartPosition="+currentStartPosition+" currentValue="+currentValue);
+                //log.trace("currentStartPosition="+currentStartPosition+" currentValue="+currentValue);
                 // Unescape value since the nameBuilder will double each escape
                 currentValue = unescapeValue(new StringBuilder(currentValue)).toString();
                 try {
@@ -340,13 +340,10 @@ public class CertTools {
             }
         }
         final X500Name x500Name = nameBuilder.build();
-        if (log.isTraceEnabled()) {
-            log.trace("x500Name: " + x500Name.toString());
-        }
         // -- Reorder fields
         final X500Name orderedX500Name = getOrderedX500Name(x500Name, ldaporder, converter);
         if (log.isTraceEnabled()) {
-            log.trace(">stringToBcX500Name: " + orderedX500Name.toString());
+            log.trace(">stringToBcX500Name: x500Name=" + x500Name.toString() + " orderedX500Name=" + orderedX500Name.toString());
         }
         return orderedX500Name;
     }
@@ -686,11 +683,6 @@ public class CertTools {
                         escapeNext = true;
                     }
                 }
-                /*
-                if (!quoted && !escapeNext && current=='\\') {
-                    escapeNext = true;
-                }
-                */
             }
         }
         if (log.isTraceEnabled()) {
