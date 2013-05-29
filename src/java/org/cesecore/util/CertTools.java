@@ -264,8 +264,8 @@ public class CertTools {
         if (dn == null) {
             return null;
         }
-        // If the entire DN is quoted, we just remove these quotes and carry on
-        if (dn.charAt(0) == '"' && dn.charAt(dn.length()-1) == '"') {
+        // If the entire DN is quoted (which is strange but legacy), we just remove these quotes and carry on
+        if (dn.length()>2 && dn.charAt(0) == '"' && dn.charAt(dn.length()-1) == '"') {
             dn = dn.substring(1, dn.length()-1);
         }
         final X500NameBuilder nameBuilder = new X500NameBuilder(CeSecoreNameStyle.INSTANCE);
