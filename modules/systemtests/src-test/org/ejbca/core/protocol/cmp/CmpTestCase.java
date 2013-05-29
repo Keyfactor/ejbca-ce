@@ -818,7 +818,7 @@ public abstract class CmpTestCase extends CaTestCase {
         assertEquals(19, tag);
         PKIConfirmContent n = (PKIConfirmContent) body.getContent();
         assertNotNull(n);
-        assertEquals(new DERNull(), n.toASN1Primitive());
+        assertEquals(DERNull.INSTANCE, n.toASN1Primitive());
     }
 
     protected void checkCmpRevokeConfirmMessage(String issuerDN, String userDN, BigInteger serno, Certificate cacert, byte[] retMsg, boolean success)
