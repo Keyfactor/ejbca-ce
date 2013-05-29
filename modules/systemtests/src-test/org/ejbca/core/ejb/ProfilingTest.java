@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Collections;
@@ -44,7 +43,13 @@ public class ProfilingTest {
     @Test
     public void retrieveStats() {
         final List<ProfilingStat> profilingStats = profilingStatsAccessSession.getEjbInvocationStats();
-        assertFalse("This test requires EJBCA profiling to be enabled.", profilingStats.isEmpty());
+        if (profilingStats.isEmpty()) {
+            // If there is no profiling enabled, we just log some information on how to enable it.
+            log.warn("This test requires EJBCA profiling to be enabled.");      
+            log.warn("  In conf/ejbca.properties set ejbca.productionmode=false");      
+            log.warn("  Log4J DEBUG log level must be enabled enabled.");
+            return;
+        }
         // Sort with most consumed time first
         Collections.sort(profilingStats, new Comparator<ProfilingStat>() {
             @Override
