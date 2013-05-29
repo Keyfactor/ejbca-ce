@@ -257,12 +257,16 @@ public class CertTools {
      *            order is the reverse
      * @return X500Name or null if input is null
      */
-    public static X500Name stringToBcX500Name(final String dn, final X509NameEntryConverter converter, final boolean ldaporder) {
+    public static X500Name stringToBcX500Name(String dn, final X509NameEntryConverter converter, final boolean ldaporder) {
         if (log.isTraceEnabled()) {
             log.trace(">stringToBcX500Name: " + dn);
         }
         if (dn == null) {
             return null;
+        }
+        // If the entire DN is quoted, we just remove these quotes and carry on
+        if (dn.charAt(0) == '"' && dn.charAt(dn.length()-1) == '"') {
+            dn = dn.substring(1, dn.length()-1);
         }
         final X500NameBuilder nameBuilder = new X500NameBuilder(CeSecoreNameStyle.INSTANCE);
         boolean quoted = false;
