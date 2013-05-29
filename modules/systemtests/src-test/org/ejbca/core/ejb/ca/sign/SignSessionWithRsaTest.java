@@ -26,7 +26,6 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.RSAPublicKey;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
@@ -460,7 +459,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             assertNotNull("Failed to create certificate", cert);
             String altNames = CertTools.getSubjectAlternativeName(cert);
             log.debug(altNames);
-            ArrayList<String> list = CertTools.getPartsFromDN(altNames, CertTools.UPN);
+            List<String> list = CertTools.getPartsFromDN(altNames, CertTools.UPN);
             assertEquals(2, list.size());
             assertTrue(list.contains("foo@a.se"));
             assertTrue(list.contains("foo@b.se"));

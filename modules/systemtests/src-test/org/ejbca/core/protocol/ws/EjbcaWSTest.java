@@ -661,7 +661,9 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     @Test
     public void test46CertificateRequestWithSpecialChars06() throws Exception {
         long rnd = new SecureRandom().nextLong();
-        testCertificateRequestWithSpecialChars("CN=test" + rnd + ", O=\"foo+b\\+ar, C=SE\"", "CN=test" + rnd + ",O=foo\\+b\\\\\\+ar\\, C\\=SE");
+        testCertificateRequestWithSpecialChars(
+                "CN=test" + rnd + ", O=\"foo+b\\+ar, C=SE\"",
+                "CN=test" + rnd + ",O=foo\\+b\\+ar\\, C\\=SE");
     }
 
     /**
@@ -671,7 +673,9 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     @Test
     public void test47CertificateRequestWithSpecialChars07() throws Exception {
         long rnd = new SecureRandom().nextLong();
-        testCertificateRequestWithSpecialChars("CN=test" + rnd + ", O=\\\"foo+b\\+ar\\, C=SE\\\"", "CN=test" + rnd + ",O=\\\"foo\\+b\\+ar\\, C\\=SE\\\"");
+        testCertificateRequestWithSpecialChars(
+                "CN=test" + rnd + ", O=\\\"foo+b\\+ar\\, C=SE\\\"",
+                "CN=test" + rnd + ",O=\\\"foo\\+b\\+ar\\, C\\=SE\\\"");
     }
 
     /**
