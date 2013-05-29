@@ -209,11 +209,5 @@ public class CaImportCRLCommandTest {
 
     private void cleanUp() throws Exception {
         CaTestCase.removeTestCA(CA_NAME);
-        try {
-            cryptoTokenManagementSession.deleteCryptoToken(admin, caSession.getCAInfo(admin, CA_NAME).getCAToken().getCryptoTokenId());
-            caSession.removeCA(admin, caInitCommand.getCAInfo(admin, CA_NAME).getCAId());
-        } catch (Exception e) {
-            // Ignore
-        }
     }
 }
