@@ -120,7 +120,7 @@ public class CmpConfirmResponseMessage extends BaseCmpMessage implements Respons
 			SignRequestException {
 
 		final PKIHeaderBuilder myPKIHeader = CmpMessageHelper.createPKIHeaderBuilder(getSender(), getRecipient(), getSenderNonce(), getRecipientNonce(), getTransactionId());
-		final PKIBody myPKIBody = new PKIBody(19, new DERNull());
+		final PKIBody myPKIBody = new PKIBody(19, DERNull.INSTANCE);
 		PKIMessage myPKIMessage = null;
 
 		if ((getPbeDigestAlg() != null) && (getPbeMacAlg() != null) && (getPbeKeyId() != null) && (getPbeKey() != null) ) {

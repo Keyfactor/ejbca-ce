@@ -565,7 +565,7 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
                 StressTest.this.performanceTest.getLog().error("Confirmation is null.");
                 return false;
             }
-            if(!n.toASN1Primitive().equals(new DERNull())) {
+            if(!n.toASN1Primitive().equals(DERNull.INSTANCE)) {
                 StressTest.this.performanceTest.getLog().error("Confirmation is not DERNull.");
                 return false;
             }

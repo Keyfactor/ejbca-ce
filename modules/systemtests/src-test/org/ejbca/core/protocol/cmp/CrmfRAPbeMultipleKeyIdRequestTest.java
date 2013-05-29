@@ -556,7 +556,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         ExtendedKeyUsage eku = ExtendedKeyUsage.getInstance(usage);
         extgen.addExtension(Extension.extendedKeyUsage, false, eku);
         // OcspNoCheck
-        extgen.addExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nocheck, false, new DERNull());
+        extgen.addExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nocheck, false, DERNull.INSTANCE);
         // Netscape cert type
         extgen.addExtension(new ASN1ObjectIdentifier("2.16.840.1.113730.1.1"), false, new NetscapeCertType(NetscapeCertType.objectSigningCA));
         // My completely own

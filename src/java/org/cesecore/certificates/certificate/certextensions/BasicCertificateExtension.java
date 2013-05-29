@@ -249,7 +249,7 @@ public class BasicCertificateExtension extends CertificateExtension {
         } else if (encoding.equalsIgnoreCase(ENCODING_DERIA5STRING)) {
             toret = parseDERIA5String(value);
         } else if (encoding.equalsIgnoreCase(ENCODING_DERNULL)) {
-            toret = new DERNull();
+            toret = DERNull.INSTANCE;
         } else if (encoding.equalsIgnoreCase(ENCODING_DEROBJECT)) {
             toret = parseHexEncodedDERObject(value);
         } else {
