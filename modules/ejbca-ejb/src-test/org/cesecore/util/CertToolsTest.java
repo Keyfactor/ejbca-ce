@@ -532,7 +532,9 @@ public class CertToolsTest {
 
         String dn12 = "CN=\"foo, OU=bar\", O=baz\\\\\\, quux,C=C";
         assertEquals("Extraction of CN from: "+dn12, "foo, OU=bar", CertTools.getPartFromDN(dn12, "CN"));
-        assertEquals(CertTools.getPartFromDN(dn12, "O"), "baz\\, quux");
+        // This is the old test, that seems invalid
+        // assertEquals("Extraction of O from: "+dn12, "baz\\, quux", CertTools.getPartFromDN(dn12, "O"));
+        assertEquals("Extraction of O from: "+dn12, "baz\\\\\\, quux", CertTools.getPartFromDN(dn12, "O"));
         assertNull(CertTools.getPartFromDN(dn12, "OU"));
 
         String dn13 = "C=SE, O=PrimeKey, EmailAddress=foo@primekey.se";
@@ -550,12 +552,6 @@ public class CertToolsTest {
         log.trace("<test01GetPartFromDN()");
     }
 
-    /**
-     * DOCUMENT ME!
-     * 
-     * @throws Exception
-     *             DOCUMENT ME!
-     */
     @Test
     public void test02StringToBCDNString() throws Exception {
         log.trace(">test02StringToBCDNString()");
@@ -643,22 +639,17 @@ public class CertToolsTest {
         assertEquals(CertTools.stringToBCDNString(dn24),
                 "TelephoneNumber=08555-666,PostalAddress=Stockholm,BusinessCategory=Surf boards,PostalCode=11122,CN=foo,CN=bar,O=CN,O=C,C=CN");
 
-        // This isn't a legal SubjectDN. Since BC does not seem to support multivalues, we assume that the user meant \+.
+        // This isn't a legal SubjectDN. Since legacy BC did not support multivalues, we assume that the user meant \+.
         String dn25 = "CN=user+name, C=CN";
-        assertEquals(CertTools.stringToBCDNString(dn25), "CN=user\\+name,C=CN");
+        assertEquals("CN=user\\+name,C=CN", CertTools.stringToBCDNString(dn25));
 
         String dn26 = "CN=user\\+name, C=CN";
-        assertEquals(CertTools.stringToBCDNString(dn26), "CN=user\\+name,C=CN");
-
-        log.trace("<test02StringToBCDNString()");
+        assertEquals("CN=user\\+name,C=CN", CertTools.stringToBCDNString(dn26));
+        
+        String dn27 = "CN=test123456, O=\\\"foo+b\\+ar\\, C=SE\\\"";
+        assertEquals("CN=test123456,O=\\\"foo\\+b\\+ar\\, C\\=SE\\\"", CertTools.stringToBCDNString(dn27));
     }
 
-    /**
-     * DOCUMENT ME!
-     * 
-     * @throws Exception
-     *             DOCUMENT ME!
-     */
     @Test
     public void test03AltNames() throws Exception {
         log.trace(">test03AltNames()");
@@ -734,12 +725,6 @@ public class CertToolsTest {
         log.trace("<test03AltNames()");
     }
 
-    /**
-     * DOCUMENT ME!
-     * 
-     * @throws Exception
-     *             DOCUMENT ME!
-     */
     @Test
     public void test04DNComponents() throws Exception {
         log.trace(">test04DNComponents()");
@@ -752,22 +737,25 @@ public class CertToolsTest {
         log.debug("bcdn1: " + bcdn1);
         assertEquals("CN=CommonName,SN=SerialNumber,GIVENNAME=GivenName,INITIALS=Initials,SURNAME=SurName,OU=OrgUnit,O=Org,C=SE", bcdn1);
 
-        dn1 = "CN=CommonName, O=Org, OU=OrgUnit, SerialNumber=SerialNumber, SurName=SurName, GivenName=GivenName, Initials=Initials, C=SE, 1.1.1.1=1111Oid, 2.2.2.2=2222Oid";
+        dn1 = "CN=CommonName, O=Org, OU=OrgUnit, SerialNumber=SerialNumber, SurName=SurName, GivenName=GivenName,"
+                +" Initials=Initials, C=SE, 1.1.1.1=1111Oid, 2.2.2.2=2222Oid";
         bcdn1 = CertTools.stringToBCDNString(dn1);
         log.debug("dn1: " + dn1);
         log.debug("bcdn1: " + bcdn1);
-        assertEquals(bcdn1,
-                "CN=CommonName,SN=SerialNumber,GIVENNAME=GivenName,INITIALS=Initials,SURNAME=SurName,OU=OrgUnit,O=Org,C=SE,2.2.2.2=2222Oid,1.1.1.1=1111Oid");
+        assertEquals("CN=CommonName,SN=SerialNumber,GIVENNAME=GivenName,INITIALS=Initials,SURNAME=SurName,OU=OrgUnit,"
+                +"O=Org,C=SE,2.2.2.2=2222Oid,1.1.1.1=1111Oid", bcdn1);
 
-        dn1 = "CN=CommonName, 3.3.3.3=3333Oid,O=Org, OU=OrgUnit, SerialNumber=SerialNumber, SurName=SurName, GivenName=GivenName, Initials=Initials, C=SE, 1.1.1.1=1111Oid, 2.2.2.2=2222Oid";
+        dn1 = "CN=CommonName, 3.3.3.3=3333Oid,O=Org, OU=OrgUnit, SerialNumber=SerialNumber, SurName=SurName,"+
+                " GivenName=GivenName, Initials=Initials, C=SE, 1.1.1.1=1111Oid, 2.2.2.2=2222Oid";
         bcdn1 = CertTools.stringToBCDNString(dn1);
         log.debug("dn1: " + dn1);
         log.debug("bcdn1: " + bcdn1);
         // 3.3.3.3 is not a valid OID so it should be silently dropped
-        assertEquals(bcdn1,
-                "CN=CommonName,SN=SerialNumber,GIVENNAME=GivenName,INITIALS=Initials,SURNAME=SurName,OU=OrgUnit,O=Org,C=SE,2.2.2.2=2222Oid,1.1.1.1=1111Oid");
+        assertEquals("CN=CommonName,SN=SerialNumber,GIVENNAME=GivenName,INITIALS=Initials,SURNAME=SurName,"
+                        +"OU=OrgUnit,O=Org,C=SE,2.2.2.2=2222Oid,1.1.1.1=1111Oid", bcdn1);
 
-        dn1 = "CN=CommonName, 2.3.3.3=3333Oid,O=Org, K=KKK, OU=OrgUnit, SerialNumber=SerialNumber, SurName=SurName, GivenName=GivenName, Initials=Initials, C=SE, 1.1.1.1=1111Oid, 2.2.2.2=2222Oid";
+        dn1 = "CN=CommonName, 2.3.3.3=3333Oid,O=Org, K=KKK, OU=OrgUnit, SerialNumber=SerialNumber, SurName=SurName,"
+                +" GivenName=GivenName, Initials=Initials, C=SE, 1.1.1.1=1111Oid, 2.2.2.2=2222Oid";
         bcdn1 = CertTools.stringToBCDNString(dn1);
         log.debug("dn1: " + dn1);
         log.debug("bcdn1: " + bcdn1);
@@ -1009,7 +997,7 @@ public class CertToolsTest {
         // Test case with two CNs in reversed DN
         String dn4 = "dc=com,dc=bigcorp,dc=se,ou=orgunit,ou=users,cn=Tomas G,CN=Bagare";
         String newdn4 = CertTools.insertCNPostfix(dn4, cnpostfix1);
-        assertEquals("dc=com,dc=bigcorp,dc=se,ou=orgunit,ou=users,cn=Tomas G (VPN),CN=Bagare", newdn4);
+        assertEquals("DC=com,DC=bigcorp,DC=se,OU=orgunit,OU=users,CN=Tomas G (VPN),CN=Bagare", newdn4);
 
         // Test case with two CNs in reversed DN
         String dn5 = "UID=tomas,CN=tomas,OU=users,OU=orgunit,DC=se,DC=bigcorp,DC=com";
@@ -1452,7 +1440,6 @@ public class CertToolsTest {
 
         Collection<Certificate> certs;
         URL url;
-
         // Test with normal cert
         try {
             certs = CertTools.getCertsFromPEM(new ByteArrayInputStream(CERT_WITH_URI.getBytes()));
@@ -1461,7 +1448,6 @@ public class CertToolsTest {
         } catch (CertificateParsingException ex) {
             fail("Exception: " + ex.getMessage());
         }
-
         // Test with cert that contains CDP without URI
         try {
             certs = CertTools.getCertsFromPEM(new ByteArrayInputStream(CERT_WITHOUT_URI.getBytes()));
@@ -1478,6 +1464,7 @@ public class CertToolsTest {
     public void testKrb5PrincipalName() throws Exception {
         String altName = "krb5principal=foo/bar@P.SE, upn=upn@u.com";
         GeneralNames gn = CertTools.getGeneralNamesFromAltName(altName);
+        assertNotNull("getGeneralNamesFromAltName failed for " + altName, gn);
 
         GeneralName[] names = gn.getNames();
         String ret = CertTools.getGeneralNameString(0, names[1].getName());
@@ -1698,7 +1685,9 @@ public class CertToolsTest {
     @Test
     public void testGetGeneralNamesFromAltName4permanentIdentifier() throws Exception {
         // One permanentIdentifier
-        GeneralNames gn = CertTools.getGeneralNamesFromAltName("permanentIdentifier=def321/1.2.5, upn=upn@u.com");
+        String altName = "permanentIdentifier=def321/1.2.5, upn=upn@u.com";
+        GeneralNames gn = CertTools.getGeneralNamesFromAltName(altName);
+        assertNotNull("getGeneralNamesFromAltName failed for " + altName, gn);
         String[] result = new String[] { 
             CertTools.getGeneralNameString(0, gn.getNames()[0].getName()), 
             CertTools.getGeneralNameString(0, gn.getNames()[1].getName())

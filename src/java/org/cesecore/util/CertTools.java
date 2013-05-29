@@ -92,9 +92,11 @@ import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.pkcs.CertificationRequest;
 import org.bouncycastle.asn1.pkcs.CertificationRequestInfo;
+import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
+import org.bouncycastle.asn1.x500.style.IETFUtils;
 import org.bouncycastle.asn1.x509.AccessDescription;
 import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
@@ -256,54 +258,114 @@ public class CertTools {
      * @return X500Name or null if input is null
      */
     public static X500Name stringToBcX500Name(final String dn, final X509NameEntryConverter converter, final boolean ldaporder) {
-
+        if (log.isTraceEnabled()) {
+            log.trace(">stringToBcX500Name: " + dn);
+        }
         if (dn == null) {
             return null;
         }
-        
-        final X509NameTokenizer x509NameTokenizer = new X509NameTokenizer(dn);
-        X500NameBuilder nameBuilder = new X500NameBuilder(new CeSecoreNameStyle());
-        
-        while (x509NameTokenizer.hasMoreTokens()) {
-            // This is a pair key=val (CN=xx)
-            final String pair = x509NameTokenizer.nextToken().trim(); // Will escape '+' and initial '#' chars
-            final int index = pair.indexOf('=');
-
-            if (index != -1) {
-                final String key = pair.substring(0, index).toLowerCase().trim();
-                String val = pair.substring(index + 1);
-                if (val != null) {
-                    // Strip whitespace from the beginning of the value, to handle the case
-                    // where someone type CN = Foo Bar
-                    val = StringUtils.stripStart(val, null);
+        final X500NameBuilder nameBuilder = new X500NameBuilder(CeSecoreNameStyle.INSTANCE);
+        boolean quoted = false;
+        boolean escapeNext = false;
+        int currentStartPosition = -1;
+        String currentPartName = null;
+        log.trace("dn.length()=" + dn.length());
+        for (int i=0; i<dn.length(); i++) {
+            final char current = dn.charAt(i);
+            // Toggle quoting for every non-escaped "-char
+            if (!escapeNext && current=='"') {
+                quoted = !quoted;
+            }
+            // If there is an unescaped and unquoted =-char the preceeding chars is a part name
+            if (currentStartPosition==-1 && !quoted && !escapeNext && current=='=' && 1<=i) {
+                // Trim spaces (e.g. "O =value")
+                int endIndexOfPartName = i;
+                while (endIndexOfPartName>0 && dn.charAt(endIndexOfPartName-1)==' ') {
+                    endIndexOfPartName--;
                 }
-
+                int startIndexOfPartName = endIndexOfPartName-1;
+                final String endOfPartNameSearchChars = ", +";
+                while (startIndexOfPartName>0 && (endOfPartNameSearchChars.indexOf(dn.charAt(startIndexOfPartName-1))==-1)) {
+                    startIndexOfPartName--;
+                }
+                currentPartName = dn.substring(startIndexOfPartName, endIndexOfPartName);
+                log.trace("startIndexOfPartName="+startIndexOfPartName+" currentPartName='"+currentPartName+"'");
+                currentStartPosition = i+1;
+            }
+            log.trace("i=" + i + " startPosition="+currentStartPosition+" quoted="+quoted + " escapeNext="+escapeNext+ " current='"+current + "'");
+            // When we have found a start marker, we need to be on the lookout for the ending marker
+            if (currentStartPosition!=-1 && ((!quoted && !escapeNext && (current==',' || current=='+')) || i==dn.length()-1)) {
+                int endPosition = (i==dn.length()-1) ? dn.length()-1 : i-1;
+                // Remove white spaces from the end of the value
+                while (endPosition>currentStartPosition && dn.charAt(endPosition)==' ') {
+                    endPosition--;
+                }
+                // Remove white spaces from the beginning of the value
+                while (endPosition>currentStartPosition && dn.charAt(currentStartPosition)==' ') {
+                    currentStartPosition++;
+                }
+                // Only return the inner value if the part is quoted
+                if (dn.charAt(currentStartPosition) == '"' && dn.charAt(endPosition) == '"') {
+                    currentStartPosition++;
+                    endPosition--;
+                }
+                String currentValue = dn.substring(currentStartPosition, endPosition+1);
+                log.trace("currentStartPosition="+currentStartPosition+" currentValue="+currentValue);
+                // Unescape value since the nameBuilder will double each escape
+                currentValue = unescapeValue(new StringBuilder(currentValue)).toString();
                 try {
                     // -- First search the OID by name in declared OID's
-                    ASN1ObjectIdentifier oid = DnComponents.getOid(key);
+                    ASN1ObjectIdentifier oid = DnComponents.getOid(currentPartName);
                     // -- If isn't declared, we try to create it
                     if (oid == null) {
-                        oid = new ASN1ObjectIdentifier(key);
+                        oid = new ASN1ObjectIdentifier(currentPartName);
                     }
-                    nameBuilder.addRDN(oid, getUnescapedPlus(val)); 
+                    nameBuilder.addRDN(oid, currentValue); 
                 } catch (IllegalArgumentException e) {
                     // If it is not an OID we will ignore it
-                    log.warn("Unknown DN component ignored and silently dropped: " + key);
+                    log.warn("Unknown DN component ignored and silently dropped: " + currentPartName);
                 }
-
+                // Reset markers
+                currentStartPosition = -1;
+                currentPartName = null;
+            }
+            if (escapeNext) {
+                // This character was escaped, so don't escape the next one
+                escapeNext = false;
             } else {
-                log.warn("No 'key=value' pair encountered in token '" + pair + "' while converting subject DN '" + dn + "' into X500Name.");
+                if (!quoted && current=='\\') {
+                    // This escape character is not escaped itself, so the next one should be
+                    escapeNext = true;
+                }
             }
         }
-
         final X500Name x500Name = nameBuilder.build();
-
+        if (log.isTraceEnabled()) {
+            log.trace("x500Name: " + x500Name.toString());
+        }
         // -- Reorder fields
         final X500Name orderedX500Name = getOrderedX500Name(x500Name, ldaporder, converter);
-
-        // log.trace("<stringToBcX500Name");
+        if (log.isTraceEnabled()) {
+            log.trace(">stringToBcX500Name: " + orderedX500Name.toString());
+        }
         return orderedX500Name;
-    } // stringToBcX500Name
+    }
+    
+    /** Removes any unescaped '\' character from the provided StringBuilder. Assumes that esacping quotes have been stripped. */
+    private static StringBuilder unescapeValue(final StringBuilder sb) {
+        boolean esq = false;
+        int index = 0;
+        while (index<sb.length()) {
+            if (!esq && sb.charAt(index) == '\\') {
+                esq = true;
+                sb.deleteCharAt(index);
+            } else {
+                esq = false;
+                index++;
+            }
+        }
+        return sb;
+    }
 
     // Remove extra '+' character escaping
     private static String getUnescapedPlus(final String value) {
@@ -324,13 +386,13 @@ public class CertTools {
     }
 
     /**
-     * Check if the String contains any unescaped '+'. RFC 2253, section 2.2 states that '+' is used for multi-valued RelativeDistinguishedName. BC
-     * (version 1.45) currently does not support multi-valued RelativeDistinguishedName, and automatically escapes it instead. We want to detect
-     * unescaped '+' chars and warn that this might not be supported in the future if support for multi-valued RDNs is implemented.
+     * Check if the String contains any unescaped '+'. RFC 2253, section 2.2 states that '+' is used for multi-valued RelativeDistinguishedName.
+     * BC (version 1.45) did not support multi-valued RelativeDistinguishedName, and automatically escaped them instead.
+     * Even though it is now (BC 1.49b15) supported, we want to keep ecaping '+' chars and warn that this might not be supported in the future.
      */
-    private static void detectUnescapedPlus(final String dn) {
+    private static String handleUnescapedPlus(final String dn) {
         if (dn == null) {
-            return;
+            return dn;
         }
         final StringBuilder buf = new StringBuilder(dn);
         int index = 0;
@@ -340,12 +402,15 @@ public class CertTools {
                 // Found an unescaped '+' character.
                 log.warn("DN \"" + dn + "\" contains an unescaped '+'-character that will be automatically escaped. RFC 2253 reservs this "
                         + "for multi-valued RelativeDistinguishedNames. Encourage clients to use '\\+' instead, since future behaviour might change.");
+                buf.insert(index, '\\');
+                index++;
             } else if (buf.charAt(index) == '\\') {
                 // Found an escape character.
                 index++;
             }
             index++;
         }
+        return buf.toString();
     }
 
     /**
@@ -356,8 +421,8 @@ public class CertTools {
      * @return String containing DN, or null if input is null
      */
     public static String stringToBCDNString(String dn) {
-
-        detectUnescapedPlus(dn); // Log warning if dn contains unescaped '+'
+        // BC now seem to handle multi-valued RDNs, but we keep escaping this for now to keep the behavior until support is required
+        dn = handleUnescapedPlus(dn); // Log warning if dn contains unescaped '+'
         if (isDNReversed(dn)) {
             dn = reverseDN(dn);
         }
@@ -391,7 +456,7 @@ public class CertTools {
         }
         ArrayList<String> ret = new ArrayList<String>();
         for (int i = 0; i < EMAILIDS.length; i++) {
-            ArrayList<String> emails = getPartsFromDN(dn, EMAILIDS[i]);
+            List<String> emails = getPartsFromDN(dn, EMAILIDS[i]);
             if (!emails.isEmpty()) {
                 ret.addAll(emails);
             }
@@ -473,7 +538,7 @@ public class CertTools {
             log.trace("<reverseDN: resulting dn: " + ret);
         }
         return ret;
-    } // reverseDN
+    }
 
     /**
      * Tries to determine if a DN is in reversed form. It does this by taking the last attribute and the first attribute. If the last attribute comes
@@ -536,62 +601,103 @@ public class CertTools {
      * @return String containing dnpart or null if dnpart is not present
      */
     public static String getPartFromDN(String dn, String dnpart) {
-        if (log.isTraceEnabled()) {
-            log.trace(">getPartFromDN: dn:'" + dn + "', dnpart=" + dnpart);
-        }
         String part = null;
-        if ((dn != null) && (dnpart != null)) {
-            String o;
-            dnpart += "="; // we search for 'CN=' etc.
-            X509NameTokenizer xt = new X509NameTokenizer(dn);
-            while (xt.hasMoreTokens()) {
-                o = xt.nextToken().trim();
-                if (log.isTraceEnabled()) {
-                    log.trace("checking: "+o);
-                }
-                if ((o.length() > dnpart.length()) && o.substring(0, dnpart.length()).equalsIgnoreCase(dnpart)) {
-                    part = o.substring(dnpart.length());
-
-                    break;
-                }
-            }
-        }
-        if (log.isTraceEnabled()) {
-            log.trace("<getpartFromDN: resulting DN part=" + part);
+        final List<String> dnParts = getPartsFromDNInternal(dn, dnpart, true);
+        if (!dnParts.isEmpty()) {
+            part = dnParts.get(0);
         }
         return part;
-    } // getPartFromDN
+    }
 
     /**
-     * Gets a specified parts of a DN. Returns all occurences as an ArrayList, also works if DN contains several instances of a part (i.e. cn=x, cn=y
-     * returns {x, y, null}).
+     * Gets a specified parts of a DN. Returns all occurrences as an ArrayList, also works if DN contains several
+     * instances of a part (i.e. cn=x, cn=y returns {x, y, null}).
      * 
      * @param dn String containing DN, The DN string has the format "C=SE, O=xx, OU=yy, CN=zz".
      * @param dnpart String specifying which part of the DN to get, should be "CN" or "OU" etc.
      * 
      * @return ArrayList containing dnparts or empty list if dnpart is not present
      */
-    public static ArrayList<String> getPartsFromDN(String dn, String dnpart) {
+    public static List<String> getPartsFromDN(String dn, String dnpart) {
+        return getPartsFromDNInternal(dn, dnpart, false);
+    }
+    
+    public static List<String> getPartsFromDNInternal(final String dn, final String dnPart, final boolean onlyReturnFirstMatch) {
         if (log.isTraceEnabled()) {
-            log.trace(">getPartsFromDN: dn:'" + dn + "', dnpart=" + dnpart);
+            log.trace(">getPartsFromDNInternal: dn:'" + dn + "', dnpart=" + dnPart + ", onlyReturnFirstMatch="+onlyReturnFirstMatch);
         }
-        ArrayList<String> parts = new ArrayList<String>();
-        if ((dn != null) && (dnpart != null)) {
-            String o;
-            dnpart += "="; // we search for 'CN=' etc.
-            X509NameTokenizer xt = new X509NameTokenizer(dn);
-            while (xt.hasMoreTokens()) {
-                o = xt.nextToken().trim();
-                if ((o.length() > dnpart.length()) && o.substring(0, dnpart.length()).equalsIgnoreCase(dnpart)) {
-                    parts.add(o.substring(dnpart.length()));
+        final List<String> parts = new ArrayList<String>();
+        if (dn!=null && dnPart!=null) {
+            final String dnPartLowerCase = dnPart.toLowerCase();
+            final int dnPartLenght = dnPart.length();
+            boolean quoted = false;
+            boolean escapeNext = false;
+            int currentStartPosition = -1;
+            for (int i=0; i<dn.length(); i++) {
+                final char current = dn.charAt(i);
+                // Toggle quoting for every non-escaped "-char
+                if (!escapeNext && current=='"') {
+                    quoted = !quoted;
                 }
+                // If there is an unescaped and unquoted =-char we need to investigate if it is a match for the sought after part
+                if (!quoted && !escapeNext && current=='=' && dnPartLenght<=i) {
+                    // Check that the character before our expected partName isn't a letter (e.g. dnsName=.. should not match E=..)
+                    if (i-dnPartLenght-1<0 || !Character.isLetter(dn.charAt(i-dnPartLenght-1))) {
+                        boolean match = true;
+                        for (int j=0; j<dnPartLenght; j++) {
+                            if (Character.toLowerCase(dn.charAt(i-dnPartLenght+j)) != dnPartLowerCase.charAt(j)) {
+                                match = false;
+                                break;
+                            }
+                        }
+                        if (match) {
+                            currentStartPosition = i+1;
+                        }
+                    }
+                }
+                // When we have found a start marker, we need to be on the lookout for the ending marker
+                if (currentStartPosition!=-1 && ((!quoted && !escapeNext && (current==',' || current=='+')) || i==dn.length()-1)) {
+                    int endPosition = (i==dn.length()-1) ? dn.length()-1 : i-1;
+                    // Remove white spaces from the end of the value
+                    while (endPosition>currentStartPosition && dn.charAt(endPosition)==' ') {
+                        endPosition--;
+                    }
+                    // Remove white spaces from the beginning of the value
+                    while (endPosition>currentStartPosition && dn.charAt(currentStartPosition)==' ') {
+                        currentStartPosition++;
+                    }
+                    // Only return the inner value if the part is quoted
+                    if (dn.charAt(currentStartPosition) == '"' && dn.charAt(endPosition) == '"') {
+                        currentStartPosition++;
+                        endPosition--;
+                    }
+                    parts.add(dn.substring(currentStartPosition, endPosition+1));
+                    if (onlyReturnFirstMatch) {
+                        break;
+                    }
+                    currentStartPosition = -1;
+                }
+                if (escapeNext) {
+                    // This character was escaped, so don't escape the next one
+                    escapeNext = false;
+                } else {
+                    if (!quoted && current=='\\') {
+                        // This escape character is not escaped itself, so the next one should be
+                        escapeNext = true;
+                    }
+                }
+                /*
+                if (!quoted && !escapeNext && current=='\\') {
+                    escapeNext = true;
+                }
+                */
             }
         }
         if (log.isTraceEnabled()) {
-            log.trace("<getpartsFromDN: resulting DN part=" + parts.toString());
+            log.trace("<getPartsFromDNInternal: resulting DN part=" + parts.toString());
         }
         return parts;
-    } // getPartFromDN
+    }
 
     /**
      * Gets a list of all custom OIDs defined in the string. A custom OID is defined as an OID, simply as that. Otherwise, if it is not a custom oid,
@@ -633,10 +739,10 @@ public class CertTools {
             }
         }
         if (log.isTraceEnabled()) {
-            log.trace("<getpartsFromDN: resulting DN part=" + parts.toString());
+            log.trace("<getCustomOids: resulting DN part=" + parts.toString());
         }
         return parts;
-    } // getPartFromDN
+    }
 
     /**
      * Gets subject DN in the format we are sure about (BouncyCastle),supporting UTF8.
@@ -2008,23 +2114,12 @@ public class CertTools {
         }
         final ASN1EncodableVector vec = new ASN1EncodableVector();
 
-        final ArrayList<String> emails = CertTools.getEmailFromDN(altName);
-        if (!emails.isEmpty()) {
-            final Iterator<String> iter = emails.iterator();
-            while (iter.hasNext()) {
-                String email = iter.next();
-                final GeneralName gn = new GeneralName(1, /*new DERIA5String(iter.next())*/ email);
-                vec.add(gn);
-            }
+        for (final String email : CertTools.getEmailFromDN(altName)) {
+            vec.add(new GeneralName(1, /*new DERIA5String(iter.next())*/ email));
         }
 
-        final ArrayList<String> dns = CertTools.getPartsFromDN(altName, CertTools.DNS);
-        if (!dns.isEmpty()) {
-            final Iterator<String> iter = dns.iterator();
-            while (iter.hasNext()) {
-                final GeneralName gn = new GeneralName(2, new DERIA5String(iter.next()));
-                vec.add(gn);
-            }
+        for (final String dns : CertTools.getPartsFromDN(altName, CertTools.DNS)) {
+            vec.add(new GeneralName(2, new DERIA5String(dns)));
         }
 
         final String directoryName = getDirectoryStringFromAltName(altName);
@@ -2035,184 +2130,134 @@ public class CertTools {
             vec.add(gn);
         }
 
-        ArrayList<String> uri = CertTools.getPartsFromDN(altName, CertTools.URI);
-        if (!uri.isEmpty()) {
-            final Iterator<String> iter = uri.iterator();
-            while (iter.hasNext()) {
-                final GeneralName gn = new GeneralName(6, new DERIA5String(iter.next()));
-                vec.add(gn);
-            }
+        for (final String uri : CertTools.getPartsFromDN(altName, CertTools.URI)) {
+            vec.add(new GeneralName(6, new DERIA5String(uri)));
         }
-        uri = CertTools.getPartsFromDN(altName, CertTools.URI1);
-        if (!uri.isEmpty()) {
-            final Iterator<String> iter = uri.iterator();
-            while (iter.hasNext()) {
-                final GeneralName gn = new GeneralName(6, new DERIA5String(iter.next()));
-                vec.add(gn);
-            }
+        for (final String uri : CertTools.getPartsFromDN(altName, CertTools.URI1)) {
+            vec.add(new GeneralName(6, new DERIA5String(uri)));
         }
-        uri = CertTools.getPartsFromDN(altName, CertTools.URI2);
-        if (!uri.isEmpty()) {
-            final Iterator<String> iter = uri.iterator();
-            while (iter.hasNext()) {
-                final GeneralName gn = new GeneralName(6, new DERIA5String(iter.next()));
-                vec.add(gn);
-            }
+        for (final String uri : CertTools.getPartsFromDN(altName, CertTools.URI2)) {
+            vec.add(new GeneralName(6, new DERIA5String(uri)));
         }
 
-        final ArrayList<String> ipstr = CertTools.getPartsFromDN(altName, CertTools.IPADDR);
-        if (!ipstr.isEmpty()) {
-            final Iterator<String> iter = ipstr.iterator();
-            while (iter.hasNext()) {
-                final String addr = iter.next();
-                final byte[] ipoctets = StringTools.ipStringToOctets(addr);
-                if (ipoctets.length > 0) {
-                    final GeneralName gn = new GeneralName(7, new DEROctetString(ipoctets));
-                    vec.add(gn);
-                } else {
-                    log.error("Cannot parse/encode ip address, ignoring: " + addr);
-                }
+        for (final String addr : CertTools.getPartsFromDN(altName, CertTools.IPADDR)) {
+            final byte[] ipoctets = StringTools.ipStringToOctets(addr);
+            if (ipoctets.length > 0) {
+                final GeneralName gn = new GeneralName(7, new DEROctetString(ipoctets));
+                vec.add(gn);
+            } else {
+                log.error("Cannot parse/encode ip address, ignoring: " + addr);
             }
         }
 
         // UPN is an OtherName see method getUpn... for asn.1 definition
-        final ArrayList<String> upn = CertTools.getPartsFromDN(altName, CertTools.UPN);
-        if (!upn.isEmpty()) {
-            final Iterator<String> iter = upn.iterator();
-            while (iter.hasNext()) {
-                final ASN1EncodableVector v = new ASN1EncodableVector();
-                v.add(new ASN1ObjectIdentifier(CertTools.UPN_OBJECTID));
-                v.add(new DERTaggedObject(true, 0, new DERUTF8String(iter.next())));
-                GeneralName gn = GeneralName.getInstance(new DERTaggedObject(false, 0, new DERSequence(v)));
-                vec.add(gn);
-            }
+        for (final String upn : CertTools.getPartsFromDN(altName, CertTools.UPN)) {
+            final ASN1EncodableVector v = new ASN1EncodableVector();
+            v.add(new ASN1ObjectIdentifier(CertTools.UPN_OBJECTID));
+            v.add(new DERTaggedObject(true, 0, new DERUTF8String(upn)));
+            vec.add(GeneralName.getInstance(new DERTaggedObject(false, 0, new DERSequence(v))));
         }
         
         // PermanentIdentifier is an OtherName see method getPermananentIdentifier... for asn.1 definition
-        final ArrayList<String> permanentIdentifier = CertTools.getPartsFromDN(altName, CertTools.PERMANENTIDENTIFIER);
-        if (!permanentIdentifier.isEmpty()) {
-            final Iterator<String> iter = permanentIdentifier.iterator();
-            while (iter.hasNext()) {
-                final String[] values = getPermanentIdentifierValues(iter.next());
-                
-                final ASN1EncodableVector v = new ASN1EncodableVector(); // this is the OtherName
-                v.add(new ASN1ObjectIdentifier(CertTools.PERMANENTIDENTIFIER_OBJECTID));
-
-                // First the PermanentIdentifier sequence
-                final ASN1EncodableVector piSeq = new ASN1EncodableVector();
-                if (values[0] != null) {
-                    piSeq.add(new DERUTF8String(values[0]));
-                }
-                if (values[1] != null) {
-                    piSeq.add(new ASN1ObjectIdentifier(values[1]));
-                }
-                v.add(new DERTaggedObject(true, 0, new DERSequence(piSeq)));
-                
-                // GeneralName gn = new GeneralName(new DERSequence(v), 0);
-                final ASN1Primitive gn = new DERTaggedObject(false, 0, new DERSequence(v));
-                vec.add(gn);
+        for (final String permanentIdentifier : CertTools.getPartsFromDN(altName, CertTools.PERMANENTIDENTIFIER)) {
+            final String[] values = getPermanentIdentifierValues(permanentIdentifier);
+            final ASN1EncodableVector v = new ASN1EncodableVector(); // this is the OtherName
+            v.add(new ASN1ObjectIdentifier(CertTools.PERMANENTIDENTIFIER_OBJECTID));
+            // First the PermanentIdentifier sequence
+            final ASN1EncodableVector piSeq = new ASN1EncodableVector();
+            if (values[0] != null) {
+                piSeq.add(new DERUTF8String(values[0]));
             }
+            if (values[1] != null) {
+                piSeq.add(new ASN1ObjectIdentifier(values[1]));
+            }
+            v.add(new DERTaggedObject(true, 0, new DERSequence(piSeq)));
+            // GeneralName gn = new GeneralName(new DERSequence(v), 0);
+            final ASN1Primitive gn = new DERTaggedObject(false, 0, new DERSequence(v));
+            vec.add(gn);
         }
 
-        final ArrayList<String> guid = CertTools.getPartsFromDN(altName, CertTools.GUID);
-        if (!guid.isEmpty()) {
-            final Iterator<String> iter = guid.iterator();
-            while (iter.hasNext()) {
-                final ASN1EncodableVector v = new ASN1EncodableVector();
-                byte[] guidbytes = Hex.decode(iter.next());
-                if (guidbytes != null) {
-                    v.add(new ASN1ObjectIdentifier(CertTools.GUID_OBJECTID));
-                    v.add(new DERTaggedObject(true, 0, new DEROctetString(guidbytes)));
-                    final ASN1Primitive gn = new DERTaggedObject(false, 0, new DERSequence(v));
-                    vec.add(gn);
-                } else {
-                    log.error("Cannot decode hexadecimal guid, ignoring: " + guid);
-                }
+        for (final String guid : CertTools.getPartsFromDN(altName, CertTools.GUID)) {
+            final ASN1EncodableVector v = new ASN1EncodableVector();
+            byte[] guidbytes = Hex.decode(guid);
+            if (guidbytes != null) {
+                v.add(new ASN1ObjectIdentifier(CertTools.GUID_OBJECTID));
+                v.add(new DERTaggedObject(true, 0, new DEROctetString(guidbytes)));
+                final ASN1Primitive gn = new DERTaggedObject(false, 0, new DERSequence(v));
+                vec.add(gn);
+            } else {
+                log.error("Cannot decode hexadecimal guid, ignoring: " + guid);
             }
         }
 
         // Krb5PrincipalName is an OtherName, see method getKrb5Principal...for ASN.1 definition
-        final ArrayList<String> krb5principalname = CertTools.getPartsFromDN(altName, CertTools.KRB5PRINCIPAL);
-        if (!krb5principalname.isEmpty()) {
-            final Iterator<String> iter = krb5principalname.iterator();
-            while (iter.hasNext()) {
-                // Start by parsing the input string to separate it in different parts
-                final String principalString = iter.next();
-                if (log.isDebugEnabled()) {
-                    log.debug("principalString: " + principalString);
-                }
-                // The realm is the last part moving back until an @
-                final int index = principalString.lastIndexOf('@');
-                String realm = "";
-                if (index > 0) {
-                    realm = principalString.substring(index + 1);
-                }
-                if (log.isDebugEnabled()) {
-                    log.debug("realm: " + realm);
-                }
-                // Now we can have several principals separated by /
-                final ArrayList<String> principalarr = new ArrayList<String>();
-                int jndex = 0;
-                int bindex = 0;
-                while (jndex < index) {
-                    // Loop and add all strings separated by /
-                    jndex = principalString.indexOf('/', bindex);
-                    if (jndex == -1) {
-                        jndex = index;
-                    }
-                    String s = principalString.substring(bindex, jndex);
-                    if (log.isDebugEnabled()) {
-                        log.debug("adding principal name: " + s);
-                    }
-                    principalarr.add(s);
-                    bindex = jndex + 1;
-                }
-
-                // Now we must construct the rather complex asn.1...
-                final ASN1EncodableVector v = new ASN1EncodableVector(); // this is the OtherName
-                v.add(new ASN1ObjectIdentifier(CertTools.KRB5PRINCIPAL_OBJECTID));
-
-                // First the Krb5PrincipalName sequence
-                final ASN1EncodableVector krb5p = new ASN1EncodableVector();
-                // The realm is the first tagged GeneralString
-                krb5p.add(new DERTaggedObject(true, 0, new DERGeneralString(realm)));
-                // Second is the sequence of principal names, which is at tagged position 1 in the krb5p
-                final ASN1EncodableVector principals = new ASN1EncodableVector();
-                // According to rfc4210 the type NT-UNKNOWN is 0, and according to some other rfc this type should be used...
-                principals.add(new DERTaggedObject(true, 0, new DERInteger(0)));
-                // The names themselves are yet another sequence
-                final Iterator<String> i = principalarr.iterator();
-                final ASN1EncodableVector names = new ASN1EncodableVector();
-                while (i.hasNext()) {
-                    String principalName = (String) i.next();
-                    names.add(new DERGeneralString(principalName));
-                }
-                principals.add(new DERTaggedObject(true, 1, new DERSequence(names)));
-                krb5p.add(new DERTaggedObject(true, 1, new DERSequence(principals)));
-
-                v.add(new DERTaggedObject(true, 0, new DERSequence(krb5p)));
-                final ASN1Primitive gn = new DERTaggedObject(false, 0, new DERSequence(v));
-                vec.add(gn);
+        for (final String principalString : CertTools.getPartsFromDN(altName, CertTools.KRB5PRINCIPAL)) {
+            // Start by parsing the input string to separate it in different parts
+            if (log.isDebugEnabled()) {
+                log.debug("principalString: " + principalString);
             }
+            // The realm is the last part moving back until an @
+            final int index = principalString.lastIndexOf('@');
+            String realm = "";
+            if (index > 0) {
+                realm = principalString.substring(index + 1);
+            }
+            if (log.isDebugEnabled()) {
+                log.debug("realm: " + realm);
+            }
+            // Now we can have several principals separated by /
+            final ArrayList<String> principalarr = new ArrayList<String>();
+            int jndex = 0;
+            int bindex = 0;
+            while (jndex < index) {
+                // Loop and add all strings separated by /
+                jndex = principalString.indexOf('/', bindex);
+                if (jndex == -1) {
+                    jndex = index;
+                }
+                String s = principalString.substring(bindex, jndex);
+                if (log.isDebugEnabled()) {
+                    log.debug("adding principal name: " + s);
+                }
+                principalarr.add(s);
+                bindex = jndex + 1;
+            }
+
+            // Now we must construct the rather complex asn.1...
+            final ASN1EncodableVector v = new ASN1EncodableVector(); // this is the OtherName
+            v.add(new ASN1ObjectIdentifier(CertTools.KRB5PRINCIPAL_OBJECTID));
+
+            // First the Krb5PrincipalName sequence
+            final ASN1EncodableVector krb5p = new ASN1EncodableVector();
+            // The realm is the first tagged GeneralString
+            krb5p.add(new DERTaggedObject(true, 0, new DERGeneralString(realm)));
+            // Second is the sequence of principal names, which is at tagged position 1 in the krb5p
+            final ASN1EncodableVector principals = new ASN1EncodableVector();
+            // According to rfc4210 the type NT-UNKNOWN is 0, and according to some other rfc this type should be used...
+            principals.add(new DERTaggedObject(true, 0, new DERInteger(0)));
+            // The names themselves are yet another sequence
+            final Iterator<String> i = principalarr.iterator();
+            final ASN1EncodableVector names = new ASN1EncodableVector();
+            while (i.hasNext()) {
+                String principalName = (String) i.next();
+                names.add(new DERGeneralString(principalName));
+            }
+            principals.add(new DERTaggedObject(true, 1, new DERSequence(names)));
+            krb5p.add(new DERTaggedObject(true, 1, new DERSequence(principals)));
+
+            v.add(new DERTaggedObject(true, 0, new DERSequence(krb5p)));
+            final ASN1Primitive gn = new DERTaggedObject(false, 0, new DERSequence(v));
+            vec.add(gn);
         }
 
         // To support custom OIDs in altNames, they must be added as an OtherName of plain type UTF8String
-        final ArrayList<String> customoids = CertTools.getCustomOids(altName);
-        if (!customoids.isEmpty()) {
-            final Iterator<String> iter = customoids.iterator();
-            while (iter.hasNext()) {
-                final String oid = iter.next();
-                final ArrayList<String> oidval = CertTools.getPartsFromDN(altName, oid);
-                if (!oidval.isEmpty()) {
-                    final Iterator<String> valiter = oidval.iterator();
-                    while (valiter.hasNext()) {
-                        final ASN1EncodableVector v = new ASN1EncodableVector();
-                        v.add(new ASN1ObjectIdentifier(oid));
-                        v.add(new DERTaggedObject(true, 0, new DERUTF8String((String) valiter.next())));
-                        final ASN1Primitive gn = new DERTaggedObject(false, 0, new DERSequence(v));
-                        vec.add(gn);
-                    }
-                }
+        for (final String oid : CertTools.getCustomOids(altName)) {
+            for (final String oidValue : CertTools.getPartsFromDN(altName, oid)) {
+                final ASN1EncodableVector v = new ASN1EncodableVector();
+                v.add(new ASN1ObjectIdentifier(oid));
+                v.add(new DERTaggedObject(true, 0, new DERUTF8String(oidValue)));
+                final ASN1Primitive gn = new DERTaggedObject(false, 0, new DERSequence(v));
+                vec.add(gn);
             }
         }
 
@@ -2739,6 +2784,37 @@ public class CertTools {
      * @return the new DN
      */
     public static String insertCNPostfix(String dn, String cnpostfix) {
+        if (log.isTraceEnabled()) {
+            log.trace(">insertCNPostfix: dn=" + dn + ", cnpostfix="+cnpostfix);
+        }
+        if (dn == null) {
+            return null;
+        }
+        final RDN[] rdns = IETFUtils.rDNsFromString(dn, CeSecoreNameStyle.INSTANCE);
+        final X500NameBuilder nameBuilder = new X500NameBuilder(CeSecoreNameStyle.INSTANCE);
+        boolean replaced = false;
+        for (final RDN rdn : rdns) {
+            final AttributeTypeAndValue[] attributeTypeAndValues = rdn.getTypesAndValues();
+            for (final AttributeTypeAndValue atav : attributeTypeAndValues) {
+                if (atav.getType() != null) {
+                    final String currentSymbol = CeSecoreNameStyle.DefaultSymbols.get(atav.getType());
+                    if (!replaced && "CN".equals(currentSymbol)) {
+                        nameBuilder.addRDN(atav.getType(), IETFUtils.valueToString(atav.getValue())+cnpostfix);
+                        replaced = true;
+                    } else {
+                        nameBuilder.addRDN(atav);
+                    }
+                }
+            }
+        }
+        final String ret =  nameBuilder.build().toString();
+        if (log.isTraceEnabled()) {
+            log.trace("<reverseDN: " + ret);
+        }
+        return ret;
+/*
+        
+        
         String newdn = null;
 
         if ((dn != null) && (cnpostfix != null)) {
@@ -2759,8 +2835,8 @@ public class CertTools {
             }
         }
 
-        return newdn;
-    } // insertCNPostfix
+        return newdn;*/
+    }
 
     /**
      * class for breaking up an X500 Name into it's component tokens, ala java.util.StringTokenizer. Taken from BouncyCastle, but does NOT use or
