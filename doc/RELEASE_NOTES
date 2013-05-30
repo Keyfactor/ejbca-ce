@@ -15,7 +15,7 @@ This release contains a minor security fix.
 
 * Noteworthy changes:
 - Added lots of CLI improvements to create subCA signed by external CAs, edit CAs and profiles, and add and edit services.
-- It is not possible to create CAs, using the CLI, with explicit ECC key encoding in CA certificate. Useful for ePassport installations.
+- It is now possible to create CAs, using the CLI, with explicit ECC key encoding in CA certificate. Useful for ePassport installations.
 - When creating link certificates they are now issued using the same certificate profile as the CA is using.  
 - Improved support for Elliptic Curve Cryptography (ECC) using the CMP protocol. You can not use CMP in a Suite B compliant way.
 - The LDAP publisher now supports STARTTLS extension, in addition to pure TLS connections.
