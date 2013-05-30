@@ -359,6 +359,10 @@
 		<antcall target="createreport">
 			<param name="reports.dir" value="${reports.base.dir}/run"/>
 		</antcall>
+		<!-- The name of the output from the profiling result will vary slightly -->
+		<fileset id="profilingtest.logfile.id" dir="${reports.base.dir}/run/html/org/ejbca/core/ejb" includes="*_ProfilingTest-out.html"/>
+		<property name="profilingtest.logfile" refid="profilingtest.logfile.id"/>
+		<echo message="Profiling results (when enabled) can be found in file://${reports.base.dir}/run/html/org/ejbca/core/ejb/${profilingtest.logfile}"/>
 		<antcall target="showtime"/>
 	</target>
 
