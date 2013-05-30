@@ -65,8 +65,7 @@ public class ProfilingTest {
                 return (int)(p1.getAverageMilliSeconds() - p0.getAverageMilliSeconds());
             }
         });
-        log.info("\n\nInvocations with average highest invocation time:");
-        logAll(profilingStats);
+        log.info("\n\nInvocations with average highest invocation time:\n" + getAsString(profilingStats));
         // Sort with most invoked methods first
         Collections.sort(profilingStats, new Comparator<ProfilingStat>() {
             @Override
@@ -82,24 +81,6 @@ public class ProfilingTest {
         }
         assertTrue("Highest average invocation time was " + highestAverage + "ms. Max allowed for this test to pass is " +
                 HIGEST_AVERAGE_ALLOWED_MS +" ms.", highestAverage<HIGEST_AVERAGE_ALLOWED_MS);
-    }
-
-    // Output in a format that will not be truncated by by integration testing reporting (Hudson)
-    private void logAll(final List<ProfilingStat> profilingStats) {
-        final StringBuilder sbHeader = new StringBuilder();
-        sbHeader.append(String.format("%1$-120s", "method")).append(' ');
-        sbHeader.append(String.format("%1$10s", "sum (ms)")).append(' ');
-        sbHeader.append(String.format("%1$10s", "calls")).append(' ');
-        sbHeader.append(String.format("%1$10s", "avg (ms)"));
-        log.info(sbHeader.toString());
-        for (final ProfilingStat profilingStat : profilingStats) {
-            final StringBuilder sbLine = new StringBuilder();
-            sbLine.append(String.format("%1$-120s", profilingStat.getFullmethodName())).append(' ');
-            sbLine.append(String.format("%1$10d", profilingStat.getDurationMilliSeconds())).append(' ');
-            sbLine.append(String.format("%1$10d", profilingStat.getInvocations())).append(' ');
-            sbLine.append(String.format("%10.3f", Long.valueOf(profilingStat.getAverageMicroSeconds()).doubleValue()/1000));
-            log.info(sbLine.toString());
-        }
     }
     
     // Output in a format that is friendly to post-processing
