@@ -50,7 +50,7 @@ new TWTR.Widget({
 <div class="frame">
 <div class="label"><a style="color:white; padding:1em;" href="http://www.primekey.se/Services/Training/" target="pk">EJBCA PKI Training</a>
 <a style="color:white; padding:1em;" href="http://www.primekey.se/Services/Support/" target="pk">Enterprise Support</a>
-<a style="color:white; padding:1.8em;" href="http://www.primekey.se/Company/Register+to+Receive/Gov+eID+%26+ePassports/" target="pk">Free eID &amp; ePassport booklet</a>
+<a style="color:white; padding:1em;" href="http://www.primekey.se/Company/Register+to+Receive/Gov+eID+%26+ePassports/" target="pk">Free eID &amp; ePassport booklet</a>
 </div>
 <div class="content">
 <!-- 
