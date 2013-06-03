@@ -99,7 +99,7 @@ public class InternalKeyBindingDataSessionBean implements InternalKeyBindingData
     @Override
     public int mergeInternalKeyBinding(InternalKeyBinding internalKeyBinding) throws InternalKeyBindingNameInUseException {
         if (log.isDebugEnabled()) {
-            log.debug(">addCryptoToken " + internalKeyBinding.getName() + " " + internalKeyBinding.getClass().getName());
+            log.debug(">mergeInternalKeyBinding " + internalKeyBinding.getName() + " " + internalKeyBinding.getClass().getName());
         }
         int internalKeyBindingId = internalKeyBinding.getId();
         final String name = internalKeyBinding.getName();
@@ -167,7 +167,7 @@ public class InternalKeyBindingDataSessionBean implements InternalKeyBindingData
         // Update cache with provided token (it might be active and we like keeping things active)
         InternalKeyBindingCache.INSTANCE.updateWith(internalKeyBindingId, internalKeyBindingData.getProtectString(0).hashCode(), name, internalKeyBinding);
         if (log.isDebugEnabled()) {
-            log.debug("<addCryptoToken " + internalKeyBinding.getName());
+            log.debug("<mergeInternalKeyBinding " + internalKeyBinding.getName());
         }
         return internalKeyBindingId;   // tokenId
     }

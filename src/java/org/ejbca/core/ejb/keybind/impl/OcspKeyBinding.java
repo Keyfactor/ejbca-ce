@@ -47,12 +47,6 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     public static final String PROPERTY_REQUIRE_TRUSTED_SIGNATURE = "requireTrustedSignature";
     public static final String PROPERTY_UNTIL_NEXT_UPDATE = "untilNextUpdate";
     public static final String PROPERTY_MAX_AGE = "maxAge";
-    //signaturealgorithm -> base class
-    //signaturerequired, false -> PROPERTY_REQUIRE_TRUSTED_SIGNATURE + empty trust list
-    //restrictsignaturesbyissuer, false -> PROPERTY_REQUIRE_TRUSTED_SIGNATURE + trust list
-    //restrictsignaturesbysigner, false -> PROPERTY_REQUIRE_TRUSTED_SIGNATURE + trust list
-    //untilNextUpdate, 0, -> per cert profile still in config file, if set here it would override global but not per cert profile setting
-    //maxAge, 30 -> as untilNextUpdate
     
     @SuppressWarnings("serial")
     public OcspKeyBinding() {
@@ -112,15 +106,19 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     public void setRequireTrustedSignature(boolean requireTrustedSignature) {
         setProperty(PROPERTY_REQUIRE_TRUSTED_SIGNATURE, Boolean.valueOf(requireTrustedSignature));
     }
+    /** @return the value in seconds (granularity defined in RFC 5019) */
     public int getUntilNextUpdate() {
         return (Integer) getProperty(PROPERTY_UNTIL_NEXT_UPDATE).getValue();
     }
+    /** Set the value in seconds (granularity defined in RFC 5019) */
     public void setUntilNextUpdate(int untilNextUpdate) {
         setProperty(PROPERTY_UNTIL_NEXT_UPDATE, Integer.valueOf(untilNextUpdate));
     }
+    /** @return the value in seconds (granularity defined in RFC 5019) */
     public int getMaxAge() {
         return (Integer) getProperty(PROPERTY_MAX_AGE).getValue();
     }
+    /** Set the value in seconds (granularity defined in RFC 5019) */
     public void setMaxAge(int maxAge) {
         setProperty(PROPERTY_MAX_AGE, Integer.valueOf(maxAge));
     }

@@ -53,6 +53,9 @@ public class OcspConfiguration {
     public static final String REKEYING_UPDATE_TIME_IN_SECONDS = "ocsp.rekeying.update.time.in.seconds";
     public static final String REKEYING_SAFETY_MARGIN_IN_SECONDS = "ocsp.rekeying.safety.margin.in.seconds";
     public static final String UNTIL_NEXT_UPDATE = "ocsp.untilNextUpdate";
+    public static final String MAX_AGE = "ocsp.maxAge";
+    public static final String INCLUDE_CERT_CHAIN = "ocsp.includecertchain";
+    public static final String RESPONDER_ID_TYPE = "ocsp.responderidtype";
     
     public static final int RESTRICTONISSUER = 0;
     public static final int RESTRICTONSIGNER = 1;
@@ -153,7 +156,7 @@ public class OcspConfiguration {
      * If set to true the certificate chain will be returned with the OCSP response.
      */
     public static boolean getIncludeCertChain() {
-        String value = ConfigurationHolder.getString("ocsp.includecertchain");
+        String value = ConfigurationHolder.getString(INCLUDE_CERT_CHAIN);
         return "true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value);
     }
 
@@ -163,7 +166,7 @@ public class OcspConfiguration {
      * @returns one of OCSPUtil.RESPONDERIDTYPE_NAME and OCSPUtil.RESPONDERIDTYPE_KEYHASH
      */
     public static int getResponderIdType() {
-        if ("name".equalsIgnoreCase(ConfigurationHolder.getString("ocsp.responderidtype"))) {
+        if ("name".equalsIgnoreCase(ConfigurationHolder.getString(RESPONDER_ID_TYPE))) {
             return RESPONDERIDTYPE_NAME;
         }
         return RESPONDERIDTYPE_KEYHASH;
@@ -376,6 +379,15 @@ public class OcspConfiguration {
         }
         return value;
     }
+    
+    /** @return true if Until Next Update is explicitly configured for the requested certificate profile */
+    public static boolean isUntilNextUpdateConfigured(final int certificateProfileId) {
+        if (certificateProfileId==CertificateProfileConstants.CERTPROFILE_NO_PROFILE){
+            return ConfigurationHolder.instance().containsKey(UNTIL_NEXT_UPDATE);
+        } else {
+            return ConfigurationHolder.instance().containsKey("ocsp." + certificateProfileId + ".untilNextUpdate");
+        }
+    }
 
     /**
      * The default number of milliseconds a HTTP-response should be cached. See RFC5019.
@@ -385,7 +397,7 @@ public class OcspConfiguration {
         Configuration config = ConfigurationHolder.instance();
         String key = "ocsp." + certProfileId + ".maxAge";
         if ((certProfileId == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) || (!config.containsKey(key))) {
-            key = "ocsp.maxAge";
+            key = MAX_AGE;
         }
         try {
             value = (config.getLong(key, value) * 1000);
@@ -395,6 +407,15 @@ public class OcspConfiguration {
             log.warn("\"ocsp.maxAge\" is not a decimal number. Using default value: " + value);
         }
         return value;
+    }
+
+    /** @return true if Until Next Update is explicitly configured for the requested certificate profile */
+    public static boolean isMaxAgeConfigured(final int certificateProfileId) {
+        if (certificateProfileId==CertificateProfileConstants.CERTPROFILE_NO_PROFILE){
+            return ConfigurationHolder.instance().containsKey(MAX_AGE);
+        } else {
+            return ConfigurationHolder.instance().containsKey("ocsp." + certificateProfileId + ".maxAge");
+        }
     }
 
     // Values for stand-alone OCSP

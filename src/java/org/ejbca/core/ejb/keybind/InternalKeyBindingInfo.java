@@ -13,9 +13,7 @@
 package org.ejbca.core.ejb.keybind;
 
 import java.io.Serializable;
-import java.math.BigInteger;
 import java.security.cert.Certificate;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -39,7 +37,7 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
     final private String keyPairAlias;
     final private String nextKeyPairAlias;
     final private List<InternalKeyBindingProperty<? extends Serializable>> properties;
-    final private List<SimpleEntry<Integer,BigInteger>> trustedCertificateReferences;
+    final private List<InternalKeyBindingTrustEntry> trustedCertificateReferences;
     final private String signatureAlgorithm;
     
     public InternalKeyBindingInfo(InternalKeyBinding internalKeyBinding) {
@@ -173,12 +171,12 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
     }
 
     @Override
-    public List<SimpleEntry<Integer, BigInteger>> getTrustedCertificateReferences() {
+    public List<InternalKeyBindingTrustEntry> getTrustedCertificateReferences() {
         return trustedCertificateReferences;
     }
 
     @Override
-    public void setTrustedCertificateReferences(List<SimpleEntry<Integer, BigInteger>> trustedCertificateReferences) {
+    public void setTrustedCertificateReferences(List<InternalKeyBindingTrustEntry> trustedCertificateReferences) {
         throw new RuntimeException(new OperationNotSupportedException());
     }
 

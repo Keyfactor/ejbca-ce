@@ -37,7 +37,6 @@ import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -147,6 +146,7 @@ import org.ejbca.core.ejb.keybind.InternalKeyBindingInfo;
 import org.ejbca.core.ejb.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.ejbca.core.ejb.keybind.InternalKeyBindingNameInUseException;
 import org.ejbca.core.ejb.keybind.InternalKeyBindingStatus;
+import org.ejbca.core.ejb.keybind.InternalKeyBindingTrustEntry;
 import org.ejbca.core.ejb.keybind.impl.AuthenticationKeyBinding;
 import org.ejbca.core.ejb.keybind.impl.OcspKeyBinding;
 import org.ejbca.core.ejb.keybind.impl.OcspKeyBinding.ResponderIdType;
@@ -408,7 +408,11 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         if (log.isDebugEnabled()) {
             log.debug("Signing algorithm: " + sigAlg);
         }
-        final boolean includeChain = OcspConfiguration.getIncludeCertChain();
+        boolean includeChain = OcspConfiguration.getIncludeCertChain();
+        // If we have an OcspKeyBinding we use this configuration to override the default
+        if (ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
+            includeChain = ocspSigningCacheEntry.getOcspKeyBinding().getIncludeCertCertChain();
+        }
         if (log.isDebugEnabled()) {
             log.debug("Include chain: " + includeChain);
         }
@@ -420,12 +424,20 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             chain[0] = signerCert;
         }
         try {
-            final int respIdType = OcspConfiguration.getResponderIdType();
+            int respIdType = OcspConfiguration.getResponderIdType();
+            // If we have an OcspKeyBinding we use this configuration to override the default
+            if (ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
+                if (ResponderIdType.NAME.equals(ocspSigningCacheEntry.getOcspKeyBinding().getResponderIdType())) {
+                    respIdType = OcspConfiguration.RESPONDERIDTYPE_NAME;
+                } else {
+                    respIdType = OcspConfiguration.RESPONDERIDTYPE_KEYHASH;
+                }
+            }
             final BasicOCSPResp ocspresp = generateBasicOcspResp(req, exts, responseList, sigAlg, signerCert, ocspSigningCacheEntry.getPrivateKey(),
                     ocspSigningCacheEntry.getSignatureProviderName(), chain,
                     respIdType);
 
-            // Now we can use the returned OCSPServiceResponse to get private key and cetificate chain to sign the ocsp response
+            // Now we can use the returned OCSPServiceResponse to get private key and certificate chain to sign the ocsp response
             if (log.isDebugEnabled()) {
                 Collection<X509Certificate> coll = Arrays.asList(chain);
                 log.debug("Cert chain for OCSP signing is of size " + coll.size());
@@ -501,7 +513,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             transactionLogger.paramPut(TransactionLogger.SIGN_SERIAL_NO, signercert.getSerialNumber().toByteArray());
             transactionLogger.paramPut(TransactionLogger.SIGN_SUBJECT_NAME, signercertSubjectName);
             transactionLogger.paramPut(PatternLogger.REPLY_TIME, TransactionLogger.REPLY_TIME);
-
+            // Check if we have configured request verification using the old property file way..
             if (OcspConfiguration.getEnforceRequestSigning()) {
                 // If it verifies OK, check if it is revoked
                 final CertificateStatus status = certificateStoreSession.getStatus(CertTools.getIssuerDN(signercert),
@@ -516,7 +528,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     log.info(infoMsg);
                     throw new SignRequestSignatureException(infoMsg);
                 }
-
+                // First do backwards compatible checking
                 if (OcspConfiguration.getRestrictSignatures()) {
                     DirectoryCache.INSTANCE.loadTrustDir();
                     switch (OcspConfiguration.getRestrictSignaturesByMethod()) {
@@ -543,13 +555,86 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     }
                 }
             }
+            // Next, check if there is an OcspKeyBinding where signing is required and configured for this request
+            // In the case where multiple requests are bundled together they all must be trusting the signer
+            for (final Req ocspRequest : result.getRequestList()) {
+                OcspSigningCacheEntry ocspSigningCacheEntry = OcspSigningCache.INSTANCE.getEntry(ocspRequest.getCertID());
+                if (ocspSigningCacheEntry==null) {
+                    if (log.isTraceEnabled()) {
+                        log.trace("Using default responder to check signature.");
+                    }
+                    ocspSigningCacheEntry = OcspSigningCache.INSTANCE.getDefaultEntry();
+                }
+                if (log.isTraceEnabled()) {
+                    log.trace("ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate: " + ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate());
+                }
+                if (ocspSigningCacheEntry!=null && ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
+                    final OcspKeyBinding ocspKeyBinding = ocspSigningCacheEntry.getOcspKeyBinding();
+                    if (log.isTraceEnabled()) {
+                        log.trace("OcspKeyBinding " + ocspKeyBinding.getId() + ", RequireTrustedSignature: " + ocspKeyBinding.getRequireTrustedSignature());
+                    }
+                    if (ocspKeyBinding.getRequireTrustedSignature()) {
+                        boolean isTrusted = false;
+                        final List<InternalKeyBindingTrustEntry> trustedCertificateReferences = ocspKeyBinding.getTrustedCertificateReferences();
+                        if (trustedCertificateReferences.isEmpty()) {
+                            // We trust ANY cert from a known CA
+                            isTrusted = true;
+                        } else {
+                            for (final InternalKeyBindingTrustEntry trustEntry : trustedCertificateReferences) {
+                                final int trustedCaId = trustEntry.getCaId();
+                                final BigInteger trustedSerialNumber = trustEntry.getCertificateSerialNumber();
+                                if (log.isTraceEnabled()) {
+                                    log.trace("Processing trustedCaId="+trustedCaId + " trustedSerialNumber="+trustedSerialNumber + " signercertIssuerName.hashCode()="+
+                                            signercertIssuerName.hashCode()+" signercertSerNo="+signercertSerNo);
+                                }
+                                if (trustedCaId == signercertIssuerName.hashCode()) {
+                                    if (trustedSerialNumber == null) {
+                                        // We trust any certificate from this CA
+                                        isTrusted = true;
+                                        if (log.isTraceEnabled()) {
+                                            log.trace("Trusting request signature since ANY certificate from issuer "+trustedCaId+" is trusted.");
+                                        }
+                                        break;
+                                    } else if (signercertSerNo.equals(trustedSerialNumber)) {
+                                        // We trust this particular certificate from this CA
+                                        isTrusted = true;
+                                        if (log.isTraceEnabled()) {
+                                            log.trace("Trusting request signature since certificate with serialnumber " + trustedSerialNumber + " from issuer "+trustedCaId+" is trusted.");
+                                        }
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        if (!isTrusted) {
+                            final String infoMsg = intres.getLocalizedMessage("ocsp.infosigner.notallowed", signercertSubjectName, signercertIssuerName,
+                                    signercertSerNo.toString(16));
+                            log.info(infoMsg);
+                            throw new SignRequestSignatureException(infoMsg);
+                        }
+                    }
+                }
+            }
         } else {
             if (OcspConfiguration.getEnforceRequestSigning()) {
                 // Signature required
                 throw new SignRequestException("Signature required");
             }
+            // Next, check if there is an OcspKeyBinding where signing is required and configured for this request
+            // In the case where multiple requests are bundled together they all must be trusting the signer
+            for (final Req ocspRequest : result.getRequestList()) {
+                OcspSigningCacheEntry ocspSigningCacheEntry = OcspSigningCache.INSTANCE.getEntry(ocspRequest.getCertID());
+                if (ocspSigningCacheEntry==null) {
+                    ocspSigningCacheEntry = OcspSigningCache.INSTANCE.getDefaultEntry();
+                }
+                if (ocspSigningCacheEntry != null && ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
+                    final OcspKeyBinding ocspKeyBinding = ocspSigningCacheEntry.getOcspKeyBinding();
+                    if (ocspKeyBinding.getRequireTrustedSignature()) {
+                        throw new SignRequestException("Signature required");
+                    }
+                }
+            }
         }
-
         return result;
     }
 
@@ -566,7 +651,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     }
     
     /**
-     * Checks the signature on an OCSP request and checks that it is signed by an allowed CA. Does not check for revocation of the signer certificate
+     * Checks the signature on an OCSP request. Does not check for revocation of the signer certificate
      * 
      * @param clientRemoteAddr The IP address or host name of the remote client that sent the request, can be null.
      * @param req The signed OCSPReq
@@ -894,10 +979,22 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 if (!signerIssuerCertStatus.equals(CertificateStatus.REVOKED)) {
                     // Check if cert is revoked
                     final CertificateStatus status = certificateStoreSession.getStatus(caCertificateSubjectDn, certId.getSerialNumber());
-                    /* If we have different maxAge and untilNextUpdate for different certificate profiles, we have to fetch these
-                     values now that we have fetched the certificate status, that includes certificate profile.*/
-                    nextUpdate = OcspConfiguration.getUntilNextUpdate(status.certificateProfileId);
-                    maxAge = OcspConfiguration.getMaxAge(status.certificateProfileId);
+                    // If we have an OcspKeyBinding configured for this request, we override the default value
+                    if (ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
+                        nextUpdate = ocspSigningCacheEntry.getOcspKeyBinding().getUntilNextUpdate()*1000L;
+                    }
+                    // If we have an explicit value configured for this certificate profile, we override the the current value with this value
+                    if (OcspConfiguration.isUntilNextUpdateConfigured(status.certificateProfileId)) {
+                        nextUpdate = OcspConfiguration.getUntilNextUpdate(status.certificateProfileId);
+                    }
+                    // If we have an OcspKeyBinding configured for this request, we override the default value
+                    if (ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
+                        maxAge = ocspSigningCacheEntry.getOcspKeyBinding().getMaxAge()*1000L;
+                    }
+                    // If we have an explicit value configured for this certificate profile, we override the the current value with this value
+                    if (OcspConfiguration.isMaxAgeConfigured(status.certificateProfileId)) {
+                        maxAge = OcspConfiguration.getMaxAge(status.certificateProfileId);
+                    }
                     if (log.isDebugEnabled()) {
                         log.debug("Set nextUpdate=" + nextUpdate + ", and maxAge=" + maxAge + " for certificateProfileId="
                                 + status.certificateProfileId);
@@ -915,7 +1012,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                          * we don't actually handle requests for the CA issuing the certificate asked about
                          * then we return unknown 
                          * */
-                        if (!OcspConfigurationCache.INSTANCE.isNonExistingGood(requestUrl) || OcspSigningCache.INSTANCE.getEntry(certId) == null) {
+                        if (!OcspConfigurationCache.INSTANCE.isNonExistingGood(requestUrl, ocspSigningCacheEntry.getOcspKeyBinding()) ||
+                                OcspSigningCache.INSTANCE.getEntry(certId) == null) {
                             sStatus = "unknown";
                             certStatus = new UnknownStatus();
                         } else {
@@ -1260,7 +1358,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             return;
         }
         log.info("No OcspKeyBindings found. Processing ocsp.properties to see if we need to perform conversion.");
-        final List<SimpleEntry<Integer,BigInteger>> trustDefaults = getOcspKeyBindingTrustDefaults();
+        final List<InternalKeyBindingTrustEntry> trustDefaults = getOcspKeyBindingTrustDefaults();
         // Create CryptoTokens and AuthenticationKeyBinding from:
         //  ocsp.rekeying.swKeystorePath = wsKeyStore.jks
         //  ocsp.rekeying.swKeystorePassword = foo123
@@ -1355,7 +1453,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     }
     
     private void processSoftKeystore(File file, String softStorePassword, String softKeyPassword, boolean doNotStorePasswordsInMemory,
-            List<SimpleEntry<Integer,BigInteger>> trustDefaults) {
+            List<InternalKeyBindingTrustEntry> trustDefaults) {
         KeyStore keyStore;
         final char[] passwordChars = softStorePassword.toCharArray();
         // Load keystore (JKS or PKCS#12)
@@ -1433,7 +1531,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     }
     
     /** Create InternalKeyBindings for Ocsp signing and SSL client authentication certs */
-    private void createInternalKeyBindings(int cryptoTokenId, KeyStore keyStore, List<SimpleEntry<Integer,BigInteger>> trustDefaults) throws KeyStoreException, CryptoTokenOfflineException, InternalKeyBindingNameInUseException, AuthorizationDeniedException, CertificateEncodingException, CertificateImportException {
+    private void createInternalKeyBindings(int cryptoTokenId, KeyStore keyStore, List<InternalKeyBindingTrustEntry> trustDefaults) throws KeyStoreException, CryptoTokenOfflineException, InternalKeyBindingNameInUseException, AuthorizationDeniedException, CertificateEncodingException, CertificateImportException {
         final Enumeration<String> aliases = keyStore.aliases();
         while (aliases.hasMoreElements()) {
             final String keyPairAlias = aliases.nextElement();
@@ -1466,11 +1564,11 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     }
 
     /** @return a list of trusted signers or CAs */
-    private List<SimpleEntry<Integer,BigInteger>> getOcspKeyBindingTrustDefaults() {
+    private List<InternalKeyBindingTrustEntry> getOcspKeyBindingTrustDefaults() {
         // Import certificates used to verify OCSP request signatures and add these to each OcspKeyBinding's trust-list
         //  ocsp.signtrustdir=signtrustdir
         //  ocsp.signtrustvalidtime should be ignored
-        final List<SimpleEntry<Integer,BigInteger>> trustedCertificateReferences = new ArrayList<SimpleEntry<Integer,BigInteger>>();
+        final List<InternalKeyBindingTrustEntry> trustedCertificateReferences = new ArrayList<InternalKeyBindingTrustEntry>();
         if (OcspConfiguration.getEnforceRequestSigning() && OcspConfiguration.getRestrictSignatures()) {
             // Import certificates and configure Issuer+serialnumber in trustlist for each
             final String dirName = OcspConfiguration.getSignTrustDir();
@@ -1493,7 +1591,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                                 " is issued by an unknown CA with subject '" + issuerDn +
                                                 "'. You should import this CA certificate as en external CA to make it known to the system.");
                                     }
-                                    trustedCertificateReferences.add(new SimpleEntry<Integer, BigInteger>(caId, serialNumber));
+                                    trustedCertificateReferences.add(new InternalKeyBindingTrustEntry(caId, serialNumber));
                                 } else {
                                     final int caId = subjectDn.hashCode();
                                     try {
@@ -1502,7 +1600,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                         log.warn("Trusted CA certificate with with subject '" + subjectDn +
                                                 "' should be imported as en external CA to make it known to the system.");
                                     }
-                                    trustedCertificateReferences.add(new SimpleEntry<Integer, BigInteger>(caId, null));
+                                    trustedCertificateReferences.add(new InternalKeyBindingTrustEntry(caId, null));
                                 }
                             }
                         } catch (AuthorizationDeniedException e) {
