@@ -22,6 +22,7 @@
 
 # JDBC driver classname.
 # The JEE server needs to be configured with the appropriate JDBC driver for the selected database
+#ocsp-database.driver=org.mariadb.jdbc.Driver
 #ocsp-database.driver=com.mysql.jdbc.Driver
 #ocsp-database.driver=org.postgresql.Driver
 #ocsp-database.driver=com.microsoft.jdbc.sqlserver.SQLServerDriver
