@@ -218,7 +218,7 @@ function checkuseautoenroll(){
     <tr id="Row1"> 
       <td width="49%" valign="top"> 
         <h3><c:out value="<%= ejbcawebbean.getText(\"AUTOENROLLUSE\") %>"/>
-        <%= ejbcawebbean.getHelpReference("/howto.html#Setting%20up%20Autoenrollment%20for%20Windows%20clients%20with%20EJBCA") %>
+        <%= ejbcawebbean.getExternalHelpReference("http://www.ejbca.org/guides.html#Setting%20up%20Autoenrollment%20for%20Windows%20clients%20with%20EJBCA") %>
         </h3>
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"AUTOENROLLUSE_HELP\") %>"/></p>
       </td>
