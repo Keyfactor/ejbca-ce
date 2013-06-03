@@ -693,8 +693,94 @@ public class CAInterfaceBean implements Serializable {
 	//
 	// Methods from editcas.jsp refactoring
 	//
+    public boolean actionCreateCaMakeRequest(String caName, String signatureAlgorithm,
+            String extendedServiceSignatureKeySpec,
+            String keySequenceFormat, String keySequence, int catype, String subjectdn,
+            String certificateProfileIdString, String signedByString, String description, String validityString,
+            String approvalSettingValues, String numofReqApprovalsParam, boolean finishUser, boolean isDoEnforceUniquePublicKeys,
+            boolean isDoEnforceUniqueDistinguishedName, boolean isDoEnforceUniqueSubjectDNSerialnumber,
+            boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, String subjectaltname,
+            String policyid, boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
+            long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod,
+            String availablePublisherValues, boolean usecrlnumber, boolean crlnumbercritical,
+            String defaultcrldistpoint, String defaultcrlissuer, String defaultocsplocator,
+            String authorityInformationAccessString, String caDefinedFreshestCrlString, boolean useutf8policytext,
+            boolean useprintablestringsubjectdn, boolean useldapdnorder, boolean usecrldistpointoncrl,
+            boolean crldistpointoncrlcritical, boolean serviceOcspActive, boolean serviceXkmsActive,
+            boolean serviceCmsActive, String sharedCmpRaSecret, boolean buttonCreateCa, boolean buttonMakeRequest,
+            String cryptoTokenIdString, String keyAliasCertSignKey, String keyAliasCrlSignKey, String keyAliasDefaultKey,
+            String keyAliasHardTokenEncryptKey, String keyAliasKeyEncryptKey, String keyAliasKeyTestKey,
+            byte[] fileBuffer) throws Exception {
+        int cryptoTokenId = Integer.parseInt(cryptoTokenIdString);
+        try {
+            if (cryptoTokenId==0) {
+                // The admin has requested a quick setup and wants to generate a soft keystore with some usable keys
+                keyAliasDefaultKey = "defaultKey";
+                keyAliasCertSignKey = "signKey";
+                keyAliasCrlSignKey = keyAliasCertSignKey;
+                keyAliasHardTokenEncryptKey = "";
+                keyAliasKeyEncryptKey = "";
+                keyAliasKeyTestKey = "testKey";
+                // First create a new soft auto-activated CryptoToken with the same name as the CA
+                final Properties cryptoTokenProperties = new Properties();
+                cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, CesecoreConfiguration.getCaKeyStorePass());
+                try {
+                    cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, caName, SoftCryptoToken.class.getName(),
+                            cryptoTokenProperties, null, null);
+                } catch (CryptoTokenNameInUseException e) {
+                    // If the name was already in use we simply add a timestamp to the name to manke it unique
+                    final String postfix = "_" + new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());;
+                    cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, caName+postfix, SoftCryptoToken.class.getName(),
+                            cryptoTokenProperties, null, null);
+                }
+                // Next generate recommended RSA key pairs for decryption and test
+                cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, keyAliasDefaultKey, AlgorithmConstants.KEYALGORITHM_RSA + "2048");
+                cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, keyAliasKeyTestKey, AlgorithmConstants.KEYALGORITHM_RSA + "1024");
+                // Next, create a CA signing key
+                final String caSignKeyAlgo = AlgorithmTools.getKeyAlgorithmFromSigAlg(signatureAlgorithm);
+                String caSignKeySpec = AlgorithmConstants.KEYALGORITHM_RSA + "2048";
+                extendedServiceSignatureKeySpec = "2048";
+                if (AlgorithmConstants.KEYALGORITHM_DSA.equals(caSignKeyAlgo)) {
+                    caSignKeySpec = AlgorithmConstants.KEYALGORITHM_DSA + "1024";
+                    extendedServiceSignatureKeySpec = caSignKeySpec;
+                } else if (AlgorithmConstants.KEYALGORITHM_ECDSA.equals(caSignKeyAlgo)) {
+                    caSignKeySpec = "prime256v1";
+                    extendedServiceSignatureKeySpec = caSignKeySpec;
+                } else if (AlgorithmTools.isGost3410Enabled() && AlgorithmConstants.KEYALGORITHM_ECGOST3410.equals(caSignKeyAlgo)) {
+                    caSignKeySpec = CesecoreConfiguration.getExtraAlgSubAlgName("gost3410", "B");
+                    extendedServiceSignatureKeySpec = caSignKeySpec;
+                } else if (AlgorithmTools.isDstu4145Enabled() && AlgorithmConstants.KEYALGORITHM_DSTU4145.equals(caSignKeyAlgo)) {
+                    caSignKeySpec = CesecoreConfiguration.getExtraAlgSubAlgName("dstu4145", "233");
+                    extendedServiceSignatureKeySpec = caSignKeySpec;
+                }
+                cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, keyAliasCertSignKey, caSignKeySpec);
+            }
+            return actionCreateCaMakeRequestInternal(caName, signatureAlgorithm, extendedServiceSignatureKeySpec,
+                    keySequenceFormat, keySequence, catype, subjectdn, certificateProfileIdString, signedByString,
+                    description, validityString, approvalSettingValues, numofReqApprovalsParam, finishUser,
+                    isDoEnforceUniquePublicKeys, isDoEnforceUniqueDistinguishedName, isDoEnforceUniqueSubjectDNSerialnumber,
+                    useCertReqHistory, useUserStorage, useCertificateStorage, subjectaltname, policyid,
+                    useauthoritykeyidentifier, authoritykeyidentifiercritical, crlperiod, crlIssueInterval,
+                    crlOverlapTime, deltacrlperiod, availablePublisherValues, usecrlnumber, crlnumbercritical,
+                    defaultcrldistpoint, defaultcrlissuer, defaultocsplocator, authorityInformationAccessString,
+                    caDefinedFreshestCrlString, useutf8policytext, useprintablestringsubjectdn, useldapdnorder,
+                    usecrldistpointoncrl, crldistpointoncrlcritical, serviceOcspActive, serviceXkmsActive,
+                    serviceCmsActive, sharedCmpRaSecret, buttonCreateCa, buttonMakeRequest, cryptoTokenId,
+                    keyAliasCertSignKey, keyAliasCrlSignKey, keyAliasDefaultKey, keyAliasHardTokenEncryptKey,
+                    keyAliasKeyEncryptKey, keyAliasKeyTestKey, fileBuffer);
+        } catch (Exception e) {
+            // If we failed during the creation we manually roll back any created soft CryptoToken
+            // The more proper way of doing it would be to implement a CaAdminSession call for one-shot
+            // CryptoToken and CA creation, but this would currently push a lot of GUI specific code
+            // to the business logic. Until we have a new GUI this is probably the best way of doing it.
+            if (cryptoTokenId != 0 && "0".equals(cryptoTokenIdString)) {
+                cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, cryptoTokenId);
+            }
+            throw e;
+        }
+    }
 
-	public boolean actionCreateCaMakeRequest(String caName, String signatureAlgorithm,
+	private boolean actionCreateCaMakeRequestInternal(String caName, String signatureAlgorithm,
 	        String extendedServiceSignatureKeySpec,
 	        String keySequenceFormat, String keySequence, int catype, String subjectdn,
 	        String certificateProfileIdString, String signedByString, String description, String validityString,
@@ -709,55 +795,12 @@ public class CAInterfaceBean implements Serializable {
             boolean useprintablestringsubjectdn, boolean useldapdnorder, boolean usecrldistpointoncrl,
             boolean crldistpointoncrlcritical, boolean serviceOcspActive, boolean serviceXkmsActive,
             boolean serviceCmsActive, String sharedCmpRaSecret, boolean buttonCreateCa, boolean buttonMakeRequest,
-            String cryptoTokenIdString, String keyAliasCertSignKey, String keyAliasCrlSignKey, String keyAliasDefaultKey,
+            int cryptoTokenId, String keyAliasCertSignKey, String keyAliasCrlSignKey, String keyAliasDefaultKey,
             String keyAliasHardTokenEncryptKey, String keyAliasKeyEncryptKey, String keyAliasKeyTestKey,
             byte[] fileBuffer) throws Exception {
 
 	    boolean illegaldnoraltname = false;
 
-	    int cryptoTokenId = Integer.parseInt(cryptoTokenIdString);
-	    if (cryptoTokenId==0) {
-            // The admin has requested a quick setup and wants to generate a soft keystore with some usable keys
-	        keyAliasDefaultKey = "defaultKey";
-            keyAliasCertSignKey = "signKey";
-            keyAliasCrlSignKey = keyAliasCertSignKey;
-            keyAliasHardTokenEncryptKey = "";
-            keyAliasKeyEncryptKey = "";
-            keyAliasKeyTestKey = "testKey";
-	        // First create a new soft auto-activated CryptoToken with the same name as the CA
-	        final Properties cryptoTokenProperties = new Properties();
-	        cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, CesecoreConfiguration.getCaKeyStorePass());
-	        try {
-	            cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, caName, SoftCryptoToken.class.getName(),
-	                    cryptoTokenProperties, null, null);
-	        } catch (CryptoTokenNameInUseException e) {
-	            // If the name was already in use we simply add a timestamp to the name to manke it unique
-	            final String postfix = "_" + new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());;
-                cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, caName+postfix, SoftCryptoToken.class.getName(),
-                        cryptoTokenProperties, null, null);
-	        }
-	        // Next generate recommended RSA key pairs for decryption and test
-	        cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, keyAliasDefaultKey, AlgorithmConstants.KEYALGORITHM_RSA + "2048");
-            cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, keyAliasKeyTestKey, AlgorithmConstants.KEYALGORITHM_RSA + "1024");
-            // Next, create a CA signing key
-            final String caSignKeyAlgo = AlgorithmTools.getKeyAlgorithmFromSigAlg(signatureAlgorithm);
-            String caSignKeySpec = AlgorithmConstants.KEYALGORITHM_RSA + "2048";
-            extendedServiceSignatureKeySpec = "2048";
-            if (AlgorithmConstants.KEYALGORITHM_DSA.equals(caSignKeyAlgo)) {
-                caSignKeySpec = AlgorithmConstants.KEYALGORITHM_DSA + "1024";
-                extendedServiceSignatureKeySpec = caSignKeySpec;
-            } else if (AlgorithmConstants.KEYALGORITHM_ECDSA.equals(caSignKeyAlgo)) {
-                caSignKeySpec = "prime256v1";
-                extendedServiceSignatureKeySpec = caSignKeySpec;
-            } else if (AlgorithmTools.isGost3410Enabled() && AlgorithmConstants.KEYALGORITHM_ECGOST3410.equals(caSignKeyAlgo)) {
-                caSignKeySpec = CesecoreConfiguration.getExtraAlgSubAlgName("gost3410", "B");
-                extendedServiceSignatureKeySpec = caSignKeySpec;
-            } else if (AlgorithmTools.isDstu4145Enabled() && AlgorithmConstants.KEYALGORITHM_DSTU4145.equals(caSignKeyAlgo)) {
-                caSignKeySpec = CesecoreConfiguration.getExtraAlgSubAlgName("dstu4145", "233");
-                extendedServiceSignatureKeySpec = caSignKeySpec;
-            }
-            cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, keyAliasCertSignKey, caSignKeySpec);
-	    }
 	    final List<String> keyPairAliases = cryptoTokenManagementSession.getKeyPairAliases(authenticationToken, cryptoTokenId);
 	    if (!keyPairAliases.contains(keyAliasDefaultKey)) {
 	        log.info(authenticationToken.toString() + " attempted to createa a CA with a non-existing defaultKey alias: "+keyAliasDefaultKey);
@@ -938,18 +981,7 @@ public class CAInterfaceBean implements Serializable {
 	                            useUserStorage,
 	                            useCertificateStorage,
 	                            sharedCmpRaSecret);
-	                    try {
-	                        cadatahandler.createCA((CAInfo) x509cainfo);
-	                    } catch (Exception e) {
-	                        // If we failed during the creation we manually roll back any created soft CryptoToken
-	                        // The more proper way of doing it would be to implement a CaAdminSession call for one-shot
-	                        // CryptoToken and CA creation, but this would currently push a lot of GUI specific code
-	                        // to the business logic. Until we have a new GUI this is probably the best way of doing it.
-	                        if ("0".equals(cryptoTokenIdString)) {
-	                            cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, cryptoTokenId);
-	                        }
-	                        throw e;
-	                    }
+	                    cadatahandler.createCA((CAInfo) x509cainfo);
 	                }
 
 	                if (buttonMakeRequest) {
