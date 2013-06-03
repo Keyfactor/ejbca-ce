@@ -201,6 +201,9 @@ org.ejbca.core.ejb.keybind.InternalKeyBindingRules
 			</h:selectOneMenu>
 		</h:column>
 	</h:dataTable>
+	<h:panelGroup rendered="#{internalKeyBindingMBean.internalKeyBindingPropertyList.rowCount == 0}">
+	    <div><h:outputText value="#{web.text.INTERNALKEYBINDING_NOPROPERTIES}"/></div>
+    </h:panelGroup>
 	<h:commandButton value="#{web.text.CREATE}" action="#{internalKeyBindingMBean.createNew}" rendered="#{internalKeyBindingMBean.inEditMode and internalKeyBindingMBean.creatingNew}"/>
 	<h:commandButton value="#{web.text.SAVE}" action="#{internalKeyBindingMBean.saveCurrent}" rendered="#{internalKeyBindingMBean.inEditMode and !internalKeyBindingMBean.creatingNew}"/>
 	</h:form>
