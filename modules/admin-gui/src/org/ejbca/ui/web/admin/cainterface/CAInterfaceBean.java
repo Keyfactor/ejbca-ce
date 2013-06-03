@@ -871,10 +871,7 @@ public class CAInterfaceBean implements Serializable {
 	                    policies.add(new CertificatePolicy((policyid.trim()),null,null));
 	                }
 	            }
-                final CertificateProfile certprof = getCertificateProfile(certprofileid);
-	            if ((certprof.getCertificatePolicies().size() > 0) && (certprof.getCertificatePolicies() != null)) {
-	                policies.addAll(certprof.getCertificatePolicies());
-	            }
+	            // Certificate policies from the CA and the CertificateProfile will be merged for cert creation in the CAAdminSession.createCA call
 
 	            final ArrayList<Integer> crlpublishers = new ArrayList<Integer>(); 
 	            if (availablePublisherValues != null) {

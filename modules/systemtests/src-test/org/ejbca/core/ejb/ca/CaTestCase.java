@@ -314,10 +314,14 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                 AlgorithmConstants.KEYALGORITHM_RSA));
         extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+        List<CertificatePolicy> policies = new ArrayList<CertificatePolicy>();
+        CertificatePolicy pol = new CertificatePolicy("2.2.2.2", null, null);
+        policies.add(pol);
         X509CAInfo cainfo = new X509CAInfo(dn, caName, CAConstants.CA_ACTIVE, new Date(), "",
                 signedBy == CAInfo.SELFSIGNED ? CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA
                         : CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 3650, null, // Expiretime
-                CAInfo.CATYPE_X509, signedBy, certificateChain, catoken, "JUnit RSA CA", -1, null, null, // PolicyId
+                CAInfo.CATYPE_X509, signedBy, certificateChain, catoken, "JUnit RSA CA", -1, null, 
+                policies, // PolicyId
                 24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
                 0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
                 10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime

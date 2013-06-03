@@ -72,6 +72,7 @@ import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
+import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
@@ -1303,79 +1304,105 @@ public class CAsTest extends CaTestCase {
         Date oldExpire = info.getExpireTime();
         Collection<Certificate> certs = info.getCertificateChain();
         X509Certificate cacert1 = (X509Certificate) certs.iterator().next();
+        String policyId = CertTools.getCertificatePolicyId(cacert1, 0);
+        assertNotNull(policyId);
+        assertEquals("2.2.2.2", policyId);
+        policyId = CertTools.getCertificatePolicyId(cacert1, 1);
+        assertNull(policyId);
         Thread.sleep(1000); // Sleep 1 second so new validity does not have a chance to be the same as old
-        caAdminSession.renewCA(admin, getTestCAId(), false, null, false);
-        info = caSession.getCAInfo(admin, getTestCAId());
-        certs = info.getCertificateChain();
-        X509Certificate cacert2 = (X509Certificate) certs.iterator().next();
-        assertFalse(cacert1.getSerialNumber().equals(cacert2.getSerialNumber()));
-        assertEquals(new String(CertTools.getSubjectKeyId(cacert1)), new String(CertTools.getSubjectKeyId(cacert2)));
-        cacert2.verify(cacert1.getPublicKey()); // throws if it fails
-        assertTrue("Renewed CA expire time should be after old one: "+info.getExpireTime()+", old: "+oldExpire, oldExpire.before(info.getExpireTime()));
+        // Use a certificate profile with a policy ID when renewing the CA
+        final String caProfileName = "TEST_CA_PROFILE_WITH_POLICY";
+        try {
+            final CertificateProfile caProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
+            List<CertificatePolicy> policies = new ArrayList<CertificatePolicy>();
+            CertificatePolicy pol = new CertificatePolicy("1.1.1.1", null, null);
+            policies.add(pol);
+            caProfile.setCertificatePolicies(policies);
+            final int certificateprofileid = certificateProfileSession.addCertificateProfile(admin, caProfileName, caProfile);
+            info.setCertificateProfileId(certificateprofileid);
+            caAdminSession.editCA(admin, info);
+            // Now we have edited the CA with the new Certificate Profile, let's renew it
+            caAdminSession.renewCA(admin, getTestCAId(), false, null, false);
+            info = caSession.getCAInfo(admin, getTestCAId());
+            certs = info.getCertificateChain();
+            X509Certificate cacert2 = (X509Certificate) certs.iterator().next();
+            policyId = CertTools.getCertificatePolicyId(cacert2, 0);
+            assertNotNull(policyId);
+            assertEquals("1.1.1.1", policyId);
+            policyId = CertTools.getCertificatePolicyId(cacert2, 1);
+            assertNotNull(policyId);
+            assertEquals("2.2.2.2", policyId);
+            assertFalse(cacert1.getSerialNumber().equals(cacert2.getSerialNumber()));
+            assertEquals(new String(CertTools.getSubjectKeyId(cacert1)), new String(CertTools.getSubjectKeyId(cacert2)));
+            cacert2.verify(cacert1.getPublicKey()); // throws if it fails
+            assertTrue("Renewed CA expire time should be after old one: "+info.getExpireTime()+", old: "+oldExpire, oldExpire.before(info.getExpireTime()));
 
-        // Test renew CA keys
-        caAdminSession.renewCA(admin, getTestCAId(), true, null, true);
-        info = caSession.getCAInfo(admin, getTestCAId());
-        certs = info.getCertificateChain();
-        X509Certificate cacert3 = (X509Certificate) certs.iterator().next();
-        assertFalse(cacert2.getSerialNumber().equals(cacert3.getSerialNumber()));
-        String keyid1 = new String(CertTools.getSubjectKeyId(cacert2));
-        String keyid2 = new String(CertTools.getSubjectKeyId(cacert3));
-        assertFalse(keyid1.equals(keyid2));
+            // Test renew CA keys
+            caAdminSession.renewCA(admin, getTestCAId(), true, null, true);
+            info = caSession.getCAInfo(admin, getTestCAId());
+            certs = info.getCertificateChain();
+            X509Certificate cacert3 = (X509Certificate) certs.iterator().next();
+            assertFalse(cacert2.getSerialNumber().equals(cacert3.getSerialNumber()));
+            String keyid1 = new String(CertTools.getSubjectKeyId(cacert2));
+            String keyid2 = new String(CertTools.getSubjectKeyId(cacert3));
+            assertFalse(keyid1.equals(keyid2));
 
-        // Test create X.509 link certificate (NewWithOld rollover cert)
-        // We have cacert3 that we want to sign with the old keys from cacert2,
-        // create a link certificate.
-        // That link certificate should have the same subjetcKeyId as cert3, but
-        // be possible to verify with cert2.
-        byte[] bytes = caAdminSession.getLatestLinkCertificate(getTestCAId());
-        X509Certificate cacert4 = (X509Certificate) CertTools.getCertfromByteArray(bytes);
-        // Same public key as in cacert3 -> same subject key id
-        keyid1 = new String(CertTools.getSubjectKeyId(cacert3));
-        keyid2 = new String(CertTools.getSubjectKeyId(cacert4));
-        assertTrue(keyid1.equals(keyid2));
-        // Same signer as for cacert2 -> same auth key id in cacert4 as subject
-        // key id in cacert2
-        keyid1 = new String(CertTools.getSubjectKeyId(cacert2));
-        keyid2 = new String(CertTools.getAuthorityKeyId(cacert4));
-        assertTrue(keyid1.equals(keyid2));
-        cacert4.verify(cacert2.getPublicKey());
+            // Test create X.509 link certificate (NewWithOld rollover cert)
+            // We have cacert3 that we want to sign with the old keys from cacert2,
+            // create a link certificate.
+            // That link certificate should have the same subjetcKeyId as cert3, but
+            // be possible to verify with cert2.
+            byte[] bytes = caAdminSession.getLatestLinkCertificate(getTestCAId());
+            X509Certificate cacert4 = (X509Certificate) CertTools.getCertfromByteArray(bytes);
+            // Same public key as in cacert3 -> same subject key id
+            keyid1 = new String(CertTools.getSubjectKeyId(cacert3));
+            keyid2 = new String(CertTools.getSubjectKeyId(cacert4));
+            assertTrue(keyid1.equals(keyid2));
+            // Same signer as for cacert2 -> same auth key id in cacert4 as subject
+            // key id in cacert2
+            keyid1 = new String(CertTools.getSubjectKeyId(cacert2));
+            keyid2 = new String(CertTools.getAuthorityKeyId(cacert4));
+            assertTrue(keyid1.equals(keyid2));
+            cacert4.verify(cacert2.getPublicKey());
 
-        // Test make request just making a request using the old keys
-        byte[] request = caAdminSession.makeRequest(admin, getTestCAId(), new ArrayList<Certificate>(), info.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
-        assertNotNull(request);
-        PKCS10RequestMessage msg = RequestMessageUtils.genPKCS10RequestMessage(request);
-        PublicKey pk1 = cacert3.getPublicKey();
-        PublicKey pk2 = msg.getRequestPublicKey();
-        String key1 = new String(Base64.encode(pk1.getEncoded()));
-        String key2 = new String(Base64.encode(pk2.getEncoded()));
-        // A plain request using the CAs key will have the same public key
-        assertEquals(key1, key2);
-        // Test make request generating new keys
-        request = caAdminSession.makeRequest(admin, getTestCAId(), new ArrayList<Certificate>(), null);
-        assertNotNull(request);
-        msg = RequestMessageUtils.genPKCS10RequestMessage(request);
-        pk1 = cacert3.getPublicKey();
-        pk2 = msg.getRequestPublicKey();
-        key1 = new String(Base64.encode(pk1.getEncoded()));
-        key2 = new String(Base64.encode(pk2.getEncoded()));
-        // A plain request using new CAs key can not have the same keys
-        assertFalse(key1.equals(key2));
-        /*
-         * After this (new keys activated but no cert response received) status should still be ACTIVE
-         * since we have an valid CA certificate.
-         * (CAConstants.CA_WAITING_CERTIFICATE_RESPONSE is only when we have no cert yet, like for an
-         * initial externally signed subCA.)
-         */
-        info = caSession.getCAInfo(admin, getTestCAId());
-        assertEquals(CAConstants.CA_ACTIVE, info.getStatus());
+            // Test make request just making a request using the old keys
+            byte[] request = caAdminSession.makeRequest(admin, getTestCAId(), new ArrayList<Certificate>(), info.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+            assertNotNull(request);
+            PKCS10RequestMessage msg = RequestMessageUtils.genPKCS10RequestMessage(request);
+            PublicKey pk1 = cacert3.getPublicKey();
+            PublicKey pk2 = msg.getRequestPublicKey();
+            String key1 = new String(Base64.encode(pk1.getEncoded()));
+            String key2 = new String(Base64.encode(pk2.getEncoded()));
+            // A plain request using the CAs key will have the same public key
+            assertEquals(key1, key2);
+            // Test make request generating new keys
+            request = caAdminSession.makeRequest(admin, getTestCAId(), new ArrayList<Certificate>(), null);
+            assertNotNull(request);
+            msg = RequestMessageUtils.genPKCS10RequestMessage(request);
+            pk1 = cacert3.getPublicKey();
+            pk2 = msg.getRequestPublicKey();
+            key1 = new String(Base64.encode(pk1.getEncoded()));
+            key2 = new String(Base64.encode(pk2.getEncoded()));
+            // A plain request using new CAs key can not have the same keys
+            assertFalse(key1.equals(key2));
+            /*
+             * After this (new keys activated but no cert response received) status should still be ACTIVE
+             * since we have an valid CA certificate.
+             * (CAConstants.CA_WAITING_CERTIFICATE_RESPONSE is only when we have no cert yet, like for an
+             * initial externally signed subCA.)
+             */
+            info = caSession.getCAInfo(admin, getTestCAId());
+            assertEquals(CAConstants.CA_ACTIVE, info.getStatus());
 
-        // To clean up after us so the active key is not out of sync with the
-        // active certificate, we should simply renew the CA
-        info.setStatus(CAConstants.CA_ACTIVE);
-        caAdminSession.editCA(admin, info); // need active status in order
-        // finally do a new renew
-        caAdminSession.renewCA(admin, getTestCAId(), false, null, false);
+            // To clean up after us so the active key is not out of sync with the
+            // active certificate, we should simply renew the CA
+            info.setStatus(CAConstants.CA_ACTIVE);
+            caAdminSession.editCA(admin, info); // need active status in order
+            // finally do a new renew
+            caAdminSession.renewCA(admin, getTestCAId(), false, null, false);
+        } finally {
+            certificateProfileSession.removeCertificateProfile(admin, caProfileName);
+        }
     } // test13RenewCA
 
     @Test

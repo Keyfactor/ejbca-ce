@@ -108,7 +108,6 @@ import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
-import org.cesecore.certificates.crl.CrlCreateSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -231,16 +230,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             X509CAInfo x509cainfo = (X509CAInfo) cainfo;
             // Create X509CA
             ca = new X509CA(x509cainfo);
-            X509CA x509ca = (X509CA) ca;
             ca.setCAToken(catoken);
-
-            // getCertificateProfile
-            if ((x509cainfo.getPolicies() != null) && (x509cainfo.getPolicies().size() > 0)) {
-                certprofile.setUseCertificatePolicies(true);
-                certprofile.setCertificatePolicies(x509cainfo.getPolicies());
-            } else if (certprofile.getUseCertificatePolicies()) {
-                x509ca.setPolicies(certprofile.getCertificatePolicies());
-            }
+            // Set certificate policies in profile object
+            mergeCertificatePoliciesFromCAAndProfile(x509cainfo, certprofile);
         } else {
             // CVC CA is a special type of CA for EAC electronic passports
             log.info("Creating a CVC CA");
@@ -251,7 +243,27 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
         return ca;
     }
-    
+
+    /** When creating, or renewing a CA we will merge the certificate policies from the CAInfo and the CertificateProfile.
+     * Since  Certificate generation uses the CertificateProfile, we merge them into the CertificateProfile object.
+     * 
+     * @param cainfo cainfo that may contain certificate policies, or not
+     * @param certprofile CertificateProfile that may contain certificate policies or not, this object is modified
+     */
+    private void mergeCertificatePoliciesFromCAAndProfile(CAInfo cainfo, CertificateProfile certprofile) {
+        if (cainfo instanceof X509CAInfo) {
+            X509CAInfo x509cainfo = (X509CAInfo) cainfo;
+            // getCertificateProfile
+            if ((x509cainfo.getPolicies() != null) && (x509cainfo.getPolicies().size() > 0)) {
+                List<CertificatePolicy> policies = certprofile.getCertificatePolicies();
+                policies.addAll(x509cainfo.getPolicies());
+                // If the profile did not say to use the extensions before, add it.
+                certprofile.setUseCertificatePolicies(true); 
+            }
+        }
+        // If not an X509CA, we will not do anything, because there are only certificate policies for X509CAs
+    }
+
     @Override
     public void createCA(AuthenticationToken admin, CAInfo cainfo) throws CAExistsException, AuthorizationDeniedException,
             CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
@@ -1303,6 +1315,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             final PublicKey caPublicKey = cryptoToken.getPublicKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
             ca.setCAToken(caToken);
             final CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(ca.getCertificateProfileId());
+            mergeCertificatePoliciesFromCAAndProfile(ca.getCAInfo(), certprofile);
+
             if (ca.getSignedBy() == CAInfo.SELFSIGNED) {
                 // create selfsigned certificate
                 String subjectAltName = null;
