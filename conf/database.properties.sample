@@ -39,6 +39,7 @@
 # JDBC driver classname.
 # The JEE server needs to be configured with the appropriate JDBC driver for the selected database
 # Default: org.hsqldb.jdbcDriver
+#database.driver=org.mariadb.jdbc.Driver
 #database.driver=com.mysql.jdbc.Driver
 #database.driver=org.postgresql.Driver
 #database.driver=com.microsoft.sqlserver.jdbc.SQLServerDriver

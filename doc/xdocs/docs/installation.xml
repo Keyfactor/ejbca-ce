@@ -512,12 +512,26 @@ connect
 It is usually not enough to just drop the JAR archive with a database JDBC driver into the deployments directory. Instead you will have to perform the following steps (for MySQL):
 <ol>
 <li>Create the necessary directories (relative to JBoss 7 base directory):
+<br/>
+On JBoss 7.1.1 or EAP 6.0:
 <pre>
- mkdir -p modules/com/mysql/main/
+mkdir -p modules/com/mysql/main/
+</pre>
+On JBoss 7.2 or EAP 6.1:
+<pre>
+mkdir -p modules/system/layers/base/com/mysql/main/
+</pre>
+Or for MariaDB, mariadb-java-client-1.1.2.jar:
+<pre>
+mkdir -p modules/org/mariadb/main/
+</pre>
+On JBoss 7.2 or EAP 6.1:
+<pre>
+mkdir -p modules/system/layers/base/org/mariadb/main/
 </pre>
 </li>
-<li>Place the mysql.jar file in the directory you just created (modules/com/mysql/main/)</li>
-<li>Create the JDBC module configuration file modules/com/mysql/main/module.xml with the following contents (replace mysql.jar with the full name of your jar file for example mysql-connector-java-5.1.18-bin.jar):
+<li>Place the mysql.jar or mariadb.jar file in the directory you just created.</li>
+<li>Create, in the created directory, the JDBC module configuration file module.xml with the following contents (replace mysql.jar with the full name of your jar file for example mysql-connector-java-5.1.18-bin.jar):
 <pre>
 &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
 &lt;module xmlns=&quot;urn:jboss:module:1.0&quot; name=&quot;com.mysql&quot;&gt;
@@ -542,10 +556,29 @@ It is usually not enough to just drop the JAR archive with a database JDBC drive
 </module>
 -->
 </pre>
+Or for MariaDB, mariadb-java-client-1.1.2.jar:
+<pre>
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;module xmlns=&quot;urn:jboss:module:1.0&quot; name=&quot;org.mariadb&quot;&gt;
+  &lt;resources&gt;
+    &lt;resource-root path=&quot;mariadb-java-client-1.1.2.jar&quot;/&gt;
+  &lt;/resources&gt;
+  &lt;dependencies&gt;
+    &lt;module name=&quot;javax.api&quot;/&gt;
+    &lt;module name=&quot;javax.transaction.api&quot;/&gt;
+  &lt;/dependencies&gt;
+&lt;/module&gt;
+</pre>
+
 </li>
 <li>Register the driver by running the following two commands in the JBoss 7 CLI administration tool:
 <pre>
 /subsystem=datasources/jdbc-driver=com.mysql.jdbc.Driver:add(driver-name=com.mysql.jdbc.Driver,driver-module-name=com.mysql,driver-xa-datasource-class-name=com.mysql.jdbc.jdbc.jdbc2.optional.MysqlXADataSource)
+:reload
+</pre>
+Or for MariaDB, mariadb-java-client-1.1.2.jar:
+<pre>
+/subsystem=datasources/jdbc-driver=org.mariadb.jdbc.Driver:add(driver-name=org.mariadb.jdbc.Driver,driver-module-name=org.mariadb,driver-xa-datasource-class-name=org.mariadb.jdbc.MySQLDataSource)
 :reload
 </pre>
 </li>
@@ -575,7 +608,7 @@ It is usually not enough to just drop the JAR archive with a database JDBC drive
 <p>
 JBoss 7/EAP 6 isolates away sun classes. That means you will not be able to send certificates through remote EJB calls, and will not be able to use the Sun PKCS#11 provider.
 These classes can be made available by editing the file
-<i>modules/sun/jdk/main/module.xml</i> and adding the following packages to the list of system export paths:
+<i>modules/sun/jdk/main/module.xml (JBoss 7.1/EAP6.0) or modules/system/layers/base/sun/jdk/main/module.xml (JBoss 7.2/EAP6.1))</i> and adding the following packages to the list of system export paths:
 </p>
 <source>
 &lt;path name="sun/security/x509"/&gt;
