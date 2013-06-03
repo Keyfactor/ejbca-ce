@@ -42,7 +42,8 @@ public interface InternalKeyBindingMgmtSession {
     /** @return the internalKeyBindingId from the more user friendly name. Return null of there is no such InternalKeyBinding. */
     Integer getIdFromName(String internalKeyBindingName);
 
-    /** Creates a new InternalKeyBinding using the factory on the server side.  */
+    /** Creates a new InternalKeyBinding using the factory on the server side. */
+    // TODO: Needs a signatureAlgorithm parameter
     int createInternalKeyBinding(AuthenticationToken authenticationToken, String type, String name, InternalKeyBindingStatus status, String certificateId,
             int cryptoTokenId, String keyPairAlias, Map<Object, Object> dataMap) throws AuthorizationDeniedException, CryptoTokenOfflineException,
             InternalKeyBindingNameInUseException;
