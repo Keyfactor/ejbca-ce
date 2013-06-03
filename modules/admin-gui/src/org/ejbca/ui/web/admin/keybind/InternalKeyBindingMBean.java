@@ -21,7 +21,6 @@ import java.security.InvalidKeyException;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.text.MessageFormat;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
