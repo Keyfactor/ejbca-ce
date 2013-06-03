@@ -640,7 +640,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         // Update or create extended CA services
         Collection<ExtendedCAServiceInfo> infos = cainfo.getExtendedCAServiceInfos();
         if (infos != null) {
-            Iterator<ExtendedCAServiceInfo> iter = cainfo.getExtendedCAServiceInfos().iterator();
+            Iterator<ExtendedCAServiceInfo> iter = infos.iterator();
             Collection<Integer> extendedservicetypes = getExternalCAServiceTypes(); // Se we can add things to this
             while (iter.hasNext()) {
                 ExtendedCAServiceInfo info = iter.next();
