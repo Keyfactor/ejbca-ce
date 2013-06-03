@@ -14,7 +14,6 @@ package org.ejbca.core.ejb.ocsp;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.InvalidAlgorithmParameterException;
@@ -30,7 +29,6 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.RSAKeyGenParameterSpec;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -83,6 +81,7 @@ import org.ejbca.core.ejb.keybind.CertificateImportException;
 import org.ejbca.core.ejb.keybind.InternalKeyBinding;
 import org.ejbca.core.ejb.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.ejbca.core.ejb.keybind.InternalKeyBindingStatus;
+import org.ejbca.core.ejb.keybind.InternalKeyBindingTrustEntry;
 import org.ejbca.core.ejb.keybind.impl.AuthenticationKeyBinding;
 import org.ejbca.core.ejb.keybind.impl.ClientX509KeyManager;
 import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
@@ -504,7 +503,7 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
         return null;
     }
     
-    private List<X509Certificate> getListOfTrustedCertificates(List<SimpleEntry<Integer, BigInteger>> trustedCertificateReferences) {
+    private List<X509Certificate> getListOfTrustedCertificates(List<InternalKeyBindingTrustEntry> trustedCertificateReferences) {
         if (trustedCertificateReferences == null || trustedCertificateReferences.isEmpty()) {
             return null;
         }

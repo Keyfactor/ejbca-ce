@@ -57,6 +57,7 @@ import org.ejbca.core.ejb.keybind.InternalKeyBindingNameInUseException;
 import org.ejbca.core.ejb.keybind.InternalKeyBindingProperty;
 import org.ejbca.core.ejb.keybind.InternalKeyBindingRules;
 import org.ejbca.core.ejb.keybind.InternalKeyBindingStatus;
+import org.ejbca.core.ejb.keybind.InternalKeyBindingTrustEntry;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
@@ -616,21 +617,19 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     public String getCurrentCertificateSerialNumber() { return currentCertificateSerialNumber; }
     public void setCurrentCertificateSerialNumber(String currentCertificateSerialNumber) { this.currentCertificateSerialNumber = currentCertificateSerialNumber; }
 
-    @SuppressWarnings("unchecked")
     public String getTrustedCertificatesCaName() {
-        return caSession.getCAIdToNameMap().get(((SimpleEntry<Integer, BigInteger>)trustedCertificates.getRowData()).getKey());
+        return caSession.getCAIdToNameMap().get(((InternalKeyBindingTrustEntry)trustedCertificates.getRowData()).getCaId());
     }
-    @SuppressWarnings("unchecked")
     public String getTrustedCertificatesSerialNumberHex() {
-        return ((SimpleEntry<Integer, BigInteger>)trustedCertificates.getRowData()).getValue().toString(16);
+        return ((InternalKeyBindingTrustEntry)trustedCertificates.getRowData()).getCertificateSerialNumber().toString(16);
     }
     
     /** @return a list of all currently trusted certificates references as pairs of [CAId,CertificateSerialNumber] */
-    public ListDataModel/*<List<SimpleEntry<Integer, BigInteger>>>*/ getTrustedCertificates() {
+    public ListDataModel/*<List<InternalKeyBindingTrustEntry>>*/ getTrustedCertificates() {
         if (trustedCertificates == null) {
             final int internalKeyBindingId = Integer.parseInt(currentInternalKeyBindingId);
             if (internalKeyBindingId == 0) {
-                trustedCertificates = new ListDataModel(new ArrayList<SimpleEntry<Integer, BigInteger>>());
+                trustedCertificates = new ListDataModel(new ArrayList<InternalKeyBindingTrustEntry>());
             } else {
                 try {
                     final InternalKeyBinding internalKeyBinding = internalKeyBindingSession.getInternalKeyBinding(authenticationToken, internalKeyBindingId);
@@ -646,12 +645,12 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     /** Invoked when the user wants to a new entry to the list of trusted certificate references */
     @SuppressWarnings("unchecked")
     public void addTrust() {
-        final List<SimpleEntry<Integer, BigInteger>> trustedCertificateReferences = (List<SimpleEntry<Integer, BigInteger>>) getTrustedCertificates().getWrappedData();
+        final List<InternalKeyBindingTrustEntry> trustedCertificateReferences = (List<InternalKeyBindingTrustEntry>) getTrustedCertificates().getWrappedData();
         final String currentCertificateSerialNumber = getCurrentCertificateSerialNumber();
         if (currentCertificateSerialNumber == null || currentCertificateSerialNumber.trim().length() == 0) {
-            trustedCertificateReferences.add(new SimpleEntry<Integer,BigInteger>(getCurrentCertificateAuthority(), null));
+            trustedCertificateReferences.add(new InternalKeyBindingTrustEntry(getCurrentCertificateAuthority(), null));
         } else {
-            trustedCertificateReferences.add(new SimpleEntry<Integer,BigInteger>(getCurrentCertificateAuthority(), new BigInteger(getCurrentCertificateSerialNumber(), 16)));
+            trustedCertificateReferences.add(new InternalKeyBindingTrustEntry(getCurrentCertificateAuthority(), new BigInteger(getCurrentCertificateSerialNumber(), 16)));
         }
         trustedCertificates.setWrappedData(trustedCertificateReferences);
     }
@@ -659,8 +658,8 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     /** Invoked when the user wants to remove an entry to the list of trusted certificate references */
     @SuppressWarnings("unchecked")
     public void removeTrust() {
-        final SimpleEntry<Integer, BigInteger> trustEntry = ((SimpleEntry<Integer, BigInteger>)trustedCertificates.getRowData());
-        final List<SimpleEntry<Integer, BigInteger>> trustedCertificateReferences = (List<SimpleEntry<Integer, BigInteger>>) getTrustedCertificates().getWrappedData();
+        final InternalKeyBindingTrustEntry trustEntry = ((InternalKeyBindingTrustEntry)trustedCertificates.getRowData());
+        final List<InternalKeyBindingTrustEntry> trustedCertificateReferences = (List<InternalKeyBindingTrustEntry>) getTrustedCertificates().getWrappedData();
         trustedCertificateReferences.remove(trustEntry);
         trustedCertificates.setWrappedData(trustedCertificateReferences);
     }
@@ -737,7 +736,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                     internalKeyBinding.setNextKeyPairAlias(currentNextKeyPairAlias);
                 }
             }
-            internalKeyBinding.setTrustedCertificateReferences((List<SimpleEntry<Integer, BigInteger>>) trustedCertificates.getWrappedData());
+            internalKeyBinding.setTrustedCertificateReferences((List<InternalKeyBindingTrustEntry>) trustedCertificates.getWrappedData());
             final List<InternalKeyBindingProperty<? extends Serializable>> internalKeyBindingProperties = 
                     (List<InternalKeyBindingProperty<? extends Serializable>>) internalKeyBindingPropertyList.getWrappedData();
             for (final InternalKeyBindingProperty<? extends Serializable> property : internalKeyBindingProperties) {

@@ -34,6 +34,7 @@ import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
+import org.ejbca.core.ejb.keybind.InternalKeyBindingDataSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 
 /**
@@ -61,6 +62,8 @@ public class ClearCacheServlet extends HttpServlet {
     private CryptoTokenSessionLocal cryptoTokenSession;
     @EJB
     private PublisherSessionLocal publisherSession;
+    @EJB
+    private InternalKeyBindingDataSessionLocal internalKeyBindingDataSession;
 	
     public void doPost(HttpServletRequest req, HttpServletResponse res)	throws IOException, ServletException {
     	doGet(req,res);
@@ -110,6 +113,10 @@ public class ClearCacheServlet extends HttpServlet {
                 if(log.isDebugEnabled()) {
                     log.debug("Publisher cache cleared");
                 }
+                if(log.isDebugEnabled()) {
+                    log.debug("InternalKeyBinding cache cleared");
+                }
+                internalKeyBindingDataSession.flushCache();
         	}
         } else {
     		if (log.isDebugEnabled()) {

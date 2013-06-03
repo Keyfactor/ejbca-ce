@@ -13,10 +13,8 @@
 package org.ejbca.core.ejb.keybind;
 
 import java.io.Serializable;
-import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.text.SimpleDateFormat;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -50,7 +48,7 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     private String certificateId;
     private int cryptoTokenId;
     private String keyPairAlias;
-    private List<SimpleEntry<Integer,BigInteger>> trustedCertificateReferences;
+    private List<InternalKeyBindingTrustEntry> trustedCertificateReferences;
     private String signatureAlgorithm;
     
     private final Map<String,InternalKeyBindingProperty<? extends Serializable>> propertyTemplates = new HashMap<String,InternalKeyBindingProperty<? extends Serializable>>();
@@ -162,18 +160,18 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     }
 
     @Override
-    public List<SimpleEntry<Integer,BigInteger>> getTrustedCertificateReferences() {
+    public List<InternalKeyBindingTrustEntry> getTrustedCertificateReferences() {
         if (trustedCertificateReferences == null) {
-            trustedCertificateReferences = getDataInternal(PROP_TRUSTED_CERTIFICATE_REFERENCES, new ArrayList<SimpleEntry<Integer,BigInteger>>());
+            trustedCertificateReferences = getDataInternal(PROP_TRUSTED_CERTIFICATE_REFERENCES, new ArrayList<InternalKeyBindingTrustEntry>());
         }
         return trustedCertificateReferences;
     }
 
     @Override
-    public void setTrustedCertificateReferences(final List<SimpleEntry<Integer,BigInteger>> trustedCertificateReferences) {
+    public void setTrustedCertificateReferences(final List<InternalKeyBindingTrustEntry> trustedCertificateReferences) {
         this.trustedCertificateReferences = trustedCertificateReferences;
         // Always save it as an ArrayList that we know is Serializable
-        final ArrayList<SimpleEntry<Integer,BigInteger>> arrayList = new ArrayList<SimpleEntry<Integer,BigInteger>>(trustedCertificateReferences.size());
+        final ArrayList<InternalKeyBindingTrustEntry> arrayList = new ArrayList<InternalKeyBindingTrustEntry>(trustedCertificateReferences.size());
         arrayList.addAll(trustedCertificateReferences);
         putDataInternal(PROP_TRUSTED_CERTIFICATE_REFERENCES, arrayList);
     }
