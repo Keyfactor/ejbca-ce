@@ -152,7 +152,7 @@ org.ejbca.core.ejb.keybind.InternalKeyBindingRules
 		rendered="#{internalKeyBindingMBean.trustedCertificates.rowCount != 0 or internalKeyBindingMBean.inEditMode}">
 		<h:column>
    			<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_CA}"/></f:facet>
-			<h:outputText value="#{internalKeyBindingMBean.trustedCertificatesCaName}" title="#{trustEntry.key}"/>
+			<h:outputText value="#{internalKeyBindingMBean.trustedCertificatesCaName}" title="#{trustEntry.caId}"/>
 			<f:facet name="footer">
 				<h:selectOneMenu rendered="#{internalKeyBindingMBean.inEditMode}"
 					value="#{internalKeyBindingMBean.currentCertificateAuthority}">
@@ -162,8 +162,8 @@ org.ejbca.core.ejb.keybind.InternalKeyBindingRules
 		</h:column>
 		<h:column>
    			<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_SERIALNUMER}"/></f:facet>
-			<h:outputText rendered="#{!empty trustEntry.value}" value="#{internalKeyBindingMBean.trustedCertificatesSerialNumberHex}"/>
-			<h:outputText rendered="#{empty trustEntry.value}" value="ANY"/>
+			<h:outputText rendered="#{!empty trustEntry.certificateSerialNumber}" value="#{internalKeyBindingMBean.trustedCertificatesSerialNumberHex}"/>
+			<h:outputText rendered="#{empty trustEntry.certificateSerialNumber}" value="ANY"/>
 			<f:facet name="footer">
 				<h:inputText id="certificateSerialNumber" rendered="#{internalKeyBindingMBean.inEditMode}" required="false"
 					value="#{internalKeyBindingMBean.currentCertificateSerialNumber}"

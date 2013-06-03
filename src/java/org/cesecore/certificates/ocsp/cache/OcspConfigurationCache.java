@@ -15,6 +15,7 @@ package org.cesecore.certificates.ocsp.cache;
 import java.util.regex.Pattern;
 
 import org.cesecore.config.OcspConfiguration;
+import org.ejbca.core.ejb.keybind.impl.OcspKeyBinding;
 
 /**
  * This cache contains non persistent configuration elements that need to be cached in order to be shared between all 
@@ -56,14 +57,14 @@ public enum OcspConfigurationCache {
         }
     }
 
-    /**
-     * @return the nonExistingIsGood
-     */
-    public boolean isNonExistingGood() {
-        return nonExistingIsGood;
-    }
-
-    public boolean isNonExistingGood(StringBuffer url) {
+    public boolean isNonExistingGood(StringBuffer url, OcspKeyBinding ocspKeyBinding) {
+        // First we read the global default
+        boolean nonExistingIsGood = this.nonExistingIsGood;
+        // If we have an OcspKeyBinding for this request we use it to override the default
+        if (ocspKeyBinding != null) {
+            nonExistingIsGood = ocspKeyBinding.getNonExistingGood();
+        }
+        // Finally, if we have explicit configuration of the URL, this will potentially override the value once again
         if (nonExistingIsGood) {
             return !isRegexFulFilled(url, nonExistingIsBadOverideRegex);
         }
