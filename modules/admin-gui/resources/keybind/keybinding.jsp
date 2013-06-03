@@ -59,64 +59,64 @@ org.ejbca.core.ejb.keybind.InternalKeyBindingRules
 	<div>
 		<h:panelGrid columns="2">
 			<h:outputLink value="adminweb/keybind/keybindings.jsf?type=#{internalKeyBindingMBean.selectedInternalKeyBindingType}">
-				<h:outputText value="Back to #{web.text[internalKeyBindingMBean.selectedInternalKeyBindingType]} overview"/>
+				<h:outputText value="#{internalKeyBindingMBean.backLinkTranslatedText}"/>
 			</h:outputLink>
 			<h:form rendered="#{internalKeyBindingMBean.switchToEditAllowed or internalKeyBindingMBean.switchToViewAllowed}">
 				<h:commandButton rendered="#{internalKeyBindingMBean.switchToEditAllowed}" action="#{internalKeyBindingMBean.switchToEdit}"
-					value="Edit" title="Switch to edit mode"/>
+					value="#{web.text.EDIT}" title="#{web.text.SWITCHTOEDITMODE}"/>
 				<h:commandButton rendered="#{internalKeyBindingMBean.switchToViewAllowed}" action="#{internalKeyBindingMBean.switchToView}"
-					value="View" title="Switch to view mode"/>
+					value="#{web.text.VIEW}" title="#{web.text.SWITCHTOVIEWMODE}"/>
 			</h:form>
 		</h:panelGrid>
 	</div>
 	<h:form id="internalkeybinding">
 	<h:panelGrid columns="3">
-		<h:outputLabel for="type" value="Type:"/>
+		<h:outputLabel for="type" value="#{web.text.INTERNALKEYBINDING_FIELD_TYPE}"/>
 		<h:outputText id="type" value="#{internalKeyBindingMBean.selectedInternalKeyBindingType}"/>
 		<h:message for="type"/>
-		<h:outputLabel for="internalKeyBindingId" value="Id:"/>
+		<h:outputLabel for="internalKeyBindingId" value="#{web.text.INTERNALKEYBINDING_FIELD_ID}"/>
 		<h:panelGroup id="internalKeyBindingId">
 			<h:outputText rendered="#{internalKeyBindingMBean.currentInternalKeyBindingId ne '0'}" value="#{internalKeyBindingMBean.currentInternalKeyBindingId}"/>
-			<h:outputText rendered="#{internalKeyBindingMBean.currentInternalKeyBindingId eq '0'}" value="Not yet generated"/>
+			<h:outputText rendered="#{internalKeyBindingMBean.currentInternalKeyBindingId eq '0'}" value="#{web.text.INTERNALKEYBINDING_NOTYETGENERATED}"/>
 		</h:panelGroup>
 		<h:message for="internalKeyBindingId"/>
-		<h:outputLabel for="name" value="Name:"/>
+		<h:outputLabel for="name" value="#{web.text.INTERNALKEYBINDING_FIELD_NAME}"/>
 		<h:panelGroup id="name">
 			<h:inputText rendered="#{internalKeyBindingMBean.inEditMode}" value="#{internalKeyBindingMBean.currentName}"/>
 			<h:outputText rendered="#{!internalKeyBindingMBean.inEditMode}" value="#{internalKeyBindingMBean.currentName}"/>
 		</h:panelGroup>
 		<h:message for="name"/>
-		<h:outputLabel for="cryptoToken" value="CryptoToken:"/>
+		<h:outputLabel for="cryptoToken" value="#{web.text.INTERNALKEYBINDING_FIELD_CRYPTOTOKEN}"/>
 		<h:panelGroup id="cryptoToken">
 			<h:panelGroup rendered="#{internalKeyBindingMBean.inEditMode and internalKeyBindingMBean.cryptoTokenActive}">
 				<h:selectOneMenu value="#{internalKeyBindingMBean.currentCryptoToken}"
 					onchange="document.getElementById('internalkeybinding:reloadCryptoToken').click();">
 					<f:selectItems value="#{internalKeyBindingMBean.availableCryptoTokens}"/>
 				</h:selectOneMenu>
-				<h:commandButton id="reloadCryptoToken" value="Update next" action="#{internalKeyBindingMBean.reloadCryptoToken}"/>
+				<h:commandButton id="reloadCryptoToken" value="#{web.text.INTERNALKEYBINDING_CRYPTOTOKEN_UPDATE}" action="#{internalKeyBindingMBean.reloadCryptoToken}"/>
 				<script>document.getElementById('internalkeybinding:reloadCryptoToken').style.display = 'none';</script>
 			</h:panelGroup>
 			<h:outputText rendered="#{!internalKeyBindingMBean.inEditMode or !internalKeyBindingMBean.cryptoTokenActive}"
 				value="#{internalKeyBindingMBean.currentCryptoTokenName}" title="#{internalKeyBindingMBean.currentCryptoToken}"/>
 			<h:outputText rendered="#{internalKeyBindingMBean.inEditMode or !internalKeyBindingMBean.cryptoTokenActive}"
-				value=" (Not active)"/>
+				value=" #{web.text.INTERNALKEYBINDING_CRYPTOTOKEN_NOTACTIVE}"/>
 		</h:panelGroup>
 		<h:message for="cryptoToken"/>
-		<h:outputLabel for="keyPairAlias" value="Key Pair Alias:"/>
+		<h:outputLabel for="keyPairAlias" value="#{web.text.INTERNALKEYBINDING_FIELD_KEYPAIRALIAS}"/>
 		<h:panelGroup id="keyPairAlias">
 			<h:panelGroup rendered="#{internalKeyBindingMBean.inEditMode and internalKeyBindingMBean.cryptoTokenActive and !internalKeyBindingMBean.boundToCertificate}">
 			<h:selectOneMenu value="#{internalKeyBindingMBean.currentKeyPairAlias}"
 				onchange="document.getElementById('internalkeybinding:reloadKeyPairAlias').click();">
 				<f:selectItems value="#{internalKeyBindingMBean.availableKeyPairAliases}"/>
 			</h:selectOneMenu>
-			<h:commandButton id="reloadKeyPairAlias" value="Update next" action="#{internalKeyBindingMBean.reloadKeyPairAlias}"/>
+			<h:commandButton id="reloadKeyPairAlias" value="#{web.text.INTERNALKEYBINDING_KEYPAIRALIAS_UPDATE}" action="#{internalKeyBindingMBean.reloadKeyPairAlias}"/>
 			<script>document.getElementById('internalkeybinding:reloadKeyPairAlias').style.display = 'none';</script>
 			</h:panelGroup>
 			<h:outputText rendered="#{!internalKeyBindingMBean.inEditMode or !internalKeyBindingMBean.cryptoTokenActive || internalKeyBindingMBean.boundToCertificate}"
 				value="#{internalKeyBindingMBean.currentKeyPairAlias}"/>
 		</h:panelGroup>
 		<h:message for="keyPairAlias"/>
-		<h:outputLabel for="signatureAlgorithm" value="Signature Algorithm:"/>
+		<h:outputLabel for="signatureAlgorithm" value="#{web.text.INTERNALKEYBINDING_FIELD_SIGALG}"/>
 		<h:panelGroup id="signatureAlgorithm">
 			<h:selectOneMenu rendered="#{internalKeyBindingMBean.inEditMode and internalKeyBindingMBean.cryptoTokenActive}"
 				value="#{internalKeyBindingMBean.currentSignatureAlgorithm}">
@@ -126,7 +126,7 @@ org.ejbca.core.ejb.keybind.InternalKeyBindingRules
 				value="#{internalKeyBindingMBean.currentSignatureAlgorithm}"/>
 		</h:panelGroup>
 		<h:message for="signatureAlgorithm"/>
-		<h:outputLabel for="nextKeyPairAlias" value="Next Key Pair Alias:"
+		<h:outputLabel for="nextKeyPairAlias" value="#{web.text.INTERNALKEYBINDING_FIELD_NEXTKEYPAIRALIAS}"
 			rendered="#{internalKeyBindingMBean.currentInternalKeyBindingId ne '0'}"/>
 		<h:panelGroup id="nextKeyPairAlias" rendered="#{internalKeyBindingMBean.currentInternalKeyBindingId ne '0'}">
 			<h:panelGroup rendered="#{internalKeyBindingMBean.inEditMode and internalKeyBindingMBean.cryptoTokenActive}">
@@ -139,15 +139,15 @@ org.ejbca.core.ejb.keybind.InternalKeyBindingRules
 				value="#{internalKeyBindingMBean.currentNextKeyPairAlias}"/>
 		</h:panelGroup>
 		<h:message for="nextKeyPairAlias" rendered="#{internalKeyBindingMBean.currentInternalKeyBindingId ne '0'}"/>
-		<h:outputLabel for="certificateId" value="Bound Certificate:"
+		<h:outputLabel for="certificateId" value="#{web.text.INTERNALKEYBINDING_FIELD_BOUNDCERT}"
 			rendered="#{internalKeyBindingMBean.boundToCertificate}"/>
 		<h:panelGroup id="certificateId" rendered="#{internalKeyBindingMBean.boundToCertificate}">
 			<h:outputText value="TODO"/>
 		</h:panelGroup>
 		<h:message for="certificateId" rendered="#{internalKeyBindingMBean.boundToCertificate}"/>
 	</h:panelGrid>
-	<h3>Trusted certificates</h3>
-	<h:outputText rendered="#{internalKeyBindingMBean.trustedCertificates.rowCount == 0}" value="Trusting ANY known CA certificate"/>
+	<h3><h:outputText value="#{web.text.INTERNALKEYBINDING_TRUSTEDCERTIFICATES}"/></h3>
+	<h:outputText rendered="#{internalKeyBindingMBean.trustedCertificates.rowCount == 0}" value="#{web.text.INTERNALKEYBINDING_TRUSTINGANY}"/>
 	<h:dataTable id="trustedCertificates" value="#{internalKeyBindingMBean.trustedCertificates}" var="trustEntry"
 		rendered="#{internalKeyBindingMBean.trustedCertificates.rowCount != 0 or internalKeyBindingMBean.inEditMode}">
 		<h:column>
@@ -167,7 +167,7 @@ org.ejbca.core.ejb.keybind.InternalKeyBindingRules
 			<f:facet name="footer">
 				<h:inputText id="certificateSerialNumber" rendered="#{internalKeyBindingMBean.inEditMode}" required="false"
 					value="#{internalKeyBindingMBean.currentCertificateSerialNumber}"
-					title="Leave empty for 'ANY' Certificate Serial Number">
+					title="#{web.text.INTERNALKEYBINDING_EMPTYFORANY}">
 					<f:validator validatorId="hexSerialNumberValidator"/>
    				</h:inputText>
 				<h:message for="certificateSerialNumber" rendered="#{internalKeyBindingMBean.inEditMode}"/>
@@ -175,14 +175,15 @@ org.ejbca.core.ejb.keybind.InternalKeyBindingRules
 		</h:column>
 		<h:column>
    			<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_ACTION}"/></f:facet>
-			<h:commandButton value="Remove" action="#{internalKeyBindingMBean.removeTrust}"/>
+			<h:commandButton value="#{web.text.REMOVE}" action="#{internalKeyBindingMBean.removeTrust}" rendered="#{internalKeyBindingMBean.inEditMode}"/>
 			<f:facet name="footer">
 				<h:commandButton  rendered="#{internalKeyBindingMBean.inEditMode}" action="#{internalKeyBindingMBean.addTrust}"
-					value="Add"/>
+					value="#{web.text.ADD}"/>
 			</f:facet>
 		</h:column>
 	</h:dataTable>
-	<h3>Properties (todo: make localizable and not look like a table)</h3>
+	<h3><h:outputText value="#{web.text.INTERNALKEYBINDING_PROPERTIES}"/></h3>
+	<%-- TODO: Make it not look like a table --%>
 	<h:dataTable value="#{internalKeyBindingMBean.internalKeyBindingPropertyList}" var="property" styleClass="propertyTable">
 		<h:column>
 			<h:outputText value="#{internalKeyBindingMBean.propertyNameTranslated}:"/>
@@ -200,8 +201,8 @@ org.ejbca.core.ejb.keybind.InternalKeyBindingRules
 			</h:selectOneMenu>
 		</h:column>
 	</h:dataTable>
-	<h:commandButton value="Create" action="#{internalKeyBindingMBean.createNew}" rendered="#{internalKeyBindingMBean.inEditMode and internalKeyBindingMBean.creatingNew}"/>
-	<h:commandButton value="Save" action="#{internalKeyBindingMBean.saveCurrent}" rendered="#{internalKeyBindingMBean.inEditMode and !internalKeyBindingMBean.creatingNew}"/>
+	<h:commandButton value="#{web.text.CREATE}" action="#{internalKeyBindingMBean.createNew}" rendered="#{internalKeyBindingMBean.inEditMode and internalKeyBindingMBean.creatingNew}"/>
+	<h:commandButton value="#{web.text.SAVE}" action="#{internalKeyBindingMBean.saveCurrent}" rendered="#{internalKeyBindingMBean.inEditMode and !internalKeyBindingMBean.creatingNew}"/>
 	</h:form>
 	<%	// Include Footer 
 	String footurl = globalconfiguration.getFootBanner(); %>
