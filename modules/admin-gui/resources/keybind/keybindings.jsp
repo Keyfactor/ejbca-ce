@@ -154,7 +154,7 @@ org.ejbca.core.ejb.keybind.InternalKeyBindingRules
 		</h:column>
 		<h:column>
    			<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_STATUS}"/></f:facet>
-			<h:outputText value="#{guiInfo.status}"/>
+			<h:outputText value="#{web.text[guiInfo.status]}"/>
 		</h:column>
 		<h:column>
    			<f:facet name="header">
