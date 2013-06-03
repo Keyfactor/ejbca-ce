@@ -122,8 +122,12 @@ org.ejbca.core.ejb.keybind.InternalKeyBindingRules
 				value="#{internalKeyBindingMBean.currentSignatureAlgorithm}">
 				<f:selectItems value="#{internalKeyBindingMBean.availableSignatureAlgorithms}"/>
 			</h:selectOneMenu>
-			<h:outputText rendered="#{!internalKeyBindingMBean.inEditMode or !internalKeyBindingMBean.cryptoTokenActive}"
-				value="#{internalKeyBindingMBean.currentSignatureAlgorithm}"/>
+			<h:panelGroup rendered="#{!internalKeyBindingMBean.inEditMode or !internalKeyBindingMBean.cryptoTokenActive}">
+				<h:outputText rendered="#{internalKeyBindingMBean.currentNextKeyPairAlias != null}"
+					value="#{internalKeyBindingMBean.currentSignatureAlgorithm}"/>
+				<h:outputText rendered="#{internalKeyBindingMBean.currentNextKeyPairAlias == null}"
+					value="Not specified (error?)"/>
+			</h:panelGroup>
 		</h:panelGroup>
 		<h:message for="signatureAlgorithm"/>
 		<h:outputLabel for="nextKeyPairAlias" value="#{web.text.INTERNALKEYBINDING_FIELD_NEXTKEYPAIRALIAS}"
@@ -135,14 +139,27 @@ org.ejbca.core.ejb.keybind.InternalKeyBindingRules
 				<f:selectItems value="#{internalKeyBindingMBean.availableKeyPairAliases}"/>
 			</h:selectOneMenu>
 			</h:panelGroup>
-			<h:outputText rendered="#{!internalKeyBindingMBean.inEditMode or !internalKeyBindingMBean.cryptoTokenActive}"
-				value="#{internalKeyBindingMBean.currentNextKeyPairAlias}"/>
+			<h:panelGroup rendered="#{!internalKeyBindingMBean.inEditMode or !internalKeyBindingMBean.cryptoTokenActive}">
+				<h:outputText rendered="#{internalKeyBindingMBean.currentNextKeyPairAlias != null}"
+					value="#{internalKeyBindingMBean.currentNextKeyPairAlias}"/>
+				<h:outputText rendered="#{internalKeyBindingMBean.currentNextKeyPairAlias == null}"
+					value="Not specified"/>
+			</h:panelGroup>
 		</h:panelGroup>
 		<h:message for="nextKeyPairAlias" rendered="#{internalKeyBindingMBean.currentInternalKeyBindingId ne '0'}"/>
 		<h:outputLabel for="certificateId" value="#{web.text.INTERNALKEYBINDING_FIELD_BOUNDCERT}"
 			rendered="#{internalKeyBindingMBean.boundToCertificate}"/>
 		<h:panelGroup id="certificateId" rendered="#{internalKeyBindingMBean.boundToCertificate}">
-			<h:outputText value="TODO"/>
+			<h:outputLink value="adminweb/viewcertificate.jsp?caid=#{internalKeyBindingMBean.boundCertificateInternalCaId}&ref=keybindings"
+				rendered="#{internalKeyBindingMBean.boundCertificateInternalCaName != null}">
+				<h:outputText value="#{internalKeyBindingMBean.boundCertificateInternalCaName}"/>
+			</h:outputLink>
+			<h:outputText value="#{internalKeyBindingMBean.boundCertificateIssuerDn}"
+				rendered="#{internalKeyBindingMBean.boundCertificateInternalCaName == null}"/>
+			<h:outputText value=" "/>
+			<h:outputLink value="adminweb/viewcertificate.jsp?certsernoparameter=#{internalKeyBindingMBean.boundCertificateSerialNumber},#{internalKeyBindingMBean.boundCertificateIssuerDn}&ref=keybindings">
+				<h:outputText style="font-family: monospace; text-align: right;" value="#{internalKeyBindingMBean.boundCertificateSerialNumber}"/>
+			</h:outputLink>
 		</h:panelGroup>
 		<h:message for="certificateId" rendered="#{internalKeyBindingMBean.boundToCertificate}"/>
 	</h:panelGrid>

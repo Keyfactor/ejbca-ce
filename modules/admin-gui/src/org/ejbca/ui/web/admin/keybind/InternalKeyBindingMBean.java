@@ -472,7 +472,64 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     }
     
     public boolean isBoundToCertificate() {
-        return false;   // TODO
+        return !"0".equals(getCurrentInternalKeyBindingId()) && getBoundCertificateId() != null;
+    }
+    
+    private String boundCertificateId = null;
+    private String boundCertificateIssuerDn = "";
+    private String boundCertificateSerialNumber = "";
+    private String boundCertificateInternalCaName = null;
+    private String boundCertificateInternalCaId = null;
+    public String getBoundCertificateId() {
+        loadCurrentCertificate();
+        return boundCertificateId;
+    }
+    public String getBoundCertificateIssuerDn() {
+        loadCurrentCertificate();
+        return boundCertificateIssuerDn;
+    }
+    public String getBoundCertificateSerialNumber() {
+        loadCurrentCertificate();
+        return boundCertificateSerialNumber;
+    }
+    public String getBoundCertificateInternalCaName() {
+        loadCurrentCertificate();
+        return boundCertificateInternalCaName;
+    }
+    public String getBoundCertificateInternalCaId() {
+        loadCurrentCertificate();
+        return boundCertificateInternalCaId;
+    }
+    
+    private void loadCurrentCertificate() {
+        final int internalKeyBindingId = Integer.parseInt(getCurrentInternalKeyBindingId());
+        InternalKeyBinding internalKeyBindingInfo;
+        try {
+            internalKeyBindingInfo = internalKeyBindingSession.getInternalKeyBindingInfo(authenticationToken, internalKeyBindingId);
+        } catch (AuthorizationDeniedException e) {
+            // Silently ignore that the admin has tried to access a token that he/she was npt authorized to..
+            return;
+        }
+        if (internalKeyBindingInfo.getCertificateId() != null && !internalKeyBindingInfo.getCertificateId().equals(boundCertificateId)) {
+            boundCertificateId = internalKeyBindingInfo.getCertificateId();
+            final Certificate certificate = boundCertificateId == null ? null : certificateStoreSession.findCertificateByFingerprint(boundCertificateId);
+            int certificateInternalCaId = boundCertificateIssuerDn.hashCode();
+            if (certificate != null) {
+                boundCertificateIssuerDn = CertTools.getIssuerDN(certificate);
+                boundCertificateSerialNumber = CertTools.getSerialNumberAsString(certificate);
+                try {
+                    // Note that we can do lookups using the .hashCode, but we will use the objects id
+                    final CA ca = caSession.getCA(authenticationToken, boundCertificateIssuerDn.hashCode());
+                    boundCertificateInternalCaName = ca.getName();
+                    certificateInternalCaId = ca.getCAId();
+                } catch (Exception e) {
+                    // CADoesntExistsException or AuthorizationDeniedException
+                    // The CA is for the purpose of "internal" renewal not available to this administrator.
+                    boundCertificateInternalCaName = boundCertificateIssuerDn;
+                }
+            }
+            this.boundCertificateInternalCaId = Integer.valueOf(certificateInternalCaId).toString();
+        }
     }
 
     public void switchToEdit() {
@@ -705,6 +762,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             for (final InternalKeyBindingProperty<? extends Serializable> property : internalKeyBindingProperties) {
                 dataMap.put(property.getName(), property.getValue());
             }
+            // TODO: Needs a signatureAlgorithm parameter..
             currentInternalKeyBindingId = String.valueOf(internalKeyBindingSession.createInternalKeyBinding(authenticationToken, 
                     selectedInternalKeyBindingType, getCurrentName(), InternalKeyBindingStatus.DISABLED, null, currentCryptoToken.intValue(),
                     currentKeyPairAlias, null));
