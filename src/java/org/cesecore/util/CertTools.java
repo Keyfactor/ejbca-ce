@@ -1608,7 +1608,7 @@ public class CertTools {
      * 
      * @param cert certificate containing the extension
      * @param pos position of the policy id, if several exist, the first is as pos 0
-     * @return String with the certificate policy OID
+     * @return String with the certificate policy OID, or null if an id at the given position does not exist
      * @throws IOException if extension can not be parsed
      */
     public static String getCertificatePolicyId(Certificate cert, int pos) throws IOException {
