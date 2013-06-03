@@ -20,6 +20,7 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
+import java.text.MessageFormat;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -151,6 +152,12 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             selectedInternalKeyBindingType = getAvailableKeyBindingTypes().get(0);
         }
         return selectedInternalKeyBindingType;
+    }
+    
+    public String getBackLinkTranslatedText() {
+        String pattern = super.getEjbcaWebBean().getText("INTERNALKEYBINDING_BACKTOOVERVIEW");
+        String type = super.getEjbcaWebBean().getText(getSelectedInternalKeyBindingType());
+        return MessageFormat.format(pattern, type);
     }
 
     public List<String> getAvailableKeyBindingTypes() {
