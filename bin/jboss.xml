@@ -47,6 +47,7 @@
 		<available file="${appserver.home}/client/jboss-j2ee.jar" property="appserver.home.valid"/>
 		<available file="${appserver.home}/client/jboss-appclient.jar" property="appserver.home.valid"/>
         <available file="${appserver.home}/modules/org/jboss/as/standalone/main/module.xml" property="appserver.home.valid"/>
+		<available file="${appserver.home}/modules/system/layers/base/org/jboss/as/standalone/main/module.xml" property="appserver.home.valid"/>
 		<fail message="'appserver.home' (${appserver.home}) does not seem to be a valid JBoss home directory" unless="appserver.home.valid"/>
 		<echo message="Using appserver.home : ${appserver.home}"/>
 	</target>
@@ -325,7 +326,7 @@
         <target name="jee:assert-runJBoss7" if="jboss7">
             <echo message="Checking if JBoss 7 is up and running..."/>
             <jboss:admsilent arg=":read-attribute(name=server-state)" resultproperty="jboss7.server.status" failonerror="false" />
-            <condition property="jboss7.server.isrunning" value="true">
+        	<condition property="jboss7.server.isrunning" value="true">
                 <equals arg1="${jboss7.server.status}" arg2="0" />
             </condition>
             <fail message="The requested action requires that JBoss 7 is up and running." unless="jboss7.server.isrunning" />
@@ -464,7 +465,6 @@
             <attribute name="failonerror" default="true" description="Fail the build if command exits with error."/>
             <attribute name="resultproperty" default="admsilent.throwaway.result" description="Name of the property where the exit code should be stored at." />
             <sequential>
-                <echo message="@{arg}"/>
                 <exec executable="${appserver.home}/bin/jboss-cli.sh" failonerror="@{failonerror}" spawn="@{nooutput}" outputproperty="admsilent.throwaway.output" resultproperty="@{resultproperty}">
                     <arg line="-c --command='@{arg}'" />
                 </exec>
