@@ -12,6 +12,7 @@
  *************************************************************************/ 
 package org.cesecore.util;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.HashMap;
@@ -32,6 +33,7 @@ public class GUIDGeneratorTest {
         String guid;
         for (int j = 1; j < 500001; j++) {
             guid = GUIDGenerator.generateGUID(this);
+            assertNotNull("Generated GUID should not be null", guid);
             if (map.put(guid, guid) != null) {
                 //                    log.warn("Duplicate guids produced: " + hex);
                 //                    log.warn("Number of guids produced before duplicate: "+j);
