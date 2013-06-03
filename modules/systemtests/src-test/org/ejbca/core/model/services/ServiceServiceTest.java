@@ -258,7 +258,7 @@ public class ServiceServiceTest extends CaTestCase {
             throw new Exception("User we have added can not be found");
         }
         status = data.getStatus();
-        log.debug("status: " + status);
+        log.debug("Status expected: "+EndEntityConstants.STATUS_GENERATED+", actual status: " + status);
         result = status == EndEntityConstants.STATUS_GENERATED;
         return result;
     }
