@@ -13,6 +13,8 @@
 
 package org.cesecore.util;
 
+import java.util.Random;
+
 import org.apache.log4j.Logger;
 
 /**
@@ -27,11 +29,12 @@ public class GUIDGenerator {
     private static String hexServerIP = null;
 
     // Initialize the secure random instance
-    private static final java.security.SecureRandom seeder = new java.security.SecureRandom();
+    private static final Random seeder = new Random();
 
     /**
      * A 32 byte GUID generator (Globally Unique ID). These artificial keys SHOULD <strong>NOT </strong> be seen by the user, not even touched by the
      * DBA but with very rare exceptions, just manipulated by the database and the programs.
+     * NOTE: This guid is not cryptographically secure, and should not be used as such.
      * 
      * Usage: Add an id field (type java.lang.String) to your EJB, and add setId(XXXUtil.generateGUID(this)); to the ejbCreate method.
      */
