@@ -382,6 +382,21 @@ If EJBCA is used as a factory and where the functionality of the Admin GUI is no
 <p>See <a href="adminguide.html#Throw%20away%20CA">Throw away CA</a> in the admin guide for more information about this option.</p>
 </subsubsection>
 
+<subsubsection name="Certificate Policy Id">
+<p>
+Setting the Certificate Policy Id when creating a CA affects the certificate policy extension in the CA certificate. You can define Certificate Policy Id in:
+<ul>
+<li>CA settings</li>
+<li>Certificate Profile</li>
+<li>Both</li>
+</ul>
+When a CA is created or renewed, the Certificate Policy Id fields of the CA settings and the Certificate Profile are merged when the CA certificate is created. 
+This means that if you have a value defined in both places, both Certificate Policy Ids will be included in the CA certificate.
+</p>
+<p>For consistency reasons it might be a good idea to only use the Certificate Policy Id in the Certificate Profiles, as it is the same for all type of certificates, and merge effects can be confusing.
+</p>
+</subsubsection>
+
 <subsubsection name="CRL Period">
 <p>
 There are four settings in CA configuration dictating the times when CRL generation is done:
