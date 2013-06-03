@@ -787,6 +787,14 @@ public class EjbcaWebBean implements Serializable {
                 + getText("OPENHELPSECTION") + "\" >?</a>]";
     }
 
+    public String getExternalHelpReference(String linkPart) {
+        if (!isHelpEnabled()) {
+            return "";
+        }
+        return "[<a href=\"" + linkPart + "\" target=\"" + GlobalConfiguration.DOCWINDOW + "\" title=\""
+                + getText("OPENHELPSECTION") + "\" >?</a>]";
+    }
+
     public String[] getCertSernoAndIssuerdn(String certdata) {
         return StringTools.parseCertData(certdata);
     }
