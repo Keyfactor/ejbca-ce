@@ -56,7 +56,6 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.crl.CRLInfo;
-import org.cesecore.certificates.crl.CrlCreateSessionBean;
 import org.cesecore.certificates.crl.CrlCreateSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -79,7 +78,7 @@ import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, PublishingCrlSessionRemote {
 
-    private static final Logger log = Logger.getLogger(CrlCreateSessionBean.class);
+    private static final Logger log = Logger.getLogger(PublishingCrlSessionBean.class);
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
     
