@@ -375,6 +375,7 @@ public class X509CA extends CA implements Serializable {
     public void updateCA(CryptoToken cryptoToken, CAInfo cainfo) throws InvalidAlgorithmException {
         super.updateCA(cryptoToken, cainfo);
         X509CAInfo info = (X509CAInfo) cainfo;
+        setPolicies(info.getPolicies());
         setAuthorityInformationAccess(info.getAuthorityInformationAccess());
         setUseAuthorityKeyIdentifier(info.getUseAuthorityKeyIdentifier());
         setAuthorityKeyIdentifierCritical(info.getAuthorityKeyIdentifierCritical());
