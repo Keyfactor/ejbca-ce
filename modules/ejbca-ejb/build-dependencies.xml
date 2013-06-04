@@ -355,13 +355,81 @@
 				</classpath>
 			</javac>
 
+			<!-- CA and Certificate Extensions component -->
+					<echo message=" ** Validating component: CA and Certificate Extensions **"/>
+					<mkdir dir="${src-temp.dir}/ca"/>
+					<mkdir dir="${build-temp.dir}/ca"/>
+					<copy todir="${src-temp.dir}/ca">
+						<fileset dir="${src.dir}">
+							<include name="com/novosec/pkix/asn1/crmf/*.java"/>
+							<include name="org/cesecore/certificates/ca/*CA.java"/>
+							<include name="org/cesecore/certificates/ca/*CAInfo.java"/>
+							<include name="org/cesecore/certificates/ca/CAConstants.java"/>
+							<include name="org/cesecore/certificates/ca/extendedservices/*.java"/>
+							<include name="org/cesecore/certificates/ca/internal/CertificateValidity.java"/>
+							<include name="org/cesecore/certificates/ca/IllegalValidityException.java"/>
+							<include name="org/cesecore/certificates/ca/IllegalNameException.java"/>
+							<include name="org/cesecore/certificates/ca/CAOfflineException.java"/>
+							<include name="org/cesecore/certificates/ca/SignRequestSignatureException.java"/>
+							<include name="org/cesecore/certificates/ca/SignRequestException.java"/>
+							<include name="org/cesecore/certificates/ca/internal/SernoGenerator.java"/>
+							<include name="org/cesecore/certificates/ca/internal/SernoGeneratorRandom.java"/>
+							<include name="org/cesecore/certificates/certificate/request/RequestMessageUtils.java"/>
+							<include name="org/cesecore/certificates/certificate/CertificateCreateException.java"/>
+							<include name="org/cesecore/certificates/certificate/request/PKCS10RequestMessage.java"/>
+							<include name="org/cesecore/certificates/certificate/request/CVCRequestMessage.java"/>
+							<include name="org/cesecore/certificates/certificate/request/SimpleRequestMessage.java"/>
+							<include name="org/cesecore/certificates/certificate/request/RequestMessage.java"/>
+							<include name="org/cesecore/certificates/certificate/request/ResponseMessage.java"/>
+							<include name="org/cesecore/certificates/certificate/request/CertificateResponseMessage.java"/>
+							<include name="org/cesecore/certificates/certificate/request/ResponseStatus.java"/>
+							<include name="org/cesecore/certificates/certificate/request/FailInfo.java"/>
+							<include name="org/cesecore/certificates/util/dn/PrintableStringEntryConverter.java"/>
+							<include name="org/cesecore/util/SimpleTime.java"/>
+							<include name="org/ejbca/core/protocol/certificatestore/HashID.java"/>
+							<include name="org/ejbca/core/protocol/certificatestore/ICertificateCache.java"/>
+							<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/BaseSigningCAServiceInfo.java"/>
+							<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/ExtendedCAServiceTypes.java"/>
+							<!-- Dependency on Certificate Extensions -->					
+							<include name="org/cesecore/certificates/certificate/certextensions/standard/*.java"/>
+							<include name="org/cesecore/certificates/certificate/certextensions/*.java"/>
+							<include name="org/cesecore/certificates/util/cert/SubjectDirAttrExtension.java"/>
+							<!-- OCSPCAService dependencies that maybe shouldn't be here.. -->
+							<include name="org/cesecore/config/OcspConfiguration.java"/>
+							<include name="org/cesecore/certificates/ocsp/SHA1DigestCalculator.java"/>
+							<include name="org/cesecore/certificates/ocsp/exception/NotSupportedException.java"/>
+							<include name="org/cesecore/certificates/ocsp/exception/OcspFailureException.java"/>
+							<include name="org/ejbca/core/protocol/ocsp/OCSPUtil.java"/>
+							<include name="org/ejbca/core/protocol/ocsp/OCSPResponseItem.java"/>
+							<include name="org/ejbca/core/protocol/ocsp/CertificateCache.java"/>
+							<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/OCSPCAService*.java"/>					
+							<!-- End Entity classes .. -->
+							<include name="org/cesecore/certificates/endentity/EndEntityConstants.java"/>
+							<include name="org/cesecore/certificates/endentity/ExtendedInformation.java"/>
+							<include name="org/cesecore/certificates/endentity/EndEntityInformation.java"/>
+							<include name="org/cesecore/certificates/util/dn/DNFieldsUtil.java"/>
+							<include name="org/cesecore/certificates/util/dn/DNFields.java"/>
+						</fileset>
+					</copy>
+					<javac srcdir="${src-temp.dir}/ca" destdir="${build-temp.dir}/ca" debug="on" includeantruntime="no"
+		        	encoding="iso8859-1" target="${java.target.version}">
+						<classpath>
+							<path refid="compile-util.classpath"/>
+							<pathelement location="${build-temp.dir}/common"/>
+							<pathelement location="${build-temp.dir}/certprof"/>
+							<pathelement location="${build-temp.dir}/catoken"/>
+							<pathelement location="${build-temp.dir}/admins"/>
+							<pathelement location="${build-temp.dir}/authorization"/>
+						</classpath>
+					</javac>
+			
 			<!-- Publish component -->
 			<echo message=" ** Validating component: Publish **"/>
 			<mkdir dir="${src-temp.dir}/publish"/>
 			<mkdir dir="${build-temp.dir}/publish"/>
 			<copy todir="${src-temp.dir}/publish">
 				<fileset dir="${src-ejbca-ejb-interface.dir}">
-					<include name="org/ejbca/core/ejb/ca/publisher/*.java"/>
+					<include name="org/ejbca/core/ejb/ca/publisher/*.java"/>					
 				</fileset>
 				<fileset dir="${src-ejbca-entity.dir}">
 					<include name="org/ejbca/core/ejb/ca/publisher/*.java"/>
@@ -369,10 +437,10 @@
 					<include name="org/cesecore/certificates/crl/CRLData.java"/>
 					<include name="org/cesecore/certificates/certificate/CertificateData.java"/>
 				</fileset>
-				<fileset dir="${src.dir}">
+				<fileset dir="${src.dir}">				
+					<include name="org/cesecore/certificates/certificate/CertificateInfo.java"/>			
 					<include name="org/ejbca/core/ejb/ca/publisher/PublisherQueueSessionBean.java"/>
 					<include name="org/ejbca/core/model/ca/publisher/*.java"/>
-					<include name="org/cesecore/certificates/certificate/CertificateInfo.java"/>
 					<!-- Use by the LDAP Publisher -->
 					<include name="org/ejbca/util/TCPTool.java"/>
 					<!-- RA classes that maybe shouldn't be here.. -->
@@ -498,73 +566,7 @@
 				</classpath>
 			</javac>
 
-			<!-- CA and Certificate Extensions component -->
-			<echo message=" ** Validating component: CA and Certificate Extensions **"/>
-			<mkdir dir="${src-temp.dir}/ca"/>
-			<mkdir dir="${build-temp.dir}/ca"/>
-			<copy todir="${src-temp.dir}/ca">
-				<fileset dir="${src.dir}">
-					<include name="com/novosec/pkix/asn1/crmf/*.java"/>
-					<include name="org/cesecore/certificates/ca/*CA.java"/>
-					<include name="org/cesecore/certificates/ca/*CAInfo.java"/>
-					<include name="org/cesecore/certificates/ca/CAConstants.java"/>
-					<include name="org/cesecore/certificates/ca/extendedservices/*.java"/>
-					<include name="org/cesecore/certificates/ca/internal/CertificateValidity.java"/>
-					<include name="org/cesecore/certificates/ca/IllegalValidityException.java"/>
-					<include name="org/cesecore/certificates/ca/IllegalNameException.java"/>
-					<include name="org/cesecore/certificates/ca/CAOfflineException.java"/>
-					<include name="org/cesecore/certificates/ca/SignRequestSignatureException.java"/>
-					<include name="org/cesecore/certificates/ca/SignRequestException.java"/>
-					<include name="org/cesecore/certificates/ca/internal/SernoGenerator.java"/>
-					<include name="org/cesecore/certificates/ca/internal/SernoGeneratorRandom.java"/>
-					<include name="org/cesecore/certificates/certificate/request/RequestMessageUtils.java"/>
-					<include name="org/cesecore/certificates/certificate/CertificateCreateException.java"/>
-					<include name="org/cesecore/certificates/certificate/request/PKCS10RequestMessage.java"/>
-					<include name="org/cesecore/certificates/certificate/request/CVCRequestMessage.java"/>
-					<include name="org/cesecore/certificates/certificate/request/SimpleRequestMessage.java"/>
-					<include name="org/cesecore/certificates/certificate/request/RequestMessage.java"/>
-					<include name="org/cesecore/certificates/certificate/request/ResponseMessage.java"/>
-					<include name="org/cesecore/certificates/certificate/request/CertificateResponseMessage.java"/>
-					<include name="org/cesecore/certificates/certificate/request/ResponseStatus.java"/>
-					<include name="org/cesecore/certificates/certificate/request/FailInfo.java"/>
-					<include name="org/cesecore/certificates/util/dn/PrintableStringEntryConverter.java"/>
-					<include name="org/cesecore/util/SimpleTime.java"/>
-					<include name="org/ejbca/core/protocol/certificatestore/HashID.java"/>
-					<include name="org/ejbca/core/protocol/certificatestore/ICertificateCache.java"/>
-					<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/BaseSigningCAServiceInfo.java"/>
-					<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/ExtendedCAServiceTypes.java"/>
-					<!-- Dependency on Certificate Extensions -->					
-					<include name="org/cesecore/certificates/certificate/certextensions/standard/*.java"/>
-					<include name="org/cesecore/certificates/certificate/certextensions/*.java"/>
-					<include name="org/cesecore/certificates/util/cert/SubjectDirAttrExtension.java"/>
-					<!-- OCSPCAService dependencies that maybe shouldn't be here.. -->
-					<include name="org/cesecore/config/OcspConfiguration.java"/>
-					<include name="org/cesecore/certificates/ocsp/SHA1DigestCalculator.java"/>
-					<include name="org/cesecore/certificates/ocsp/exception/NotSupportedException.java"/>
-					<include name="org/cesecore/certificates/ocsp/exception/OcspFailureException.java"/>
-					<include name="org/ejbca/core/protocol/ocsp/OCSPUtil.java"/>
-					<include name="org/ejbca/core/protocol/ocsp/OCSPResponseItem.java"/>
-					<include name="org/ejbca/core/protocol/ocsp/CertificateCache.java"/>
-					<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/OCSPCAService*.java"/>					
-					<!-- End Entity classes .. -->
-					<include name="org/cesecore/certificates/endentity/EndEntityConstants.java"/>
-					<include name="org/cesecore/certificates/endentity/ExtendedInformation.java"/>
-					<include name="org/cesecore/certificates/endentity/EndEntityInformation.java"/>
-					<include name="org/cesecore/certificates/util/dn/DNFieldsUtil.java"/>
-					<include name="org/cesecore/certificates/util/dn/DNFields.java"/>
-				</fileset>
-			</copy>
-			<javac srcdir="${src-temp.dir}/ca" destdir="${build-temp.dir}/ca" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}">
-				<classpath>
-					<path refid="compile-util.classpath"/>
-					<pathelement location="${build-temp.dir}/common"/>
-					<pathelement location="${build-temp.dir}/certprof"/>
-					<pathelement location="${build-temp.dir}/catoken"/>
-					<pathelement location="${build-temp.dir}/admins"/>
-					<pathelement location="${build-temp.dir}/authorization"/>
-				</classpath>
-			</javac>
+		
 
 			<!-- CA Admin component -->
 			<echo message=" ** Validating component: CA Admin (Excluding CAAdminSessionBean!) **" />
@@ -613,13 +615,17 @@
 			<copy todir="${src-temp.dir}/crl">
 				<fileset dir="${src-ejbca-ejb-interface.dir}">
 					<include name="org/cesecore/certificates/crl/Crl*Session*.java"/>
+					<include name="org/ejbca/core/ejb/crl/PublishingCrlSession*.java"/>
 				</fileset>
 				<fileset dir="${src-ejbca-entity.dir}">
 					<include name="org/cesecore/certificates/crl/CRLData.java"/>
 				</fileset>
 				<fileset dir="${src.dir}">
+					<include name="org/cesecore/certificates/ca/CAOfflineException.java"/>
+					<include name="org/cesecore/certificates/ca/CAConstants.java"/>	
+					<include name="org/cesecore/certificates/ca/X509CAInfo.java"/>
 					<include name="org/cesecore/certificates/crl/*.java"/>
-
+					<include name="org/ejbca/core/ejb/crl/PublishingCrlSessionBean.java"/>
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/crl" destdir="${build-temp.dir}/crl" debug="on" includeantruntime="no"
@@ -943,7 +949,7 @@
 			<copy todir="${src-temp.dir}/services">
 				<fileset dir="${src-ejbca-ejb-interface.dir}">
 					<include name="org/ejbca/core/ejb/services/*.java"/>
-					<include name="org/ejbca/core/ejb/authentication/web/WebAuthenticationProviderSessionLocal.java"/>
+					<include name="org/ejbca/core/ejb/authentication/web/WebAuthenticationProviderSessionLocal.java"/>				
 				</fileset>
 				<fileset dir="${src-ejbca-entity.dir}">
 					<include name="org/ejbca/core/ejb/services/*.java"/>
@@ -956,7 +962,7 @@
 					<include name="org/ejbca/core/model/services/ServiceConfiguration.java"/>
 					<include name="org/ejbca/core/model/services/*Exception.java"/>
 					<include name="org/ejbca/core/model/services/ActionInfo.java"/>
-					<include name="org/ejbca/core/model/services/intervals/DummyInterval.java"/>
+					<include name="org/ejbca/core/model/services/intervals/DummyInterval.java"/>				
 					<!-- Depends on EjbLocalHelper
        			<include name="org/ejbca/core/model/services/*.java"/>
     			<include name="org/ejbca/core/model/services/actions/*.java"/>
