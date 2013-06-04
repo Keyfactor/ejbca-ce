@@ -1,11 +1,16 @@
 #
-# $Id: cmpaliasconf.properties.sample 16605 2013-04-16 02:18:57Z anatom $
+# $Id$
 #
 # This is a sample file to override properties used
 # during deployment of EJBCA
 # 
 # You should copy and rename this file to cmpaliasconf.properties
 # and customize at will.
+#
+# This file will shortly be replaced by configurations stored in the database.
+# Note that there will not be automatic upgrade for this future change. Once
+# the database configurations are implemented, these properties will need to 
+# be set again in the AdminGUI.
 #
 # Developers: If you add fields in this file, make arrangements in CmpServlet.
 
