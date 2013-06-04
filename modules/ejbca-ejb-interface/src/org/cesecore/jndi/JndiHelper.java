@@ -34,7 +34,7 @@ public abstract class JndiHelper {
 	private static Context context = null;
 
 	// By default try the first lookup as JEE5 name, is that fails try JEE6
-	// We can probably do this more clever by using reflextion or something?
+	// We can probably do this more clever by using reflection or something?
 	private static boolean isJEE6 = false;
 	
 	private static Context getContext() throws NamingException {
