@@ -199,8 +199,12 @@ public class CAsTest extends CaTestCase {
         extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
 
+        List<CertificatePolicy> policies = new ArrayList<CertificatePolicy>();
+        CertificatePolicy pol = new CertificatePolicy("1.2.3.4", null, null);
+        policies.add(pol);
         X509CAInfo cainfo = new X509CAInfo("CN=TEST", caName, CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 3650, null, // Expiretime
-                CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catoken, "JUnit RSA CA", -1, null, null, // PolicyId
+                CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catoken, "JUnit RSA CA", -1, null, 
+                policies, // PolicyId
                 24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
                 0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
                 10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
@@ -243,6 +247,10 @@ public class CAsTest extends CaTestCase {
                 "CA is not valid for the specified duration.",
                 cert.getNotAfter().after(new Date(new Date().getTime() + 10 * 364 * 24 * 60 * 60 * 1000L))
                         && cert.getNotAfter().before(new Date(new Date().getTime() + 10 * 366 * 24 * 60 * 60 * 1000L)));
+        String policyId = CertTools.getCertificatePolicyId(cert, 0);
+        assertNotNull("CA certificate should have a Certificate Policy from CA settings", policyId);
+        assertEquals("1.2.3.4", policyId);
+
         // Test to generate a certificate request from the CA
         Collection<Certificate> cachain = info.getCertificateChain();
         // Check CMP RA secret, default value empty string
@@ -1304,18 +1312,35 @@ public class CAsTest extends CaTestCase {
         Date oldExpire = info.getExpireTime();
         Collection<Certificate> certs = info.getCertificateChain();
         X509Certificate cacert1 = (X509Certificate) certs.iterator().next();
-        String policyId = CertTools.getCertificatePolicyId(cacert1, 0);
-        assertNotNull(policyId);
-        assertEquals("2.2.2.2", policyId);
-        policyId = CertTools.getCertificatePolicyId(cacert1, 1);
-        assertNull(policyId);
         Thread.sleep(1000); // Sleep 1 second so new validity does not have a chance to be the same as old
         // Use a certificate profile with a policy ID when renewing the CA
         final String caProfileName = "TEST_CA_PROFILE_WITH_POLICY";
         try {
-            final CertificateProfile caProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
+            // Set a policy in the CA settings, and check for values
+            X509CAInfo xinfo = (X509CAInfo)info;
             List<CertificatePolicy> policies = new ArrayList<CertificatePolicy>();
-            CertificatePolicy pol = new CertificatePolicy("1.1.1.1", null, null);
+            CertificatePolicy pol = new CertificatePolicy("2.2.2.2", null, null);
+            policies.add(pol);
+            xinfo.setPolicies(policies);
+            caSession.editCA(admin, xinfo);
+            caAdminSession.renewCA(admin, getTestCAId(), false, null, false);
+            info = caSession.getCAInfo(admin, getTestCAId());
+            certs = info.getCertificateChain();
+            X509Certificate cacert2 = (X509Certificate) certs.iterator().next();
+            // cacert2 should have the policy defined in the CA settings only
+            String policyId = CertTools.getCertificatePolicyId(cacert2, 0);
+            assertNotNull("CA certificate after renewal should have a Certificate Policy from CA settings", policyId);
+            assertEquals("2.2.2.2", policyId);
+            policyId = CertTools.getCertificatePolicyId(cacert2, 1);
+            assertNull(policyId);
+            assertFalse(cacert1.getSerialNumber().equals(cacert2.getSerialNumber()));
+            assertEquals(new String(CertTools.getSubjectKeyId(cacert1)), new String(CertTools.getSubjectKeyId(cacert2)));
+            cacert2.verify(cacert1.getPublicKey()); // throws if it fails
+            assertTrue("Renewed CA expire time should be after old one: "+info.getExpireTime()+", old: "+oldExpire, oldExpire.before(info.getExpireTime()));
+            // Add a new policy to the certificate profile, and renew again to verify certificate policy handling during renewal
+            final CertificateProfile caProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
+            policies = new ArrayList<CertificatePolicy>();
+            pol = new CertificatePolicy("1.1.1.1", null, null);
             policies.add(pol);
             caProfile.setCertificatePolicies(policies);
             final int certificateprofileid = certificateProfileSession.addCertificateProfile(admin, caProfileName, caProfile);
@@ -1325,26 +1350,22 @@ public class CAsTest extends CaTestCase {
             caAdminSession.renewCA(admin, getTestCAId(), false, null, false);
             info = caSession.getCAInfo(admin, getTestCAId());
             certs = info.getCertificateChain();
-            X509Certificate cacert2 = (X509Certificate) certs.iterator().next();
-            policyId = CertTools.getCertificatePolicyId(cacert2, 0);
-            assertNotNull(policyId);
+            X509Certificate cacert3 = (X509Certificate) certs.iterator().next();
+            policyId = CertTools.getCertificatePolicyId(cacert3, 0);
+            assertNotNull("CA certficiate after renewal should also have Certificate Policy from certificate profile", policyId);
             assertEquals("1.1.1.1", policyId);
-            policyId = CertTools.getCertificatePolicyId(cacert2, 1);
-            assertNotNull(policyId);
+            policyId = CertTools.getCertificatePolicyId(cacert3, 1);
+            assertNotNull("CA certficiate after renewal should have Certificate Policy from CA settings", policyId);
             assertEquals("2.2.2.2", policyId);
-            assertFalse(cacert1.getSerialNumber().equals(cacert2.getSerialNumber()));
-            assertEquals(new String(CertTools.getSubjectKeyId(cacert1)), new String(CertTools.getSubjectKeyId(cacert2)));
-            cacert2.verify(cacert1.getPublicKey()); // throws if it fails
-            assertTrue("Renewed CA expire time should be after old one: "+info.getExpireTime()+", old: "+oldExpire, oldExpire.before(info.getExpireTime()));
 
             // Test renew CA keys
             caAdminSession.renewCA(admin, getTestCAId(), true, null, true);
             info = caSession.getCAInfo(admin, getTestCAId());
             certs = info.getCertificateChain();
-            X509Certificate cacert3 = (X509Certificate) certs.iterator().next();
-            assertFalse(cacert2.getSerialNumber().equals(cacert3.getSerialNumber()));
-            String keyid1 = new String(CertTools.getSubjectKeyId(cacert2));
-            String keyid2 = new String(CertTools.getSubjectKeyId(cacert3));
+            X509Certificate cacert4 = (X509Certificate) certs.iterator().next();
+            assertFalse(cacert2.getSerialNumber().equals(cacert4.getSerialNumber()));
+            String keyid1 = new String(CertTools.getSubjectKeyId(cacert3));
+            String keyid2 = new String(CertTools.getSubjectKeyId(cacert4));
             assertFalse(keyid1.equals(keyid2));
 
             // Test create X.509 link certificate (NewWithOld rollover cert)
@@ -1353,23 +1374,23 @@ public class CAsTest extends CaTestCase {
             // That link certificate should have the same subjetcKeyId as cert3, but
             // be possible to verify with cert2.
             byte[] bytes = caAdminSession.getLatestLinkCertificate(getTestCAId());
-            X509Certificate cacert4 = (X509Certificate) CertTools.getCertfromByteArray(bytes);
+            X509Certificate cacert5 = (X509Certificate) CertTools.getCertfromByteArray(bytes);
             // Same public key as in cacert3 -> same subject key id
-            keyid1 = new String(CertTools.getSubjectKeyId(cacert3));
-            keyid2 = new String(CertTools.getSubjectKeyId(cacert4));
+            keyid1 = new String(CertTools.getSubjectKeyId(cacert4));
+            keyid2 = new String(CertTools.getSubjectKeyId(cacert5));
             assertTrue(keyid1.equals(keyid2));
             // Same signer as for cacert2 -> same auth key id in cacert4 as subject
             // key id in cacert2
-            keyid1 = new String(CertTools.getSubjectKeyId(cacert2));
-            keyid2 = new String(CertTools.getAuthorityKeyId(cacert4));
+            keyid1 = new String(CertTools.getSubjectKeyId(cacert3));
+            keyid2 = new String(CertTools.getAuthorityKeyId(cacert5));
             assertTrue(keyid1.equals(keyid2));
-            cacert4.verify(cacert2.getPublicKey());
+            cacert5.verify(cacert2.getPublicKey());
 
             // Test make request just making a request using the old keys
             byte[] request = caAdminSession.makeRequest(admin, getTestCAId(), new ArrayList<Certificate>(), info.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
             assertNotNull(request);
             PKCS10RequestMessage msg = RequestMessageUtils.genPKCS10RequestMessage(request);
-            PublicKey pk1 = cacert3.getPublicKey();
+            PublicKey pk1 = cacert4.getPublicKey();
             PublicKey pk2 = msg.getRequestPublicKey();
             String key1 = new String(Base64.encode(pk1.getEncoded()));
             String key2 = new String(Base64.encode(pk2.getEncoded()));
@@ -1379,7 +1400,7 @@ public class CAsTest extends CaTestCase {
             request = caAdminSession.makeRequest(admin, getTestCAId(), new ArrayList<Certificate>(), null);
             assertNotNull(request);
             msg = RequestMessageUtils.genPKCS10RequestMessage(request);
-            pk1 = cacert3.getPublicKey();
+            pk1 = cacert4.getPublicKey();
             pk2 = msg.getRequestPublicKey();
             key1 = new String(Base64.encode(pk1.getEncoded()));
             key2 = new String(Base64.encode(pk2.getEncoded()));
