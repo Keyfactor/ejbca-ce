@@ -32,6 +32,12 @@ public class GUIDGeneratorTest {
         HashMap<String, String> map = new HashMap<String, String>(500000);
         String guid;
         for (int j = 1; j < 500001; j++) {
+            // Ensure we don't generate all GUIDs within the same millisecond, so pause 1ms for every 10000 GUIDs generated.
+            // This should be more "real world", as we will probably not add more than 10000 records to a DB during 1 single millisecond
+            if (j % 10000 == 0) {
+                //log.info("Generated "+j+" GUIDs so far, sleeping for 1ms.");
+                Thread.sleep(1);
+            }
             guid = GUIDGenerator.generateGUID(this);
             assertNotNull("Generated GUID should not be null", guid);
             if (map.put(guid, guid) != null) {
