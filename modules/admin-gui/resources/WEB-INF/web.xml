@@ -29,6 +29,25 @@
         <filter-name>ProxiedAuthenticationFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
+    <!-- Tomahawk filter for file uploads. Should be replaced by h:inputFile pattern when we can use JSF2.2. -->
+    <filter>
+        <filter-name>extensionsFilter</filter-name>
+        <filter-class>org.apache.myfaces.webapp.filter.ExtensionsFilter</filter-class>
+        <init-param>
+            <description>Maximum size of uploads</description>
+            <param-name>uploadMaxFileSize</param-name>
+            <param-value>101k</param-value>
+        </init-param>
+        <init-param>
+            <description>Maximum size of uploads before using disk</description>
+            <param-name>uploadThresholdSize</param-name>
+            <param-value>100k</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>extensionsFilter</filter-name>
+        <url-pattern>*.jsf</url-pattern>
+    </filter-mapping>
 
    <servlet>
       <description><![CDATA[Returns the specified CA certificate]]></description>

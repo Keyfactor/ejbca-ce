@@ -36,6 +36,8 @@ import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.Logger;
+import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
@@ -123,7 +125,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     }
     
     private static final long serialVersionUID = 1L;
-    //private static final Logger log = Logger.getLogger(InternalKeyBindingMBean.class);
+    private static final Logger log = Logger.getLogger(InternalKeyBindingMBean.class);
 
     private final CryptoTokenManagementSessionLocal cryptoTokenManagementSession = getEjbcaWebBean().getEjb().getCryptoTokenManagementSession();
     private final InternalKeyBindingMgmtSessionLocal internalKeyBindingSession = getEjbcaWebBean().getEjb().getInternalKeyBindingMgmtSession();
@@ -170,6 +172,45 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
 
     private void flushListCaches() {
         internalKeyBindingGuiList = null;
+    }
+
+    private Integer uploadTarget = null;
+    private UploadedFile uploadToTargetFile;
+    
+    public Integer getUploadTarget() { return uploadTarget; }
+    public void setUploadTarget(Integer uploadTarget) { this.uploadTarget = uploadTarget; }
+    public UploadedFile getUploadToTargetFile() { return uploadToTargetFile; }
+    public void setUploadToTargetFile(UploadedFile uploadToTargetFile){ this.uploadToTargetFile = uploadToTargetFile; }
+
+    @SuppressWarnings("unchecked")
+    public List<SelectItem/*<Integer,String>*/> getUploadTargets() {
+        final List<SelectItem> ret = new ArrayList<SelectItem>();
+        for (final GuiInfo guiInfo : (List<GuiInfo>)getInternalKeyBindingGuiList().getWrappedData()) {
+            ret.add(new SelectItem(guiInfo.getInternalKeyBindingId(), guiInfo.getName()));
+        }
+        return ret;
+    }
+
+    /** Invoked when the user is trying to import a new certificate for an InternalKeyBinding */
+    public void uploadToTarget() {
+        if (uploadTarget == null) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "No InternalKeyBinding selected.", null));
+            return;
+        }
+        if (uploadToTargetFile==null) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "File upload failed.", null));
+            return;
+        }
+        try {
+            internalKeyBindingSession.importCertificateForInternalKeyBinding(getAdmin(), uploadTarget.intValue(), uploadToTargetFile.getBytes());
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Operation completed without errors.", null));
+        } catch (IOException e) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+        } catch (CertificateImportException e) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+        } catch (AuthorizationDeniedException e) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+        }
     }
 
     /** @return list of gui representations for all the InternalKeyBindings of the current type*/
