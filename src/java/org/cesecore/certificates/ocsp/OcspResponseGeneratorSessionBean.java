@@ -433,11 +433,12 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     respIdType = OcspConfiguration.RESPONDERIDTYPE_KEYHASH;
                 }
             }
+            
+            // Now we can use the returned OCSPServiceResponse to get private key and certificate chain to sign the ocsp response
             final BasicOCSPResp ocspresp = generateBasicOcspResp(req, exts, responseList, sigAlg, signerCert, ocspSigningCacheEntry.getPrivateKey(),
                     ocspSigningCacheEntry.getSignatureProviderName(), chain,
                     respIdType);
 
-            // Now we can use the returned OCSPServiceResponse to get private key and certificate chain to sign the ocsp response
             if (log.isDebugEnabled()) {
                 Collection<X509Certificate> coll = Arrays.asList(chain);
                 log.debug("Cert chain for OCSP signing is of size " + coll.size());
@@ -464,12 +465,11 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     /**
      * This method takes byte array and translates it onto a OCSPReq class.
      * 
-     * @param authenticationToken An authentication token needed to perform validation.
      * @param request the byte array in question.
      * @param remoteAddress The remote address of the HttpRequest associated with this array.
      * @param transactionLogger A transaction logger.
      * @return
-     * @throws InvalidKeyException
+     * @throws MalformedRequestException
      * @throws SignRequestException thrown if an unsigned request was processed when system configuration requires that all requests be signed.
      * @throws CertificateException
      * @throws NoSuchAlgorithmException
