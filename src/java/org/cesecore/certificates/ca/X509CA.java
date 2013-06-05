@@ -781,8 +781,7 @@ public class X509CA extends CA implements Serializable {
         if (log.isTraceEnabled()) {
             log.trace(">certgen.generate");
         }
-        
-        final ContentSigner signer = new JcaContentSignerBuilder(sigAlg).build(caPrivateKey);
+        final ContentSigner signer = new JcaContentSignerBuilder(sigAlg).setProvider(provider).build(caPrivateKey);
         final X509CertificateHolder certHolder = certbuilder.build(signer);
         final X509Certificate cert = (X509Certificate)CertTools.getCertfromByteArray(certHolder.getEncoded());
         if (log.isTraceEnabled()) {
@@ -989,7 +988,6 @@ public class X509CA extends CA implements Serializable {
         final String alias = getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN);
         try {
             final ContentSigner signer = new JcaContentSignerBuilder(sigAlg).setProvider(cryptoToken.getSignProviderName()).build(cryptoToken.getPrivateKey(alias));
-            //ContentSigner signer = buildContentSigner(sigAlg, getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CRLSIGN), getCAToken().getProvider());
             crl = crlgen.build(signer);
         } catch (OperatorCreationException e) {
             // Very fatal error
