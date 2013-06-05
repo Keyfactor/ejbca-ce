@@ -17,7 +17,7 @@ commons-cli-1.0.jar is used to create nice CLI programs.
 
 bc-x jars are BouncyCastle (http://www.bouncycastle.org), License is BC (BSD like).
 These jars are the cryptographic foundation in EJBCA.
-Current version used is 1.47.
+Current version used is 1.49.
 
 Ldap.jar is from OpenLDAP and used for publishing in LDAP directories, current version is from 2009-10-07.
 
