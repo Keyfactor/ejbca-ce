@@ -63,11 +63,24 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * @param userDataDN if an DN object is not found in the certificate use object from user data instead.
      * @return true if status was changed in the database, false if not, for example if the certificate was already revoked or a null value was passed as certificate
      * @throws CertificaterevokeException (rollback) if certificate does not exist
-     * @throws AuthorizationDeniedException (rollback)
      */
     boolean setRevokeStatusNoAuth(AuthenticationToken admin, Certificate certificate, Date revokedDate, int reason, String userDataDN)
-    	throws CertificateRevokeException, AuthorizationDeniedException;
-
+    	throws CertificateRevokeException;
+    
+    /**
+     * 
+     * Changes the revocation date for the certificate identified by the fingerprint. This should only occur in an exceptional circumstance (a revoked 
+     * certificate missing a revocation date) and should not be called during standard operations.
+     * 
+     * This method should only be used in the exceptional circumstance where a revoked certificate lacks a revocation date.  
+     * 
+     * @param authenticationToken the authenticating end entity
+     * @param certificateFingerprint a fingerprint identifying a certificate
+     * @param revocationDate the revocation date
+     * @throws AuthorizationDeniedException 
+     */
+    void setRevocationDate(AuthenticationToken authenticationToken, String certificateFingerprint, Date revocationDate) throws AuthorizationDeniedException;
+    
     /**
      * Fetch a List of all certificate fingerprints and corresponding username
      * 

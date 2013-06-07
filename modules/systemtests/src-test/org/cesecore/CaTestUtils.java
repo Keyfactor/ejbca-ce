@@ -31,9 +31,14 @@ import java.util.List;
 import java.util.Properties;
 
 import org.bouncycastle.operator.OperatorCreationException;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.X509CAInfo;
@@ -43,8 +48,15 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.token.CryptoToken;
+import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
+import org.cesecore.keys.token.CryptoTokenManagementProxySessionRemote;
+import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
+import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.token.IllegalCryptoTokenException;
+import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
 
@@ -54,10 +66,52 @@ import org.cesecore.util.StringTools;
  * @version $Id$
  *
  */
-public abstract class CaCreatingTestCase extends RoleUsingTestCase {
+public abstract class CaTestUtils {
 
-    protected CA createX509Ca(CryptoToken cryptoToken, String cadn) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException,
-            InvalidAlgorithmParameterException, SignatureException, KeyStoreException, CertificateException, CryptoTokenOfflineException, IOException, InvalidAlgorithmException, IllegalStateException, OperatorCreationException {
+    /**
+     * Creates and stores a simple X509 CA 
+     * 
+     * @param authenticationToken
+     * @param cryptoTokenName
+     * @param cadn
+     */
+    public static CA createX509Ca(AuthenticationToken authenticationToken, String cryptoTokenName, String caName, String cadn)
+            throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException,
+            AuthorizationDeniedException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException,
+            SignatureException, KeyStoreException, CertificateException, InvalidAlgorithmException, IllegalStateException, OperatorCreationException,
+            IOException, CAExistsException, IllegalCryptoTokenException {
+        CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+        CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
+                .getRemoteSession(CryptoTokenManagementSessionRemote.class);
+        CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession = EjbRemoteHelper.INSTANCE
+                .getRemoteSession(CryptoTokenManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+
+        final Properties cryptoTokenProperties = new Properties();
+        cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, "foo123");
+        int cryptoTokenId;
+        if (!cryptoTokenManagementProxySession.isCryptoTokenNameUsed(cryptoTokenName)) {
+            cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, cryptoTokenName, SoftCryptoToken.class.getName(),
+                    cryptoTokenProperties, null, null);
+        } else {
+            cryptoTokenId = cryptoTokenManagementSession.getIdFromName(cryptoTokenName);
+        }
+        if (!cryptoTokenManagementSession.isAliasUsedInCryptoToken(cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS)) {
+            cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS, "1024");
+        }
+        if (!cryptoTokenManagementSession.isAliasUsedInCryptoToken(cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS)) {
+            cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS, "1024");
+        }
+
+        final CryptoToken cryptoToken = cryptoTokenManagementProxySession.getCryptoToken(cryptoTokenId);
+        final CA x509Ca = createX509Ca(cryptoToken, caName, cadn);
+        caSession.addCA(authenticationToken, x509Ca);
+        return x509Ca;
+    }
+
+    
+    private static CA createX509Ca(final CryptoToken cryptoToken, String caName, String cadn) throws InvalidKeyException, NoSuchAlgorithmException,
+            NoSuchProviderException, InvalidAlgorithmParameterException, SignatureException, KeyStoreException, CertificateException,
+            CryptoTokenOfflineException, IOException, InvalidAlgorithmException, IllegalStateException, OperatorCreationException {
         Properties caTokenProperties = new Properties();
         caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
         caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
@@ -70,7 +124,7 @@ public abstract class CaCreatingTestCase extends RoleUsingTestCase {
         catoken.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
         // No extended services
         final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
-        X509CAInfo cainfo = new X509CAInfo(cadn, "TEST", CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA,
+        X509CAInfo cainfo = new X509CAInfo(cadn, caName, CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA,
                 3650, null, // Expiretime
                 CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catoken, "JUnit RSA CA", -1, null, null, // PolicyId
                 24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
@@ -115,5 +169,15 @@ public abstract class CaCreatingTestCase extends RoleUsingTestCase {
         x509ca.setCertificateChain(cachain);
         // Now our CA should be operational
         return x509ca;
+    }
+    
+    public static void removeCA(AuthenticationToken authenticationToken, String cryptoTokenName, String caName) throws AuthorizationDeniedException, CADoesntExistsException {
+        CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+        CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
+                .getRemoteSession(CryptoTokenManagementSessionRemote.class);
+        int caid = caSession.getCAInfo(authenticationToken, caName).getCAId();
+        caSession.removeCA(authenticationToken, caid);
+        int cryptoTokenId = cryptoTokenManagementSession.getIdFromName(cryptoTokenName);
+        cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, cryptoTokenId);
     }
 }

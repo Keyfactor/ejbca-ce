@@ -827,7 +827,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         if (log.isTraceEnabled()) {
             log.trace(">cancelTimers");
         }
-        @SuppressWarnings("unchecked")
         Collection<Timer> timers = timerService.getTimers();
         for (Timer timer : timers) {
             timer.cancel();

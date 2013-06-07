@@ -17,6 +17,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,7 +64,7 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
     @EJB
     private AccessControlSessionLocal accessSession;
     @EJB
-    CertificateStoreSessionLocal certStore;
+    private CertificateStoreSessionLocal certStore;
     @EJB
     private SecurityEventsLoggerSessionLocal logSession;
 
@@ -175,5 +176,11 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
             final String msg = INTRES.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), caid);
             throw new AuthorizationDeniedException(msg);
         }
+    }
+
+    @Override
+    public void setRevocationDate(AuthenticationToken authenticationToken, String certificateFingerprint, Date revocationDate)
+            throws AuthorizationDeniedException {
+        certStore.setRevocationDate(authenticationToken, certificateFingerprint, revocationDate);     
     }
 }
