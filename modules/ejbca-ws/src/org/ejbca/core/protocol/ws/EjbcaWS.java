@@ -930,17 +930,13 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 			final int caid = userdata.getCAId();
 			caSession.verifyExistenceOfCA(caid);
-			final String[] rules = {StandardRules.CAACCESS.resource() +caid, AccessRulesConstants.REGULAR_CREATECERTIFICATE};
-			if (!authorizationSession.isAuthorizedNoLogging(admin, rules)) {
-	            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", Arrays.toString(rules), null);
-		        throw new AuthorizationDeniedException(msg);
-			}
 			// Check tokentype
 			if (userdata.getTokenType() != SecConst.TOKEN_SOFT_BROWSERGEN) {
 				throw EjbcaWSHelper.getEjbcaException("Error: Wrong Token Type of user, must be 'USERGENERATED' for PKCS10/SPKAC/CRMF/CVC requests",
                                         logger, ErrorCode.BAD_USER_TOKEN_TYPE, null);
 			}
-
+            // Authorization for {StandardRules.CAACCESS.resource() +caid, StandardRules.CREATECERT.resource()} is done in the 
+            // CertificateCreateSessionBean.createCertificate call which is called in the end
 			RequestMessage imsg = RequestMessageUtils.getSimpleRequestMessageFromType(username, password, req, reqType);
 			if (imsg != null) {
 				retval = getCertResponseFromPublicKey(admin, imsg, hardTokenSN, responseType);
