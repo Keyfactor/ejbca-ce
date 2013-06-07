@@ -369,4 +369,14 @@ public class NestedMessageContent extends BaseCmpMessage implements RequestMessa
             String provider) {
         return null;
     }
+    
+    @Override
+    public void setResponseKeyInfo(PrivateKey key, String provider) {
+    }
+
+    @Override
+    public CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass, RequestMessage req, Certificate cert) {
+        return null;
+    }
+
 }
