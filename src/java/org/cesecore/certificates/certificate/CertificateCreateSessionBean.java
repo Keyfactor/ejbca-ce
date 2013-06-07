@@ -37,7 +37,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.cesecore.CesecoreException;
@@ -188,11 +187,10 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                     sequence = new String(ki);                  
                 }
             }
-            Certificate cert = createCertificate(admin, userData, ca, req.getRequestX500Name(), reqpk, keyusage, notBefore, notAfter, exts, sequence);
-
+            
+            Certificate cert = createCertificate(admin, userData, ca, req, reqpk, keyusage, notBefore, notAfter, exts, sequence);
             // Create the response message with all nonces and checks etc
-            ret = req.createResponseMessage(responseClass, req, ca.getCACertificate(), cryptoToken.getPrivateKey(alias),
-                    cryptoToken.getSignProviderName());
+            ret = req.createResponseMessage(responseClass, req, ca.getCACertificate());
 
             ResponseStatus status = ResponseStatus.SUCCESS;
             FailInfo failInfo = null;
@@ -278,7 +276,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
 
     @Override
     public Certificate createCertificate(final AuthenticationToken admin, final EndEntityInformation data, final CA ca,
-            final X500Name requestX500Name, final PublicKey pk, final int keyusage, final Date notBefore, final Date notAfter,
+            final RequestMessage request, final PublicKey pk, final int keyusage, final Date notBefore, final Date notAfter,
             final Extensions extensions, final String sequence) throws CustomCertSerialNumberException, IllegalKeyException,
             AuthorizationDeniedException, CertificateCreateException, CesecoreException {
         if (log.isTraceEnabled()) {
@@ -296,7 +294,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         // Audit log that we received the request
         final Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("subjectdn", data.getDN());
-        details.put("requestX500name", requestX500Name == null ? "null" : requestX500Name.toString());
+        details.put("requestX500name", request.getRequestX500Name() == null ? "null" : request.getRequestX500Name().toString());
         details.put("certprofile", data.getCertificateProfileId());
         details.put("keyusage", keyusage);
         details.put("notbefore", notBefore);
@@ -355,7 +353,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 if (cryptoToken==null) {
                     throw new CryptoTokenOfflineException("CA's CryptoToken not found.");
                 }
-                cert = ca.generateCertificate(cryptoToken, data, requestX500Name, pk, keyusage, notBefore, notAfter, certProfile, extensions, sequence);
+                cert = ca.generateCertificate(cryptoToken, data, request, pk, keyusage, notBefore, notAfter, certProfile, extensions, sequence);
                 serialNo = CertTools.getSerialNumberAsString(cert);
                 cafingerprint = CertTools.getFingerprintAsString(cacert);
                 // Store certificate in the database, if this CA is configured to do so.

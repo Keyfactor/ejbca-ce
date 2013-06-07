@@ -351,7 +351,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         final Certificate cert;
         try {
             // Now finally after all these checks, get the certificate, we don't have any sequence number or extensions available here
-            cert = createCertificate(admin, data, null, ca, pk, keyusage, notBefore, notAfter, null, null);
+            cert = createCertificate(admin, data, ca, pk, keyusage, notBefore, notAfter, null, null);
             // Call authentication session and tell that we are finished with this user
             finishUser(ca, data);
         } catch (CustomCertSerialNumberException e) {
@@ -630,7 +630,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @throws IllegalKeyException 
      * @see org.cesecore.certificates.certificate.CertificateCreateSessionLocal#createCertificate(AuthenticationToken, EndEntityInformation, CA, X500Name, PublicKey, int, Date, Date, Extensions, String)
      */
-    private Certificate createCertificate(final AuthenticationToken admin, final EndEntityInformation data, final X500Name requestX500Name, final CA ca, final PublicKey pk,
+    private Certificate createCertificate(final AuthenticationToken admin, final EndEntityInformation data, final CA ca, final PublicKey pk,
             final int keyusage, final Date notBefore, final Date notAfter, final Extensions extensions, final String sequence) throws IllegalKeyException,
             CertificateCreateException, AuthorizationDeniedException, CesecoreException {
         if (log.isTraceEnabled()) {
@@ -638,8 +638,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         }
 
         // Create the certificate. Does access control checks (with audit log) on the CA and create_certificate.
-        final Certificate cert = certificateCreateSession.createCertificate(admin, data, ca, requestX500Name, pk, keyusage, notBefore, notAfter,
-                extensions, sequence);
+        final Certificate cert = certificateCreateSession.createCertificate(admin, data, ca, null, pk, keyusage, notBefore, notAfter, extensions, sequence);
 
         postCreateCertificate(admin, data, ca, cert);
 

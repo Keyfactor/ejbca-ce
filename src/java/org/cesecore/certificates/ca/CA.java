@@ -35,7 +35,6 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
-import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.jce.X509KeyUsage;
@@ -49,6 +48,7 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequest;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestException;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
+import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -709,7 +709,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * @return
      * @throws Exception
      */
-    public abstract Certificate generateCertificate(CryptoToken cryptoToken, EndEntityInformation subject, X500Name requestX500Name, PublicKey publicKey, int keyusage,
+    public abstract Certificate generateCertificate(CryptoToken cryptoToken, EndEntityInformation subject, RequestMessage request, PublicKey publicKey, int keyusage,
             Date notBefore, Date notAfter, CertificateProfile certProfile, Extensions extensions, String sequence) throws Exception;
 
     public abstract X509CRLHolder generateCRL(CryptoToken cryptoToken,Collection<RevokedCertInfo> certs, int crlnumber) throws Exception;

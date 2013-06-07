@@ -69,6 +69,11 @@ public class CVCRequestMessage implements RequestMessage {
     /** The cvc request message, not serialized. */
     protected transient CVCertificate cvcert = null;
 
+    /** Private key used for signing/encrypting response, if needed */
+    private PrivateKey responsePrivateKey;
+    /** Security provider used for the responsePrivateKey */
+    private String responseProvider = "BC";
+
     /**
      * Constructs a new empty message handler object.
      */
@@ -328,6 +333,19 @@ public class CVCRequestMessage implements RequestMessage {
     	return RequestMessageUtils.createResponseMessage(responseClass, req, cert, signPriv, provider);
     }
     
+    @Override
+    public void setResponseKeyInfo(PrivateKey key, String provider) {
+        this.responsePrivateKey = key;
+        if (provider != null) {
+            this.responseProvider = provider;
+        }
+    }
+
+    @Override
+    public CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass, RequestMessage req, Certificate cert) {
+        return createResponseMessage(responseClass, req, cert, responsePrivateKey, responseProvider);
+    }
+
     /** Specific to CVC request messages, EAC requests contains a sequence */
     public String getKeySequence() {
     	String ret = null;
