@@ -153,7 +153,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
     
 
     @Override
-    public int createDeltaCRLs(AuthenticationToken admin, Collection<Integer> caids, long crloverlaptime)
+    public int createDeltaCRLs(final AuthenticationToken admin, final Collection<Integer> caids, long crloverlaptime)
             throws AuthorizationDeniedException {
         int createddeltacrls = 0;
         Iterator<Integer> iter = null;
@@ -415,9 +415,9 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                 if (log.isDebugEnabled()) {
                     log.debug("Listing revoked certificates. Free memory="+Runtime.getRuntime().freeMemory());
                 }          
-                Collection<RevokedCertInfo> revcerts = certificateStoreSession.listRevokedCertInfo(caCertSubjectDN, -1);
+                Collection<RevokedCertInfo> revokedCertificates = certificateStoreSession.listRevokedCertInfo(caCertSubjectDN, -1);
                 if (log.isDebugEnabled()) {
-                    log.debug("Found "+revcerts.size()+" revoked certificates. Free memory="+Runtime.getRuntime().freeMemory());
+                    log.debug("Found "+revokedCertificates.size()+" revoked certificates. Free memory="+Runtime.getRuntime().freeMemory());
                 }
                 // Go through them and create a CRL, at the same time archive expired certificates
                 //
@@ -433,23 +433,22 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                 Date now = new Date();
                 Date check = new Date(now.getTime() - crlperiod);
                 AuthenticationToken archiveAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CrlCreateSession.archive_expired"));
-                for(RevokedCertInfo data : revcerts) {
+                for(RevokedCertInfo revokedCertInfo : revokedCertificates) {
                     // We want to include certificates that was revoked after the last CRL was issued, but before this one
                     // so the revoked certs are included in ONE CRL at least. See RFC5280 section 3.3.
-                    if ( data.getExpireDate().before(check) ) {
+                    if ( revokedCertInfo.getExpireDate().before(check) ) {
                         // Certificate has expired, set status to archived in the database
                         if (log.isDebugEnabled()) {
-                            log.debug("Archiving certificate with fp="+data.getCertificateFingerprint()+". Free memory="+Runtime.getRuntime().freeMemory());
+                            log.debug("Archiving certificate with fp="+revokedCertInfo.getCertificateFingerprint()+". Free memory="+Runtime.getRuntime().freeMemory());
                         }           
-                        certificateStoreSession.setStatus(archiveAdmin, data.getCertificateFingerprint(), CertificateConstants.CERT_ARCHIVED);
+                        certificateStoreSession.setStatus(archiveAdmin, revokedCertInfo.getCertificateFingerprint(), CertificateConstants.CERT_ARCHIVED);
                     } else {
-                        Date revDate = data.getRevocationDate();
+                        Date revDate = revokedCertInfo.getRevocationDate();
                         if (revDate == null) {
-                            data.setRevocationDate(now);
-                            //TODO: This is not elegant
-                            CertificateData certdata = CertificateData.findByFingerprint(entityManager, data.getCertificateFingerprint());
+                            revokedCertInfo.setRevocationDate(now);
+                            CertificateData certdata = CertificateData.findByFingerprint(entityManager, revokedCertInfo.getCertificateFingerprint());
                             if (certdata == null) {
-                                throw new FinderException("No certificate with fingerprint " + data.getCertificateFingerprint());
+                                throw new FinderException("No certificate with fingerprint " + revokedCertInfo.getCertificateFingerprint());
                             }
                             // Set revocation date in the database
                             certdata.setRevocationDate(now);
@@ -457,7 +456,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                     }
                 }
                 // a full CRL
-                byte[] crlBytes = generateAndStoreCRL(admin, ca, revcerts, -1);
+                byte[] crlBytes = generateAndStoreCRL(admin, ca, revokedCertificates, -1);
                 if (crlBytes != null) {
                     ret = CertTools.getFingerprintAsString(crlBytes);                       
                 }
@@ -568,9 +567,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
     }
 
     private byte[] generateAndStoreCRL(AuthenticationToken admin, CA ca, Collection<RevokedCertInfo> certs, int basecrlnumber) throws CryptoTokenOfflineException, AuthorizationDeniedException {
-        // TODO: publishing below is something that is NOT included in CESeCore.
-        // It is an add-on for EJBCA put here because we did not want to refactor all references to CrlCreateSessionBean in the last minute.
-        // Hard and error-prone to do that.
+         // Hard and error-prone to do that.
         if (log.isDebugEnabled()) {
             log.debug("Storing CRL in publishers");
         }

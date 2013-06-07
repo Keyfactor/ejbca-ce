@@ -14,7 +14,7 @@ package org.ejbca.core.ejb.crl;
 
 import java.util.Collection;
 
-import javax.ejb.Local;
+import javax.ejb.Remote;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -23,11 +23,13 @@ import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 
 /**
+ * Remote interface for a local test proxy, in order to test local only methods in PublishingCrlSessionBean
+ * 
  * @version $Id$
  *
  */
-@Local
-public interface PublishingCrlSessionLocal extends PublishingCrlSession {
+@Remote
+public interface PublishingCrlProxySessionRemote {
 
     /**
      * Method that checks if there are any CRLs needed to be updated and then
@@ -78,4 +80,5 @@ public interface PublishingCrlSessionLocal extends PublishingCrlSession {
      */
     boolean createDeltaCRLnewTransactionConditioned(AuthenticationToken admin, int caid, long crloverlaptime) throws CryptoTokenOfflineException, CAOfflineException, CADoesntExistsException, AuthorizationDeniedException;
 
+    
 }
