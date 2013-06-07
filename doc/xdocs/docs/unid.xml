@@ -107,7 +107,7 @@ The Common Name (CN) for a TLS server should be the same as the machines fully q
 For example 'CN=ocsp.primekey.se'.The other DN components you can choose freely.
 </p><p>
 Once the JKS keystore is issued you can configure TLS on the OCSP server in the same way as on the EJBCA server. 
-It is configured in the file JBOSS_HOME/server/default/deploy/jboss-web.deployer/server.xml on the CA server.
+It is configured in the file JBOSS_HOME/server/default/deploy/jbossweb.sar/server.xml on the CA server.
 The Connectors for port 8442 and 8443 is the TLS configuration.
 The keystoreFile, keystorePass, truststoreFile and truststorePass are important to get right.
 <br/>It is easiest if you put the keystore for the TLS server in the file p12/tomcat.jks on the external OCSP responder.
