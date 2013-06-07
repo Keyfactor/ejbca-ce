@@ -258,6 +258,12 @@
 					<include name="org/cesecore/certificates/ca/catoken/PurposeMapping.java"/>
 					<include name="org/cesecore/certificates/ca/extendedservices/*.java"/>
 					<include name="org/cesecore/certificates/ca/internal/*Manager.java"/>
+					<include name="org/cesecore/certificates/ca/SignRequestException.java"/>
+					<include name="org/cesecore/certificates/certificate/request/RequestMessage.java"/>
+					<include name="org/cesecore/certificates/certificate/request/ResponseMessage.java"/>
+					<include name="org/cesecore/certificates/certificate/request/CertificateResponseMessage.java"/>
+					<include name="org/cesecore/certificates/certificate/request/ResponseStatus.java"/>
+					<include name="org/cesecore/certificates/certificate/request/FailInfo.java"/>
 					<include name="org/cesecore/certificates/certificateprofile/CertificateProfile.java"/>
 					<include name="org/cesecore/certificates/certificateprofile/CertificatePolicy.java"/>
 					<include name="org/cesecore/certificates/endentity/EndEntityConstants.java"/>
