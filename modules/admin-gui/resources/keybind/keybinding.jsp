@@ -34,21 +34,6 @@ org.ejbca.core.ejb.keybind.InternalKeyBindingRules
   <base href="<%= ejbcawebbean.getBaseUrl() %>" />
   <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>" />
   <script src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
-  <style type="text/css">
-		/* TODO: Move re-usable styles to included .css */
-		.infoMessage {
-			font-style: italic;
-			padding: 0.5em;
-			border-radius: 0.3em;
-			background: #fcfcfc;
-			margin-bottom: 1em;
-		}
-		.propertyTable {
-			border: 0px;
-			right: auto;
-			left: auto;
-		}
-   </style>
 </head>
 <body>
 	<h1>

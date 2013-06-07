@@ -35,66 +35,6 @@ org.ejbca.core.ejb.keybind.InternalKeyBindingRules
   <base href="<%= ejbcawebbean.getBaseUrl() %>" />
   <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>" />
   <script src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
-  <style type="text/css">
-		/* TODO: Move re-usable styles to included .css */
-		div.tabLinks {
-			width: inherit;
-			margin-top: 5px;
-			padding-left: 2px;
-			border-bottom: 1px solid #aaa;
-		}
-		a.tabLinkfalse {
-			/*
-			font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
-			font-variant: small-caps;
-		    text-decoration: none;
-			*/
-			font-size: 16px;
-			font-weight: bold;
-		    text-align: left;
-		    padding: 2px 7px 2px 7px;
-		    margin-bottom: 2px;
-			color: #669;
-			background: #fbfbfb;
-			border-left: 1px solid #aaa;
-			border-top: 1px solid #aaa;
-			border-right: 1px solid #aaa;
-			border-bottom: 1px solid #aaa;
-			border-top-left-radius: 5px;
-			border-top-right-radius: 5px;
-		}
-		a.tabLinktrue {
-			/*
-			font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
-			font-variant: small-caps;
-		    text-decoration: none;
-			*/
-			font-size: 16px;
-			font-weight: bold;
-		    text-align: left;
-		    padding: 2px 7px 2px 7px;
-		    margin-bottom: 2px;
-			color: #009;
-			background: #fff;
-			border-left: 1px solid #aaa;
-			border-top: 1px solid #aaa;
-			border-right: 1px solid #aaa;
-			border-bottom: 1px solid #fff;
-			border-top-left-radius: 3px;
-			border-top-right-radius: 3px;
-		}
-		a.tabLinkfalse:hover, a.tabLinktrue:hover{
-			color: #009;
-			background: #eee;
-		}
-		.infoMessage {
-			font-style: italic;
-			padding: 0.5em;
-			border-radius: 0.3em;
-			background: #fcfcfc;
-			margin-bottom: 1em;
-		}
-   </style>
 </head>
 <body>
 	<h1>
