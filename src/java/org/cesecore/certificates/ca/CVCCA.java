@@ -20,6 +20,7 @@ import java.security.InvalidParameterException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
@@ -354,9 +355,9 @@ public class CVCCA extends CA implements Serializable {
         	// This will be an initial root CA, since no CA-certificate exists
         	if (log.isDebugEnabled()) {
         		log.debug("Using Holder Ref also as CA Ref, because it is a root CA");
+                log.debug("Using AuthorizationRoleEnum.CVCA");
         	}
             caRef = new CAReferenceField(holderRef.getCountry(), holderRef.getMnemonic(), holderRef.getSequence());
-            log.debug("Using AuthorizationRoleEnum.CVCA");
             authRole = AuthorizationRoleEnum.CVCA;
         } else {
         	if (log.isDebugEnabled()) {
@@ -369,17 +370,23 @@ public class CVCCA extends CA implements Serializable {
             	// If the holder DV's country is something else, it is a foreign DV
             	if (StringUtils.equals(caRef.getCountry(), holderRef.getCountry())) {
                 	authRole = AuthorizationRoleEnum.DV_D;            		
-                    log.debug("Using AuthorizationRoleEnum.DV_D");
+                    if (log.isDebugEnabled()) {
+                        log.debug("Using AuthorizationRoleEnum.DV_D");
+                    }
             	} else {
                 	authRole = AuthorizationRoleEnum.DV_F;	            		
-                    log.debug("Using AuthorizationRoleEnum.DV_F");
+                    if (log.isDebugEnabled()) {
+                        log.debug("Using AuthorizationRoleEnum.DV_F");
+                    }
             	}
             }
         }
 
         AccessRightEnum accessRights = AccessRightEnum.READ_ACCESS_NONE;
         int rights = certProfile.getCVCAccessRights();
-        log.debug("Access rights in certificate profile: "+rights);
+        if (log.isDebugEnabled()) {
+            log.debug("Access rights in certificate profile: "+rights);
+        }
         switch (rights) {
 	        case CertificateProfile.CVC_ACCESS_DG3: accessRights = AccessRightEnum.READ_ACCESS_DG3; break;
 	        case CertificateProfile.CVC_ACCESS_DG4: accessRights = AccessRightEnum.READ_ACCESS_DG4; break;
@@ -389,11 +396,15 @@ public class CVCCA extends CA implements Serializable {
         // Generate the CVC certificate using Keijos library
         CAToken catoken = getCAToken();
         String sigAlg = catoken.getSignatureAlgorithm();
-        log.debug("Creating CV certificate with algorithm "+sigAlg+", using provider "+cryptoToken.getSignProviderName()+", public key algorithm from CVC request must match this algorithm.");
-        log.debug("CARef: "+caRef.getConcatenated()+"; holderRef: "+holderRef.getConcatenated());
+        final String provider = cryptoToken.getSignProviderName();
         final String alias = getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
-        CVCertificate cvc = CertificateGenerator.createCertificate(publicKey, cryptoToken.getPrivateKey(alias), 
-        		sigAlg, caRef, holderRef, authRole, accessRights, val.getNotBefore(), val.getNotAfter(), cryptoToken.getSignProviderName());
+        final PrivateKey caPrivateKey = cryptoToken.getPrivateKey(alias);
+        if (log.isDebugEnabled()) {
+            log.debug("Creating CV certificate with algorithm "+sigAlg+", using provider "+provider+", public key algorithm from CVC request must match this algorithm.");
+            log.debug("CARef: "+caRef.getConcatenated()+"; holderRef: "+holderRef.getConcatenated());
+        }
+        CVCertificate cvc = CertificateGenerator.createCertificate(publicKey, caPrivateKey, 
+        		sigAlg, caRef, holderRef, authRole, accessRights, val.getNotBefore(), val.getNotAfter(), provider);
 
         if (log.isDebugEnabled()) {
             log.debug("Certificate: "+cvc.toString());
@@ -403,6 +414,8 @@ public class CVCCA extends CA implements Serializable {
         CardVerifiableCertificate retCert = new CardVerifiableCertificate(cvc);
         // Verify certificate before returning
         retCert.verify(cryptoToken.getPublicKey(alias));
+        // Before returning from this method, we will set the private key and provider in the request message, in case the response  message needs to be signed
+        request.setResponseKeyInfo(caPrivateKey, provider);
         if (log.isTraceEnabled()) {
         	log.trace("<generateCertificate()");
         }
