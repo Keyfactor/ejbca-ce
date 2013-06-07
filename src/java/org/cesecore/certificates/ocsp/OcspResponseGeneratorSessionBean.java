@@ -776,12 +776,11 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     boolean supportsResponseType = false;
                     while (en.hasMoreElements()) {
                         ASN1ObjectIdentifier oid = en.nextElement();
-                        // log.debug("Found oid: "+oid.getId());
                         if (oid.equals(OCSPObjectIdentifiers.id_pkix_ocsp_basic)) {
                             // This is the response type we support, so we are happy! Break the loop.
                             supportsResponseType = true;
                             log.debug("Response type supported: " + oid.getId());
-                            continue;
+                            break;
                         }
                     }
                     if (!supportsResponseType) {
@@ -1211,28 +1210,29 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         }
         if (log.isDebugEnabled()) {
             log.debug("Signing OCSP response with OCSP signer cert: " + signerCert.getSubjectDN().getName());
-            RespID respId = null;
-            if (respIdType == OcspConfiguration.RESPONDERIDTYPE_NAME) {
-                respId = new JcaRespID(signerCert.getSubjectX500Principal());
-            } else {
-                respId = new JcaRespID(signerCert.getPublicKey(), SHA1DigestCalculator.buildSha1Instance());
-            }
-            if (!returnval.getResponderId().equals(respId)) {
-                log.error("Response responderId does not match signer certificate responderId!");
-            }
-            boolean verify;
-            try {
-                verify = returnval.isSignatureValid(new JcaContentVerifierProviderBuilder().build(signerCert.getPublicKey()));
-            } catch (OperatorCreationException e) {
-                // Very fatal error
-                throw new EJBException("Can not create Jca content signer: ", e);
-            }
-            if (verify) {
-                log.debug("The OCSP response is verifying.");
-            } else {
-                log.error("The response is NOT verifying!");
-            }
         }
+        RespID respId = null;
+        if (respIdType == OcspConfiguration.RESPONDERIDTYPE_NAME) {
+            respId = new JcaRespID(signerCert.getSubjectX500Principal());
+        } else {
+            respId = new JcaRespID(signerCert.getPublicKey(), SHA1DigestCalculator.buildSha1Instance());
+        }
+        if (!returnval.getResponderId().equals(respId)) {
+            log.error("Response responderId does not match signer certificate responderId!");
+        }
+        //TODO: Look over the below code. Is it as harmless to not verify as it looks?
+        boolean verify;
+        try {
+            verify = returnval.isSignatureValid(new JcaContentVerifierProviderBuilder().build(signerCert.getPublicKey()));
+        } catch (OperatorCreationException e) {
+            // Very fatal error
+            throw new EJBException("Can not create Jca content signer: ", e);
+        }
+        if (verify) {
+            log.debug("The OCSP response is verifying.");
+        } else {
+            log.error("The response is NOT verifying!");
+        }     
         return returnval;
     }
 
@@ -1318,11 +1318,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         } catch (CertificateNotYetValidException e) {
             throw new Error("This should never happen.", e);
         }
-        if (!log.isDebugEnabled()) {
-            return true;
-        }
-        log.debug("Time for \"certificate will soon expire\" not yet reached. You will be warned after: "
-                + new Date(signerCert.getNotAfter().getTime() - warnBeforeExpirationTime));
+        if (log.isDebugEnabled()) {
+            log.debug("Time for \"certificate will soon expire\" not yet reached. You will be warned after: "
+                    + new Date(signerCert.getNotAfter().getTime() - warnBeforeExpirationTime));
+        }   
         return true;
     }
     
