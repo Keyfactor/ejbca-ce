@@ -317,7 +317,6 @@ public class CardCertReqServlet extends HttpServlet {
         } catch (Exception e) {
             log.error("Exception occured: ", e);
             debug.print("<h3>parameter name and values: </h3>");
-            @SuppressWarnings("unchecked")
             Enumeration<String> paramNames = request.getParameterNames();
             while (paramNames.hasMoreElements()) {
                 String name = paramNames.nextElement().toString();

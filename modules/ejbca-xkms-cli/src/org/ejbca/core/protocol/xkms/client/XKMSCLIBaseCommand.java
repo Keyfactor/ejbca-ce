@@ -261,10 +261,14 @@ public abstract class XKMSCLIBaseCommand {
      */
     protected byte[] loadCert(String arg) {
 		try {
-			BufferedInputStream bis = new BufferedInputStream(new FileInputStream(arg));
-			byte[] retval = new byte[bis.available()];
-			bis.read(retval);
-			return retval;
+            BufferedInputStream bis = new BufferedInputStream(new FileInputStream(arg));
+            try {
+                byte[] retval = new byte[bis.available()];
+                bis.read(retval);
+                return retval;
+            } finally {
+                bis.close();
+            }
 			
 		} catch (FileNotFoundException e) {
 			getPrintStream().println("Couldn't find file with name " + arg);

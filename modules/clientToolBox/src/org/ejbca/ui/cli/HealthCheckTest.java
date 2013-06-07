@@ -58,21 +58,25 @@ class HealthCheckTest extends ClientToolBox {
                     performanceTest.getLog().error("Content is not an input stream.");
                     return false;
                 }
-                final InputStream is = (InputStream)content;
-                final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                while ( true ) {
-                    int nextByte = is.read();
-                    if (nextByte<0) {
-                        break;
+                final InputStream is = (InputStream) content;
+                try {
+                    final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    while (true) {
+                        int nextByte = is.read();
+                        if (nextByte < 0) {
+                            break;
+                        }
+                        baos.write(nextByte);
                     }
-                    baos.write(nextByte);
+                    if (!baos.toString().equals("ALLOK")) {
+                        performanceTest.getLog().error("Wrong content: " + baos);
+                        return false;
+                    }
+                    performanceTest.getLog().info("Health OK! ");
+                    return true;
+                } finally {
+                    is.close();
                 }
-                if ( !baos.toString().equals("ALLOK")) {
-                    performanceTest.getLog().error("Wrong content: "+baos);
-                    return false;
-                }
-                performanceTest.getLog().info("Health OK! ");
-                return true;
             }
             public String getJobTimeDescription() {
                 return "Get health status";

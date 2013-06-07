@@ -65,10 +65,14 @@ public class SVGTemplatePrinter extends BaseCommand {
 				int validity = Integer.parseInt(data.getProperty("VALIDITY"));		
 				String hardtokensnprefix = data.getProperty("HARDTOKENSNPREFIX");
 				FileInputStream fis = new FileInputStream(templatefilename);
-				byte[] byteData = new byte[fis.available()];
-			    fis.read(byteData);
-			    String sVGData = new String(byteData,"UTF8");
-			    PrinterManager.print(printername, templatefilename, sVGData, 1, validity, userdata, pins, puks, hardtokensnprefix, hardtokensn, copyofhardtokensn);	
+                try {
+                    byte[] byteData = new byte[fis.available()];
+                    fis.read(byteData);
+                    String sVGData = new String(byteData,"UTF8");
+                    PrinterManager.print(printername, templatefilename, sVGData, 1, validity, userdata, pins, puks, hardtokensnprefix, hardtokensn, copyofhardtokensn); 
+                } finally {
+                    fis.close();
+                }	    
 			} catch(Exception e) {
 				getLogger().error(e.getMessage());
 				e.printStackTrace();

@@ -308,7 +308,6 @@ public class DemoCertReqServlet extends HttpServlet {
         } catch (Exception e) {
             log.debug(e);
             debug.print("<h3>parameter name and values: </h3>");
-            @SuppressWarnings("unchecked")
             Enumeration<? extends Object> paramNames = request.getParameterNames();
             while (paramNames.hasMoreElements()) {
                 String name = paramNames.nextElement().toString();
