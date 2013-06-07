@@ -45,7 +45,8 @@ import org.bouncycastle.cert.ocsp.UnknownStatus;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
-import org.cesecore.CaCreatingTestCase;
+import org.cesecore.CaTestUtils;
+import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -57,7 +58,6 @@ import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
@@ -82,10 +82,8 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.keys.token.CryptoTokenManagementProxySessionRemote;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
-import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.RoleData;
@@ -104,7 +102,7 @@ import org.junit.Test;
  * @version $Id$
  * 
  */
-public class IntegratedOcspResponseTest extends CaCreatingTestCase {
+public class IntegratedOcspResponseTest extends RoleUsingTestCase {
 
     private static final String DN = "C=SE,O=Test,CN=TEST";
 
@@ -114,8 +112,6 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(CryptoTokenManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CryptoTokenManagementSessionRemote.class);
     private InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
@@ -157,27 +153,8 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
 
         final Properties cryptoTokenProperties = new Properties();
         cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, "foo123");
-        final String cryptoTokenName = "IntegratedOcspResponseTest";
-        if (!cryptoTokenManagementProxySession.isCryptoTokenNameUsed(cryptoTokenName)) {
-            cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(roleMgmgToken, cryptoTokenName, SoftCryptoToken.class.getName(),
-                    cryptoTokenProperties, null, null);
-        } else {
-            cryptoTokenId = cryptoTokenManagementSession.getIdFromName(cryptoTokenName);
-        }
-        if (!cryptoTokenManagementSession.isAliasUsedInCryptoToken(cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS)) {
-            cryptoTokenManagementSession.createKeyPair(roleMgmgToken, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS, "1024");
-        }
-        if (!cryptoTokenManagementSession.isAliasUsedInCryptoToken(cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS)) {
-            cryptoTokenManagementSession.createKeyPair(roleMgmgToken, cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS, "1024");
-        }
-        /*
-         * Yes, this is intentional and makes some developers sad..
-         * 
-         * We generate keys on the server side and then fetch a copy of these keys to the client VM where we generate a
-         * self-signed CA certificate that is then added to the database instead of using non-CESeCore code for creating the CA.
-         */
-        final CryptoToken cryptoToken = cryptoTokenManagementProxySession.getCryptoToken(cryptoTokenId);
-        final CA testx509ca = createX509Ca(cryptoToken, "CN=TEST,O=Test,C=SE");
+        final String className = IntegratedOcspResponseTest.class.getSimpleName();
+        final CA testx509ca = CaTestUtils.createX509Ca(internalAdmin, className, className, "CN=TEST,O=Test,C=SE");
         caId = testx509ca.getCAId();
         accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAACCESS.resource() + caId, AccessRuleState.RULE_ACCEPT, true));
         roleManagementSession.addAccessRulesToRole(roleMgmgToken, role, accessRules);

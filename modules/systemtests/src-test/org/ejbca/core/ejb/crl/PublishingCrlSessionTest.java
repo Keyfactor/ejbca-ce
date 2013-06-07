@@ -109,6 +109,8 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private CrlStoreSessionRemote crlStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class);
     private PublishingCrlSessionRemote publishingCrlSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(PublishingCrlSessionRemote.class);
+    private PublishingCrlProxySessionRemote publishingCrlProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(
+            PublishingCrlProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     private final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CrlCreateSessionCRLTest"));
@@ -448,11 +450,11 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
             // Compare CRL numbers instead of Dates, since these CRLs might have been generated the same second as the last ones
             final Collection<Integer> caids = new ArrayList<Integer>();
             caids.add(Integer.valueOf(testx509ca.getCAId()));
-            publishingCrlSessionRemote.createCRLs(roleMgmgToken, caids, 2);
+            publishingCrlProxySession.createCRLs(roleMgmgToken, caids, 2);
             final X509CRL x509crlAfter2 = CertTools.getCRLfromByteArray(crlStoreSession.getLastCRL(cainfo.getSubjectDN(), false));
             assertTrue("Did not generate a newer CRL.",
                     CrlExtensions.getCrlNumber(x509crlAfter2).intValue() > CrlExtensions.getCrlNumber(x509crlAfter).intValue());
-            publishingCrlSessionRemote.createDeltaCRLs(roleMgmgToken, caids, 2);
+            publishingCrlProxySession.createDeltaCRLs(roleMgmgToken, caids, 2);
             final X509CRL x509deltaCrlAfter2 = CertTools.getCRLfromByteArray(crlStoreSession.getLastCRL(cainfo.getSubjectDN(), true));
             assertTrue("Did not generate a newer Delta CRL.",
                     CrlExtensions.getCrlNumber(x509deltaCrlAfter2).intValue() > CrlExtensions.getCrlNumber(x509deltaCrlAfter).intValue());

@@ -15,6 +15,7 @@ package org.cesecore.certificates.certificate;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import javax.ejb.Remote;
@@ -75,5 +76,20 @@ public interface InternalCertificateStoreSessionRemote {
      * @return true if the status was updated, false if not, for example if the certificate did not exist
      */
     boolean setStatus(AuthenticationToken admin, String fingerprint, int status) throws AuthorizationDeniedException;
+    
+    /**
+     * 
+     * Changes the revocation date for the certificate identified by the fingerprint. This should only occur in an exceptional circumstance (a revoked 
+     * certificate missing a revocation date) and should not be called during standard operations.
+     * 
+     * This method should only be used in the exceptional circumstance where a revoked certificate lacks a revocation date.  
+     * 
+     * @param authenticationToken the authenticating end entity
+     * @param certificateFingerprint a fingerprint identifying a certificate
+     * @param revocationDate the revocation date
+     * @throws AuthorizationDeniedException 
+     */
+    void setRevocationDate(AuthenticationToken authenticationToken, String certificateFingerprint, Date revocationDate) throws AuthorizationDeniedException;
+
 
 }

@@ -604,11 +604,39 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         return setRevokeStatusNoAuth(admin, certificate, revokedDate, reason, userDataDN);
     }
     
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public void setRevocationDate(AuthenticationToken authenticationToken, String certificateFingerprint, Date revocationDate)
+            throws AuthorizationDeniedException {
+        // Must be authorized to CA in order to change status is certificates issued by the CA
+        CertificateData certdata = CertificateData.findByFingerprint(entityManager, certificateFingerprint);
+        if(certdata.getStatus() != CertificateConstants.CERT_REVOKED) {
+            throw new UnsupportedOperationException("Attempted to set revocation date on an unrevoked certificate.");
+        }
+        if(certdata.getRevocationDate() != 0) {
+            throw new UnsupportedOperationException("Attempted to overwrite revocation date");
+        }
+        Certificate certificate = certdata.getCertificate();
+        int caid = CertTools.getIssuerDN(certificate).hashCode();
+        authorizedToCA(authenticationToken, caid);
+        certdata.setRevocationDate(revocationDate);
+        final String username = certdata.getUsername();
+        final String serialNo = CertTools.getSerialNumberAsString(certificate); // for logging
+        final String msg = INTRES.getLocalizedMessage("store.revocationdateset", username, certificateFingerprint, certdata.getSubjectDN(),
+                certdata.getIssuerDN(), serialNo, revocationDate);
+        Map<String, Object> details = new LinkedHashMap<String, Object>();
+        details.put("msg", msg);
+        //Log this as CERT_REVOKED since this data should have been added then. 
+        logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, authenticationToken.toString(),
+                String.valueOf(caid), serialNo, username, details);
+    }
+    
+    
     /** Local interface only */
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public boolean setRevokeStatusNoAuth(AuthenticationToken admin, Certificate certificate, Date revokeDate, int reason, String userDataDN)
-            throws CertificateRevokeException, AuthorizationDeniedException {
+            throws CertificateRevokeException {
         if (certificate == null) {
             return false;
         }
@@ -897,6 +925,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         query.setParameter("subjectKeyId", subjectKeyIdString);
         query.setParameter("status", CertificateConstants.CERT_ACTIVE);
         query.setMaxResults(1);
+        @SuppressWarnings("unchecked")
         final List<CertificateData> resultList = query.getResultList();
         if (resultList.size() == 1) {
             return resultList.get(0).getCertificate();
