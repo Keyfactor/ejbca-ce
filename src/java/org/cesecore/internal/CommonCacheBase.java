@@ -63,7 +63,7 @@ public abstract class CommonCacheBase<T> implements CommonCache<T> {
             return null;
         }
         if (log.isDebugEnabled()) {
-            log.debug("Returning cached " + cacheEntry.object.getClass().getSimpleName() + "object. Digest was " + cacheEntry.digest);
+            log.debug("Returning cached " + cacheEntry.object.getClass().getSimpleName() + " object. Digest was " + cacheEntry.digest);
         }
         return cacheEntry.object;
     }
