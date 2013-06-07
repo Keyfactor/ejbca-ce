@@ -581,7 +581,6 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
      * This method cancels all timers associated with this bean.
      */
     private void cancelTimers() {
-        @SuppressWarnings("unchecked")
         Collection<Timer> timers = timerService.getTimers();
         for (Timer timer : timers) {
             timer.cancel();

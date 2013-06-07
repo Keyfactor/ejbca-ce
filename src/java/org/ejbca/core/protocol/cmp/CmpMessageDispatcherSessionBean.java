@@ -233,9 +233,13 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 		}
 	}
 	
-	private ASN1Primitive getDERObject(byte[] ba) throws IOException {
-	       ASN1InputStream ins = new ASN1InputStream(ba);
-	       ASN1Primitive obj = ins.readObject();
-	       return obj;
-	}
+    private ASN1Primitive getDERObject(byte[] ba) throws IOException {
+        ASN1InputStream ins = new ASN1InputStream(ba);
+        try {
+            ASN1Primitive obj = ins.readObject();
+            return obj;
+        } finally {
+            ins.close();
+        }
+    }
 }

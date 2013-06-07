@@ -58,14 +58,19 @@ public class FixEndOfBrokenXMLTest {
 			final XMLDecoder decoder = new XMLDecoder(new ByteArrayInputStream(fixedXml));
 			final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			final XMLEncoder encoder = new XMLEncoder(baos);
-			try {
-				encoder.writeObject(decoder.readObject());
-				encoder.close();
-			} catch( Throwable t ) {
-				log.error("Exception: ", t);
-				notPossibleToRemoveMoreBytes(nrOfBytesMissing, brokenXml, limit);
-				return;
-			}
+            try {
+                try {
+                    encoder.writeObject(decoder.readObject());
+                } catch (Throwable t) {
+                    log.error("Exception: ", t);
+                    notPossibleToRemoveMoreBytes(nrOfBytesMissing, brokenXml, limit);
+                    return;
+                } finally {
+                    encoder.close();
+                }
+            } finally {
+                decoder.close();
+            }
 			final byte decodedXml[] = baos.toByteArray();
 			if ( !Arrays.equals(xml,decodedXml) ) {
 				if (nrOfBytesMissing < limit) {
@@ -103,14 +108,21 @@ public class FixEndOfBrokenXMLTest {
 		assertFalse("Only possible to fix "+nrOfBytesMissing+" missing bytes. We should be able to handle "+limit+" missing bytes.", nrOfBytesMissing<limit);
 	}
 
-	private byte[] decodeAndEncode(final byte[] testXml) {
-		final XMLDecoder dec = new XMLDecoder(new ByteArrayInputStream(testXml));
-		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		final XMLEncoder encoder = new XMLEncoder(baos);
-		encoder.writeObject(dec.readObject());
-		encoder.close();
-		return baos.toByteArray();
-	}
+    private byte[] decodeAndEncode(final byte[] testXml) {
+        final XMLDecoder dec = new XMLDecoder(new ByteArrayInputStream(testXml));
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            final XMLEncoder encoder = new XMLEncoder(baos);
+            try {
+                encoder.writeObject(dec.readObject());
+            } finally {
+                encoder.close();
+            }
+        } finally {
+            dec.close();
+        }
+        return baos.toByteArray();
+    }
 
 	/**
 	 * If the start of the last string-element is broken, we will remove all

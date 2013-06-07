@@ -359,11 +359,15 @@ public abstract class CmpTestCase extends CaTestCase {
      }
      
      
-     byte[] bytes = keys.getPublic().getEncoded();
-     ByteArrayInputStream bIn = new ByteArrayInputStream(bytes);
-     ASN1InputStream dIn = new ASN1InputStream(bIn);
-     SubjectPublicKeyInfo keyInfo = new SubjectPublicKeyInfo((ASN1Sequence) dIn.readObject());
-     myCertTemplate.setPublicKey(keyInfo);
+        byte[] bytes = keys.getPublic().getEncoded();
+        ByteArrayInputStream bIn = new ByteArrayInputStream(bytes);
+        ASN1InputStream dIn = new ASN1InputStream(bIn);
+        try {
+            SubjectPublicKeyInfo keyInfo = new SubjectPublicKeyInfo((ASN1Sequence) dIn.readObject());
+            myCertTemplate.setPublicKey(keyInfo);
+        } finally {
+            dIn.close();
+        }
 
      CertRequest myCertRequest = new CertRequest(4, myCertTemplate.build(), null);
 
@@ -706,42 +710,47 @@ public abstract class CmpTestCase extends CaTestCase {
             final Socket socket = new Socket(host, port);
 
             final byte[] msg = createTcpMessage(message);
+            try {
+                final BufferedOutputStream os = new BufferedOutputStream(socket.getOutputStream());
+                os.write(msg);
+                os.flush();
 
-            final BufferedOutputStream os = new BufferedOutputStream(socket.getOutputStream());
-            os.write(msg);
-            os.flush();
+                DataInputStream dis = new DataInputStream(socket.getInputStream());
 
-            DataInputStream dis = new DataInputStream(socket.getInputStream());
-            // Read the length, 32 bits
-            final int len = dis.readInt();
-            log.info("Got a message claiming to be of length: " + len);
-            // Read the version, 8 bits. Version should be 10 (protocol draft nr
-            // 5)
-            final int ver = dis.readByte();
-            log.info("Got a message with version: " + ver);
-            assertEquals(ver, 10);
+                // Read the length, 32 bits
+                final int len = dis.readInt();
+                log.info("Got a message claiming to be of length: " + len);
+                // Read the version, 8 bits. Version should be 10 (protocol draft nr
+                // 5)
+                final int ver = dis.readByte();
+                log.info("Got a message with version: " + ver);
+                assertEquals(ver, 10);
 
-            // Read flags, 8 bits for version 10
-            final byte flags = dis.readByte();
-            log.info("Got a message with flags (1 means close): " + flags);
-            // Check if the client wants us to close the connection (LSB is 1 in
-            // that case according to spec)
+                // Read flags, 8 bits for version 10
+                final byte flags = dis.readByte();
+                log.info("Got a message with flags (1 means close): " + flags);
+                // Check if the client wants us to close the connection (LSB is 1 in
+                // that case according to spec)
 
-            // Read message type, 8 bits
-            final int msgType = dis.readByte();
-            log.info("Got a message of type: " + msgType);
-            assertEquals(msgType, type);
+                // Read message type, 8 bits
+                final int msgType = dis.readByte();
+                log.info("Got a message of type: " + msgType);
+                assertEquals(msgType, type);
 
-            // Read message
-            final ByteArrayOutputStream baos = new ByteArrayOutputStream(3072);
-            while (dis.available() > 0) {
-                baos.write(dis.read());
+                // Read message
+                final ByteArrayOutputStream baos = new ByteArrayOutputStream(3072);
+                while (dis.available() > 0) {
+                    baos.write(dis.read());
+                }
+
+                log.info("Read " + baos.size() + " bytes");
+                final byte[] respBytes = baos.toByteArray();
+                assertNotNull(respBytes);
+                assertTrue(respBytes.length > 0);
+                return respBytes;
+            } finally {
+                socket.close();
             }
-            log.info("Read " + baos.size() + " bytes");
-            final byte[] respBytes = baos.toByteArray();
-            assertNotNull(respBytes);
-            assertTrue(respBytes.length > 0);
-            return respBytes;
         } catch (ConnectException e) {
             assertTrue("This test requires a CMP TCP listener to be configured on " + host + ":" + port + ". Edit conf/cmp.properties and redeploy.",
                     false);

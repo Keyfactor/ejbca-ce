@@ -631,16 +631,22 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         byte input[] = concatByteArrays(headers.getBytes(), data);
         // Create the socket.
         Socket socket = new Socket(InetAddress.getByName("127.0.0.1"), Integer.parseInt(httpPort));
+        try {
         // Send data byte for byte.
         OutputStream os = socket.getOutputStream();
-        try {
-            os.write(input);
-        } catch (IOException e) {
-            log.info("Socket threw an IOException.", e);
-            // Windows throws an IOException when trying to write more bytes to
-            // the server than it should. JBoss on Linux does not.
-            // assertTrue("Tried to write more than it should to the server (>1000), "+i, i > 1000);
-            return;
+            try {
+                os.write(input);
+            } catch (IOException e) {
+                log.info("Socket threw an IOException.", e);
+                // Windows throws an IOException when trying to write more bytes to
+                // the server than it should. JBoss on Linux does not.
+                // assertTrue("Tried to write more than it should to the server (>1000), "+i, i > 1000);
+                return;
+            } finally {
+                os.close();
+            }
+        } finally {
+            socket.close();
         }
         // Reading the response.
         InputStream ins = socket.getInputStream();
