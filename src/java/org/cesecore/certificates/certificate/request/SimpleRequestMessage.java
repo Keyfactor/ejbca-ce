@@ -21,8 +21,8 @@ import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.util.Date;
 
-import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.cms.CMSSignedGenerator;
 
 
@@ -74,6 +74,11 @@ public class SimpleRequestMessage implements RequestMessage {
     /** Requested certificate extensions */
     private Extensions x509Extensions = null;
     
+    /** Private key used for signing/encrypting response, if needed */
+    private PrivateKey responsePrivateKey;
+    /** Security provider used for the responsePrivateKey */
+    private String responseProvider = "BC";
+
     /**
      * Constructs a new Simple message handler object.
      * @param pubkey the public key to be certified
@@ -86,9 +91,7 @@ public class SimpleRequestMessage implements RequestMessage {
         this.password = password;
     }
 
-    /**
-     * @see org.cesecore.certificates.certificate.request.RequestMessage
-     */
+    @Override
     public PublicKey getRequestPublicKey() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
     	return pubkey;
     }
@@ -99,9 +102,7 @@ public class SimpleRequestMessage implements RequestMessage {
         this.password = pwd;
     }
 
-    /**
-     * @return password.
-     */
+    @Override
     public String getPassword() {
     	return password;
     }
@@ -112,18 +113,12 @@ public class SimpleRequestMessage implements RequestMessage {
         this.username = username;
     }
 
-    /**
-     * @return username, which is the CN field from the subject DN in certification request.
-     */
+    @Override
     public String getUsername() {
     	return username;
     }
 
-    /**
-     * Gets the issuer DN if contained in the request (the CA the request is targeted at).
-     *
-     * @return issuerDN of receiving CA or null.
-     */
+    @Override
     public String getIssuerDN() {
         return issuerDN;
     }
@@ -135,46 +130,27 @@ public class SimpleRequestMessage implements RequestMessage {
     public void setIssuerDN(String dn) {
     	this.issuerDN = dn;
     }
-    /**
-     * Gets the number (of CA cert) from IssuerAndSerialNumber. Combined with getIssuerDN to identify
-     * the CA-certificate of the CA the request is targeted for.
-     *
-     * @return serial number of CA certificate for CA issuing CRL or null.
-     */
+    @Override
     public BigInteger getSerialNo() {
     	return null;
     }
     
-    /**
-     * Gets the issuer DN (of CA cert) from IssuerAndSerialNumber when this is a CRL request.
-     *
-     * @return issuerDN of CA issuing CRL.
-     */
+    @Override
     public String getCRLIssuerDN() {
         return null;
     }
 
-    /**
-     * Gets the number (of CA cert) from IssuerAndSerialNumber when this is a CRL request.
-     *
-     * @return serial number of CA certificate for CA issuing CRL.
-     */
+    @Override
     public BigInteger getCRLSerialNo() {
         return null;
     }
 
-    /**
-     * Returns the string representation of the subject DN from the certification request.
-     *
-     * @return subject DN from certification request or null.
-     */
+    @Override
     public String getRequestDN() {
     	return null;
     }
 
-    /**
-     * @see RequestMessage#getRequestX500Name()
-     */
+    @Override
     public X500Name getRequestX500Name() {
     	if (this.requestDN == null) {
     		return null;
@@ -186,27 +162,22 @@ public class SimpleRequestMessage implements RequestMessage {
     	this.requestDN = dn;
     }
     
+    @Override
     public String getRequestAltNames() {
     	return null;
     }
 
-    /**
-     * @see org.cesecore.certificates.certificate.request.RequestMessage
-     */
+    @Override
 	public Date getRequestValidityNotBefore() {
 		return null;
 	}
 	
-    /**
-     * @see org.cesecore.certificates.certificate.request.RequestMessage
-     */
+    @Override
 	public Date getRequestValidityNotAfter() {
 		return null;
 	}
 	
-    /**
-     * @see org.cesecore.certificates.certificate.request.RequestMessage
-     */
+    @Override
 	public Extensions getRequestExtensions() {
 	    return x509Extensions;
 	}
@@ -216,108 +187,81 @@ public class SimpleRequestMessage implements RequestMessage {
 	    this.x509Extensions = extensions;
 	}
 	
-    /**
-     * @see org.cesecore.certificates.certificate.request.RequestMessage
-     */
+    @Override
     public boolean verify()
     throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
         return true;
     }
 
-    /**
-     * indicates if this message needs recipients public and private key to verify, decrypt etc. If
-     * this returns true, setKeyInfo() should be called.
-     *
-     * @return True if public and private key is needed.
-     */
+    @Override
     public boolean requireKeyInfo() {
         return false;
     }
 
-    /**
-     * Sets the public and private key needed to decrypt/verify the message. Must be set if
-     * requireKeyInfo() returns true.
-     *
-     * @param cert certificate containing the public key.
-     * @param key private key.
-     * @param provider the provider to use, if the private key is on a HSM you must use a special provider. If null is given, the default BC provider is used.
-     *
-     * @see #requireKeyInfo()
-     */
+    @Override
     public void setKeyInfo(Certificate cert, PrivateKey key, String Provider) {
     }
 
-    /**
-     * Returns an error number after an error has occured processing the request
-     *
-     * @return class specific error number
-     */
+    @Override
     public int getErrorNo() {
         return error;
     }
 
-    /**
-     * Returns an error message after an error has occured processing the request
-     *
-     * @return class specific error message
-     */
+    @Override
     public String getErrorText() {
         return errorText;
     }
 
-    /**
-     * Returns a senderNonce if present in the request
-     *
-     * @return senderNonce
-     */
+    @Override
     public String getSenderNonce() {
         return null;
     }
 
-    /**
-     * Returns a transaction identifier if present in the request
-     *
-     * @return transaction id
-     */
+    @Override
     public String getTransactionId() {
         return null;
     }
 
-    /**
-     * Returns requesters key info, key id or similar
-     *
-     * @return request key info
-     */
+    @Override
     public byte[] getRequestKeyInfo() {
         return null;
     }
     
-    /** @see org.cesecore.certificates.certificate.request.RequestMessage
-     */
+    @Override
     public String getPreferredDigestAlg() {
     	return preferredDigestAlg;
     }
-    /** @see org.cesecore.certificates.certificate.request.RequestMessage
-     */
+    @Override
     public boolean includeCACert() {
     	return includeCACert;
     }
 
-    /** @see org.cesecore.certificates.certificate.request.RequestMessage
-     */
+    @Override
     public int getRequestType() {
     	return 0;
     }
     
-    /** @see org.cesecore.certificates.certificate.request.RequestMessage
-     */
+    @Override
     public int getRequestId() {
     	return 0;
     }
     
-    /** @see org.cesecore.certificates.certificate.request.RequestMessage
-     */
+    @Override
     public CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass, RequestMessage req, Certificate cert, PrivateKey signPriv, String provider) {
     	return RequestMessageUtils.createResponseMessage(responseClass, req, cert, signPriv, provider);
     }
+
+    @Override
+    public void setResponseKeyInfo(PrivateKey key, String provider) {
+        this.responsePrivateKey = key;
+        if (provider != null) {
+            this.responseProvider = provider;
+        }
+    }
+
+    @Override
+    public CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass, RequestMessage req, Certificate cert) {
+        return createResponseMessage(responseClass, req, cert, responsePrivateKey, responseProvider);
+    }
+
 } // SimpleRequestMessage

@@ -108,6 +108,11 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
     private byte[] pkimsgbytes = null;
     private transient CertReqMsg req = null;
 
+    /** Private key used for signing/encrypting response, if needed */
+    private PrivateKey responsePrivateKey;
+    /** Security provider used for the responsePrivateKey */
+    private String responseProvider = "BC";
+
     /** Because CertReqMsg is not serializable we may need to encode/decode bytes if the object is lost during deserialization. */
     private CertReqMsg getReq() {
         if (req == null) {
@@ -579,4 +584,18 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
             final Certificate cert, final PrivateKey signPriv, final String provider) {
         return RequestMessageUtils.createResponseMessage(responseClass, req, cert, signPriv, provider);
     }
+    
+    @Override
+    public void setResponseKeyInfo(PrivateKey key, String provider) {
+        this.responsePrivateKey = key;
+        if (provider != null) {
+            this.responseProvider = provider;
+        }
+    }
+
+    @Override
+    public CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass, RequestMessage req, Certificate cert) {
+        return createResponseMessage(responseClass, req, cert, responsePrivateKey, responseProvider);
+    }
+
 }

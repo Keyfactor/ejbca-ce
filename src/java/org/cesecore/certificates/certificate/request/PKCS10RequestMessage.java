@@ -40,8 +40,8 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.CeSecoreNameStyle;
+import org.cesecore.util.CertTools;
 
 /**
  * Class to handle PKCS10 request messages sent to the CA.
@@ -85,6 +85,11 @@ public class PKCS10RequestMessage implements RequestMessage {
 
     /** Error text */
     private String errorText = null;
+
+    /** Private key used for signing/encrypting response, if needed */
+    private PrivateKey responsePrivateKey;
+    /** Security provider used for the responsePrivateKey */
+    private String responseProvider = "BC";
 
     /**
      * Constructs a new empty PKCS#10 message handler object.
@@ -532,4 +537,18 @@ public class PKCS10RequestMessage implements RequestMessage {
     public CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass, RequestMessage req, Certificate cert, PrivateKey signPriv, String provider) {
     	return RequestMessageUtils.createResponseMessage(responseClass, req, cert, signPriv, provider);
     }
+    
+    @Override
+    public void setResponseKeyInfo(PrivateKey key, String provider) {
+        this.responsePrivateKey = key;
+        if (provider != null) {
+            this.responseProvider = provider;
+        }
+    }
+
+    @Override
+    public CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass, RequestMessage req, Certificate cert) {
+        return createResponseMessage(responseClass, req, cert, responsePrivateKey, responseProvider);
+    }
+
 } 
