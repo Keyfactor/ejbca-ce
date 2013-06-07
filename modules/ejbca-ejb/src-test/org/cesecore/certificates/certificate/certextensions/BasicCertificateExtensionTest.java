@@ -239,7 +239,7 @@ public class BasicCertificateExtensionTest {
 		
 		props = new Properties();
 		props.put("id1.property.encoding", "DERPRINTABLESTRING");
-		props.put("id1.property.value", "This is a non  printable string ���");
+		props.put("id1.property.value", "This is a non  printable string ���������");
 		boolean exceptionThrown = false;
 		try{	
 		  baseExt = new BasicCertificateExtension();
@@ -247,7 +247,7 @@ public class BasicCertificateExtensionTest {
 		  value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));
 		}catch(CertificateExtentionConfigurationException e){
 			exceptionThrown = true;
-                        assertEquals(intres.getLocalizedMessage("certext.basic.illegalvalue", "This is a non  printable string ���", 1, "1.2.3"), e.getMessage());
+                        assertEquals(intres.getLocalizedMessage("certext.basic.illegalvalue", "This is a non  printable string ���������", 1, "1.2.3"), e.getMessage());
 		}
 		assertTrue(exceptionThrown);        
 	}
@@ -256,14 +256,14 @@ public class BasicCertificateExtensionTest {
 	public void test07UTF8StringExtension() throws Exception{
 		Properties props = new Properties();
 		props.put("id1.property.encoding", "DERUTF8STRING");
-		props.put("id1.property.value", "This is a utf8 ��� ��string");
+		props.put("id1.property.value", "This is a utf8 ��������� ������string");
 		
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", false, props);
 		
 		ASN1Encodable value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));
 		assertTrue(value.getClass().toString(),value instanceof DERUTF8String);
-		assertTrue(((DERUTF8String)value).getString(),((DERUTF8String)value).getString().equals("This is a utf8 ��� ��string"));
+		assertTrue(((DERUTF8String)value).getString(),((DERUTF8String)value).getString().equals("This is a utf8 ��������� ������string"));
         
 	}
 	
@@ -271,7 +271,7 @@ public class BasicCertificateExtensionTest {
 	public void test08WrongEncoding() throws Exception{
 		Properties props = new Properties();
 		props.put("id1.property.encoding", "DERUTF8sdfTRING");
-		props.put("id1.property.value", "This is a utf8 ��� ��string");
+		props.put("id1.property.value", "This is a utf8 ��������� ������string");
 
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", false, props);
@@ -366,7 +366,7 @@ public class BasicCertificateExtensionTest {
 		
 		props = new Properties();
 		props.put("id1.property.encoding", "DERIA5STRING");
-		props.put("id1.property.value", "This is a non printable string ���");
+		props.put("id1.property.value", "This is a non printable string ���������");
 		boolean exceptionThrown = false;
 		try{	
 		  baseExt = new BasicCertificateExtension();
@@ -437,10 +437,15 @@ public class BasicCertificateExtensionTest {
 		
 		// Success with value specified
 		userData.getExtendedinformation().setExtensionData("1.2.3", "The value 123");
-		ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(baseExt.getValueEncoded(userData, null, null, null, null, null)));
-		ASN1Encodable value1 = in.readObject();
-		assertTrue(value1.getClass().toString(), value1 instanceof DERPrintableString);
-		assertEquals("The value 123", ((DERPrintableString) value1).getString());
+        ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(baseExt.getValueEncoded(userData, null, null, null, null, null)));
+        try {
+            ASN1Encodable value1 = in.readObject();
+            assertTrue(value1.getClass().toString(), value1 instanceof DERPrintableString);
+            assertEquals("The value 123", ((DERPrintableString) value1).getString());
+        } finally {
+            in.close();
+        }
+		
 	}
 	
 	/**
@@ -658,15 +663,19 @@ public class BasicCertificateExtensionTest {
         	assertEquals("This is a printable string", ia5str.getString());
         }
 
-	private ASN1Encodable getObject(byte[] valueEncoded) throws IOException {
-		ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(valueEncoded));
-		return in.readObject();
-	}
+    private ASN1Encodable getObject(byte[] valueEncoded) throws IOException {
+        ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(valueEncoded));
+        try {
+            return in.readObject();
+        } finally {
+            in.close();
+        }
+    }
 
-        /**
-         * Test using encoding=RAW and only dynamic value.
-         */
-        @Test
+    /**
+     * Test using encoding=RAW and only dynamic value.
+     */
+    @Test
 	public void test21RawValueNotSpecified() throws Exception {
 		Properties props = new Properties();
 		props.put("id1.property.encoding", "RAW");

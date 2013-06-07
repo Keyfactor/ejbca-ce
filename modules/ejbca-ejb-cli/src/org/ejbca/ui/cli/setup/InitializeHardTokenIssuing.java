@@ -149,11 +149,15 @@ public class InitializeHardTokenIssuing extends BaseCommand {
         BufferedReader br = new BufferedReader(new FileReader(SVGPINFILENAME));
         String filecontent = "";
         String nextline = "";
-        while (nextline != null) {
-            nextline = br.readLine();
-            if (nextline != null) {
-                filecontent += nextline + "\n";
+        try {
+            while (nextline != null) {
+                nextline = br.readLine();
+                if (nextline != null) {
+                    filecontent += nextline + "\n";
+                }
             }
+        } finally {
+            br.close();
         }
         ((IPINEnvelopeSettings) admintokenprofile).setPINEnvelopeData(filecontent);
         ((IPINEnvelopeSettings) admintokenprofile).setPINEnvelopeTemplateFilename(SVGPINFILENAME);

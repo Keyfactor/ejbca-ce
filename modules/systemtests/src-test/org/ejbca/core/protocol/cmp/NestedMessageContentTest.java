@@ -609,10 +609,13 @@ public class NestedMessageContentTest extends CmpTestCase {
         byte[]                  bytes = keys.getPublic().getEncoded();
         ByteArrayInputStream    bIn = new ByteArrayInputStream(bytes);
         ASN1InputStream         dIn = new ASN1InputStream(bIn);
+        try {
         SubjectPublicKeyInfo keyInfo = new SubjectPublicKeyInfo((ASN1Sequence)dIn.readObject());
         myCertTemplate.setPublicKey(keyInfo);
         // If we did not pass any extensions as parameter, we will create some of our own, standard ones
-        
+        } finally {
+            dIn.close();
+        }
         Extensions exts = null;
         if (exts == null) {
             // SubjectAltName
@@ -1225,9 +1228,13 @@ public class NestedMessageContentTest extends CmpTestCase {
     
     private CMPCertificate getCMPCert(Certificate cert) throws CertificateEncodingException, IOException {
         ASN1InputStream ins = new ASN1InputStream(cert.getEncoded());
-        ASN1Primitive pcert = ins.readObject();
-        org.bouncycastle.asn1.x509.Certificate c = org.bouncycastle.asn1.x509.Certificate.getInstance(pcert.toASN1Primitive());
-        return new CMPCertificate(c); //new CMPCertificate(new AttributeCertificate((ASN1Sequence) pcert.toASN1Primitive()));        
+        try {
+            ASN1Primitive pcert = ins.readObject();
+            org.bouncycastle.asn1.x509.Certificate c = org.bouncycastle.asn1.x509.Certificate.getInstance(pcert.toASN1Primitive());
+            return new CMPCertificate(c);
+        } finally {
+            ins.close();
+        }
     }
 
     

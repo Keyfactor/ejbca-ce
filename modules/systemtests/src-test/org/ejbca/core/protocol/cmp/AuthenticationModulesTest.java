@@ -119,7 +119,6 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EjbcaConfigurationHolder;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
@@ -178,7 +177,6 @@ public class AuthenticationModulesTest extends CmpTestCase {
     private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
     private RoleAccessSessionRemote roleAccessSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private CertificateProfileSessionRemote certProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     
     @BeforeClass
@@ -517,16 +515,21 @@ public class AuthenticationModulesTest extends CmpTestCase {
                 .getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         int revStatus = checkRevokeStatus(issuerDN, CertTools.getSerialNumber(cert));
         assertEquals("Revocation request succeeded", RevokedCertInfo.NOT_REVOKED, revStatus);
-        PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(resp)).readObject());
-        assertNotNull(respObject);
+        ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
+        try {
+            PKIMessage respObject = PKIMessage.getInstance(asn1InputStream.readObject());
+            assertNotNull(respObject);
 
-        PKIBody body = respObject.getBody();
-        assertEquals(23, body.getType());
-        ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-        String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
-        String expectedErrMsg = "CA with DN 'C=SE,CN=cmprevuser1' is unknown";
-        assertEquals(expectedErrMsg, errMsg);
-        removeAuthenticationToken(adminToken, admCert, adminName);
+            PKIBody body = respObject.getBody();
+            assertEquals(23, body.getType());
+            ErrorMsgContent err = (ErrorMsgContent) body.getContent();
+            String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+            String expectedErrMsg = "CA with DN 'C=SE,CN=cmprevuser1' is unknown";
+            assertEquals(expectedErrMsg, errMsg);
+            removeAuthenticationToken(adminToken, admCert, adminName);
+        } finally {
+            asn1InputStream.close();
+        }
     }
 
     @Test

@@ -241,17 +241,21 @@ public class RequestMessageUtils {
         } else if (reqType == CertificateConstants.CERT_REQ_TYPE_CRMF) {
             byte[] request = Base64.decode(req.getBytes());
             ASN1InputStream in = new ASN1InputStream(request);
-            ASN1Sequence    crmfSeq = (ASN1Sequence) in.readObject();
-            ASN1Sequence reqSeq =  (ASN1Sequence) ((ASN1Sequence) crmfSeq.getObjectAt(0)).getObjectAt(0);
-            CertRequest certReq = CertRequest.getInstance( reqSeq );
-            SubjectPublicKeyInfo pKeyInfo = certReq.getCertTemplate().getPublicKey();
-            KeyFactory keyFact = KeyFactory.getInstance("RSA", "BC");
-            KeySpec keySpec = new X509EncodedKeySpec( pKeyInfo.getEncoded() );
-            PublicKey pubKey = keyFact.generatePublic(keySpec); // just check it's ok
-            SimpleRequestMessage simplereq = new SimpleRequestMessage(pubKey, username, password);
-            Extensions ext = certReq.getCertTemplate().getExtensions();
-            simplereq.setRequestExtensions(ext);
-            ret = simplereq;
+            try {
+                ASN1Sequence crmfSeq = (ASN1Sequence) in.readObject();
+                ASN1Sequence reqSeq = (ASN1Sequence) ((ASN1Sequence) crmfSeq.getObjectAt(0)).getObjectAt(0);
+                CertRequest certReq = CertRequest.getInstance(reqSeq);
+                SubjectPublicKeyInfo pKeyInfo = certReq.getCertTemplate().getPublicKey();
+                KeyFactory keyFact = KeyFactory.getInstance("RSA", "BC");
+                KeySpec keySpec = new X509EncodedKeySpec(pKeyInfo.getEncoded());
+                PublicKey pubKey = keyFact.generatePublic(keySpec); // just check it's ok
+                SimpleRequestMessage simplereq = new SimpleRequestMessage(pubKey, username, password);
+                Extensions ext = certReq.getCertTemplate().getExtensions();
+                simplereq.setRequestExtensions(ext);
+                ret = simplereq;
+            } finally {
+                in.close();
+            }
             // a simple crmf is not a complete PKI message, as desired by the CrmfRequestMessage class
             //PKIMessage msg = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(request)).readObject());
             //CrmfRequestMessage reqmsg = new CrmfRequestMessage(msg, null, true, null);

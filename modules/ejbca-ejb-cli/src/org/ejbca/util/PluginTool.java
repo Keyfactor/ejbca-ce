@@ -76,54 +76,61 @@ public class PluginTool {
 				}
 				
 			}
-			for (File candidateJarFile : jarFileList) {
-				log.debug("Processing JAR: " + candidateJarFile.getName());
-				JarFile jarFile = new JarFile(candidateJarFile);
-				Enumeration<JarEntry> jarEntries = jarFile.entries();
-				while (jarEntries.hasMoreElements()) {
-					JarEntry jarEntry = jarEntries.nextElement();
-					if (!jarEntry.getName().startsWith(packageName) ||!jarEntry.getName().endsWith(".class")) {
-						continue;
-					}
-					//log.debug(" class: " + jarEntry.getName());
-					try {
-						Class<?> currentClass = Class.forName(jarEntry.getName().replace("/", ".").substring(0, jarEntry.getName().length()-".class".length()));
-						if (Modifier.isAbstract(currentClass.getModifiers())) {
-							continue;	// Don't include abstract classes
-						}
-						for (Class<?> currentInterfaceClass : currentClass.getInterfaces()) {
-							//log.debug(" Class " + currentClass.getName() + " implements: " + currentInterfaceClass.getName());
-							if (currentInterfaceClass.getName().equals(interfaceClass.getName())) {
-								implementationList.add(currentClass);
-								break;
-							}
-						}
-						if (checkSuperClasses) {
-							Class<?> superClass = currentClass;
-							boolean foundMatch = false;
-							while (!foundMatch && !((superClass = superClass.getSuperclass())==null || superClass.getName().startsWith("java.") || superClass.getName().startsWith("javax."))) {
-								for (Class<?> currentInterfaceClass : superClass.getInterfaces()) {
-									//log.debug(" SuperClass: " + superClass.getName() + " of " + currentClass.getName() + " implements: " + currentInterfaceClass.getName());
-									if (currentInterfaceClass.getName().equals(interfaceClass.getName())) {
-										implementationList.add(currentClass);
-										foundMatch = true;
-										break;
-									}
-								}
-							}
-						}
-					} catch (UnsatisfiedLinkError e) {
-						log.warn("Could not load dependency for this class.. skipping this JAR. (UnsatisfiedLinkError: " + e.getMessage() + ")");
-						break;	// If we fail to load the class then this JAR wasn't in the class-path, so skip it.
-					} catch (NoClassDefFoundError e) {
-						log.warn("Could not load dependency for this class.. skipping this JAR. (NoClassDefFoundError: " + e.getMessage() + ")");
-						break;	// If we fail to load the class then this JAR wasn't in the class-path, so skip it.
-					} catch (ClassNotFoundException e) {
-						log.warn("Could not load class.. skipping this JAR. (ClassNotFoundException: "  + e.getMessage() + ")");
-						break;	// If we fail to load the class then this JAR wasn't in the class-path, so skip it.
-					}
-				}
-			}
+            for (File candidateJarFile : jarFileList) {
+                log.debug("Processing JAR: " + candidateJarFile.getName());
+                JarFile jarFile = new JarFile(candidateJarFile);
+                try {
+                    Enumeration<JarEntry> jarEntries = jarFile.entries();
+                    while (jarEntries.hasMoreElements()) {
+                        JarEntry jarEntry = jarEntries.nextElement();
+                        if (!jarEntry.getName().startsWith(packageName) || !jarEntry.getName().endsWith(".class")) {
+                            continue;
+                        }
+                        //log.debug(" class: " + jarEntry.getName());
+                        try {
+                            Class<?> currentClass = Class.forName(jarEntry.getName().replace("/", ".")
+                                    .substring(0, jarEntry.getName().length() - ".class".length()));
+                            if (Modifier.isAbstract(currentClass.getModifiers())) {
+                                continue; // Don't include abstract classes
+                            }
+                            for (Class<?> currentInterfaceClass : currentClass.getInterfaces()) {
+                                //log.debug(" Class " + currentClass.getName() + " implements: " + currentInterfaceClass.getName());
+                                if (currentInterfaceClass.getName().equals(interfaceClass.getName())) {
+                                    implementationList.add(currentClass);
+                                    break;
+                                }
+                            }
+                            if (checkSuperClasses) {
+                                Class<?> superClass = currentClass;
+                                boolean foundMatch = false;
+                                while (!foundMatch
+                                        && !((superClass = superClass.getSuperclass()) == null || superClass.getName().startsWith("java.") || superClass
+                                                .getName().startsWith("javax."))) {
+                                    for (Class<?> currentInterfaceClass : superClass.getInterfaces()) {
+                                        //log.debug(" SuperClass: " + superClass.getName() + " of " + currentClass.getName() + " implements: " + currentInterfaceClass.getName());
+                                        if (currentInterfaceClass.getName().equals(interfaceClass.getName())) {
+                                            implementationList.add(currentClass);
+                                            foundMatch = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        } catch (UnsatisfiedLinkError e) {
+                            log.warn("Could not load dependency for this class.. skipping this JAR. (UnsatisfiedLinkError: " + e.getMessage() + ")");
+                            break; // If we fail to load the class then this JAR wasn't in the class-path, so skip it.
+                        } catch (NoClassDefFoundError e) {
+                            log.warn("Could not load dependency for this class.. skipping this JAR. (NoClassDefFoundError: " + e.getMessage() + ")");
+                            break; // If we fail to load the class then this JAR wasn't in the class-path, so skip it.
+                        } catch (ClassNotFoundException e) {
+                            log.warn("Could not load class.. skipping this JAR. (ClassNotFoundException: " + e.getMessage() + ")");
+                            break; // If we fail to load the class then this JAR wasn't in the class-path, so skip it.
+                        }
+                    }
+                } finally {
+                    jarFile.close();
+                }
+            }
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

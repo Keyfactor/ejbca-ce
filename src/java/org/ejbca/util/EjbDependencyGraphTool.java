@@ -50,108 +50,121 @@ public class EjbDependencyGraphTool {
 		}
 	}
 
-	private void run(String[] args) throws IOException, ClassNotFoundException {
-		if (args.length != 2) {
-			log("Syntax: <EAR file> <output.dot>");
-		}
-		log("Extracting JARs form EAR into temp directory..");
-		final File earFile = new File(args[0]);
-		final JarFile earJarFile = new JarFile(earFile);
-		final JarInputStream earInputStream = new JarInputStream(new FileInputStream(earFile));
-		final List<URL> jarUrls = new ArrayList<URL>();
-		final List<String> interestingClasses = new ArrayList<String>();
-		JarEntry earEntry;
-		while ((earEntry=earInputStream.getNextJarEntry()) != null) {
-			if (earEntry.getName().endsWith(".jar")) {
-				final File tempFile = getTempFileFromJar(earJarFile.getInputStream(earEntry));
-				jarUrls.add(tempFile.toURI().toURL());
-				interestingClasses.addAll(getInterestingClasses(tempFile));
-			}
-		}
-		log("Loading potentially interesting classes..");
-		final ClassLoader loader = new URLClassLoader(jarUrls.toArray(new URL[0]), this.getClass().getClassLoader());	// NOPMD this is a stand-alone tools, not a part of a JEE application
-		List<BeanInfo> ejbs = new ArrayList<BeanInfo>();
-		for (String className : interestingClasses) {
-			Class<?> c = loader.loadClass(className);
-			if (c.isAnnotationPresent(javax.ejb.Stateless.class)) {
-				ejbs.add(new BeanInfo(c));
-			}
-		}
-		log("Translating local interface dependencies into bean dependencies..");
-		for (BeanInfo beanInfoToAlter : ejbs) {
-			for (Class<?> dependingOnIface : beanInfoToAlter.interfaceDependencies) {
-				for (BeanInfo beanInfoToMatch : ejbs) {
-					for (Class<?> iface : beanInfoToMatch.ifaceClasses) {
-						if (dependingOnIface.equals(iface)) {
-							beanInfoToAlter.beanDependencies.add(beanInfoToMatch);
-						}
-					}
-				}
-			}
-		}
-		log("Removing implied dependencies..");
-		boolean moreIterationsRequired = true;
-		while (moreIterationsRequired) {
-			moreIterationsRequired = false;
-			for (BeanInfo currentBean : ejbs) {
-				//log(" processing " + currentBean.beanClass.getSimpleName());
-				final List<BeanInfo> toRemove = new ArrayList<BeanInfo>();
-				for (BeanInfo dependsOn : currentBean.beanDependencies) {
-					if (!toRemove.contains(dependsOn)) {
-						for (BeanInfo dependsOn2 : currentBean.beanDependencies) {
-							if (!toRemove.contains(dependsOn2)) {
-								if (dependsOn.dependsOnBean(dependsOn2, currentBean, 0, 10)) {
-									toRemove.add(dependsOn2);
-									moreIterationsRequired = true;
-								}
-							}
-						}
-					}
-				}
-				currentBean.beanDependencies.removeAll(toRemove);
-			}
-		}
-		// Show what we got..
-		for (BeanInfo currentBean : ejbs) {
-			log(currentBean.beanClass.getSimpleName());
-			for (BeanInfo dep : currentBean.beanDependencies) {
-				log(" -> " + dep.beanClass.getSimpleName());
-			}
-		}
-		// Create .dot-file
-		final StringBuilder sb = new StringBuilder();
-		sb.append("digraph \""+args[0].substring(args[0].lastIndexOf("/")+1)+"\" {\n");
-		sb.append("graph [rankdir=\"BT\",nslimit=\"5.0\",mclimit=\"5.0\"];\n");
-		sb.append("node [fontsize=\"12\",fontname=\"Helvetica-Bold\",shape=box];\n");
-		sb.append("edge [style=\"bold\"];\n");
-		for (BeanInfo currentBean : ejbs) {
-			sb.append("\""+currentBean.beanClass.getSimpleName()+"\" [fillcolor=\"yellow\",style=\"filled,bold\",fontname=\"Helvetica-Bold\"]\n");
-			for (BeanInfo dep : currentBean.beanDependencies) {
-				sb.append("\""+currentBean.beanClass.getSimpleName()+"\" -> \""+dep.beanClass.getSimpleName()+"\" [color=\"#000068\"]\n");
-			}
-		}
-		sb.append("}\n");
-		FileOutputStream fos = new FileOutputStream(new File(args[1]));
-		fos.write(sb.toString().getBytes());
-		fos.close();
+    private void run(String[] args) throws IOException, ClassNotFoundException {
+        if (args.length != 2) {
+            log("Syntax: <EAR file> <output.dot>");
+        }
+        log("Extracting JARs form EAR into temp directory..");
+        final File earFile = new File(args[0]);
+        final JarFile earJarFile = new JarFile(earFile);
+        final JarInputStream earInputStream = new JarInputStream(new FileInputStream(earFile));
+        final List<URL> jarUrls = new ArrayList<URL>();
+        final List<String> interestingClasses = new ArrayList<String>();
+        JarEntry earEntry;
+        while ((earEntry = earInputStream.getNextJarEntry()) != null) {
+            if (earEntry.getName().endsWith(".jar")) {
+                final File tempFile = getTempFileFromJar(earJarFile.getInputStream(earEntry));
+                jarUrls.add(tempFile.toURI().toURL());
+                interestingClasses.addAll(getInterestingClasses(tempFile));
+            }
+        }
+        log("Loading potentially interesting classes..");
+        final URLClassLoader loader = new URLClassLoader(jarUrls.toArray(new URL[0]), this.getClass().getClassLoader()); // NOPMD this is a stand-alone tools, not a part of a JEE application
+        try {
+            List<BeanInfo> ejbs = new ArrayList<BeanInfo>();
+            for (String className : interestingClasses) {
+                Class<?> c = loader.loadClass(className);
+                if (c.isAnnotationPresent(javax.ejb.Stateless.class)) {
+                    ejbs.add(new BeanInfo(c));
+                }
+            }
+
+            log("Translating local interface dependencies into bean dependencies..");
+            for (BeanInfo beanInfoToAlter : ejbs) {
+                for (Class<?> dependingOnIface : beanInfoToAlter.interfaceDependencies) {
+                    for (BeanInfo beanInfoToMatch : ejbs) {
+                        for (Class<?> iface : beanInfoToMatch.ifaceClasses) {
+                            if (dependingOnIface.equals(iface)) {
+                                beanInfoToAlter.beanDependencies.add(beanInfoToMatch);
+                            }
+                        }
+                    }
+                }
+            }
+            log("Removing implied dependencies..");
+            boolean moreIterationsRequired = true;
+            while (moreIterationsRequired) {
+                moreIterationsRequired = false;
+                for (BeanInfo currentBean : ejbs) {
+                    //log(" processing " + currentBean.beanClass.getSimpleName());
+                    final List<BeanInfo> toRemove = new ArrayList<BeanInfo>();
+                    for (BeanInfo dependsOn : currentBean.beanDependencies) {
+                        if (!toRemove.contains(dependsOn)) {
+                            for (BeanInfo dependsOn2 : currentBean.beanDependencies) {
+                                if (!toRemove.contains(dependsOn2)) {
+                                    if (dependsOn.dependsOnBean(dependsOn2, currentBean, 0, 10)) {
+                                        toRemove.add(dependsOn2);
+                                        moreIterationsRequired = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    currentBean.beanDependencies.removeAll(toRemove);
+                }
+            }
+            // Show what we got..
+            for (BeanInfo currentBean : ejbs) {
+                log(currentBean.beanClass.getSimpleName());
+                for (BeanInfo dep : currentBean.beanDependencies) {
+                    log(" -> " + dep.beanClass.getSimpleName());
+                }
+            }
+            // Create .dot-file
+            final StringBuilder sb = new StringBuilder();
+            sb.append("digraph \"" + args[0].substring(args[0].lastIndexOf("/") + 1) + "\" {\n");
+            sb.append("graph [rankdir=\"BT\",nslimit=\"5.0\",mclimit=\"5.0\"];\n");
+            sb.append("node [fontsize=\"12\",fontname=\"Helvetica-Bold\",shape=box];\n");
+            sb.append("edge [style=\"bold\"];\n");
+            for (BeanInfo currentBean : ejbs) {
+                sb.append("\"" + currentBean.beanClass.getSimpleName()
+                        + "\" [fillcolor=\"yellow\",style=\"filled,bold\",fontname=\"Helvetica-Bold\"]\n");
+                for (BeanInfo dep : currentBean.beanDependencies) {
+                    sb.append("\"" + currentBean.beanClass.getSimpleName() + "\" -> \"" + dep.beanClass.getSimpleName() + "\" [color=\"#000068\"]\n");
+                }
+            }
+            sb.append("}\n");
+            FileOutputStream fos = new FileOutputStream(new File(args[1]));
+            try {
+                fos.write(sb.toString().getBytes());
+            } finally {
+                fos.close();
+            }
+        } finally {
+            loader.close();
+        }
 	}
 	
 	/** @return a list of class-names that end with "SessionBean" (we don't want to load all classes from the EAR into the ClassLoader..) */
-	private List<String> getInterestingClasses(File jarFile) throws IOException {
-		final JarInputStream jarInputStream = new JarInputStream(new FileInputStream(jarFile));
-		final List<String> interestingClasses = new ArrayList<String>();
-		JarEntry jarEntry;
-		//log("    Processing " + jarFile.getName() + ":" + jarFile.length());
-		while ((jarEntry=jarInputStream.getNextJarEntry()) != null) {
-			final String jarEntryName = jarEntry.getName();
-			if (jarEntryName.endsWith("SessionBean.class")) {
-				final String className = jarEntryName.replaceAll(".class", "").replaceAll("/", ".");
-				//log("  Matching filename: " + jarEntryName + " -> " + className);
-				interestingClasses.add(className);
-			}
-		}
-		return interestingClasses;
-	}
+    private List<String> getInterestingClasses(File jarFile) throws IOException {
+        final JarInputStream jarInputStream = new JarInputStream(new FileInputStream(jarFile));
+        try {
+            final List<String> interestingClasses = new ArrayList<String>();
+            JarEntry jarEntry;
+            //log("    Processing " + jarFile.getName() + ":" + jarFile.length());
+            while ((jarEntry = jarInputStream.getNextJarEntry()) != null) {
+                final String jarEntryName = jarEntry.getName();
+                if (jarEntryName.endsWith("SessionBean.class")) {
+                    final String className = jarEntryName.replaceAll(".class", "").replaceAll("/", ".");
+                    //log("  Matching filename: " + jarEntryName + " -> " + className);
+                    interestingClasses.add(className);
+                }
+            }
+            return interestingClasses;
+        } finally {
+            jarInputStream.close();
+        }
+    }
 
 	/** Write JAR entry to temporary file and return a reference to this file. */
 	private File getTempFileFromJar(InputStream jarInputStream) throws IOException {

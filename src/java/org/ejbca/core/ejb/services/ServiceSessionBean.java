@@ -677,7 +677,6 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     @Override
     public void load() {
         // Get all services
-        @SuppressWarnings("unchecked")
         Collection<Timer> currentTimers = timerService.getTimers();
         Iterator<Timer> iter = currentTimers.iterator();
         HashSet<Serializable> existingTimers = new HashSet<Serializable>();
@@ -731,7 +730,6 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     }
 
     // We don't want the appserver to persist/update the timer in the same transaction if they are stored in different non XA DataSources
-    @SuppressWarnings("unchecked")
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public void unload() {
@@ -770,7 +768,6 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      * 
      * @param id the id of the timer
      */
-    @SuppressWarnings("unchecked")
     // We don't want the appserver to persist/update the timer in the same transaction if they are stored in different non XA DataSources. This method
     // should not be run from within a transaction.
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
