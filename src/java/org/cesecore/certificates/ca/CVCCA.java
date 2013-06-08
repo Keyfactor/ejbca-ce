@@ -415,7 +415,9 @@ public class CVCCA extends CA implements Serializable {
         // Verify certificate before returning
         retCert.verify(cryptoToken.getPublicKey(alias));
         // Before returning from this method, we will set the private key and provider in the request message, in case the response  message needs to be signed
-        request.setResponseKeyInfo(caPrivateKey, provider);
+        if (request != null) {
+            request.setResponseKeyInfo(caPrivateKey, provider);
+        }
         if (log.isTraceEnabled()) {
         	log.trace("<generateCertificate()");
         }

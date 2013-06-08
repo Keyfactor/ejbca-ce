@@ -696,7 +696,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * 
      * @param cryptoToken 
      * @param subject
-     * @param requestX500Name if the certificate profile allows subject DN override this value will be used instead of the value from subject.getDN
+     * @param request certificate request message containing optional information, and will be set with the signing key and provider. If the certificate profile allows subject DN override this value will be used instead of the value from subject.getDN. Can be null.
      * @param publicKey
      * @param keyusage BouncyCastle key usage {@link X509KeyUsage}, e.g. X509KeyUsage.digitalSignature | X509KeyUsage.keyEncipherment
      * @param notBefore
