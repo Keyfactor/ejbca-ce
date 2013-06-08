@@ -633,7 +633,7 @@ public class X509CA extends CA implements Serializable {
             ldapdnorder = true;
         }
         final X500Name subjectDNName;
-        if (certProfile.getAllowDNOverride() && (request.getRequestX500Name() != null)) {
+        if (certProfile.getAllowDNOverride() && (request != null) && (request.getRequestX500Name() != null)) {
             subjectDNName = request.getRequestX500Name();
             if (log.isDebugEnabled()) {
                 log.debug("Using X509Name from request instead of user's registered.");
@@ -828,7 +828,9 @@ public class X509CA extends CA implements Serializable {
             }
         }
         // Before returning from this method, we will set the private key and provider in the request message, in case the response  message needs to be signed
-        request.setResponseKeyInfo(caPrivateKey, provider);
+        if (request != null) {
+            request.setResponseKeyInfo(caPrivateKey, provider);
+        }
         if (log.isDebugEnabled()) {
             log.debug("X509CA: generated certificate, CA " + this.getCAId() + " for DN: " + subject.getCertificateDN());
         }
