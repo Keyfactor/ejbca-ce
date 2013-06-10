@@ -18,6 +18,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
@@ -25,6 +26,7 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.ejb.keybind.InternalKeyBinding;
 import org.ejbca.core.ejb.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.ejbca.core.ejb.keybind.InternalKeyBindingProperty;
+import org.ejbca.core.ejb.keybind.InternalKeyBindingTrustEntry;
 
 /**
  * See getDescription().
@@ -48,6 +50,7 @@ public class InternalKeyBindingListCommand extends BaseInternalKeyBindingCommand
         final InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = ejb.getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
         final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = ejb.getRemoteSession(CryptoTokenManagementSessionRemote.class);
         final CertificateStoreSessionRemote certificateStoreSession = ejb.getRemoteSession(CertificateStoreSessionRemote.class);
+        final CaSessionRemote caSession = ejb.getRemoteSession(CaSessionRemote.class);
         final List<? extends InternalKeyBinding> internalKeyBindings = internalKeyBindingMgmtSession.getInternalKeyBindingInfos(getAdmin(), null);
         // Sort by type and name
         Collections.sort(internalKeyBindings, new Comparator<InternalKeyBinding>(){
@@ -63,7 +66,7 @@ public class InternalKeyBindingListCommand extends BaseInternalKeyBindingCommand
         if (internalKeyBindings.size()==0) {
             getLogger().info(" No InternalKeyBindings available or you are not authorized to view any.");
         } else {
-            getLogger().info(" Type\t\"Name\" (id), Status, IssuerDN, SerialNumber, \"CryptoTokenName\" (id), KeyPairAlias, {Implementations specific properties}");
+            getLogger().info(" Type\t\"Name\" (id), Status, \"IssuerDN\", SerialNumber, \"CryptoTokenName\" (id), KeyPairAlias, NextKeyPairAlias, properties={Implementations specific properties}, trust={list of trusted CAs and certificates}");
         }
         for (final InternalKeyBinding internalKeyBinding : internalKeyBindings) {
             final StringBuilder sb = new StringBuilder();
@@ -75,7 +78,7 @@ public class InternalKeyBindingListCommand extends BaseInternalKeyBindingCommand
             String issuerDn = "n/a";
             String serialNumber = "n/a";
             if (certificateInfo != null) {
-                issuerDn = certificateInfo.getIssuerDN();
+                issuerDn = "\"" + certificateInfo.getIssuerDN() + "\"";
                 serialNumber = certificateInfo.getSerialNumber().toString(16).toUpperCase();
             }
             sb.append(", ").append(issuerDn).append(" ").append(serialNumber);
@@ -83,13 +86,30 @@ public class InternalKeyBindingListCommand extends BaseInternalKeyBindingCommand
             final String cryptoTokenName = cryptoTokenManagementSession.getCryptoTokenInfo(getAdmin(), cryptoTokenId).getName();
             sb.append(", \"").append(cryptoTokenName).append("\" (").append(cryptoTokenId).append(')');
             sb.append(", ").append(internalKeyBinding.getKeyPairAlias());
-            sb.append(", {");
+            sb.append(", ").append(internalKeyBinding.getNextKeyPairAlias());
+            sb.append(", properties={");
             final List<InternalKeyBindingProperty<? extends Serializable>> properties = internalKeyBinding.getCopyOfProperties();
             for (final InternalKeyBindingProperty<? extends Serializable> property : properties) {
-                sb.append("\n\t").append(property.getName()).append('=').append(property.getValue()).append(" [").append(property.getType()).append(',').append(property.getDefaultValue()).append("],");
+                sb.append("\n\t").append(property.getName()).append('=').append(property.getValue());
+                sb.append(" [").append(property.getType().getSimpleName()).append(", ").append(property.getDefaultValue()).append("],");
             }
             if (properties.size() > 0) {
                 sb.deleteCharAt(sb.length()-1);
+            }
+            sb.append("\n }, trust={");
+            final List<InternalKeyBindingTrustEntry> internalKeyBindingTrustEntries = internalKeyBinding.getTrustedCertificateReferences();
+            if (internalKeyBindingTrustEntries.isEmpty()) {
+                sb.append("\n\tANY certificate issued by a known CA");
+            } else {
+                for (final InternalKeyBindingTrustEntry internalKeyBindingTrustEntry : internalKeyBindingTrustEntries) {
+                    final String caSubject = caSession.getCAInfo(getAdmin(), internalKeyBindingTrustEntry.getCaId()).getSubjectDN();
+                    sb.append("\n\t\"").append(caSubject).append("\", ");
+                    if (internalKeyBindingTrustEntry.getCertificateSerialNumber() == null) {
+                        sb.append("ANY certificate");
+                    } else {
+                        sb.append(internalKeyBindingTrustEntry.getCertificateSerialNumber().toString(16));
+                    }
+                }
             }
             sb.append("\n }");
             getLogger().info(sb);
