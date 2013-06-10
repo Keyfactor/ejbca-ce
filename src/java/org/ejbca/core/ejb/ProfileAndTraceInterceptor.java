@@ -34,13 +34,14 @@ public class ProfileAndTraceInterceptor {
     
     @AroundInvoke
     public Object logger(final InvocationContext invocationContext) throws Exception {
+        if (!log.isDebugEnabled()) {
+            return invocationContext.proceed();
+        }
         long invocationStartTime = 0;
         final String targetMethodName = invocationContext.getMethod().getName();
         final Class<?> targetMethodClass = invocationContext.getTarget().getClass();
         final Logger targetLogger = Logger.getLogger(targetMethodClass);
-        if (log.isDebugEnabled()) {
-            invocationStartTime = System.nanoTime();
-        }
+        invocationStartTime = System.nanoTime();
         if (targetLogger.isTraceEnabled()) {
             targetLogger.trace(">" + targetMethodName + "(" + Arrays.toString(invocationContext.getParameters()) + ")");
         }
@@ -53,11 +54,9 @@ public class ProfileAndTraceInterceptor {
             throw e;
         } finally {
             long invocationDuration = -1;
-            if (log.isDebugEnabled()) {
-                invocationDuration = (System.nanoTime() - invocationStartTime) / 1000;
-                final String fullTargetIdentifier = targetMethodClass.getName() + "." + targetMethodName;
-                ProfilingStats.INSTANCE.add(fullTargetIdentifier, invocationDuration);
-            }
+            invocationDuration = (System.nanoTime() - invocationStartTime) / 1000;
+            final String fullTargetIdentifier = targetMethodClass.getName() + "." + targetMethodName;
+            ProfilingStats.INSTANCE.add(fullTargetIdentifier, invocationDuration);
             if (targetLogger.isTraceEnabled()) {
                 if (returnException == null) {
                     targetLogger.trace("<" + targetMethodName + " took " + invocationDuration + "micros, returned " + returnValue);
