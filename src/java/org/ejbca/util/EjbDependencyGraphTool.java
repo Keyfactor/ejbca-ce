@@ -141,7 +141,8 @@ public class EjbDependencyGraphTool {
                 fos.close();
             }
         } finally {
-            loader.close();
+            //loader.close(); // close is inly available since java 7
+            earInputStream.close();
         }
 	}
 	
