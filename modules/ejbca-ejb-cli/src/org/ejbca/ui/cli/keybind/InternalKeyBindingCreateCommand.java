@@ -74,7 +74,7 @@ public class InternalKeyBindingCreateCommand extends BaseInternalKeyBindingComma
             getLogger().info(sb.toString());
             return;
         }
-        // Start be extracting any property
+        // Start by extracting any property
         final Map<Object,Object> dataMap = new LinkedHashMap<Object,Object>();
         final List<String> argsList = CliTools.getAsModifyableList(args);
         while (true) {
@@ -87,7 +87,7 @@ public class InternalKeyBindingCreateCommand extends BaseInternalKeyBindingComma
                 getLogger().info(" Ignoring --property with value " + propertyArg + ". The correct format is \"key=value\"");
                 continue;
             }
-            String key = propertyArg.substring(0, indexOfEqualsSign-1);
+            String key = propertyArg.substring(0, indexOfEqualsSign);
             String value = propertyArg.substring(indexOfEqualsSign+1);
             dataMap.put(key, value);
         }

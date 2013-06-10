@@ -56,4 +56,29 @@ public class InternalKeyBindingTrustEntry implements Serializable {
             this.certificateSerialNumberDecimal = certificateSerialNumber.toString();
         }
     }
+    
+    @Override
+    public String toString() {
+        final BigInteger certificateSerialNumber = getCertificateSerialNumber();
+        if (certificateSerialNumber==null) {
+            return Integer.valueOf(caId).toString();
+        } else {
+            return Integer.valueOf(caId).toString() + ";" + certificateSerialNumber.toString(16);
+        }
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof InternalKeyBindingTrustEntry)) {
+            return false;
+        }
+        final InternalKeyBindingTrustEntry other = (InternalKeyBindingTrustEntry) object;
+        if (caId != other.caId) {
+            return false;
+        }
+        if (certificateSerialNumberDecimal==null && other.certificateSerialNumberDecimal==null) {
+            return true;
+        }
+        return certificateSerialNumberDecimal!=null && certificateSerialNumberDecimal.equals(other.certificateSerialNumberDecimal);
+    }
 }
