@@ -424,6 +424,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         currentSignatureAlgorithm = null;
         currentNextKeyPairAlias = null;
         internalKeyBindingPropertyList = null;
+        trustedCertificates = null;
         inEditMode = false;
     }
     
@@ -488,6 +489,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             currentSignatureAlgorithm = internalKeyBinding.getSignatureAlgorithm();
             currentNextKeyPairAlias = internalKeyBinding.getNextKeyPairAlias();
             internalKeyBindingPropertyList = new ListDataModel(internalKeyBinding.getCopyOfProperties());
+            trustedCertificates = null;
         }
     }
     
@@ -580,6 +582,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
 
     public void switchToView() {
         inEditMode = false;
+        flushCurrentCache();
     }
 
     /** @return true if there is yet no assigned InternalKeyBindingId ('0') */
