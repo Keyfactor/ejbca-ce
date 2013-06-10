@@ -69,6 +69,7 @@ public class EjbDependencyGraphTool {
             }
         }
         log("Loading potentially interesting classes..");
+        @SuppressWarnings("resource") //Loader can only be closed on JDK7
         final URLClassLoader loader = new URLClassLoader(jarUrls.toArray(new URL[0]), this.getClass().getClassLoader()); // NOPMD this is a stand-alone tools, not a part of a JEE application
         try {
             List<BeanInfo> ejbs = new ArrayList<BeanInfo>();
@@ -143,6 +144,7 @@ public class EjbDependencyGraphTool {
         } finally {
             //loader.close(); // close is inly available since java 7
             earInputStream.close();
+            earJarFile.close();
         }
 	}
 	

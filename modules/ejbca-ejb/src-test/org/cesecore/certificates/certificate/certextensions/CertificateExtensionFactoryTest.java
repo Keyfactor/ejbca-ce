@@ -137,7 +137,11 @@ public class CertificateExtensionFactoryTest {
 	
 	private ASN1Encodable getObject(byte[] valueEncoded) throws IOException {
 		ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(valueEncoded));
-		return in.readObject();
+        try {
+            return in.readObject();
+        } finally {
+            in.close();
+        }
 	}
 
 }

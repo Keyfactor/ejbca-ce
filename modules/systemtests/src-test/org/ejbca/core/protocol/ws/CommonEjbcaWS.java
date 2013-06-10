@@ -970,8 +970,12 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         byte[] bytes = keys.getPublic().getEncoded();
         ByteArrayInputStream bIn = new ByteArrayInputStream(bytes);
         ASN1InputStream dIn = new ASN1InputStream(bIn);
-        SubjectPublicKeyInfo keyInfo = new SubjectPublicKeyInfo((ASN1Sequence) dIn.readObject());
-        myCertTemplate.setPublicKey(keyInfo);
+        try {
+            SubjectPublicKeyInfo keyInfo = new SubjectPublicKeyInfo((ASN1Sequence) dIn.readObject());
+            myCertTemplate.setPublicKey(keyInfo);
+        } finally {
+            dIn.close();
+        }
         // If we did not pass any extensions as parameter, we will create some of our own, standard ones
         ExtensionsGenerator extgen = new ExtensionsGenerator();
         extgen.addExtension(new ASN1ObjectIdentifier(extensionOid), false, new DEROctetString("foo123".getBytes()));
@@ -1327,7 +1331,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         user1.setUsername(CA1_WSTESTUSER1);
         user1.setPassword(PASSWORD);
         user1.setClearPwd(true);
-        user1.setSubjectDN("CN=WS������");
+        user1.setSubjectDN("CN=WS������������������");
         user1.setCaName(getAdminCAName());
         user1.setEmail(null);
         user1.setSubjectAltName(null);
@@ -1348,7 +1352,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         assertTrue(userdatas.size() == 1);
         UserDataVOWS userdata = userdatas.get(0);
         assertTrue(userdata.getUsername().equals(CA1_WSTESTUSER1));
-        assertTrue(userdata.getSubjectDN().equals("CN=WS������"));
+        assertTrue(userdata.getSubjectDN().equals("CN=WS������������������"));
 
     }
 

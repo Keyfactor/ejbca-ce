@@ -436,66 +436,63 @@ public class JAXWSDocAndConvTools {
     }
     
 	
-    CompilationUnit parse (String file_name) throws Exception{
-		System.out.println ("File to parse: " + file_name);
-		CompilationUnit compilation = new CompilationUnit ();
-		lines = new StringBuilder();
-		BufferedReader in = new BufferedReader (new FileReader (file_name));
-		String line;
-		while ((line = in.readLine()) != null){
-			lines.append(line).append('\n');
-		}
+    CompilationUnit parse(String file_name) throws Exception {
+        System.out.println("File to parse: " + file_name);
+        CompilationUnit compilation = new CompilationUnit();
+        lines = new StringBuilder();
+        BufferedReader in = new BufferedReader(new FileReader(file_name));
+        try {
+            String line;
+            while ((line = in.readLine()) != null) {
+                lines.append(line).append('\n');
+            }
+        } finally {
+            in.close();
+        }
+        c_index = 0;
+        curr = null;
+        boolean packfound = false;
+        String class_jdoc = null;
+        while (scan() != null) {
+            switch (curr.getType()) {
+            case COMMENT:
+                class_jdoc = curr.getText();
+                break;
 
-		c_index = 0;
-		curr = null;
-		boolean packfound = false;
-		String class_jdoc = null;
-		while (scan () != null)
-		{
-			switch (curr.getType ()){
-			    case COMMENT:
-			    	class_jdoc = curr.getText();
-			    	break;
-			    	
-				case IDENTIFIER:
-			       if (packfound){
-			    	   if (curr.equals("import")){
-			    		   Token imp = scan ();
-			    		   if (imp.getType() != Types.IDENTIFIER) {
-			    			   bad ("Misformed import");
-			    		   }
-//				    	   System.out.println ("Import:'" + imp.getText () + "'");
-			    		   readSemicolon ();
-			    		   compilation.imports.add(imp.getText ());
-					       class_jdoc = null;
-			    	   } else {
-			    		   compilation.class_java_doc = class_jdoc;
-			    		   decodeDeclaration (curr, compilation);
-			    	   }
-			       }
-			       else{
-			    	   if (!curr.equals("package")) {
-			    		   bad ("No package key-word found");
-			    	   }
-			    	   Token pack = scan ();
-			    	   if (pack.getType () != Types.IDENTIFIER) {
-			    		   bad ("Package missing");
-			    	   }
-			    	   compilation.package_name = pack.getText ();
-//			    	   System.out.println ("Package:'" + pack.getText () + "'");
-			    	   readSemicolon ();
-				       packfound = true;
-				       class_jdoc = null;
-			       }
-			       break;
-			   default:
-				   break;
-						
-			}
-		}
-		  
-		return compilation;
-	}
+            case IDENTIFIER:
+                if (packfound) {
+                    if (curr.equals("import")) {
+                        Token imp = scan();
+                        if (imp.getType() != Types.IDENTIFIER) {
+                            bad("Misformed import");
+                        }
+                        readSemicolon();
+                        compilation.imports.add(imp.getText());
+                        class_jdoc = null;
+                    } else {
+                        compilation.class_java_doc = class_jdoc;
+                        decodeDeclaration(curr, compilation);
+                    }
+                } else {
+                    if (!curr.equals("package")) {
+                        bad("No package key-word found");
+                    }
+                    Token pack = scan();
+                    if (pack.getType() != Types.IDENTIFIER) {
+                        bad("Package missing");
+                    }
+                    compilation.package_name = pack.getText();
+                    readSemicolon();
+                    packfound = true;
+                    class_jdoc = null;
+                }
+                break;
+            default:
+                break;
+            }
+        }
+        return compilation;
+    }
 
 	void generateJDocFriendlyFile(String gen_directory) throws Exception{
 		

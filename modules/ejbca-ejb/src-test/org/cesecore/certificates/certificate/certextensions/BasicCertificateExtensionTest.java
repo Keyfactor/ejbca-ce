@@ -608,10 +608,14 @@ public class BasicCertificateExtensionTest {
 		
 		// Success with value specified
 		userData.getExtendedinformation().setExtensionData("1.2.3.value", "The value 456");
-		ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(baseExt.getValueEncoded(userData, null, null, null, null, null)));
-		ASN1Encodable value1 = in.readObject();
-		assertTrue(value1.getClass().toString(), value1 instanceof DERPrintableString);
-		assertEquals("The value 456", ((DERPrintableString) value1).getString());
+        ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(baseExt.getValueEncoded(userData, null, null, null, null, null)));
+        try {
+            ASN1Encodable value1 = in.readObject();
+            assertTrue(value1.getClass().toString(), value1 instanceof DERPrintableString);
+            assertEquals("The value 456", ((DERPrintableString) value1).getString());
+        } finally {
+            in.close();
+        }
 	}
 	
         /**
