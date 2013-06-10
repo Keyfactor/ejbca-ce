@@ -432,7 +432,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
 
     @Override
     public PrivateKey getPrivateKey(final String alias) throws CryptoTokenOfflineException {
-        autoActivate();
+        // Auto activate is done in the call to getKeyStore below
         try {
             final PrivateKey privateK = (PrivateKey) getKeyStore().getKey(alias, (mAuthCode != null && mAuthCode.length > 0) ? mAuthCode : null);
             if (privateK == null) {
@@ -461,7 +461,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
 
     @Override
     public PublicKey getPublicKey(final String alias) throws CryptoTokenOfflineException {
-        autoActivate();
+        // Auto activate is done in the call to getKeyStore below (from readPublicKey)
         try {
             PublicKey publicK = readPublicKey(alias);
             if (publicK == null) {
@@ -490,7 +490,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
 
     @Override
     public Key getKey(String alias) throws CryptoTokenOfflineException {
-        autoActivate();
+        // Auto activate is done in the call to getKeyStore below
         try {
             Key key = getKeyStore().getKey(alias, (mAuthCode != null && mAuthCode.length > 0) ? mAuthCode : null);
             if (key == null) {
@@ -556,7 +556,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
 
     @Override
     public int getTokenStatus() {
-        autoActivate();
+        // Auto activate is done in the call to getKeyStore below
         int ret = CryptoToken.STATUS_OFFLINE;
         try {
             getKeyStore();
