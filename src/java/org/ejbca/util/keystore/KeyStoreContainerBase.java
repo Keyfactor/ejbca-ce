@@ -46,6 +46,7 @@ import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.jce.ECKeyUtil;
+import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
@@ -131,7 +132,7 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
         
         final SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo((ASN1Sequence)ASN1Primitive.fromByteArray(publicKey.getEncoded()));
         X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(new X500Name(myname), BigInteger.valueOf(firstDate.getTime()), firstDate, lastDate, new X500Name(myname), pkinfo);
-        final ContentSigner signer = new JcaContentSignerBuilder(sigAlg).build(keyPair.getPrivate());
+        final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).build(keyPair.getPrivate()), 20480);
         final X509CertificateHolder certHolder = certbuilder.build(signer);
         return (X509Certificate) CertTools.getCertfromByteArray(certHolder.getEncoded());
     }

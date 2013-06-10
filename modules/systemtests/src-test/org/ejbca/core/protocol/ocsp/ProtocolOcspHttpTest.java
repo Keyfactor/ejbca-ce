@@ -77,6 +77,7 @@ import org.bouncycastle.cert.ocsp.OCSPRespBuilder;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
+import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
@@ -385,7 +386,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
             chain[0] = new JcaX509CertificateHolder((X509Certificate) certs[0]);
             chain[1] = new JcaX509CertificateHolder((X509Certificate) certs[1]);
             PrivateKey pk = (PrivateKey) store.getKey("privateKey", "foo123".toCharArray());
-            req = gen.build(new JcaContentSignerBuilder("SHA1WithRSA").build(pk), chain);
+            req = gen.build(new BufferingContentSigner(new JcaContentSignerBuilder("SHA1WithRSA").build(pk), 20480), chain);
             // Send the request and receive a singleResponse, this response should
             // throw an SignRequestSignatureException
             caught = false;
@@ -404,7 +405,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
             chain[0] =  new JcaX509CertificateHolder((X509Certificate) certs[0]);
             chain[1] =  new JcaX509CertificateHolder((X509Certificate) certs[1]);
             pk = (PrivateKey) store.getKey("ocspclient", "foo123".toCharArray());
-            req = gen.build(new JcaContentSignerBuilder("SHA1WithRSA").build(pk), chain);
+            req = gen.build(new BufferingContentSigner(new JcaContentSignerBuilder("SHA1WithRSA").build(pk), 20480), chain);
             // Send the request and receive a singleResponse, this response should
             // throw an SignRequestSignatureException
             caught = false;
