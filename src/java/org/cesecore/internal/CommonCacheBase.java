@@ -12,12 +12,10 @@
  *************************************************************************/
 package org.cesecore.internal;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.log4j.Logger;
 
@@ -46,9 +44,8 @@ public abstract class CommonCacheBase<T> implements CommonCache<T> {
     }
     
     private final Logger log = Logger.getLogger(CommonCacheBase.class);
-    private final ReentrantLock lock = new ReentrantLock(false);
-    private final Map<Integer, CacheEntry> cache = new HashMap<Integer, CacheEntry>();
-    private final Map<Integer, String> idToNameMap = new HashMap<Integer, String>();
+    private Map<Integer, CacheEntry> cache = new HashMap<Integer, CacheEntry>();
+    private Map<String, Integer> nameToIdMap = new HashMap<String, Integer>();
 
     /** @return how long to cache objects in milliseconds. */
     protected abstract long getCacheTime();
@@ -77,21 +74,21 @@ public abstract class CommonCacheBase<T> implements CommonCache<T> {
             return true;
         }
         final Integer key = Integer.valueOf(id);
-        lock.lock();
-        try {
-            final CacheEntry cacheEntry = cache.get(key);
-            if (cacheEntry == null) {
-                // No such object in cache, caller should check db
-                return true;
+        final CacheEntry cacheEntry = cache.get(key);
+        if (cacheEntry == null) {
+            // No such object in cache, caller should check db
+            return true;
+        }
+        if (cacheEntry.lastUpdate+cacheTime<now) {
+            // We probably need to update, but re-check using synchronization
+            synchronized (cacheEntry) {
+                if (cacheEntry.lastUpdate+cacheTime<now) {
+                    // Object is present in cache, but cache has expired so the caller should update the cache
+                    // To prevent other threads to ask the database for the same thing, we reset the cache time.
+                    cacheEntry.lastUpdate = now;
+                    return true;
+                }
             }
-            if (cacheEntry.lastUpdate+cacheTime<now) {
-                // Object is present in cache, but cache has expired so the caller should update the cache
-                // To prevent other threads to ask the database for the same thing, we reset the cache time.
-                cacheEntry.lastUpdate = now;
-                return true;
-            }
-        } finally {
-            lock.unlock();
         }
         return false;
     }
@@ -135,74 +132,55 @@ public abstract class CommonCacheBase<T> implements CommonCache<T> {
     
     /** @return cache entry for the requested key or null */
     private CacheEntry getCacheEntry(final Integer key) {
-        lock.lock();
-        try {
-            return cache.get(key);
-        } finally {
-            lock.unlock(); 
-        }
+        return cache.get(key);
     }
     
     /** Set or remove cache entry. */
     private void setCacheEntry(final Integer key, final CacheEntry cacheEntry) {
-        long maxCacheLifeTime = getMaxCacheLifeTime();
-        lock.lock();
-        try {
-            if (cacheEntry == null) {
-                cache.remove(key);
-                idToNameMap.remove(key);
-            } else {
-                cache.put(key, cacheEntry);
-                idToNameMap.put(key, cacheEntry.name);
-                // By flushing older entries we at least limit how much
-                // this registry will grow when used for short-lived objects
-                // in a clustered environment.
-                if (maxCacheLifeTime>0) {
-                    flushStale(maxCacheLifeTime);
+        final Map<Integer, CacheEntry> cacheStage = new HashMap<Integer, CacheEntry>();
+        final Map<String, Integer> nameToIdMapStage = new HashMap<String, Integer>();
+        final long maxCacheLifeTime = getMaxCacheLifeTime();
+        final long staleCutOffTime = System.currentTimeMillis()-maxCacheLifeTime;
+        synchronized (this) {
+            // Process all entries except for the one that will change
+            for (final Entry<Integer,CacheEntry> entry : cache.entrySet()) {
+                final Integer currentId = entry.getKey();
+                if (!key.equals(currentId)) {
+                    final CacheEntry currentCacheEntry = entry.getValue();
+                    // By flushing older entries we at least limit how much
+                    // this registry will grow when used for short-lived objects
+                    // in a clustered environment.
+                    if (maxCacheLifeTime<1 || currentCacheEntry.lastUpdate >= staleCutOffTime) {
+                        // Keep using the current entry in the new cache
+                        cacheStage.put(entry.getKey(), currentCacheEntry);
+                        nameToIdMapStage.put(currentCacheEntry.name, entry.getKey());
+                    }
                 }
             }
-        } finally {
-            lock.unlock(); 
+            // Process the one that will change
+            if (cacheEntry == null) {
+                // Don't add if to the new version of the cache if it existed (e.g. remove it)
+            } else {
+                cacheStage.put(key, cacheEntry);
+                nameToIdMapStage.put(cacheEntry.name, key);
+            }
+            cache = cacheStage;
+            nameToIdMap = Collections.unmodifiableMap(nameToIdMapStage);
         }
     }
 
     @Override
     public Map<String,Integer> getNameToIdMap() {
-        final Map<String,Integer> ret = new HashMap<String,Integer>();
-        lock.lock();
-        try {
-            for (final Integer key : idToNameMap.keySet()) {
-                ret.put(idToNameMap.get(key), key);
-            }
-            return ret;
-        } finally {
-            lock.unlock(); 
-        }
+        return nameToIdMap;
     }
 
     @Override
     public void flush() {
-        lock.lock();
-        try {
-            cache.clear();
-            idToNameMap.clear();
-        } finally {
-            lock.unlock(); 
-        }
-    }    
-
-    /** Remove entries older than maxAge milliseconds. */
-    private void flushStale(final long maxAge) {
-        final long cutOff = System.currentTimeMillis()-maxAge;
-        final List<Integer> toRemove = new ArrayList<Integer>();
-        for (final Entry<Integer,CacheEntry> entry : cache.entrySet()) {
-            if (entry.getValue().lastUpdate < cutOff) {
-                toRemove.add(entry.getKey());
-            }
-        }
-        for (final Integer key : toRemove) {
-            cache.remove(key);
-            idToNameMap.remove(key);
+        final Map<Integer, CacheEntry> cacheStage = new HashMap<Integer, CacheEntry>();
+        final Map<String, Integer> nameToIdMapStage = new HashMap<String, Integer>();
+        synchronized (this) {
+            cache = cacheStage;
+            nameToIdMap = nameToIdMapStage;
         }
     }
 }
