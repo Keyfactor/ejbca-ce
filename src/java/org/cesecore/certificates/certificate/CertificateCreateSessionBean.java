@@ -294,7 +294,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         // Audit log that we received the request
         final Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("subjectdn", data.getDN());
-        details.put("requestX500name", request.getRequestX500Name() == null ? "null" : request.getRequestX500Name().toString());
+        details.put("requestX500name", (request == null || request.getRequestX500Name() == null) ? "null" : request.getRequestX500Name().toString());
         details.put("certprofile", data.getCertificateProfileId());
         details.put("keyusage", keyusage);
         details.put("notbefore", notBefore);
