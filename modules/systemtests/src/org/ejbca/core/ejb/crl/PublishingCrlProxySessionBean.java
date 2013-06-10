@@ -44,13 +44,13 @@ public class PublishingCrlProxySessionBean implements PublishingCrlProxySessionR
 
     @Override
     public int createDeltaCRLs(AuthenticationToken admin, Collection<Integer> caids, long crloverlaptime) throws AuthorizationDeniedException {
-        return createDeltaCRLs(admin, caids, crloverlaptime);
+        return publishingCrlSession.createDeltaCRLs(admin, caids, crloverlaptime);
     }
 
     @Override
     public boolean createDeltaCRLnewTransactionConditioned(AuthenticationToken admin, int caid, long crloverlaptime)
             throws CryptoTokenOfflineException, CAOfflineException, CADoesntExistsException, AuthorizationDeniedException {
-        return createDeltaCRLnewTransactionConditioned(admin, caid, crloverlaptime);
+        return publishingCrlSession.createDeltaCRLnewTransactionConditioned(admin, caid, crloverlaptime);
     }
 
 }
