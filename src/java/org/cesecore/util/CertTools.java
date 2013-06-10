@@ -3233,6 +3233,7 @@ public class CertTools {
 
         ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(signatureAlgorithm).build(signingKey), 20480);
         signer.getOutputStream().write(reqInfo.getEncoded(ASN1Encoding.DER));
+        signer.getOutputStream().flush();
         byte[] sig = signer.getSignature();
         DERBitString sigBits = new DERBitString(sig);
        
