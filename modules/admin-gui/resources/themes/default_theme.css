@@ -903,7 +903,7 @@ a.tabLinkfalse {
 	font-size: 16px;
 	font-weight: bold;
     text-align: left;
-    padding: 2px 7px 2px 7px;
+    padding: 1px 7px 0px 7px;
     margin-bottom: 2px;
 	color: #669;
 	background: #fbfbfb;
@@ -918,7 +918,7 @@ a.tabLinktrue {
 	font-size: 16px;
 	font-weight: bold;
     text-align: left;
-    padding: 2px 7px 2px 7px;
+    padding: 2px 7px 0px 7px;
     margin-bottom: 2px;
 	color: #009;
 	background: #fff;

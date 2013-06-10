@@ -204,6 +204,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         try {
             internalKeyBindingSession.importCertificateForInternalKeyBinding(getAdmin(), uploadTarget.intValue(), uploadToTargetFile.getBytes());
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Operation completed without errors.", null));
+            flushListCaches();
         } catch (IOException e) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
         } catch (CertificateImportException e) {

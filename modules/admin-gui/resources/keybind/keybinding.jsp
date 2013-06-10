@@ -78,13 +78,13 @@ org.ejbca.core.ejb.keybind.InternalKeyBindingRules
 					onchange="document.getElementById('internalkeybinding:reloadCryptoToken').click();">
 					<f:selectItems value="#{internalKeyBindingMBean.availableCryptoTokens}"/>
 				</h:selectOneMenu>
-				<h:commandButton id="reloadCryptoToken" value="#{web.text.INTERNALKEYBINDING_CRYPTOTOKEN_UPDATE}" action="#{internalKeyBindingMBean.reloadCryptoToken}"/>
+				<h:commandButton id="reloadCryptoToken" value="#{web.text.INTERNALKEYBINDING_CRYPTOTOKEN_UPDATENEXT}" action="#{internalKeyBindingMBean.reloadCryptoToken}"/>
 				<script>document.getElementById('internalkeybinding:reloadCryptoToken').style.display = 'none';</script>
 			</h:panelGroup>
+			<h:outputText rendered="#{internalKeyBindingMBean.inEditMode and !internalKeyBindingMBean.cryptoTokenActive}"
+				value=" #{web.text.INTERNALKEYBINDING_CRYPTOTOKEN_NOTACTIVE}"/>
 			<h:outputText rendered="#{!internalKeyBindingMBean.inEditMode or !internalKeyBindingMBean.cryptoTokenActive}"
 				value="#{internalKeyBindingMBean.currentCryptoTokenName}" title="#{internalKeyBindingMBean.currentCryptoToken}"/>
-			<h:outputText rendered="#{internalKeyBindingMBean.inEditMode or !internalKeyBindingMBean.cryptoTokenActive}"
-				value=" #{web.text.INTERNALKEYBINDING_CRYPTOTOKEN_NOTACTIVE}"/>
 		</h:panelGroup>
 		<h:message for="cryptoToken"/>
 		<h:outputLabel for="keyPairAlias" value="#{web.text.INTERNALKEYBINDING_FIELD_KEYPAIRALIAS}"/>
