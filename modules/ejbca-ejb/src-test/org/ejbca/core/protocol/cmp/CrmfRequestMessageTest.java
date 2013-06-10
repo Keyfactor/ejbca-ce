@@ -109,8 +109,12 @@ public class CrmfRequestMessageTest {
 		byte[]                  bytes = keys.getPublic().getEncoded();
         ByteArrayInputStream    bIn = new ByteArrayInputStream(bytes);
         ASN1InputStream         dIn = new ASN1InputStream(bIn);
-        SubjectPublicKeyInfo keyInfo = new SubjectPublicKeyInfo((ASN1Sequence)dIn.readObject());
-		myCertTemplate.setPublicKey(keyInfo);
+        try {
+            SubjectPublicKeyInfo keyInfo = new SubjectPublicKeyInfo((ASN1Sequence) dIn.readObject());
+            myCertTemplate.setPublicKey(keyInfo);
+        } finally {
+            dIn.close();
+        }
 		ByteArrayOutputStream   bOut = new ByteArrayOutputStream();
 		DEROutputStream         dOut = new DEROutputStream(bOut);
 		ExtensionsGenerator extgen = new ExtensionsGenerator();
@@ -158,28 +162,32 @@ public class CrmfRequestMessageTest {
 	public void testNovosecRARequest() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, CertificateEncodingException, SignatureException, IllegalStateException {
     	// Check that we can parse a request from  Novosec (patched by EJBCA).
     	// Read an initialization request with RAVerifiedPOP and PBE protection to see that we can process it
-    	ASN1InputStream in = new ASN1InputStream(novosecrapopir);
-    	ASN1Primitive derObject = in.readObject();
-    	PKIMessage req = PKIMessage.getInstance(derObject);
-    	//log.info(req.toString());
-    	// Verify should be false if we do not allow RA verify POP here, since we don't have any normal POP
-    	CrmfRequestMessage msg = new CrmfRequestMessage(req, "CN=AdminCA1", false, "CN");
-    	assertFalse(msg.verify());
-    	// Verify should be ok when we allow RA verified POP
-    	msg = new CrmfRequestMessage(req, "CN=AdminCA1", true, "CN");
-    	assertTrue(msg.verify());
-    	assertEquals("CN=AdminCA1,O=EJBCA Sample,C=SE", msg.getIssuerDN());
-    	assertEquals("CN=abc123rry-4371939543913639881,O=PrimeKey Solutions AB,C=SE", msg.getRequestDN());
-    	assertEquals("abc123rry-4371939543913639881", msg.getUsername());
-    	assertEquals("foo123", msg.getPassword());
-    	// Verify PBE protection
-    	PKIHeader head = msg.getHeader();
-    	final ASN1OctetString os = head.getSenderKID();
-    	String keyId = CmpMessageHelper.getStringFromOctets(os);
-    	assertEquals("mykeyid", keyId);
-    	final CmpPbeVerifyer verifyer = new CmpPbeVerifyer(msg.getMessage());
-    	assertTrue(verifyer.verify("foo123"));
-    	assertFalse(verifyer.verify("bar123"));
+        ASN1InputStream in = new ASN1InputStream(novosecrapopir);
+        try {
+            ASN1Primitive derObject = in.readObject();
+            PKIMessage req = PKIMessage.getInstance(derObject);
+            //log.info(req.toString());
+            // Verify should be false if we do not allow RA verify POP here, since we don't have any normal POP
+            CrmfRequestMessage msg = new CrmfRequestMessage(req, "CN=AdminCA1", false, "CN");
+            assertFalse(msg.verify());
+            // Verify should be ok when we allow RA verified POP
+            msg = new CrmfRequestMessage(req, "CN=AdminCA1", true, "CN");
+            assertTrue(msg.verify());
+            assertEquals("CN=AdminCA1,O=EJBCA Sample,C=SE", msg.getIssuerDN());
+            assertEquals("CN=abc123rry-4371939543913639881,O=PrimeKey Solutions AB,C=SE", msg.getRequestDN());
+            assertEquals("abc123rry-4371939543913639881", msg.getUsername());
+            assertEquals("foo123", msg.getPassword());
+            // Verify PBE protection
+            PKIHeader head = msg.getHeader();
+            final ASN1OctetString os = head.getSenderKID();
+            String keyId = CmpMessageHelper.getStringFromOctets(os);
+            assertEquals("mykeyid", keyId);
+            final CmpPbeVerifyer verifyer = new CmpPbeVerifyer(msg.getMessage());
+            assertTrue(verifyer.verify("foo123"));
+            assertFalse(verifyer.verify("bar123"));
+        } finally {
+            in.close();
+        }
     }
 
 	@Test
@@ -188,6 +196,7 @@ public class CrmfRequestMessageTest {
     	// Read an initialization request with a signature POP and signature protection to see that we can process it
     	{
     		ASN1InputStream in = new ASN1InputStream(novosecsigpopir);
+    		try {
     		ASN1Primitive derObject = in.readObject();
     		PKIMessage req = PKIMessage.getInstance(derObject);
     		//log.info(req.toString());
@@ -212,23 +221,29 @@ public class CrmfRequestMessageTest {
     		// Verify that our verification routine does not give positive result for any other keys
     		KeyPair keys = KeyTools.genKeys("512", "RSA");
     		assertFalse(CmpMessageHelper.verifyCertBasedPKIProtection(msg.getMessage(), keys.getPublic()));
+    		} finally {
+    		    in.close();
+    		}
     	}
     	// Re-protect the message, now fixed by ECA-2104
     	{
     		ASN1InputStream in = new ASN1InputStream(novosecsigpopir);
+    		try {
     		ASN1Primitive derObject = in.readObject();
     		PKIMessage myPKIMessage = PKIMessage.getInstance(derObject);
     		KeyPair keys = KeyTools.genKeys("512", "RSA");
     		X509Certificate signCert = CertTools.genSelfCert("CN=CMP Sign Test", 3650, null, keys.getPrivate(), keys.getPublic(), "SHA1WithRSA", false);
     		// Re-sign the message
     		byte[] newmsg = CmpMessageHelper.signPKIMessage(myPKIMessage, signCert, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1, "BC");
-    		in = new ASN1InputStream(newmsg);
+    		in.close();
+    		in = new ASN1InputStream(newmsg);		
     		derObject = in.readObject();
     		PKIMessage pkimsg = PKIMessage.getInstance(derObject);
     		// We have to do this twice, because Novosec caches ProtectedBytes in the PKIMessage object, so we need to 
     		// encode it and re-decode it again to get the changes from ECA-2104 encoded correctly.
     		// Not needed when simply signing a new message that you create, only when re-signing 
     		newmsg = CmpMessageHelper.signPKIMessage(pkimsg, signCert, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1, "BC");
+    		in.close();
     		in = new ASN1InputStream(newmsg);
     		derObject = in.readObject();
     		pkimsg = PKIMessage.getInstance(derObject);
@@ -246,6 +261,9 @@ public class CrmfRequestMessageTest {
     		assertTrue(msg.verify());
     		PublicKey pubKey = msg.getRequestPublicKey();
     		assertFalse(CmpMessageHelper.verifyCertBasedPKIProtection(pkimsg, pubKey));
+    		} finally {
+    		    in.close();
+    		}
     	}
     }
 
@@ -263,28 +281,32 @@ public class CrmfRequestMessageTest {
     	// Check that we can parse request from BouncyCastle version 1.46.
     	// Read an initialization request with RAVerifiedPOP with PBE protection to see that we can process it
     	ASN1InputStream in = new ASN1InputStream(message);
-    	ASN1Primitive derObject = in.readObject();
-    	PKIMessage req = PKIMessage.getInstance(derObject);
-    	//log.info(req.toString());
-    	// Verify should be false if we do not allow RA verify POP here, since we don't have any normal POP
-    	CrmfRequestMessage msg = new CrmfRequestMessage(req, "CN=AdminCA1", false, "CN");
-    	assertFalse(msg.verify());
-    	// Verify should be ok when we allow RA verified POP
-    	msg = new CrmfRequestMessage(req, "CN=AdminCA1", true, "CN");
-    	assertTrue(msg.verify());
-    	assertEquals("CN=AdminCA1", msg.getIssuerDN());
-    	assertEquals("CN=user", msg.getRequestDN());
-    	assertEquals("user", msg.getUsername());
-    	// We should want a password
-    	assertEquals("foo123", msg.getPassword());
-    	// Verify PBE protection
-    	PKIHeader head = msg.getHeader();
-    	final ASN1OctetString os = head.getSenderKID();
-    	String keyId = CmpMessageHelper.getStringFromOctets(os);
-    	assertEquals("KeyId", keyId);
-    	final CmpPbeVerifyer verifyer = new CmpPbeVerifyer(msg.getMessage());
-    	assertTrue(verifyer.verify("password"));
-    	assertFalse(verifyer.verify("foo123"));
+        try {
+            ASN1Primitive derObject = in.readObject();
+            PKIMessage req = PKIMessage.getInstance(derObject);
+            //log.info(req.toString());
+            // Verify should be false if we do not allow RA verify POP here, since we don't have any normal POP
+            CrmfRequestMessage msg = new CrmfRequestMessage(req, "CN=AdminCA1", false, "CN");
+            assertFalse(msg.verify());
+            // Verify should be ok when we allow RA verified POP
+            msg = new CrmfRequestMessage(req, "CN=AdminCA1", true, "CN");
+            assertTrue(msg.verify());
+            assertEquals("CN=AdminCA1", msg.getIssuerDN());
+            assertEquals("CN=user", msg.getRequestDN());
+            assertEquals("user", msg.getUsername());
+            // We should want a password
+            assertEquals("foo123", msg.getPassword());
+            // Verify PBE protection
+            PKIHeader head = msg.getHeader();
+            final ASN1OctetString os = head.getSenderKID();
+            String keyId = CmpMessageHelper.getStringFromOctets(os);
+            assertEquals("KeyId", keyId);
+            final CmpPbeVerifyer verifyer = new CmpPbeVerifyer(msg.getMessage());
+            assertTrue(verifyer.verify("password"));
+            assertFalse(verifyer.verify("foo123"));
+        } finally {
+            in.close();
+        }
     }
 
     @Test
@@ -301,81 +323,90 @@ public class CrmfRequestMessageTest {
     	// Check that we can parse request from BouncyCastle version 1.46.    	
     	// Read an initialization request with a signature POP, and signature protection, to see that we can process it
     	ASN1InputStream in = new ASN1InputStream(message);
-    	ASN1Primitive derObject = in.readObject();
-    	PKIMessage req = PKIMessage.getInstance(derObject);
-    	//log.info(req.toString());
-    	// Verify should be ok if we do not allow RA verify POP here
-    	CrmfRequestMessage msg = new CrmfRequestMessage(req, "CN=AdminCA1", false, "CN");
-    	// BC messages in BC1.46 uses POPOSigningKeyInput for POPO, not the 3rd case in RFC4211 section 4.1, like everyone else...
-    	// BC messages in BC1.47 should use normal POPO, 3rd case
-    	assertTrue(msg.verify());
-    	// Since we don't have RA POP we can't test for that...
-    	assertEquals("CN=AdminCA1", msg.getIssuerDN());
-    	assertEquals("CN=user", msg.getRequestDN());
-    	assertEquals("user", msg.getUsername());
-    	assertEquals("foo123", msg.getPassword());
-    	// Check signature protection
-    	AlgorithmIdentifier algId = msg.getMessage().getHeader().getProtectionAlg();
-    	String oid = algId.getAlgorithm().getId();
-    	assertEquals(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), oid);
-    	// Check that we have DERNull and not plain java null as algorithm parameters.
-    	ASN1Encodable pp = algId.getParameters();
-    	assertNotNull(pp);
-    	assertEquals(DERNull.class.getName(), pp.getClass().getName());
-    	// Try to verify the protection signature
-    	assertTrue(CmpMessageHelper.verifyCertBasedPKIProtection(msg.getMessage(), msg.getRequestPublicKey()));
+        try {
+            ASN1Primitive derObject = in.readObject();
+            PKIMessage req = PKIMessage.getInstance(derObject);
+            //log.info(req.toString());
+            // Verify should be ok if we do not allow RA verify POP here
+            CrmfRequestMessage msg = new CrmfRequestMessage(req, "CN=AdminCA1", false, "CN");
+            // BC messages in BC1.46 uses POPOSigningKeyInput for POPO, not the 3rd case in RFC4211 section 4.1, like everyone else...
+            // BC messages in BC1.47 should use normal POPO, 3rd case
+            assertTrue(msg.verify());
+            // Since we don't have RA POP we can't test for that...
+            assertEquals("CN=AdminCA1", msg.getIssuerDN());
+            assertEquals("CN=user", msg.getRequestDN());
+            assertEquals("user", msg.getUsername());
+            assertEquals("foo123", msg.getPassword());
+            // Check signature protection
+            AlgorithmIdentifier algId = msg.getMessage().getHeader().getProtectionAlg();
+            String oid = algId.getAlgorithm().getId();
+            assertEquals(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), oid);
+            // Check that we have DERNull and not plain java null as algorithm parameters.
+            ASN1Encodable pp = algId.getParameters();
+            assertNotNull(pp);
+            assertEquals(DERNull.class.getName(), pp.getClass().getName());
+            // Try to verify the protection signature
+            assertTrue(CmpMessageHelper.verifyCertBasedPKIProtection(msg.getMessage(), msg.getRequestPublicKey()));
+        } finally {
+            in.close();
+        }
     }
 
     @Test
     public void testHuaweiEnodeBClientRequest() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException {
-    	// Read an initialization request to see that we can process it
-    	ASN1InputStream in = new ASN1InputStream(huaweiir);
-		ASN1Primitive derObject = in.readObject();
-		PKIMessage req = PKIMessage.getInstance(derObject);
-		//log.info(req.toString());
-    	CrmfRequestMessage msg = new CrmfRequestMessage(req, null, false, "CN");
-    	// This message does not have an issuerDN in the cert template
-    	assertNull(msg.getIssuerDN());
-    	// Use a default CA instead
-    	msg = new CrmfRequestMessage(req, "CN=AdminCA1", false, "CN");
-    	assertTrue(msg.verify());
-    	assertEquals("CN=AdminCA1", msg.getIssuerDN());
-    	assertEquals("CN=21030533610000000012 eNodeB", msg.getRequestDN());
-    	assertEquals("21030533610000000012 eNodeB", msg.getUsername());
-    	// We would like a password here...
-		assertNull(msg.getPassword());
-		AlgorithmIdentifier algId = msg.getMessage().getHeader().getProtectionAlg();
-		String oid = algId.getAlgorithm().getId();
-		assertEquals(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), oid);
-		// Check that we have DERNull and not plain java null as algorithm parameters.
-		ASN1Encodable pp = algId.getParameters();
-		assertNotNull(pp);
-		assertEquals(DERNull.class.getName(), pp.getClass().getName());
-		// Try to verify message protection
-		// Does not work for this Huawei message, is it signed by the same key as in the request at all?
-		// We will wait for another huawei message to test
-		//PublicKey pubKey = msg.getRequestPublicKey();
-		//assertTrue(CmpMessageHelper.verifyCertBasedPKIProtection(msg.getMessage(), pubKey));
+        // Read an initialization request to see that we can process it
+        ASN1InputStream in = new ASN1InputStream(huaweiir);
+        try {
+            ASN1Primitive derObject = in.readObject();
+            PKIMessage req = PKIMessage.getInstance(derObject);
+            //log.info(req.toString());
+            CrmfRequestMessage msg = new CrmfRequestMessage(req, null, false, "CN");
+            // This message does not have an issuerDN in the cert template
+            assertNull(msg.getIssuerDN());
+            // Use a default CA instead
+            msg = new CrmfRequestMessage(req, "CN=AdminCA1", false, "CN");
+            assertTrue(msg.verify());
+            assertEquals("CN=AdminCA1", msg.getIssuerDN());
+            assertEquals("CN=21030533610000000012 eNodeB", msg.getRequestDN());
+            assertEquals("21030533610000000012 eNodeB", msg.getUsername());
+            // We would like a password here...
+            assertNull(msg.getPassword());
+            AlgorithmIdentifier algId = msg.getMessage().getHeader().getProtectionAlg();
+            String oid = algId.getAlgorithm().getId();
+            assertEquals(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), oid);
+            // Check that we have DERNull and not plain java null as algorithm parameters.
+            ASN1Encodable pp = algId.getParameters();
+            assertNotNull(pp);
+            assertEquals(DERNull.class.getName(), pp.getClass().getName());
+            // Try to verify message protection
+            // Does not work for this Huawei message, is it signed by the same key as in the request at all?
+            // We will wait for another huawei message to test
+            //PublicKey pubKey = msg.getRequestPublicKey();
+            //assertTrue(CmpMessageHelper.verifyCertBasedPKIProtection(msg.getMessage(), pubKey));
 
-    	// Read the CertConf (certificate confirmation) CMP message that the client sends to
-		// the CA after receiving the certificate. RFC4210 section "5.3.18.  Certificate Confirmation Content".
-    	in = new ASN1InputStream(huaweicertconf);
-		derObject = in.readObject();
-		PKIMessage certconf = PKIMessage.getInstance(derObject);
-		//log.info(certconf.toString());
-		GeneralCmpMessage conf = new GeneralCmpMessage(certconf);
-		algId = conf.getMessage().getHeader().getProtectionAlg();
-		oid = algId.getAlgorithm().getId();
-		assertEquals(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), oid);
-		// Check that we have DERNull and not plain java null as algorithm parameters.
-		pp = algId.getParameters();
-		assertNotNull(pp);
-		assertEquals(DERNull.class.getName(), pp.getClass().getName());
-		// Try to verify message protection
-		// Does not work for this Huawei message, is it signed by the same key as in the request at all?
-		// We will wait for another huawei message to test
-		//PublicKey pubKey = msg.getRequestPublicKey();
-		//assertTrue(CmpMessageHelper.verifyCertBasedPKIProtection(msg.getMessage(), pubKey));
+            // Read the CertConf (certificate confirmation) CMP message that the client sends to
+            // the CA after receiving the certificate. RFC4210 section "5.3.18.  Certificate Confirmation Content".
+            in.close();
+            in = new ASN1InputStream(huaweicertconf);
+            derObject = in.readObject();
+            PKIMessage certconf = PKIMessage.getInstance(derObject);
+            //log.info(certconf.toString());
+            GeneralCmpMessage conf = new GeneralCmpMessage(certconf);
+            algId = conf.getMessage().getHeader().getProtectionAlg();
+            oid = algId.getAlgorithm().getId();
+            assertEquals(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), oid);
+            // Check that we have DERNull and not plain java null as algorithm parameters.
+            pp = algId.getParameters();
+            assertNotNull(pp);
+            assertEquals(DERNull.class.getName(), pp.getClass().getName());
+            // Try to verify message protection
+            // Does not work for this Huawei message, is it signed by the same key as in the request at all?
+            // We will wait for another huawei message to test
+            //PublicKey pubKey = msg.getRequestPublicKey();
+            //assertTrue(CmpMessageHelper.verifyCertBasedPKIProtection(msg.getMessage(), pubKey));
+        } finally {
+            in.close();
+        }
     }
 
     /** CMP initial request message, created with Huawei eNode B, with signature POP (no POPOSigningKey) and signature protection */
