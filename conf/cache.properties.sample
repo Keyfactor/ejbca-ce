@@ -19,13 +19,13 @@
 # During this fetch, the currently cached CryptoToken object will continue to be used.
 # This cache can never be completely disabled to ensure that an activated CryptoToken object
 # is kept in the active state until removed or changed in the database.
-# Setting this value will improve performance for very large volume installations (>100 cert/s). 
+# Setting this value will improve performance for very large volume installations (>50 cert/s). 
 # For normal installations, where extreme speeds and response times are not required, leave as default.
 # Default: 10000
-# Possible values -1 (no caching) to 9223372036854775807 (2^63-1 = Long.MAX_VALUE).
+# Possible values 0 (no caching, but keeps activated) to 9223372036854775807 (2^63-1 = Long.MAX_VALUE).
 #  If you want caching for an infinite time then set something high for example 157680000000 (5years). 
 #cryptotoken.cachetime=157680000000
-#cryptotoken.cachetime=-1
+#cryptotoken.cachetime=0
 
 # CA object caching gets updates from database when a CA object is stale.
 # During this fetch, the currently cached CA object will continue to be used.
