@@ -46,6 +46,7 @@ import org.bouncycastle.cert.ocsp.OCSPReqBuilder;
 import org.bouncycastle.cert.ocsp.OCSPResp;
 import org.bouncycastle.cert.ocsp.SingleResp;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
+import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
@@ -526,7 +527,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         ocspReqBuilder.setRequestExtensions(new Extensions(new Extension[] {new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()))}));
         if (ocspAuthenticationCertificate != null && ocspAuthenticationPrivateKey != null) {
             // Create a signed request
-            final ContentSigner signer = new JcaContentSignerBuilder(AlgorithmConstants.SIGALG_SHA1_WITH_RSA).build(ocspAuthenticationPrivateKey);
+            final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(AlgorithmConstants.SIGALG_SHA1_WITH_RSA).build(ocspAuthenticationPrivateKey), 20480);
             return ocspReqBuilder.build(signer, new X509CertificateHolder[] {new X509CertificateHolder(ocspAuthenticationCertificate.getEncoded())});
         } else {
             // Create an unsigned request

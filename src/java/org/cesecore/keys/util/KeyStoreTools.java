@@ -50,6 +50,7 @@ import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.jce.ECKeyUtil;
+import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -153,7 +154,7 @@ public class KeyStoreTools {
         try {
             final X509v3CertificateBuilder cg = new JcaX509v3CertificateBuilder(issuer, serno, firstDate, lastDate, issuer, publicKey);
             log.debug("Keystore signing algorithm " + sigAlg);
-            final ContentSigner signer = new JcaContentSignerBuilder(sigAlg).setProvider(this.providerName).build(keyPair.getPrivate());
+            final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(this.providerName).build(keyPair.getPrivate()), 20480);
             final X509CertificateHolder cert = cg.build(signer);
             return (X509Certificate) CertTools.getCertfromByteArray(cert.getEncoded());
         } catch (OperatorCreationException e) {

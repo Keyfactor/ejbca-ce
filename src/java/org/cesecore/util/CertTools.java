@@ -117,6 +117,7 @@ import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -1546,7 +1547,7 @@ public class CertTools {
             certbuilder.addExtension(Extension.certificatePolicies, false, seq);
         }
 
-        final ContentSigner signer = new JcaContentSignerBuilder(sigAlg).build(privKey);
+        final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).build(privKey), 20480);
         final X509CertificateHolder certHolder = certbuilder.build(signer);
         final X509Certificate selfcert = (X509Certificate)CertTools.getCertfromByteArray(certHolder.getEncoded());
 
@@ -3230,7 +3231,7 @@ public class CertTools {
             provider = BouncyCastleProvider.PROVIDER_NAME;
         }
 
-        ContentSigner signer = new JcaContentSignerBuilder(signatureAlgorithm).build(signingKey);
+        ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(signatureAlgorithm).build(signingKey), 20480);
         signer.getOutputStream().write(reqInfo.getEncoded(ASN1Encoding.DER));
         byte[] sig = signer.getSignature();
         DERBitString sigBits = new DERBitString(sig);

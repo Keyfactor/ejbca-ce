@@ -46,6 +46,7 @@ import org.bouncycastle.cert.ocsp.OCSPException;
 import org.bouncycastle.cert.ocsp.OCSPReq;
 import org.bouncycastle.cert.ocsp.RespID;
 import org.bouncycastle.cert.ocsp.jcajce.JcaRespID;
+import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
@@ -130,7 +131,7 @@ public class OCSPUtil {
     		}
     	}
 
-    	returnval = basicRes.build(new JcaContentSignerBuilder(sigAlg).build(signerKey), chain, new Date());
+    	returnval = basicRes.build(new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).build(signerKey), 20480), chain, new Date());
     	if (m_log.isDebugEnabled()) {
     		m_log.debug("Signing OCSP response with OCSP signer cert: " + signerCert.getSubjectDN().getName());
     		RespID respId = null;
