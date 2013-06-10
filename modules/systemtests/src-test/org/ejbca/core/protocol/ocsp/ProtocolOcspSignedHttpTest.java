@@ -40,6 +40,7 @@ import org.bouncycastle.cert.ocsp.OCSPReq;
 import org.bouncycastle.cert.ocsp.OCSPReqBuilder;
 import org.bouncycastle.cert.ocsp.SingleResp;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
+import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -206,7 +207,7 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
         chain[0] = new JcaX509CertificateHolder(ocspTestCert);
         chain[1] = new JcaX509CertificateHolder(cacert);
         gen.setRequestorName(chain[0].getSubject());
-        OCSPReq req = gen.build(new JcaContentSignerBuilder("SHA1withRSA").build(keys.getPrivate()), chain);
+        OCSPReq req = gen.build(new BufferingContentSigner(new JcaContentSignerBuilder("SHA1withRSA").build(keys.getPrivate()), 20480), chain);
         //OCSPReq req = gen.generate();
         
         // Send the request and receive a singleResponse
@@ -233,7 +234,7 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
         chain[0] = new JcaX509CertificateHolder((X509Certificate)certs[0]);
         chain[1] = new JcaX509CertificateHolder((X509Certificate)certs[1]);
         PrivateKey pk = (PrivateKey)store.getKey("privateKey", "foo123".toCharArray());
-        req = gen.build(new JcaContentSignerBuilder("SHA1withRSA").build(pk), chain);
+        req = gen.build(new BufferingContentSigner(new JcaContentSignerBuilder("SHA1withRSA").build(pk), 20480), chain);
         // Send the request and receive a singleResponse, this response should have error code UNAUTHORIZED (6)
         singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", OCSPResponseStatus.UNAUTHORIZED, 200);
         assertNull(singleResps);

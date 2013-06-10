@@ -36,6 +36,7 @@ import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.jce.ECGOST3410NamedCurveTable;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.util.encoders.Base64;
@@ -201,7 +202,7 @@ public class ExtraAlgorithmsPKCS12Test {
         certbuild.addExtension(X509Extension.subjectKeyIdentifier, false, ski);
         certbuild.addExtension(X509Extension.authorityKeyIdentifier, false, aki);
         
-        ContentSigner sigGen = new JcaContentSignerBuilder(sigAlg).setProvider("BC").build(privKey);
+        ContentSigner sigGen = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider("BC").build(privKey), 20480);
         
         return new JcaX509CertificateConverter().setProvider("BC")
                 .getCertificate(certbuild.build(sigGen));

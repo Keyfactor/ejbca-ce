@@ -50,6 +50,7 @@ import org.bouncycastle.cert.ocsp.OCSPReqBuilder;
 import org.bouncycastle.cert.ocsp.OCSPResp;
 import org.bouncycastle.cert.ocsp.SingleResp;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
+import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
@@ -194,7 +195,7 @@ public class ProtocolOcspHttpPerfTest {
         OCSPReq req = null;
         if (dosigning) {
             gen.setRequestorName(certChain[0].getSubject());
-            req = gen.build(new JcaContentSignerBuilder(signingAlg).build(privKey), certChain);        	
+            req = gen.build(new BufferingContentSigner(new JcaContentSignerBuilder(signingAlg).build(privKey), 20480), certChain);        	
         } else {
         	req = gen.build();
         }
@@ -274,7 +275,7 @@ public class ProtocolOcspHttpPerfTest {
 			        OCSPReq req = null;
 			        if (dosigning) {
 			            gen.setRequestorName(certChain[0].getSubject());
-			            req = gen.build(new JcaContentSignerBuilder(signingAlg).build(privKey), certChain);        	
+			            req = gen.build(new BufferingContentSigner(new JcaContentSignerBuilder(signingAlg).build(privKey), 20480), certChain);        	
 			        } else {
 			        	req = gen.build();
 			        }

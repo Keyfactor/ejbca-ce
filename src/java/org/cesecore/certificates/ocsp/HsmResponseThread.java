@@ -22,6 +22,7 @@ import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.cert.ocsp.BasicOCSPResp;
 import org.bouncycastle.cert.ocsp.BasicOCSPRespBuilder;
 import org.bouncycastle.cert.ocsp.OCSPException;
+import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
@@ -56,7 +57,7 @@ public class HsmResponseThread implements Callable<BasicOCSPResp> {
     @Override
     public BasicOCSPResp call() throws OCSPException {
         try {
-            final ContentSigner signer = new JcaContentSignerBuilder(signingAlgorithm).setProvider(provider).build(signerKey);
+            final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(signingAlgorithm).setProvider(provider).build(signerKey), 20480);
             return basicRes.build(signer, convertCertificateChainToCertificateHolderChain(chain), new Date());
         } catch (CertificateEncodingException e) {
             throw new OcspFailureException(e);
