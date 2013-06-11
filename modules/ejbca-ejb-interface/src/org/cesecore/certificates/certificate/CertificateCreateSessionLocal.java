@@ -19,7 +19,6 @@ import java.util.Date;
 import javax.ejb.Local;
 
 import org.bouncycastle.asn1.x509.Extensions;
-import org.bouncycastle.asn1.x500.X500Name;
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
