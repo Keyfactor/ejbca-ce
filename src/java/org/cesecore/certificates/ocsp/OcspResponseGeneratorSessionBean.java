@@ -768,26 +768,30 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         }
         if (req.hasExtensions()) {
             Extension ext = req.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_response);
-            //X509Extension ext = reqexts.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_response);
             if (null != ext) {
                 // log.debug("Found extension AcceptableResponses");
                 ASN1OctetString oct = ext.getExtnValue();
                 try {
-                    ASN1Sequence seq = ASN1Sequence.getInstance(new ASN1InputStream(new ByteArrayInputStream(oct.getOctets())).readObject());
-                    @SuppressWarnings("unchecked")
-                    Enumeration<ASN1ObjectIdentifier> en = seq.getObjects();
-                    boolean supportsResponseType = false;
-                    while (en.hasMoreElements()) {
-                        ASN1ObjectIdentifier oid = en.nextElement();
-                        if (oid.equals(OCSPObjectIdentifiers.id_pkix_ocsp_basic)) {
-                            // This is the response type we support, so we are happy! Break the loop.
-                            supportsResponseType = true;
-                            log.debug("Response type supported: " + oid.getId());
-                            break;
+                    ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(oct.getOctets()));
+                    try {
+                        ASN1Sequence seq = ASN1Sequence.getInstance(asn1InputStream.readObject());
+                        @SuppressWarnings("unchecked")
+                        Enumeration<ASN1ObjectIdentifier> en = seq.getObjects();
+                        boolean supportsResponseType = false;
+                        while (en.hasMoreElements()) {
+                            ASN1ObjectIdentifier oid = en.nextElement();
+                            if (oid.equals(OCSPObjectIdentifiers.id_pkix_ocsp_basic)) {
+                                // This is the response type we support, so we are happy! Break the loop.
+                                supportsResponseType = true;
+                                log.debug("Response type supported: " + oid.getId());
+                                break;
+                            }
                         }
-                    }
-                    if (!supportsResponseType) {
-                        throw new NotSupportedException("Required response type not supported, this responder only supports id-pkix-ocsp-basic.");
+                        if (!supportsResponseType) {
+                            throw new NotSupportedException("Required response type not supported, this responder only supports id-pkix-ocsp-basic.");
+                        }
+                    } finally {
+                        asn1InputStream.close();
                     }
                 } catch (IOException e) {
                 }
@@ -1221,8 +1225,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         }
         if (!returnval.getResponderId().equals(respId)) {
             log.error("Response responderId does not match signer certificate responderId!");
+            throw new OcspFailureException("Response responderId does not match signer certificate responderId!");
         }
-        //TODO: Look over the below code. Is it as harmless to not verify as it looks?
         boolean verify;
         try {
             verify = returnval.isSignatureValid(new JcaContentVerifierProviderBuilder().build(signerCert.getPublicKey()));
@@ -1231,10 +1235,13 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             throw new EJBException("Can not create Jca content signer: ", e);
         }
         if (verify) {
-            log.debug("The OCSP response is verifying.");
+            if (log.isDebugEnabled()) {
+                log.debug("The OCSP response is verifying.");
+            }
         } else {
-            log.error("The response is NOT verifying!");
-        }     
+            log.error("The response is NOT verifying! Attempted to sign using " + CertTools.getSubjectDN(signerCert) + " but signature was not valid.");
+            throw new OcspFailureException("Attempted to sign using " + CertTools.getSubjectDN(signerCert) + " but signature was not valid.");
+        }
         return returnval;
     }
 
