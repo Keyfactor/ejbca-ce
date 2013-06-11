@@ -28,6 +28,7 @@ import org.ejbca.ui.web.admin.services.servicetypes.CertificateExpirationNotifie
 import org.ejbca.ui.web.admin.services.servicetypes.CustomActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.CustomIntervalType;
 import org.ejbca.ui.web.admin.services.servicetypes.CustomWorkerType;
+import org.ejbca.ui.web.admin.services.servicetypes.HsmKeepAliveWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.MailActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.NoActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.PeriodicalIntervalType;
@@ -82,6 +83,7 @@ public class ServiceTypeManager implements Serializable {
 		ServiceTypeManager.registerServiceType(new UserPasswordExpireWorkerType());
 		ServiceTypeManager.registerServiceType(new RenewCAWorkerType());
 		ServiceTypeManager.registerServiceType(new PublishQueueWorkerType());
+		ServiceTypeManager.registerServiceType(new HsmKeepAliveWorkerType());
 	}
 
 	@SuppressWarnings("unchecked")

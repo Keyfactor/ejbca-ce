@@ -25,10 +25,12 @@ import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventType;
 import org.cesecore.audit.enums.ModuleType;
 import org.cesecore.audit.enums.ServiceType;
+import org.cesecore.audit.impl.integrityprotected.AuditRecordData;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.AuditLogRules;
+import org.cesecore.dbprotection.ProtectedDataConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.time.TrustedTime;
@@ -99,5 +101,10 @@ public class SecurityEventsLoggerSessionBean implements SecurityEventsLoggerSess
                 log.trace("<log");
             }
         }
+    }
+
+    @Override
+    public boolean isAuditLogSigningEnabled() {
+        return ProtectedDataConfiguration.useDatabaseIntegrityProtection(AuditRecordData.class.getSimpleName());
     }
 }

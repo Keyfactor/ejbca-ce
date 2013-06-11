@@ -23,7 +23,6 @@ import org.ejbca.core.model.services.workers.PublishQueueProcessWorker;
 /**
  * Class managing the view of the Renew CA Worker
  * 
- * @author Tomas Gustavsson
  *
  * @version $Id$
  */
@@ -48,11 +47,8 @@ public class PublishQueueWorkerType extends BaseEmailNotifyingWorkerType {
 	 */
 	public Properties getProperties(ArrayList<String> errorMessages) throws IOException {
 		Properties ret = super.getProperties(errorMessages);
-		
-		Iterator<String> iter = selectedPublisherIdsToCheck.iterator();		
 		String publisherIdString = "";
-		while(iter.hasNext()){
-			String pubid = iter.next();
+		for(String pubid : selectedPublisherIdsToCheck) {
 			if(!pubid.trim().equals("")){
 			  if(publisherIdString.equals("")){
 				  publisherIdString = pubid;
@@ -70,7 +66,6 @@ public class PublishQueueWorkerType extends BaseEmailNotifyingWorkerType {
 	 */
 	public void setProperties(Properties properties) throws IOException {
 		super.setProperties(properties);
-
 		selectedPublisherIdsToCheck = new ArrayList<String>();
 		String[] publisherIdsToCheck = properties.getProperty(PublishQueueProcessWorker.PROP_PUBLISHER_IDS,"").split(";");
 		for(int i=0;i<publisherIdsToCheck.length;i++){
@@ -78,11 +73,12 @@ public class PublishQueueWorkerType extends BaseEmailNotifyingWorkerType {
 		}
 	}
 
-	public List<String> getSelectedPublisherIdsToCheck() {
-		return selectedPublisherIdsToCheck;
-	}
-	public void setSelectedPublisherIdsToCheck(List<String> selectedPublisherIdsToCheck) {
-		this.selectedPublisherIdsToCheck = selectedPublisherIdsToCheck;
-	}
+    public List<String> getSelectedPublisherIdsToCheck() {
+        return selectedPublisherIdsToCheck;
+    }
+
+    public void setSelectedPublisherIdsToCheck(List<String> selectedPublisherIdsToCheck) {
+        this.selectedPublisherIdsToCheck = selectedPublisherIdsToCheck;
+    }
 
 }

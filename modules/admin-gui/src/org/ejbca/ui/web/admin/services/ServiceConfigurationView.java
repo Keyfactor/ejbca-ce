@@ -18,7 +18,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -68,7 +67,7 @@ public class ServiceConfigurationView implements Serializable{
 	
 	private ServiceConfiguration serviceConfiguration;
 	
-	public ServiceConfigurationView(ServiceConfiguration serviceConfiguration)  throws IOException {
+	public ServiceConfigurationView(ServiceConfiguration serviceConfiguration) {
 		
 		typeManager = new ServiceTypeManager();
 	
@@ -278,9 +277,7 @@ public class ServiceConfigurationView implements Serializable{
 	public List<SelectItem> getAvailableWorkers(){
 		ArrayList<SelectItem> retval = new ArrayList<SelectItem>();
 		Collection<ServiceType> available = typeManager.getAvailableWorkerTypes();
-		Iterator<ServiceType> iter = available.iterator();
-		while(iter.hasNext()){
-			ServiceType next = (ServiceType) iter.next();
+		for(ServiceType next : available) {
 			String label = next.getName();
 			if(next.isTranslatable()){
 				label = (String) EjbcaJSFHelper.getBean().getText().get(next.getName());
@@ -294,9 +291,7 @@ public class ServiceConfigurationView implements Serializable{
 	public List<SelectItem> getAvailableIntervals(){
 		ArrayList<SelectItem> retval = new ArrayList<SelectItem>();
 		WorkerType currentWorkerType = (WorkerType) typeManager.getServiceTypeByName(selectedWorker);
-		Iterator<String> iter = currentWorkerType.getCompatibleIntervalTypeNames().iterator();
-		while(iter.hasNext()){
-			String name = iter.next();
+		for(String name : currentWorkerType.getCompatibleIntervalTypeNames()) {
 			ServiceType next = typeManager.getServiceTypeByName(name);
 			String label = name;
 			if(next.isTranslatable()){
@@ -313,9 +308,7 @@ public class ServiceConfigurationView implements Serializable{
 	public List<SelectItem> getAvailableActions(){
 		ArrayList<SelectItem> retval = new ArrayList<SelectItem>();
 		WorkerType currentWorkerType = (WorkerType) typeManager.getServiceTypeByName(selectedWorker);
-		Iterator<String> iter = currentWorkerType.getCompatibleActionTypeNames().iterator();
-		while(iter.hasNext()){
-			String name = iter.next();
+		for(String name : currentWorkerType.getCompatibleActionTypeNames()) {
 			ServiceType next = typeManager.getServiceTypeByName(name);
 			String label = name;
 			if(next.isTranslatable()){

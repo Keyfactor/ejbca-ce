@@ -328,9 +328,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         // If superadmin return all visible services
         if (authorizationSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource())) {
             Collection<Integer> allServiceIds = getServiceIdToNameMap().keySet();
-            Iterator<Integer> i = allServiceIds.iterator();
-            while (i.hasNext()) {
-                int id = i.next().intValue();
+            for (int id : allServiceIds) {
                 // Remove hidden services here..
                 if (!getServiceConfiguration(admin, id).isHidden()) {
                     allVisibleServiceIds.add(Integer.valueOf(id));
@@ -882,9 +880,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     public HashMap<Integer, String> getServiceIdToNameMap() {
         HashMap<Integer, String> returnval = new HashMap<Integer, String>();
         Collection<ServiceData> result = serviceDataSession.findAll();
-        Iterator<ServiceData> i = result.iterator();
-        while (i.hasNext()) {
-            ServiceData next = i.next();
+        for(ServiceData next : result) {
             returnval.put(next.getId(), next.getName());
         }
         return returnval;

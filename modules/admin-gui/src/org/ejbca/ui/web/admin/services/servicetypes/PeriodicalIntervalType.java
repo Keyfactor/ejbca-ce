@@ -25,7 +25,6 @@ import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 /**
  * Class used to populate the fields in the custominterval.jsp subview page. 
  * 
- * @author Philip Vendil 2006 sep 30
  *
  * @version $Id$
  */
@@ -38,15 +37,14 @@ public class PeriodicalIntervalType extends IntervalType {
 	public static final String DEFAULT_UNIT = PeriodicalInterval.UNIT_MINUTES;
 	public static final String DEFAULT_VALUE = "5";
 	
+    private String unit;
+    private String value;
+	
 	public PeriodicalIntervalType() {
 		super("periodicalinterval.jsp", NAME, true);
-		unit = DEFAULT_UNIT;
-		value = DEFAULT_VALUE;
+		this.unit = DEFAULT_UNIT;
+		this.value = DEFAULT_VALUE;
 	}
-
-    String unit;
-    String value;
-
 
 	public String getClassPath() {
 		return org.ejbca.core.model.services.intervals.PeriodicalInterval.class.getName();

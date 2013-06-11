@@ -15,9 +15,8 @@ package org.ejbca.ui.web.admin.services.servicetypes;
 
 /**
  * Class representing an Action Type, should be registered in the 
- * ServiceTypesManager. Should be inhereted by all action managed beans.
+ * ServiceTypesManager. Should be inherited by all action managed beans.
  * 
- * @author Philip Vendil 2006 sep 29
  *
  * @version $Id$
  */
