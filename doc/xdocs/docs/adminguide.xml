@@ -5251,7 +5251,7 @@ To access the usage information for some commands, that does not take parameters
 <p>By default, the CLI authenticates using a standard user defined in ejbca.properties. Disabling this user will lead 
 to all CLI operations demanding authentication in the form of the following flags appended to the argument list:</p>
 <source>
--u &lt;username&gt; -p; 
+-u &lt;username&gt; -p
 </source>
 <p>which will cause the console to prompt for the password. If instead the password should be included in the command line (such as)
 	from a script, it can be specified using the following flags:</p>
