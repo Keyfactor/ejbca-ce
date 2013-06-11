@@ -2,7 +2,6 @@ package org.ejbca.ui.web.admin.configuration;
 
 import javax.faces.application.Application;
 import javax.faces.context.FacesContext;
-import javax.faces.el.ValueBinding;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
@@ -121,9 +120,8 @@ public class EjbcaJSFHelper {
 
      public static EjbcaJSFHelper getBean(){    
     	 FacesContext context = FacesContext.getCurrentInstance();    
-    	 Application app = context.getApplication();    
-    	 ValueBinding binding = app.createValueBinding("#{web}");    
-    	 Object value = binding.getValue(context);    
-    	 return (EjbcaJSFHelper) value;
+    	 Application app = context.getApplication();   
+    	 EjbcaJSFHelper value = (EjbcaJSFHelper) app.evaluateExpressionGet(context, "#{web}", EjbcaJSFHelper.class);
+    	 return value;
      }
 }

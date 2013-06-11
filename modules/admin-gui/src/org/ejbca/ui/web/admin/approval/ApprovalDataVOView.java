@@ -27,7 +27,6 @@ import java.util.Set;
 import javax.ejb.EJBException;
 import javax.faces.application.Application;
 import javax.faces.context.FacesContext;
-import javax.faces.el.ValueBinding;
 import javax.security.auth.x500.X500Principal;
 
 import org.apache.log4j.Logger;
@@ -166,10 +165,9 @@ public class ApprovalDataVOView implements Serializable {
         }
         FacesContext context = FacesContext.getCurrentInstance();
         Application app = context.getApplication();
-        ValueBinding binding = app.createValueBinding("#{approvalActionSession}");
-        Object value = binding.getValue(context);
-        ApproveActionSessionBean approvalActionSession = (ApproveActionSessionBean) value;
-        return (String) approvalActionSession.getStatusText().get(Integer.valueOf(data.getStatus()));
+        ApproveActionSessionBean value = (ApproveActionSessionBean) app.evaluateExpressionGet(context, "#{approvalActionSession}",
+                ApproveActionSessionBean.class);
+        return (String) value.getStatusText().get(Integer.valueOf(data.getStatus()));
     }
 
     public ApprovalDataVO getApproveActionDataVO() {
