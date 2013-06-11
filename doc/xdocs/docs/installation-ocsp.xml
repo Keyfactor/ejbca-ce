@@ -7,33 +7,34 @@
 
 <body>
   <section name="OCSP Installation">
-  <note>
-  This section contains installation instructions for the external OCSP responder. EJBCA by default have an internal OCSP responder that works
-  out of the box on the CA server. See 'OCSP Architecture' to determine if you also need an external OCSP responder.
-  </note>  
-  <p> Installing the external OCSP responder together with EJBCA requires configuration on the CA and installation of the 
-  external OCSP responder. 
-  </p><p>If you are not using the responder with EJBCA you can skip the section about building and configuring EJBCA.
+  <p>
+  This section contains installation instructions for running EJBCA as an external OCSP responder where a separate key pair
+  and certificate is used to sign OCSP responses on behalf of a CA.
+  By default, each CA can sign OCSP responses out of the box using the CA key pair.
+  See 'OCSP Architecture' to determine if you also need an external OCSP responder.
+  </p><p>
+  Installing the external OCSP responder together with EJBCA requires configuration on the CA and installation of the 
+  external OCSP responder EJBCA instance(s).
+  </p><p>
+  If you are not using the responder with EJBCA you can skip the section about building and configuring EJBCA.
   </p>
   <subsection name="Building and configuring the Responder">
 <subsubsection name="General configuration">
 <p>
 You should first read the <a href="installation-va.html">Standalone VA installation</a> that specifies the general configuration for a VA.
 </p><p>
-All options for the OCSP responders OCSP behavior is set in conf/ocsp.properties. All options are documented in this file.
-<br/>
-The ocsp.keys.* preferences (that has no meaning for EJBCA) has also to be configured.<br/> 
+All default options for the OCSP responders OCSP behavior is set in conf/ocsp.properties. All options are documented in this file.
 </p>
 </subsubsection>
 <subsubsection name="Responder signing keys">
 <p>
-The keys used to sign the OCSP response could either be stored on as a PKCS#12 file in the file system of the host, 
-on a smart card or on a PKCS#11 token. It should be one key for each CA, and the each CA the responder answers for an OCSP signing certificate must be issued.
+The keys used to sign the OCSP response are referenced through CryptoTokens (that could be either soft or HSM/PKCS#11 based).
+There should be one key for each CA, and the each CA the responder answers for an OCSP signing certificate must be issued.
 <br/>
-The certificate profile could be the same for both soft, smart card and PKCS#11 keys.
+The certificate profile could be the same for all issued OCSP signing certificates.
 </p><p>
-To issue OCSP signer certificate from EJBCA you define a new certificate profile and use 'OCSPSIGNER (FIXED)' as template (use selected as template).
-<br/>This certificate profile is like a normal end entity profile but with the following key usages:
+To issue OCSP signer certificate from EJBCA you define a new certificate profile and use 'OCSPSIGNER (FIXED)' as template
+(use selected as template). This certificate profile is like a normal end entity profile but with the following key usages:
 </p>
 <source>
 - Key Usage: Digital Signature
@@ -42,109 +43,111 @@ To issue OCSP signer certificate from EJBCA you define a new certificate profile
 <p>
 Configure the newly created certificate profile to use the OCSP publisher defined above.
 You also need to create a new End Entity Profile to use the new Certificate Profile.
-</p>
-<p>
-You should then create a user for each CA using this certificate profile. 
-Use the token type "p12" or "jks" for soft keys and "user generated" for pkcs#11 and card keys.
+You should then create a user for each CA using this certificate profile. Use the token type "User generated".
+</p><p>
 </p>
 <note>
 Note: The OCSP responders certificate(s) AND the CA certificate(s) need to be published from the CA to the 
 OCSP responder. For the CA you do this by setting the CRL publisher to the OCSP publisher.
 </note>
-<subsubsection name="Soft keystores">
-<p>
-When a soft key has been created it should be stored in the directory defined by the ocsp.keys.dir property of conf/ejbca.properties.
-The password for each key must be the same and should be equal to the ocsp.keys.keyPassword property of conf/ejbca.properties.
-</p>
-<p>
-Soft OCSP keystores are most easily created by adding a user to EJBCA and selecting the PKCS#12 keystores type. After this the OCSP keystore can be created
-by running the <i>bin/ejbca.sh batch</i> command on the EJBCA server, or by fetching the PKCS#12 keystore from the public enrollment pages of EJBCA. 
-</p>
 </subsubsection>
-<subsubsection name="PKCS#11 HSMs">
-<p>
-A PKCS#11 key and certificate is created like this (example for Thales/nCipher, change accordingly for your HSM):
-</p>
-<source>
-ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ./sunpkcs11.cfg 2048 ocsp
-ejbcaClientToolBox.sh PKCS11HSMKeyTool certreq /opt/nfast/toolkits/pkcs11/libcknfast.so i1 ocsp
-</source>
-<p>
-The certificate for the key is then fetched from the public enrollment page of EJBCA with the certificate request that was stored in the file ocsp.pem
-when the "certreq" command was executed. You then have to manually create a certificate chain file. The OCSP signer certificate should be
-first in this file and the root CA certificate should be last.
-</p>
-<p>
-If the chain file is called chain.pem then the certificate chain is installed in the HSM like this:
-</p>
-<source>
-ejbcaClientToolBox.sh PKCS11HSMKeyTool installcert /opt/nfast/toolkits/pkcs11/libcknfast.so i1 chain.pem
-</source>
-<p>
-You must then define all ocsp.p11.* properties on the responder.
-Please read <a href="adminguide.html#Generic%20PKCS#11%20provider">Generic PKCS#11 provider</a> for information on the configuration file for the generate command.
-Do also try to find your HSM in <a href="adminguide.html#Hardware%20Security%20Modules%20(HSM)">Hardware Security Modules (HSM)</a>. 
-Please note the only PKCS#11 HSMs are supported.
-</p>
+<subsubsection name="Workflow for setting up a new OCSP signer">
+<p>This section requires the previous one to be completed first.</p>
+<ul>
+<li>Go to AdminGUI of OCSP -> CryptoTokens and create a new CryptoToken (unless you want to reuse an existing).</li>
+<li>Go to AdminGUI of OCSP -> CryptoTokens -> <i>Your created CryptoToken</i> and generate a new key pair.</li>
+<li>Go to AdminGUI of OCSP -> InternalKeyBindings -> OcspKeyBindings tab and create a new OcspKeyBinding the references the CryptoToken and key pair.</li>
+<li>Go to AdminGUI of OCSP -> InternalKeyBindings and create a Certificate Signing Request for your new OcspKeyBinding. Save this file.</li>
+<li>Go to PublicWeb of CA -> Create Certificate from CSR -> Use the credentials for issuing an OCSP signing certificate and upload the CSR.</li>
+<li>...(CA publishes new OCSP signing certificate to OCSP instance)...</li>
+<li>Go to AdminGUI of OCSP -> InternalKeyBindings and click "Reload" for your new OcspKeyBinding. This will find the published certificate
+by matching the key pair with the certificate.</li>
+<li>Go to AdminGUI of OCSP -> InternalKeyBindings and click "Activate" for your new OcspKeyBinding to start processing OCSP responses with it.</li>
+</ul>
 </subsubsection>
-<p>
-Re-start the application server for the external OCSP responder.
-When the application server is started it should just work.
-</p>
+<subsubsection name="Workflow for setting renewal of an OCSP signer">
+<ul>
+<li>[Optional] Go to AdminGUI of OCSP -> InternalKeyBindings and create "New keys" for your OcspKeyBinding.</li>
+<li>Go to AdminGUI of OCSP -> InternalKeyBindings and create a Certificate Signing Request for your OcspKeyBinding. Save this file.</li>
+<li>Go to PublicWeb of CA -> Create Certificate from CSR -> Use the credentials for issuing an OCSP signing certificate and upload the CSR.</li>
+<li>...(CA publishes new OCSP signing certificate to OCSP instance)...</li>
+<li>Go to AdminGUI of OCSP -> InternalKeyBindings and click "Reload" for your new OcspKeyBinding. This will find the published certificate
+by matching the key pair with the certificate.</li>
+<li>Go to AdminGUI of OCSP -> InternalKeyBindings and click "Activate" for your new OcspKeyBinding to start processing OCSP responses with it.</li>
+</ul>
 </subsubsection>
 </subsection>
-<subsection name="Dynamic reconfiguration">
+<subsection name="Renewal of an OCSP signer via CA's WebService (a.k.a. Re-keying)">
+<note>
+Re-keying as described below will change in a future version of EJBCA.
+The CA will keep track of the OCSP responders certificates and order key renewal and update the responder's certificates
+to avoid incoming traffic to the CA.
+For now this is the way to do it.
+</note>
 <p>
-By configuring the property 'allow.external-dynamic.configuration' in conf/ejbca.properties you can have the OCSP responder re-read some 
-configuration values from files in the file system. The values ocsp.untilNextUpdate and ocsp.maxAge from ocsp.properties will be re-read if you put 
-an ocsp.properties file in the directory /etc/ejbca/conf or in APPSRV_HOME/bin/conf (if you start your application server from APPSRV_HOME/bin).
-</p>
-</subsection>
-<subsection name="Key updating">
-<p>
-The responder might be configured (in ocsp.properties) to scan for installed keys at regular intervals. The responder will use the keys detected at the latest scan.
-</p>
-<p>
-Please note that keys in the PKCS#11 slot will not be updated if automatic re-keying is enabled.
-</p>
-</subsection>
-<subsection name="Re-keying">
-<p>
-Re-keying allows the OCSP responder to generate new signing keys and obtain a new certificate for these keys from the CA. Re-keying is configured in the ocsp.properties configuration file.
-</p>
-<p>
-Re-keying can be either automatic or manual. Automatic re-keying allows you to specify the maximum expiration period in seconds before the re-keying should happen (i.e. you can set-up the OCSP responder to renew its keys and certificates when its current certificate is about to expire). Manual re-keying allows you to trigger the renewal by sending a GET request to the OCSP responder (with the necessary parameters). Manual re-keying is useful when a greater control on re-keying periods is desired. Since manual re-keying can be done with external tools (like wget or curl), cron jobs can be set-up to trigger it at the desired time.
-</p>
-<p>
-Both automatic and manual re-keying require that EJBCA CA web-service URL is defined. The web-service URL should point to the EJBCA CA server which has issued the certificates for the OCSP responder. If the URL is not defined, the re-keying won't be enabled.
-</p>
-<p>
-OCSP responder acts as a registration authority when renewing keys with the EJBCA CA. OCSP responder can use either a soft keystore, or an HSM for authenticating with CA. If soft keystore is used, it needs to be provided in the Java keystore format (jks), and its location and password should be defined in the ocsp.properties configuration file. If HSM is used for the authentication, the soft keystore options should not be specified, and the re-keying function will instead use the private key from the configured P11 slot (the private key from HSM slot is selected by first locating the corresponding certificate in the slot with the necessary key usage and extended key usage as outlined below).
-</p>
-<p>
-Since OCSP responder is acting as a registration authority, its certificate for authenticating to the EJBCA CA web-service must have the key usage set to "Digital Signature" and extended key usage set to "Client Authentication". It is also necessary to set-up the appropriate access rules on the CA side (either by creating a new RA role, or using an existing one). The role for the OCSP responder should have the right to view and edit the end entities (at least for all of the CA's issuing the certificates for the OCSP responder, as well as for certificate profiles used by the OCSP responder's certificates).
-</p>
-<p>
-For manual re-keying the GET request should contain the parameters "renewSigner" and "password". The "renewSigner" parameter can be used to specify which OCSP keys should be renewed. It can be either set to "all", which will renew all of the OCSP signer keys, or to a specific OCSP responder certificate subject DN (unlike the default responder options, the parameter specified here should be the OCSP's subject DN, not the issuer's). Password should be configured in the ocsp.properties file. If the password is not set, manual re-keying will not be enabled.
-</p>
-<p>
-Manual re-keying can further be limitted by specifying the allowed originating IP addresses for the requests. By default the re-keying is allowed only from the localhost (127.0.0.1) address. Allowed IP addresses are configured in the ocsp.properties configuration file, and multiple addresses can be provided by separating them with a semicolon (;).
-</p>
-<p>
-The following two examples demonstrate the manual triggering of re-keying on the OCSP responder. The first example triggers the re-keying for all of the OCSP signer keys, while the second one will trigger rekeying for a specific signer (the one matching the subject DN of "CN=OCSP REsponder 123,O=PrimeKey Solutions AB,C=SE"):
+Re-keying allows the OCSP responder to generate new signing keys and obtain a new certificate for these keys from the CA's WebService.
+Re-keying is configured in the ocsp.properties configuration file.
+The client authentication SSL certificate is configured as an AuthenticationKeyBinding in the AdminGUI (or using the EJB CLI). 
+</p><p>
+Re-keying can be either automatic or manual.
+Automatic re-keying allows you to specify the maximum expiration period in seconds before the re-keying should happen
+(i.e. you can set-up the OCSP responder to renew its keys and certificates when its current certificate is about to expire).
+Manual re-keying allows you to trigger the renewal by sending a GET request to the OCSP responder (with the necessary parameters).
+Manual re-keying is useful when a greater control on re-keying periods is desired.
+Since manual re-keying can be done with external tools (like wget or curl), cron jobs can be set-up to trigger it at the desired time.
+</p><p>
+Both automatic and manual re-keying require that EJBCA CA web-service URL is defined.
+The web-service URL should point to the EJBCA CA server which has issued the certificates for the OCSP responder.
+If the URL is not defined, the re-keying won't be enabled.
+</p><p>
+OCSP responder acts as a registration authority when renewing keys with the EJBCA CA.
+The OCSP responder uses an AuthenticationKeyBinding for SSL client authentication to the CA's web-service.
+</p><p>
+Since OCSP responder is acting as a registration authority, its certificate for authenticating to the EJBCA CA
+web-service must have the key usage set to "Digital Signature" and extended key usage set to "Client Authentication".
+It is also necessary to set-up the appropriate access rules on the CA side (either by creating a new RA role, or using
+an existing one).
+The role for the OCSP responder should have the right to view and edit the end entities (at least for all of the CA's
+issuing the certificates for the OCSP responder, as well as for certificate profiles used by the OCSP responder's certificates).
+</p><p>
+For manual re-keying the GET request should contain the parameters "renewSigner" and "password".
+The "renewSigner" parameter can be used to specify which OCSP keys should be renewed.
+It can be either set to "all", which will renew all of the OCSP signer keys, or to a specific OCSP responder
+certificate subject DN (unlike the default responder options, the parameter specified here should be the OCSP's subject
+DN, not the issuer's).
+Password should be configured in the ocsp.properties file.
+If the password is not set, manual re-keying will not be enabled.
+</p><p>
+Manual re-keying can further be limited by specifying the allowed originating IP addresses for the requests.
+By default the re-keying is allowed only from the localhost (127.0.0.1) address.
+Allowed IP addresses are configured in the ocsp.properties configuration file, and multiple addresses can be provided
+by separating them with a semicolon (;).
+</p><p>
+The following two examples demonstrate the manual triggering of re-keying on the OCSP responder.
+The first example triggers the re-keying for all of the OCSP signer keys, while the second one will trigger rekeying
+for a specific signer (the one matching the subject DN of "CN=OCSP REsponder 123,O=PrimeKey Solutions AB,C=SE"):
 </p>
 <source>
 wget http://va.example.com:8080/ejbca/publicweb/status/ocsp?renewSigner=all\&amp;password=foobar123
 wget http://va.example.com:8080/ejbca/publicweb/status/ocsp?renewSigner=CN=OCSP\ Responder\ 123,\ O=PrimeKey\ Solutions\ AB,\ C=SE\&amp;password=foobar123
 </source>
 <p>
-If a specific OCSP subject DN is provided, the OCSP responder will look amongst its keystores/HSM slots for matching certificate and its associated keys. If the specified subject DN is not found, an ERROR message will be output to the server log files specifying the searched subject DN and the available subject DN's. If you're having problems with manual re-keying when providing a specific subject DN, make sure to check the logs and verify that the proper subject DN was specified for the "renewSigner" parameter. Ordering of subject components matters. You can also copy/paste the subject DN from the log to make sure the spelling and ordering is right (i.e. that it matches with what can be found on-disk or in HSM).
-</p>
-<p>
-For re-keying to work, the OCSP signer certificates need to be issued to separate end entities on the EJBCA ca (i.e. you can't re-use the same end entity for multiple OCSP signer certificates for different CA's).
-</p>
-<p>
-Be aware that the re-keying operation has not been tested on all of the application servers. Some of the application servers may have problematic client web-service implementations. The following application servers have been tested and confirmed to work as expected for OCSP signer re-keying:
+If a specific OCSP subject DN is provided, the OCSP responder will look amongst its keystores/HSM slots for matching
+certificate and its associated keys.
+If the specified subject DN is not found, an ERROR message will be output to the server log files specifying the
+searched subject DN and the available subject DN's.
+If you're having problems with manual re-keying when providing a specific subject DN, make sure to check the logs and
+verify that the proper subject DN was specified for the "renewSigner" parameter.
+Ordering of subject components matters.
+You can also copy/paste the subject DN from the log to make sure the spelling and ordering is right (i.e. that it
+matches with what can be found on-disk or in HSM).
+</p><p>
+For re-keying to work, the OCSP signer certificates need to be issued to separate end entities on the EJBCA CA
+(i.e. you can't re-use the same end entity for multiple OCSP signer certificates for different CA's).
+</p><p>
+Be aware that the re-keying operation has not been tested on all of the application servers.
+Some of the application servers may have problematic client web-service implementations.
+The following application servers have been tested and confirmed to work as expected for OCSP signer re-keying:
 <ol>
 <li>JBoss 5.1.0.GA (jdk6)</li>
 <li>JBoss EAP 5.1.2</li>
@@ -154,7 +157,7 @@ Be aware that the re-keying operation has not been tested on all of the applicat
 </subsection>
 <subsection name="No password in memory">
 <p>
-With this feature enabled no password are kept in memory. If it is enabled you must not define any passwords in ocsp.properties.
+To avoid that passwords are kept in memory, use manual activation of your referenced CryptoTokens.
 </p>
 </subsection>
 </section>
@@ -162,7 +165,9 @@ With this feature enabled no password are kept in memory. If it is enabled you m
 <section name="Error handling">
 <p>
 If there is an error publishing to the OCSP database, the OCSP responder will be out of sync with the CA.
-It is very important to re-synchronize the databases in that case. Read about error handling and synchronization of the database in the <a href="installation-va.html#Error%20handling">VA installation</a> guide.
+It is very important to re-synchronize the databases in that case.
+Read about error handling and synchronization of the database in the
+<a href="installation-va.html#Error%20handling">VA installation</a> guide.
 </p>
   
   </section>
@@ -401,31 +406,29 @@ JBOSS_HOME/bin/run.conf. On Glassfish this JVM option is configured under Applic
 
   <section name="Responses with longer validity and caching">
   <p>
-<a href="http://www.ietf.org/rfc/rfc2560.txt">RFC 2560</a> defines thisUpdate, nextUpdate and producedAt. producedAt is always
-included in the response and is the time the response was created.
-thisUpdate and nextUpdate is enabled by configuring 'ocsp.untilNextUpdate' in
-ocsp.properties. thisUpdate will be the time a singleResponse is embedded in
-the main response and nextUpdate will be 'untilNextUpdate' seconds later than
-thisUpdate. This enables clients that supports this feature to re-use a valid
-response and decrease to load on the OCSP-responder.
+<a href="http://www.ietf.org/rfc/rfc2560.txt">RFC 2560</a> defines thisUpdate, nextUpdate and producedAt.
+producedAt is always included in the response and is the time the response was created.
+thisUpdate and nextUpdate is enabled by configuring 'ocsp.untilNextUpdate' in ocsp.properties or in the OcspKeyBinding.
+thisUpdate will be the time a singleResponse is embedded in the main response and nextUpdate will be 'untilNextUpdate'
+seconds later than thisUpdate.
+This enables clients that supports this feature to re-use a valid response and decrease to load on the OCSP-responder.
   </p><p>
 <a href="http://www.ietf.org/rfc/rfc5019.txt">RFC 5019</a> defines how to use HTTP
 cache headers as defined in <a href="http://www.ietf.org/rfc/rfc2616.txt">RFC 2616</a> for
-OCSP HTTP GET requests. By using the headers Last-Modified, Expires, max-age
-and Date, less intelligent nextwork component like HTTP caches can cache
-respones. This enables re-use of responses to decrease the load on the
-OCSP-responder and can shorten reponse times by deploying caches closer to the
-actual OCSP consumers. HTTP cache headers is enabled by configuring configuring
-'ocsp.maxAge' in ocsp.properties
+OCSP HTTP GET requests.
+By using the headers Last-Modified, Expires, max-age and Date, less intelligent nextwork component like HTTP caches can
+cache respones.
+This enables re-use of responses to decrease the load on the OCSP-responder and can shorten reponse times by deploying
+caches closer to the actual OCSP consumers.
+HTTP cache headers is enabled by configuring configuring 'ocsp.maxAge' in ocsp.properties or in the OcspKeyBinding.
   </p><p>
-When using RFC 5019 style HTTP headers, JBoss users should be aware that the
-Date header is overwritten with a cached value. Since generating the
-Date-string is computationally heavy for regular small GET requests, it is
-generated about once per second. So a response will have a Last-Modified that
-is one second in the future from Date from time to time.
+When using RFC 5019 style HTTP headers, JBoss users should be aware that the Date header is overwritten with a cached
+value.
+Since generating the Date-string is computationally heavy for regular small GET requests, it is generated about once
+per second.
+So a response will have a Last-Modified that is one second in the future from Date from time to time.
   </p><p>
-A regular Apache HTTP server can be used for caching requests, load-balancing
-and dropping some unwanted requests:
+A regular Apache HTTP server can be used for caching requests, load-balancing and dropping some unwanted requests:
   </p>
   <source>
 &lt;VirtualHost *:80>
