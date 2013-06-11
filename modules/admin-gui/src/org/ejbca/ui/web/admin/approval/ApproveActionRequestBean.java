@@ -15,45 +15,40 @@ package org.ejbca.ui.web.admin.approval;
 
 import javax.faces.application.Application;
 import javax.faces.context.FacesContext;
-import javax.faces.el.ValueBinding;
 import javax.servlet.http.HttpServletRequest;
 
 /**
  * Bean to set the right Approve Request Data when calling the approveaction.jsf page
  * from javascript
  * 
- * @author Philip Vendil
  * @version $Id$
  */
 public class ApproveActionRequestBean {
-  private int uniqueId;
+    private int uniqueId;
 
-  
-  
-  public ApproveActionRequestBean() {
-	  FacesContext ctx = FacesContext.getCurrentInstance();
-	  	  
-	  try{
-		String param = ((HttpServletRequest) ctx.getExternalContext().getRequest()).getParameter("uniqueId");
-        if(param != null){			  
-        	uniqueId = Integer.parseInt(((HttpServletRequest) ctx.getExternalContext().getRequest()).getParameter("uniqueId"));
-        	Application app = ctx.getApplication();    
-        	ValueBinding binding = app.createValueBinding("#{approvalActionSession}");    
-        	Object value = binding.getValue(ctx);    
-        	((ApproveActionSessionBean) value).setUniqueId(uniqueId);
+    public ApproveActionRequestBean() {
+        FacesContext ctx = FacesContext.getCurrentInstance();
+
+        try {
+            String param = ((HttpServletRequest) ctx.getExternalContext().getRequest()).getParameter("uniqueId");
+            if (param != null) {
+                uniqueId = Integer.parseInt(((HttpServletRequest) ctx.getExternalContext().getRequest()).getParameter("uniqueId"));
+                Application app = ctx.getApplication();
+                ApproveActionSessionBean value = (ApproveActionSessionBean) app.evaluateExpressionGet(ctx, "#{approvalActionSession}",
+                        ApproveActionSessionBean.class);
+                value.setUniqueId(uniqueId);
+            }
+        } catch (NumberFormatException e) {
+
         }
-	  }catch(NumberFormatException e){
-		 
-	  }
-  }
+    }
 
-public int getUniqueId() {
-	return uniqueId;
-  }
+    public int getUniqueId() {
+        return uniqueId;
+    }
 
-  public void setUniqueId(int uniqueId) {
-	this.uniqueId = uniqueId;
-  }
-
+    public void setUniqueId(int uniqueId) {
+        this.uniqueId = uniqueId;
+    }
 
 }
