@@ -39,7 +39,7 @@ public enum DefaultRoles {
             new AccessRuleTemplate(AuditLogRules.LOG.resource(), AccessRuleState.RULE_ACCEPT, true), 
             new AccessRuleTemplate(AccessRulesConstants.REGULAR_RAFUNCTIONALITY, AccessRuleState.RULE_ACCEPT, true), 
             new AccessRuleTemplate(AccessRulesConstants.REGULAR_SYSTEMFUNCTIONALITY, AccessRuleState.RULE_ACCEPT, false), 
-            new AccessRuleTemplate(AccessRulesConstants.REGULAR_EDITADMINISTRATORPRIVILEDGES, AccessRuleState.RULE_ACCEPT, false), 
+            new AccessRuleTemplate(StandardRules.EDITROLES.resource(), AccessRuleState.RULE_ACCEPT, false), 
             new AccessRuleTemplate(AccessRulesConstants.ENDENTITYPROFILEBASE, AccessRuleState.RULE_ACCEPT, true), 
             new AccessRuleTemplate(AccessRulesConstants.HARDTOKEN_EDITHARDTOKENISSUERS, AccessRuleState.RULE_ACCEPT, false), 
             new AccessRuleTemplate(AccessRulesConstants.HARDTOKEN_EDITHARDTOKENPROFILES, AccessRuleState.RULE_ACCEPT, false),

@@ -309,22 +309,14 @@ public class RolesManagedBean extends BaseManagedBean {
     private RoleData getCurrentRoleObjectForEach() {
         String roleName = ((RoleData) FacesContext.getCurrentInstance().getExternalContext().getRequestMap().get("role")).getRoleName();
         RoleData role = null;
-        try {
-            role = getAuthorizationDataHandler().getRole(roleName);
-        } catch (AuthorizationDeniedException e) {
-            addErrorMessage("AUTHORIZATIONDENIED");
-        }
+        role = getAuthorizationDataHandler().getRole(roleName);
         return role;
     }
 
     /** @return the administrators for the current role */
     public Collection<AccessUserAspectData> getAdmins() {
         List<AccessUserAspectData> list = new ArrayList<AccessUserAspectData>();
-        try {
-            list.addAll(getAuthorizationDataHandler().getRole((getCurrentRole())).getAccessUsers().values());
-        } catch (AuthorizationDeniedException e) {
-            addErrorMessage("AUTHORIZATIONDENIED");
-        }
+        list.addAll(getAuthorizationDataHandler().getRole((getCurrentRole())).getAccessUsers().values());
         Collections.sort(list);
         return list;
     }
@@ -709,11 +701,7 @@ public class RolesManagedBean extends BaseManagedBean {
     /** @return the current role sent with POST, GET or injected through the backing value */
     public RoleData getCurrentRoleObject() {
         RoleData role = null;
-        try {
-            role = getAuthorizationDataHandler().getRole(getCurrentRole());
-        } catch (AuthorizationDeniedException e) {
-            addErrorMessage("AUTHORIZATIONDENIED");
-        }
+        role = getAuthorizationDataHandler().getRole(getCurrentRole());
         return role;
     }
 
