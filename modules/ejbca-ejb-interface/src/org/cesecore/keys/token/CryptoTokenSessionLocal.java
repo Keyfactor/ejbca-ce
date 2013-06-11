@@ -30,8 +30,11 @@ public interface CryptoTokenSessionLocal {
     /** Add the specified CryptoToken to the database and return the id used to store it */
     int mergeCryptoToken(CryptoToken cryptoToken) throws CryptoTokenNameInUseException;
 
-    /** Remove the specified CryptoToken from the database. */
-    void removeCryptoToken(final int cryptoTokenId);
+    /** Remove the specified CryptoToken from the database. 
+     * @param cryptoTokenId the id of the crypto token that should be removed
+     * @return true if crypto token exists and is deleted, false if crypto token with given id does not exist 
+     */
+    boolean removeCryptoToken(final int cryptoTokenId);
 
     /** @return a list of all CryptoToken identifiers in the database. */
     List<Integer> getCryptoTokenIds();
