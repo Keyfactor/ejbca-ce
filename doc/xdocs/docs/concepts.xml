@@ -93,6 +93,18 @@ The different forms that are stored in the database are:
 A publisher stores issued certificates to a central location. EJBCA have implemented support for LDAP and Active Directory but it's also possible to create customized plug-ins.
 </p>
 </subsection>
+<subsection name="InternalKeyBinding">
+<p>
+An InternalKeyBinding is a key pair available to the EJBCA instance, a non-CA certificate, an optional list of trusted certificates
+and properties for its purpose. It can be though of as a simplified key store with purpose-specific properties.
+</p><p>
+Example:
+An OcspKeyBinding can be used to sign OCSP responses on behalf of a CA.
+It has a key in an HSM accessible from the EJBCA instance (via a CryptoToken) and an OCSP signing certificate.
+Additionally the trusted certificates can be used to verify that OCSP requests are sent from a trusted source and additional
+properties can be used to specify how long an OCSP response should be valid.
+</p>
+</subsection>
 <subsection name="External RA">
 <p>
 In some cases, for security reasons, is it preferable to deny all in-bound traffic to the CA and instead let the CA

@@ -52,6 +52,22 @@ The class CliAuthenticationToken and associated classes have been moved from the
 authentication classes under src. This means that approval requests using the CliAuthenticationToken created in 5.0.x will not 
 be forwards compatible.
 
+The external Validation Authority build has been removed and external VA deployments are now full EJBCA deployments.
+- Database privileges on the VA host must be the same as used by the CA (all tables must exist).
+- Key-stores, certificates and trust-stores (both soft and HSM based) will be automatically converted on first startup
+(or as soon as the password has been made available using clientToolBox if ocsp.activation.doNotStorePasswordsInMemory=true)
+to CryptoTokens and OcspKeyBindings 
+- Health-check URL is now the same as for CA installations, and it will check the usability of ACTIVE OcspKeyBindings.
+- OcspKeyBindings and CryptoTokens can still be managed without the AdminGUI using the EJB CLI (bin/ejbca.sh).
+- OCSP signing or re-keying certificates no longer need to be present in the HSM slot (migrated to the CertificateData table)
+- Using a manually activated CryptoToken replaces the use of ocsp.activation.doNotStorePasswordsInMemory
+- Behavior of OCSP responses (like untilNextUpdate etc) can now be configured per OcspKeyBinding.
+(Certificate Profile or URL specific settings in ocsp.properties has highest priority, then the OcspKeyBinding properties
+and finally the default configuration in ocsp.properties).
+- The re-keying key-store will be migrated to an AuthenticationKeyBinding.
+- Management of *KeyBindings and CryptoTokens will be audit logged. Configure it before the upgrade to have proper traceability
+from this point on.
+
 The 'ant bootstrap' target has been deprecated, and now it's covered by the 'ant
 deploy' target. Behavior for the 'ant deploy' has been changed, and the old
 command is equivalent to the following sequence:
@@ -97,11 +113,11 @@ NOTE: batchtool.properties is no longer searched for in bin/ but in conf/
 instead. Note that everything in this file is commented out by default, so it
 can be removed if it hasn't been modified.
 
-NOTE: In EJBCA 5.1.0 new versions of BouncyCastle jars are included. If you have
+NOTE: In EJBCA 5.2.0 new versions of BouncyCastle jars are included. If you have
 been copying ejbca/lib/bc*.jar files to JBoss (jboss/server/default/lib), you
 must remove the old jars from JBoss and copy new jars from EJBCA.
 
-In EJBCA 5.1.0 the API for custom certificate extensions was changed. If you have created your own custom certificate extension classes,
+In EJBCA 5.2.0 the API for custom certificate extensions was changed. If you have created your own custom certificate extension classes,
 you need to update the API with one new argument (can be null). There is no effect if you used standard custom extensions in the certextensions.properties, only custom java classes.
 
 Starting with EJBCA 5.2.0 custom services and publishers are automatically

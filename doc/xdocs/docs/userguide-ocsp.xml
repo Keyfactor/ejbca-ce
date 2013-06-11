@@ -7,10 +7,10 @@
 
 <body>
 
-<section name="Control tool">
+<section name="Verification tool">
 <p>
-All control of a running responder is done with the EJBCA client toolbox.
-See <a href="userguide.html#EJBCA%20client%20toolbox">EJBCA client toolbox</a> for instructions how to build and use the client toolbox.
+Verification of a running responder can be done by using EJBCA's clientToolBox.
+See <a href="userguide.html#EJBCA%20client%20toolbox">EJBCA clientToolBox</a> for instructions how to build and use it.
 </p><p>
 To get all available OCSP commands please type:
 <source>
@@ -18,28 +18,20 @@ $TOOLBOX_HOME/ejbcaClientToolBox.sh OCSP
 </source>
 </p>
 </section>
-<section name="Signature token activation">
-<p>
-If passwords are not configured for the tokens of the keys then you got to activate your responder.
-When activating you are prompted for a password. This password will then be used for all token password not configured.
-</p><p>
-Activate like this:
-</p>
-<source>
-$TOOLBOX_HOME/ejbcaClientToolBox.sh OCSPActivate
-</source>
-</section>
 
 <section name="Chain validation">
 <p>
-When returning status of a certificate whose status is requested in an OCSP request, the status of the CA certificate of this certificate is also validated.
+When returning status of a certificate whose status is requested in an OCSP request, the status of the CA certificate
+of this certificate is also validated.
 </p>
 </section>
 
 <section name="Expired certificates">
 <p>
-EJBCA keeps the status of expired certificates in the database, so the responder will answer queries also for expired certificates unless you remove them from the database.
-In the internal EJBCA database the status of expired certificates are set to ARCHIVED in the database (CertificateData table) by the CRL creation job. 
+EJBCA keeps the status of expired certificates in the database, so the responder will answer queries also for expired
+certificates unless you remove them from the database.
+In the internal EJBCA database the status of expired certificates are set to ARCHIVED in the database (CertificateData
+table) by the CRL creation job. 
 This ARCHIVED status does not (from EJBCA 3.9.4) affect the response sent by the OCSP responder. 
 The algorithm is:
 </p>
@@ -54,21 +46,22 @@ The algorithm is:
 
 <section name="Multiple responder and CA certificates">
 <p>
-The OCSP responder can have many responder certificates, each issued by one CA. This means that the responder can answer requests targeted at multiple CAs. 
+The OCSP responder can have many responder certificates, each issued by one CA and mapped by an OcspKeyBinding.
+This means that the responder can answer requests targeted at multiple CAs. 
 There is no built in limitation on the number of CAs that can be handled.
-</p>
-<p>
-There can exist multiple CA certificates with the same DN. The OCSP standard includes IssuerNameHash and IssuerKeyHash in the request, meaning that
-the OCSP protocol, and the responder, can handle key roll-over on the CA without issues. 
+</p><p>
+There can exist multiple CA certificates with the same DN.
+The OCSP standard includes IssuerNameHash and IssuerKeyHash in the request, meaning that the OCSP protocol, and the
+responder, can handle key roll-over on the CA without issues. 
 </p>
 </section>
 
-<section name="Using the API">
+<section name="Using the OCSP API">
 <p>
-The best way to learn the API is by looking at the source code, since it is included. The client API is in the class 
-org.ejbca.core.protocol.ocsp.OCSPUnidClient.
-The <a href="userguide.html#EJBCA%20client%20toolbox">EJBCA client toolbox</a> can serve as a good sample for using the API and it is in the class
-org.ejbca.ui.cli.Ocsp.
+The best way to learn the API is by looking at the source code, since it is included.
+The client API is used in the class org.ejbca.core.protocol.ocsp.OCSPUnidClient.
+The <a href="userguide.html#EJBCA%20client%20toolbox">EJBCA client toolbox</a> can serve as a good sample for using the
+API and it is in the class org.ejbca.ui.cli.Ocsp.
 </p>
 </section>
 <section name="OCSP extensions">
@@ -77,31 +70,37 @@ The standard allows the usage of extensions in OCSP requests and responses.
 </p>
 <subsection name="Nonce">
 <p>
-Nonce is the only standard extensions defined. The purpose of the nonce is that a client can verify that a response really is in response
-to the specific requests, and not a replayed response. Is is recommended that if the OCSP requests contains the nonce extension, the OCSP response also contains the nonce.
+Nonce is the only standard extensions defined.
+The purpose of the nonce is that a client can verify that a response really is in response to the specific requests,
+and not a replayed response.
+Is is recommended that if the OCSP requests contains the nonce extension, the OCSP response also contains the nonce.
 <br/>
 EJBCA included the nonce from the client requests in the server response if the requests contains a nonce.
 </p>
 </subsection>
 <subsection name="Custom extensions">
 <p>
-You can implement custom OCSP extensions in EJBCA by implementing a simple Java class and including it in the application servers class-path. 
-The easiest way to do that is to put your java file in an ejbca-custom directory, so it will be included in the ejbca.ear file. See EJBCA User Guide and look in conf/custom.properties for more information about using an ejbca-custom directory.
+You can implement custom OCSP extensions in EJBCA by implementing a simple Java class and including it in the
+application servers class-path. 
+The easiest way to do that is to put your java file in an ejbca-custom directory, so it will be included in the
+ejbca.ear file.
+See EJBCA User Guide and look in conf/custom.properties for more information about using an ejbca-custom directory.
 To use your custom OCSP extension you have to define a few properties in conf/ocsp.properties:
 <ul>
 <li>ocsp.extensionoid - the OID defining your extension.</li>
 <li>ocsp.extensionclass - the fully qualified class name implementing your extension, i.e. org.ejbca.core.protocol.ocsp.OCSPUnidExtension.</li>
 </ul>
-To specify that an extension always be used in the reply regardless of what's specified in the request, preface the relevant ocsp.extensionoid-value with an 
-asterisk (e.g. *2.16.578.1.16.3.2)
+To specify that an extension always be used in the reply regardless of what's specified in the request, preface the
+relevant ocsp.extensionoid-value with an asterisk (e.g. *2.16.578.1.16.3.2)
 </p>
 </subsection>
 <subsection name="Fnr-Unid Mapping Extension">
-  <note>If you don't know what a Unid-Fnr mapping is, you are probably not interested in this part.
+  <note>
+  If you don't know what a Unid-Fnr mapping is, you are probably not interested in this part.
   </note>
-<p>
+  <p>
 The Unid functionality is described in a separate <a href="unid.html">document</a>. 
-</p>
+  </p>
 </subsection>
 <subsection name="CertHash OCSP Extension">
   <p>
@@ -112,32 +111,38 @@ The Unid functionality is described in a separate <a href="unid.html">document</
 
 <section name="Using HTTP GET and RFC5019">
 <p>
-For HTTP get requests according to <a href="http://www.ietf.org/rfc/rfc5019.txt">RFC5019</a> we can set HTTP headers in the response to allow caching proxies to cache responses. 
-By default these properties are set not to allow caching, which is the default behavior. To enable caching in http proxies you can tune a few properties in conf/ocsp.properties.
+For HTTP get requests according to <a href="http://www.ietf.org/rfc/rfc5019.txt">RFC5019</a> we can set HTTP headers in
+the response to allow caching proxies to cache responses. 
+By default these properties are set not to allow caching, which is the default behavior.
+To enable caching in HTTP proxies you can tune a few properties in conf/ocsp.properties or in the an OcspKeyBinding.
 <ul>
 <li>ocsp.untilNextUpdate - number of seconds a response will be valid. This sets the nextUpdate field in the OCSP response.</li>
 <li>ocsp.maxAge - how long a response will be cached, in seconds. Should be less than untilNextUpdate. This adds
 <a href="http://www.ietf.org/rfc/rfc5019.txt">RFC5019</a> cache headers.</li>
 </ul> 
-</p>
-<p>
+</p><p>
 You can also specify different nextUpdate values depending on which certificate profiles the certificate was issued by.
-This only works when you have published the certificate information using EJBCA 3.9.0 or later, where the certificateProfileId column in the CertificateData table is populated.
-You can find the certificateProfileId in the admin GUI.
+This only works when you have published the certificate information using EJBCA 3.9.0 or later, where the
+certificateProfileId column in the CertificateData table is populated.
+You can find the certificateProfileId in the AdminGUI.
 <ul>
-<li>ocsp.&lt;certificateProfileId>.untilNextUpdate - number of seconds a response will be valid for certificates issued with the specified certificate profile.</li>
-<li>ocsp.&lt;certificateProfileId>.maxAge - how long a response will be cached for certificates issued with the specified certificate profile. Should be less than untilNextUpdate.</li>
+<li>ocsp.&lt;certificateProfileId>.untilNextUpdate - number of seconds a response will be valid for certificates issued
+with the specified certificate profile.</li>
+<li>ocsp.&lt;certificateProfileId>.maxAge - how long a response will be cached for certificates issued with the specified
+certificate profile. Should be less than untilNextUpdate.</li>
 </ul> 
 If no specific certificateProfileId is specified the default values from ocsp.maxAge and ocsp.untilNextUpdate are used.
+Properties from an OcspKeyBinding will override the defaults, but never certificateProfileId specific settings.
 </p>
 </section>
 
   <section name="OCSP stress testing">
   <p>
-    Using the <a href="userguide.html#EJBCA%20client%20toolbox">EJBCA client toolbox</a> you can easily stress test your CAs and OCSP responders.
-  </p>
-  <p>To stress test you can first issue a large number of certificates from the CA using the webservice stress test, and after this
-  stress test the OCSP responder with a random selection of all the certificates issued.
+    Using the <a href="userguide.html#EJBCA%20client%20toolbox">EJBCA client toolbox</a> you can easily stress test
+    your CAs and OCSP responders.
+  </p><p>
+  To stress test you can first issue a large number of certificates from the CA using the web-service stress test, and
+  after this stress test the OCSP responder with a random selection of all the certificates issued.
   </p>
   <source>
 $TOOLBOX_HOME/ejbcaClientToolBox.sh EjbcaWsRaCli stress ...
@@ -158,9 +163,8 @@ Log4J is used for reporting an can be configured in
   <p>
 The tool operates using Certificate Profile IDs that are the internal representations of different Certificate
 Profiles in EJBCA. When you run the tool it will output all the existing IDs in each OCSP. These IDs is also
-shown in the Admin GUI for each CertificateProfile.
-  </p>
-  <p>
+shown in the AdminGUI for each CertificateProfile.
+  </p><p>
 Inconsistencies that will be detected are:
 <ol>
 <li>Missing info about certificates in the OCSP database. (ERROR)</li>
@@ -170,8 +174,7 @@ Inconsistencies that will be detected are:
 </ol>
 Every detected inconsistency will also be reported in a summarizing final ERROR-message. If there are two many errors,
 this final message will be truncated. 
-  </p>
-  <p>
+  </p><p>
 Since going through every single CertificateData row in a database is heavy work, it's highly recommended to
 use indexes such as
   </p>
@@ -183,13 +186,13 @@ for your both the CA database and each OCSP responder.
   
   <section name="Populating the OCSP responder database">
   <p>
-  When running the OCSP responder answering queries from CAs in an EJBCA installation, populating the database is easy. Simply use the 'External OCSP Publisher'. 
+  When running the OCSP responder answering queries from CAs in an EJBCA installation, populating the database is easy.
+  Simply use the 'External OCSP Publisher'. 
   Documentation how to configure this is located in the 'OCSP Installation' guide. 
-  </p>
-  <p>
-  When using other CA software than EJBCA you can populate the database based on data from that system. the only thing needed is to insert data in the CertificateData table on the external OCSP responder.
-  </p>
-  <p>
+  </p><p>
+  When using other CA software than EJBCA you can populate the database based on data from that system.
+  The only thing needed is to insert data in the CertificateData table on the external OCSP responder.
+  </p><p>
   The values used by the OCSP responder are:
   <ul>
   <li>issuerDN</li>
@@ -199,18 +202,38 @@ for your both the CA database and each OCSP responder.
   <li>revocationReason</li>
   <li>certificateProfileId</li>
   </ul>
-  </p>
-  <p>Specification of the fields:
+  </p><p>
+  Specification of the fields:
   <ul>
   <li>issuerDN must be of "EJBCA normalized" form, as returned by org.cesecore.util.CertTools.getIssuerDN(cert).</li>
   <li>serialNumber is BigInteger.toString().</li>
   <li>Status is from CertificateDataBean.CERT_REVOKED etc.</li>
   <li>certificateProfileId can be basically anything and is used if you configure things like 'ocsp.999.untilNextUpdate' in ocsp.properties.</li>
   </ul>
-  </p>
-  <p>CA certificates and OCSP signer certificates must also be in the database. For these certificates the fingerprint, subjectDN and base64Cert fields must also be included.
+  </p><p>
+  CA certificates and OCSP signer certificates must also be in the database.
+  For these certificates the fingerprint, subjectDN and base64Cert fields must also be included.
   </p>
   </section>
+
+<section name="Signature token activation (Upgrades only)">
+<p>
+If you are upgrading from an earlier (EJBCA 5.0.x) version of EJBCA, the activation password is required for migrating
+the OCSP signing key-stores.
+When activating you are prompted for a password.
+This password will then be used for all token password not configured.
+</p><p>
+Activate like this:
+</p>
+<source>
+$TOOLBOX_HOME/ejbcaClientToolBox.sh OCSPActivate
+</source>
+<p>
+After migrating the key-stores and certificates to CryptoTokens and OcspKeyBindings, you must use the EJB CLI for
+activating your CryptoTokens.
+</p>
+</section>
+
 </body>
 </document>
 
