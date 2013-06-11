@@ -63,7 +63,7 @@ public class InternalKeyBindingDataSessionBean implements InternalKeyBindingData
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public InternalKeyBinding getInternalKeyBinding(final int id) {
-        // 1. Check (new) CryptoTokenCache if it is time to sync-up with database
+        // 1. Check (new) InternalKeyBindingCache if it is time to sync-up with database
         if (InternalKeyBindingCache.INSTANCE.shouldCheckForUpdates(id)) {
             if (log.isDebugEnabled()) {
                 log.debug("Object with ID " + id + " will be checked for updates.");
@@ -92,7 +92,7 @@ public class InternalKeyBindingDataSessionBean implements InternalKeyBindingData
             // 3. The cache compares the database data with what is in the cache
             // 4. If database is different from cache, replace it in the cache (while trying to keep activation)
         }
-        // 5. Get CryptoToken from cache (or null) and be merry
+        // 5. Get InternalKeyBinding from cache (or null) and be merry
         return InternalKeyBindingCache.INSTANCE.getEntry(id);
     }
 
@@ -136,7 +136,7 @@ public class InternalKeyBindingDataSessionBean implements InternalKeyBindingData
             internalKeyBindingData = entityManager.find(InternalKeyBindingData.class, internalKeyBindingId);
         }
         if (internalKeyBindingData == null) {
-            // The cryptoToken does not exist in the database, before we add it we want to check that the name is not in use
+            // The InternalKeyBinding does not exist in the database, before we add it we want to check that the name is not in use
             if (isNameUsed(name)) {
                 if (log.isDebugEnabled()) {
                     log.debug("isNameUsed("+name+")");
