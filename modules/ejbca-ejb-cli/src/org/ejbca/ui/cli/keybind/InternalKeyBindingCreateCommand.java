@@ -19,6 +19,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.ejb.keybind.InternalKeyBindingMgmtSessionRemote;
@@ -51,9 +53,9 @@ public class InternalKeyBindingCreateCommand extends BaseInternalKeyBindingComma
     @Override
     public void executeCommand(Integer internalKeyBindingId, String[] args) throws AuthorizationDeniedException, CryptoTokenOfflineException, Exception {
         final InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = ejb.getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
-        if (args.length < 7) {
+        if (args.length < 8) {
             getLogger().info("Description: " + getDescription());
-            getLogger().info("Usage: " + getCommand() + " <name> <type> <status> <certificate fingerprint> <crypto token name> <key pair alias> [--property key1=value1 --property key2=value2 ...]");
+            getLogger().info("Usage: " + getCommand() + " <name> <type> <status> <certificate fingerprint> <crypto token name> <key pair alias> <signature algorithm> [--property key1=value1 --property key2=value2 ...]");
             // List available types and their properties
             Map<String, List<InternalKeyBindingProperty<? extends Serializable>>> typesAndProperties = internalKeyBindingMgmtSession.getAvailableTypesAndProperties(getAdmin());
             getLogger().info(" Registered implementation types and implemention specific properties:");
@@ -72,6 +74,14 @@ public class InternalKeyBindingCreateCommand extends BaseInternalKeyBindingComma
             }
             sb.deleteCharAt(sb.length()-1);
             getLogger().info(sb.toString());
+            final StringBuilder sbAlg = new StringBuilder(" signature algorithm is one of ");
+            for (final String algorithm : AlgorithmConstants.AVAILABLE_SIGALGS) {
+                if (AlgorithmTools.isSigAlgEnabled(algorithm)) {
+                    sbAlg.append(algorithm).append(',');
+                }
+            }
+            sbAlg.deleteCharAt(sbAlg.length()-1);
+            getLogger().info(sbAlg.toString());
             return;
         }
         // Start by extracting any property
@@ -99,7 +109,8 @@ public class InternalKeyBindingCreateCommand extends BaseInternalKeyBindingComma
         final String certificateId = "null".equalsIgnoreCase(args[4]) ? null : args[4];
         final int cryptoTokenId = ejb.getRemoteSession(CryptoTokenManagementSessionRemote.class).getIdFromName(args[5]);
         final String keyPairAlias = args[6];
-        int internalKeyBindingIdNew = internalKeyBindingMgmtSession.createInternalKeyBinding(getAdmin(), type, name, status, certificateId, cryptoTokenId, keyPairAlias, dataMap);
+        final String signatureAlgorithm = args[7];
+        int internalKeyBindingIdNew = internalKeyBindingMgmtSession.createInternalKeyBinding(getAdmin(), type, name, status, certificateId, cryptoTokenId, keyPairAlias, signatureAlgorithm, dataMap);
         getLogger().info("InternalKeyBinding with id " + internalKeyBindingIdNew + " created successfully.");
     }
 }

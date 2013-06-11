@@ -399,9 +399,15 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         if(!isOCSPCert(signerCert)) {
             log.warn("Signing with non OCSP certificate. This is not an error state if it is the default responder.");
         }
-        final String sigAlgs = OcspConfiguration.getSignatureAlgorithm();
-        final PublicKey pk = signerCert.getPublicKey();
-        final String sigAlg = getSigningAlgFromAlgSelection(sigAlgs, pk);
+        final String sigAlg;
+        if (ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
+            // If we have an OcspKeyBinding we use this configuration to override the default
+            sigAlg = ocspSigningCacheEntry.getOcspKeyBinding().getSignatureAlgorithm();
+        } else {
+            final String sigAlgs = OcspConfiguration.getSignatureAlgorithm();
+            final PublicKey pk = signerCert.getPublicKey();
+            sigAlg = getSigningAlgFromAlgSelection(sigAlgs, pk);
+        }
         if (log.isDebugEnabled()) {
             log.debug("Signing algorithm: " + sigAlg);
         }
@@ -1535,11 +1541,14 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 log.info("Alias " + keyPairAlias + " does not contain any certificate and will be ignored.");
                 continue;   // Ignore entry
             }
+            // Extract the default signature algorithm
+            final String signatureAlgorithm = getSigningAlgFromAlgSelection(OcspConfiguration.getSignatureAlgorithm(), chain[0].getPublicKey());
             if (OcspKeyBinding.isOcspSigningCertificate(chain[0])) {
-                log.info("Alias " + keyPairAlias + " contains an OCSP certificate and will be converted.");
                 // Create the actual OcspKeyBinding
+                log.info("Alias " + keyPairAlias + " contains an OCSP certificate and will be converted.");
                 int internalKeyBindingId = internalKeyBindingMgmtSession.createInternalKeyBinding(authenticationToken, OcspKeyBinding.IMPLEMENTATION_ALIAS,
-                        "OcspKeyBinding for " + keyPairAlias, InternalKeyBindingStatus.DISABLED, null, cryptoTokenId, keyPairAlias, getOcspKeyBindingDefaultProperties());
+                        "OcspKeyBinding for " + keyPairAlias, InternalKeyBindingStatus.DISABLED, null, cryptoTokenId, keyPairAlias, signatureAlgorithm,
+                        getOcspKeyBindingDefaultProperties());
                 InternalKeyBinding internalKeyBinding = internalKeyBindingMgmtSession.getInternalKeyBinding(authenticationToken, internalKeyBindingId);
                 internalKeyBinding.setTrustedCertificateReferences(trustDefaults);
                 internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, internalKeyBinding);
@@ -1549,7 +1558,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 log.info("Alias " + keyPairAlias + " contains an SSL client certificate and will be converted.");
                 // We are looking for an SSL cert, use this to create an AuthenticationKeyBinding
                 int internalKeyBindingId = internalKeyBindingMgmtSession.createInternalKeyBinding(authenticationToken, AuthenticationKeyBinding.IMPLEMENTATION_ALIAS,
-                        "AuthenticationKeyBinding for " + keyPairAlias, InternalKeyBindingStatus.DISABLED, null, cryptoTokenId, keyPairAlias, null);
+                        "AuthenticationKeyBinding for " + keyPairAlias, InternalKeyBindingStatus.DISABLED, null, cryptoTokenId, keyPairAlias,
+                        signatureAlgorithm, null);
                 internalKeyBindingMgmtSession.importCertificateForInternalKeyBinding(authenticationToken, internalKeyBindingId, chain[0].getEncoded());
                 internalKeyBindingMgmtSession.setStatus(authenticationToken, internalKeyBindingId, InternalKeyBindingStatus.ACTIVE);
             } else {

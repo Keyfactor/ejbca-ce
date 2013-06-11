@@ -807,10 +807,9 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             for (final InternalKeyBindingProperty<? extends Serializable> property : internalKeyBindingProperties) {
                 dataMap.put(property.getName(), property.getValue());
             }
-            // TODO: Needs a signatureAlgorithm parameter..
             currentInternalKeyBindingId = String.valueOf(internalKeyBindingSession.createInternalKeyBinding(authenticationToken, 
                     selectedInternalKeyBindingType, getCurrentName(), InternalKeyBindingStatus.DISABLED, null, currentCryptoToken.intValue(),
-                    currentKeyPairAlias, null));
+                    currentKeyPairAlias, currentSignatureAlgorithm, dataMap));
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(getCurrentName() + " created with id " + currentInternalKeyBindingId));
             inEditMode = false;
         } catch (AuthorizationDeniedException e) {
