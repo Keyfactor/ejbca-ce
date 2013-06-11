@@ -18,9 +18,6 @@ import java.util.Properties;
 
 import org.ejbca.core.model.services.workers.RenewCAWorker;
 
-
-
-
 /**
  * Class managing the view of the Renew CA Worker
  * 

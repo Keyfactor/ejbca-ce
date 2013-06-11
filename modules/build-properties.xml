@@ -313,7 +313,7 @@
 			<include name="server/default/deploy/jbossweb.sar/jstl.jar" /> <!-- 5.1.0 -->
 			<include name="common/lib/el-api.jar" /> <!-- 5.1.0 -->
 		    <include name="modules/javax/el/api/main/jboss-el-api_2.2_spec-1.0*.jar"/> <!-- 7.1.1 / EAP6.0 -->
-			<include name="modules/system/layers/base/javax/servlet/jsp/api/main/jboss-el-api_2.2_spec-1.0*.jar"/> <!-- 7.2.0 / EAP6.1 -->
+			<include name="modules/system/layers/base/javax/el/api/main/jboss-el-api_2.2_spec-1.0.*.jar"/><!-- 7.2.0 / EAP6.1 -->
 			<!-- Glassfish -->
 			<include name="lib/appserv-jstl.jar" /> <!-- 2.1.1 -->
 			<include name="modules/javax.servlet.jsp.jstl.jar" /> <!-- 3.1 -->

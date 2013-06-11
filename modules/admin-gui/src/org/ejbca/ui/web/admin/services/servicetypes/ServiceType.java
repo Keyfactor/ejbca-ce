@@ -21,7 +21,6 @@ import java.util.Properties;
  * Abstract base class of all type of service components. Used to manages
  * available and compatible JSF SubViews
  * 
- * @author Philip Vendil 2006 sep 29
  *
  * @version $Id$
  */
@@ -35,7 +34,7 @@ public abstract class ServiceType implements Serializable{
 
 	/**
 	 * 
-	 * @param subViewPage the name og the subViewPage to link in the page
+	 * @param subViewPage the name of the subViewPage to link in the page
 	 * @param name, the name of the page when it is selected in the GUI
 	 * @param translatable if the name should be looked up in the resource files or not. 
 	 */
@@ -47,7 +46,7 @@ public abstract class ServiceType implements Serializable{
 	}
 
 	/**
-	 * @return the name og the subViewPage to link in the page
+	 * @return the name of the subViewPage to link in the page
 	 */
 	public String getJSFSubViewPage() {
 		return jSFSubViewPage;

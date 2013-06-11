@@ -27,7 +27,6 @@ import org.ejbca.core.model.services.ServiceExecutionFailedException;
  * Class processing the publisher queue. Can only run on instance in one VM on
  * one node. See method docs below for information about algorithms used.
  * 
- * @author Tomas Gustavsson
  * @version $Id$
  */
 public class PublishQueueProcessWorker extends EmailSendingWorker {

@@ -61,4 +61,9 @@ public interface SecurityEventsLoggerSessionLocal extends SecurityEventsLoggerSe
     void log(EventType eventType, EventStatus eventStatus, ModuleType module, ServiceType service, String authToken, 
             String customId, String searchDetail1, String searchDetail2, String additionalDetailsMsg) throws AuditRecordStorageException;
 
+    /**
+     * 
+     * @return true if database protection is enabled for the audit logs.
+     */
+    boolean isAuditLogSigningEnabled();
 }

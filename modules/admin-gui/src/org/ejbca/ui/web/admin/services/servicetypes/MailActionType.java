@@ -21,7 +21,6 @@ import org.ejbca.core.model.services.actions.MailAction;
 /**
  * Action type describing the mail notification action
  * 
- * @author Philip Vendil
  *
  * $Id$
  */

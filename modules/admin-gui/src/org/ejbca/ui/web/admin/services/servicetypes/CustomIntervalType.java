@@ -24,7 +24,6 @@ import org.ejbca.ui.web.admin.CustomLoader;
 /**
  * Class used to populate the fields in the custominterval.jsp subview page. 
  * 
- * @author Philip Vendil 2006 sep 30
  *
  * @version $Id$
  */

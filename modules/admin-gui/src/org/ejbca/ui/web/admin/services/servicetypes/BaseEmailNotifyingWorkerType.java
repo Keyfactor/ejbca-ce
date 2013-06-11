@@ -30,7 +30,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
  * @version $Id$
  *
  */
-public class BaseEmailNotifyingWorkerType extends BaseWorkerType {
+public abstract class BaseEmailNotifyingWorkerType extends BaseWorkerType {
 
    
     public static final boolean DEFAULT_USEENDUSERNOTIFICATIONS = false;

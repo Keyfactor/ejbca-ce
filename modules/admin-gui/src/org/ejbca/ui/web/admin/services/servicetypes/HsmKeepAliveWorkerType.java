@@ -12,47 +12,31 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.services.servicetypes;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Properties;
+import org.ejbca.core.model.services.workers.HsmKeepAliveWorker;
 
 /**
- * Class used to populate the fields in the noaction subpage. 
+ * This worker type exists with the express purpose of keeping a session to an HSM slot from timing out. It replaces
+ * the previous need of creating crontab calls to the healthchecker. 
  * 
- *
  * @version $Id$
+ *
  */
-public class NoActionType extends ActionType {
-	
-	private static final long serialVersionUID = -5063026816886312970L;
+public class HsmKeepAliveWorkerType extends BaseWorkerType {
 
-    public static final String NAME = "NOACTION";
-	
-	private transient Properties properties = new Properties();
-	
-	public NoActionType() {
-		super("noaction.jsp", NAME, true);
-	}
-
-    String unit;
-    String value;
-
-
-	public String getClassPath() {
-		return org.ejbca.core.model.services.actions.NoAction.class.getName();
-	}
-
-	public Properties getProperties(ArrayList<String> errorMessages) throws IOException {		
-		return properties;
-	}
-	
-	public void setProperties(Properties properties) throws IOException {
-		this.properties = properties;
-	}
-
-	public boolean isCustom() {
-		return false;
-	}
+    public static final String NAME = "HSMKEEPALIVEWORKER";
+    
+    private static final long serialVersionUID = -1598910154971679252L;
+    
+    public HsmKeepAliveWorkerType() {
+        super("hsmkeepaliveworker.jsp", NAME, true, HsmKeepAliveWorker.class.getName());
+        // No action available for this worker
+        deleteAllCompatibleActionTypes();
+        addCompatibleActionTypeName(NoActionType.NAME);
+        //deleteAllCompatibleIntervalTypes();
+        addCompatibleIntervalTypeName(PeriodicalIntervalType.NAME);
+        
+    }
+    
 
 
 }

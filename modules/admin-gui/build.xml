@@ -18,6 +18,7 @@
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.servlet.classpath"/>
 		<path refid="lib.jsf.classpath"/>
+		<path refid="lib.jsp.classpath"/>
 		<path refid="lib.commons-lang.classpath"/>
 		<path refid="lib.commons-fileupload.classpath"/>
 		<path refid="lib.commons-config.classpath"/>
