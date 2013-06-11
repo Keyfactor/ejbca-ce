@@ -88,10 +88,10 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     public void setNonExistingGood(boolean nonExistingGood) {
         setProperty(PROPERTY_NON_EXISTING_GOOD, Boolean.valueOf(nonExistingGood));
     }
-    public boolean getIncludeCertCertChain() {
+    public boolean getIncludeCertChain() {
         return (Boolean) getProperty(PROPERTY_INCLUDE_CERT_CHAIN).getValue();
     }
-    public void setIncludeCertCertChain(boolean includeCertChain) {
+    public void setIncludeCertChain(boolean includeCertChain) {
         setProperty(PROPERTY_INCLUDE_CERT_CHAIN, Boolean.valueOf(includeCertChain));
     }
     public ResponderIdType getResponderIdType() {

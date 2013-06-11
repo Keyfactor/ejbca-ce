@@ -414,7 +414,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         boolean includeChain = OcspConfiguration.getIncludeCertChain();
         // If we have an OcspKeyBinding we use this configuration to override the default
         if (ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
-            includeChain = ocspSigningCacheEntry.getOcspKeyBinding().getIncludeCertCertChain();
+            includeChain = ocspSigningCacheEntry.getOcspKeyBinding().getIncludeCertChain();
         }
         if (log.isDebugEnabled()) {
             log.debug("Include chain: " + includeChain);
