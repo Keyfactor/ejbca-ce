@@ -108,10 +108,10 @@ org.ejbca.core.ejb.keybind.InternalKeyBindingRules
 				<f:selectItems value="#{internalKeyBindingMBean.availableSignatureAlgorithms}"/>
 			</h:selectOneMenu>
 			<h:panelGroup rendered="#{!internalKeyBindingMBean.inEditMode or !internalKeyBindingMBean.cryptoTokenActive}">
-				<h:outputText rendered="#{internalKeyBindingMBean.currentNextKeyPairAlias != null}"
+				<h:outputText rendered="#{internalKeyBindingMBean.currentSignatureAlgorithm != null}"
 					value="#{internalKeyBindingMBean.currentSignatureAlgorithm}"/>
-				<h:outputText rendered="#{internalKeyBindingMBean.currentNextKeyPairAlias == null}"
-					value="Not specified (error?)"/>
+				<h:outputText rendered="#{internalKeyBindingMBean.currentSignatureAlgorithm == null}"
+					value="Not specified (error)"/>
 			</h:panelGroup>
 		</h:panelGroup>
 		<h:message for="signatureAlgorithm"/>
