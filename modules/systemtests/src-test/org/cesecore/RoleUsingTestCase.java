@@ -55,7 +55,11 @@ public abstract class RoleUsingTestCase {
         final RoleAccessSessionRemote roleAccessSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
         if (roleAccessSessionRemote.findRole(roleName) == null) {
             final RoleInitializationSessionRemote roleInitSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleInitializationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-            roleInitSession.initializeAccessWithCert(roleMgmgToken, roleName, cert);
+            try {
+                roleInitSession.initializeAccessWithCert(roleMgmgToken, roleName, cert);
+            } catch (AuthorizationDeniedException e) {
+                // NOPMD This can't happen
+            }
         }
     }
 

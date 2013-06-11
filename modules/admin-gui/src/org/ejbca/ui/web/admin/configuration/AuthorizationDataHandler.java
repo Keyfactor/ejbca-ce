@@ -17,7 +17,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
@@ -30,7 +29,6 @@ import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSession;
 import org.cesecore.roles.management.RoleManagementSession;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.authorization.AccessRulesConstants;
 
 /**
  * A class handling the authorization data.
@@ -43,7 +41,6 @@ public class AuthorizationDataHandler implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private static final Logger log = Logger.getLogger(AuthorizationDataHandler.class);
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
@@ -111,7 +108,6 @@ public class AuthorizationDataHandler implements Serializable {
      * @throws RoleNotFoundException
      */
     public void removeRole(String name) throws AuthorizationDeniedException, RoleNotFoundException {
-        authorizedToEditAdministratorPrivileges(roleAccessSession.findRole(name));
         roleManagementSession.remove(administrator, name);
         informationmemory.administrativePriviledgesEdited();
         this.authorizedRoles = null;
@@ -123,7 +119,6 @@ public class AuthorizationDataHandler implements Serializable {
      * @throws RoleExistsException
      */
     public void renameRole(String oldname, String newname) throws AuthorizationDeniedException, RoleExistsException {
-        authorizedToEditAdministratorPrivileges(roleAccessSession.findRole(oldname));
         roleManagementSession.renameRole(administrator, oldname, newname);
         informationmemory.administrativePriviledgesEdited();
         this.authorizedRoles = null;
@@ -140,13 +135,10 @@ public class AuthorizationDataHandler implements Serializable {
     }
 
     /**
-     * Returns the given role with it's authorization data
+     * @return the given role with it's authorization data
      * 
-     * @throws AuthorizationDeniedException if administrator isn't authorized to access role.
      */
-    public RoleData getRole(String roleName) throws AuthorizationDeniedException {
-        RoleData role = roleAccessSession.findRole(roleName);
-        authorizedToEditAdministratorPrivileges(role);
+    public RoleData getRole(String roleName) {
         return roleAccessSession.findRole(roleName);
     }
 
@@ -160,7 +152,6 @@ public class AuthorizationDataHandler implements Serializable {
      */
     public void addAccessRules(String roleName, Collection<AccessRuleData> accessRules) throws AuthorizationDeniedException,
             AccessRuleNotFoundException, RoleNotFoundException {
-        authorizedToEditAdministratorPrivileges(roleAccessSession.findRole(roleName));
         authorizedToAddAccessRules(accessRules);
         roleManagementSession.addAccessRulesToRole(administrator, roleAccessSession.findRole(roleName), accessRules);
         informationmemory.administrativePriviledgesEdited();
@@ -175,7 +166,6 @@ public class AuthorizationDataHandler implements Serializable {
      */
     public void removeAccessRules(String roleName, Collection<AccessRuleData> accessRules) throws AuthorizationDeniedException, RoleNotFoundException {
         RoleData role = roleAccessSession.findRole(roleName);
-        authorizedToEditAdministratorPrivileges(role);
         Collection<AccessRuleData> rulesToRemove = new ArrayList<AccessRuleData>();
         for(AccessRuleData rule : accessRules) {
             if(role.getAccessRules().containsKey(rule.getPrimaryKey())) {
@@ -189,12 +179,12 @@ public class AuthorizationDataHandler implements Serializable {
     /**
      * Method to replace an collection of access rules in a role.
      * 
+     * @param rolename the name of the given role
      * @param accessrules a Collection of String containing accesssrules to replace.
      * @throws AuthorizationDeniedException when administrator is't authorized to edit this CA.
-     * @throws RoleNotFoundException 
+     * @throws RoleNotFoundException if role of given name wasn't found
      */
     public void replaceAccessRules(String rolename, Collection<AccessRuleData> accessRules) throws AuthorizationDeniedException, RoleNotFoundException {
-        authorizedToEditAdministratorPrivileges(roleAccessSession.findRole(rolename));
         roleManagementSession.replaceAccessRulesInRole(administrator, roleAccessSession.findRole(rolename), accessRules);
         informationmemory.administrativePriviledgesEdited();
     }
@@ -215,7 +205,6 @@ public class AuthorizationDataHandler implements Serializable {
      * @throws RoleNotFoundException 
      */
     public void addAdminEntities(RoleData role, Collection<AccessUserAspectData> subjects) throws AuthorizationDeniedException, RoleNotFoundException {
-        authorizedToEditAdministratorPrivileges(role);
         roleManagementSession.addSubjectsToRole(administrator, role, subjects);
         informationmemory.administrativePriviledgesEdited();
     }
@@ -227,36 +216,11 @@ public class AuthorizationDataHandler implements Serializable {
      * @throws RoleNotFoundException 
      */
     public void removeAdminEntities(RoleData role, Collection<AccessUserAspectData> subjects) throws AuthorizationDeniedException, RoleNotFoundException {
-        authorizedToEditAdministratorPrivileges(role);
         roleManagementSession.removeSubjectsFromRole(administrator, role, subjects);
         informationmemory.administrativePriviledgesEdited();
     }
 
-    private void authorizedToEditAdministratorPrivileges(RoleData role) throws AuthorizationDeniedException {
-        // Authorized to edit administrative privileges
-        if (!authorizationsession.isAuthorizedNoLogging(administrator, AccessRulesConstants.REGULAR_EDITADMINISTRATORPRIVILEDGES)) {
-            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource",
-                    AccessRulesConstants.REGULAR_EDITADMINISTRATORPRIVILEDGES, null);
-            throw new AuthorizationDeniedException(msg);
-        }
-        // Authorized to role
-        if (!roleManagementSession.isAuthorizedToEditRole(administrator, role)) {
-            throw new AuthorizationDeniedException("Admin " + administrator + " not authorized to role " + role);
-        }
-        // Check if role is among available roles
-        boolean exists = false;
-        for (RoleData next : roleManagementSession.getAllRolesAuthorizedToEdit(administrator)) {
-            if (next.equals(role)) {
-                exists = true;
-            }
-        }
-        if (!exists) {
-            if (log.isDebugEnabled()) {
-                log.debug("role " + role + " not among authorized roles.");
-            }
-            throw new AuthorizationDeniedException("role " + role + " not among authorized roles.");
-        }
-    }
+
 
     private void authorizedToAddAccessRules(Collection<AccessRuleData> accessrules) throws AuthorizationDeniedException {
         for (AccessRuleData accessRule : accessrules) {
