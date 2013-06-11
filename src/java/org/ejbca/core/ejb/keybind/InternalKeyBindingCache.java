@@ -29,12 +29,12 @@ public enum InternalKeyBindingCache implements CommonCache<InternalKeyBinding> {
     final private CommonCache<InternalKeyBinding> internalKeyBindingCache = new CommonCacheBase<InternalKeyBinding>() {
         @Override
         protected long getCacheTime() {
-            // We never disable storage of Signers in the cache completely
+            // We never disable storage of InternalKeyBindings in the cache completely
             return Math.max(CesecoreConfiguration.getCacheTimeInternalKeyBinding(), 0);
         }
         @Override
         protected long getMaxCacheLifeTime() {
-            // We never purge Signer unless a database select discovers a missing object.
+            // We never purge InternalKeyBindings unless a database select discovers a missing object.
             return 0;
         };
     };
