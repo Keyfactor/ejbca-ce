@@ -148,9 +148,10 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal {
     }
 
     @Override
-    public void removeCryptoToken(final int cryptoTokenId) {
-        deleteCryptoTokenData(cryptoTokenId);
+    public boolean removeCryptoToken(final int cryptoTokenId) {
+        final boolean ret = deleteCryptoTokenData(cryptoTokenId);
         CryptoTokenCache.INSTANCE.updateWith(cryptoTokenId, 0, null, null);
+        return ret;
     }
     
     @Override

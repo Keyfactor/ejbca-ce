@@ -231,9 +231,12 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         if (!accessControlSessionSession.isAuthorized(authenticationToken, CryptoTokenRules.DELETE_CRYPTOTOKEN.resource()+"/"+cryptoTokenId)) {
             throw new AuthorizationDeniedException();
         }
-        securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_DELETE, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE, authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null,
-                "Delete of CryptoToken with id " + cryptoTokenId);
-        cryptoTokenSession.removeCryptoToken(cryptoTokenId);
+        if (cryptoTokenSession.removeCryptoToken(cryptoTokenId)) {
+            securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_DELETE, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE, authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null,
+                    "Delete of CryptoToken with id " + cryptoTokenId);
+        } else if (log.isDebugEnabled()) {
+            log.debug("Crypto token with id "+cryptoTokenId+" does not exists and can not be deleted.");
+        }
     }
     
     @Override
