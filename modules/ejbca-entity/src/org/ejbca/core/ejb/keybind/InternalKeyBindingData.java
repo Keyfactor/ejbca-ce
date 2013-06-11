@@ -75,7 +75,7 @@ public class InternalKeyBindingData extends ProtectedData implements Serializabl
 
     // @Column
     public String getName() { return name; }
-    public void setName(String signerName) { this.name = signerName; }
+    public void setName(String name) { this.name = name; }
 
     // @Column
     /** Use getStatusEnum() instead */
