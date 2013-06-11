@@ -41,6 +41,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
@@ -98,7 +99,7 @@ public class OcspTestUtils {
         final Map<Object, Object> dataMap = new LinkedHashMap<Object, Object>();
         dataMap.put(PROPERTY_ALIAS, Boolean.FALSE);
         int internalKeyBindingId = internalKeyBindingMgmtSession.createInternalKeyBinding(authenticationToken, type,
-                testName, InternalKeyBindingStatus.ACTIVE, null, cryptoTokenId, testName, dataMap);
+                testName, InternalKeyBindingStatus.ACTIVE, null, cryptoTokenId, testName, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, dataMap);
         return internalKeyBindingId;
     }
     
