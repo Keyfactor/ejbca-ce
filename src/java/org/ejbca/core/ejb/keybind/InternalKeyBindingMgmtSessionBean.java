@@ -485,7 +485,8 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             String certificateId = CertTools.getFingerprintAsString(certificate);
             final PublicKey currentPublicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, currentKeyPairAlias);
             if (log.isDebugEnabled()) {
-                log.debug("currentPublicKey: " + new String(Hex.encode(KeyTools.createSubjectKeyId(currentPublicKey).getKeyIdentifier())));
+                log.debug("currentPublicKey: " + (currentPublicKey != null ?
+                    new String(Hex.encode(KeyTools.createSubjectKeyId(currentPublicKey).getKeyIdentifier())) : "null"));
             }
             if (currentPublicKey != null && KeyTools.createSubjectKeyId(currentPublicKey).equals(KeyTools.createSubjectKeyId(certificate.getPublicKey()))) {
                 // If current key matches current public key -> import + update certificateId
@@ -504,7 +505,8 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                 if (nextKeyPairAlias != null) {
                     final PublicKey nextPublicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, nextKeyPairAlias);
                     if (log.isDebugEnabled()) {
-                        log.debug("nextPublicKey: " + new String(Hex.encode(KeyTools.createSubjectKeyId(nextPublicKey).getKeyIdentifier())));
+                        log.debug("nextPublicKey: " + (nextPublicKey != null ?
+                            new String(Hex.encode(KeyTools.createSubjectKeyId(nextPublicKey).getKeyIdentifier())) : "null"));
                     }
                     if (nextPublicKey != null && KeyTools.createSubjectKeyId(nextPublicKey).equals(KeyTools.createSubjectKeyId(certificate.getPublicKey()))) {
                         // If current key matches next public key -> import and update nextKey + certificateId
