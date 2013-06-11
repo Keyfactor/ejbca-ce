@@ -80,7 +80,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
     public static EditServiceManagedBean getBean() {    
     	FacesContext context = FacesContext.getCurrentInstance();
     	Application app = context.getApplication();
-    	EditServiceManagedBean value =  app.evaluateExpressionGet(context, "#{editService}", EditServiceManagedBean.class);
+    	EditServiceManagedBean value = (EditServiceManagedBean) app.evaluateExpressionGet(context, "#{editService}", EditServiceManagedBean.class);
     	return value;
     }
     
