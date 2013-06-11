@@ -165,9 +165,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     private static final int MAX_REQUEST_SIZE = 100000;
 
     private static final String hardTokenClassName = OcspConfiguration.getHardTokenClassName();
-  //  private static final String p11SharedLibrary = OcspConfiguration.getP11SharedLibrary();
-  //  private static final String P12_SUFFIX = ".p12";
-  //  private static final String CERT_SUFFIX = ".cert";
 
     private static final Logger log = Logger.getLogger(OcspResponseGeneratorSessionBean.class);
 

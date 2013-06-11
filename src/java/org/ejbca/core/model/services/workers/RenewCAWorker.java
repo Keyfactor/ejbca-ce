@@ -33,7 +33,6 @@ import org.ejbca.core.model.services.ServiceExecutionFailedException;
 /**
  * Worker renewing CA that is about to expire.
  * 
- * @author Tomas Gustavsson
  *
  * @version: $Id$
  */

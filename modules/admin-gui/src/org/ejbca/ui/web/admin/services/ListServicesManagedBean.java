@@ -13,16 +13,13 @@
 
 package org.ejbca.ui.web.admin.services;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.faces.application.Application;
 import javax.faces.context.FacesContext;
-import javax.faces.el.ValueBinding;
 
 import org.apache.commons.lang.StringUtils;
 import org.ejbca.core.model.services.ServiceConfiguration;
@@ -36,7 +33,6 @@ import org.ejbca.ui.web.admin.configuration.SortableSelectItem;
  * Class used to manage the listservices.jsp page
  * Contains and manages the available services
  * 
- * @author Philip Vendil 2006 sep 29
  *
  * @version $Id$
  */
@@ -57,39 +53,35 @@ public class ListServicesManagedBean extends BaseManagedBean {
 		selectedServiceName = string;
 	}
 
-	public List<SortableSelectItem> getAvailableServices() {
-		List<SortableSelectItem> availableServices = new ArrayList<SortableSelectItem>();
-	    Collection<Integer> availableServicesIds = ejb.getServiceSession().getAuthorizedVisibleServiceIds(getAdmin());
-	    Iterator<Integer> iter = availableServicesIds.iterator();
-	    while (iter.hasNext()) {
-	    	Integer id = (Integer) iter.next();
-	    	ServiceConfiguration serviceConfig =  ejb.getServiceSession().getServiceConfiguration(getAdmin(), id.intValue());
-	    	String serviceName = ejb.getServiceSession().getServiceName(id.intValue());
-	    	String hidden = "";
-	    	if (serviceConfig.isHidden()) {
-	    		hidden = "<Hidden, Debug mode>";
-	    	}
-	    	if (serviceConfig.isActive()) {
-	    		availableServices.add(new SortableSelectItem(serviceName, serviceName+ " (" + EjbcaJSFHelper.getBean().getText().get("ACTIVE") + ")" + hidden));
-	    	} else {
-	    		availableServices.add(new SortableSelectItem(serviceName, serviceName + " (" + EjbcaJSFHelper.getBean().getText().get("INACTIVE") + ")" + hidden));
-	    	}
-	    }
-	    Collections.sort(availableServices);
-		return availableServices;
-	}
+    public List<SortableSelectItem> getAvailableServices() {
+        List<SortableSelectItem> availableServices = new ArrayList<SortableSelectItem>();
+        Collection<Integer> availableServicesIds = ejb.getServiceSession().getAuthorizedVisibleServiceIds(getAdmin());
+        for (Integer id : availableServicesIds) {
+            ServiceConfiguration serviceConfig = ejb.getServiceSession().getServiceConfiguration(getAdmin(), id.intValue());
+            String serviceName = ejb.getServiceSession().getServiceName(id.intValue());
+            String hidden = "";
+            if (serviceConfig.isHidden()) {
+                hidden = "<Hidden, Debug mode>";
+            }
+            if (serviceConfig.isActive()) {
+                availableServices.add(new SortableSelectItem(serviceName, serviceName + " (" + EjbcaJSFHelper.getBean().getText().get("ACTIVE") + ")"
+                        + hidden));
+            } else {
+                availableServices.add(new SortableSelectItem(serviceName, serviceName + " (" + EjbcaJSFHelper.getBean().getText().get("INACTIVE")
+                        + ")" + hidden));
+            }
+        }
+        Collections.sort(availableServices);
+        return availableServices;
+    }
 
 	public String editService(){
 		String retval = "editservice";
-		if (StringUtils.isNotEmpty(selectedServiceName)){			
-			try {
-				getEditServiceBean().setServiceName(selectedServiceName);
-				ServiceConfiguration serviceConf = ejb.getServiceSession().getService(selectedServiceName);
-				getEditServiceBean().setServiceConfiguration(serviceConf);
-			} catch (IOException e) {
-				addNonTranslatedErrorMessage((String) EjbcaJSFHelper.getBean().getText().get("ERROREDITINGSERVICE") + " " + e.getMessage());						
-			}				
-		}else{
+        if (StringUtils.isNotEmpty(selectedServiceName)) {
+            getEditServiceBean().setServiceName(selectedServiceName);
+            ServiceConfiguration serviceConf = ejb.getServiceSession().getService(selectedServiceName);
+            getEditServiceBean().setServiceConfiguration(serviceConf);
+        } else {
 			addErrorMessage("YOUHAVETOSELECTASERVICE");
 			retval = "listservices";
 		}
@@ -138,9 +130,7 @@ public class ListServicesManagedBean extends BaseManagedBean {
 				getEditServiceBean().setServiceName(newServiceName);
 			} catch (ServiceExistsException e) {
 				addNonTranslatedErrorMessage((String) EjbcaJSFHelper.getBean().getText().get("SERVICENAMEALREADYEXISTS"));
-			} catch (IOException e) {
-				addNonTranslatedErrorMessage((String) EjbcaJSFHelper.getBean().getText().get("ERRORADDINGSERVICE") + e.getMessage());
-			}
+			} 
 		}
 		newServiceName = "";
 		return "listservices";
@@ -184,9 +174,8 @@ public class ListServicesManagedBean extends BaseManagedBean {
 
 	private EditServiceManagedBean getEditServiceBean(){
 		FacesContext context = FacesContext.getCurrentInstance();    
-		Application app = context.getApplication();    
-		ValueBinding binding = app.createValueBinding("#{editService}");    
-		Object value = binding.getValue(context);    
-		return (EditServiceManagedBean) value;
+		Application app = context.getApplication();   
+		EditServiceManagedBean value =  app.evaluateExpressionGet(context, "#{editService}", EditServiceManagedBean.class);
+		return value;
 	}
 }

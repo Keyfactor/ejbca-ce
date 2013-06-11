@@ -21,7 +21,6 @@ import java.util.TreeMap;
 
 import javax.faces.application.Application;
 import javax.faces.context.FacesContext;
-import javax.faces.el.ValueBinding;
 import javax.faces.event.ValueChangeEvent;
 import javax.faces.model.SelectItem;
 
@@ -74,20 +73,15 @@ public class EditServiceManagedBean extends BaseManagedBean {
 	private ServiceConfigurationView serviceConfigurationView;
 	private String serviceName = "";
 
-	public EditServiceManagedBean() {
-        try {
-			setServiceConfiguration(new ServiceConfiguration());
-		} catch (IOException e) {
-			log.error(e);
-		}
-	}
+    public EditServiceManagedBean() {
+        setServiceConfiguration(new ServiceConfiguration());
+    }
 	
     public static EditServiceManagedBean getBean() {    
     	FacesContext context = FacesContext.getCurrentInstance();
     	Application app = context.getApplication();
-    	ValueBinding binding = app.createValueBinding("#{editService}");
-    	Object value = binding.getValue(context);
-    	return (EditServiceManagedBean) value;
+    	EditServiceManagedBean value =  app.evaluateExpressionGet(context, "#{editService}", EditServiceManagedBean.class);
+    	return value;
     }
     
 	/** @return the serviceName */
@@ -105,7 +99,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
 		return serviceConfigurationView;
 	}
 	
-	public void setServiceConfiguration(ServiceConfiguration serviceConfiguration) throws IOException{
+	public void setServiceConfiguration(ServiceConfiguration serviceConfiguration) {
 		this.serviceConfigurationView = new ServiceConfigurationView(serviceConfiguration);
 	}
 
