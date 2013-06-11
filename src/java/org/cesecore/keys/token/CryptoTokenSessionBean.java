@@ -103,8 +103,8 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal {
 
     @Override
     public int mergeCryptoToken(final CryptoToken cryptoToken) throws CryptoTokenNameInUseException {
-        if (log.isDebugEnabled()) {
-            log.debug(">addCryptoToken " + cryptoToken.getTokenName() + " " + cryptoToken.getClass().getName());
+        if (log.isTraceEnabled()) {
+            log.trace(">addCryptoToken " + cryptoToken.getTokenName() + " " + cryptoToken.getClass().getName());
         }
         final int cryptoTokenId = cryptoToken.getId();
         final String tokenName = cryptoToken.getTokenName();
@@ -141,8 +141,8 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal {
         cryptoTokenData = createOrUpdateCryptoTokenData(cryptoTokenData);
         // Update cache with provided token (it might be active and we like keeping things active)
         CryptoTokenCache.INSTANCE.updateWith(cryptoTokenId, cryptoTokenData.getProtectString(0).hashCode(), tokenName, cryptoToken);
-        if (log.isDebugEnabled()) {
-            log.debug("<addCryptoToken " + cryptoToken.getTokenName());
+        if (log.isTraceEnabled()) {
+            log.trace("<addCryptoToken " + cryptoToken.getTokenName());
         }
         return cryptoTokenId;   // tokenId
     }

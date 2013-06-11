@@ -427,7 +427,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
             cryptoTokenId = ca.getCAToken().getCryptoTokenId();
             caSession.removeCA(internalAdmin, ca.getCAId());
         } catch (CADoesntExistsException e) {
-            //Ignore
+            log.debug("CA with name " + caName + " does not exist and can not be removed (probably not a problem here).");
         }
         log.debug("Deleting CryptoToken with id " + cryptoTokenId + " last used by CA " + caName);
         cryptoTokenManagementSession.deleteCryptoToken(internalAdmin, cryptoTokenId);
@@ -444,7 +444,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
             cryptoTokenId = ca.getCAToken().getCryptoTokenId();
             caSession.removeCA(internalAdmin, ca.getCAId());
         } catch (CADoesntExistsException e) {
-            //Ignore
+            log.debug("CA with id " + caId + " does not exist and can not be removed (probably not a problem here).");
         }
         log.debug("Deleting CryptoToken with id " + cryptoTokenId + " last used by CA " + caId);
         cryptoTokenManagementSession.deleteCryptoToken(internalAdmin, cryptoTokenId);
