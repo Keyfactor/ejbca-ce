@@ -43,7 +43,8 @@ public interface CryptoTokenManagementSession {
 
     /**
      * Remove CryptoToken with the specified ID. If this CryptoToken is backed by an HSM only the reference to the
-     * PKCS#11 slot will be removed not the actual key material.
+     * PKCS#11 slot will be removed not the actual key material. If the crypto token with the given id does not exists, nothing happens.
+     * @param cryptoTokenId the id of the crypto token that should be removed
      */
     void deleteCryptoToken(AuthenticationToken authenticationToken, int cryptoTokenId) throws AuthorizationDeniedException;
 
