@@ -188,7 +188,9 @@
     	<property name="gen-depgraph.dir" value="${ejbca.home}/tmp/gen-dep"/>
     	<mkdir dir="${gen-depgraph.dir}"/>
     	<path id="gen-dep.classpath">
-    		<fileset dir="${appserver.home}" includes="client/jboss-javaee.jar client/ejb3-persistence.jar"/> <!-- for javax.ejb.Stateless, Local and EJB-->
+    	    <!-- for javax.ejb.Stateless, Local and EJB-->
+    		<fileset dir="${appserver.home}" includes="client/jboss-javaee.jar client/ejb3-persistence.jar"/>
+    		<fileset dir="${appserver.home}" includes="modules/javax/ejb/api/main/jboss-ejb-api_* modules/javax/persistence/api/main/hibernate-jpa-*"/>
     	</path>
     	<javac srcdir="${ejbca.home}/src/java" destdir="${gen-depgraph.dir}" classpathref="gen-dep.classpath" debug="on" includeantruntime="false"
     		includes="org/ejbca/util/EjbDependencyGraphTool.java"/>
