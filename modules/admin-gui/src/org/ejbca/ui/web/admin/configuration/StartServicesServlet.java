@@ -96,31 +96,46 @@ public class StartServicesServlet extends HttpServlet {
     @Resource
     private UserTransaction tx;
     
-    // Since timers are reloaded at server startup, we can leave them in the database. This was a workaround for WebLogic.
-    // By skipping this we don't need application server (read JBoss) specific config for what this module depends on.
-    /* *
-     * Method used to remove all active timers and stop system services.
+    /**
+     * Method used to log service shutdown.
 	 * @see javax.servlet.GenericServlet#destroy()
-	 * /
+	 **/
+    @Override
 	public void destroy() {
-		String iMsg = intres.getLocalizedMessage("startservice.shutdown");
+        String iMsg = intres.getLocalizedMessage("startservice.shutdown");
         log.info(iMsg);
-        
-        log.trace(">destroy calling ServiceSession.unload");
-        try {
-			serviceSession.unload();
-		} catch (Exception e) {
-			log.error(e);
-		}
-        log.trace(">destroy waiting for system services to finish");
-		super.destroy();
-	}*/
 
+        // Making an EJB call to audit log shutdown is not possible, since the EJBs will shut down before the servlet. 
+        // This should be possible to handle  with EJB 3.1
+        /*
+        @Singleton
+        @Startup
+        public class StartupBean {
+
+        @PostConstruct
+        private void startup() { ... }
+
+        @PreDestroy
+        private void shutdown() { ... }
+        ...
+        }
+        */
+        // Make a log row that EJBCA is stopping
+//        final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("StartServicesServlet.destroy"));
+//        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+//        details.put("msg", iMsg);
+//        logSession.log(EjbcaEventTypes.EJBCA_STOPPING, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);                
+
+        super.destroy();
+	}
+
+    @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
         ejbcaInit();
     }
 
+    @Override
     public void doPost(HttpServletRequest req, HttpServletResponse res)
         throws IOException, ServletException {
         log.trace(">doPost()");
@@ -128,6 +143,7 @@ public class StartServicesServlet extends HttpServlet {
         log.trace("<doPost()");
     } //doPost
 
+    @Override
     public void doGet(HttpServletRequest req,  HttpServletResponse res) throws java.io.IOException, ServletException {
         log.trace(">doGet()");
     	res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Servlet doesn't support requests is only loaded on startup.");
