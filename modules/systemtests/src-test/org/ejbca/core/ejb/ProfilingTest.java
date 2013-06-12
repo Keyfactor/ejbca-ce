@@ -47,7 +47,7 @@ public class ProfilingTest {
             // If there is no profiling enabled, we just log some information on how to enable it.
             log.warn("This test requires EJBCA profiling to be enabled.");      
             log.warn("  In conf/ejbca.properties set ejbca.productionmode=false");      
-            log.warn("  Log4J DEBUG log level must be enabled enabled.");
+            log.warn("  Log4J DEBUG log level must be enabled.");
             return;
         }
         // Sort with most consumed time first
