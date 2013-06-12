@@ -100,6 +100,8 @@ public class CertificateData extends ProtectedData implements Serializable {
      * subjectDN, issuerDN, serial number, expiration date. Status, Type, CAFingerprint, revocationDate and revocationReason are set to default values
      * (CERT_UNASSIGNED, USER_INVALID, null, null and REVOCATION_REASON_UNSPECIFIED) and should be set using the respective set-methods.
      * 
+     * NOTE! Never use this constructor without considering the useBase64CertTable below!
+     * 
      * @param incert the (X509)Certificate to be stored in the database. If the property "database.useSeparateCertificateTable" is true then it should be null.
      * @param enrichedpubkey possibly an EC public key enriched with the full set of parameters, if the public key in the certificate does not have
      *            parameters. Can be null if RSA or certificate public key contains all parameters.
