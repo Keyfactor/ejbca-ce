@@ -60,5 +60,9 @@ public class OcspSigningCacheEntry {
     public PrivateKey getPrivateKey() { return privateKey; }
     public String getSignatureProviderName() { return signatureProviderName; }
     public OcspKeyBinding getOcspKeyBinding() { return ocspKeyBinding; }
+    /**
+     * Checks if the entry has a OCSP signing certificate separate from the certificate chain.
+     * Only entries with a keybinding can have a separate certificate.
+     * */
     public boolean isUsingSeparateOcspSigningCertificate() { return ocspSigningCertificate != null; }
 }
