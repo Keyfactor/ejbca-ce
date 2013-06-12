@@ -58,3 +58,10 @@
 # Database password.
 # Default: (blank works with hsqldb)
 #database.password=ejbca
+
+# The encoded certificate may be stored in the table Base64CertData instead of
+# in a column in the CertificateData table. Using a separate table for the
+# certificate data may speed up searching for certificates if there are lots of
+# them (>100Million).
+# Default: false
+#database.useSeparateCertificateTable=true

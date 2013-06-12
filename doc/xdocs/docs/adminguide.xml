@@ -5722,6 +5722,7 @@ configuration items that can maximize performance of EJBCA to issue more than 10
 <li>Do not enforce any uniqueness (keys, DN, Subject DN SerialNumber) in CA configuration. This will ensure no extra selects are made and can give a small improvement.</li>
 <li>Minimize the number of indexes in the database, only use the ones that are absolutely needed. This makes inserts in the database a bit faster and can give additonal 10%.</li>
 <li>Use the native JBoss connectors for http and https. This can give an additional 10%.</li>
+<li>If you have a lot of certificates (>100M) it might be a good idea to use a separate table for the storage of the encoded certificates. See the database.useSeparateCertificateTable property in ./conf/database.properties.sample</li>
 </ul>
 <subsection name="Throw away CA">
 <p>EJBCA have a configurable function going by the name of "throw away CA". This is an option where EJBCA simply functions as a high speed certificate factory, issuing certificates but not storing any trace of them in the local database.

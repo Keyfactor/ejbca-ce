@@ -18,11 +18,11 @@ import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -100,7 +100,7 @@ public class CertificateData extends ProtectedData implements Serializable {
      * subjectDN, issuerDN, serial number, expiration date. Status, Type, CAFingerprint, revocationDate and revocationReason are set to default values
      * (CERT_UNASSIGNED, USER_INVALID, null, null and REVOCATION_REASON_UNSPECIFIED) and should be set using the respective set-methods.
      * 
-     * @param incert the (X509)Certificate to be stored in the database.
+     * @param incert the (X509)Certificate to be stored in the database. If the property "database.useSeparateCertificateTable" is true then it should be null.
      * @param enrichedpubkey possibly an EC public key enriched with the full set of parameters, if the public key in the certificate does not have
      *            parameters. Can be null if RSA or certificate public key contains all parameters.
      * @param username the username in UserData to map the certificate to
@@ -110,12 +110,15 @@ public class CertificateData extends ProtectedData implements Serializable {
      * @param certprofileid certificate profile id, can be 0
      * @param tag a custom tag to map the certificate to any custom defined tag
      * @param updatetime the time the certificate was updated in the database, i.e. System.currentTimeMillis().
+     * @param useBase64CertTable true if a special table is used for the encoded certificates. NOTE: If true then the caller must store the certificate in Base64CertData as well. 
      */
     public CertificateData(Certificate incert, PublicKey enrichedpubkey, String username, String cafp, int status, int type, int certprofileid,
-            String tag, long updatetime) {
+            String tag, long updatetime, boolean useBase64CertTable) {
         // Extract all fields to store with the certificate.
         try {
-            setBase64Cert(new String(Base64.encode(incert.getEncoded())));
+            if ( !useBase64CertTable ) {
+                setBase64Cert(new String(Base64.encode(incert.getEncoded())));
+            }
 
             String fp = CertTools.getFingerprintAsString(incert);
             setFingerprint(fp);
@@ -486,39 +489,35 @@ public class CertificateData extends ProtectedData implements Serializable {
     //
 
     /**
+     * Return the certificate . From this table if contained here. From {link Base64CertData} if contained there.
+     * @param entityManager To be used if the cert is in the {@link Base64CertData} table.
+     * @return The certificate
+     */
+    private String getBase64Cert(EntityManager entityManager) {
+        if ( this.base64Cert!=null && this.base64Cert.length()>0 ) {
+            return this.base64Cert; // the cert was in this table.
+        }
+        // try the other table.
+        final Base64CertData res = Base64CertData.findByFingerprint(entityManager, this.fingerprint);
+        if ( res==null ) {
+            log.info("No certificate found with fingerprint "+this.fingerprint+" for '"+this.subjectDN+"' issued by '"+this.issuerDN+"'.");
+            return null;
+        }
+        // it was in the other table.
+        return res.getBase64Cert();
+    }
+    /**
      * certificate itself
      * 
      * @return certificate
      */
     @Transient
-    public Certificate getCertificate() {
-        Certificate cert = null;
+    public Certificate getCertificate(EntityManager entityManager) {
         try {
-            cert = CertTools.getCertfromByteArray(Base64.decode(getBase64Cert().getBytes()));
+            return CertTools.getCertfromByteArray(Base64.decode(getBase64Cert(entityManager).getBytes()));
         } catch (CertificateException ce) {
             log.error("Can't decode certificate.", ce);
             return null;
-        }
-        return cert;
-    }
-
-    /**
-     * certificate itself
-     * 
-     * @param incert certificate
-     */
-    public void setCertificate(Certificate incert) {
-        try {
-            String b64Cert = new String(Base64.encode(incert.getEncoded()));
-            setBase64Cert(b64Cert);
-            X509Certificate tmpcert = (X509Certificate) incert;
-            String fp = CertTools.getFingerprintAsString(tmpcert);
-            setFingerprint(fp);
-            setSubjectDN(CertTools.getSubjectDN(tmpcert));
-            setIssuerDN(CertTools.getIssuerDN(tmpcert));
-            setSerialNumber(tmpcert.getSerialNumber().toString());
-        } catch (CertificateEncodingException cee) {
-            log.error("Can't extract DER encoded certificate information.", cee);
         }
     }
 
@@ -568,6 +567,7 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     // Comparators
 
+    @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof CertificateData)) {
             return false;
@@ -582,17 +582,23 @@ public class CertificateData extends ProtectedData implements Serializable {
         return equals(certificateData, strictStatus);
     }
 
-    public boolean equals(CertificateData certificateData, boolean strictStatus) {
+    private boolean equals(CertificateData certificateData, boolean strictStatus) {
         if (!equalsNonSensitive(certificateData, strictStatus)) {
             return false;
         }
-        if (!base64Cert.equals(certificateData.base64Cert)) {
+        if ( this.base64Cert==null && certificateData.base64Cert==null ) {
+            return true; // test before shows that fingerprint is equal and then both objects must refer to same row in Base64CertData
+        }
+        if ( this.base64Cert==null || certificateData.base64Cert==null ) {
+            return false; // one is null and the other not null
+        }
+        if (!this.base64Cert.equals(certificateData.base64Cert)) {
             return false;
         }
         return true;
     }
 
-    public boolean equalsNonSensitive(CertificateData certificateData, boolean strictStatus) {
+    private boolean equalsNonSensitive(CertificateData certificateData, boolean strictStatus) {
         if (!issuerDN.equals(certificateData.issuerDN)) {
             return false;
         }
@@ -959,9 +965,26 @@ public class CertificateData extends ProtectedData implements Serializable {
         return query.getResultList();
     }
 
+    /**
+     * Get a list of {@link Certificate} from a list of list of {@link CertificateData}.
+     * @param cdl
+     * @param entityManager
+     * @return The resulting list.
+     */
+    public static List<Certificate> getCertificateList(List<CertificateData> cdl, EntityManager entityManager) {
+        final List<Certificate> cl = new LinkedList<Certificate>();
+        for ( CertificateData cd : cdl) {
+            final Certificate cert = cd.getCertificate(entityManager);
+            if ( cert==null ) {
+                continue;
+            }
+            cl.add(cert);
+        }
+        return cl;
+    }
+    @SuppressWarnings("unchecked")
     public static List<Certificate> findCertificatesByIssuerDnAndSerialNumbers(EntityManager entityManager, String issuerDN,
             Collection<BigInteger> serialNumbers) {
-        final List<Certificate> certificateList = new ArrayList<Certificate>();
         final StringBuilder sb = new StringBuilder();
         for(final BigInteger serno : serialNumbers) {
             sb.append(", '");            
@@ -974,20 +997,10 @@ public class CertificateData extends ProtectedData implements Serializable {
         // Derby: Columns of type 'LONG VARCHAR' may not be used in CREATE INDEX, ORDER BY, GROUP BY, UNION, INTERSECT, EXCEPT or DISTINCT statements
         // because comparisons are not supported for that type.
         // Since two certificates in the database should never be the same, "SELECT DISTINCT ..." was changed to "SELECT ..." here.
-        final Query query = entityManager.createQuery("SELECT a.base64Cert FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.serialNumber IN ("
+        final Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.serialNumber IN ("
                 + sb.toString() + ")");
         query.setParameter("issuerDN", issuerDN);
-        @SuppressWarnings("unchecked")
-        final List<String> base64CertificateList = query.getResultList();
-        for (String base64Certificate : base64CertificateList) {
-            try {
-                certificateList.add(CertTools.getCertfromByteArray(Base64.decode(base64Certificate.getBytes())));
-            } catch (CertificateException ce) {
-                log.error("Can't decode certificate.", ce);
-                // Continue with the rest of the results, even if this one exploded..
-            }
-        }
-        return certificateList;
+        return getCertificateList(query.getResultList(), entityManager);
     }
 
     /** @return the CertificateInfo representation (all fields except the actual cert) or null if no such fingerprint exists. */
@@ -1063,25 +1076,15 @@ public class CertificateData extends ProtectedData implements Serializable {
      * @return a List<Certificate> of SecConst.CERT_ACTIVE and CERT_NOTIFIEDABOUTEXPIRATION certs that have one of the specified types. */
     @SuppressWarnings("unchecked")
     public static List<Certificate> findActiveCertificatesByType(EntityManager entityManager, Collection<Integer> certificateTypes) {
-        final List<Certificate> certificateList = new ArrayList<Certificate>();
         // Derby: Columns of type 'LONG VARCHAR' may not be used in CREATE INDEX, ORDER BY, GROUP BY, UNION, INTERSECT, EXCEPT or DISTINCT statements
         // because comparisons are not supported for that type.
         // Since two certificates in the database should never be the same, "SELECT DISTINCT ..." was changed to "SELECT ..." here.
         final Query query = entityManager
-                .createQuery("SELECT a.base64Cert FROM CertificateData a WHERE (a.status=:status1 or a.status=:status2) AND a.type IN (:ctypes)");
+                .createQuery("SELECT a FROM CertificateData a WHERE (a.status=:status1 or a.status=:status2) AND a.type IN (:ctypes)");
         query.setParameter("status1", CertificateConstants.CERT_ACTIVE);
         query.setParameter("status2", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION);
         query.setParameter("ctypes", certificateTypes);
-        final List<String> base64CertificateList = query.getResultList();
-        for (String base64Certificate : base64CertificateList) {
-            try {
-                certificateList.add(CertTools.getCertfromByteArray(Base64.decode(base64Certificate.getBytes())));
-            } catch (CertificateException ce) {
-                log.error("Can't decode certificate.", ce);
-                // Continue with the rest of the results, even if this one exploded..
-            }
-        }
-        return certificateList;
+        return getCertificateList( query.getResultList(), entityManager );
     }
 
     /**
@@ -1090,26 +1093,16 @@ public class CertificateData extends ProtectedData implements Serializable {
      */
     @SuppressWarnings("unchecked")
     public static List<Certificate> findActiveCertificatesByTypeAndIssuer(EntityManager entityManager, final Collection<Integer> certificateTypes, String issuerDN) {
-        final List<Certificate> certificateList = new ArrayList<Certificate>();
         // Derby: Columns of type 'LONG VARCHAR' may not be used in CREATE INDEX, ORDER BY, GROUP BY, UNION, INTERSECT, EXCEPT or DISTINCT statements
         // because comparisons are not supported for that type.
         // Since two certificates in the database should never be the same, "SELECT DISTINCT ..." was changed to "SELECT ..." here.
         final Query query = entityManager
-                .createQuery("SELECT a.base64Cert FROM CertificateData a WHERE (a.status=:status1 or a.status=:status2) AND a.type IN (:ctypes) AND a.issuerDN=:issuerDN");
+                .createQuery("SELECT a FROM CertificateData a WHERE (a.status=:status1 or a.status=:status2) AND a.type IN (:ctypes) AND a.issuerDN=:issuerDN");
         query.setParameter("ctypes", certificateTypes);
         query.setParameter("status1", CertificateConstants.CERT_ACTIVE);
         query.setParameter("status2", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION);
         query.setParameter("issuerDN", issuerDN);
-        final List<String> base64CertificateList = query.getResultList();
-        for (String base64Certificate : base64CertificateList) {
-            try {
-                certificateList.add(CertTools.getCertfromByteArray(Base64.decode(base64Certificate.getBytes())));
-            } catch (CertificateException ce) {
-                log.error("Can't decode certificate.", ce);
-                // Continue with the rest of the results, even if this one exploded..
-            }
-        }
-        return certificateList;
+        return getCertificateList(query.getResultList(), entityManager);
     }
 
     /**

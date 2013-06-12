@@ -442,6 +442,7 @@
 					<!-- Unwanted dependecies.. -->
 					<include name="org/cesecore/certificates/crl/CRLData.java"/>
 					<include name="org/cesecore/certificates/certificate/CertificateData.java"/>
+					<include name="org/cesecore/certificates/certificate/Base64CertData.java"/>
 				</fileset>
 				<fileset dir="${src.dir}">				
 					<include name="org/cesecore/certificates/certificate/CertificateInfo.java"/>			

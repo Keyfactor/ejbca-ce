@@ -51,6 +51,7 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
@@ -112,9 +113,14 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
 
     @Test
     public void test01CreateNewCertRSASha1() throws Exception {
-        Certificate cert = generateCert(roleMgmgToken, CertificateConstants.CERT_ACTIVE);
+        final Certificate cert = generateCert(this.roleMgmgToken, CertificateConstants.CERT_ACTIVE);
         assertNotNull(cert);
-        internalCertStoreSession.removeCertificate(cert);
+        final int b64tableCerts = this.internalCertStoreSession.removeCertificate(cert);
+        if ( CesecoreConfiguration.useBase64CertTable() ) {
+            assertEquals("The Base64CertTable should be used and therefore one certificate should be removed from this table.",  1, b64tableCerts);
+        } else {
+            assertEquals("The Base64CertTable should NOT be used and therefore no certificate should be removed from this table.",  0, b64tableCerts);
+        }
     }
 
     @Test
