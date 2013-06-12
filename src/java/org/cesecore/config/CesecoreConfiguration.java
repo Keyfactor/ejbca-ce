@@ -169,7 +169,7 @@ public final class CesecoreConfiguration {
 
     /** Parameter to specify if retrieving Authorization Access Rules (in AuthorizationSession) should be cached, and in that case for how long. */
     public static long getCacheAuthorizationTime() {
-        return getLongValue("certprofiles.cachetime", 30000L, "milliseconds to cache authorization");
+        return getLongValue("authorization.cachetime", 30000L, "milliseconds to cache authorization");
     }
 
     private static long getLongValue(final String propertyName, final long defaultValue, final String unit) {
