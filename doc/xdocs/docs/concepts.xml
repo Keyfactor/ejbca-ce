@@ -95,7 +95,7 @@ A publisher stores issued certificates to a central location. EJBCA have impleme
 </subsection>
 <subsection name="InternalKeyBinding">
 <p>
-An InternalKeyBinding is a key pair available to the EJBCA instance, a non-CA certificate, an optional list of trusted certificates
+An InternalKeyBinding can be used to make keys in a CryptoToken available for other uses than in a CA. It is a reference to a key pair available to the EJBCA instance, a non-CA certificate, an optional list of trusted certificates
 and properties for its purpose. It can be though of as a simplified key store with purpose-specific properties.
 </p><p>
 Example:
