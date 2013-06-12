@@ -147,8 +147,7 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
     /**
      * 
      * 
-     * @param signerSubjectDN signerSubjectDN subject DN of the signing key to be renewed. The string "all" (as represented by the constant 
-     * TokenAndChainCache.RENEW_ALL_KEYS) will result in all keys being renewed
+     * @param signerSubjectDN signerSubjectDN subject DN of the signing key to be renewed. The string "all" will result in all keys being renewed
      * @param safetyMargin the number of seconds before actual expiration that a keystore should be renewed
      * @throws CryptoTokenOfflineException if Crypto Token is not available or connected, or key with alias does not exist.
      * @throws InvalidKeyException if the public key in the tokenAndChain can not be used to verify a string signed by the private key, because the key 

@@ -29,8 +29,7 @@ public interface OcspKeyRenewalProxySessionRemote {
     /**
      * This method causes the standalone OCSP responder to renew its keystores. 
      * 
-     * @param signerSubjectDN subject DN of the signing key to be renewed. The string "all" (as represented by the constant 
-     * TokenAndChainCache.RENEW_ALL_KEYS) will result 
+     * @param signerSubjectDN subject DN of the signing key to be renewed. The string "all" will result 
      * @throws KeyStoreException 
      * @throws CryptoTokenOfflineException 
      * @throws InvalidKeyException 
