@@ -32,6 +32,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NoSuchElementException;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJB;
@@ -637,7 +638,9 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                     break;
                 }
             } catch (CADoesntExistsException e) {
-                log.debug("CA with caId " + caId + "disappeared during this operation.");
+                log.debug("CA with caId " + caId + " disappeared during this operation.");
+            } catch (NoSuchElementException e) {
+                log.debug("CA with caId " + caId + " has no certificate chain.");
             }
         }
         if (caFingerprint == null) {
