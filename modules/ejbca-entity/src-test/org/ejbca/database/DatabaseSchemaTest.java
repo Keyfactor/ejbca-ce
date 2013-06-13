@@ -35,6 +35,7 @@ import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificateprofile.CertificateProfileData;
 import org.cesecore.certificates.crl.CRLData;
+import org.cesecore.keys.token.CryptoTokenData;
 import org.cesecore.roles.RoleData;
 import org.ejbca.core.ejb.approval.ApprovalData;
 import org.ejbca.core.ejb.ca.publisher.PublisherData;
@@ -46,6 +47,7 @@ import org.ejbca.core.ejb.hardtoken.HardTokenIssuerData;
 import org.ejbca.core.ejb.hardtoken.HardTokenProfileData;
 import org.ejbca.core.ejb.hardtoken.HardTokenPropertyData;
 import org.ejbca.core.ejb.hardtoken.HardTokenPropertyDataPK;
+import org.ejbca.core.ejb.keybind.InternalKeyBindingData;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoveryData;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoveryDataPK;
 import org.ejbca.core.ejb.ra.UserData;
@@ -321,6 +323,23 @@ public class DatabaseSchemaTest {
         LOG.trace("<testCertReqHistoryData");
     }
 
+    @Test
+    public void testCryptoTokenData() {
+        LOG.trace(">testCryptoTokenData");
+        logMemStats();
+        CryptoTokenData entity = new CryptoTokenData();
+        entity.setId(BOGUS_INT);
+        entity.setLastUpdate(0L);
+        entity.setRowProtection(CLOB_10KiB);
+        entity.setRowVersion(0);
+        entity.setTokenData(CLOB_1MiB);
+        entity.setTokenName(VARCHAR_250B);
+        entity.setTokenProps(CLOB_10KiB);
+        entity.setTokenType(VARCHAR_250B);
+        storeAndRemoveEntity(entity);
+        LOG.trace("<testCryptoTokenData");
+    }
+
     // ZZ to run this test last, since we often run out of memory here and mess up the database connection.
     @Test
     public void testZZCRLData() {
@@ -418,6 +437,26 @@ public class DatabaseSchemaTest {
         entity.setValue(VARCHAR_250B);
         storeAndRemoveEntity(entity);
         LOG.trace("<testHardTokenPropertyData");
+    }
+
+    @Test
+    public void testInternalKeyBindingData() {
+        LOG.trace(">testInternalKeyBindingData");
+        logMemStats();
+        InternalKeyBindingData entity = new InternalKeyBindingData();
+        entity.setCertificateId(VARCHAR_250B);
+        entity.setCryptoTokenId(BOGUS_INT);
+        entity.setId(BOGUS_INT);
+        entity.setKeyBindingType(VARCHAR_250B);
+        entity.setKeyPairAlias(VARCHAR_250B);
+        entity.setLastUpdate(0L);
+        entity.setName(VARCHAR_250B);
+        entity.setRawData(CLOB_1MiB);
+        entity.setRowProtection(CLOB_10KiB);
+        entity.setRowVersion(0);
+        entity.setStatus(VARCHAR_250B);
+        storeAndRemoveEntity(entity);
+        LOG.trace("<testInternalKeyBindingData");
     }
 
     @Test

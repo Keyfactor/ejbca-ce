@@ -13,7 +13,6 @@
 	<import file="${build-properties.basedir}/../propertyDefaults.xml"/>
 	
     <property name="ejbca.dist.path" location="${ejbca.home}/dist" />
-    <property name="va.dist.path" location="${ejbca.home}/va-dist" />
     <!-- Define the different modules -->
     <property name="mod.path" location="${ejbca.home}/modules" />
     <property name="mod.common.path" location="${mod.path}/common" />
@@ -24,18 +23,14 @@
     <property name="mod.ejbca-entity.lib" location="${mod.dist.path}/ejbca-entity.jar" />
     <property name="mod.ejbca-db-cli.dist" location="${ejbca.dist.path}/ejbca-db-cli" />
     <property name="mod.ejbca-db-cli.lib" location="${mod.ejbca-db-cli.dist}/ejbca-db-cli.jar" />
-    <property name="mod.va-entity.lib" location="${mod.dist.path}/va-entity.jar" />
     <property name="mod.ejbca-ejb.lib" location="${mod.dist.path}/ejbca-ejb.jar" />
-    <property name="mod.va-ejb.lib" location="${mod.dist.path}/va-ejb.jar" />
     <property name="mod.ejbca-ejb.path" location="${mod.path}/ejbca-ejb" />
     <property name="mod.ejbca-ejb-cli.dist" location="${ejbca.dist.path}/ejbca-ejb-cli" />
     <property name="mod.ejbca-ejb-cli.lib" location="${mod.ejbca-ejb-cli.dist}/ejbca-ejb-cli.jar" />
     <property name="mod.ejbca-ejb-cli.path" location="${mod.path}/ejbca-ejb-cli" />
     <property name="mod.ejbca-ejb-interface.path" location="${mod.path}/ejbca-ejb-interface" />
 	<property name="mod.ejbca-ejb-interface.lib" location="${mod.dist.path}/ejbca-interface.jar" />
-    <property name="mod.va-ejb-interface.lib" location="${mod.dist.path}/va-ejb3-interface.jar" />
     <property name="mod.ejbca-util.lib" location="${ejbca.dist.path}/ejbca-util.jar" />
-    <property name="mod.va-common.lib" location="${mod.dist.path}/va-common.jar" />
     <property name="mod.ejbca-util-signserver.lib" location="${ejbca.dist.path}/ejbca-util-signserver.jar" />
     <property name="mod.ejbca-common-web.lib" location="${mod.dist.path}/ejbca-common-web.jar" />
 	<property name="mod.ejbca-extensions.lib" location="${mod.dist.path}/ejbca-extensions.jar" />

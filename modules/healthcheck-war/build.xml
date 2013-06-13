@@ -8,7 +8,6 @@
 	<import file="${this.dir}/../build.xml"/>
 	
 	<property name="build.dir" location="${this.dir}/build"/>
-	<property name="build-ocsp.dir" location="${this.dir}/build-ocsp"/>
 	<property name="build-test.dir" location="${this.dir}/build-test"/>
 	<property name="src.dir" location="${this.dir}/src"/>
 	<property name="src-test.dir" location="${this.dir}/src-test"/>
@@ -27,14 +26,6 @@
 		<path refid="lib.ejbca-common-web.classpath"/>
 	</path>
 	
-	<path id="compile-va.classpath">
-		<path refid="compile-common.classpath"/>
-		<pathelement location="${mod.va-ejb-interface.lib}"/>
-		<pathelement location="${mod.va-common.lib}"/>
-		<pathelement location="${mod.va-entity.lib}" />
-    	<path refid="lib.ejbca-util.classpath"/>
-	</path>
-
 	<path id="test.classpath">
 		<path refid="compile-common.classpath"/>
 		<path location="${build-test.dir}" />
@@ -44,7 +35,6 @@
 
     <target name="clean" description="Clean up this module">
 		<delete dir="${build.dir}" />
-		<delete dir="${build-ocsp.dir}" />
 		<delete dir="${build-test.dir}" />
     	<delete file="${mod.healthcheck-war.war}" />
     </target>
@@ -53,22 +43,12 @@
         <war destfile="${mod.healthcheck-war.war}" webxml="${resources.dir}/WEB-INF/web-ejbca.xml" basedir="${build.dir}"/>
     </target>
 
-	<target name="va-build" description="Build this module" depends="va-compile">
-		<war destfile="${mod.healthcheck-war.war}" webxml="${resources.dir}/WEB-INF/web-ocsp.xml" basedir="${build-ocsp.dir}"/>
-	</target>
-
     <target name="compile-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-common-web"/></target>
     <target name="ejbca-compile" depends="compile-external-deps">
     	<mkdir dir="${build.dir}/WEB-INF/classes" />
         <javac srcdir="${src.dir}" destdir="${build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
 			excludes="org/ejbca/ui/web/pub/cluster/ExtOCSPHealthCheck.java, org/ejbca/ui/web/pub/OCSPHealthServlet.java" classpathref="compile-ejbca.classpath"/>
     </target>
-
-	<target name="va-compile" depends="va-va-war">
-		<mkdir dir="${build-ocsp.dir}/WEB-INF/classes" />
-		<javac srcdir="${src.dir}" destdir="${build-ocsp.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
-			excludes="org/ejbca/ui/web/pub/cluster/EJBCAHealthCheck.java, org/ejbca/ui/web/pub/HealthCheckServlet.java" classpathref="compile-va.classpath"/>
-	</target>
 
 	<target name="compile-tests" depends="with.clover, ejbca-compile">
 		<mkdir dir="${build-test.dir}" />
