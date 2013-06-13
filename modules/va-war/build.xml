@@ -33,14 +33,6 @@
 		<path refid="lib.ejbca-util.classpath"/>
 	</path>
 
-	<path id="compile-va.classpath">
-		<path refid="compile-common.classpath"/>
-		<path refid="lib.ejbca-util.classpath"/>
-		<pathelement location="${mod.va-ejb-interface.lib}"/>
-		<pathelement location="${mod.va-common.lib}"/>
-		<pathelement location="${mod.va-entity.lib}"/>
-	</path>
-		
     <target name="clean" description="Clean up this module">
 		<delete dir="${build-status.dir}" />
 		<delete dir="${build-status-va.dir}" />
@@ -65,20 +57,6 @@
 		<war destfile="${mod.crlstore.war}" webxml="${resources.dir}/WEB-INF/web-crlstore-ejbca.xml" basedir="${build-crlstore.dir}"/>
 	</target>
 
-	<target name="va-build" description="Build this module" depends="va-status.war, va-certstore.war, va-crlstore.war"/>
-	<target name="va-status.war" depends="va-compile" if="ocsp.enabled.if.defined">
-		<war destfile="${mod.status.war}" webxml="${resources.dir}/WEB-INF/web-status-va.xml" basedir="${build-status-va.dir}"/>
-	</target>
-	<target name="va-certstore.war" depends="va-compile" if="certstore.enabled.if.defined">
-		<war destfile="${mod.certstore.war}" webxml="${resources.dir}/WEB-INF/web-certstore-va.xml" basedir="${build-certstore-va.dir}"/>
-	</target>
-	<target name="va-crlstore.war" depends="va-compile" if="crlstore.enabled.if.defined">
-		<war destfile="${mod.crlstore.war}" webxml="${resources.dir}/WEB-INF/web-crlstore-va.xml" basedir="${build-crlstore-va.dir}"/>
-	</target>
-
-	<target name="va-compile" depends="va-status-compile, va-certstore-compile, va-crlstore-compile"/>
-	<target name="va-common-compile" depends="va-ejb">
-	</target>
 	<condition property="use.ocsp.extensionclass">
 			<not>
 				<equals arg1="${ocsp.extensionclass}" arg2=""/>
@@ -106,42 +84,6 @@
 		</jar>
 	</target>
 	
-	<target name="va-extensions-build">
-			<jar basedir="${build-status-va.dir}/WEB-INF/classes" jarfile="${mod.ejbca-extensions.lib}">
-				<include name="org/ejbca/core/protocol/ocsp/*.class"/>
-				<include name="org/ejbca/core/protocol/ocsp/extension/**/*.class"/>
-			</jar>
-	</target>
-	
-	<target name="va-status-compile" depends="va-common-compile, use-ocsp-extensionclass" if="ocsp.enabled.if.defined">
-		<echo message="${mod.va-ejb.lib}"/>
-		<mkdir dir="${build-status-va.dir}/WEB-INF/classes" />
-		<javac destdir="${build-status-va.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
-			classpathref="compile-va.classpath">
-			<include name="org/cesecore/certificates/ocsp/extension/OCSPExtension.java" />
-			<include name="org/ejbca/core/protocol/ocsp/*Extension.java"/>
-			<include name="org/ejbca/core/protocol/ocsp/extension/**/*.java"/>
-			<src path="${src.dir}"/>
-		</javac>
-		<antcall target="va-extensions-build"/>
-	</target>
-	<target name="va-certstore-compile" depends="va-common-compile" if="certstore.enabled.if.defined">
-    	<mkdir dir="${build-certstore-va.dir}/WEB-INF/classes" />
-		<javac destdir="${build-certstore-va.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
-			classpathref="compile-va.classpath">
-        	<include name="org/ejbca/ui/web/protocol/CertStoreServlet.java" />
-			<src path="${src.dir}"/>
-		</javac>
-	</target>
-	<target name="va-crlstore-compile" depends="va-common-compile" if="crlstore.enabled.if.defined">
-    	<mkdir dir="${build-crlstore-va.dir}/WEB-INF/classes" />
-		<javac destdir="${build-crlstore-va.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
-			classpathref="compile-va.classpath">
-        	<include name="org/ejbca/ui/web/protocol/CRLStoreServlet.java" />
-			<src path="${src.dir}"/>
-		</javac>
-	</target>
-
 	<target name="ejbca-compile" depends="ejbca-status-compile, ejbca-certstore-compile, ejbca-crlstore-compile, use-ocsp-extensionclass"/>
 	<target name="ejbca-common-compile-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-common-web"/></target>
 	<target name="ejbca-status-compile" depends="ejbca-common-compile-external-deps" if="ocsp.enabled.if.defined">

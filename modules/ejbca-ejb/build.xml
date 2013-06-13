@@ -13,8 +13,6 @@
 	<property name="build-util.dir" location="${this.dir}/build-util"/>
 	<property name="build-util-signserver.dir" location="${this.dir}/build-util-signserver"/>
 	<property name="build-common-web.dir" location="${this.dir}/build-common-web"/>
-	<property name="build-va.dir" location="${this.dir}/build-va"/>
-	<property name="build-va-common.dir" location="${this.dir}/build-va-common"/>
 	<property name="build-test.dir" location="${this.dir}/build-test"/>
 	<property name="src.dir" location="${ejbca.home}/src/java"/>
 	<property name="src-test.dir" location="${this.dir}/src-test"/>
@@ -51,14 +49,6 @@
 		<path refid="lib.quickserver.classpath"/>
 		<pathelement location="${mod.ejbca-ws-cli.lib}"/>
 		<pathelement location="${mod.ejbca-ws.lib}"/>
-	</path>
-
-	<path id="compile-va-ejb.classpath">
-		<path refid="compile-util.classpath"/>
-		<path refid="lib.ejbca-util.classpath"/>
-		<pathelement location="${mod.va-ejb-interface.lib}"/>
-		<pathelement location="${mod.va-entity.lib}"/>
-		<path path="${build-va-common.dir}"/>
 	</path>
 
 	<path id="compile-test.classpath">
@@ -392,14 +382,11 @@
 
 	<target name="clean" depends="dependecy-check-clean" description="Clean up this module">
 		<delete dir="${build.dir}" />
-		<delete dir="${build-va.dir}" />
-		<delete dir="${build-va-common.dir}" />
 		<delete dir="${build-util.dir}" />
 		<delete dir="${build-util-signserver.dir}" />
 		<delete dir="${build-common-web.dir}" />
 		<delete dir="${build-test.dir}" />
 		<delete file="${mod.ejbca-ejb.lib}" />
-		<delete file="${mod.va-ejb.lib}" />
 		<delete file="${mod.ejbca-util.lib}" />
 		<delete file="${mod.ejbca-common-web.lib}" />
 	</target>
@@ -451,34 +438,6 @@
 		<exec executable="${appserver.home}/bin/createEJBStubs.${generate-stubs-script-extension}">
 			<arg line="${mod.ejbca-ejb.lib} -verbose -cp ${mod.ejbca-ejb-interface.lib}:${mod.ejbca-util.lib}:${mod.ejbca-entity.lib} -updatefile ${mod.ejbca-ejb-interface.lib}" />
 		</exec>
-	</target>
-
-	<target name="build-va" description="Build this module" depends="build-va-common, compile-va-ejb">
-		<mkdir dir="${ocsp.hardToken.classes}"/>
-		<!-- If it doesn't exist.. -->
-		<jar destfile="${mod.va-ejb.lib}">
-			<fileset dir="${build-va.dir}" />
-			<fileset dir="${ocsp.hardToken.classes}"/>
-		</jar>
-	</target>
-
-	<target name="build-va-common" description="Build the va-common JAR" depends="compile-va-common">
-		<dirname file="${mod.va-common.lib}" property="mod.va-common.lib.dir"/>
-		<mkdir dir="${mod.va-common.lib.dir}" />
-		<jar destfile="${mod.va-common.lib}">
-			<manifest>
-				<attribute name="Implementation-Version" value="${app.version}"/>
-			</manifest>
-			<fileset dir="${build-va-common.dir}" includes="**/*.class"/>
-			<fileset dir="${ejbca.home}/src/java">
-				<include name="dncomponents.properties"/>
-				<include name="profilemappings.properties"/>
-				<include name="certextensions.properties"/>
-			    <!-- defaultvalues.properties is normally included in ejbca-util.jar, but since that jar
-			         is not included in the va ear build, we include it in this lib instead -->
-                <include name="defaultvalues.properties"/>
-			</fileset>
-		</jar>
 	</target>
 
 	<target name="build-util" description="Build the ejbca-util JAR" depends="compile-util">
@@ -544,43 +503,6 @@
 		<mkdir dir="${build.dir}"/>
 		<javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" includeantruntime="no" encoding="iso8859-1"
         	includes="${source.fileset.ejbca-ejb.files}" classpathref="compile-ejbca-ejb.classpath"/>
-	</target>
-
-	<target name="compile-va-ejb" depends="with.clover, va-ejb-interface, compile-va-common">
-		<mkdir dir="${build-va.dir}"/>
-		<javac srcdir="${src.dir}" destdir="${build-va.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" classpathref="compile-va-ejb.classpath">
-			<include name="org/cesecore/certificates/certificate/CertificateStoreSessionBean.java" />
-			<include name="org/cesecore/certificates/crl/CrlStoreSessionBean.java" />
-			<include name="org/cesecore/certificates/ocsp/standalone/StandaloneOcspResponseGeneratorSessionBean.java" />
-			<include name="org/cesecore/keys/token/CryptoTokenManagementSessionBean.java" />
-			<include name="org/cesecore/keys/token/CryptoTokenSessionBean.java" />
-			<include name="org/ejbca/core/ejb/ocsp/standalone/OcspKeyRenewalSessionBean.java" />
-			<include name="org/ejbca/cesecoreintegration/StandAloneVaMockSessionBean.java" />
-			<include name="org/ejbca/core/ejb/config/HealthCheckSessionBean.java" />
-		</javac>
-	</target>
-
-	<target name="compile-va-common" depends="with.clover, va-ejb-interface">
-		<mkdir dir="${build-va-common.dir}"/>
-		<javac destdir="${build-va-common.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" classpathref="compile-va-ejb.classpath">
-			<include name="org/ejbca/core/protocol/certificatestore/CertificateCacheFactory.java"/>
-           	<include name="org/ejbca/ui/web/LimitLengthASN1Reader.java"/>
-			<include name="org/ejbca/ui/web/protocol/RFC4387URL.java"/>
-			<include name="org/ejbca/ui/web/protocol/IHealtChecker.java"/>
-			<include name="org/ejbca/ui/web/pub/cluster/ValidationAuthorityHealthCheck.java"/>
-            <include name="org/ejbca/util/*PatternLogger.java"/>
-		    <include name="org/ejbca/util/HTMLTools.java"/>
-			<include name="org/ejbca/core/protocol/ws/common/CertificateHelper.java"/>
-			<include name="org/ejbca/core/protocol/ws/client/gen/CertificateResponse.java"/>
-			<include name="org/ejbca/core/protocol/ws/client/gen/EjbcaWS.java"/>
-			<include name="org/ejbca/core/protocol/ws/client/gen/EjbcaWSService.java"/>
-			<include name="org/ejbca/core/protocol/ws/client/gen/NameAndId.java"/>
-			<include name="org/ejbca/core/protocol/ws/client/gen/UserDataVOWS.java"/>
-			<include name="org/ejbca/core/protocol/ws/client/gen/UserMatch.java"/>
-			<src path="${src.dir}"/>
-			<src path="${mod.ejbca-ws.path}/src"/>
-			<src path="${mod.ejbca-ws-cli.path}/src-gen"/>
-		</javac>
 	</target>
 
 	<target name="compile-util" depends="with.clover">

@@ -21,10 +21,6 @@
     	<ant antfile="build.xml" dir="modules/systemtests" target="rungfver" />
     </target>
 
-    <target name="test:rungfver-va" description="run Glassfish JEE validation tool on the OCSP EAR" depends="va-ear">
-    	<ant antfile="build.xml" dir="modules/systemtests" target="rungfver-va" />
-    </target>
-
     <target name="test:runone" description="run a single JUnit-test specified -Dtest.runone=classname">
     	<fail message="'test.runone' not set. Example -Dtest.runone=TestDnComponents " unless="test.runone" />
     	<!-- Locate the right module where the test resides.. -->

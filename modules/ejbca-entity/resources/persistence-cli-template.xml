@@ -28,7 +28,6 @@
         Persistence unit for validating and reading an EJBCA database.
     -->
     <persistence-unit name="ejbca-read" transaction-type="RESOURCE_LOCAL">
-        <mapping-file>META-INF/orm-common-${database.name}.xml</mapping-file>
         <mapping-file>META-INF/orm-ejbca-${database.name}.xml</mapping-file>
         <class>org.cesecore.authorization.rules.AccessRuleData</class>
         <class>org.cesecore.authorization.cache.AccessTreeUpdateData</class>
@@ -58,25 +57,6 @@
         <class>org.ejbca.core.ejb.ra.userdatasource.UserDataSourceData</class>
         <class>org.ejbca.core.ejb.services.ServiceData</class>
         <class>org.ejbca.core.ejb.keybind.InternalKeyBindingData</class>
-        <properties>
-            <property name="hibernate.dialect" value="${hibernate.dialect}"/>
-            <property name="hibernate.connection.url" value="${database.url}"/>
-            <property name="hibernate.connection.driver_class" value="${database.driver}"/>
-            <property name="hibernate.connection.username" value="${database.username}"/>
-            <property name="hibernate.connection.password" value="${database.password}"/>
-            <property name="hibernate.hbm2ddl.auto" value="validate"/>
-            <property name="hibernate.query.jpaql_strict_compliance" value="true"/>
-        </properties>
-    </persistence-unit>
-    <!--
-        Persistence unit for validating and reading a VA database.
-    -->
-    <persistence-unit name="va-read" transaction-type="RESOURCE_LOCAL">
-        <mapping-file>META-INF/orm-common-${database.name}.xml</mapping-file>
-        <class>org.cesecore.certificates.certificate.CertificateData</class>
-        <class>org.cesecore.certificates.certificate.Base64CertData</class>
-        <class>org.cesecore.certificates.crl.CRLData</class>
-        <class>org.cesecore.keys.token.CryptoTokenData</class>
         <properties>
             <property name="hibernate.dialect" value="${hibernate.dialect}"/>
             <property name="hibernate.connection.url" value="${database.url}"/>
@@ -91,7 +71,6 @@
         Persistence unit for creating tables and writing to an EJBCA database.
     -->
     <persistence-unit name="ejbca-write" transaction-type="RESOURCE_LOCAL">
-        <mapping-file>META-INF/orm-common-${database.name}.xml</mapping-file>
         <mapping-file>META-INF/orm-ejbca-${database.name}.xml</mapping-file>
         <class>org.cesecore.authorization.rules.AccessRuleData</class>
         <class>org.cesecore.authorization.cache.AccessTreeUpdateData</class>
@@ -121,25 +100,6 @@
         <class>org.ejbca.core.ejb.ra.userdatasource.UserDataSourceData</class>
         <class>org.ejbca.core.ejb.services.ServiceData</class>
         <class>org.ejbca.core.ejb.keybind.InternalKeyBindingData</class>
-        <properties>
-            <property name="hibernate.dialect" value="${hibernate.dialect}"/>
-            <property name="hibernate.connection.url" value="${database.url}"/>
-            <property name="hibernate.connection.driver_class" value="${database.driver}"/>
-            <property name="hibernate.connection.username" value="${database.username}"/>
-            <property name="hibernate.connection.password" value="${database.password}"/>
-            <property name="hibernate.hbm2ddl.auto" value="update"/>
-            <property name="hibernate.query.jpaql_strict_compliance" value="true"/>
-        </properties>
-    </persistence-unit>
-    <!--
-        Persistence unit for creating tables and writing to a VA database.
-    -->
-    <persistence-unit name="va-write" transaction-type="RESOURCE_LOCAL">
-        <mapping-file>META-INF/orm-common-${database.name}.xml</mapping-file>
-        <class>org.cesecore.certificates.certificate.CertificateData</class>
-        <class>org.cesecore.certificates.certificate.Base64CertData</class>
-        <class>org.cesecore.certificates.crl.CRLData</class>
-        <class>org.cesecore.keys.token.CryptoTokenData</class>
         <properties>
             <property name="hibernate.dialect" value="${hibernate.dialect}"/>
             <property name="hibernate.connection.url" value="${database.url}"/>
