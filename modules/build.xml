@@ -94,18 +94,10 @@
 		<ant antfile="${mod.ejbca-entity.path}/build.xml" target="build-cli" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
-	<target name="va-entity" depends="ejbca-util" description="Build EJBCA JPA entity library">
-		<ant antfile="${mod.ejbca-entity.path}/build.xml" target="build-va" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-	</target>
-
 	<target name="ejbca-ejb-interface" depends="ejbca-entity, ejbca-ws-cli" description="Build EJBCA EJB interfaces library">
 		<ant antfile="${mod.ejbca-ejb-interface.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
-	<target name="va-ejb-interface" description="Build OCSP EJB interfaces library" depends="ejbca-ws-cli">
-		<ant antfile="${mod.ejbca-ejb-interface.path}/build.xml" target="build-va" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-	</target>
-				
 	<target name="ejbca-ejb-cli" depends="ejbca-ejb-interface" description="Build EJBCA EJB CLI">
 		<ant antfile="${mod.ejbca-ejb-cli.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
@@ -274,20 +266,12 @@
 		<ant antfile="${mod.healthcheck-war.path}/build.xml" target="ejbca-build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
-	<target name="healthcheck-va-war" description="Build the OCSP Helthcheck WAR">
-		<ant antfile="${mod.healthcheck-war.path}/build.xml" target="va-build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-	</target>
-
 	<target name="clearcache-ejbca-war" depends="ejbca-common-web" description="Build the EJBCA ClearCache WAR">
 		<ant antfile="${mod.clearcache-war.path}/build.xml" target="ejbca-build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
 	<target name="va-ejbca-war" depends="ejbca-common-web" description="Build the EJBCA OCSP WAR">
 		<ant antfile="${mod.va-war.path}/build.xml" target="ejbca-build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
-	</target>
-
-	<target name="va-va-war" description="Build the External OCSP Responder OCSP WAR">
-		<ant antfile="${mod.va-war.path}/build.xml" target="va-build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
 
 	<target name="renew-war" depends="ejbca-common-web" description="Build the Renew WAR">
@@ -306,11 +290,6 @@
 		<ant antfile="${mod.ejbca-ejb.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
-	<target name="va-ejb" description="Build OCSP EJB module">
-		<ant antfile="${mod.ejbca-ejb.path}/build.xml" target="build-va" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<ant antfile="${mod.systemtests.path}/build.xml" target="build-libs-va" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-	</target>
-
 	<target name="appserver-ext-jbosslog4jsafer">
 		<ant antfile="${mod.appserver-ext.path}/build.xml" target="jbosslog4jsafer" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
@@ -327,10 +306,6 @@
 		<ant dir="systemtests" target="build-libs"/>
 	</target>
 	
-	<target name="systemtests.build.libs.va">
-		<ant dir="systemtests" target="build-libs-va"/>
-	</target>
-
 	<target name="ejbca.clients" depends="ejbca-ejb-cli, ejbca-ws-cli, ejbca-xkms-cli, ejbca-db-cli"/>
 	<target name="ejbca.ear.module-dependencies" depends="publicweb-gui, renew-war, scep-war, webdist-war, va-ejbca-war, cmp-war, healthcheck-ejbca-war, clearcache-ejbca-war, admin-gui, ejbca-ejb, ejbca-properties, ejbca-ws, ejbca-xkms, externalra-service, ejbca-cmp-tcp, ejbca.clients, systemtests.build.libs"/>
 

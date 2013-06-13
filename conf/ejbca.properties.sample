@@ -25,14 +25,12 @@
 #appserver.type=jboss
 
 # To prevent accidental runs of tests or deploying the wrong thing in a production environment, we
-# could prevent this by setting this variable to either "ca" or "ocsp".
+# could prevent this by setting this variable to either "true" or "false".
 # Setting this value to 'false' will allow system tests to alter the configuration of the running
 # EJBCA instance.
 # Default: true
 #ejbca.productionmode=true
 #ejbca.productionmode=false
-#ejbca.productionmode=ca
-#ejbca.productionmode=ocsp
 
 # Set to true to allow dynamic re-configuration using properties files in the file 
 # system. Using this you can place a file /etc/ejbca/conf/ocsp.properties in the file system and

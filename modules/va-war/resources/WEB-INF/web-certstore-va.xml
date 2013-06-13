@@ -7,38 +7,6 @@
     xsi:schemaLocation="http://java.sun.com/xml/ns/javaee 
     http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
 
-    <description><![CDATA[Stand alone certificate store]]></description>
+	<!-- DEPRECATED. REMOVE. -->
 
-    <servlet>
-        <description><![CDATA[Fetches certificates according to rfc4378]]></description>
-        <display-name>CertStoreServletStandAlone</display-name>
-        <servlet-name>CertificateStore</servlet-name>
-        <servlet-class>org.ejbca.ui.web.protocol.CertStoreServlet</servlet-class>
-        <load-on-startup>1</load-on-startup>
-    </servlet>
-
-    <servlet-mapping>
-        <servlet-name>CertificateStore</servlet-name>
-        <url-pattern>/search.cgi</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>CertificateStore</servlet-name>
-        <url-pattern>/search.cgi/*</url-pattern>
-    </servlet-mapping>
-
-    <session-config>
-        <session-timeout>30</session-timeout>
-    </session-config>
-
-    <security-constraint>
-        <web-resource-collection>
-            <web-resource-name>restricted methods</web-resource-name>
-            <url-pattern>/*</url-pattern>
-            <http-method>PUT</http-method>
-            <http-method>DELETE</http-method>
-            <http-method>OPTIONS</http-method>
-            <http-method>TRACE</http-method>
-        </web-resource-collection>
-        <auth-constraint />
-    </security-constraint> 
 </web-app>

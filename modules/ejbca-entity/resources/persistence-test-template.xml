@@ -25,7 +25,6 @@
     http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd"
     >
     <persistence-unit name="ejbca-pu" transaction-type="RESOURCE_LOCAL">
-        <mapping-file>META-INF/orm-common-${database.name}.xml</mapping-file>
         <mapping-file>META-INF/orm-ejbca-${database.name}.xml</mapping-file>
         <class>org.cesecore.authorization.rules.AccessRuleData</class>
         <class>org.cesecore.authorization.cache.AccessTreeUpdateData</class>
@@ -70,7 +69,7 @@
 	    OCSP Monitoring Tool test configurations on MySQL.
 	-->
     <persistence-unit name="ca" transaction-type="RESOURCE_LOCAL">
-        <mapping-file>META-INF/orm-common-mysql.xml</mapping-file>
+        <mapping-file>META-INF/orm-ejbca-mysql.xml</mapping-file>
         <class>org.cesecore.certificates.certificate.CertificateData</class>
         <class>org.cesecore.certificates.certificate.Base64CertData</class>
         <class>org.cesecore.certificates.crl.CRLData</class>
@@ -86,7 +85,7 @@
         </properties>
     </persistence-unit>
     <persistence-unit name="ocsp1" transaction-type="RESOURCE_LOCAL">
-        <mapping-file>META-INF/orm-common-mysql.xml</mapping-file>
+        <mapping-file>META-INF/orm-ejbca-mysql.xml</mapping-file>
         <class>org.cesecore.certificates.certificate.CertificateData</class>
         <class>org.cesecore.certificates.certificate.Base64CertData</class>
         <class>org.cesecore.certificates.crl.CRLData</class>

@@ -7,48 +7,6 @@
     xsi:schemaLocation="http://java.sun.com/xml/ns/javaee 
     http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
 
-    <description><![CDATA[OCSP responder standalone]]></description>
+	<!-- DEPRECATED. REMOVE. -->
 
-    <servlet-mapping>
-        <servlet-name>OCSP</servlet-name>
-        <url-pattern>/ocsp</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>OCSP</servlet-name>
-        <url-pattern>/ocsp/*</url-pattern>
-    </servlet-mapping>
-
-    <session-config>
-        <session-timeout>30</session-timeout>
-    </session-config>
-
-<!--
-    <resource-ref >
-        <res-ref-name>java:/EjbcaDS</res-ref-name>
-        <res-type>javax.sql.DataSource</res-type>
-        <res-auth>Container</res-auth>
-    </resource-ref>
--->
-
-    <security-constraint>
-        <web-resource-collection>
-            <web-resource-name>restricted methods</web-resource-name>
-            <url-pattern>/*</url-pattern>
-            <http-method>PUT</http-method>
-            <http-method>DELETE</http-method>
-            <http-method>OPTIONS</http-method>
-            <http-method>TRACE</http-method>
-        </web-resource-collection>
-        <auth-constraint />
-    </security-constraint> 
-
-<!--
-    <ejb-local-ref >
-        <ejb-ref-name>ejb/CertificateStoreOnlyDataSessionLocal</ejb-ref-name>
-        <ejb-ref-type>Session</ejb-ref-type>
-        <local-home>org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocalHome</local-home>
-        <local>org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal</local>
-        <ejb-link>CertificateStoreOnlyDataSession</ejb-link>
-    </ejb-local-ref>
--->
 </web-app>

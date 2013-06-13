@@ -24,7 +24,6 @@
 	<import file="${this.dir}/../build.xml"/>
 	
 	<property name="build.dir" location="${this.dir}/build"/>
-	<property name="build-va.dir" location="${this.dir}/build-va"/>
 	<property name="build-test.dir" location="${this.dir}/build-test"/>
 	<property name="build-cli.dir" location="${this.dir}/build-cli"/>
 	<property name="reports.base.dir" location="${this.dir}/build-test/reports/"/>
@@ -41,13 +40,6 @@
 
 	<path id="compile.classpath">
 		<path refid="common-compile.classpath"/>
-		<path refid="lib.ejbca-util.classpath"/>
-	</path>
-
-	<path id="va-compile.classpath">
-		<path refid="common-compile.classpath"/>
-		<path refid="lib.cert-cvc.classpath"/>
-		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.ejbca-util.classpath"/>
 	</path>
 
@@ -98,20 +90,14 @@
 
     <target name="clean" description="Clean up this module">
 		<delete dir="${build.dir}" />
-		<delete dir="${build-va.dir}" />
 		<delete dir="${build-test.dir}" />
 		<delete dir="${build-cli.dir}" />
 		<delete file="${mod.ejbca-entity.lib}" />
-		<delete file="${mod.va-entity.lib}" />
 		<delete dir="${mod.ejbca-db-cli.dist}" />
     </target>
 	
     <target name="build" description="Build this module" depends="compile, handlepersistence, handleorm">
     	<jar destfile="${mod.ejbca-entity.lib}" basedir="${build.dir}" includes="**/*.class **/*.xml" excludes="org/ejbca/util/DatabaseSchemaScriptCreator.class"/>
-    </target>
-
-    <target name="build-va" description="Build this module" depends="compile-va, handlepersistence, handleorm-ocsp">
-    	<jar destfile="${mod.va-entity.lib}" basedir="${build-va.dir}" includes="**/*.class **/*.xml"/>
     </target>
 
     <target name="handlepersistence">
@@ -123,11 +109,6 @@
     	<mkdir dir="${build.dir}/META-INF"/>
     	<mkdir dir="${build-va.dir}/META-INF"/>
     	<copy file="${resources.dir}/persistence-ds-template.xml" tofile="${build.dir}/META-INF/persistence.xml" failonerror="true" overwrite="true">
-    		<filterchain>
-				<expandproperties/>
-    		</filterchain>
-    	</copy>
-    	<copy file="${resources.dir}/persistence-ds-va-template.xml" tofile="${build-va.dir}/META-INF/persistence.xml" failonerror="true" overwrite="true">
     		<filterchain>
 				<expandproperties/>
     		</filterchain>
@@ -147,7 +128,6 @@
     </target>
 
     <target name="handleorm">
-		<copy file="${resources.dir}/orm-common-${database.name}.xml" todir="${build.dir}/META-INF/" failonerror="true" overwrite="true"/>
 		<copy file="${resources.dir}/orm-ejbca-${database.name}.xml" todir="${build.dir}/META-INF/" failonerror="true" overwrite="true"/>
 		<copy todir="${build-test.dir}/META-INF/" failonerror="true" overwrite="true">
 			<fileset dir="${resources.dir}" includes="orm-*.xml"/>
@@ -155,10 +135,6 @@
 		<copy todir="${build-cli.dir}/META-INF/" failonerror="true" overwrite="true">
 			<fileset dir="${resources.dir}" includes="orm-*.xml"/>
     	</copy>
-	</target>
-
-    <target name="handleorm-ocsp">
-		<copy file="${resources.dir}/orm-common-${database.name}.xml" tofile="${build-va.dir}/META-INF/orm-common-${database.name}.xml" failonerror="true" overwrite="true"/>
 	</target>
 
     <target name="compile-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-util"/></target>
@@ -169,24 +145,12 @@
         	encoding="iso8859-1" target="${java.target.version}" classpathref="compile.classpath"/>
     </target>
 
-    <target name="compile-va" depends="with.clover">
-    	<mkdir dir="${build-va.dir}" />
-        <javac destdir="${build-va.dir}" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}" classpathref="va-compile.classpath">
-        	<include name="org/cesecore/certificates/certificate/CertificateData.java"/>
-        	<include name="org/cesecore/certificates/crl/CRLData.java"/>
-        	<include name="org/cesecore/keys/token/CryptoTokenData.java" />
-        	<src path="${src.dir}"/>
-        </javac>
-    </target>
-
     <target name="test-dbschema" description="Perform database schema validation." depends="compile-test, handlepersistence, handleorm">
     	<fail unless="jdbc.driver.dir" message="Use -Djdbc.driver.dir=/path-to-jdbc-jars/ to specify the directory with the JDBC driver JARs."/>
 		<available property="database.driver.available" classname="${database.driver}" classpathref="jdbc-jars.classpath"/>
     	<fail unless="database.driver.available" message="Driver class (${database.driver}) from database.properties can not be found in ${jdbc.driver.dir}."/>
         <copy file="${resources.dir}/log4j.xml" tofile="${build-test.dir}/log4j.xml" />
     	<mkdir dir="${build-test.dir}/META-INF"/>
-		<copy file="${resources.dir}/orm-common-${database.name}.xml" todir="${build-test.dir}/META-INF/" failonerror="true" overwrite="true"/>
 		<copy file="${resources.dir}/orm-ejbca-${database.name}.xml" todir="${build-test.dir}/META-INF/" failonerror="true" overwrite="true"/>
     	<property name="reports.dir" location="${reports.base.dir}/dbschema"/>
 		<delete dir="${reports.dir}" />
@@ -215,7 +179,6 @@
     	<fail unless="database.driver.available" message="Driver class (${database.driver}) from database.properties can not be found in ${jdbc.driver.dir}."/>
         <copy file="${resources.dir}/log4j.xml" tofile="${build-test.dir}/log4j.xml" />
     	<mkdir dir="${build-test.dir}/META-INF"/>
-		<copy file="${resources.dir}/orm-common-${database.name}.xml" todir="${build-test.dir}/META-INF/" failonerror="true" overwrite="true"/>
 		<copy file="${resources.dir}/orm-ejbca-${database.name}.xml" todir="${build-test.dir}/META-INF/" failonerror="true" overwrite="true"/>
     	<property name="reports.dir" location="${reports.base.dir}/ocspmon"/>
 		<delete dir="${reports.dir}" />

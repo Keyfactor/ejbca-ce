@@ -391,15 +391,6 @@
 		-->
 	</target>
 
-	<target name="jee:deployva" depends="set-paths">
-                <antcall target="jee:deployDS" />
-		<copy todir="${jboss.farm.dir}">
-			<fileset dir="${va-dist.dir}" includes="ejbca.ear"/>
-		</copy>
-		<chmod file="${jboss.farm.dir}/ejbca.ear" perm="600"/>
-		<antcall target="notifyDeploymentScanner" />
-	</target>
-
 	<target name="jee:run" description="Start the JEE server">
 		<jee-server classname="org.jboss.Main" classpath="${appserver.home}/bin/run.jar">
 			<args>

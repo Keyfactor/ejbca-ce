@@ -23,8 +23,7 @@
     >
     <persistence-unit name="ejbca" transaction-type="JTA">
         <provider>org.hibernate.ejb.HibernatePersistence</provider>
-        <jta-data-source>${datasource.jndi-name-prefix}${datasource.jndi-name}</jta-data-source>        
-        <mapping-file>META-INF/orm-common-${database.name}.xml</mapping-file>
+        <jta-data-source>${datasource.jndi-name-prefix}${datasource.jndi-name}</jta-data-source>
         <mapping-file>META-INF/orm-ejbca-${database.name}.xml</mapping-file>
         <properties>
             <property name="hibernate.dialect" value="${hibernate.dialect}"/>

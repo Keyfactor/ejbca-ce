@@ -9,7 +9,6 @@
 	<property name="build.dir" location="${this.dir}/build"/>
 	<property name="build.test.dir" location="${this.dir}/build/test"/>
 	<property name="build.src.dir" location="${this.dir}/build/src"/>
-	<property name="build.src.va.dir" location="${this.dir}/build/src_va"/>
 	<property name="build.interface.dir" location="${this.dir}/build/interface"/>
 	<property name="systemtests.dist.dir" location="${ejbca.home}/modules/dist"/>
 	<property name="src.dir" location="${this.dir}/src"/>
@@ -17,9 +16,7 @@
 	<property name="src.interface.dir" location="${this.dir}/src-interface"/>
 	<property name="reports.base.dir" location="${this.dir}/build/reports/"/>
 	<property name="test-ejb.jar" location="${systemtests.dist.dir}/systemtests-ejb.jar"/>
-	<property name="test-va.jar" location="${systemtests.dist.dir}/va-systemtests.jar"/>
 	<property name="test-interface.jar" location="${systemtests.dist.dir}/systemtests-interfaces.jar" />
-	<property name="test-va-interface.jar" location="${systemtests.dist.dir}/test-va-interface.jar" />
 
 	<!-- Include endorsed jars from Glassfish -->
 	<condition property="tests.jvmargs" value="-Djava.endorsed.dirs=${appserver.home}/modules/endorsed" else="">
@@ -69,15 +66,6 @@
 		<path refid="lib.hibernate.compatibility.classpath"/>
 	</path>
 	
-	<path id="systemtests-va.classpath">
-		<path refid="systemtests.classpath"/>
-		<pathelement location="${mod.va-ejb-interface.lib}"/>
-		<pathelement location="${test-va-interface.jar}"/>
-		<pathelement location="${test-va.jar}"/>
-		<pathelement location="${mod.va-ejb-interface.lib}" />
-		<pathelement location="${mod.va-ejb.lib}" />
-	</path>
-
 	<path id="interfaces.classpath">
 		<path refid="lib.ejbca-common-web.classpath"/>
 		<pathelement location="${mod.ejbca-entity.lib}" />
@@ -86,16 +74,6 @@
 		<path refid="lib.bouncycastle.classpath"/>
 	</path>
 
-	<path id="interfaces-va.classpath">
-		<path refid="lib.ejbca-common-web.classpath"/>
-		<pathelement location="${mod.va-ejb-interface.lib}" />
-		<pathelement location="${mod.va-ejb.lib}" />
-		<path refid="lib.log4j.classpath"/>
-		<path refid="lib.jee.classpath"/>
-		<path refid="lib.bouncycastle.classpath"/>
-	</path>
-	
-	
 	<path id="compile-ejb.classpath">
 		<path refid="lib.cert-cvc.classpath" />
 		<path refid="lib.bouncycastle.classpath" />
@@ -518,33 +496,4 @@
 		</junit>
 		<antcall target="createreport"/>
 	</target>
-
-	<target name="rungfver-ocsp" depends="build">
-		<condition property="isglassfish">
-			<matches pattern="glassfish" string="${appserver.type}"/>
-		</condition>
-		<property name="reports.dir" location="${reports.base.dir}/gfver-ocsp"/>
-		<delete dir="${reports.dir}" />
-		<mkdir dir="${reports.dir}/html"/>
-		<exec command="${appserver.home}/bin/verifier" failifexecutionfails="false">
-			<arg line="-p -d ${reports.dir} ${ejbca.home}/ocsp-dist/ejbca.ear"/>
-		</exec>
-		<junit printsummary="yes" haltonfailure="no">
-			<classpath>
-				<path location="${build.test.dir}" />
-				<path refid="systemtests.classpath" />
-				<pathelement path="${clover.jar}"/>
-			</classpath>
-			<jvmarg line="${tests.jvmargs}"/>
-			<jvmarg line="-Dvertest.report=${reports.dir}/ejbca.ear.xml -Dvertest.expectedFailures=0"/>
-			<formatter type="xml" />
-			<batchtest fork="yes" todir="${reports.dir}" if="isglassfish">
-				<fileset dir="${build.test.dir}">
-					<include name="org/ejbca/ejb/GlassfishVerifierReportParserTest.class" />
-				</fileset>
-			</batchtest>
-		</junit>
-		<antcall target="createreport"/>
-	</target>
-
 </project>

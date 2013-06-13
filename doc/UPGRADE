@@ -67,6 +67,7 @@ and finally the default configuration in ocsp.properties).
 - The re-keying key-store will be migrated to an AuthenticationKeyBinding.
 - Management of *KeyBindings and CryptoTokens will be audit logged. Configure it before the upgrade to have proper traceability
 from this point on.
+- The 'ejbca.productionmode' property should be set to 'true' or 'false'. 'va' or 'ocsp' options are no longer supported.
 
 The 'ant bootstrap' target has been deprecated, and now it's covered by the 'ant
 deploy' target. Behavior for the 'ant deploy' has been changed, and the old

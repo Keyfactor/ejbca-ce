@@ -9,9 +9,7 @@
     <!-- set global properties for this build -->
     <property name="tmp" value="${ejbca.home}/tmp" />
     <property name="lib" value="${ejbca.home}/lib" />
-    
     <property name="dist.dir" location="${ejbca.home}/dist" />
-    <property name="va-dist.dir" location="${ejbca.home}/va-dist" />
 	
     <property name="hwtoken_classes" value="hwtoken"/>
     <property name="hwtoken.class.dir" location="${hwtoken_classes}" />
@@ -35,7 +33,6 @@
     <!-- =================================================================== -->
     <target name="clean" depends="deprecated:check">
         <delete dir="${dist.dir}" />
-        <delete dir="${va-dist.dir}" />
         <delete dir="${apidoc}" />
         <delete dir="${tmp}"/>
         <delete file="velocity.log" />
@@ -91,10 +88,10 @@
 	</target>
 	
     <!-- =================================================================== -->
-	<!-- Dont allow deploy of the wrong thing in production                   -->
+	<!-- Dont allow deploy of the wrong thing in production                  -->
     <!-- =================================================================== -->
-    <target name="failinproduction-ca">
-		<fail message="You cannot deploy EJBCA as a CA in a OCSP production environment.">
+    <target name="failinproduction-deprecation">
+		<fail message="ejbca.productionmode no longer supports 'va' or 'ocsp' options. Use 'true' instead.">
 			<condition>
 				<or>
 				    <equals arg1="${ejbca.productionmode}" arg2="va" casesensitive="false"/>
@@ -103,11 +100,14 @@
 			</condition>
 		</fail>
     </target>
-
-    <target name="failinproduction-va">
-		<fail message="You cannot deploy EJBCA as a OCSP Responder in a CA production environment.">
+    <target name="failinproduction">
+		<fail message="ejbca.productionmode must be set to false for this operation.">
 			<condition>
-				<equals arg1="${ejbca.productionmode}" arg2="ca" casesensitive="false"/>
+				<or>
+					<not>
+				    	<equals arg1="${ejbca.productionmode}" arg2="false" casesensitive="false"/>
+					</not>
+				</or>
 			</condition>
 		</fail>
     </target>
@@ -125,13 +125,6 @@
     <target name="ejbca-util.jar" depends="deprecated:check" description="Creates ejbca util classes for use in other projects.jar">
         <ant antfile="build.xml" dir="modules" target="ejbca-util" />
     </target>    	
-
-    <!-- =================================================================== -->
-    <!-- Build va ejb part                                                    -->
-    <!-- =================================================================== -->
-    <target name="va-jar">
-    	<ant antfile="build.xml" dir="modules" target="va-ejb" />
-    </target>
 
 	<macrodef name="jar-replacement-in-module" description="Optionally enable and configure a EJB module in the EAR">
 		<attribute name="replacement-tag"/>
@@ -509,70 +502,7 @@
 		<jar destfile="modules/dist/log4jconfig.jar" whenempty="skip" basedir="tmp" includes="log4j.xml"/>
 		<delete file="tmp/log4j.xml"/>
 	</target>
-	
-    <!-- =================================================================== -->
-    <!-- Build VA-ear                                                        -->
-    <!-- =================================================================== -->
-    <target name="va-ear" depends="fail-unless-appserver-detected, display-properties, vahealthcheck.war, create-log4config-bundle">
-		<property name="eardd.src" value="${tmp}/va-ear" />
-			<!-- This is quite ugly, we use two variables in order to decide if the systemtest files will be 
-			     included in the ear file or not. In ant 1.8 we could us an "if" to the "include" directive,
-			     and only need one variable, but that does not work in ant 1.7 so... --> 
-	    <condition property="in-test-mode" else="false">
-	    	<equals arg1="${ejbca.productionmode}" arg2="false" casesensitive="false"/>
-	    </condition>
-	    <condition property="in-test-mode-include" value="" else="dontinclude/">
-	   		<equals arg1="${ejbca.productionmode}" arg2="false" casesensitive="false"/>
-	    </condition>
-			
-		<mkdir dir="${eardd.src}/META-INF"/>
-		<copy todir="${eardd.src}/META-INF" file="src/deploy/va-ear/META-INF/application.xml" flatten="true" failonerror="true"/>
-		<antcall target="va_replacings_in_application.xml">
-			<param name="application.xml" value="${eardd.src}/META-INF/application.xml"/>
-		</antcall>
-		<ant dir="modules" target="ejbca-properties" />
-		<!-- Include Hibernate JPA libraries if they don't exist in the current application server. -->
-		<condition property="bundle-hibernate-exclude" value="" else="**">
-			<isset property="bundle-hibernate-jpa"/>
-		</condition>
-        <mkdir dir="${va-dist.dir}"/>
-        <ear destfile="${va-dist.dir}/ejbca.ear" appxml="${eardd.src}/META-INF/application.xml"> 
-            <zipfileset prefix="lib" dir="${lib}">
-                <include name="bcpkix-jdk15on-149.jar" />
-                <include name="bcprov-jdk15on-149.jar" />
-                <include name="cert-cvc.jar" />
-                <include name="log4j-1.2.16.jar" />
-                <include name="ldap.jar" />
-                <include name="commons-lang-*.jar" />
-                <include name="commons-collections-3.2.jar" />
-                <include name="commons-fileupload-1.0.jar" />
-                <include name="commons-configuration-1.6.jar" />
-                <include name="commons-logging-1.1.1.jar" />
-            </zipfileset>
-        	<zipfileset prefix="lib" dir="${lib}/hibernate" excludes="${bundle-hibernate-exclude}"/>
-            <fileset dir="${ejbca.home}/modules/dist">
-                <include name="healthcheck.war" />
-                <include name="status.war" />
-                <include name="certstore.war" />
-                <include name="crlstore.war" />
-                <include name="va-ejb.jar" />
-            	<include name="ejbca-extensions.jar" />
-            	<include name="va-systemtests.jar"/>
-            	<include name="test-va-interface.jar"/>
-            </fileset>
-        	<zipfileset prefix="lib" dir="${ejbca.home}/modules/dist">
-                <include name="ejbca-properties.jar" />
-                <include name="va-ejb3-interface.jar" />
-                <include name="va-entity.jar" />
-                <include name="va-common.jar" />
-                <include name="log4jconfig.jar" />
-                <include name="va-systemtests.jar"/>
-                <include name="test-va-interface.jar"/>
-        	</zipfileset>
-        	<zipfileset prefix="lib" dir="${dist.dir}" includes="ejbca-util.jar"/>
-	</ear>
-    </target>
-	
+
     <!-- =================================================================== -->
     <!-- Build Javadoc part                                                  -->
     <!-- =================================================================== -->
@@ -652,7 +582,7 @@
     <!-- ======================================================================= -->
     <!-- Deploy EJBCA ear to JBoss                                               -->
     <!-- ======================================================================= -->
-    <target name="deploy" depends="cleanDistDir, failinproduction-ca,build, inputDatabasePassword, deprecated:check" description="Deploy the main EJBCA application with datasources and configuration">       
+    <target name="deploy" depends="cleanDistDir, failinproduction-deprecation,build, inputDatabasePassword, deprecated:check" description="Deploy the main EJBCA application with datasources and configuration">       
     	<antcall target="jee:deploy" />
         <antcall target="showtime" />
     </target>
@@ -676,12 +606,11 @@
         <antcall target="jee:deployear" />
         <antcall target="showtime" />
     </target>
-	<!--
-    <target name="va-deploy" depends="failinproduction-va,va-ear,inputDatabasePassword,deprecated:check" description="Deploy the stand alone Verification Authority (VA)" >
-        <antcall target="jee:deployva" />
-        <antcall target="showtime" />
+
+    <target name="va-deploy">
+    	<fail message="This taget is no longer available. See doc/UPGRADE for further explanation on how to use EJBCA as a Validation Authority."/>
     </target>
--->
+
     <!-- ======================================================================= -->
     <!-- Configure the web access for application servers.                       -->
     <!-- ======================================================================= -->
@@ -722,7 +651,7 @@
     </target>
 
 
-	<target name="deploy-test" depends="failinproduction-ca,build, inputDatabasePassword, inputKeystorePassword, deprecated:check" description="Deploy a test version of EJBCA.">		
+	<target name="deploy-test" depends="failinproduction,build, inputDatabasePassword, inputKeystorePassword, deprecated:check" description="Deploy a test version of EJBCA.">		
 		<!-- Build the test EAR -->
 	   	<antcall target="jee:deployTestEar"/>
 	</target>
@@ -762,7 +691,6 @@
 		    	<exclude name="**/CVS/**" />
 		    	<exclude name="tmp/**" />
 		    	<exclude name="dist/**" />
-		    	<exclude name="va-dist/**" />
 		    	<exclude name="bin/META_INF/**" />
 		    	<exclude name="out/**" />
 		    	<exclude name="p12*/**" />
@@ -880,20 +808,12 @@
     	<ant dir="modules" target="ejbca-entity" />
     </target>
 
-    <target name="va-entity">
-    	<ant dir="modules" target="va-entity" />
-    </target>
-
     <target name="ejbca-db-cli" depends="deprecated:check" description="Build EJBCA JPA database CLI">
     	<ant dir="modules" target="ejbca-db-cli" />
     </target>
 
 	<target name="ejbca-ejb-interface">
        	<ant dir="modules" target="ejbca-ejb-interface" />
-    </target>
-
-	<target name="va-ejb-interface">
-       	<ant dir="modules" target="va-ejb-interface" />
     </target>
 
     <target name="ejbca-ejb-cli" depends="deprecated:check" description="Builds EJBCA command line interface">
@@ -920,10 +840,6 @@
     	<ant dir="modules" target="clearcache-ejbca-war" />
     </target>
 		
-    <target name="vahealthcheck.war">
-    	<ant dir="modules" target="healthcheck-va-war" />
-    </target>	
-
     <target name="renew.war" if="renew.war.enabled">
     	<ant dir="modules" target="renew-war" />
     </target>   
@@ -936,10 +852,6 @@
     	<ant dir="modules" target="va-ejbca-war" />
     </target>
 	
-    <target name="va-war">
-    	<ant dir="modules" target="va-va-war" />
-    </target>
-
     <target name="webdist.war">
     	<ant dir="modules" target="webdist-war" />
     </target>

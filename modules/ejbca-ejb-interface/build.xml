@@ -8,8 +8,6 @@
 	<import file="${this.dir}/../build.xml"/>
 	
 	<property name="build.dir" location="${this.dir}/build"/>
-	<property name="ejb3.build.dir" location="${this.dir}/ejb3build"/>
-	<property name="build-va.dir" location="${this.dir}/build-va"/>
 	<property name="src.dir" location="${this.dir}/src"/>
 
 	<path id="compile.classpath">
@@ -21,60 +19,20 @@
 		<path refid="lib.bouncycastle.classpath"/>
 	</path>
 
-	<path id="va-compile.classpath">
-		<pathelement location="${mod.va-entity.lib}" />
-		<pathelement location="${mod.ejbca-ws-cli.lib}"/>
-		<path refid="lib.ejbca-util.classpath"/>
-		<path refid="lib.commons-lang.classpath"/>
-		<path refid="lib.jee.classpath"/>
-		<path refid="lib.log4j.classpath"/>
-		<path refid="lib.ldap.classpath"/>
-		<path refid="lib.bouncycastle.classpath"/>
-	</path>
-
     <target name="build" description="Build this module" depends="compile-ejb3">
-  	 	<jar destfile="${mod.ejbca-ejb-interface.lib}" basedir="${ejb3.build.dir}" >
-  	 	</jar>
-    </target>
-
-    <target name="build-va" description="Build this module" depends="compile-va">
-    	<jar destfile="${mod.va-ejb-interface.lib}" basedir="${build-va.dir}"/>
+  	 	<jar destfile="${mod.ejbca-ejb-interface.lib}" basedir="${build.dir}"/>
     </target>
 
     <target name="clean" description="Clean up this module">
 		<delete dir="${build.dir}" />
-    	<delete dir="${ejb3.build.dir}" />
-		<delete dir="${build-va.dir}" />
     	<delete file="${mod.ejbca-ejb-interface.lib}"/>
-		<delete file="${mod.va-ejb-interface.lib}"/>
     </target>
 
-	<target name="compile-va" depends="with.clover, va-entity">
-    	<mkdir dir="${build-va.dir}" />
-        <javac destdir="${build-va.dir}" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}" classpathref="va-compile.classpath">
-        	<src path="${src.dir}"/>
-			<include name="org/cesecore/certificates/certificate/CertificateStoreSession*.java"/>
-			<include name="org/cesecore/certificates/crl/CrlStoreSession*.java"/>
-			<include name="org/cesecore/keys/token/CryptoTokenManagementSession*.java" />
-        	<include name="org/cesecore/keys/token/CryptoTokenSession*.java" />
-			<include name="org/cesecore/audit/log/SecurityEventsLoggerSession.java"/>
-			<include name="org/cesecore/audit/log/SecurityEventsLoggerSessionLocal.java"/>
-			<include name="org/cesecore/authorization/control/AccessControlSession.java"/>
-			<include name="org/cesecore/authorization/control/AccessControlSessionLocal.java"/>
-			<include name="org/ejbca/core/ejb/config/HealthCheckSession*.java"/>
-			<include name="org/cesecore/certificates/ocsp/OcspResponseGeneratorSessionLocal.java"/>
-			<include name="org/cesecore/certificates/ocsp/standalone/StandaloneOcspResponseGeneratorSession*.java"/>
-			<include name="org/ejbca/core/ejb/ocsp/standalone/OcspKeyRenewalSession*.java" />
-        	<include name="org/cesecore/jndi/JndiHelper.java" />
-    	</javac>
-    </target>
-	
     <target name="compile-ejb3-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-entity"/></target>
 	
     <target name="compile-ejb3" depends="with.clover, ejbca-util, ejbca-entity">
-        <mkdir dir="${ejb3.build.dir}" />
-        <javac srcdir="${src.dir}" destdir="${ejb3.build.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
+        <mkdir dir="${build.dir}" />
+        <javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
         	classpathref="compile.classpath">	
         </javac>
     </target>
