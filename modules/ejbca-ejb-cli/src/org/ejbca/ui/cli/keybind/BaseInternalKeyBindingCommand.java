@@ -83,7 +83,10 @@ public abstract class BaseInternalKeyBindingCommand extends BaseCommand {
             for (InternalKeyBindingProperty<? extends Serializable> property : entry.getValue()) {
                 sb.append(property.getName()).append(",");
             }
-            sb.deleteCharAt(sb.length()-1).append("}");
+            if (sb.charAt(sb.length()-1) == ',') {
+                sb.deleteCharAt(sb.length()-1);
+            }
+            sb.append("}");
             getLogger().info(sb.toString());
         }
     }
