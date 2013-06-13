@@ -147,6 +147,14 @@ CREATE TABLE CertificateData (
     PRIMARY KEY (fingerprint)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
+CREATE TABLE Base64CertData (
+    fingerprint VARCHAR(250) BINARY NOT NULL,
+    base64Cert LONGTEXT,
+    rowProtection LONGTEXT,
+    rowVersion INT(11) NOT NULL,
+    PRIMARY KEY (fingerprint)
+) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
+
 CREATE TABLE CertificateProfileData (
     id INT(11) NOT NULL,
     certificateProfileName VARCHAR(250) BINARY NOT NULL,

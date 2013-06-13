@@ -11,6 +11,7 @@ drop table if exists CAData;
 drop table if exists CRLData;
 drop table if exists CertReqHistoryData;
 drop table if exists CertificateData;
+drop table if exists Base64CertData;
 drop table if exists CertificateProfileData;
 drop table if exists CryptoTokenData;
 drop table if exists EndEntityProfileData;

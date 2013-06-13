@@ -9,6 +9,7 @@ drop table CAData;
 drop table CRLData;
 drop table CertReqHistoryData;
 drop table CertificateData;
+drop table Base64CertData;
 drop table CertificateProfileData;
 drop table CryptoTokenData;
 drop table EndEntityProfileData;

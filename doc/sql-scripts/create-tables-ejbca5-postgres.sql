@@ -145,6 +145,14 @@ CREATE TABLE CertificateData (
     PRIMARY KEY (fingerprint)
 );
 
+CREATE TABLE Base64CertData (
+    fingerprint TEXT NOT NULL,
+    base64Cert TEXT,
+    rowProtection TEXT,
+    rowVersion INT4 NOT NULL,
+    PRIMARY KEY (fingerprint)
+);
+
 CREATE TABLE CertificateProfileData (
     id INT4 NOT NULL,
     certificateProfileName TEXT NOT NULL,
