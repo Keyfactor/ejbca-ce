@@ -14,7 +14,6 @@ package org.ejbca.ui.cli.keybind;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.ejb.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.ejbca.ui.cli.BaseCommand;
 import org.ejbca.ui.cli.CliUsernameException;
@@ -33,10 +32,10 @@ public abstract class BaseInternalKeyBindingCommand extends BaseCommand {
     }
 
     /**
-     * Overridable CryptoToken-specific execution methods that will parse and interpret the first parameter
-     * (when present) as the name of a CryptoToken and lookup its cryptoTokenId.
+     * Overridable InternalKeyBinding-specific execution methods that will parse and interpret the first parameter
+     * (when present) as the name of a InternalKeyBinding and lookup its InternalKeyBindingId.
      */
-    public abstract void executeCommand(Integer internalKeyBindingId, String[] args) throws AuthorizationDeniedException, CryptoTokenOfflineException, Exception;
+    public abstract void executeCommand(Integer internalKeyBindingId, String[] args) throws AuthorizationDeniedException, Exception;
     
     @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
@@ -58,8 +57,6 @@ public abstract class BaseInternalKeyBindingCommand extends BaseCommand {
             executeCommand(internalKeyBindingId, args);
         } catch (AuthorizationDeniedException e) {
             getLogger().info(e.getMessage());
-        } catch (CryptoTokenOfflineException e) {
-            getLogger().info("CryptoToken is not active. You need to activate the CryptoToken before you can interact with its content.");
         } catch (Exception e) {
             getLogger().info("Operation failed: " + e.getMessage());
             getLogger().debug("", e);

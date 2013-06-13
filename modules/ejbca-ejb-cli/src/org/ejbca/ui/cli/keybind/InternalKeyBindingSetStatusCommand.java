@@ -35,8 +35,7 @@ public class InternalKeyBindingSetStatusCommand extends BaseInternalKeyBindingCo
     }
 
     @Override
-    public void executeCommand(Integer internalKeyBindingId, String[] args) throws AuthorizationDeniedException, CryptoTokenOfflineException,
-            Exception {
+    public void executeCommand(Integer internalKeyBindingId, String[] args) throws AuthorizationDeniedException, Exception {
         if (args.length < 3) {
             getLogger().info("Description: " + getDescription());
             String values = "";
