@@ -166,7 +166,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                     if( errMsg == null) {
                         errMsg = "Failed to verify the request";
                     }
-                    LOG.error(errMsg);
+                    LOG.info(errMsg);
                     return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, errMsg);
                 }
                 
@@ -281,7 +281,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                     }
                     if(certPublicKey.equals(requestPublicKey)) {
                         final String errMsg = "Invalid key. The public key in the KeyUpdateRequest is the same as the public key in the existing end entity certificate";
-                        LOG.error(errMsg);
+                        LOG.info(errMsg);
                         return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, errMsg);
                     }
                 }
@@ -291,12 +291,12 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
 
                 if (resp == null) {
                     final String errMsg = INTRES.getLocalizedMessage("cmp.errornullresp");
-                    LOG.error(errMsg);
+                    LOG.info(errMsg);
                     resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, errMsg);
                 }
             } else {
                 final String errMsg = INTRES.getLocalizedMessage("cmp.errornocmrfreq");
-                LOG.error(errMsg);
+                LOG.info(errMsg);
                 resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, errMsg);
             }
         
