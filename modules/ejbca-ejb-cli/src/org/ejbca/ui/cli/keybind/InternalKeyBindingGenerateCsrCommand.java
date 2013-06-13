@@ -46,14 +46,18 @@ public class InternalKeyBindingGenerateCsrCommand extends BaseInternalKeyBinding
         final InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = ejb.getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
         if (args.length < 3) {
             getLogger().info("Description: " + getDescription());
-            getLogger().info("Usage: " + getCommand() + " <name> [--generate] <output filename>");
+            getLogger().info("Usage: " + getCommand() + " <name> [--newkeypair] <output filename>");
             return;
         }
         final List<String> argsList = CliTools.getAsModifyableList(args);
-        final boolean switchGenerate = CliTools.getAndRemoveSwitch("--generate", argsList);
+        final boolean switchNewKeyPair = CliTools.getAndRemoveSwitch("--newkeypair", argsList);
+        if (argsList.contains("--nextkeypair")) { // typo
+            getLogger().info("Error: --newkeypair switch is misspelled");
+            return;
+        }
         args = CliTools.getAsArgs(argsList);
         String nextKeyAlias;
-        if (switchGenerate) {
+        if (switchNewKeyPair) {
             nextKeyAlias = internalKeyBindingMgmtSession.generateNextKeyPair(getAdmin(), internalKeyBindingId);
             getLogger().info("A new key pair has been generated with alias " + nextKeyAlias);
         } else {
