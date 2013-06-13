@@ -12,9 +12,18 @@
  *************************************************************************/
 package org.ejbca.ui.cli.keybind;
 
+import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.AlgorithmTools;
 import org.ejbca.core.ejb.keybind.InternalKeyBindingMgmtSessionRemote;
+import org.ejbca.core.ejb.keybind.InternalKeyBindingProperty;
+import org.ejbca.core.ejb.keybind.InternalKeyBindingStatus;
 import org.ejbca.ui.cli.BaseCommand;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -61,6 +70,42 @@ public abstract class BaseInternalKeyBindingCommand extends BaseCommand {
             getLogger().info("Operation failed: " + e.getMessage());
             getLogger().debug("", e);
         }
+    }
+    
+    /** Lists available types and their properties */
+    protected void showTypesProperties() {
+        final InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = ejb.getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
+        Map<String, List<InternalKeyBindingProperty<? extends Serializable>>> typesAndProperties = internalKeyBindingMgmtSession.getAvailableTypesAndProperties(getAdmin());
+        getLogger().info("Registered implementation types and implemention specific properties:");
+        for (Entry<String, List<InternalKeyBindingProperty<? extends Serializable>>> entry : typesAndProperties.entrySet()) {
+            final StringBuilder sb = new StringBuilder();
+            sb.append("  ").append(entry.getKey()).append(" {");
+            for (InternalKeyBindingProperty<? extends Serializable> property : entry.getValue()) {
+                sb.append(property.getName()).append(",");
+            }
+            sb.deleteCharAt(sb.length()-1).append("}");
+            getLogger().info(sb.toString());
+        }
+    }
+    
+    protected void showStatuses() {
+        final StringBuilder sb = new StringBuilder("Status is one of ");
+        for (InternalKeyBindingStatus internalKeyBindingStatus : InternalKeyBindingStatus.values()) {
+            sb.append(internalKeyBindingStatus.name()).append(",");
+        }
+        sb.deleteCharAt(sb.length()-1);
+        getLogger().info(sb.toString());
+    }
+    
+    protected void showSigAlgs() {
+        final StringBuilder sbAlg = new StringBuilder("Signature algorithm is one of ");
+        for (final String algorithm : AlgorithmConstants.AVAILABLE_SIGALGS) {
+            if (AlgorithmTools.isSigAlgEnabled(algorithm)) {
+                sbAlg.append(algorithm).append(',');
+            }
+        }
+        sbAlg.deleteCharAt(sbAlg.length()-1);
+        getLogger().info(sbAlg.toString());
     }
     
     protected boolean failIfInternalKeyBindIsMissing() {

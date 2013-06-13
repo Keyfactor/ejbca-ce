@@ -12,18 +12,13 @@
  *************************************************************************/
 package org.ejbca.ui.cli.keybind;
 
-import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.ejbca.core.ejb.keybind.InternalKeyBindingMgmtSessionRemote;
-import org.ejbca.core.ejb.keybind.InternalKeyBindingProperty;
 import org.ejbca.core.ejb.keybind.InternalKeyBindingStatus;
 import org.ejbca.util.CliTools;
 
@@ -55,32 +50,10 @@ public class InternalKeyBindingCreateCommand extends BaseInternalKeyBindingComma
         if (args.length < 8) {
             getLogger().info("Description: " + getDescription());
             getLogger().info("Usage: " + getCommand() + " <name> <type> <status> <certificate fingerprint> <crypto token name> <key pair alias> <signature algorithm> [--property key1=value1 --property key2=value2 ...]");
-            // List available types and their properties
-            Map<String, List<InternalKeyBindingProperty<? extends Serializable>>> typesAndProperties = internalKeyBindingMgmtSession.getAvailableTypesAndProperties(getAdmin());
-            getLogger().info(" Registered implementation types and implemention specific properties:");
-            for (Entry<String, List<InternalKeyBindingProperty<? extends Serializable>>> entry : typesAndProperties.entrySet()) {
-                final StringBuilder sb = new StringBuilder();
-                sb.append("  ").append(entry.getKey()).append(" {");
-                for (InternalKeyBindingProperty<? extends Serializable> property : entry.getValue()) {
-                    sb.append(property.getName()).append(",");
-                }
-                sb.deleteCharAt(sb.length()-1).append("}");
-                getLogger().info(sb.toString());
-            }
-            final StringBuilder sb = new StringBuilder(" status is one of ");
-            for (InternalKeyBindingStatus internalKeyBindingStatus : InternalKeyBindingStatus.values()) {
-                sb.append(internalKeyBindingStatus.name()).append(",");
-            }
-            sb.deleteCharAt(sb.length()-1);
-            getLogger().info(sb.toString());
-            final StringBuilder sbAlg = new StringBuilder(" signature algorithm is one of ");
-            for (final String algorithm : AlgorithmConstants.AVAILABLE_SIGALGS) {
-                if (AlgorithmTools.isSigAlgEnabled(algorithm)) {
-                    sbAlg.append(algorithm).append(',');
-                }
-            }
-            sbAlg.deleteCharAt(sbAlg.length()-1);
-            getLogger().info(sbAlg.toString());
+            getLogger().info("");
+            showTypesProperties();
+            showStatuses();
+            showSigAlgs();
             return;
         }
         // Start by extracting any property

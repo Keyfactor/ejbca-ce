@@ -19,7 +19,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -61,19 +60,7 @@ public class InternalKeyBindingModifyCommand extends BaseInternalKeyBindingComma
             getLogger().info("");
             getLogger().info("OcspKeyBinding example: " + getCommand() + " OcspKeyBinding1 --nextkeypair nextSigningKey --property maxAge=30 --property untilNextUpdate=30");
             getLogger().info("");
-            // List available types and their properties
-            final Map<String, List<InternalKeyBindingProperty<? extends Serializable>>> typesAndProperties = internalKeyBindingMgmtSession.getAvailableTypesAndProperties(getAdmin());
-            getLogger().info(" Registered implementation types and implemention specific properties:");
-            for (final Entry<String, List<InternalKeyBindingProperty<? extends Serializable>>> entry : typesAndProperties.entrySet()) {
-                final StringBuilder sb = new StringBuilder();
-                sb.append("  ").append(entry.getKey()).append(" {");
-                for (InternalKeyBindingProperty<? extends Serializable> property : entry.getValue()) {
-                    sb.append(property.getName()).append(",");
-                }
-                sb.deleteCharAt(sb.length()-1).append("}");
-                getLogger().info(sb.toString());
-            }
-            return;
+            showTypesProperties();
         }
         final List<String> argsList = CliTools.getAsModifyableList(args);
         // Extract properties
