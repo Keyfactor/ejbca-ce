@@ -861,6 +861,10 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 
 	private static KeyStore[] getKeyStores( final String fileDirectory, final String keystorePassword ) throws Exception {
 		final File dir = new File(fileDirectory);
+		if (dir.listFiles() == null) {
+            System.out.println(fileDirectory+" does not exist or is not a directory.");		    
+            System.exit(-1);
+		}
 		final List<KeyStore> keyStores = new LinkedList<KeyStore>();
 		for ( final File file : dir.listFiles() ) {
 			final KeyStore keyStore = getKeyStore(file, keystorePassword);
