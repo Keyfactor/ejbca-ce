@@ -20,7 +20,6 @@ import java.security.cert.CertificateException;
 import java.util.List;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.keybind.CertificateImportException;
 import org.ejbca.core.ejb.keybind.InternalKeyBindingMgmtSessionRemote;
@@ -43,7 +42,7 @@ public class InternalKeyBindingImportCertificateCommand extends BaseInternalKeyB
     }
 
     @Override
-    public void executeCommand(Integer internalKeyBindingId, String[] args) throws AuthorizationDeniedException, CryptoTokenOfflineException, CertificateImportException {
+    public void executeCommand(Integer internalKeyBindingId, String[] args) throws AuthorizationDeniedException, CertificateImportException {
         if (args.length < 3) {
             getLogger().info("Description: " + getDescription());
             getLogger().info("Usage: " + getCommand() + " <name> <PEM input file name>");

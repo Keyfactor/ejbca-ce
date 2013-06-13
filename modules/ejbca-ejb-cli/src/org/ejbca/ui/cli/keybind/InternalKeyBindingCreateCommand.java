@@ -22,7 +22,6 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.ejb.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.ejbca.core.ejb.keybind.InternalKeyBindingProperty;
 import org.ejbca.core.ejb.keybind.InternalKeyBindingStatus;
@@ -51,7 +50,7 @@ public class InternalKeyBindingCreateCommand extends BaseInternalKeyBindingComma
     }
 
     @Override
-    public void executeCommand(Integer internalKeyBindingId, String[] args) throws AuthorizationDeniedException, CryptoTokenOfflineException, Exception {
+    public void executeCommand(Integer internalKeyBindingId, String[] args) throws AuthorizationDeniedException, Exception {
         final InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = ejb.getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
         if (args.length < 8) {
             getLogger().info("Description: " + getDescription());
