@@ -9,6 +9,7 @@ drop table CAData cascade constraints;
 drop table CRLData cascade constraints;
 drop table CertReqHistoryData cascade constraints;
 drop table CertificateData cascade constraints;
+drop table Base64CertData cascade constraints;
 drop table CertificateProfileData cascade constraints;
 drop table CryptoTokenData cascade constraints;
 drop table EndEntityProfileData cascade constraints;
