@@ -607,10 +607,6 @@
         <antcall target="showtime" />
     </target>
 
-    <target name="va-deploy">
-    	<fail message="This taget is no longer available. See doc/UPGRADE for further explanation on how to use EJBCA as a Validation Authority."/>
-    </target>
-
     <!-- ======================================================================= -->
     <!-- Configure the web access for application servers.                       -->
     <!-- ======================================================================= -->
