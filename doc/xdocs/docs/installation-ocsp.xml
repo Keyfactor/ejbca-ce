@@ -60,7 +60,7 @@ OCSP responder. For the CA you do this by setting the CRL publisher to the OCSP 
 <li>Go to AdminGUI of OCSP -> InternalKeyBindings and create a Certificate Signing Request for your new OcspKeyBinding. Save this file.</li>
 <li>Go to PublicWeb of CA -> Create Certificate from CSR -> Use the credentials for issuing an OCSP signing certificate and upload the CSR.</li>
 <li>...(CA publishes new OCSP signing certificate to OCSP instance)...</li>
-<li>Go to AdminGUI of OCSP -> InternalKeyBindings and click "Reload" for your new OcspKeyBinding. This will find the published certificate
+<li>Go to AdminGUI of OCSP -> InternalKeyBindings and click "Update" for your new OcspKeyBinding. This will find the published certificate
 by matching the key pair with the certificate.</li>
 <li>Go to AdminGUI of OCSP -> InternalKeyBindings and click "Activate" for your new OcspKeyBinding to start processing OCSP responses with it.</li>
 </ul>
@@ -71,7 +71,7 @@ by matching the key pair with the certificate.</li>
 <li>Go to AdminGUI of OCSP -> InternalKeyBindings and create a Certificate Signing Request for your OcspKeyBinding. Save this file.</li>
 <li>Go to PublicWeb of CA -> Create Certificate from CSR -> Use the credentials for issuing an OCSP signing certificate and upload the CSR.</li>
 <li>...(CA publishes new OCSP signing certificate to OCSP instance)...</li>
-<li>Go to AdminGUI of OCSP -> InternalKeyBindings and click "Reload" for your new OcspKeyBinding. This will find the published certificate
+<li>Go to AdminGUI of OCSP -> InternalKeyBindings and click "Update" for your new OcspKeyBinding. This will find the published certificate
 by matching the key pair with the certificate.</li>
 <li>Go to AdminGUI of OCSP -> InternalKeyBindings and click "Activate" for your new OcspKeyBinding to start processing OCSP responses with it.</li>
 </ul>
