@@ -19,7 +19,6 @@ import java.security.InvalidKeyException;
 import java.util.List;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.keybind.InternalKeyBinding;
 import org.ejbca.core.ejb.keybind.InternalKeyBindingMgmtSessionRemote;
@@ -43,7 +42,7 @@ public class InternalKeyBindingGenerateCsrCommand extends BaseInternalKeyBinding
     }
 
     @Override
-    public void executeCommand(Integer internalKeyBindingId, String[] args) throws AuthorizationDeniedException, CryptoTokenOfflineException, IOException, InvalidKeyException, Exception {
+    public void executeCommand(Integer internalKeyBindingId, String[] args) throws AuthorizationDeniedException, IOException, InvalidKeyException, Exception {
         final InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = ejb.getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
         if (args.length < 3) {
             getLogger().info("Description: " + getDescription());
