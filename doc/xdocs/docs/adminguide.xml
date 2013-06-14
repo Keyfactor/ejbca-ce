@@ -2318,6 +2318,7 @@ sends an email notification to the end user and/or the administrator.</li>
 certain amount of time after been registered, and expires the users possibility to enroll.</li>
 <li>a 'Renew CA Service' that checks if CA certificates are about to expire and renews them.</li>
 <li>a 'Publisher queue process service' that retries failed publishing.</li>
+<li>a 'HSM Keepalive Service' that periodically tests crypto tokens to avoid connection timeouts.</li>
 </ul>
 It is also possible to easily write plug-ins for customized services.
 </p><p>
@@ -2468,6 +2469,21 @@ If you run one service for each publisher you should onle configure one publishe
 <p>To read on how the algorithm to prevent excessive database load etc is done, the easiest way is to read in the java file for class PublishQueueProcessWorker.
 </p>
 <p>The same algorithm as for the CRL update worker is used to make sure the service only runs in one instance on one node.</p>
+
+<p><b>HSM Keepalive Service</b></p>
+<p>
+The service periodically (with configured interval) goes through all available Crypto Tokens and makes a test signature if the following conditions are met:
+<ul>
+<li>The crypto token is a PKCS#11 crypto token, i.e. have a PKCS#11 library path configured.</li>
+<li>The crypto token is active.</li>
+<li>The crypto token have a key with alias 'testKey'.</li>
+</ul>
+If these conditions are met, a test signature with the 'testKey' is performed. In addition, if security audit log protection is configured, a test string is protected with the security audit log protection, 
+also testing this crypto token (which is not available in the crypto tokens in the GUI). 
+</p><p>
+This will ensure that all configured PKCS#11 slots are used regularly, preventing connection timeouts that could lead to service downtime. You only need to enable this service if you encounter HSM timeouts. 
+The occurance of such timeouts depend on the specific HSM used, neworking equipment etc. 
+</p>
 
 </subsection>
 

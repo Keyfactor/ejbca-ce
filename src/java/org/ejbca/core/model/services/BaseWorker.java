@@ -45,7 +45,7 @@ public abstract class BaseWorker implements IWorker {
     private IAction action = null;
     private IInterval interval = null;
     
-    private AuthenticationToken admin = null;
+    protected AuthenticationToken admin = null;
 
 	private transient Collection<Integer> cAIdsToCheck = null;
 	private transient long timeBeforeExpire = -1;

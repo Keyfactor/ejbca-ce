@@ -29,9 +29,13 @@ import org.cesecore.audit.enums.EventType;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleType;
 import org.cesecore.audit.enums.ServiceType;
+import org.cesecore.audit.impl.integrityprotected.AuditRecordData;
 import org.cesecore.audit.impl.integrityprotected.IntegrityProtectedLoggerSessionLocal;
 import org.cesecore.audit.impl.queued.QueuedLoggerSessionLocal;
+import org.cesecore.dbprotection.ProtectedData;
+import org.cesecore.dbprotection.ProtectedDataConfiguration;
 import org.cesecore.time.TrustedTime;
+import org.ejbca.core.model.services.workers.HsmKeepAliveWorker;
 
 /**
  * Internal logging without dependency on TrustedTime.
@@ -90,4 +94,19 @@ public class InternalSecurityEventsLoggerSessionBean implements InternalSecurity
         ejbs.put(IntegrityProtectedLoggerSessionLocal.class, integrityProtectedLoggerSession);
         return ejbs;
     }
+    
+    @Override
+    public boolean auditLogCryptoTest(final String protectThis) {
+        if ( ProtectedDataConfiguration.useDatabaseIntegrityProtection(AuditRecordData.class.getSimpleName()) ) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Performing audit log integrity protection test.");
+            }
+            final int keyid = ProtectedDataConfiguration.instance().getKeyId(AuditRecordData.class.getSimpleName()).intValue();
+            final int protectVersion = ProtectedDataConfiguration.instance().getProtectVersion(keyid).intValue();
+            ProtectedData.calculateProtection(protectVersion, keyid, HsmKeepAliveWorker.class.getSimpleName());
+            return true;
+        }
+        return false;
+    }
+
 }

@@ -42,6 +42,7 @@ import javax.ejb.TransactionAttributeType;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.audit.audit.SecurityEventsAuditorSessionLocal;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.InternalSecurityEventsLoggerSessionLocal;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
@@ -55,6 +56,7 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.CrlCreateSessionLocal;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.util.ProfileID;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
@@ -115,6 +117,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     @EJB
     private SecurityEventsLoggerSessionLocal auditSession;
     @EJB
+    private InternalSecurityEventsLoggerSessionLocal internalAuditSession;
+    @EJB
     private ServiceDataSessionLocal serviceDataSession;
 
     private ServiceSessionLocal serviceSession;
@@ -162,6 +166,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     private ComplexAccessControlSessionLocal complexAccessControlSession;
     @EJB
     private PublishingCrlSessionLocal publishingCrlSession;
+    @EJB
+    private CryptoTokenManagementSessionLocal cryptoTokenSession;
 
     // The administrator that the services should be run as. Internal, allow all.
     private AuthenticationToken intAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ServiceSession"));
@@ -604,7 +610,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             ejbs.put(CrlCreateSessionLocal.class, crlCreateSession);
             ejbs.put(EndEntityProfileSessionLocal.class, endEntityProfileSession);
             ejbs.put(HardTokenSessionLocal.class, hardTokenSession);
-            ejbs.put(InternalSecurityEventsLoggerSessionLocal.class, auditSession);
+            ejbs.put(SecurityEventsLoggerSessionLocal.class, auditSession);
+            ejbs.put(InternalSecurityEventsLoggerSessionLocal.class, internalAuditSession);
             ejbs.put(KeyRecoverySessionLocal.class, keyRecoverySession);
             ejbs.put(AdminPreferenceSessionLocal.class, raAdminSession);
             ejbs.put(GlobalConfigurationSessionLocal.class, globalConfigurationSession);
@@ -617,6 +624,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             ejbs.put(WebAuthenticationProviderSessionLocal.class, webAuthenticationSession);
             ejbs.put(ComplexAccessControlSessionLocal.class, complexAccessControlSession);
             ejbs.put(PublishingCrlSessionLocal.class, publishingCrlSession);
+            ejbs.put(CryptoTokenManagementSessionLocal.class, cryptoTokenSession);
             worker.work(ejbs);
             final String msg = intres.getLocalizedMessage("services.serviceexecuted", serviceName);
             log.info(msg);

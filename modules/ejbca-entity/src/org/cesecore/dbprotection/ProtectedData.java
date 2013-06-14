@@ -230,7 +230,7 @@ public abstract class ProtectedData {
 		return signature.verify(Hex.decode(signatureInHex));
 	}
 
-	private static String calculateProtection(final int protectVersion, final int keyid, final String toBesigned) {
+	public static String calculateProtection(final int protectVersion, final int keyid, final String toBesigned) {
 		if (log.isTraceEnabled()) {
 			log.trace("Using keyid " + keyid + " to calculate protection.");
 		}
