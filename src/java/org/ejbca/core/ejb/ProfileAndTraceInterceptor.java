@@ -59,7 +59,7 @@ public class ProfileAndTraceInterceptor {
             ProfilingStats.INSTANCE.add(fullTargetIdentifier, invocationDuration);
             if (targetLogger.isTraceEnabled()) {
                 if (returnException == null) {
-                    targetLogger.trace("<" + targetMethodName + " took " + invocationDuration + "micros, returned " + returnValue);
+                    targetLogger.trace("<" + targetMethodName + " took " + invocationDuration + "micros");
                 } else {
                     targetLogger.trace("<" + targetMethodName + " took " + invocationDuration + "micros, threw " + returnException.getClass().getName() + ": " + returnException.getMessage());
                 }
