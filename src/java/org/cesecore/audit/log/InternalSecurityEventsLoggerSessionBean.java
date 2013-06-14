@@ -35,7 +35,6 @@ import org.cesecore.audit.impl.queued.QueuedLoggerSessionLocal;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectedDataConfiguration;
 import org.cesecore.time.TrustedTime;
-import org.ejbca.core.model.services.workers.HsmKeepAliveWorker;
 
 /**
  * Internal logging without dependency on TrustedTime.
@@ -103,7 +102,7 @@ public class InternalSecurityEventsLoggerSessionBean implements InternalSecurity
             }
             final int keyid = ProtectedDataConfiguration.instance().getKeyId(AuditRecordData.class.getSimpleName()).intValue();
             final int protectVersion = ProtectedDataConfiguration.instance().getProtectVersion(keyid).intValue();
-            ProtectedData.calculateProtection(protectVersion, keyid, HsmKeepAliveWorker.class.getSimpleName());
+            ProtectedData.calculateProtection(protectVersion, keyid, this.getClass().getSimpleName());
             return true;
         }
         return false;
