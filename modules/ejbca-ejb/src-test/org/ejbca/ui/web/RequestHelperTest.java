@@ -41,7 +41,6 @@ import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
-import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.easymock.EasyMock;
@@ -54,9 +53,7 @@ import org.junit.Test;
  *
  */
 public class RequestHelperTest {
-
-    private final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(RequestHelperTest.class.getSimpleName());
-
+    
     /*
      * CSR for a external CA with DN: CN=foos
      */
@@ -98,7 +95,7 @@ public class RequestHelperTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testPkcs10CertRequestWithCertificateChain() throws Exception {
-        RequestHelper requestHelper = new RequestHelper(authenticationToken, null);
+        RequestHelper requestHelper = new RequestHelper(null, null);
 
         //Generate a self signed certificate to act as a CA cert, and a signed certificate.
         KeyPair caKeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
