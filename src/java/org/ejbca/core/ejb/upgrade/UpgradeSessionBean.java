@@ -162,6 +162,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 return postUpgrade(oldVersion, dbtype);
             }
             return upgrade(dbtype, oldVersion);
+        } catch (RuntimeException e) {
+        	// We want to log in server.log so we can analyze the error
+            log.error("Error thrown during upgrade: ", e);
+            throw e;
         } finally {
             log.trace("<upgrade()");
         }
