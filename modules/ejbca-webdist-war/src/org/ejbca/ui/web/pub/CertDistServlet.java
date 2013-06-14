@@ -26,6 +26,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509CRL;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 
@@ -438,13 +439,7 @@ public class CertDistServlet extends HttpServlet {
 				byte[] outbytes = new byte[0];
 				// Encode and send back
 				if ((format == null) || StringUtils.equalsIgnoreCase(format, "pem")) {
-					final StringBuilder out = new StringBuilder();
-					for (int i = 0; i < chain.length; i++) {
-						out.append("-----BEGIN CERTIFICATE-----\n");
-						out.append(new String(Base64.encode(chain[i].getEncoded())));
-						out.append("\n-----END CERTIFICATE-----\n");
-					}
-					outbytes = out.toString().getBytes();
+					outbytes = CertTools.getPemFromCertificateChain(Arrays.asList(chain));
 				} else {
 					// Create a JKS truststore with the CA certificates in
 			        final KeyStore store = KeyStore.getInstance("JKS");

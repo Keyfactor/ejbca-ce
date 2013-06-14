@@ -56,7 +56,6 @@ import org.ejbca.core.model.InternalEjbcaResources;
  * password is needed. The path could be absolute or relative.<br>
  * </p>
  *
- * @author Original code by Lars Silven
  * @version $Id$
  */
 public class CertReqServlet extends HttpServlet {

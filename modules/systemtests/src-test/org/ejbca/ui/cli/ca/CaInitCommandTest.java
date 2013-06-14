@@ -224,7 +224,7 @@ public class CaInitCommandTest {
             ArrayList<Certificate> mylist = new ArrayList<Certificate>();
             mylist.add(externalCACert);
             FileOutputStream fos = new FileOutputStream(temp);
-            fos.write(CertTools.getPEMFromCerts(mylist));
+            fos.write(CertTools.getPemFromCertificateChain(mylist));
             fos.close();
             SIGNED_BY_EXTERNAL_ARGS[SIGNED_BY_EXTERNAL_ARGS.length-1] = temp.getAbsolutePath();
             caInitCommand.execute(SIGNED_BY_EXTERNAL_ARGS);
@@ -258,7 +258,7 @@ public class CaInitCommandTest {
             mylist = new ArrayList<Certificate>();
             mylist.add(cert);
             fos = new FileOutputStream(certfile);
-            fos.write(CertTools.getPEMFromCerts(mylist));
+            fos.write(CertTools.getPemFromCertificateChain(mylist));
             fos.close();
             IMPORT_SIGNED_BY_EXTERNAL_ARGS[IMPORT_SIGNED_BY_EXTERNAL_ARGS.length-1] = certfile.getAbsolutePath();
             caImportCaCertCommand.execute(IMPORT_SIGNED_BY_EXTERNAL_ARGS);

@@ -69,7 +69,7 @@ public class ServletDebug {
         print(msg);
     }
 
-    public void printInsertLineBreaks(byte[] bA) throws Exception {
+    public void printInsertLineBreaks(byte[] bA) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(bA)));
 
         while (true) {

@@ -1064,7 +1064,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         
         Vector<Certificate> certCollection = new Vector<Certificate>();
         certCollection.add(racert);
-        byte[] pemRaCert = CertTools.getPEMFromCerts(certCollection);
+        byte[] pemRaCert = CertTools.getPemFromCertificateChain(certCollection);
         
         String raCertPath = configurationSession.getProperty(CmpConfiguration.CONFIG_RACERT_PATH);
         String filename = raCertPath + "/" + username + ".pem";

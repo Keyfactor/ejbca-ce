@@ -1069,7 +1069,7 @@ public class CertTools {
     public static CertificateFactory getCertificateFactory() {
         return getCertificateFactory("BC");
     }
-
+    
     /**
      * Reads certificates in PEM-format from a file.
      * The stream may contain other things between the different certificates.
@@ -1205,7 +1205,7 @@ public class CertTools {
      * @return byte array containing PEM certificate
      * @exception CertificateException if the stream does not contain a correct certificate.
      */
-    public static byte[] getPEMFromCerts(Collection<Certificate> certs) throws CertificateException {
+    public static byte[] getPemFromCertificateChain(Collection<Certificate> certs) throws CertificateException {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         final PrintStream printStream = new PrintStream(baos);
         for (final Certificate certificate : certs) {

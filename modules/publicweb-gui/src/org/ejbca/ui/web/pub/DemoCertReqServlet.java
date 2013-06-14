@@ -30,6 +30,7 @@ import org.bouncycastle.util.encoders.DecoderException;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -89,6 +90,8 @@ public class DemoCertReqServlet extends HttpServlet {
     // Edit this constant to the id of your preferable CA used to sign certificate.
     private final static int DEFAULT_DEMOCAID = 0;
 
+    @EJB
+    private CaSessionLocal caSession;
     @EJB
     private SignSessionLocal signSession;
     @EJB
@@ -258,7 +261,7 @@ public class DemoCertReqServlet extends HttpServlet {
                 RequestHelper.sendNewCertToNSClient(certs, response);
             }
             if (type == 2) {
-                byte[] b64cert = helper.pkcs10CertRequest(signSession, reqBytes, username, password, RequestHelper.ENCODED_PKCS7);
+                byte[] b64cert = helper.pkcs10CertRequest(signSession, caSession, reqBytes, username, password, RequestHelper.ENCODED_PKCS7);
                 debug.ieCertFix(b64cert);
                 RequestHelper.sendNewCertToIEClient(b64cert, response.getOutputStream(), getServletContext(), getInitParameter("responseTemplate"),
                         classid);

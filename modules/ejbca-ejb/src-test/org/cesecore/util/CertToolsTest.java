@@ -1584,7 +1584,7 @@ public class CertToolsTest {
     	assertEquals("CN=p12test,O=PrimeTest,C=SE", CertTools.getSubjectDN(iter.next()));
     	assertEquals("UID=guid,CN=Guid,C=SE", CertTools.getSubjectDN(iter.next()));
     	assertEquals("CN=foo,O=AnaTom,C=SE", CertTools.getSubjectDN(iter.next()));
-    	byte[] bytes = CertTools.getPEMFromCerts(certs);
+    	byte[] bytes = CertTools.getPemFromCertificateChain(certs);
     	String str = new String(bytes);
     	assertTrue(str.contains("BEGIN CERTIFICATE"));
     }

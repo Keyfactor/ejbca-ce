@@ -226,7 +226,7 @@ public class LocateCommand extends XKMSCLIBaseCommand implements IAdminCommand{
 							FileOutputStream fos = new FileOutputStream(filename);
 							ArrayList<Certificate> certs = new ArrayList<Certificate>();
 							certs.add(nextCert);
-							byte[] pemData = CertTools.getPEMFromCerts(certs);
+							byte[] pemData = CertTools.getPemFromCertificateChain(certs);
 							fos.write(pemData);
 							fos.close();					  
 						}else{

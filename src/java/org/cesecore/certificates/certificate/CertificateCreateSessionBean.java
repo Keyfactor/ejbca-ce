@@ -258,7 +258,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         CA ca = null;
         // See if we can get issuerDN directly from request
         if (req.getIssuerDN() != null) {
-            String dn = CADnHelper.getCADnFromRequest(req, certificateStoreSession);
+            String dn = certificateStoreSession.getCADnFromRequest(req);
             ca = caSession.getCA(admin, dn.hashCode());
             if (log.isDebugEnabled()) {
                 log.debug("Using CA (from issuerDN) with id: " + ca.getCAId() + " and DN: " + ca.getSubjectDN());

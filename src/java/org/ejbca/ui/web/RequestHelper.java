@@ -23,10 +23,18 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SignatureException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.LinkedList;
 import java.util.regex.Pattern;
 
+import javax.ejb.ObjectNotFoundException;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -37,7 +45,12 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.jce.netscape.NetscapeCertRequest;
+import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.request.CVCRequestMessage;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
@@ -47,6 +60,7 @@ import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.cvc.CAReferenceField;
 import org.ejbca.cvc.CardVerifiableCertificate;
@@ -81,6 +95,7 @@ public class RequestHelper {
 	public static final int ENCODED_CERTIFICATE = 1;
 	public static final int ENCODED_PKCS7          = 2;
 	public static final int BINARY_CERTIFICATE = 3;
+	public static final int ENCODED_CERTIFICATE_CHAIN = 4;
 	
     /**
      * Creates a new RequestHelper object.
@@ -105,9 +120,20 @@ public class RequestHelper {
      * @param password users password for authorization.
      *
      * @return byte[] containing DER-encoded certificate.
+     * @throws IOException 
+     * @throws CesecoreException 
+     * @throws AuthorizationDeniedException 
+     * @throws EjbcaException 
+     * @throws CADoesntExistsException 
+     * @throws ObjectNotFoundException 
+     * @throws CertificateEncodingException 
+     * @throws NoSuchProviderException 
+     * @throws SignatureException 
+     * @throws NoSuchAlgorithmException 
+     * @throws InvalidKeyException 
      */
     public byte[] nsCertRequest(SignSessionLocal signsession, byte[] reqBytes, String username,
-        String password) throws Exception {
+        String password) throws IOException, ObjectNotFoundException, CADoesntExistsException, EjbcaException, AuthorizationDeniedException, CesecoreException, CertificateEncodingException, InvalidKeyException, NoSuchAlgorithmException, SignatureException, NoSuchProviderException {
         byte[] buffer = Base64.decode(reqBytes);
 
         if (buffer == null) {
@@ -171,34 +197,53 @@ public class RequestHelper {
      * BIT STRING }</code> PublicKey's encoded-format has to be RSA X.509.
      *
      * @param signsession signsession to get certificate from
+     * @param caSession a reference to CaSessionBean
      * @param b64Encoded base64 encoded pkcs10 request message
      * @param username username of requesting user
      * @param password password of requesting user
      * @param resulttype should indicate if a PKCS7 or just the certificate is wanted.
      * @param doSplitLines
      * @return Base64 encoded byte[] 
-     * @throws Exception
+     * @throws AuthorizationDeniedException 
+     * @throws CesecoreException 
+     * @throws EjbcaException 
+     * @throws IOException 
+     * @throws CertificateException 
+     * @throws CertificateEncodingException 
      */
-    public byte[] pkcs10CertRequest(SignSessionLocal signsession, byte[] b64Encoded,
-        String username, String password, int resulttype, boolean doSplitLines) throws Exception {
-        byte[] result = null;	
-        Certificate cert=null;
+    public byte[] pkcs10CertRequest(SignSessionLocal signsession, CaSessionLocal caSession, byte[] b64Encoded, String username, String password,
+            int resulttype, boolean doSplitLines) throws EjbcaException, CesecoreException, AuthorizationDeniedException,
+            CertificateEncodingException, CertificateException, IOException {
+        byte[] result = null;
+        Certificate cert = null;
 		PKCS10RequestMessage req = RequestMessageUtils.genPKCS10RequestMessage(b64Encoded);
 		req.setUsername(username);
         req.setPassword(password);
-        ResponseMessage resp = signsession.createCertificate(administrator, req, X509ResponseMessage.class, null);
+        ResponseMessage resp;
+        resp = signsession.createCertificate(administrator, req, X509ResponseMessage.class, null);
         cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
-        if(resulttype == ENCODED_CERTIFICATE) {
-          result = cert.getEncoded();
-        } else {  
-          result = signsession.createPKCS7(administrator, cert, true);
+        switch (resulttype) {
+        case ENCODED_CERTIFICATE:            
+            result = Base64.encode(cert.getEncoded(), doSplitLines);
+            break;
+        case ENCODED_CERTIFICATE_CHAIN:
+            CAInfo caInfo = caSession.getCAFromRequest(administrator, req, false).getCAInfo();
+            LinkedList<Certificate> chain = new LinkedList<Certificate>(caInfo.getCertificateChain());
+            chain.addFirst(cert);
+            result = CertTools.getPemFromCertificateChain(chain);
+            break;
+        case ENCODED_PKCS7:
+            result = Base64.encode(signsession.createPKCS7(administrator, cert, true), doSplitLines);
+            break;
+        default:           
+            break;
         }
         log.debug("Created certificate (PKCS7) for " + username);
         if (debug != null) {
             debug.print("<h4>Generated certificate:</h4>");
             debug.printInsertLineBreaks(cert.toString().getBytes());
         }
-        return Base64.encode(result, doSplitLines);
+        return result;
     } //pkcs10CertReq
 
     /** Handles CVC certificate requests. These are the special certificates for EAC ePassport PKI.
@@ -234,12 +279,18 @@ public class RequestHelper {
      * @param password
      * @param resulttype
      * @return
-     * @throws Exception
+     * @throws IOException 
+     * @throws AuthorizationDeniedException 
+     * @throws CesecoreException 
+     * @throws EjbcaException 
+     * @throws CertificateException 
+     * @throws CertificateEncodingException 
      */
-    public byte[] pkcs10CertRequest(SignSessionLocal signsession, byte[] b64Encoded,
-                                    String username, String password, int resulttype) throws Exception {
-        return pkcs10CertRequest(signsession, b64Encoded, username, password, resulttype, true);
-    }    
+    public byte[] pkcs10CertRequest(SignSessionLocal signsession, CaSessionLocal caSession, byte[] b64Encoded, String username, String password,
+            int resulttype) throws CertificateEncodingException, CertificateException, EjbcaException, CesecoreException,
+            AuthorizationDeniedException, IOException {
+        return pkcs10CertRequest(signsession, caSession, b64Encoded, username, password, resulttype, true);
+    }
 
     /**
      * Formats certificate in form to be received by IE
@@ -428,8 +479,8 @@ public class RequestHelper {
      * @param b64cert base64 encoded certificate to be returned
      * @param out output stream to send to
      * @param filename filename sent as 'Content-disposition' header 
-     * @param beginKey, String contaitning key information, ie BEGIN_CERTIFICATE_WITH_NL or BEGIN_PKCS7_WITH_NL
-     * @param beginKey, String contaitning key information, ie END_CERTIFICATE_WITH_NL or END_PKCS7_WITH_NL
+     * @param beginKey String containing key information, i.e. BEGIN_CERTIFICATE_WITH_NL or BEGIN_PKCS7_WITH_NL
+     * @param endKey String containing key information, i.e. END_CERTIFICATE_WITH_NL or END_PKCS7_WITH_NL
      * @throws IOException 
      * @throws Exception on error
      */

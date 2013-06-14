@@ -63,7 +63,7 @@ public class CaGetRootCertCommand extends BaseCaAdminCommand {
  
                 FileOutputStream fos = new FileOutputStream(filename);
                 if (pem) {		
-                    fos.write(CertTools.getPEMFromCerts(chain));
+                    fos.write(CertTools.getPemFromCertificateChain(chain));
                 } else {					
                     fos.write(rootcert.getEncoded());
                 }				

@@ -132,7 +132,7 @@ public class CertificateRequestCommand extends EJBCAWSRABaseCommand implements I
             			FileOutputStream fos = new FileOutputStream(filepath);
             			ArrayList<java.security.cert.Certificate> list = new ArrayList<java.security.cert.Certificate>();
             			list.add(CertificateHelper.getCertificate(result.getData()));
-            			fos.write(CertTools.getPEMFromCerts(list));
+            			fos.write(CertTools.getPemFromCertificateChain(list));
             			fos.close();            				            				
             		}
             		getPrintStream().println("Certificate generated, written to " + filepath);
