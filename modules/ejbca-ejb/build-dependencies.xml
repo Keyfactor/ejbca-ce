@@ -277,6 +277,8 @@
 					<include name="org/cesecore/util/ProfileID.java"/>
 					<include name="org/ejbca/config/*.java"/>			
 					<include name="org/ejbca/core/model/authorization/*.java"/>
+					<include name="org/ejbca/core/model/ca/AuthLoginException.java"/>
+					<include name="org/ejbca/core/model/ca/AuthStatusException.java"/>
                     <include name="org/ejbca/core/model/ra/NotFoundException*.java"/>							
 					<include name="org/ejbca/util/SlotList.java"/>
 				</fileset>
