@@ -516,8 +516,8 @@ public class RequestHelper {
      *
      * @param b64cert base64 encoded certificate to be returned
      * @param out output stream to send to
-     * @param beginKey, String contaitning key information, ie BEGIN_CERTIFICATE_WITH_NL or BEGIN_PKCS7_WITH_NL
-     * @param beginKey, String contaitning key information, ie END_CERTIFICATE_WITH_NL or END_PKCS7_WITH_NL
+     * @param beginKey, String containing key information, i.e. BEGIN_CERTIFICATE_WITH_NL or BEGIN_PKCS7_WITH_NL
+     * @param beginKey, String containing key information, i.e. END_CERTIFICATE_WITH_NL or END_PKCS7_WITH_NL
      * @throws Exception on error
      */
     public static void sendNewB64Cert(byte[] b64cert, HttpServletResponse out, String beginKey, String endKey)
