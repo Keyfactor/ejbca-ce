@@ -49,7 +49,6 @@ import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
-import org.cesecore.certificates.certificate.CADnHelper;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
@@ -79,7 +78,6 @@ import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
-import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.AuthLoginException;
@@ -223,7 +221,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         }
         return createCertificate(admin, username, password, incert.getPublicKey(), CertTools.sunKeyUsageToBC(((X509Certificate)incert).getKeyUsage()), null, null);
     }
-
+    
     @Override
     public ResponseMessage createCertificate(final AuthenticationToken admin, final RequestMessage req, Class<? extends ResponseMessage> responseClass, final EndEntityInformation suppliedUserData)
             throws EjbcaException, CesecoreException, AuthorizationDeniedException {
@@ -237,7 +235,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         // Do not log access control to the CA here, that is logged later on when we use the CA to issue a certificate (if we get that far).
         final CA ca;
         if (suppliedUserData == null) {
-            ca = getCAFromRequest(admin, req, false);
+            ca = caSession.getCAFromRequest(admin, req, false);
         } else {
             ca = caSession.getCANoLog(admin, suppliedUserData.getCAId()); // Take the CAId from the supplied userdata, if any
         }
@@ -372,7 +370,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             log.trace(">createRequestFailedResponse(IRequestMessage)");
         }
         CertificateResponseMessage ret = null;
-        final CA ca = getCAFromRequest(admin, req, true);
+        final CA ca = caSession.getCAFromRequest(admin, req, true);
         try {
             final CAToken catoken = ca.getCAToken();
             final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(catoken.getCryptoTokenId());
@@ -411,7 +409,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             log.trace(">decryptAndVerifyRequest(IRequestMessage)");
         }
         // Get CA that will receive request
-        final CA ca = getCAFromRequest(admin, req, true);
+        final CA ca = caSession.getCAFromRequest(admin, req, true);
         try {
             // See if we need some key material to decrypt request
             final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
@@ -456,7 +454,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         }
         ResponseMessage ret = null;
         // Get CA that will receive request
-        final CA ca = getCAFromRequest(admin, req, true);
+        final CA ca = caSession.getCAFromRequest(admin, req, true);
         try {
             final CAToken catoken = ca.getCAToken();
             if (ca.getStatus() != CAConstants.CA_ACTIVE) {
@@ -508,80 +506,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         }
         return ret;
     }
-
-    /** Help Method that extracts the CA specified in the request. 
-     * @throws AuthorizationDeniedException */
-    private CA getCAFromRequest(final AuthenticationToken admin, final RequestMessage req, final boolean doLog) throws AuthStatusException, AuthLoginException,
-            CADoesntExistsException, AuthorizationDeniedException {
-        CA ca = null;
-        try {
-            // See if we can get issuerDN directly from request
-            if (req.getIssuerDN() != null) {
-                String dn = CADnHelper.getCADnFromRequest(req, certificateStoreSession);
-                
-                try {
-                    if (doLog) {
-                        ca = caSession.getCA(admin, dn.hashCode());
-                    } else {
-                        ca = caSession.getCANoLog(admin, dn.hashCode());                        
-                    }
-                    if (log.isDebugEnabled()) {
-                        log.debug("Using CA (from issuerDN) with id: " + ca.getCAId() + " and DN: " + ca.getSubjectDN());
-                    }
-                } catch (CADoesntExistsException e) {
-                    // We could not find a CA from that DN, so it might not be a CA. Try to get from username instead
-                    if (req.getUsername() != null) {
-                        ca = getCAFromUsername(admin, req, doLog);
-                        if (log.isDebugEnabled()) {
-                            log.debug("Using CA from username: " + req.getUsername());
-                        }
-                    } else {
-                        String msg = intres.getLocalizedMessage("createcert.canotfoundissuerusername", dn, "null");
-                        throw new CADoesntExistsException(msg);
-                    }
-                }
-            } else if (req.getUsername() != null) {
-                ca = getCAFromUsername(admin, req, doLog);
-                if (log.isDebugEnabled()) {
-                    log.debug("Using CA from username: " + req.getUsername());
-                }
-            } else {
-                throw new CADoesntExistsException(intres.getLocalizedMessage("createcert.canotfoundissuerusername", req.getIssuerDN(),
-                        req.getUsername()));
-            }
-        } catch (ObjectNotFoundException e) {
-            throw new CADoesntExistsException(
-                    intres.getLocalizedMessage("createcert.canotfoundissuerusername", req.getIssuerDN(), req.getUsername()));
-        }
-
-        if (ca.getStatus() != CAConstants.CA_ACTIVE) {
-            String msg = intres.getLocalizedMessage("createcert.canotactive", ca.getSubjectDN());
-            throw new EJBException(msg);
-        }
-        return ca;
-    }
-
-    private CA getCAFromUsername(final AuthenticationToken admin, final RequestMessage req, final boolean doLog) throws ObjectNotFoundException, AuthStatusException,
-            AuthLoginException, CADoesntExistsException, AuthorizationDeniedException {
-        // See if we can get username and password directly from request
-        final String username = req.getUsername();
-        // Find the user with username username, or throw ObjectNotFoundException
-        final UserData data = UserData.findByUsername(entityManager, username);
-        if (data == null) {
-            throw new ObjectNotFoundException("Could not find username " + username);
-        }
-        final CA ca;
-        if (doLog) {
-            ca = caSession.getCA(admin, data.getCaId());
-        } else {
-            ca = caSession.getCANoLog(admin, data.getCaId());
-        }
-        if (log.isDebugEnabled()) {
-            log.debug("Using CA (from username) with id: " + ca.getCAId() + " and DN: " + ca.getSubjectDN());
-        }
-        return ca;
-    }
-
+   
     private EndEntityInformation authUser(final AuthenticationToken admin, final String username, final String password) throws ObjectNotFoundException,
             AuthStatusException, AuthLoginException {
         // Authorize user and get DN

@@ -27,7 +27,6 @@ import org.junit.Test;
 /**
  * Series of unit tests for LimitLengthASN1Reader
  * 
- * @author mikek
  * @version $Id$
  */
 public class LimitLengthASN1ReaderTest {

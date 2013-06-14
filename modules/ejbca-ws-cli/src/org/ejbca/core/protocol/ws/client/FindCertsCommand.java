@@ -90,7 +90,7 @@ public class FindCertsCommand extends EJBCAWSRABaseCommand implements IAdminComm
             				FileOutputStream fos = new FileOutputStream(outputPath + "/" + username + "-" + i +".pem");
             				ArrayList<java.security.cert.Certificate> list = new ArrayList<java.security.cert.Certificate>();
             				list.add(CertificateHelper.getCertificate(cert.getCertificateData()));
-            				fos.write(CertTools.getPEMFromCerts(list));
+            				fos.write(CertTools.getPemFromCertificateChain(list));
             				fos.close();            				            				
             			}                        
             		}

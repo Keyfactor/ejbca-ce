@@ -33,7 +33,8 @@ or paste a PEM-formated request into the field below and click OK to fetch your 
 	<br />
 	<label for="resulttype">Result type</label>
 	<select name="resulttype" id="resulttype">
-		<option value="<%=org.ejbca.ui.web.RequestHelper.ENCODED_CERTIFICATE%>">PEM certificate</option> 
+		<option value="<%=org.ejbca.ui.web.RequestHelper.ENCODED_CERTIFICATE%>">PEM  - certificate only</option> 
+		<option value="<%=org.ejbca.ui.web.RequestHelper.ENCODED_CERTIFICATE_CHAIN%>">PEM  - full certificate chain</option> 
 		<option value="<%=org.ejbca.ui.web.RequestHelper.ENCODED_PKCS7%>">PKCS#7 certificate</option>
 	</select>
 	<br />

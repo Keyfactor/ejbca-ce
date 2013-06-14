@@ -73,7 +73,7 @@ public class CreateCert extends BaseCommand {
 			Certificate cert = CertTools.getCertfromByteArray(respBytes);
 			Collection<Certificate> certs = new ArrayList<Certificate>();
 			certs.add(cert);
-			byte[] pembytes = CertTools.getPEMFromCerts(certs);
+			byte[] pembytes = CertTools.getPemFromCertificateChain(certs);
 			// Write the resulting cert to file
 			FileOutputStream fos = new FileOutputStream(certf);
 			fos.write(pembytes);

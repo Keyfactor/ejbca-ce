@@ -268,7 +268,6 @@ public class RequestInstance {
 			}
 
 			final AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("RequestInstance: "+request.getRemoteAddr()));
-			//Admin administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr());
 
 			RequestHelper helper = new RequestHelper(administrator, debug);
 
@@ -375,7 +374,7 @@ public class RequestInstance {
                         if (log.isDebugEnabled()) {
                             log.debug("Received iidPkcs10 request: "+new String(reqBytes));
                         }
-						byte[] b64cert=helper.pkcs10CertRequest(signSession, reqBytes, username, password, RequestHelper.ENCODED_CERTIFICATE, false);
+						byte[] b64cert=helper.pkcs10CertRequest(signSession, caSession, reqBytes, username, password, RequestHelper.ENCODED_CERTIFICATE, false);
 						response.setContentType("text/html");
 						RequestHelper.sendNewCertToIidClient(b64cert, request, response.getOutputStream(), servletContext, servletConfig.getInitParameter("responseIidTemplate"),classid);
 					} else {
@@ -391,7 +390,7 @@ public class RequestInstance {
                         if (log.isDebugEnabled()) {
                             log.debug("Received IE request: "+new String(reqBytes));
                         }
-						byte[] b64cert=helper.pkcs10CertRequest(signSession, reqBytes, username, password, RequestHelper.ENCODED_PKCS7);
+						byte[] b64cert=helper.pkcs10CertRequest(signSession, caSession, reqBytes, username, password, RequestHelper.ENCODED_PKCS7);
 						debug.ieCertFix(b64cert);
 						response.setContentType("text/html");
 						RequestHelper.sendNewCertToIEClient(b64cert, response.getOutputStream(), servletContext, servletConfig.getInitParameter("responseTemplate"),classid);
@@ -417,7 +416,7 @@ public class RequestInstance {
 					}
 
 					if ((reqBytes != null) && (reqBytes.length>0)) {
-						pkcs10Req(response, username, password, resulttype, signSession, helper, reqBytes);
+						pkcs10Req(response, username, password, resulttype, helper, reqBytes);
 					} else {
 						throw new SignRequestException("No request bytes received.");
 					}
@@ -617,19 +616,28 @@ public class RequestInstance {
 		return ret;
 	}
 
-	private void pkcs10Req(HttpServletResponse response, String username, String password, int resulttype, SignSessionLocal signsession,
+	private void pkcs10Req(HttpServletResponse response, String username, String password, int resulttype,
 			RequestHelper helper, byte[] reqBytes) throws Exception, IOException {
         if (log.isDebugEnabled()) {
             log.debug("Received PKCS10 request: " + new String(reqBytes));
         }
-		byte[] b64cert = helper.pkcs10CertRequest(signsession, reqBytes, username, password, resulttype);
-		if (resulttype == RequestHelper.ENCODED_PKCS7) {
-			RequestHelper.sendNewB64File(b64cert, response, username + ".pem", RequestHelper.BEGIN_PKCS7_WITH_NL, RequestHelper.END_PKCS7_WITH_NL);
-		}
-		if (resulttype == RequestHelper.ENCODED_CERTIFICATE) {
-			RequestHelper.sendNewB64File(b64cert, response, username + ".pem", RequestHelper.BEGIN_CERTIFICATE_WITH_NL,
-					RequestHelper.END_CERTIFICATE_WITH_NL);
-		}
+		byte[] b64cert = helper.pkcs10CertRequest(signSession, caSession, reqBytes, username, password, resulttype);
+        switch (resulttype) {
+        case RequestHelper.ENCODED_PKCS7:
+            RequestHelper.sendNewB64File(b64cert, response, username + ".pem", RequestHelper.BEGIN_PKCS7_WITH_NL, RequestHelper.END_PKCS7_WITH_NL);
+            break;
+        case RequestHelper.ENCODED_CERTIFICATE:
+            RequestHelper.sendNewB64File(b64cert, response, username + ".pem", RequestHelper.BEGIN_CERTIFICATE_WITH_NL,
+                    RequestHelper.END_CERTIFICATE_WITH_NL);
+        case RequestHelper.ENCODED_CERTIFICATE_CHAIN:
+            //Begin/end keys have already been set in the serialized object 
+            RequestHelper.sendNewB64File(b64cert, response, username + ".pem", "", "");
+            break;
+        default:
+            log.warn("Unknown resulttype requested from pkcs10 request.");
+            break;
+        }
+		
 	}
 
 	/**

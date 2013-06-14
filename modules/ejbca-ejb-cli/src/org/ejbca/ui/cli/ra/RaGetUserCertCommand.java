@@ -41,7 +41,7 @@ public class RaGetUserCertCommand extends BaseRaAdminCommand {
             final String username = args[1];
             final Collection<Certificate> data = ejb.getRemoteSession(CertificateStoreSessionRemote.class).findCertificatesByUsername(username);
             if (data != null) {
-            	getLogger().info(new String(CertTools.getPEMFromCerts(data)));
+            	getLogger().info(new String(CertTools.getPemFromCertificateChain(data)));
             } else {
             	getLogger().info("User '" + username + "' does not exist.");
             }
