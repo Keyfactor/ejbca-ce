@@ -48,6 +48,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.config.CesecoreConfiguration;
@@ -937,6 +938,32 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             return resultList.get(0).getCertificate(this.entityManager);
         }
         return null;
+    }
+    
+
+    @Override
+    public String getCADnFromRequest(final RequestMessage req) {
+        String dn = req.getIssuerDN();
+        if (log.isDebugEnabled()) {
+            log.debug("Got an issuerDN: " + dn);
+        }
+        // If we have issuer and serialNo, we must find the CA certificate, to get the CAs subject name
+        // If we don't have a serialNumber, we take a chance that it was actually the subjectDN (for example a RootCA)
+        final BigInteger serno = req.getSerialNo();
+        if (serno != null) {
+            if (log.isDebugEnabled()) {
+                log.debug("Got a serialNumber: " + serno.toString(16));
+            }
+
+            final Certificate cert = findCertificateByIssuerAndSerno(dn, serno);
+            if (cert != null) {
+                dn = CertTools.getSubjectDN(cert);
+            }
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("Using DN: " + dn);
+        }
+        return dn;
     }
 
 }

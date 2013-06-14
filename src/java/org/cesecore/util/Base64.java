@@ -38,7 +38,7 @@ public final class Base64 {
     }
 
 	/**
-     * encode the input data producong a base 64 encoded byte array.
+     * encode the input data producing a base 64 encoded byte array.
      *
      * @param data the data to be encoded
      * @param splitlines whether the output lines will be split by '\n' (64 byte rows) or not.

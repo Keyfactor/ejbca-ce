@@ -29,6 +29,7 @@ import java.util.Properties;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -52,6 +53,9 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.internal.CACacheHelper;
 import org.cesecore.certificates.ca.internal.CaCache;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.certificate.request.RequestMessage;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
@@ -65,6 +69,7 @@ import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 
 /**
  * Implementation of CaSession, i.e takes care of all CA related CRUD operations.
@@ -84,14 +89,20 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     private EntityManager entityManager;
     @Resource
     private SessionContext sessionContext;
+    
     @EJB
     private AccessControlSessionLocal accessSession;
     @EJB
-    private SecurityEventsLoggerSessionLocal logSession;
+    private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     @EJB
     private CryptoTokenSessionLocal cryptoTokenSession;
+    @EJB
+    private EndEntityAccessSessionLocal endEntityAccessSession;
+    @EJB
+    private SecurityEventsLoggerSessionLocal logSession;
+    
     private CaSessionLocal caSession;
 
     @PostConstruct
@@ -263,6 +274,56 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         if (!authorizedToCA(admin, ca.getCAId())) {
             String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), name);
             throw new AuthorizationDeniedException(msg);
+        }
+        return ca;
+    }
+   
+    
+    @Override
+    public CA getCAFromRequest(final AuthenticationToken admin, final RequestMessage req, final boolean doLog) throws CADoesntExistsException,
+            AuthorizationDeniedException {
+        CA ca = null;
+        // See if we can get issuerDN directly from request
+        if (req.getIssuerDN() != null) {
+            String dn = certificateStoreSession.getCADnFromRequest(req);
+
+            try {
+                if (doLog) {
+                    ca = getCA(admin, dn.hashCode());
+                } else {
+                    ca = getCANoLog(admin, dn.hashCode());
+                }
+                if (log.isDebugEnabled()) {
+                    log.debug("Using CA (from issuerDN) with id: " + ca.getCAId() + " and DN: " + ca.getSubjectDN());
+                }
+            } catch (CADoesntExistsException e) {
+                // We could not find a CA from that DN, so it might not be a CA. Try to get from username instead
+                if (req.getUsername() != null) {
+                    final String username = req.getUsername();
+                    EndEntityInformation endEntityInformation = endEntityAccessSession.findUser(admin, username);
+                    ca = getCAInternal(endEntityInformation.getCAId(), null, true);
+                    if (log.isDebugEnabled()) {
+                        log.debug("Using CA from username: " + req.getUsername());
+                    }
+                } else {
+                    String msg = intres.getLocalizedMessage("createcert.canotfoundissuerusername", dn, "null");
+                    throw new CADoesntExistsException(msg);
+                }
+            }
+        } else if (req.getUsername() != null) {
+            final String username = req.getUsername();
+            EndEntityInformation endEntityInformation = endEntityAccessSession.findUser(admin, username);
+            ca = getCa(endEntityInformation.getCAId());
+            if (log.isDebugEnabled()) {
+                log.debug("Using CA from username: " + req.getUsername());
+            }
+        } else {
+            throw new CADoesntExistsException(intres.getLocalizedMessage("createcert.canotfoundissuerusername", req.getIssuerDN(), req.getUsername()));
+        }
+
+        if (ca.getStatus() != CAConstants.CA_ACTIVE) {
+            String msg = intres.getLocalizedMessage("createcert.canotactive", ca.getSubjectDN());
+            throw new EJBException(msg);
         }
         return ca;
     }
