@@ -488,11 +488,12 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 log.error("Not possible to edit subjects for role: "+role.getRoleName(), e);
             }
     
-    	    
+    	    //The old "/super_administrator" rule is replaced by a rule to access "/" (StandardRules.ROLE_ROOT.resource()) with recursive=true.
+    	    // therefore we must insert a new access rule in the database in all roles that have super_administrator access.
     		final Map<Integer, AccessRuleData> rulemap = role.getAccessRules();
     		final Collection<AccessRuleData> rules = rulemap.values();
     		for (AccessRuleData rule : rules) {
-    			if (StringUtils.equals(StandardRules.ROLE_ROOT.resource(), rule.getAccessRuleName()) && 
+    			if (StringUtils.equals("/super_administrator", rule.getAccessRuleName()) && 
     					rule.getInternalState().equals(AccessRuleState.RULE_ACCEPT)) {
     				// Now we add a new rule
     				final AccessRuleData slashRule = new AccessRuleData(role.getRoleName(), StandardRules.ROLE_ROOT.resource(), AccessRuleState.RULE_ACCEPT, true);
