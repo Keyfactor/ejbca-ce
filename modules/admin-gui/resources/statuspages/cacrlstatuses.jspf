@@ -9,7 +9,7 @@ org.cesecore.certificates.ca.CAConstants,
 org.ejbca.ui.web.admin.cainterface.CAInterfaceBean.CaCrlStatusInfo
 "%>
 <%
-	cabean.initialize(request, ejbcawebbean);
+	cabean.initialize(ejbcawebbean);
 %>
 
 <div class="status" id="crlstatus" >

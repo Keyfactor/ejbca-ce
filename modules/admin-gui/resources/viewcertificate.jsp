@@ -49,7 +49,7 @@
   // Initialize environment.
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.REGULAR_VIEWCERTIFICATE); 
                                             rabean.initialize(request, ejbcawebbean);
-                                            cabean.initialize(request, ejbcawebbean); 
+                                            cabean.initialize(ejbcawebbean); 
 
   String THIS_FILENAME            =  globalconfiguration.getAdminWebPath()  + "viewcertificate.jsp";
 

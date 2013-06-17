@@ -189,7 +189,7 @@
 
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES); 
                                             ejbcarabean.initialize(request, ejbcawebbean);
-                                            cabean.initialize(request, ejbcawebbean);
+                                            cabean.initialize(ejbcawebbean);
                                             tokenbean.initialize(request, ejbcawebbean);
   String THIS_FILENAME            =  globalconfiguration .getRaPath()  + "/editendentityprofiles/editendentityprofiles.jsp";
   

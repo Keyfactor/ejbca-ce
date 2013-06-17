@@ -45,7 +45,7 @@ org.ejbca.util.HTMLTools
 %>
 <%   // Initialize environment
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_CABASICFUNCTIONS); 
-                                            cabean.initialize(request, ejbcawebbean); 
+                                            cabean.initialize(ejbcawebbean); 
 
   final String THIS_FILENAME                = globalconfiguration.getCaPath() 
                                                   + "/cafunctions.jsp";
