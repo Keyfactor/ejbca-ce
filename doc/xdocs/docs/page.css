@@ -42,24 +42,22 @@ a:visited { color:#2170ab}
 
 #toppic { padding-left:210px;}
 
-.twitter {
-	top: 185px;
-	left: 400px;
-	z-index: -1;
-	padding: 1px 0 0 0;
-	margin: 0;
-	position: absolute;
+#twitter p {
+   text-align: left;
 }
-.twitter h4{
-    border-bottom: 0;
-	}
+
 .pagetitle{
 	color:#005a9b;
 	}
 #promotion {
 	padding:0;
-	margin:0 0 0 0;
+	margin:0;
 	}
+	#promotion td{
+		padding:0;
+		margin:0;
+		vertical-align:top;
+		}
 .marg{padding-left:13px;}
 .marg2{padding:0 0 .5em 0;}	
 	
@@ -144,37 +142,51 @@ table .title { background-color: #FFFFFF; width:100%; border: 0px; }
 .content .externals th { width: 120px; text-align: right; }
 .content .externals td { background-color: #f0f0ff; color: black; }
 
-
 .frame {
-    border-radius: 5px;
+  border-radius: 5px;
   border: solid #8ca8d0 1px;
-  margin: 0em 4em 0em 0em;
+    border: solid #e8e8e8 1px;
+  margin: 1em 4em 0 0;
+    margin: 0 1em 0 0;
+  padding: 0;
 }
-div.frame{
-	padding:0;
-	margin:0em 0 0 1.5em;
+.frame .banner {
+	padding: 0;
+	margin: .4em 0 1em 0;
+	border: 1px solid #8ca8d0;
 	}
-
+div.frame{
+	padding: 0;
+	margin: .3em 0 0 0;
+		margin: .4em 1em 0 0;
+	}
 .frame .label {
   background: #8ca8d0;
-     border-radius: 3px 3px 0px 0;
+  border-radius: 3px 3px 0 0;
   color: white;
   font-weight: bold;
-  padding: 5px 10px;
+  padding: 8px 10px;
 }
 .label a { font-weight:bold; font-style: normal; color: #015a9c; text-decoration : none; }
 .label a:link {   }
-.label a:visited { color:#015a9c;}
+.label a:visited { color: #015a9c;}
 .label a:hover { text-decoration: underline; }
 
 .frame .content {
   border-radius: 5px;
   padding: 5px 10px;
-  background: #f4f2f2;
+  background: #f0f0f0;
   color: black;
   line-height: 120%;
   font-size: 90%;
 }
+.frame .content hr{
+	display: block;
+	height: 1px;
+    border: 0;
+	border-top: 1px dotted #8ca8d0;
+    margin: 0 0 1em 0; padding: 0;
+	}
 .warning .label {
   background: #C00;
   color: white;
@@ -305,6 +317,7 @@ h4 {
 
 .logobar {
     background-color: #f4f2f2;    
+	    background-color: #f0f0f0;  
     color: #000000;
     font-size: 14pt;
     font-style: italic;
