@@ -62,7 +62,7 @@ earlier version of EJBCA.
 <p>This section provides a fast way to get installed and running for a test using Ubuntu Linux. 
 To get more information a about configuration options etc (there are plenty), you should follow the regular <strong>Installation guide</strong> below.
 </p><p>
-This quick start guide assumes EJBCA 5.2.0 and JBoss 5.1.0.GA, but other version should also be possible to use by just replacing the versions.
+This quick start guide assumes EJBCA 6.0 and JBoss 5.1.0.GA, but other version should also be possible to use by just replacing the versions.
 We also assume installation is made in a user account with username "user". In your environment simply replace user with the username you are using.
 </p>
 <ol>
@@ -77,7 +77,7 @@ We also assume installation is made in a user account with username "user". In y
 <li>sudo apt-get install openjdk-6-jdk ant ant-optional unzip ntp</li>
 </ul>
 </li>
-<li>Install software not in Ubuntu repositories, JBoss 5.1.0.GA-jdk6 and EJBCA 5.2.0.<br/>
+<li>Install software not in Ubuntu repositories, JBoss 5.1.0.GA-jdk6 and EJBCA 6.0.<br/>
 <ul>
 <li>wget http://sourceforge.net/projects/jboss/files/JBoss/JBoss-5.1.0.GA/jboss-5.1.0.GA-jdk6.zip</li>
 <li>wget http://sourceforge.net/projects/ejbca/files/ejbca5/ejbca_5_2_0/ejbca_5_2_0.zip</li>
