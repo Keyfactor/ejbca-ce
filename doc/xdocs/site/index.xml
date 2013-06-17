@@ -8,40 +8,14 @@
 <body>
   <section name="PKI News">
 
-
 <table class="promotion"><!--AC table for twitterwidget and Note area-->
 
 <tr>
 <td valign="top"><!--TWITTER WIDGET-->
 <div class="frame note" id="twitter" style="border:0;">
-<script charset="utf-8" src="https://widgets.twimg.com/j/2/widget.js">
-</script>
+<a class="twitter-timeline" width="260" height="275" data-dnt="true" href="https://twitter.com/primekeyPKI" data-widget-id="344774465936306176">Tweets by @primekeyPKI</a>
 <script>
-new TWTR.Widget({
-  version: 2,
-  type: 'profile',
-  rpp: 7,
-  interval: 30000,
-  width: 0,
-  height: 0,
-  theme: {
-    shell: {
-      background: '#8ca8d0',
-      color: '#ffffff',
-    },
-    tweets: {
-      background: '#eee',
-      color: '#333',
-      links: '#5e87bb'
-    }
-  },
-  features: {
-    scrollbar: true,
-    loop: true,
-    live: false,
-    behavior: 'all'
-  }
-}).render().setUser('primekeyPKI').start();
+!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
 </script>
 </div>
 </td>
@@ -57,7 +31,7 @@ new TWTR.Widget({
 <a href="https://ae.rsaconference.com/US13/portal/newreg.ww" target="rsa"><img src="./images/RSAC-2013_623px.png" alt="Visit PrimeKey at RSA 2013. Free Expo Pass Code." class="banner"/></a>
     <hr/>
  -->    
-  <p><strong>EJBCA 5.0.9 is now out!</strong>
+  <p><strong>EJBCA 5.0.10 is now out!</strong>
   <br />Visit the <a href="download.html">download</a> section. There is also a LiveCD!
   <br />
   <span class="date"> Date: 2013-03-21</span>  
