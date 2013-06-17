@@ -2,7 +2,7 @@
 <%@page import="java.util.*, org.ejbca.ui.web.admin.cainterface.EditPublisherJSPHelper"%>
 <jsp:useBean id="publisherhelper" scope="session" class="org.ejbca.ui.web.admin.cainterface.EditPublisherJSPHelper" />
 <%
-	cabean.initialize(request, ejbcawebbean);
+	cabean.initialize(ejbcawebbean);
 	publisherhelper.initialize(request,ejbcawebbean, cabean);
 	
 	TreeMap publishernames = ejbcawebbean.getInformationMemory().getAuthorizedPublisherNames();
