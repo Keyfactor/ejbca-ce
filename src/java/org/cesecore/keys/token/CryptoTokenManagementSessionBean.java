@@ -235,7 +235,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
             securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_DELETE, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE, authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null,
                     "Delete of CryptoToken with id " + cryptoTokenId);
         } else if (log.isDebugEnabled()) {
-            log.debug("Crypto token with id "+cryptoTokenId+" does not exists and can not be deleted.");
+            log.debug("Crypto token with id "+cryptoTokenId+" does not exist and can not be deleted.");
         }
     }
     
