@@ -21,6 +21,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.rules.AccessRuleData;
+import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspect;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
@@ -284,7 +285,8 @@ public class AccessTreeNode {
                                 log.trace("logMatchValue is null for authenticationToken " + authenticationToken.toString());
                                 logMatchValue = authenticationToken.getDefaultMatchValue();
                             }
-                            log.trace("accessUser " + logMatchValue.name() + " " + accessUser.getMatchTypeAsType().name() + " "
+                            final AccessMatchType matchType = accessUser.getMatchTypeAsType();
+                            log.trace("accessUser " + logMatchValue.name() + " " + (matchType == null ? "null" : matchType.name()) + " "
                                     + accessUser.getMatchValue() + " matched authenticationToken. thisUserState=" + logState.name()
                                     + " thisUserStatePriority=" + thisUserStatePriority);
                         }
