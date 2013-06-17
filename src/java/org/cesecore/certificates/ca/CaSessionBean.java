@@ -705,7 +705,11 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         }
         final boolean upgradedExtendedService = ca.upgradeExtendedCAServices();
         // Compare old version with current version and save the data if there has been a change
-        if (adhocUpgrade || upgradedExtendedService || Float.compare(oldversion, ca.getVersion()) != 0 || expired) {
+        final boolean upgradeCA = (Float.compare(oldversion, ca.getVersion()) != 0);
+        if (adhocUpgrade || upgradedExtendedService || upgradeCA || expired) {
+            if (log.isDebugEnabled()) {
+                log.debug("Merging CA to database. Name: "+cadata.getName()+", id: "+cadata.getCaId()+", adhocUpgrade: "+adhocUpgrade+", upgradedExtendedService: "+upgradedExtendedService+", upgradeCA: "+upgradeCA+", expired: "+expired);
+            }
             ca.getCAToken();
             final int caId = caSession.mergeCa(ca);
             caDataReturn = entityManager.find(CAData.class, caId);
