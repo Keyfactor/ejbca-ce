@@ -783,6 +783,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             try {
                 cryptoTokenId = cryptoTokenSession.mergeCryptoToken(CryptoTokenFactory.createCryptoToken(classpath, prop, keyStoreData, caid, cryptoTokenName));
             } catch (CryptoTokenNameInUseException e) {
+                log.info("Crypto token name already in use upgrading (adhocUpgradeFrom50) crypto token for CA '"+caName+"', cryptoTokenName '"+cryptoTokenName+"'.", e);
                 throw new RuntimeException(e);  // Since we have a constraint on CA names to be unique, this should never happen
             }
         }
