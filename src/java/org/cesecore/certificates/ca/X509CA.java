@@ -1150,6 +1150,7 @@ public class X509CA extends CA implements Serializable {
      * Method to upgrade new (or existing external caservices) This method needs to be called outside the regular upgrade since the CA isn't
      * instantiated in the regular upgrade.
      */
+    @SuppressWarnings("rawtypes")
     public boolean upgradeExtendedCAServices() {
         boolean retval = false;
         Collection<Integer> extendedServiceTypes = getExternalCAServiceTypes();
@@ -1162,7 +1163,12 @@ public class X509CA extends CA implements Serializable {
                 if (Float.compare(service.getLatestVersion(), service.getVersion()) != 0) {
                     retval = true;
                     service.upgrade();
-                }            	
+                    setExtendedCAServiceData(service.getExtendedCAServiceInfo().getType(), (HashMap)service.saveData());
+                } else if (service.isUpgraded()) {
+                    // Also return true if the service was automatically upgraded by a UpgradeableDataHashMap.load, which calls upgrade automagically. 
+                    retval = true;
+                    setExtendedCAServiceData(service.getExtendedCAServiceInfo().getType(), (HashMap)service.saveData());
+                }
             } else {
             	log.error("Extended service is null, can not upgrade service of type: "+type);
             }
