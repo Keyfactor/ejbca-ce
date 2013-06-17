@@ -280,7 +280,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     public static boolean createTestCA(String caName, int keyStrength, String dn, int signedBy, Collection<Certificate> certificateChain)
             throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException,
             CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
-        log.trace(">createTestCA");
+        log.trace(">createTestCA("+caName+", "+dn+")");
         AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaTestCase"));
         final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
         final CaSessionRemote caSession = getCaSession();
@@ -288,16 +288,20 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         // Search for requested CA
         try {
             caSession.getCAInfo(internalAdmin, caName);
+            log.debug("CA with name " + caName+" already exists, returning true from createTestCA.");
             return true;
         } catch (CADoesntExistsException e) {
+            log.debug("CA with name " + caName+" does not exist, move on to try to rename a CA with same Id");
             // Ignore this state, continue instead. This is due to a lack of an exists-method in CaSession
         }
         
         try {
             CAInfo cainfo = caSession.getCAInfo(internalAdmin, dn.hashCode() );
             caSession.renameCA(internalAdmin, cainfo.getName(), caName);
+            log.debug("CA with name " + cainfo.getName()+" was renamed to "+caName+"', returning true from createTestCA.");
             return true;
         } catch (CADoesntExistsException e) {
+            log.debug("CA with id " + dn.hashCode()+" can not be renamed to '"+caName+"', because strangely CAinfo id and name does not match (or multiple threads are messing with the same CA.");
             // Ignore this state, continue instead. This is due to a lack of an exists-method in CaSession
         }
         
