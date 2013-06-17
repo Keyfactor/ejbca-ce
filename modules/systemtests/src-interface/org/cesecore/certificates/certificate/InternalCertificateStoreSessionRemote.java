@@ -56,6 +56,12 @@ public interface InternalCertificateStoreSessionRemote {
      */
     int removeCertificate(Certificate certificate);
     
+    /** Removes all certificates issued to the given subject DN
+     * 
+     * @param subjectDN the subject DN of the certificates that should be removed
+     */
+    public void removeCertificatesBySubject(final String subjectDN);
+
     /** To allow testing of Local-only method */
     List<Object[]> findExpirationInfo(Collection<String> cas, long activeNotifiedExpireDateMin, long activeNotifiedExpireDateMax, long activeExpireDateMin);
      
