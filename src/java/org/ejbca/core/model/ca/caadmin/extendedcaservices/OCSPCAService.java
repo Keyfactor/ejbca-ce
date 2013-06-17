@@ -102,7 +102,9 @@ public class OCSPCAService extends ExtendedCAService implements Serializable {
     public ExtendedCAServiceResponse extendedService(CryptoToken cryptoToken, final ExtendedCAServiceRequest request) throws ExtendedCAServiceRequestException,
             IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, CertificateEncodingException, CertificateException,
             OperatorCreationException {
-        log.trace(">extendedService");
+        if (log.isTraceEnabled()) {
+            log.trace(">extendedService");
+        }
         if (this.getStatus() != ExtendedCAServiceInfo.STATUS_ACTIVE) {
             String msg = intres.getLocalizedMessage("caservice.notactive", "OCSP");
             log.error(msg);
@@ -119,7 +121,9 @@ public class OCSPCAService extends ExtendedCAService implements Serializable {
             final X509Certificate[] signerChain = (X509Certificate[]) getCa().getCertificateChain().toArray(new X509Certificate[0]);
             final ExtendedCAServiceResponse returnval = OCSPUtil.createOCSPCAServiceResponse(ocspServiceReq, privKey, providerName,
                     OCSPUtil.convertCertificateChainToCertificateHolderChain(signerChain));
-            log.trace("<extendedService");
+            if (log.isTraceEnabled()) {
+                log.trace("<extendedService");
+            }
             return returnval;
         } catch (CryptoTokenOfflineException e) {
             throw new ExtendedCAServiceNotActiveException(e);
