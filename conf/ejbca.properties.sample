@@ -88,7 +88,7 @@
 #jboss.farm.name=farm
 
 #------------------- EJBCA Healthcheck settings -------------
-# Specifies the basic settings of the EJBCA Healtcheck servlet
+# Specifies the basic settings of the EJBCA Healthcheck servlet
 # for more detailed configuration edit the file src/publicweb/healthcheck/WEB-INF/web.xml
 # URL: http://localhost:8080/ejbca/publicweb/healthcheck/ejbcahealth
 #
