@@ -203,7 +203,7 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 
 # Password for rekeying via the servlet. 
 # Default: null
-#ocsp.rekeying.trigging.password
+#ocsp.rekeying.trigging.password=
 
 # URL to webservice from which the certificate for a newly generated OCSP responder key should be fetched.
 # The automatic re-keying feature is disabled if this property is not defined.
