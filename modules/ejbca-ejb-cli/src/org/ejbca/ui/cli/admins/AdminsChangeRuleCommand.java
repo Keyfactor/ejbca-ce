@@ -58,9 +58,9 @@ public class AdminsChangeRuleCommand extends BaseAdminsCommand {
         }
         
         try {
-            if (args.length < 5) {
+            if (args.length < 4) {
                 getLogger().info("Description: " + getDescription());
-                getLogger().info("Usage: " + getCommand() + " <name of role> <access rule> <rule> <recursive>");
+                getLogger().info("Usage: " + getCommand() + " <name of role> <access rule> <rule> [<recursive>]");
                 Collection<RoleData> roles = ejb.getRemoteSession(RoleManagementSessionRemote.class).getAllRolesAuthorizedToEdit(getAdmin(cliUserName, cliPassword));
                 Collections.sort((List<RoleData>) roles);
                 String availableRoles = "";
@@ -85,7 +85,7 @@ public class AdminsChangeRuleCommand extends BaseAdminsCommand {
                     availableRules += (availableRules.length() == 0 ? "" : ", ") + current.getName();
                 }
                 getLogger().info("Available rules: " + availableRules);
-                getLogger().info("Recursive is one of: TRUE, FALSE");
+                getLogger().info("Recursive is one of: TRUE, FALSE (Only " + AccessRuleState.RULE_ACCEPT + " may be set TRUE. Default is FALSE.)");
                 return;
             }
             String groupName = args[1];
@@ -117,9 +117,19 @@ public class AdminsChangeRuleCommand extends BaseAdminsCommand {
                 getLogger().error("No such rule \"" + args[3] + "\".");
                 return;
             }
-            boolean recursive = "TRUE".equalsIgnoreCase(args[4]);
-            List<String> accessRuleStrings = new ArrayList<String>();
+            boolean recursive = false;
+            if (args.length == 5) {
+                if ("TRUE".equalsIgnoreCase(args[4])) {
+                    if (rule == AccessRuleState.RULE_ACCEPT) {
+                        recursive = true;
+                    } else {
+                        getLogger().info("Recursive set TRUE for rule state " + rule.getName() + " is invalid. Ignoring recursive statement.");
+                    }
+                }
 
+            }
+
+            List<String> accessRuleStrings = new ArrayList<String>();
             accessRuleStrings.add(accessRule);
             if (rule == AccessRuleState.RULE_NOTUSED) {
                 ejb.getRemoteSession(RoleManagementSessionRemote.class).removeAccessRulesFromRole(getAdmin(cliUserName, cliPassword), role, accessRuleStrings);
