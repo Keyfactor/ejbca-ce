@@ -84,7 +84,6 @@ import org.ejbca.util.HTMLTools;
 /**
  * The main bean for the web interface, it contains all basic functions.
  * 
- * @author Philip Vendil
  * @version $Id$
  */
 public class EjbcaWebBean implements Serializable {

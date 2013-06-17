@@ -216,7 +216,7 @@ java.security.InvalidAlgorithmParameterException
   String errormessage = null;
 
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.ROLE_ROOT.resource());
-  cabean.initialize(request, ejbcawebbean);
+  cabean.initialize(ejbcawebbean);
   CADataHandler cadatahandler = cabean.getCADataHandler();
 
   final String THIS_FILENAME = globalconfiguration.getCaPath()  + "/editcas/editcas.jsp";
