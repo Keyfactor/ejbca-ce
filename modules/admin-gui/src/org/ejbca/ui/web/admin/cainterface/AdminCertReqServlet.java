@@ -111,7 +111,7 @@ import org.ejbca.ui.web.admin.rainterface.UserView;
  * </dl>
  * 
  *
- * @author Ville Skytt�
+ * @author Ville Skytt���
  * @version $Id$
  */
 public class AdminCertReqServlet extends HttpServlet {
@@ -429,7 +429,7 @@ public class AdminCertReqServlet extends HttpServlet {
                 throw new ServletException("Unable to instantiate CAInterfaceBean", e);
             }
             try {
-                cabean.initialize(req, getEjbcaWebBean(req));
+                cabean.initialize(getEjbcaWebBean(req));
             } catch (Exception e) {
                 throw new ServletException("Cannot initialize CAInterfaceBean", e);
             }
