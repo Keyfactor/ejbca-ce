@@ -114,6 +114,8 @@ public class CaInitCommandTest {
     @After
     public void tearDown() throws Exception {
         CaTestCase.removeTestCA(CA_NAME);
+        // Make sure CA certificates are wiped from the DB
+        internalCertStoreSession.removeCertificatesBySubject(CA_DN);
     }
 
     /** Test trivial happy path for execute, i.e, create an ordinary CA. */
