@@ -84,29 +84,27 @@ public class CACertReqServlet extends HttpServlet {
         log.trace(">doGet()");
 
         // Check if authorized
-        EjbcaWebBean ejbcawebbean= (org.ejbca.ui.web.admin.configuration.EjbcaWebBean)
-                                   req.getSession().getAttribute("ejbcawebbean");
+        EjbcaWebBean ejbcawebbean = (EjbcaWebBean) req.getSession().getAttribute("ejbcawebbean");
         if ( ejbcawebbean == null ){
           try {
-            ejbcawebbean = (org.ejbca.ui.web.admin.configuration.EjbcaWebBean) java.beans.Beans.instantiate(Thread.currentThread().getContextClassLoader(), org.ejbca.ui.web.admin.configuration.EjbcaWebBean.class.getName());
+            ejbcawebbean = (EjbcaWebBean) java.beans.Beans.instantiate(Thread.currentThread().getContextClassLoader(), EjbcaWebBean.class.getName());
            } catch (ClassNotFoundException exc) {
                throw new ServletException(exc.getMessage());
            }catch (Exception exc) {
-               throw new ServletException (" Cannot create bean of class "+org.ejbca.ui.web.admin.configuration.EjbcaWebBean.class.getName(), exc);
+               throw new ServletException (" Cannot create bean of class "+EjbcaWebBean.class.getName(), exc);
            }
            req.getSession().setAttribute("ejbcawebbean", ejbcawebbean);
         }
 
 		// Check if authorized
-		CAInterfaceBean cabean= (org.ejbca.ui.web.admin.cainterface.CAInterfaceBean)
-								   req.getSession().getAttribute("cabean");
+        CAInterfaceBean cabean = (CAInterfaceBean) req.getSession().getAttribute("cabean");
 		if ( cabean == null ){
 		  try {
-			cabean = (org.ejbca.ui.web.admin.cainterface.CAInterfaceBean) java.beans.Beans.instantiate(Thread.currentThread().getContextClassLoader(), org.ejbca.ui.web.admin.cainterface.CAInterfaceBean.class.getName());
+			cabean = (CAInterfaceBean) java.beans.Beans.instantiate(Thread.currentThread().getContextClassLoader(), CAInterfaceBean.class.getName());
 		   } catch (ClassNotFoundException exc) {
 			   throw new ServletException(exc.getMessage());
 		   }catch (Exception exc) {
-			   throw new ServletException (" Cannot create bean of class "+org.ejbca.ui.web.admin.cainterface.CAInterfaceBean.class.getName(), exc);
+			   throw new ServletException (" Cannot create bean of class "+CAInterfaceBean.class.getName(), exc);
 		   }
 		   req.getSession().setAttribute("cabean", cabean);
 		}
@@ -119,7 +117,7 @@ public class CACertReqServlet extends HttpServlet {
         }
 
 		try{
-		  cabean.initialize(req, ejbcawebbean);
+		  cabean.initialize(ejbcawebbean);
 		} catch(Exception e){
 		   throw new java.io.IOException("Error initializing CACertReqServlet");
 		}        
@@ -156,28 +154,22 @@ public class CACertReqServlet extends HttpServlet {
                     	filename = chrf.getConcatenated();
                     }
                 } catch (ParseException ex) {
-                    // Apparently it wasn't a CVC request, ignore
-                } catch (IllegalArgumentException ex) {
-                    // Apparently it wasn't a X.509 certificate, was it a certificate request?
-            		try {
-                		PKCS10RequestMessage p10 = RequestMessageUtils.genPKCS10RequestMessage(request);
-                		filename = CertTools.getPartFromDN(p10.getRequestX500Name().toString(), "CN");
-            		} catch (Exception e1) { // NOPMD
-            			// Nope, not a certificate request either, see if it was an X.509 certificate
-            			Certificate cert = CertTools.getCertfromByteArray(request);
-            			filename = CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN");
-            			if (filename == null) {
-            				filename = "cert";
-            			}
-            			isx509cert = true;
-            		}
+                     // Apparently it wasn't a CVC request, ignore
+                }
+                // Apparently it wasn't a CVC certificate, was it a certificate request?
+                try {
+                    PKCS10RequestMessage p10 = RequestMessageUtils.genPKCS10RequestMessage(request);
+                    filename = CertTools.getPartFromDN(p10.getRequestX500Name().toString(), "CN") + "_csr";
+                } catch (Exception e) { // NOPMD
+                    // Nope, not a certificate request either, see if it was an X.509 certificate
+                    Certificate cert = CertTools.getCertfromByteArray(request);
+                    filename = CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN");
+                    if (filename == null) {
+                        filename = "cert";
+                    }
+                    isx509cert = true;
                 }
 
-                if (filename == null) {
-                    filename = "certificaterequest";
-                } else {
-        	    	filename = filename.replaceAll("\\W", "");
-                }
                 int length = request.length;
                 byte[] outbytes = request;
             	if (!StringUtils.equals(format, "binary")) {

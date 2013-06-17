@@ -214,10 +214,6 @@ public class CAInterfaceBean implements Serializable {
         }
     }
 
-    public void initialize(HttpServletRequest request, EjbcaWebBean ejbcawebbean) {
-    	initialize(ejbcawebbean);
-    }
-
     public CertificateView[] getCACertificates(int caid) {
     	try {
     		final Collection<Certificate> chain = signsession.getCertificateChain(authenticationToken, caid);
