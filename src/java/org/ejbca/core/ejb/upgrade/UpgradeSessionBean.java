@@ -452,8 +452,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 						final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
 						ca.updateCA(cryptoToken, cainfo);
 					}
-                    // Upgrade existing extended CA services to latest version
-                    ca.upgradeExtendedCAServices();
 					// Finally store the upgraded CA
 					caSession.editCA(admin, ca, true);
 				}
