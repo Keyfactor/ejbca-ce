@@ -29,7 +29,7 @@ All database upgrades require CREATE and ALTER TABLE privileges besides the regu
 INSERT and DELETE. The SQL executed by database upgrades code is available in
 "src/upgrade/<oldversion>_<newversion>/<oldversion>_<newversion>-upgrade-<database>.sql".
 
-From EJBCA 5.0.x to EJBCA 5.2.x
+From EJBCA 5.0.x to EJBCA 6.0.x
 -------------------------------
 See release notes for more details on changes.
 
