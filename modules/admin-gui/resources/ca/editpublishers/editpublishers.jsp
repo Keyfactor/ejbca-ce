@@ -19,7 +19,7 @@
 
 
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, StandardRules.ROLE_ROOT.resource()); 
-                                            cabean.initialize(request, ejbcawebbean); 
+                                            cabean.initialize(ejbcawebbean); 
                                             publisherhelper.initialize(request,ejbcawebbean, cabean);
   String THIS_FILENAME            =  globalconfiguration.getCaPath()  + "/editpublishers/editpublishers.jsp";
   

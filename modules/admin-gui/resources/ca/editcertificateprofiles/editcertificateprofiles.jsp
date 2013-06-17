@@ -147,7 +147,7 @@
   List<String> casUsingCertificateProfile = new ArrayList<String>();
 
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_EDITCERTIFICATEPROFILES); 
-                                            cabean.initialize(request, ejbcawebbean); 
+                                            cabean.initialize(ejbcawebbean); 
 
   String THIS_FILENAME            =  globalconfiguration.getCaPath()  + "/editcertificateprofiles/editcertificateprofiles.jsp";
   

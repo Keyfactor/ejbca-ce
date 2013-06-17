@@ -56,7 +56,7 @@
 
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.HARDTOKEN_EDITHARDTOKENISSUERS); 
                                     tokenbean.initialize(request, ejbcawebbean);
-                                    cabean.initialize(request, ejbcawebbean); 
+                                    cabean.initialize(ejbcawebbean); 
 
   String THIS_FILENAME                    = globalconfiguration.getHardTokenPath() + "/edithardtokenissuers.jsp";
 

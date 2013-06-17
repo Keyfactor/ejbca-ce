@@ -21,7 +21,7 @@ java.security.cert.X509Certificate
 <%
   // Initialize environment.
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_CABASICFUNCTIONS); 
-                                            cabean.initialize(request, ejbcawebbean);
+                                            cabean.initialize(ejbcawebbean);
   String THIS_FILENAME                    = globalconfiguration.getCaPath()  + "/viewcainfo.jsp";
 
   final String VIEWCERT_LINK            = ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "viewcertificate.jsp";
