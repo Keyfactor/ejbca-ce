@@ -51,7 +51,7 @@ $Id$
 
 		  <!-- TLS operations, not STARTTLS -->
 		  <!-- 
-          <property name="mail.smtp.tls.enable" value="true"/>
+          <property name="mail.smtp.ssl.enable" value="true"/>
           <property name="mail.smtp.socketFactory.class" value="javax.net.ssl.SSLSocketFactory"/>
            -->
            
