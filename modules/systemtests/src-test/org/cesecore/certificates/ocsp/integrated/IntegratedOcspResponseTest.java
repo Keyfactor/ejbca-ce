@@ -21,9 +21,11 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.security.KeyPair;
 import java.security.NoSuchProviderException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -55,9 +57,17 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.ca.X509CA;
+import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.ca.catoken.CAToken;
+import org.cesecore.certificates.ca.catoken.CATokenConstants;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
@@ -84,6 +94,7 @@ import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
+import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.RoleData;
@@ -92,6 +103,8 @@ import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.SimpleTime;
+import org.cesecore.util.StringTools;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -549,4 +562,93 @@ public class IntegratedOcspResponseTest extends RoleUsingTestCase {
             }
         }
     }
+    
+    /**
+     * Makes sure that the OcspSigningCache doesn't add Unsigned CAs
+     * @throws AuthorizationDeniedException 
+     * @throws IllegalCryptoTokenException 
+     * @throws CAExistsException 
+     * @throws CADoesntExistsException 
+     * @throws InvalidAlgorithmException 
+     */
+    @Test
+    public void testOcspSigningCacheDoesntAddUnsignedCa() throws CAExistsException, IllegalCryptoTokenException, AuthorizationDeniedException,
+            CADoesntExistsException, InvalidAlgorithmException {
+        final Properties cryptoTokenProperties = new Properties();
+        cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, "foo1234");
+        int cryptoTokenId = 0;
+        try {
+            try {
+                cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(internalAdmin, "testOcspSigningCacheDoesntAddUnsignedCa",
+                        SoftCryptoToken.class.getName(), cryptoTokenProperties, null, null);
+                cryptoTokenManagementSession.createKeyPair(internalAdmin, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS, "1024");
+                cryptoTokenManagementSession.createKeyPair(internalAdmin, cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS, "1024");
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            // Create CAToken (what key in the CryptoToken should be used for what)
+            final Properties caTokenProperties = new Properties();
+            caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+            caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+            caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
+            final CAToken catoken = new CAToken(cryptoTokenId, caTokenProperties);
+            catoken.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            catoken.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            catoken.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
+            catoken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+
+            // Create and active OSCP CA Service.
+
+            X509CAInfo cainfo = new X509CAInfo("CN=TESTSIGNEDBYEXTERNAL", "TESTSIGNEDBYEXTERNAL", CAConstants.CA_ACTIVE, new Date(), "",
+                    CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 1000, null, // Expiretime
+                    CAInfo.CATYPE_X509, CAInfo.SIGNEDBYEXTERNALCA, // Signed by the first TEST CA we created
+                    (Collection<Certificate>) null, catoken, "TESTSIGNEDBYEXTERNAL", -1, null, null, // PolicyId
+                    24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
+                    0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
+                    10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
+                    10 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
+                    new ArrayList<Integer>(), true, // Authority Key Identifier
+                    false, // Authority Key Identifier Critical
+                    true, // CRL Number
+                    false, // CRL Number Critical
+                    null, // defaultcrldistpoint
+                    null, // defaultcrlissuer
+                    null, // defaultocsplocator
+                    null, // Authority Information Access
+                    null, // defaultfreshestcrl
+                    true, // Finish User
+                    new ArrayList<ExtendedCAServiceInfo>(), false, // use default utf8 settings
+                    new ArrayList<Integer>(), // Approvals Settings
+                    1, // Number of Req approvals
+                    false, // Use UTF8 subject DN by default
+                    true, // Use LDAP DN order by default
+                    false, // Use CRL Distribution Point on CRL
+                    false, // CRL Distribution Point on CRL critical
+                    true, true, // isDoEnforceUniquePublicKeys
+                    true, // isDoEnforceUniqueDistinguishedName
+                    false, // isDoEnforceUniqueSubjectDNSerialnumber
+                    true, // useCertReqHistory
+                    true, // useUserStorage
+                    true, // useCertificateStorage
+                    null // cmpRaAuthSecret
+            );
+            try {
+                CA ca = new X509CA(cainfo);
+                ca.setCAToken(catoken);
+                ocspResponseGeneratorTestSession.reloadOcspSigningCache();
+                int originalCacheSize = ocspResponseGeneratorTestSession.getCacheOcspCertificates().size();
+                caSession.addCA(internalAdmin, ca);
+                ocspResponseGeneratorTestSession.reloadOcspSigningCache();
+                int laterCacheSize = ocspResponseGeneratorTestSession.getCacheOcspCertificates().size();
+                assertEquals("An unsigned CA has been added to cache.", originalCacheSize, laterCacheSize);
+            } finally {
+                caSession.removeCA(internalAdmin, cainfo.getCAId());
+            }
+        } finally {
+            if (cryptoTokenId != 0) {
+                cryptoTokenManagementSession.deleteCryptoToken(internalAdmin, cryptoTokenId);
+            }
+        }
+    }
+
 }
