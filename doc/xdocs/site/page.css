@@ -202,7 +202,7 @@ div.frame{
 .fixme { margin-top: 15px; margin-bottom: 15px; padding: 5px; border: solid 1px #C6C600; background-color: #FAF9C3; }
 .fixme .label { background-color: #C6C600; color: #ffffff; }
 
-.code { background-color:#FCF1D1; border-color: #CFDCED; border-style: dashed; border-width: 1px; margin: 5px; padding: 5px; }
+.code { background-color:#FCF1D1; border-color: #CFDCED; border-style: dashed; border-width: 1px; margin: 0px 5px 20px 5px; padding: 8px 10px 8px 10px; }
 .codefrag {	font-family: "Courier New", Courier, monospace; }
 
 .highlight { background-color: yellow; }
