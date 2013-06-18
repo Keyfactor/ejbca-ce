@@ -154,7 +154,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                     throw new InvalidKeyException(msg);
                 }
             } catch (InvalidKeyException e) {
-                // If we get an invalid key exception here, we shoudl throw an IllegalKeyException to the caller
+                // If we get an invalid key exception here, we should throw an IllegalKeyException to the caller
                 // The catch of InvalidKeyException in the end of this method, catches error from the CA crypto token
                 throw new IllegalKeyException(e);
             }
