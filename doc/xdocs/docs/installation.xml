@@ -676,7 +676,7 @@ There are at least two ways to use TLS for SMTP connection:
 Since mail configuration is done differently in different versions of JBoss we only provide guidance for the second version. There are two options that might be needed:
 </p>
 <ul>
-<li>mail.smtp.tls.enable=true</li>
+<li>mail.smtp.ssl.enable=true</li>
 <li>mail.smtp.socketFactory.class=javax.net.ssl.SSLSocketFactory</li>
 </ul>
 <p>For JBoss 5 these are added, commented out in src/appserver/jboss/ejbca-mail-service.xml, for JBoss 7 they should be set using the JBoss command line admin tool.</p>
