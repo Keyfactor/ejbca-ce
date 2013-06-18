@@ -155,7 +155,7 @@ auto-enroll regenerate
 # crypto ca enroll FMSCA
   </source>
   <p>
-  Check your ejbca logs, you shoud see something like:
+  Check your ejbca logs, you should see something like:
   </p>
   <source>
 ERROR [PKCS10RequestMessage] No CN in DN: SN=12013150+unstructuredName=your.ciscobox.hosts.name
@@ -458,11 +458,12 @@ Router#debug crypto pki validation
   Configure the default virtual host-file /etc/apache2/sites-enabled/000-default
   </p>
   <note>
-  Note that this configuration with SSLVerifyClient inside a Location directtive is not safe with the newly (2009-11-15) discovered
-  vulnerability in SSL/TLS. You should only use SSLVerifyClient and SSLCipherSuite on whole virtualhosts. You can create the same effect
-  as below by using a separate subdomain for EJBCA administration (i.e. admin.ca.youdomain.com).
+  Note that this configuration with SSLVerifyClient inside a Location directive is not safe with the discovered
+  vulnerability in SSL/TLS discovered in 2009-11-15 (CVE-2009-3555). You should run updated versions of Apache and Java, or only use SSLVerifyClient and SSLCipherSuite on whole virtualhosts. 
+  You can create the same effect as below by using a separate subdomain for EJBCA administration (i.e. admin.ca.youdomain.com).
   <br/>See for example the <a href="http://www.debian.org/security/2009/dsa-1934">Debian advisory</a>. 
   </note>
+  <br/>
 <source>
 NameVirtualHost *:80
 &lt;VirtualHost *:80&gt;
