@@ -267,6 +267,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     if (caInfo.getCAType() == CAInfo.CATYPE_CVC || caInfo.getCertificateChain() == null) {
                         // Bravely ignore OCSP for CVC CAs or CA's that have no CA certificate (yet)
                         continue;
+                    } else if (caInfo.getCertificateChain().size() == 0) {
+                        continue;
                     }
                     if (log.isDebugEnabled()) {
                         log.debug("Processing X509 CA " + caInfo.getName() + " (" + caInfo.getCAId() + ").");
