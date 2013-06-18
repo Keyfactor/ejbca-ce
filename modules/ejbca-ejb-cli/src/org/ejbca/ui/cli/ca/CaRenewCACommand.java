@@ -165,7 +165,7 @@ public class CaRenewCACommand extends BaseCaAdminCommand {
     		.toString());
     }
 
-    private void printCertificate(final Certificate certificate) {
+    private void printCertificate(final Certificate certificate) throws IOException {
     	if (certificate instanceof X509Certificate) {
         	final X509Certificate x509 = (X509Certificate) certificate;
         	getLogger().info(new StringBuilder()
@@ -197,15 +197,19 @@ public class CaRenewCACommand extends BaseCaAdminCommand {
         }
     }
     
-    private static String computeSubjectKeyIdentifier(final X509Certificate certificate) {
-		try {
-			SubjectPublicKeyInfo spki = new SubjectPublicKeyInfo((ASN1Sequence) new ASN1InputStream(
-			        new ByteArrayInputStream(certificate.getPublicKey().getEncoded())).readObject());
-			SubjectKeyIdentifier ski = new SubjectKeyIdentifier(spki);
-	    	return new String(Hex.encode(ski.getKeyIdentifier()));	
-		} catch (IOException e) {
-			return "n/a";
-		}
+    private static String computeSubjectKeyIdentifier(final X509Certificate certificate) throws IOException {
+       
+        ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(certificate.getPublicKey().getEncoded()));
+        try {
+            SubjectPublicKeyInfo spki = new SubjectPublicKeyInfo((ASN1Sequence) asn1InputStream.readObject());
+            SubjectKeyIdentifier ski = new SubjectKeyIdentifier(spki);
+            return new String(Hex.encode(ski.getKeyIdentifier()));
+
+        } catch (IOException e) {
+            return "n/a";
+        } finally {
+            asn1InputStream.close();
+        }
     }
     
     private static String computePublicKeyHash(final PublicKey publicKey) {

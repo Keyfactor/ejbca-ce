@@ -1526,16 +1526,24 @@ public class CertTools {
         // Subject and Authority key identifier is always non-critical and MUST be present for certificates to verify in Firefox.
         try {
             if (isCA) {
-                SubjectPublicKeyInfo spki = new SubjectPublicKeyInfo((ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(
-                        publicKey.getEncoded())).readObject());
-                SubjectKeyIdentifier ski = new SubjectKeyIdentifier(spki);
+            
+                ASN1InputStream sAsn1InputStream =  new ASN1InputStream(new ByteArrayInputStream(
+                        publicKey.getEncoded()));
+                ASN1InputStream aAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(
+                        publicKey.getEncoded()));
+                try {
+                    SubjectPublicKeyInfo spki = new SubjectPublicKeyInfo((ASN1Sequence) sAsn1InputStream.readObject());
+                    SubjectKeyIdentifier ski = new SubjectKeyIdentifier(spki);
 
-                SubjectPublicKeyInfo apki = new SubjectPublicKeyInfo((ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(
-                        publicKey.getEncoded())).readObject());
-                AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(apki);
+                    SubjectPublicKeyInfo apki = new SubjectPublicKeyInfo((ASN1Sequence) aAsn1InputStream.readObject());
+                    AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(apki);
 
-                certbuilder.addExtension(Extension.subjectKeyIdentifier, false, ski);
-                certbuilder.addExtension(Extension.authorityKeyIdentifier, false, aki);
+                    certbuilder.addExtension(Extension.subjectKeyIdentifier, false, ski);
+                    certbuilder.addExtension(Extension.authorityKeyIdentifier, false, aki);
+                } finally {
+                    sAsn1InputStream.close();
+                    aAsn1InputStream.close();
+                }
             }
         } catch (IOException e) { // do nothing
         }
@@ -1571,10 +1579,19 @@ public class CertTools {
             if (extvalue == null) {
                 return null;
             }
-            DEROctetString oct = (DEROctetString) (new ASN1InputStream(new ByteArrayInputStream(extvalue)).readObject());
-            AuthorityKeyIdentifier keyId = AuthorityKeyIdentifier.getInstance(
-                    (ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(oct.getOctets())).readObject());
-            return keyId.getKeyIdentifier();
+            ASN1InputStream octAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(extvalue));
+            try {
+                DEROctetString oct = (DEROctetString) (octAsn1InputStream.readObject());
+                ASN1InputStream keyAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(oct.getOctets()));
+                try {
+                    AuthorityKeyIdentifier keyId = AuthorityKeyIdentifier.getInstance((ASN1Sequence) keyAsn1InputStream.readObject());
+                    return keyId.getKeyIdentifier();
+                } finally {
+                    keyAsn1InputStream.close();
+                }
+            } finally {
+                octAsn1InputStream.close();
+            }
         }
         return null;
     } // getAuthorityKeyId
