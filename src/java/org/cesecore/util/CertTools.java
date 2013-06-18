@@ -1204,6 +1204,19 @@ public class CertTools {
      * @param certs Collection of Certificate to convert to PEM
      * @return byte array containing PEM certificate
      * @exception CertificateException if the stream does not contain a correct certificate.
+     * 
+     * @deprecated Since 6.0.0, use org.cesecore.util.CertTools.getPemFromCertificateChain(Collection<Certificate>) instead
+     */
+    @Deprecated
+    public static byte[] getPEMFromCerts(Collection<Certificate> certs) throws CertificateException {
+        return getPemFromCertificateChain(certs);
+    }
+    /**
+     * Returns a certificate in PEM-format.
+     * 
+     * @param certs Collection of Certificate to convert to PEM
+     * @return byte array containing PEM certificate
+     * @exception CertificateException if the stream does not contain a correct certificate.
      */
     public static byte[] getPemFromCertificateChain(Collection<Certificate> certs) throws CertificateException {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();

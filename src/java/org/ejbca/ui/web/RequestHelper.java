@@ -219,8 +219,7 @@ public class RequestHelper {
 		PKCS10RequestMessage req = RequestMessageUtils.genPKCS10RequestMessage(b64Encoded);
 		req.setUsername(username);
         req.setPassword(password);
-        ResponseMessage resp;
-        resp = signsession.createCertificate(administrator, req, X509ResponseMessage.class, null);
+        ResponseMessage resp = signsession.createCertificate(administrator, req, X509ResponseMessage.class, null);
         cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         switch (resulttype) {
         case ENCODED_CERTIFICATE:            
