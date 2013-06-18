@@ -1987,8 +1987,8 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     protected void ejbcaVersion() throws Exception {
 
         String version = ejbcaraws.getEjbcaVersion();
-        assertTrue("Wrong version: "+version, version.contains("EJBCA 5")); // We don't know which specific
-        // version we are testing
+        // We don't know which specific version we are testing
+        assertTrue("Wrong version: "+version, version.contains("EJBCA 6.0")); 
     }
 
     protected void getLastCertChain() throws Exception {
