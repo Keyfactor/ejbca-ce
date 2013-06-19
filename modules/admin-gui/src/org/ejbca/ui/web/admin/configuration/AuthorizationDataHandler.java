@@ -152,7 +152,6 @@ public class AuthorizationDataHandler implements Serializable {
      */
     public void addAccessRules(String roleName, Collection<AccessRuleData> accessRules) throws AuthorizationDeniedException,
             AccessRuleNotFoundException, RoleNotFoundException {
-        authorizedToAddAccessRules(accessRules);
         roleManagementSession.addAccessRulesToRole(administrator, roleAccessSession.findRole(roleName), accessRules);
         informationmemory.administrativePriviledgesEdited();
     }
