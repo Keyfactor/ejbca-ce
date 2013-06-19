@@ -308,9 +308,7 @@ public class RolesManagedBean extends BaseManagedBean {
     /** @return the current role for the current row in the datatable */
     private RoleData getCurrentRoleObjectForEach() {
         String roleName = ((RoleData) FacesContext.getCurrentInstance().getExternalContext().getRequestMap().get("role")).getRoleName();
-        RoleData role = null;
-        role = getAuthorizationDataHandler().getRole(roleName);
-        return role;
+        return getAuthorizationDataHandler().getRole(roleName);
     }
 
     /** @return the administrators for the current role */
@@ -700,9 +698,7 @@ public class RolesManagedBean extends BaseManagedBean {
 
     /** @return the current role sent with POST, GET or injected through the backing value */
     public RoleData getCurrentRoleObject() {
-        RoleData role = null;
-        role = getAuthorizationDataHandler().getRole(getCurrentRole());
-        return role;
+        return getAuthorizationDataHandler().getRole(getCurrentRole());
     }
 
     /** Setter for current role used were applicable. */
