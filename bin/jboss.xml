@@ -134,9 +134,9 @@
                 <chmod file="${jboss.farm.dir}/ocsp-ds.xml" perm="600"/>
         </target>
 
-        <target name="jee:deployExtRADSJBoss5" unless="jboss7" depends="set-paths">
+        <target name="jee:deployExtRAGUIDSJBoss5" unless="jboss7" depends="set-paths">
             <copy todir="${jboss.farm.dir}" overwrite="true">
-                <fileset dir="src/appserver/jboss">
+                <fileset dir="modules/externalra-gui/resources">
                     <include name="externalragui-ds.xml"/>
                 </fileset>
                 <filterchain>
@@ -145,7 +145,19 @@
             </copy>
             <chmod file="${jboss.farm.dir}/externalragui-ds.xml" perm="600"/>
          </target>
-                	
+
+    <target name="jee:deployExtRASCEPDSJBoss5" unless="jboss7" depends="set-paths">
+        <copy todir="${jboss.farm.dir}" overwrite="true">
+            <fileset dir="modules/externalra-scep/resources">
+                <include name="ramessage-ds.xml"/>
+            </fileset>
+            <filterchain>
+                <expandproperties/>
+            </filterchain>
+        </copy>
+        <chmod file="${jboss.farm.dir}/ramessage-ds.xml" perm="600"/>
+     </target>
+
         <target name="jee:deployServicesJBoss5" unless="jboss7" depends="set-paths">
             <copy todir="${jboss.farm.dir}" overwrite="true">
                 <fileset dir="src/appserver/jboss">
@@ -260,15 +272,27 @@
             <jboss:admsilent arg="deploy --name=ejbca.ear" failonerror="false" />
         </target>
 
-	<target name="jee:deployExtRADSJBoss7" if="jboss7" depends="set-paths,jee:assert-runJBoss7" >
-            <!-- We have to undeploy ejbca.ear before removing the datasource, or removal will fail. @TODO: Figure out how to detect if something is deployed or not. -->
+	<target name="jee:deployExtRAGUIDSJBoss7" if="jboss7" depends="set-paths,jee:assert-runJBoss7" >
+            <!-- We have to undeploy the war file before removing the datasource, or removal will fail. @TODO: Figure out how to detect if something is deployed or not. -->
             <jboss:admsilent arg="undeploy externalra-gui.war --keep-content" failonerror="false" />
-            <jboss:admsilent arg="data-source remove --name=extrads" failonerror="false" />
-            <jboss:adm arg='data-source add --name=extrads --driver-name="${externalra-database.driver}" --connection-url="${externalra-gui.datasource.jdbc-url}" --jndi-name="java:/ExternalRAGUIMessageDS" --use-ccm=true --driver-class="${externalra-database.driver}" --user-name="${externalra-gui.datasource.username}" --password="${externalra-gui.datasource.password}" --validate-on-match=false --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=10 --max-pool-size=10 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --jta=false --check-valid-connection-sql="select 1;"' />
+            <jboss:admsilent arg="data-source remove --name=extraguids" failonerror="false" />
+		
+            <jboss:adm arg='data-source add --name=extraguids --driver-name="${externalra-database.driver}" --connection-url="${externalra-gui.datasource.jdbc-url}" --jndi-name="java:/ExternalRAGUIMessageDS" --use-ccm=true --driver-class="${externalra-database.driver}" --user-name="${externalra-gui.datasource.username}" --password="${externalra-gui.datasource.password}" --validate-on-match=false --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=10 --max-pool-size=10 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --jta=false --check-valid-connection-sql="select 1;"' />
             <!-- If we don't reload now, JBoss AS 7 will get stuck. @TODO: Try this out with JBoss EAP 6, and see if we can report a bug. -->
             <jboss:admsilent arg=":reload" />
             <jboss:admsilent arg="deploy --name=externalra-gui.war" failonerror="false" />
-        </target>
+    </target>
+
+	<target name="jee:deployExtRASCEPDSJBoss7" if="jboss7" depends="set-paths,jee:assert-runJBoss7" >
+            <!-- We have to undeploy the war file before removing the datasource, or removal will fail. @TODO: Figure out how to detect if something is deployed or not. -->
+            <jboss:admsilent arg="undeploy scepraserver.war --keep-content" failonerror="false" />
+            <jboss:admsilent arg="data-source remove --name=extrascepds" failonerror="false" />
+		
+            <jboss:adm arg='data-source add --name=extrascepds --driver-name="${externalra-database.driver}" --connection-url="${scep.ra.datasource.jdbc-url}" --jndi-name="java:/ScepRAMessageDS" --use-ccm=true --driver-class="${externalra-database.driver}" --user-name="${scep.ra.datasource.username}" --password="${scep.ra.datasource.password}" --validate-on-match=false --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=10 --max-pool-size=10 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --jta=false --check-valid-connection-sql="select 1;"' />
+            <!-- If we don't reload now, JBoss AS 7 will get stuck. @TODO: Try this out with JBoss EAP 6, and see if we can report a bug. -->
+            <jboss:admsilent arg=":reload" />
+            <jboss:admsilent arg="deploy --name=scepraserver.war" failonerror="false" />
+    </target>
 
 	<target name="notifyDeploymentScannerJBoss7" depends="set-paths" if="jboss7,jee:assert-runJBoss7">
 	    <touch file="${jboss.farm.dir}/ejbca.ear.dodeploy" />
@@ -373,14 +397,13 @@
 	    <antcall target="notifyDeploymentScanner" />
 	</target>
 	
-	<target name="jee:deploy-scep-war" depends="jee:check">
-		<chmod dir="dist/datasources" includes="ramessage-ds.xml" perm="600"/>
-		<copy todir="${jboss.farm.dir}" overwrite="true" file="dist/datasources/ramessage-ds.xml"/>
+	<target name="jee:deploy-scep-war" depends="jee:check, detect-tomcatdir, jee:deployExtRASCEPDSJBoss5,jee:deployExtRASCEPDSJBoss7">
 		<chmod dir="dist" includes="scepraserver.war" perm="600"/>
 		<copy todir="${jboss.farm.dir}" overwrite="true" file="dist/scepraserver.war"/>
+		<antcall target="notifyDeploymentScanner" />
 	</target>
 
-	<target name="jee:deploy-externalragui-war" depends="jee:check, detect-tomcatdir, jee:deployExtRADSJBoss5,jee:deployExtRADSJBoss7">
+	<target name="jee:deploy-externalragui-war" depends="jee:check, detect-tomcatdir, jee:deployExtRAGUIDSJBoss5,jee:deployExtRAGUIDSJBoss7">
 		<chmod dir="dist/externalra-gui" includes="externalra-gui.war" perm="600"/>
 		<copy todir="${jboss.farm.dir}" overwrite="true" file="dist/externalra-gui/externalra-gui.war"/>
 		<antcall target="notifyDeploymentScanner" />

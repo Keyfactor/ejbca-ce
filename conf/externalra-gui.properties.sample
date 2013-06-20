@@ -69,6 +69,7 @@
 
 # JDBC driver classname.
 # The JEE server needs to be configured with the appropriate JDBC driver for the selected database
+# Default: com.mysql.jdbc.Driver
 #externalra-database.driver=com.mysql.jdbc.Driver
 #externalra-database.driver=org.postgresql.Driver
 #externalra-database.driver=org.hsqldb.jdbcDriver
