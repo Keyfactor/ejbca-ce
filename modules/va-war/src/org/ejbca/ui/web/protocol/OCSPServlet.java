@@ -242,7 +242,10 @@ public class OCSPServlet extends HttpServlet {
                 transactionLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);
                 auditLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);
                 final String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
-                log.info(errMsg, e);
+                log.info(errMsg);
+                if (log.isDebugEnabled()) {
+                    log.debug(errMsg, e);
+                }
                 // RFC 2560: responseBytes are not set on error.
                 ocspResponseInformation = new OcspResponseInformation(responseGenerator.build(OCSPRespBuilder.INTERNAL_ERROR, null), OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE));
                 transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespBuilder.INTERNAL_ERROR);
