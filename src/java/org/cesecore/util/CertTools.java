@@ -3276,10 +3276,9 @@ public class CertTools {
      * 
      * @param pubkey
      * @return a JcaContentVerifierProvider. Useful for verifying the signiture in a PKCS10CertificationRequest
-     * @throws IOException
      * @throws OperatorCreationException
      */
-    public static ContentVerifierProvider genContentVerifierProvider(PublicKey pubkey) throws IOException, OperatorCreationException {
+    public static ContentVerifierProvider genContentVerifierProvider(PublicKey pubkey) throws OperatorCreationException {
         return new JcaContentVerifierProviderBuilder().build(pubkey);
     }
     

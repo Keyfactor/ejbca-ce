@@ -54,7 +54,7 @@ import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.util.Base64;
@@ -373,7 +373,8 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
         ASN1Primitive derobj = new ASN1InputStream(new ByteArrayInputStream(decBytes)).readObject();
         if (messageType == ScepRequestMessage.SCEP_TYPE_PKCSREQ) {
             ASN1Sequence seq = (ASN1Sequence) derobj;
-            pkcs10 = new PKCS10CertificationRequest(seq);
+            pkcs10 = new JcaPKCS10CertificationRequest(decBytes);
+                    //new PKCS10CertificationRequest(seq);
             if (log.isDebugEnabled()) {
             	log.debug("Successfully extracted PKCS10:"+new String(Base64.encode(pkcs10.getEncoded())));
             }
