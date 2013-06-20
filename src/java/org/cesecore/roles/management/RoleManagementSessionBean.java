@@ -49,6 +49,7 @@ import org.cesecore.authorization.rules.AccessRuleNotFoundException;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.AccessUserAspectManagerSessionLocal;
 import org.cesecore.authorization.user.AccessUserAspectNotFoundException;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
@@ -85,7 +86,8 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
 
     @EJB
     private AccessRuleManagementSessionLocal accessRuleManagement;
-
+    @EJB
+    private CaSessionLocal caSession;
     @EJB
     private RoleAccessSessionLocal roleAccessSession;
 
@@ -296,8 +298,24 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
 
     @Override
     public RoleData addSubjectsToRole(AuthenticationToken authenticationToken, final RoleData role, Collection<AccessUserAspectData> users)
-            throws RoleNotFoundException, AuthorizationDeniedException {
+            throws RoleNotFoundException, AuthorizationDeniedException {  
         assertAuthorizedToEditRole(authenticationToken, role);
+        //Verify that authenticating user is authorized to all users
+        StringBuilder sb = new StringBuilder();
+        for(AccessUserAspectData accessUserAspectData : users) {
+            int caId = accessUserAspectData.getCaId();
+            if(!caSession.authorizedToCANoLogging(authenticationToken, caId)) {
+                if(sb.length() > 0 ) {
+                    sb.append("; ");
+                }
+                String msg = INTERNAL_RESOURCES.getLocalizedMessage("caadmin.notauthorizedtoca", authenticationToken.toString(), caId);
+                sb.append(msg);
+            }
+        }
+        if(sb.length() > 0) {
+            throw new AuthorizationDeniedException(sb.toString());
+        }
+        
         return addSubjectsToRoleNoAuth(authenticationToken, role, users);
     }
 
@@ -406,14 +424,14 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
         }
         // Firstly, make sure that authentication token authorized for all access user aspects in role, by checking against the CA that produced them.
         for (AccessUserAspectData accessUserAspect : role.getAccessUsers().values()) {
-            if (!accessControlSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAACCESS.resource() + accessUserAspect.getCaId())) {
+            if (!caSession.authorizedToCA(authenticationToken, accessUserAspect.getCaId())) {
                 return false;
             }
         }
-        if(!isAuthorizedToRules(authenticationToken, role.getAccessRules().values())) {
+        if (!isAuthorizedToRules(authenticationToken, role.getAccessRules().values())) {
             return false;
         }
-        
+
         // Everything's A-OK, role is good.
         return true;
     }
