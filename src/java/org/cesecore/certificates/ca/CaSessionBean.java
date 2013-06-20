@@ -611,8 +611,9 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         }
         return cadata;
     }
-
-    private boolean authorizedToCANoLogging(final AuthenticationToken admin, final int caid) {
+    
+    @Override
+    public boolean authorizedToCANoLogging(final AuthenticationToken admin, final int caid) {
         final boolean ret = accessSession.isAuthorizedNoLogging(admin, StandardRules.CAACCESS.resource() + caid);
         if (log.isDebugEnabled() && !ret) {
             final String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), caid);
@@ -621,7 +622,8 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         return ret;
     }
 
-    private boolean authorizedToCA(final AuthenticationToken admin, final int caid) {
+    @Override
+    public boolean authorizedToCA(final AuthenticationToken admin, final int caid) {
     	final boolean ret = accessSession.isAuthorized(admin, StandardRules.CAACCESS.resource() + caid);
         if (log.isDebugEnabled() && !ret) {
         	final String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), caid);
