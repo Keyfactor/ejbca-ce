@@ -828,6 +828,12 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             final InternalKeyBinding internalKeyBinding = internalKeyBindingSession.getInternalKeyBinding(authenticationToken, Integer.parseInt(currentInternalKeyBindingId));
             internalKeyBinding.setName(getCurrentName());
             if (isCryptoTokenActive()) {
+                final int loadedCryptoTokenId = internalKeyBinding.getCryptoTokenId();
+                final String loadedKeyPairAlias = internalKeyBinding.getKeyPairAlias();
+                if (loadedCryptoTokenId != currentCryptoToken.intValue() || !loadedKeyPairAlias.equals(currentKeyPairAlias)) {
+                    // Since we have changed the referenced key, the referenced certificate (if any) is no longer valid
+                    internalKeyBinding.setCertificateId(null);
+                }
                 internalKeyBinding.setCryptoTokenId(currentCryptoToken.intValue());
                 internalKeyBinding.setKeyPairAlias(currentKeyPairAlias);
                 internalKeyBinding.setSignatureAlgorithm(currentSignatureAlgorithm);
