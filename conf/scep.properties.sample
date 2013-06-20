@@ -119,7 +119,18 @@ scep.ra.defaultCA=ScepCA
 CN\=Scep\ CA,O\=EJBCA\ Sample,C\=SE=ScepCA
 
 # Database connection information. The right JDBC driver has to be installed manually in the application server.
-# SQL dialect and driver class name is derived from the JDBC URL.
-scep.ra.datasource.jdbc-url=jdbc:mysql://127.0.0.1/messages
-scep.ra.datasource.username=ejbca
-scep.ra.datasource.password=ejbca
+# SQL dialect is derived from the JDBC URL.
+# Default: jdbc:mysql://127.0.0.1/messages
+#scep.ra.datasource.jdbc-url=jdbc:mysql://127.0.0.1/messages
+# JDBC driver classname.
+# The JEE server needs to be configured with the appropriate JDBC driver for the selected database
+# Default: com.mysql.jdbc.Driver
+#externalra-database.driver=com.mysql.jdbc.Driver
+#externalra-database.driver=org.postgresql.Driver
+#externalra-database.driver=org.hsqldb.jdbcDriver
+# Username for database connection.
+# Default: ejbca
+#scep.ra.datasource.username=ejbca
+# Password for database connection.
+# Default: ejbca
+#scep.ra.datasource.password=ejbca
