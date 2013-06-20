@@ -398,8 +398,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             throws CryptoTokenOfflineException {
         final X509Certificate[] certChain = ocspSigningCacheEntry.getFullCertificateChain().toArray(new X509Certificate[0]);
         final X509Certificate signerCert = certChain[0];
-        if(!isOCSPCert(signerCert)) {
-            log.warn("Signing with non OCSP certificate. This is not an error state if it is the default responder.");
+        if(!isOCSPCert(signerCert) && ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
+            log.warn("Signing with non OCSP certificate bound by OcspKeyBinding '" + ocspSigningCacheEntry.getOcspKeyBinding().getName() + "'.");
         }
         final String sigAlg;
         if (ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
@@ -1098,8 +1098,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespBuilder.SUCCESSFUL);
             } else {
                 // Only unknown CAs in requests and no default responder's cert
-                String errMsg = intres.getLocalizedMessage("ocsp.errornocacreateresp");
-                log.error(errMsg);
+                final String errMsg = intres.getLocalizedMessage("ocsp.errornocacreateresp");
+                // This will be logged by the OcspServlet as INFO
+                //log.info(errMsg);
                 throw new OcspFailureException(errMsg);
             }
         } catch (SignRequestException e) {

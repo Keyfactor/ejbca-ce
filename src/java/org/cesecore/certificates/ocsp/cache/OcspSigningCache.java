@@ -94,7 +94,8 @@ public enum OcspSigningCache {
                     " OCSP requests for certificates issued by unknown CAs will fail with response code 2 (internal error).");
             if (staging.values().size() > 0) {
                 // We could pick a responder at chance here, but it may be a feature to the user to not waste HSM signatures on Unknown responses..
-                log.info("OCSP responders are currently available. Please verify your configuration if you want to send signed OCSP responses for Unknown CAs.");
+                log.info("No default OCSP responder has been configured. OCSP requests for certificates issued by unknown CAs "+
+                        "will fail with response code 2 (internal error).");
             }
         }
         if (log.isDebugEnabled()) {
