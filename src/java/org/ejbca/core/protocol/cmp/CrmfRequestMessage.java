@@ -454,7 +454,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
                     // If subject is present in cert template it must be the same as in POPOSigningKeyInput
                     final X500Name subject = req.getCertTemplate().getSubject();
                     if (subject != null && !subject.toString().equals(pski.getSender().getName().toString())) {
-                        log.info("Subject '" + subject.toString() + "̈́', is not equal to '" + pski.getSender().toString() + "'.");
+                        log.info("Subject '" + subject.toString() + "��', is not equal to '" + pski.getSender().toString() + "'.");
                         protObject = null; // pski is not a valid protection object
                     }
                     // If public key is present in cert template it must be the same as in POPOSigningKeyInput

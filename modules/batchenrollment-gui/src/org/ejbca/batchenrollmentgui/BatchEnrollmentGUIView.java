@@ -95,7 +95,7 @@ import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
 import org.bouncycastle.cms.jcajce.JcaX509CertSelectorConverter;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -120,7 +120,6 @@ import org.jdesktop.application.TaskMonitor;
 /**
  * The application's main frame.
  * 
- * @author markus
  * @version $Id$
  */
 public class BatchEnrollmentGUIView extends FrameView {
@@ -872,8 +871,7 @@ public class BatchEnrollmentGUIView extends FrameView {
 
             // Parse PKCS10 and fill in requested DN
             PKCS10CertificationRequest pkcs10 = getPkcs10Request(requestBytes);
-            request.setRequestedDN(pkcs10.getCertificationRequestInfo()
-                    .getSubject().toString());
+            request.setRequestedDN(pkcs10.getSubject().toString());
 
             request.setInFile(inFile);
             request.setOutFile(new File(inFile.getParentFile(), 

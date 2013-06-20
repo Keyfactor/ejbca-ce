@@ -13,15 +13,15 @@
 
 package org.ejbca.core.protocol.ws.client.gen;
 
-import org.bouncycastle.jce.PKCS10CertificationRequest;
+import java.io.IOException;
+
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.ejbca.core.model.hardtoken.HardTokenConstants;
 
 /**
  * Base class this is a ITokenCertificateRequest, either
  * a PKCS10 or KeyStore defined by the type field.
  * 
- * 
- * @author Philip Vendil 2007 feb 8
  *
  * @version $Id$
  */
@@ -38,7 +38,7 @@ public class TokenCertificateRequestWS {
 	private String keyspec = "1024";
 	private String keyalg = "RSA";
 	
-	public TokenCertificateRequestWS(String name, String certificateProfileName, String validityIdDays, PKCS10CertificationRequest pkcs10) {
+	public TokenCertificateRequestWS(String name, String certificateProfileName, String validityIdDays, PKCS10CertificationRequest pkcs10) throws IOException {
 		super();
 		type = HardTokenConstants.REQUESTTYPE_PKCS10_REQUEST;
 		cAName = name;
@@ -46,6 +46,7 @@ public class TokenCertificateRequestWS {
 		this.certificateProfileName = certificateProfileName;
 		this.pkcs10Data = pkcs10.getEncoded();
 	}
+	
 	public TokenCertificateRequestWS(String name, String certificateProfileName, String validityIdDays,String tokenType, String keyspec, String keyalg) {
 		super();
 		type = HardTokenConstants.REQUESTTYPE_KEYSTORE_REQUEST;

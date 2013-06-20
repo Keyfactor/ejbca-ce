@@ -20,20 +20,19 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.ASN1String;
 import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DERUTF8String;
-import org.bouncycastle.asn1.cms.Attribute;
-import org.bouncycastle.asn1.cms.AttributeTable;
-import org.bouncycastle.asn1.pkcs.CertificationRequestInfo;
+import org.bouncycastle.asn1.pkcs.Attribute;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 
 /** Extends the PKCS10RequestMessgae and contains a few function to parse MS specific information like GUID, DNS, Template etc..
@@ -49,12 +48,12 @@ public class MSPKCS10RequestMessage extends PKCS10RequestMessage {
 		super();
 	}
 
-	public MSPKCS10RequestMessage(byte[] msg) {
+	public MSPKCS10RequestMessage(byte[] msg) throws IOException {
 		super(msg);
 	}
     
-	public MSPKCS10RequestMessage(PKCS10CertificationRequest p10) {
-		super(p10);
+	public MSPKCS10RequestMessage(PKCS10CertificationRequest p10) throws IOException {
+		super(new JcaPKCS10CertificationRequest(p10));
 	}
 
     public static final String szOID_CERTIFICATE_TEMPLATE_V2 = "1.3.6.1.4.1.311.21.7";		//MicrosoftObjectIdentifiers.microsoftCertTemplateV2?
@@ -88,14 +87,11 @@ public class MSPKCS10RequestMessage extends PKCS10RequestMessage {
         	return ret;
         }
         // Get attributes
-        CertificationRequestInfo info = pkcs10.getCertificationRequestInfo();
-        AttributeTable attributes = new AttributeTable(info.getAttributes());
-
-        Attribute attr = attributes.get(new ASN1ObjectIdentifier(szOID_REQUEST_CLIENT_INFO));
-        if (attr == null) {
+        Attribute[] attributes = pkcs10.getAttributes(new ASN1ObjectIdentifier(szOID_REQUEST_CLIENT_INFO));
+        if (attributes.length == 0) {
                 return ret;                
         } else {
-            ASN1Set values = attr.getAttrValues();
+            ASN1Set values = attributes[0].getAttrValues();
             if (values.size() == 0) {
             	return ret;
             }
@@ -144,14 +140,12 @@ public class MSPKCS10RequestMessage extends PKCS10RequestMessage {
     		return null;
     	}
         // Get attributes
-        CertificationRequestInfo info = pkcs10.getCertificationRequestInfo();
-        AttributeTable attributes = new AttributeTable(info.getAttributes());
-        Attribute attr = attributes.get(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
-        if (attr == null) {
+        Attribute[] attributes = pkcs10.getAttributes(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
+        if (attributes.length == 0) {
         	log.error("Cannot find request extension.");
         	return null;
         }
-        ASN1Set set = attr.getAttrValues();
+        ASN1Set set = attributes[0].getAttrValues();
         DERSequence seq = (DERSequence) DERSequence.getInstance(set.getObjectAt(0));
         Enumeration<?> enumeration = seq.getObjects();
         while (enumeration.hasMoreElements()) {
@@ -182,11 +176,9 @@ public class MSPKCS10RequestMessage extends PKCS10RequestMessage {
     		return ret;
     	}
         // Get attributes
-        CertificationRequestInfo info = pkcs10.getCertificationRequestInfo();
-        AttributeTable attributes = new AttributeTable(info.getAttributes());
-        Attribute attr = attributes.get(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
-        if (attr != null) {
-            ASN1Set set = attr.getAttrValues();
+        Attribute[] attributes = pkcs10.getAttributes(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
+        if (attributes.length != 0) {
+            ASN1Set set = attributes[0].getAttrValues();
             DERSequence seq = (DERSequence) DERSequence.getInstance(set.getObjectAt(0));
             Enumeration<?> enumeration = seq.getObjects();
             while (enumeration.hasMoreElements()) {

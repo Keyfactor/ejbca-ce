@@ -206,7 +206,7 @@ public class AdminCertReqServlet extends HttpServlet {
         
         // Decompose the PKCS#10 request, and create the user.
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(buffer);
-        String dn = p10.getCertificationRequest().getCertificationRequestInfo().getSubject().toString();
+        String dn = p10.getCertificationRequest().getSubject().toString();
         
         String username = request.getParameter("username");
         if (username == null || username.trim().length() == 0) {

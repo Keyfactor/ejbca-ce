@@ -16,10 +16,8 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.util.Date;
 
@@ -29,9 +27,7 @@ import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.ASN1String;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERUTF8String;
-import org.bouncycastle.asn1.cms.Attribute;
-import org.bouncycastle.asn1.cms.AttributeTable;
-import org.bouncycastle.asn1.pkcs.CertificationRequestInfo;
+import org.bouncycastle.asn1.pkcs.Attribute;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
 import org.bouncycastle.asn1.x500.RDN;
@@ -39,7 +35,11 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.cms.CMSSignedGenerator;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.bouncycastle.operator.ContentVerifierProvider;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.bouncycastle.pkcs.PKCSException;
+import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
 
@@ -78,7 +78,7 @@ public class PKCS10RequestMessage implements RequestMessage {
     private transient String preferredDigestAlg = CMSSignedGenerator.DIGEST_SHA1;
 
     /** The pkcs10 request message, not serialized. */
-    protected transient PKCS10CertificationRequest pkcs10 = null;
+    protected transient JcaPKCS10CertificationRequest pkcs10 = null;
 
     /** Type of error */
     private int error = 0;
@@ -102,6 +102,7 @@ public class PKCS10RequestMessage implements RequestMessage {
      * Constructs a new PKCS#10 message handler object.
      *
      * @param msg The DER encoded PKCS#10 request.
+     * @throws IOException 
      */
     public PKCS10RequestMessage(byte[] msg) {
     	if (log.isTraceEnabled()) {
@@ -118,8 +119,9 @@ public class PKCS10RequestMessage implements RequestMessage {
      * Constructs a new PKCS#10 message handler object.
      *
      * @param p10 the PKCS#10 request
+     * @throws IOException 
      */
-    public PKCS10RequestMessage(PKCS10CertificationRequest p10) {
+    public PKCS10RequestMessage(JcaPKCS10CertificationRequest p10) throws IOException {
     	if (log.isTraceEnabled()) {
     		log.trace(">PKCS10RequestMessage(ExtendedPKCS10CertificationRequest)");
     	}
@@ -131,21 +133,26 @@ public class PKCS10RequestMessage implements RequestMessage {
     }
 
     private void init() {
-        pkcs10 = new PKCS10CertificationRequest(p10msg);
+       if(p10msg == null) {
+           throw new IllegalStateException("Can't initialize a PKCS10RequestMessage without a p10msg set.");
+       }
+        
+        try {
+            pkcs10 = new JcaPKCS10CertificationRequest(p10msg);
+        } catch (IOException e) {
+            log.warn("PKCS10 not initiated!");
+        }
     }
 
     @Override
-    public PublicKey getRequestPublicKey()
-            throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
-        try {
-            if (pkcs10 == null) {
+    public PublicKey getRequestPublicKey() throws InvalidKeyException, NoSuchAlgorithmException {
+        if (pkcs10 == null) {
+            if (p10msg != null) {
                 init();
+            } else {
+                return null;
             }
-        } catch (IllegalArgumentException e) {
-            log.warn("PKCS10 not inited!");
-            return null;
         }
-
         return pkcs10.getPublicKey();
     }
 
@@ -170,36 +177,19 @@ public class PKCS10RequestMessage implements RequestMessage {
             return null;
         }
 
-        String ret = null;
-
-        // Get attributes
-        // The password attribute can be either a pkcs_9_at_challengePassword directly
-        // or
-        // a pkcs_9_at_extensionRequest containing a pkcs_9_at_challengePassword as a
-        // X509Extension.
-        AttributeTable attributes = null;
-        CertificationRequestInfo info = pkcs10.getCertificationRequestInfo();
-        if (info != null) {
-        	ASN1Set attrs = info.getAttributes();
-        	if (attrs != null) {
-        		attributes = new AttributeTable(attrs);		
-        	}
-        }
-        if (attributes == null) {
-            return null;
-        }        
-        Attribute attr = attributes.get(PKCSObjectIdentifiers.pkcs_9_at_challengePassword);
+        String ret = null;      
+        Attribute[] attributes = pkcs10.getAttributes(PKCSObjectIdentifiers.pkcs_9_at_challengePassword);
         ASN1Encodable obj = null;
-        if (attr == null) {
+        if (attributes.length == 0) {
             // See if we have it embedded in an extension request instead
-            attr = attributes.get(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
-            if (attr == null) {
+            attributes = pkcs10.getAttributes(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
+            if (attributes.length == 0) {
                 return null;                
             }
             if (log.isDebugEnabled()) {
             	log.debug("got extension request");
             }
-            ASN1Set values = attr.getAttrValues();
+            ASN1Set values = attributes[0].getAttrValues();
             if (values.size() == 0) {
                 return null;
             }
@@ -214,7 +204,7 @@ public class PKCS10RequestMessage implements RequestMessage {
             obj = ext.getExtnValue();
         } else {
             // If it is a challengePassword directly, it's just to grab the value
-            ASN1Set values = attr.getAttrValues();
+            ASN1Set values = attributes[0].getAttrValues();
             obj = values.getObjectAt(0);
         }
 
@@ -333,18 +323,7 @@ public class PKCS10RequestMessage implements RequestMessage {
             log.error("PKCS10 not inited!");
             return null;
         }
-        X500Name ret = null;
-        // Get subject name from request
-        CertificationRequestInfo info = pkcs10.getCertificationRequestInfo();
-        if (info != null) {
-            try {
-                X500Name name = X500Name.getInstance(info.getSubject().getEncoded());
-                ret = name;
-            } catch (IOException e) {
-                log.warn("Error encoding/decoding request name: ", e);
-            }
-        }
-        return ret;
+        return pkcs10.getSubject();
     }
     
     @Override
@@ -395,33 +374,25 @@ public class PKCS10RequestMessage implements RequestMessage {
 
         // Get attributes
         // The X509 extension is in a a pkcs_9_at_extensionRequest
-        AttributeTable attributes = null;
-        CertificationRequestInfo info = pkcs10.getCertificationRequestInfo();
-        if (info != null) {
-        	ASN1Set attrs = info.getAttributes();
-        	if (attrs != null) {
-        		attributes = new AttributeTable(attrs);		
-        	}
-        }
-        if (attributes != null) {
-            // See if we have it embedded in an extension request instead
-            Attribute attr = attributes.get(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
-            if (attr != null) {
-                if (log.isDebugEnabled()) {
-                	log.debug("got request extension");
-                }
-                ASN1Set values = attr.getAttrValues();
-                if (values.size() > 0) {
-                    try {
-                        ret = Extensions.getInstance(values.getObjectAt(0));
-                    } catch (IllegalArgumentException e) {
-                        if (log.isDebugEnabled()) {
-                        	log.debug("pkcs_9_extensionRequest does not contain Extensions that it should, ignoring invalid encoded extension request.");
-                        }
+       
+        // See if we have it embedded in an extension request instead
+        Attribute[] attr = pkcs10.getAttributes(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
+        if (attr.length != 0) {
+            if (log.isDebugEnabled()) {
+                log.debug("got request extension");
+            }
+            ASN1Set values = attr[0].getAttrValues();
+            if (values.size() > 0) {
+                try {
+                    ret = Extensions.getInstance(values.getObjectAt(0));
+                } catch (IllegalArgumentException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("pkcs_9_extensionRequest does not contain Extensions that it should, ignoring invalid encoded extension request.");
                     }
                 }
             }
-        }        
+        }
+
         return ret;
 	}
 	
@@ -437,7 +408,6 @@ public class PKCS10RequestMessage implements RequestMessage {
             }
         } catch (IllegalArgumentException e) {
             log.error("PKCS10 not inited!");
-
             return null;
         }
 
@@ -445,38 +415,38 @@ public class PKCS10RequestMessage implements RequestMessage {
     }
 
     @Override
-    public boolean verify()
-    throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
+    public boolean verify() throws InvalidKeyException, NoSuchAlgorithmException {    
         return verify(null);
     }
     
-    public boolean verify(PublicKey pubKey)
-            throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
+    public boolean verify(PublicKey pubKey) throws InvalidKeyException, NoSuchAlgorithmException {
     	if (log.isTraceEnabled()) {
     		log.trace(">verify()");
-    	}
-        boolean ret = false;
+    	}	
+    	 if (pkcs10 == null) {
+             init();
+         }
+    	
+        ContentVerifierProvider verifierProvider;
         try {
-            if (pkcs10 == null) {
-                init();
-            }
             if (pubKey == null) {
-            	ret = pkcs10.verify();
+                verifierProvider = CertTools.genContentVerifierProvider(pkcs10.getPublicKey());
             } else {
-                ret = pkcs10.verify(pubKey, "BC");            	
+                verifierProvider = CertTools.genContentVerifierProvider(pubKey);
             }
-        } catch (IllegalArgumentException e) {
-            log.error("PKCS10 not inited!");
-        } catch (InvalidKeyException e) {
-            log.error("Error in PKCS10-request:", e);
-            throw e;
-        } catch (SignatureException e) {
-            log.error("Error in PKCS10-signature:", e);
+            try {
+                return pkcs10.isSignatureValid(verifierProvider);
+            } catch (PKCSException e) {
+                log.error("Signature could not be processed.", e);
+            }
+        } catch (OperatorCreationException e) {
+            log.error("Content verifier provider could not be created.", e);
+        } finally {
+            if (log.isTraceEnabled()) {
+                log.trace("<verify()");
+            }
         }
-    	if (log.isTraceEnabled()) {
-    		log.trace("<verify()");
-    	}
-        return ret;
+        return false;
     }
 
     @Override
