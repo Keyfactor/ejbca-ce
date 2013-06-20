@@ -40,7 +40,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 
@@ -48,14 +47,12 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DERUTF8String;
-import org.bouncycastle.asn1.pkcs.CertificationRequestInfo;
+import org.bouncycastle.asn1.pkcs.Attribute;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.util.ASN1Dump;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -66,8 +63,9 @@ import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.X509DefaultEntryConverter;
 import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.cert.CrlExtensions;
@@ -1197,59 +1195,45 @@ public class CertToolsTest {
         log.trace("<test18DNSpaceTrimming()");
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void test19getAltNameStringFromExtension() throws Exception {
-        PKCS10CertificationRequest p10 = new PKCS10CertificationRequest(p10ReqWithAltNames);
-        CertificationRequestInfo info = p10.getCertificationRequestInfo();
-        ASN1Set set = info.getAttributes();
-        // The set of attributes contains a sequence of with type oid
-        // PKCSObjectIdentifiers.pkcs_9_at_extensionRequest
-        Enumeration<Object> en = set.getObjects();
-        boolean found = false;
-        while (en.hasMoreElements()) {
-            ASN1Sequence seq = ASN1Sequence.getInstance(en.nextElement());
-            ASN1ObjectIdentifier oid = (ASN1ObjectIdentifier) seq.getObjectAt(0);
-            if (oid.equals(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest)) {
-                // The object at position 1 is a SET of extensions
-                DERSet s = (DERSet) seq.getObjectAt(1);
-                Extensions exts = Extensions.getInstance(s.getObjectAt(0));
-                Extension ext = exts.getExtension(Extension.subjectAlternativeName);
-                if (ext != null) {
-                    found = true;
-                    String altNames = CertTools.getAltNameStringFromExtension(ext);
-                    assertEquals("dNSName=ort3-kru.net.polisen.se, iPAddress=10.252.255.237", altNames);
-                }
-            }
-        }
-        assertTrue(found);
+        {
+            PKCS10CertificationRequest p10 = new JcaPKCS10CertificationRequest(p10ReqWithAltNames);
+            Attribute attribute = p10.getAttributes(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest)[0];
+            // The set of attributes contains a sequence of with type oid
+            // PKCSObjectIdentifiers.pkcs_9_at_extensionRequest
+            boolean found = false;
+            DERSet s = (DERSet) attribute.getAttrValues();
+            Extensions exts = Extensions.getInstance(s.getObjectAt(0));
+            Extension ext = exts.getExtension(Extension.subjectAlternativeName);
+            if (ext != null) {
+                found = true;
+                String altNames = CertTools.getAltNameStringFromExtension(ext);
+                assertEquals("dNSName=ort3-kru.net.polisen.se, iPAddress=10.252.255.237", altNames);
 
-        p10 = new PKCS10CertificationRequest(p10ReqWithAltNames2);
-        info = p10.getCertificationRequestInfo();
-        set = info.getAttributes();
-        // The set of attributes contains a sequence of with type oid
-        // PKCSObjectIdentifiers.pkcs_9_at_extensionRequest
-
-        en = set.getObjects();
-        found = false;
-        while (en.hasMoreElements()) {
-            ASN1Sequence seq = ASN1Sequence.getInstance(en.nextElement());
-            ASN1ObjectIdentifier oid = (ASN1ObjectIdentifier) seq.getObjectAt(0);
-            if (oid.equals(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest)) {
-                // The object at position 1 is a SET of extensions
-                DERSet s = (DERSet) seq.getObjectAt(1);
-                Extensions exts = Extensions.getInstance(s.getObjectAt(0));
-                Extension ext = exts.getExtension(Extension.subjectAlternativeName);
-                if (ext != null) {
-                    found = true;
-                    String altNames = CertTools.getAltNameStringFromExtension(ext);
-                    assertEquals("dNSName=foo.bar.com, iPAddress=10.0.0.1", altNames);
-                }
             }
+            assertTrue(found);
         }
-        assertTrue(found);
+        {
+            PKCS10CertificationRequest p10 = new JcaPKCS10CertificationRequest(p10ReqWithAltNames2);
+            // The set of attributes contains a sequence of with type oid
+            // PKCSObjectIdentifiers.pkcs_9_at_extensionRequest
+            Attribute attribute = p10.getAttributes(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest)[0];
+            boolean found = false;
+            DERSet s = (DERSet) attribute.getAttrValues();
+            Extensions exts = Extensions.getInstance(s.getObjectAt(0));
+            Extension ext = exts.getExtension(Extension.subjectAlternativeName);
+            if (ext != null) {
+                found = true;
+                String altNames = CertTools.getAltNameStringFromExtension(ext);
+                assertEquals("dNSName=foo.bar.com, iPAddress=10.0.0.1", altNames);
+            }
+            assertTrue(found);
+        }
 
     }
+
+    
 
     @Test
     public void test20cvcCert() throws Exception {

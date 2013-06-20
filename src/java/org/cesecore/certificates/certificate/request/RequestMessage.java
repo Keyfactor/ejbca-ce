@@ -126,7 +126,7 @@ public interface RequestMessage extends Serializable {
     /**
      * Get the public key from a certification request.
      *
-     * @return The public key from a certification request.
+     * @return The public key from a certification request. Returns null if request content hasn't been set.
      *
      * @throws InvalidKeyException If the key is invalid.
      * @throws NoSuchProviderException if there is an error with the Provider.

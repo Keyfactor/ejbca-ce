@@ -49,12 +49,12 @@ import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.DEREnumerated;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.DERUTF8String;
+import org.bouncycastle.asn1.pkcs.Attribute;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x509.CRLDistPoint;
 import org.bouncycastle.asn1.x509.CRLReason;
@@ -67,8 +67,9 @@ import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.IssuingDistributionPoint;
 import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.cms.CMSSignedData;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
@@ -148,7 +149,7 @@ public class X509CATest {
         byte[] req = x509ca.createRequest(cryptoToken, null, algName, cacert, CATokenConstants.CAKEYPURPOSE_CERTSIGN);
         PKCS10CertificationRequest p10 = new PKCS10CertificationRequest(req);
         assertNotNull(p10);
-        String dn = p10.getCertificationRequestInfo().getSubject().toString();
+        String dn = p10.getSubject().toString();
         assertEquals(CADN, dn);
         
         // Make a request with some pkcs11 attributes as well
@@ -173,11 +174,11 @@ public class X509CATest {
         req = x509ca.createRequest(cryptoToken, attributes, algName, cacert, CATokenConstants.CAKEYPURPOSE_CERTSIGN);
         p10 = new PKCS10CertificationRequest(req);
         assertNotNull(p10);
-        dn = p10.getCertificationRequestInfo().getSubject().toString();
+        dn = p10.getSubject().toString();
         assertEquals(CADN, dn);
-        ASN1Set attrs = p10.getCertificationRequestInfo().getAttributes();
-        assertEquals(2, attrs.size());
-        PKCS10RequestMessage p10msg = new PKCS10RequestMessage(p10);
+        Attribute[] attrs = p10.getAttributes();
+        assertEquals(2, attrs.length);
+        PKCS10RequestMessage p10msg = new PKCS10RequestMessage(new JcaPKCS10CertificationRequest(p10));
         assertEquals("foobar123", p10msg.getPassword());
         assertEquals("dNSName=foobar.bar.com", p10msg.getRequestAltNames());
 

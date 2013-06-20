@@ -24,7 +24,7 @@ import java.util.Iterator;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.util.ASN1Dump;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.util.CertTools;
 import org.ejbca.cvc.CVCObject;
