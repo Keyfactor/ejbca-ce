@@ -7,21 +7,19 @@
 <section name="Standalone VA Installation">
   <subsection name="Building and configuring the EJBCA CA">
   <p>
-EJBCA should be configured as for any other installation but you must also set all preferences
-of the VA database in conf/va-publisher.properties. 
-The VA database is the master database of all standalone VA installations. It is there that EJBCA will 
+EJBCA should be configured the same when installing a VA as for any other installation, in addition to setting preferences
+for the VA database in conf/va-publisher.properties. 
+The VA database is the master database for standalone VA installations and where the master CA will 
 publish certificates when they are issued or revoked. 
   </p><p>
-After this configuration EJBCA is built and deployed as usual with the commands 'ant deploy', 'ant web-configure', and 'ant deploy-keystore', as described in the EJBCA installation guide.
+As with any EJBCA installation, the VA is built and deployed as usual with the commands 'ant deploy', 'ant web-configure', and 'ant deploy-keystore'.
   </p><p>
-The deploy command sets up a datasource <b>java:/OcspDS</b> in JBoss, if you use another application server 
-you must set up this datasource manually. It should be a datasource that is not involved in transactions
+The deploy command sets up a data source, <b>java:/OcspDS</b>, in JBoss. If you use another application server 
+you must set up this data source manually. The VA data source should be not be involved in transactions
 (a <i>no-tx-datasource</i> in JBoss), and it should have autocommit (should be default in JBoss).
   </p><p>
-When EJBCA has been started you have to add a new publisher. As a superadministrator you add this publisher
-on the "Edit Publishers" page in the Admin GUI. Use publisher type "Validation Authority Publisher". 
-  </p><p>
-Validation Authority Settings :
+Once EJBCA is been started you have to add a new publisher to the main CA server (not the VA). As a super administrator you add this publisher
+on the "Edit Publishers" page in the Admin GUI. Use publisher type "Validation Authority Publisher" The settings for this publisher are as follows: 
   </p>
 <ul>
 <li>'Data Source' - is the database of the standalone VA where this publisher will publish certificates. Use java:/OcspDS if ocsp-datasource.jndi-name=OcspDS.</li>
@@ -35,26 +33,26 @@ A publisher for CA certificates (used on a 'Edit Certificate Authorities' page) 
 </ul>
   <p>
 All certificate profiles for certificates that should be available to the OCSP responder should
-have a reference to this publisher. To configure this you must be a superadministrator.
+reference this publisher. To configure this you must be a super administrator.
   </p><p>
-All CAs that should have their certificates and CRLs published to the VA  should
-have a reference to this publisher. To configure this you must be a superadministrator.
+All CAs that publish certificates and CRLs to the VA should
+have a reference to this publisher. To configure this you must be a super administrator.
   </p><p>
-When all settings above have been done, every issued or revoked certificate with a certificate
-profile that uses the ValidationAuthorityPublisher should be published in the responder
-database as well as in the EJBCA database.
-If the publishing is not working it is important to notice this and synchronize the databases again, 
-see <a href="#Error%20handling">Error handling</a> below.
+Once the above is complete, all issed and revoked certificates with a profile that references a ValidationAuthorityPublisher should be published 
+to the VA database.
+It's important to verify that publishing succeeds and to synchronize the databases again should it fail. 
+See <a href="#Error%20handling">Error handling</a> below.
   </p>
   </subsection>
   <subsection name="Building and configuring the EJBCA VA">
   <p>
-A pure Validation Authority is a regular instance of EJBCA, but only a subset of the functionality is used.
-To only use a sub-set of the functionality is optional and for example a combination of a SubCAs and OCSP-responders for higher level CAs
-could be deployed in a DMZ on the same instances of EJBCA.
+A Validation Authority installation is at first glance identical to a standard CA installation, but only a subset of services is activated in order 
+to function as merely a VA. This means that an EJBCA installation could in practice be used as both its own CA and as a VA for 
+another CA at the same time. 
   </p>
   <note> 
-For users of EJBCA 5.0.x and earlier this is different. Previously there were two separate builds, but now there is only one allowing better code-reuse,
+This is a radical change from EJBCA 5.0.x and previous versions, where the VA was defined as a subset of EJBCA at compile time. This design choice 
+has since then been reconsidered in order to allow better code reuse,
 flexibility, audit trail of management operations and (optional) administration through the AdminGUI.
   </note>
   <p>
