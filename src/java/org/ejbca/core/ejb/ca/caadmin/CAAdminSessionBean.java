@@ -1656,7 +1656,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     public void importCAFromKeys(AuthenticationToken authenticationToken, String caname, String keystorepass, Certificate[] signatureCertChain,
             PublicKey p12PublicSignatureKey, PrivateKey p12PrivateSignatureKey, PrivateKey p12PrivateEncryptionKey, PublicKey p12PublicEncryptionKey)
             throws CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException, IllegalCryptoTokenException, CADoesntExistsException,
-            AuthorizationDeniedException, CAExistsException {
+            AuthorizationDeniedException, CAExistsException, CAOfflineException {
         // Transform into token
         int caId = StringTools.strip(CertTools.getSubjectDN(signatureCertChain[0])).hashCode(); // caid
         CAToken catoken = null;
@@ -1798,7 +1798,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @Override
     public void importCAFromHSM(AuthenticationToken authenticationToken, String caname, Certificate[] signatureCertChain, String catokenpassword,
             String catokenclasspath, String catokenproperties) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
-            IllegalCryptoTokenException, CADoesntExistsException, AuthorizationDeniedException, CAExistsException {
+            IllegalCryptoTokenException, CADoesntExistsException, AuthorizationDeniedException, CAExistsException, CAOfflineException {
         Certificate cacert = signatureCertChain[0];
         int caId = StringTools.strip(CertTools.getSubjectDN(cacert)).hashCode();
         Properties caTokenProperties = CAToken.getPropertiesFromString(catokenproperties);
@@ -1870,10 +1870,11 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * @throws AuthorizationDeniedException
      * @throws CADoesntExistsException if superCA does not exist
      * @throws CAExistsException if the CA already exists
+     * @throws CAOfflineException if CRLs can not be generated because imported CA did not manage to get online
      */
     private CA importCA(AuthenticationToken admin, String caname, String keystorepass, Certificate[] signatureCertChain, CAToken catoken,
             String keyAlgorithm, String keySpecification) throws CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException,
-            IllegalCryptoTokenException, AuthorizationDeniedException, CADoesntExistsException, CAExistsException {
+            IllegalCryptoTokenException, AuthorizationDeniedException, CADoesntExistsException, CAExistsException, CAOfflineException {
         // Create a new CA
         int signedby = CAInfo.SIGNEDBYEXTERNALCA;
         int certprof = CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA;
@@ -2012,10 +2013,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         caSession.addCA(admin, ca);
 
         // Create initial CRLs
-        Collection<Integer> caids = new ArrayList<Integer>();
-        caids.add(ca.getCAId());
-        publishingCrlSession.createCRLs(admin, caids, 0);
-        publishingCrlSession.createDeltaCRLs(admin, caids, 0);
+        publishingCrlSession.forceCRL(admin, ca.getCAId());
+        publishingCrlSession.forceDeltaCRL(admin, ca.getCAId());
         return ca;
     }
 
