@@ -26,7 +26,7 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 @Local
 public interface OcspKeyRenewalSessionLocal {
 
-    static final String RENEW_ALL_KEYS = "all";
+     final String RENEW_ALL_KEYS = "all";
     
     /**
      * This method causes the standalone OCSP responder to renew its keystores. 
