@@ -96,7 +96,7 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 			// Creating the confirm message response
 			
 			if (LOG.isDebugEnabled()) {
-				LOG.debug("Creating a PKI confirm message response");
+				LOG.debug("Creating a PKI confirm message response, responseProtection="+responseProtection);
 			}
 			CmpConfirmResponseMessage cresp = new CmpConfirmResponseMessage();
 			cresp.setRecipientNonce(msg.getSenderNonce());

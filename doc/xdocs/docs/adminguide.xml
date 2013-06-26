@@ -721,7 +721,7 @@ options in conf/cmpaliasconf.properties. Just like with the default configuratio
 and configure. For example, if the alias is '123', to set the CMP operation mode to RA, the cmpaliasconf.properties file should contain: <code>cmp.123.operationmode=ra</code>
 </p>
 <p>
-The configuration alias can be any String as long as it is alphanomeric.
+The configuration alias can be any String as long as it is alphanumeric.
 </p>
 <p>
 The custom configurations can only be used when sending the CMP request over http and does not work with TCP.
