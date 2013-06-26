@@ -399,7 +399,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         final X509Certificate[] certChain = ocspSigningCacheEntry.getFullCertificateChain().toArray(new X509Certificate[0]);
         final X509Certificate signerCert = certChain[0];
         if(!isOCSPCert(signerCert) && ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
-            log.warn("Signing with non OCSP certificate bound by OcspKeyBinding '" + ocspSigningCacheEntry.getOcspKeyBinding().getName() + "'.");
+            log.warn("Signing with non OCSP certificate (no 'OCSP Signing' Extended Key Usage) bound by OcspKeyBinding '" + ocspSigningCacheEntry.getOcspKeyBinding().getName() + "'.");
         }
         final String sigAlg;
         if (ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
