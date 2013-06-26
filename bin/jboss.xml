@@ -317,7 +317,7 @@
         </target>
 
         <target name="jee:web-configureJBoss7" depends="jee:check,jee:assert-runJBoss7" if="jboss7">
-            <echo message="Setting-up web configration for JBoss 7." />
+            <echo message="Setting-up web configuration for JBoss 7." />
             <antcall target="jee:web-configureJBoss7Cleanup" />
             <jboss:adm arg='/socket-binding-group=standard-sockets/socket-binding=http:add(port="${httpserver.pubhttp}")' />
             <jboss:adm arg="/subsystem=web/connector=http:add(protocol=HTTP/1.1, scheme=http, socket-binding=http)" />
@@ -333,7 +333,7 @@
         </target>
 
         <target name="jee:web-configureJBoss7SSL" depends="jee:check" unless="web.nosslconfigure">
-            <echo message="Setting-up SSL web configration for JBoss 7." />
+            <echo message="Setting-up SSL web configuration for JBoss 7." />
             <!-- Set-up the private port which requires client certificate -->
             <jboss:adm arg='/socket-binding-group=standard-sockets/socket-binding=httpspriv:add(port="${httpserver.privhttps}")' />
             <jboss:adm arg="/subsystem=web/connector=httpspriv:add(protocol=HTTP/1.1, scheme=https, socket-binding=httpspriv, secure=true)" />
