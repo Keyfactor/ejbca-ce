@@ -227,10 +227,11 @@ public interface CAAdminSession {
      * @param p12PublicEncryptionKey
      *            CA public encryption key, or null to generate a new
      *            encryption key
+     * @throws CAOfflineException if CRLs can not be generated because imported CA did not manage to get online
      */
     public void importCAFromKeys(AuthenticationToken admin, String caname, String keystorepass, java.security.cert.Certificate[] signatureCertChain,
             java.security.PublicKey p12PublicSignatureKey, java.security.PrivateKey p12PrivateSignatureKey, java.security.PrivateKey p12PrivateEncryptionKey,
-            java.security.PublicKey p12PublicEncryptionKey) throws CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException, IllegalCryptoTokenException, CADoesntExistsException, CAExistsException, AuthorizationDeniedException;
+            java.security.PublicKey p12PublicEncryptionKey) throws CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException, IllegalCryptoTokenException, CADoesntExistsException, CAExistsException, AuthorizationDeniedException, CAOfflineException;
 
     /**
      * Method that is used to create a new CA from keys on an HSM and
@@ -250,9 +251,10 @@ public interface CAAdminSession {
      * @param catokenproperties
      *            the catoken properties, same as usually entered in the
      *            adminGUI for hard token CAs.
+     * @throws CAOfflineException if CRLs can not be generated because imported CA did not manage to get online
      */
     public void importCAFromHSM(AuthenticationToken admin, String caname, java.security.cert.Certificate[] signatureCertChain, String catokenpassword,
-            String catokenclasspath, String catokenproperties) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, IllegalCryptoTokenException, CADoesntExistsException, CAExistsException, AuthorizationDeniedException;
+            String catokenclasspath, String catokenproperties) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, IllegalCryptoTokenException, CADoesntExistsException, CAExistsException, AuthorizationDeniedException, CAOfflineException;
 
     /**
      * Exports a CA to file. The method only works for soft tokens.

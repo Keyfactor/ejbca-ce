@@ -56,6 +56,7 @@ public interface CrlStoreSession {
 	 * 
 	 * @param issuerdn the subjectDN of a CA certificate
 	 * @param deltaCRL true to get the latest deltaCRL, false to get the latest complete CRL
+	 * @return the highest CRL number of CRLs issued by issuerdn, or 0 if no CRLs were issued.
 	 */
 	int getLastCRLNumber(String issuerdn, boolean deltaCRL);
 	
