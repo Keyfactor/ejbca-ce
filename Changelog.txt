@@ -419,6 +419,15 @@ Task
     [ECA-2320] - Merge changes from CESECORE-197
     [ECA-2324] - Merge changes from CESECORE-269 to EJBCA
 
+EJBCA 4.0.16, 2013-06-28
+---
+Bug
+    [ECA-2495] - Exception in view old log
+    [ECA-3059] - Database rolled back for failed CRL publishings instead of put in queue
+
+Improvement
+    [ECA-3050] - Base64CertData table
+
 EJBCA 4.0.15, 2013-05-10
 ---
 Bug
