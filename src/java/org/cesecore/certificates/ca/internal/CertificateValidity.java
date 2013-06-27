@@ -94,8 +94,14 @@ public class CertificateValidity {
         			}
         		}
     			if ( startTimeDate != null && startTimeDate.before(now)) {
+    			    if ((log.isDebugEnabled())) {
+    			        log.debug("Using custom start time, but it is before current date, ignoring custom date and setting to 'now'");
+    			    }
                 	startTimeDate = now;
     			}
+                if ((log.isDebugEnabled())) {
+                    log.debug("Custom notBefore: "+startTimeDate);
+                }
 	        }
 	        if ( eiEndTime != null ) {
         		if ( eiEndTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
@@ -111,6 +117,9 @@ public class CertificateValidity {
         				log.error(intres.getLocalizedMessage("createcert.errorinvalidstarttime",eiEndTime));
         			}
         		}
+                if ((log.isDebugEnabled())) {
+                    log.debug("Custom notAfter: "+endTimeDate);
+                }
 	        }
         }
         // Find out what start and end time to actually use..
@@ -125,6 +134,10 @@ public class CertificateValidity {
             if (lastDate == null) {
             	lastDate = notAfter;
             }    	
+            if (log.isDebugEnabled()) {
+                log.debug("Allow validity override, notBefore: "+firstDate);
+                log.debug("Allow validity override, notAfter: "+lastDate);
+            }
         }
         // Prio 3 is default values
         if (firstDate == null) {
