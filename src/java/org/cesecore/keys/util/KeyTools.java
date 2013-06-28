@@ -21,6 +21,9 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -65,7 +68,9 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.crypto.interfaces.DHPrivateKey;
@@ -885,7 +890,9 @@ public final class KeyTools {
 
     /**
      * Calls {@link #getP11Provider(String, String, boolean, String, String)} with privateKeyLabel set to null
+     * @deprecated use {@link PKCS11Slot#getP11Provider(String, String, String)} instead.
      */
+    @Deprecated
     public static Provider getP11Provider(final String slot, final String fileName, final boolean isIndex, final String attributesFile)
             throws IOException {
         return getP11Provider(slot, fileName, isIndex, attributesFile, null);
@@ -895,8 +902,8 @@ public final class KeyTools {
      * Creates a SUN or IAIK PKCS#11 provider using the passed in pkcs11 library. First we try to see if the IAIK provider is available, because it
      * supports more algorithms. If the IAIK provider is not available in the classpath, we try the SUN provider.
      * 
-     * @param slot
-     *            pkcs11 slot number or null if a config file name is provided as fileName
+     * @param sSlot
+     *            pkcs11 slot number (ID or IX) or null if a config file name is provided as fileName. Could also be any of: TOKEN_LABEL:<string> SLOT_LIST_IX:<int> SLOT_ID:<long> SUN_FILE:<string>
      * @param fileName
      *            the manufacturers provided pkcs11 library (.dll or .so) or config file name if slot is null
      * @param isIndex
@@ -916,149 +923,389 @@ public final class KeyTools {
      * @return AuthProvider of type "sun.security.pkcs11.SunPKCS11" or
      * @throws IOException
      *             if the pkcs11 library can not be found, or the PKCS11 provider can not be created.
+     * @deprecated use {@link PKCS11Slot#getP11Provider(String, String, String)} instead.
      */
-    public static Provider getP11Provider(final String slot, final String fileName, final boolean isIndex, final String attributesFile, final String privateKeyLabel)
+    @Deprecated
+    public static Provider getP11Provider(final String sSlot, final String fileName, final boolean isIndex, final String attributesFile, final String privateKeyLabel)
             throws IOException {
-        if (StringUtils.isEmpty(fileName)) {
-            throw new IOException("A file name must be supplied.");
-        }
-        final File libFile = new File(fileName);
-        if (!libFile.isFile() || !libFile.canRead()) {
-            throw new IOException("The file " + fileName + " can't be read.");
-        }
-        // We will construct the PKCS11 provider (sun.security..., or iaik...) using reflection, because
-        // the sun class does not exist on all platforms in jdk5, and we want to be able to compile everything.
-
-        if ( slot==null || slot.length()<1 ) {// no slot. It must be Sun with all config in the file named 'fileName'
-            return getSunP11Provider(new FileInputStream(libFile));
-        }
-        try {
-            Integer.parseInt(slot);
-        } catch (NumberFormatException e) {
-            throw new IOException("Slot nr " + slot + " not an integer.");
-        }
-        {// We will first try to construct the more competent IAIK provider, if it exists in the classpath
-            final Provider prov = getIAIKP11Provider(slot, libFile, isIndex);
-            if ( prov!=null ) {
-                return prov;
+        PKCS11Slot slotSpec;
+        if ( sSlot!=null && sSlot.length()>0 ) {
+            try {
+                Long.parseLong(sSlot);
+                slotSpec = new PKCS11Slot( isIndex ? PKCS11Slot.Type.SLOT_LIST_IX : PKCS11Slot.Type.SLOT_ID, sSlot );
+            } catch (NumberFormatException e) {
+                slotSpec = new PKCS11Slot(sSlot);
             }
-        }
-        {// if that does not exist, we will revert back to use the SUN provider
-            final Provider prov = getSunP11Provider(slot, libFile, isIndex, attributesFile, privateKeyLabel);
-            if ( prov!=null ) {
-                return prov;
-            }
-        }
-        log.error("No provider available.");
-        return null;
-    }
-    private static Provider getIAIKP11Provider(final String slot, final File libFile, final boolean isIndex) throws IOException {
-        // Properties for the IAIK PKCS#11 provider
-        final Properties prop = new Properties();
-        prop.setProperty("PKCS11_NATIVE_MODULE", libFile.getCanonicalPath());
-        // If using Slot Index it is denoted by brackets in iaik
-        prop.setProperty("SLOT_ID", isIndex ? ("[" + slot + "]") : slot);
-        if (log.isDebugEnabled()) {
-            log.debug(prop.toString());
-        }
-        Provider ret = null;
-        try {
-            @SuppressWarnings("unchecked")
-            final Class<? extends Provider> implClass = (Class<? extends Provider>) Class.forName(IAIKPKCS11CLASS);
-            log.info("Using IAIK PKCS11 provider: " + IAIKPKCS11CLASS);
-            // iaik PKCS11 has Properties as constructor argument
-            ret = implClass.getConstructor(Properties.class).newInstance(new Object[] { prop });
-            // It's not enough just to add the p11 provider. Depending on algorithms we may have to install the IAIK JCE provider as well in order
-            // to support algorithm delegation
-            @SuppressWarnings("unchecked")
-            final Class<? extends Provider> jceImplClass = (Class<? extends Provider>) Class.forName(KeyTools.IAIKJCEPROVIDERCLASS);
-            Provider iaikProvider = jceImplClass.getConstructor().newInstance();
-            if (Security.getProvider(iaikProvider.getName()) == null) {
-                log.info("Adding IAIK JCE provider for Delegation: " + KeyTools.IAIKJCEPROVIDERCLASS);
-                Security.addProvider(iaikProvider);
-            }
-        } catch (Exception e) {
-            // do nothing here. Sun provider is tested below.
-        }
-        return ret;
-    }
-    private static Provider getSunP11Provider(final String slot, final File libFile, final boolean isIndex, final String attributesFile, String privateKeyLabel) throws IOException {
-
-        // Properties for the SUN PKCS#11 provider
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        final PrintWriter pw = new PrintWriter(baos);
-        pw.println("name = " + libFile.getName() + "-slot" + slot);
-        pw.println("library = " + libFile.getCanonicalPath());
-        if ( slot!=null ) {
-            pw.println("slot" + (isIndex ? "ListIndex" : "") + " = " + slot);
-        }
-        if (attributesFile != null) {
-            byte[] attrs = FileTools.readFiletoBuffer(attributesFile);
-            pw.println(new String(attrs));
         } else {
-            // setting the attributes like this should work for most HSMs.
-            pw.println("attributes(*, *, *) = {");
-            pw.println("  CKA_TOKEN = true"); // all created objects should be permanent. They should not only exiswt during the session.
-            pw.println("}");
-            pw.println("attributes(*, CKO_PUBLIC_KEY, *) = {");
-            pw.println("  CKA_ENCRYPT = true");
-            pw.println("  CKA_VERIFY = true");
-            pw.println("  CKA_WRAP = true");// no harm allowing wrapping of keys. created private keys can not be wrapped anyway since CKA_EXTRACTABLE
-            // is false.
-            pw.println("}");
-            pw.println("attributes(*, CKO_PRIVATE_KEY, *) = {");
-            pw.println("  CKA_PRIVATE = true"); // always require logon with password to use the key
-            pw.println("  CKA_SENSITIVE = true"); // not possible to read the key
-            pw.println("  CKA_EXTRACTABLE = false"); // not possible to wrap the key with another key
-            pw.println("  CKA_DECRYPT = true");
-            pw.println("  CKA_SIGN = true");
-            if ( privateKeyLabel!=null && privateKeyLabel.length()>0 ) {
-                pw.print("  CKA_LABEL = 0h");
-                pw.println(new String(Hex.encode(privateKeyLabel.getBytes())));
-            }
-            pw.println("  CKA_UNWRAP = true");// for unwrapping of session keys,
-            pw.println("}");
-            pw.println("attributes(*, CKO_SECRET_KEY, *) = {");
-            pw.println("  CKA_SENSITIVE = true"); // not possible to read the key
-            pw.println("  CKA_EXTRACTABLE = false"); // not possible to wrap the key with another key
-            pw.println("  CKA_ENCRYPT = true");
-            pw.println("  CKA_DECRYPT = true");
-            pw.println("  CKA_SIGN = true");
-            pw.println("  CKA_VERIFY = true");
-            pw.println("  CKA_WRAP = true");// for unwrapping of session keys,
-            pw.println("  CKA_UNWRAP = true");// for unwrapping of session keys,
-            pw.println("}");
+            slotSpec = new PKCS11Slot(PKCS11Slot.Type.SUN_FILE, null);
         }
-        pw.flush();
-        pw.close();
-        if (log.isDebugEnabled()) {
-            log.debug(baos.toString());
-        }
-        return getSunP11Provider( new ByteArrayInputStream(baos.toByteArray()) );
+        return slotSpec.getP11Provider(fileName, attributesFile, privateKeyLabel);
     }
 
     /**
-     * @param is
-     *            InputStream for sun configuration file.
-     * @return The Sun provider
-     * @throws IOException
+     * TODO: put this class in its own file.
+     * Object to handle a p11 SLOT.
+     * You can get a provider for the slot with {@link PKCS11Slot#getP11Provider(String, String, String)}
      */
-    public static Provider getSunP11Provider(final InputStream is) throws IOException {
-        // The below code replaces the single line (for the SUN provider):
-        // return new SunPKCS11(is);
-        try {
-            // Sun PKCS11 has InputStream as constructor argument
-            @SuppressWarnings("unchecked")
-            final Class<? extends Provider> implClass = (Class<? extends Provider>) Class.forName(SUNPKCS11CLASS);
-            log.info("Using SUN PKCS11 provider: " + SUNPKCS11CLASS);
-            return implClass.getConstructor(InputStream.class).newInstance(new Object[] { is });
-        } catch (Exception e) {
-            log.error("Error constructing pkcs11 provider: " + e.getMessage());
-            final IOException ioe = new IOException("Error constructing pkcs11 provider: " + e.getMessage());
-            ioe.initCause(e);
-            throw ioe;
+    public static class PKCS11Slot {
+        /**
+         * Defines how the slot is specified.
+         */
+        public enum Type {
+            TOKEN_LABEL("Token Label"),
+            SLOT_LIST_IX("Slot list index"),
+            SLOT_ID("slot ID"),
+            SUN_FILE("Sun configuration file");
+
+            private final String description;
+            private Type( String _description ) {
+                this.description = _description;
+            }
+            @Override
+            public String toString() {
+                return this.description;
+            }
         }
-    }
+        final private static String DELIMETER = ":";
+        final private Type type;
+        final private String value;
+        /**
+         * Create an instance with a string that defines the slot.
+         * @param taggedString Defines type and value this like this '<Type>:<value>'. Example slot with token label "Hej på dig.": TOKEN_LABEL:Hej på dig.
+         * @throws IOException
+         */
+        public PKCS11Slot( final String taggedString ) throws IOException {
+            final String[] split = taggedString.split(DELIMETER, 2);
+            try {
+                this.type = Type.valueOf(split[0].trim());
+            } catch( IllegalArgumentException e ) {
+                throw new IOException("P11 Slot specifier '"+taggedString+"' has a tag that is not existing: '"+split[0]+"'");
+            }
+            this.value = split.length>1 ? split[1].trim() : null;
+        }
+        /**
+         * Use explicit values.
+         * @param _type
+         * @param _value
+         */
+        public PKCS11Slot( final Type _type, final String _value) {
+            this.type = _type;
+            this.value = _value.trim();
+        }
+        /**
+         * Get a string that later could be used to create a new object with {@link PKCS11Slot#PKCS11Slot(String)}.
+         * Use it when you want to store a reference to the slot.
+         * @return the string.
+         */
+        public String getTaggedString() {
+            return this.type.name() + DELIMETER + this.value;
+        }
+        @Override
+        public String toString() {
+            return "Slot type: '"+this.type+"'. Slot value: '"+this.value+"'.";
+        }
+        /**
+         * Get provider for the slot.
+         * @param fileName path name to the P11 module so file or sun config file (only in the case of {@link #type}=={@link Type#SUN_FILE})
+         * @param attributesFile Path to file with P11 attributes to be used when generating keys with the provider. If null a good default will be used.
+         * @param privateKeyLabel Label that will be set to all private keys generated by the provider. If null no label will be set.
+         * @return the provider.
+         * @throws IOException
+         */
+        public Provider getP11Provider(final String fileName, final String attributesFile, final String privateKeyLabel)
+                throws IOException {
+            if (StringUtils.isEmpty(fileName)) {
+                throw new IOException("A file name must be supplied.");
+            }
+            final File libFile = new File(fileName);
+            if (!libFile.isFile() || !libFile.canRead()) {
+                throw new IOException("The file " + fileName + " can't be read.");
+            }
+            // We will construct the PKCS11 provider (sun.security..., or iaik...) using reflection, because
+            // the sun class does not exist on all platforms in jdk5, and we want to be able to compile everything.
+
+            final long slot;
+            final boolean isIndex;
+            log.debug("slot spec: "+this.toString());
+            switch ( this.type ) {
+            case TOKEN_LABEL:
+                try {
+                    slot = getSlotID(this.value, fileName);
+                    isIndex = false;
+                } catch (RuntimeException e) {
+                    throw e;// don't bother about exceptions that has nothing to do with reflection
+                } catch (IOException e) {
+                    throw e;// don't bother about exceptions that has nothing to do with reflection
+                } catch (Exception e) {
+                    throw new IOException("Slot nr " + this.value + " not an integer and sun classes to find slot for token label are not available.", e);
+                }
+                if ( slot<0 ) {
+                    throw new IOException("Token label '"+this.value+"' not found.");
+                }
+                break;
+            case SLOT_ID:
+                slot = Long.parseLong( this.value );
+                isIndex = false;
+                break;
+            case SLOT_LIST_IX:
+                slot = Long.parseLong( this.value );
+                isIndex = true;
+                break;
+            case SUN_FILE:
+                return getSunP11Provider(new FileInputStream(libFile));
+            default:
+                throw new Error("This should not ever happen if all type of slots are tested.");
+            }
+            {// We will first try to construct the more competent IAIK provider, if it exists in the classpath
+                final Provider prov = getIAIKP11Provider(slot, libFile, isIndex);
+                if ( prov!=null ) {
+                    return prov;
+                }
+            }
+            {// if that does not exist, we will revert back to use the SUN provider
+                final Provider prov = getSunP11Provider(slot, libFile, isIndex, attributesFile, privateKeyLabel);
+                if ( prov!=null ) {
+                    return prov;
+                }
+            }
+            log.error("No provider available.");
+            return null;
+        }
+        /**
+         * Class that does does P11 calls with Sun classes. Reflection is used so that call is compiling without Sun classes.
+         *
+         */
+        private static class PKCS11 {
+            static final private Map<String, PKCS11> instances = new HashMap<String, PKCS11>();
+            final private Method getSlotListMethod;
+            final private Method getTokenInfoMethod;
+            final private Field labelField;
+            final private Object p11;
+            private PKCS11(final String fileName) throws ClassNotFoundException, NoSuchMethodException, NoSuchFieldException, IllegalAccessException, InvocationTargetException {
+                final Class<? extends Object> p11Class = Class.forName("sun.security.pkcs11.wrapper.PKCS11");
+
+                this.getSlotListMethod = p11Class.getDeclaredMethod("C_GetSlotList", new Class[] {boolean.class});
+                this.getTokenInfoMethod = p11Class.getDeclaredMethod("C_GetTokenInfo", new Class[]{long.class});
+                this.labelField = Class.forName("sun.security.pkcs11.wrapper.CK_TOKEN_INFO").getField("label");
+
+                final Method getInstanceMethod = p11Class.getDeclaredMethod("getInstance", new Class[] { String.class, String.class, Class.forName("sun.security.pkcs11.wrapper.CK_C_INITIALIZE_ARGS"), boolean.class });
+                this.p11 = getInstanceMethod.invoke(null, new Object[]{fileName, "C_GetFunctionList", null, false});
+            }
+            /**
+             * Get an instance of the class. I
+             * @param fileName name of the p11 so file.
+             * @return the instance.
+             * @throws ClassNotFoundException
+             * @throws NoSuchMethodException
+             * @throws NoSuchFieldException
+             * @throws IllegalAccessException
+             * @throws InvocationTargetException
+             */
+            static synchronized PKCS11 getInstance(final String fileName) throws ClassNotFoundException, NoSuchMethodException, NoSuchFieldException, IllegalAccessException, InvocationTargetException {
+                final PKCS11 storedP11 = instances.get(fileName);
+                if ( storedP11!=null ) {
+                    return storedP11;
+                }
+                final PKCS11 newP11 = new PKCS11(fileName);
+                instances.put(fileName, newP11);
+                return newP11;
+            }
+            /**
+             * Get a list of p11 slot IDs to slots that has a token.
+             * @return the list.
+             * @throws IllegalAccessException
+             * @throws InvocationTargetException
+             */
+            long[] C_GetSlotList() throws IllegalAccessException, InvocationTargetException {
+                return (long[])this.getSlotListMethod.invoke(this.p11, new Object[]{true});
+            }
+            /**
+             * Get the token label of a specific slot ID.
+             * @param slotID
+             * @return
+             * @throws IllegalAccessException
+             * @throws InvocationTargetException
+             */
+            char[] getTokenLabel(long slotID) throws IllegalAccessException, InvocationTargetException {
+                final Object tokenInfo = this.getTokenInfoMethod.invoke(this.p11, new Object[] {slotID});
+                if ( tokenInfo==null ) {
+                    return null;
+                }
+                return (char[])this.labelField.get(tokenInfo);
+            }
+        }
+        /**
+         * Get slot ID for a token label.
+         * @param tokenLabel the label.
+         * @param fileName path to the P11 module so file.
+         * @return the slot ID.
+         * @throws ClassNotFoundException
+         * @throws NoSuchMethodException
+         * @throws NoSuchFieldException
+         * @throws IllegalAccessException
+         * @throws InvocationTargetException
+         * @throws IOException
+         */
+        private static long getSlotID(final String tokenLabel, final String fileName)//  all thrown exceptions indicate that the required sun p11 classes is not available.
+                throws ClassNotFoundException, NoSuchMethodException, NoSuchFieldException, IllegalAccessException, InvocationTargetException, IOException {
+            //final PKCS11 p11 = PKCS11.getInstance(fileName, "C_GetFunctionList", null, false);
+            final PKCS11 p11= PKCS11.getInstance(fileName);
+            //final long[] slots = p11.C_GetSlotList(true);
+            final long slots[] = p11.C_GetSlotList();
+            if ( log.isDebugEnabled() ) {
+                log.debug("Searching for token label:\t"+tokenLabel);
+            }
+            for ( final long slotID : slots) {
+                //final CK_TOKEN_INFO tokenInfo = p11.C_GetTokenInfo(slotID);
+                final char label[] = p11.getTokenLabel(slotID);
+                /*if ( tokenInfo==null || tokenInfo.label==null ) {
+                continue;
+            }*/
+                if ( label==null ) {
+                    continue;
+                }
+                //final String candidateTokenLabel = new String(tokenInfo.label);
+                final String candidateTokenLabel = new String(label);
+                if ( log.isDebugEnabled() ) {
+                    log.debug("Candidate token label:\t"+candidateTokenLabel);
+                }
+                if ( !tokenLabel.equals(candidateTokenLabel.trim()) ) {
+                    continue;
+                }
+                if ( log.isDebugEnabled() ) {
+                    log.debug("Label '"+tokenLabel+"' found. The slot ID is:\t"+slotID);
+                }
+                return slotID;
+            }
+            throw new IOException("Token label '"+tokenLabel+"' not found.");
+        }
+        /**
+         * Get the IAIK provider.
+         * @param slot Slot list index or slot ID.
+         * @param libFile P11 module so file.
+         * @param isIndex true if first parameter is a slot list index, false if slot ID.
+         * @return the provider
+         * @throws IOException
+         */
+        private static Provider getIAIKP11Provider(final long slot, final File libFile, final boolean isIndex) throws IOException {
+            // Properties for the IAIK PKCS#11 provider
+            final Properties prop = new Properties();
+            prop.setProperty("PKCS11_NATIVE_MODULE", libFile.getCanonicalPath());
+            // If using Slot Index it is denoted by brackets in iaik
+            prop.setProperty("SLOT_ID", isIndex ? ("[" + slot + "]") : Long.toString(slot));
+            if (log.isDebugEnabled()) {
+                log.debug(prop.toString());
+            }
+            Provider ret = null;
+            try {
+                @SuppressWarnings("unchecked")
+                final Class<? extends Provider> implClass = (Class<? extends Provider>) Class.forName(IAIKPKCS11CLASS);
+                log.info("Using IAIK PKCS11 provider: " + IAIKPKCS11CLASS);
+                // iaik PKCS11 has Properties as constructor argument
+                ret = implClass.getConstructor(Properties.class).newInstance(new Object[] { prop });
+                // It's not enough just to add the p11 provider. Depending on algorithms we may have to install the IAIK JCE provider as well in order
+                // to support algorithm delegation
+                @SuppressWarnings("unchecked")
+                final Class<? extends Provider> jceImplClass = (Class<? extends Provider>) Class.forName(KeyTools.IAIKJCEPROVIDERCLASS);
+                Provider iaikProvider = jceImplClass.getConstructor().newInstance();
+                if (Security.getProvider(iaikProvider.getName()) == null) {
+                    log.info("Adding IAIK JCE provider for Delegation: " + KeyTools.IAIKJCEPROVIDERCLASS);
+                    Security.addProvider(iaikProvider);
+                }
+            } catch (Exception e) {
+                // do nothing here. Sun provider is tested below.
+            }
+            return ret;
+        }
+        /**
+         * Get the Sun provider.
+         * @param slot Slot list index or slot ID.
+         * @param libFile P11 module so file.
+         * @param isIndex true if first parameter is a slot list index, false if slot ID.
+         * @param attributesFile Path to file with P11 attributes to be used when generating keys with the provider. If null a good default will be used.
+         * @param privateKeyLabel Label that will be set to all private keys generated by the provider. If null no label will be set.
+         * @return the provider
+         * @throws IOException
+         */
+        private static Provider getSunP11Provider(final long slot, final File libFile, final boolean isIndex, final String attributesFile, String privateKeyLabel) throws IOException {
+
+            // Properties for the SUN PKCS#11 provider
+            final String sSlot = Long.toString(slot);
+            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            final PrintWriter pw = new PrintWriter(baos);
+            pw.println("name = " + libFile.getName() + "-slot" + sSlot);
+            pw.println("library = " + libFile.getCanonicalPath());
+            if ( sSlot!=null ) {
+                pw.println("slot" + (isIndex ? "ListIndex" : "") + " = " + sSlot);
+            }
+            if (attributesFile != null) {
+                byte[] attrs = FileTools.readFiletoBuffer(attributesFile);
+                pw.println(new String(attrs));
+            } else {
+                // setting the attributes like this should work for most HSMs.
+                pw.println("attributes(*, *, *) = {");
+                pw.println("  CKA_TOKEN = true"); // all created objects should be permanent. They should not only exiswt during the session.
+                pw.println("}");
+                pw.println("attributes(*, CKO_PUBLIC_KEY, *) = {");
+                pw.println("  CKA_ENCRYPT = true");
+                pw.println("  CKA_VERIFY = true");
+                pw.println("  CKA_WRAP = true");// no harm allowing wrapping of keys. created private keys can not be wrapped anyway since CKA_EXTRACTABLE
+                // is false.
+                pw.println("}");
+                pw.println("attributes(*, CKO_PRIVATE_KEY, *) = {");
+                pw.println("  CKA_PRIVATE = true"); // always require logon with password to use the key
+                pw.println("  CKA_SENSITIVE = true"); // not possible to read the key
+                pw.println("  CKA_EXTRACTABLE = false"); // not possible to wrap the key with another key
+                pw.println("  CKA_DECRYPT = true");
+                pw.println("  CKA_SIGN = true");
+                if ( privateKeyLabel!=null && privateKeyLabel.length()>0 ) {
+                    pw.print("  CKA_LABEL = 0h");
+                    pw.println(new String(Hex.encode(privateKeyLabel.getBytes())));
+                }
+                pw.println("  CKA_UNWRAP = true");// for unwrapping of session keys,
+                pw.println("}");
+                pw.println("attributes(*, CKO_SECRET_KEY, *) = {");
+                pw.println("  CKA_SENSITIVE = true"); // not possible to read the key
+                pw.println("  CKA_EXTRACTABLE = false"); // not possible to wrap the key with another key
+                pw.println("  CKA_ENCRYPT = true");
+                pw.println("  CKA_DECRYPT = true");
+                pw.println("  CKA_SIGN = true");
+                pw.println("  CKA_VERIFY = true");
+                pw.println("  CKA_WRAP = true");// for unwrapping of session keys,
+                pw.println("  CKA_UNWRAP = true");// for unwrapping of session keys,
+                pw.println("}");
+            }
+            pw.flush();
+            pw.close();
+            if (log.isDebugEnabled()) {
+                log.debug(baos.toString());
+            }
+            return getSunP11Provider( new ByteArrayInputStream(baos.toByteArray()) );
+        }
+
+        /**
+         * @param is
+         *            InputStream for sun configuration file.
+         * @return The Sun provider
+         * @throws IOException
+         */
+        private static Provider getSunP11Provider(final InputStream is) throws IOException {
+            // The below code replaces the single line (for the SUN provider):
+            // return new SunPKCS11(is);
+            try {
+                // Sun PKCS11 has InputStream as constructor argument
+                @SuppressWarnings("unchecked")
+                final Class<? extends Provider> implClass = (Class<? extends Provider>) Class.forName(SUNPKCS11CLASS);
+                log.info("Using SUN PKCS11 provider: " + SUNPKCS11CLASS);
+                return implClass.getConstructor(InputStream.class).newInstance(new Object[] { is });
+            } catch (Exception e) {
+                log.error("Error constructing pkcs11 provider: " + e.getMessage());
+                final IOException ioe = new IOException("Error constructing pkcs11 provider: " + e.getMessage());
+                ioe.initCause(e);
+                throw ioe;
+            }
+        }
+    }// end of the class PKCS11Slot
 
     /**
      * Detect if "Unlimited Strength" Policy files has bean properly installed.
