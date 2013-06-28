@@ -306,7 +306,7 @@ public class P11Slot {
                 tmpProvider = KeyTools.getP11Provider(this.slotNr, this.sharedLibrary,
                                                         this.isIndex, this.attributesFile);
             } else if ( this.sunP11ConfigFileName!=null ) {
-                tmpProvider = KeyTools.getSunP11Provider(new FileInputStream(this.sunP11ConfigFileName));
+                tmpProvider = new KeyTools.PKCS11Slot(KeyTools.PKCS11Slot.Type.SUN_FILE, null).getP11Provider(this.sunP11ConfigFileName, null, null);
             } else {
                 throw new Error("Should never happen.");
             }
