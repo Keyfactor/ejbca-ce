@@ -605,10 +605,12 @@ Or for MariaDB, mariadb-java-client-1.1.2.jar:
 </subsubsection>
 
 <subsubsection name="JBoss 7/EAP 6 PKCS11">
+<p>Note: This is not needed in JBoss EAP 6.1/JBoss 7.2, because these classes are exported by default since <a href="https://issues.jboss.org/browse/JBPAPP6-1748">JBPAPP6-1748</a>
+</p>
 <p>
-JBoss 7/EAP 6 isolates away sun classes. That means you will not be able to send certificates through remote EJB calls, and will not be able to use the Sun PKCS#11 provider.
+JBoss 7/EAP 6 isolates away most sun classes. That means you will not be able to send certificates through remote EJB calls, and will not be able to use the Sun PKCS#11 provider.
 These classes can be made available by editing the file
-<i>modules/sun/jdk/main/module.xml (JBoss 7.1/EAP6.0) or modules/system/layers/base/sun/jdk/main/module.xml (JBoss 7.2/EAP6.1))</i> and adding the following packages to the list of system export paths:
+<i>modules/sun/jdk/main/module.xml (JBoss 7.1/EAP6.0)</i> and adding the following packages to the list of system export paths:
 </p>
 <source>
 &lt;path name="sun/security/x509"/&gt;
@@ -617,6 +619,18 @@ These classes can be made available by editing the file
 <p>
 This will allow an application to use these internal Sun/Oracle/OpenJDK classes.
 </p>
+</subsubsection>
+
+<subsubsection name="JBoss 7/EAP 6 CMP TCP">
+<p>Note that the TCP transport of the CMP protocol is deprecated in the standard draft. TCP transport may be removed in future EJBCA releases.</p>
+<p>
+JBoss 7/EAP 6 isolates away  most sun classes. This means that the CMP TCP library is not able to get system properties.
+The needed classes can be made available by editing the file
+<i>modules/sun/jdk/main/module.xml (JBoss 7.1/EAP6.0) or modules/system/layers/base/sun/jdk/main/module.xml (JBoss 7.2/EAP6.1))</i> and adding the following package to the list of system export paths:
+</p>
+<source>
+&lt;path name="sun/security/action"/&gt;
+</source>
 </subsubsection>
 
 <subsubsection name="JBoss 7 and Oracle JDK BC issues">
