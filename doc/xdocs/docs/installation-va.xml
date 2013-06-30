@@ -22,7 +22,8 @@ Once EJBCA is been started you have to add a new publisher to the main CA server
 on the "Edit Publishers" page in the Admin GUI. Use publisher type "Validation Authority Publisher" The settings for this publisher are as follows: 
   </p>
 <ul>
-<li>'Data Source' - is the database of the standalone VA where this publisher will publish certificates. Use java:/OcspDS if ocsp-datasource.jndi-name=OcspDS.</li>
+<li>'Data Source' - is the database of the standalone VA where this publisher will publish certificates. Use java:/OcspDS if ocsp-datasource.jndi-name=OcspDS. 
+This must be a non-tx/jta=false data source (see <a href="installation.html#JBoss">Installation</a> for instruction how to create this manually if needed).</li>
 <li>'Store certificate at the Validation Authority' - stores the complete certificate on the VA. If this is unchecked only the information needed to answer OCSP requests are stored, but not the certificate itself.
 There are good reasons not to publish the whole certificate. It is large, thus making it a bit of heavy insert and it may contain sensitive information. 
 On the other hand some OCSP Extension plug-ins may not work without the certificate. A regular OCSP responder works fine without the certificate. A publisher for CA certificates (used on a 'Edit Certificate Authorities' page) must have this enabled.

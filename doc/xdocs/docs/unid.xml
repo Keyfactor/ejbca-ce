@@ -139,7 +139,8 @@ Requirements:
   cmp.ra.certificateprofile=KeyId<br/>
   cmp.uniddatasource=[as in OCSP (for example java:/UnidDS)]
 </li>
-<li>A Unid datasource is configured in the application server. Note that this must be a 'no-tx-datasource', just like the an OCSP publisher datasource.</li>
+<li>A Unid datasource is configured in the application server. Note that this must be a 'no-tx-datasource', just like the an OCSP publisher datasource
+ (see <a href="installation.html#JBoss">Installation</a> for instruction how to create this manually if needed).</li>
 </ol>
 <p>
 Detailed operation:
