@@ -335,7 +335,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         String reqString = new String(Base64.encode(req.getEncoded(), false));
         URL url = new URL(httpReqPath + '/' + resourceOcsp + '/' + URLEncoder.encode(reqString, "UTF-8"));
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
-        assertEquals("Response code did not match. ", 200, con.getResponseCode());
+        assertEquals("Response code did not match. (Make sure you allow encoded slashes in your appserver.. add -Dorg.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH=true in Tomcat)", 200, con.getResponseCode());
         // Some appserver (Weblogic) responds with
         // "application/ocsp-response; charset=UTF-8"
         assertNotNull(con.getContentType());
