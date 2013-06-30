@@ -6,6 +6,7 @@
 # server, you should uncomment this property. Enabling this option will prevent
 # the 'ant web-configure' command from making any changes to the configuration
 # of your application server (in terms of web settings, like paths etc).
+# Can not be set to false, commented away means that web will be configured.
 #web.noconfigure=true
 
 # If you enable this option, the 'ant web-configure' command will not set-up the
@@ -15,6 +16,7 @@
 # (otherwise you won't have access to the administration web interface). If you
 # wish to use the Unid functionality on the OCSP responder, make sure to also
 # have a look at the 'Configuring TLS on the Unid lookup server' how-to.
+# Can not be set to false, commented away means that web will be configured.
 # web.nosslconfigure=true
 
 # Password for java trust keystore (p12/truststore.jks). Default is changeit
