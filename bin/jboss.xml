@@ -170,7 +170,7 @@
             <chmod file="${jboss.farm.dir}/ejbca-mail-service.xml" perm="600"/>
         </target>
 
-	<target name="jee:web-configureJBoss5" depends="jee:check,detect-tomcatdir" unless="jboss7">
+	<target name="jee:web-configureJBoss5" depends="jee:check,detect-tomcatdir" unless="jboss7,web.noconfigure">
             <echo message="Using JBoss deploy directory ${jboss.farm.dir}"/>
             <!-- If the web.nosslconfigure option was provided, don't deploy the SSL by commenting it out from the deployed file. -->
             <condition property="definitions_away_begin" value="&#x3C;!--">
@@ -323,7 +323,7 @@
             </waitfor>
         </target>
 
-        <target name="jee:web-configureJBoss7" depends="jee:check,jee:assert-runJBoss7" if="jboss7">
+        <target name="jee:web-configureJBoss7" depends="jee:check,jee:assert-runJBoss7" if="jboss7" unless="web.noconfigure">
             <echo message="Setting-up web configuration for JBoss 7." />
             <antcall target="jee:web-configureJBoss7Cleanup" />
             <jboss:adm arg='/socket-binding-group=standard-sockets/socket-binding=http:add(port="${httpserver.pubhttp}")' />
