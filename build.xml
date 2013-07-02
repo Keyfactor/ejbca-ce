@@ -520,7 +520,7 @@
            	<sourcepath location="${ejbca.home}/modules/ejbca-xkms/src"/>
            	<sourcepath location="${ejbca.home}/modules/ejbca-ws-cli/src"/>
            	<sourcepath location="${ejbca.home}/modules/ejbca-ws-cli/src-gen"/>
-           	<sourcepath location="${ejbca.home}/modules/ejbca-ws/src"/>	<!-- ECA-1396 will probably change this.. -->
+           	<sourcepath location="${ejbca.home}/modules/ejbca-ws/src"/>	
            	<sourcepath location="${ejbca.home}/modules/ejbca-ejb-cli/src"/>
            	<sourcepath location="${ejbca.home}/modules/clientToolBox/src"/>
             <sourcepath location="${ejbca.home}/modules/validationtool/src"/>

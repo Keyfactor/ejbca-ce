@@ -132,11 +132,7 @@ public class PKCS10RequestMessage implements RequestMessage {
     	}
     }
 
-    private void init() {
-       if(p10msg == null) {
-           throw new IllegalStateException("Can't initialize a PKCS10RequestMessage without a p10msg set.");
-       }
-        
+    private void init() {        
         try {
             pkcs10 = new JcaPKCS10CertificationRequest(p10msg);
         } catch (IOException e) {
