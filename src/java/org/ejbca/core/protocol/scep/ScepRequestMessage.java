@@ -374,7 +374,6 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
         if (messageType == ScepRequestMessage.SCEP_TYPE_PKCSREQ) {
             ASN1Sequence seq = (ASN1Sequence) derobj;
             pkcs10 = new JcaPKCS10CertificationRequest(decBytes);
-                    //new PKCS10CertificationRequest(seq);
             if (log.isDebugEnabled()) {
             	log.debug("Successfully extracted PKCS10:"+new String(Base64.encode(pkcs10.getEncoded())));
             }
