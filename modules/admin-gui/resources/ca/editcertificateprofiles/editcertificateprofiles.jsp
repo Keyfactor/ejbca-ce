@@ -5,7 +5,7 @@
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.cesecore.certificates.certificateprofile.CertificateProfile, org.ejbca.ui.web.admin.cainterface.CertificateProfileDataHandler, 
                org.cesecore.certificates.certificateprofile.CertificateProfileExistsException, org.cesecore.certificates.certificateprofile.CertificateProfileConstants, org.ejbca.ui.web.CertificateView, org.cesecore.certificates.util.DNFieldExtractor, org.cesecore.certificates.util.DnComponents, 
                org.cesecore.certificates.certificate.certextensions.CertificateExtensionFactory, org.cesecore.certificates.certificate.certextensions.AvailableCertificateExtension, org.cesecore.certificates.certificateprofile.CertificatePolicy,
-               org.cesecore.certificates.ca.CAInfo, org.cesecore.util.ValidityDate, org.ejbca.ui.web.ParameterError, org.cesecore.certificates.util.AlgorithmConstants,
+               org.cesecore.certificates.ca.CAInfo, org.cesecore.util.ValidityDate, org.ejbca.ui.web.ParameterException, org.cesecore.certificates.util.AlgorithmConstants,
                org.cesecore.certificates.certificate.CertificateConstants, org.ejbca.core.model.authorization.AccessRulesConstants"%>
 <%@page import="org.cesecore.util.YearMonthDayTime"%>
 <html>
@@ -298,7 +298,7 @@
              if ( value!=null && value.length()>0 ){
                  final long validity = ValidityDate.encode(value);
                  if ( validity<0 ) {
-                     throw new ParameterError(ejbcawebbean.getText("INVALIDVALIDITYORCERTEND"));
+                     throw new ParameterException(ejbcawebbean.getText("INVALIDVALIDITYORCERTEND"));
                  }
                  certificateprofiledata.setValidity(validity);
              }
@@ -798,7 +798,7 @@
 		             	if (value.length() > 0) {
 		                 	final long validity = ValidityDate.encode(value);
 		                 	if (validity < 0) {
-		                 	    throw new ParameterError(ejbcawebbean.getText("INVALIDPRIVKEYSTARTOFFSET"));
+		                 	    throw new ParameterException(ejbcawebbean.getText("INVALIDPRIVKEYSTARTOFFSET"));
 		                 	}
 		                 	certificateprofiledata.setPrivateKeyUsagePeriodStartOffset(validity * 24 * 3600);
 		                }
@@ -819,7 +819,7 @@
 		             	if (value.length() > 0) {
 			                 final long validity = ValidityDate.encode(value);
 			                 if (validity < 0) {
-			                     throw new ParameterError(ejbcawebbean.getText("INVALIDPRIVKEYPERIOD"));
+			                     throw new ParameterException(ejbcawebbean.getText("INVALIDPRIVKEYPERIOD"));
 			                 }
 			                 certificateprofiledata.setPrivateKeyUsagePeriodLength(validity * 24 * 3600);
 		                }

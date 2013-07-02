@@ -60,7 +60,7 @@ org.cesecore.util.SimpleTime,
 org.cesecore.util.YearMonthDayTime,
 org.ejbca.util.CombineTime,
 org.cesecore.util.ValidityDate,
-org.ejbca.ui.web.ParameterError,
+org.ejbca.ui.web.ParameterException,
 org.cesecore.util.StringTools,
 org.cesecore.certificates.util.AlgorithmConstants,
 org.cesecore.certificates.util.AlgorithmTools,
@@ -399,7 +399,7 @@ java.security.InvalidAlgorithmParameterException
                         }
                         t = t.getCause();
                     }
-                } catch (ParameterError pe) {
+                } catch (ParameterException pe) {
                     errormessage = pe.getMessage();
                 } catch (EJBException ejbe) {
                     Exception ex = ejbe.getCausedByException();

@@ -169,13 +169,13 @@ public abstract class ProtectedData {
 		}
 		verifyProtection(prot, str, protectVersion, keyid);
 	}
-	void throwException( String data, String realprot, Exception cause) throws DatabaseProtectionError {
+	void throwException( String data, String realprot, Exception cause) throws DatabaseProtectionException {
 		final String msg = INTRES.getLocalizedMessage("databaseprotection.errorverify", data, realprot, this.getClass().getName(),getRowId());
 		log.error(msg);
 		if ( !ProtectedDataConfiguration.errorOnVerifyFail() ) {
 			return;
 		}
-		final DatabaseProtectionError dpe = new DatabaseProtectionError(msg, this);
+		final DatabaseProtectionException dpe = new DatabaseProtectionException(msg, this);
 		if ( cause!=null ) {
 			dpe.initCause(cause);
 		}
@@ -198,7 +198,7 @@ public abstract class ProtectedData {
 				result = false;
 				break;
 			}
-		} catch (Exception e) { // DatabaseProtectionError will not be caught since it is a RuntimeException
+		} catch (Exception e) { // DatabaseProtectionException will not be caught since it is a RuntimeException
 			throwException( data, realprot, e );
 			return;
 		}
@@ -240,7 +240,7 @@ public abstract class ProtectedData {
 				final String msg = INTRES.getLocalizedMessage("databaseprotection.notokenwithid", Integer.valueOf(keyid));
 				log.error(msg);
 				if (ProtectedDataConfiguration.errorOnVerifyFail()) {
-					throw new DatabaseProtectionError(msg);
+					throw new DatabaseProtectionException(msg);
 				}
 				return msg;
 			}
@@ -262,12 +262,12 @@ public abstract class ProtectedData {
 				return new String(Hex.encode(bytes));
 			}
 			default: {
-				throw new DatabaseProtectionError("Unknown protectVersion: " + protectVersion);
+				throw new DatabaseProtectionException("Unknown protectVersion: " + protectVersion);
 			}
 			}
-		} catch (Exception e) { // DatabaseProtectionError will not be caught since it is a RuntimeException
+		} catch (Exception e) { // DatabaseProtectionException will not be caught since it is a RuntimeException
 			log.error(e);
-			throw new DatabaseProtectionError(e);
+			throw new DatabaseProtectionException(e);
 		}
 	}
 }

@@ -65,7 +65,7 @@ public class ProtectedDataTest extends ProtectedData {
     	try {
     		verifyData(); // will throw if fails
     		assertTrue("Should throw", false);
-    	} catch (DatabaseProtectionError e) {
+    	} catch (DatabaseProtectionException e) {
     		// NOPMD
     	}
     }
@@ -99,7 +99,7 @@ public class ProtectedDataTest extends ProtectedData {
     	try {
     		verifyData(); // will throw if fails
     		assertTrue("Should throw", false);
-    	} catch (DatabaseProtectionError e) {
+    	} catch (DatabaseProtectionException e) {
     		// NOPMD
     	}
     }
@@ -135,7 +135,7 @@ public class ProtectedDataTest extends ProtectedData {
         try {
             verifyData(); // will throw if fails
             assertTrue("Should throw", false);
-        } catch (DatabaseProtectionError e) {
+        } catch (DatabaseProtectionException e) {
             // NOPMD
         }
     }
