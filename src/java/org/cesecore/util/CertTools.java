@@ -65,6 +65,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import org.apache.commons.lang.CharUtils;
 import org.apache.commons.lang.StringUtils;
@@ -111,7 +112,6 @@ import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.X509DefaultEntryConverter;
 import org.bouncycastle.asn1.x509.X509NameEntryConverter;
-import org.bouncycastle.asn1.x509.X509NameTokenizer;
 import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
@@ -370,7 +370,7 @@ public class CertTools {
     }
 
     // Remove extra '+' character escaping
-    private static String getUnescapedPlus(final String value) {
+    public static String getUnescapedPlus(final String value) {
         StringBuilder buf = new StringBuilder(value);
         int index = 0;
         int end = buf.length();
@@ -562,7 +562,7 @@ public class CertTools {
         if (dn != null) {
             String first = null;
             String last = null;
-            X509NameTokenizer xt = new X509NameTokenizer(dn);
+            StringTokenizer xt = new StringTokenizer(dn, ",");
             if (xt.hasMoreTokens()) {
                 first = xt.nextToken().trim();
             }
@@ -713,7 +713,7 @@ public class CertTools {
         ArrayList<String> parts = new ArrayList<String>();
         if (dn != null) {
             String o;
-            X509NameTokenizer xt = new X509NameTokenizer(dn);
+            StringTokenizer xt = new StringTokenizer(dn, ",");
             while (xt.hasMoreTokens()) {
                 o = xt.nextToken().trim();
                 // Try to see if it is a valid OID
@@ -2839,30 +2839,6 @@ public class CertTools {
             log.trace("<reverseDN: " + ret);
         }
         return ret;
-/*
-        
-        
-        String newdn = null;
-
-        if ((dn != null) && (cnpostfix != null)) {
-            String o;
-            X509NameTokenizer xt = new X509NameTokenizer(dn);
-            boolean alreadyreplaced = false;
-            while (xt.hasMoreTokens()) {
-                o = xt.nextToken().trim();
-                if (!alreadyreplaced && (o.length() > 3) && o.substring(0, 3).equalsIgnoreCase("cn=")) {
-                    o += cnpostfix;
-                    alreadyreplaced = true;
-                }
-                if (newdn == null) {
-                    newdn = o;
-                } else {
-                    newdn += "," + o;
-                }
-            }
-        }
-
-        return newdn;*/
     }
 
     /**
