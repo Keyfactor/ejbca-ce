@@ -20,7 +20,7 @@ package org.cesecore.dbprotection;
  *
  * @version $Id$
  */
-public class DatabaseProtectionError extends RuntimeException {
+public class DatabaseProtectionException extends RuntimeException {
     
     private static final long serialVersionUID = -1L;
 
@@ -31,7 +31,7 @@ public class DatabaseProtectionError extends RuntimeException {
      * Constructs an instance of exception with a simple details message
      * and the read entity causing the error.
      */
-    public DatabaseProtectionError(final String msg, final ProtectedData entity) {
+    public DatabaseProtectionException(final String msg, final ProtectedData entity) {
         super(msg);
         this.entity = entity;
     }
@@ -39,7 +39,7 @@ public class DatabaseProtectionError extends RuntimeException {
     /**
      * Constructs an instance of exception with a simple details message
      */
-    public DatabaseProtectionError(final String msg) {
+    public DatabaseProtectionException(final String msg) {
         super(msg);
         this.entity = null;
     }
@@ -47,7 +47,7 @@ public class DatabaseProtectionError extends RuntimeException {
     /**
      * Constructs an instance of exception wrapping the causing error
      */
-    public DatabaseProtectionError(final Exception e) {
+    public DatabaseProtectionException(final Exception e) {
         super(e);
         this.entity = null;
     }
