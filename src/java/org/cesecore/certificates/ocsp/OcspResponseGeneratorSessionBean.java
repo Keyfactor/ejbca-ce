@@ -99,6 +99,7 @@ import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -264,12 +265,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 final List<X509Certificate> caCertificateChain = new ArrayList<X509Certificate>();
                 try {
                     final CAInfo caInfo = caSession.getCAInfoInternal(caId.intValue());
-                    if (caInfo.getCAType() == CAInfo.CATYPE_CVC || caInfo.getCertificateChain() == null) {
+                    if (caInfo.getCAType() == CAInfo.CATYPE_CVC || caInfo.getStatus() != CAConstants.CA_ACTIVE) {
                         // Bravely ignore OCSP for CVC CAs or CA's that have no CA certificate (yet)
                         continue;
-                    } else if (caInfo.getCertificateChain().size() == 0) {
-                        continue;
-                    }
+                    } 
                     if (log.isDebugEnabled()) {
                         log.debug("Processing X509 CA " + caInfo.getName() + " (" + caInfo.getCAId() + ").");
                     }
