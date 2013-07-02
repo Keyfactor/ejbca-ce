@@ -597,9 +597,9 @@ public class IntegratedOcspResponseTest extends RoleUsingTestCase {
             catoken.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
             catoken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
 
-            // Create and active OSCP CA Service.
+            // Create an inactive OSCP CA Service.
 
-            X509CAInfo cainfo = new X509CAInfo("CN=TESTSIGNEDBYEXTERNAL", "TESTSIGNEDBYEXTERNAL", CAConstants.CA_ACTIVE, new Date(), "",
+            X509CAInfo cainfo = new X509CAInfo("CN=TESTSIGNEDBYEXTERNAL", "TESTSIGNEDBYEXTERNAL", CAConstants.CA_WAITING_CERTIFICATE_RESPONSE, new Date(), "",
                     CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 1000, null, // Expiretime
                     CAInfo.CATYPE_X509, CAInfo.SIGNEDBYEXTERNALCA, // Signed by the first TEST CA we created
                     (Collection<Certificate>) null, catoken, "TESTSIGNEDBYEXTERNAL", -1, null, null, // PolicyId
