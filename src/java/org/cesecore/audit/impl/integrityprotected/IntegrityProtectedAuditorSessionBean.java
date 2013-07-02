@@ -50,7 +50,7 @@ import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.dbprotection.DatabaseProtectionError;
+import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.util.ValidityDate;
 import org.cesecore.util.query.Criteria;
@@ -193,7 +193,7 @@ public class IntegrityProtectedAuditorSessionBean implements IntegrityProtectedA
         					((AuditLogExportReport) report).incExportCount();
 						}
 					}
-    			} catch (DatabaseProtectionError e) {
+    			} catch (DatabaseProtectionException e) {
     				// One of the FETCH_SIZE entries failed.. we have to go through line by line to find out witch one..
     				for (int i=0; i<fetchSize; i++) {
         				try {
@@ -206,7 +206,7 @@ public class IntegrityProtectedAuditorSessionBean implements IntegrityProtectedA
         						writeToExport(auditExporter, queryResult.get(0));
             					((AuditLogExportReport) report).incExportCount();
         					}
-        				} catch (DatabaseProtectionError e2) {
+        				} catch (DatabaseProtectionException e2) {
         					final AuditRecordData auditRecordData = (AuditRecordData) e2.getEntity();
         					// Add to report
         					report.warn(new AuditLogReportElem(lastSeqNumber.get().longValue(), auditRecordData.getSequenceNumber(), "log with sequence number after " + lastSeqNumber + " on nodeId " + nodeId + " could not be verified"));
@@ -255,10 +255,10 @@ public class IntegrityProtectedAuditorSessionBean implements IntegrityProtectedA
      * @param lastSeqNumber will be updated to the last sequence number processed in this subset
      * @param nodeId identifier of which node that claims to have written this data
      * @return the log entries we fetched from the database so the caller may export these
-     * @throws DatabaseProtectionError if the intregrity verification fails for one of the entries in the batch during fetch
+     * @throws DatabaseProtectionException if the intregrity verification fails for one of the entries in the batch during fetch
      */
-	private List<AuditRecordData> verifyLogsIntegritySubset(final int startIndex, final int max, final QueryCriteria queryCriteria, final AuditLogValidationReport report, final Holder<Long> lastSeqNumber, final String nodeId) throws DatabaseProtectionError {
-		final List<AuditRecordData> queryResult = internalSelectAuditLogs(startIndex, max, queryCriteria);	// Might throw DatabaseProtectionError
+	private List<AuditRecordData> verifyLogsIntegritySubset(final int startIndex, final int max, final QueryCriteria queryCriteria, final AuditLogValidationReport report, final Holder<Long> lastSeqNumber, final String nodeId) throws DatabaseProtectionException {
+		final List<AuditRecordData> queryResult = internalSelectAuditLogs(startIndex, max, queryCriteria);	// Might throw DatabaseProtectionException
 		// Loop through results and verify that the sequence order is correct
 		for (int i=0; i<queryResult.size(); i++) {
 			final long currentSeqNumber = queryResult.get(i).getSequenceNumber().longValue();

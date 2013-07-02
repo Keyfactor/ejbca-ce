@@ -109,7 +109,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.CertificateView;
-import org.ejbca.ui.web.ParameterError;
+import org.ejbca.ui.web.ParameterException;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.RevokedInfoView;
 import org.ejbca.ui.web.admin.cainterface.exception.ExcessiveResultsException;
@@ -875,7 +875,7 @@ public class CAInterfaceBean implements Serializable {
 
 	    final long validity = ValidityDate.encode(validityString);
 	    if (validity<0) {
-	        throw new ParameterError(ejbcawebbean.getText("INVALIDVALIDITYORCERTEND"));
+	        throw new ParameterException(ejbcawebbean.getText("INVALIDVALIDITYORCERTEND"));
 	    }
 
 	    if (catoken != null && catype != 0 && subjectdn != null && caName != null && signedby != 0) {
@@ -1115,7 +1115,7 @@ public class CAInterfaceBean implements Serializable {
         }
         final long validity = ValidityDate.encode(validityString);
         if (validity<0) {
-            throw new ParameterError(ejbcawebbean.getText("INVALIDVALIDITYORCERTEND"));
+            throw new ParameterException(ejbcawebbean.getText("INVALIDVALIDITYORCERTEND"));
         }
         if (caid != 0  && catype !=0) {
             // First common info for both X509 CAs and CVC CAs

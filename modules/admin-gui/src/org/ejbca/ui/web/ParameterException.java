@@ -18,14 +18,14 @@
  * @version $Id$
  *
  */
-public class ParameterError extends Exception {
+public class ParameterException extends Exception {
 
     private static final long serialVersionUID = -8861455593395367960L;
 
     /**
      * @param message string to be displayed on the error page of the admin web GUI.
      */
-    public ParameterError(String message) {
+    public ParameterException(String message) {
         super(message);
     }
 }

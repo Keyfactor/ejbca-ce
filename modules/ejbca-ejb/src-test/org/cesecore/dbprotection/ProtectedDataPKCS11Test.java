@@ -84,7 +84,7 @@ public class ProtectedDataPKCS11Test extends ProtectedData {
 	    	try {
 	    		verifyData(); // will throw if fails
 	    		assertTrue("Should throw", false);
-	    	} catch (DatabaseProtectionError e) {
+	    	} catch (DatabaseProtectionException e) {
 	    		// NOPMD
 	    	}	    	
 	    } finally {
