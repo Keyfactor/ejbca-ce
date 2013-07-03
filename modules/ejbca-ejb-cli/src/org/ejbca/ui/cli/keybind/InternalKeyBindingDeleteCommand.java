@@ -33,7 +33,7 @@ public class InternalKeyBindingDeleteCommand extends BaseInternalKeyBindingComma
     }
 
     @Override
-    public void executeCommand(Integer internalKeyBindinId, String[] args) throws AuthorizationDeniedException, Exception {
+    public void executeCommand(Integer internalKeyBindinId, String[] args) throws AuthorizationDeniedException {
         if (args.length < 2) {
             getLogger().info("Description: " + getDescription());
             getLogger().info("Usage: " + getCommand() + " <name>");

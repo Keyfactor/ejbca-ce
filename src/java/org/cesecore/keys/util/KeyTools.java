@@ -1555,7 +1555,11 @@ public final class KeyTools {
         }
     }
 
-    /** @return the ASN.1 encoded PublicKey as a Java Object */
+    /** 
+     * Get the ASN.1 encoded PublicKey as a Java PublicKey Object.
+     * @param the ASN.1 encoded PublicKey
+     * @return the ASN.1 encoded PublicKey as a Java Object
+     */
     public static PublicKey getPublicKeyFromBytes(byte[] asn1EncodedPublicKey) {
         PublicKey pubKey = null;
         final ASN1InputStream in = new ASN1InputStream(asn1EncodedPublicKey);
