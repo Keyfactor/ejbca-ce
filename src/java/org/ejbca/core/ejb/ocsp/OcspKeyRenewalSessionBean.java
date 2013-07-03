@@ -13,7 +13,6 @@
 package org.ejbca.core.ejb.ocsp;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.InvalidAlgorithmParameterException;
@@ -192,10 +191,6 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
                         String msg = intres.getLocalizedMessage("ocsp.rekey.failed.unknown.reason", target, e.getLocalizedMessage());
                         log.error(msg, e);
                         continue;
-                    } catch (IOException e) {
-                        String msg = intres.getLocalizedMessage("ocsp.rekey.failed.unknown.reason", target, e.getLocalizedMessage());
-                        log.error(msg, e);
-                        continue;
                     }
                 }
             }
@@ -217,15 +212,16 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
     }
 
     /**
+     * Generate a new key pair and request a new certificate for this key pair using EJBCA WS.
      * 
-     * @throws InvalidKeyException if the public key in the tokenAndChain can not be used to verify a string signed by the private key, because the key is wrong or 
+     * @param ejbcaWS a reference to the remote EJBCA WS
+     * @param ocspSigningCacheEntry the cached OCSP signing entry backed by an OcspKeyBinding
+     * @throws InvalidKeyException if the new public key can not be used to verify a string signed by the private key, because the key is wrong or 
      * the signature operation fails for other reasons such as a NoSuchAlgorithmException or SignatureException.
      * @throws CryptoTokenOfflineException if Crypto Token is not available or connected, or key with alias does not exist.
      * @throws KeyRenewalFailedException if any error occurs during signing
-     * @throws IOException
      */
-    private void renewKeyStore(EjbcaWS ejbcaWS, OcspSigningCacheEntry ocspSigningCacheEntry) throws InvalidKeyException, CryptoTokenOfflineException, KeyRenewalFailedException,
-            IOException {
+    private void renewKeyStore(EjbcaWS ejbcaWS, OcspSigningCacheEntry ocspSigningCacheEntry) throws InvalidKeyException, CryptoTokenOfflineException, KeyRenewalFailedException {
         final X509Certificate ocspSigningCertificate = ocspSigningCacheEntry.getOcspSigningCertificate();
         final X500Principal src = ocspSigningCertificate.getSubjectX500Principal();
         //Firstly, generate a new key pair and retrieve the public and private keys for future use.                
@@ -349,11 +345,10 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
      * 
      * @return a certificate that has been signed by the CA. 
      * @throws KeyRenewalFailedException if any error occurs during signing
-     * @throws IOException 
      * @throws CryptoTokenOfflineException 
      */
     @SuppressWarnings("unchecked")
-    private X509Certificate signCertificateByCa(EjbcaWS ejbcaWS, OcspSigningCacheEntry ocspSigningCacheEntry) throws KeyRenewalFailedException, IOException,
+    private X509Certificate signCertificateByCa(EjbcaWS ejbcaWS, OcspSigningCacheEntry ocspSigningCacheEntry) throws KeyRenewalFailedException,
             CryptoTokenOfflineException {
         /* Construct a certification request in order to have the new keystore certified by the CA. 
          */
@@ -465,7 +460,7 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
                     break;
                 }
             } catch (AuthorizationDeniedException e) {
-                throw new RuntimeException(e);  // TODO: We should have an unauthenticated local call for this
+                throw new RuntimeException(e);
             }
         }
         if (authenticationKeyBinding == null) {

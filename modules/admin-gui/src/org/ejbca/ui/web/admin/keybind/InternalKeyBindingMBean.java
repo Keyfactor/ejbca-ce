@@ -36,7 +36,6 @@ import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -44,6 +43,7 @@ import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.token.CryptoTokenInfo;
@@ -125,7 +125,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     }
     
     private static final long serialVersionUID = 1L;
-    private static final Logger log = Logger.getLogger(InternalKeyBindingMBean.class);
+    //private static final Logger log = Logger.getLogger(InternalKeyBindingMBean.class);
 
     private final CryptoTokenManagementSessionLocal cryptoTokenManagementSession = getEjbcaWebBean().getEjb().getCryptoTokenManagementSession();
     private final InternalKeyBindingMgmtSessionLocal internalKeyBindingSession = getEjbcaWebBean().getEjb().getInternalKeyBindingMgmtSession();
@@ -164,7 +164,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
 
     public List<String> getAvailableKeyBindingTypes() {
         final List<String> availableKeyBindingTypes = new ArrayList<String>();
-        for (String current : internalKeyBindingSession.getAvailableTypesAndProperties(authenticationToken).keySet()) {
+        for (String current : internalKeyBindingSession.getAvailableTypesAndProperties().keySet()) {
             availableKeyBindingTypes.add(current);
         }
         return availableKeyBindingTypes;
@@ -302,8 +302,6 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         } catch (AuthorizationDeniedException e) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
         } catch (CertificateImportException e) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
-        } catch (CryptoTokenOfflineException e) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
         }
         flushListCaches();
@@ -471,7 +469,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             getAvailableCryptoTokens();
             getAvailableKeyPairAliases();
             getAvailableSignatureAlgorithms();
-            internalKeyBindingPropertyList = new ListDataModel(internalKeyBindingSession.getAvailableTypesAndProperties(authenticationToken).get(getSelectedInternalKeyBindingType()));
+            internalKeyBindingPropertyList = new ListDataModel(internalKeyBindingSession.getAvailableTypesAndProperties().get(getSelectedInternalKeyBindingType()));
         } else {
             // Load existing
             final int internalKeyBindingId = Integer.parseInt(currentInternalKeyBindingId);
@@ -817,6 +815,8 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         } catch (InternalKeyBindingNameInUseException e) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
         } catch (CryptoTokenOfflineException e) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
+        } catch (InvalidAlgorithmException e) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
         }
     }

@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.ejb.keybind.impl.AuthenticationKeyBinding;
 import org.ejbca.core.ejb.keybind.impl.OcspKeyBinding;
 
@@ -43,9 +45,22 @@ public enum InternalKeyBindingFactory {
         addImplementation(AuthenticationKeyBinding.class);
         // Use ServiceLoader framework to find additional available implementations
         // We add these after the built in ones, so the built in implementations can be overridden
-        // TODO ...
+        // TODO the above when we need to
     }
 
+    /**
+     * Creates a new InternalKeyBinding instance.
+     * 
+     * @param type is the alias of the registered InternalKeyBinding's type
+     * @param id is the unique identifier of this InternalKeyBinding
+     * @param name is the unique name that this InternalKeyBinding will be given
+     * @param status the initial status to give the InternalKeyBinding
+     * @param certificateId is the certificate fingerprint matching the mapped key pair or null
+     * @param cryptoTokenId is the CryptoToken id of the container where the mapped key pair is stored
+     * @param keyPairAlias is the alias of the mapped key pair in the specified CryptoToken (may not be null)
+     * @param dataMap is a Map of implementation specific properties for this type of IntenalKeyBinding
+     * @return a new InternalKeyBinding instance
+     */
     public InternalKeyBinding create(final String type, final int id, final String name, final InternalKeyBindingStatus status, final String certificateId,
             final int cryptoTokenId, final String keyPairAlias, final LinkedHashMap<Object, Object> dataMap) {
         final String implementationClassName = aliasToImplementationMap.get(type);

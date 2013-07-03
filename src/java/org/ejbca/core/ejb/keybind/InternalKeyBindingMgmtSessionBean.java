@@ -52,6 +52,7 @@ import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
@@ -106,7 +107,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     @SuppressWarnings("unchecked")
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public Map<String, List<InternalKeyBindingProperty<? extends Serializable>>> getAvailableTypesAndProperties(AuthenticationToken authenticationToken) {
+    public Map<String, List<InternalKeyBindingProperty<? extends Serializable>>> getAvailableTypesAndProperties() {
         // Perform deep cloning (this will work since we know that the property types extend Serializable)
         final Map<String, List<InternalKeyBindingProperty<? extends Serializable>>> clone;
         try {
@@ -117,7 +118,9 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             final ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(baos.toByteArray()));
             clone = (Map<String, List<InternalKeyBindingProperty<? extends Serializable>>>) ois.readObject();
             ois.close();
-        } catch (Exception e) {
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
         return clone;
@@ -196,14 +199,14 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     @Override
     public int createInternalKeyBinding(AuthenticationToken authenticationToken, String type, String name, InternalKeyBindingStatus status, String certificateId,
             int cryptoTokenId, String keyPairAlias, String signatureAlgorithm, Map<Object, Object> dataMap) throws AuthorizationDeniedException, CryptoTokenOfflineException,
-            InternalKeyBindingNameInUseException {
+            InternalKeyBindingNameInUseException, InvalidAlgorithmException {
         if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.MODIFY.resource(),
                 CryptoTokenRules.USE.resource() + "/" + cryptoTokenId)) {
             final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.MODIFY.resource(), authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
         }
         if (!AlgorithmTools.isSigAlgEnabled(signatureAlgorithm)) {
-            throw new AuthorizationDeniedException("Signature algorithm " + signatureAlgorithm + " is not available.");
+            throw new InvalidAlgorithmException("Signature algorithm " + signatureAlgorithm + " is not available.");
         }
         // Convert supplied properties using a prefix to ensure that the caller can't mess with internal ones
         final LinkedHashMap<Object,Object> initDataMap = new LinkedHashMap<Object,Object>();
