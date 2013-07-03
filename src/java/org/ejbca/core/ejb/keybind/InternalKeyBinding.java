@@ -32,7 +32,7 @@ public interface InternalKeyBinding extends Serializable {
     /** Return the non-changeable alias for this implementation. E.g. "DummyKeyBinding". */
     String getImplementationAlias();
     
-    /** @return the next key pair's alias to be used */
+    /** @return the next key pair's alias to be used or null of there currently is no mapped next key */
     String getNextKeyPairAlias();
 
     /** Set the next key pair's alias to be used */

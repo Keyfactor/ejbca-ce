@@ -75,7 +75,7 @@ public abstract class BaseInternalKeyBindingCommand extends BaseCommand {
     /** Lists available types and their properties */
     protected void showTypesProperties() {
         final InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = ejb.getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
-        Map<String, List<InternalKeyBindingProperty<? extends Serializable>>> typesAndProperties = internalKeyBindingMgmtSession.getAvailableTypesAndProperties(getAdmin());
+        Map<String, List<InternalKeyBindingProperty<? extends Serializable>>> typesAndProperties = internalKeyBindingMgmtSession.getAvailableTypesAndProperties();
         getLogger().info("Registered implementation types and implemention specific properties:");
         for (Entry<String, List<InternalKeyBindingProperty<? extends Serializable>>> entry : typesAndProperties.entrySet()) {
             final StringBuilder sb = new StringBuilder();

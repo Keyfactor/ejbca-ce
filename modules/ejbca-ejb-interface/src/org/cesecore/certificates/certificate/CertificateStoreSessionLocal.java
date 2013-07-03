@@ -24,6 +24,7 @@ import javax.ejb.Local;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.request.RequestMessage;
+import org.cesecore.keys.util.KeyTools;
 
 /**
  * Local interface for CertificateStoreSession.
@@ -105,10 +106,16 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      */
     boolean isOnlyUsernameForSubjectKeyIdOrDnAndIssuerDN(String issuerDN, byte[] subjectKeyId, String subjectDN, String username);
 
-    /** @return null or the certificate which is active, matches the argument and has the latest updateTime */
+    /**
+     * Find the most recently issued/updated certificate for a public key
+     * 
+     * @param subjectKeyId Is the ASN.1 SubjectKeyIdentifier of the public key as a byte array
+     * @return null or the certificate which is active, matches the argument and has the latest updateTime
+     * @see org.cesecore.keys.util.KeyTools#createSubjectKeyId(java.security.PublicKey)
+     */
     Certificate findMostRecentlyUpdatedActiveCertificate(byte[] subjectKeyId);
 
-    /** @return the username or null if no row was found for this fingerprint */
+    /** @return the username or null if no row was found for this certificate fingerprint */
     String findUsernameByFingerprint(String fingerprint);
 
     /** 
