@@ -576,7 +576,13 @@ public class NestedMessageContentTest extends CmpTestCase {
         // Send request and receive response
         final byte[] resp = sendCmpHttp(ba, 200);
 
-        PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(resp)).readObject());
+        PKIMessage respObject = null;
+        ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
+        try {
+            respObject = PKIMessage.getInstance(asn1InputStream.readObject());
+        } finally {
+            asn1InputStream.close();
+        }
         assertNotNull(respObject);
 
         PKIBody body = respObject.getBody();
@@ -669,7 +675,13 @@ public class NestedMessageContentTest extends CmpTestCase {
         // Send request and receive response
         final byte[] resp = sendCmpHttp(ba, 200);
 
-        PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(resp)).readObject());
+        PKIMessage respObject = null;
+        ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
+        try {
+            respObject = PKIMessage.getInstance(asn1InputStream.readObject());
+        } finally {
+            asn1InputStream.close();
+        }
         assertNotNull(respObject);
 
         PKIBody body = respObject.getBody();
@@ -742,7 +754,13 @@ public class NestedMessageContentTest extends CmpTestCase {
         
         checkCmpResponseGeneral(resp, issuerDN, reqSubjectDN, cacert, myPKIMessage.getHeader().getSenderNonce().getOctets(), 
                             myPKIMessage.getHeader().getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(resp)).readObject());
+        PKIMessage respObject = null;
+        ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
+        try {
+            respObject = PKIMessage.getInstance(asn1InputStream.readObject());
+        } finally {
+            asn1InputStream.close();
+        }
         assertNotNull(respObject);
 
         PKIBody body = respObject.getBody();
@@ -807,7 +825,13 @@ public class NestedMessageContentTest extends CmpTestCase {
         
         checkCmpResponseGeneral(resp, issuerDN, reqSubjectDN, cacert, myPKIMessage.getHeader().getSenderNonce().getOctets(), 
                             myPKIMessage.getHeader().getTransactionID().getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(resp)).readObject());
+        PKIMessage respObject = null;
+        ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
+        try {
+            respObject = PKIMessage.getInstance(asn1InputStream.readObject());
+        } finally {
+            asn1InputStream.close();
+        }
         assertNotNull(respObject);
 
         PKIBody body = respObject.getBody();

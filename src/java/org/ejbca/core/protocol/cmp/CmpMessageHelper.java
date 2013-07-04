@@ -143,13 +143,18 @@ public class CmpMessageHelper {
     	if (LOG.isTraceEnabled()) {
     		LOG.trace(">signPKIMessage()");
     	}
-		CMPCertificate signStruct = CMPCertificate.getInstance(new ASN1InputStream(new ByteArrayInputStream(signCert.getEncoded())).readObject());
-		myPKIMessage = CmpMessageHelper.buildCertBasedPKIProtection( myPKIMessage, signStruct, signKey, digestAlg, provider);
-    	if (LOG.isTraceEnabled()) {
-    		LOG.trace("<signPKIMessage()");
-    	}
-		// Return response as byte array 
-		return CmpMessageHelper.pkiMessageToByteArray(myPKIMessage);
+    	ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(signCert.getEncoded()));
+        try {
+            CMPCertificate signStruct = CMPCertificate.getInstance(asn1InputStream.readObject());
+            myPKIMessage = CmpMessageHelper.buildCertBasedPKIProtection(myPKIMessage, signStruct, signKey, digestAlg, provider);
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("<signPKIMessage()");
+            }
+            // Return response as byte array 
+            return CmpMessageHelper.pkiMessageToByteArray(myPKIMessage);
+        } finally {
+            asn1InputStream.close();
+        }
     }
     
 	public static PKIMessage buildCertBasedPKIProtection( PKIMessage pKIMessage, CMPCertificate cert, PrivateKey key, String digestAlg, String provider )

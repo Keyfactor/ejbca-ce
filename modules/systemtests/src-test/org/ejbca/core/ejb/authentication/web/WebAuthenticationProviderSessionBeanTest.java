@@ -283,16 +283,19 @@ public class WebAuthenticationProviderSessionBeanTest {
         // Subject and Authority key identifier is always non-critical and MUST be present for certificates to verify in Firefox.
         try {
             if (isCA) {
-                SubjectPublicKeyInfo spki = new SubjectPublicKeyInfo((ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(
-                        publicKey.getEncoded())).readObject());
-                SubjectKeyIdentifier ski = new SubjectKeyIdentifier(spki);
-
-                SubjectPublicKeyInfo apki = new SubjectPublicKeyInfo((ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(
-                        publicKey.getEncoded())).readObject());
-                AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(apki);
-
-                certbuilder.addExtension(Extension.subjectKeyIdentifier, false, ski);
-                certbuilder.addExtension(Extension.authorityKeyIdentifier, false, aki);
+                ASN1InputStream spkiAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(publicKey.getEncoded()));
+                ASN1InputStream apkiAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(publicKey.getEncoded()));
+                try {
+                    SubjectPublicKeyInfo spki = new SubjectPublicKeyInfo((ASN1Sequence) spkiAsn1InputStream.readObject());
+                    SubjectKeyIdentifier ski = new SubjectKeyIdentifier(spki);
+                    SubjectPublicKeyInfo apki = new SubjectPublicKeyInfo((ASN1Sequence) apkiAsn1InputStream.readObject());
+                    AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(apki);
+                    certbuilder.addExtension(Extension.subjectKeyIdentifier, false, ski);
+                    certbuilder.addExtension(Extension.authorityKeyIdentifier, false, aki);
+                } finally {
+                    spkiAsn1InputStream.close();
+                    apkiAsn1InputStream.close();
+                }
             }
         } catch (IOException e) { // do nothing
         }
