@@ -341,16 +341,16 @@ ant jbosslog4jsafer
 <b>2.</b> Copy jbosslog4jsafer.jar from the dist directory to your JBoss Servers lib directory. For example:
 </p>
 <source>
-cp dist/jbosslog4jsafer.jar /home/jboss/jboss-4.2.2.GA/server/default/lib/
+cp dist/jbosslog4jsafer.jar /home/jboss/jboss-5.1.0.GA/server/default/lib/
 </source>
 <p>
 <b>3.</b> Set  'ocsp.log-safer = true' in ocsp.properties
 </p><p>
-<b>4.</b> Modify your jboss-log4j.xml file to use the SaferDailyRollingFileAppender and ProbeableErrorHandler. For example:
+<b>4.</b> Modify your jboss-log4j.xml file to use the SaferDailyRollingFileAppender and ProbableErrorHandler. For example:
 </p>
 <source>
 	&lt;appender name="OCSPTRANSACTION" class="org.cesecore.util.log.SaferDailyRollingFileAppender">
-		&lt;errorHandler class="org.ejbca.appserver.jboss.ProbeableErrorHandler" />
+		&lt;errorHandler class="org.cesecore.util.log.ProbableErrorHandler" />
 		&lt;param name="File" value="${jboss.server.log.dir}/transactions.log" />
 		&lt;param name="Append" value="true" />
 		
@@ -362,7 +362,7 @@ cp dist/jbosslog4jsafer.jar /home/jboss/jboss-4.2.2.GA/server/default/lib/
 		&lt;/layout>
 	&lt;/appender>
 	&lt;appender name="OCSPAUDIT" class="org.cesecore.util.log.SaferDailyRollingFileAppender">
-		&lt;errorHandler class="org.ejbca.appserver.jboss.ProbeableErrorHandler" />
+		&lt;errorHandler class="org.cesecore.util.log.ProbableErrorHandler" />
 		&lt;param name="File" value="${jboss.server.log.dir}/audit.log" />
 		&lt;param name="Append" value="true" />
 
