@@ -10,6 +10,7 @@
 	<property name="build-jbosslogsigning.dir" location="${this.dir}/build-jbosslogsigning"/>
 	<property name="build-jbosslog4jsafer.dir" location="${this.dir}/build-jbosslog4jsafer"/>
 	<property name="src.dir" location="${this.dir}/src"/>
+	<property name="ejbcasrc.dir" location="${ejbca.home}/src/java"/>
 
 	<path id="compile-jbosslogsigning.classpath">
 		<path refid="lib.jboss-log4j.classpath"/>
@@ -65,7 +66,7 @@
 
 	<target name="compile-jbosslog4jsafer">
     	<mkdir dir="${build-jbosslog4jsafer.dir}" />
-        <javac srcdir="${src.dir}" destdir="${build-jbosslog4jsafer.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}" classpathref="compile-jbosslog4jsafer.classpath">
+        <javac srcdir="${ejbcasrc.dir}" destdir="${build-jbosslog4jsafer.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}" classpathref="compile-jbosslog4jsafer.classpath">
         	<sourcepath location="${ejbca.home}/src/java"/>
 			<include name="org/cesecore/util/log/SaferDailyRollingFileAppender.java"/>
 			<include name="org/cesecore/util/log/ProbableErrorHandler.java"/>
