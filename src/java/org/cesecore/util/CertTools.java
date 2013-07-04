@@ -1625,10 +1625,19 @@ public class CertTools {
             if (extvalue == null) {
                 return null;
             }
-            ASN1OctetString str = ASN1OctetString.getInstance(new ASN1InputStream(new ByteArrayInputStream(extvalue)).readObject());
-            SubjectKeyIdentifier keyId = SubjectKeyIdentifier
-                    .getInstance(new ASN1InputStream(new ByteArrayInputStream(str.getOctets())).readObject());
-            return keyId.getKeyIdentifier();
+            ASN1InputStream extvalueAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(extvalue));
+            try {
+                ASN1OctetString str = ASN1OctetString.getInstance(extvalueAsn1InputStream.readObject());
+                ASN1InputStream strAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(str.getOctets()));
+                try {
+                    SubjectKeyIdentifier keyId = SubjectKeyIdentifier.getInstance(strAsn1InputStream.readObject());
+                    return keyId.getKeyIdentifier();
+                } finally {
+                    strAsn1InputStream.close();
+                }
+            } finally {
+                extvalueAsn1InputStream.close();
+            }
         }
         return null;
     } // getSubjectKeyId
@@ -1649,14 +1658,24 @@ public class CertTools {
             if (extvalue == null) {
                 return null;
             }
-            DEROctetString oct = (DEROctetString) (new ASN1InputStream(new ByteArrayInputStream(extvalue)).readObject());
-            ASN1Sequence seq = (ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(oct.getOctets())).readObject();
-            // Check the size so we don't ArrayIndexOutOfBounds
-            if (seq.size() < pos + 1) {
-                return null;
+            ASN1InputStream extAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(extvalue));
+            try {
+                DEROctetString oct = (DEROctetString) (extAsn1InputStream.readObject());
+                ASN1InputStream octAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(oct.getOctets()));
+                try {
+                    ASN1Sequence seq = (ASN1Sequence) octAsn1InputStream.readObject();
+                    // Check the size so we don't ArrayIndexOutOfBounds
+                    if (seq.size() < pos + 1) {
+                        return null;
+                    }
+                    PolicyInformation pol = PolicyInformation.getInstance((ASN1Sequence) seq.getObjectAt(pos));
+                    ret = pol.getPolicyIdentifier().getId();
+                } finally {
+                    octAsn1InputStream.close();
+                }
+            } finally {
+                extAsn1InputStream.close();
             }
-            PolicyInformation pol = PolicyInformation.getInstance((ASN1Sequence) seq.getObjectAt(pos));
-            ret = pol.getPolicyIdentifier().getId();
         }
         return ret;
     } // getCertificatePolicyId
@@ -2549,11 +2568,20 @@ public class CertTools {
         final byte[] extvalue = cert.getExtensionValue(Extension.privateKeyUsagePeriod.getId());
         if ((extvalue != null) && (extvalue.length > 0)) {
             if (log.isTraceEnabled()) {
-                log.trace("Found a PrivateKeyUsagePeriod in the certificate with subject: "+cert.getSubjectDN().toString());
+                log.trace("Found a PrivateKeyUsagePeriod in the certificate with subject: " + cert.getSubjectDN().toString());
             }
-            final DEROctetString oct = (DEROctetString) (new ASN1InputStream(new ByteArrayInputStream(extvalue)).readObject());
-            res = PrivateKeyUsagePeriod.
-                    getInstance((ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(oct.getOctets())).readObject());
+            ASN1InputStream extAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(extvalue));
+            try {
+                final DEROctetString oct = (DEROctetString) (extAsn1InputStream.readObject());
+                ASN1InputStream octAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(oct.getOctets()));
+                try {
+                    res = PrivateKeyUsagePeriod.getInstance((ASN1Sequence) octAsn1InputStream.readObject());
+                } finally {
+                    octAsn1InputStream.close();
+                }
+            } finally {
+                extAsn1InputStream.close();
+            }
         }
         return res;
     }

@@ -211,7 +211,13 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
 
     @Test
     public void test03BlueXCrmf() throws Exception {
-        PKIMessage req = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(bluexir)).readObject());
+        PKIMessage req = null;
+        ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(bluexir));
+        try {
+            req = PKIMessage.getInstance(asn1InputStream.readObject());
+        } finally {
+            asn1InputStream.close();
+        }
         byte[] resp = sendCmpTcp(bluexir, 5);
         userDN = "CN=Some Common Name"; // we know what it is in this request...
         assertNotNull(resp);
@@ -270,7 +276,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
     @Test
     public void test06DnEmail() throws Exception {
        try {
-        String subjectDN = "C=SE,CN=Göran Strömförare,E=adam@eva.se";
+        String subjectDN = "C=SE,CN=G��ran Str��mf��rare,E=adam@eva.se";
         // createCmpUser("cmptest2", subjectDN);
 
         byte[] nonce = CmpMessageHelper.createSenderNonce();
@@ -304,7 +310,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         checkCmpResponseGeneral(resp, issuerDN, subjectDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         checkCmpPKIConfirmMessage(subjectDN, cacert, resp);
        } finally {
-           endEntityManagementSession.deleteUser(admin, "Göran Strömförare");
+           endEntityManagementSession.deleteUser(admin, "G��ran Str��mf��rare");
        }
     }
 

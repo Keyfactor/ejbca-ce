@@ -922,10 +922,15 @@ public class X509CA extends CA implements Serializable {
              
         // Authority key identifier
         if (getUseAuthorityKeyIdentifier() == true) {      
-            SubjectPublicKeyInfo apki = new SubjectPublicKeyInfo((ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(
-                    cryptoToken.getPublicKey(getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN)).getEncoded())).readObject());
-            AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(apki);
-            crlgen.addExtension(Extension.authorityKeyIdentifier, getAuthorityKeyIdentifierCritical(), aki);
+            ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(cryptoToken.getPublicKey(
+                    getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN)).getEncoded()));
+            try {
+                SubjectPublicKeyInfo apki = new SubjectPublicKeyInfo((ASN1Sequence) asn1InputStream.readObject());
+                AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(apki);
+                crlgen.addExtension(Extension.authorityKeyIdentifier, getAuthorityKeyIdentifierCritical(), aki);
+            } finally {
+                asn1InputStream.close();
+            }
         }
         
         // Authority Information Access  

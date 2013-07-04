@@ -24,7 +24,6 @@ import javax.ejb.Local;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.request.RequestMessage;
-import org.cesecore.keys.util.KeyTools;
 
 /**
  * Local interface for CertificateStoreSession.
