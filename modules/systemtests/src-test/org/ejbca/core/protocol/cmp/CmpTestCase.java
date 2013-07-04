@@ -553,7 +553,13 @@ public abstract class CmpTestCase extends CaTestCase {
         //
         // Parse response message
         //
-        PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(retMsg)).readObject());
+        ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(retMsg));
+        PKIMessage respObject = null;
+        try {
+            respObject = PKIMessage.getInstance(asn1InputStream.readObject());
+        } finally {
+            asn1InputStream.close();
+        }
         assertNotNull(respObject);
 
         // The signer, i.e. the CA, check it's the right CA
@@ -587,7 +593,7 @@ public abstract class CmpTestCase extends CaTestCase {
         assertEquals(header.getSender().getTagNo(), 4);
         
         X500Name expissuer = new X500Name(issuerDN);
-        X500Name actissuer = new X500Name(header.getSender().getName().toString());
+        X500Name actissuer = new X500Name(header.getSender().getName().toString());     
         assertEquals(expissuer, actissuer);
         if (signed) {
             // Verify the signature
@@ -778,7 +784,13 @@ public abstract class CmpTestCase extends CaTestCase {
         //
         // Parse response message
         //
-        PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(retMsg)).readObject());
+        PKIMessage respObject = null;
+        ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(retMsg));
+        try {
+            respObject = PKIMessage.getInstance(asn1InputStream.readObject());
+        } finally {
+            asn1InputStream.close();
+        }
         assertNotNull(respObject);
 
         PKIBody body = respObject.getBody();
@@ -809,7 +821,13 @@ public abstract class CmpTestCase extends CaTestCase {
         //
         // Parse response message
         //
-        PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(retMsg)).readObject());
+        PKIMessage respObject = null;
+        ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(retMsg));
+        try {
+            respObject = PKIMessage.getInstance(asn1InputStream.readObject());
+        } finally {
+            asn1InputStream.close();
+        }
         assertNotNull(respObject);
         PKIHeader header = respObject.getHeader();
         assertEquals(header.getSender().getTagNo(), 4);
@@ -835,7 +853,13 @@ public abstract class CmpTestCase extends CaTestCase {
         //
         // Parse response message
         //
-        PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(retMsg)).readObject());
+        PKIMessage respObject = null;
+        ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(retMsg));
+        try {
+            respObject = PKIMessage.getInstance(asn1InputStream.readObject());
+        } finally {
+            asn1InputStream.close();
+        }
         assertNotNull(respObject);
         PKIHeader header = respObject.getHeader();
         assertEquals(header.getSender().getTagNo(), 4);
@@ -874,7 +898,13 @@ public abstract class CmpTestCase extends CaTestCase {
         //
         // Parse response message
         //
-        final PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(retMsg)).readObject());
+        PKIMessage respObject = null;
+        ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(retMsg));
+        try {
+            respObject = PKIMessage.getInstance(asn1InputStream.readObject());
+        } finally {
+            asn1InputStream.close();
+        }
         assertNotNull(respObject);
 
         final PKIBody body = respObject.getBody();
@@ -920,7 +950,13 @@ public abstract class CmpTestCase extends CaTestCase {
         //
         // Parse response message
         //
-        PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(retMsg)).readObject());
+        PKIMessage respObject = null;
+        ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(retMsg));
+        try {
+            respObject = PKIMessage.getInstance(asn1InputStream.readObject());
+        } finally {
+            asn1InputStream.close();
+        }
         assertNotNull(respObject);
         PKIHeader header = respObject.getHeader();
         assertEquals(header.getSender().getTagNo(), 4);

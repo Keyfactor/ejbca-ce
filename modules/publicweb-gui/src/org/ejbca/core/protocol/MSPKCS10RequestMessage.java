@@ -154,8 +154,13 @@ public class MSPKCS10RequestMessage extends PKCS10RequestMessage {
         	if (szOID_ENROLL_CERTTYPE_EXTENSION.equals(oid.getId())) {
         		try {
         			DEROctetString dos = (DEROctetString) seq2.getObjectAt(1);
-        			ASN1String derobj = (ASN1String) new ASN1InputStream(new ByteArrayInputStream(dos.getOctets())).readObject();
-        			return derobj.getString();
+        			ASN1InputStream dosAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(dos.getOctets()));
+                    try {
+                        ASN1String derobj = (ASN1String) dosAsn1InputStream.readObject();
+                        return derobj.getString();
+                    } finally {
+                        dosAsn1InputStream.close();
+                    }
         		} catch (IOException e) {
         			log.error(e);
         		}

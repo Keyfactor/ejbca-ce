@@ -200,7 +200,13 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
         }
         // Parse and verify the integrity of the PKIOperation message PKCS#7
         /* If this would have been done using the newer CMS it would have made me so much happier... */
-        ASN1Sequence seq = (ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(scepmsg)).readObject();
+        ASN1InputStream seqAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(scepmsg));
+        ASN1Sequence seq = null;
+        try {
+            seq = (ASN1Sequence) seqAsn1InputStream.readObject();
+        } finally {
+            seqAsn1InputStream.close();
+        }
         ContentInfo ci = new ContentInfo(seq);
         String ctoid = ci.getContentType().getId();
 
@@ -290,7 +296,13 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
                     if (log.isDebugEnabled()) {
                     	log.debug("envelopedData is " + content.getOctets().length + " bytes.");
                     }
-                    ASN1Sequence seq1 = (ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(content.getOctets())).readObject();
+                    ASN1InputStream seq1Asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(content.getOctets()));
+                    ASN1Sequence seq1 = null;
+                    try {
+                        seq1 = (ASN1Sequence) seq1Asn1InputStream.readObject();
+                    } finally {
+                        seq1Asn1InputStream.close();
+                    }
                     envEncData = new ContentInfo(seq1);
                     ctoid = envEncData.getContentType().getId();
 
@@ -370,7 +382,13 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
             break;
         }
 
-        ASN1Primitive derobj = new ASN1InputStream(new ByteArrayInputStream(decBytes)).readObject();
+        ASN1InputStream derAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(decBytes));
+        ASN1Primitive derobj = null;
+        try {
+            derobj = derAsn1InputStream.readObject();
+        } finally {
+            derAsn1InputStream.close();
+        }
         if (messageType == ScepRequestMessage.SCEP_TYPE_PKCSREQ) {
             ASN1Sequence seq = (ASN1Sequence) derobj;
             pkcs10 = new JcaPKCS10CertificationRequest(decBytes);

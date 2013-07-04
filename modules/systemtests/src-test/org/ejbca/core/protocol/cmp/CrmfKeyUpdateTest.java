@@ -324,7 +324,13 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] resp = sendCmpHttp(ba, 200);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         
-        PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(resp)).readObject());
+        PKIMessage respObject = null;
+        ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
+        try {
+            respObject = PKIMessage.getInstance(asn1InputStream.readObject());
+        } finally {
+            asn1InputStream.close();
+        }
         assertNotNull(respObject);
 
         final PKIBody body = respObject.getBody();
@@ -412,7 +418,13 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] resp = sendCmpHttp(ba, 200);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         
-        PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(resp)).readObject());
+        PKIMessage respObject = null;
+        ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
+        try {
+            respObject = PKIMessage.getInstance(asn1InputStream.readObject());
+        } finally {
+            asn1InputStream.close();
+        }
         assertNotNull(respObject);
 
         final PKIBody body = respObject.getBody();
@@ -489,7 +501,13 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] resp = sendCmpHttp(ba, 200);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         
-        PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(resp)).readObject());
+        PKIMessage respObject = null;
+        ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
+        try {
+            respObject = PKIMessage.getInstance(asn1InputStream.readObject());
+        } finally {
+            asn1InputStream.close();
+        }
         assertNotNull(respObject);
 
         PKIBody body = respObject.getBody();
@@ -531,7 +549,13 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         resp = sendCmpHttp(ba, 200);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         
-        respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(resp)).readObject());
+        respObject = null;
+        asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
+        try {
+            respObject = PKIMessage.getInstance(asn1InputStream.readObject());
+        } finally {
+            asn1InputStream.close();
+        }
         assertNotNull(respObject);
 
         body = respObject.getBody();
@@ -607,7 +631,13 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] resp = sendCmpHttp(ba, 200);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         
-        PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(resp)).readObject());
+        PKIMessage respObject = null;
+        ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
+        try {
+            respObject = PKIMessage.getInstance(asn1InputStream.readObject());
+        } finally {
+            asn1InputStream.close();
+        }
         assertNotNull(respObject);
 
         final PKIBody body = respObject.getBody();
@@ -834,7 +864,13 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] resp = sendCmpHttp(ba, 200);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         
-        PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(resp)).readObject());
+        PKIMessage respObject = null;
+        ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
+        try {
+            respObject = PKIMessage.getInstance(asn1InputStream.readObject());
+        } finally {
+            asn1InputStream.close();
+        }
         assertNotNull(respObject);
 
         final PKIBody body = respObject.getBody();
@@ -988,7 +1024,13 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] resp = sendCmpHttp(ba, 200);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         
-        PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(resp)).readObject());
+        PKIMessage respObject = null;
+        ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
+        try {
+            respObject = PKIMessage.getInstance(asn1InputStream.readObject());
+        } finally {
+            asn1InputStream.close();
+        }
         assertNotNull(respObject);
 
         final PKIBody body = respObject.getBody();
@@ -1147,7 +1189,13 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] resp = sendCmpHttp(ba, 200);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         
-        PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(resp)).readObject());
+        PKIMessage respObject = null;
+        ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
+        try {
+            respObject = PKIMessage.getInstance(asn1InputStream.readObject());
+        } finally {
+            asn1InputStream.close();
+        }
         assertNotNull(respObject);
 
         final PKIBody body = respObject.getBody();
@@ -1230,7 +1278,13 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         //send request and recieve response
         byte[] resp = sendCmpHttp(ba, 200);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(resp)).readObject());
+        PKIMessage respObject = null;
+        ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
+        try {
+            respObject = PKIMessage.getInstance(asn1InputStream.readObject());
+        } finally {
+            asn1InputStream.close();
+        }
         assertNotNull(respObject);
         
         
@@ -1333,7 +1387,13 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] resp = sendCmpHttp(ba, 200);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         
-        PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(resp)).readObject());
+        PKIMessage respObject = null;
+        ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
+        try {
+            respObject = PKIMessage.getInstance(asn1InputStream.readObject());
+        } finally {
+            asn1InputStream.close();
+        }
         assertNotNull(respObject);
 
         final PKIBody body = respObject.getBody();
@@ -1477,7 +1537,15 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         //
         // Parse response message
         //
-        PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(retMsg)).readObject());
+        
+        PKIMessage respObject = null;
+        ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(retMsg));
+        try {
+            respObject = PKIMessage.getInstance(asn1InputStream.readObject());
+        } finally {
+            asn1InputStream.close();
+        }
+        
         assertNotNull(respObject);
 
         PKIBody body = respObject.getBody();

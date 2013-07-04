@@ -647,8 +647,13 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             assertEquals(getDN(CA1_WSTESTUSER1), cert.getSubjectDN().toString());
             ext = cert.getExtensionValue("1.2.3.4");
             assertNotNull("there should be an extension", ext);
-            DEROctetString oct = (DEROctetString) (new ASN1InputStream(new ByteArrayInputStream(ext)).readObject());
-            assertEquals("Extension did not have the correct value", "foo123", (new String(oct.getOctets())).trim());
+            ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(ext));
+            try {
+                DEROctetString oct = (DEROctetString) (asn1InputStream.readObject());
+                assertEquals("Extension did not have the correct value", "foo123", (new String(oct.getOctets())).trim());
+            } finally {
+                asn1InputStream.close();
+            }
         } finally {
             // restore
             profile.setAllowExtensionOverride(false);
@@ -777,8 +782,13 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             assertEquals(getDN(CA1_WSTESTUSER1), cert.getSubjectDN().toString());
             ext = cert.getExtensionValue("1.2.3.4");
             assertNotNull("there should be an extension", ext);
-            DEROctetString oct = (DEROctetString) (new ASN1InputStream(new ByteArrayInputStream(ext)).readObject());
-            assertEquals("Extension did not have the correct value", "foo123", (new String(oct.getOctets())).trim() );
+            ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(ext));
+            try {
+                DEROctetString oct = (DEROctetString) (asn1InputStream.readObject());
+                assertEquals("Extension did not have the correct value", "foo123", (new String(oct.getOctets())).trim());
+            } finally {
+                asn1InputStream.close();
+            }
         } finally {
             // restore
             profile.setAllowExtensionOverride(false);
@@ -954,8 +964,13 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             assertEquals(getDN(CA1_WSTESTUSER1), cert.getSubjectDN().toString());
             ext = cert.getExtensionValue("1.2.3.4");
             assertNotNull("there should be an extension", ext);
-            DEROctetString oct = (DEROctetString) (new ASN1InputStream(new ByteArrayInputStream(ext)).readObject());
-            assertEquals("Extension did not have the correct value", "foo123", (new String(oct.getOctets()).trim()));
+            ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(ext));
+            try {
+                DEROctetString oct = (DEROctetString) (asn1InputStream.readObject());
+                assertEquals("Extension did not have the correct value", "foo123", (new String(oct.getOctets()).trim()));
+            } finally {
+                asn1InputStream.close();
+            }
         } finally {
             // restore
             profile.setAllowExtensionOverride(false);

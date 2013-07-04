@@ -872,15 +872,25 @@ public final class KeyTools {
     public static SubjectKeyIdentifier createSubjectKeyId(final PublicKey pubKey) {
         try {
             final ASN1Sequence keyASN1Sequence;
-            final Object keyObject = new ASN1InputStream(new ByteArrayInputStream(pubKey.getEncoded())).readObject();
-            if (keyObject instanceof ASN1Sequence) {
-                keyASN1Sequence = (ASN1Sequence) keyObject;
-            } else {
-                // PublicKey key that don't encode to a ASN1Sequence. Fix this by creating a BC object instead.
-                final PublicKey altKey = (PublicKey) KeyFactory.getInstance(pubKey.getAlgorithm(), "BC").translateKey(pubKey);
-                keyASN1Sequence = (ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(altKey.getEncoded())).readObject();
+            ASN1InputStream pubKeyAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(pubKey.getEncoded()));
+            try {
+                final Object keyObject = pubKeyAsn1InputStream.readObject();
+                if (keyObject instanceof ASN1Sequence) {
+                    keyASN1Sequence = (ASN1Sequence) keyObject;
+                } else {
+                    // PublicKey key that don't encode to a ASN1Sequence. Fix this by creating a BC object instead.
+                    final PublicKey altKey = (PublicKey) KeyFactory.getInstance(pubKey.getAlgorithm(), "BC").translateKey(pubKey);
+                    ASN1InputStream altKeyAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(altKey.getEncoded()));
+                    try {
+                        keyASN1Sequence = (ASN1Sequence) altKeyAsn1InputStream.readObject();
+                    } finally {
+                        altKeyAsn1InputStream.close();
+                    }
+                }
+                return new SubjectKeyIdentifier(new SubjectPublicKeyInfo(keyASN1Sequence));
+            } finally {
+                pubKeyAsn1InputStream.close();
             }
-            return new SubjectKeyIdentifier(new SubjectPublicKeyInfo(keyASN1Sequence));
         } catch (Exception e) {
             final RuntimeException e2 = new RuntimeException("error creating key"); // NOPMD
             e2.initCause(e);
@@ -971,7 +981,7 @@ public final class KeyTools {
         final private String value;
         /**
          * Create an instance with a string that defines the slot.
-         * @param taggedString Defines type and value this like this '<Type>:<value>'. Example slot with token label "Hej på dig.": TOKEN_LABEL:Hej på dig.
+         * @param taggedString Defines type and value this like this '<Type>:<value>'. Example slot with token label "Hej p�� dig.": TOKEN_LABEL:Hej p�� dig.
          * @throws IOException
          */
         public PKCS11Slot( final String taggedString ) throws IOException {

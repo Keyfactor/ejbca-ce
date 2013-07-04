@@ -495,27 +495,31 @@ public class CmpConfigAliasTest  extends CmpTestCase {
         //
         // Parse response message
         //
-        PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(retMsg)).readObject());
-        assertNotNull(respObject);
-
-        PKIBody body = respObject.getBody();
-        int tag = body.getType();   
-        assertEquals(8, tag);
-        CertRepMessage c = (CertRepMessage) body.getContent();
-        assertNotNull(c);
-        CertResponse resp = c.getResponse()[0];
-        assertNotNull(resp);
-        assertEquals(resp.getCertReqId().getValue().intValue(), requestId);
-        PKIStatusInfo info = resp.getStatus();
-        assertNotNull(info);
-        assertEquals(0, info.getStatus().intValue());
-        CMPCertificate cmpcert = c.getCaPubs()[0]; //cc.getCertificate();
-        assertNotNull(cmpcert);
-        X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(cmpcert.getEncoded());
-        X500Name name = new X500Name(CertTools.getSubjectDN(cert));
-        checkDN(userDN, name);
-        assertEquals(CertTools.stringToBCDNString(CertTools.getIssuerDN(cert)), CertTools.getSubjectDN(cacert));
-        return cert;
+        ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(retMsg));
+        try {
+            PKIMessage respObject = PKIMessage.getInstance(asn1InputStream.readObject());
+            assertNotNull(respObject);
+            PKIBody body = respObject.getBody();
+            int tag = body.getType();
+            assertEquals(8, tag);
+            CertRepMessage c = (CertRepMessage) body.getContent();
+            assertNotNull(c);
+            CertResponse resp = c.getResponse()[0];
+            assertNotNull(resp);
+            assertEquals(resp.getCertReqId().getValue().intValue(), requestId);
+            PKIStatusInfo info = resp.getStatus();
+            assertNotNull(info);
+            assertEquals(0, info.getStatus().intValue());
+            CMPCertificate cmpcert = c.getCaPubs()[0]; //cc.getCertificate();
+            assertNotNull(cmpcert);
+            X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(cmpcert.getEncoded());
+            X500Name name = new X500Name(CertTools.getSubjectDN(cert));
+            checkDN(userDN, name);
+            assertEquals(CertTools.stringToBCDNString(CertTools.getIssuerDN(cert)), CertTools.getSubjectDN(cacert));
+            return cert;
+        } finally {
+            asn1InputStream.close();
+        }
     }
 
 

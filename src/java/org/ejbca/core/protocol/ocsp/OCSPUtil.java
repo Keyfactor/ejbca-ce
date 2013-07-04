@@ -83,25 +83,30 @@ public class OCSPUtil {
         	res = new BasicOCSPRespBuilder(new JcaRespID(respondercert.getPublicKey(), SHA1DigestCalculator.buildSha1Instance()));
         }
         if (req.hasExtensions()) {
-        	Extension ext = req.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_response);
+            Extension ext = req.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_response);
             if (null != ext) {
                 ASN1OctetString oct = ext.getExtnValue();
                 try {
-                    ASN1Sequence seq = ASN1Sequence.getInstance(new ASN1InputStream(new ByteArrayInputStream(oct.getOctets())).readObject());
-                    @SuppressWarnings("unchecked")
-                    Enumeration<ASN1ObjectIdentifier> en = seq.getObjects();
-                    boolean supportsResponseType = false;
-                    while (en.hasMoreElements()) {
-                        ASN1ObjectIdentifier oid = en.nextElement();
-                        if (oid.equals(OCSPObjectIdentifiers.id_pkix_ocsp_basic)) {
-                            // This is the response type we support, so we are happy! Break the loop.
-                            supportsResponseType = true;
-                            m_log.debug("Response type supported: " + oid.getId());
-                            continue;
+                    ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(oct.getOctets()));
+                    try {
+                        ASN1Sequence seq = ASN1Sequence.getInstance(asn1InputStream.readObject());
+                        @SuppressWarnings("unchecked")
+                        Enumeration<ASN1ObjectIdentifier> en = seq.getObjects();
+                        boolean supportsResponseType = false;
+                        while (en.hasMoreElements()) {
+                            ASN1ObjectIdentifier oid = en.nextElement();
+                            if (oid.equals(OCSPObjectIdentifiers.id_pkix_ocsp_basic)) {
+                                // This is the response type we support, so we are happy! Break the loop.
+                                supportsResponseType = true;
+                                m_log.debug("Response type supported: " + oid.getId());
+                                continue;
+                            }
                         }
-                    }
-                    if (!supportsResponseType) {
-                        throw new NotSupportedException("Required response type not supported, this responder only supports id-pkix-ocsp-basic.");
+                        if (!supportsResponseType) {
+                            throw new NotSupportedException("Required response type not supported, this responder only supports id-pkix-ocsp-basic.");
+                        }
+                    } finally {
+                        asn1InputStream.close();
                     }
                 } catch (IOException e) {
                 }

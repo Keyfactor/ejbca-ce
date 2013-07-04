@@ -216,23 +216,26 @@ public class CmpResponseMessage implements CertificateResponseMessage {
                         log.debug("Creating a CertRepMessage 'accepted'");
                     }
                     PKIStatusInfo myPKIStatusInfo = new PKIStatusInfo(PKIStatus.granted); // 0 = accepted
-                    
-                    CMPCertificate cmpcert = CMPCertificate.getInstance(new ASN1InputStream(new ByteArrayInputStream(cert
-                            .getEncoded())).readObject());
-                    CertOrEncCert retCert = new CertOrEncCert(cmpcert);
-                    CertifiedKeyPair myCertifiedKeyPair = new CertifiedKeyPair(retCert);
-                    CertResponse myCertResponse = new CertResponse(new ASN1Integer(requestId), myPKIStatusInfo, myCertifiedKeyPair, null);
-                    
-                    CertResponse[] certRespos = {myCertResponse};
-                    CMPCertificate[] cmpCerts = {cmpcert};
+                    ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(cert.getEncoded()));
+                    try {
+                        CMPCertificate cmpcert = CMPCertificate.getInstance(asn1InputStream.readObject());
+                        CertOrEncCert retCert = new CertOrEncCert(cmpcert);
+                        CertifiedKeyPair myCertifiedKeyPair = new CertifiedKeyPair(retCert);
+                        CertResponse myCertResponse = new CertResponse(new ASN1Integer(requestId), myPKIStatusInfo, myCertifiedKeyPair, null);
 
-                    CertRepMessage myCertRepMessage = new CertRepMessage(cmpCerts, certRespos);
+                        CertResponse[] certRespos = { myCertResponse };
+                        CMPCertificate[] cmpCerts = { cmpcert };
 
-                    int respType = requestType + 1; // 1 = intitialization response, 3 = certification response etc
-                    if (log.isDebugEnabled()) {
-                        log.debug("Creating response body of type " + respType);
+                        CertRepMessage myCertRepMessage = new CertRepMessage(cmpCerts, certRespos);
+
+                        int respType = requestType + 1; // 1 = intitialization response, 3 = certification response etc
+                        if (log.isDebugEnabled()) {
+                            log.debug("Creating response body of type " + respType);
+                        }
+                        myPKIBody = new PKIBody(respType, myCertRepMessage);
+                    } finally {
+                        asn1InputStream.close();
                     }
-                    myPKIBody = new PKIBody(respType, myCertRepMessage);
                 }
             } else if (status.equals(ResponseStatus.FAILURE)) {
                 if (log.isDebugEnabled()) {
