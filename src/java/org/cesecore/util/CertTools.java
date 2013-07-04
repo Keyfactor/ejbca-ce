@@ -65,7 +65,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import org.apache.commons.lang.CharUtils;
 import org.apache.commons.lang.StringUtils;
@@ -562,7 +561,7 @@ public class CertTools {
         if (dn != null) {
             String first = null;
             String last = null;
-            StringTokenizer xt = new StringTokenizer(dn, ",");
+            X509NameTokenizer xt = new X509NameTokenizer(dn);
             if (xt.hasMoreTokens()) {
                 first = xt.nextToken().trim();
             }
@@ -713,7 +712,7 @@ public class CertTools {
         ArrayList<String> parts = new ArrayList<String>();
         if (dn != null) {
             String o;
-            StringTokenizer xt = new StringTokenizer(dn, ",");
+            X509NameTokenizer xt = new X509NameTokenizer(dn);
             while (xt.hasMoreTokens()) {
                 o = xt.nextToken().trim();
                 // Try to see if it is a valid OID
@@ -2839,6 +2838,80 @@ public class CertTools {
             log.trace("<reverseDN: " + ret);
         }
         return ret;
+    }
+    
+    /**
+     * class for breaking up an X500 Name into it's component tokens, ala java.util.StringTokenizer. 
+     */
+    private static class X509NameTokenizer {
+        private String value;
+        private int index;
+        private char separator;
+        private StringBuffer buf = new StringBuffer();
+
+        public X509NameTokenizer(String oid) {
+            this(oid, ',');
+        }
+
+        public X509NameTokenizer(String oid, char separator) {
+            this.value = oid;
+            this.index = -1;
+            this.separator = separator;
+        }
+
+        public boolean hasMoreTokens() {
+            return (index != value.length());
+        }
+
+        public String nextToken() {
+            if (index == value.length()) {
+                return null;
+            }
+
+            int end = index + 1;
+            boolean quoted = false;
+            boolean escaped = false;
+
+            buf.setLength(0);
+
+            while (end != value.length()) {
+                char c = value.charAt(end);
+
+                if (c == '"') {
+                    if (!escaped) {
+                        quoted = !quoted;
+                    } else {
+                        if (c == '#' && buf.charAt(buf.length() - 1) == '=') {
+                            buf.append('\\');
+                        } else if (c == '+' && separator != '+') {
+                            buf.append('\\');
+                        }
+                        buf.append(c);
+                    }
+                    escaped = false;
+                } else {
+                    if (escaped || quoted) {
+                        if (c == '#' && buf.charAt(buf.length() - 1) == '=') {
+                            buf.append('\\');
+                        } else if (c == '+' && separator != '+') {
+                            buf.append('\\');
+                        }
+                        buf.append(c);
+                        escaped = false;
+                    } else if (c == '\\') {
+                        escaped = true;
+                    } else if (c == separator) {
+                        break;
+                    } else {
+                        buf.append(c);
+                    }
+                }
+                end++;
+            }
+
+            index = end;
+            return buf.toString().trim();
+        }
     }
 
     /**
