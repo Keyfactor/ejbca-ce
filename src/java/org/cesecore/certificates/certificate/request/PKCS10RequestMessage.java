@@ -133,6 +133,9 @@ public class PKCS10RequestMessage implements RequestMessage {
     }
 
     private void init() {        
+        if(p10msg == null) {
+            throw new NullPointerException("Cannot initiate with p10msg == null");
+        }       
         try {
             pkcs10 = new JcaPKCS10CertificationRequest(p10msg);
         } catch (IOException e) {
@@ -168,8 +171,8 @@ public class PKCS10RequestMessage implements RequestMessage {
             if (pkcs10 == null) {
                 init();
             }
-        } catch (IllegalArgumentException e) {
-            log.error("PKCS10 not inited!");
+        } catch (NullPointerException e) {
+            log.error("PKCS10 not initated!");
             return null;
         }
 
@@ -315,7 +318,7 @@ public class PKCS10RequestMessage implements RequestMessage {
             if (pkcs10 == null) {
                 init();
             }
-        } catch (IllegalArgumentException e) {
+        } catch (NullPointerException e) {
             log.error("PKCS10 not inited!");
             return null;
         }
@@ -362,7 +365,7 @@ public class PKCS10RequestMessage implements RequestMessage {
             if (pkcs10 == null) {
                 init();
             }
-        } catch (IllegalArgumentException e) {
+        } catch (NullPointerException e) {
             log.error("PKCS10 not inited!");
             return null;
         }
@@ -402,7 +405,7 @@ public class PKCS10RequestMessage implements RequestMessage {
             if (pkcs10 == null) {
                 init();
             }
-        } catch (IllegalArgumentException e) {
+        } catch (NullPointerException e) {
             log.error("PKCS10 not inited!");
             return null;
         }
