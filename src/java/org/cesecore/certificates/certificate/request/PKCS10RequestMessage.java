@@ -319,7 +319,7 @@ public class PKCS10RequestMessage implements RequestMessage {
                 init();
             }
         } catch (NullPointerException e) {
-            log.error("PKCS10 not inited!");
+            log.error("PKCS10 not inited: "+e.getMessage());
             return null;
         }
         return pkcs10.getSubject();
