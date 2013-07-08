@@ -135,18 +135,20 @@ public abstract class BaseCommand implements CliCommandPlugin {
         // Go through the args list and check for the password prefix
         for (index = 0; index < argsList.size(); index++) {
             String argument = argsList.get(index);
-            if (argument.startsWith(PASSWORD_PREFIX)) {
-                if ((argsList.indexOf(PROMPT_PASSWORD_FLAG)) != -1) {
-                    // Uh-oh, can't both specify password and ask for ask for
-                    // prompt.
-                    getLogger().info("Password can't both be specified and prompted");
-                    getLogger().info(PASSWORD_MAN_TEXT);
-                    throw new CliAuthenticationFailedException();
-                } else {
-                    cliPassword = argument.substring(PASSWORD_PREFIX.length());
-                    argsList.remove(index);
-                }
+            if (argument != null) {
+                if (argument.startsWith(PASSWORD_PREFIX)) {
+                    if ((argsList.indexOf(PROMPT_PASSWORD_FLAG)) != -1) {
+                        // Uh-oh, can't both specify password and ask for ask for
+                        // prompt.
+                        getLogger().info("Password can't both be specified and prompted");
+                        getLogger().info(PASSWORD_MAN_TEXT);
+                        throw new CliAuthenticationFailedException();
+                    } else {
+                        cliPassword = argument.substring(PASSWORD_PREFIX.length());
+                        argsList.remove(index);
+                    }
 
+                }
             }
         }
         if ((index = argsList.indexOf(PROMPT_PASSWORD_FLAG)) != -1) {

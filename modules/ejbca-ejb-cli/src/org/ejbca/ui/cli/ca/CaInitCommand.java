@@ -138,7 +138,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             getLogger()
                     .info("Usage: "
                             + getCommand()
-                            + " <caname> <dn> <catokentype> <catokenpassword> <keyspec> <keytype> <validity-days> <policyID> <signalgorithm> [-certprofile profileName] [-type  "+ CaType.getTypeNames()+"] [-superadmincn SuperAdmin] [<catokenproperties> or null] [<signed by caid>] [-explicitecc] [-externalcachain <externalCA chain PEM file]");
+                            + " <caname> <dn> <catokentype> <catokenpassword> <keyspec> <keytype> <validity-days> <policyID> <signalgorithm> <<catokenproperties> or null> [-certprofile profileName] [-type  "+ CaType.getTypeNames()+"] [-superadmincn SuperAdmin]  [<signed by caid>] [-explicitecc] [-externalcachain <externalCA chain PEM file]");
             getLogger()
                     .info(" catokentype defines if the CA should be created with soft keys or on a HSM. Use 'soft' for software keys and 'org.cesecore.keys.token.PKCS11CryptoToken' for PKCS#11 HSMs.");
             getLogger()
@@ -273,6 +273,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
                 }
             }
             int signedByCAId = CAInfo.SELFSIGNED;
+            
             if (args.length > 11) {
                 String caid = args[11];
                 if (StringUtils.equalsIgnoreCase("External", caid)) {
