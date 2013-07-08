@@ -1336,7 +1336,7 @@ function checkUseInBatch(){
 	                <% }else{ %> 
 	                   <select name="<%= SELECT_SUBJECTALTNAME + i %>" size="1" tabindex="<%=tabindex++%>">
 	                    <% for(int j=0;j < options.length;j++){ %>
-                           <option value="<c:out value="<%= options[j].trim() %>"/>" <%  if(domain.equals(options[j].trim())) out.write(" selected "); %>> 
+                           <option value="<c:out value="<%= options[j].trim() %>"/>" <%  if(fullname.equals(options[j].trim())) out.write(" selected "); %>> 
                              <c:out value="<%= options[j].trim() %>"/>
                            </option>                
 	                    <% } %>
