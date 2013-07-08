@@ -74,34 +74,35 @@ public class CaInitCommandTest {
     private static final String CA_NAME = "1327ca2";
     private static final String CA_DN = "CN=CLI Test CA 1237ca2,O=EJBCA,C=SE";
     private static final String CERTIFICATE_PROFILE_NAME = "certificateProfile1327";
-    private static final String[] HAPPY_PATH_ARGS = { "init", CA_NAME, CA_DN, "soft", "foo123", "2048", "RSA",
-            "365", "null", "SHA1WithRSA" };
-    private static final String[] X509_TYPE_ARGS = { "init", CA_NAME, CA_DN, "soft", "foo123", "2048", "RSA",
-        "365", "null", "SHA1WithRSA", "-type", "x509" };
-    private static final String[] X509_ARGS_NON_DEFULTPWD = { "init", CA_NAME, CA_DN, "soft", "bar123", "2048", "RSA",
-        "365", "1.1.1.1", "SHA1WithRSA" };
-    private static final String[] CVC_TYPE_ARGS = { "init", CA_NAME, "CN=CVCCATEST,O=EJBCA,C=AZ ", "soft", "foo123", "2048", "RSA",
-        "365", "null", "SHA1WithRSA", "-type", "cvc" };
-    private static final String[] ROOT_CA_ARGS = { "init", CA_NAME, CA_DN, "soft", "foo123", "2048", "RSA",
-            "365", "null", "SHA1WithRSA", "-certprofile", "ROOTCA" };
-    private static final String[] CUSTOM_PROFILE_ARGS = { "init", CA_NAME, CA_DN, "soft", "foo123", "2048",
-            "RSA", "365", "null", "SHA1WithRSA", "-certprofile", CERTIFICATE_PROFILE_NAME };
-    private static final String[] ECC_CA_ARGS = { "init", CA_NAME, CA_DN, "soft", "foo123", "secp256r1", "ECDSA",
-        "365", "null", "SHA256withECDSA" };
-    private static final String[] ECC_CA_EXPLICIT_ARGS = { "init", CA_NAME, CA_DN, "soft", "foo123", "secp256r1", "ECDSA",
-        "365", "null", "SHA256withECDSA", "-explicitecc" };
-    private static final String[] SIGNED_BY_EXTERNAL_ARGS = { "init", CA_NAME, CA_DN, "soft", "foo123", "2048", "RSA",
-        "365", "null", "SHA1WithRSA", "null", "External", "-externalcachain", "chain.pem"};
-    private static final String[] IMPORT_SIGNED_BY_EXTERNAL_ARGS = { "importcacert", CA_NAME, "cert.pem"};
+    private static final String[] HAPPY_PATH_ARGS = { "init", CA_NAME, CA_DN, "soft", "foo123", "2048", "RSA", "365", "null", "SHA1WithRSA" };
+    private static final String[] X509_TYPE_ARGS = { "init", CA_NAME, CA_DN, "soft", "foo123", "2048", "RSA", "365", "null", "SHA1WithRSA", "-type",
+            "x509" };
+    private static final String[] X509_ARGS_NON_DEFULTPWD = { "init", CA_NAME, CA_DN, "soft", "bar123", "2048", "RSA", "365", "1.1.1.1",
+            "SHA1WithRSA" };
+    private static final String[] CVC_TYPE_ARGS = { "init", CA_NAME, "CN=CVCCATEST,O=EJBCA,C=AZ ", "soft", "foo123", "2048", "RSA", "365", "null",
+            "SHA1WithRSA", "-type", "cvc" };
+    private static final String[] ROOT_CA_ARGS = { "init", CA_NAME, CA_DN, "soft", "foo123", "2048", "RSA", "365", "null", "SHA1WithRSA",
+            "-certprofile", "ROOTCA" };
+    private static final String[] CUSTOM_PROFILE_ARGS = { "init", CA_NAME, CA_DN, "soft", "foo123", "2048", "RSA", "365", "null", "SHA1WithRSA",
+            "-certprofile", CERTIFICATE_PROFILE_NAME };
+    private static final String[] ECC_CA_ARGS = { "init", CA_NAME, CA_DN, "soft", "foo123", "secp256r1", "ECDSA", "365", "null", "SHA256withECDSA" };
+    private static final String[] ECC_CA_EXPLICIT_ARGS = { "init", CA_NAME, CA_DN, "soft", "foo123", "secp256r1", "ECDSA", "365", "null",
+            "SHA256withECDSA", "-explicitecc" };
+    private static final String[] SIGNED_BY_EXTERNAL_ARGS = { "init", CA_NAME, CA_DN, "soft", "foo123", "2048", "RSA", "365", "null", "SHA1WithRSA",
+            "null", "External", "-externalcachain", "chain.pem" };
+    private static final String[] IMPORT_SIGNED_BY_EXTERNAL_ARGS = { "importcacert", CA_NAME, "cert.pem" };
 
     private CaInitCommand caInitCommand;
     private CaImportCACertCommand caImportCaCertCommand;
     private AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaInitCommandTest"));
 
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    private CertificateProfileSessionRemote certificateProfileSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
-    private CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
-    private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private CertificateProfileSessionRemote certificateProfileSessionRemote = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(CertificateProfileSessionRemote.class);
+    private CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(CryptoTokenManagementSessionRemote.class);
+    private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
+            InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     @Before
     public void setUp() throws Exception {
@@ -124,27 +125,27 @@ public class CaInitCommandTest {
         caInitCommand.execute(HAPPY_PATH_ARGS);
         assertNotNull("Happy path CA was not created.", caSession.getCAInfo(admin, CA_NAME));
     }
-    
+
     @Test
-    public void testWithX509Type() throws Exception{
+    public void testWithX509Type() throws Exception {
         caInitCommand.execute(X509_TYPE_ARGS);
         assertNotNull("X509 typed CA was not created.", caSession.getCAInfo(admin, CA_NAME));
     }
 
     @Test
-    public void testWithX509TypeNonDefaultPwd() throws Exception{
+    public void testWithX509TypeNonDefaultPwd() throws Exception {
         caInitCommand.execute(X509_ARGS_NON_DEFULTPWD);
         assertNotNull("X509 typed CA with non default CA token pwd was not created.", caSession.getCAInfo(admin, CA_NAME));
     }
 
     @Test
-    public void testWithCVCType() throws Exception{
+    public void testWithCVCType() throws Exception {
         caInitCommand.execute(CVC_TYPE_ARGS);
         CAInfo caInfo = caSession.getCAInfo(admin, CA_NAME);
         assertNotNull("CVC typed CA was not created.", caInfo);
-        assertEquals("CAInfo was not of type CVC", caInfo.getCAType(), CAInfo.CATYPE_CVC);        
+        assertEquals("CAInfo was not of type CVC", caInfo.getCAType(), CAInfo.CATYPE_CVC);
     }
-    
+
     @Test
     public void testExecuteWithRootCACertificateProfile() throws Exception {
         caInitCommand.execute(ROOT_CA_ARGS);
@@ -166,7 +167,7 @@ public class CaInitCommandTest {
             // Following line should throw an exception.
             boolean caught = false;
             try {
-                caSession.getCAInfo(admin, CA_NAME);              
+                caSession.getCAInfo(admin, CA_NAME);
             } catch (CADoesntExistsException e) {
                 caught = true;
             }
@@ -208,34 +209,34 @@ public class CaInitCommandTest {
             cryptoTokenManagementSession.deleteCryptoToken(admin, id);
         }
     }
-    
+
     /** Test happy path for creating a CA signed by an external CA. */
     @Test
     public void testCASignedByExternal() throws Exception {
         // Create a handmade External CA
         KeyPair keys = KeyTools.genKeys("1024", "RSA");
-        X509Certificate externalCACert = CertTools.genSelfCert(
-                "CN=External CA", 365, null,
-                keys.getPrivate(), keys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
+        X509Certificate externalCACert = CertTools.genSelfCert("CN=External CA", 365, null, keys.getPrivate(), keys.getPublic(),
+                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
         final String fp1 = CertTools.getFingerprintAsString(externalCACert);
         String fp2 = null;
         File temp = File.createTempFile("chain", ".pem");
-        File csr = new File(CA_NAME+"_csr.der");
-        File certfile = new File(CA_NAME+"_cert.der");
+        File csr = new File(CA_NAME + "_csr.der");
+        File certfile = new File(CA_NAME + "_cert.der");
         try {
             ArrayList<Certificate> mylist = new ArrayList<Certificate>();
             mylist.add(externalCACert);
             FileOutputStream fos = new FileOutputStream(temp);
             fos.write(CertTools.getPemFromCertificateChain(mylist));
             fos.close();
-            SIGNED_BY_EXTERNAL_ARGS[SIGNED_BY_EXTERNAL_ARGS.length-1] = temp.getAbsolutePath();
+            SIGNED_BY_EXTERNAL_ARGS[SIGNED_BY_EXTERNAL_ARGS.length - 1] = temp.getAbsolutePath();
             caInitCommand.execute(SIGNED_BY_EXTERNAL_ARGS);
             CAInfo cainfo = caSession.getCAInfo(admin, CA_NAME);
             assertNotNull("CA signed by external CA was not created.", cainfo);
-            assertEquals("Creating a CA signed by an external CA should initially create it in status 'waiting for certificate response'", CAConstants.CA_WAITING_CERTIFICATE_RESPONSE, cainfo.getStatus());
-            
+            assertEquals("Creating a CA signed by an external CA should initially create it in status 'waiting for certificate response'",
+                    CAConstants.CA_WAITING_CERTIFICATE_RESPONSE, cainfo.getStatus());
+
             // Read the generated CSR, requires knowledge of what filename it creates
-            byte[] bytes = FileTools.readFiletoBuffer(CA_NAME+"_csr.der");
+            byte[] bytes = FileTools.readFiletoBuffer(CA_NAME + "_csr.der");
             PKCS10RequestMessage msg = new PKCS10RequestMessage(bytes);
             // Create a new certificate with the subjectDN and publicKey from the request
             Date firstDate = new Date();
@@ -245,16 +246,18 @@ public class CaInitCommandTest {
             Random random = new Random();
             random.setSeed(firstDate.getTime());
             random.nextBytes(serno);
-            final SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo((ASN1Sequence)ASN1Primitive.fromByteArray(msg.getRequestPublicKey().getEncoded()));
-            X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(CertTools.stringToBcX500Name(externalCACert.getSubjectDN().toString()), new java.math.BigInteger(serno).abs(), firstDate, lastDate, 
-                    CertTools.stringToBcX500Name(msg.getRequestDN()), pkinfo);
+            final SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo((ASN1Sequence) ASN1Primitive.fromByteArray(msg.getRequestPublicKey()
+                    .getEncoded()));
+            X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(
+                    CertTools.stringToBcX500Name(externalCACert.getSubjectDN().toString()), new java.math.BigInteger(serno).abs(), firstDate,
+                    lastDate, CertTools.stringToBcX500Name(msg.getRequestDN()), pkinfo);
             BasicConstraints bc = new BasicConstraints(true);
             certbuilder.addExtension(Extension.basicConstraints, true, bc);
             X509KeyUsage ku = new X509KeyUsage(X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign);
             certbuilder.addExtension(Extension.keyUsage, true, ku);
             final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder("SHA1WithRSA").build(keys.getPrivate()), 20480);
             final X509CertificateHolder certHolder = certbuilder.build(signer);
-            final X509Certificate cert = (X509Certificate)CertTools.getCertfromByteArray(certHolder.getEncoded());
+            final X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(certHolder.getEncoded());
             fp2 = CertTools.getFingerprintAsString(cert);
             // Now we have issued a certificate, import it
             mylist = new ArrayList<Certificate>();
@@ -262,11 +265,12 @@ public class CaInitCommandTest {
             fos = new FileOutputStream(certfile);
             fos.write(CertTools.getPemFromCertificateChain(mylist));
             fos.close();
-            IMPORT_SIGNED_BY_EXTERNAL_ARGS[IMPORT_SIGNED_BY_EXTERNAL_ARGS.length-1] = certfile.getAbsolutePath();
+            IMPORT_SIGNED_BY_EXTERNAL_ARGS[IMPORT_SIGNED_BY_EXTERNAL_ARGS.length - 1] = certfile.getAbsolutePath();
             caImportCaCertCommand.execute(IMPORT_SIGNED_BY_EXTERNAL_ARGS);
             cainfo = caSession.getCAInfo(admin, CA_NAME);
             assertNotNull("CA signed by external CA does not exist.", cainfo);
-            assertEquals("importing a certificate to a CA signed by an external CA should result in status 'active'", CAConstants.CA_ACTIVE, cainfo.getStatus());
+            assertEquals("importing a certificate to a CA signed by an external CA should result in status 'active'", CAConstants.CA_ACTIVE,
+                    cainfo.getStatus());
         } finally {
             temp.deleteOnExit();
             csr.deleteOnExit();
@@ -275,5 +279,40 @@ public class CaInitCommandTest {
             internalCertStoreSession.removeCertificate(fp1);
             internalCertStoreSession.removeCertificate(fp2);
         }
+    }
+
+    /**
+     * Create a root CA, then create a sub CA signed by that root.
+     */
+    @Test
+    public void testCreateSubCa() throws ErrorAdminCommandException, AuthorizationDeniedException {
+        final String rootCaName = "rootca";
+        final String subCaName = "subca";
+        final String[] ROOT_CA_ARGS = { "init", rootCaName, "CN=rootca", "soft", "foo123", "2048", "RSA", "365", "null", "SHA1WithRSA" };
+      
+        try {
+            caInitCommand.execute(ROOT_CA_ARGS);
+            CAInfo rootCaInfo = caSession.getCAInfo(admin, rootCaName);
+            int rootCaId = rootCaInfo.getCAId();
+            try {
+                final String[] SUB_CA_ARGS = { "init", subCaName, "CN=subca", "soft", "foo123", "2048", "RSA", "365", "null", "SHA1WithRSA", null,
+                        Integer.toString(rootCaId) };
+                caInitCommand.execute(SUB_CA_ARGS);
+                CAInfo subCaInfo = caSession.getCAInfo(admin, subCaName);
+                int subCaId = subCaInfo.getCAId();
+                try {
+                    assertEquals("SubCA was not signed by Root CA", rootCaId, subCaInfo.getSignedBy());
+                } finally {
+                    caSession.removeCA(admin, subCaId);
+                    cryptoTokenManagementSession.deleteCryptoToken(admin, subCaInfo.getCAToken().getCryptoTokenId());
+                }
+            } finally {
+                caSession.removeCA(admin, rootCaId);
+                cryptoTokenManagementSession.deleteCryptoToken(admin, rootCaInfo.getCAToken().getCryptoTokenId());
+            }
+        } catch (CADoesntExistsException e) {
+            throw new RuntimeException("Root CA wasn't created, can't continue.");
+        }
+
     }
 }
