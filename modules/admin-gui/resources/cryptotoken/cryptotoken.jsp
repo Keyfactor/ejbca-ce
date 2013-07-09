@@ -67,13 +67,6 @@ org.cesecore.authorization.control.CryptoTokenRules
 	  }
   }
   </script>
-     <style type="text/css">
-		/* TODO: Move re-usable styles to included .css */
-		.expandOnClick { width: 25em;  height: 1em;  display: block; overflow: hidden; white-space: nowrap; }
-		.expandOnClick:after { content: "..."; }
-		.expandOnClick:focus { width: 100%; display: inline; overflow: auto; color:#000000; white-space: pre-wrap; cursor: pointer; }
-		.expandOnClick:focus:after { content: ""; }
-   </style>
 </head>
 <body onload="selectOneMenuTypeUpdated(document.getElementById('currentCryptoTokenForm:selectOneMenuType'))">
 	<h1>
