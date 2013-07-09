@@ -672,6 +672,20 @@ table#logconfigbuttons td input[type="submit"] {
 	margin-right: 1em;
 }
 
+/* --- Page: SUP > View Log */
+#search2 input.noBorder {
+	border: 0px;
+}
+#search2 input.numberInputBig {
+	width: 6em; text-align: right;
+}
+#search2 input.numberInputSmall {
+	width: 4em; text-align: right;
+}
+#search2 td {
+	white-space: nowrap;
+}
+
 /* --- Page: SYS > Administrators Groups */
 /* Administrator entities */
 form#groupList p {
@@ -762,6 +776,9 @@ table#config tr td:first-child {
 .label { vertical-align: top; text-align: right; }
 .field { vertical-align: top; text-align: left; }
 
+.listCaption { text-align: left; background-color: #5B8CCD; color: #FFF; }
+.listHeader { color: #777; font-size: 1.2em; font-weight: bold; text-align: left; }
+
 /* --- Table: List/Actions */
 
 .listColumn1 { text-align: left; width: 40%; }
@@ -778,8 +795,6 @@ tr#LogTextRow0 { color: black; font-size: 7pt; background-color: white; }
 tr#LogTextRow1 { color: black; font-size: 7pt; background-color: #E5ECFF; }
 
 /* --- Table: SYS > Administrators Groups */
-
-.listHeader { color: #777; font-size: 1.2em; font-weight: bold; text-align: left; }
 
 .caColumn { text-align: left; width: 20%; }
 .withColumn { text-align: left; width: 35%; }
@@ -945,6 +960,12 @@ a.tabLinkfalse:hover, a.tabLinktrue:hover{
 	right: auto;
 	left: auto;
 }
+
+/* CSS2 compatible expandable text */
+.expandOnClick { width: 25em;  height: 1em;  display: block; overflow: hidden; white-space: nowrap; }
+.expandOnClick:after { content: "..."; }
+.expandOnClick:focus { width: 100%; display: inline; overflow: auto; color:#000000; white-space: pre-wrap; cursor: pointer; }
+.expandOnClick:focus:after { content: ""; }
 
 /*--------------------------------------------------------------------------*/
 /* EOF */
