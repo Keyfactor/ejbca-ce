@@ -34,20 +34,13 @@ org.cesecore.authorization.control.AuditLogRules
   <base href="<%= ejbcawebbean.getBaseUrl() %>" />
   <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>" />
   <script language="javascript" src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
-     <style type="text/css">
-		/* CSS2 compatible expandable text*/
-		.expandOnClick { width: 25em;  height: 1em;  display: block; overflow: hidden; white-space: nowrap; }
-		.expandOnClick:after { content: "..."; }
-		.expandOnClick:focus { width: 100%; display: inline; overflow: auto; color:#000000; white-space: pre-wrap; cursor: pointer; }
-		.expandOnClick:focus:after { content: ""; }
-   </style>
 </head>
 <body>
 
 <h1><h:outputText value="#{web.text.AUDITHEADER}" /></h1>
 
 <%
-	//TODO: Clean up style-mess. Fix translation keys.
+	//TODO: Fix translation keys.
 %>
 
 <div id="home" class="app">
@@ -55,14 +48,14 @@ org.cesecore.authorization.control.AuditLogRules
 	<h:form id="search" rendered="#{auditor.device != null}">
 	<h:outputLabel for="device" value="Audit Log Device" rendered="#{auditor.oneLogDevice == false}"/>
 	<h:selectOneMenu id="device" value="#{auditor.device}" rendered="#{auditor.oneLogDevice == false}"><f:selectItems value="#{auditor.devices}" /></h:selectOneMenu>
-	<!-- 
+	<%-- 
 	<h:outputLabel rendered="false" for="sortColumn" value="Order by"/>
 	<h:selectOneMenu rendered="false" id="sortColumn" value="#{auditor.sortColumn}"><f:selectItems value="#{auditor.sortColumns}" /></h:selectOneMenu>
 	<h:outputLabel rendered="false" for="sortOrder" value="Order"/>
 	<h:selectOneMenu rendered="false" id="sortOrder" value="#{auditor.sortOrder}"><f:selectItems value="#{auditor.sortOrders}" /></h:selectOneMenu>
- 	-->
+ 	--%>
 	<p>
-   	<h:dataTable value="#{auditor.conditions}" var="condition" captionStyle="text-align: left; background-color: #5B8CCD; color: #FFF;" headerClass="listHeader" styleClass="grid" rowClasses="a">
+   	<h:dataTable value="#{auditor.conditions}" var="condition" captionClass="listCaption" headerClass="listHeader" styleClass="grid" rowClasses="a">
 		<f:facet name="caption"><h:outputText value="Current conditions"/></f:facet>
 		<h:column rendered="false"><f:facet name="header"><h:outputText value="operation"/></f:facet><h:outputText value="#{condition.operation}"></h:outputText></h:column>
 		<h:column>
@@ -119,19 +112,19 @@ org.cesecore.authorization.control.AuditLogRules
 		<h:commandButton disabled="#{auditor.startIndex == 1}" action="#{auditor.previous}" styleClass="commandLink" value="#{web.text.PREVIOUS}"/>
 		<h:commandButton action="#{auditor.reload}" styleClass="commandLink" value="#{web.text.RELOAD}"/>
 		<h:commandButton disabled="#{auditor.renderNext==false}" action="#{auditor.next}" styleClass="commandLink" value="#{web.text.NEXT}"/>
-		<!-- 
+		<%-- 
 		<h:outputLabel rendered="false" for="startIndex" value="Results start at index"/>
-		<h:inputText rendered="false" id="startIndex" value="#{auditor.startIndex}" style="border: 0px; width: 6em; text-align:right;"><f:convertNumber type="number"/></h:inputText>
-		 -->
-		<!-- 
+		<h:inputText rendered="false" id="startIndex" value="#{auditor.startIndex}" styleClass="noBorder numberInputBig"><f:convertNumber type="number"/></h:inputText>
+		 --%>
+		<%-- 
 		<h:outputText rendered="false" value="Displaying results #{auditor.startIndex} - #{auditor.startIndex + auditor.maxResults - 1}."/>
 		<h:outputText rendered="false" value="Ordered by #{auditor.nameFromColumn[(auditor.sortColumn)]}, asc=#{auditor.sortOrder}."/>
-		 -->
+		 --%>
 		<h:outputText value="#{web.text.AUDIT_DISPRESULTS} "/>
-		<h:inputText id="startIndex2" value="#{auditor.startIndex}" style="width: 6em; text-align:right;"><f:convertNumber type="number"/></h:inputText>
+		<h:inputText id="startIndex2" value="#{auditor.startIndex}" styleClass="numberInputBig"><f:convertNumber type="number"/></h:inputText>
 		<h:outputText value=" #{web.text.AUDIT_DISPRESULTSTO} #{auditor.startIndex + auditor.resultSize - 1}."/>
 		<h:outputLabel for="maxResults" value="#{web.text.ENTRIESPERPAGE} "/>
-		<h:inputText id="maxResults" value="#{auditor.maxResults}" style="width: 4em; text-align:right;"><f:convertNumber type="number"/></h:inputText>
+		<h:inputText id="maxResults" value="#{auditor.maxResults}" styleClass="numberInputSmall"><f:convertNumber type="number"/></h:inputText>
 
 		<br />
 		<h:commandButton disabled="#{empty auditor.results}" action="#{auditor.downloadResults}" styleClass="commandLink" value="#{web.text.AUDIT_DOWNLOAD}"/>
@@ -143,7 +136,7 @@ org.cesecore.authorization.control.AuditLogRules
 	</p>
 	<%/* Note! h:messages requires that auditor.results has been fetched at least ones to display error messages from that method. */%>
 	<p><h:messages layout="table" styleClass="alert"/></p>
-	<h:dataTable value="#{auditor.results}" var="auditLogEntry" captionStyle="text-align: left; background-color: #5B8CCD; color: #FFF;" headerClass="results" styleClass="grid" rowClasses="LogTextRow0,LogTextRow1" rendered="#{not empty auditor.results}">
+	<h:dataTable value="#{auditor.results}" var="auditLogEntry" captionClass="listCaption" headerClass="results" styleClass="grid" rowClasses="LogTextRow0,LogTextRow1" rendered="#{not empty auditor.results}">
 		<f:facet name="caption">
 			<h:panelGroup>
 				<h:outputText value="#{web.text.AUDIT_SEARCHRESULTS}"/>
@@ -157,7 +150,7 @@ org.cesecore.authorization.control.AuditLogRules
 					<h:commandButton action="#{auditor.reorderDescByTime}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/uparrow.gif"/>
 				</h:panelGroup>
 			</f:facet>
-			<h:outputText style="white-space: nowrap;" value="#{auditLogEntry.timeStamp}"><f:convertDateTime pattern="yyyy-MM-dd HH:mm:ssZZ" /></h:outputText>
+			<h:outputText value="#{auditLogEntry.timeStamp}"><f:convertDateTime pattern="yyyy-MM-dd HH:mm:ssZZ" /></h:outputText>
 		</h:column>
 		<h:column>
 			<f:facet name="header">
@@ -167,7 +160,7 @@ org.cesecore.authorization.control.AuditLogRules
 					<h:commandButton action="#{auditor.reorderDescByEvent}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/uparrow.gif"/>
 				</h:panelGroup>
 			</f:facet>
-			<h:outputText style="white-space: nowrap;" value="#{web.text[(auditLogEntry.eventTypeValue)]}"/>
+			<h:outputText value="#{web.text[(auditLogEntry.eventTypeValue)]}"/>
 		</h:column>
 		<h:column>
 			<f:facet name="header">
@@ -189,7 +182,7 @@ org.cesecore.authorization.control.AuditLogRules
 			</f:facet>
 			<h:outputText value="#{auditLogEntry.authToken}"/>
 		</h:column>
-		<!-- 
+		<%-- 
 		<h:column rendered="false">
 			<f:facet name="header">
 				<h:panelGroup>
@@ -200,7 +193,7 @@ org.cesecore.authorization.control.AuditLogRules
 			</f:facet>
 			<h:outputText value="#{auditLogEntry.serviceTypeValue}"/>
 		</h:column>
-		 -->
+		 --%>
 		<h:column>
 			<f:facet name="header">
 				<h:panelGroup>
@@ -209,7 +202,7 @@ org.cesecore.authorization.control.AuditLogRules
 					<h:commandButton action="#{auditor.reorderDescByModule}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/uparrow.gif"/>
 				</h:panelGroup>
 			</f:facet>
-			<h:outputText style="white-space: nowrap;" value="#{web.text[(auditLogEntry.moduleTypeValue)]}"/>
+			<h:outputText value="#{web.text[(auditLogEntry.moduleTypeValue)]}"/>
 		</h:column>
 		<h:column>
 			<f:facet name="header">
@@ -252,7 +245,7 @@ org.cesecore.authorization.control.AuditLogRules
 			</f:facet>
 			<h:outputText value="#{auditLogEntry.nodeId}"/>
 		</h:column>
-			<!-- 
+			<%-- 
 		<h:column rendered="false">
 			<f:facet name="header">
 				<h:panelGroup>
@@ -263,7 +256,7 @@ org.cesecore.authorization.control.AuditLogRules
 			</f:facet>
 			<h:outputText value="#{auditLogEntry.sequenceNumber}"/>
 		</h:column>
-		 -->
+		 --%>
 		<h:column>
 			<f:facet name="header">
 				<h:outputText value="#{auditor.nameFromColumn['additionalDetails']}"/>
