@@ -211,7 +211,7 @@ public interface CAAdminSession {
      *            the alias for the private encryption key in the keystore
      */
     public void importCAFromKeyStore(AuthenticationToken admin, String caname, byte[] p12file, String keystorepass, String privkeypass, String privateSignatureKeyAlias,
-            String privateEncryptionKeyAlias) throws Exception;
+            String privateEncryptionKeyAlias);
 
     /**
      * Method that is used to create a new CA from keys and certificates.

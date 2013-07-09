@@ -1449,7 +1449,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     @Override
     public void importCAFromKeyStore(AuthenticationToken admin, String caname, byte[] p12file, String keystorepass, String privkeypass,
-            String privateSignatureKeyAlias, String privateEncryptionKeyAlias) throws Exception {
+            String privateSignatureKeyAlias, String privateEncryptionKeyAlias) {
         try {
             // check authorization
             if (!accessSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource())) {
