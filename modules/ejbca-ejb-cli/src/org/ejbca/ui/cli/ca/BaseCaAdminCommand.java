@@ -34,6 +34,7 @@ import org.bouncycastle.pkcs.PKCSException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.rules.AccessRuleNotFoundException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -70,7 +71,7 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
      * @param human readable name of CA
      * @return array of certificates, from ISignSession.getCertificateChain()
      */
-    protected Collection<Certificate> getCertChain(AuthenticationToken authenticationToken, String caname) throws Exception {
+    protected Collection<Certificate> getCertChain(AuthenticationToken authenticationToken, String caname) {
         getLogger().trace(">getCertChain()");
         Collection<Certificate> returnval = new ArrayList<Certificate>();
         try {
@@ -155,17 +156,17 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
         return cainfo != null ? cainfo.getSubjectDN() : null;
     }
 
-    protected CAInfo getCAInfo(AuthenticationToken authenticationToken, String caname) throws Exception {
-        CAInfo result;
+    protected CAInfo getCAInfo(AuthenticationToken authenticationToken, String caname) {
+        CAInfo result = null;
         try {
             result = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(authenticationToken, caname);
-        } catch (Exception e) {
+        } catch (CADoesntExistsException e) {
             getLogger().debug("Error retriving CA " + caname + " info.", e);
-            throw new Exception("Error retriving CA " + caname + " info.", e);
+        } catch (AuthorizationDeniedException e) {
+           getLogger().error("Authorization denied", e);
         }
         if (result == null) {
             getLogger().debug("CA " + caname + " not found.");
-            throw new Exception("CA " + caname + " not found.");
         }
         return result;
     }
