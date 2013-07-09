@@ -558,6 +558,16 @@ div.status table td img {
 	margin-top: .1em;
 }
 
+/* --- Page: CA > CryptoTokens */
+form#cryptotokens table {
+	border-collapse: collapse;
+	right: auto; /* ??? */
+	left: auto;
+}
+form#cryptotokens img.statusIcon {
+	border-width: 0;
+}
+
 /* --- Page: CA > CA Activation */
 .actCasHeader {
 	padding-left: 4px;
