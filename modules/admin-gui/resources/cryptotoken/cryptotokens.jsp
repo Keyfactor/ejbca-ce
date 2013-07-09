@@ -62,8 +62,7 @@ org.cesecore.authorization.control.CryptoTokenRules
 	</h1>
 	<div class="message"><h:messages layout="table" errorClass="alert"/></div>
 	<h:form id="cryptotokens">
-	<h:dataTable value="#{cryptoTokenMBean.cryptoTokenGuiList}" var="cryptoTokenGuiInfo"
-		styleClass="grid" style="border-collapse: collapse; right: auto; left: auto">
+	<h:dataTable value="#{cryptoTokenMBean.cryptoTokenGuiList}" var="cryptoTokenGuiInfo" styleClass="grid">
 		<h:column rendered="false">
 			<h:selectBooleanCheckbox value="#{cryptoTokenGuiInfo.selected}"/>
 		</h:column>
@@ -87,7 +86,7 @@ org.cesecore.authorization.control.CryptoTokenRules
 		</h:column>
 		<h:column>
    			<f:facet name="header"><h:outputText value="#{web.text.CRYPTOTOKEN_ACTIVE}"/></f:facet>
-			<h:graphicImage height="16" width="16" url="#{cryptoTokenGuiInfo.statusImg}" style="border-width:0"/>
+			<h:graphicImage height="16" width="16" url="#{cryptoTokenGuiInfo.statusImg}" styleClass="statusIcon"/>
 		</h:column>
 		<h:column>
    			<f:facet name="header"><h:outputText value="#{web.text.CRYPTOTOKEN_REFDHEAD}"/></f:facet>
