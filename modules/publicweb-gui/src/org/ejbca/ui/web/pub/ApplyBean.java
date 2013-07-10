@@ -19,7 +19,6 @@ import java.util.Iterator;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
@@ -63,6 +62,7 @@ public class ApplyBean implements java.io.Serializable {
         if (!initialized) {
         	administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Public Web: "+request.getRemoteAddr()));
         	ejbLocalHelper = new EjbLocalHelper();
+        	browser = detectBrowser(request);
             initialized = true;
         }
     }
@@ -237,10 +237,43 @@ public class ApplyBean implements java.io.Serializable {
         return returnval;
     }
     
+    /**
+     * Detects the browser type from the User-Agent HTTP header and returns it.
+     * @return Either "netscape", "explorer" or "unknown"
+     */
+    private String detectBrowser(HttpServletRequest request) {
+        String userAgent = request.getHeader("User-Agent");
+        if (userAgent != null) {
+            final boolean isGecko = userAgent.contains("Gecko");
+            final boolean isIE = userAgent.contains("MSIE");
+            final boolean isNewIE = userAgent.contains("Trident");
+            
+            if (isIE && !isGecko) return "explorer";
+            if (isGecko && !isNewIE) return "netscape";
+            /*
+             * TODO: IE 11.0 will emulate Firefox in some aspects and implement some HTML5 stuff
+             * (<keygen> is standardized in HTML5). When it has been released we should try it out.
+             * 
+             * See: http://msdn.microsoft.com/en-us/library/ie/bg182625%28v=vs.85%29.aspx
+             */
+        }
+        return "unknown";
+    }
+    
+    /**
+     * Returns the detected browser type.
+     * @see detectBrowser(Request)
+     * @return Either "netscape", "explorer" or "unknown"
+     */
+    public String getBrowser() {
+        return browser;
+    }
+    
     private boolean initialized;
     private AuthenticationToken administrator;
     private String username = "";
     private EndEntityInformation endEntityInformation = null;
+    private String browser = "unknown";
     
     //--------------------------------------------------------------
     // Convenience methods used from JSTL.

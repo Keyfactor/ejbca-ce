@@ -1,15 +1,4 @@
 
-   // Used in apply_auth()
-   function browserSelector() {
-        var browserName = navigator.appName;
-        var browserNum = parseInt(navigator.appVersion);
-        if (browserName == "Netscape") {
-            document.CertReqForm.hiddenbrowser.value = "netscape";
-        } else if ((browserName == "Microsoft Internet Explorer") && (browserNum>= 4)) {
-            document.CertReqForm.hiddenbrowser.value = "explorer";
-        }
-    }
-
 	// Used in apply_exp.jspf
 	function showCSPActiveX() {
 		if (navigator.appName.indexOf("Explorer") != -1) {

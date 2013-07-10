@@ -12,7 +12,6 @@
 	</c:if>
 
 	<input type="hidden" name="${ACTION}" value="${ACTION_GENERATETOKEN}" />
-    <input type="hidden" name="${HIDDEN_BROWSER}" value="${BROWSER_UNKNOWN}" />
 
 	<label for="${TEXTFIELD_USERNAME}">Username</label>
 	<input type="text" size="40" name="${TEXTFIELD_USERNAME}" id="${TEXTFIELD_USERNAME}" accesskey="u" />
@@ -24,9 +23,3 @@
     <input type="submit" value="OK" name="${BUTTON_SUBMIT_USERNAME}" id="${BUTTON_SUBMIT_USERNAME}" />
   </fieldset>
 </form>
-
-<script type="text/javascript">
-<!--
-    browserSelector ();
-// -->
-</script>
