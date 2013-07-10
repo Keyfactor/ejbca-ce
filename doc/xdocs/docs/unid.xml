@@ -50,7 +50,7 @@ To enable the Unid extension you configure the options:
 </p>
 <source>
 ocsp.extensionoid=2.16.578.1.16.3.2
-ocsp.extensionclass=org.ejbca.core.protocol.ocsp.OCSPUnidExtension
+ocsp.extensionclass=org.ejbca.core.protocol.ocsp.extension.unid.OCSPUnidExtension
 </source>
 <p>
 in conf/ocsp.properties of the OCSP responder. All options are described in ocsp.properties.sample.

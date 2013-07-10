@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.core.protocol.ocsp;
+package org.ejbca.core.protocol.ocsp.extension.unid;
 
 import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1Primitive;

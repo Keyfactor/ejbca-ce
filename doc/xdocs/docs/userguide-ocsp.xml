@@ -88,7 +88,7 @@ See EJBCA User Guide and look in conf/custom.properties for more information abo
 To use your custom OCSP extension you have to define a few properties in conf/ocsp.properties:
 <ul>
 <li>ocsp.extensionoid - the OID defining your extension.</li>
-<li>ocsp.extensionclass - the fully qualified class name implementing your extension, i.e. org.ejbca.core.protocol.ocsp.OCSPUnidExtension.</li>
+<li>ocsp.extensionclass - the fully qualified class name implementing your extension, i.e. org.ejbca.core.protocol.ocsp.extension.unid.OCSPUnidExtension.</li>
 </ul>
 To specify that an extension always be used in the reply regardless of what's specified in the request, preface the
 relevant ocsp.extensionoid-value with an asterisk (e.g. *2.16.578.1.16.3.2)
