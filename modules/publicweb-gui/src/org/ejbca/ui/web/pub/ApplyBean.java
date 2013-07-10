@@ -19,6 +19,7 @@ import java.util.Iterator;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
@@ -294,6 +295,21 @@ public class ApplyBean implements java.io.Serializable {
 	public int[] getAvailableBitLengths() throws Exception {
 		return availableBitLengths(defaultUsername);
 	}
+	
+	/**
+     * Returns the smallest available keylength.
+     * @see #getAvailableBitLengths() 
+     * @return the minimum key length, or Integer.MAX_VALUE if there are no keylengths available.
+     */
+    public int getMinimumAvailableKeyLength() throws Exception {
+        int minimum = Integer.MAX_VALUE;
+        for (int keylength : getAvailableBitLengths()) {
+            if (keylength < minimum) {
+                minimum = keylength;
+            }
+        }
+        return minimum;
+    }
 	
 
     /**

@@ -363,7 +363,7 @@
   </div>
 </div>
 <p>&nbsp;</p>
-<p>Please choose the CSP you wish to use and your preferred key size from the lists below (the defaults are probably good). 
+<p>Please choose the CSP you wish to use <c:if test="${minKeyLength > 1024}">and your preferred key size</c:if> from the lists below (the defaults are probably good). 
    Tick the check box if you are adding a certificate to an Enhanced eID card.</p>
 
 <form name="CertReqForm" action="../certreq" enctype="x-www-form-encoded" method="POST">
@@ -381,13 +381,18 @@
     </select>
     <br />
 
-    <label for="keysize">Key size:</label>
-    <select name="keysize" id="keysize">
-      <option value="512">512</option>
-      <option value="1024" selected="selected">1024</option>
-      <option value="2048">2048</option>
-    </select>
-    <br />
+    <c:if test="${minKeyLength > 1024}">
+        <input type="hidden" name="keysize" id="keysize" value="2048">
+    </c:if>
+    <c:if test="${minKeyLength <= 1024}">
+        <label for="keysize">Key size:</label>
+        <select name="keysize" id="keysize">
+          <option value="512">512</option>
+          <option value="1024" selected="selected">1024</option>
+          <option value="2048">2048</option>
+        </select>
+        <br />
+    </c:if>
     
     <c:if test="${applybean.certificateProfileListShown}">
         <label for="certprofile">Certificate profile:</label>
@@ -413,7 +418,7 @@
     <br />
 
 	<label for="dummy"></label>
-	<input type="button" value="OK" name="GenReq">
+	<input type="button" value="Enroll" name="GenReq">
   </fieldset>
 </form>
 
