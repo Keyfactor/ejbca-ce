@@ -316,6 +316,15 @@ public class ApplyBean implements java.io.Serializable {
 	public String[] getAvailableCertificateProfiles() throws Exception {
 		return availableCertificateProfiles(defaultUsername);
 	}
+	
+	/**
+     * Returns true if a list of certificate profiles should be shown to the user.
+     * @see #getAvailableCertificateProfiles() 
+     */
+    public boolean isCertificateProfileListShown() throws Exception {
+        return getAvailableCertificateProfiles().length != 1;
+    }
+	
 	/** Returns the certificate profile the user is registered with
 	 * 
 	 * @return certificate profile name
