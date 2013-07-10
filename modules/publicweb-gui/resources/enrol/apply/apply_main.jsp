@@ -19,7 +19,6 @@
 
 <c:set var="username" value="${param[TEXTFIELD_USERNAME]}" />
 <c:set var="password" value="${param[TEXTFIELD_PASSWORD]}" />
-<c:set var="browser" value="${param[HIDDEN_BROWSER]}" />
 <c:set var="forcedBrowser" value="${param[FORCE_BROWSER]}" />
 <c:set var="action" value="${param[ACTION]}" />
 
@@ -31,6 +30,8 @@
   applybean.setDefaultUsername(username);
   finder.initialize(request.getRemoteAddr());
 %>
+
+<c:set var="browser" value="${applybean.browser}" />
 
 <c:set var="includefile" value="apply_auth.jspf" />
 <c:if test="${action != null && action == ACTION_GENERATETOKEN}">
