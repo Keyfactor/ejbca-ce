@@ -38,7 +38,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.FileTools;
 import org.ejbca.core.protocol.ocsp.OCSPUnidClient;
-import org.ejbca.core.protocol.ocsp.OCSPUnidResponse;
+import org.ejbca.core.protocol.ocsp.extension.unid.OCSPUnidResponse;
 import org.ejbca.util.PerformanceTest;
 import org.ejbca.util.PerformanceTest.Command;
 import org.ejbca.util.PerformanceTest.CommandFactory;
