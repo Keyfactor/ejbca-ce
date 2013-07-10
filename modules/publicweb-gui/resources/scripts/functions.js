@@ -41,9 +41,8 @@
 			} else {
 				document.writeln("<object name=\"iID\" type=\"application/x-iid\" width=\"0\" height=\"0\"></object>");
 			}
-		} else {
-			document.writeln("The CryptoAPI component is not installed.");
 		}
+		// if the plugin is not available we silently ignore it.
 	}
 
     function selectKey() {
@@ -133,7 +132,6 @@
             document.writeln("    <input type=\"button\" value=\"Fetch Certificate\" onclick=\"generate_pkcs10()\" />");
             document.writeln("  </fieldset>");
             document.writeln("</form>");
-        } else {
-            document.writeln("<p>NetID not installed.</p>");
         }
+        // if the plugin is not available we silently ignore it.
     }
