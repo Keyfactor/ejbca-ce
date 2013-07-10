@@ -15,6 +15,7 @@ package org.cesecore.certificates.ocsp.cache;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ocsp.extension.OCSPExtension;
@@ -33,8 +34,10 @@ public enum OcspExtensionsCache {
 
     private static final Logger log = Logger.getLogger(OcspExtensionsCache.class);
 
+    private final ReentrantLock lock = new ReentrantLock(true);
+    
     private Map<String, OCSPExtension> extensionMap;
-
+    
     private OcspExtensionsCache() {    
         reloadCache();
     }
@@ -44,32 +47,39 @@ public enum OcspExtensionsCache {
      * @return a map containing all loaded extensions. 
      */
     public Map<String, OCSPExtension> getExtensions() {
+        while(lock.isLocked()) {
+            //Kill time if cache is being reloaded. Should be quick, so this method can be blocking. 
+        }
         return extensionMap;
     }
     
     /**
-     * Method to manually reload the cache. Note that this method is not thread safe, and should in the future
-     * be mutexed with the getExtensions() method. 
+     * Method to manually reload the cache. 
      */
     public void reloadCache() {
         extensionMap = new HashMap<String, OCSPExtension>();
         Iterator<String> extensionClasses = OcspConfiguration.getExtensionClasses().iterator();
         Iterator<String> extensionOids = OcspConfiguration.getExtensionOids().iterator();
 
-        while (extensionClasses.hasNext()) {
-            String clazz = extensionClasses.next();
-            String oid =  extensionOids.next();
-            if(oid.startsWith("*")) {
-                oid = oid.substring(1, oid.length());
+        lock.lock();
+        try {
+            while (extensionClasses.hasNext()) {
+                String clazz = extensionClasses.next();
+                String oid = extensionOids.next();
+                if (oid.startsWith("*")) {
+                    oid = oid.substring(1, oid.length());
+                }
+                OCSPExtension ext = null;
+                try {
+                    ext = (OCSPExtension) Class.forName(clazz).newInstance();
+                } catch (Exception e) {
+                    log.error("Can not create extension with class " + clazz, e);
+                    continue;
+                }
+                extensionMap.put(oid, ext);
             }
-            OCSPExtension ext = null;
-            try {
-                ext = (OCSPExtension) Class.forName(clazz).newInstance();
-            } catch (Exception e) {
-                log.error("Can not create extension with class " + clazz, e);
-                continue;
-            }
-            extensionMap.put(oid, ext);
+        } finally {
+            lock.unlock();
         }
     }
 
