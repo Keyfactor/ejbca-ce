@@ -78,6 +78,7 @@ import org.ejbca.core.ejb.ca.revoke.RevocationSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.protocol.ocsp.extension.unid.FnrFromUnidExtension;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;

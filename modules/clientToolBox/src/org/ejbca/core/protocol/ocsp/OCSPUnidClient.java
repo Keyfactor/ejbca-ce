@@ -78,6 +78,8 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.ejbca.core.protocol.ocsp.extension.unid.FnrFromUnidExtension;
+import org.ejbca.core.protocol.ocsp.extension.unid.OCSPUnidResponse;
 
 /** A simple OCSP lookup client used to query the OCSPUnidExtension. Attributes needed to call the client is a keystore
  * issued from the same CA as has issued the TLS server certificate of the OCSP/Lookup server.
