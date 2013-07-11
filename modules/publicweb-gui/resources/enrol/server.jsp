@@ -15,6 +15,9 @@ or paste a PEM-formated request into the field below and click OK to fetch your 
 <form name="EJBCA" action="../certreq" method="post" enctype="multipart/form-data">
   <fieldset >
     <legend>Enroll</legend>
+    
+    <input type="hidden" name="hidemenu" value="${hidemenu}" />
+    
 	<label for="user">Username</label>
 	<input type="text" size="40" name="user" id="user" accesskey="u" />
 	<br />

@@ -37,6 +37,8 @@
       <fieldset>
         <legend>Registration request - Step 1 of 2</legend>
         
+        <input type="hidden" name="hidemenu" value="${hidemenu}" />
+        
         <label for="certType">Certificate type</label>
         <select name="certType" id="certType" accesskey="t">
           <c:forEach var="certtype" items="${reg.certificateTypes}">
