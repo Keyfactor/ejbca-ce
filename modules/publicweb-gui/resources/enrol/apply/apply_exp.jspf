@@ -377,6 +377,7 @@
 	<input name="classid" type="hidden" value="" />
     <input name="pkcs10" type="hidden" value="" />
     <input name="containername" type="hidden" value="" />
+    <input type="hidden" name="hidemenu" value="${hidemenu}" />
 
 	<label for="CspProvider">Provider:</label>
     <select name="CspProvider" id="CspProvider" accesskey="p">

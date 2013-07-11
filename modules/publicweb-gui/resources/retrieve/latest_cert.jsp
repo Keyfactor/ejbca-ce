@@ -13,6 +13,7 @@
 <form action="../publicweb/webdist/certdist" enctype="x-www-form-encoded" method="get">
   <fieldset>
     <legend>Name</legend>
+    <input type="hidden" name="hidemenu" value="${hidemenu}" />
     <input type="hidden" name="cmd" value="lastcert" />
     <label for="subject">Subject DN</label>
     <input name="subject" id="subject" type="text" size="60" accesskey="s" />

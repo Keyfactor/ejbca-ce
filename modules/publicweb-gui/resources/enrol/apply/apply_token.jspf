@@ -31,7 +31,7 @@
    This options requires special configuration of the CA.
 </p>
 
-<form action="../certreq" enctype="x-www-form-encoded" method="post">
+<form action="../certreq?hidemenu=${hidemenu}" enctype="x-www-form-encoded" method="post">
   <fieldset>
 	<legend>Options</legend>
 	<i><c:out value="Leave values as default if unsure."/></i>

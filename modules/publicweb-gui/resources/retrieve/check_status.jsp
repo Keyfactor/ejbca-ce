@@ -7,6 +7,7 @@
   <fieldset>
     <legend>Certificate data</legend>
 
+    <input type="hidden" name="hidemenu" value="${hidemenu}" />
 	<input type="hidden" name="cmd" value="revoked" />
 
 	<label for="issuer">Issuer DN</label>

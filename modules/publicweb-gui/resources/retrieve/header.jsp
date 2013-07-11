@@ -1,11 +1,13 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <%@ page pageEncoding="ISO-8859-1"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%
    response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding());
    org.ejbca.ui.web.RequestHelper.setDefaultCharacterEncoding(request);
 %>
 
+<c:set var="hidemenu" value="${param['hidemenu'] == 'true' ? 'true' : 'false'}" />
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=<%= org.ejbca.config.WebConfiguration.getWebContentEncoding() %>" />
@@ -23,6 +25,7 @@
 		</div>
     </div>
     <div class="menucontainer">
+      <c:if test="${hidemenu != 'true'}">
       <div class="menu">
         <ul>
           <li><div class="menuheader">Enroll</div>
@@ -107,6 +110,7 @@
           </li>  
         </ul>
       </div>
+      </c:if>
     </div>
     <div class="main">
       <div class="content">

@@ -45,6 +45,7 @@
     
 	<input name="user" type="hidden" value="${username}" />
 	<input name="password" type="hidden" value="${password}" />
+	<input type="hidden" name="hidemenu" value="${hidemenu}" />
 	
 	<c:if test="${minKeyLength > 1024}"><div style="display: none"></c:if>
     	<label for="keygen">Key length:</label>
