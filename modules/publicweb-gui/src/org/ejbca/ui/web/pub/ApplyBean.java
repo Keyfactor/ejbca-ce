@@ -13,6 +13,7 @@
  
 package org.ejbca.ui.web.pub;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -27,6 +28,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.ejbca.config.EjbcaConfigurationHolder;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.util.EjbLocalHelper;
@@ -346,6 +348,16 @@ public class ApplyBean implements java.io.Serializable {
         }
         return minimum;
     }
+    
+    /**
+     * Checks if there's more than one key length to choose from
+     * @return true if there's more than one key length, or if no available key lengths could be found.
+     * @throws Exception
+     */
+    public boolean isMultipleKeyLengthsAvailable() throws Exception {
+        int[] keylengths = getAvailableBitLengths();
+        return keylengths == null || keylengths.length != 1; 
+    }
 	
 
     /**
@@ -384,6 +396,22 @@ public class ApplyBean implements java.io.Serializable {
 	 */
 	public String getUserCertificateProfile() throws Exception {
 		return getUserCertificateProfile(defaultUsername);
+	}
+	
+	/**
+	 * Checks if the "OpenVPN installer" option should be available.
+	 */
+	public boolean isOpenVPNInstallerConfigured() throws Exception {
+        // Check that the OpenVPN installer script exists 
+        final String script = EjbcaConfigurationHolder
+            .getString("web.openvpn.createInstallerScript");
+        boolean exists = (script != null && new File(script).exists());
+        
+        if (log.isDebugEnabled()) {
+            log.debug("OpenVPN installer script does not exist, so the option will be hidden: " + script);
+        }
+        
+        return exists;
 	}
 
 }
