@@ -29,6 +29,8 @@
       <fieldset>
         <legend>Registration request - Step 2 of 2</legend>
         
+        <input type="hidden" name="hidemenu" value="${hidemenu}" />
+        
         <b>Certificate type: <c:out value="${reg.certTypeDescription}" /></b>
         <input type="hidden" name="certType" value="<c:out value="${reg.certType}" />"  />
         <br />
