@@ -51,6 +51,8 @@
     	<label for="keygen">Key length:</label>
     	<keygen name="keygen" id="keygen" value="challenge" accesskey="k"/>
     	<br />
+    	<small>Medium grade = 1024 bit key length. High grade = 2048 bit key length.</small>
+    	<br />
 	<c:if test="${minKeyLength > 1024}"></div></c:if>
 	
     <c:if test="${applybean.certificateProfileListShown}">
