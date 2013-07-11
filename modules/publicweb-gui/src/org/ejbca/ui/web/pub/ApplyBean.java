@@ -336,9 +336,12 @@ public class ApplyBean implements java.io.Serializable {
      */
     public int getMinimumAvailableKeyLength() throws Exception {
         int minimum = Integer.MAX_VALUE;
-        for (int keylength : getAvailableBitLengths()) {
-            if (keylength < minimum) {
-                minimum = keylength;
+        int[] keylengths = getAvailableBitLengths();
+        if (keylengths != null) {
+            for (int keylength : keylengths) {
+                if (keylength < minimum) {
+                    minimum = keylength;
+                }
             }
         }
         return minimum;
