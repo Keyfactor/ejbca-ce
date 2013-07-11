@@ -10,7 +10,6 @@
 <c:set var="TEXTFIELD_USERNAME" value="textfieldusername" />
 <c:set var="TEXTFIELD_PASSWORD" value="textfieldpassword" />
 
-<c:set var="HIDDEN_BROWSER" value="hiddenbrowser" />
 <c:set var="FORCE_BROWSER" value="forcebrowser" />
 
 <c:set var="BROWSER_NETSCAPE" value="netscape" />
