@@ -33,7 +33,7 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfileException;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
 
@@ -70,7 +70,7 @@ public interface EndEntityManagementSession {
      */
     void addUser(AuthenticationToken admin, String username, String password, String subjectdn, String subjectaltname, String email,
     		boolean clearpwd, int endentityprofileid, int certificateprofileid, EndEntityType type, int tokentype, int hardwaretokenissuerid, int caid)
-    		throws PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException,
+    		throws PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfileException, WaitingForApprovalException,
     		CADoesntExistsException, EjbcaException;
 
     /**
@@ -84,7 +84,7 @@ public interface EndEntityManagementSession {
      *            db, otherwise it is hashed.
      * @throws AuthorizationDeniedException
      *             if administrator isn't authorized to add user
-     * @throws UserDoesntFullfillEndEntityProfile
+     * @throws UserDoesntFullfillEndEntityProfileException
      *             if data doesn't fullfil requirements of end entity profile
      * @throws PersistenceException
      *             if user already exists or some other database error occur during commit
@@ -98,7 +98,7 @@ public interface EndEntityManagementSession {
      *             SubjectDN Serialnumber already exists when it is specified in
      *             the CA that it should be unique.
      */
-    void addUserFromWS(AuthenticationToken admin, EndEntityInformation userdata, boolean clearpwd) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
+    void addUserFromWS(AuthenticationToken admin, EndEntityInformation userdata, boolean clearpwd) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfileException,
             PersistenceException, WaitingForApprovalException, CADoesntExistsException, EjbcaException;
 
     /**
@@ -111,7 +111,7 @@ public interface EndEntityManagementSession {
      *            db, otherwise it is hashed.
      * @throws AuthorizationDeniedException
      *             if administrator isn't authorized to add user
-     * @throws UserDoesntFullfillEndEntityProfile
+     * @throws UserDoesntFullfillEndEntityProfileException
      *             if data doesn't fullfil requirements of end entity profile
      * @throws PersistenceException
      *             if user already exists or some other database error occur during commit
@@ -124,14 +124,14 @@ public interface EndEntityManagementSession {
      *             the CA that it should be unique.
      * @throws WaitingForApprovalException
      */
-    void addUser(AuthenticationToken admin, EndEntityInformation userdata, boolean clearpwd) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
+    void addUser(AuthenticationToken admin, EndEntityInformation userdata, boolean clearpwd) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfileException,
             PersistenceException, WaitingForApprovalException, CADoesntExistsException, EjbcaException;
 
     /**
      * Validates the name and DN in an end entity and canonicalizes/strips
      * the attributes. This method is called by addUser.
      */
-    public void canonicalizeUser(final EndEntityInformation endEntity) throws EjbcaException, UserDoesntFullfillEndEntityProfile;
+    public void canonicalizeUser(final EndEntityInformation endEntity) throws EjbcaException, UserDoesntFullfillEndEntityProfileException;
     
     /**
      * Changes data for a user in the database specified by username.
@@ -159,7 +159,7 @@ public interface EndEntityManagementSession {
      *             certificate
      * @throws AuthorizationDeniedException
      *             if administrator isn't authorized to add user
-     * @throws UserDoesntFullfillEndEntityProfile
+     * @throws UserDoesntFullfillEndEntityProfileException
      *             if data doesn't fullfil requirements of end entity profile
      * @throws ApprovalException
      *             if an approval already is waiting for specified action
@@ -178,7 +178,7 @@ public interface EndEntityManagementSession {
     @Deprecated
     void changeUser(AuthenticationToken admin, String username, String password, String subjectdn, String subjectaltname, String email, boolean clearpwd,
     		int endentityprofileid, int certificateprofileid, EndEntityType type, int tokentype, int hardwaretokenissuerid, int status, int caid) throws AuthorizationDeniedException,
-            UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, CADoesntExistsException, EjbcaException;
+            UserDoesntFullfillEndEntityProfileException, WaitingForApprovalException, CADoesntExistsException, EjbcaException;
 
     /**
      * Change user information.
@@ -190,7 +190,7 @@ public interface EndEntityManagementSession {
      *             db, otherwise it is hashed.
      * @throws AuthorizationDeniedException
      *             if administrator isn't authorized to add user
-     * @throws UserDoesntFullfillEndEntityProfile
+     * @throws UserDoesntFullfillEndEntityProfileException
      *             if data doesn't fullfil requirements of end entity profile
      * @throws ApprovalException
      *             if an approval already is waiting for specified action
@@ -205,7 +205,7 @@ public interface EndEntityManagementSession {
      *             the CA that it should be unique.
      */
     void changeUser(AuthenticationToken admin, EndEntityInformation userdata, boolean clearpwd)
-            throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
+            throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfileException,
             WaitingForApprovalException, CADoesntExistsException, EjbcaException;
 
     /**
@@ -219,7 +219,7 @@ public interface EndEntityManagementSession {
      * @param fromWebService The service is called from webService
      * @throws AuthorizationDeniedException
      *             if administrator isn't authorized to add user
-     * @throws UserDoesntFullfillEndEntityProfile
+     * @throws UserDoesntFullfillEndEntityProfileException
      *             if data doesn't fullfil requirements of end entity profile
      * @throws WaitingForApprovalException
      *             if approval is required and the action have been added in the
@@ -232,7 +232,7 @@ public interface EndEntityManagementSession {
      * @throws javax.ejb.EJBException if the user does not exist
      */
     void changeUser(AuthenticationToken admin, EndEntityInformation userdata, boolean clearpwd, boolean fromWebService)
-            throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
+            throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfileException,
             WaitingForApprovalException, CADoesntExistsException, EjbcaException;
 
     /**
@@ -264,7 +264,7 @@ public interface EndEntityManagementSession {
      * @param username the unique username.
      * @param password the new password for the user, NOT null.
      */
-    void setPassword(AuthenticationToken admin, String username, String password) throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException, FinderException;
+    void setPassword(AuthenticationToken admin, String username, String password) throws UserDoesntFullfillEndEntityProfileException, AuthorizationDeniedException, FinderException;
 
     /**
      * Sets a clear text password for a user.
@@ -275,7 +275,7 @@ public interface EndEntityManagementSession {
      *            password to 'null' effectively deletes any previous clear
      *            text password.
      */
-    void setClearTextPassword(AuthenticationToken admin, String username, String password) throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException, FinderException;
+    void setClearTextPassword(AuthenticationToken admin, String username, String password) throws UserDoesntFullfillEndEntityProfileException, AuthorizationDeniedException, FinderException;
 
     /**
      * Verifies a password for a user.
@@ -284,7 +284,7 @@ public interface EndEntityManagementSession {
      * @param username the unique username.
      * @param password the password to be verified.
      */
-    boolean verifyPassword(AuthenticationToken admin, String username, String password) throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException, FinderException;
+    boolean verifyPassword(AuthenticationToken admin, String username, String password) throws UserDoesntFullfillEndEntityProfileException, AuthorizationDeniedException, FinderException;
 
     /**
      * Method to execute a customized query on the ra user data. The parameter

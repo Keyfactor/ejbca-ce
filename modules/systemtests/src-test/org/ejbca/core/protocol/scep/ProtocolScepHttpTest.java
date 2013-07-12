@@ -96,7 +96,7 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfileException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -473,7 +473,7 @@ public class ProtocolScepHttpTest extends CaTestCase {
         return data;
     }
 
-    private void createScepUser(String userName, String userDN) throws PersistenceException, CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException {
+    private void createScepUser(String userName, String userDN) throws PersistenceException, CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfileException, WaitingForApprovalException, EjbcaException {
         if(!endEntityManagementSession.existsUser(userName)) {
             endEntityManagementSession.addUser(admin, getEndEntityInformation(userName, userDN), false);
         } else {
@@ -481,7 +481,7 @@ public class ProtocolScepHttpTest extends CaTestCase {
         }
     }
 
-    private void changeScepUser(String userName, String userDN) throws CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException  {
+    private void changeScepUser(String userName, String userDN) throws CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfileException, WaitingForApprovalException, EjbcaException  {
         endEntityManagementSession.changeUser(admin, getEndEntityInformation(userName, userDN), false);
         log.debug("changing user: " + userName + ", foo123, " + userDN);
     }

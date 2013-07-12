@@ -33,7 +33,7 @@ import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfileException;
 import org.ejbca.core.model.ra.userdatasource.MultipleMatchException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceException;
 import org.ejbca.core.protocol.ws.DateNotValidException;
@@ -86,14 +86,14 @@ public interface IEjbcaWS {
 	 * @throws CADoesntExistsException if a referenced CA does not exist
 	 * @throws ApprovalException
 	 * @throws AuthorizationDeniedException
-	 * @throws UserDoesntFullfillEndEntityProfile
+	 * @throws UserDoesntFullfillEndEntityProfileException
 	 * @throws WaitingForApprovalException
 	 * @throws EjbcaException
 	 * @throws IllegalQueryException 
 	 */
 	public abstract void editUser(UserDataVOWS userdata)
 			throws CADoesntExistsException, AuthorizationDeniedException,
-			UserDoesntFullfillEndEntityProfile, EjbcaException,
+			UserDoesntFullfillEndEntityProfileException, EjbcaException,
 			ApprovalException, WaitingForApprovalException;
 
 	/**
@@ -236,7 +236,7 @@ public interface IEjbcaWS {
 	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws AuthorizationDeniedException if administrator is not authorized to edit end entity or if an authenticated request can not be verified
 	 * @throws SignRequestException if the provided request is invalid, for example not containing a username or password
-	 * @throws UserDoesntFullfillEndEntityProfile
+	 * @throws UserDoesntFullfillEndEntityProfileException
 	 * @throws NotFoundException
 	 * @throws EjbcaException for other errors, an error code like ErrorCode.SIGNATURE_ERROR (popo/inner signature verification failed) is set.
 	 * @throws ApprovalException
@@ -246,7 +246,7 @@ public interface IEjbcaWS {
 	 * @see org.cesecore.ErrorCode 
 	 */
 	public List<Certificate> cvcRequest(String username, String password, String cvcreq)
-	throws CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, NotFoundException,
+	throws CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfileException, NotFoundException,
 	EjbcaException, ApprovalException, WaitingForApprovalException, SignRequestException, CertificateExpiredException, CesecoreException;
 	
 
@@ -599,7 +599,7 @@ public interface IEjbcaWS {
 	 * @throws ApprovalException  if error happened with the approval mechanisms
 	 * @throws WaitingForApprovalException if the request haven't been processed yet. 
 	 * @throws ApprovalRequestExecutionException if the approval request was rejected
-	 * @throws UserDoesntFullfillEndEntityProfile
+	 * @throws UserDoesntFullfillEndEntityProfileException
 	 * @throws EjbcaException
 	 */
 	public abstract List<TokenCertificateResponseWS> genTokenCertificates(
@@ -609,7 +609,7 @@ public interface IEjbcaWS {
 			boolean overwriteExistingSN,
 			boolean revokePreviousCards) throws CADoesntExistsException, AuthorizationDeniedException,
 			WaitingForApprovalException, HardTokenExistsException,
-			UserDoesntFullfillEndEntityProfile, ApprovalException,
+			UserDoesntFullfillEndEntityProfileException, ApprovalException,
 			EjbcaException, ApprovalRequestExpiredException, ApprovalRequestExecutionException;
 
 	/**
@@ -921,7 +921,7 @@ public interface IEjbcaWS {
 	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws AuthorizationDeniedException if client isn't authorized to request
 	 * @throws NotFoundException if user cannot be found
-	 * @throws UserDoesntFullfillEndEntityProfile
+	 * @throws UserDoesntFullfillEndEntityProfileException
 	 * @throws ApprovalException
 	 * @throws WaitingForApprovalException
 	 * @throws EjbcaException
@@ -929,7 +929,7 @@ public interface IEjbcaWS {
 	 * @see #editUser(UserDataVOWS)
 	 */
 	public abstract KeyStore softTokenRequest(UserDataVOWS userData, String hardTokenSN, String keyspec, String keyalg)
-	throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, UserDoesntFullfillEndEntityProfile,
+	throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, UserDoesntFullfillEndEntityProfileException,
 	ApprovalException, WaitingForApprovalException, EjbcaException;
 	/**
 	 * Generates a certificate for a user.
@@ -958,7 +958,7 @@ public interface IEjbcaWS {
 	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws AuthorizationDeniedException if client isn't authorized to request
 	 * @throws NotFoundException if user cannot be found
-	 * @throws UserDoesntFullfillEndEntityProfile
+	 * @throws UserDoesntFullfillEndEntityProfileException
 	 * @throws ApprovalException
 	 * @throws WaitingForApprovalException
 	 * @throws EjbcaException
@@ -966,7 +966,7 @@ public interface IEjbcaWS {
 	 * @see #editUser(UserDataVOWS)
 	 */
 	public abstract CertificateResponse certificateRequest(UserDataVOWS userData, String requestData, int requestType, String hardTokenSN, String responseType)
-	throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, UserDoesntFullfillEndEntityProfile,
+	throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, UserDoesntFullfillEndEntityProfileException,
 	ApprovalException, WaitingForApprovalException, EjbcaException;
 
 

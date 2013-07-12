@@ -17,7 +17,7 @@ import javax.ejb.FinderException;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfileException;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -54,7 +54,7 @@ public class RaSetClearPwdCommand extends BaseRaAdminCommand {
                 ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setClearTextPassword(getAdmin(cliUserName, cliPassword), username, password);
             } catch (AuthorizationDeniedException e) {
             	getLogger().error("Not authorized to change userdata.");
-            } catch (UserDoesntFullfillEndEntityProfile e) {
+            } catch (UserDoesntFullfillEndEntityProfileException e) {
             	getLogger().error("Given userdata doesn't fullfill end entity profile. : " + e.getMessage());
             } catch (FinderException e) {
                 getLogger().error("User '"+username+"' does not exist.");

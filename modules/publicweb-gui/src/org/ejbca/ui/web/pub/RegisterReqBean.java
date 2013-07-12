@@ -44,7 +44,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfileException;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.util.DNFieldDescriber;
 
@@ -443,7 +443,7 @@ public class RegisterReqBean {
         } catch (EjbcaException e) {
             errors.add("Validation error: "+e.getMessage());
             return;
-        } catch (UserDoesntFullfillEndEntityProfile e) {
+        } catch (UserDoesntFullfillEndEntityProfileException e) {
             errors.add("User information does not fulfill requirements: "+e.getMessage());
             return;
         }

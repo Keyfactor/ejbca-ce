@@ -113,7 +113,7 @@ import org.ejbca.core.model.ra.EndEntityInformationFiller;
 import org.ejbca.core.model.ra.UserNotificationParamGen;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.ICustomNotificationRecipient;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfileException;
 import org.ejbca.core.model.ra.raadmin.UserNotification;
 import org.ejbca.util.PrinterManager;
 import org.ejbca.util.dn.DistinguishedName;
@@ -228,7 +228,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     @Override
     public void addUser(final AuthenticationToken admin, final String username, final String password, final String subjectdn, final String subjectaltname, final String email,
             final boolean clearpwd, final int endentityprofileid, final int certificateprofileid, final EndEntityType type, final int tokentype, final int hardwaretokenissuerid, final int caid)
-            throws PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException,
+            throws PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfileException, WaitingForApprovalException,
             CADoesntExistsException, EjbcaException {
         final EndEntityInformation userdata = new EndEntityInformation(username, subjectdn, caid, subjectaltname, email, EndEntityConstants.STATUS_NEW,
                 type, endentityprofileid, certificateprofileid, null, null, tokentype, hardwaretokenissuerid, null);
@@ -241,7 +241,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
 
     @Override
     public void addUserFromWS(final AuthenticationToken admin, EndEntityInformation userdata, final boolean clearpwd) throws AuthorizationDeniedException,
-            UserDoesntFullfillEndEntityProfile, PersistenceException, WaitingForApprovalException, CADoesntExistsException, EjbcaException {
+            UserDoesntFullfillEndEntityProfileException, PersistenceException, WaitingForApprovalException, CADoesntExistsException, EjbcaException {
         final int profileId = userdata.getEndEntityProfileId();
         final EndEntityProfile profile = endEntityProfileSession.getEndEntityProfileNoClone(profileId);
         if (profile.getAllowMergeDnWebServices()) {
@@ -251,7 +251,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     }
 
     @Override
-    public void canonicalizeUser(final EndEntityInformation endEntity) throws EjbcaException, UserDoesntFullfillEndEntityProfile {
+    public void canonicalizeUser(final EndEntityInformation endEntity) throws EjbcaException, UserDoesntFullfillEndEntityProfileException {
         final int endEntityProfileId = endEntity.getEndEntityProfileId();
         final String endEntityProfileName = endEntityProfileSession.getEndEntityProfileName(endEntityProfileId);
         try {
@@ -270,7 +270,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     // EJBException(java.rmi.ServerException(java.rmi.RemoteException(javax.persistence.EntityExistsException)))) on Glassfish
     @Override
     public void addUser(final AuthenticationToken admin, final EndEntityInformation endEntity, final boolean clearpwd) throws AuthorizationDeniedException,
-            EjbcaException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, PersistenceException, CADoesntExistsException {
+            EjbcaException, UserDoesntFullfillEndEntityProfileException, WaitingForApprovalException, PersistenceException, CADoesntExistsException {
         final int endEntityProfileId = endEntity.getEndEntityProfileId();
         final int caid = endEntity.getCAId();
         // Check if administrator is authorized to add user to CA.
@@ -315,7 +315,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         endEntity.getCertificateProfileId(), clearpwd, type.contains(EndEntityTypes.KEYRECOVERABLE),
                         type.contains(EndEntityTypes.SENDNOTIFICATION), endEntity.getTokenType(), endEntity.getHardTokenIssuerId(), caid,
                         endEntity.getExtendedinformation());
-            } catch (UserDoesntFullfillEndEntityProfile e) {
+            } catch (UserDoesntFullfillEndEntityProfileException e) {
                 final String msg = intres.getLocalizedMessage("ra.errorfullfillprofile", endEntityProfileName, dn, e.getMessage());
                 Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
@@ -454,7 +454,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     @Override
     public void changeUser(final AuthenticationToken admin, final String username, final String password, final String subjectdn, final String subjectaltname, final String email,
             final boolean clearpwd, final int endentityprofileid, final int certificateprofileid, final EndEntityType type, final int tokentype, final int hardwaretokenissuerid, final int status,
-            final int caid) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, CADoesntExistsException,
+            final int caid) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfileException, WaitingForApprovalException, CADoesntExistsException,
             EjbcaException {
         final EndEntityInformation userdata = new EndEntityInformation(username, subjectdn, caid, subjectaltname, email, status, type, endentityprofileid,
                 certificateprofileid, null, null, tokentype, hardwaretokenissuerid, null);
@@ -471,13 +471,13 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
 
     @Override
     public void changeUser(final AuthenticationToken admin, final EndEntityInformation userdata, final boolean clearpwd) throws AuthorizationDeniedException,
-            UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, CADoesntExistsException, EjbcaException {
+            UserDoesntFullfillEndEntityProfileException, WaitingForApprovalException, CADoesntExistsException, EjbcaException {
         changeUser(admin, userdata, clearpwd, false);
     }
 
     @Override
     public void changeUser(final AuthenticationToken admin, final EndEntityInformation endEntityInformation, final boolean clearpwd,
-            final boolean fromWebService) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException,
+            final boolean fromWebService) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfileException, WaitingForApprovalException,
             CADoesntExistsException, EjbcaException {
         final int endEntityProfileId = endEntityInformation.getEndEntityProfileId();
         final int caid = endEntityInformation.getCAId();
@@ -565,7 +565,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                             endEntityInformation.getCertificateProfileId(), type.contains(EndEntityTypes.KEYRECOVERABLE),
                             type.contains(EndEntityTypes.SENDNOTIFICATION), endEntityInformation.getTokenType(), endEntityInformation.getHardTokenIssuerId(), caid, ei);
                 }
-            } catch (UserDoesntFullfillEndEntityProfile e) {
+            } catch (UserDoesntFullfillEndEntityProfileException e) {
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", intres.getLocalizedMessage("ra.errorfullfillprofile", Integer.valueOf(endEntityProfileId), dn, e.getMessage()));
                 auditSession.log(EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.FAILURE, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(),
@@ -1037,13 +1037,13 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     }
 
     @Override
-    public void setPassword(AuthenticationToken admin, String username, String password) throws UserDoesntFullfillEndEntityProfile,
+    public void setPassword(AuthenticationToken admin, String username, String password) throws UserDoesntFullfillEndEntityProfileException,
             AuthorizationDeniedException, FinderException {
         setPassword(admin, username, password, false);
     }
 
     @Override
-    public void setClearTextPassword(AuthenticationToken admin, String username, String password) throws UserDoesntFullfillEndEntityProfile,
+    public void setClearTextPassword(AuthenticationToken admin, String username, String password) throws UserDoesntFullfillEndEntityProfileException,
             AuthorizationDeniedException, FinderException {
         setPassword(admin, username, password, true);
     }
@@ -1057,7 +1057,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
      * @param cleartext true gives cleartext password, false hashed
      */
     private void setPassword(final AuthenticationToken admin, final String username, final String password, final boolean cleartext)
-            throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException, FinderException {
+            throws UserDoesntFullfillEndEntityProfileException, AuthorizationDeniedException, FinderException {
         if (log.isTraceEnabled()) {
             log.trace(">setPassword(" + username + ", hiddenpwd), " + cleartext);
         }
@@ -1080,7 +1080,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             // Check if user fulfills it's profile.
             try {
                 profile.doesPasswordFulfillEndEntityProfile(password, true);
-            } catch (UserDoesntFullfillEndEntityProfile ufe) {
+            } catch (UserDoesntFullfillEndEntityProfileException ufe) {
                 final String msg = intres.getLocalizedMessage("ra.errorfullfillprofile", Integer.valueOf(endEntityProfileId), dn, ufe.getMessage());
                 Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
@@ -1120,7 +1120,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     }
 
     @Override
-    public boolean verifyPassword(AuthenticationToken admin, String username, String password) throws UserDoesntFullfillEndEntityProfile,
+    public boolean verifyPassword(AuthenticationToken admin, String username, String password) throws UserDoesntFullfillEndEntityProfileException,
             AuthorizationDeniedException, FinderException {
         if (log.isTraceEnabled()) {
             log.trace(">verifyPassword(" + username + ", hiddenpwd)");
