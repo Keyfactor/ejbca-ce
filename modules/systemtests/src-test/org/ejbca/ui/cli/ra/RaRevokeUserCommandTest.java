@@ -60,7 +60,7 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.NotFoundException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfileException;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
@@ -110,7 +110,7 @@ public class RaRevokeUserCommandTest extends CaTestCase {
     }
 
     @Test
-    public void testExecuteHappyPath() throws PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException, IllegalQueryException, RemoveException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, CustomCertSerialNumberException, IllegalKeyException, CertificateCreateException, CesecoreException  {
+    public void testExecuteHappyPath() throws PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfileException, WaitingForApprovalException, EjbcaException, IllegalQueryException, RemoveException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, CustomCertSerialNumberException, IllegalKeyException, CertificateCreateException, CesecoreException  {
 
         String fingerprint = null;
         try {

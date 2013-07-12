@@ -36,7 +36,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfileException;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -282,7 +282,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                     getLogger().info("Note: If batch processing should be possible, also use 'ra setclearpwd " + username + " <pwd>'.");
                 } catch (AuthorizationDeniedException e) {
                     getLogger().error(e.getMessage());
-                } catch (UserDoesntFullfillEndEntityProfile e) {
+                } catch (UserDoesntFullfillEndEntityProfileException e) {
                     getLogger().info("Given userdata doesn't fullfill end entity profile. : " + e.getMessage());
                 } catch (WaitingForApprovalException e) {
                     getLogger().info("\nOperation pending, waiting for approval: " + e.getMessage());

@@ -58,7 +58,7 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ra.UsernameGenerator;
 import org.ejbca.core.model.ra.UsernameGeneratorParams;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfileException;
 import org.ejbca.core.protocol.ExtendedUserDataHandler;
 import org.ejbca.core.protocol.ExtendedUserDataHandler.HandlerException;
 import org.ejbca.core.protocol.cmp.authentication.HMACAuthenticationModule;
@@ -457,7 +457,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 					// Try again
 					resp = this.certificateRequestSession.processCertReq(this.admin, userdata, req, org.ejbca.core.protocol.cmp.CmpResponseMessage.class);
 				}
-			} catch (UserDoesntFullfillEndEntityProfile e) {
+			} catch (UserDoesntFullfillEndEntityProfileException e) {
 				LOG.error(INTRES.getLocalizedMessage(CMP_ERRORADDUSER, username), e);
 				resp = CmpMessageHelper.createErrorMessage(msg, FailInfo.INCORRECT_DATA, e.getMessage(), requestId, requestType, verifyer, keyId, this.responseProt);
 			} catch (ApprovalException e) {

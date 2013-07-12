@@ -19,7 +19,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfileException;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -66,7 +66,7 @@ public class RaSetSubjDirAttrCommand extends BaseRaAdminCommand {
             	ejb.getRemoteSession(EndEntityManagementSessionRemote.class).changeUser(getAdmin(cliUserName, cliPassword), uservo, false);
             } catch (AuthorizationDeniedException e) {
             	getLogger().error("Not authorized to change userdata.");
-            } catch (UserDoesntFullfillEndEntityProfile e) {
+            } catch (UserDoesntFullfillEndEntityProfileException e) {
             	getLogger().error("Given userdata doesn't fullfill end entity profile. : " + e.getMessage());
             }
         } catch (Exception e) {

@@ -49,7 +49,7 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfileException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -187,7 +187,7 @@ public class ExtendedKeyUsageTest extends CaTestCase {
     }
 
     private void createOrEditUser(final int fooCertProfile, final int fooEEProfile) throws AuthorizationDeniedException,
-            UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, CADoesntExistsException, EjbcaException {
+            UserDoesntFullfillEndEntityProfileException, WaitingForApprovalException, CADoesntExistsException, EjbcaException {
         // Make user that we know...
         boolean userExists = false;
         EndEntityInformation user = new EndEntityInformation("extkeyusagefoo", "C=SE,O=AnaTom,CN=extkeyusagefoo", rsacaid, null, "foo@anatom.se",

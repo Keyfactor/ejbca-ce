@@ -105,7 +105,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.NotFoundException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfileException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -1504,7 +1504,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         return new CMPCertificate(c);
     }
 
-    private EndEntityInformation createUser(String username, String subjectDN, String password) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, 
+    private EndEntityInformation createUser(String username, String subjectDN, String password) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfileException, 
                 WaitingForApprovalException, EjbcaException, Exception {
 
         EndEntityInformation user = new EndEntityInformation(username, subjectDN, caid, null, username+"@primekey.se", new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE,
@@ -1640,7 +1640,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             createUser(adminName, dn, "foo123");
         } catch (AuthorizationDeniedException e1) {
             throw new CertificateCreationException("Error encountered when creating admin user", e1);
-        } catch (UserDoesntFullfillEndEntityProfile e1) {
+        } catch (UserDoesntFullfillEndEntityProfileException e1) {
             throw new CertificateCreationException("Error encountered when creating admin user", e1);
         } catch (WaitingForApprovalException e1) {
             throw new CertificateCreationException("Error encountered when creating admin user", e1);

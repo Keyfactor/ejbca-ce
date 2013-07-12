@@ -69,7 +69,7 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.WrongTokenTypeException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfileException;
 import org.ejbca.core.model.util.GenerateToken;
 import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
@@ -115,7 +115,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
     public byte[] processCertReq(AuthenticationToken admin, EndEntityInformation userdata, String req, int reqType, String hardTokenSN,
             int responseType) throws AuthorizationDeniedException, NotFoundException, InvalidKeyException, NoSuchAlgorithmException,
             InvalidKeySpecException, NoSuchProviderException, SignatureException, IOException, ObjectNotFoundException, CertificateException,
-            UserDoesntFullfillEndEntityProfile, ApprovalException, EjbcaException, CesecoreException {
+            UserDoesntFullfillEndEntityProfileException, ApprovalException, EjbcaException, CesecoreException {
         byte[] retval = null;
 
         // Check tokentype
@@ -177,7 +177,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
 
     @Override
     public ResponseMessage processCertReq(AuthenticationToken admin, EndEntityInformation userdata, RequestMessage req, Class<? extends ResponseMessage> responseClass)
-            throws PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, CesecoreException {
+            throws PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfileException, EjbcaException, CesecoreException {
         // Check tokentype
         if (userdata.getTokenType() != SecConst.TOKEN_SOFT_BROWSERGEN) {
             throw new WrongTokenTypeException("Error: Wrong Token Type of user, must be 'USERGENERATED' for PKCS10/SPKAC/CRMF/CVC requests");
@@ -201,7 +201,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
      * @throws CADoesntExistsException if userdata.caId is not a valid caid. This is checked in editUser or addUserFromWS
      */
     private void addOrEditUser(AuthenticationToken admin, EndEntityInformation userdata, boolean clearpwd, boolean fromwebservice)
-            throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ApprovalException, PersistenceException,
+            throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfileException, ApprovalException, PersistenceException,
             CADoesntExistsException, EjbcaException {
 
         int caid = userdata.getCAId();
@@ -279,7 +279,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
     public byte[] processSoftTokenReq(AuthenticationToken admin, EndEntityInformation userdata, String hardTokenSN, String keyspec, String keyalg,
             boolean createJKS) throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, InvalidKeyException,
             InvalidKeySpecException, NoSuchProviderException, SignatureException, IOException, ObjectNotFoundException, CertificateException,
-            UserDoesntFullfillEndEntityProfile, ApprovalException, EjbcaException, KeyStoreException, NoSuchAlgorithmException,
+            UserDoesntFullfillEndEntityProfileException, ApprovalException, EjbcaException, KeyStoreException, NoSuchAlgorithmException,
             InvalidAlgorithmParameterException, PersistenceException {
 
         // This is the secret sauce, do the end entity handling automagically here before we get the cert

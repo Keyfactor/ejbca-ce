@@ -41,7 +41,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.ra.NotFoundException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfileException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.IllegalQueryException;
@@ -95,7 +95,7 @@ public class RaAddUserCommandTest {
     }
 
     @Test
-    public void testExecuteHappyPath() throws ErrorAdminCommandException, IllegalQueryException, AuthorizationDeniedException, RemoveException, UserDoesntFullfillEndEntityProfile, FinderException {
+    public void testExecuteHappyPath() throws ErrorAdminCommandException, IllegalQueryException, AuthorizationDeniedException, RemoveException, UserDoesntFullfillEndEntityProfileException, FinderException {
 
         try {
             command0.execute(HAPPY_PATH_ADD_ARGS);
@@ -136,7 +136,7 @@ public class RaAddUserCommandTest {
 
 
     @Test
-    public void testSetPwdInvalidUser() throws ErrorAdminCommandException, IllegalQueryException, AuthorizationDeniedException, RemoveException, UserDoesntFullfillEndEntityProfile, FinderException {
+    public void testSetPwdInvalidUser() throws ErrorAdminCommandException, IllegalQueryException, AuthorizationDeniedException, RemoveException, UserDoesntFullfillEndEntityProfileException, FinderException {
 
         try {
 
