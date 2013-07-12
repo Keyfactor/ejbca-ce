@@ -211,8 +211,8 @@ acronym { border-bottom: none; }
 }
 .content.hidemenu {
 	width: 750px;
-	margin-left: auto;
-	margin-right: auto;
+	margin-left: 5px;
+	margin-right: 5px;
 }
 
 /* Message: Note, Alert, etc. (e.g. in frame) */
