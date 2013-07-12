@@ -46,7 +46,9 @@ import org.apache.commons.fileupload.FileUpload;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.ECNamedCurveTable;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.CryptoTokenRules;
@@ -269,7 +271,7 @@ public class CAInterfaceBean implements Serializable {
             boolean caTokenStatus = false;
             final int cryptoTokenId = cainfo.getCAToken().getCryptoTokenId();
             try {
-                caTokenStatus = cryptoTokenManagementSession.isCryptoTokenStatusActive(authenticationToken, cryptoTokenId);
+                caTokenStatus = cryptoTokenManagementSession.isCryptoTokenStatusActive(cryptoTokenId);
             } catch (Exception e) {
                 final String msg = authenticationToken.toString() + " failed to load CryptoToken status for " + cryptoTokenId;
                 if (log.isDebugEnabled()) {
@@ -282,15 +284,16 @@ public class CAInterfaceBean implements Serializable {
             boolean crlStatus = true;
             final Date now = new Date();
             final CRLInfo crlinfo = getLastCRLInfo(cainfo.getCAInfo(), false);
-            if ( (crlinfo != null) && (now.after(crlinfo.getExpireDate())) ) {
+            if ((crlinfo != null) && (now.after(crlinfo.getExpireDate()))) {
                 crlStatus = false;
             }
             final CRLInfo deltacrlinfo = getLastCRLInfo(cainfo.getCAInfo(), true);
-            if ( (deltacrlinfo != null) && (now.after(deltacrlinfo.getExpireDate())) ) {
+            if ((deltacrlinfo != null) && (now.after(deltacrlinfo.getExpireDate()))) {
                 crlStatus = false;
             }
             ret.add(new CaCrlStatusInfo(caName, caService, crlStatus));
         }
+
         return ret;
     }
 
