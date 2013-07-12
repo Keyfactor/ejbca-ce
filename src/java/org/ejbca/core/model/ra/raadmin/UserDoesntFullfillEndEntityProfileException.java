@@ -19,17 +19,16 @@ import javax.xml.ws.WebFault;
  * An exception thrown when someone tries to add or edit a profile that doesn't match its end entity
  * profile.
  *
- * @author Philip Vendil 2002-04-12
  * @version $Id$
  */
 @WebFault
-public class UserDoesntFullfillEndEntityProfile extends java.lang.Exception {
+public class UserDoesntFullfillEndEntityProfileException extends Exception {
     private static final long serialVersionUID = 777317800935352658L;
 
     /**
      * Creates a new instance of <code>UserDoesntFullfillProfile</code> without detail message.
      */
-    public UserDoesntFullfillEndEntityProfile() {
+    public UserDoesntFullfillEndEntityProfileException() {
         super();
     }
 
@@ -39,7 +38,7 @@ public class UserDoesntFullfillEndEntityProfile extends java.lang.Exception {
      *
      * @param msg the detail message.
      */
-    public UserDoesntFullfillEndEntityProfile(String msg) {
+    public UserDoesntFullfillEndEntityProfileException(String msg) {
         super(msg);
     }
 }

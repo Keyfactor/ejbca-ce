@@ -50,7 +50,7 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfileException;
 import org.ejbca.core.protocol.cmp.authentication.EndEntityCertificateAuthenticationModule;
 
 /**
@@ -131,7 +131,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
      * @param msg
      * @throws AuthorizationDeniedException when the concerned end entity is not found
      * @throws CADoesntExistsException when updating the end entity fails
-     * @throws UserDoesntFullfillEndEntityProfile when updating the end entity fails
+     * @throws UserDoesntFullfillEndEntityProfileException when updating the end entity fails
      * @throws WaitingForApprovalException when updating the end entity fails
      * @throws EjbcaException when updating the end entity fails
      * @throws FinderException when end entity status fails to update
@@ -308,7 +308,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
             final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
             LOG.info(errMsg, e);           
             resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, e.getMessage());
-        } catch (UserDoesntFullfillEndEntityProfile e) {
+        } catch (UserDoesntFullfillEndEntityProfileException e) {
             final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
             LOG.info(errMsg, e);           
             resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, e.getMessage());

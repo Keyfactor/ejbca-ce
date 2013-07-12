@@ -57,7 +57,7 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.NotFoundException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfileException;
 
 /**
  * @version $Id$
@@ -146,7 +146,7 @@ public class OcspTestUtils {
 
     public static X509Certificate createOcspSigningCertificate(AuthenticationToken authenticationToken, int internalKeyBindingId, int caId)
             throws AuthorizationDeniedException, CustomCertSerialNumberException, IllegalKeyException, CADoesntExistsException,
-            CertificateCreateException, CesecoreException, RemoveException, PersistenceException, UserDoesntFullfillEndEntityProfile,
+            CertificateCreateException, CesecoreException, RemoveException, PersistenceException, UserDoesntFullfillEndEntityProfileException,
             WaitingForApprovalException, EjbcaException {
         CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
         InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE
