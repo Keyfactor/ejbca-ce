@@ -679,7 +679,7 @@
 					<include name="org/cesecore/certificates/certificate/CertificateCreateSessionBean.java"/>
 					<include name="org/ejbca/core/model/ca/AuthStatusException.java"/>
 					<include name="org/ejbca/core/model/ca/AuthLoginException.java"/>
-					<include name="org/ejbca/core/model/ra/raadmin/UserDoesntFullfillEndEntityProfile.java"/>
+					<include name="org/ejbca/core/model/ra/raadmin/UserDoesntFullfillEndEntityProfileException.java"/>
 					<include name="org/ejbca/core/model/ra/AlreadyRevokedException.java"/>
 					<include name="org/ejbca/core/model/ra/RevokeBackDateNotAllowedForProfileException.java"/>
 					<include name="org/cesecore/certificates/endentity/EndEntityConstants.java"/>
