@@ -50,6 +50,7 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.FileTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.EjbcaConfigurationHolder;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
@@ -679,8 +680,7 @@ public class RequestInstance {
 		if (rt == null) {
 			log.error(intres.getLocalizedMessage("certreq.ovpntnoruntime"));
 		} else {
-			final String script = EjbcaConfigurationHolder
-			.getString("web.openvpn.createInstallerScript");
+			final String script = WebConfiguration.getOpenVPNCreateInstallerScript();
 			Process p = rt.exec(script);
 			if (p == null) {
 				log.error(intres.getLocalizedMessage("certreq.ovpntfailedexec", script));

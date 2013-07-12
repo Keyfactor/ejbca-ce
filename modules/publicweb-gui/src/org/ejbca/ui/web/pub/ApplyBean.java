@@ -28,7 +28,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.ejbca.config.EjbcaConfigurationHolder;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.util.EjbLocalHelper;
@@ -403,8 +403,7 @@ public class ApplyBean implements java.io.Serializable {
 	 */
 	public boolean isOpenVPNInstallerConfigured() throws Exception {
         // Check that the OpenVPN installer script exists 
-        final String script = EjbcaConfigurationHolder
-            .getString("web.openvpn.createInstallerScript");
+        final String script = WebConfiguration.getOpenVPNCreateInstallerScript();
         boolean exists = (script != null && new File(script).exists());
         
         if (log.isDebugEnabled()) {
