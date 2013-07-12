@@ -14,6 +14,8 @@ package org.cesecore.keys.token;
 
 import javax.ejb.Local;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
+
 /**
  * @see CryptoTokenManagementSession
  * @version $Id$
@@ -31,4 +33,21 @@ public interface CryptoTokenManagementSessionLocal extends CryptoTokenManagement
 
     /** @return value object with non-sensitive information about the CryptoToken for UI use or similar. */
     CryptoTokenInfo getCryptoTokenInfo(int cryptoTokenId);
+
+    /**
+     * Checks if admin is authorized to crypto token
+     * 
+     * @param authenticationToken an authentication token for the admin
+     * @param cryptoTokenId the ID of the crypto token
+     * @return true if authorized
+     */
+    boolean isAuthorizedToViewCryptoToken(AuthenticationToken authenticationToken, int cryptoTokenId);
+
+    /**
+     * Checks if a crypto token is active. 
+     * 
+     * @param cryptoTokenId the ID of the crypto token
+     * @return true of it is active.
+     */
+    boolean isCryptoTokenStatusActive(int cryptoTokenId);
 }
