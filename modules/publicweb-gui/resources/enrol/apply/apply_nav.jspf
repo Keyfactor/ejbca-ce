@@ -4,11 +4,10 @@
 <p>If you want to, you can manually install the CA certificate(s)
    in your browser, otherwise this will be done automatically when
    your certificate is retrieved.</p>
-<p>Install CA certificates:</p>
-
+<p>Install CA certificates:
 	<c:choose>
 		<c:when test="${fn:length(finder.CACertificateChain) == 0}">
-			<p>No CA certificates exist</p>
+			<em>No CA certificates exist</em>
 		</c:when>
 		<c:otherwise>
 			<c:url var="chain_url" value="../publicweb/webdist/certdist" >
@@ -16,9 +15,10 @@
 				<c:param name="level" value="0" />
 				<c:param name="caid" value="${caid}" />
 			</c:url>
-			<p><a href="${chain_url}">Certificate chain</a></p>
+			<a href="${chain_url}">Certificate chain</a>
 		</c:otherwise>
 	</c:choose>
+</p>
 
 <hr />
 <div>

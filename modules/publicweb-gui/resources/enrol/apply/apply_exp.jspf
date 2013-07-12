@@ -307,7 +307,7 @@
 
 	<c:choose>
 		<c:when test="${fn:length(chain) == 0}">
-			<p>No CA certificates exist</p>
+			<p><em>No CA certificates exist</em></p>
 		</c:when>
 		<c:otherwise>
 			<ul>
