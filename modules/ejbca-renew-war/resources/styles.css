@@ -209,6 +209,11 @@ acronym { border-bottom: none; }
 	margin-right: 20px;
 	padding: 5px 10px;
 }
+.content.hidemenu {
+	width: 750px;
+	margin-left: auto;
+	margin-right: auto;
+}
 
 /* Message: Note, Alert, etc. (e.g. in frame) */
 .message {
