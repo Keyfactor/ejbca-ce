@@ -21,8 +21,8 @@
 			<a href="../"><img src="../images/ejbca_pki_by_primekey_logo.png" alt="EJBCA" /></a>
 		</div>
     </div>
+    <c:if test="${hidemenu != 'true'}">
     <div class="menucontainer">
-      <c:if test="${hidemenu != 'true'}">
       <div class="menu">
         <ul>
           <li><div class="menuheader">Enroll</div>
@@ -66,10 +66,16 @@
           </li>  
         </ul>
       </div>
-      </c:if>
     </div>
     <div class="main">
       <div class="content">
+    </c:if>
+    
+    <c:if test="${hidemenu == 'true'}">
+    <div class="main hidemenu">
+      <div class="content hidemenu">
+    </c:if>
+
 <!-- Header -->
 
 <object classid="$CLASSID" id="g_objClassFactory"></object>
