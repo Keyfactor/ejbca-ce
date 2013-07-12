@@ -62,6 +62,11 @@
         </ul>
       </div>
     </div>
-    </c:if>
     <div class="main">
       <div class="content">
+    </c:if>
+    
+    <c:if test="${hidemenu == 'true'}">
+    <div class="main hidemenu">
+      <div class="content hidemenu">
+    </c:if>
