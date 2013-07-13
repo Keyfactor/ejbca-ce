@@ -121,18 +121,14 @@ public class CrmfRequestMessageTest {
 	        final PKIMessage myPKIMessage = createPKIMessage("CN=bogusIssuer", "CN=subject,SN=000106716,O=Org,C=SE");
 	        final CrmfRequestMessage crmf = new CrmfRequestMessage(myPKIMessage, "CN=SomeCA", true, null);
 	        final X500Name dnname = crmf.getRequestX500Name();
-	        System.out.println(dnname);
-	        System.out.println(dnname.toString());
 	        final UsernameGeneratorParams params = new UsernameGeneratorParams();
 	        params.setMode(UsernameGeneratorParams.DN);
 	        UsernameGenerator gen = UsernameGenerator.getInstance(params);
 	        String username = gen.generateUsername(dnname.toString());
-	        System.out.println(username);
 	        assertEquals("Username was not constructed properly from DN (CN)", "subject", username);
 	        params.setDNGeneratorComponent("");
 	        gen = UsernameGenerator.getInstance(params);
 	        username = gen.generateUsername(dnname.toString());
-	        System.out.println(username);
 	        assertEquals("Username was not constructed properly from DN", "CN=subject,SERIALNUMBER=000106716,O=Org,C=SE", username);
 	    }
 	    {
@@ -140,18 +136,14 @@ public class CrmfRequestMessageTest {
 	        final PKIMessage myPKIMessage = createPKIMessage("CN=bogusIssuer", "C=SE,O=Org,SERIALNUMBER=000106716,CN=subject");
 	        final CrmfRequestMessage crmf = new CrmfRequestMessage(myPKIMessage, "CN=SomeCA", true, null);
 	        final X500Name dnname = crmf.getRequestX500Name();
-	        System.out.println(dnname);
-	        System.out.println(dnname.toString());
 	        final UsernameGeneratorParams params = new UsernameGeneratorParams();
 	        params.setMode(UsernameGeneratorParams.DN);
 	        UsernameGenerator gen = UsernameGenerator.getInstance(params);
 	        String username = gen.generateUsername(dnname.toString());
-	        System.out.println(username);
 	        assertEquals("Username was not constructed properly from DN (CN)", "subject", username);
 	        params.setDNGeneratorComponent("");
 	        gen = UsernameGenerator.getInstance(params);
 	        username = gen.generateUsername(dnname.toString());
-	        System.out.println(username);
 	        assertEquals("Username was not constructed properly from DN", "C=SE,O=Org,SERIALNUMBER=000106716,CN=subject", username);
 	    }
 	}
