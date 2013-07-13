@@ -67,6 +67,7 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.X509KeyUsage;
@@ -75,6 +76,8 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.ejbca.core.model.ra.UsernameGenerator;
+import org.ejbca.core.model.ra.UsernameGeneratorParams;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -93,7 +96,67 @@ public class CrmfRequestMessageTest {
 
 	@Test
     public void testCrmfRequestMessageSerialization() throws IOException, ClassNotFoundException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
-    	// Create a bogus PKIMessage
+        // Create a bogus PKIMessage
+    	PKIMessage myPKIMessage = createPKIMessage("CN=bogusIssuer", "CN=bogusSubject");
+        
+    	// Create a bogus CrmfRequestMessage
+    	CrmfRequestMessage crmf = new CrmfRequestMessage(myPKIMessage, "CN=SomeCA", true, null);
+    	crmf.setPbeParameters("keyId", "key", "digestAlg", "macAlg", 100);
+    	// Serialize it
+    	ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    	ObjectOutputStream oos = new ObjectOutputStream(baos);
+    	oos.writeObject(crmf);
+    	// Deserialize it
+    	ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(baos.toByteArray()));
+    	Object o = ois.readObject();
+    	assertTrue("The deserialized object was not of type CrmfRequestMessage.", o instanceof CrmfRequestMessage);
+    	CrmfRequestMessage crmf2 = (CrmfRequestMessage) o;
+    	assertEquals("Inherited object was not properly deserilized: ", "macAlg", crmf2.getPbeMacAlg());
+    }
+
+	@Test
+	public void testCrmfRequestUsernameGeneratorFromDN() throws IOException, ClassNotFoundException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
+	    CryptoProviderTools.installBCProviderIfNotAvailable();
+	    {
+	        final PKIMessage myPKIMessage = createPKIMessage("CN=bogusIssuer", "CN=subject,SN=000106716,O=Org,C=SE");
+	        final CrmfRequestMessage crmf = new CrmfRequestMessage(myPKIMessage, "CN=SomeCA", true, null);
+	        final X500Name dnname = crmf.getRequestX500Name();
+	        System.out.println(dnname);
+	        System.out.println(dnname.toString());
+	        final UsernameGeneratorParams params = new UsernameGeneratorParams();
+	        params.setMode(UsernameGeneratorParams.DN);
+	        UsernameGenerator gen = UsernameGenerator.getInstance(params);
+	        String username = gen.generateUsername(dnname.toString());
+	        System.out.println(username);
+	        assertEquals("Username was not constructed properly from DN (CN)", "subject", username);
+	        params.setDNGeneratorComponent("");
+	        gen = UsernameGenerator.getInstance(params);
+	        username = gen.generateUsername(dnname.toString());
+	        System.out.println(username);
+	        assertEquals("Username was not constructed properly from DN", "CN=subject,SERIALNUMBER=000106716,O=Org,C=SE", username);
+	    }
+	    {
+	        // DN order the other way around, should give username the other way around as well
+	        final PKIMessage myPKIMessage = createPKIMessage("CN=bogusIssuer", "C=SE,O=Org,SERIALNUMBER=000106716,CN=subject");
+	        final CrmfRequestMessage crmf = new CrmfRequestMessage(myPKIMessage, "CN=SomeCA", true, null);
+	        final X500Name dnname = crmf.getRequestX500Name();
+	        System.out.println(dnname);
+	        System.out.println(dnname.toString());
+	        final UsernameGeneratorParams params = new UsernameGeneratorParams();
+	        params.setMode(UsernameGeneratorParams.DN);
+	        UsernameGenerator gen = UsernameGenerator.getInstance(params);
+	        String username = gen.generateUsername(dnname.toString());
+	        System.out.println(username);
+	        assertEquals("Username was not constructed properly from DN (CN)", "subject", username);
+	        params.setDNGeneratorComponent("");
+	        gen = UsernameGenerator.getInstance(params);
+	        username = gen.generateUsername(dnname.toString());
+	        System.out.println(username);
+	        assertEquals("Username was not constructed properly from DN", "C=SE,O=Org,SERIALNUMBER=000106716,CN=subject", username);
+	    }
+	}
+
+    private PKIMessage createPKIMessage(final String issuerDN, final String subjectDN) throws InvalidAlgorithmParameterException, IOException {
 		KeyPair keys = KeyTools.genKeys("1024", "RSA");
 		ASN1EncodableVector optionalValidityV = new ASN1EncodableVector();
 		org.bouncycastle.asn1.x509.Time nb = new org.bouncycastle.asn1.x509.Time(new DERGeneralizedTime("20030211002120Z"));
@@ -104,8 +167,8 @@ public class CrmfRequestMessageTest {
 		
 		CertTemplateBuilder myCertTemplate = new CertTemplateBuilder();
 		myCertTemplate.setValidity( myOptionalValidity );
-		myCertTemplate.setIssuer(new X500Name("CN=bogusIssuer"));
-		myCertTemplate.setSubject(new X500Name("CN=bogusSubject"));
+		myCertTemplate.setIssuer(new X500Name(issuerDN));
+		myCertTemplate.setSubject(new X500Name(subjectDN));
 		byte[]                  bytes = keys.getPublic().getEncoded();
         ByteArrayInputStream    bIn = new ByteArrayInputStream(bytes);
         ASN1InputStream         dIn = new ASN1InputStream(bIn);
@@ -142,20 +205,7 @@ public class CrmfRequestMessageTest {
 
         PKIBody myPKIBody = new PKIBody(0, myCertReqMessages);
         PKIMessage myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
-        
-    	// Create a bogus CrmfRequestMessage
-    	CrmfRequestMessage crmf = new CrmfRequestMessage(myPKIMessage, "CN=SomeCA", true, null);
-    	crmf.setPbeParameters("keyId", "key", "digestAlg", "macAlg", 100);
-    	// Serialize it
-    	ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    	ObjectOutputStream oos = new ObjectOutputStream(baos);
-    	oos.writeObject(crmf);
-    	// Deserialize it
-    	ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(baos.toByteArray()));
-    	Object o = ois.readObject();
-    	assertTrue("The deserialized object was not of type CrmfRequestMessage.", o instanceof CrmfRequestMessage);
-    	CrmfRequestMessage crmf2 = (CrmfRequestMessage) o;
-    	assertEquals("Inherited object was not properly deserilized: ", "macAlg", crmf2.getPbeMacAlg());
+        return myPKIMessage;
     }
 
 	@Test
