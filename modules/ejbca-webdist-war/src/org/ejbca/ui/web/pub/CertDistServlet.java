@@ -101,6 +101,7 @@ public class CertDistServlet extends HttpServlet {
     private static final String LEVEL_PROPERTY = "level";
     private static final String MOZILLA_PROPERTY = "moz";
     private static final String FORMAT_PROPERTY = "format";
+    private static final String INSTALLTOBROWSER_PROPERTY = "installtobrowser";
 
     @EJB
     private CertificateStoreSessionLocal storesession;
@@ -231,8 +232,12 @@ public class CertDistServlet extends HttpServlet {
                         filename = filename+ending;                        
                         // We must remove cache headers for IE
                         ServletUtils.removeCacheHeaders(res);
-                        res.setHeader("Content-disposition", "attachment; filename=\"" +  StringTools.stripFilename(filename)+"\"");
-                        res.setContentType("application/octet-stream");
+                        if ("netscape".equals(req.getParameter(INSTALLTOBROWSER_PROPERTY))) {
+                            res.setContentType("application/x-x509-user-cert");
+                        } else {
+                            res.setHeader("Content-disposition", "attachment; filename=\"" +  StringTools.stripFilename(filename)+"\"");
+                            res.setContentType("application/octet-stream");
+                        }
                         if (StringUtils.equals(format, "PEM")) {
                             RequestHelper.sendNewB64File(Base64.encode(cert, true), res, filename, RequestHelper.BEGIN_CERTIFICATE_WITH_NL, RequestHelper.END_CERTIFICATE_WITH_NL);
                         } else {

@@ -23,6 +23,7 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -573,6 +574,22 @@ public class RequestHelper {
             log.debug("Sent " + bytes.length + " bytes to client");
         }
     } // sendBinaryBytes
+    
+    /**
+     * Sends a page with certificate information and an automatic redirect to the
+     * download page. The issuer must not be a "throw away" CA.
+     * 
+     * @param certbytes DER encoded certificate
+     * @param out output stream to send to
+     * @throws Exception
+     */
+    public static void sendResultPage(byte[] certbytes, HttpServletResponse out) throws Exception {
+        Certificate cert = CertTools.getCertfromByteArray(certbytes);
+        String issuerDN = CertTools.getIssuerDN(cert);
+        String serialNumber = CertTools.getSerialNumberAsString(cert);
+        
+        out.sendRedirect("enrol/result_download.jsp?issuer="+URLEncoder.encode(issuerDN, "UTF-8")+"&serno="+serialNumber);
+    }
     
     /** Sets the default character encoding for decoding post and get parameters. 
      * First tries to get the character encoding from the request, if the browser is so kind to tell us which it is using, which it never does...
