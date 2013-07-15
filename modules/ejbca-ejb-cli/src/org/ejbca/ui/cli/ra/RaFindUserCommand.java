@@ -49,21 +49,21 @@ public class RaFindUserCommand extends BaseRaAdminCommand {
                 EndEntityInformation data = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAdmin(cliUserName, cliPassword), username);
                 if (data != null) {
                 	getLogger().info("Found user:");
-                	getLogger().info("username=" + data.getUsername());
-                    getLogger().info("password=" + data.getPassword());
-                    getLogger().info("dn: \"" + data.getDN() + "\"");
-                    getLogger().info("altName: \"" + data.getSubjectAltName() + "\"");
+                	getLogger().info("Username: " + data.getUsername());
+                    getLogger().info("Password: " + (data.getPassword() != null ? data.getPassword() : "*****"));
+                    getLogger().info("DN: \"" + data.getDN() + "\"");
+                    getLogger().info("Alt Name: \"" + data.getSubjectAltName() + "\"");
                     ExtendedInformation ei = data.getExtendedinformation();
-                    getLogger().info("directoryAttributes: \"" + (ei != null ? ei.getSubjectDirectoryAttributes() : "") + "\"");
-                    getLogger().info("email=" + data.getEmail());
-                    getLogger().info("status=" + data.getStatus());
-                    getLogger().info("type=" + data.getType().getHexValue());
-                    getLogger().info("token type=" + data.getTokenType());
-                    getLogger().info("end entity profile id=" + data.getEndEntityProfileId());
-                    getLogger().info("certificate entity profile id=" + data.getCertificateProfileId());
-                    getLogger().info("hard token issuer id=" + data.getHardTokenIssuerId());
-                    getLogger().info("created=" + data.getTimeCreated());
-                    getLogger().info("modified=" + data.getTimeModified());
+                    getLogger().info("Directory Attributes: \"" + (ei != null ? ei.getSubjectDirectoryAttributes() : "") + "\"");
+                    getLogger().info("E-Mail: " + data.getEmail());
+                    getLogger().info("Status: " + data.getStatus());
+                    getLogger().info("Type: " + data.getType().getHexValue());
+                    getLogger().info("Token Type: " + data.getTokenType());
+                    getLogger().info("End Entity Profile ID: " + data.getEndEntityProfileId());
+                    getLogger().info("Certificate Profile ID: " + data.getCertificateProfileId());
+                    getLogger().info("Hard Token Issuer ID: " + data.getHardTokenIssuerId());
+                    getLogger().info("Created: " + data.getTimeCreated());
+                    getLogger().info("Modified: " + data.getTimeModified());
                 } else {
                     getLogger().error("User '" + username + "' does not exist.");
                 }
