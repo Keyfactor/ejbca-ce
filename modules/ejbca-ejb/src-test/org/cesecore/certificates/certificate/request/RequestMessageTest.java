@@ -41,6 +41,8 @@ import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.ejbca.core.model.ra.UsernameGenerator;
+import org.ejbca.core.model.ra.UsernameGeneratorParams;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -62,35 +64,7 @@ public class RequestMessageTest {
 	 @Test
 	 public void test01Pkcs10RequestMessage() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException, IOException, OperatorCreationException {
 		 
-		 // Create a P10 with extensions, in this case altNames with a DNS name
-		 ASN1EncodableVector altnameattr = new ASN1EncodableVector();
-		 altnameattr.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
-		 // AltNames
-		 // String[] namearray = altnames.split(",");
-		 GeneralNames san = CertTools.getGeneralNamesFromAltName("dNSName=foo1.bar.com");
-		 ExtensionsGenerator extgen = new ExtensionsGenerator();
-	     extgen.addExtension(Extension.subjectAlternativeName, false, san );
-		 Extensions exts = extgen.generate();
-		 altnameattr.add(new DERSet(exts));
-		 
-		 // Add a challenge password as well
-		 ASN1EncodableVector pwdattr = new ASN1EncodableVector();
-		 pwdattr.add(PKCSObjectIdentifiers.pkcs_9_at_challengePassword); 
-		 ASN1EncodableVector pwdvalues = new ASN1EncodableVector();
-		 pwdvalues.add(new DERUTF8String("foo123"));
-		 pwdattr.add(new DERSet(pwdvalues));
-		 
-		 // Complete the Attribute section of the request, the set (Attributes)
-		 // contains one sequence (Attribute)
-		 ASN1EncodableVector v = new ASN1EncodableVector();
-		 v.add(new DERSequence(altnameattr));
-		 v.add(new DERSequence(pwdattr));
-		 DERSet attributes = new DERSet(v);
-
-		 // Create the PKCS10
-		 X500Name dn = new X500Name("CN=Test,OU=foo");
-		 PKCS10CertificationRequest basicpkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", dn, 
-				 keyPair.getPublic(), attributes, keyPair.getPrivate(), null);
+	     PKCS10CertificationRequest basicpkcs10 = createP10("CN=Test,OU=foo");
 
 		 PKCS10RequestMessage msg = new PKCS10RequestMessage(basicpkcs10.toASN1Structure().getEncoded());
 		 String username = msg.getUsername();
@@ -122,7 +96,7 @@ public class RequestMessageTest {
 		}
 		 
 		 // Try different DNs and DN oids
-		 dn = new X500Name("C=SE, O=Foo, CN=Test Testsson");
+		 X500Name dn = new X500Name("C=SE, O=Foo, CN=Test Testsson");
 		 basicpkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", dn, 
 				 keyPair.getPublic(), new DERSet(), keyPair.getPrivate(), null);
 
@@ -231,4 +205,72 @@ public class RequestMessageTest {
 		 username = msg.getUsername();
 		 assertEquals("Test", username);
 	 }
+
+    private PKCS10CertificationRequest createP10(final String subjectDN) throws IOException, OperatorCreationException {
+        // Create a P10 with extensions, in this case altNames with a DNS name
+		 ASN1EncodableVector altnameattr = new ASN1EncodableVector();
+		 altnameattr.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
+		 // AltNames
+		 // String[] namearray = altnames.split(",");
+		 GeneralNames san = CertTools.getGeneralNamesFromAltName("dNSName=foo1.bar.com");
+		 ExtensionsGenerator extgen = new ExtensionsGenerator();
+	     extgen.addExtension(Extension.subjectAlternativeName, false, san );
+		 Extensions exts = extgen.generate();
+		 altnameattr.add(new DERSet(exts));
+		 
+		 // Add a challenge password as well
+		 ASN1EncodableVector pwdattr = new ASN1EncodableVector();
+		 pwdattr.add(PKCSObjectIdentifiers.pkcs_9_at_challengePassword); 
+		 ASN1EncodableVector pwdvalues = new ASN1EncodableVector();
+		 pwdvalues.add(new DERUTF8String("foo123"));
+		 pwdattr.add(new DERSet(pwdvalues));
+		 
+		 // Complete the Attribute section of the request, the set (Attributes)
+		 // contains one sequence (Attribute)
+		 ASN1EncodableVector v = new ASN1EncodableVector();
+		 v.add(new DERSequence(altnameattr));
+		 v.add(new DERSequence(pwdattr));
+		 DERSet attributes = new DERSet(v);
+
+		 // Create the PKCS10
+		 X500Name dn = new X500Name(subjectDN);
+		 PKCS10CertificationRequest basicpkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", dn, 
+				 keyPair.getPublic(), attributes, keyPair.getPrivate(), null);
+        return basicpkcs10;
+    }
+	 
+    @Test
+    public void testCrmfRequestUsernameGeneratorFromDN() throws OperatorCreationException, IOException {
+        CryptoProviderTools.installBCProviderIfNotAvailable();
+        {
+            PKCS10CertificationRequest basicpkcs10 = createP10("CN=subject,SN=000106716,O=Org,C=SE");
+            PKCS10RequestMessage msg = new PKCS10RequestMessage(basicpkcs10.toASN1Structure().getEncoded());
+            final X500Name dnname = msg.getRequestX500Name();
+            final UsernameGeneratorParams params = new UsernameGeneratorParams();
+            params.setMode(UsernameGeneratorParams.DN);
+            UsernameGenerator gen = UsernameGenerator.getInstance(params);
+            String username = gen.generateUsername(dnname.toString());
+            assertEquals("Username was not constructed properly from DN (CN)", "subject", username);
+            params.setDNGeneratorComponent("");
+            gen = UsernameGenerator.getInstance(params);
+            username = gen.generateUsername(dnname.toString());
+            assertEquals("Username was not constructed properly from DN", "CN=subject,SERIALNUMBER=000106716,O=Org,C=SE", username);
+        }
+        {
+            // DN order the other way around, should give username the other way around as well
+            PKCS10CertificationRequest basicpkcs10 = createP10("C=SE,O=Org,SERIALNUMBER=000106716,CN=subject");
+            PKCS10RequestMessage msg = new PKCS10RequestMessage(basicpkcs10.toASN1Structure().getEncoded());
+            final X500Name dnname = msg.getRequestX500Name();
+            final UsernameGeneratorParams params = new UsernameGeneratorParams();
+            params.setMode(UsernameGeneratorParams.DN);
+            UsernameGenerator gen = UsernameGenerator.getInstance(params);
+            String username = gen.generateUsername(dnname.toString());
+            assertEquals("Username was not constructed properly from DN (CN)", "subject", username);
+            params.setDNGeneratorComponent("");
+            gen = UsernameGenerator.getInstance(params);
+            username = gen.generateUsername(dnname.toString());
+            assertEquals("Username was not constructed properly from DN", "C=SE,O=Org,SERIALNUMBER=000106716,CN=subject", username);
+        }
+    }
+
  }
