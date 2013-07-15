@@ -115,10 +115,56 @@ org.ejbca.core.ejb.keybind.InternalKeyBindingRules
 		</li>
 <%    }
    }catch(AuthorizationDeniedException e){} 
-
+%>
+<%
    // --------------------------------------------------------------------------
    // CA FUNCTIONS
-
+ %>
+ <%
+   try{
+     if(ejbcawebbean.isAuthorizedNoLog(ACTIVATECA_RESOURCE)){ 
+        if(!caheaderprinted){
+          out.write("<li id=\"cat1\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_CAFUNCTIONS")+"</strong><ul>"); 
+           caheaderprinted=true;
+        } %>
+				<li><a href="<%= CA_ACTIVATION_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_CAACTIVATION") %></a></li>
+<%    }
+   }catch(AuthorizationDeniedException e){} 
+%>
+<% 
+   try{
+     if(ejbcawebbean.isAuthorizedNoLog(CABASICFUNCTIONS_RESOURCE)){ 
+         if(!caheaderprinted){
+             out.write("<li id=\"cat1\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_CAFUNCTIONS")+"</strong><ul>"); 
+              caheaderprinted=true;
+           } %>
+				<li><a href="<%= CA_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_CASTRUCTUREANDCRL") %></a></li>
+<%    }
+   }catch(AuthorizationDeniedException e){} 
+%>
+<%
+   try{
+     if(ejbcawebbean.isAuthorizedNoLog(EDITCERTIFICATEPROFILES_RESOURCE)){ 
+        if(!caheaderprinted){
+          out.write("<li id=\"cat1\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_CAFUNCTIONS")+"</strong><ul>"); 
+           caheaderprinted=true;
+        } %>
+				<li><a href="<%= CA_CERTIFICATEPROFILELINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_CERTIFICATEPROFILES") %></a></li>
+<%    }
+   }catch(AuthorizationDeniedException e){} 
+%>
+<%
+   try{
+     if(ejbcawebbean.isAuthorizedNoLog(EDITCAS_RESOURCE)){ 
+        if(!caheaderprinted){
+          out.write("<li id=\"cat1\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_CAFUNCTIONS")+"</strong><ul>"); 
+           caheaderprinted=true;
+        } %>
+				<li><a href="<%= EDITCA_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_CAS") %></a></li>     
+<%    }
+   }catch(AuthorizationDeniedException e){} 
+%>
+<% 
    // If authorized to use the ca then display related links.
    try{
      if(ejbcawebbean.isAuthorizedNoLog(CRYPTOTOKEN_RESOURCE)){ 
@@ -129,33 +175,8 @@ org.ejbca.core.ejb.keybind.InternalKeyBindingRules
 				<li><a href="<%= CRYPTOTOKENS_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_CRYPTOTOKENS") %></a></li>
 <%    }
    }catch(AuthorizationDeniedException e){} 
-   try{
-     if(ejbcawebbean.isAuthorizedNoLog(CABASICFUNCTIONS_RESOURCE)){ 
-         if(!caheaderprinted){
-             out.write("<li id=\"cat1\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_CAFUNCTIONS")+"</strong><ul>"); 
-              caheaderprinted=true;
-           } %>
-				<li><a href="<%= CA_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_CASTRUCTUREANDCRL") %></a></li>
-<%    }
-   }catch(AuthorizationDeniedException e){} 
-   try{
-     if(ejbcawebbean.isAuthorizedNoLog(ACTIVATECA_RESOURCE)){ 
-        if(!caheaderprinted){
-          out.write("<li id=\"cat1\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_CAFUNCTIONS")+"</strong><ul>"); 
-           caheaderprinted=true;
-        } %>
-				<li><a href="<%= CA_ACTIVATION_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_CAACTIVATION") %></a></li>
-<%    }
-   }catch(AuthorizationDeniedException e){} 
-   try{
-     if(ejbcawebbean.isAuthorizedNoLog(EDITCERTIFICATEPROFILES_RESOURCE)){ 
-        if(!caheaderprinted){
-          out.write("<li id=\"cat1\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_CAFUNCTIONS")+"</strong><ul>"); 
-           caheaderprinted=true;
-        } %>
-				<li><a href="<%= CA_CERTIFICATEPROFILELINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_CERTIFICATEPROFILES") %></a></li>
-<%    }
-   }catch(AuthorizationDeniedException e){} 
+%>
+<%
    try{
      if(ejbcawebbean.isAuthorizedNoLog(EDITPUBLISHERS_RESOURCE)){ 
         if(!caheaderprinted){
@@ -165,44 +186,19 @@ org.ejbca.core.ejb.keybind.InternalKeyBindingRules
 				<li><a href="<%= EDITPUBLISHERS_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_PUBLISHERS") %></a></li>
 <%    }
    }catch(AuthorizationDeniedException e){} 
-   try{
-     if(ejbcawebbean.isAuthorizedNoLog(EDITCAS_RESOURCE)){ 
-        if(!caheaderprinted){
-          out.write("<li id=\"cat1\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_CAFUNCTIONS")+"</strong><ul>"); 
-           caheaderprinted=true;
-        } %>
-				<li><a href="<%= EDITCA_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_CAS") %></a></li>     
-<%    }
-   }catch(AuthorizationDeniedException e){} 
+%>
+
+<%
    if(caheaderprinted){
      out.write("</ul></li>"); 
    }
+%>
 
-
+<%
    // --------------------------------------------------------------------------
    // RA FUNCTIONS
-
-   // If authorized to edit the ra user data sources then display related links.
-   try{
-     if(ejbcawebbean.isAuthorizedNoLog(RAEDITUSERDATASOURCES_RESOURCE)){ 
-          raheaderprinted=true;%> 
-		<li id="cat2" class="section"><strong><%=ejbcawebbean.getText("NAV_RAFUNCTIONS") %></strong>
-			<ul>
-				<li><a href="<%= RA_EDITUSERDATASOURCESLINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_USERDATASOURCES") %></a></li>
-<%   }
-  }catch(AuthorizationDeniedException e){}   
-
-    // If authorized to edit the ra profiles then display related links.
-    try{
-      if(ejbcawebbean.isAuthorizedNoLog(RAEDITENDENTITYPROFILES_RESOURCE)){            
-         if(!raheaderprinted){
-           out.write("<li id=\"cat2\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_RAFUNCTIONS")+"</strong><ul>"); 
-           raheaderprinted=true;
-         }  %>
-				<li><a href="<%= RA_EDITPROFILESLINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_ENDENTITYPROFILES") %></a></li>
-<%   }
-   }catch(AuthorizationDeniedException e){}
-
+%>
+<%
     // If authorized to use the ra then display related links. 
     try{
       if(ejbcawebbean.isAuthorizedNoLog(RAADDENDENTITY_RESOURCE)){ 
@@ -213,6 +209,20 @@ org.ejbca.core.ejb.keybind.InternalKeyBindingRules
 				<li><a href="<%= RA_ADDENDENTITYLINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_ADDENDENTITY") %></a></li>
 <%   }
    }catch(AuthorizationDeniedException e){}
+%>
+<%
+    // If authorized to edit the ra profiles then display related links.
+    try{
+      if(ejbcawebbean.isAuthorizedNoLog(RAEDITENDENTITYPROFILES_RESOURCE)){            
+         if(!raheaderprinted){
+           out.write("<li id=\"cat2\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_RAFUNCTIONS")+"</strong><ul>"); 
+           raheaderprinted=true;
+         }  %>
+				<li><a href="<%= RA_EDITPROFILESLINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_ENDENTITYPROFILES") %></a></li>
+<%   }
+   }catch(AuthorizationDeniedException e){}
+%>
+<%
     // If authorized to use the ra then display related links. 
     try{
       if(ejbcawebbean.isAuthorizedNoLog(RALISTEDITENDENTITY_RESOURCE)){ 
@@ -220,29 +230,36 @@ org.ejbca.core.ejb.keybind.InternalKeyBindingRules
               out.write("<li id=\"cat2\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_RAFUNCTIONS")+"</strong><ul>"); 
               raheaderprinted=true;
             }  %>
-				<li><a href="<%=RA_LISTENDENTITIESLINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_SEARCHENDENTITIES") %></a></li>
+				<li><a href="<%= RA_LISTENDENTITIESLINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_SEARCHENDENTITIES") %></a></li>
 <%   }
    }catch(AuthorizationDeniedException e){}
+%>
+
+<%
+   // If authorized to edit the ra user data sources then display related links.
+   try{
+     if(ejbcawebbean.isAuthorizedNoLog(RAEDITUSERDATASOURCES_RESOURCE)){ 
+         if(!raheaderprinted){
+             out.write("<li id=\"cat2\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_RAFUNCTIONS")+ "</strong><ul>");
+			 raheaderprinted=true;
+			 } %> 
+				<li><a href="<%= RA_EDITUSERDATASOURCESLINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_USERDATASOURCES") %></a></li>
+<%   }
+  }catch(AuthorizationDeniedException e){}   
+%>
+<%
    if(raheaderprinted){
      out.write("</ul></li>"); 
    }
-
-
+%>
+<%
    // --------------------------------------------------------------------------
    // HARD TOKEN FUNCTIONS
-
+%>
+<%
    if(globalconfiguration.getIssueHardwareTokens()){
-
-     // If authorized to edit the hard token profiles then display related links.
-     try{
-       if(ejbcawebbean.isAuthorizedNoLog(HTEDITHARDTOKENPROFILES_RESOURCE)){ 
-           htheaderprinted=true;%> 
-		<li id="cat3" class="section"><strong><%=ejbcawebbean.getText("NAV_HARDTOKENFUNCTIONS") %></strong>
-			<ul>
-				<li><a href="<%= HT_EDITHARDTOKENPROFILES_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_HARDTOKENPROFILES") %></a></li>
-<%     }
-      }catch(AuthorizationDeniedException e){}
-    
+       %>  
+<%
      // If authorized to edit the hard token issuers then display related links.
      try{
        if(ejbcawebbean.isAuthorizedNoLog(HTEDITHARDTOKENISSUERS_RESOURCE)){ 
@@ -254,10 +271,26 @@ org.ejbca.core.ejb.keybind.InternalKeyBindingRules
 				<li><a href="<%= HT_EDITHARDTOKENISSUERS_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_HARDTOKENISSUERS") %></a></li>
 <%     }
       }catch(AuthorizationDeniedException e){}
-      if(htheaderprinted){
+%>
+    <%
+     // If authorized to edit the hard token profiles then display related links.
+     try{
+       if(ejbcawebbean.isAuthorizedNoLog(HTEDITHARDTOKENPROFILES_RESOURCE)){ 
+           htheaderprinted=true;%> 
+		<li id="cat3" class="section"><strong><%=ejbcawebbean.getText("NAV_HARDTOKENFUNCTIONS") %></strong>
+			<ul>
+				<li><a href="<%= HT_EDITHARDTOKENPROFILES_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_HARDTOKENPROFILES") %></a></li>
+<%     }
+      }catch(AuthorizationDeniedException e){}
+%>
+<%
+	if(htheaderprinted){
         out.write("</ul></li>"); 
       }
+%>
+<%
     }
+
    
 
    // --------------------------------------------------------------------------
@@ -297,39 +330,8 @@ org.ejbca.core.ejb.keybind.InternalKeyBindingRules
 
    // --------------------------------------------------------------------------
    // SYSTEM FUNCTIONS
-
-    // If authorized to configure Ejbca then display related links.
-    try{
-      if(ejbcawebbean.isAuthorizedNoLog(SYSTEMCONFIGURATION_RESOURCE)){ 
-        systemheaderprinted = true;%>
-		<li id="cat7" class="section"><strong><%=ejbcawebbean.getText("NAV_SYSTEMFUNCTIONS") %></strong>
-			<ul>
-				<li><a href="<%= CONFIGURATION_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_SYSTEMCONFIGURATION") %></a></li>
-<%   }
-   }catch(AuthorizationDeniedException e){}
-
-   // If authorized to edit services then display related links.
-   try{
-     if(ejbcawebbean.isAuthorizedNoLog(SERVICES_RESOURCE)){
-       if(!systemheaderprinted){
-         out.write("<li id=\"cat7\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMFUNCTIONS")+"</strong><ul>"); 
-         systemheaderprinted=true;
-         }  %>
-				<li><a href="<%= SERVICES_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_SERVICES") %></a></li>
-<%   }
-  }catch(AuthorizationDeniedException e){} 
-   
-   // If authorized to edit authorizations then display related links.
-   try{
-     if(ejbcawebbean.isAuthorizedNoLog(INTERNALKEYBINDING_RESOURCE)){
-       if(!systemheaderprinted){
-         out.write("<li id=\"cat7\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_INTERNALKEYBINDINGS")+"</strong><ul>"); 
-         systemheaderprinted=true;
-         }  %>
-				<li><a href="<%= INTERNALKEYBINDING_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_KEYBINDINGS") %></a></li>
-<%   }
-  }catch(AuthorizationDeniedException e){}
-
+%>
+<%
    // If authorized to edit authorizations then display related links.
    try{
      if(ejbcawebbean.isAuthorizedNoLog(ADMINPRIVILEGES_RESOURCE)){
@@ -340,15 +342,54 @@ org.ejbca.core.ejb.keybind.InternalKeyBindingRules
 				<li><a href="<%= ADMINISTRATORPRIV_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_ROLES") %></a></li>
 <%   }
   }catch(AuthorizationDeniedException e){}
-
+%>
+<%   
+   // If authorized to edit authorizations then display related links.
+   try{
+     if(ejbcawebbean.isAuthorizedNoLog(INTERNALKEYBINDING_RESOURCE)){
+       if(!systemheaderprinted){
+         out.write("<li id=\"cat7\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_INTERNALKEYBINDINGS")+"</strong><ul>"); 
+         systemheaderprinted=true;
+         }  %>
+				<li><a href="<%= INTERNALKEYBINDING_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_KEYBINDINGS") %></a></li>
+<%   }
+  }catch(AuthorizationDeniedException e){}
+%>
+<%
     // If authorized to edit user preferences then display related links.
     try{
       if(ejbcawebbean.isAuthorizedNoLog(MAIN_RESOURCE)){ %>
 				<li><a href="<%= MYPREFERENCES_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_MYPREFERENCES") %></a></li>
 <%   }
-   }catch(AuthorizationDeniedException e){
-   //     throw new AuthorizationDeniedException();
-   } 
+   }catch(AuthorizationDeniedException e){}
+%>
+<%
+   // If authorized to edit services then display related links.
+   try{
+     if(ejbcawebbean.isAuthorizedNoLog(SERVICES_RESOURCE)){
+       if(!systemheaderprinted){
+         out.write("<li id=\"cat7\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMFUNCTIONS")+"</strong><ul>"); 
+         systemheaderprinted=true;
+         }  %>
+				<li><a href="<%= SERVICES_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_SERVICES") %></a></li>
+<%   }
+  }catch(AuthorizationDeniedException e){} 
+%>
+<%
+    // If authorized to configure Ejbca then display related links.
+    try{
+      if(ejbcawebbean.isAuthorizedNoLog(SYSTEMCONFIGURATION_RESOURCE)){ 
+          if(!systemheaderprinted){      
+        out.write("<li id=\"cat7\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMFUNCTIONS")+"</strong><ul>");
+        systemheaderprinted = true;
+          } %>
+				<li><a href="<%= CONFIGURATION_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_SYSTEMCONFIGURATION") %></a></li>
+<%   }
+   }catch(AuthorizationDeniedException e){}
+%>
+
+
+<%
    if(systemheaderprinted){
      out.write("</ul></li>"); 
    }
