@@ -10,6 +10,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -37,6 +38,8 @@ import org.cesecore.ErrorCode;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
@@ -47,9 +50,9 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.FileTools;
 import org.cesecore.util.StringTools;
-import org.ejbca.config.EjbcaConfigurationHolder;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
@@ -364,7 +367,11 @@ public class RequestInstance {
 					        log.debug("Received NS request: "+new String(reqBytes));
 					    }
 						byte[] certs = helper.nsCertRequest(signSession, reqBytes, username, password);
-						RequestHelper.sendNewCertToNSClient(certs, response);
+						if (getParameter("showResultPage") != null && !isCertIssuerThrowAwayCA(certs)) {
+						  RequestHelper.sendResultPage(certs, response);
+						} else {
+						  RequestHelper.sendNewCertToNSClient(certs, response);
+						}
 					} else {
 						throw new SignRequestException("No request bytes received.");
 					}
@@ -561,6 +568,19 @@ public class RequestInstance {
             return true;
         }
         return false;
+    }
+    
+    /**
+     * Determines whether the issuer of a certificate is a "throw away" CA.
+     * @param certbytes DER encoded certificate.
+     * @throws CertificateException
+     */
+    private boolean isCertIssuerThrowAwayCA(byte[] certbytes) throws CADoesntExistsException, CertificateException {
+        Certificate cert = CertTools.getCertfromByteArray(certbytes);
+        String issuerDN = CertTools.getIssuerDN(cert);
+        int caid = issuerDN.hashCode();
+        CAInfo caInfo = caSession.getCAInfoInternal(caid);
+        return !caInfo.isUseCertificateStorage();
     }
     
 	/**
