@@ -50,12 +50,12 @@ public enum OcspExtensionsCache {
     /**
      * Method to manually reload the cache. 
      */
-    public synchronized void reloadCache(Map<String, OCSPExtension> newExtensionMap) {
+    private void reloadCache(Map<String, OCSPExtension> newExtensionMap) {
         extensionMap = newExtensionMap;
 
     }
 
-    public static Map<String, OCSPExtension> buildExtensionsMap() {
+    private static Map<String, OCSPExtension> buildExtensionsMap() {
         Map<String, OCSPExtension> result = new HashMap<String, OCSPExtension>();
         Iterator<String> extensionClasses = OcspConfiguration.getExtensionClasses().iterator();
         Iterator<String> extensionOids = OcspConfiguration.getExtensionOids().iterator();
