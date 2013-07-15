@@ -240,7 +240,7 @@ public class RequestMessageTest {
     }
 	 
     @Test
-    public void testCrmfRequestUsernameGeneratorFromDN() throws OperatorCreationException, IOException {
+    public void testRequestUsernameGeneratorFromDN() throws OperatorCreationException, IOException {
         CryptoProviderTools.installBCProviderIfNotAvailable();
         {
             PKCS10CertificationRequest basicpkcs10 = createP10("CN=subject,SN=000106716,O=Org,C=SE");
