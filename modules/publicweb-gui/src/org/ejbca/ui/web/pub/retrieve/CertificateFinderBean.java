@@ -227,4 +227,47 @@ public class CertificateFinderBean {
 			}
 		}
 	}
+	
+	/**
+	 * Looks up a certificate information by issuer and serial number.
+	 * The information can be accessed by getter methods in this class.
+	 * @see getIssuerDN()
+	 * @see getSubjectDN()
+	 * @see getSerialNumber()
+	 */
+    public void lookupCertificateInfo(String issuer, String serno) {
+        BigInteger sernoBigInt = CertTools.getSerialNumberFromString(serno);
+        Certificate cert = mStoreSession.findCertificateByIssuerAndSerno(issuer, sernoBigInt);
+        this.issuerDN = CertTools.getIssuerDN(cert);
+        this.subjectDN = CertTools.getSubjectDN(cert);
+        this.serialNumber = CertTools.getSerialNumberAsString(cert);
+    }
+    
+    private String issuerDN;
+    private String subjectDN;
+    private String serialNumber;
+    
+    /**
+     * @return the Issuer DN string of the current certificate.
+     * @see lookupCertificateInfo(String, String)
+     */
+    public String getIssuerDN() {
+        return issuerDN;
+    }
+    
+    /**
+     * @return the Subject DN string of the current certificate.
+     * @see lookupCertificateInfo(String, String)
+     */
+    public String getSubjectDN() {
+        return subjectDN;
+    }
+    
+    /**
+     * @return the serial number hex string of the current certificate.
+     * @see lookupCertificateInfo(String, String)
+     */
+    public String getSerialNumber() {
+        return serialNumber;
+    }
 }
