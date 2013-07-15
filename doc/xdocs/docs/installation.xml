@@ -1219,7 +1219,7 @@ but it will give an indication as well for other platforms what configuration st
 <li>deploy/ejbca-ds.xml</li>
 <li>deploy/ocsp-ds.xml (if OCSP datasource is configured)</li>
 </ul>
-<li>ant deploy-services</li>
+<li>ant deploy-service</li>
 <ul>
 <li>deploy/ejbca-mail-service.xml</li>
 </ul>
