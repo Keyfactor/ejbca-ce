@@ -17,6 +17,9 @@
     <link rel="stylesheet" href="../styles.css" type="text/css" />
     <script type="text/javascript" src="../scripts/functions.js"></script>
     <script type="text/vbscript" src="../scripts/functions.vbs"></script>
+    <c:if test="${!empty header_redirect_url}">
+        <meta http-equiv="Refresh" content="1; URL=<c:out value="${header_redirect_url}"/>">
+    </c:if>
   </head>
 
   <body>
