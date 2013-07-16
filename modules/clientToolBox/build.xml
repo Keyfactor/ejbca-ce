@@ -84,7 +84,7 @@
             <include name="org/ejbca/core/protocol/ws/client/cvcwscli.java" />
             <include name="org/ejbca/core/protocol/ws/client/gen/*.java" />
             <include name="org/ejbca/util/provider/TrustManagerFactoryImpl.java" />
-            <include name="org/ejbca/core/protocol/ocsp/extension.unid.OCSPUnidResponse.java" />
+            <include name="org/ejbca/core/protocol/ocsp/extension/unid/OCSPUnidResponse.java" />
         </javac>
     </target>
 
