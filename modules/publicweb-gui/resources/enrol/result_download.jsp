@@ -10,11 +10,11 @@ finder.initialize(request.getRemoteAddr());
 finder.lookupCertificateInfo(request.getParameter("issuer"), request.getParameter("serno"));
 %>
 
-<p>
-Subject DN: <strong><c:out value="${finder.subjectDN}" /></strong><br />
-Issuer DN: <strong><c:out value="${finder.issuerDN}" /></strong><br />
-Serial Number: <strong><c:out value="${finder.serialNumber}" /></strong><br />
-</p>
+<table>
+<tr><td>Subject DN: </td><td><strong><c:out value="${finder.subjectDN}" /></strong><br /></td></tr>
+<tr><td>Issuer DN: </td><td><strong><c:out value="${finder.issuerDN}" /></strong><br /></td></tr>
+<tr><td>Serial Number: </td><td><strong><c:out value="${finder.serialNumber}" /></strong><br /></td></tr>
+</table>
 
 <p>
 If your certificate is not installed automatically, please click here to install it:<br />
