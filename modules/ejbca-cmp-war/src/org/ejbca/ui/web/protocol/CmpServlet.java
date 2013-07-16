@@ -82,7 +82,7 @@ public class CmpServlet extends HttpServlet {
             }
             
             String alias = null;
-            if(getServletName().equals("CmpAliasServlet") && request.getServletPath().equals("/cmp/customconfig")) {
+            if(getServletName().equals("CmpAliasServlet")) {
                 alias = getAlias(request.getPathInfo());
                 if(alias == null) {
                     response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Wrong CMP URL.");
@@ -153,29 +153,24 @@ public class CmpServlet extends HttpServlet {
     
     private String getAlias(String pathInfo) {
         // PathInfo contains the alias used for CMP configuration. 
-        // The CMP URL for custom configuration looks like: http://HOST:PORT/ejbca/publicweb/cmp/customconfig/*
-        // pathInfo contains what * is and should have the form "/alias<SOME IDENTIFYING TEXT>". We extract the "SOME IDENTIFYING TEXT" and that will be
+        // The CMP URL for custom configuration looks like: http://HOST:PORT/ejbca/publicweb/cmp/*
+        // pathInfo contains what * is and should have the form "/<SOME IDENTIFYING TEXT>". We extract the "SOME IDENTIFYING TEXT" and that will be
         // the CMP configuration alias.
         String alias = null;
         if((pathInfo != null) && (pathInfo.length() > 0) ) {
-            if(pathInfo.indexOf("/alias") == -1) {
-                log.error("Wrong CMP URL. URL should have the form '<CMP base URL>/cmp/customconfig/alias*' but was '<CMP base URL>/cmp/customconfig" + pathInfo);
-                return null;
-            } else {
-                alias = pathInfo.substring(6);
-                if(log.isDebugEnabled()) {
-                    log.debug("Using CMP configuration alias: " + alias);
-                }
+            alias = pathInfo.substring(1);
+            if(log.isDebugEnabled()) {
+                log.debug("Using CMP configuration alias: " + alias);
+            }
 
-                if((alias == null) || (alias.length() < 1)) {
-                    log.error("Wrong CMP URL. A CMP configuration alias must be specified");
-                    return null;
-                }
+            if((alias == null) || (alias.length() < 1)) {
+                log.error("Wrong CMP URL. A CMP configuration alias must be specified");
+                return null;
+            }
                 
-                if(!isAlphanumeric(alias)) {
-                    log.error("Wrong CMP URL. A CMP configuration alias must consist of only number and/or letters");
-                    return null;
-                }
+            if(!isAlphanumeric(alias)) {
+                log.error("Wrong CMP URL. A CMP configuration alias must consist of only number and/or letters");
+                return null;
             }
         }
         return alias;
