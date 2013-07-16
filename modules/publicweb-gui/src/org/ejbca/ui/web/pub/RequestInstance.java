@@ -368,7 +368,7 @@ public class RequestInstance {
 					    }
 						byte[] certs = helper.nsCertRequest(signSession, reqBytes, username, password);
 						if (getParameter("showResultPage") != null && !isCertIssuerThrowAwayCA(certs)) {
-						  RequestHelper.sendResultPage(certs, response);
+						  RequestHelper.sendResultPage(certs, response, "true".equals(getParameter("hidemenu")));
 						} else {
 						  RequestHelper.sendNewCertToNSClient(certs, response);
 						}
