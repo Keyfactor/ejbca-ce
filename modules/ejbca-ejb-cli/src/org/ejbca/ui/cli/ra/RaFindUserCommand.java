@@ -50,7 +50,7 @@ public class RaFindUserCommand extends BaseRaAdminCommand {
                 if (data != null) {
                 	getLogger().info("Found user:");
                 	getLogger().info("Username: " + data.getUsername());
-                    getLogger().info("Password: " + (data.getPassword() != null ? data.getPassword() : "*****"));
+                    getLogger().info("Password: " + (data.getPassword() != null ? data.getPassword() : "<hidden>"));
                     getLogger().info("DN: \"" + data.getDN() + "\"");
                     getLogger().info("Alt Name: \"" + data.getSubjectAltName() + "\"");
                     ExtendedInformation ei = data.getExtendedinformation();
