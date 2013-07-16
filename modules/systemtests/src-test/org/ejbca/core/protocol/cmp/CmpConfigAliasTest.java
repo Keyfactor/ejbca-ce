@@ -109,7 +109,7 @@ public class CmpConfigAliasTest  extends CmpTestCase {
     private Certificate cacert;
     private CA testx509ca;
     
-    private String baseResource = "publicweb/cmp/customconfig/";
+    private String baseResource = "publicweb/cmp/";
     private String httpReqPath;
     
     @BeforeClass
@@ -184,7 +184,7 @@ public class CmpConfigAliasTest  extends CmpTestCase {
         con2.setRequestMethod("POST");
         con2.setRequestProperty("Content-type", "application/pkixcmp");
         con2.connect();
-        assertEquals("Unexpected HTTP response code.", 400, con2.getResponseCode()); // ERROR
+        assertEquals("Unexpected HTTP response code.", 200, con2.getResponseCode()); // OK response
         
         urlString = httpReqPath + '/' + baseResource; 
         log.info("http URL: " + urlString);
@@ -274,7 +274,7 @@ public class CmpConfigAliasTest  extends CmpTestCase {
             out.writeObject(req);
             byte[] ba = bao.toByteArray();
             // Send request and receive response
-            byte[] resp = sendCmpHttp(ba, 200, "alias" + alias);
+            byte[] resp = sendCmpHttp(ba, 200, alias);
             checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, req.getHeader().getSenderNonce().getOctets(), req.getHeader().getTransactionID()
                     .getOctets(), true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
             CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
@@ -291,7 +291,7 @@ public class CmpConfigAliasTest  extends CmpTestCase {
             out.writeObject(confirm);
             ba = bao.toByteArray();
             // Send request and receive response
-            resp = sendCmpHttp(ba, 200, "alias" + alias);
+            resp = sendCmpHttp(ba, 200, alias);
         
             //Since pAlg was not set in the ConfirmationRequest, the default DigestAlgorithm (SHA1) will be used
             checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
@@ -308,7 +308,7 @@ public class CmpConfigAliasTest  extends CmpTestCase {
             outrev.writeObject(rev);
             byte[] barev = baorev.toByteArray();
             // Send request and receive response
-            resp = sendCmpHttp(barev, 200, "alias" + alias);
+            resp = sendCmpHttp(barev, 200, alias);
             checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
             int revStatus = checkRevokeStatus(issuerDN, CertTools.getSerialNumber(cert));
             assertNotSame("Revocation request failed to revoke the certificate", RevokedCertInfo.NOT_REVOKED, revStatus);
@@ -374,7 +374,7 @@ public class CmpConfigAliasTest  extends CmpTestCase {
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
         // Send request and receive response
-        byte[] resp = sendCmpHttp(ba, 200, "alias" + alias);
+        byte[] resp = sendCmpHttp(ba, 200, alias);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         X509Certificate cert = checkKurCertRepMessage(userDN, cacert, resp, reqId);
         assertNotNull("Failed to renew the certificate", cert);
@@ -402,9 +402,6 @@ public class CmpConfigAliasTest  extends CmpTestCase {
         updatePropertyOnServer(CmpAliasConfiguration.CONFIG_PREFIX + alias + ".ra.passwordgenparams", "random");
         updatePropertyOnServer(CmpAliasConfiguration.CONFIG_PREFIX + alias + CmpAliasConfiguration.CONFIG_RA_ALLOWCUSTOMCERTSERNO, "false");
         updatePropertyOnServer(CmpAliasConfiguration.CONFIG_PREFIX + alias + CmpAliasConfiguration.CONFIG_RESPONSEPROTECTION, "signature");
-        
-        //updatePropertyOnServer(CmpAliasConfiguration.CONFIG_PREFIX + alias + CmpAliasConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true");
-        //updatePropertyOnServer(CmpAliasConfiguration.CONFIG_PREFIX + alias + CmpAliasConfiguration.CONFIG_ALLOWUPDATEWITHSAMEKEY, "true");
     }
     
     private EndEntityInformation createUser(String username, String subjectDN, String password) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfileException, 

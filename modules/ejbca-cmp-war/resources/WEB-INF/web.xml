@@ -32,7 +32,7 @@
 
     <servlet-mapping>
         <servlet-name>CmpAliasServlet</servlet-name>
-        <url-pattern>/cmp/customconfig/*</url-pattern>
+        <url-pattern>/cmp/*</url-pattern>
     </servlet-mapping>
 
     <session-config>
