@@ -581,14 +581,15 @@ public class RequestHelper {
      * 
      * @param certbytes DER encoded certificate
      * @param out output stream to send to
+     * @param hidemenu whether the menu should be hidden (translates to the "hidemenu" URL parameter)
      * @throws Exception
      */
-    public static void sendResultPage(byte[] certbytes, HttpServletResponse out) throws Exception {
+    public static void sendResultPage(byte[] certbytes, HttpServletResponse out, boolean hidemenu) throws Exception {
         Certificate cert = CertTools.getCertfromByteArray(certbytes);
         String issuerDN = CertTools.getIssuerDN(cert);
         String serialNumber = CertTools.getSerialNumberAsString(cert);
         
-        out.sendRedirect("enrol/result_download.jsp?issuer="+URLEncoder.encode(issuerDN, "UTF-8")+"&serno="+serialNumber);
+        out.sendRedirect("enrol/result_download.jsp?issuer="+URLEncoder.encode(issuerDN, "UTF-8")+"&serno="+serialNumber+"&hidemenu="+hidemenu);
     }
     
     /** Sets the default character encoding for decoding post and get parameters. 
