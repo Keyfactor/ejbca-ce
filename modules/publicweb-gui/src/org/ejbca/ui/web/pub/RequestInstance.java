@@ -368,8 +368,12 @@ public class RequestInstance {
 					    }
 						byte[] certs = helper.nsCertRequest(signSession, reqBytes, username, password);
 						if (Boolean.valueOf(getParameter("showResultPage")) && !isCertIssuerThrowAwayCA(certs)) {
+						  // Send info page that redirects to download URL that
+						  // retrieves the new certificate from the database
 						  RequestHelper.sendResultPage(certs, response, "true".equals(getParameter("hidemenu")));
 						} else {
+						  // The certificate will not be stored in the database,
+						  // so we must send the certificate while we still have it
 						  RequestHelper.sendNewCertToNSClient(certs, response);
 						}
 					} else {
