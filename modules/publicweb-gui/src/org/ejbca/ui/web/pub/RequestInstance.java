@@ -367,7 +367,7 @@ public class RequestInstance {
 					        log.debug("Received NS request: "+new String(reqBytes));
 					    }
 						byte[] certs = helper.nsCertRequest(signSession, reqBytes, username, password);
-						if (getParameter("showResultPage") != null && !isCertIssuerThrowAwayCA(certs)) {
+						if (Boolean.valueOf(getParameter("showResultPage")) && !isCertIssuerThrowAwayCA(certs)) {
 						  RequestHelper.sendResultPage(certs, response, "true".equals(getParameter("hidemenu")));
 						} else {
 						  RequestHelper.sendNewCertToNSClient(certs, response);
@@ -571,7 +571,9 @@ public class RequestInstance {
     }
     
     /**
-     * Determines whether the issuer of a certificate is a "throw away" CA.
+     * Determines whether the issuer of a certificate is a "throw away" CA, i.e.
+     * if it does not store certificates it issues in the database.
+     * 
      * @param certbytes DER encoded certificate.
      * @throws CertificateException
      */
