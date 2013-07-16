@@ -63,6 +63,11 @@ public class CertificateFinderBean {
 	 * It is used by getCAInfo().
 	 */
 	private int mCurrentCA;
+	
+    // Used to store the result of lookupCertificateInfo
+    private String issuerDN;
+    private String subjectDN;
+    private String serialNumber;
 
 	/**
 	 * Empty default constructor.
@@ -242,10 +247,6 @@ public class CertificateFinderBean {
         this.subjectDN = CertTools.getSubjectDN(cert);
         this.serialNumber = CertTools.getSerialNumberAsString(cert);
     }
-    
-    private String issuerDN;
-    private String subjectDN;
-    private String serialNumber;
     
     /**
      * @return the Issuer DN string of the current certificate.
