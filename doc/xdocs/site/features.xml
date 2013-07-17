@@ -23,6 +23,7 @@
 <li>Support for Hardware Security Modules (HSMs). Built in support for Thales/nCipher, SafeNet Luna, SafeNet ProtectServer, Utimaco CryptoServer, AEP Keyper, ARX CoSign and other HSMs with a good PKCS#11 library.</li>
 <li>Individual enrollment or batch production of certificates.</li>
 <li>Issues SSL/TLS certificates that work with all common servers.</li>
+<li><a href="docs/userguide.html#End%20Entities">Admin registration</a> and <a href="docs/adminguide.html#Self%20Registration">self-registration</a> work-flows out of the box. Supports virtually any work-flow with <a href="docs/adminguide.html#Customizing%20EJBCA">plug-ins</a> and integration.</li>
 <li>Server and client certificates can be exported as PKCS12, JKS or PEM.</li>
 <li>Browser enrollment with Firefox, IE, etc.</li>
 <li>Enrollment for other applications through open APIs and tools.</li>
