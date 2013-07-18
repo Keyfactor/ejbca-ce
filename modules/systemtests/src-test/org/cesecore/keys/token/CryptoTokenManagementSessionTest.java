@@ -300,6 +300,20 @@ public class CryptoTokenManagementSessionTest extends RoleUsingTestCase {
         if (authenticationToken == null) {
             authenticationToken = alwaysAllowToken;
         }
+        
+        // Generate full name of cryptotoken including class/method name etc.
+        final String callingClassName = Thread.currentThread().getStackTrace()[4].getClassName();
+        final String callingClassSimpleName = callingClassName.substring(callingClassName.lastIndexOf('.')+1);
+        final String callingMethodName = Thread.currentThread().getStackTrace()[4].getMethodName();
+        final String fullTokenName = callingClassSimpleName + "." + callingMethodName + "."+ tokenName;
+        
+        // Delete cryptotoken if it exists already
+        final Integer oldCryptoTokenId = cryptoTokenManagementSession.getIdFromName(fullTokenName);
+        if (oldCryptoTokenId != null) {
+            removeCryptoToken(authenticationToken, oldCryptoTokenId);
+        }
+        
+        // Set up properties
         final Properties cryptoTokenProperties = new Properties();
         cryptoTokenProperties.setProperty(SoftCryptoToken.NODEFAULTPWD, "true");
         if (pin==null) {
@@ -311,18 +325,11 @@ public class CryptoTokenManagementSessionTest extends RoleUsingTestCase {
             cryptoTokenProperties.setProperty(PKCS11CryptoToken.SLOT_LABEL_KEY, "1");
             cryptoTokenClassName = PKCS11CryptoToken.class.getName();
         }
+        
+        // Create the cryptotoken
         int cryptoTokenId = 0;
         try {
-            /*
-            int level = 0;
-            for (StackTraceElement stackTraceElement : Thread.currentThread().getStackTrace()) {
-                log.debug(level++ + " " + stackTraceElement.getClassName() + " " + stackTraceElement.getMethodName());
-            }
-            */
-            final String callingClassName = Thread.currentThread().getStackTrace()[4].getClassName();
-            final String callingClassSimpleName = callingClassName.substring(callingClassName.lastIndexOf('.')+1);
-            final String callingMethodName = Thread.currentThread().getStackTrace()[4].getMethodName();
-            cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, callingClassSimpleName + "." + callingMethodName + "."+ tokenName, cryptoTokenClassName, cryptoTokenProperties, null, pin);
+            cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, fullTokenName, cryptoTokenClassName, cryptoTokenProperties, null, pin);
             if (genenrateKeys) {
                 cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS, signKeySpec);
                 cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS, "1024");
