@@ -307,9 +307,10 @@ public class CryptoTokenManagementSessionTest extends RoleUsingTestCase {
         final String callingMethodName = Thread.currentThread().getStackTrace()[4].getMethodName();
         final String fullTokenName = callingClassSimpleName + "." + callingMethodName + "."+ tokenName;
         
-        // Delete cryptotoken if it exists already
-        final Integer oldCryptoTokenId = cryptoTokenManagementSession.getIdFromName(fullTokenName);
-        if (oldCryptoTokenId != null) {
+        // Delete cryptotokens with the same name
+        while (true) {
+            final Integer oldCryptoTokenId = cryptoTokenManagementSession.getIdFromName(fullTokenName);
+            if (oldCryptoTokenId == null) break;
             removeCryptoToken(authenticationToken, oldCryptoTokenId);
         }
         
