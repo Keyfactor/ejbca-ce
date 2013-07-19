@@ -175,15 +175,7 @@ public class OcspKeyRenewalTest {
         cleanupKeyBinding(TESTCLASSNAME + "-ocsp"); // ocsp key binding
         
         // Delete CryptoToken
-        try {
-            while (true) {
-                Integer id = cryptoTokenManagementSession.getIdFromName(TESTCLASSNAME); 
-                if (id == null) break;
-                cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, id);
-            }
-        } catch (Exception e) {
-            //Ignore any failures.
-        }
+        cleanupCryptoToken(TESTCLASSNAME);
         
         // Delete CA
         try {
@@ -194,6 +186,7 @@ public class OcspKeyRenewalTest {
         } catch (Exception e) {
             // Get out of loop and ignore
         }
+        cleanupCryptoToken(CA_DN);
         
         // Ensure that the removed signing certificate is removed from the cache
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
@@ -206,6 +199,18 @@ public class OcspKeyRenewalTest {
                 Integer keybindingId = internalKeyBindingMgmtSession.getIdFromName(keybindingName);
                 if (keybindingId == null) break;
                 internalKeyBindingMgmtSession.deleteInternalKeyBinding(authenticationToken, keybindingId);
+            }
+        } catch (Exception e) {
+            //Ignore any failures.
+        }
+    }
+    
+    private static void cleanupCryptoToken(String name) {
+        try {
+            while (true) {
+                Integer id = cryptoTokenManagementSession.getIdFromName(name); 
+                if (id == null) break;
+                cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, id);
             }
         } catch (Exception e) {
             //Ignore any failures.
