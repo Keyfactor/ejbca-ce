@@ -141,7 +141,11 @@ public class OcspKeyRenewalTest {
     
     @AfterClass
     public static void afterClass() throws Exception {
-        roleManagementSession.remove(authenticationToken, TESTCLASSNAME);
+        try {
+            roleManagementSession.remove(authenticationToken, TESTCLASSNAME);
+        } catch (Exception e) {
+            //Ignore any failures.
+        }
         try {
             internalCertificateStoreSession.removeCertificate(ocspSigningCertificate);
         } catch (Exception e) {
