@@ -30,6 +30,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
@@ -103,6 +104,8 @@ public class OcspKeyRenewalTest {
     @BeforeClass
     public static void beforeClass() throws Exception {
         cleanup();
+        ocspResponseGeneratorTestSession.reloadOcspSigningCache();
+        
         x509ca = CryptoTokenTestUtils.createTestCA(authenticationToken, CA_DN);
         log.debug("OCSP CA Id: " + x509ca.getCAId() + " CA SubjectDN: " + x509ca.getSubjectDN());
         cryptoTokenId = CryptoTokenTestUtils.createCryptoToken(authenticationToken, TESTCLASSNAME);
@@ -166,12 +169,36 @@ public class OcspKeyRenewalTest {
         } catch (Exception e) {
             //Ignore any failures.
         }
-        internalKeyBindingMgmtSession.deleteInternalKeyBinding(authenticationToken, authenticationKeyBindingId);
-        internalKeyBindingMgmtSession.deleteInternalKeyBinding(authenticationToken, ocspKeyBindingId);
-        cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, cryptoTokenId);
-        OcspTestUtils.deleteCa(authenticationToken, x509ca);
+        
+        // Delete KeyBindings
+        cleanupKeyBinding(TESTCLASSNAME + "-ssl"); // authentication key binding
+        cleanupKeyBinding(TESTCLASSNAME + "-ocsp"); // ocsp key binding
+        
+        // Delete CryptoToken
+        while (true) {
+            Integer id = cryptoTokenManagementSession.getIdFromName(TESTCLASSNAME); 
+            if (id == null) break;
+            cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, id);
+        }
+        
+        // Delete CA
+        while (true) {
+            CAInfo info = caSession.getCAInfo(authenticationToken, CA_DN);
+            if (info == null) break;
+            caSession.removeCA(authenticationToken, info.getCAId());
+        }
+        
         // Ensure that the removed signing certificate is removed from the cache
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
+    }
+    
+    private static void cleanupKeyBinding(String keybindingName) throws AuthorizationDeniedException {
+        // There can be more than one key binding if the test has failed multiple times
+        while (true) {
+            Integer keybindingId = internalKeyBindingMgmtSession.getIdFromName(keybindingName);
+            if (keybindingId == null) break;
+            internalKeyBindingMgmtSession.deleteInternalKeyBinding(authenticationToken, keybindingId);
+        }
     }
     
     @Test
