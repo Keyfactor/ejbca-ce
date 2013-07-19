@@ -102,6 +102,7 @@ public class OcspKeyRenewalTest {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
+        cleanup();
         x509ca = CryptoTokenTestUtils.createTestCA(authenticationToken, CA_DN);
         log.debug("OCSP CA Id: " + x509ca.getCAId() + " CA SubjectDN: " + x509ca.getSubjectDN());
         cryptoTokenId = CryptoTokenTestUtils.createCryptoToken(authenticationToken, TESTCLASSNAME);
@@ -141,6 +142,10 @@ public class OcspKeyRenewalTest {
     
     @AfterClass
     public static void afterClass() throws Exception {
+        cleanup();
+    }
+    
+    private static void cleanup() throws Exception {
         try {
             roleManagementSession.remove(authenticationToken, TESTCLASSNAME);
         } catch (Exception e) {
