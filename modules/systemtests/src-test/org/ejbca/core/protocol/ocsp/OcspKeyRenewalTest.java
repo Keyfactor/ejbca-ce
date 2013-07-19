@@ -175,29 +175,40 @@ public class OcspKeyRenewalTest {
         cleanupKeyBinding(TESTCLASSNAME + "-ocsp"); // ocsp key binding
         
         // Delete CryptoToken
-        while (true) {
-            Integer id = cryptoTokenManagementSession.getIdFromName(TESTCLASSNAME); 
-            if (id == null) break;
-            cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, id);
+        try {
+            while (true) {
+                Integer id = cryptoTokenManagementSession.getIdFromName(TESTCLASSNAME); 
+                if (id == null) break;
+                cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, id);
+            }
+        } catch (Exception e) {
+            //Ignore any failures.
         }
         
         // Delete CA
-        while (true) {
-            CAInfo info = caSession.getCAInfo(authenticationToken, CA_DN);
-            if (info == null) break;
-            caSession.removeCA(authenticationToken, info.getCAId());
+        try {
+            while (true) {
+                CAInfo info = caSession.getCAInfo(authenticationToken, CA_DN);
+                caSession.removeCA(authenticationToken, info.getCAId());
+            }
+        } catch (Exception e) {
+            // Get out of loop and ignore
         }
         
         // Ensure that the removed signing certificate is removed from the cache
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
     }
     
-    private static void cleanupKeyBinding(String keybindingName) throws AuthorizationDeniedException {
-        // There can be more than one key binding if the test has failed multiple times
-        while (true) {
-            Integer keybindingId = internalKeyBindingMgmtSession.getIdFromName(keybindingName);
-            if (keybindingId == null) break;
-            internalKeyBindingMgmtSession.deleteInternalKeyBinding(authenticationToken, keybindingId);
+    private static void cleanupKeyBinding(String keybindingName) {
+        try {
+            // There can be more than one key binding if the test has failed multiple times
+            while (true) {
+                Integer keybindingId = internalKeyBindingMgmtSession.getIdFromName(keybindingName);
+                if (keybindingId == null) break;
+                internalKeyBindingMgmtSession.deleteInternalKeyBinding(authenticationToken, keybindingId);
+            }
+        } catch (Exception e) {
+            //Ignore any failures.
         }
     }
     
