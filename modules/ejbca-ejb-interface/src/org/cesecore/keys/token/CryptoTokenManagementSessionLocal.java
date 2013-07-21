@@ -35,15 +35,6 @@ public interface CryptoTokenManagementSessionLocal extends CryptoTokenManagement
     CryptoTokenInfo getCryptoTokenInfo(int cryptoTokenId);
 
     /**
-     * Checks if admin is authorized to crypto token
-     * 
-     * @param authenticationToken an authentication token for the admin
-     * @param cryptoTokenId the ID of the crypto token
-     * @return true if authorized
-     */
-    boolean isAuthorizedToViewCryptoToken(AuthenticationToken authenticationToken, int cryptoTokenId);
-
-    /**
      * Checks if a crypto token is active. 
      * 
      * @param cryptoTokenId the ID of the crypto token
