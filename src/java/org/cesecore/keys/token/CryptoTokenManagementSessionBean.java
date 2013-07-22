@@ -168,8 +168,8 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         details.put("encProviderName", cryptoToken.getEncProviderName());
         details.put("signProviderName", cryptoToken.getSignProviderName());
         putDelta(new Properties(), cryptoToken.getProperties(), details);
-        securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_CREATE, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE, authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, details);
         cryptoTokenSession.mergeCryptoToken(cryptoToken);
+        securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_CREATE, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE, authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, details);
         if (log.isTraceEnabled()) {
             log.trace("<createCryptoToken: "+tokenName+", "+className);
         }
@@ -218,8 +218,8 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         putDelta("encProviderName", currentCryptoToken.getEncProviderName(), newCryptoToken.getEncProviderName(), details);
         putDelta("signProviderName", currentCryptoToken.getSignProviderName(), newCryptoToken.getSignProviderName(), details);
         putDelta(currentCryptoToken.getProperties(), newCryptoToken.getProperties(), details);
-        securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_EDIT, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE, authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, details);
         cryptoTokenSession.mergeCryptoToken(newCryptoToken);
+        securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_EDIT, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE, authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, details);
         if (log.isTraceEnabled()) {
             log.trace("<saveCryptoToken: "+tokenName+", "+cryptoTokenId);
         }
@@ -257,9 +257,9 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     public void activate(final AuthenticationToken authenticationToken, final int cryptoTokenId, final char[] authenticationCode) throws AuthorizationDeniedException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException {
         assertAuthorization(authenticationToken, cryptoTokenId, CryptoTokenRules.ACTIVATE.resource()+"/"+cryptoTokenId);
         final CryptoToken cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
+        cryptoToken.activate(authenticationCode);
         securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_ACTIVATE, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE, authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null,
                 "Activated CryptoToken '" + cryptoToken.getTokenName() + "' with id " + cryptoTokenId);
-        cryptoToken.activate(authenticationCode);
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -267,9 +267,9 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     public void deactivate(final AuthenticationToken authenticationToken, final int cryptoTokenId) throws AuthorizationDeniedException {
         assertAuthorization(authenticationToken, cryptoTokenId, CryptoTokenRules.DEACTIVATE.resource()+"/"+cryptoTokenId);
         final CryptoToken cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
+        cryptoToken.deactivate();
         securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_DEACTIVATE, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE, authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null,
                 "Activated CryptoToken '" + cryptoToken.getTokenName() + "' with id " + cryptoTokenId);
-        cryptoToken.deactivate();
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -359,6 +359,8 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
             // This should not happen here since we use the same name and id
             throw new RuntimeException(e);
         }
+        securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_UPDATEPIN, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE, authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null,
+                "Updated PIN of CryptoToken '" + cryptoToken.getTokenName() + "' with id " + cryptoTokenId);
         // Return the current auto-activation state
         return BaseCryptoToken.getAutoActivatePin(cryptoTokenProperties) != null;
     }
@@ -468,8 +470,6 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         details.put("msg", "Generated new keypair in CryptoToken " + cryptoTokenId);
         details.put("keyAlias", alias);
         details.put("keySpecification", keySpecification);
-        securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_GEN_KEYPAIR, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
-                authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, details);
         cryptoToken.generateKeyPair(keySpecification, alias);
         cryptoToken.testKeyPair(alias);
         // Merge is important for soft tokens where the data is persisted in the database, but will also update lastUpdate
@@ -478,6 +478,8 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         } catch (CryptoTokenNameInUseException e) {
             throw new RuntimeException(e);  // We have not changed the name of the CrytpoToken here, so this should never happen
         }
+        securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_GEN_KEYPAIR, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
+                authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, details);
     }
 
     @Override
@@ -500,8 +502,6 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         details.put("msg", "Generated new keypair in CryptoToken " + cryptoTokenId);
         details.put("keyAlias", newAlias);
         details.put("keySpecification", keySpecification);
-        securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_GEN_KEYPAIR, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
-                authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, details);
         cryptoToken.generateKeyPair(keySpecification, newAlias);
         cryptoToken.testKeyPair(newAlias);
         try {
@@ -509,6 +509,8 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         } catch (CryptoTokenNameInUseException e) {
             throw new RuntimeException(e);  // We have not changed the name of the CrytpoToken here, so this should never happen
         }
+        securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_GEN_KEYPAIR, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
+                authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, details);
     }
 
     @Override
@@ -556,7 +558,6 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         final Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", "Deleted key pair from CryptoToken " + cryptoTokenId);
         details.put("keyAlias", alias);
-        securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_DELETE_ENTRY, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE, authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, details);
         try {
             cryptoToken.deleteEntry(alias);
         } catch (KeyStoreException e) {
@@ -576,6 +577,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         } catch (CryptoTokenNameInUseException e) {
             throw new RuntimeException(e);  // We have not changed the name of the CrytpoToken here, so this should never happen
         }
+        securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_DELETE_ENTRY, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE, authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, details);
     }
 
     @Override
