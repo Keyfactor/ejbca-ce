@@ -18,6 +18,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.security.InvalidParameterException;
 import java.security.cert.Certificate;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -43,6 +44,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRem
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
+import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
@@ -403,7 +405,14 @@ public class CaInitCommand extends BaseCaAdminCommand {
             final String className = "soft".equals(catokentype) ? SoftCryptoToken.class.getName() : PKCS11CryptoToken.class.getName();
             // Create the CryptoToken
             final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
-            final int cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(getAdmin(cliUserName, cliPassword), caname, className, cryptoTokenProperties, null, authenticationCode);
+            int cryptoTokenId;
+            try {
+                cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(getAdmin(cliUserName, cliPassword), caname, className, cryptoTokenProperties, null, authenticationCode);
+            } catch (CryptoTokenNameInUseException e) {
+                // If the name was already in use we simply add a timestamp to the name to make it unique
+                final String postfix = "_" + new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+                cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(getAdmin(cliUserName, cliPassword), caname+postfix, className, cryptoTokenProperties, null, authenticationCode);
+            }
             // Create the CA Token
             final CAToken caToken = new CAToken(cryptoTokenId, caTokenProperties);
             caToken.setSignatureAlgorithm(signAlg);
