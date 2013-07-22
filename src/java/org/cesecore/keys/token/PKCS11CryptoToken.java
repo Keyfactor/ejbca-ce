@@ -34,7 +34,6 @@ import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.token.p11.P11Slot;
 import org.cesecore.keys.token.p11.P11SlotUser;
 import org.cesecore.keys.util.KeyStoreTools;
-import org.cesecore.keys.util.KeyTools;
 
 /**
  * Class implementing a keystore on PKCS11 tokens.
@@ -71,9 +70,9 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
     public PKCS11CryptoToken() throws InstantiationException {
         super();
         try {
-            Thread.currentThread().getContextClassLoader().loadClass(KeyTools.SUNPKCS11CLASS);
+            Thread.currentThread().getContextClassLoader().loadClass(org.cesecore.keys.token.p11.Pkcs11SlotLabel.SUN_PKCS11_CLASS);
         } catch (ClassNotFoundException t) {
-            throw new InstantiationException("PKCS11 provider class " + KeyTools.SUNPKCS11CLASS + " not found.");
+            throw new InstantiationException("PKCS11 provider class " + org.cesecore.keys.token.p11.Pkcs11SlotLabel.SUN_PKCS11_CLASS + " not found.");
         }
     }
 
@@ -155,7 +154,7 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
         // The password parameter of the load method (this is the second parameter, which is null here) will be used if provided (i.e. if it is not
         // null). If it is null, the default login manager will use the configured method for prompting the PIN on demand. If the application just
         // provides the instance number as a string instead of the complete provider name, the key store will also accept it.
-        if (provider.getClass().getName().equals(KeyTools.IAIKPKCS11CLASS)) {
+        if (provider.getClass().getName().equals(org.cesecore.keys.token.p11.Pkcs11SlotLabel.IAIK_PKCS11_CLASS)) {
             keyStore.load(new ByteArrayInputStream(getSignProviderName().getBytes("UTF-8")), authCode);
         } else {
             // For the Sun provider this works fine to initialize the provider using previously provided protection parameters.

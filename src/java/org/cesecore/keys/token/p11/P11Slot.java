@@ -28,7 +28,6 @@ import javax.security.auth.login.LoginException;
 import org.apache.log4j.Logger;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.util.KeyTools;
 
 /**
  * Each instance of this class represents a slot on a P11 module.
@@ -302,10 +301,10 @@ public class P11Slot {
         try {
             this.isSettingProvider = true;
             if ( this.slotNr!=null && this.sharedLibrary!=null ) {
-                tmpProvider = KeyTools.getP11Provider(this.slotNr, this.sharedLibrary,
+                tmpProvider = Pkcs11SlotLabel.getP11Provider(this.slotNr, this.sharedLibrary,
                                                         this.isIndex, this.attributesFile);
             } else if ( this.sunP11ConfigFileName!=null ) {
-                tmpProvider = new KeyTools.PKCS11Slot(KeyTools.PKCS11Slot.Type.SUN_FILE, null).getP11Provider(this.sunP11ConfigFileName, null, null);
+                tmpProvider = new Pkcs11SlotLabel(Pkcs11SlotLabel.Type.SUN_FILE, null).getP11Provider(this.sunP11ConfigFileName, null, null);
             } else {
                 throw new Error("Should never happen.");
             }
@@ -329,4 +328,6 @@ public class P11Slot {
         }
         return tmpProvider;
     }
+    
+    
 }
