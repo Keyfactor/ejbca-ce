@@ -287,6 +287,14 @@ public class CaInitCommand extends BaseCaAdminCommand {
                     signedByCAId = Integer.valueOf(caid);
                 }
             }
+            
+            // Check that the CA doesn't exist already
+            getLogger().debug("Checking that CA doesn't exist: "+caname);
+            if (getCAInfo(getAdmin(cliUserName, cliPassword), caname) != null) {
+                getLogger().error("Error: CA '"+caname+"' exists already");
+                return;
+            }
+            
             // Get the profile ID from the name if we specified a certain profile name
             int certificateProfileId = CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA;
             if (profileName == null) {
