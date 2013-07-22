@@ -18,6 +18,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -100,37 +101,36 @@ public final class FileTools {
      * @param file filename of file.
      *
      * @return byte[] containing the contents of the file.
+     * @throws FileNotFoundException if file was not found
      *
      * @throws IOException if the file does not exist or cannot be read.
      */
-    public static byte[] readFiletoBuffer(final String file)
-        throws IOException {
-    	final InputStream in = new FileInputStream(file);
+    public static byte[] readFiletoBuffer(final String file) throws FileNotFoundException {
+        final InputStream in = new FileInputStream(file);
         return readInputStreamtoBuffer(in);
-    } // readFiletoBuffer
+    } 
 
     /**
-     * Helpfunction to read an InputStream to a byte array.
+     * Help function to read an InputStream to a byte array.
      *
      * @return byte[] containing the contents of the file.
      *
-     * @throws IOException if the file does not exist or cannot be read.
      */
-    public static byte[] readInputStreamtoBuffer(final InputStream in)
-        throws IOException {
-    	final ByteArrayOutputStream os = new ByteArrayOutputStream();
+    public static byte[] readInputStreamtoBuffer(final InputStream in)  {
+        final ByteArrayOutputStream os = new ByteArrayOutputStream();
+        try {
         int len = 0;
         final byte[] buf = new byte[1024];
-
         while ((len = in.read(buf)) > 0) {
             os.write(buf, 0, len);
         }
-
         in.close();
         os.close();
-
         return os.toByteArray();
-    } // readInputStreamtoBuffer
+        } catch(IOException e) {
+            throw new RuntimeException("Caught IOException for unknown reason", e);      
+        }
+    }
 
     /**
      * Sort the files by name with directories first.
@@ -158,4 +158,4 @@ public final class FileTools {
     		return c.compare(f1.getName(), f2.getName());
     	}
     }
-} // FileTools
+} 
