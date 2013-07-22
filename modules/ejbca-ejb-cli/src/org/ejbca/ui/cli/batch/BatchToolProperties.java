@@ -41,10 +41,10 @@ public class BatchToolProperties {
 
 	/**
 	 * Returns the configured keysize
-	 * Default is 1024
+	 * Default is 2048
 	 */
 	public String getKeySpec(){
-		return batchToolProperties.getProperty(PROPERTY_KEYSPEC,"1024");
+		return batchToolProperties.getProperty(PROPERTY_KEYSPEC,"2048");
 	}
 
 	/**
