@@ -20,6 +20,7 @@ import java.util.Properties;
 
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.PKCS11CryptoTokenTest;
+import org.cesecore.keys.token.PKCS11TestUtils;
 import org.cesecore.util.CryptoProviderTools;
 import org.junit.Test;
 
@@ -89,6 +90,6 @@ public class PKCS11CATokenTest extends CATokenTestBase {
 	}
 
     String getProvider() {
-    	return PKCS11CryptoTokenTest.getHSMProvider();
+    	return PKCS11TestUtils.getHSMProvider();
     }
 }

@@ -35,12 +35,8 @@ import org.apache.log4j.Logger;
  *
  * @version $Id$
  */
-public final class FileTools {
+public abstract class FileTools {
     private static final Logger log = Logger.getLogger(FileTools.class);
-
-    /** Should not be created */
-    private FileTools() {
-    }
 
     /**
      * Reads binary bytes from a PEM-file. The PEM-file may contain other stuff, the first item

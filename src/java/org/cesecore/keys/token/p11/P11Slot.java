@@ -13,7 +13,6 @@
 package org.cesecore.keys.token.p11;
 
 import java.io.File;
-import java.io.IOException;
 import java.security.AuthProvider;
 import java.security.Provider;
 import java.security.Security;
@@ -40,19 +39,24 @@ public class P11Slot {
     /** Log4j instance */
     private static final Logger log = Logger.getLogger(P11Slot.class);
 
+    /**
+     * Used for library key map when a sun configuration file is used to specify a token (slot). In this case only one lib could be used.
+     */
+    private static final String ONLY_ONE = "onlyOne";
+    
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
     private final static Map<String,P11Slot> slotMap = new HashMap<String, P11Slot>();
     private final static Set<String> slotsBeingCreated = new HashSet<String>();
     private final static Map<String,Set<P11Slot>> libMap = new HashMap<String, Set<P11Slot>>();
     private final static Map<Integer, P11SlotUser> tokenMap = new HashMap<Integer, P11SlotUser>();
-    final private String slotNr;
-    final private String sharedLibrary;
-    final private String attributesFile;
-    final private boolean isIndex;
-    final private Set<Integer> tokenids = new HashSet<Integer>();
-    final private String sunP11ConfigFileName;
-    final private Provider provider;
+    private final String slotNr;
+    private final String sharedLibrary;
+    private final String attributesFile;
+    private final boolean isIndex;
+    private final Set<Integer> tokenids = new HashSet<Integer>();
+    private final String sunP11ConfigFileName;
+    private final Provider provider;
     private boolean isSettingProvider = false;
     private P11Slot(String _slotNr, String _sharedLibrary, boolean _isIndex, String _attributesFile) throws CryptoTokenOfflineException {
         this.slotNr = _slotNr;
@@ -80,10 +84,7 @@ public class P11Slot {
         }
         return "P11 slot "+(this.isIndex ? "index ":"#")+this.slotNr+" using library "+this.sharedLibrary+'.';
     }
-    /**
-     * Used for library key map when a sun configuration file is used to specify a token (slot). In this case only one lib could be used.
-     */
-    static private String ONLY_ONE = "onlyOne";
+
     /**
      * Reset the HSM. Could be done if it has stopped working in a try to get it working again.
      */
@@ -108,11 +109,10 @@ public class P11Slot {
      * @param token Token that should use this object
      * @param id unique ID of the user of the token. For EJBCA this is the caid. For the OCSP responder this is fixed since then there is only one user.
      * @return P11Slot
-     * @throws CryptoTokenOfflineException if token can not be activated, IllegalArgumentException if sharedLibrary is null.
+     * @throws CryptoTokenOfflineException if token can not be activated
      */
     public static P11Slot getInstance(String slotNr, String sharedLibrary, boolean isIndex, 
-                                      String attributesFile, P11SlotUser token, int id) throws CryptoTokenOfflineException {
-        
+                                      String attributesFile, P11SlotUser token, int id) throws CryptoTokenOfflineException {       
         return getInstance(null, slotNr, sharedLibrary, isIndex, attributesFile, token, id);
     }
     
@@ -128,7 +128,7 @@ public class P11Slot {
      * @param token Token that should use this object
      * @param id unique ID of the user of the token. For EJBCA this is the caid. For the OCSP responder this is fixed since then there is only one user.
      * @return P11Slot
-     * @throws CryptoTokenOfflineException if token can not be activated, IllegalArgumentException if sharedLibrary is null.
+     * @throws CryptoTokenOfflineException if token can not be activated
      */
     public static P11Slot getInstance(String friendlyName, String slotNr, String sharedLibrary, boolean isIndex, 
                                       String attributesFile, P11SlotUser token, int id) throws CryptoTokenOfflineException {
@@ -146,12 +146,12 @@ public class P11Slot {
      * @param token Token that should use this object.
      * @param id unique ID of the user of the token. For EJBCA this is the caid. For the OCSP responder this is fixed since then there is only one user.
      * @return a new P11Slot instance
-     * @throws CATokenOfflineException
+     * @throws CryptoTokenOfflineException
      */
-    static public P11Slot getInstance(String configFileName, P11SlotUser token, int id) throws CryptoTokenOfflineException {
+    public static P11Slot getInstance(String configFileName, P11SlotUser token, int id) throws CryptoTokenOfflineException {
         return getInstance(new SlotDataConfigFile(configFileName), token, id);
     }
-    static private P11Slot getInstance(ISlotData data, P11SlotUser token, int id) throws CryptoTokenOfflineException {
+    private static P11Slot getInstance(SlotData data, P11SlotUser token, int id) throws CryptoTokenOfflineException {
         tokenMap.put(Integer.valueOf(id), token);
         P11Slot slot = slotMap.get(data.getSlotLabel());
         if (slot==null) {
@@ -207,12 +207,12 @@ public class P11Slot {
         slot.tokenids.add(Integer.valueOf(id));
         return slot;
     }
-    private static interface ISlotData {
+    private static interface SlotData {
         P11Slot getNewP11Slot() throws CryptoTokenOfflineException;
         String getSlotLabel();
         String getLibName();
     }
-    private static class SlotDataConfigFile implements ISlotData {
+    private static class SlotDataConfigFile implements SlotData {
         private final String configFileName;
         SlotDataConfigFile(String _configFileName) {
             this.configFileName = _configFileName;
@@ -227,14 +227,16 @@ public class P11Slot {
             return new File(this.configFileName).getName();
         }
     }
-    private static class SlotDataParam implements ISlotData {
+    
+    private static class SlotDataParam implements SlotData {
     	private final String friendlyName;
         private final String slotNr;
         private final String sharedLibrary;
         private final String libName;
         private final boolean isIndex; 
         private final String attributesFile;
-        SlotDataParam(String _friendlyName, String _slotNr, String _sharedLibrary, boolean _isIndex, 
+        
+        public SlotDataParam(String _friendlyName, String _slotNr, String _sharedLibrary, boolean _isIndex, 
                       String _attributesFile) {
             this.slotNr = _slotNr;
             this.sharedLibrary = _sharedLibrary;
@@ -243,9 +245,11 @@ public class P11Slot {
             this.libName = new File(this.sharedLibrary).getName();
             this.friendlyName = _friendlyName;
         }
+        
         public P11Slot getNewP11Slot() throws CryptoTokenOfflineException {
             return new P11Slot(this.slotNr, this.sharedLibrary, this.isIndex, this.attributesFile);
         }
+        
         public String getSlotLabel() {
         	if(this.friendlyName != null) {
         		return this.friendlyName;
@@ -253,6 +257,7 @@ public class P11Slot {
         		return this.slotNr + this.libName + this.isIndex;
         	}
         }
+        
         public String getLibName() {
             return this.libName;
         }
@@ -306,12 +311,8 @@ public class P11Slot {
             } else if ( this.sunP11ConfigFileName!=null ) {
                 tmpProvider = new Pkcs11SlotLabel(Pkcs11SlotLabel.Type.SUN_FILE, null).getP11Provider(this.sunP11ConfigFileName, null, null);
             } else {
-                throw new Error("Should never happen.");
+                throw new IllegalStateException("Should never happen.");
             }
-        } catch (IOException e) {
-            final CryptoTokenOfflineException e2 = new CryptoTokenOfflineException("Not possible to create provider. See cause.");
-            e2.initCause(e);
-            throw e2;
         } finally {
             this.isSettingProvider = false;
             this.notifyAll();
@@ -327,7 +328,5 @@ public class P11Slot {
         	log.debug("Provider successfully added: "+tmpProvider);
         }
         return tmpProvider;
-    }
-    
-    
+    }  
 }

@@ -64,13 +64,14 @@ public class Pkcs11SlotLabel {
             return this.description;
         }
     }
-    final private static String DELIMETER = ":";
-    final private Type type;
-    final private String value;
+    
+    private final static String DELIMETER = ":";
+    private final Type type;
+    private final String value;
+    
     /**
      * Create an instance with a string that defines the slot.
      * @param taggedString Defines type and value this like this '<Type>:<value>'. Example slot with token label "Toledo": TOKEN_LABEL:Toledo
-     * @throws IOException
      */
     public Pkcs11SlotLabel( final String taggedString ) {
         final String[] split = taggedString.split(DELIMETER, 2);
@@ -98,6 +99,7 @@ public class Pkcs11SlotLabel {
     public String getTaggedString() {
         return this.type.name() + DELIMETER + this.value;
     }
+    
     @Override
     public String toString() {
         return "Slot type: '"+this.type+"'. Slot value: '"+this.value+"'.";
@@ -178,7 +180,7 @@ public class Pkcs11SlotLabel {
 
      */
     private static long getSlotID(final String tokenLabel, final String fileName) {
-        final PKCS11Wrapper p11 = PKCS11Wrapper.getInstance(fileName);
+        final Pkcs11Wrapper p11 = Pkcs11Wrapper.getInstance(fileName);
         final long slots[] = p11.C_GetSlotList();
         if (log.isDebugEnabled()) {
             log.debug("Searching for token label:\t" + tokenLabel);
@@ -338,10 +340,28 @@ public class Pkcs11SlotLabel {
     }
     
     /**
-     * Calls {@link #getP11Provider(String, String, boolean, String, String)} with privateKeyLabel set to null
+     * Creates a SUN or IAIK PKCS#11 provider using the passed in pkcs11 library. First we try to see if the IAIK provider is available, because it
+     * supports more algorithms. If the IAIK provider is not available in the classpath, we try the SUN provider.
+     * 
+     * @param sSlot
+     *            pkcs11 slot number (ID or IX) or null if a config file name is provided as fileName. Could also be any of: TOKEN_LABEL:<string> SLOT_LIST_IX:<int> SLOT_ID:<long> SUN_FILE:<string>
+     * @param fileName
+     *            the manufacturers provided pkcs11 library (.dll or .so) or config file name if slot is null
+     * @param isIndex
+     *            specifies if the slot is a slot number or a slotIndex
+     * @param attributesFile
+     *            a file specifying PKCS#11 attributes (used mainly for key generation) in the format specified in the
+     *            "JavaTM PKCS#11 Reference Guide", http://java.sun.com/javase/6/docs/technotes/guides/security/p11guide.html
+     * 
+     *            Example contents of attributes file:
+     * 
+     *            attributes(generate,CKO_PRIVATE_KEY,*) = { CKA_PRIVATE = true CKA_SIGN = true CKA_DECRYPT = true CKA_TOKEN = true }
+     * 
+     *            See also html documentation for PKCS#11 HSMs in EJBCA.
+     * 
+     * @return AuthProvider of type "sun.security.pkcs11.SunPKCS11" 
      */
-    public static Provider getP11Provider(final String slot, final String fileName, final boolean isIndex, final String attributesFile)
-            throws IOException {
+    public static Provider getP11Provider(final String slot, final String fileName, final boolean isIndex, final String attributesFile) {
         return getP11Provider(slot, fileName, isIndex, attributesFile, null);
     }
 
@@ -367,12 +387,9 @@ public class Pkcs11SlotLabel {
      * @param privateKeyLabel
      *            The private key label to be set to generated keys. null means no label.
      * 
-     * @return AuthProvider of type "sun.security.pkcs11.SunPKCS11" or
-     * @throws IOException
-     *             if the pkcs11 library can not be found, or the PKCS11 provider can not be created.
+     * @return AuthProvider of type "sun.security.pkcs11.SunPKCS11" 
      */
-    public static Provider getP11Provider(final String sSlot, final String fileName, final boolean isIndex, final String attributesFile, final String privateKeyLabel)
-            throws IOException {
+    public static Provider getP11Provider(final String sSlot, final String fileName, final boolean isIndex, final String attributesFile, final String privateKeyLabel) {
         Pkcs11SlotLabel slotSpec;
         if ( sSlot!=null && sSlot.length()>0 ) {
             try {
