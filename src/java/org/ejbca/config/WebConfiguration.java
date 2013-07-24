@@ -152,6 +152,27 @@ public class WebConfiguration {
         return Boolean.TRUE.toString().equalsIgnoreCase(EjbcaConfigurationHolder.getString("web.enableproxiedauth"));
     }
     
+        
+    /**
+     * Whether the remote IP address from HttpServletRequest should be logged.
+     * If a reverse proxy server is running in front of EJBCA then the address
+     * of the proxy will be logged.
+     */
+    public static boolean getAdminLogRemoteAddress() {
+        return Boolean.TRUE.toString().equalsIgnoreCase(EjbcaConfigurationHolder.getString("web.log.adminremoteip"));
+    }
+    
+    /**
+     * Whether the IP address seen at the proxy (from the HTTP header "X-Forwarded-For")
+     * should be logged. This information can only be trusted if the request
+     * is known to come from a trusted proxy server.
+     * 
+     * @see getAdminLogRemoteAddress()
+     */
+    public static boolean getAdminLogForwardedFor() {
+        return Boolean.TRUE.toString().equalsIgnoreCase(EjbcaConfigurationHolder.getString("web.log.adminforwardedip"));
+    }
+    
     /** @return true if the user is allowed to enter class names manually in the Publishers and Services pages */
     public static boolean isManualClassPathsEnabled() {
         return Boolean.TRUE.toString().equalsIgnoreCase(EjbcaConfigurationHolder.getString("web.manualclasspathsenabled"));
