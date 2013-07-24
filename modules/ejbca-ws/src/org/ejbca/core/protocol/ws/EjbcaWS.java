@@ -56,9 +56,11 @@ import javax.ejb.TransactionAttributeType;
 import javax.jws.WebService;
 import javax.persistence.PersistenceException;
 import javax.security.auth.x500.X500Principal;
+import javax.servlet.http.HttpServletRequest;
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.ws.WebServiceContext;
+import javax.xml.ws.handler.MessageContext;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
@@ -270,9 +272,18 @@ public class EjbcaWS implements IEjbcaWS {
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     private void logAdminName(final AuthenticationToken admin, final IPatternLogger logger) {
+        // Log certificate info
         final X509Certificate cert = ((X509CertificateAuthenticationToken)admin).getCertificate();
         logger.paramPut(TransactionTags.ADMIN_DN.toString(), cert.getSubjectDN().toString());
         logger.paramPut(TransactionTags.ADMIN_ISSUER_DN.toString(), cert.getIssuerDN().toString());
+        
+        // Log IP address
+        MessageContext msgctx = wsContext.getMessageContext();
+        HttpServletRequest request = (HttpServletRequest)msgctx.get(MessageContext.SERVLET_REQUEST);
+        logger.paramPut(TransactionTags.ADMIN_REMOTE_IP.toString(), request.getRemoteAddr());
+        String addr = request.getHeader("X-Forwarded-For");
+        if (addr != null) addr = addr.replaceAll("[^a-zA-Z0-9.:-_]", "?");
+        logger.paramPut(TransactionTags.ADMIN_FORWARDED_IP.toString(), addr);
     }
     /**
 	 * @throws IllegalQueryException 
