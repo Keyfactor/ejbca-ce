@@ -3,6 +3,7 @@ EJBCA 6.0.0
 
 - The term 'Admin Group' has been mostly purged and replaced with 'Role'.
 - The installation work-flow and ant targets have changed.
+- 'Certificate Request History' is now disabled by default for new CAs.
 
 EJBCA 5.1.0
 -----------

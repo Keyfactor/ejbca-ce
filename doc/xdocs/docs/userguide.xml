@@ -343,13 +343,8 @@ Information stored is:
 <li>timestamp</li>
 <li>UserDataVO</li>
 </ul>
-The certificate request history is enabled by default, but you may turn it of to maximize performance and save database space.
-</p>
-<p>
-The impact of loosing CertReqHistoryData and that you can not see the exact values of the UserDataVO that was in effect when the certificate was issued. 
-This is mostly interesting if you use a subset of the user DN in the certificate (see certificate profile), and in this case it can also affect publishing and re-publishing of certificates.
-If you are not using a subset of user DN in the certificates disabling this feature should be safe, but still needs thorough testing in your environment.
-If unsure leave enabled.
+Turning on certificate request history will reduce performance and use more database space, and is disabled by default since EJBCA version 6.0.
+If request history is needed please consider using the <a href="adminguide.html#Security%20Audit%20Log">audit log</a> functionality instead.
 </p>
 </subsubsection>
 
