@@ -720,11 +720,8 @@ function checkallfields(){
       </td>
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_USECERTREQHISTORY %>" value="<%=CHECKBOX_VALUE %>" 
-            <% if(editca) {
-                 if (cainfo.isUseCertReqHistory()) out.write("CHECKED"); // edit CA
-               } else {
-            	 out.write("CHECKED"); // new CA default to true
-               }%> id="<%=CHECKBOX_USECERTREQHISTORY%>">         
+            <% if(editca && cainfo.isUseCertReqHistory())
+                 out.write("CHECKED");%> id="<%=CHECKBOX_USECERTREQHISTORY%>">         
                <label for="<%=CHECKBOX_USECERTREQHISTORY%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
       </td>
     </tr>
