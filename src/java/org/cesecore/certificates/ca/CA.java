@@ -544,9 +544,9 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         data.put(DO_ENFORCE_UNIQUE_SUBJECTDN_SERIALNUMBER, Boolean.valueOf(doEnforceUniqueSubjectDNSerialnumber));
     }
 
-    /** whether certificate request history should be used or not, default true as was the case before 3.10.4 */
+    /** whether certificate request history should be used or not, default false since 6.0.0 */
     public boolean isUseCertReqHistory() {
-        return getBoolean(USE_CERTREQ_HISTORY, true);
+        return getBoolean(USE_CERTREQ_HISTORY, false);
     }
 
     private void setUseCertReqHistory(boolean useCertReqHistory) {
