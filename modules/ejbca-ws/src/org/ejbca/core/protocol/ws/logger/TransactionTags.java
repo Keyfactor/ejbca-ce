@@ -16,7 +16,9 @@ public enum TransactionTags {
     METHOD,
     ERROR_MESSAGE,
     ADMIN_DN,
-    ADMIN_ISSUER_DN;
+    ADMIN_ISSUER_DN,
+    ADMIN_REMOTE_IP,
+    ADMIN_FORWARDED_IP;
     public String getTag() {
         return "${"+toString()+"}";
     }

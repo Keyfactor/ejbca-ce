@@ -60,6 +60,9 @@
 # Default: \\$\\{(.+?)\\}
 #ejbcaws.trx-log-pattern = \\$\\{(.+?)\\}
 
-# Use ejbcaws.trx-log-order to specify what information should be logged and in what order. You can also configure what characters you want in between
+# Use ejbcaws.trx-log-order to specify what information should be logged and in what order.
+# The values ADMIN_REMOTE_IP and ADMIN_FORWARDED_IP are not logged by default, and must be added if you want to log them.
+# You can also configure what characters you want in between the values.
+#
 # Default: ${LOG_TIME};${SESSION_ID};${LOG_ID};${REPLY_TIME};${METHOD};${ERROR_MESSAGE};${ADMIN_DN};${ADMIN_ISSUER_DN}
-#ejbcaws.trx-log-order = ${LOG_TIME};${SESSION_ID};${LOG_ID};${REPLY_TIME};${METHOD};${ERROR_MESSAGE};${ADMIN_DN};${ADMIN_ISSUER_DN}
+#ejbcaws.trx-log-order = ${LOG_TIME};${SESSION_ID};${LOG_ID};${REPLY_TIME};${METHOD};${ERROR_MESSAGE};${ADMIN_DN};${ADMIN_ISSUER_DN};${ADMIN_REMOTE_IP};${ADMIN_FORWARDED_IP}
