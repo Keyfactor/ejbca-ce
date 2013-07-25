@@ -1067,7 +1067,7 @@ function checkUseInBatch(){
 
           <% if(profile.getUse(EndEntityProfile.PASSWORD,0)){ %>
       <tr id="Row<%=(row)%2%>">
-	<td align="right"><%= ejbcawebbean.getText("PASSWORD") %></td>
+	<td align="right"><%= ejbcawebbean.getText("PASSWORDORENROLLMENTCODE") %></td>
         <td>   
              <%
                if(!profile.isModifyable(EndEntityProfile.PASSWORD,0)){ 

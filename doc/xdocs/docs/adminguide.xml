@@ -194,7 +194,7 @@ The parameters are as follows:
 </p>
 <ul>
     <li><em>username</em> - Username of the end entity which should be owner of the certificate. If the end entity does not exist, it will be created automatically. If the end entity already exists, the imported certificate will be associated with it, and the end entity properties (subject, subject alternative names) will be updated.</li>
-    <li><em>password</em> - Password that will be set for the end entity.</li>
+    <li><em>password</em> - Password that will be set for the end entity (often called "enrollment code" in the public web).</li>
     <li><em>caname</em> - The name of the CA which has issued the certificate. The certificate's issuer signature will be verified against this CA. If the signature does not match, the certificate will not be imported. The CA certificate must be present in the database (at least as an external CA).</li>
     <li><em>status</em> - Status that should be set for the imported certificate. Supported values are <em>ACTIVE</em> (for valid certificate), and <em>REVOKED</em> (for revoked certificate). The revocation reason for <em>REVOKED</em> certificate will be set to <em>Unspecified</em>.</li>
     <li><em>email</em> - E-mail that will be used for the end entity. If the e-mail is set to string <em>null</em>, it will be taken from the certificate itself.</li>
@@ -1951,7 +1951,7 @@ Variables used with userdata:
   ${USERNAME} or ${user.USERNAME} = The user's username.
 </li>
 <li>
-  ${PASSWORD} or ${user.PASSWORD} = The user's password.
+  ${PASSWORD} or ${user.PASSWORD} = The user's password, or "enrollment code" as it is called in most pages in the public web. 
 </li>
 <li>
   ${UID} or ${user.UID}           = The user's unique identifier.
