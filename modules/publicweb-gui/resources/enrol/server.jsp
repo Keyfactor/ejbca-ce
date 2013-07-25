@@ -2,7 +2,7 @@
 <c:set var="THIS_TITLE" value="Certificate Enrollment from CSR" />
 <%@ include file="header.jsp" %>
 <h1 class="title">Certificate enrollment from a CSR</h1>
-<p>Please give your username and password, select a PEM- or DER-formated certification request file (CSR) for upload, 
+<p>Please give your username and enrollment code, select a PEM- or DER-formated certification request file (CSR) for upload, 
 or paste a PEM-formated request into the field below and click OK to fetch your certificate. 
 </p>
 
@@ -21,7 +21,7 @@ or paste a PEM-formated request into the field below and click OK to fetch your 
 	<label for="user">Username</label>
 	<input type="text" size="40" name="user" id="user" accesskey="u" />
 	<br />
-	<label for="password">Password</label>
+	<label for="password" title="Please enter your one-time authentication code. This is NOT the same as the certificate passphrase.">Enrollment code</label>
 	<input type="password" autocomplete="off" size="40" name="password" id="password" accesskey="p" />
 
 	<br />
