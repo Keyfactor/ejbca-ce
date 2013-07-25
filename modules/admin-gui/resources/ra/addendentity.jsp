@@ -1247,7 +1247,7 @@ function checkallfields(){
 
           <% if(profile.getUse(EndEntityProfile.PASSWORD,0)){ %>
       <tr id="Row<%=(row)%2%>">
-		<td align="right"><c:out value="<%= ejbcawebbean.getText(\"PASSWORD\") %>"/></td>
+		<td align="right"><c:out value="<%= ejbcawebbean.getText(\"PASSWORDORENROLLMENTCODE\") %>"/></td>
         <td>   
              <%
                if(!profile.isModifyable(EndEntityProfile.PASSWORD,0)){ 

@@ -406,7 +406,8 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
          &nbsp;
       </td>
       <td width="40%" valign="top" align="right"> 
-        <c:out value="<%= ejbcawebbean.getText(\"PASSWORD\") %>" />
+        <c:out value="<%= ejbcawebbean.getText(\"PASSWORDORENROLLMENTCODE\") %>" />
+        <%= ejbcawebbean.getHelpReference("/userguide.html#Password%20Fields") %>
       </td>
       <td width="50%"> 
         <% used = profiledata.getUse(EndEntityProfile.PASSWORD,0); %>
