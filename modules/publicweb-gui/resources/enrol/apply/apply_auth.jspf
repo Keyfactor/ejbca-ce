@@ -1,7 +1,12 @@
 <h1 class="title">${THIS_TITLE}</h1>
 
 <p>Welcome to ${THIS_TITLE}.</p>
-<p>Please enter your username and password. Then click OK to generate your token.</p>
+<p>Please enter your username and
+<c:choose>
+    <c:when test="${PASSWORD_TERMINOLOGY == 'enrollment_code'}">enrollment code.</c:when>
+    <c:otherwise>password.</c:otherwise>
+</c:choose>
+Then click OK to generate your token.</p>
 
 <form name="CertReqForm" action="${THIS_FILENAME}"  method="post">
   <fieldset>
@@ -17,7 +22,14 @@
 	<label for="${TEXTFIELD_USERNAME}">Username</label>
 	<input type="text" size="40" name="${TEXTFIELD_USERNAME}" id="${TEXTFIELD_USERNAME}" accesskey="u" />
 	<br />
-    <label for="${TEXTFIELD_PASSWORD}">Password</label>
+    <c:choose>
+        <c:when test="${PASSWORD_TERMINOLOGY == 'enrollment_code'}">
+            <label for="password" title="Please enter your one-time authentication code.">Enrollment code</label>
+        </c:when>
+        <c:otherwise>
+            <label for="${TEXTFIELD_PASSWORD}">Password</label>
+        </c:otherwise>
+    </c:choose>
     <input type="password" autocomplete="off" size="40" name="${TEXTFIELD_PASSWORD}" id="${TEXTFIELD_PASSWORD}" accesskey="p" />
     <br />
     <label for="${BUTTON_SUBMIT_USERNAME}"></label>
