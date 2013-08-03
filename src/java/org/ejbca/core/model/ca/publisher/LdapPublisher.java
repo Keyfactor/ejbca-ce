@@ -29,6 +29,9 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.x500.RDN;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x509.Extension;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -36,6 +39,7 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.LdapNameStyle;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.util.TCPTool;
 
@@ -338,7 +342,7 @@ public class LdapPublisher extends BasePublisher {
     							// Check if the intermediate parent node is present, and if it is not
     							// we can create it, of allowed to do so by the publisher configuration
     							if(getCreateIntermediateNodes()) {
-    								final String parentDN = new String(dn.substring(dn.indexOf(',') + 1));
+    								final String parentDN = CertTools.getParentDN(dn);
     								try {
     									lc.read(parentDN, ldapSearchConstraints);
     								} catch(LDAPException e) {
@@ -406,18 +410,15 @@ public class LdapPublisher extends BasePublisher {
 	private void createIntermediateNodes(LDAPConnection lc, String dn) throws PublisherException {
 		LDAPAttributeSet attrSet;
 		LDAPEntry entry;
-		String dnFragment, rdn, field, value;
-		int ix = dn.lastIndexOf(getBaseDN()) - 1;
-
-		while((ix = dn.lastIndexOf(',', ix - 1)) >= 0) {
-			dnFragment = new String(dn.substring(ix + 1));
-			rdn = new String(dnFragment.substring(0, dnFragment.indexOf(',')));
-			field = new String(rdn.substring(0, rdn.indexOf('=')));
-			value = new String(rdn.substring(rdn.indexOf('=') + 1));
+	    for (String dnFragment : CertTools.getIntermediateDNs(dn, getBaseDN())) {
 			try {
 				lc.read(dnFragment, ldapSearchConstraints);
 			} catch(LDAPException e) {
 				if(e.getResultCode() == LDAPException.NO_SUCH_OBJECT) {
+				    final String rdn = CertTools.getFirstDNComponent(dnFragment);
+				    final String field = new String(rdn.substring(0, rdn.indexOf('=')));
+				    final String value = new String(rdn.substring(rdn.indexOf('=') + 1));
+				    
 					attrSet = new LDAPAttributeSet();
 					attrSet.add(getObjectClassAttribute(field));
 					attrSet.add(new LDAPAttribute(field.toLowerCase(), value));
@@ -1652,7 +1653,6 @@ public class LdapPublisher extends BasePublisher {
 		if (log.isDebugEnabled()) {
 			log.debug("DN in certificate '"+certDN+"'. DN in user data '"+userDataDN+"'.");
 		}
-		String retval = "";
 		final DNFieldExtractor certExtractor = new DNFieldExtractor(certDN, DNFieldExtractor.TYPE_SUBJECTDN);
 		final DNFieldExtractor userDataExtractor = userDataDN!=null ? new DNFieldExtractor(userDataDN, DNFieldExtractor.TYPE_SUBJECTDN) : null;
 
@@ -1660,30 +1660,20 @@ public class LdapPublisher extends BasePublisher {
 		if(usefields instanceof List<?>){
 			Collections.sort((List<Integer>) usefields);
 		}
-		Iterator<Integer> iter = usefields.iterator(); 
-		while(iter.hasNext()){
-			Integer next = iter.next();
-			String dnField = certExtractor.getFieldString(next.intValue());
-			if ( StringUtils.isEmpty(dnField) && userDataExtractor!=null ) {
-				dnField = userDataExtractor.getFieldString(next.intValue());
-			}
-			if (StringUtils.isNotEmpty(dnField)) {
-				if (dnField.startsWith("SN")) {
-					// This is SN in Bouncycastle, but it should be serialNumber in LDAP
-					dnField = "serialNumber"+new String(dnField.substring(2));
-				}
-				if (dnField.startsWith("E")) {
-					// This is E in Bouncycastle, but it should be mail in LDAP
-					dnField = "mail"+new String(dnField.substring(1));
-				}
-				if(retval.length() == 0) {
-					retval += dnField; // first item, don't start with a comma
-				} else {
-					retval += "," + dnField;
-				}
-			}
+		final X500NameBuilder nameBuilder = new X500NameBuilder(LdapNameStyle.INSTANCE);
+		for (Integer fieldNum : usefields) { // There must be at least one
+            String dnField = certExtractor.getFieldString(fieldNum);
+            if (StringUtils.isEmpty(dnField) && userDataExtractor!=null) {
+                dnField = userDataExtractor.getFieldString(fieldNum);
+            }
+            
+            if (StringUtils.isNotEmpty(dnField)) {
+                RDN rdn = new X500Name(LdapNameStyle.INSTANCE, dnField).getRDNs()[0];
+                nameBuilder.addRDN(rdn.getFirst());
+            }
 		}
-		retval = retval + "," + this.getBaseDN();
+		
+		String retval = nameBuilder.build().toString() + "," + this.getBaseDN(); 
 		if (log.isDebugEnabled()) {
 			log.debug("LdapPublisher: constructed DN: " + retval );
 		}
