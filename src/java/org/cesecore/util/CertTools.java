@@ -2869,6 +2869,62 @@ public class CertTools {
     }
     
     /**
+     * Returns the parent DN of a DN string, e.g. if the input is
+     * "cn=User,dc=example,dc=com" then it would return "dc=example,dc=com".
+     * Returns an empty string if there is no parent DN.
+     */
+    public static String getParentDN(String dn) {
+        final X509NameTokenizer tokenizer = new X509NameTokenizer(dn);
+        tokenizer.nextToken();
+        return tokenizer.getRemainingString();
+    }
+    
+    /**
+     * Returns the first component in a DN string, e.g. if the input is
+     * "cn=User,dc=example,dc=com" then it would return "cn=User".
+     */
+    public static String getFirstDNComponent(String dn) {
+        final X509NameTokenizer tokenizer = new X509NameTokenizer(dn);
+        final String component = tokenizer.nextToken();
+        if (StringUtils.isEmpty(component)) return "";
+        else return LDAPDN.escapeRDN(component);
+    }
+    
+    /**
+     * Returns all intermediate DNs in a given DN under a base DN, in the order from the
+     * first one below the base DN and further down.
+     */
+    public static List<String> getIntermediateDNs(String dn, String baseDN) {
+        // Remove the base DN
+        if (!dn.endsWith(baseDN)) return new ArrayList<String>();
+        final String subDN = dn.substring(0, dn.length()-baseDN.length());
+        
+        // Split the DN
+        final X509NameTokenizer tokenizer = new X509NameTokenizer(subDN);
+        tokenizer.nextToken(); // skip the lowest level component
+        final List<String> components = new ArrayList<String>();
+        while (tokenizer.hasMoreTokens()) {
+            final String comp = tokenizer.nextToken();
+            if (!StringUtils.isEmpty(comp)) {
+                components.add(LDAPDN.escapeRDN(comp));
+            }
+        }
+        
+        // Add each intermediate DN
+        final List<String> ret = new ArrayList<String>();
+        for (int start = components.size()-1; start >= 0; start--) {
+            final List<String> intermComps = components.subList(start, components.size());
+            final X500NameBuilder nameBuilder = new X500NameBuilder(LdapNameStyle.INSTANCE);
+            for (String comp : intermComps) {
+                final RDN rdn = new X500Name(LdapNameStyle.INSTANCE, comp).getRDNs()[0];
+                nameBuilder.addRDN(rdn.getFirst());
+            }
+            ret.add(nameBuilder.build().toString() + "," + baseDN);
+        }
+        return ret;
+    }
+    
+    /**
      * class for breaking up an X500 Name into it's component tokens, ala java.util.StringTokenizer. 
      */
     private static class X509NameTokenizer {
@@ -2939,6 +2995,13 @@ public class CertTools {
 
             index = end;
             return buf.toString().trim();
+        }
+        
+        /**
+         * Returns the remaining (not yet tokenized) part of the DN.
+         */
+        String getRemainingString() {
+            return index+1 < value.length() ? value.substring(index+1) : "";
         }
     }
 
