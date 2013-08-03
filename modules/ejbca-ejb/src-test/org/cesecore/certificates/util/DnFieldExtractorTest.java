@@ -184,6 +184,20 @@ public class DnFieldExtractorTest {
     	assertEquals(0, num);
 
     }
+    
+    @Test
+    public void test02CheckDnFieldWithCommas() throws Exception {
+        String dn = "cn=Hello\\, World!,dc=example,dc=com";
+        DNFieldExtractor extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
+        String cn = extractor.getField(DNFieldExtractor.CN, 0);
+        assertEquals("Hello, World!", cn);
+        String fieldstr = extractor.getFieldString(DNFieldExtractor.CN);
+        assertEquals("CN=Hello\\, World!", fieldstr);
+        boolean illegal = extractor.isIllegal();
+        assertFalse(illegal);
+        boolean other = extractor.existsOther();
+        assertFalse(other);
+    }
 
 }
 

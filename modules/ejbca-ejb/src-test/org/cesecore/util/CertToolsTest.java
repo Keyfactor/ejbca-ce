@@ -1443,6 +1443,41 @@ public class CertToolsTest {
 
         log.trace("<test24GetCrlDistributionPoint()");
     }
+    
+    @Test
+    public void test25GetParentDN() {
+        assertEquals("", CertTools.getParentDN(""));
+        assertEquals("", CertTools.getParentDN("dc=localhost"));
+        assertEquals("dc=example,dc=com", CertTools.getParentDN("cn=test user,dc=example,dc=com").toLowerCase());
+        assertEquals("dc=example,dc=com", CertTools.getParentDN("cn=test\\,user,dc=example,dc=com").toLowerCase());
+        assertEquals("o=company\\,inc,dc=example,dc=com", CertTools.getParentDN("cn=user,o=company\\,inc,dc=example,dc=com").toLowerCase());
+    }
+    
+    @Test
+    public void test26GetFirstDNComponent() {
+        assertEquals("", CertTools.getFirstDNComponent(""));
+        assertEquals("cn=user", CertTools.getFirstDNComponent("cn=user").toLowerCase());
+        assertEquals("cn=user", CertTools.getFirstDNComponent("cn=user,dc=localhost").toLowerCase());
+        assertEquals("cn=some\\,user", CertTools.getFirstDNComponent("cn=some\\,user,dc=localhost").toLowerCase());
+    }
+    
+    @Test
+    public void test27GetIntermediateDNs() {
+        assertEquals(0, CertTools.getIntermediateDNs("dc=example,dc=com", "dc=example,dc=com").size());
+        assertEquals(0, CertTools.getIntermediateDNs("cn=user,dc=example,dc=com", "dc=example,dc=com").size());
+        
+        List<String> intDNs;
+        
+        intDNs = CertTools.getIntermediateDNs("cn=user,o=company,dc=example,dc=com", "dc=example,dc=com");
+        assertEquals(1, intDNs.size());
+        assertEquals("o=company,dc=example,dc=com", intDNs.get(0).toLowerCase());
+        
+        intDNs = CertTools.getIntermediateDNs("cn=user,mail=user@example.com,ou=safety department,o=company,dc=example,dc=com", "dc=example,dc=com");
+        assertEquals(3, intDNs.size());
+        assertEquals("o=company,dc=example,dc=com", intDNs.get(0).toLowerCase());
+        assertEquals("ou=safety department,o=company,dc=example,dc=com", intDNs.get(1).toLowerCase());
+        assertEquals("mail=user@example.com,ou=safety department,o=company,dc=example,dc=com", intDNs.get(2).toLowerCase());
+    }
 
     @Test
     public void testKrb5PrincipalName() throws Exception {

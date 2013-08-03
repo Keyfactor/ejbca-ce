@@ -264,6 +264,7 @@ public class DNFieldExtractor implements java.io.Serializable {
      * @param field
      *            the DN component, one of the constants DNFieldExtractor.CN, ...
      * @return A String for example "CN=Tomas Gustavsson" if DNFieldExtractor.CN was passed, "DC=PrimeKey,DC=com" if DNFieldExtractor.DC was passed.
+     *            This string is escaped so it can be used in a DN string.
      */
     public String getFieldString(final int field) {
         String retval = "";
@@ -274,9 +275,9 @@ public class DNFieldExtractor implements java.io.Serializable {
         final int num = getNumberOfFields(field);
         for (int i = 0; i < num; i++) {
             if (retval.length() == 0) {
-                retval += fieldname + getField(field, i);
+                retval += LDAPDN.escapeRDN(fieldname + getField(field, i));
             } else {
-                retval += "," + fieldname + getField(field, i);
+                retval += "," + LDAPDN.escapeRDN(fieldname + getField(field, i));
             }
         }
         return retval;

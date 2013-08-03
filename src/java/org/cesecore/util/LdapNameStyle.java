@@ -16,7 +16,6 @@ package org.cesecore.util;
 import java.util.Hashtable;
 
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameStyle;
@@ -24,17 +23,16 @@ import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x500.style.IETFUtils;
 
 /**
+ * Name style used for parsing and building DNs for use with LDAP. 
  * 
  * @version $Id$
- *
  */
-public class CeSecoreNameStyle extends BCStyle {
+public class LdapNameStyle extends BCStyle {
 
-    public static final X500NameStyle INSTANCE = new CeSecoreNameStyle();
+    public static final X500NameStyle INSTANCE = new LdapNameStyle();
 
     /**
-     * default look up table translating OID values into their common symbols following
-     * the convention in RFC 2253 with a few extras
+     * default look up table translating OID values into their common symbols
      */
     public static final Hashtable<ASN1ObjectIdentifier, String> DefaultSymbols = new Hashtable<ASN1ObjectIdentifier, String>();
 
@@ -56,8 +54,8 @@ public class CeSecoreNameStyle extends BCStyle {
         DefaultSymbols.put(CN, "CN");
         DefaultSymbols.put(L, "L");
         DefaultSymbols.put(ST, "ST");
-        DefaultSymbols.put(SN, "SN");
-        DefaultSymbols.put(EmailAddress, "E");
+        DefaultSymbols.put(SN, "serialNumber");
+        DefaultSymbols.put(EmailAddress, "mail");
         DefaultSymbols.put(DC, "DC");
         DefaultSymbols.put(UID, "UID");
         DefaultSymbols.put(STREET, "STREET");
@@ -93,6 +91,7 @@ public class CeSecoreNameStyle extends BCStyle {
         DefaultLookUp.put("serialnumber", SN);
         DefaultLookUp.put("street", STREET);
         DefaultLookUp.put("emailaddress", E);
+        DefaultLookUp.put("mail", E);
         DefaultLookUp.put("dc", DC);
         DefaultLookUp.put("e", E);
         DefaultLookUp.put("uid", UID);
@@ -128,6 +127,7 @@ public class CeSecoreNameStyle extends BCStyle {
         DefaultStringStringLookUp.put("SERIALNUMBER", SN.getId());
         DefaultStringStringLookUp.put("STREET", STREET.getId());
         DefaultStringStringLookUp.put("EMAILADDRESS", E.getId());
+        DefaultStringStringLookUp.put("MAIL", E.getId());
         DefaultStringStringLookUp.put("DC", DC.getId());
         DefaultStringStringLookUp.put("E", E.getId());
         DefaultStringStringLookUp.put("UID", UID.getId());
@@ -153,43 +153,14 @@ public class CeSecoreNameStyle extends BCStyle {
         DefaultStringStringLookUp.put("NAME", NAME.getId());
     }
 
-    // Re-used by LdapNameStyle. That's why it's package-internal
-    static String buildString(Hashtable<ASN1ObjectIdentifier,String> defaultSymbols, X500Name name) {
-        StringBuffer buf = new StringBuffer();
-        boolean first = true;
-
-        RDN[] rdns = name.getRDNs();
-
-        for (int i = 0; i < rdns.length; i++) {
-            if (first) {
-                first = false;
-            } else {
-                buf.append(',');
-            }
-
-            if (rdns[i].isMultiValued()) {
-                AttributeTypeAndValue[] atv = rdns[i].getTypesAndValues();
-                boolean firstAtv = true;
-
-                for (int j = 0; j != atv.length; j++) {
-                    if (firstAtv) {
-                        firstAtv = false;
-                    } else {
-                        buf.append('+');
-                    }
-
-                    IETFUtils.appendTypeAndValue(buf, atv[j], defaultSymbols);
-                }
-            } else {
-                IETFUtils.appendTypeAndValue(buf, rdns[i].getFirst(), defaultSymbols);
-            }
-        }
-
-        return buf.toString();
+    public String toString(X500Name name) {
+        return CeSecoreNameStyle.buildString(DefaultSymbols, name);
     }
     
-    public String toString(X500Name name) {
-        return buildString(DefaultSymbols, name);
+    @Override
+    public ASN1ObjectIdentifier attrNameToOID(String attrName)
+    {
+        return IETFUtils.decodeAttrName(attrName, DefaultLookUp);
     }
 
 }
