@@ -233,7 +233,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         }
         if (cryptoTokenSession.removeCryptoToken(cryptoTokenId)) {
             securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_DELETE, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE, authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null,
-                    "Delete of CryptoToken with id " + cryptoTokenId);
+                    "Deleted CryptoToken with id " + cryptoTokenId);
         } else if (log.isDebugEnabled()) {
             log.debug("Crypto token with id "+cryptoTokenId+" does not exist and can not be deleted.");
         }
@@ -269,7 +269,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         final CryptoToken cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
         cryptoToken.deactivate();
         securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_DEACTIVATE, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE, authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null,
-                "Activated CryptoToken '" + cryptoToken.getTokenName() + "' with id " + cryptoTokenId);
+                "Deactivated CryptoToken '" + cryptoToken.getTokenName() + "' with id " + cryptoTokenId);
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
