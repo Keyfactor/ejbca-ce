@@ -1434,7 +1434,7 @@ function checkallfields(){
     <%-- MS Template extension --%>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <c:out value="<%= ejbcawebbean.getText(\"EXT_MS_TEMPLATE\") %>" /> 
+        <c:out value="<%= ejbcawebbean.getText(\"EXT_MS_TEMPLATENAME\") %>" /> 
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_USEMSTEMPLATE %>"  onclick="checkusemstemplatefield()" value="<%=CHECKBOX_VALUE %>" 
@@ -1456,7 +1456,7 @@ function checkallfields(){
            </select>
            <br />
            <p class="help">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-           <c:out value="<%= ejbcawebbean.getText(\"EXT_MS_TEMPLATE_HELP\") %>" /></p>
+           <c:out value="<%= ejbcawebbean.getText(\"EXT_MS_TEMPLATENAME_HELP\") %>" /></p>
       </td>
     </tr>
 
