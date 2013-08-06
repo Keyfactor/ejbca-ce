@@ -1096,6 +1096,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             final Date now = new Date();
             if ((newpasswd == null) && (cleartext)) {
                 data.setClearPassword("");
+                data.setPasswordHash("");
                 data.setTimeModified(now.getTime());
             } else {
                 if (cleartext) {

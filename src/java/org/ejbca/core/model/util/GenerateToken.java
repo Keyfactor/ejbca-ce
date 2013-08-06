@@ -9,6 +9,7 @@ import java.security.cert.X509Certificate;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
@@ -16,6 +17,7 @@ import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSession;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
+import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryInformation;
 
 /** Class that has helper methods to generate tokens for users in ejbca. 
@@ -28,13 +30,15 @@ public class GenerateToken {
 
 	private EndEntityAuthenticationSession authenticationSession;
 	private EndEntityAccessSession endEntityAccessSession;
+	private EndEntityManagementSession endEntityManagementSession;
 	private CaSession caSession;
 	private KeyRecoverySessionLocal keyRecoverySession;
 	private SignSession signSession;
 	
-    public GenerateToken(EndEntityAuthenticationSession authenticationSession, EndEntityAccessSession endEntityAccessSession, CaSession caSession, KeyRecoverySessionLocal keyRecoverySession, SignSession signSession) {
+    public GenerateToken(EndEntityAuthenticationSession authenticationSession, EndEntityAccessSession endEntityAccessSession, EndEntityManagementSession endEntityManagementSession, CaSession caSession, KeyRecoverySessionLocal keyRecoverySession, SignSession signSession) {
     	this.authenticationSession = authenticationSession;
     	this.endEntityAccessSession = endEntityAccessSession;
+    	this.endEntityManagementSession = endEntityManagementSession;
     	this.caSession = caSession;
     	this.keyRecoverySession = keyRecoverySession;
     	this.signSession = signSession;
@@ -96,13 +100,18 @@ public class GenerateToken {
 			finishUser = caSession.getCAInfo(administrator,caid).getFinishUser();
     		if (finishUser) {
     			EndEntityInformation userdata = endEntityAccessSession.findUser(administrator, username);
-				authenticationSession.finishUser(userdata);    				
+				authenticationSession.finishUser(userdata);
     		}
     	} else {
             if (log.isDebugEnabled()) {
                 log.debug("Generating new certificate for user: "+ username);
             }
 			cert = (X509Certificate)signSession.createCertificate(administrator, username, password, rsaKeys.getPublic());
+    	}
+    	// Clear password from database
+    	EndEntityInformation userdata = endEntityAccessSession.findUser(administrator, username);
+        if (userdata.getStatus() == EndEntityConstants.STATUS_GENERATED) {
+    	   endEntityManagementSession.setClearTextPassword(administrator, username, null);
     	}
         // Make a certificate chain from the certificate and the CA-certificate
     	Certificate[] cachain = (Certificate[])signSession.getCertificateChain(administrator, caid).toArray(new Certificate[0]);

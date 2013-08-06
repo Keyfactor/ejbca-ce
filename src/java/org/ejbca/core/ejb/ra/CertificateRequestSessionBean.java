@@ -312,7 +312,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             String password = userdata.getPassword();
             String username = userdata.getUsername();
             int caid = userdata.getCAId();
-            GenerateToken tgen = new GenerateToken(authenticationSession, endEntityAccessSession, caSession, keyRecoverySession, signSession);
+            GenerateToken tgen = new GenerateToken(authenticationSession, endEntityAccessSession, endEntityManagementSession, caSession, keyRecoverySession, signSession);
             KeyStore keyStore = tgen.generateOrKeyRecoverToken(admin, username, password, caid, keyspec, keyalg, createJKS, loadkeys, savekeys,
                     reusecertificate, endEntityProfileId);
             String alias = keyStore.aliases().nextElement();
