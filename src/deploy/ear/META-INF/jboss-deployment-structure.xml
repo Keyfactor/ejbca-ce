@@ -3,24 +3,12 @@
   
     <deployment>
         <dependencies>
-            <module name="deployment.javaee.api" />
-        </dependencies>
-  
-        <exclusions>
-            <module name="javaee.api" />
-        </exclusions>
-    </deployment>
-  
-    <module name="deployment.javaee.api">
-        <dependencies>
-            <module name="javaee.api" export="true">
-                <imports>
-                    <exclude path="org/apache/xml/security/**" />
-                </imports>
-            </module>
+            <!-- Export of XALAN classes in JBoss 7/EAP6 is needed for XKMS, we could probably do it with a sub-deployment as well, 
+            but the we would have to do build.xml magic to only include it when XKMS is enabled. Since we have no XALAN of our own included 
+            we might as well export the system one. -->
             <module name="org.apache.xalan" export="true"/>
         </dependencies>
-    </module>
-
+    </deployment>
+  
 </jboss-deployment-structure>
 

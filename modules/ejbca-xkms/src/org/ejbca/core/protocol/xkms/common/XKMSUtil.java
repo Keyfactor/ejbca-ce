@@ -135,6 +135,7 @@ public class XKMSUtil {
 			            log.debug("XKMS Marshaller: using com.sun.xml.bind.namespacePrefixMapper (JAXB RI?)");					
 			        }
 			    } catch (ClassNotFoundException ce) {
+			        // With JDK 7 it seems to be enough with the org.ejbca.core.protocol.xkms.package-info.java
                     if (log.isDebugEnabled()) {
                         log.debug("XKMS Marshaller: not using any namespacePrefixMappper (JDK7?)");                   
                     }			        
