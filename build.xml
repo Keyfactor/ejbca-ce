@@ -410,7 +410,7 @@
         <ear destfile="${caear}" appxml="${eardd.src}/META-INF/application.xml">
     		<!-- Specify that we will use a specific WS implementation -->
             <zipfileset prefix="META-INF/services" dir="${ejbca.home}/src/deploy/ear/META-INF/services/" includes="javax.xml.soap.MetaFactory"/>
-            <zipfileset prefix="META-INF" dir="${ejbca.home}/src/deploy/ear/META-INF" includes="weblogic-application.xml"/>
+            <zipfileset prefix="META-INF" dir="${ejbca.home}/src/deploy/ear/META-INF" includes="weblogic-application.xml jboss-deployment-structure.xml"/>
         	<!-- The place where to find plugins -->
 		    <zipfileset dir="${ejbca.plugin.gen.path}" erroronmissingdir="false"/>
             <zipfileset prefix="lib" dir="${lib}">
