@@ -748,6 +748,18 @@ If persisted timers needs to be removed in JBoss 7 the directory <i>jboss/standa
 </p>
 </subsubsection>
 
+<subsubsection name="XKMS">
+<p>Please do <strong>not</strong> use XKMS. It is a rather old, generally unused protocol with poor interoperability and client suppport. There are many better options, like CMP, available.</p>
+<p>EJBCA may deprecate XKMS in the future, and it is a best effort, cummunity based, support only.</p>
+<p>If you decide to use XKMS anyhow you may stumble into some issues.</p>
+<p>
+<u>JBoss EAP 5.1</u>:
+In JBoss EAP 5.1 it seems neccessary to use the Java parameter "-Dorg.jboss.ws.enable_doctype_decl=true" to the JBoss starup parameters, otherwise EJBCA will fail to deploy.
+Add the parameter to bin/run.sh for example.
+</p>
+
+</subsubsection>
+
 </subsection>
 
 <subsection name="Glassfish">
