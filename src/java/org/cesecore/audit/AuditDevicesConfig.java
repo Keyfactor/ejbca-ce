@@ -89,6 +89,9 @@ public class AuditDevicesConfig {
                     }
                 }
                 for (int i = 0; i < 255; i++) {
+                    if (!checkNoDuplicateProperties(DEVICE_CLASS + i)) {
+                        continue;
+                    }
                     final String deviceClass = ConfigurationHolder.getString(DEVICE_CLASS + i);
                     if ((deviceClass != null) && (!"null".equalsIgnoreCase(deviceClass))) {
                         if (log.isDebugEnabled()) {
@@ -132,6 +135,16 @@ public class AuditDevicesConfig {
         } finally {
             lock.unlock();
         }
+    }
+
+    /** Checks that there are no duplicate properties in the configuration. */
+    private static boolean checkNoDuplicateProperties(String name) {
+        final String[] arr = ConfigurationHolder.instance().getStringArray(name);
+        if (arr != null && arr.length > 1) {
+            log.error("Duplicate property definitions of \""+name+"\". This property will be ignored.");
+            return false;
+        }
+        return true;
     }
 
     /** @return the ids of all devices that support querying as a serilizable (Hash)Set. */
