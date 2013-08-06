@@ -325,7 +325,7 @@ public class RequestInstance {
 
 			// get users Token Type.
 			tokentype = data.getTokenType();
-			GenerateToken tgen = new GenerateToken(authenticationSession, endEntityAccessSession, caSession, keyRecoverySession, signSession);
+			GenerateToken tgen = new GenerateToken(authenticationSession, endEntityAccessSession, endEntityManagementSession, caSession, keyRecoverySession, signSession);
 			if(tokentype == SecConst.TOKEN_SOFT_P12){
 			    // If the user is configured for a server generated token, but submitted a CSR, it is most likely an administrative error.
 			    // The RA admin should probably have set token type usergenerated instead.
