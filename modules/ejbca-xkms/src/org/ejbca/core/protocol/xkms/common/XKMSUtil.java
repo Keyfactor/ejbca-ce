@@ -88,7 +88,7 @@ public class XKMSUtil {
 	
 	static{  
 		try {
-			CryptoProviderTools.installBCProvider();
+			CryptoProviderTools.installBCProviderIfNotAvailable();
 			org.apache.xml.security.Init.init();
 			
 			jAXBContext = JAXBContext.newInstance("org.w3._2002._03.xkms_:org.w3._2001._04.xmlenc_:org.w3._2000._09.xmldsig_");
@@ -120,16 +120,25 @@ public class XKMSUtil {
 				// Use JAXB distributed in Java 6 - note 'internal' 
 				Object o = Class.forName("org.ejbca.core.protocol.xkms.common.XKMSNamespacePrefixMapper").newInstance();
 				marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", o);				
-				if (log.isTraceEnabled()) {
-					log.debug("using com.sun.xml.internal.bind.namespacePrefixMapper (JAXB in Java6?)");					
+				if (log.isDebugEnabled()) {
+					log.debug("XKMS Marshaller: using com.sun.xml.internal.bind.namespacePrefixMapper (JAXB in Java6?)");					
 				}
 			} catch (PropertyException e) {
-				// Reference implementation appears to be present (in endorsed dir?)
-				Object o = Class.forName("org.ejbca.core.protocol.xkms.common.XKMSNamespacePrefixMapperRI").newInstance();
-				marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", o);
-				if (log.isTraceEnabled()) {
-					log.debug("using com.sun.xml.bind.namespacePrefixMapper (JAXB RI?)");					
-				}
+			    try {
+			        // Reference implementation appears to be present (in endorsed dir?)
+			        // Check if com.sun.xml.bind.marshaller.NamespacePrefixMapper exists, if not we are probably running JDK 7
+			        Class.forName("com.sun.xml.bind.marshaller.NamespacePrefixMapper");
+			        // No ClassNotFoundException, carry on and try to use the JAXB RA namespacePrefixMapper
+			        Object o = Class.forName("org.ejbca.core.protocol.xkms.common.XKMSNamespacePrefixMapperRI").newInstance();
+			        marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", o);
+			        if (log.isDebugEnabled()) {
+			            log.debug("XKMS Marshaller: using com.sun.xml.bind.namespacePrefixMapper (JAXB RI?)");					
+			        }
+			    } catch (ClassNotFoundException ce) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("XKMS Marshaller: not using any namespacePrefixMappper (JDK7?)");                   
+                    }			        
+			    }
 			}
 		} catch( PropertyException e ) {
 			log.error("Error registering new namespace mapper property.",e);
