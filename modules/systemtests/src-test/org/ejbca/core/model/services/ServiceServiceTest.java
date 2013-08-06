@@ -114,7 +114,7 @@ public class ServiceServiceTest extends CaTestCase {
         addAndActivateService(TEST01_SERVICE, config, TESTCA1);
 
         // The service will run...
-        Thread.sleep(7 * 1000);
+        waitForRun(username);
 
         assertTrue("Service should have run", hasServiceRun(username));
 
@@ -139,8 +139,8 @@ public class ServiceServiceTest extends CaTestCase {
 
         addAndActivateService(TEST02_SERVICE, config, TESTCA2);
 
-        // The service will run...
-        Thread.sleep(7 * 1000);
+        // The service shouldn't run...
+        Thread.sleep(10 * 1000);
 
         assertFalse("Service should not have run", hasServiceRun(username));
 
@@ -168,11 +168,20 @@ public class ServiceServiceTest extends CaTestCase {
         addAndActivateService(TEST03_SERVICE, config, TESTCA3);
 
         // The service will run...
-        Thread.sleep(7 * 1000);
+        waitForRun(username);
 
         assertTrue("Service should have run", hasServiceRun(username));
 
         log.trace("<test03NotPinnedService()");
+    }
+
+    private void waitForRun(String username) throws Exception {
+        Thread.sleep(3 * 1000);
+        for (int i = 0; i < 30; i++) {
+            if (hasServiceRun(username)) break;
+            Thread.sleep(1000);
+            log.info("Waiting...");
+        }
     }
 
     @After
