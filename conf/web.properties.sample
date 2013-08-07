@@ -165,13 +165,14 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 #web.enableproxiedauth=true
 
 # Whether the remote IP address should be logged during administrator login.
-# If a reverse proxy server is running in front of EJBCA then the address
-# of the proxy will be logged.
+# This works as expected when using an Apache AJP proxy, but if a reverse proxy
+# server is running in front of EJBCA then the address of the proxy will be logged.
+# In that case the web.log.adminforwardingip can be used in addition to this.
 #
 # If you want this information to be included in the webservice transaction log,
 # you should add ${ADMIN_FORWARDED_IP} to the "ejbcaws.trx-log-order" property instead.
 # 
-# Default: false
+# Default: true
 #web.log.adminremoteip=true
 
 # Whether the IP address seen at the proxy (from the HTTP header "X-Forwarded-For")

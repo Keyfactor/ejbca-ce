@@ -154,12 +154,12 @@ public class WebConfiguration {
     
         
     /**
-     * Whether the remote IP address from HttpServletRequest should be logged.
-     * If a reverse proxy server is running in front of EJBCA then the address
-     * of the proxy will be logged.
+     * Whether the remote IP address should be logged during administrator login.
+     * This works as expected when using an Apache AJP proxy, but if a reverse proxy
+     * server is running in front of EJBCA then the address of the proxy will be logged.
      */
     public static boolean getAdminLogRemoteAddress() {
-        return Boolean.TRUE.toString().equalsIgnoreCase(EjbcaConfigurationHolder.getString("web.log.adminremoteip"));
+        return !Boolean.FALSE.toString().equalsIgnoreCase(EjbcaConfigurationHolder.getString("web.log.adminremoteip"));
     }
     
     /**
