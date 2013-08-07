@@ -178,15 +178,16 @@ public class OcspKeyRenewalTest {
         cleanupCryptoToken(TESTCLASSNAME);
         
         // Delete CA
+        final String caName = CertTools.getPartFromDN(CA_DN, "CN");
         try {
             while (true) {
-                CAInfo info = caSession.getCAInfo(authenticationToken, CA_DN);
+                CAInfo info = caSession.getCAInfo(authenticationToken, caName);
                 caSession.removeCA(authenticationToken, info.getCAId());
             }
         } catch (Exception e) {
             // Get out of loop and ignore
         }
-        cleanupCryptoToken(CA_DN);
+        cleanupCryptoToken(caName);
         
         // Ensure that the removed signing certificate is removed from the cache
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
