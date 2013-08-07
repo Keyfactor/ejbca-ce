@@ -552,7 +552,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
                 true, // isDoEnforceUniquePublicKeys
                 true, // isDoEnforceUniqueDistinguishedName
                 false, // isDoEnforceUniqueSubjectDNSerialnumber
-                true, // useCertReqHistory
+                false, // useCertReqHistory
                 true, // useUserStorage
                 true, // useCertificateStorage
                 null //cmpRaAuthSecret
@@ -576,7 +576,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
                 true, // isDoEnforceUniquePublicKeys
                 true, // isDoEnforceUniqueDistinguishedName
                 false, // isDoEnforceUniqueSubjectDNSerialnumber
-                true, // useCertReqHistory
+                false, // useCertReqHistory
                 true, // useUserStorage
                 true // useCertificateStorage
         );

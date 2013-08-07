@@ -406,7 +406,7 @@ public class CAKeystoreExportRemoveRestoreTest {
                 true, // isDoEnforceUniquePublicKeys
                 true, // isDoEnforceUniqueDistinguishedName
                 false, // isDoEnforceUniqueSubjectDNSerialnumber
-                true, // useCertReqHistory
+                false, // useCertReqHistory
                 true, // useUserStorage
                 true, // useCertificateStorage
                 null // cmpRaAuthSecret

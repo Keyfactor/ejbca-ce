@@ -229,7 +229,7 @@ public class RevocationApprovalTest extends CaTestCase {
                 10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
                 0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
                 new ArrayList<Integer>(), true, false, true, false, "", "", "", null, "", true, new ArrayList<ExtendedCAServiceInfo>(), false, approvalSettings, 1,
-                false, true, false, false, true, true, true, false, true, true, true, null);
+                false, true, false, false, true, true, true, false, false, true, true, null);
         int caID = cainfo.getCAId();
         try {
             caAdminSession.revokeCA(internalAdmin, caID, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
