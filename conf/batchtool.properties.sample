@@ -12,5 +12,5 @@
 # Indicates which key size of the RSA or DSA keys that should be used, or curve if ECDSA.
 # Examples: 1024 for RSA or DSA and prime256v1 for ECDSA
 #
-# Default: 1024
+# Default: 2048
 #keys.spec=2048
