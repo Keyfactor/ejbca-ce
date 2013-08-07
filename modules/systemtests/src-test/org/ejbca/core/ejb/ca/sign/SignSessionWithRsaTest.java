@@ -830,7 +830,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
     @Test
     public void testCertReqHistory() throws Exception {        
         int rsacaid = caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId();
-        // Configure CA not to store certreq history
+        // Configure CA to store certreq history
         CAInfo cainfo = caSession.getCAInfo(internalAdmin, rsacaid);
         cainfo.setUseCertReqHistory(true);
         cainfo.setDoEnforceUniquePublicKeys(false);
