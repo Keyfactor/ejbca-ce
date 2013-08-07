@@ -1168,7 +1168,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     numofreqapprovals, useprintablestringsubjectdn, useldapdnorder, usecrldistpointoncrl, crldistpointoncrlcritical, false, true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    true, // useCertReqHistory
+                    false, // useCertReqHistory
                     true, // useUserStorage
                     true, // useCertificateStorage
                     null // cmpRaAuthSecret
@@ -1968,7 +1968,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    true, // useCertReqHistory
+                    false, // useCertReqHistory
                     true, // useUserStorage
                     true, // useCertificateStorage
                     null // cmpRaAuthSecret

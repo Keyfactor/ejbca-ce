@@ -229,7 +229,7 @@ public class CAsTest extends CaTestCase {
                 true, true, // isDoEnforceUniquePublicKeys
                 true, // isDoEnforceUniqueDistinguishedName
                 false, // isDoEnforceUniqueSubjectDNSerialnumber
-                true, // useCertReqHistory
+                false, // useCertReqHistory
                 true, // useUserStorage
                 true, // useCertificateStorage
                 null // cmpRaAuthSecret
@@ -521,7 +521,7 @@ public class CAsTest extends CaTestCase {
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    true, // useCertReqHistory
+                    false, // useCertReqHistory
                     true, // useUserStorage
                     true, // useCertificateStorage
                     null // cmpRaAuthSecret
@@ -1145,7 +1145,7 @@ public class CAsTest extends CaTestCase {
                     true, true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    true, // useCertReqHistory
+                    false, // useCertReqHistory
                     true, // useUserStorage
                     true, // useCertificateStorage
                     null // cmpRaAuthSecret
@@ -1564,7 +1564,7 @@ public class CAsTest extends CaTestCase {
                 true, true, // isDoEnforceUniquePublicKeys
                 true, // isDoEnforceUniqueDistinguishedName
                 false, // isDoEnforceUniqueSubjectDNSerialnumber
-                true, // useCertReqHistory
+                false, // useCertReqHistory
                 true, // useUserStorage
                 true, // useCertificateStorage
                 null // cmpRaAuthSecret

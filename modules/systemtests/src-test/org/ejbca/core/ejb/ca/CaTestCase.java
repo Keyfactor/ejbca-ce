@@ -347,7 +347,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                 true, true, // isDoEnforceUniquePublicKeys
                 true, // isDoEnforceUniqueDistinguishedName
                 false, // isDoEnforceUniqueSubjectDNSerialnumber
-                true, // useCertReqHistory
+                false, // useCertReqHistory
                 true, // useUserStorage
                 true, // useCertificateStorage
                 null // cmpRaAuthSecret
@@ -573,7 +573,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                 true, // isDoEnforceUniquePublicKeys
                 true, // isDoEnforceUniqueDistinguishedName
                 false, // isDoEnforceUniqueSubjectDNSerialnumber
-                true, // useCertReqHistory
+                false, // useCertReqHistory
                 true, // useUserStorage
                 true, // useCertificateStorage
                 null // cmpRaAuthSecret
@@ -631,7 +631,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                 true, // isDoEnforceUniquePublicKeys
                 true, // isDoEnforceUniqueDistinguishedName
                 false, // isDoEnforceUniqueSubjectDNSerialnumber
-                true, // useCertReqHistory
+                false, // useCertReqHistory
                 true, // useUserStorage
                 true, // useCertificateStorage
                 null // cmpRaAuthSecret
@@ -684,7 +684,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                 true, // isDoEnforceUniquePublicKeys
                 true, // isDoEnforceUniqueDistinguishedName
                 false, // isDoEnforceUniqueSubjectDNSerialnumber
-                true, // useCertReqHistory
+                false, // useCertReqHistory
                 true, // useUserStorage
                 true, // useCertificateStorage
                 null // cmpRaAuthSecret
@@ -734,7 +734,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                 true, // isDoEnforceUniquePublicKeys
                 true, // isDoEnforceUniqueDistinguishedName
                 false, // isDoEnforceUniqueSubjectDNSerialnumber
-                true, // useCertReqHistory
+                false, // useCertReqHistory
                 true, // useUserStorage
                 true, // useCertificateStorage
                 null // cmpRaAuthSecret
@@ -786,7 +786,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                 true, // isDoEnforceUniquePublicKeys
                 true, // isDoEnforceUniqueDistinguishedName
                 false, // isDoEnforceUniqueSubjectDNSerialnumber
-                true, // useCertReqHistory
+                false, // useCertReqHistory
                 true, // useUserStorage
                 true, // useCertificateStorage
                 null // cmpRaAuthSecret
@@ -838,7 +838,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                 true, // isDoEnforceUniquePublicKeys
                 true, // isDoEnforceUniqueDistinguishedName
                 false, // isDoEnforceUniqueSubjectDNSerialnumber
-                true, // useCertReqHistory
+                false, // useCertReqHistory
                 true, // useUserStorage
                 true, // useCertificateStorage
                 null // cmpRaAuthSecret
@@ -918,7 +918,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                 true, true, // isDoEnforceUniquePublicKeys
                 true, // isDoEnforceUniqueDistinguishedName
                 false, // isDoEnforceUniqueSubjectDNSerialnumber
-                true, // useCertReqHistory
+                false, // useCertReqHistory
                 true, // useUserStorage
                 true, // useCertificateStorage
                 null // cmpRaAuthSecret
