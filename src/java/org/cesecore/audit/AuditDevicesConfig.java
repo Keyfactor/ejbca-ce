@@ -141,7 +141,7 @@ public class AuditDevicesConfig {
     private static boolean checkNoDuplicateProperties(String name) {
         final String[] arr = ConfigurationHolder.instance().getStringArray(name);
         if (arr != null && arr.length > 1) {
-            log.error("Duplicate property definitions of \""+name+"\". This property will be ignored.");
+            log.error("Duplicate property definitions of \""+name+"\". All defintions ("+arr.length+" occurrences) of this property will be ignored.");
             return false;
         }
         return true;
