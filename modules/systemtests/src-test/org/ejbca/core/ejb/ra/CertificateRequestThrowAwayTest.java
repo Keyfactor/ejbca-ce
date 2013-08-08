@@ -118,7 +118,7 @@ public class CertificateRequestThrowAwayTest extends CaTestCase {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        assertCAConfig(true, true, true);
+        assertCAConfig(false, true, true);
     }
 
     @Test
