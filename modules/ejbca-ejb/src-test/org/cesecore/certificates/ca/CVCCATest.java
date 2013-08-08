@@ -205,7 +205,7 @@ public class CVCCATest {
                 true, // isDoEnforceUniquePublicKeys
                 true, // isDoEnforceUniqueDistinguishedName
                 false, // isDoEnforceUniqueSubjectDNSerialnumber
-                true, // useCertReqHistory
+                false, // useCertReqHistory
                 true, // useUserStorage
                 true // useCertificateStorage
         );
