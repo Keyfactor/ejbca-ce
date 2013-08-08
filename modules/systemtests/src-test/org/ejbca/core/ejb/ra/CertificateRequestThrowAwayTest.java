@@ -107,17 +107,12 @@ public class CertificateRequestThrowAwayTest extends CaTestCase {
     @BeforeClass
     public static void setupBeforeClass() throws Exception {
         CryptoProviderTools.installBCProviderIfNotAvailable();
-        createTestCA(TESTCA_NAME); // Create test CA
-    }
-    
-    @AfterClass
-    public static void afterClass() throws Exception {
-        removeTestCA(TESTCA_NAME);
     }
     
     @Before
     public void setUp() throws Exception {
         super.setUp();
+        createTestCA(TESTCA_NAME); // Create test CA
         assertCAConfig(false, true, true);
     }
 
@@ -143,6 +138,7 @@ public class CertificateRequestThrowAwayTest extends CaTestCase {
 
     @After
     public void tearDown() throws Exception {
+        removeTestCA(TESTCA_NAME);
         super.tearDown();
     }
 
