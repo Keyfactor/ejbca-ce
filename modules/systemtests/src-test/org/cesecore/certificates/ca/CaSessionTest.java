@@ -256,7 +256,7 @@ public class CaSessionTest extends RoleUsingTestCase {
                 true, // isDoEnforceUniquePublicKeys
                 true, // isDoEnforceUniqueDistinguishedName
                 false, // isDoEnforceUniqueSubjectDNSerialnumber
-                true, // useCertReqHistory
+                false, // useCertReqHistory
                 true, // useUserStorage
                 true // useCertificateStorage
         );
