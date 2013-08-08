@@ -84,7 +84,7 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
        
         caCertificate = (X509Certificate) EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(ADMIN, getTestCAId(TESTCA_NAME)).getCertificateChain().iterator()
                 .next();
-        assertCAConfig(true, true, true);
+        assertCAConfig(false, true, true);
         // Configure CMP for this test. RA mode with individual shared PBE secrets for each CA.
         updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
         updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO, "true");
