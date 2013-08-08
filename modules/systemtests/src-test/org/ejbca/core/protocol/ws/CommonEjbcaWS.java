@@ -2785,7 +2785,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    true, // useCertReqHistory
+                    false, // useCertReqHistory
                     true, // useUserStorage
                     true // useCertificateStorage
             );
@@ -2814,7 +2814,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    true, // useCertReqHistory
+                    false, // useCertReqHistory
                     true, // useUserStorage
                     true // useCertificateStorage
             );
@@ -2851,7 +2851,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    true, // useCertReqHistory
+                    false, // useCertReqHistory
                     true, // useUserStorage
                     true // useCertificateStorage
             );

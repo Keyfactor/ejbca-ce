@@ -1179,7 +1179,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     extendedcaserviceinfos, approvalsettings, numofreqapprovals, false, true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    true, // useCertReqHistory
+                    false, // useCertReqHistory
                     true, // useUserStorage
                     true // useCertificateStorage
             );
@@ -1989,7 +1989,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    true, // useCertReqHistory
+                    false, // useCertReqHistory
                     true, // useUserStorage
                     true // useCertificateStorage
             );
