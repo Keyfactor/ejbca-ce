@@ -41,7 +41,7 @@ public class CeSecoreNameStyle extends BCStyle {
     /**
      * look up table translating common symbols into their OIDS.
      */
-    private static final Hashtable<String, ASN1ObjectIdentifier> DefaultLookUp = new Hashtable<String, ASN1ObjectIdentifier>();
+    public static final Hashtable<String, ASN1ObjectIdentifier> DefaultLookUp = new Hashtable<String, ASN1ObjectIdentifier>();
 
     /**
      * look up table translating common symbols into their OIDS.
