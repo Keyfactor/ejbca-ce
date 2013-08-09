@@ -39,8 +39,9 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
-import org.cesecore.util.LdapNameStyle;
 import org.ejbca.core.model.InternalEjbcaResources;
+import org.ejbca.util.LdapNameStyle;
+import org.ejbca.util.LdapTools;
 import org.ejbca.util.TCPTool;
 
 import com.novell.ldap.LDAPAttribute;
@@ -410,12 +411,12 @@ public class LdapPublisher extends BasePublisher {
 	private void createIntermediateNodes(LDAPConnection lc, String dn) throws PublisherException {
 		LDAPAttributeSet attrSet;
 		LDAPEntry entry;
-	    for (String dnFragment : CertTools.getIntermediateDNs(dn, getBaseDN())) {
+	    for (String dnFragment : LdapTools.getIntermediateDNs(dn, getBaseDN())) {
 			try {
 				lc.read(dnFragment, ldapSearchConstraints);
 			} catch(LDAPException e) {
 				if(e.getResultCode() == LDAPException.NO_SUCH_OBJECT) {
-				    final String rdn = CertTools.getFirstDNComponent(dnFragment);
+				    final String rdn = LdapTools.getFirstDNComponent(dnFragment);
 				    final String field = new String(rdn.substring(0, rdn.indexOf('=')));
 				    final String value = new String(rdn.substring(rdn.indexOf('=') + 1));
 				    
