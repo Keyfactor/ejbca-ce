@@ -33,127 +33,50 @@ public class LdapNameStyle extends BCStyle {
     public static final X500NameStyle INSTANCE = new LdapNameStyle();
 
     /**
-     * default look up table translating OID values into their common symbols
+     * Default look up table translating OID values into their common symbols
+     * Please call initLookupTables() before using this!
      */
-    public static final Hashtable<ASN1ObjectIdentifier, String> DefaultSymbols = new Hashtable<ASN1ObjectIdentifier, String>();
+    public static Hashtable<ASN1ObjectIdentifier, String> DefaultSymbols;
 
     /**
-     * look up table translating common symbols into their OIDS.
+     * Look up table translating common symbols into their OIDS.
+     * Please call initLookupTables() before using this!
      */
-    private static final Hashtable<String, ASN1ObjectIdentifier> DefaultLookUp = new Hashtable<String, ASN1ObjectIdentifier>();
+    private static Hashtable<String, ASN1ObjectIdentifier> DefaultLookUp;
 
     /**
-     * look up table translating common symbols into their OIDS.
+     * Look up table translating common symbols into their OIDS.
+     * Please call initLookupTables() before using this!
      */
-    public static final Hashtable<String, String> DefaultStringStringLookUp = new Hashtable<String, String>();
+    public static Hashtable<String, String> DefaultStringStringLookUp;
 
-    static {
-        DefaultSymbols.put(C, "C");
-        DefaultSymbols.put(O, "O");
-        DefaultSymbols.put(T, "T");
-        DefaultSymbols.put(OU, "OU");
-        DefaultSymbols.put(CN, "CN");
-        DefaultSymbols.put(L, "L");
-        DefaultSymbols.put(ST, "ST");
-        DefaultSymbols.put(SN, "serialNumber"); // different from CeSecoreNameStyle
-        DefaultSymbols.put(EmailAddress, "mail"); // different from CeSecoreNameStyle
-        DefaultSymbols.put(DC, "DC");
-        DefaultSymbols.put(UID, "UID");
-        DefaultSymbols.put(STREET, "STREET");
-        DefaultSymbols.put(SURNAME, "SURNAME");
-        DefaultSymbols.put(GIVENNAME, "GIVENNAME");
-        DefaultSymbols.put(INITIALS, "INITIALS");
-        DefaultSymbols.put(GENERATION, "GENERATION");
-        DefaultSymbols.put(UnstructuredAddress, "unstructuredAddress");
-        DefaultSymbols.put(UnstructuredName, "unstructuredName");
-        DefaultSymbols.put(UNIQUE_IDENTIFIER, "UniqueIdentifier");
-        DefaultSymbols.put(DN_QUALIFIER, "DN");
-        DefaultSymbols.put(PSEUDONYM, "Pseudonym");
-        DefaultSymbols.put(POSTAL_ADDRESS, "PostalAddress");
-        DefaultSymbols.put(NAME_AT_BIRTH, "NameAtBirth");
-        DefaultSymbols.put(COUNTRY_OF_CITIZENSHIP, "CountryOfCitizenship");
-        DefaultSymbols.put(COUNTRY_OF_RESIDENCE, "CountryOfResidence");
-        DefaultSymbols.put(GENDER, "Gender");
-        DefaultSymbols.put(PLACE_OF_BIRTH, "PlaceOfBirth");
-        DefaultSymbols.put(DATE_OF_BIRTH, "DateOfBirth");
-        DefaultSymbols.put(POSTAL_CODE, "PostalCode");
-        DefaultSymbols.put(BUSINESS_CATEGORY, "BusinessCategory");
-        DefaultSymbols.put(TELEPHONE_NUMBER, "TelephoneNumber");
-        DefaultSymbols.put(NAME, "Name");
-
-        DefaultLookUp.put("c", C);
-        DefaultLookUp.put("o", O);
-        DefaultLookUp.put("t", T);
-        DefaultLookUp.put("ou", OU);
-        DefaultLookUp.put("cn", CN);
-        DefaultLookUp.put("l", L);
-        DefaultLookUp.put("st", ST);
-        DefaultLookUp.put("sn", SN);
-        DefaultLookUp.put("serialnumber", SN);
-        DefaultLookUp.put("street", STREET);
-        DefaultLookUp.put("emailaddress", E);
-        DefaultLookUp.put("mail", E); // different from CeSecoreNameStyle
-        DefaultLookUp.put("dc", DC);
-        DefaultLookUp.put("e", E);
-        DefaultLookUp.put("uid", UID);
-        DefaultLookUp.put("surname", SURNAME);
-        DefaultLookUp.put("givenname", GIVENNAME);
-        DefaultLookUp.put("initials", INITIALS);
-        DefaultLookUp.put("generation", GENERATION);
-        DefaultLookUp.put("unstructuredaddress", UnstructuredAddress);
-        DefaultLookUp.put("unstructuredname", UnstructuredName);
-        DefaultLookUp.put("uniqueidentifier", UNIQUE_IDENTIFIER);
-        DefaultLookUp.put("dn", DN_QUALIFIER);
-        DefaultLookUp.put("pseudonym", PSEUDONYM);
-        DefaultLookUp.put("postaladdress", POSTAL_ADDRESS);
-        DefaultLookUp.put("nameofbirth", NAME_AT_BIRTH);
-        DefaultLookUp.put("countryofcitizenship", COUNTRY_OF_CITIZENSHIP);
-        DefaultLookUp.put("countryofresidence", COUNTRY_OF_RESIDENCE);
-        DefaultLookUp.put("gender", GENDER);
-        DefaultLookUp.put("placeofbirth", PLACE_OF_BIRTH);
-        DefaultLookUp.put("dateofbirth", DATE_OF_BIRTH);
-        DefaultLookUp.put("postalcode", POSTAL_CODE);
-        DefaultLookUp.put("businesscategory", BUSINESS_CATEGORY);
-        DefaultLookUp.put("telephonenumber", TELEPHONE_NUMBER);
-        DefaultLookUp.put("name", NAME);
-
-        DefaultStringStringLookUp.put("C", C.getId());
-        DefaultStringStringLookUp.put("O", O.getId());
-        DefaultStringStringLookUp.put("T", T.getId());
-        DefaultStringStringLookUp.put("OU", OU.getId());
-        DefaultStringStringLookUp.put("CN", CN.getId());
-        DefaultStringStringLookUp.put("L", L.getId());
-        DefaultStringStringLookUp.put("ST", ST.getId());
-        DefaultStringStringLookUp.put("SN", SN.getId());
-        DefaultStringStringLookUp.put("SERIALNUMBER", SN.getId());
-        DefaultStringStringLookUp.put("STREET", STREET.getId());
-        DefaultStringStringLookUp.put("EMAILADDRESS", E.getId());
+    /**
+     * Must call this method before using the lookup tables. It's automatically
+     * called when using LdapNameStyle.INSTANCE to access this class.
+     */
+    public static void initLookupTables() {
+        DefaultSymbols = new Hashtable<ASN1ObjectIdentifier, String>();
+        DefaultLookUp = new Hashtable<String, ASN1ObjectIdentifier>();
+        DefaultStringStringLookUp = new Hashtable<String, String>();
+        
+        // Copy from CeSecore
+        DefaultSymbols.putAll(CeSecoreNameStyle.DefaultSymbols);
+        DefaultLookUp.putAll(CeSecoreNameStyle.DefaultLookUp);
+        DefaultStringStringLookUp.putAll(CeSecoreNameStyle.DefaultStringStringLookUp);
+        
+        // Apply differences in LDAP
+        DefaultSymbols.put(SN, "serialNumber");
+        DefaultSymbols.put(EmailAddress, "mail");
+        DefaultLookUp.put("mail", E);
         DefaultStringStringLookUp.put("MAIL", E.getId());  // different from CeSecoreNameStyle
-        DefaultStringStringLookUp.put("DC", DC.getId());
-        DefaultStringStringLookUp.put("E", E.getId());
-        DefaultStringStringLookUp.put("UID", UID.getId());
-        DefaultStringStringLookUp.put("SURNAME", SURNAME.getId());
-        DefaultStringStringLookUp.put("GIVENNAME", GIVENNAME.getId());
-        DefaultStringStringLookUp.put("INITIALS", INITIALS.getId());
-        DefaultStringStringLookUp.put("GENERATION", GENERATION.getId());
-        DefaultStringStringLookUp.put("UNSTRUCTUREDADDRESS", UnstructuredAddress.getId());
-        DefaultStringStringLookUp.put("UNSTRUCTUREDNAME", UnstructuredName.getId());
-        DefaultStringStringLookUp.put("UNIQUEIDENTIFIER", UNIQUE_IDENTIFIER.getId());
-        DefaultStringStringLookUp.put("DN", DN_QUALIFIER.getId());
-        DefaultStringStringLookUp.put("PSEUDONYM", PSEUDONYM.getId());
-        DefaultStringStringLookUp.put("POSTALADDRESS", POSTAL_ADDRESS.getId());
-        DefaultStringStringLookUp.put("NAMEOFBIRTH", NAME_AT_BIRTH.getId());
-        DefaultStringStringLookUp.put("COUNTRYOFCITIZENSHIP", COUNTRY_OF_CITIZENSHIP.getId());
-        DefaultStringStringLookUp.put("COUNTRYOFRESIDENCE", COUNTRY_OF_RESIDENCE.getId());
-        DefaultStringStringLookUp.put("GENDER", GENDER.getId());
-        DefaultStringStringLookUp.put("PLACEOFBIRTH", PLACE_OF_BIRTH.getId());
-        DefaultStringStringLookUp.put("DATEOFBIRTH", DATE_OF_BIRTH.getId());
-        DefaultStringStringLookUp.put("POSTALCODE", POSTAL_CODE.getId());
-        DefaultStringStringLookUp.put("BUSINESSCATEGORY", BUSINESS_CATEGORY.getId());
-        DefaultStringStringLookUp.put("TELEPHONENUMBER", TELEPHONE_NUMBER.getId());
-        DefaultStringStringLookUp.put("NAME", NAME.getId());
     }
 
+    private LdapNameStyle() {
+        if (DefaultSymbols == null) {
+            initLookupTables();
+        }
+    }
+    
     public String toString(X500Name name) {
         return CeSecoreNameStyle.buildString(DefaultSymbols, name);
     }
