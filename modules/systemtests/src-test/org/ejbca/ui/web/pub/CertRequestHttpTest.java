@@ -18,6 +18,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -63,6 +64,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.NotFoundException;
@@ -79,14 +81,16 @@ import org.junit.Test;
 public class CertRequestHttpTest extends CaTestCase {
     private static Logger log = Logger.getLogger(CertRequestHttpTest.class);
 
+    private static final String TEST_USERNAME = "reqtest";
     private String httpReqPath;
     private String resourceReq;
 
     private int caid = getTestCAId();
     private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CertRequestHttpTest"));
 
-    private ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private final ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private final EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
 
     @BeforeClass
     public static void beforeClass() {    
@@ -106,7 +110,7 @@ public class CertRequestHttpTest extends CaTestCase {
     public void tearDown() throws Exception {
         super.tearDown();
     	try {
-    		endEntityManagementSession.deleteUser(admin, "reqtest");
+    		endEntityManagementSession.deleteUser(admin, TEST_USERNAME);
     	} catch (NotFoundException e) {
     		// NOPMD:ignore if the user was not created
     	}
@@ -124,6 +128,7 @@ public class CertRequestHttpTest extends CaTestCase {
         // find a CA (TestCA?) create a user
         // Send certificate request for a server generated PKCS12
         setupUser(SecConst.TOKEN_SOFT_P12);
+        setupUserStatus(EndEntityConstants.STATUS_NEW);
 
         // POST the OCSP request
         URL url = new URL(httpReqPath + '/' + resourceReq);
@@ -135,7 +140,7 @@ public class CertRequestHttpTest extends CaTestCase {
         // POST it
         con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
         OutputStream os = con.getOutputStream();
-        os.write("user=reqtest&password=foo123&keylength=2048".getBytes("UTF-8"));
+        os.write(("user="+TEST_USERNAME+"&password=foo123&keylength=2048").getBytes("UTF-8"));
         os.close();
         assertEquals("Response code", 200, con.getResponseCode());
         // Some appserver (Weblogic) responds with
@@ -260,7 +265,7 @@ public class CertRequestHttpTest extends CaTestCase {
         // POST it
         con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
         OutputStream os = con.getOutputStream();
-        os.write("user=reqtest&password=foo456&keylength=2048".getBytes("UTF-8"));
+        os.write(("user="+TEST_USERNAME+"&password=foo456&keylength=2048").getBytes("UTF-8"));
         os.close();
         final int responseCode = con.getResponseCode();
         if (responseCode != HttpURLConnection.HTTP_OK) {
@@ -292,7 +297,7 @@ public class CertRequestHttpTest extends CaTestCase {
         int index = error.indexOf("<pre>");
         int index2 = error.indexOf("</pre>");
         String errormsg = error.substring(index + 5, index2);
-        String expectedErrormsg = "Username: reqtest\nWrong username or password! To generate a certificate a valid username and password must be supplied.\n";
+        String expectedErrormsg = "Username: "+TEST_USERNAME+"\nWrong username or password! To generate a certificate a valid username and password must be supplied.\n";
         assertEquals(expectedErrormsg.replaceAll("\\s", ""), errormsg.replaceAll("\\s", ""));
         log.info(errormsg);
         log.trace("<test03RequestWrongPwd()");
@@ -322,7 +327,7 @@ public class CertRequestHttpTest extends CaTestCase {
         // POST it
         con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
         OutputStream os = con.getOutputStream();
-        os.write("user=reqtest&password=foo456&keylength=2048".getBytes("UTF-8"));
+        os.write(("user="+TEST_USERNAME+"&password=foo456&keylength=2048").getBytes("UTF-8"));
         os.close();
         final int responseCode = con.getResponseCode();
         if (responseCode != HttpURLConnection.HTTP_OK) {
@@ -354,7 +359,7 @@ public class CertRequestHttpTest extends CaTestCase {
         int index = error.indexOf("<pre>");
         int index2 = error.indexOf("</pre>");
         String errormsg = error.substring(index + 5, index2);
-        String expectedErrormsg = "Username: reqtest\nWrong user status! To generate a certificate for a user the user must have status New, Failed or In process.\n";
+        String expectedErrormsg = "Username: "+TEST_USERNAME+"\nWrong user status! To generate a certificate for a user the user must have status New, Failed or In process.\n";
 
         assertEquals(expectedErrormsg.replaceAll("\\s", ""), errormsg.replaceAll("\\s", ""));
         log.info(errormsg);
@@ -420,6 +425,45 @@ public class CertRequestHttpTest extends CaTestCase {
         // System.out.println(resp);
         assertTrue("Response does not contain 'User was configured for server generated token but a CSR was sent in the request'", resp.contains("User was configured for server generated token but a CSR was sent in the request"));
     }
+    
+    /**
+     * Tests request for a pkcs12 with a clear-text password
+     */
+    @Test
+    public void test09RequestPKCS12ClearPassword() throws Exception {
+        log.trace(">test01RequestPKCS12()");
+
+        // Create a user with a clear-text password
+        setupUser(SecConst.TOKEN_SOFT_P12, true);
+        assertEquals("end entity password wasn't set", "foo123", findPassword(TEST_USERNAME));
+
+        // POST the OCSP request
+        URL url = new URL(httpReqPath + '/' + resourceReq);
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        // we are going to do a POST
+        con.setDoOutput(true);
+        con.setRequestMethod("POST");
+
+        // POST it
+        con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+        OutputStream os = con.getOutputStream();
+        os.write(("user="+TEST_USERNAME+"&password=foo123&keylength=2048").getBytes("UTF-8"));
+        os.close();
+        assertEquals("Response code", 200, con.getResponseCode());
+        // Some appserver (Weblogic) responds with
+        // "application/x-pkcs12; charset=UTF-8"
+        String contentType = con.getContentType();
+        assertTrue("contentType was " + contentType, contentType.startsWith("application/x-pkcs12"));
+        
+        // First read the response and then close the connection
+        try {
+            con.getInputStream().skip(99999);
+        } catch (EOFException e) { /* Ignore */ }
+        con.disconnect();
+
+        assertEquals("password wasn't cleared", "", findPassword(TEST_USERNAME));
+        log.trace("<test01RequestPKCS12()");
+    }
 
     /** type 1 = ie (pkcs10)
      *  type 2 = csr (pkcs10req)
@@ -456,7 +500,7 @@ public class CertRequestHttpTest extends CaTestCase {
         // POST it
         con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
         OutputStream os = con.getOutputStream();
-        final StringBuilder buf = new StringBuilder("user=reqtest&password=foo123&");
+        final StringBuilder buf = new StringBuilder("user="+TEST_USERNAME+"&password=foo123&");
         switch (type) {
         case 1:
             buf.append("pkcs10=");
@@ -493,14 +537,18 @@ public class CertRequestHttpTest extends CaTestCase {
     //
     // Private helper methods
     //
-
+    
     private void setupUser(int tokentype) throws Exception {
+        setupUser(tokentype, false); // without clear text password
+    }
+
+    private void setupUser(int tokentype, boolean clearpwd) throws Exception {
         // Make user that we know...
         boolean userExists = false;
         try {
-            endEntityManagementSession.addUser(admin, "reqtest", "foo123", "C=SE,O=PrimeKey,CN=ReqTest", null, "reqtest@primekey.se", false,
+            endEntityManagementSession.addUser(admin, TEST_USERNAME, "foo123", "C=SE,O=PrimeKey,CN=ReqTest", null, "reqtest@primekey.se", clearpwd,
                     SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), tokentype, 0, caid);
-            log.debug("created user: reqtest, foo123, C=SE, O=PrimeKey, CN=ReqTest");
+            log.debug("created user: "+TEST_USERNAME+", foo123, C=SE, O=PrimeKey, CN=ReqTest");
         } catch (EJBException ejbException) {
             // On Glassfish, ejbException.getCause() returns null, getCausedByException() should be used.
             Exception e = ejbException.getCausedByException();
@@ -521,8 +569,8 @@ public class CertRequestHttpTest extends CaTestCase {
             }
         }
         if (userExists) {
-            log.debug("User reqtest already exists.");
-            EndEntityInformation endEntityInformation = new EndEntityInformation("reqtest", "C=SE,O=PrimeKey,CN=ReqTest", caid, null, "reqtest@anatom.se", EndEntityTypes.ENDUSER.toEndEntityType(), 
+            log.debug("User "+TEST_USERNAME+" already exists.");
+            EndEntityInformation endEntityInformation = new EndEntityInformation(TEST_USERNAME, "C=SE,O=PrimeKey,CN=ReqTest", caid, null, "reqtest@anatom.se", EndEntityTypes.ENDUSER.toEndEntityType(), 
                     SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, tokentype, 0, null);
             endEntityInformation.setPassword("foo123");
             endEntityInformation.setStatus(EndEntityConstants.STATUS_NEW);
@@ -532,12 +580,20 @@ public class CertRequestHttpTest extends CaTestCase {
     }
 
     private void setupUserStatus(int status) throws Exception {
-        EndEntityInformation endEntityInformation = new EndEntityInformation("reqtest", "C=SE,O=PrimeKey,CN=ReqTest", caid, null, "reqtest@anatom.se", EndEntityTypes.ENDUSER.toEndEntityType(), 
+        EndEntityInformation endEntityInformation = new EndEntityInformation(TEST_USERNAME, "C=SE,O=PrimeKey,CN=ReqTest", caid, null, "reqtest@anatom.se", EndEntityTypes.ENDUSER.toEndEntityType(), 
                 SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
         endEntityInformation.setPassword("foo123");
         endEntityInformation.setStatus(status);
         endEntityManagementSession.changeUser(admin, endEntityInformation, false);
         log.debug("Set status to: " + status);
+    }
+    
+    private String findPassword(String user) throws Exception {
+        EndEntityInformation ei = endEntityAccessSession.findUser(admin, user);
+        if (ei == null) {
+            throw new NotFoundException("coundn't find user \""+user+"\"");
+        }
+        return ei.getPassword(); // This is the clear text password. See UserData.toEndEntityInformation
     }
 
     public String getRoleName() {
