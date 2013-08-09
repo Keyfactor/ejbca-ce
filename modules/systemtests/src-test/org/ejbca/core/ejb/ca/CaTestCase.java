@@ -468,7 +468,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
 
     /** Generate random user */
     public static final String genRandomUserName() {
-        Random rand = new Random(new Date().getTime() + 4711);
+        Random rand = new Random(System.nanoTime() + 4711);
         String username = "";
         for (int i = 0; i < 6; i++) {
             int randint = rand.nextInt(9);
