@@ -13,6 +13,7 @@
 
 package org.ejbca.ui.cli.batch;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
@@ -21,22 +22,28 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.ra.NotFoundException;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 /** Tests the batch making of soft cards.
  *
  * @version $Id$
  */
-
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class BatchMakeP12Test extends CaTestCase {
     private static final Logger log = Logger.getLogger(BatchMakeP12Test.class);
     private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("BatchMakeP12Test"));
@@ -46,18 +53,24 @@ public class BatchMakeP12Test extends CaTestCase {
     private final String cliPassword = EjbcaConfiguration.getCliDefaultPassword();
     
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
 
+    private static String username, username1;
+
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+        username = genRandomUserName();
+        username1 = genRandomUserName();
+    }
 
     @Before
     public void setUp() throws Exception {
         super.setUp();
- 
     }
 
     @After
     public void tearDown() throws Exception {
         super.tearDown();
-
     }
 
     /**
@@ -68,7 +81,6 @@ public class BatchMakeP12Test extends CaTestCase {
     @Test
     public void test01CreateNewUsers() throws Exception {
         log.trace(">test01CreateNewUser()");
-        String username = genRandomUserName();
         Object o = null;
         try {
             endEntityManagementSession.addUser(admin, username, "foo123", "C=SE, O=AnaTom, CN=" + username, "", username + "@anatom.se", false,
@@ -81,8 +93,8 @@ public class BatchMakeP12Test extends CaTestCase {
         }
 
         log.debug("created " + username + ", pwd=foo123");
+        assertEquals("end entity password wasn't set", "foo123", findPassword(username));
 
-        String username1 = genRandomUserName();
         o = null;
         try {
         	endEntityManagementSession.addUser(admin, username1, "foo123", "C=SE, O=AnaTom, CN=" + username1, "", username1 + "@anatom.se", false,
@@ -94,6 +106,7 @@ public class BatchMakeP12Test extends CaTestCase {
             assertNotNull("Failed to create user " + username1, o);
         }
         log.debug("created " + username1 + ", pwd=foo123");
+        assertEquals("end entity password wasn't set", "foo123", findPassword(username1));
         log.trace("<test01CreateNewUsers()");
     }
 
@@ -113,6 +126,25 @@ public class BatchMakeP12Test extends CaTestCase {
         makep12.setMainStoreDir(tmpfile.getParent());
         makep12.createAllNew(cliUserName, cliPassword);
         log.trace("<test02MakeP12()");
+    }
+    
+    /**
+     * Checks that the password is cleared after batch generation.
+     */
+    @Test
+    public void test03CheckPasswordCleared() throws Exception {
+        log.trace(">test03CheckPasswordCleared");
+        assertEquals("password wasn't cleared.", "", findPassword(username));
+        assertEquals("password wasn't cleared.", "", findPassword(username1));
+        log.trace("<test03CheckPasswordCleared");
+    }
+    
+    private String findPassword(String user) throws Exception {
+        EndEntityInformation ei = endEntityAccessSession.findUser(admin, user);
+        if (ei == null) {
+            throw new NotFoundException("cound find user \""+user+"\"");
+        }
+        return ei.getPassword(); // This is the clear text password. See UserData.toEndEntityInformation
     }
 
     @Override
