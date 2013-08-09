@@ -36,6 +36,8 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -148,12 +150,13 @@ public class XKMSKISSTest {
         log.trace(">setUp()");    
     
         CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-        List<String> canames = caSession.getAvailableCANames(administrator);
-        if(canames.contains("AdminCA1")) {
-            issuerdn = "CN=AdminCA1,O=EJBCA Sample,C=SE";
-        } else if(canames.contains("ManagementCA")) {
-            issuerdn = "CN=ManagementCA,O=EJBCA Sample,C=SE";
+        CAInfo caInfo = null;
+        try {
+            caInfo = caSession.getCAInfo(administrator, "AdminCA1");
+        } catch (CADoesntExistsException e) {
+            caInfo = caSession.getCAInfo(administrator, "ManagementCA");
         }
+        issuerdn = caInfo.getSubjectDN();
         caid = issuerdn.hashCode();
         
         Random ran = new Random();
