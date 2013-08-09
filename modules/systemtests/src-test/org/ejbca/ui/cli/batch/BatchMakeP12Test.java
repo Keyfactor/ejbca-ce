@@ -142,7 +142,7 @@ public class BatchMakeP12Test extends CaTestCase {
     private String findPassword(String user) throws Exception {
         EndEntityInformation ei = endEntityAccessSession.findUser(admin, user);
         if (ei == null) {
-            throw new NotFoundException("cound find user \""+user+"\"");
+            throw new NotFoundException("coundn't find user \""+user+"\"");
         }
         return ei.getPassword(); // This is the clear text password. See UserData.toEndEntityInformation
     }
