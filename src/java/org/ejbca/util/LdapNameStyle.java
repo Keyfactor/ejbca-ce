@@ -55,8 +55,8 @@ public class LdapNameStyle extends BCStyle {
         DefaultSymbols.put(CN, "CN");
         DefaultSymbols.put(L, "L");
         DefaultSymbols.put(ST, "ST");
-        DefaultSymbols.put(SN, "serialNumber");
-        DefaultSymbols.put(EmailAddress, "mail");
+        DefaultSymbols.put(SN, "serialNumber"); // different from CeSecoreNameStyle
+        DefaultSymbols.put(EmailAddress, "mail"); // different from CeSecoreNameStyle
         DefaultSymbols.put(DC, "DC");
         DefaultSymbols.put(UID, "UID");
         DefaultSymbols.put(STREET, "STREET");
@@ -92,7 +92,7 @@ public class LdapNameStyle extends BCStyle {
         DefaultLookUp.put("serialnumber", SN);
         DefaultLookUp.put("street", STREET);
         DefaultLookUp.put("emailaddress", E);
-        DefaultLookUp.put("mail", E);
+        DefaultLookUp.put("mail", E); // different from CeSecoreNameStyle
         DefaultLookUp.put("dc", DC);
         DefaultLookUp.put("e", E);
         DefaultLookUp.put("uid", UID);
@@ -128,7 +128,7 @@ public class LdapNameStyle extends BCStyle {
         DefaultStringStringLookUp.put("SERIALNUMBER", SN.getId());
         DefaultStringStringLookUp.put("STREET", STREET.getId());
         DefaultStringStringLookUp.put("EMAILADDRESS", E.getId());
-        DefaultStringStringLookUp.put("MAIL", E.getId());
+        DefaultStringStringLookUp.put("MAIL", E.getId());  // different from CeSecoreNameStyle
         DefaultStringStringLookUp.put("DC", DC.getId());
         DefaultStringStringLookUp.put("E", E.getId());
         DefaultStringStringLookUp.put("UID", UID.getId());
