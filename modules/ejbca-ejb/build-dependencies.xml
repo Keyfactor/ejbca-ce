@@ -92,7 +92,6 @@
 					<include name="org/ejbca/core/ejb/ServiceLocator.java"/>
 					<include name="org/ejbca/core/ejb/ServiceLocatorException.java"/>
 					<include name="org/cesecore/util/CeSecoreNameStyle.java"/>
-					<include name="org/cesecore/util/LdapNameStyle.java"/>
 					<include name="org/ejbca/util/JDBCUtil.java"/>			
 					<!-- Dependencies from Protect that are pretty general.. -->
 					<include name="org/cesecore/internal/InternalResources.java"/>
@@ -126,6 +125,9 @@
 					<include name="org/cesecore/util/ValidityDate.java"/>
 					<include name="org/cesecore/util/YearMonthDayTime.java"/>
 					<include name="org/cesecore/util/UnitParser.java"/>
+					<!-- Dependencies from LdapPublisher -->
+					<include name="org/ejbca/util/LdapNameStyle.java"/>
+            		<include name="org/ejbca/util/LdapTools.java"/>
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/common" destdir="${build-temp.dir}/common" debug="on" includeantruntime="no"
