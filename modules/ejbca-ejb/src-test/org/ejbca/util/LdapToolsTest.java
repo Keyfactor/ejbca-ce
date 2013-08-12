@@ -14,6 +14,7 @@
 package org.ejbca.util;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.util.List;
 
@@ -21,6 +22,7 @@ import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
+import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
 import org.junit.Test;
 
@@ -28,6 +30,8 @@ import org.junit.Test;
  * @version $Id$
  */
 public class LdapToolsTest {
+
+    private static final String LDAP_TEST_DN = "cn=Test Person,mail=test@example.com,serialnumber=123456-7890";
 
     @Test
     public void test01GetParentDN() {
@@ -65,18 +69,47 @@ public class LdapToolsTest {
     }
     
     /**
-     * Tests the LdapNameStyle class which is used by the LdapTools class.
+     * Tests parsing with LdapNameStyle class which is used by the LdapTools class.
      */
     @Test
-    public void test04LdapNameStyle() {
-        X500Name name = new X500Name(LdapNameStyle.INSTANCE, "cn=Test Person,mail=test@example.com,serialnumber=123456-7890");
-        X500NameBuilder nameBuilder = new X500NameBuilder(LdapNameStyle.INSTANCE);
-        for (RDN rdn : name.getRDNs()) {
+    public void test04ParseLdapNameStyle() {
+        // LDAP-specific attributes such as MAIL and SERIALNUMBER should work with LdapNameStyle...
+        X500Name ldapName = new X500Name(LdapNameStyle.INSTANCE, LDAP_TEST_DN);
+        assertEquals(LDAP_TEST_DN.toString().toLowerCase(), ldapName.toString().toLowerCase());
+        
+        // ...but they should not work with CeSecoreNameStyle
+        try {
+            new X500Name(CeSecoreNameStyle.INSTANCE, LDAP_TEST_DN);
+            fail("LDAP-specific DN should not be accepted by CeSecoreNameStyle");
+        } catch (Exception e) {
+            // NOPMD: expected case
+        }
+    }
+    
+    /**
+     * Tests name builder with LdapNameStyle class which is used by the LdapTools class.
+     */
+    @Test
+    public void test05BuildLdapNameStyle() {
+        X500Name ldapName = new X500Name(LdapNameStyle.INSTANCE, LDAP_TEST_DN);
+        
+        // LdapNameStyle should return a DN with MAIL and SERIALNUMBER
+        X500NameBuilder ldapNameBuilder = new X500NameBuilder(LdapNameStyle.INSTANCE);
+        for (RDN rdn : ldapName.getRDNs()) {
             for (AttributeTypeAndValue atv : rdn.getTypesAndValues()) {
-                nameBuilder.addRDN(atv);
+                ldapNameBuilder.addRDN(atv);
             }
         }
-        assertEquals("cn=test person,mail=test@example.com,serialnumber=123456-7890", nameBuilder.build().toString().toLowerCase());
+        assertEquals(LDAP_TEST_DN.toLowerCase(), ldapNameBuilder.build().toString().toLowerCase());
+        
+        // CesecoreNameStyle should return a DN with E and SN
+        X500NameBuilder cesecoreNameBuilder = new X500NameBuilder(CeSecoreNameStyle.INSTANCE);
+        for (RDN rdn : ldapName.getRDNs()) {
+            for (AttributeTypeAndValue atv : rdn.getTypesAndValues()) {
+                cesecoreNameBuilder.addRDN(atv);
+            }
+        }
+        assertEquals("cn=test person,e=test@example.com,sn=123456-7890", cesecoreNameBuilder.build().toString().toLowerCase());
     }
 
 }
