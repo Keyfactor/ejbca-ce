@@ -1246,6 +1246,7 @@ but it will give an indication as well for other platforms what configuration st
 <p>
 <strong>ant install</strong>
 <ul>
+<li>ant runinstall (creates initial Management CA and web keystores)</li>
 <li>ant web-configure</li>
 <li>ant deploy-keystore</li>
 </ul>
