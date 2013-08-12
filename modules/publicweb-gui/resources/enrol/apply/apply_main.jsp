@@ -21,7 +21,7 @@
 <c:set var="forcedBrowser" value="${param[FORCE_BROWSER]}" />
 <c:set var="action" value="${param[ACTION]}" />
 
-<jsp:useBean id="applybean" class="org.ejbca.ui.web.pub.ApplyBean" scope="session" />
+<jsp:useBean id="applybean" class="org.ejbca.ui.web.pub.ApplyBean" scope="page" />
 <jsp:useBean id="username" class="java.lang.String" />
 <jsp:useBean id="finder" class="org.ejbca.ui.web.pub.retrieve.CertificateFinderBean" scope="page" />
 <%
