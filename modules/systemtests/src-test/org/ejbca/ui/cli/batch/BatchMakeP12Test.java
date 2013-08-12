@@ -144,7 +144,8 @@ public class BatchMakeP12Test extends CaTestCase {
         if (ei == null) {
             throw new NotFoundException("coundn't find user \""+user+"\"");
         }
-        return ei.getPassword(); // This is the clear text password. See UserData.toEndEntityInformation
+        String password = ei.getPassword(); // This is the clear text password. See UserData.toEndEntityInformation
+        return password != null ? password : ""; // For empty strings, some DBs return null while others return ""
     }
 
     @Override
