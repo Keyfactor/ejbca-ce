@@ -76,7 +76,7 @@ public class CmpTcpServer {
 		}
 		try	{
 			logger = Logger.getLogger("");
-			logger.setLevel(Level.FINEST);
+			logger.setLevel(Level.INFO);
 
 			logger = Logger.getLogger("cmptcpserver");
 			logger.setLevel(Level.FINEST); 
