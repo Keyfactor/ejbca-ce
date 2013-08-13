@@ -187,9 +187,15 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
     }
     
     @Override
-    public void setUniqueSernoOkIndex() {
-        log.info("Setting unique serno check to OK, i.e. force EJBCA to believe we have a unique issuerDN/SerialNo index in the database");
+    public void setUniqueSernoIndexTrue() {
+        log.info("Setting unique serno check to TRUE, i.e. force EJBCA to believe we have a unique issuerDN/SerialNo index in the database");
         certStore.setUniqueCertificateSerialNumberIndex(Boolean.TRUE);
+    }
+
+    @Override
+    public void setUniqueSernoIndexFalse() {
+        log.info("Setting unique serno check to FALSE, i.e. force EJBCA to believe we have a unique issuerDN/SerialNo index in the database");
+        certStore.setUniqueCertificateSerialNumberIndex(Boolean.FALSE);
     }
 
     @Override
