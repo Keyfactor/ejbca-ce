@@ -60,7 +60,7 @@
     <!-- Create Log4j ErrorHandler and appender                              -->
     <!-- =================================================================== -->
 	<target name="jbosslog4jsafer" depends="compile-jbosslog4jsafer">
-    	<mkdir dir="${ejbca.dist.path}"/>
+    	<mkdir dir="${mod.dist.path}"/>
 		<jar basedir="${build-jbosslog4jsafer.dir}" jarfile="${mod.jbosslog4jsafer.lib}"/>
 	</target>
 

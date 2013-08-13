@@ -1134,6 +1134,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             respBytes = ocspResponse.getEncoded();
             auditLogger.paramPut(AuditLogger.OCSPRESPONSE, new String(Hex.encode(respBytes)));
             auditLogger.writeln();
+            transactionLogger.writeln();
             auditLogger.flush();
             transactionLogger.flush();
             if (OcspConfiguration.getLogSafer()) {

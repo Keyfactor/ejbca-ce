@@ -25,6 +25,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.FastDateFormat;
+import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
 
 /**
@@ -89,10 +90,13 @@ public abstract class PatternLogger implements Serializable {
     private final Date startTime;
     private Date startProcessTime = null;
     private boolean doLogging;
+    final private Logger logger;
 
     /**
      * @param doLogging
      *            True if you want this pattern logger to do anything upon flush.
+     * @param logger
+     *            The Log4j logger to log to if doLogging is true
      * @param matchPattern
      *            A string to create a matcher that is used together with matchString to determine how output is formatted
      * @param matchString
@@ -103,10 +107,11 @@ public abstract class PatternLogger implements Serializable {
      *            A string that specifies how the log-time is formatted
      * @param timeZone
      */
-    protected PatternLogger(boolean doLogging, String matchPattern, String matchString, String logDateFormat, String timeZone) {
+    protected PatternLogger(boolean doLogging, Logger logger, String matchPattern, String matchString, String logDateFormat, String timeZone) {
         this.doLogging = doLogging;
         this.m = Pattern.compile(matchPattern).matcher(matchString);
         this.orderString = matchString;
+        this.logger = logger;
         this.startTime = new Date();
         final FastDateFormat dateformat;
         if (timeZone == null) {
@@ -207,6 +212,7 @@ public abstract class PatternLogger implements Serializable {
             if (startProcessTime != null) {
                 output = output.replaceAll(PROCESS_TIME, String.valueOf(new Date().getTime() - this.startProcessTime.getTime()));
             }
+            this.logger.debug(output); // Finally output the log row to the logging device
         }
     }
 }
