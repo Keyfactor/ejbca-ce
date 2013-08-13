@@ -50,12 +50,12 @@
         </layout>           
      </appender>
 
-	<category name="org.ejbca.core.protocol.ocsp.TransactionLogger" additivity="false">
+	<category name="org.cesecore.certificates.ocsp.logging.TransactionLogger" additivity="false">
 		<priority value="DEBUG"/>
 		<appender-ref ref="TransactionLogger"/>
 	</category>
 	
-	<category name="org.ejbca.core.protocol.ocsp.AuditLogger" additivity="false">
+	<category name="org.cesecore.certificates.ocsp.logging.AuditLogger" additivity="false">
 		<priority value="DEBUG"/>
 		<appender-ref ref="AuditLogger"/>
 	</category>

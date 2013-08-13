@@ -337,6 +337,8 @@
 	<!-- JBoss 5.1.0 -->
 	<path id="lib.jboss-log4j.classpath"><fileset dir="${appserver.home}/client" includes="jboss-logging-log4j.jar log4j.jar"/></path>
 	
+	<path id="lib.log4j.classpath"><pathelement location="${ejbca.home}/lib/log4j-1.2.16.jar"/></path>
+
 	<path id="lib.ejbca-util.classpath">
     	<pathelement location="${ejbca.home}/lib/cert-cvc.jar"/>
     	<pathelement location="${mod.ejbca-util.lib}"/>
