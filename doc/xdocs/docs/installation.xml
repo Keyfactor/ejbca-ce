@@ -666,6 +666,12 @@ Logging can be configured using the CLI:
  /subsystem=logging/logger=org.cesecore:write-attribute(name=level, value=DEBUG)
 </source>
 <p>The per-deployment feature was added in EAP 6.0.0 and is not present in GA 7.1.</p>
+<p>In JBoss EAP 6 you can also configure a completely custom Log4J configuration by:</p>
+<ul>
+<li>Do _not_ set 'org.jboss.as.logging.per-deployment' to false above, by default it's value is true, but you can also set it manually to true.</li>
+<li>Create a $EJBCA_HOME/conf/log4j-jbosseap6.xml, you can use log4j-jbosseap6.xml.sample as a template. Set paths to the desired log files.</li>
+<li>Redeploy with 'ant clean deployear'.</li>
+</ul>
 </subsubsection>
 
 <subsubsection name="JBoss 7/EAP 6 URI encoding and WSDL location">

@@ -1,0 +1,2 @@
+# JBoss 7
+java.naming.factory.url.pkgs=org.jboss.ejb.client.naming

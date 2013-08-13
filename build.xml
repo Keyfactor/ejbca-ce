@@ -343,6 +343,8 @@
 		<!-- Make sure we have an application.xml since we want to specify base URLs. Configure enabled modules. -->
 		<mkdir dir="${eardd.src}/META-INF"/>
 		<copy todir="${eardd.src}/META-INF" file="src/deploy/ear/META-INF/application.xml" overwrite="true" flatten="true" failonerror="true"/>
+		<!-- Currently (2013-08) for JBoss 6, include a user defined log4j.xml in META-INF for per-deployment log configuration, re-usable for other appservers using the appserver.subtype var. -->
+		<copy tofile="${eardd.src}/META-INF/log4j.xml" file="conf/log4j-${appserver.subtype}.xml" overwrite="true" failonerror="false"/>
 		<war-replacement-in-module
 			replacement-tag="!--@doc.war@-->"
 			replacement-file="${eardd.src}/META-INF/application.xml"
@@ -405,14 +407,19 @@
 		</condition>
 		<!-- Do we need special WebSphere handling? -->
     	<condition property="websphere-specials" value="true"><equals arg1="websphere" arg2="${appserver.type}"/></condition>
+		<!-- Do we need special JBoss EAP 6 handling? -->
+    	<condition property="jbosseap6-specials" value="true"><equals arg1="jbosseap6" arg2="${appserver.subtype}"/></condition>
 		<!-- Remove possible "leftovers" from previous plugin runs! -->
 	    <delete dir="${ejbca.plugin.gen.path}"/>
         <!-- Plugin build starts here... -->
 	    <antcall target="plugin-bootstrap-build"/>
 		<!-- Build the EAR -->
         <ear destfile="${caear}" appxml="${eardd.src}/META-INF/application.xml">
+    		<!-- Add other specific files we need in META-INF -->
+            <zipfileset prefix="META-INF" dir="${eardd.src}/META-INF" includes="log4j.xml"/>
     		<!-- Specify that we will use a specific WS implementation -->
             <zipfileset prefix="META-INF/services" dir="${ejbca.home}/src/deploy/ear/META-INF/services/" includes="javax.xml.soap.MetaFactory"/>
+        	<!-- Add aplplication server specific XML files -->
             <zipfileset prefix="META-INF" dir="${ejbca.home}/src/deploy/ear/META-INF" includes="weblogic-application.xml jboss-deployment-structure.xml"/>
         	<!-- The place where to find plugins -->
 		    <zipfileset dir="${ejbca.plugin.gen.path}" erroronmissingdir="false"/>
@@ -421,7 +428,7 @@
                 <include name="bcpkix-jdk15on-149.jar" unless="websphere-specials"/>
                 <include name="bcprov-jdk15on-149.jar" unless="websphere-specials"/>
                 <include name="cert-cvc.jar" />
-                <include name="log4j-1.2.16.jar" />
+                <include name="log4j-1.2.16.jar" unless="jbosseap6-specials"/>
                 <include name="ldap.jar" />
                 <include name="commons-*.jar" />
                 <include name="libidn.jar" />	<!-- XKMS -->
@@ -454,7 +461,7 @@
                 <include name="ejbca-entity.jar" />
         		<include name="ejbca-extensions.jar" />
                 <include name="ejbca-properties.jar" />
-                <include name="log4jconfig.jar" />
+                <include name="log4jconfig.jar" unless="jbosseap6-specials"/>
         		<include name="${in-test-mode-include}systemtests-interfaces.jar"/>
         	</zipfileset>
         	<zipfileset prefix="lib" dir="${mod.ejbca-ws-cli.dist}">
