@@ -276,6 +276,6 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 #ocsp.audit-log-order = SESSION_ID:${SESSION_ID};LOG ID:${LOG_ID};"${LOG_TIME}";REPLY TIME:${REPLY_TIME};\nTIME TO PROCESS:${PROCESS_TIME};\nOCSP REQUEST:\n"${OCSPREQUEST}";\nOCSP RESPONSE:\n"${OCSPRESPONSE}";\nSTATUS:${STATUS}
 
 # Set to true if you want transactions to be aborted when logging fails
-# This option needs other configuration changes as well, see HOWTO-OCSP-RESPONDER for more information
+# This option needs other configuration changes as well, see  "Safer Log4j Logging" in the OCSP install guide for more information
 # Default: false
 #ocsp.log-safer = true
