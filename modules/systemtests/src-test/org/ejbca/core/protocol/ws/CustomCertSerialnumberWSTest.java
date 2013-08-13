@@ -3,6 +3,7 @@ package org.ejbca.core.protocol.ws;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.math.BigInteger;
 import java.security.cert.X509Certificate;
@@ -78,15 +79,7 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
 
         log.debug(">test01CreateCertWithCustomSN");
 
-        try {
-            // See if we really have a unique serno index in the database
-            boolean hasUniqueSernoIndex = sernoHelperSession.existsUniqueSernoIndex();
-            if (!hasUniqueSernoIndex) {
-                log.info("We don't have a unique serno index, se we have to fake that we have. Will skip parts of the test.");
-                // Make sure EJBCA "thinks" that we have a unique serno index in the database
-                sernoHelperSession.setUniqueSernoOkIndex();
-            }
-            
+        try {            
             final BigInteger serno = SernoGeneratorRandom.instance().getSerno();
             log.debug("serno: " + serno);
 
@@ -112,6 +105,18 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
                     getAdminCAName(), null, "foo@anatom.se", UserDataVOWS.STATUS_NEW,
                     UserDataVOWS.TOKEN_TYPE_P12, END_ENTITY_PROFILE, CERTIFICATE_PROFILE, null);
             user.setCertificateSerialNumber(serno);
+
+            try {
+                // Make sure EJBCA thinks that we don't have a unique serno index, then we should get a CustomCertSerialNumberException
+                sernoHelperSession.setUniqueSernoIndexFalse();
+                this.ejbcaraws.softTokenRequest(user, null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
+                fail("We should not be able to create a certificate with customCertSerialNo when there is no unique issuerDN/certSerno index in the database.");
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+                assertTrue("Exception message should tell that custom cert serial is not allowed", e.getMessage().contains("Custom certificate serial number not allowed since there is no unique index on (issuerDN,serialNumber) on the 'CertificateData' table."));
+            }
+            // Make sure EJBCA "thinks" that we have a unique serno index in the database
+            sernoHelperSession.setUniqueSernoIndexTrue();
 
             KeyStore ksenv = this.ejbcaraws.softTokenRequest(user, null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
             java.security.KeyStore keyStore = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(), "PKCS12", PASSWORD);
@@ -141,6 +146,9 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
                     UserDataVOWS.TOKEN_TYPE_P12, END_ENTITY_PROFILE, CERTIFICATE_PROFILE, null);
             user.setCertificateSerialNumber(serno);
 
+            // See if we really have a unique serno index in the database
+            sernoHelperSession.resetUniqueSernoCheck();
+            boolean hasUniqueSernoIndex = sernoHelperSession.existsUniqueSernoIndex();
             if (hasUniqueSernoIndex) {
                 ksenv = null;
                 try {
