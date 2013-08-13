@@ -137,7 +137,7 @@ public class BatchMakeP12Test extends CaTestCase {
     public void test03CheckPasswordCleared() throws Exception {
         log.trace(">test03CheckPasswordCleared");
         assertTrue("password wasn't cleared.", StringUtils.isEmpty(findPassword(username)));
-        assertTrue("password wasn't cleared.", StringUtils.isEmpty(findPassword(username1)))
+        assertTrue("password wasn't cleared.", StringUtils.isEmpty(findPassword(username1)));
         log.trace("<test03CheckPasswordCleared");
     }
     
