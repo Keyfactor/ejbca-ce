@@ -629,6 +629,6 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
 	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 	@Override
     public boolean isUniqueCertificateSerialNumberIndex() {
-    	return UniqueSernoHelper.isUniqueCertificateSerialNumberIndex(certificateStoreSession);
+    	return certificateStoreSession.isUniqueCertificateSerialNumberIndex();
     }
 }

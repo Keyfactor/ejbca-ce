@@ -11,7 +11,7 @@ import java.util.Enumeration;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.internal.SernoGeneratorRandom;
-import org.cesecore.certificates.certificate.UniqueSernoHelperTestSessionRemote;
+import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -50,7 +50,7 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
 
 	private static final String TEST_USER3 = "customSerialNrUser3";
 
-    private UniqueSernoHelperTestSessionRemote sernoHelperSession= EjbRemoteHelper.INSTANCE.getRemoteSession(UniqueSernoHelperTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private InternalCertificateStoreSessionRemote sernoHelperSession= EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     @BeforeClass
     public static void setupAccessRights() {
