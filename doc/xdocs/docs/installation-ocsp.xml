@@ -349,39 +349,39 @@ cp dist/jbosslog4jsafer.jar /home/jboss/jboss-5.1.0.GA/server/default/lib/
 <b>4.</b> Modify your jboss-log4j.xml file to use the SaferDailyRollingFileAppender and ProbableErrorHandler. For example:
 </p>
 <source>
-	&lt;appender name="OCSPTRANSACTION" class="org.cesecore.util.log.SaferDailyRollingFileAppender">
-		&lt;errorHandler class="org.cesecore.util.log.ProbableErrorHandler" />
-		&lt;param name="File" value="${jboss.server.log.dir}/transactions.log" />
-		&lt;param name="Append" value="true" />
-		
-        &lt;!-- Rollover at midnight each day -->
-		&lt;param name="DatePattern" value="'.'yyyy-MM-dd" />
-		&lt;layout class="org.apache.log4j.PatternLayout">
-            &lt;!-- The default pattern: Date Priority [Category] Message\n -->
-			&lt;param name="ConversionPattern" value="%d %-5p [%c] %m%n" />
-		&lt;/layout>
-	&lt;/appender>
-	&lt;appender name="OCSPAUDIT" class="org.cesecore.util.log.SaferDailyRollingFileAppender">
-		&lt;errorHandler class="org.cesecore.util.log.ProbableErrorHandler" />
-		&lt;param name="File" value="${jboss.server.log.dir}/audit.log" />
-		&lt;param name="Append" value="true" />
-
-        &lt;!-- Rollover at midnight each day -->
-		&lt;param name="DatePattern" value="'.'yyyy-MM-dd" />
-		&lt;layout class="org.apache.log4j.PatternLayout">
-            &lt;!-- The default pattern: Date Priority [Category] Message\n -->
-			&lt;param name="ConversionPattern" value="%d %-5p [%c] %m%n" />
-		&lt;/layout>
-	&lt;/appender>
+&lt;appender name="OCSPTRANSACTION" class="org.cesecore.util.log.SaferDailyRollingFileAppender">
+	&lt;errorHandler class="org.cesecore.util.log.ProbableErrorHandler" />
+	&lt;param name="File" value="${jboss.server.log.dir}/transactions.log" />
+	&lt;param name="Append" value="true" />
 	
-	&lt;logger name="org.ejbca.core.protocol.ocsp.TransactionLogger">
-		&lt;level value="DEBUG" />
-		&lt;appender-ref ref="OCSPTRANSACTION" />
-	&lt;/logger>
-	&lt;logger name="org.ejbca.core.protocol.ocsp.AuditLogger">
-		&lt;level value="DEBUG" />
-		&lt;appender-ref ref="OCSPAUDIT" />
-	&lt;/logger>  
+       &lt;!-- Rollover at midnight each day -->
+	&lt;param name="DatePattern" value="'.'yyyy-MM-dd" />
+	&lt;layout class="org.apache.log4j.PatternLayout">
+        &lt;!-- The default pattern: Date Priority [Category] Message\n -->
+		&lt;param name="ConversionPattern" value="%d %-5p [%c] %m%n" />
+	&lt;/layout>
+&lt;/appender>
+&lt;appender name="OCSPAUDIT" class="org.cesecore.util.log.SaferDailyRollingFileAppender">
+	&lt;errorHandler class="org.cesecore.util.log.ProbableErrorHandler" />
+	&lt;param name="File" value="${jboss.server.log.dir}/audit.log" />
+	&lt;param name="Append" value="true" />
+
+    &lt;!-- Rollover at midnight each day -->
+	&lt;param name="DatePattern" value="'.'yyyy-MM-dd" />
+	&lt;layout class="org.apache.log4j.PatternLayout">
+        &lt;!-- The default pattern: Date Priority [Category] Message\n -->
+		&lt;param name="ConversionPattern" value="%d %-5p [%c] %m%n" />
+	&lt;/layout>
+&lt;/appender>
+	
+&lt;logger name="org.ejbca.core.protocol.ocsp.TransactionLogger">
+	&lt;level value="DEBUG" />
+	&lt;appender-ref ref="OCSPTRANSACTION" />
+&lt;/logger>
+&lt;logger name="org.ejbca.core.protocol.ocsp.AuditLogger">
+	&lt;level value="DEBUG" />
+	&lt;appender-ref ref="OCSPAUDIT" />
+&lt;/logger>  
 </source>
 <p>
 If you use category instead of logger Log4j will output warnings on startup

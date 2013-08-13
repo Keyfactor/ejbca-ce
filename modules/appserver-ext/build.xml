@@ -22,7 +22,7 @@
 	</path>
 	
 	<path id="compile-jbosslog4jsafer.classpath">
-		<path refid="lib.jboss-log4j.classpath"/>
+		<path refid="lib.log4j.classpath"/>
 	</path>
 	
     <target name="clean" description="Clean up this module">
