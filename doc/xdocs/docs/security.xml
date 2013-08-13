@@ -38,6 +38,7 @@ Locally on the host, a number of ports are used in order for your application se
 
 <section name="Securing JBoss">
 <subsection name="JBoss 5">
+<subsubsection name="Disable default services">
 <note>
 Before putting anything on JBoss 5 (community edition) up on the Internet, at least do the following:
 <ul>
@@ -48,6 +49,8 @@ Before putting anything on JBoss 5 (community edition) up on the Internet, at le
 <li>rm /opt/jboss/server/default/deploy/admin-console.war/ -R</li>
 </ul>
 </note>
+</subsubsection>
+<subsubsection name="HttpOnly session cookies">
 <p>
 For JBoss 5 you can set the HttpOnly session cookies by editing 'server/default/deploy/jbossweb.sar/context.xml':
 </p>
@@ -55,11 +58,58 @@ For JBoss 5 you can set the HttpOnly session cookies by editing 'server/default/
 &lt;Context cookies="true" crossContext="true"&gt;
   &lt;SessionCookie secure="true" httpOnly="true" /&gt;
 </source>
+</subsubsection>
+<subsubsection name="Disable specific HTTP methods">
+<p>EJBCA by default limits the use of PUT|DELETE|TRACE|OPTIONS in it's web applications, but if you are unsure you can further enfoce it.</p>
+<p>You can use a <a href="http://docs.jboss.org/jbossweb/2.1.x/rewrite.html">RewriteValve</a> in JBoss.</p>
+<p>You can disable specific HTTP methods like PUT|DELETE|TRACE|OPTIONS using an Apache http mod_rewrite in front of EJBCA:
+</p>
+<source>
+RewriteEngine On
+RewriteCond %{REQUEST_METHOD} ^(PUT|DELETE|TRACE|OPTIONS)$ [NC]
+RewriteRule .* - [F]
+</source>
+<p>You can verify the configuration with:</p>
+<source>
+curl -v -XTRACE http://hostname:port/appContext
+curl -v -XDELETE http://hostname:port/appContex
+</source>
+</subsubsection>
+<subsubsection name="Content Security Policy">
+<p>You can do the same as described for JBoss 7 below.</p>
+</subsubsection>
 </subsection>
 <subsection name="JBoss 7">
+<subsubsection name="Secure Management Interfaces">
 <p>
 See <a href="https://docs.jboss.org/author/display/AS7/Securing+the+Management+Interfaces">Securing JBoss 7 Management Interfaces</a>.
 </p>
+</subsubsection>
+<subsubsection name="Disable specific HTTP methods">
+<p>EJBCA by default limits the use of PUT|DELETE|TRACE|OPTIONS in it's web applications, but if you are unsure you can further enfoce it.</p>
+<p>You can use the same Apache front end as for JBoss 5, or you can use a RewriteValve in standalone.xml</p>
+<source>
+&lt;subsystem xmlns="urn:jboss:domain:web:1.1" default-virtual-server="default-host" native="false"&gt;
+    &lt;connector name="http" protocol="HTTP/1.1" scheme="http" socket-binding="http"/&gt;
+    &lt;virtual-server name="default-host" enable-welcome-root="true"&gt;
+        &lt;rewrite pattern=".*" substitution="-" flags="F"&gt;
+            &lt;condition test="%{REQUEST_METHOD}" pattern="^(PUT|DELETE|TRACE|OPTIONS)$" flags="NC" /&gt;
+    &lt;/rewrite&gt;
+    &lt;/virtual-server&gt;
+&lt;/subsystem&gt;
+</source>
+</subsubsection>
+<subsubsection name="Content Security Policy">
+<p>CSP is something implemented in browsers to mitigate cross site scripting attacks. See the description over at <a href="https://developer.mozilla.org/en-US/docs/Security/CSP/Introducing_Content_Security_Policy">Mozilla Developer Network</a>, 
+or <a href="http://content-security-policy.com/">Content Security Policy Reference</a>.</p>
+<p>You can implement if globally if you use an Apache front end with mod_headers:</p>
+<source>
+&lt;IfModule mod_headers.c&gt;
+Header set Content-Security-Policy "default-src 'self'"
+&lt;/IfModule&gt;
+</source>
+<p>This is not thoroughly tested, so if something does not work you may have to alter the above statement.</p>
+</subsubsection>
 </subsection>
 <p>
 JBoss has a description how to secure a default installation of JBoss. You should read this document before putting
