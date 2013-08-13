@@ -175,6 +175,10 @@ public class EndEntityInformation implements Serializable {
     public void setCardNumber(String cardNumber) {this.cardNumber =  StringTools.putBase64String(cardNumber);}
     public String getCardNumber() {return StringTools.getBase64String(cardNumber);}
     public void setPassword(String pwd) {this.password = StringTools.putBase64String(pwd);}
+    /**
+     * Gets the user's clear text password. For empty passwords, it can either return
+     * null or an empty string depending on the database software used.
+     */
     public String getPassword() {return StringTools.getBase64String(password);}
     public void setStatus(int status) {this.status=status;}
     public int getStatus() {return status;}

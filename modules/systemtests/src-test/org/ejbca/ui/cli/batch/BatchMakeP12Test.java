@@ -15,9 +15,11 @@ package org.ejbca.ui.cli.batch;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -134,18 +136,20 @@ public class BatchMakeP12Test extends CaTestCase {
     @Test
     public void test03CheckPasswordCleared() throws Exception {
         log.trace(">test03CheckPasswordCleared");
-        assertEquals("password wasn't cleared.", "", findPassword(username));
-        assertEquals("password wasn't cleared.", "", findPassword(username1));
+        assertTrue("password wasn't cleared.", StringUtils.isEmpty(findPassword(username)));
+        assertTrue("password wasn't cleared.", StringUtils.isEmpty(findPassword(username1)))
         log.trace("<test03CheckPasswordCleared");
     }
     
+    /**
+     * Gets the clear text password of a user.
+     */
     private String findPassword(String user) throws Exception {
         EndEntityInformation ei = endEntityAccessSession.findUser(admin, user);
         if (ei == null) {
             throw new NotFoundException("coundn't find user \""+user+"\"");
         }
-        String password = ei.getPassword(); // This is the clear text password. See UserData.toEndEntityInformation
-        return password != null ? password : ""; // For empty strings, some DBs return null while others return ""
+        return ei.getPassword();
     }
 
     @Override
