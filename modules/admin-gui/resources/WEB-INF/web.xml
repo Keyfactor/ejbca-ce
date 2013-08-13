@@ -158,6 +158,22 @@
       <session-timeout>30</session-timeout>
    </session-config>
 
+    <welcome-file-list>
+        <welcome-file>index.jsp</welcome-file>
+    </welcome-file-list>
+
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>restricted methods</web-resource-name>
+            <url-pattern>/*</url-pattern>
+            <http-method>PUT</http-method>
+            <http-method>DELETE</http-method>
+            <http-method>OPTIONS</http-method>
+            <http-method>TRACE</http-method>
+        </web-resource-collection>
+        <auth-constraint />
+    </security-constraint> 
+
    <!--
    <!ELEMENT mime-mapping (extension, mime-type)>
    -->
@@ -191,9 +207,6 @@
    <!ELEMENT form-error-page (#PCDATA)>
    -->
 
-    <welcome-file-list>
-        <welcome-file>index.jsp</welcome-file>
-    </welcome-file-list>
     <ejb-local-ref>
         <description>An EJB that can provide references to all other SSBs to avoid this kind of declarations</description>
         <ejb-ref-name>EjbBridgeSession</ejb-ref-name>
