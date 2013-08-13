@@ -99,5 +99,15 @@ public interface InternalCertificateStoreSessionRemote {
      */
     void setRevocationDate(AuthenticationToken authenticationToken, String certificateFingerprint, Date revocationDate) throws AuthorizationDeniedException;
 
+    /** Setting unique serno check to OK, i.e. force EJBCA to believe we have a unique issuerDN/SerialNo index in the database
+     */
+    public void setUniqueSernoOkIndex();
+
+    /** Resets the current (static) check for unique index and re-checks. */
+    public boolean existsUniqueSernoIndex();
+
+    /** Resetting unique serno check */
+    public void resetUniqueSernoCheck();
+
 
 }

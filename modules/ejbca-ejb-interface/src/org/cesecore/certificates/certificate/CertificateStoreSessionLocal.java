@@ -124,4 +124,20 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * @return issuer DN or null if it does not exist in the 
      */
     String getCADnFromRequest(RequestMessage req);
+    
+    /**
+     * Will test if there is a unique index/constraint for (certificate serial number,issuer DN) first time it is run.
+     * @return returns true if there is a database index for unique certificate serial number / issuer DN.
+     */
+    boolean isUniqueCertificateSerialNumberIndex();
+
+    /** ONLY use in Unit tests.
+     * Required by multiple entry unit tests since isUniqueCertificateSerialNumberIndex is a static variable. */
+    void resetUniqueCertificateSerialNumberIndex();
+
+    /** ONLY use in Unit tests.
+     * Sets the check for present certificate serial number unique index to specified value. Can be used to override safety check that the 
+     * index exists. */
+    void setUniqueCertificateSerialNumberIndex(final Boolean value);
+
 }
