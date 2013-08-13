@@ -343,6 +343,11 @@ ant jbosslog4jsafer
 <source>
 cp dist/jbosslog4jsafer.jar /home/jboss/jboss-5.1.0.GA/server/default/lib/
 </source>
+<p>On JBoss 7 / EAP 6 build and deploy a new ejbca.ear that includes jbosslog4jsafer.jar with:</p>
+<source>
+ant ejbca.ear
+ant deployear
+</source>
 <p>
 <b>3.</b> Set  'ocsp.log-safer = true' in ocsp.properties (and enable ocsp.trx-log and ocsp.audit-log of course).
 </p><p>
