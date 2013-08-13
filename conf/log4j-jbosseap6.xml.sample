@@ -2,17 +2,8 @@
 <!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
 
-	<!-- Console output -->
-	<appender name="CONSOLE" class="org.apache.log4j.ConsoleAppender"> 
-		<param name="Target" value="System.out"/>
-		<param name="Threshold" value="INFO"/>
-		<layout class="org.apache.log4j.PatternLayout"> 
-			<param name="ConversionPattern" value="%m%n"/> 
-		</layout> 
-	</appender> 
-
 	<appender name="EJBCAFILE" class="org.apache.log4j.RollingFileAppender">
-        <param name="File" value="/home/tomas/Dev/jboss-eap-6.1/standalone/log/ejbca.log" />
+        <param name="File" value="/home/jboss/jboss-eap-6.1/standalone/log/ejbca.log" />
         <param name="Append" value="true" />
         <param name="MaxFileSize" value="10240KB" />
         <!--
@@ -24,7 +15,7 @@
      </appender>
 
 	<appender name="OcspTransactionLogger" class="org.apache.log4j.RollingFileAppender">
-        <param name="File" value="/home/tomas/Dev/jboss-eap-6.1/standalone/log/ocsp-transactions.log" />
+        <param name="File" value="/home/jboss/jboss-eap-6.1/standalone/log/ocsp-transactions.log" />
 		<param name="Threshold" value="DEBUG"/>
         <param name="Append" value="true" />
         <param name="MaxFileSize" value="10240KB" />
@@ -37,7 +28,7 @@
      </appender>
 
 	<appender name="OcspAuditLogger" class="org.apache.log4j.RollingFileAppender">
-        <param name="File" value="/home/tomas/Dev/jboss-eap-6.1/standalone/log/ocsp-audit.log" />
+        <param name="File" value="/home/jboss/jboss-eap-6.1/standalone/log/ocsp-audit.log" />
 		<param name="Threshold" value="DEBUG"/>
         <param name="Append" value="true" />
         <param name="MaxFileSize" value="10240KB" />
@@ -95,7 +86,6 @@
 
 	<root> 
 		<priority value="DEBUG" />
-		<appender-ref ref="CONSOLE"/>
 		<appender-ref ref="EJBCAFILE"/>
 	</root> 
 

@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp.logging;
 
+import org.apache.log4j.Logger;
 import org.cesecore.config.OcspConfiguration;
 
 /**
@@ -21,6 +22,8 @@ import org.cesecore.config.OcspConfiguration;
  *
  */
 public class TransactionLogger extends PatternLogger {
+
+    private static final Logger translog = Logger.getLogger(TransactionLogger.class.getName());
 
     private static final long serialVersionUID = 1722398387512931482L;
     /**
@@ -60,7 +63,7 @@ public class TransactionLogger extends PatternLogger {
     public static final String CERT_STATUS = "CERT_STATUS";
     
     public TransactionLogger(Integer logId, String sessionId, String clientIp) {
-        super( OcspConfiguration.getTransactionLog(), OcspConfiguration.getTransactionLogPattern(), OcspConfiguration.getTransactionLogOrder(), OcspConfiguration.getLogDateFormat(), OcspConfiguration.getLogTimeZone());
+        super( OcspConfiguration.getTransactionLog(), translog, OcspConfiguration.getTransactionLogPattern(), OcspConfiguration.getTransactionLogOrder(), OcspConfiguration.getLogDateFormat(), OcspConfiguration.getLogTimeZone());
         
         paramPut(PatternLogger.LOG_ID, logId);
         paramPut(PatternLogger.SESSION_ID, sessionId);
