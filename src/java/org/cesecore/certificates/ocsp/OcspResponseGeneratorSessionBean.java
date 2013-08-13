@@ -200,7 +200,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     public void init() throws AuthorizationDeniedException {
         if (OcspConfiguration.getLogSafer() == true) {
             SaferDailyRollingFileAppender.addSubscriber(this);
-            log.info("added us as subscriber" + SaferDailyRollingFileAppender.class.getCanonicalName());
+            log.info("added us as subscriber: " + SaferDailyRollingFileAppender.class.getCanonicalName());
         }
         timerService = sessionContext.getTimerService();
     }
