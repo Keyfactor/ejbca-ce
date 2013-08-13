@@ -185,4 +185,23 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
             throws AuthorizationDeniedException {
         certStore.setRevocationDate(authenticationToken, certificateFingerprint, revocationDate);     
     }
+    
+    @Override
+    public void setUniqueSernoOkIndex() {
+        log.info("Setting unique serno check to OK, i.e. force EJBCA to believe we have a unique issuerDN/SerialNo index in the database");
+        certStore.setUniqueCertificateSerialNumberIndex(Boolean.TRUE);
+    }
+
+    @Override
+    public boolean existsUniqueSernoIndex() {
+        certStore.resetUniqueCertificateSerialNumberIndex();        
+        return certStore.isUniqueCertificateSerialNumberIndex();
+    }
+
+    @Override
+    public void resetUniqueSernoCheck() {
+        log.info("Resetting unique serno check");
+        certStore.resetUniqueCertificateSerialNumberIndex();        
+    }
+
 }
