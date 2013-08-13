@@ -88,9 +88,14 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
                         details.put("resource"+i, resource);
                     }
                 } else {
-                    // At least log failed authorization attempts as INFO, even though CC does not require any sec audit 
-                    log.info("Authorization failed for " + authenticationToken.toString() + " of type "
-                            + authenticationToken.getClass().getSimpleName() + " for resource " + resource);
+                    // At least log failed authorization attempts as INFO, even though CC does not require any sec audit
+                    // If we are checking authorization without logging, for example to see if an admin menu should be available, only log at debug level.
+                    // Note: same message below, but if debug logging is not enabled we don't want to construct the string at all (to save time and objects) for debug logging, therefore code copied.
+                    if (doLogging) {
+                        log.info("Authorization failed for " + authenticationToken.toString() + " of type " + authenticationToken.getClass().getSimpleName() + " for resource " + resource);                        
+                    } else if (log.isDebugEnabled()) {
+                        log.debug("Authorization failed for " + authenticationToken.toString() + " of type " + authenticationToken.getClass().getSimpleName() + " for resource " + resource);                        
+                    }
                     // We failed one of the checks, so there is no point in continuing..
                     // If we failed an authorization check, there is no need to log successful ones before this point since
                     // the requester has not yet been (and never will be) notified of the successful outcomes.
