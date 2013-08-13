@@ -312,12 +312,12 @@ For JBoss you can configure JBOSS_HOME/server/default/conf/jboss-log4j.xml to pu
      &lt;/layout>	    
    &lt;/appender>
 
-   &lt;category name="org.ejbca.core.protocol.ocsp.TransactionLogger">
+   &lt;category name="org.cesecore.certificates.ocsp.logging.TransactionLogger">
          &lt;priority value="DEBUG"/>
          &lt;appender-ref ref="OCSPTRANSACTION"/>
    &lt;/category>
 
-   &lt;category name="org.ejbca.core.protocol.ocsp.AuditLogger">
+   &lt;category name="org.cesecore.certificates.ocsp.logging.AuditLogger">
          &lt;priority value="DEBUG"/>
          &lt;appender-ref ref="OCSPAUDIT"/>
    &lt;/category>   
@@ -338,15 +338,15 @@ If you prefer the responder not to send OCSP-responses when logging fails you ca
 ant jbosslog4jsafer
 </source>
 <p> 
-<b>2.</b> Copy jbosslog4jsafer.jar from the dist directory to your JBoss Servers lib directory. For example:
+<b>2.</b> On JBoss 5 copy jbosslog4jsafer.jar from the modules/dist directory to your servers lib directory. For example:
 </p>
 <source>
 cp dist/jbosslog4jsafer.jar /home/jboss/jboss-5.1.0.GA/server/default/lib/
 </source>
 <p>
-<b>3.</b> Set  'ocsp.log-safer = true' in ocsp.properties
+<b>3.</b> Set  'ocsp.log-safer = true' in ocsp.properties (and enable ocsp.trx-log and ocsp.audit-log of course).
 </p><p>
-<b>4.</b> Modify your jboss-log4j.xml file to use the SaferDailyRollingFileAppender and ProbableErrorHandler. For example:
+<b>4.</b> Modify your jboss-log4j.xml file (JBoss 5) or create a custom Log4j config (JBoss 7/EAP6) to use the SaferDailyRollingFileAppender and ProbableErrorHandler. For example:
 </p>
 <source>
 &lt;appender name="OCSPTRANSACTION" class="org.cesecore.util.log.SaferDailyRollingFileAppender">
@@ -374,11 +374,11 @@ cp dist/jbosslog4jsafer.jar /home/jboss/jboss-5.1.0.GA/server/default/lib/
 	&lt;/layout>
 &lt;/appender>
 	
-&lt;logger name="org.ejbca.core.protocol.ocsp.TransactionLogger">
+&lt;logger name="org.cesecore.certificates.ocsp.logging.TransactionLogger">
 	&lt;level value="DEBUG" />
 	&lt;appender-ref ref="OCSPTRANSACTION" />
 &lt;/logger>
-&lt;logger name="org.ejbca.core.protocol.ocsp.AuditLogger">
+&lt;logger name="org.cesecore.certificates.ocsp.logging.AuditLogger">
 	&lt;level value="DEBUG" />
 	&lt;appender-ref ref="OCSPAUDIT" />
 &lt;/logger>  

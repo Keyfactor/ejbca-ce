@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp.logging;
 
+import org.apache.log4j.Logger;
 import org.cesecore.config.OcspConfiguration;
 
 /**
@@ -22,6 +23,8 @@ import org.cesecore.config.OcspConfiguration;
  */
 public class AuditLogger extends PatternLogger {
     
+    private static final Logger auditlog = Logger.getLogger(AuditLogger.class.getName());
+
     private static final long serialVersionUID = 4474243795289459488L;
     /**
      * The byte[] ocsp-request that came with the http-request
@@ -33,7 +36,7 @@ public class AuditLogger extends PatternLogger {
     public static final String OCSPRESPONSE = "OCSPRESPONSE";
 
     public AuditLogger(String ocspRequest, Integer logId, String sessionId, String clientIp) {
-        super(OcspConfiguration.getAuditLog(), OcspConfiguration.getAuditLogPattern(), OcspConfiguration.getAuditLogOrder(), OcspConfiguration.getLogDateFormat(), OcspConfiguration.getLogTimeZone());
+        super(OcspConfiguration.getAuditLog(), auditlog, OcspConfiguration.getAuditLogPattern(), OcspConfiguration.getAuditLogOrder(), OcspConfiguration.getLogDateFormat(), OcspConfiguration.getLogTimeZone());
 
         paramPut(OCSPREQUEST, ocspRequest);
         paramPut(PatternLogger.LOG_ID, logId);
