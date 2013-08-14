@@ -321,7 +321,7 @@ public class ValidationAuthorityPublisher extends BasePublisher implements ICust
 			}
 			newCert(prep);
 			return true;
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			throwPublisherException(e, prep);
 			return false;
 		}
@@ -398,14 +398,14 @@ public class ValidationAuthorityPublisher extends BasePublisher implements ICust
 			} catch (Exception ue) {
 				throwPublisherException(ue, prep);
 			}
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			// If it is an SQL exception, we probably had a duplicate key, so we are actually trying to re-publish
 			throwPublisherException(e, prep);
 		}
 		return true;
 	}
-	void throwPublisherException(Exception e, Preparer prep) throws PublisherException {
-		final String lmsg = intres.getLocalizedMessage("publisher.errorvapubl", prep.getInfoString());
+	void throwPublisherException(Throwable e, Preparer prep) throws PublisherException {
+		final String lmsg = intres.getLocalizedMessage("publisher.errorvapubl", getDataSource(), prep.getInfoString());
 		log.error(lmsg, e);
 		final PublisherException pe = new PublisherException(lmsg);
 		pe.initCause(e);
