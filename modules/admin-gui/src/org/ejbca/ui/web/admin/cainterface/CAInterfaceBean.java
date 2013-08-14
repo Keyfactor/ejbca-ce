@@ -92,7 +92,7 @@ import org.cesecore.util.FileTools;
 import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.publisher.PublisherQueueSession;
+import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
@@ -159,7 +159,7 @@ public class CAInterfaceBean implements Serializable {
     private EndEntityProfileSession endEntityProfileSession;
     private HardTokenSession hardtokensession;
     private PublishingCrlSessionLocal publishingCrlSession;
-    private PublisherQueueSession publisherqueuesession;
+    private PublisherQueueSessionLocal publisherqueuesession;
     private PublisherSessionLocal publishersession;
     private ServiceSessionLocal serviceSession;
     private SignSession signsession; 
