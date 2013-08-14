@@ -113,7 +113,7 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
                 fail("We should not be able to create a certificate with customCertSerialNo when there is no unique issuerDN/certSerno index in the database.");
             } catch (Exception e) {
                 System.out.println(e.getMessage());
-                assertTrue("Exception message should tell that custom cert serial is not allowed", e.getMessage().contains("Custom certificate serial number not allowed since there is no unique index on (issuerDN,serialNumber) on the 'CertificateData' table."));
+                assertTrue("Exception message should tell that custom cert serial is not allowed: "+e.getMessage(), e.getMessage().contains("Custom certificate serial number not allowed since there is no unique index on (issuerDN,serialNumber) on the 'CertificateData' table."));
             }
             // Make sure EJBCA "thinks" that we have a unique serno index in the database
             sernoHelperSession.setUniqueSernoIndexTrue();
