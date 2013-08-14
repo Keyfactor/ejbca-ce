@@ -54,7 +54,7 @@ import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "PublisherQueueSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
-public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, PublisherQueueSessionLocal  {
+public class PublisherQueueSessionBean implements PublisherQueueSessionLocal  {
 
 	private static final Logger log = Logger.getLogger(PublisherQueueSessionBean.class);
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
