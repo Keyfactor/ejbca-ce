@@ -200,7 +200,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     public void init() throws AuthorizationDeniedException {
         if (OcspConfiguration.getLogSafer() == true) {
             SaferDailyRollingFileAppender.addSubscriber(this);
-            log.info("added us as subscriber: " + SaferDailyRollingFileAppender.class.getCanonicalName());
+            log.info("Added us as subscriber: " + SaferDailyRollingFileAppender.class.getCanonicalName());
         }
         timerService = sessionContext.getTimerService();
     }
@@ -209,12 +209,17 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     public void initTimers() {
         if (timerService.getTimers().size() == 0) {
             reloadOcspSigningCache();
+        } else {
+            log.info("Not initing OCSP reload timers, there are already some.");
         }
     }
 
     @Override
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void reloadOcspSigningCache() {
+    	if (log.isDebugEnabled()) {
+    		log.debug("reloadOcspSigningCache");
+    	}
         // Cancel any waiting timers
         cancelTimers();
         try {
@@ -254,6 +259,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     
     @Override
     public void reloadTokenAndChainCache(String p11Password, String p12StorePassword, String p12KeyPassword) {
+        if (log.isDebugEnabled()) {
+            log.debug("reloadTokenAndChainCache");
+        }
         // Verify card key holder
         if (CardKeyHolder.getInstance().getCardKeys() == null) {
             log.info(intres.getLocalizedMessage("ocsp.classnotfound", hardTokenClassName));
@@ -1101,6 +1109,19 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 final String errMsg = intres.getLocalizedMessage("ocsp.errornocacreateresp");
                 // This will be logged by the OcspServlet as INFO
                 //log.info(errMsg);
+                if (log.isTraceEnabled()) {
+                    Collection<OcspSigningCacheEntry> entries = OcspSigningCache.INSTANCE.getEntries();
+                    if (entries.isEmpty()) {
+                        log.trace("OcspSigningCache contains no entries.");
+                    } else {
+                        log.trace("Dumping contents of OCSP signing cache:");
+                        for (OcspSigningCacheEntry ocspSigningCacheEntry2 : entries) {
+                            log.trace("SubjectDN: "+ocspSigningCacheEntry2.getOcspSigningCertificate().getSubjectDN().toString());
+                            log.trace("- IssuerNameHash: "+new String(Hex.encode(ocspSigningCacheEntry2.getCertificateID().getIssuerNameHash())));
+                            log.trace("- IssuerKeyHash: "+new String(Hex.encode(ocspSigningCacheEntry2.getCertificateID().getIssuerKeyHash())));
+                        }    	
+                    }
+                }
                 throw new OcspFailureException(errMsg);
             }
         } catch (SignRequestException e) {
