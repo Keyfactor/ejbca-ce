@@ -162,7 +162,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             this.entityManager.persist(data1);
         } catch (Exception e) {
             // For backward compatibility. We should drop the throw entirely and rely on the return value.
-            CreateException ce = new CreateException();
+            CreateException ce = new CreateException(e.getMessage());
             ce.setStackTrace(e.getStackTrace());
             throw ce;
         }
@@ -974,11 +974,12 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
 
     // 
     // Classes for checking Unique issuerDN/serialNumber index in the database. If we have such an index, we can allow
-    // certificate serial number overide, where user specifies the serial number to be put in the certificate.
+    // certificate serial number override, where user specifies the serial number to be put in the certificate.
     //
 
     @Override
     public void resetUniqueCertificateSerialNumberIndex() {
+        log.info("Resetting isUniqueCertificateSerialNumberIndex to null.");
         UniqueSernoHelper.setIsUniqueCertificateSerialNumberIndex(null);
     }
 
@@ -989,7 +990,9 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     }
 
     @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public boolean isUniqueCertificateSerialNumberIndex() {
+        // Must always run in a transaction in order to store certificates, EntityManager requires use within a transaction
         checkForUniqueCertificateSerialNumberIndex();
         return UniqueSernoHelper.getIsUniqueCertificateSerialNumberIndex()!=null && UniqueSernoHelper.getIsUniqueCertificateSerialNumberIndex().booleanValue();
     }
