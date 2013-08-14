@@ -83,14 +83,21 @@ public abstract class PatternLogger implements Serializable {
     public static final String PROCESS_TIME = "PROCESS_TIME";
 
     private final Map<String, String> valuepairs = new HashMap<String, String>();
-    private transient final StringWriter sw = new StringWriter();
-    private transient final PrintWriter pw = new PrintWriter(this.sw);
-    private transient final Matcher m;
+    private final String matchString;
+    private final String matchPattern;
+    // Matcher is not Serializable
+    private transient Matcher m;
     private final String orderString;
     private final Date startTime;
     private Date startProcessTime = null;
     private boolean doLogging;
     final private Class<?> loggerClass;
+    // Logger is not Serializable
+    private transient Logger logger;
+
+    // for writing the output
+    private transient StringWriter sw;
+    private transient PrintWriter pw;
 
     /**
      * @param doLogging
@@ -107,11 +114,12 @@ public abstract class PatternLogger implements Serializable {
      *            A string that specifies how the log-time is formatted
      * @param timeZone
      */
-    protected PatternLogger(boolean doLogging, Class<?> logger, String matchPattern, String matchString, String logDateFormat, String timeZone) {
+    protected PatternLogger(boolean doLogging, Class<?> loggerClass, String matchPattern, String matchString, String logDateFormat, String timeZone) {
         this.doLogging = doLogging;
-        this.m = Pattern.compile(matchPattern).matcher(matchString);
+        this.matchString = matchString;
+        this.matchPattern = matchPattern;
         this.orderString = matchString;
-        this.loggerClass = logger;
+        this.loggerClass = loggerClass;
         this.startTime = new Date();
         final FastDateFormat dateformat;
         if (timeZone == null) {
@@ -123,32 +131,59 @@ public abstract class PatternLogger implements Serializable {
         this.paramPut(REPLY_TIME, REPLY_TIME);
         this.paramPut(LOG_ID, "0");
     }
+    
+    private Matcher getMatcher() {
+        if (this.m == null) {
+            // We have to instantiate the Matcher in the class and can not have it as an instance variable.
+            // This is because we are sending this object to a remote EJB (at least in system tests)
+            this.m = Pattern.compile(matchPattern).matcher(matchString);
+        }
+        return this.m;
+    }
 
+    private Logger getLogger() {
+        if (this.logger == null) {
+            // We have to instantiate the logger in the class and can not have it as an instance variable.
+            // This is because we are sending this object to a remote EJB (at least in system tests) and org.apache.log4j.Logger is not serializable.
+            this.logger = Logger.getLogger(loggerClass);
+        }
+        return this.logger;
+    }
+
+    private PrintWriter getPrintWriter() {
+        if (this.pw == null) {
+            this.sw = new StringWriter();
+            this.pw = new PrintWriter(this.sw);
+        }
+        return pw;
+    }
+    
     /**
      * 
      * @return output to be logged
      */
     private String interpolate() {
         final StringBuffer sb = new StringBuffer(this.orderString.length());
-        this.m.reset();
-        while (this.m.find()) {
+        final Matcher matcher = getMatcher();
+        matcher.reset();
+        while (matcher.find()) {
             // when the pattern is ${identifier}, group 0 is 'identifier'
-            final String key = this.m.group(1);
+            final String key = matcher.group(1);
             final String value = this.valuepairs.get(key);
 
             // if the pattern does exists, replace it by its value
             // otherwise keep the pattern ( it is group(0) )
             if (value != null) {
-                this.m.appendReplacement(sb, value);
+                matcher.appendReplacement(sb, value);
             } else {
                 // I'm doing this to avoid the backreference problem as there will be a $
                 // if I replace directly with the group 0 (which is also a pattern)
-                this.m.appendReplacement(sb, "");
-                final String unknown = this.m.group(0);
+                matcher.appendReplacement(sb, "");
+                final String unknown = matcher.group(0);
                 sb.append(unknown);
             }
         }
-        this.m.appendTail(sb);
+        matcher.appendTail(sb);
         return sb.toString();
     }
 
@@ -197,7 +232,7 @@ public abstract class PatternLogger implements Serializable {
      */
     public void writeln() {
         if (doLogging) {
-            this.pw.println(interpolate());
+            getPrintWriter().println(interpolate());
         }
     }
 
@@ -206,16 +241,13 @@ public abstract class PatternLogger implements Serializable {
      */
     public void flush() {
         if (doLogging) {
-            this.pw.flush();
+            getPrintWriter().flush();
             String output = this.sw.toString();
             output = output.replaceAll(REPLY_TIME, String.valueOf(new Date().getTime() - this.startTime.getTime()));
             if (startProcessTime != null) {
                 output = output.replaceAll(PROCESS_TIME, String.valueOf(new Date().getTime() - this.startProcessTime.getTime()));
             }
-            // We have to instantiate the logger in the class and can not have it as an instance variable.
-            // This is because we are sending this object to a remote EJB (at least in system tests) and org.apache.log4j.Logger is not serializeable.
-            final Logger logger = Logger.getLogger(loggerClass);
-            logger.debug(output); // Finally output the log row to the logging device
+            getLogger().debug(output); // Finally output the log row to the logging device
         }
     }
 }
