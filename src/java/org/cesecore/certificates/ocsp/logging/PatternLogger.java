@@ -90,13 +90,13 @@ public abstract class PatternLogger implements Serializable {
     private final Date startTime;
     private Date startProcessTime = null;
     private boolean doLogging;
-    final private Logger logger;
+    final private Class<?> loggerClass;
 
     /**
      * @param doLogging
      *            True if you want this pattern logger to do anything upon flush.
      * @param logger
-     *            The Log4j logger to log to if doLogging is true
+     *            The Class to create Log4j logger for, to log to if doLogging is true
      * @param matchPattern
      *            A string to create a matcher that is used together with matchString to determine how output is formatted
      * @param matchString
@@ -107,11 +107,11 @@ public abstract class PatternLogger implements Serializable {
      *            A string that specifies how the log-time is formatted
      * @param timeZone
      */
-    protected PatternLogger(boolean doLogging, Logger logger, String matchPattern, String matchString, String logDateFormat, String timeZone) {
+    protected PatternLogger(boolean doLogging, Class<?> logger, String matchPattern, String matchString, String logDateFormat, String timeZone) {
         this.doLogging = doLogging;
         this.m = Pattern.compile(matchPattern).matcher(matchString);
         this.orderString = matchString;
-        this.logger = logger;
+        this.loggerClass = logger;
         this.startTime = new Date();
         final FastDateFormat dateformat;
         if (timeZone == null) {
@@ -212,7 +212,10 @@ public abstract class PatternLogger implements Serializable {
             if (startProcessTime != null) {
                 output = output.replaceAll(PROCESS_TIME, String.valueOf(new Date().getTime() - this.startProcessTime.getTime()));
             }
-            this.logger.debug(output); // Finally output the log row to the logging device
+            // We have to instantiate the logger in the class and can not have it as an instance variable.
+            // This is because we are sending this object to a remote EJB (at least in system tests) and org.apache.log4j.Logger is not serializeable.
+            final Logger logger = Logger.getLogger(loggerClass);
+            logger.debug(output); // Finally output the log row to the logging device
         }
     }
 }
