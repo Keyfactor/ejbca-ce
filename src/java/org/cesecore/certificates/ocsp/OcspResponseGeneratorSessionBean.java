@@ -207,7 +207,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     
     @Override
     public void initTimers() {
-        if (timerService.getTimers().size() == 0) {
+        // Reload OCSP signing cache, and cancel/create timers if there are no timers or if the cache is empty (probably a fresh startup)
+        if ((timerService.getTimers().size() == 0) || (OcspSigningCache.INSTANCE.getEntries().isEmpty())){
             reloadOcspSigningCache();
         } else {
             log.info("Not initing OCSP reload timers, there are already some.");
