@@ -333,6 +333,7 @@ public class XKMSKRSSTest {
     
     private Certificate simpleRegistration(String dn, boolean willFail) throws Exception {
 
+        log.debug(">simpleRegistration: "+dn+", "+willFail);
         RegisterRequestType registerRequestType = xKMSObjectFactory.createRegisterRequestType();
         registerRequestType.setId("600");
 
