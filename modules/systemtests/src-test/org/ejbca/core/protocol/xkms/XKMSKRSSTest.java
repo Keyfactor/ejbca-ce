@@ -334,7 +334,6 @@ public class XKMSKRSSTest {
     }
     
     private Certificate simpleRegistration(String dn, boolean willFail) throws Exception {
-
         log.debug(">simpleRegistration: "+dn+", "+willFail);
         RegisterRequestType registerRequestType = xKMSObjectFactory.createRegisterRequestType();
         registerRequestType.setId("600");
@@ -365,13 +364,13 @@ public class XKMSKRSSTest {
         RegisterResultType registerResultType = xKMSInvoker.register(registerRequestType, null, null, "foo123", keys1.getPrivate(), prototypeKeyBindingType
                 .getId());
         if (willFail) {
-            assertTrue(registerResultType.getResultMajor().equals(XKMSConstants.RESULTMAJOR_RECIEVER));
-            assertTrue(registerResultType.getResultMinor().equals(XKMSConstants.RESULTMINOR_FAILURE));
+            assertEquals("ResultMajor not XKMSConstants.RESULTMAJOR_RECIEVER", XKMSConstants.RESULTMAJOR_RECIEVER, registerResultType.getResultMajor());
+            assertEquals("ResultMinor not XKMSConstants.RESULTMINOR_FAILURE", XKMSConstants.RESULTMINOR_FAILURE, registerResultType.getResultMinor());
             return null;
         }
-        assertTrue(registerResultType.getResultMajor().equals(XKMSConstants.RESULTMAJOR_SUCCESS));
+        assertEquals("ResultMajor not XKMSConstants.RESULTMAJOR_SUCCESS", XKMSConstants.RESULTMAJOR_SUCCESS, registerResultType.getResultMajor());
 
-        assertTrue(registerResultType.getKeyBinding().size() == 1);
+        assertEquals("Keybinding not of size 1", 1, registerResultType.getKeyBinding().size());
         KeyBindingType keyBindingType = registerResultType.getKeyBinding().get(0);
         assertTrue(keyBindingType.getStatus().getValidReason().size() == 4);
 
