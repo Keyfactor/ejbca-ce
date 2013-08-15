@@ -305,37 +305,37 @@ public class ScepServlet extends HttpServlet {
             }
         } catch (CADoesntExistsException cae) {
     		String errMsg = intres.getLocalizedMessage("scep.errorunknownca", "cert");
-            log.error(errMsg, cae);
+            log.info(errMsg, cae);
             // TODO: Send back proper Failure Response
             response.sendError(HttpServletResponse.SC_NOT_FOUND, cae.getMessage());
         } catch (DecoderException de) {
     		String errMsg = intres.getLocalizedMessage("scep.errorinvalidreq");
-            log.error(errMsg, de);
+            log.info(errMsg, de);
             // TODO: Send back proper Failure Response
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, de.getMessage());
         } catch (AuthorizationDeniedException ae) {
     		String errMsg = intres.getLocalizedMessage("scep.errorauth");
-            log.error(errMsg, ae);
+            log.info(errMsg, ae);
             // TODO: Send back proper Failure Response
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ae.getMessage());
         } catch (AuthLoginException ae) {
     		String errMsg = intres.getLocalizedMessage("scep.errorauth");
-            log.error(errMsg, ae);
+            log.info(errMsg, ae);
             // TODO: Send back proper Failure Response
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ae.getMessage());
         } catch (AuthStatusException ae) {
     		String errMsg = intres.getLocalizedMessage("scep.errorclientstatus");
-            log.error(errMsg, ae);
+            log.info(errMsg, ae);
             // TODO: Send back proper Failure Response
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ae.getMessage());
         } catch (CryptoTokenOfflineException ee) {
     		String errMsg = intres.getLocalizedMessage("scep.errorgeneral");
-            log.error(errMsg, ee);
+            log.info(errMsg, ee);
             // TODO: Send back proper Failure Response
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ee.getMessage());
         } catch (Exception e) {
     		String errMsg = intres.getLocalizedMessage("scep.errorgeneral");
-            log.error(errMsg, e);
+            log.info(errMsg, e);
             // TODO: Send back proper Failure Response
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         }
