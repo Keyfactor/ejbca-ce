@@ -632,9 +632,9 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         byte input[] = concatByteArrays(headers.getBytes(), data);
         // Create the socket.
         Socket socket = new Socket(InetAddress.getByName("127.0.0.1"), Integer.parseInt(httpPort));
-        try {
-        // Send data byte for byte.
         OutputStream os = socket.getOutputStream();
+        try {
+            // Send data byte for byte.
             try {
                 os.write(input);
             } catch (IOException e) {
@@ -643,35 +643,33 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
                 // the server than it should. JBoss on Linux does not.
                 // assertTrue("Tried to write more than it should to the server (>1000), "+i, i > 1000);
                 return;
-            } finally {
-                os.close();
+            } 
+            // Reading the response.
+            InputStream ins = socket.getInputStream();
+            byte ret[] = new byte[1024];
+            ins.read(ret);
+            // Removing the HTTP headers. The HTTP headers end at the last
+            // occurrence of "\r\n".
+            for (i = ret.length - 1; i > 0; i--) {
+                if ((ret[i] == 0x0A) && (ret[i - 1] == 0x0D)) {
+                    break;
+                }
             }
+            int start = i + 1;
+            byte respa[] = new byte[ret.length - start];
+            for (i = start; i < ret.length; i++) {
+                respa[i - start] = ret[i];
+            }
+            log.info("response contains: " + respa.length + " bytes.");
+            // Reading the response as a OCSPResp. When the input data array is
+            // longer than allowed the OCSP response will return as an internal
+            // error.
+            OCSPResp response = new OCSPResp(respa);
+            assertEquals("Incorrect response status.", OCSPRespBuilder.INTERNAL_ERROR, response.getStatus());
         } finally {
+            os.close();
             socket.close();
         }
-        // Reading the response.
-        InputStream ins = socket.getInputStream();
-        byte ret[] = new byte[1024];
-        ins.read(ret);
-        socket.close();
-        // Removing the HTTP headers. The HTTP headers end at the last
-        // occurrence of "\r\n".
-        for (i = ret.length - 1; i > 0; i--) {
-            if ((ret[i] == 0x0A) && (ret[i - 1] == 0x0D)) {
-                break;
-            }
-        }
-        int start = i + 1;
-        byte respa[] = new byte[ret.length - start];
-        for (i = start; i < ret.length; i++) {
-            respa[i - start] = ret[i];
-        }
-        log.info("response contains: " + respa.length + " bytes.");
-        // Reading the response as a OCSPResp. When the input data array is
-        // longer than allowed the OCSP response will return as an internal
-        // error.
-        OCSPResp response = new OCSPResp(respa);
-        assertEquals("Incorrect response status.", OCSPRespBuilder.INTERNAL_ERROR, response.getStatus());
         log.trace("<test18MaliciousOcspRequest");
     }
 
