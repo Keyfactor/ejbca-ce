@@ -85,7 +85,7 @@ import javax.security.auth.x500.X500Principal;
  *   logInfo: [Log line n]
  * 
  * Each log line is formatted as follows:
- * time:[Generalized Time] sqn:[number] stage:objectimport level:[Level] msgid: [nnn] msg: [message] msgext: [extended extra info]
+ * time:[Generalized Time] sqn:[number] stage:objectimport level:[Level] msgid: [nnn] msg: [message] pid: msgext: [extended extra info]
  *
  * 
  * Example cert entry:
@@ -127,7 +127,7 @@ import javax.security.auth.x500.X500Principal;
  * Note the escaping of commas in the DN, this is needed since the "CN" of the LDAP DN contains commas (CN=C=SE\,O=foo\,CN=cscav1).
  * OpenLDAP implement very old escaping rules and will replace = with \3D and things like that. Better to use OpenDJ, easy to install and run, and works correctly.
  * 
- * Version: 0.8
+ * Version: 0.9
  *
  * @version $Id$
  */
@@ -500,10 +500,12 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
         final Date now = new Date();
         final String generalizedTime = LogInfo.toGeneralizedTime(now);
         final LinkedList<String> logEntries = new LinkedList<String>();
-        logEntries.add(new LogInfo(now, 1, "objectupload", level, null, message, null).getEncoded());
+        final StringBuilder buff = new StringBuilder();
+        buff.append(message);
         if (!success) {
-            logEntries.add(new LogInfo(now, 2, "objectupload", level, null, exception.getLocalizedMessage(), null).getEncoded());
+            buff.append(": ").append(exception.getLocalizedMessage());
         }
+        logEntries.add(new LogInfo(now, 1, "objectupload", level, null, buff.toString(), null, null).getEncoded());
 
         // Connect
         final LDAPConnection lc = createLdapConnection();
@@ -782,6 +784,7 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
         private final String level;
         private final String msgid;
         private final String msg;
+        private final String pid;
         private final String msgext;
 
         public LogInfo(Date time, String level, String msg) {
@@ -791,11 +794,12 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
             this.level = level;
             this.msgid = null;
             this.msg = msg;
+            this.pid = null;
             this.msgext = null;
         }
 
         public LogInfo(Date time, Integer sqn, String stage, String level,
-                String msgid, String msg, String msgext) {
+                String msgid, String msg, String pid, String msgext) {
             super();
             this.time = time;
             this.sqn = sqn;
@@ -803,6 +807,7 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
             this.level = level;
             this.msgid = msgid;
             this.msg = msg;
+            this.pid = pid;
             this.msgext = msgext;
 
             if (msgid != null && msgid.length() != 3) {
@@ -820,6 +825,7 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
                     .append(" ").append("level:").append(level)
                     .append(" ").append("msgid:").append(unlessNull(msgid))
                     .append(" ").append("msg:").append(msg)
+                    .append(" ").append("pid:").append(unlessNull(pid))
                     .append(" ").append("msgext:").append(unlessNull(msgext))
                     .toString();
         }
@@ -854,6 +860,10 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
 
         public String getMsg() {
             return msg;
+        }
+
+        public String getPid() {
+            return pid;
         }
 
         public String getMsgext() {
