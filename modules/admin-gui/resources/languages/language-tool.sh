@@ -23,7 +23,8 @@ PATH_ADMINGUI_SRC="modules/admin-gui/src"			# Files: Java
 PATH_CONFIG="conf"									# Files: Properties
 PATH_JAVA_CESECORE="src/java/org/cesecore"			# Files: Java
 PATH_JAVA_EJBCA="src/java/org/ejbca"				# Files: Java
-PATH_JAVA="src/java"								# Files: Properties
+PATH_JAVA="src/java"								# Files: Java
+PATH_MODULES="modules"								# Files: module source files
 #- EJBCA folders [INFO]
 #  $SVN_ROOT/$PATH_ADMINGUI_RES/languages/
 #  $SVN_ROOT/$PATH_ADMINGUI_RES/
@@ -32,6 +33,7 @@ PATH_JAVA="src/java"								# Files: Properties
 #  $SVN_ROOT/$PATH_JAVA_CESECORE/
 #  $SVN_ROOT/$PATH_JAVA_EJBCA/
 #  $SVN_ROOT/$PATH_JAVA/
+#  $SVN_ROOT/$PATH_MODULES
 
 #- EJBCA version (only numbers and dots)
 EJBCA_VERSION=$(cat $SVN_ROOT/src/internal.properties | grep "app.version.number=" | sed -e "s/^.*=\([0-9.]*\).*/\1/")
@@ -285,7 +287,7 @@ case "$action" in
 		## CONF
 
 		#-- PATTERNS = | KEY|, | KEY |, |=KEY|, |=KEY |
-			count=$(grep -l -e "[ \t=]"$key"[ \t]*$" --include=*.properties -r --exclude-dir=.svn $SVN_ROOT/$PATH_CONFIG/ | wc -l)
+			count=$(grep -l -e "[ \t=]"$key"[ \t]*$" --include=*.properties* -r --exclude-dir=.svn $SVN_ROOT/$PATH_CONFIG/ | wc -l)
 			if [ $count -gt 0 ]; then
 				continue
 			fi
@@ -293,17 +295,26 @@ case "$action" in
 		## SRC > JAVA (CESecore, EJBCA, properties)
 
 		#-- PATTERNS = |"KEY"|, |'KEY'|
-			count=$(grep -l -e "[\"']"$key"[\"']" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_JAVA_CESECORE/ | wc -l)
+			count=$(grep -l -e "[\"']"$key"[\"']" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_JAVA/ | wc -l)
 			if [ $count -gt 0 ]; then
 				continue
 			fi
-			count=$(grep -l -e "[\"']"$key"[\"']" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_JAVA_EJBCA/ | wc -l)
+			count=$(grep -l -e "[\"']"$key"[\"']" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_MODULES/ | wc -l)
+			if [ $count -gt 0 ]; then
+				continue
+			fi
+		#-- PATTERNS = |EventTypes.KEY|
+			count=$(grep -l -e "EventTypes.$key" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_JAVA/ | wc -l)
+			if [ $count -gt 0 ]; then
+				continue
+			fi
+			count=$(grep -l -e "EventTypes.$key" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_MODULES/ | wc -l)
 			if [ $count -gt 0 ]; then
 				continue
 			fi
 
 		#-- PATTERNS = |;KEY;|, |,KEY,|, |;KEY|, |,KEY|, |= KEY|, etc.
-			count=$(grep -l -e "[;,][ \t]*"$key"[ \t]*[;,]" -e "[;,=][ \t]*"$key"[ \t]*$" --include=*.properties -r --exclude-dir=.svn $SVN_ROOT/$PATH_JAVA/ | wc -l)
+			count=$(grep -l -e "[;,][ \t]*"$key"[ \t]*[;,]" -e "[;,=][ \t]*"$key"[ \t]*$" --include=*.properties* -r --exclude-dir=.svn $SVN_ROOT/$PATH_JAVA/ | wc -l)
 			if [ $count -gt 0 ]; then
 				continue
 			fi
@@ -496,16 +507,19 @@ case "$action" in
 	## SRC > JAVA (CESecore, EJBCA, properties)
 
 	#-- PATTERNS = |"KEY"|, |'KEY'|
-		grep -l -e "[\"']"$keysearch"[\"']" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_JAVA_CESECORE/ | sed -e "s/\.\.\///g"
-		count=$(grep -l -e "[\"']"$keysearch"[\"']" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_JAVA_CESECORE/ | wc -l)
+		grep -l -e "[\"']"$keysearch"[\"']" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_JAVA/ | sed -e "s/\.\.\///g"
+		count=$(grep -l -e "[\"']"$keysearch"[\"']" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_JAVA/ | wc -l)
 		let "filecount+=count"
-		grep -l -e "[\"']"$keysearch"[\"']" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_JAVA_EJBCA/ | sed -e "s/\.\.\///g"
-		count=$(grep -l -e "[\"']"$keysearch"[\"']" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_JAVA_EJBCA/ | wc -l)
+		grep -l -e "[\"']"$keysearch"[\"']" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_ MODULES/ | sed -e "s/\.\.\///g"
+		count=$(grep -l -e "[\"']"$keysearch"[\"']" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_MODULES/ | wc -l)
 		let "filecount+=count"
 
 	#-- PATTERNS = |;KEY;|, |,KEY,|, |;KEY|, |,KEY|, |= KEY|, etc.
 		grep -l -e "[;,][ \t]*"$keysearch"[ \t]*[;,]" -e "[;,=][ \t]*"$keysearch"[ \t]*$" --include=*.properties -r --exclude-dir=.svn $SVN_ROOT/$PATH_JAVA/ | sed -e "s/\.\.\///g"
 		count=$(grep -l -e "[;,][ \t]*"$keysearch"[ \t]*[;,]" -e "[;,=][ \t]*"$keysearch"[ \t]*$" --include=*.properties -r --exclude-dir=.svn $SVN_ROOT/$PATH_JAVA/ | wc -l)
+		let "filecount+=count"
+		grep -l -e "[;,][ \t]*"$keysearch"[ \t]*[;,]" -e "[;,=][ \t]*"$keysearch"[ \t]*$" --include=*.properties -r --exclude-dir=.svn $SVN_ROOT/$PATH_MODULES/ | sed -e "s/\.\.\///g"
+		count=$(grep -l -e "[;,][ \t]*"$keysearch"[ \t]*[;,]" -e "[;,=][ \t]*"$keysearch"[ \t]*$" --include=*.properties -r --exclude-dir=.svn $SVN_ROOT/$PATH_MODULES/ | wc -l)
 		let "filecount+=count"
 
 		echo "Count = $filecount source files"
@@ -571,13 +585,13 @@ case "$action" in
 	## SRC > JAVA (CESecore, EJBCA, properties)
 
 	#-- PATTERNS = |"KEY"|, |'KEY'|
-		count=$(grep -l -e "[\"']"$keysearch"[\"']" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_JAVA_CESECORE/ | wc -l)
+		count=$(grep -l -e "[\"']"$keysearch"[\"']" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_JAVA/ | wc -l)
 		let "filecount+=count"
-		count=$(grep -e "[\"']"$keysearch"[\"']" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_JAVA_CESECORE/ | wc -l)
+		count=$(grep -e "[\"']"$keysearch"[\"']" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_JAVA/ | wc -l)
 		let "keycount+=count"
-		count=$(grep -l -e "[\"']"$keysearch"[\"']" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_JAVA_EJBCA/ | wc -l)
+		count=$(grep -l -e "[\"']"$keysearch"[\"']" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_MODULES/ | wc -l)
 		let "filecount+=count"
-		count=$(grep -e "[\"']"$keysearch"[\"']" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_JAVA_EJBCA/ | wc -l)
+		count=$(grep -e "[\"']"$keysearch"[\"']" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_MODULES/ | wc -l)
 		let "keycount+=count"
 
 	#-- PATTERNS = |;KEY;|, |,KEY,|, |;KEY|, |,KEY|, |= KEY|, etc.
@@ -628,11 +642,11 @@ case "$action" in
 	## SRC > JAVA (CESecore, EJBCA, properties)
 
 	#-- PATTERNS = ||
-		grep -l -e "" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_JAVA_CESECORE/ | sed -e "s/\.\.\///g"
-		count=$(grep -l -e "" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_JAVA_CESECORE/ | wc -l)
+		grep -l -e "" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_JAVA/ | sed -e "s/\.\.\///g"
+		count=$(grep -l -e "" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_JAVA/ | wc -l)
 		let "filecount+=count"
-		grep -l -e "" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_JAVA_EJBCA/ | sed -e "s/\.\.\///g"
-		count=$(grep -l -e "" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_JAVA_EJBCA/ | wc -l)
+		grep -l -e "" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_MODULES/ | sed -e "s/\.\.\///g"
+		count=$(grep -l -e "" --include=*.java -r --exclude-dir=.svn $SVN_ROOT/$PATH_MODULES/ | wc -l)
 		let "filecount+=count"
 
 	#-- PATTERNS = ||
