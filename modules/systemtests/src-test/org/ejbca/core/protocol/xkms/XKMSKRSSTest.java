@@ -80,6 +80,7 @@ import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalTest;
+import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.protocol.xkms.client.XKMSInvoker;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
@@ -315,7 +316,7 @@ public class XKMSKRSSTest {
             final String subjectaltname1 = "RFC822NAME=" + userName + "@foo.se";
             final String email1 = userName + "@foo.se";
             if (endEntityAccessSession.findUser(administrator, userName) != null) {
-                log.info("User already exists in the database.");
+                log.info("User '"+userName+"'already exists in the database, not adding.");
             } else {
                 endEntityManagementSession.addUser(administrator, userName, pwd, CertTools.stringToBCDNString(dn), subjectaltname1, email1, false,
                         endEntityProfileSession.getEndEntityProfileId(endentityprofilename), certificatetypeid, type, token,
@@ -328,6 +329,7 @@ public class XKMSKRSSTest {
 
     @Test
     public void test01SimpleRegistration() throws Exception {
+        log.trace(">test01SimpleRegistration");
         cert1 = simpleRegistration(dn1, false);
     }
     
@@ -396,6 +398,7 @@ public class XKMSKRSSTest {
 
     @Test
     public void test02ServerGenRegistration() throws Exception {
+        log.trace(">test02ServerGenRegistration");
         RegisterRequestType registerRequestType = xKMSObjectFactory.createRegisterRequestType();
         registerRequestType.setId("601");
 
@@ -453,6 +456,7 @@ public class XKMSKRSSTest {
 
     @Test
     public void test03RegisterWithWrongDN() throws Exception {
+        log.trace(">test03RegisterWithWrongDN");
         RegisterRequestType registerRequestType = xKMSObjectFactory.createRegisterRequestType();
         registerRequestType.setId("602");
 
@@ -484,6 +488,7 @@ public class XKMSKRSSTest {
 
     @Test
     public void test04RegisterWithWrongStatus() throws Exception {
+        log.trace(">test04RegisterWithWrongStatus");
         KeyPair keys = genKeys();
         RegisterRequestType registerRequestType = xKMSObjectFactory.createRegisterRequestType();
         registerRequestType.setId("603");
@@ -516,6 +521,7 @@ public class XKMSKRSSTest {
 
     @Test
     public void test05RegisterWithWrongPassword() throws Exception {
+        log.trace(">test05RegisterWithWrongPassword");
         KeyPair keys = genKeys();
         RegisterRequestType registerRequestType = xKMSObjectFactory.createRegisterRequestType();
         registerRequestType.setId("604");
@@ -548,6 +554,7 @@ public class XKMSKRSSTest {
 
     @Test
     public void test06RegisterWithNoPOP() throws Exception {
+        log.trace(">test06RegisterWithNoPOP");
         KeyPair keys = genKeys();
         RegisterRequestType registerRequestType = xKMSObjectFactory.createRegisterRequestType();
         registerRequestType.setId("605");
@@ -579,6 +586,7 @@ public class XKMSKRSSTest {
 
     @Test
     public void test07RegisterWithBasicAuthentication() throws Exception {
+        log.trace(">test07RegisterWithBasicAuthentication");
         KeyPair keys = genKeys();
         RegisterRequestType registerRequestType = xKMSObjectFactory.createRegisterRequestType();
         registerRequestType.setId("606");
@@ -620,6 +628,7 @@ public class XKMSKRSSTest {
 
     @Test
     public void test08SimpleReissue() throws Exception {
+        log.trace(">test08SimpleReissue");
         simpleReissue(username1, dn1);
         simpleReissue(username1, dn1); // could be repeated any number of times
     }
@@ -680,6 +689,7 @@ public class XKMSKRSSTest {
 
     @Test
     public void test09ReissueWrongPassword() throws Exception {
+        log.trace(">test09ReissueWrongPassword");
         endEntityManagementSession.setUserStatus(administrator, username1, 10);
         endEntityManagementSession.setClearTextPassword(administrator, username1, "ReissuePassword");
         ReissueRequestType reissueRequestType = xKMSObjectFactory.createReissueRequestType();
@@ -713,6 +723,7 @@ public class XKMSKRSSTest {
 
     @Test
     public void test10ReissueWrongStatus() throws Exception {
+        log.trace(">test10ReissueWrongStatus");
         endEntityManagementSession.setUserStatus(administrator, username1, 40);
         endEntityManagementSession.setClearTextPassword(administrator, username1, "ReissuePassword");
         ReissueRequestType reissueRequestType = xKMSObjectFactory.createReissueRequestType();
@@ -745,7 +756,7 @@ public class XKMSKRSSTest {
 
     @Test
     public void test11ReissueWrongCert() throws Exception {
-
+        log.trace(">test11ReissueWrongCert");
         endEntityManagementSession.setUserStatus(administrator, username1, 10);
         endEntityManagementSession.setClearTextPassword(administrator, username1, "ReissuePassword");
         ReissueRequestType reissueRequestType = xKMSObjectFactory.createReissueRequestType();
@@ -778,6 +789,7 @@ public class XKMSKRSSTest {
 
     @Test
     public void test12SimpleRecover() throws Exception {
+        log.trace(">test12SimpleRecover");
         endEntityManagementSession.prepareForKeyRecovery(administrator, username2, endEntityProfileSession.getEndEntityProfileId(endentityprofilename), cert2);
         endEntityManagementSession.setClearTextPassword(administrator, username2, "RerecoverPassword");
         RecoverRequestType recoverRequestType = xKMSObjectFactory.createRecoverRequestType();
@@ -840,6 +852,7 @@ public class XKMSKRSSTest {
 
     @Test
     public void test13RecoverWrongPassword() throws Exception {
+        log.trace(">test13RecoverWrongPassword");
         endEntityManagementSession.prepareForKeyRecovery(administrator, username2, endEntityProfileSession.getEndEntityProfileId(endentityprofilename), cert2);
         endEntityManagementSession.setClearTextPassword(administrator, username2, "RerecoverPassword");
         RecoverRequestType recoverRequestType = xKMSObjectFactory.createRecoverRequestType();
@@ -874,6 +887,7 @@ public class XKMSKRSSTest {
 
     @Test
     public void test14RecoverWrongStatus() throws Exception {
+        log.trace(">test14RecoverWrongStatus");
         endEntityManagementSession.setUserStatus(administrator, username2, 10);
         endEntityManagementSession.setClearTextPassword(administrator, username2, "RerecoverPassword");
         RecoverRequestType recoverRequestType = xKMSObjectFactory.createRecoverRequestType();
@@ -908,6 +922,7 @@ public class XKMSKRSSTest {
 
     @Test
     public void test15RecoverWrongCert() throws Exception {
+        log.trace(">test15RecoverWrongCert");
         endEntityManagementSession.setUserStatus(administrator, username2, EndEntityConstants.STATUS_KEYRECOVERY);
         endEntityManagementSession.setClearTextPassword(administrator, username2, "RerecoverPassword");
         RecoverRequestType recoverRequestType = xKMSObjectFactory.createRecoverRequestType();
@@ -942,6 +957,7 @@ public class XKMSKRSSTest {
 
     @Test
    public void test16CertNotMarked() throws Exception {
+        log.trace(">test16CertNotMarked");
         keyRecoverySession.unmarkUser(administrator, username2);
         endEntityManagementSession.setUserStatus(administrator, username2, 40);
         endEntityManagementSession.setClearTextPassword(administrator, username2, "RerecoverPassword");
@@ -977,6 +993,7 @@ public class XKMSKRSSTest {
 
     @Test
     public void test17SimpleRevoke() throws Exception {
+        log.trace(">test17SimpleRevoke");
         RevokeRequestType revokeRequestType = xKMSObjectFactory.createRevokeRequestType();
         revokeRequestType.setId("800");
 
@@ -1002,6 +1019,7 @@ public class XKMSKRSSTest {
 
     @Test
     public void test18RevokeWrongPassword() throws Exception {
+        log.trace(">test18RevokeWrongPassword");
         RevokeRequestType revokeRequestType = xKMSObjectFactory.createRevokeRequestType();
         revokeRequestType.setId("801");
 
@@ -1028,6 +1046,7 @@ public class XKMSKRSSTest {
 
     @Test
     public void test19RevokeWithResult() throws Exception {
+        log.trace(">test19RevokeWithResult");
         RevokeRequestType revokeRequestType = xKMSObjectFactory.createRevokeRequestType();
         revokeRequestType.setId("802");
 
@@ -1077,6 +1096,7 @@ public class XKMSKRSSTest {
 
     @Test
     public void test20RevokeAlreadyRevoked() throws Exception {
+        log.trace(">test20RevokeAlreadyRevoked");
         RevokeRequestType revokeRequestType = xKMSObjectFactory.createRevokeRequestType();
         revokeRequestType.setId("804");
 
@@ -1103,6 +1123,7 @@ public class XKMSKRSSTest {
 
     @Test
     public void test21RevocationApprovals() throws Exception {
+        log.trace(">test21RevocationApprovals");
         final String APPROVINGADMINNAME = "superadmin";
         final String ERRORNOTSENTFORAPPROVAL = "The request was never sent for approval.";
         String randomPostfix = Integer.toString(ran.nextInt(999999));
@@ -1201,20 +1222,28 @@ public class XKMSKRSSTest {
 
     @Test
     public void test22SimpleRegistrationSameKeyDifferentUsers() throws Exception {
+        log.trace(">test22SimpleRegistrationSameKeyDifferentUsers");
         final String usernameX = baseUsername + 'X';
-        final String dnX = "C=SE, O=AnaTom, CN=" + usernameX;
-        addUser(usernameX, dnX);
-        simpleRegistration(dnX, true);
-        endEntityManagementSession.deleteUser(administrator, usernameX);
+        try {
+            final String dnX = "C=SE, O=AnaTom, CN=" + usernameX;
+            addUser(usernameX, dnX);
+            simpleRegistration(dnX, true);
+        } finally {
+            endEntityManagementSession.deleteUser(administrator, usernameX);
+        }
     }
 
     @Test
    public void test23SimpleRegistrationSameSubjcectDifferentUsers() throws Exception {
+        log.trace(">test23SimpleRegistrationSameSubjcectDifferentUsers");
         endEntityManagementSession.deleteUser(administrator, username1);
         final String usernameX = baseUsername + 'X';
-        addUser(usernameX, dn1);
-        simpleRegistration(dn1, true);
-        endEntityManagementSession.deleteUser(administrator, usernameX);
+        try {
+            addUser(usernameX, dn1);
+            simpleRegistration(dn1, true);
+        } finally {
+            endEntityManagementSession.deleteUser(administrator, usernameX);
+        }
     }
 
     @AfterClass
@@ -1225,8 +1254,15 @@ public class XKMSKRSSTest {
         EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
         EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
         
-        endEntityManagementSession.deleteUser(administrator, username2);
-        endEntityManagementSession.deleteUser(administrator, username3);
+        try {
+            endEntityManagementSession.deleteUser(administrator, username1);
+        } catch (NotFoundException e) { /* NOPMD ignore */ }
+        try {
+            endEntityManagementSession.deleteUser(administrator, username2);
+        } catch (NotFoundException e) { /* NOPMD ignore */ }
+        try {
+            endEntityManagementSession.deleteUser(administrator, username3);
+        } catch (NotFoundException e) { /* NOPMD ignore */ }
 
         endEntityProfileSession.removeEndEntityProfile(administrator, endentityprofilename);
 
