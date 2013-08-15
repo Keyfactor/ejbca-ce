@@ -44,6 +44,7 @@ import java.security.interfaces.RSAPublicKey;
 import javax.ejb.EJBException;
 import javax.persistence.PersistenceException;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.xml.security.utils.Base64;
 import org.bouncycastle.asn1.DEROutputStream;
@@ -461,7 +462,7 @@ public class CertRequestHttpTest extends CaTestCase {
         } catch (EOFException e) { /* Ignore */ }
         con.disconnect();
 
-        assertEquals("password wasn't cleared", "", findPassword(TEST_USERNAME));
+        assertTrue("password wasn't cleared", StringUtils.isEmpty(findPassword(TEST_USERNAME)));
         log.trace("<test01RequestPKCS12()");
     }
 
