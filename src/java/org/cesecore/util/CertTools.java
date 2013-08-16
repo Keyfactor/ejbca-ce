@@ -273,7 +273,6 @@ public class CertTools {
         boolean escapeNext = false;
         int currentStartPosition = -1;
         String currentPartName = null;
-        log.trace("dn.length()=" + dn.length());
         for (int i=0; i<dn.length(); i++) {
             final char current = dn.charAt(i);
             // Toggle quoting for every non-escaped "-char
