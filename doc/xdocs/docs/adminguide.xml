@@ -4795,6 +4795,55 @@ certificate profiles.
 In the example above the certificate profile with id 2234644354 will not have any certificates stored. The profile with id 1645141026 will have about 25% of the certificates stored and for all other profiles all certificates will be sampled.
 </p>
 </subsubsection>
+
+<subsubsection name="Customer specific publisher for a PKD-like catalog">
+<p>
+The CustomerLdapPublisher1 publishes end entity (Document Signer) certificates 
+and (CSCA) CRLs according to a customer specific schema based on the schema 
+defined by ICAO for uploading to the PKD but with some customer-specific 
+extensions added.
+</p>
+<p>
+Extra attributes are added including checksums of the uploaded objects as well 
+as a feature for putting some log entries in the catalog.
+</p>
+<p>
+To use the CustomerLdapPublisher1 select "Edit Publishers" in the Administration GUI, create a new publisher and edit it.
+</p>
+<ul>
+<li>Publisher type: Custom Publisher</li>
+<li>Class Path: - Specify class path manually -<br/>
+org.ejbca.core.model.ca.publisher.custpubl1.CustomerLdapPublisher1</li>
+<li>Properties of Custom Publisher: 
+</li>
+</ul>
+<source>
+hostnames=localhost
+port=1636
+basedn=dc=example,dc=com
+logindn=cn=Directory Manager
+loginpassword=foo123
+usessl=true
+
+# Optional properties:
+logconnectiontests=true
+connectiontimeout=5000
+readtimeout=30000
+storetimeout=60000
+</source>
+<p>
+Click "Save and Test Connection" to save the entered information and validate
+that the entered configuration is correct. Select the publisher in the 
+DS certificate profiles and the CSCA.
+</p>
+<p>
+In the example above logconnectiontests equals true which means that a click on 
+the "Save and test connection" button will cause an log entry to be added to the 
+catalog. Notice that in this case if health check checks the publishers an log 
+entry will also be inserted for every health check run.
+</p>
+    
+</subsubsection>
 </subsection>
 
 <subsection name="Publisher Queue and failures">
