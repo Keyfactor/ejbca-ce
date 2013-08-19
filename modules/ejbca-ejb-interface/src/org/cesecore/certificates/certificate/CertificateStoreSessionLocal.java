@@ -140,4 +140,8 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * index exists. */
     void setUniqueCertificateSerialNumberIndex(final Boolean value);
 
+    /** Checks for present certificate serial number unique index in a new transaction in order to avoid rollback, since we can expect SQL exceptions here. 
+     * Should not be used externally. */
+    void checkForUniqueCertificateSerialNumberIndexInTransaction();
+
 }
