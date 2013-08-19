@@ -132,7 +132,8 @@ public class Pkcs11SlotLabel {
         log.debug("slot spec: "+this.toString());
         switch ( this.type ) {
         case TOKEN_LABEL:
-            slot = getSlotID(this.value, fileName);
+            getSunP11Provider(-1, libFile, true, null, null);// creating dummy provider just to have C_Initialize executed with multiple thread arguments.
+            slot = getSlotID(this.value, libFile);
             isIndex = false;
             //catch (Exception e) {
             //  throw new IOException("Slot nr " + this.value + " not an integer and sun classes to find slot for token label are not available.", e);
@@ -179,15 +180,15 @@ public class Pkcs11SlotLabel {
     /**
      * Get slot ID for a token label.
      * @param tokenLabel the label.
-     * @param fileName path to the P11 module so file.
+     * @param the P11 module so file.
      * @return the slot ID.
      * @throws IllegalArgumentException 
 
      */
-    private static long getSlotID(final String tokenLabel, final String fileName) throws IllegalArgumentException {
+    private static long getSlotID(final String tokenLabel, final File file) throws IllegalArgumentException {
         slotIDLock.lock(); // only one thread at a time may use the p11 object.
         try {
-            final Pkcs11Wrapper p11 = Pkcs11Wrapper.getInstance(fileName);
+            final Pkcs11Wrapper p11 = Pkcs11Wrapper.getInstance(file);
             final long slots[] = p11.C_GetSlotList();
             if (log.isDebugEnabled()) {
                 log.debug("Searching for token label:\t" + tokenLabel);
