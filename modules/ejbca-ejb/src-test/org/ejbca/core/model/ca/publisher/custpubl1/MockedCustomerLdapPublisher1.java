@@ -20,6 +20,7 @@ import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 
 /**
+ * Mocked version of the CustomerLdapPublisher1 used in the unit tests.
  *
  * @version @Id$
  */
@@ -39,7 +40,6 @@ public class MockedCustomerLdapPublisher1 extends CustomerLdapPublisher1 {
     private PublisherException doStoreCRLException;
     private PublisherConnectionException doTestConnectionException;
     
-    private boolean searchOldEntityCalled;
     private SearchOldEntityParameters searchOldEntityParameters;
     private PublisherException searchOldEntityException;
     private LDAPEntry searchOldEntityReturn;
@@ -139,7 +139,6 @@ public class MockedCustomerLdapPublisher1 extends CustomerLdapPublisher1 {
     // searchOldEntity
     @Override
     protected LDAPEntry searchOldEntity(LDAPConnection lc, String ldapDN) throws PublisherException {
-        this.searchOldEntityCalled = true;
         this.searchOldEntityParameters = new SearchOldEntityParameters(lc, ldapDN);
         if (searchOldEntityException != null) {
             throw searchOldEntityException;
@@ -159,9 +158,6 @@ public class MockedCustomerLdapPublisher1 extends CustomerLdapPublisher1 {
         this.searchOldEntityReturn = searchOldEntityReturn;
     }
 
-    
-    
-    
     public static class StoreLogParameters {
         private final String level;
         private final boolean success;
