@@ -21,6 +21,8 @@ import com.novell.ldap.LDAPConnection;
 import com.novell.ldap.LDAPEntry;
 
 /**
+ * An additional mocked version of the CustomerLdapPublisher1 used by the unit
+ * tests.
  *
  * @version @Id$
  */
@@ -112,7 +114,6 @@ public class SecondMockedCustomerLdapPublisher1 extends CustomerLdapPublisher1 {
     public void setWriteCrlEntryToLDAPException(PublisherException writeCrlEntryToLDAPException) {
         this.writeCrlEntryToLDAPException = writeCrlEntryToLDAPException;
     }
-    
     
     
     public static class StoreLogParameters {
