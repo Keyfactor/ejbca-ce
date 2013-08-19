@@ -14,11 +14,9 @@ package org.ejbca.core.model.ca.publisher.custpubl1;
 
 import com.novell.ldap.LDAPAttributeSet;
 import com.novell.ldap.LDAPEntry;
-import org.ejbca.core.model.ca.publisher.*;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assert.assertEquals;
+import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
+import org.ejbca.core.model.ca.publisher.PublisherException;
+import static org.junit.Assert.*;
 
 import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
@@ -434,7 +432,6 @@ public class CustomerLdapPublisher1UnitTest {
         assertFalse("storeLog not called", instance.isStoreLogCalled());
     }
     
-    // TODO: Unfinished test
     /** Tests the logic and implementation details of doStoreCertificate. */
     @Test
     public void testDoStoreCertificate() throws Exception {
@@ -454,13 +451,14 @@ public class CustomerLdapPublisher1UnitTest {
         SecondMockedCustomerLdapPublisher1.WriteCertEntryToLDAPParameters params = instance.getWriteCertEntryToLDAPParameters();
         LDAPEntry newEntry = params.getNewEntry();
         
-        newEntry.writeDSML(System.out);
+        //newEntry.writeDSML(System.out);
+        
         // Note: The DN should be in the reversed order as compared to the certificate according to RFC2253 and the customer/PKD requirements
         assertEquals("ldapDN", "CN=C=SE\\,O=Test\\,CN=Test+sn=20EAA2570247CFEF,ou=staging,dc=test.example.com,dc=com", newEntry.getDN());
         LDAPAttributeSet attributeSet = newEntry.getAttributeSet();
-        
-        // TODO: assert that the right attributes are present!!!
-        
+        assertNotNull(attributeSet.getAttribute("sn"));
+        assertNotNull(attributeSet.getAttribute("checksum"));
+        assertNotNull(attributeSet.getAttribute("objectclass"));
 
         // Test with Sun cert
         instance.doStoreCertificate(sunCert, ANY_USERNAME, ANY_PASSWORD, CERT_ISSUERDN, null);
@@ -473,12 +471,8 @@ public class CustomerLdapPublisher1UnitTest {
         
         // Note: The DN should be in the reversed order as compared to the certificate according to RFC2253 and the customer/PKD requirements
         assertEquals("ldapDN", "CN=C=SE\\,O=Test\\,CN=Test+sn=20EAA2570247CFEF,ou=staging,dc=test.example.com,dc=com", newEntry.getDN());
-        
-        // Test storage of an existing entry
-        // TODO:
     }
     
-    // TODO: Unfinished test
     /** Tests the logic and implementation details of doStoreCRL. */
     @Test
     public void testDoStoreCRL() throws Exception {
@@ -504,17 +498,8 @@ public class CustomerLdapPublisher1UnitTest {
         // Note: The DN should be in the reversed order as compared to the certificate according to RFC2253 and the customer/PKD requirements
         assertEquals("ldapDN", "CN=C=SE\\,O=AnaTom\\,CN=TestCA,ou=staging,dc=test.example.com,dc=com", newEntry.getDN());
         LDAPAttributeSet attributeSet = newEntry.getAttributeSet();
-        
-        // TODO: assert that the right attributes are present!!!
+        assertNull(attributeSet.getAttribute("sn"));
+        assertNotNull(attributeSet.getAttribute("checksum"));
+        assertNotNull(attributeSet.getAttribute("objectclass"));
     }
-    
-    // TODO: testDoTestConnection
-    
-    // TODO: testStoreLog
-    
-    // TODO: testWriteCertEntryToLDAP
-    
-    // TODO: testWriteCrlEntryToLDAP
-    
-    // TODO: testWriteLogEntryToLDAP
 }
