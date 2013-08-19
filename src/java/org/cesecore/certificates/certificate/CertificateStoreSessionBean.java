@@ -30,10 +30,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import javax.ejb.CreateException;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
+import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -84,6 +87,20 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     private AccessControlSessionLocal accessSession;
     @EJB
     private SecurityEventsLoggerSessionLocal logSession;
+    // Myself needs to be looked up in postConstruct
+    @Resource
+    private SessionContext sessionContext;
+    private CertificateStoreSessionLocal certificateStoreSession;
+
+    /** Default create for SessionBean without any creation Arguments. */
+    @PostConstruct
+    public void postConstruct() {
+        // We lookup the reference to our-self in PostConstruct, since we cannot inject this.
+        // We can not inject ourself, JBoss will not start then therefore we use this to get a reference to this session bean
+        // to call isUniqueCertificateSerialNumberIndex we want to do it on the real bean in order to get
+        // the transaction setting (NOT_SUPPORTED) which suspends the active transaction and makes the check outside the transaction
+        certificateStoreSession = sessionContext.getBusinessObject(CertificateStoreSessionLocal.class);
+    }
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -990,7 +1007,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     }
 
     @Override
-    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean isUniqueCertificateSerialNumberIndex() {
         // Must always run in a transaction in order to store certificates, EntityManager requires use within a transaction
         checkForUniqueCertificateSerialNumberIndex();
@@ -1003,86 +1020,99 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
      */
     private final void checkForUniqueCertificateSerialNumberIndex() {
         if (UniqueSernoHelper.getIsUniqueCertificateSerialNumberIndex() == null) {
-            final String userName = "checkUniqueIndexTestUserNotToBeUsed_fjasdfjsdjfsad"; // This name should only be used for this test. Made complex so that no one else will use the same.
-            // Loading two dummy certificates. These certificates has same serial number and issuer.
-            // It should not be possible to store both of them in the DB.
-            final X509Certificate cert1;
-            final X509Certificate cert2;
-            {
-                final byte certEncoded1[];
-                final byte certEncoded2[];
-                {
-                    final String certInBase64 =
-                        "MIIB8zCCAVygAwIBAgIESZYC0jANBgkqhkiG9w0BAQUFADApMScwJQYDVQQDDB5D"+
-                        "QSBmb3IgRUpCQ0EgdGVzdCBjZXJ0aWZpY2F0ZXMwHhcNMTAwNjI2MDU0OTM2WhcN"+
-                        "MjAwNjI2MDU0OTM2WjA1MTMwMQYDVQQDDCpBbGxvdyBjZXJ0aWZpY2F0ZSBzZXJp"+
-                        "YWwgbnVtYmVyIG92ZXJyaWRlIDEwXDANBgkqhkiG9w0BAQEFAANLADBIAkEAnnIj"+
-                        "y8A6CJzASedM5MbZk/ld8R3P0aWfRSW2UUDaskm25oK5SsjwVZD3KEc3IJgyl1/D"+
-                        "lWdywxEduWwc2nzGGQIDAQABo2AwXjAdBgNVHQ4EFgQUPL3Au/wYZbD3TpNGW1G4"+
-                        "+Ck4A2swDAYDVR0TAQH/BAIwADAfBgNVHSMEGDAWgBQ/TRpUbLxt6j6EC3olHGWJ"+
-                        "7XZqETAOBgNVHQ8BAf8EBAMCBwAwDQYJKoZIhvcNAQEFBQADgYEAPMWjE5hv3G5T"+
-                        "q/fzPQlRMCQDoM5EgVwJYQu1S+wns/mKPI/bDv9s5nybKoro70LKpqLb1+f2TaD+"+
-                        "W2Ro+ni8zYm5+H6okXRIc5Kd4LlD3tjsOF7bS7fixvMCSCUgLxQOt2creOqfDVjm"+
-                        "i6MA48AhotWmx/rlzQXhnvuKnMI3m54=";
-                    certEncoded1= org.bouncycastle.util.encoders.Base64.decode(certInBase64);
-                }{
-                    final String certInBase64 =
-                        "MIIB8zCCAVygAwIBAgIESZYC0jANBgkqhkiG9w0BAQUFADApMScwJQYDVQQDDB5D"+
-                        "QSBmb3IgRUpCQ0EgdGVzdCBjZXJ0aWZpY2F0ZXMwHhcNMTAwNjI2MDU1MDA4WhcN"+
-                        "MjAwNjI2MDU1MDA4WjA1MTMwMQYDVQQDDCpBbGxvdyBjZXJ0aWZpY2F0ZSBzZXJp"+
-                        "YWwgbnVtYmVyIG92ZXJyaWRlIDIwXDANBgkqhkiG9w0BAQEFAANLADBIAkEAn2H4"+
-                        "IAMYZyXqkSTY4Slq9LKZ/qB5wc+3hbEHNawdOoMBBkhLGi2q49sbCdcI8AZi3med"+
-                        "sm8+A8Q4NHFRKdOYuwIDAQABo2AwXjAdBgNVHQ4EFgQUhWVwIsv18DIYszvRzqDg"+
-                        "AkGO8QkwDAYDVR0TAQH/BAIwADAfBgNVHSMEGDAWgBQ/TRpUbLxt6j6EC3olHGWJ"+
-                        "7XZqETAOBgNVHQ8BAf8EBAMCBwAwDQYJKoZIhvcNAQEFBQADgYEAM8laLm4bgMTz"+
-                        "e9TLmwcmhwqevPrfea9jdiNafHCyb+JVppoLVHqAZjPs3Lvlxdt2d75au5+QcJ/Z"+
-                        "9RgakF8Vq29Tz3xrYYIQe9VtlaUzw/dgsDfZi6V8W57uHLpU65fe5afwfi+5XDZk"+
-                        "TaTsNgFz8NorE2f7ILSm2FcfIpC+GPI=";
-                    certEncoded2 = org.bouncycastle.util.encoders.Base64.decode(certInBase64);
-                }
-                try {
-                    final CertificateFactory cf = CertificateFactory.getInstance("X.509", "BC");
-                    cert1 = (X509Certificate)cf.generateCertificate(new ByteArrayInputStream(certEncoded1));
-                    cert2 = (X509Certificate)cf.generateCertificate(new ByteArrayInputStream(certEncoded2));
-                } catch (CertificateException e) {
-                    throw new RuntimeException( "Not possible to generate predefined dummy certificate. Should never happen", e );
-                } catch (NoSuchProviderException e) {
-                    throw new RuntimeException( "Not possible to generate predefined dummy certificate. Should never happen", e );
-                }
+            // Only create a new transaction and call this, if the variable is not initialized.
+            // If it is already set we don't have to waste time creating a new transaction
+            try {
+                certificateStoreSession.checkForUniqueCertificateSerialNumberIndexInTransaction();
+            } catch (Throwable t) { // NOPMD: we just want to not throw the check exception all the way out
+                log.debug("certificateStoreSession.checkForUniqueCertificateSerialNumberIndexInTransaction threw Throwable (normal if there is a unique issuerDN/serialNumber index): "+t.getMessage());
             }
-            
-            final Certificate c1 = findCertificateByFingerprint(CertTools.getFingerprintAsString(cert1));
-            final Certificate c2 = findCertificateByFingerprint(CertTools.getFingerprintAsString(cert2));
-            if ( (c1 != null) && (c2 != null) ) {
-                // already proved that not checking index for serial number.
-                UniqueSernoHelper.setIsUniqueCertificateSerialNumberIndex(Boolean.FALSE);
-            }
-            final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Internal database constraint test"));
-            if (c1 == null) {// storing initial certificate if no test certificate created.
-                try {
-                    storeCertificate(admin, cert1, userName, "abcdef0123456789", CertificateConstants.CERT_INACTIVE, 0, 0, "", new Date().getTime());
-                } catch (Throwable e) { // NOPMD, we really need to catch all, never crash
-                    throw new RuntimeException("It should always be possible to store initial dummy certificate.", e);
-                }
-            }
-            UniqueSernoHelper.setIsUniqueCertificateSerialNumberIndex(Boolean.FALSE);           
-            if (c2 == null) { // storing a second certificate with same issuer 
-                try { 
-                    storeCertificate(admin, cert2, userName, "fedcba9876543210", CertificateConstants.CERT_INACTIVE, 0, 0, "", new Date().getTime());
-                } catch (Throwable e) { // NOPMD, we really need to catch all, never crash
-                    log.info("Unique index in CertificateData table for certificate serial number");
-                    // Exception is thrown when unique index is working and a certificate with same serial number is in the database.
-                    UniqueSernoHelper.setIsUniqueCertificateSerialNumberIndex(Boolean.TRUE);
-                }
-            }
-            if (!UniqueSernoHelper.getIsUniqueCertificateSerialNumberIndex().booleanValue()) {
-                // It was possible to store a second certificate with same serial number. Unique number not working.
-                log.info( INTRES.getLocalizedMessage("createcert.not_unique_certserialnumberindex") );
-            }
-            // Remove potentially stored certificates so anyone can create the unique index if wanted
-            // TODO: need access to EntityManager directly to do this
-            // In EJBCA this is solved by removing the two dummy certificates in the beginning of the create index sql script..
         }
+    }
+
+    // We want each storage of a certificate to run in a new transactions, so we can catch errors as they happen..
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public void checkForUniqueCertificateSerialNumberIndexInTransaction() {
+        final String userName = "checkUniqueIndexTestUserNotToBeUsed_fjasdfjsdjfsad"; // This name should only be used for this test. Made complex so that no one else will use the same.
+        // Loading two dummy certificates. These certificates has same serial number and issuer.
+        // It should not be possible to store both of them in the DB.
+        final X509Certificate cert1;
+        final X509Certificate cert2;
+        {
+            final byte certEncoded1[];
+            final byte certEncoded2[];
+            {
+                final String certInBase64 =
+                    "MIIB8zCCAVygAwIBAgIESZYC0jANBgkqhkiG9w0BAQUFADApMScwJQYDVQQDDB5D"+
+                    "QSBmb3IgRUpCQ0EgdGVzdCBjZXJ0aWZpY2F0ZXMwHhcNMTAwNjI2MDU0OTM2WhcN"+
+                    "MjAwNjI2MDU0OTM2WjA1MTMwMQYDVQQDDCpBbGxvdyBjZXJ0aWZpY2F0ZSBzZXJp"+
+                    "YWwgbnVtYmVyIG92ZXJyaWRlIDEwXDANBgkqhkiG9w0BAQEFAANLADBIAkEAnnIj"+
+                    "y8A6CJzASedM5MbZk/ld8R3P0aWfRSW2UUDaskm25oK5SsjwVZD3KEc3IJgyl1/D"+
+                    "lWdywxEduWwc2nzGGQIDAQABo2AwXjAdBgNVHQ4EFgQUPL3Au/wYZbD3TpNGW1G4"+
+                    "+Ck4A2swDAYDVR0TAQH/BAIwADAfBgNVHSMEGDAWgBQ/TRpUbLxt6j6EC3olHGWJ"+
+                    "7XZqETAOBgNVHQ8BAf8EBAMCBwAwDQYJKoZIhvcNAQEFBQADgYEAPMWjE5hv3G5T"+
+                    "q/fzPQlRMCQDoM5EgVwJYQu1S+wns/mKPI/bDv9s5nybKoro70LKpqLb1+f2TaD+"+
+                    "W2Ro+ni8zYm5+H6okXRIc5Kd4LlD3tjsOF7bS7fixvMCSCUgLxQOt2creOqfDVjm"+
+                    "i6MA48AhotWmx/rlzQXhnvuKnMI3m54=";
+                certEncoded1= org.bouncycastle.util.encoders.Base64.decode(certInBase64);
+            }{
+                final String certInBase64 =
+                    "MIIB8zCCAVygAwIBAgIESZYC0jANBgkqhkiG9w0BAQUFADApMScwJQYDVQQDDB5D"+
+                    "QSBmb3IgRUpCQ0EgdGVzdCBjZXJ0aWZpY2F0ZXMwHhcNMTAwNjI2MDU1MDA4WhcN"+
+                    "MjAwNjI2MDU1MDA4WjA1MTMwMQYDVQQDDCpBbGxvdyBjZXJ0aWZpY2F0ZSBzZXJp"+
+                    "YWwgbnVtYmVyIG92ZXJyaWRlIDIwXDANBgkqhkiG9w0BAQEFAANLADBIAkEAn2H4"+
+                    "IAMYZyXqkSTY4Slq9LKZ/qB5wc+3hbEHNawdOoMBBkhLGi2q49sbCdcI8AZi3med"+
+                    "sm8+A8Q4NHFRKdOYuwIDAQABo2AwXjAdBgNVHQ4EFgQUhWVwIsv18DIYszvRzqDg"+
+                    "AkGO8QkwDAYDVR0TAQH/BAIwADAfBgNVHSMEGDAWgBQ/TRpUbLxt6j6EC3olHGWJ"+
+                    "7XZqETAOBgNVHQ8BAf8EBAMCBwAwDQYJKoZIhvcNAQEFBQADgYEAM8laLm4bgMTz"+
+                    "e9TLmwcmhwqevPrfea9jdiNafHCyb+JVppoLVHqAZjPs3Lvlxdt2d75au5+QcJ/Z"+
+                    "9RgakF8Vq29Tz3xrYYIQe9VtlaUzw/dgsDfZi6V8W57uHLpU65fe5afwfi+5XDZk"+
+                    "TaTsNgFz8NorE2f7ILSm2FcfIpC+GPI=";
+                certEncoded2 = org.bouncycastle.util.encoders.Base64.decode(certInBase64);
+            }
+            try {
+                final CertificateFactory cf = CertificateFactory.getInstance("X.509", "BC");
+                cert1 = (X509Certificate)cf.generateCertificate(new ByteArrayInputStream(certEncoded1));
+                cert2 = (X509Certificate)cf.generateCertificate(new ByteArrayInputStream(certEncoded2));
+            } catch (CertificateException e) {
+                throw new RuntimeException( "Not possible to generate predefined dummy certificate. Should never happen", e );
+            } catch (NoSuchProviderException e) {
+                throw new RuntimeException( "Not possible to generate predefined dummy certificate. Should never happen", e );
+            }
+        }
+        
+        final Certificate c1 = findCertificateByFingerprint(CertTools.getFingerprintAsString(cert1));
+        final Certificate c2 = findCertificateByFingerprint(CertTools.getFingerprintAsString(cert2));
+        if ( (c1 != null) && (c2 != null) ) {
+            // already proved that not checking index for serial number.
+            UniqueSernoHelper.setIsUniqueCertificateSerialNumberIndex(Boolean.FALSE);
+        }
+        final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Internal database constraint test"));
+        if (c1 == null) {// storing initial certificate if no test certificate created.
+            try {
+                storeCertificate(admin, cert1, userName, "abcdef0123456789", CertificateConstants.CERT_INACTIVE, 0, 0, "", new Date().getTime());
+            } catch (Throwable e) { // NOPMD, we really need to catch all, never crash
+                throw new RuntimeException("It should always be possible to store initial dummy certificate.", e);
+            }
+        }
+        UniqueSernoHelper.setIsUniqueCertificateSerialNumberIndex(Boolean.FALSE);           
+        if (c2 == null) { // storing a second certificate with same issuer 
+            try { 
+                storeCertificate(admin, cert2, userName, "fedcba9876543210", CertificateConstants.CERT_INACTIVE, 0, 0, "", new Date().getTime());
+            } catch (Throwable e) { // NOPMD, we really need to catch all, never crash
+                log.info("Unique index in CertificateData table for certificate serial number");
+                // Exception is thrown when unique index is working and a certificate with same serial number is in the database.
+                UniqueSernoHelper.setIsUniqueCertificateSerialNumberIndex(Boolean.TRUE);
+            }
+        }
+        if (!UniqueSernoHelper.getIsUniqueCertificateSerialNumberIndex().booleanValue()) {
+            // It was possible to store a second certificate with same serial number. Unique number not working.
+            log.info( INTRES.getLocalizedMessage("createcert.not_unique_certserialnumberindex") );
+        }
+        // Remove potentially stored certificates so anyone can create the unique index if wanted
+        // TODO: need access to EntityManager directly to do this
+        // In EJBCA this is solved by removing the two dummy certificates in the beginning of the create index sql script..
     }
 
 }

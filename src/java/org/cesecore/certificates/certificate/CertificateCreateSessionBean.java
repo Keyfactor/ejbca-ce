@@ -25,10 +25,8 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
-import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -96,8 +94,6 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
-    @Resource
-    private SessionContext sessionContext;
     @EJB
     private CaSessionLocal caSession;
     @EJB
@@ -110,19 +106,12 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
     private SecurityEventsLoggerSessionLocal logSession;
     @EJB
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
-    // Myself needs to be looked up in postConstruct
-    private CertificateCreateSessionLocal certificateCreateSession;
 
     /** Default create for SessionBean without any creation Arguments. */
     @PostConstruct
     public void postConstruct() {
         // Install BouncyCastle provider
         CryptoProviderTools.installBCProviderIfNotAvailable();
-        // We lookup the reference to our-self in PostConstruct, since we cannot inject this.
-        // We can not inject ourself, JBoss will not start then therefore we use this to get a reference to this session bean
-        // to call isUniqueCertificateSerialNumberIndex we want to do it on the real bean in order to get
-        // the transaction setting (NOT_SUPPORTED) which suspends the active transaction and makes the check outside the transaction
-        certificateCreateSession = sessionContext.getBusinessObject(CertificateCreateSessionLocal.class);
     }
 
     @Override
@@ -332,7 +321,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             }
             final int maxRetrys;
             if (useCustomSN) {
-                if (ca.isUseCertificateStorage() && !certificateCreateSession.isUniqueCertificateSerialNumberIndex()) {
+                if (ca.isUseCertificateStorage() && !isUniqueCertificateSerialNumberIndex()) {
                     final String msg = intres.getLocalizedMessage("createcert.not_unique_certserialnumberindex");
                     log.error(msg);
                     throw new CustomCertSerialNumberException(new CesecoreException(msg));
@@ -515,7 +504,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
 
     /** When no unique index is present in the database, we still try to enforce X.509 serial number per CA uniqueness. */
     private void assertSerialNumberForIssuerOk(final CA ca, final String issuerDN, final BigInteger serialNumber) throws CesecoreException {
-        if (ca.getCAType()==CAInfo.CATYPE_X509 && !certificateCreateSession.isUniqueCertificateSerialNumberIndex()) {
+        if (ca.getCAType()==CAInfo.CATYPE_X509 && !isUniqueCertificateSerialNumberIndex()) {
             if (certificateStoreSession.findCertificateByIssuerAndSerno(issuerDN, serialNumber)!=null) {
                 final String msg = intres.getLocalizedMessage("createcert.cert_serial_number_allready_in_database", serialNumber.toString());
                 log.info(msg);
@@ -625,8 +614,6 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         return sb.toString();
     }
 
-	// We want each storage of a certificate to run in a new transactions, so we can catch errors as they happen..
-	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 	@Override
     public boolean isUniqueCertificateSerialNumberIndex() {
     	return certificateStoreSession.isUniqueCertificateSerialNumberIndex();
