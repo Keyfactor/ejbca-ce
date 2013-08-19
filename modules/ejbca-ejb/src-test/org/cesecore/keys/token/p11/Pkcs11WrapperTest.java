@@ -14,6 +14,8 @@ package org.cesecore.keys.token.p11;
 
 import static org.junit.Assert.fail;
 
+import java.io.File;
+
 import org.apache.log4j.Logger;
 import org.cesecore.keys.token.PKCS11TestUtils;
 import org.cesecore.util.CryptoProviderTools;
@@ -42,7 +44,7 @@ public class Pkcs11WrapperTest {
     //        throw new RuntimeException("No known PKCS11 installed, test can't continue.");
         }
         try {   
-            Pkcs11Wrapper.getInstance(pkcs11Library);
+            Pkcs11Wrapper.getInstance(new File(pkcs11Library));
         } catch (Exception e) {
             log.error("Unknown exception encountered", e);
   //          fail("Exception was thrown, instantiation failed.");
