@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.cesecore.keys.token.p11;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -106,7 +108,7 @@ public class Pkcs11Wrapper {
             throw new IllegalStateException(msg, e);
         }
         try {
-            this.p11 = getInstanceMethod.invoke(null, new Object[] { fileName, "C_GetFunctionList", null, false });
+            this.p11 = getInstanceMethod.invoke(null, new Object[] { fileName, "C_GetFunctionList", null, Boolean.FALSE });
         } catch (IllegalAccessException e) {
             String msg = "Method sun.security.pkcs11.wrapper.PKCS11.CK_C_INITIALIZE_ARGS.getInstance was not accessible, this may be due to"
                     + " a change in the underlying library.";
@@ -129,23 +131,22 @@ public class Pkcs11Wrapper {
      * Get an instance of the class. 
      * @param fileName name of the p11 .so file.
      * @return the instance.
+     * @throws IllegalArgumentException
      */
-    public static Pkcs11Wrapper getInstance(final String fileName) {
-        Pkcs11Wrapper storedP11 = instances.get(fileName);
+    public static synchronized Pkcs11Wrapper getInstance(final String fileName) throws IllegalArgumentException {
+        String canonicalFileName;
+        try {
+            canonicalFileName = new File(fileName).getCanonicalPath();
+        } catch (IOException e) {
+            throw new IllegalArgumentException(fileName+" is not a valid filename.",e );
+        }
+        final Pkcs11Wrapper storedP11 = instances.get(canonicalFileName);
         if (storedP11 != null) {
             return storedP11;
-        } else {
-            synchronized (instances) {
-                storedP11 = instances.get(fileName);
-                if (storedP11 == null) {
-                    final Pkcs11Wrapper newP11 = new Pkcs11Wrapper(fileName);
-                    instances.put(fileName, newP11);
-                    storedP11 = newP11;
-                }
-                return storedP11;
-            }
-
         }
+        final Pkcs11Wrapper newP11 = new Pkcs11Wrapper(canonicalFileName);
+        instances.put(canonicalFileName, newP11);
+        return newP11;
     }
 
     /**
@@ -154,7 +155,7 @@ public class Pkcs11Wrapper {
      */
     public long[] C_GetSlotList() {
         try {
-            return (long[]) this.getSlotListMethod.invoke(this.p11, new Object[] { true });
+            return (long[]) this.getSlotListMethod.invoke(this.p11, new Object[] { Boolean.TRUE });
         } catch (IllegalAccessException e) {
             String msg = "Access was denied to method sun.security.pkcs11.wrapper.PKCS11C.GetSlotList, this may be due to"
                     + " a change in the underlying library.";
@@ -178,9 +179,9 @@ public class Pkcs11Wrapper {
      * @return the token label, or null if no matching token was found.
      */
     public char[] getTokenLabel(long slotID)  {
-        Object tokenInfo;
+        final Object tokenInfo;
         try {
-            tokenInfo = this.getTokenInfoMethod.invoke(this.p11, new Object[] { slotID });
+            tokenInfo = this.getTokenInfoMethod.invoke(this.p11, new Object[] { Long.valueOf(slotID) });
         } catch (IllegalAccessException e) {
             String msg = "Access was denied to method sun.security.pkcs11.wrapper.PKCS11.C_GetTokenInfo, this may be due to"
                     + " a change in the underlying library.";

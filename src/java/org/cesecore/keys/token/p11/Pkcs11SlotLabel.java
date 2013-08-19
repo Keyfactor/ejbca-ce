@@ -24,6 +24,8 @@ import java.security.InvalidParameterException;
 import java.security.Provider;
 import java.security.Security;
 import java.util.Properties;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -68,7 +70,9 @@ public class Pkcs11SlotLabel {
     private final static String DELIMETER = ":";
     private final Type type;
     private final String value;
-    
+
+    private static final Lock slotIDLock = new ReentrantLock();
+
     /**
      * Create an instance with a string that defines the slot.
      * @param taggedString Defines type and value this like this '<Type>:<value>'. Example slot with token label "Toledo": TOKEN_LABEL:Toledo
@@ -177,34 +181,40 @@ public class Pkcs11SlotLabel {
      * @param tokenLabel the label.
      * @param fileName path to the P11 module so file.
      * @return the slot ID.
+     * @throws IllegalArgumentException 
 
      */
-    private static long getSlotID(final String tokenLabel, final String fileName) {
-        final Pkcs11Wrapper p11 = Pkcs11Wrapper.getInstance(fileName);
-        final long slots[] = p11.C_GetSlotList();
-        if (log.isDebugEnabled()) {
-            log.debug("Searching for token label:\t" + tokenLabel);
-        }
-        for (final long slotID : slots) {
-            final char label[] = p11.getTokenLabel(slotID);
-            if (label == null) {
-                continue;
-            }
-            final String candidateTokenLabel = new String(label);
+    private static long getSlotID(final String tokenLabel, final String fileName) throws IllegalArgumentException {
+        slotIDLock.lock(); // only one thread at a time may use the p11 object.
+        try {
+            final Pkcs11Wrapper p11 = Pkcs11Wrapper.getInstance(fileName);
+            final long slots[] = p11.C_GetSlotList();
             if (log.isDebugEnabled()) {
-                log.debug("Candidate token label:\t" + candidateTokenLabel);
+                log.debug("Searching for token label:\t" + tokenLabel);
             }
-            if (!tokenLabel.equals(candidateTokenLabel.trim())) {
-                continue;
+            for (final long slotID : slots) {
+                final char label[] = p11.getTokenLabel(slotID);
+                if (label == null) {
+                    continue;
+                }
+                final String candidateTokenLabel = new String(label);
+                if (log.isDebugEnabled()) {
+                    log.debug("Candidate token label:\t" + candidateTokenLabel);
+                }
+                if (!tokenLabel.equals(candidateTokenLabel.trim())) {
+                    continue;
+                }
+                if (log.isDebugEnabled()) {
+                    log.debug("Label '" + tokenLabel + "' found. The slot ID is:\t" + slotID);
+                }
+                return slotID;
             }
-            if (log.isDebugEnabled()) {
-                log.debug("Label '" + tokenLabel + "' found. The slot ID is:\t" + slotID);
-            }
-            return slotID;
+            throw new InvalidParameterException("Token label '" + tokenLabel + "' not found.");
+        } finally {
+            slotIDLock.unlock();// lock must always be unlocked.
         }
-        throw new InvalidParameterException("Token label '" + tokenLabel + "' not found.");
     }
-    
+        
     /**
      * Get the IAIK provider.
      * @param slot Slot list index or slot ID.
