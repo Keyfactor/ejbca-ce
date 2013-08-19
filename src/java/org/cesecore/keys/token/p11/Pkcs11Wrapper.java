@@ -129,16 +129,16 @@ public class Pkcs11Wrapper {
 
     /**
      * Get an instance of the class. 
-     * @param fileName name of the p11 .so file.
+     * @param the p11 .so file.
      * @return the instance.
      * @throws IllegalArgumentException
      */
-    public static synchronized Pkcs11Wrapper getInstance(final String fileName) throws IllegalArgumentException {
+    public static synchronized Pkcs11Wrapper getInstance(final File file) throws IllegalArgumentException {
         String canonicalFileName;
         try {
-            canonicalFileName = new File(fileName).getCanonicalPath();
+            canonicalFileName = file.getCanonicalPath();
         } catch (IOException e) {
-            throw new IllegalArgumentException(fileName+" is not a valid filename.",e );
+            throw new IllegalArgumentException(file+" is not a valid filename.",e );
         }
         final Pkcs11Wrapper storedP11 = instances.get(canonicalFileName);
         if (storedP11 != null) {
