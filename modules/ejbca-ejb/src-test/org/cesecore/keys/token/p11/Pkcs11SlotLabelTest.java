@@ -12,62 +12,62 @@
  *************************************************************************/
 package org.cesecore.keys.token.p11;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertNotNull;
 
-import java.io.File;
+import java.security.Provider;
 
-import org.apache.log4j.Logger;
 import org.cesecore.keys.token.PKCS11TestUtils;
+import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.util.CryptoProviderTools;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Tests instantiating the Pkcs11Wrapper
+ * Some general test methods for Pkcs11SlotLabel
+ *
  * 
  * @version $Id$
  *
  */
-public class Pkcs11WrapperTest {
+public class Pkcs11SlotLabelTest {
 
-    private static final Logger log = Logger.getLogger(Pkcs11WrapperTest.class);
-    
+    private static final String SLOT_NUMBER = "1";
+    private static final String SLOT_INDEX = "i1";
     private static final String SLOT_LABEL = "placeholder";
-    private static final long SLOT_NUMBER = 1;
-    
+
     @BeforeClass
     public static void beforeClass() {
         CryptoProviderTools.installBCProviderIfNotAvailable();
     }
-
+    
     @Test
-    public void testInstantiatePkcs11Wrapper() {
+    public void testgetProviderWithNumber() throws NoSuchSlotException {
         String pkcs11Library = PKCS11TestUtils.getHSMLibrary();
         if (pkcs11Library == null) {
             throw new RuntimeException("No known PKCS11 installed, test can't continue.");
         }
-        try {   
-            Pkcs11Wrapper.getInstance(new File(pkcs11Library));
-        } catch (Exception e) {
-            log.error("Unknown exception encountered", e);
-            fail("Exception was thrown, instantiation failed.");
-        }
-        
+        Provider provider = Pkcs11SlotLabel.getP11Provider(SLOT_NUMBER, Pkcs11SlotLabelType.SLOT_NUMBER, PKCS11TestUtils.getHSMLibrary(), null);
+        assertNotNull("No provider for slot number : " + SLOT_NUMBER + " was found.", provider);
     }
     
-    /**
-     * Verifies that the getTokenLabel method works. Note that this method will fail in HSMs without
-     * fixed slot numbers, e.g. nCypher
-     */
     @Test
-    public void testGetSlotLabel() {
+    public void testgetProviderWithIndex() throws NoSuchSlotException {
         String pkcs11Library = PKCS11TestUtils.getHSMLibrary();
         if (pkcs11Library == null) {
             throw new RuntimeException("No known PKCS11 installed, test can't continue.");
         }
-        Pkcs11Wrapper pkcs11Wrapper = Pkcs11Wrapper.getInstance(new File(pkcs11Library));
-        assertEquals("Correct slot label was not found.", SLOT_LABEL, new String(pkcs11Wrapper.getTokenLabel(SLOT_NUMBER)));
+        Provider provider = Pkcs11SlotLabel.getP11Provider(SLOT_INDEX, Pkcs11SlotLabelType.SLOT_INDEX, PKCS11TestUtils.getHSMLibrary(), null);
+        assertNotNull("No provider for slot index : " + SLOT_INDEX + " was found.", provider);
     }
-
+    
+    @Test
+    public void testgetProviderWithLabel() throws NoSuchSlotException {
+        String pkcs11Library = PKCS11TestUtils.getHSMLibrary();
+        if (pkcs11Library == null) {
+            throw new RuntimeException("No known PKCS11 installed, test can't continue.");
+        }
+        Provider provider = Pkcs11SlotLabel.getP11Provider(SLOT_LABEL, Pkcs11SlotLabelType.SLOT_LABEL, PKCS11TestUtils.getHSMLibrary(), null);
+        assertNotNull("No provider for slot label : " + SLOT_LABEL + " was found.", provider);
+    }
+    
 }

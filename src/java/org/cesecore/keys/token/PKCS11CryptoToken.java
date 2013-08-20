@@ -33,6 +33,8 @@ import org.apache.log4j.Logger;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.token.p11.P11Slot;
 import org.cesecore.keys.token.p11.P11SlotUser;
+import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
+import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.util.KeyStoreTools;
 
 /**
@@ -50,11 +52,21 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
     private static final InternalResources intres = InternalResources.getInstance();
 
     /** Keys, specific to PKCS#11, that can be defined in CA token properties */
-    public final static String SLOT_LABEL_KEY = "slot";
-    public final static String SHLIB_LABEL_KEY = "sharedLibrary";
-    public final static String ATTRIB_LABEL_KEY = "attributesFile";
-    public final static String SLOT_LIST_INDEX_LABEL_KEY = "slotListIndex";
-    public final static String PASSWORD_LABEL_KEY = "pin";
+    //public final static String SLOT_NUMBER_KEY = "slot";
+    //public final static String SLOT_LIST_INDEX_KEY = "slotListIndex";
+    //public final static String SLOT_LABEL_KEY = "slotLabel";
+    public static final String SLOT_LABEL_VALUE = "slotLabelValue";
+    public static final String SLOT_LABEL_TYPE = "slotLabelType";
+    public static final String SHLIB_LABEL_KEY = "sharedLibrary";
+    public static final String ATTRIB_LABEL_KEY = "attributesFile";
+    public static final String PASSWORD_LABEL_KEY = "pin";
+    
+    @Deprecated //Remove once upgrading from 5.0->6.0 is no longer supported
+    public static final String SLOT_LIST_INDEX_KEY = "slotListIndex";
+    @Deprecated //Remove once upgrading from 5.0->6.0 is no longer supported
+    public static final String SLOT_LABEL_KEY = "slot";
+
+    
     /** A user defined name of the slot provider. Used in order to be able to have two different providers
      * (with different PKCS#11 attributes) for the same slot. If this is not set (null), the default
      * java provider name is used (SunPKCS11-pkcs11LibName-slotNr for example SunPKCS11-libcryptoki.so-slot1).
@@ -63,6 +75,8 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
 
     private P11Slot p11slot;
 
+    private String sSlotLabel = null;
+    
     /**
      * @param providerClass
      * @throws InstantiationException
@@ -77,28 +91,26 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
     }
 
     @Override
-    public void init(final Properties properties, final byte[] data, final int id) throws CryptoTokenOfflineException {
+    public void init(final Properties properties, final byte[] data, final int id) throws CryptoTokenOfflineException, NoSuchSlotException {
         // Don't autoactivate this right away, we must dynamically create the auth-provider with a slot
         setProperties(properties);
-        init(SLOT_LABEL_KEY, properties, false, id);
-        final boolean isIndex;
-        if (this.sSlotLabel == null) {
-            this.sSlotLabel = properties.getProperty(SLOT_LIST_INDEX_LABEL_KEY);
-            this.sSlotLabel = this.sSlotLabel != null ? this.sSlotLabel.trim() : "-1";
-            isIndex = this.sSlotLabel != null;
-        } else {
-            isIndex = false;
-        }
+        init(properties, false, id);
+        Pkcs11SlotLabelType type = null;
+        this.sSlotLabel = null;
+        
+        this.sSlotLabel = getSlotLabel(SLOT_LABEL_VALUE, properties);
+        type = Pkcs11SlotLabelType.getFromKey(getSlotLabel(SLOT_LABEL_TYPE, properties));
         String sharedLibrary = properties.getProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY);
         String attributesFile = properties.getProperty(PKCS11CryptoToken.ATTRIB_LABEL_KEY);
 
         String friendlyName = properties.getProperty(TOKEN_FRIENDLY_NAME);
 
         if(friendlyName != null){
-            this.p11slot = P11Slot.getInstance(friendlyName, this.sSlotLabel, sharedLibrary, isIndex, attributesFile, this, id);
+            this.p11slot = P11Slot.getInstance(friendlyName, this.sSlotLabel, sharedLibrary, type, attributesFile, this, id);
         } else {
             // getInstance will run autoActivate()
-            this.p11slot = P11Slot.getInstance(this.sSlotLabel, sharedLibrary, isIndex, attributesFile, this, id);
+            this.p11slot = P11Slot.getInstance(this.sSlotLabel, sharedLibrary, type, attributesFile, this, id);
+            
         }
         final Provider provider = this.p11slot.getProvider();
         setJCAProvider(provider);
@@ -242,5 +254,53 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
     /** Used for testing */
     protected P11Slot getP11slot() {
         return p11slot;
+    }
+    
+    /**
+     * Extracts the slotLabel that is used for many tokens in construction of the provider
+     *
+     * @param sSlotLabelKey which key in the properties that gives us the label
+     * @param properties CA token properties
+     * @return String with the slot label, trimmed from whitespace
+     */
+    private static String getSlotLabel(String sSlotLabelKey, Properties properties) {
+        String ret = null;
+        if (sSlotLabelKey != null && properties != null) {
+            ret = properties.getProperty(sSlotLabelKey);
+            if (ret != null) {
+                ret = ret.trim();
+            }
+        }
+        return ret;
+    }
+    
+    /**
+     * Will replace deprecated properties values with the new ones. 
+     * 
+     * @param properties a properties file of the old format.
+     * @return a defensive copy of the submitted properties
+     */
+    @Deprecated
+    //Remove when we no longer support upgrading from 5.0.x -> 6.0.x 
+    public static Properties upgradePropertiesFileFrom5_0_x(final Properties properties) {
+        Properties returnValue = new Properties();
+        
+        for (Object key : properties.keySet()) {
+            String keyString = (String) key;
+            if (keyString.equals(SLOT_LABEL_KEY)) {
+                returnValue.setProperty(SLOT_LABEL_VALUE, properties.getProperty(keyString));
+                returnValue.setProperty(SLOT_LABEL_TYPE, Pkcs11SlotLabelType.SLOT_NUMBER.getKey());
+            } else if (((String) key).equals(SLOT_LIST_INDEX_KEY)) {
+                String indexValue = properties.getProperty(keyString);
+                if (indexValue.charAt(0) != 'i') {
+                    indexValue = "i" + indexValue;
+                }
+                returnValue.setProperty(SLOT_LABEL_VALUE, indexValue);
+                returnValue.setProperty(SLOT_LABEL_TYPE, Pkcs11SlotLabelType.SLOT_INDEX.getKey());
+            } else {
+                returnValue.setProperty(keyString, properties.getProperty(keyString));
+            }
+        }
+        return returnValue;
     }
 }

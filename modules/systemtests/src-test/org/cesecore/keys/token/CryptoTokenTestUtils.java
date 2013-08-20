@@ -18,6 +18,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.CaSessionTest;
 import org.cesecore.certificates.ca.X509CA;
+import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.util.EjbRemoteHelper;
 
 /**
@@ -45,7 +46,7 @@ public class CryptoTokenTestUtils {
     }
     
     public static int createCryptoToken(AuthenticationToken authenticationToken, String cryptoTokenName) throws AuthorizationDeniedException,
-            CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException {
+            CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException, NoSuchSlotException {
         CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
                 .getRemoteSession(CryptoTokenManagementSessionRemote.class);
         // Remove any old CryptoToken created by this setup

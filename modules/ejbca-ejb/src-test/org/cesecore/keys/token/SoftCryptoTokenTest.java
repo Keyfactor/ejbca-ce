@@ -29,6 +29,7 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
+import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.junit.Test;
@@ -142,7 +143,12 @@ public class SoftCryptoTokenTest extends CryptoTokenTestBase {
         } else {
             prop.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.toString(false));
         }
-        CryptoToken catoken = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), prop, null, 111, "Soft CryptoToken");
+        CryptoToken catoken;
+        try {
+            catoken = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), prop, null, 111, "Soft CryptoToken");
+        } catch (NoSuchSlotException e) {
+            throw new RuntimeException("Attempted to find a slot for a soft crypto token. This should not happen.");
+        }
 		return catoken;
 	}
 

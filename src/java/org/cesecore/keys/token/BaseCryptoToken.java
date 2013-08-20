@@ -67,8 +67,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
     private String mJcaProviderName = null;
     /** Used for encrypt/decrypt, can be same as for signatures for example for pkcs#11 */
     private String mJceProviderName = null;
-
-    protected String sSlotLabel = null;
+    
     private char[] mAuthCode;
 
     private Properties properties;
@@ -185,25 +184,22 @@ public abstract class BaseCryptoToken implements CryptoToken {
     /**
      * Initiates the class members of this crypto token.
      *
-     * @param sSlotLabelKey A String representation of the slot label key.
      * @param properties A Properties object containing properties for this token.
      * @param doAutoActivate Set true if activation of this crypto token should happen in this method.
      * @param id ID of this crypto token.
      */
-    protected void init(String sSlotLabelKey, Properties properties, boolean doAutoActivate, int id) {
-        if (log.isDebugEnabled()) {
-            log.debug(">init: sSlotLabelKey=" + sSlotLabelKey + ", doAutoActivate=" + doAutoActivate);
-        }
+    protected void init(Properties properties, boolean doAutoActivate, int id) {
+
         this.id = id;
         // Set basic properties that are of dynamic nature
         setProperties(properties);
         // Set properties that can not change dynamically
-        this.sSlotLabel = getSlotLabel(sSlotLabelKey, properties);
+        
         if (doAutoActivate) {
             autoActivate();
         }
         if (log.isDebugEnabled()) {
-            log.debug("<init: sSlotLabelKey=" + sSlotLabelKey + ", doAutoActivate=" + doAutoActivate);
+            log.debug("<init: doAutoActivate=" + doAutoActivate);
         }
     }
 
@@ -267,24 +263,6 @@ public abstract class BaseCryptoToken implements CryptoToken {
             }
         }
     } // updateProperties
-
-    /**
-     * Extracts the slotLabel that is used for many tokens in construction of the provider
-     *
-     * @param sSlotLabelKey which key in the properties that gives us the label
-     * @param properties CA token properties
-     * @return String with the slot label, trimmed from whitespace
-     */
-    protected static String getSlotLabel(String sSlotLabelKey, Properties properties) {
-        String ret = null;
-        if (sSlotLabelKey != null && properties != null) {
-            ret = properties.getProperty(sSlotLabelKey);
-            if (ret != null) {
-                ret = ret.trim();
-            }
-        }
-        return ret;
-    }
 
     /**
      * Retrieves the auto activation PIN code, if it has been set for this crypto token. With an auto activation PIN the token does not have to be

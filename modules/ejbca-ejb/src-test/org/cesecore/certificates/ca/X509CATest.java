@@ -90,6 +90,7 @@ import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.SoftCryptoToken;
+import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -724,8 +725,13 @@ public class X509CATest {
     private CryptoToken getNewCryptoToken() {
         final Properties cryptoTokenProperties = new Properties();
         cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, "foo1234");
-        final CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(
-                SoftCryptoToken.class.getName(), cryptoTokenProperties, null, 17, "CryptoToken's name");
+        CryptoToken cryptoToken;
+        try {
+            cryptoToken = CryptoTokenFactory.createCryptoToken(
+                    SoftCryptoToken.class.getName(), cryptoTokenProperties, null, 17, "CryptoToken's name");
+        } catch (NoSuchSlotException e) {
+            throw new RuntimeException("Attempted to find a slot for a soft crypto token. This should not happen.");
+        }
         return cryptoToken;
     }
     

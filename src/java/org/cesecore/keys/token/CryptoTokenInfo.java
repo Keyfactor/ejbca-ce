@@ -14,6 +14,8 @@ package org.cesecore.keys.token;
 
 import java.io.Serializable;
 
+import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
+
 /**
  * Non-sensitive information about a CryptoToken.
  * 
@@ -29,19 +31,21 @@ public class CryptoTokenInfo implements Serializable {
     private final String type;
     private final boolean allowExportPrivateKey;
     private final String p11Library;
-    private final String p11Slot;
+    private final String p11SlotLabel;
+    private final Pkcs11SlotLabelType slotLabelType;
     private final String p11AttributeFile;
     
-    public CryptoTokenInfo(Integer cryptoTokenId, String name, boolean active, boolean autoActivation, String type,
-            boolean allowExportPrivateKey, String p11Library, String p11Slot, String p11AttributeFile) {
-        this.cryptoTokenId = cryptoTokenId;
+    public CryptoTokenInfo(Integer cryptoTokenId, String name, boolean active, boolean autoActivation, String type, boolean allowExportPrivateKey,
+            String p11Library, String p11SlotLabel, Pkcs11SlotLabelType slotLabelType, String p11AttributeFile) {
+       this.cryptoTokenId = cryptoTokenId;
         this.name = name;
         this.active = active;
         this.autoActivation = autoActivation;
         this.type = type;
         this.allowExportPrivateKey = allowExportPrivateKey;
         this.p11Library = p11Library;
-        this.p11Slot = p11Slot;
+        this.slotLabelType = slotLabelType;
+        this.p11SlotLabel = p11SlotLabel;
         this.p11AttributeFile = p11AttributeFile;
     }
 
@@ -52,6 +56,23 @@ public class CryptoTokenInfo implements Serializable {
     public String getType() { return type; }
     public boolean isAllowExportPrivateKey() { return allowExportPrivateKey; }
     public String getP11Library() { return p11Library; }
-    public String getP11Slot() { return p11Slot; }
+    public String getP11Slot() { return p11SlotLabel; }
+
+    public String getP11SlotLabelType() {
+        if (slotLabelType != null) {
+            return slotLabelType.getKey();
+        } else {
+            return null;
+        }
+    }
+    
+    public String getP11SlotLabelTypeDescription() {
+        if(slotLabelType != null) {
+            return slotLabelType.getDescription();
+        } else {
+            return null;
+        }
+    }
+    
     public String getP11AttributeFile() { return p11AttributeFile; }
 }

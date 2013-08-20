@@ -41,6 +41,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 
@@ -497,7 +498,9 @@ public abstract class CryptoTokenTestBase {
                 cryptoToken.deleteEntry("rsatest00001");
             }
 
-    protected void doStoreAndLoad(CryptoToken cryptoToken) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, InvalidKeyException, NoSuchProviderException, InvalidAlgorithmParameterException, SignatureException  {
+    protected void doStoreAndLoad(CryptoToken cryptoToken) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
+            KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, InvalidKeyException, NoSuchProviderException,
+            InvalidAlgorithmParameterException, SignatureException, NoSuchSlotException {
         cryptoToken.activate(tokenpin.toCharArray());
         assertEquals(CryptoToken.STATUS_ACTIVE, cryptoToken.getTokenStatus());
         cryptoToken.deleteEntry("rsatest00001");
@@ -530,7 +533,10 @@ public abstract class CryptoTokenTestBase {
         cryptoToken.deleteEntry("rsatest00001");
     }
 
-    protected void doGenerateSymKey(CryptoToken cryptoToken) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, KeyStoreException, InvalidAlgorithmParameterException, SignatureException, CertificateException, NoSuchPaddingException, IllegalBlockSizeException, IOException, BadPaddingException  {
+    protected void doGenerateSymKey(CryptoToken cryptoToken) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
+            InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, KeyStoreException, InvalidAlgorithmParameterException,
+            SignatureException, CertificateException, NoSuchPaddingException, IllegalBlockSizeException, IOException, BadPaddingException,
+            NoSuchSlotException {
         cryptoToken.activate(tokenpin.toCharArray());
         assertEquals(CryptoToken.STATUS_ACTIVE, cryptoToken.getTokenStatus());
         cryptoToken.deleteEntry("aestest00001");

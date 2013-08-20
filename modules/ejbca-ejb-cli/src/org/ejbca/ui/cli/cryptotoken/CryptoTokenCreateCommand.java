@@ -22,6 +22,7 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
+import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 
 /**
  * CryptoToken EJB CLI command. See {@link #getDescription()} implementation.
@@ -50,8 +51,13 @@ public class CryptoTokenCreateCommand extends BaseCryptoTokenCommand {
         if (args.length < 6) {
             getLogger().info("Description: " + getDescription());
             getLogger().info("Usage: " + getCommand() + " <name> <pin or \"null\" to prompt> <auto activate: true|false> <type> <type specific arguments...>");
+            getLogger().info("  Available types: " + SoftCryptoToken.class.getSimpleName() + ", " + PKCS11CryptoToken.class.getSimpleName());
             getLogger().info("   " + SoftCryptoToken.class.getSimpleName() + " arguments: <allow private key export: true|false>");
-            getLogger().info(" " + PKCS11CryptoToken.class.getSimpleName() + " arguments: <PKCS#11 library file> <PKCS#11 slot> <PKCS#11 attribute file or \"null\">");
+            getLogger().info("   " + PKCS11CryptoToken.class.getSimpleName() + " arguments: <PKCS#11 library file> <PKCS#11 slot> <Slot Label Type> <PKCS#11 attribute file or \"null\">");
+            getLogger().info("   " + PKCS11CryptoToken.class.getSimpleName() + " Slot Label Types:");
+            for(Pkcs11SlotLabelType type : Pkcs11SlotLabelType.values()) {
+                getLogger().info("    " + type.getKey() + " - " + type.getDescription());
+            }           
             return;
         }
         final String cryptoTokenName = args[1];
@@ -71,27 +77,28 @@ public class CryptoTokenCreateCommand extends BaseCryptoTokenCommand {
                 return;
             }
             cryptoTokenPropertes.setProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY, args[5]);
-            // Parse slot or slotindex
             String slotPropertyValue = args[6];
-            String slotPropertyName = PKCS11CryptoToken.SLOT_LABEL_KEY;
-            if (slotPropertyValue.startsWith("i")) {
-                slotPropertyValue = slotPropertyValue.substring(1);
-                slotPropertyName = PKCS11CryptoToken.SLOT_LIST_INDEX_LABEL_KEY;
+            cryptoTokenPropertes.setProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE, slotPropertyValue);
+            Pkcs11SlotLabelType labelType = Pkcs11SlotLabelType.getFromKey(args[7]);
+            //If an index was given, accept just numbers as well
+            if(labelType.isEqual(Pkcs11SlotLabelType.SLOT_INDEX)) {
+                if(slotPropertyValue.charAt(0) != 'i') {
+                    slotPropertyValue = "i" + slotPropertyValue;
+                }
             }
-            try {
-                Integer.parseInt(slotPropertyValue);
-            } catch (NumberFormatException e) {
-                getLogger().info("Invalid slot specification.");
+            if(!labelType.validate(slotPropertyValue)) {
+                getLogger().info("Invalid value " + slotPropertyValue + " given for slot type " + labelType.getDescription());
                 return;
+            } else {
+                cryptoTokenPropertes.setProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE, labelType.getKey());
             }
-            cryptoTokenPropertes.setProperty(slotPropertyName, slotPropertyValue);
             // Parse attribute file
-            if (!"null".equalsIgnoreCase(args[7])) {
-                if (!new File(args[7]).exists()) {
-                    getLogger().info("PKCS#11 attribute file " + args[7] + " does not exist!");
+            if (!"null".equalsIgnoreCase(args[8])) {
+                if (!new File(args[8]).exists()) {
+                    getLogger().info("PKCS#11 attribute file " + args[8] + " does not exist!");
                     return;
                 }
-                cryptoTokenPropertes.setProperty(PKCS11CryptoToken.ATTRIB_LABEL_KEY, args[7]);
+                cryptoTokenPropertes.setProperty(PKCS11CryptoToken.ATTRIB_LABEL_KEY, args[8]);
             }
         } else {
             getLogger().info("Invalid CryptoToken type: " + type);
@@ -102,8 +109,9 @@ public class CryptoTokenCreateCommand extends BaseCryptoTokenCommand {
             BaseCryptoToken.setAutoActivatePin(cryptoTokenPropertes, new String(authenticationCode), true);
         }
         try {
-            final Integer cryptoTokenIdNew = ejb.getRemoteSession(CryptoTokenManagementSessionRemote.class).createCryptoToken(getAdmin(),
-                    cryptoTokenName, className, cryptoTokenPropertes, null, authenticationCode);
+            final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = ejb.getRemoteSession(CryptoTokenManagementSessionRemote.class);
+            final Integer cryptoTokenIdNew = cryptoTokenManagementSession.createCryptoToken(getAdmin(), cryptoTokenName, className,
+                    cryptoTokenPropertes, null, authenticationCode);
             getLogger().info("CryptoToken with id " + cryptoTokenIdNew + " created successfully.");
         } catch (AuthorizationDeniedException e) {
             getLogger().info(e.getMessage());

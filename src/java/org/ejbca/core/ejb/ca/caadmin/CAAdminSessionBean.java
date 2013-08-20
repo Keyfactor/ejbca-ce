@@ -128,6 +128,7 @@ import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.keys.token.NullCryptoToken;
 import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
+import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -1751,8 +1752,13 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
             // Now we have the PKCS12 keystore, from this we can create the CAToken
             final Properties cryptoTokenProperties = new Properties();
-            int cryptoTokenId = createCryptoTokenWithUniqueName(authenticationToken, "ImportedCryptoToken"+caId, SoftCryptoToken.class.getName(), cryptoTokenProperties,
-                    baos.toByteArray(), authCode);
+            int cryptoTokenId;
+            try {
+                cryptoTokenId = createCryptoTokenWithUniqueName(authenticationToken, "ImportedCryptoToken"+caId, SoftCryptoToken.class.getName(), cryptoTokenProperties,
+                        baos.toByteArray(), authCode);
+            } catch (NoSuchSlotException e1) {
+                throw new RuntimeException("Attempte to define a slot for a soft crypto token. This should not happen.");
+            }
             final CAToken catoken = new CAToken(cryptoTokenId, caTokenProperties);
             // If this is a CVC CA we need to find out the sequence
             String sequence = CAToken.DEFAULT_KEYSEQUENCE;
@@ -1798,7 +1804,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @Override
     public void importCAFromHSM(AuthenticationToken authenticationToken, String caname, Certificate[] signatureCertChain, String catokenpassword,
             String catokenclasspath, String catokenproperties) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
-            IllegalCryptoTokenException, CADoesntExistsException, AuthorizationDeniedException, CAExistsException, CAOfflineException {
+            IllegalCryptoTokenException, CADoesntExistsException, AuthorizationDeniedException, CAExistsException, CAOfflineException,
+            NoSuchSlotException {
         Certificate cacert = signatureCertChain[0];
         int caId = StringTools.strip(CertTools.getSubjectDN(cacert)).hashCode();
         Properties caTokenProperties = CAToken.getPropertiesFromString(catokenproperties);
@@ -1839,10 +1846,12 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         importCA(authenticationToken, caname, catokenpassword, signatureCertChain, catoken, keyAlgorithm, keySpecification);
     }
 
-    /** Wrapper for CryptoToken creation that tries to find a unique CryptoTokenName */
+    /** Wrapper for CryptoToken creation that tries to find a unique CryptoTokenName 
+     * @throws NoSuchSlotException if no slot with the given label could be found
+     */
     private int createCryptoTokenWithUniqueName(AuthenticationToken authenticationToken, String basename, String className,
             Properties cryptoTokenProperties, byte[] data, char[] authCode) throws CryptoTokenOfflineException,
-            CryptoTokenAuthenticationFailedException, AuthorizationDeniedException {
+            CryptoTokenAuthenticationFailedException, AuthorizationDeniedException, NoSuchSlotException {
         int cryptoTokenId = 0;
         final int maxTriesToFindUnusedCryptoTokenName = 25;
         String postFix = "";

@@ -47,6 +47,7 @@ import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.SoftCryptoToken;
+import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -228,11 +229,16 @@ public class CVCCATest {
 	}
 
     /** @return a new empty soft auto-activated CryptoToken */
-	private CryptoToken getNewCryptoToken() {
+    private CryptoToken getNewCryptoToken() {
         final Properties cryptoTokenProperties = new Properties();
         cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, "foo1234");
-        final CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(
-                SoftCryptoToken.class.getName(), cryptoTokenProperties, null, 17, "CryptoToken's name");
+        CryptoToken cryptoToken;
+        try {
+            cryptoToken = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), cryptoTokenProperties, null, 17,
+                    "CryptoToken's name");
+        } catch (NoSuchSlotException e) {
+            throw new RuntimeException("Attemped to create a slot for a soft crypto token, should not be able to happen", e);
+        }
         return cryptoToken;
     }
 }
