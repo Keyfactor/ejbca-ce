@@ -2607,7 +2607,7 @@ Since EJBCA 3.6 the recommended HSM connector is to use the PKCS#11 interface. O
 </subsection>
 <subsection name="HSM modules available in the Admin GUI">
 <p>
-Since EJBCA 5.2 you can manage crypto tokens fully in the Admin GUI or EJBCA.
+Since EJBCA 5.0 you can manage crypto tokens fully in the Admin GUI or EJBCA.
 The admin GUI tries to be user friendly and automatically show you the HSMs available in your system.
 When creating a new Crypto Token (CryptoTokens-&gt;Create New) you can select between Soft and PKCS#11 crypto tokens. 
 </p>
@@ -2688,19 +2688,17 @@ tested with Utimaco CryptoServer and nCipher nShield/netHSM and SafeNet ProtectS
 <p>
 Besides the keys previously described the property field of the Administration GUI should contain the following properties:
 <ul>
-<li>slot                - the slot of the CA.</li>
-<li>slotListIndex	- the index number in the slot list for the slot of the CA</li>
-<li>sharedLibrary       - the shared PKCS#11 library to be used.</li>
+<li>(PKCS#11) Slot - the value of the slot labeling.</li>
+<li>(PKCS#11) Label Type	- the type of slot label</li>
+<li>(PKCS#11) Attribute file: - the shared PKCS#11 library to be used.</li>
 </ul>
 </p><p>
-The 'slot' property is interperted like this:
+The slot label type can be one of the following
 <ul>
-<li>integer								- the slot ID used will be the integer.</li>
-<li>TOKEN_LABEL:&lt;tokenLabel&gt;		- the slot containing the token with the label &lt;tokenLabel&gt;.</li>
-<li>SLOT_NUMBER:&lt;id&gt;					- the slot with the ID &lt;id&gt;. This is the same as just specifying an integer.</li>
-<li>SLOT_INDEX:&lt;ix&gt;				- the slot with number &lt;ix&gt; in the slot list. This is the same as using the slotListIndex property.</li>
-<li>SLOT_LABEL:&lt;label&gt;				- the slot with label &lt;label&gt; in the slot list. This label may be an integer or an 'i' followed by an integer (like a number or an index)</li>
-<li>SUN_FILE:&lt;fileName&gt;			- the slot specified by the SUN config file &lt;fileName&gt;.</li>
+<li>Slot Number		- Any positive integer, can be used to refer to slots in any HSM with consecutive slot numbering.</li>
+<li>Slot Index		- Any positive integer, prefaced by an 'i'. </li>
+<li>Slot Label		- The PKCS#11 standard allows for using strings for labeling slots. This label may also be an integer or an 'i' followed by an integer (like a number or an index)</li>
+<li>Sun File		- the slot specified by a SUN config file. The slot label can be left blank.</li>
 </ul>
 </p><p>
 </p>
