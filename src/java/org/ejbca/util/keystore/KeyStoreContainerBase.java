@@ -52,6 +52,7 @@ import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -292,9 +293,10 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
                             final String keyStoreType,
                             final String fromID,
                             final String toID,
+                            final Pkcs11SlotLabelType slotLabelType,
                             KeyStore.ProtectionParameter pp) throws Exception {
-        KeyStoreContainerBase fromKS = (KeyStoreContainerBase)KeyStoreContainerFactory.getInstance(keyStoreType, providerClassName, encryptProviderClassName, fromID, null, pp);
-        KeyStoreContainerBase toKS = (KeyStoreContainerBase)KeyStoreContainerFactory.getInstance(keyStoreType, providerClassName, encryptProviderClassName, toID, null, pp);
+        KeyStoreContainerBase fromKS = (KeyStoreContainerBase)KeyStoreContainerFactory.getInstance(keyStoreType, providerClassName, encryptProviderClassName, fromID, slotLabelType, null, pp);
+        KeyStoreContainerBase toKS = (KeyStoreContainerBase)KeyStoreContainerFactory.getInstance(keyStoreType, providerClassName, encryptProviderClassName, toID, slotLabelType, null, pp);
         Enumeration<String> e = fromKS.getKeyStore().aliases();
         while( e.hasMoreElements() ) {
             String alias = e.nextElement();

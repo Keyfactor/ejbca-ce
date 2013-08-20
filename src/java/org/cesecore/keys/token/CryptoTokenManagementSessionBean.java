@@ -36,6 +36,7 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.management.RuntimeErrorException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
@@ -43,6 +44,7 @@ import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceTypes;
+import org.cesecore.audit.log.AuditRecordStorageException;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -52,6 +54,8 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
+import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CryptoProviderTools;
 
@@ -126,17 +130,19 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         final boolean autoActivation = BaseCryptoToken.getAutoActivatePin(cryptoTokenProperties) != null;
         final boolean allowExportPrivateKey = Boolean.valueOf(cryptoTokenProperties.getProperty(SoftCryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY));
         final String p11Library = cryptoTokenProperties.getProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY, "");
-        final String p11Slot = (String) cryptoTokenProperties.getProperty(PKCS11CryptoToken.SLOT_LABEL_KEY,
-                cryptoTokenProperties.getProperty(PKCS11CryptoToken.SLOT_LIST_INDEX_LABEL_KEY, ""));
+        final String p11SlotLabel = cryptoTokenProperties.getProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE);
+        final Pkcs11SlotLabelType p11SlotLabelType = Pkcs11SlotLabelType.getFromKey(cryptoTokenProperties.getProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE));
         final String p11AttributeFile = cryptoTokenProperties.getProperty(PKCS11CryptoToken.ATTRIB_LABEL_KEY, "");
         final String type = cryptoToken.getClass().getSimpleName();
-        return new CryptoTokenInfo(cryptoTokenId, cryptoToken.getTokenName(), isActive, autoActivation, type, allowExportPrivateKey, p11Library, p11Slot, p11AttributeFile);
+        return new CryptoTokenInfo(cryptoTokenId, cryptoToken.getTokenName(), isActive, autoActivation, type, allowExportPrivateKey, p11Library,
+                p11SlotLabel, p11SlotLabelType, p11AttributeFile);
     }
-    
+
     @Override
-    public int createCryptoToken(final AuthenticationToken authenticationToken, final String tokenName, final String className, final Properties properties,
-            final byte[] data, final char[] authenticationCode) throws AuthorizationDeniedException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
-            CryptoTokenNameInUseException {
+    public int createCryptoToken(final AuthenticationToken authenticationToken, final String tokenName, final String className,
+            final Properties properties, final byte[] data, final char[] authenticationCode) throws AuthorizationDeniedException,
+            CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException, NoSuchSlotException,
+            AuditRecordStorageException {
         if (log.isTraceEnabled()) {
             log.trace(">createCryptoToken: "+tokenName+", "+className);
         }
@@ -161,6 +167,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         }
         // Note: if data is null, a new empty keystore will be created
         final CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, data, cryptoTokenId.intValue(), tokenName);
+        //FIXME: A thread skip happens sometime before this point. 
         cryptoToken.activate(authenticationCode);
         final Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", "Created CryptoToken with id " + cryptoTokenId);
@@ -177,8 +184,9 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     }
     
     @Override
-    public void saveCryptoToken(AuthenticationToken authenticationToken, int cryptoTokenId, String tokenName, Properties properties, char[] authenticationCode)
-            throws AuthorizationDeniedException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException {
+    public void saveCryptoToken(AuthenticationToken authenticationToken, int cryptoTokenId, String tokenName, Properties properties,
+            char[] authenticationCode) throws AuthorizationDeniedException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
+            CryptoTokenNameInUseException, NoSuchSlotException {
         if (log.isTraceEnabled()) {
             log.trace(">saveCryptoToken: "+tokenName+", "+cryptoTokenId);
         }
@@ -252,6 +260,26 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         return cryptoToken.getTokenStatus() == CryptoToken.STATUS_ACTIVE;
     }
 
+    @TransactionAttribute(TransactionAttributeType.REQUIRED) 
+    @Override
+    public synchronized void adhocUpgradeWithin6_0_x(AuthenticationToken authenticationToken) {
+        List<Integer> cryptoTokenIds = cryptoTokenSession.getCryptoTokenIds();
+        for(int cryptoTokenId : cryptoTokenIds) {
+            CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
+            Properties oldProperties = cryptoToken.getProperties();
+            if(!oldProperties.containsKey(PKCS11CryptoToken.SLOT_LABEL_VALUE)) {
+                Properties newProperties = PKCS11CryptoToken.upgradePropertiesFileFrom5_0_x(oldProperties);
+                cryptoToken.setProperties(newProperties);
+                try {
+                    cryptoTokenSession.mergeCryptoToken(cryptoToken);
+                } catch (CryptoTokenNameInUseException e) {
+                    //This should not be able to happen
+                    throw new RuntimeException("Attempted to merge a crypto token with one ID to another with the same name.", e);
+                }
+            }
+        }
+    }
+    
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public void activate(final AuthenticationToken authenticationToken, final int cryptoTokenId, final char[] authenticationCode) throws AuthorizationDeniedException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException {

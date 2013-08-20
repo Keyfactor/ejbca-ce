@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.keys.token;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
@@ -32,6 +33,8 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
+import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
+import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.util.CryptoProviderTools;
 import org.junit.After;
 import org.junit.Assert;
@@ -105,6 +108,21 @@ public class PKCS11CryptoTokenTest extends CryptoTokenTestBase {
         PKCS11CryptoToken token5 = (PKCS11CryptoToken) createPKCS11Token("token5", false);
         Assert.assertNotSame("Differen token was expected!", token3.getP11slot(), token5.getP11slot());
     }
+    
+    @SuppressWarnings("deprecation") //This test will be removed when the deprecated methods it tests are.
+    @Test
+    public void testUpgradePropertiesFileFrom5_0_x() {
+        Properties slotNumberProperties = new Properties();
+        slotNumberProperties.setProperty("slot", "7");
+        Properties indexProperties = new Properties();
+        indexProperties.setProperty("slotListIndex", "7");
+        Properties newSlotNumber = PKCS11CryptoToken.upgradePropertiesFileFrom5_0_x(slotNumberProperties);
+        assertEquals("7", newSlotNumber.getProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE));
+        assertEquals(Pkcs11SlotLabelType.SLOT_NUMBER.getKey(), newSlotNumber.getProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE));
+        Properties newIndexNumber = PKCS11CryptoToken.upgradePropertiesFileFrom5_0_x(indexProperties);
+        assertEquals("i7", newIndexNumber.getProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE));
+        assertEquals(Pkcs11SlotLabelType.SLOT_INDEX.getKey(), newIndexNumber.getProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE));
+    }
 
 //	private String attributesHmac = "attributes(*, *, *) = {\n"+
 //		  "CKA_TOKEN = true\n"+
@@ -136,6 +154,7 @@ public class PKCS11CryptoTokenTest extends CryptoTokenTestBase {
 	/**
 	 * This test is hard to make working on different HSMs due to algorithms restrictions
 	 * Not implemented yet, see CESECORE-42
+	 * @throws NoSuchSlotException 
 	 */
 //	@Test
 //    public void testGenerateHMACKey() throws Exception {
@@ -148,11 +167,13 @@ public class PKCS11CryptoTokenTest extends CryptoTokenTestBase {
 //    	doGenerateHmacKey(token);
 //	}
 
-	@Test
-	public void testExtractKeyFalse() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, CryptoTokenOfflineException, IOException, CryptoTokenAuthenticationFailedException, InvalidKeyException, NoSuchProviderException, InvalidAlgorithmParameterException, SignatureException, NoSuchPaddingException, IllegalBlockSizeException {
-    	CryptoToken token = createPKCS11Token("testExtractKeyFalse", false);
-		doExtractKeyFalse(token);
-	}
+    @Test
+    public void testExtractKeyFalse() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, CryptoTokenOfflineException,
+            IOException, CryptoTokenAuthenticationFailedException, InvalidKeyException, NoSuchProviderException, InvalidAlgorithmParameterException,
+            SignatureException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchSlotException {
+        CryptoToken token = createPKCS11Token("testExtractKeyFalse", false);
+        doExtractKeyFalse(token);
+    }
 
 	private String attributesExtract = "attributes(*, *, *) = {\n"+
 	  "CKA_TOKEN = true\n"+
@@ -182,9 +203,12 @@ public class PKCS11CryptoTokenTest extends CryptoTokenTestBase {
 	"}";
 
 	@Test
-	public void testExtractKey() throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, KeyStoreException, InvalidAlgorithmParameterException, SignatureException, CertificateException, NoSuchPaddingException, IllegalBlockSizeException, IOException, PrivateKeyNotExtractableException, BadPaddingException, InvalidKeySpecException{
-		File f = File.createTempFile("tokentest", "txt");
-		f.deleteOnExit();
+    public void testExtractKey() throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidKeyException,
+            NoSuchAlgorithmException, NoSuchProviderException, KeyStoreException, InvalidAlgorithmParameterException, SignatureException,
+            CertificateException, NoSuchPaddingException, IllegalBlockSizeException, IOException, PrivateKeyNotExtractableException,
+            BadPaddingException, InvalidKeySpecException, NoSuchSlotException {
+        File f = File.createTempFile("tokentest", "txt");
+	f.deleteOnExit();
 		FileOutputStream fos = new FileOutputStream(f);
 		fos.write(attributesExtract.getBytes());
 		fos.close();
@@ -197,20 +221,21 @@ public class PKCS11CryptoTokenTest extends CryptoTokenTestBase {
 		return PKCS11TestUtils.getHSMProvider();
 	}
 
-	public static CryptoToken createPKCS11Token() {
+	public static CryptoToken createPKCS11Token() throws NoSuchSlotException {
 		return createPKCS11TokenWithAttributesFile(null, null, true);
 	}
 
-    public static CryptoToken createPKCS11Token(String name, boolean extractable){
+    public static CryptoToken createPKCS11Token(String name, boolean extractable) throws NoSuchSlotException{
         return createPKCS11TokenWithAttributesFile(null, name, extractable);
     }
 
-	public static CryptoToken createPKCS11TokenWithAttributesFile(String file, String tokenName, boolean extractable) {
+	public static CryptoToken createPKCS11TokenWithAttributesFile(String file, String tokenName, boolean extractable) throws NoSuchSlotException {
 		Properties prop = new Properties();
         String hsmlib = PKCS11TestUtils.getHSMLibrary();
         assertNotNull(hsmlib);
         prop.setProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY, hsmlib);
-        prop.setProperty(PKCS11CryptoToken.SLOT_LABEL_KEY, "1");
+        prop.setProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE, "1");
+        prop.setProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE, Pkcs11SlotLabelType.SLOT_NUMBER.getKey());
         if (file != null) {
             prop.setProperty(PKCS11CryptoToken.ATTRIB_LABEL_KEY, file);
         }

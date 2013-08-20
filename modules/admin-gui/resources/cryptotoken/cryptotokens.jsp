@@ -76,6 +76,10 @@ org.cesecore.authorization.control.CryptoTokenRules
    			<f:facet name="header"><h:outputText value="#{web.text.CRYPTOTOKEN_SLOT}"/></f:facet>
 			<h:outputText value="#{cryptoTokenGuiInfo.p11Slot}"/>
 		</h:column>
+        <h:column>
+            <f:facet name="header"><h:outputText value="#{web.text.CRYPTOTOKEN_LABEL_TYPE}"/></f:facet>
+            <h:outputText value="#{cryptoTokenGuiInfo.p11SlotLabelTypeDescription}"/>
+        </h:column>
 		<h:column>
    			<f:facet name="header"><h:outputText value="#{web.text.CRYPTOTOKEN_ACTIVE}"/></f:facet>
 			<h:graphicImage height="16" width="16" url="#{cryptoTokenGuiInfo.statusImg}" styleClass="statusIcon"/>

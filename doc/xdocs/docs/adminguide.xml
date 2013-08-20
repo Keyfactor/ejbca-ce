@@ -2693,16 +2693,16 @@ Besides the keys previously described the property field of the Administration G
 <li>sharedLibrary       - the shared PKCS#11 library to be used.</li>
 </ul>
 </p><p>
-The 'slot' property is interpreated like this:
+The 'slot' property is interperted like this:
 <ul>
 <li>integer								- the slot ID used will be the integer.</li>
 <li>TOKEN_LABEL:&lt;tokenLabel&gt;		- the slot containing the token with the label &lt;tokenLabel&gt;.</li>
-<li>SLOT_ID:&lt;id&gt;					- the slot with the ID &lt;id&gt;. This is the same as just specifying an integer.</li>
-<li>SLOT_LIST_IX:&lt;ix&gt;				- the slot with number &lt;ix&gt; in the slot list. This is the same as using the slotListIndex property.</li>
+<li>SLOT_NUMBER:&lt;id&gt;					- the slot with the ID &lt;id&gt;. This is the same as just specifying an integer.</li>
+<li>SLOT_INDEX:&lt;ix&gt;				- the slot with number &lt;ix&gt; in the slot list. This is the same as using the slotListIndex property.</li>
+<li>SLOT_LABEL:&lt;label&gt;				- the slot with label &lt;label&gt; in the slot list. This label may be an integer or an 'i' followed by an integer (like a number or an index)</li>
 <li>SUN_FILE:&lt;fileName&gt;			- the slot specified by the SUN config file &lt;fileName&gt;.</li>
 </ul>
 </p><p>
-But only one of 'slot' or 'slotListIndex' should exist.
 </p>
 <p>Optionally a few extra properties fields can be used:
 <ul>

@@ -17,10 +17,10 @@ import java.security.KeyStore;
 import java.security.Security;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 
 /**
  * @version $Id$
- * @author primelars
  */
 public class KeyStoreContainerFactory {
 
@@ -34,42 +34,24 @@ public class KeyStoreContainerFactory {
      * @return
      * @throws Exception
      */
-    public static KeyStoreContainer getInstance(final String keyStoreType,
-                                                final String providerClassName,
-                                                final String encryptProviderClassName,
-                                                final String storeID,
-                                                final String attributesFile,
-                                                final KeyStore.ProtectionParameter pp,
-                                                final String privateKeyLabel) throws Exception {
-        Security.addProvider( new BouncyCastleProvider() );
-        if ( isP11(keyStoreType) ) {
-            final char firstChar = storeID!=null && storeID.length()>0 ? storeID.charAt(0) : '\0';
-            final String slotID;
-            final boolean isIndex;
-            if ( storeID!=null && (firstChar=='i'||firstChar=='I') ) {
-                slotID = storeID.substring(1);
-                isIndex = true;
-            } else {
-                slotID = storeID;
-                isIndex = false;
-            }
-            return KeyStoreContainerP11.getInstance( slotID,
-                                                     providerClassName,
-                                                     isIndex, attributesFile, pp,
-                                                     privateKeyLabel);
+    public static KeyStoreContainer getInstance(final String keyStoreType, final String providerClassName, final String encryptProviderClassName,
+            final String storeID, final Pkcs11SlotLabelType slotLabelType, final String attributesFile, final KeyStore.ProtectionParameter pp,
+            final String privateKeyLabel) throws Exception {
+        Security.addProvider(new BouncyCastleProvider());
+        if (isP11(keyStoreType)) {
+            return KeyStoreContainerP11.getInstance(storeID, slotLabelType, providerClassName, attributesFile, pp, privateKeyLabel);
         }
-        return KeyStoreContainerJCE.getInstance( keyStoreType,
-                                                 providerClassName,
-                                                 encryptProviderClassName,
-                                                 storeID!=null ? storeID.getBytes():null);
+        return KeyStoreContainerJCE.getInstance(keyStoreType, providerClassName, encryptProviderClassName, storeID != null ? storeID.getBytes()
+                : null);
     }
     public static KeyStoreContainer getInstance(final String keyStoreType,
             final String providerClassName,
             final String encryptProviderClassName,
             final String storeID,
+            final Pkcs11SlotLabelType slotLabelType,
             final String attributesFile,
             final KeyStore.ProtectionParameter pp) throws Exception {
-        return getInstance(keyStoreType, providerClassName, encryptProviderClassName, storeID, attributesFile, pp, null);
+        return getInstance(keyStoreType, providerClassName, encryptProviderClassName, storeID, slotLabelType, attributesFile, pp, null);
     }
     /**
      * @param keyStoreType

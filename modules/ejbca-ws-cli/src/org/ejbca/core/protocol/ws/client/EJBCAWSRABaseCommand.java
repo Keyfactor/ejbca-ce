@@ -19,6 +19,7 @@ import javax.xml.namespace.QName;
 
 import org.cesecore.keys.token.p11.P11Slot;
 import org.cesecore.keys.token.p11.P11SlotUser;
+import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.provider.TLSProvider;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
@@ -97,24 +98,9 @@ public abstract class EJBCAWSRABaseCommand implements P11SlotUser {
             if ( sharedLibraryPath!=null ) {
                 checkIfFileExists(sharedLibraryPath);
                 final String sSlot =  props.getProperty("ejbcawsracli.p11.slot");
-                final String sSlotindex =  props.getProperty("ejbcawsracli.p11.slotindex");
-                if ( sSlot!=null && sSlotindex!=null ) {
-                    throw new Exception("You can not specify both slot and slotindex");
-                }
-                final boolean isIndex;
-                final String nr;
-                if ( sSlot!=null ) {
-                    isIndex = false;
-                    nr = sSlot;
-                } else if ( sSlotindex!=null ) {
-                    isIndex = true;
-                    nr = sSlotindex;
-                } else {
-                    isIndex = true;
-                    nr = "1";
-                }
-                final P11Slot slot = P11Slot.getInstance(nr, sharedLibraryPath, isIndex, null, this, 0);// no CA set ID to 0 to indicate just one user
-                final AuthProvider provider = (AuthProvider)slot.getProvider();
+                final Pkcs11SlotLabelType type = Pkcs11SlotLabelType.getFromKey(props.getProperty("ejbcawsracli.p11.slotlabeltype"));
+                final P11Slot slot = P11Slot.getInstance(sSlot, sharedLibraryPath, type, null, this, 0);// no CA set ID to 0 to indicate just one user
+                final AuthProvider provider = (AuthProvider) slot.getProvider();
                 final String providerName = provider.getName();
                 final PasswordHandler handler = new PasswordHandler(password);
                 provider.login(null, handler);

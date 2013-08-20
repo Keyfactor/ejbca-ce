@@ -129,6 +129,16 @@ org.cesecore.authorization.control.CryptoTokenRules
 		    <h:inputText value="#{cryptoTokenMBean.currentCryptoToken.p11Slot}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"/>
 			<h:outputText value="#{cryptoTokenMBean.currentCryptoToken.p11Slot}" rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
 		</h:panelGroup>
+		
+		<h:outputLabel id="currentCryptoTokenP11SlotLabelTypeLabel" for="currentCryptoTokenP11SlotLabelType" rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken}" value="(#{web.text.CRYPTOTOKEN_TYPE_P11}) #{web.text.CRYPTOTOKEN_LABEL_TYPE}:"/>
+		<h:panelGroup id="currentCryptoTokenP11SlotLabelType" rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken}">		
+			<h:selectOneMenu value="#{cryptoTokenMBean.currentCryptoToken.p11SlotLabelType}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}">
+				<f:selectItems value="#{cryptoTokenMBean.availableCryptoTokenP11SlotLabelTypes}"/>
+			</h:selectOneMenu>
+			
+			<h:outputText value="#{cryptoTokenMBean.currentCryptoToken.p11SlotLabelType}" rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+		</h:panelGroup>
+		
 		<h:outputLabel id="currentCryptoTokenP11AttributeFileLabel" for="currentCryptoTokenP11AttributeFile" rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken}" value="(#{web.text.CRYPTOTOKEN_TYPE_P11}) #{web.text.CRYPTOTOKEN_ATTRFILE}:"/>
 		<h:panelGroup id="currentCryptoTokenP11AttributeFile" rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken}">
 			<h:selectOneMenu value="#{cryptoTokenMBean.currentCryptoToken.p11AttributeFile}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}">

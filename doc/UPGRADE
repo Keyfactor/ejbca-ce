@@ -127,7 +127,7 @@ specified manually. If you need to use old custom classes from before 6.0
 (i.e. not autodetected classes) you can enable manual entry with the
 option web.manualclasspathsenabled=true in web.properties.
 
-If you get a "java.lang.NoSuchMethodError" in the admin GUI it is because JBoss does not clean temporary files very good.
+If you get a "java.lang.NoSuchMethodError" in the admin GUI it is because JBoss does not clean temporary files very well.
 Delete the directories JBOSS_HOME/server/default/tmp and JBOSS_HOME/server/default/work and restart JBoss to get it working.
 
 From EJBCA 5.0.x to EJBCA 5.0.x

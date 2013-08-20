@@ -28,6 +28,7 @@ import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.util.Base64;
 import org.cesecore.util.StringTools;
 
@@ -231,7 +232,12 @@ public final class ProtectedDataConfiguration {
 		        					// Data is base64 encoded byte[] so decode it
 		        					keydata = Base64.decode(data.getBytes());	        						
 	        					}
-	        					final CryptoToken token = CryptoTokenFactory.createCryptoToken(classname, properties, keydata, Integer.valueOf(keyid), String.valueOf(keyid));
+	        					CryptoToken token;
+                                try {
+                                    token = CryptoTokenFactory.createCryptoToken(classname, properties, keydata, Integer.valueOf(keyid), String.valueOf(keyid));
+                                } catch (NoSuchSlotException e) {
+                                    throw new DatabaseProtectionException("Slot labeled as definied by label in properties file not found", e);
+                                }
 	        					// We must activate the token as well (if not using a default pwd of course, in which case we assume the tokenpin property is not set)
 	        					final String pin = conf.getString(pinstr+i);
 	        					try {

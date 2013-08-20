@@ -53,6 +53,7 @@ import org.cesecore.keys.token.KeyPairInfo;
 import org.cesecore.keys.token.NullCryptoToken;
 import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
+import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.keys.util.KeyTools;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.ui.web.admin.BaseManagedBean;
@@ -91,7 +92,13 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         public boolean isActive() { return cryptoTokenInfo.isActive(); }
         public boolean isAutoActivation() { return cryptoTokenInfo.isAutoActivation(); }
         public String getTokenType() { return cryptoTokenInfo.getType(); }
+        
+        /**
+         * @return A string representing slot:index:label for a P11 slot
+         */
         public String getP11Slot() { return cryptoTokenInfo.getP11Slot(); }
+        public String getP11SlotLabelType() { return cryptoTokenInfo.getP11SlotLabelType(); }
+        public String getP11SlotLabelTypeDescription() { return cryptoTokenInfo.getP11SlotLabelTypeDescription(); }
         public String getP11LibraryAlias() { return p11LibraryAlias; }
         public String getAuthenticationCode() { return authenticationCode; }
         public void setAuthenticationCode(String authenticationCode) { this.authenticationCode = authenticationCode; }
@@ -110,6 +117,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         private boolean allowExportPrivateKey = false;
         private String p11Library = "";
         private String p11Slot = WebConfiguration.getDefaultP11SlotNumber();
+        private Pkcs11SlotLabelType p11SlotLabelType = Pkcs11SlotLabelType.SLOT_NUMBER;
         private String p11AttributeFile = "default";
         private boolean active = false;
         private boolean referenced = false;
@@ -132,6 +140,10 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         public void setP11Library(String p11Library) { this.p11Library = p11Library; }
         public String getP11Slot() { return p11Slot; }
         public void setP11Slot(String p11Slot) { this.p11Slot = p11Slot; }
+        public String getP11SlotLabelType() { return p11SlotLabelType.getKey(); }
+        public void setP11SlotLabelType(String p11SlotLabelType) {
+            this.p11SlotLabelType = Pkcs11SlotLabelType.getFromKey(p11SlotLabelType);
+        }
         public String getP11AttributeFile() { return p11AttributeFile; }
         public void setP11AttributeFile(String p11AttributeFile) { this.p11AttributeFile = p11AttributeFile; }
         public boolean isActive() { return active; }
@@ -172,8 +184,10 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     private static final Logger log = Logger.getLogger(CryptoTokenMBean.class);
 
     private List<CryptoTokenGuiInfo> cryptoTokenGuiInfos = new ArrayList<CryptoTokenGuiInfo>();
+    @SuppressWarnings("rawtypes") //JDK6 does not support typing for ListDataModel
     private ListDataModel cryptoTokenGuiList = null;
     private List<KeyPairGuiInfo> keyPairGuiInfos = new ArrayList<KeyPairGuiInfo>();
+    @SuppressWarnings("rawtypes") //JDK6 does not support typing for ListDataModel
     private ListDataModel keyPairGuiList = null;
     private String keyPairGuiListError = null;
     private int currentCryptoTokenId = 0;
@@ -212,6 +226,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     }
     
     /** Build a list sorted by name from the authorized cryptoTokens that can be presented to the user */
+    @SuppressWarnings({ "rawtypes", "unchecked" }) //JDK6 does not support typing for ListDataModel
     public ListDataModel getCryptoTokenGuiList() throws AuthorizationDeniedException {
         if (cryptoTokenGuiList==null) {
             final List<Integer> referencedCryptoTokenIds = getReferencedCryptoTokenIds();
@@ -301,20 +316,25 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                     String library = getCurrentCryptoToken().getP11Library();
                     properties.setProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY, library);
                     String slotTextValue = getCurrentCryptoToken().getP11Slot().trim();
-                    String slotPropertyValue = slotTextValue;
-                    String slotPropertyName = PKCS11CryptoToken.SLOT_LABEL_KEY;
-                    if (slotPropertyValue.startsWith("i")) {
-                        slotPropertyValue = slotPropertyValue.substring(1);
-                        slotPropertyName = PKCS11CryptoToken.SLOT_LIST_INDEX_LABEL_KEY;
+                    String slotLabelType =   getCurrentCryptoToken().getP11SlotLabelType();
+                    //Perform some name validation
+                    if(slotLabelType.equals(Pkcs11SlotLabelType.SLOT_NUMBER.getKey())) {
+                        Long.parseLong(slotTextValue);
+                    } else if(slotLabelType.equals(Pkcs11SlotLabelType.SLOT_INDEX.getKey())) {
+                        if(slotTextValue.charAt(0) != 'i') {
+                            slotTextValue = "i" + slotTextValue;
+                        }
+                        Long.parseLong(slotTextValue.substring(1));
                     }
-                    // Verify that it is a valid number
-                    Integer.parseInt(slotPropertyValue);
+                 
                     // Verify that it is allowed
                     SlotList allowedSlots = getP11SlotList();
                     if (allowedSlots != null && !allowedSlots.contains(slotTextValue)) {
                         throw new IllegalArgumentException("Slot number "+slotTextValue+" is not allowed. Allowed slots are: "+allowedSlots);
                     }
-                    properties.setProperty(slotPropertyName, slotPropertyValue);
+                    
+                    properties.setProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE, slotTextValue);
+                    properties.setProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE, slotLabelType);
                     // The default should be null, but we will get a value "default" from the GUI code in this case..
                     final String p11AttributeFile = getCurrentCryptoToken().getP11AttributeFile();
                     if (!"default".equals(p11AttributeFile)) {
@@ -430,6 +450,14 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         });
         return ret;
     }
+    
+    public List<SelectItem> getAvailableCryptoTokenP11SlotLabelTypes() {
+        final List<SelectItem> ret = new ArrayList<SelectItem>();
+        for(Pkcs11SlotLabelType type : Pkcs11SlotLabelType.values()) {
+            ret.add(new SelectItem(type.name(), type.toString()));
+        }
+        return ret;
+    }
 
     /** @return alias if present otherwise the filename */
     public String getP11AttributeFileAlias(String p11AttributeFile) {
@@ -510,10 +538,13 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                     currentCryptoToken.setSecret1("");
                     currentCryptoToken.setSecret2("");
                     currentCryptoToken.setName(cryptoTokenInfo.getName());
-                    currentCryptoToken.setP11AttributeFile(cryptoTokenInfo.getP11AttributeFile());
-                    currentCryptoToken.setP11Library(cryptoTokenInfo.getP11Library());
-                    currentCryptoToken.setP11Slot(cryptoTokenInfo.getP11Slot());
                     currentCryptoToken.setType(cryptoTokenInfo.getType());
+                    if (cryptoTokenInfo.getType().equals(PKCS11CryptoToken.class.getSimpleName())) {
+                        currentCryptoToken.setP11AttributeFile(cryptoTokenInfo.getP11AttributeFile());
+                        currentCryptoToken.setP11Library(cryptoTokenInfo.getP11Library());
+                        currentCryptoToken.setP11Slot(cryptoTokenInfo.getP11Slot());
+                        currentCryptoToken.setP11SlotLabelType(cryptoTokenInfo.getP11SlotLabelType());
+                    }
                     currentCryptoToken.setActive(cryptoTokenInfo.isActive());
                     currentCryptoToken.setReferenced(getReferencedCryptoTokenIds().contains(Integer.valueOf(cryptoTokenId)));
                 }
@@ -643,6 +674,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     }
     
     /** @return a list of all the keys in the current CryptoToken. */
+    @SuppressWarnings({ "rawtypes", "unchecked" }) //JDK6 does not support typing for ListDataModel
     public ListDataModel getKeyPairGuiList() throws AuthorizationDeniedException {
         if (keyPairGuiList==null) {
             final List<KeyPairGuiInfo> ret = new ArrayList<KeyPairGuiInfo>();

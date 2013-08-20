@@ -115,6 +115,7 @@
 					<include name="org/cesecore/keys/token/KeyRenewalFailedException.java"/>
 					<include name="org/cesecore/keys/token/PrivateKeyNotExtractableException.java"/>
 					<include name="org/cesecore/keys/token/p11/*.java"/>
+					<include name="org/cesecore/keys/token/p11/exception/*.java"/>
 					<include name="org/cesecore/keys/KeyCreationException.java"/>
 					<include name="org/cesecore/keys/util/Key*.java"/>
 					<include name="org/cesecore/util/CertTools.java"/>

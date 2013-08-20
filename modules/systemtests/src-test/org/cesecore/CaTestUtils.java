@@ -55,6 +55,7 @@ import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.keys.token.SoftCryptoToken;
+import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.SimpleTime;
@@ -90,8 +91,12 @@ public abstract class CaTestUtils {
         cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, "foo123");
         int cryptoTokenId;
         if (!cryptoTokenManagementProxySession.isCryptoTokenNameUsed(cryptoTokenName)) {
-            cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, cryptoTokenName, SoftCryptoToken.class.getName(),
-                    cryptoTokenProperties, null, null);
+            try {
+                cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, cryptoTokenName, SoftCryptoToken.class.getName(),
+                        cryptoTokenProperties, null, null);
+            } catch (NoSuchSlotException e) {
+                throw new RuntimeException("Attempted to find a slot for a soft crypto token. This should not happen.");
+            }
         } else {
             cryptoTokenId = cryptoTokenManagementSession.getIdFromName(cryptoTokenName);
         }

@@ -33,6 +33,7 @@ import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.certificates.ca.catoken.CAToken;
+import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
@@ -323,7 +324,8 @@ public class CryptoTokenManagementSessionTest extends RoleUsingTestCase {
         String cryptoTokenClassName = SoftCryptoToken.class.getName();
         if (pkcs11) {
             cryptoTokenProperties.setProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY, getHSMLibrary());
-            cryptoTokenProperties.setProperty(PKCS11CryptoToken.SLOT_LABEL_KEY, "1");
+            cryptoTokenProperties.setProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE, "1");
+            cryptoTokenProperties.setProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE, Pkcs11SlotLabelType.SLOT_NUMBER.getKey());
             cryptoTokenClassName = PKCS11CryptoToken.class.getName();
         }
         

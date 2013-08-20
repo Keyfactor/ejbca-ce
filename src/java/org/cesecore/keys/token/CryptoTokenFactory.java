@@ -19,6 +19,7 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.cesecore.internal.InternalResources;
+import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 
 
 /**
@@ -146,32 +147,36 @@ public class CryptoTokenFactory {
     
     /** Creates a crypto token using reflection to construct the class from classname and initializing the CryptoToken
      * 
-	 * @param classname the full classname of the crypto token implementation class
-	 * @param properties properties passed to the init method of the CryptoToken
-	 * @param data byte data passed to the init method of the CryptoToken
-	 * @param id id passed to the init method of the CryptoToken, the id is user defined and not used internally for anything but logging.
+     * @param classname the full classname of the crypto token implementation class
+     * @param properties properties passed to the init method of the CryptoToken
+     * @param data byte data passed to the init method of the CryptoToken
+     * @param id id passed to the init method of the CryptoToken, the id is user defined and not used internally for anything but logging.
      * @param tokenName user friendly identifier
+     * @throws NoSuchSlotException if no slot as defined in properties could be found.
      */
-    public static final CryptoToken createCryptoToken(final String inClassname, final Properties properties, final byte[] data, final int id, String tokenName) {
-    	final String classname;
-    	if ( inClassname!=null ) {
-    		classname = inClassname;
-    	} else {
-    		classname = NullCryptoToken.class.getName();
-    		log.info("This must be an imported CA that is being upgraded. Use NullCryptoToken.");
-    	}
-    	final CryptoToken token = createTokenFromClass(classname);
-    	if ( token==null ) {
-    		log.error("No token. Classpath="+classname);
-    		return null;
-    	}
-    	try {
-			token.init(properties, data, id);
-		} catch (Exception e) {
-    		log.error("Error initializing Crypto Token. Classpath="+classname, e);
-		}
-    	token.setTokenName(tokenName);
-    	return token;
+    public static final CryptoToken createCryptoToken(final String inClassname, final Properties properties, final byte[] data, final int id,
+            String tokenName) throws NoSuchSlotException {
+        final String classname;
+        if (inClassname != null) {
+            classname = inClassname;
+        } else {
+            classname = NullCryptoToken.class.getName();
+            log.info("This must be an imported CA that is being upgraded. Use NullCryptoToken.");
+        }
+        final CryptoToken token = createTokenFromClass(classname);
+        if (token == null) {
+            log.error("No token. Classpath=" + classname);
+            return null;
+        }
+        try {
+            token.init(properties, data, id);
+        } catch (NoSuchSlotException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error initializing Crypto Token. Classpath=" + classname, e);
+        }
+        token.setTokenName(tokenName);
+        return token;
     }
     
     private static final CryptoToken createTokenFromClass(final String classpath) {

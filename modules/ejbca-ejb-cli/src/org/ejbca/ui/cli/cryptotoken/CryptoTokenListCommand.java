@@ -62,7 +62,8 @@ public class CryptoTokenListCommand extends BaseCryptoTokenCommand {
             }
             if (PKCS11CryptoToken.class.getSimpleName().equals(cryptoTokenInfo.getType())) {
                 sb.append(", library=").append(cryptoTokenInfo.getP11Library());
-                sb.append(", slot=").append(cryptoTokenInfo.getP11Slot());
+                sb.append(", Slot Label=").append(cryptoTokenInfo.getP11Slot());
+                sb.append(", Slot Label Type=").append(cryptoTokenInfo.getP11SlotLabelTypeDescription());
                 sb.append(", attributes=").append(cryptoTokenInfo.getP11AttributeFile());
             }
             getLogger().info(sb);

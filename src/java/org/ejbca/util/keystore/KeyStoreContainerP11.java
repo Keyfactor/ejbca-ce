@@ -24,6 +24,7 @@ import javax.security.auth.callback.CallbackHandler;
 
 import org.apache.log4j.Logger;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabel;
+import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 
 /** A keystore container for PCKS#11 keystores i.e. the java PKCS#11 wrapper
  * 
@@ -45,15 +46,12 @@ public class KeyStoreContainerP11 extends KeyStoreContainerBase {
      * @param privateKeyLabel 
      * @see KeyStoreContainer#getInstance(String, String, String, String)
      */
-    static KeyStoreContainer getInstance(final String slot,
-                                         final String libName,
-                                         final boolean isIx,
-                                         final String attributesFile,
-                                         final KeyStore.ProtectionParameter protectionParameter,
-                                         final String privateKeyLabel) throws Exception, IOException {
-        final Provider provider = Pkcs11SlotLabel.getP11Provider(slot, libName, isIx, attributesFile, privateKeyLabel);
+    static KeyStoreContainer getInstance(final String slot, final Pkcs11SlotLabelType slotLabelType, final String libName,
+            final String attributesFile, final KeyStore.ProtectionParameter protectionParameter, final String privateKeyLabel) throws Exception,
+            IOException {
+        final Provider provider = Pkcs11SlotLabel.getP11Provider(slot, slotLabelType, libName, attributesFile, privateKeyLabel);
         final String providerName = provider.getName();
-        log.debug("Adding provider with name: "+providerName);
+        log.debug("Adding provider with name: " + providerName);
         if (Security.getProvider(providerName) == null) {
             Security.addProvider(provider);
         } else {

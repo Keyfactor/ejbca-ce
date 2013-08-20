@@ -102,7 +102,7 @@ public class SoftCryptoToken extends BaseCryptoToken {
             log.debug("No default pwd allowed for this soft crypto token.");
         }
         boolean autoActivate = autoPwd != null || properties.getProperty(NODEFAULTPWD) == null;
-        init(null, properties, autoActivate, cryptoTokenId);
+        init(properties, autoActivate, cryptoTokenId);
     }
 
     @Override

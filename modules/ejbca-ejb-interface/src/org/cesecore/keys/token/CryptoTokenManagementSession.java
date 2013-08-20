@@ -20,6 +20,7 @@ import java.util.Properties;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 
 /**
  * CryptoToken management operations that require authorization and/or security events audit logging.
@@ -51,15 +52,43 @@ public interface CryptoTokenManagementSession {
     /** @return true if the CryptoToken with the specified ID has been activated. */
     boolean isCryptoTokenStatusActive(AuthenticationToken authenticationToken, int cryptoTokenId) throws AuthorizationDeniedException;
 
-    /** @return the ID of a newly persisted CryptoToken from the supplied parameters. */
+    /**
+     * 
+     * @param authenticationToken
+     * @param tokenName
+     * @param className
+     * @param properties
+     * @param data
+     * @param authenticationCode
+     * @return the ID of a newly persisted CryptoToken from the supplied parameters.
+     * @throws AuthorizationDeniedException
+     * @throws CryptoTokenOfflineException
+     * @throws CryptoTokenAuthenticationFailedException
+     * @throws CryptoTokenNameInUseException
+     * @throws NoSuchSlotException if no slot as defined by the label in properties could be found
+     */
     int createCryptoToken(AuthenticationToken authenticationToken, String tokenName, String className, Properties properties, byte[] data,
             char[] authenticationCode) throws AuthorizationDeniedException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
-            CryptoTokenNameInUseException;
+            CryptoTokenNameInUseException, NoSuchSlotException;
 
-    /** Update the CryptoToken with the specified ID. The authentication code can be omitted (null) if auto-activation is used. */
+   
+    /**
+     * Update the CryptoToken with the specified ID. The authentication code can be omitted (null) if auto-activation is used. 
+     * 
+     * @param authenticationToken
+     * @param cryptoTokenId
+     * @param tokenName
+     * @param properties
+     * @param authenticationCode
+     * @throws AuthorizationDeniedException
+     * @throws CryptoTokenOfflineException
+     * @throws CryptoTokenAuthenticationFailedException
+     * @throws CryptoTokenNameInUseException
+     * @throws NoSuchSlotException if no such slot as defined in properties could be found
+     */
     void saveCryptoToken(AuthenticationToken authenticationToken, int cryptoTokenId, String tokenName, Properties properties,
             char[] authenticationCode) throws AuthorizationDeniedException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
-            CryptoTokenNameInUseException;
+            CryptoTokenNameInUseException, NoSuchSlotException;
 
     /** @return value object with non-sensitive information about the CryptoToken for UI use or similar. */
     CryptoTokenInfo getCryptoTokenInfo(AuthenticationToken authenticationToken, int cryptoTokenId) throws AuthorizationDeniedException;

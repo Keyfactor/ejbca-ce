@@ -27,6 +27,7 @@ import javax.security.auth.login.LoginException;
 import org.apache.log4j.Logger;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 
 /**
  * Each instance of this class represents a slot on a P11 module.
@@ -51,28 +52,30 @@ public class P11Slot {
     private final static Map<String,Set<P11Slot>> libMap = new HashMap<String, Set<P11Slot>>();
     private final static Map<Integer, P11SlotUser> tokenMap = new HashMap<Integer, P11SlotUser>();
     private final String slotNr;
+    private final Pkcs11SlotLabelType slotLabelType;
     private final String sharedLibrary;
     private final String attributesFile;
-    private final boolean isIndex;
     private final Set<Integer> tokenids = new HashSet<Integer>();
     private final String sunP11ConfigFileName;
     private final Provider provider;
     private boolean isSettingProvider = false;
-    private P11Slot(String _slotNr, String _sharedLibrary, boolean _isIndex, String _attributesFile) throws CryptoTokenOfflineException {
+    
+    private P11Slot(String _slotNr, Pkcs11SlotLabelType slotLabelType, String _sharedLibrary, String _attributesFile) throws CryptoTokenOfflineException, NoSuchSlotException {
         this.slotNr = _slotNr;
         this.sharedLibrary = _sharedLibrary;
-        this.isIndex = _isIndex;
         this.attributesFile = _attributesFile;
         this.sunP11ConfigFileName = null;
+        this.slotLabelType = slotLabelType;
         this.provider = createProvider();
+       
     }
-    private P11Slot( String configFileName ) throws CryptoTokenOfflineException {
+    private P11Slot( String configFileName ) throws CryptoTokenOfflineException, NoSuchSlotException {
         this.sunP11ConfigFileName = configFileName;
         this.slotNr = null;
         this.sharedLibrary = null;
-        this.isIndex = false;
         this.attributesFile = null;
-        this.provider = createProvider();
+        this.slotLabelType = null;
+        this.provider = createProvider();      
     }
     /* (non-Javadoc)
      * @see java.lang.Object#toString()
@@ -82,7 +85,7 @@ public class P11Slot {
         if ( this.slotNr==null && this.sharedLibrary==null ) {
             return "P11, Sun configuration file name: "+this.sunP11ConfigFileName;
         }
-        return "P11 slot "+(this.isIndex ? "index ":"#")+this.slotNr+" using library "+this.sharedLibrary+'.';
+        return "P11 slot "+this.slotNr+" using library "+this.sharedLibrary+'.';
     }
 
     /**
@@ -102,18 +105,19 @@ public class P11Slot {
     }
     /**
      * Get P11 slot instance. Only one instance (provider) will ever be created for each slot regardless of how many times this method is called.
-     * @param slotNr number of the slot
+     * @param slotLabel the labeling of the slot, regardless of label type. 
      * @param sharedLibrary file path of shared
-     * @param isIndex true if not slot number but index in slot list
+     * @param slotLabelType The type of the label. May be a slot number [0...9]*, slot index i[0...9]* or a label.
      * @param attributesFile Attributes file. Optional. Set to null if not used
      * @param token Token that should use this object
      * @param id unique ID of the user of the token. For EJBCA this is the caid. For the OCSP responder this is fixed since then there is only one user.
      * @return P11Slot
      * @throws CryptoTokenOfflineException if token can not be activated
+     * @throws NoSuchSlotException if no slot with the label defined by slotLabel could be found
      */
-    public static P11Slot getInstance(String slotNr, String sharedLibrary, boolean isIndex, 
-                                      String attributesFile, P11SlotUser token, int id) throws CryptoTokenOfflineException {       
-        return getInstance(null, slotNr, sharedLibrary, isIndex, attributesFile, token, id);
+    public static P11Slot getInstance(String slotLabel, String sharedLibrary, Pkcs11SlotLabelType slotLabelType, 
+                                      String attributesFile, P11SlotUser token, int id) throws CryptoTokenOfflineException, NoSuchSlotException {       
+        return getInstance(null, slotLabel, sharedLibrary, slotLabelType, attributesFile, token, id);
     }
     
     
@@ -121,24 +125,30 @@ public class P11Slot {
     /**
      * Get P11 slot instance. Only one instance (provider) will ever be created for each slot regardless of how many times this method is called.
      * @param friendlyName name to identify the instance
-     * @param slotNr number of the slot
+     * @param slotLabel the labeling of the slot, regardless of label type. 
      * @param sharedLibrary file path of shared
-     * @param isIndex true if not slot number but index in slot list
+     * @param slotLabelType The type of the label. May be a slot number [0...9]*, slot index i[0...9]* or a label. 
      * @param attributesFile Attributes file. Optional. Set to null if not used
      * @param token Token that should use this object
      * @param id unique ID of the user of the token. For EJBCA this is the caid. For the OCSP responder this is fixed since then there is only one user.
      * @return P11Slot
      * @throws CryptoTokenOfflineException if token can not be activated
+     * @throws NoSuchSlotException if no slot by the given label could be found
      */
-    public static P11Slot getInstance(String friendlyName, String slotNr, String sharedLibrary, boolean isIndex, 
-                                      String attributesFile, P11SlotUser token, int id) throws CryptoTokenOfflineException {
+    public static P11Slot getInstance(String friendlyName, String slotLabel, String sharedLibrary, Pkcs11SlotLabelType slotLabelType, 
+                                      String attributesFile, P11SlotUser token, int id) throws CryptoTokenOfflineException, NoSuchSlotException {
         if (sharedLibrary == null) {
             throw new IllegalArgumentException("sharedLibrary = null");
         }
         if (log.isDebugEnabled()) {
-        	log.debug("P11Slot.getInstance(): '"+slotNr+"', '"+sharedLibrary+"', "+isIndex+", '"+attributesFile+"', "+id);
+            log.debug("slotlabel: "+slotLabel);
+            log.debug("sharedlib: "+sharedLibrary);
+            log.debug("slotlabeltype: "+slotLabelType);
+            log.debug("attributesFile: " +attributesFile);
+            log.debug("id: "+id);
+        	log.debug("P11Slot.getInstance(): '"+slotLabel+"', '"+sharedLibrary+"', "+slotLabelType.toString()+", '"+attributesFile+"', "+id);
         }
-        return getInstance(new SlotDataParam(friendlyName, slotNr, sharedLibrary, isIndex, attributesFile), token, id);
+        return getInstance(new SlotDataParam(friendlyName, slotLabel, sharedLibrary, slotLabelType, attributesFile), token, id);
     }
     /**
      * As {@link #getInstance(String, String, boolean, String, org.ejbca.util.keystore.P11Slot.P11SlotUser)} but is using config file instead parameters. Do only use this method if the P11 shared library is ony specified in this config file.
@@ -147,11 +157,12 @@ public class P11Slot {
      * @param id unique ID of the user of the token. For EJBCA this is the caid. For the OCSP responder this is fixed since then there is only one user.
      * @return a new P11Slot instance
      * @throws CryptoTokenOfflineException
+     * @throws NoSuchSlotException if no slot defined by the label in configFileName could be found.
      */
-    public static P11Slot getInstance(String configFileName, P11SlotUser token, int id) throws CryptoTokenOfflineException {
+    public static P11Slot getInstance(String configFileName, P11SlotUser token, int id) throws CryptoTokenOfflineException, NoSuchSlotException {
         return getInstance(new SlotDataConfigFile(configFileName), token, id);
     }
-    private static P11Slot getInstance(SlotData data, P11SlotUser token, int id) throws CryptoTokenOfflineException {
+    private static P11Slot getInstance(SlotData data, P11SlotUser token, int id) throws CryptoTokenOfflineException, NoSuchSlotException {
         tokenMap.put(Integer.valueOf(id), token);
         P11Slot slot = slotMap.get(data.getSlotLabel());
         if (slot==null) {
@@ -170,7 +181,7 @@ public class P11Slot {
                         try {
                             slotsBeingCreated.wait();
                         } catch (InterruptedException e) {
-                            throw new Error( "This should never happen.", e);
+                            throw new RuntimeException( "This should never happen.", e);
                         }
                         // the slot should now have been created by another thread
                     }
@@ -208,7 +219,7 @@ public class P11Slot {
         return slot;
     }
     private static interface SlotData {
-        P11Slot getNewP11Slot() throws CryptoTokenOfflineException;
+        P11Slot getNewP11Slot() throws CryptoTokenOfflineException, NoSuchSlotException;
         String getSlotLabel();
         String getLibName();
     }
@@ -220,7 +231,7 @@ public class P11Slot {
         public String getLibName() {
             return ONLY_ONE;
         }
-        public P11Slot getNewP11Slot() throws CryptoTokenOfflineException {
+        public P11Slot getNewP11Slot() throws CryptoTokenOfflineException, NoSuchSlotException {
             return new P11Slot(this.configFileName);
         }
         public String getSlotLabel() {
@@ -230,31 +241,31 @@ public class P11Slot {
     
     private static class SlotDataParam implements SlotData {
     	private final String friendlyName;
-        private final String slotNr;
+        private final String slotLabel;
         private final String sharedLibrary;
         private final String libName;
-        private final boolean isIndex; 
+        private final Pkcs11SlotLabelType slotLabelType;
         private final String attributesFile;
         
-        public SlotDataParam(String _friendlyName, String _slotNr, String _sharedLibrary, boolean _isIndex, 
+        public SlotDataParam(String _friendlyName, String slotLabel, String _sharedLibrary, Pkcs11SlotLabelType slotLabelType, 
                       String _attributesFile) {
-            this.slotNr = _slotNr;
+            this.slotLabel = slotLabel;
             this.sharedLibrary = _sharedLibrary;
-            this.isIndex = _isIndex;
+            this.slotLabelType = slotLabelType;
             this.attributesFile = _attributesFile;
             this.libName = new File(this.sharedLibrary).getName();
             this.friendlyName = _friendlyName;
         }
         
-        public P11Slot getNewP11Slot() throws CryptoTokenOfflineException {
-            return new P11Slot(this.slotNr, this.sharedLibrary, this.isIndex, this.attributesFile);
+        public P11Slot getNewP11Slot() throws CryptoTokenOfflineException, NoSuchSlotException {     
+            return new P11Slot(this.slotLabel, this.slotLabelType,  this.sharedLibrary, this.attributesFile);
         }
         
         public String getSlotLabel() {
         	if(this.friendlyName != null) {
         		return this.friendlyName;
         	} else {
-        		return this.slotNr + this.libName + this.isIndex;
+        		return this.slotLabel + this.libName + this.slotLabelType.toString();
         	}
         }
         
@@ -264,7 +275,6 @@ public class P11Slot {
     }
     /**
      * Unload if last active token on slot
-     * @throws LoginException 
      */
     public void logoutFromSlotIfNoTokensActive() {
         final Iterator<Integer> iTokens = this.tokenids.iterator();
@@ -293,8 +303,9 @@ public class P11Slot {
     /**
      * @return  the provider of the slot.
      * @throws CryptoTokenOfflineException
+     * @throws NoSuchSlotException 
      */
-    private synchronized Provider createProvider() throws CryptoTokenOfflineException {
+    private synchronized Provider createProvider() throws CryptoTokenOfflineException, NoSuchSlotException {
         final Provider tmpProvider;
         while ( this.isSettingProvider ) {
             try {
@@ -306,10 +317,10 @@ public class P11Slot {
         try {
             this.isSettingProvider = true;
             if ( this.slotNr!=null && this.sharedLibrary!=null ) {
-                tmpProvider = Pkcs11SlotLabel.getP11Provider(this.slotNr, this.sharedLibrary,
-                                                        this.isIndex, this.attributesFile);
+                tmpProvider = Pkcs11SlotLabel.getP11Provider(this.slotNr, slotLabelType, this.sharedLibrary,
+                                                        this.attributesFile);
             } else if ( this.sunP11ConfigFileName!=null ) {
-                tmpProvider = new Pkcs11SlotLabel(Pkcs11SlotLabel.Type.SUN_FILE, null).getP11Provider(this.sunP11ConfigFileName, null, null);
+                tmpProvider = new Pkcs11SlotLabel(Pkcs11SlotLabelType.SUN_FILE, null).getProvider(this.sunP11ConfigFileName, null, null);
             } else {
                 throw new IllegalStateException("Should never happen.");
             }
@@ -318,7 +329,7 @@ public class P11Slot {
             this.notifyAll();
         }
         if ( tmpProvider==null ) {
-            throw new CryptoTokenOfflineException("Provider is null");
+            throw new NoSuchSlotException("Slot labeled " + slotNr + " could not be located.");
         }
         if ( Security.getProvider(tmpProvider.getName())!=null ) {
             Security.removeProvider(tmpProvider.getName());
