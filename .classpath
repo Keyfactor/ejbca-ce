@@ -97,6 +97,7 @@
 	<classpathentry kind="var" path="JBOSS5_HOME/lib/jboss-kernel.jar"/>
 	<classpathentry kind="var" path="JBOSS5_HOME/client/jboss-javaee.jar"/>
 	<classpathentry kind="var" path="JBOSS5_HOME/common/lib/servlet-api.jar"/>
+	<classpathentry kind="var" path="JBOSS5_HOME/common/lib/el-api.jar"/>
 	<classpathentry kind="var" path="JBOSS5_HOME/server/default/deploy/jbossweb.sar/jsf-libs/jsf-api.jar"/>
 	<classpathentry kind="var" path="JBOSS5_HOME/server/default/deploy/jbossweb.sar/jsf-libs/jsf-impl.jar"/>
 	<classpathentry kind="var" path="JBOSS5_HOME/server/default/deploy/jbossweb.sar/jstl.jar"/>
