@@ -33,7 +33,7 @@ public class Pkcs11WrapperTest {
 
     private static final Logger log = Logger.getLogger(Pkcs11WrapperTest.class);
     
-    private static final String SLOT_LABEL = "placeholder";
+    private static final String SLOT_LABEL = "ejbca";
     private static final long SLOT_NUMBER = 1;
     
     @BeforeClass
