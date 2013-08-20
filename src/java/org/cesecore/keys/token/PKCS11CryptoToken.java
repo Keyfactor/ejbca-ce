@@ -52,9 +52,6 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
     private static final InternalResources intres = InternalResources.getInstance();
 
     /** Keys, specific to PKCS#11, that can be defined in CA token properties */
-    //public final static String SLOT_NUMBER_KEY = "slot";
-    //public final static String SLOT_LIST_INDEX_KEY = "slotListIndex";
-    //public final static String SLOT_LABEL_KEY = "slotLabel";
     public static final String SLOT_LABEL_VALUE = "slotLabelValue";
     public static final String SLOT_LABEL_TYPE = "slotLabelType";
     public static final String SHLIB_LABEL_KEY = "sharedLibrary";
