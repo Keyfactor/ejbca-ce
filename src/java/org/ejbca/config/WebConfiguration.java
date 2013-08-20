@@ -189,7 +189,6 @@ public class WebConfiguration {
         return (s != null && !s.trim().isEmpty() ? s : "0");
     }
     
-    
     public static final class P11LibraryInfo {
         private final String alias;
         private final SlotList slotList;

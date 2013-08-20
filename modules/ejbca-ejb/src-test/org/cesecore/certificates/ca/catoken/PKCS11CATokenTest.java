@@ -21,6 +21,7 @@ import java.util.Properties;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.PKCS11CryptoTokenTest;
 import org.cesecore.keys.token.PKCS11TestUtils;
+import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.util.CryptoProviderTools;
 import org.junit.Test;
 
@@ -71,7 +72,7 @@ public class PKCS11CATokenTest extends CATokenTestBase {
     	doSaveAndLoad("1024", cryptoToken, getCaTokenProperties("rsatest" + CAToken.DEFAULT_KEYSEQUENCE));
 	}
 
-	private CryptoToken createPKCS11Token(boolean useAutoActivationPin) {
+	private CryptoToken createPKCS11Token(boolean useAutoActivationPin) throws NoSuchSlotException {
 		CryptoToken cryptoToken = PKCS11CryptoTokenTest.createPKCS11Token();
     	Properties cryptoTokenProperties = cryptoToken.getProperties();
     	if (useAutoActivationPin) {

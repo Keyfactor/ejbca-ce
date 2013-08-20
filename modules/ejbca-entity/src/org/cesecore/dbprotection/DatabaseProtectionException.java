@@ -36,6 +36,15 @@ public class DatabaseProtectionException extends RuntimeException {
         this.entity = entity;
     }
 
+    
+    /**
+     * Constructs an instance of exception with a simple details message
+     * and the underlying exception
+     */
+    public DatabaseProtectionException(final String msg, final Exception e) {
+        super(msg, e);
+        this.entity = null;
+    }
     /**
      * Constructs an instance of exception with a simple details message
      */

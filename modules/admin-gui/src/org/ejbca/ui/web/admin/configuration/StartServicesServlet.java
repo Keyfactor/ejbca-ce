@@ -49,6 +49,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLoc
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
 import org.cesecore.dbprotection.ProtectedDataConfiguration;
 import org.cesecore.keys.token.CryptoTokenFactory;
+import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
@@ -78,6 +79,8 @@ public class StartServicesServlet extends HttpServlet {
     private CAAdminSessionLocal caAdminSession;
     @EJB
     private CertificateProfileSessionLocal certificateProfileSession;
+    @EJB
+    private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
     @EJB
@@ -322,6 +325,8 @@ public class StartServicesServlet extends HttpServlet {
         ocspResponseGeneratorSession.adhocUpgradeFromPre52(null);
         // Start key reload timer
         ocspResponseGeneratorSession.initTimers();
+        
+        cryptoTokenManagementSession.adhocUpgradeWithin6_0_x(admin);
     }
     
     /**

@@ -103,7 +103,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 
 	    public TokenAndCaActivationGuiInfo(Integer cryptoTokenId) {
             this.cryptoTokenInfo = new CryptoTokenInfo(cryptoTokenId, "CryptoToken id " + cryptoTokenId,
-                    false, false, "NullCryptoToken", false, "", "", "");
+                    false, false, "NullCryptoToken", false, "", "", null, "");
             this.cryptoTokenNewState = false;
             this.allowedActivation = false;
             this.allowedDeactivation = false;

@@ -43,6 +43,7 @@ import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
+import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -252,9 +253,10 @@ public interface CAAdminSession {
      *            the catoken properties, same as usually entered in the
      *            adminGUI for hard token CAs.
      * @throws CAOfflineException if CRLs can not be generated because imported CA did not manage to get online
+     * @throws NoSuchSlotException if no slot as defined by the label in catokenproperties could be found
      */
-    public void importCAFromHSM(AuthenticationToken admin, String caname, java.security.cert.Certificate[] signatureCertChain, String catokenpassword,
-            String catokenclasspath, String catokenproperties) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, IllegalCryptoTokenException, CADoesntExistsException, CAExistsException, AuthorizationDeniedException, CAOfflineException;
+    public void importCAFromHSM(AuthenticationToken admin, String caname, Certificate[] signatureCertChain, String catokenpassword,
+            String catokenclasspath, String catokenproperties) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, IllegalCryptoTokenException, CADoesntExistsException, CAExistsException, AuthorizationDeniedException, CAOfflineException, NoSuchSlotException;
 
     /**
      * Exports a CA to file. The method only works for soft tokens.

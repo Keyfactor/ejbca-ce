@@ -67,6 +67,7 @@ import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.keys.token.PKCS11CryptoToken;
+import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
@@ -776,8 +777,8 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
                 CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(currentCryptoTokenId.intValue());
                 if (StringUtils.equals(prop.getProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY), cryptoToken.getProperties().getProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY))
                         && StringUtils.equals(prop.getProperty(PKCS11CryptoToken.ATTRIB_LABEL_KEY), cryptoToken.getProperties().getProperty(PKCS11CryptoToken.ATTRIB_LABEL_KEY))
-                        && StringUtils.equals(prop.getProperty(PKCS11CryptoToken.SLOT_LABEL_KEY), cryptoToken.getProperties().getProperty(PKCS11CryptoToken.SLOT_LABEL_KEY))
-                        && StringUtils.equals(prop.getProperty(PKCS11CryptoToken.SLOT_LIST_INDEX_LABEL_KEY), cryptoToken.getProperties().getProperty(PKCS11CryptoToken.SLOT_LIST_INDEX_LABEL_KEY))) {
+                        && StringUtils.equals(prop.getProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE), cryptoToken.getProperties().getProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE))
+                        && StringUtils.equals(prop.getProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE), cryptoToken.getProperties().getProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE))) {
                     // The current CryptoToken point to the same HSM slot in the same way.. re-use this id!
                     cryptoTokenId = currentCryptoTokenId.intValue();
                     break;
@@ -787,11 +788,19 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         if (cryptoTokenId == 0) {
             final String cryptoTokenName = "Upgraded CA CryptoToken for " + caName;
             try {
-                cryptoTokenId = cryptoTokenSession.mergeCryptoToken(CryptoTokenFactory.createCryptoToken(classpath, prop, keyStoreData, caid, cryptoTokenName));
+                //Upgrade the properties value
+                Properties upgradedProperties = PKCS11CryptoToken.upgradePropertiesFileFrom5_0_x(prop);
+                cryptoTokenId = cryptoTokenSession.mergeCryptoToken(CryptoTokenFactory.createCryptoToken(classpath, upgradedProperties, keyStoreData, caid, cryptoTokenName));
             } catch (CryptoTokenNameInUseException e) {
-                log.info("Crypto token name already in use upgrading (adhocUpgradeFrom50) crypto token for CA '"+caName+"', cryptoTokenName '"+cryptoTokenName+"'.", e);
-                throw new RuntimeException(e);  // Since we have a constraint on CA names to be unique, this should never happen
+                String msg = "Crypto token name already in use upgrading (adhocUpgradeFrom50) crypto token for CA '"+caName+"', cryptoTokenName '"+cryptoTokenName+"'.";
+                log.info(msg, e);
+                throw new RuntimeException(msg, e);  // Since we have a constraint on CA names to be unique, this should never happen
+            } catch (NoSuchSlotException e) {
+                String msg = "Slot as defined by " + prop.getProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE) + " could not be found.";
+                log.error(msg, e);
+                throw new RuntimeException(msg, e);
             }
+                
         }
         tokendata.put(CAToken.CRYPTOTOKENID, String.valueOf(cryptoTokenId));
         // Note: We did not remove the keystore in the CA properties here, so old versions running in parallel will still work

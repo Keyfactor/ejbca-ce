@@ -137,6 +137,7 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
+import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.log.ProbableErrorHandler;
@@ -1418,14 +1419,19 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 final Properties cryptoTokenProperties = new Properties();
                 if (p11SharedLibrary != null && p11SharedLibrary.length()!=0) {
                     log.info(" Processing PKCS#11 with shared library " + p11SharedLibrary);
-                    final String p11slot = OcspConfiguration.getP11SlotIndex();
-                    // ...
-                    if (p11slot.startsWith("i")) {
-                        cryptoTokenProperties.put(PKCS11CryptoToken.SLOT_LIST_INDEX_LABEL_KEY, p11slot.replaceAll("i", ""));
-                    } else {
-                        cryptoTokenProperties.put(PKCS11CryptoToken.SLOT_LABEL_KEY, p11slot);
-                    }
+                    final String p11slot = OcspConfiguration.getP11SlotIndex();       
                     cryptoTokenProperties.put(PKCS11CryptoToken.SHLIB_LABEL_KEY, p11SharedLibrary);
+                    cryptoTokenProperties.put(PKCS11CryptoToken.SLOT_LABEL_VALUE, p11slot);
+                    // Guess label type in order index, number or label 
+                    Pkcs11SlotLabelType type;
+                    if(Pkcs11SlotLabelType.SLOT_NUMBER.validate(p11slot)) {
+                        type = Pkcs11SlotLabelType.SLOT_NUMBER;
+                    } else if(Pkcs11SlotLabelType.SLOT_INDEX.validate(p11slot)) {
+                        type = Pkcs11SlotLabelType.SLOT_INDEX;
+                    } else {
+                        type = Pkcs11SlotLabelType.SLOT_LABEL;
+                    }
+                    cryptoTokenProperties.put(PKCS11CryptoToken.SLOT_LABEL_TYPE, type.getKey());
                     cryptoTokenName = "PKCS11 slot "+p11slot;
                 } else if (sunP11ConfigurationFile != null && sunP11ConfigurationFile.length()!=0) {
                     log.info(" Processing PKCS#11 with Sun property file " + sunP11ConfigurationFile);
@@ -1439,8 +1445,19 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     // ...
                     final Properties p11ConfigurationFileProperties = new Properties();
                     p11ConfigurationFileProperties.load(new FileInputStream(sunP11ConfigurationFile));
-                    cryptoTokenProperties.put(PKCS11CryptoToken.SLOT_LABEL_KEY, p11ConfigurationFileProperties.getProperty("slot"));
-                    cryptoTokenProperties.put(PKCS11CryptoToken.SLOT_LIST_INDEX_LABEL_KEY, p11ConfigurationFileProperties.getProperty("slotListIndex"));
+                    String p11slot = p11ConfigurationFileProperties.getProperty("slot");
+                    cryptoTokenProperties.put(PKCS11CryptoToken.SLOT_LABEL_VALUE, p11slot);
+                    // Guess label type in order index, number or label 
+                    Pkcs11SlotLabelType type;
+                    if(Pkcs11SlotLabelType.SLOT_NUMBER.validate(p11slot)) {
+                        type = Pkcs11SlotLabelType.SLOT_NUMBER;
+                    } else if(Pkcs11SlotLabelType.SLOT_INDEX.validate(p11slot)) {
+                        type = Pkcs11SlotLabelType.SLOT_INDEX;
+                    } else {
+                        type = Pkcs11SlotLabelType.SLOT_LABEL;
+                    }
+                    cryptoTokenProperties.put(PKCS11CryptoToken.SLOT_LABEL_TYPE, type.getKey());
+                    
                     cryptoTokenProperties.put(PKCS11CryptoToken.SHLIB_LABEL_KEY, p11ConfigurationFileProperties.getProperty("library"));
                     //cryptoTokenProperties.put(PKCS11CryptoToken.ATTRIB_LABEL_KEY, null);
                     log.warn("Any attributes(..) = { ... } will be ignored and system defaults will be used."+

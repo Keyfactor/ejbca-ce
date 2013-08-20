@@ -33,6 +33,7 @@ import java.util.Set;
 
 import javax.crypto.Cipher;
 
+import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.keys.util.KeyTools;
 import org.ejbca.util.PerformanceTest;
 import org.ejbca.util.PerformanceTest.Command;
@@ -60,6 +61,7 @@ class KeyStoreContainerTest {
                      final String encryptProviderClassName,
                      final String keyStoreType,
                      final String storeID,
+                     final Pkcs11SlotLabelType slotLabelType,
                      final int nrOfTests,
                      final String alias,
                      final String typeOfOperation,
@@ -69,6 +71,7 @@ class KeyStoreContainerTest {
                         encryptProviderClassName,
                         keyStoreType,
                         storeID,
+                        slotLabelType,
                         nrOfTests,
                         protectionParameter);
             return;
@@ -77,6 +80,7 @@ class KeyStoreContainerTest {
                     encryptProviderClassName,
                     keyStoreType,
                     storeID,
+                    slotLabelType,
                     nrOfTests,
                     alias,
                     typeOfOperation==null || typeOfOperation.toLowerCase().indexOf("sign")>=0,
@@ -113,12 +117,13 @@ class KeyStoreContainerTest {
                                     final String encryptProviderClassName,
                                     final String keyStoreType,
                                     final String storeID,
+                                    final Pkcs11SlotLabelType slotLabelType,
                                     final int nrOfTests,
                                     final ProtectionParameter protectionParameter) throws Exception {
         termOut.println("Test of keystore with ID "+storeID+'.');
         NormalTest tests[] = null;
         final KeyStoreContainer keyStore = getKeyStore(providerClassName, encryptProviderClassName,
-                                                           keyStoreType, storeID, protectionParameter);
+                                                           keyStoreType, storeID, slotLabelType, protectionParameter);
         for (int i = 0; i<nrOfTests || nrOfTests<1; i++) {
             try {
                 if ( tests==null || nrOfTests==-5 ) {
@@ -138,12 +143,13 @@ class KeyStoreContainerTest {
                                     final String encryptProviderClassName,
                                     final String keyStoreType,
                                     final String storeID,
+                                    final Pkcs11SlotLabelType slotLabelType,
                                     final int numberOfThreads,
                                     final String alias,
                                     final boolean isSign,
                                     final ProtectionParameter protectionParameter) throws Exception {
         final KeyStoreContainer keyStore = getKeyStore(providerClassName, encryptProviderClassName,
-                                                       keyStoreType, storeID, protectionParameter);
+                                                       keyStoreType, storeID, slotLabelType, protectionParameter);
         if ( keyStore.getKeyStore().isKeyEntry(alias) ) {
             PrivateKey privateKey = (PrivateKey)keyStore.getKey(alias);
             new KeyStoreContainerTest.StressTest(alias,
@@ -160,12 +166,13 @@ class KeyStoreContainerTest {
                                                  final String encryptProviderClassName,
                                                  final String keyStoreType,
                                                  final String storeID,
+                                                 final Pkcs11SlotLabelType slotLabelType,
                                                  final ProtectionParameter protectionParameter) throws Exception {
         KeyStoreContainer keyStore = null;
         while( keyStore==null ) {
             try {
                 keyStore = KeyStoreContainerFactory.getInstance(keyStoreType, providerName,
-                                                   encryptProviderClassName, storeID, null, protectionParameter);
+                                                   encryptProviderClassName, storeID, slotLabelType, null, protectionParameter);
             } catch( Throwable t ) { // NOPMD: dealing with HSMs we really want to catch all
                 t.printStackTrace(termErr);
                 termErr.println("Not possible to load keys. Maybe a smart card should be inserted or maybe you just typed the wrong PIN. Press enter when the problem is fixed.");

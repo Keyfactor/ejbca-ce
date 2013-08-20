@@ -1,9 +1,17 @@
 EJBCA 6.0.0
 -----------
 
+* Noteworthy changes:
 - The term 'Admin Group' has been mostly purged and replaced with 'Role'.
 - The installation work-flow and ant targets have changed.
 - 'Certificate Request History' is now disabled by default for new CAs.
+- PKCS11 crypto tokens can now be managed by slot label (in addition to slot number and index) 
+
+* Changes to the CLI
+- The 'cryptotoken create' command has been been given an additional argument for PKCS11 crypto tokens to define the slot labeling type.
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE.
 
 EJBCA 5.1.0
 -----------
@@ -298,7 +306,7 @@ This is a maintenance release containing 1 new VA publisher feature, 1 security 
 David Carella has contributed many GUI improvements for the last few releases.
 - forms and tables are colored according to consistent rules.
 - all forms and tables are split in several logical sections.
-- all similar fields (e.g. “[_] Use”, “[_] Critical”, “[_] Required”, “[_] Modifiable”, etc.) are vertically aligned.
+- all similar fields (e.g. ���[_] Use���, ���[_] Critical���, ���[_] Required���, ���[_] Modifiable���, etc.) are vertically aligned.
 - all check boxes (and radio boxes) can be checked by clicking on its label,
 - two rules for in-line help for PKI administrators and RA officers.
 - forms are globally more compact (the page heights are smaller). 
@@ -476,7 +484,7 @@ For upgrade instructions, please see UPGRADE.
 
 EJBCA 4.0.1
 -----------
-This is a maintenance release – only one issue is resolved.
+This is a maintenance release ��� only one issue is resolved.
 
 Changes:
 - Fixed failure to perform web browser enrollment with Internet Explorer.
@@ -515,7 +523,7 @@ Known issues (see EJBCA issue tracker for a more updated version):
 
 EJBCA 3.11.1
 -----------
-This is a maintenance release – 16 issues have been resolved. Only fixes and layout improvements, no new features. 
+This is a maintenance release ��� 16 issues have been resolved. Only fixes and layout improvements, no new features. 
 This release fixes an upgrade issue from 3.6.x to 3.11.x and also a MySQL/MyISAM related issue in the 3.11.0 release.
 A few uncaught regressions from 3.10.x and 3.11.0 were fixed, and as usual David Carella of Linagora added some 
 Admin GUI layout improvements.
@@ -543,7 +551,7 @@ This should affect a very small number of users.
 
 EJBCA 3.11.0
 -----------
-This is a major release with several new features – 47 issues have been resolved. 
+This is a major release with several new features ��� 47 issues have been resolved. 
 One major goal with this release is to prepare for a seamless migration to EJBCA 4.0. To make 
 the migration path to EJBCA 4.0 a simple plug-in upgrade, EJBCA 3.11 introduces database changes
 needed to make the schema fully compatible and consistent across all supported databases.
@@ -559,7 +567,7 @@ Noteworthy changes:
 - Upgrade database schema to be consistent across databases.
 - Add a few new columns to database tables, a preparation to be used in EJBCA 4.0.
 - Improvements in the Glassfish support, now also usable with Oracle database. 
-- Several other new features and extended key usages, GUI improvements and performance enhancements – many of which are contributed by Linagora.
+- Several other new features and extended key usages, GUI improvements and performance enhancements ��� many of which are contributed by Linagora.
 
 *Important notes*
 1. 
@@ -643,7 +651,7 @@ The release was primarily done to fix a regression for EAC CVC CAs using ECC key
   
 Noteworthy changes:
 - EAC CVC Document Verifiers using ECC keys did not work properly. This was fixed and new test cases was added to the test suite.
-- Removed requirement to use “Batch generation” when using CMP RA mode.
+- Removed requirement to use ���Batch generation��� when using CMP RA mode.
 - Fixed issue that revocation in admin gui did not work with CAs using accented characters.
 - Added code to mitigate potential cross site scripting in admin gui. Note that client certificate authentication was still needed so it was not publicly exploitable.
 - Added UTF-8 URI encoding for the public http port (8080). It was previously only enabled for the https ports.

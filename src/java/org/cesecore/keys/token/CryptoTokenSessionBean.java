@@ -27,6 +27,7 @@ import javax.persistence.Query;
 import org.apache.log4j.Logger;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
+import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.QueryResultWrapper;
 
@@ -90,7 +91,12 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal {
                         inClassname = act.getClassPath();
                     }
                 }
-                final CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(inClassname, properties, data, cryptoTokenId, tokenName);
+                CryptoToken cryptoToken;
+                try {
+                    cryptoToken = CryptoTokenFactory.createCryptoToken(inClassname, properties, data, cryptoTokenId, tokenName);
+                } catch (NoSuchSlotException e) {
+                    throw new RuntimeException("Attempted to find a slot for a soft crypto token. This should not happen.");
+                }
                 CryptoTokenCache.INSTANCE.updateWith(cryptoTokenId, digest, tokenName, cryptoToken);
             }
             // 3. The cache compares the database data with what is in the cache
