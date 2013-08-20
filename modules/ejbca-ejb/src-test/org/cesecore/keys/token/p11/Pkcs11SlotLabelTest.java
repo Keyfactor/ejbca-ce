@@ -33,7 +33,7 @@ public class Pkcs11SlotLabelTest {
 
     private static final String SLOT_NUMBER = "1";
     private static final String SLOT_INDEX = "i1";
-    private static final String SLOT_LABEL = "ejbca";
+    private static final String SLOT_LABEL = "ejbca                           ";
 
     @BeforeClass
     public static void beforeClass() {
