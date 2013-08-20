@@ -84,8 +84,10 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
     private int deleteRow(final String tableName, final String fingerPrint) {
         // This is done as a native query because we do not want to be depending on rowProtection validating
         // correctly, since publisher tests inserts directly in the database with null rowProtection.
-        final Query query = this.entityManager.createNativeQuery("DELETE from "+tableName+" where fingerprint=:fingerprint");
-        query.setParameter("fingerprint", fingerPrint);
+        // NOTE: the below native query uses direct String insertion instead of a parameterized query. 
+        // This is because in PostgreSQL we otherwise bet an error "ERROR: operator does not exist: text = bytea".
+        // Do NOT use SQL like below in production code (this is only test code), since it is vulnerable to SQL injection.
+        final Query query = this.entityManager.createNativeQuery("DELETE from "+tableName+" where fingerprint='"+fingerPrint+"'");
         return query.executeUpdate();
     }
 
