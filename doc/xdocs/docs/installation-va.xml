@@ -30,7 +30,8 @@ On the other hand some OCSP Extension plug-ins may not work without the certific
 </li>
 <li>'Publish only revoked certificates' - If checked only revoked certificate are stored on the VA. The OCSP responder of the VA must have the 'nonexistingisgood' (conf/ocsp.properties) enabled if only revoked certificates are published.
 A publisher for CA certificates (used on a 'Edit Certificate Authorities' page) must have this disabled.</li>
-<li>'Store CRL at the Validation Authority' - should be set if the CRL store service of the VA should be used for a CA (only has a meaning for publishers used on a 'Edit Certificate Authorities' page).</li>
+<li>'Store CRL at the Validation Authority' - should be set if the CRL store service of the VA should be used for a CA (only has a meaning for publishers used on a 'Edit Certificate Authorities' page).
+In order to use this option you must also check 'Store certificate at the Validation Authority', and you must not check 'Publish only revoked certificates'. This is because the CA certificate(s) must also be stored in the VA when CRLs are stored there.</li>
 </ul>
   <p>
 All certificate profiles for certificates that should be available to the OCSP responder should
