@@ -1037,6 +1037,23 @@ such as MS UPN, GUID, Krb5PrincipalName.
 <p>
 Subject alternative names can be: rfc822Name=&lt;email>, dNSName=&lt;host name>, uri=&lt;http://host.com/>, ipaddress=&lt;address>, upn=&lt;MS UPN>, guid=&lt;MS globally unique id>, directoryName=&lt;LDAP escaped DN>, krb5principal=&lt;Krb5 principal name>, permanentIdentifier=&lt;Permanent Identifier values&gt;
 </p>
+<strong>RFC 822 Name (e-mail address)</strong>
+<p>Configuration of email fileds can be a bit tricky, since there are two places.
+</p>
+<ol>
+<li>Email field - registers a user email in the EJBCA database.</li>
+<li>Subject alternative name field - add an email address to the SubjectAlternativeName field in an issued certificate.</li>
+</ol>
+<p>These two fields can be the same, but does not have to be, which is why configuration can be a bit tricky if you configure the individually.</p>
+<p>The the Subject alternative name field there are different options:</p>
+<ul>
+<li>Use entity e-mail field checked: this results in a single entry for 'End Entity E-mail' when adding a new end entity.</li>
+<ul><li>Required: if checked the 'End Entity E-mail' field must be filled and can not be omitted.</li></ul>
+<li>Use entity e-mail field unchecked: this results in a separate input field for 'RFC 822 Name'.</li>
+<ul><li>Required: if checked the 'RFC 822 Name' field must be filled and can not be omitted.</li>
+<li>Modifiable: if checked the RA administrator can fill in an email address. If a domain (foo.com) is set in the profile, the RA administrator can fill in the first part of the email, i.e. before @. If Modifiable is unchecked a full, fixed, email address must be provided in the profile, and all end entities will be registered with this email address.</li></ul>
+</ul>
+
 <strong>IP address</strong>
 <p>An IP address can be either an IPv4 address or an IPv6 address.
 <br/>Example IPv4:
