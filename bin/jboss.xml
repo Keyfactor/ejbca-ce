@@ -264,7 +264,7 @@
             <!-- We have to undeploy ejbca.ear before removing the datasource, or removal will fail. @TODO: Figure out how to detect if something is deployed or not. -->
             <jboss:admsilent arg="undeploy ejbca.ear --keep-content" failonerror="false" />
             <jboss:admsilent arg="data-source remove --name=ejbcads" failonerror="false" />
-            <jboss:adm arg='data-source add --name=ejbcads --driver-name="${database.driver}" --connection-url="${database.url}" --jndi-name="java:/${datasource.jndi-name}" --use-ccm=true --driver-class="${database.driver}" --user-name="${database.username}" --password="${database.password}" --validate-on-match=false --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=5 --max-pool-size=150 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --check-valid-connection-sql="select 1;"' />
+            <jboss:adm arg='data-source add --name=ejbcads --driver-name="${database.driver}" --connection-url="${database.url}" --jndi-name="java:/${datasource.jndi-name}" --use-ccm=true --user-name="${database.username}" --password="${database.password}" --validate-on-match=false --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=5 --max-pool-size=150 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --check-valid-connection-sql="select 1;"' />
             <!-- If we don't reload now, JBoss AS 7 will get stuck. @TODO: Try this out with JBoss EAP 6, and see if we can report a bug. -->
             <jboss:admsilent arg=":reload" />
             <jboss:admsilent arg="deploy --name=ejbca.ear" failonerror="false" />
