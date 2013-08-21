@@ -1,5 +1,8 @@
 # ------------- Database configuration ------------------------
 
+# The default values in this file is good for a default install, using the build in H2 test database, with JBoss 7/EAP 6.
+# For a default install with Hypersonic database on JBoss 5, change database.name, database.url, database.driver and database.password.
+
 # JNDI name of the DataSource used for EJBCA's database access. The prefix
 # (e.g. 'java:/', '' or 'jdbc/')is automatically determined for each
 # application server.
