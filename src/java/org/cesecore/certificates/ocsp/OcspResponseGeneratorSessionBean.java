@@ -219,8 +219,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     @Override
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void reloadOcspSigningCache() {
-    	if (log.isDebugEnabled()) {
-    		log.debug("reloadOcspSigningCache");
+    	if (log.isTraceEnabled()) {
+    		log.trace(">reloadOcspSigningCache");
     	}
         // Cancel any waiting timers
         cancelTimers();
@@ -265,8 +265,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             log.debug("reloadTokenAndChainCache");
         }
         // Verify card key holder
-        if (CardKeyHolder.getInstance().getCardKeys() == null) {
-            log.info(intres.getLocalizedMessage("ocsp.classnotfound", hardTokenClassName));
+        if (log.isDebugEnabled() && (CardKeyHolder.getInstance().getCardKeys() == null)) {
+            log.debug(intres.getLocalizedMessage("ocsp.classnotfound", hardTokenClassName));
         }
         // Populate OcspSigningCache
         try {
@@ -1774,7 +1774,7 @@ class CardKeyHolder {
             this.cardKeys = (CardKeys) OcspResponseGeneratorSessionBean.class.getClassLoader().loadClass(hardTokenClassName).newInstance();
             this.cardKeys.autenticate(OcspConfiguration.getCardPassword());
         } catch (ClassNotFoundException e) {
-            log.info(intres.getLocalizedMessage("ocsp.classnotfound", hardTokenClassName));
+            log.debug(intres.getLocalizedMessage("ocsp.classnotfound", hardTokenClassName));
         } catch (Exception e) {
             log.info("Could not create CardKeyHolder", e);
         }
