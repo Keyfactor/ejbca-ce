@@ -501,8 +501,9 @@ public class HSMKeyTool extends ClientToolBox {
             String prefix = storeId.split(":", 2)[0];
             if(prefix.equals("TOKEN_LABEL") || prefix.equals(Pkcs11SlotLabelType.SLOT_LABEL.getKey())) {
                 return Pkcs11SlotLabelType.SLOT_LABEL;
-            } else if (prefix.equals("SLOT_ID") || prefix.equals(Pkcs11SlotLabelType.SLOT_LABEL.getKey())) {
-                return Pkcs11SlotLabelType.SLOT_LABEL;
+            } else if (prefix.equals("SLOT_ID") || prefix.equals(Pkcs11SlotLabelType.SLOT_NUMBER.getKey())) {
+               
+                return Pkcs11SlotLabelType.SLOT_NUMBER;
             } else if (prefix.equals("SLOT_LIST_IX") || prefix.equals(Pkcs11SlotLabelType.SLOT_INDEX.getKey())) {
                 return Pkcs11SlotLabelType.SLOT_INDEX;
             } else {
