@@ -174,7 +174,7 @@ Sample setup:
  admin@host:~$ sudo su postgres
  postgres@host:~$ createuser -SDRP ejbca
   <enter password twice>
- postgres@host:~$ createdb ejbca
+ postgres@host:~$ createdb -E UTF8 ejbca
 
 Typically usage: 'createdb ejbca "database for ejbca"' will create
 a database named 'ejbca' with description "database for ejbca" and with user
