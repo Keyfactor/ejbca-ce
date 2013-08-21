@@ -341,7 +341,7 @@ ant jbosslog4jsafer
 <b>2.</b> On JBoss 5 copy jbosslog4jsafer.jar from the modules/dist directory to your servers lib directory. For example:
 </p>
 <source>
-cp dist/jbosslog4jsafer.jar /home/jboss/jboss-5.1.0.GA/server/default/lib/
+cp modules/dist/jbosslog4jsafer.jar /home/jboss/jboss-5.1.0.GA/server/default/lib/
 </source>
 <p>On JBoss 7 / EAP 6 build and deploy a new ejbca.ear that includes jbosslog4jsafer.jar with:</p>
 <source>
