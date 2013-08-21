@@ -498,16 +498,15 @@ public class HSMKeyTool extends ClientToolBox {
     
     private static final Pkcs11SlotLabelType divineSlotLabelType(String storeId) {
         if(storeId.contains(":")) {
-            String prefix = storeId.split(":", 2)[0];
+            String prefix = storeId.split(":", 2)[0].trim();
             if(prefix.equals("TOKEN_LABEL") || prefix.equals(Pkcs11SlotLabelType.SLOT_LABEL.getKey())) {
                 return Pkcs11SlotLabelType.SLOT_LABEL;
             } else if (prefix.equals("SLOT_ID") || prefix.equals(Pkcs11SlotLabelType.SLOT_NUMBER.getKey())) {
-               
                 return Pkcs11SlotLabelType.SLOT_NUMBER;
             } else if (prefix.equals("SLOT_LIST_IX") || prefix.equals(Pkcs11SlotLabelType.SLOT_INDEX.getKey())) {
                 return Pkcs11SlotLabelType.SLOT_INDEX;
             } else {
-                return null;
+                throw new IllegalArgumentException("Type " + prefix + " was not valid");
             }
                 
         } else {
