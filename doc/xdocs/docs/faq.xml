@@ -7,18 +7,19 @@
   <faqsection title="General">
     <faq id="jboss600">
      <question>
-      I get an error during installation on JBoss 6.0.0 or JBoss 5.1 using Oracle JDK.
+      I get an error during installation on JBoss 5, 6 or 7 using Oracle JDK.
       </question>
       <answer>
       <p>
-      This is because JBoss 5 and 6 have a bug using security providers with Oracle JDK. See JBoss issue <a href="https://issues.jboss.org/browse/JBAS-7882">JBAS-7882</a>.
+      This is because JBoss 5, 6 and 7 have a bug using security providers with Oracle JDK. See JBoss issue <a href="https://issues.jboss.org/browse/JBAS-7882">JBAS-7882</a>.
       </p><p>Everything works fine using OpenJDK, such as the one included with RedHat or Ubuntu servers. 
-      <br/>The way to work around this is different on JBoss 5 and 6.</p>
+      <br/>The way to work around this is different on JBoss 5, 6 and 7.</p>
       <p>On JBoss 6 with Oracle JDK copy ejbca/lib/bc*.jar to $JAVA_HOME/jre/lib/ext, and remove lib/bc*.jar from the deployed ejbca.ear file. If you are unsure about this workaround
       (and the implications it has for upgrades) we suggest using JBoss 5.1.0 instead, where there is a simpler workaround.
       </p>
       <p>On JBoss 5.1 with Oracle JDK copy ejbca/lib/bc*.jar to $JBOSS_HOME/server/default/lib. Don't forget this when you upgrade EJBCA.
       </p>
+      <p>On JBoss 7 you may be able to install the BC libraries as modules. See description in the JBAS-7882 issue linked above.</p>
       </answer>    
     </faq>
     <faq id="illegalKeyLength">

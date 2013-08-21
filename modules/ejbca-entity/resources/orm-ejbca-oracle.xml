@@ -22,7 +22,6 @@
 
     <!-- 
          This file contains mappings specific to Oracle 9.x or 10.x and the JDBC driver version 10.1.0.2.
-         Additional mappings of tables common to both EJBCA and VA are configured in orm-common-${database.name}.xml.
 
          boolean: NUMBER(1)
          int:     NUMBER(10)
