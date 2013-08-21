@@ -22,7 +22,6 @@
 
     <!-- 
          This file contains mappings specific to Informix.
-         Additional mappings of tables common to both EJBCA and VA are configured in orm-common-${database.name}.xml.
 
          boolean: BOOLEAN
          int:     INTEGER

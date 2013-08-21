@@ -10,7 +10,8 @@
 # All supported databases are defined below, others can easily be added
 # See the document doc/howto/HOWTO-database.txt for database specifics and tips and tricks.
 # (Note that the names below are fixed for the database type, it is not the name of your database instance.)
-# Default: hsqldb
+# Default: h2
+#database.name=hsqldb
 #database.name=mysql
 #database.name=postgres
 #database.name=mssql
@@ -23,7 +24,8 @@
 
 # Database connection URL.
 # This is the URL used to connect to the database, used to configure a new datasource in JBoss.
-# Default: jdbc:hsqldb:${jboss.server.data.dir}${/}hypersonic${/}localDB
+# Default: jdbc:h2:~/ejbcadb;DB_CLOSE_DELAY=-1
+#database.url=jdbc:hsqldb:${jboss.server.data.dir}${/}hypersonic${/}localDB
 #database.url=jdbc:mysql://127.0.0.1:3306/ejbca
 #database.url=jdbc:mysql://127.0.0.1:3306/ejbca?characterEncoding=UTF-8
 #database.url=jdbc:postgresql://127.0.0.1/ejbca
@@ -38,7 +40,9 @@
 
 # JDBC driver classname.
 # The JEE server needs to be configured with the appropriate JDBC driver for the selected database
-# Default: org.hsqldb.jdbcDriver
+# The Default h2 works (as test database) on JBoss 7, on JBoss 5 use org.hsqldb.jdbcDriver
+# Default: h2
+#database.driver=org.hsqldb.jdbcDriver
 #database.driver=org.mariadb.jdbc.Driver
 #database.driver=com.mysql.jdbc.Driver
 #database.driver=org.postgresql.Driver
@@ -56,7 +60,7 @@
 #database.username=ejbca
 
 # Database password.
-# Default: (blank works with hsqldb)
+# Default: sa (works with hsqldb on JBoss 7, use blank on JBoss 5)
 #database.password=ejbca
 
 # The encoded certificate may be stored in the table Base64CertData instead of

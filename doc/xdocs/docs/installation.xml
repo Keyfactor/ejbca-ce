@@ -59,11 +59,19 @@ earlier version of EJBCA.
 </p></section>
 
 <section name="Ubuntu quick start">
+<note>
+The current installation procedures for JBoss 7 / EAP 6 uses the JBoss CLI to configure the application server.
+The JBoss CLI turns out not to be well suited for automated deploys however, so functions can break. 
+For example if the machine has too few cores CLI connections will mysteriously terminate and report errors.
+<br/>
+Contributions to improve the automated installation on JBoss 7 / EAP 6 are welcome.
+</note>
 <p>This section provides a fast way to get installed and running for a test using Ubuntu Linux. 
 To get more information a about configuration options etc (there are plenty), you should follow the regular <strong>Installation guide</strong> below.
 </p><p>
-This quick start guide assumes EJBCA 6.0 and JBoss 5.1.0.GA, but other version should also be possible to use by just replacing the versions.
+This quick start guide assumes EJBCA 6.0, JBoss 7.1.1.Final and Java 7, but other version should also be possible to use by just replacing the versions.
 We also assume installation is made in a user account with username "user". In your environment simply replace user with the username you are using.
+<br/>Note that the quick install will create a H2 database as ~/ejbcadb.
 </p>
 <ol>
 <li>Install Ubuntu 12.04 server x64, default config, only OpenSSH server selected (or other Ubuntu of your choice, for example Ubuntu Desktop).
@@ -74,34 +82,34 @@ We also assume installation is made in a user account with username "user". In y
 <li>Open a new terminal "ejbca".</li>
 <li>Install needed software from Ubuntu repositories.
 <ul>
-<li>sudo apt-get install openjdk-6-jdk ant ant-optional unzip ntp</li>
+<li>sudo apt-get install openjdk-7-jdk ant ant-optional unzip ntp</li>
 </ul>
 </li>
-<li>Install software not in Ubuntu repositories, JBoss 5.1.0.GA-jdk6 and EJBCA 6.0.<br/>
+<li>Install software not in Ubuntu repositories, JBoss 7.1.1.Final and EJBCA 6.0.<br/>
 <ul>
-<li>wget http://sourceforge.net/projects/jboss/files/JBoss/JBoss-5.1.0.GA/jboss-5.1.0.GA-jdk6.zip</li>
-<li>wget http://sourceforge.net/projects/ejbca/files/ejbca5/ejbca_5_2_0/ejbca_5_2_0.zip</li>
-<li>unzip jboss-5.1.0.GA-jdk6.zip</li>
-<li>unzip ejbca_5_2_0.zip</li>
+<li>wget http://download.jboss.org/jbossas/7.1/jboss-as-7.1.1.Final/jboss-as-7.1.1.Final.zip</li>
+<li>wget http://sourceforge.net/projects/ejbca/files/ejbca6/ejbca_6_0_0/ejbca_6_0_0.zip</li>
+<li>unzip jboss-as-7.1.1.Final.zip</li>
+<li>unzip ejbca_6_0_0.zip</li>
 </ul>
 </li>
 <li>Configure EJBCA so it can find the application server (JBoss).
 <ul>
-<li>echo "appserver.home=/home/user/jboss-5.1.0.GA" >> ejbca_5_2_0/conf/ejbca.properties</li>
-</ul>
-</li>
-<li>Build and deploy EJBCA to JBoss.
-<ul>
-<li>cd ejbca_5_2_0</li>
-<li>ant deploy (just press enter if questions show up)</li>
+<li>echo "appserver.home=/home/user/jboss-as-7.1.1.Final" >> ejbca_6_0_0/conf/ejbca.properties</li>
 </ul>
 </li>
 <li>Open new terminal "jboss" and start JBoss.<br/>
 <ul>
-<li>jboss-5.1.0.GA/bin/run.sh</li>
+<li>jboss-as-7.1.1.Final/bin/standalone.sh</li>
 </ul>
 </li>
-<li>Go back to terminal "ejbca" and run install to create initial administrator CA.<br/>
+<li>Build and deploy EJBCA to JBoss.
+<ul>
+<li>cd ejbca_6_0_0</li>
+<li>ant deploy (just press enter if questions show up)</li>
+</ul>
+</li>
+<li>Run install (in terminal "ejbca") to create initial Management CA and TLS keystores.<br/>
 <ul>
 <li>ant install (choose all default values)</li>
 </ul>
@@ -109,10 +117,10 @@ We also assume installation is made in a user account with username "user". In y
 <li>Go back to terminal "jboss" and restart JBoss.<br/>
 <ul>
 <li>ctrl-c</li>
-<li>jboss-5.1.0.GA/bin/run.sh</li>
+<li>jboss-as-7.1.1.Final/bin/standalone.sh</li>
 </ul>
 </li>
-<li>Copy /home/user/ejbca_5_2_0/p12/superadmin.p12 to admin desktop machine and import in web browser.</li>
+<li>Copy /home/user/ejbca_6_0_0/p12/superadmin.p12 to admin desktop machine and import in web browser.</li>
 <li>Open URL https://server:8443/ejbca, where 'server' is the servers name/ip.</li>
 </ol>
 <p>Done!</p>
@@ -122,12 +130,13 @@ We also assume installation is made in a user account with username "user". In y
 <section name="RedHat Enterprise Linux quick start">
 <p>This section provides a fast way to get installed and running for a test using RedHat Enterprise Linux. 
 To get more information a about configuration options etc (there are plenty), you should follow the regular <strong>Installation guide</strong> below.
-</p><p>
+</p>
+<p>
 This quick start guide makes the same assumptions and uses the same procedures as the Ubuntu quick start guide.
 RHEL by default only installs with a 'root' account. Therefore we start by creating a user account with username "user". In your environment simply replace user with the username you are using.
 </p>
 <ol>
-<li>Install RHEL 6.2 x86_64, default config, 'Basic Server'.</li>
+<li>Install RHEL 6.4 x86_64, default config, 'Basic Server'.</li>
 <ul>
 <li>Don't forget to 'Configure Network' at the screen where you set the server hostname.</li>
 <li>Make sure the hostname you set is present in /etc/hosts, or in DNS (or use the default localhost). If not JBoss will not start.</li>
@@ -149,7 +158,7 @@ RHEL by default only installs with a 'root' account. Therefore we start by creat
 <li>Add port 8443, protocol tcp</li>
 </ul>
 </ul>
-<li>Install needed software from RedHat repositories, still logged in as root (assumes RHEL 6.2 DVD in cdrom).</li>
+<li>Install needed software from RedHat repositories, still logged in as root (assumes RHEL 6.4 DVD in cdrom).</li>
 <ul>
 <li>vi /etc/yum.repos.d/install_dvd.repo</li>
 </ul>
@@ -193,9 +202,9 @@ the JCE.
 <p>
 Needed to build and run are:</p>
 <ul>
-<li>JDK 1.6 OpenJDK or (<a href="http://www.oracle.com/technetwork/java/javase/downloads/">Oracle JDK download</a>), if available OpenJDK is recommended</li>
+<li>JDK 7 OpenJDK or (<a href="http://www.oracle.com/technetwork/java/javase/downloads/">Oracle JDK download</a>), if available OpenJDK is recommended</li>
 <li><i>Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files</i> for your JDK (<a href="http://www.oracle.com/technetwork/java/javase/downloads/">download for Oracle's JDK</a>, not required for OpenJDK)</li>
-<li>JBoss Application Server 5.1.x or later for JDK6 (<a href="http://sourceforge.net/projects/jboss/files/JBoss/JBoss-5.1.0.GA/jboss-5.1.0.GA-jdk6.zip/download">download</a>)</li>
+<li>JBoss Application Server 7.1.x or later (<a href="http://www.jboss.org/jbossas/downloads">download</a>, note that the absolute latest may not always be tested)</li>
 <li>Apache Ant 1.7.1 or later to build (<a href="http://ant.apache.org/">download</a>). Note that javascript support may be needed in ant for some components.</li>
 </ul>
  <p>
@@ -305,30 +314,25 @@ Note that the installation must be done with a user with privileges to write to 
 examples:
 </p> 
 <source>
-appserver.home=/opt/jboss-5.1.0
+appserver.home=/opt/jboss-7.1.1.Final
 </source>
 <source>
-appserver.home=/opt/jboss-6.0.0.Final
+appserver.home=/opt/jboss-5.1.0.GA
 </source>
-<p>Also make sure the right java tools (javac/keytool) are available in your system PATH, ie. /usr/local/jdk1.6.0_24/bin.
-<br/>Due to Java's memory handling you may need to assign more memory to Ant in order to build the system without OutOfMemory errors. 
-You can do that by setting an environment variable:
+<p>Also make sure the right java tools (javac/keytool) are available in your system PATH, ie. /usr/local/jdk1.7.0_25/bin.
 </p>
-<source>
-ANT_OPTS=-Xmx512m
-</source>
 <p>
-2) Open a console and type:
+2) Open a console (terminal) and start JBoss.
+You can start JBoss with the normal command 'run.sh/cmd' (JBoss 5) or 'standalone.sh' (JBoss 7) from APPSRV_HOME/bin. You should see JBoss
+picking up everything and deploying the ear without errors.
+</p><p>
+3) Open a console and type:
 </p>
 <source>
 ant deploy
 </source>
 <p>it will compile and build EJBCA and deploy it to JBoss. You will be prompted to enter the value for database.password if it has
 not already been defined in database.properties. 
-</p><p>
-3) Open a console (terminal) and start JBoss.
-You can start JBoss with the normal command 'run.sh/cmd' from APPSRV_HOME/bin. You should see JBoss
-picking up everything and deploying the ear without errors.
 </p><p>
 4) Type:
 </p>
@@ -383,20 +387,19 @@ You must stop and start JBoss after doing this.
 EJBCA should run on any on any JEE5 compliant application server in theory. In reality it doesn't, because dofferent application servers have different tweaks for the standard.
 It is not enough to pass JEE validation in order to run onn all application servers.
 <ol>
-<li>JBoss 5.1.0.GA / JBoss EAP 5.1: Works well. Community and professional support available.</li>
 <li>JBoss 7.1.1.Final / JBoss EAP 6: Works well. Community and professional support available.</li>
-<li>Glassfish 2.1.1: Works. Community support available.</li>
+<li>JBoss 5.1.0.GA / JBoss EAP 5.1: Works well. Community and professional support available.</li>
 <li>Glassfish 3.1.1: Not supported yet.</li>
-<li>WebLogic 10.3.4: Used to work with earlier versions of EJBCA. Unsupported.</li>
-<li>WebSphere 7.0.0.13: Does not work.</li>
+<li>Glassfish 2.1.1: Works with older versions of EJBCA (before v6).</li>
+<li>WebLogic: Does not work. Used to work with earlier versions of EJBCA.</li>
+<li>WebSphere: Does not work. Workder with one version of EJBCA in the past.</li>
 <li>Geronimo: Not supported yet.</li>
 <li>JoNaS: Not supported yet.</li>
-<li>OC4J: Not supported. Not JEE5 compliant and never will be.</li>
 </ol>
 </p>
 
 <subsection name="JBoss">
-<note>JBoss 5 and 7 are the official well tested platforms for EJBCA 5.x. Most of the development is done against JBoss.</note>
+<note>JBoss 5 and 7 / EAP 6 are the official well tested platforms for EJBCA 6.x. Most of the development is done against JBoss.</note>
 
 <subsubsection name="JBoss 5 and OracleJVM bug">
 <p>

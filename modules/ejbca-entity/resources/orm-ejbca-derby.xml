@@ -22,7 +22,6 @@
 
     <!-- 
          This file contains mappings specific to Derby 10.1 or 10.2.
-         Additional mappings of tables common to both EJBCA and VA are configured in orm-common-${database.name}.xml.
 
          boolean: SMALLINT
          int:     INTEGER

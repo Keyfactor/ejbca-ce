@@ -568,7 +568,7 @@
     <!-- Prompts for the database password if it has not been set already -->
     <!-- ================================================================ -->
 	<target name="inputDatabasePassword" >
-		<input message="Please enter the password to the database. A blank password works for hsqldb." addproperty="database.password" defaultvalue="">
+		<input message="Please enter the password to the database. Default works for H2." addproperty="database.password" defaultvalue="sa">
 			<handler classname="org.apache.tools.ant.input.SecureInputHandler" />
 		</input>
 	</target>

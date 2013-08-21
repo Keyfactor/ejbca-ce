@@ -22,9 +22,6 @@
 
     <!-- 
          This file contains mappings specific to MS SQL. Tested with MS SQL Server 2005 Express.
-         Additional mappings of tables common to both EJBCA and VA are configured in orm-common-${database.name}.xml.
-
-         Keep this in sync with orm-{ejbca|ocsp}-{database}.xml!
 
          boolean: BIT
          int:     INTEGER
