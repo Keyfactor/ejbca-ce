@@ -29,6 +29,7 @@ public class KeyStoreContainerFactory {
      * @param providerClassName
      * @param encryptProviderClassName
      * @param storeID
+     * @param slotLabelType the slot label type
      * @param attributesFile
      * @param pp
      * @return

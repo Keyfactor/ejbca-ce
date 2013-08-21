@@ -44,7 +44,6 @@ import org.ejbca.util.keystore.KeyStoreContainerFactory;
 /**
  * Manages a key store on a HSM. This class may be extended by a class specific for a typical HSM.
  * 
- * @author primelars
  * @version $Id$
  *
  */
@@ -175,7 +174,13 @@ public class HSMKeyTool extends ClientToolBox {
             if ( args[1].toLowerCase().trim().contains(GENERATE_MODULE_SWITCH) ) {
                 setModuleProtection();
             }
-            final KeyStoreContainer store = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args.length>6 ? args[6] : null, Pkcs11SlotLabelType.SLOT_NUMBER, null, protectionParameter, "batch-"+new Date().getTime());
+            String storeId = null;
+            Pkcs11SlotLabelType slotType = null;
+            if(args.length > 6) {
+                storeId = trimStoreId(args[6]);
+                slotType = divineSlotLabelType(args[6]);
+            }
+            final KeyStoreContainer store = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter, "batch-"+new Date().getTime());
             generateBatch(args[5], store);
             return true;
         }
@@ -189,7 +194,13 @@ public class HSMKeyTool extends ClientToolBox {
                     setModuleProtection();
                 }
                 final String keyEntryName = args.length>6 ? args[6] :"myKey";
-                final KeyStoreContainer store = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args.length>7 ? args[7] : null, Pkcs11SlotLabelType.SLOT_NUMBER, null, protectionParameter, "priv-"+keyEntryName);
+                String storeId = null;
+                Pkcs11SlotLabelType slotType = null;
+                if(args.length > 7) {
+                    storeId = trimStoreId(args[7]);
+                    slotType = divineSlotLabelType(args[7]);
+                }
+                final KeyStoreContainer store = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter, "priv-"+keyEntryName);
                 store.generate(args[5], keyEntryName);
                 System.err.println("Created certificate with entry "+keyEntryName+'.');
             }
@@ -202,7 +213,13 @@ public class HSMKeyTool extends ClientToolBox {
             } else {
                 String alias = args.length>6 ? args[6] : null;
                 System.err.println("Deleting certificate with alias "+alias+'.');
-                KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], Pkcs11SlotLabelType.SLOT_NUMBER, null, protectionParameter).delete(alias);
+                String storeId = null;
+                Pkcs11SlotLabelType slotType = null;
+              
+                storeId = trimStoreId(args[5]);
+                slotType = divineSlotLabelType(args[5]);
+
+                KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter).delete(alias);
             }
             return true;
         }
@@ -217,7 +234,9 @@ public class HSMKeyTool extends ClientToolBox {
                 System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " [-all] [-explicitecc]");
                 tooFewArguments(args);
             } else {
-                final KeyStoreContainer container = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], Pkcs11SlotLabelType.SLOT_NUMBER, null, protectionParameter);
+                String storeId = trimStoreId(args[5]);
+                Pkcs11SlotLabelType slotType = divineSlotLabelType(args[5]);
+                final KeyStoreContainer container = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter);
                 final List<String> entries;
                 if (forAllKeys) {
                     entries = new LinkedList<String>();
@@ -244,7 +263,11 @@ public class HSMKeyTool extends ClientToolBox {
                 System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <certificate chain files in PEM format (one chain per file)>");
                 tooFewArguments(args);
             } else {
-                final KeyStoreContainer container = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], Pkcs11SlotLabelType.SLOT_NUMBER, null, protectionParameter);
+                String storeId = null;
+                Pkcs11SlotLabelType slotType = null;
+                storeId = trimStoreId(args[5]);
+                slotType = divineSlotLabelType(args[5]);
+                final KeyStoreContainer container = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter);
                 boolean failure = false;
                 for (int i = 6; i < args.length; i++) {
                     try {
@@ -265,7 +288,11 @@ public class HSMKeyTool extends ClientToolBox {
                 System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <trusted root certificate in PEM format>");
                 tooFewArguments(args);
             } else {
-                KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], Pkcs11SlotLabelType.SLOT_NUMBER, null, protectionParameter).installTrustedRoot(args[6]);
+                String storeId = null;
+                Pkcs11SlotLabelType slotType = null;
+                storeId = trimStoreId(args[5]);
+                slotType = divineSlotLabelType(args[5]);
+                KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter).installTrustedRoot(args[6]);
             }
             return true;
         }
@@ -292,7 +319,11 @@ public class HSMKeyTool extends ClientToolBox {
                     symmAlgOid = args[9];
                 }
                 System.err.println("Using symmstric encryption algorithm: "+symmAlgOid);
-                KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], Pkcs11SlotLabelType.SLOT_NUMBER, null, protectionParameter).encrypt(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8], symmAlgOid);
+                String storeId = null;
+                Pkcs11SlotLabelType slotType = null;
+                storeId = trimStoreId(args[5]);
+                slotType = divineSlotLabelType(args[5]);
+                KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter).encrypt(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8], symmAlgOid);
             }
             return true;
         }
@@ -301,7 +332,11 @@ public class HSMKeyTool extends ClientToolBox {
                 System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <input file> <output file> <key alias>");
                 tooFewArguments(args);
             } else {
-                KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], Pkcs11SlotLabelType.SLOT_NUMBER, null, protectionParameter).decrypt(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8]);
+                String storeId = null;
+                Pkcs11SlotLabelType slotType = null;
+                storeId = trimStoreId(args[5]);
+                slotType = divineSlotLabelType(args[5]);
+                KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter).decrypt(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8]);
             }
             return true;
         }
@@ -310,7 +345,11 @@ public class HSMKeyTool extends ClientToolBox {
                 System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <input file> <output file> <key alias>");
                 tooFewArguments(args);
             } else {
-                KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], Pkcs11SlotLabelType.SLOT_NUMBER, null, protectionParameter).sign(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8]);
+                String storeId = null;
+                Pkcs11SlotLabelType slotType = null;
+                storeId = trimStoreId(args[5]);
+                slotType = divineSlotLabelType(args[5]);
+                KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter).sign(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8]);
             }
             return true;
         }
@@ -327,7 +366,11 @@ public class HSMKeyTool extends ClientToolBox {
                 final X509Certificate cert = (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(new BufferedInputStream(new FileInputStream(args[6])));
                 verifyResult = CMS.verify(new FileInputStream(args[2]), new FileOutputStream(args[5]), cert);
             } else {
-                verifyResult = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], Pkcs11SlotLabelType.SLOT_NUMBER, null, protectionParameter).verify(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8]);
+                String storeId = null;
+                Pkcs11SlotLabelType slotType = null;
+                storeId = trimStoreId(args[5]);
+                slotType = divineSlotLabelType(args[5]);
+                verifyResult = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter).verify(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8]);
             }
             if ( verifyResult==null ) {
                 System.out.println("Not possible to parse signed file.");
@@ -344,7 +387,11 @@ public class HSMKeyTool extends ClientToolBox {
                 System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " [<# of tests or threads>] [<alias for stress test>] [<type of stress test>]");
                 tooFewArguments(args);
             } else {
-                KeyStoreContainerTest.test(args[2], args[3], args[4], args[5], Pkcs11SlotLabelType.SLOT_NUMBER,
+                String storeId = null;
+                Pkcs11SlotLabelType slotType = null;
+                storeId = trimStoreId(args[5]);
+                slotType = divineSlotLabelType(args[5]);
+                KeyStoreContainerTest.test(args[2], args[3], args[4], storeId, slotType,
                                            args.length>6 ? Integer.parseInt(args[6].trim()) : 1,
                                            args.length>7 ? args[7].trim() : null, args.length>8 ? args[8].trim() : null,
                                            protectionParameter);
@@ -356,7 +403,11 @@ public class HSMKeyTool extends ClientToolBox {
                 System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <old key alias> <new key alias>");
                 tooFewArguments(args);
             } else {
-                KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], Pkcs11SlotLabelType.SLOT_NUMBER, null, protectionParameter).renameAlias(args[6], args[7]);
+                String storeId = null;
+                Pkcs11SlotLabelType slotType = null;
+                storeId = trimStoreId(args[5]);
+                slotType = divineSlotLabelType(args[5]);
+                KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter).renameAlias(args[6], args[7]);
             }
             return true;
         }
@@ -367,8 +418,10 @@ public class HSMKeyTool extends ClientToolBox {
             } else {
                 String fromId = args[5];                    
                 String toId = args[6];
+                Pkcs11SlotLabelType slotType = null;
+                slotType = divineSlotLabelType(args[5]);
                 System.err.println("Moving entry with alias '"+fromId+"' to alias '"+toId+'.');
-                KeyStoreContainerBase.move(args[2], args[3], args[4], fromId, toId, Pkcs11SlotLabelType.SLOT_NUMBER, protectionParameter);
+                KeyStoreContainerBase.move(args[2], args[3], args[4], fromId, toId, slotType, protectionParameter);
             }
             return true;
         }
@@ -433,5 +486,37 @@ public class HSMKeyTool extends ClientToolBox {
     @Override
     protected String getName() {
         return "HSMKeyTool";
+    }
+    
+    private static final String trimStoreId(String storeId) {
+        if(storeId.contains(":")) {
+            return storeId.split(":", 2)[1];
+        } else {
+            return storeId;
+        }
+    }
+    
+    private static final Pkcs11SlotLabelType divineSlotLabelType(String storeId) {
+        if(storeId.contains(":")) {
+            String prefix = storeId.split(":", 2)[0];
+            if(prefix.equals("TOKEN_LABEL") || prefix.equals(Pkcs11SlotLabelType.SLOT_LABEL.getKey())) {
+                return Pkcs11SlotLabelType.SLOT_LABEL;
+            } else if (prefix.equals("SLOT_ID") || prefix.equals(Pkcs11SlotLabelType.SLOT_LABEL.getKey())) {
+                return Pkcs11SlotLabelType.SLOT_LABEL;
+            } else if (prefix.equals("SLOT_LIST_IX") || prefix.equals(Pkcs11SlotLabelType.SLOT_INDEX.getKey())) {
+                return Pkcs11SlotLabelType.SLOT_INDEX;
+            } else {
+                return null;
+            }
+                
+        } else {
+            if(Pkcs11SlotLabelType.SLOT_NUMBER.validate(storeId)) {
+                return Pkcs11SlotLabelType.SLOT_NUMBER;
+            } else if(Pkcs11SlotLabelType.SLOT_INDEX.validate(storeId)) {
+                return Pkcs11SlotLabelType.SLOT_INDEX;
+            } else {
+                return Pkcs11SlotLabelType.SLOT_LABEL;
+            }
+        }
     }
 }
