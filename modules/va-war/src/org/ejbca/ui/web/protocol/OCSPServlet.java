@@ -182,7 +182,7 @@ public class OCSPServlet extends HttpServlet {
                 try {
                     log.warn("'active' will only be used for initial one-time upgrade."+
                             " Use regular CryptoToken activation in EJB CLI or Admin GUI to active your responder keystores.");
-                    integratedOcspResponseGeneratorSession.adhocUpgradeFromPre52(activationPassword.toCharArray());
+                    integratedOcspResponseGeneratorSession.adhocUpgradeFromPre60(activationPassword.toCharArray());
                 } catch (Exception e) {
                     log.error("Problem loading keys.", e);
                     response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Problem. See ocsp responder server log.");

@@ -1381,7 +1381,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
 
     // TODO: Test this throughly! 
     @Override
-    public void adhocUpgradeFromPre52(char[] activationPassword) {
+    public void adhocUpgradeFromPre60(char[] activationPassword) {
         // Check if there are any OcspKeyBindings already, if so return
         if (!internalKeyBindingMgmtSession.getInternalKeyBindingIds(authenticationToken, OcspKeyBinding.IMPLEMENTATION_ALIAS).isEmpty()) {
             return;

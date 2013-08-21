@@ -322,7 +322,7 @@ public class StartServicesServlet extends HttpServlet {
             log.error("Failure during match value initialization", e);
         }
         // Check and upgrade if this is the first time we start an instance that was previously an stand-alone VA
-        ocspResponseGeneratorSession.adhocUpgradeFromPre52(null);
+        ocspResponseGeneratorSession.adhocUpgradeFromPre60(null);
         // Start key reload timer
         ocspResponseGeneratorSession.initTimers();
         
