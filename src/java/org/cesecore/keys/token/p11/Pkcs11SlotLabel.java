@@ -55,21 +55,6 @@ public class Pkcs11SlotLabel {
 
 	private static final Lock slotIDLock = new ReentrantLock();
 
-
-    /**
-     * Create an instance with a string that defines the slot.
-     * @param taggedString Defines type and value this like this '<Type>:<value>'. Example slot with token label "Toledo": TOKEN_LABEL:Toledo
-     */
-    public Pkcs11SlotLabel(final String taggedString) {
-        final String[] split = taggedString.split(DELIMETER, 2);
-        try {
-            this.type = Pkcs11SlotLabelType.valueOf(split[0].trim());
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("P11 Slot specifier '" + taggedString + "' has a tag that is not existing: '" + split[0] + "'");
-        }
-        this.value = split.length > 1 ? split[1].trim() : null;
-    }
-
     /**
      * Use explicit values.
      * @param type
