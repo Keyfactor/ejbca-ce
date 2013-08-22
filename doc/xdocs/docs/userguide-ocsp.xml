@@ -229,8 +229,8 @@ Activate like this:
 $TOOLBOX_HOME/ejbcaClientToolBox.sh OCSPActivate
 </source>
 <p>
-After migrating the key-stores and certificates to CryptoTokens and OcspKeyBindings, you must use the EJB CLI for
-activating your CryptoTokens.
+After migrating the key-stores and certificates to Crypto Tokens and OcspKeyBindings, you must use the EJB CLI for
+activating your Crypto Tokens.
 </p>
 </section>
 
