@@ -5330,6 +5330,15 @@ to all CLI operations demanding authentication in the form of the following flag
 <source>
 -u &lt;username&gt; -password=&lt;password&gt;
 </source>
+<p>You can also specify that the password is provided as the first line in a file, which can be useful for scripting. It can be specified prepending 'file:' to the password:</p>
+<source>
+-u &lt;username&gt; -password=file:&lt;filename&gt;
+</source>
+<p>Where <i>filename</i> is a file, for example /tmp/pwd.txt, containing the password as a single line.</p>
+<p>An example CLI command to list CAs can look like:</p>
+<source>
+bin/ejbca.sh ca listcas -u ejbca -password=file:/tmp/pwd.txt
+</source>
 <p>Command line users are authenticated from the existing list of End Entities, and are granted the same rights.
 You can find the default CLI user in the 'Super Administrator Role' under 'Edit Administrator Privileges' after a default install or upgrade.</p>
 </subsubsection>
