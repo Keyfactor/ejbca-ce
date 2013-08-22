@@ -109,7 +109,7 @@ org.cesecore.authorization.control.CryptoTokenRules
 		</h:column>
 	</h:dataTable>
 	<br/>
-	<h:outputLink value="adminweb/cryptotoken/cryptotoken.jsf?cryptoTokenId=0" rendered="#{cryptoTokenMBean.allowedToModify}">
+	<h:outputLink value="adminweb/cryptotoken/cryptotoken.jsf?cryptoTokenId=0&ref=cryptotokens" rendered="#{cryptoTokenMBean.allowedToModify}">
 		<h:outputText value="#{web.text.CRYPTOTOKEN_CREATENEW}"/>
 	</h:outputLink>
 
