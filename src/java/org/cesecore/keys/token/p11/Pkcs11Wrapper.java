@@ -201,7 +201,8 @@ public class Pkcs11Wrapper {
             return null;
         }
         try {
-            return (char[]) this.labelField.get(tokenInfo);
+            String result = String.copyValueOf((char[]) this.labelField.get(tokenInfo));
+            return result.trim().toCharArray();
         } catch (IllegalArgumentException e) {
             String msg = "Field sun.security.pkcs11.wrapper.PKCS11.C_GetTokenInfo was not of type sun.security.pkcs11.wrapper.CK_TOKEN_INFO"
                     + ", this may be due to a change in the underlying library.";

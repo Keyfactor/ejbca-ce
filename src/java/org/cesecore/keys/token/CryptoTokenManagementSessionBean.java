@@ -167,7 +167,6 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         }
         // Note: if data is null, a new empty keystore will be created
         final CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, data, cryptoTokenId.intValue(), tokenName);
-        //FIXME: A thread skip happens sometime before this point. 
         cryptoToken.activate(authenticationCode);
         final Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", "Created CryptoToken with id " + cryptoTokenId);
