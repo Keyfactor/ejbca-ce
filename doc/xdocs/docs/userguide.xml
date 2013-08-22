@@ -73,14 +73,14 @@ If CRLs have expired you can generate new CRLs. See <a href="adminguide.html#CRL
 </subsection>
 </section>
 
-<section name="Managing CryptoTokens">
+<section name="Managing Crypto Tokens">
 <p>
-A Crypto(graphic)Token in EJBCA is where keys are stored. A CryptoToken can be either backed by a soft keystore
+A Crypto(graphic) Token in EJBCA is where keys are stored. A Crypto Token can be either backed by a soft keystore
 (file in the database) or an HSM PKCS#11 slot.
 </p>
 <p>
-In the EJBCA Admin GUI the menu item "CryptoTokens" will show you all the CryptoToken related management.
-Activation of CryptoTokens can also be done from the CA Activation page.
+In the EJBCA Admin GUI the menu item "Crypto Tokens" will show you all the Crypto Token related management.
+Activation of Crypto Tokens can also be done from the CA Activation page.
 </p>
 <p>
 There is also a CLI for all the functionality available in the Admin GUI. Run
@@ -91,43 +91,43 @@ bin/ejbca.sh cryptotoken
 <p>
 for a list of available sub-commands.
 </p>
-<subsection name="New CryptoTokens">
+<subsection name="New Crypto Tokens">
 <p>
 <ul>
-<li>Name: A user-friendly name for the CryptoToken.</li>
+<li>Name: A user-friendly name for the Crypto Token.</li>
 <li>Type: PKCS#11 HSM slot mapping or a Soft PKCS#12 keystore in the database.</li>
 <li>Authentication Code: The PKCS#11 slot PIN or the password that will protect the soft keystore.</li>
 <li>Repeat Authentication Code: Should be the same as the previous field.</li>
-<li>Auto-activation: If the authentication code should be stored (obfuscated) in the database and used to always keep the CryptoToken active.</li>
-<li>Allow export of private keys: EJBCA will not try to prevent Soft CryptoToken keystore export if this box is checked.</li>
+<li>Auto-activation: If the authentication code should be stored (obfuscated) in the database and used to always keep the Crypto Token active.</li>
+<li>Allow export of private keys: EJBCA will not try to prevent Soft Crypto Token keystore export if this box is checked.</li>
 <li>Library: PKCS#11 shared library configured as available in conf/web.properties.</li>
 <li>Attribute file: PKCS#11 attribute file configured as available in conf/web.properties.</li>
 <li>Slot: PKCS#11 slot number, index or label.</li>
 <li>Slot Label Type: What kind of a slot label that is described by the previous parameter.</li>
 </ul>
 The PKCS#11 properties above are described in more detail in the <a href="adminguide.html#Hardware Security Modules (HSM)">AdminGuide's HSM</a> section.
-A unique CryptoToken identifier will be generated when the token is created.
+A unique Crypto Token identifier will be generated when the token is created.
 </p>
 </subsection>
-<subsection name="View or Edit a CryptoToken">
+<subsection name="View or Edit a Crypto Token">
 <p>
 The view is very similar to the creation of a token except for showing the id and activation status.
-It is not possible to change the CryptoToken id, type or the change the authentication code of soft CryptoTokens. 
+It is not possible to change the Crypto Token id, type or the change the authentication code of soft Crypto Tokens. 
 </p>
 </subsection>
 <subsection name="Activation and deactivation">
 <p>
-In the list of CryptoToken there are 3 possible actions available:
+In the list of Crypto Token there are 3 possible actions available:
 <ul>
-<li>Activate: Enter a authentication code and clicking "Activate" will activate an inactive CryptoToken.</li>
-<li>Deactivate: Clicking "Deactivate" will deactivate an active CryptoToken.</li>
-<li>Reactivate: Clicking "Reactivate" will reactivate an active CryptoToken with auto-activation enabled.</li>
+<li>Activate: Enter a authentication code and clicking "Activate" will activate an inactive Crypto Token.</li>
+<li>Deactivate: Clicking "Deactivate" will deactivate an active Crypto Token.</li>
+<li>Reactivate: Clicking "Reactivate" will reactivate an active Crypto Token with auto-activation enabled.</li>
 </ul>
 </p>
 </subsection>
 <subsection name="Key management">
 <p>
-While viewing an active CryptoToken it is possible to also view and interact with the CryptoToken's keys.
+While viewing an active Crypto Token it is possible to also view and interact with the Crypto Token's keys.
 The shown SubjectKeyID column is a SHA1 over the public key.
 <ul>
 <li>A new key pair can be created by giving it an alias, a key specification and clicking generate.</li>
@@ -141,19 +141,19 @@ an error will be shown when trying to use such a key specification.
 </subsection>
 <subsection name="CryptoToken Authorization">
 <p>
-For all authorized CA operations, authorization for underlying CryptoToken operations are implied.
-The minimum authorization required to create a CA is authorization to "view" and "use" (or "modify") a CryptoToken.
+For all authorized CA operations, authorization for underlying Crypto Token operations are implied.
+The minimum authorization required to create a CA is authorization to "view" and "use" (or "modify") a Crypto Token.
 </p><p>
-Since modification of PKCS#11 CryptoTokens could change the slot mapping, we require the same authorization for creation and modification.
+Since modification of PKCS#11 Crypto Tokens could change the slot mapping, we require the same authorization for creation and modification.
 The full list of authorization rules follow:
 <ul>
-<li>/cryptotoken/: Required for displaying the CryptoToken management in the Admin GUI.</li>
-<li>/cryptotoken/view/<i>cryptoTokenId</i>: Required for viewing CryptoToken information and listing key pairs.</li>
-<li>/cryptotoken/use/<i>cryptoTokenId</i>: Required for binding a CryptoToken to a CA.</li>
-<li>/cryptotoken/modify/: Required for creating or modifying a CryptoToken.</li>
-<li>/cryptotoken/delete/: Required for deletion of a CryptoToken.</li>
-<li>/cryptotoken/activate/<i>cryptoTokenId</i>: Required for activation of a CryptoToken.</li>
-<li>/cryptotoken/deactivate/<i>cryptoTokenId</i>: Required for de-activation of a CryptoToken.</li>
+<li>/cryptotoken/: Required for displaying the Crypto Token management in the Admin GUI.</li>
+<li>/cryptotoken/view/<i>cryptoTokenId</i>: Required for viewing Crypto Token information and listing key pairs.</li>
+<li>/cryptotoken/use/<i>cryptoTokenId</i>: Required for binding a Crypto Token to a CA.</li>
+<li>/cryptotoken/modify/: Required for creating or modifying a Crypto Token.</li>
+<li>/cryptotoken/delete/: Required for deletion of a Crypto Token.</li>
+<li>/cryptotoken/activate/<i>cryptoTokenId</i>: Required for activation of a Crypto Token.</li>
+<li>/cryptotoken/deactivate/<i>cryptoTokenId</i>: Required for de-activation of a Crypto Token.</li>
 <li>/cryptotoken/keys/generate/<i>cryptoTokenId</i>: Required for key pair generation.</li>
 <li>/cryptotoken/keys/remove/<i>cryptoTokenId</i>: Required for key pair removal.</li>
 <li>/cryptotoken/keys/test/<i>cryptoTokenId</i>: Required for key pair testing.</li>
@@ -217,16 +217,16 @@ The signing algorithm to use for issuing certificates, signing CRLs etc.
 </p>
 </subsubsection>
 
-<subsubsection name="CryptoToken">
+<subsubsection name="Crypto Token">
 <p>
-The CryptoToken where the CA's key mappings are expected to exist.
+The Crypto Token where the CA's key mappings are expected to exist.
 </p>
 <p>
-The list of available CryptoTokens are those that the administrator is authorized to view and use.
-The CryptoToken must also be active and contain a key that can be used with the CA signing algorithm in order to be shown.
+The list of available Crypto Tokens are those that the administrator is authorized to view and use.
+The Crypto Token must also be active and contain a key that can be used with the CA signing algorithm in order to be shown.
 </p>
 <p>
-The purpose mappings are the key alias in the CryptoToken to use for what:
+The purpose mappings are the key alias in the Crypto Token to use for what:
 <ul>
 <li>defaultKey: The key to use no specific alias is selected (Required).</li>
 <li>certSignKey: The key to use for certificate issuance. Must comply with the Signing Algorithm and only valid choices are shown.</li>
@@ -234,7 +234,7 @@ The purpose mappings are the key alias in the CryptoToken to use for what:
 client support is rare and the certSignKey will always be used.</li>
 <li>keyEncryptKey: Key to use for key recovery when enabled. Decrypts escrowed keys and must be RSA.</li>
 <li>hardTokenEncrypt: Deprecated functionality, do not use.</li>
-<li>testKey: Key used by health-check to verify that the CryptoToken is usable. Usually a short key for speedy connection checks.</li>
+<li>testKey: Key used by health-check to verify that the Crypto Token is usable. Usually a short key for speedy connection checks.</li>
 </ul>
 </p>
 </subsubsection>
@@ -565,7 +565,7 @@ You can renew the SubCA in two ways:
 <li>Generating new CA signing keys.</li>
 </ol>
 To renew a CA go to "Edit Certificate Authorities" select the SubCA and use the button "Renew CA" in the bottom of the page.
-The CA's CryptoToken must be active to make a certificate signing request (and optionally for key generation).
+The CA's Crypto Token must be active to make a certificate signing request (and optionally for key generation).
 </p>
 <p>
 When you generate new keys for the SubCA, the new keys will not be used until you upload a new CA certificate for this key pair.

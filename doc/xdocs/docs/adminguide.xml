@@ -2609,7 +2609,7 @@ Since EJBCA 3.6 the recommended HSM connector is to use the PKCS#11 interface. O
 <p>
 Since EJBCA 5.0 you can manage crypto tokens fully in the Admin GUI or EJBCA.
 The admin GUI tries to be user friendly and automatically show you the HSMs available in your system.
-When creating a new Crypto Token (CryptoTokens-&gt;Create New) you can select between Soft and PKCS#11 crypto tokens. 
+When creating a new Crypto Token (Crypto Tokens-&gt;Create New) you can select between Soft and PKCS#11 crypto tokens. 
 </p>
 <ul>
 <li>The PKCS#11 option is only available if EJBCA can find any known PKCS#11 modules in the file system.</li>
