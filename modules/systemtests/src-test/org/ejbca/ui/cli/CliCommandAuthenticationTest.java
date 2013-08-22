@@ -14,6 +14,8 @@ package org.ejbca.ui.cli;
 
 import static org.junit.Assert.fail;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.security.Principal;
 import java.util.HashSet;
 import java.util.Set;
@@ -116,6 +118,57 @@ public class CliCommandAuthenticationTest {
         try {
             mockCliCommand.execute(new String[] { "foo", "-u", CliAuthenticationTestHelperSessionRemote.USERNAME,
                     "-password=" + CliAuthenticationTestHelperSessionRemote.PASSWORD });
+        } catch (CliTestRuntimeException e) {
+            fail("Exception was thrown when authenticating with a known user.");
+        } finally {
+            endEntityManagementSession.deleteUser(internalAdmin, CliAuthenticationTestHelperSessionRemote.USERNAME);
+        }
+    }
+
+    @Test
+    public void testWithKnownUserPasswordInFile() throws Exception {
+        cliAuthenticationTestHelperSession.createUser(CliAuthenticationTestHelperSessionRemote.USERNAME, CliAuthenticationTestHelperSessionRemote.PASSWORD);
+        try {
+            try {
+                mockCliCommand.execute(new String[] { "foo", "-u", CliAuthenticationTestHelperSessionRemote.USERNAME,
+                "-password=file:/tmp/fileshouldnotexist.txt" });
+                fail("/tmp/fileshouldnotexist.txt should not have existed.");
+            } catch (ErrorAdminCommandException e) {
+                // NOPMD: The last command should have failed, so go on with next fail test
+            }
+            File f = File.createTempFile("ejbca", "txt");
+            f.deleteOnExit();
+            // Just insert a space, should count as not password existing in the file
+            FileWriter fout = new FileWriter(f);
+            fout.write(" ");
+            fout.close();
+            try {
+                mockCliCommand.execute(new String[] { "foo", "-u", CliAuthenticationTestHelperSessionRemote.USERNAME,
+                "-password=file:"+f.getAbsolutePath() });
+                fail("/tmp/fileshouldnotexist.txt should not have contained any password.");
+            } catch (ErrorAdminCommandException e) {
+                // NOPMD: The last command should have failed, so go on with successful
+            }
+            // Insert a line with a password
+            fout = new FileWriter(f);
+            fout.write(CliAuthenticationTestHelperSessionRemote.PASSWORD);
+            fout.close();
+            try {
+                mockCliCommand.execute(new String[] { "foo", "-u", CliAuthenticationTestHelperSessionRemote.USERNAME,
+                "-password=file:"+f.getAbsolutePath() });
+            } catch (ErrorAdminCommandException e) {
+                fail("/tmp/fileshouldnotexist.txt should not have contained a password.");
+            }
+            // Insert a line with a password, some whitespace and newline should work as well
+            fout = new FileWriter(f);
+            fout.write(CliAuthenticationTestHelperSessionRemote.PASSWORD+"  \n");
+            fout.close();
+            try {
+                mockCliCommand.execute(new String[] { "foo", "-u", CliAuthenticationTestHelperSessionRemote.USERNAME,
+                "-password=file:"+f.getAbsolutePath() });
+            } catch (ErrorAdminCommandException e) {
+                fail("/tmp/fileshouldnotexist.txt should not have contained a password.");
+            }            
         } catch (CliTestRuntimeException e) {
             fail("Exception was thrown when authenticating with a known user.");
         } finally {

@@ -13,8 +13,10 @@
 
 package org.ejbca.ui.cli;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.Console;
+import java.io.FileReader;
 import java.io.IOException;
 import java.security.KeyFactory;
 import java.security.KeyStore;
@@ -145,6 +147,25 @@ public abstract class BaseCommand implements CliCommandPlugin {
                         throw new CliAuthenticationFailedException();
                     } else {
                         cliPassword = argument.substring(PASSWORD_PREFIX.length());
+                        // See if the password argument points to a file
+                        if (cliPassword.startsWith("file:") && (cliPassword.length()>5)) {
+                            final String fileName = cliPassword.substring(5);
+                            // Read the password file and just take the first line as being the password
+                            try {
+                                BufferedReader br = new BufferedReader(new FileReader(fileName));
+                                cliPassword = br.readLine();
+                                br.close();
+                                if (cliPassword != null) {
+                                    // Trim it, it's so easy for people to include spaces after a line, and a password should never end with a space
+                                    cliPassword = cliPassword.trim();                                    
+                                }
+                                if ((cliPassword == null) || (cliPassword.length() == 0)) {
+                                    throw new ErrorAdminCommandException("File '"+fileName+"' does not contain any lines.");
+                                }
+                            } catch (IOException e) {
+                                throw new ErrorAdminCommandException("File '"+fileName+"' can not be read: "+e.getMessage());
+                            }
+                        }
                         argsList.remove(index);
                     }
 
