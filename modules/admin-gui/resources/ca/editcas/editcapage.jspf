@@ -379,7 +379,7 @@ function checkallfields(){
         </tr>
         <tr id="Row<%=row%2%>">
             <td width="50%" align="right">
-            <strong><%= ejbcawebbean.getText("CRYPTOTOKEN") %></strong></td>
+            <strong><%= ejbcawebbean.getText("CRYPTOTOKEN") %></strong> <%= ejbcawebbean.getHelpReference("/userguide.html#Managing%20Crypto%20Tokens") %></td>
             <td>
             <% if (cabean.isCryptoTokenPresent(catoken.getCryptoTokenId())) { %>
             <a href="<%= ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "cryptotoken/cryptotoken.jsf?cryptoTokenId=" + catoken.getCryptoTokenId() %>">
@@ -458,7 +458,7 @@ function checkallfields(){
             </td>	
         </tr>
         <tr id="Row<%=row%2%>">
-            <strong><td width="50%"  align="right"><%= ejbcawebbean.getText("CRYPTOTOKEN") %></strong></td>
+            <td width="50%"  align="right"><strong><%= ejbcawebbean.getText("CRYPTOTOKEN") %></strong> <%= ejbcawebbean.getHelpReference("/userguide.html#Managing%20Crypto%20Tokens") %></td>
 	        <td>
 	        <form name="changecatokentype" action="<%= THIS_FILENAME %>" method="post">
 	            <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_CHOOSE_CATOKENTYPE %>'/>

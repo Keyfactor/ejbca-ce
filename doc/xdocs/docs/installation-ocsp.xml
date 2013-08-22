@@ -28,7 +28,7 @@ All default options for the OCSP responders OCSP behavior is set in conf/ocsp.pr
 </subsubsection>
 <subsubsection name="Responder signing keys">
 <p>
-The keys used to sign the OCSP response are referenced through CryptoTokens (that could be either soft or HSM/PKCS#11 based).
+The keys used to sign the OCSP response are referenced through Crypto Tokens (that could be either soft or HSM/PKCS#11 based).
 There should be one key for each CA, and the each CA the responder answers for an OCSP signing certificate must be issued.
 <br/>
 The certificate profile could be the same for all issued OCSP signing certificates.
@@ -54,9 +54,9 @@ OCSP responder. For the CA you do this by setting the CRL publisher to the OCSP 
 <subsubsection name="Workflow for setting up a new OCSP signer">
 <p>This section requires the previous one to be completed first.</p>
 <ul>
-<li>Go to AdminGUI of OCSP -> CryptoTokens and create a new CryptoToken (unless you want to reuse an existing).</li>
-<li>Go to AdminGUI of OCSP -> CryptoTokens -> <i>Your created CryptoToken</i> and generate a new key pair.</li>
-<li>Go to AdminGUI of OCSP -> InternalKeyBindings -> OcspKeyBindings tab and create a new OcspKeyBinding the references the CryptoToken and key pair.</li>
+<li>Go to AdminGUI of OCSP -> Crypto Tokens and create a new Crypto Token (unless you want to reuse an existing).</li>
+<li>Go to AdminGUI of OCSP -> Crypto Tokens -> <i>Your created Crypto Token</i> and generate a new key pair.</li>
+<li>Go to AdminGUI of OCSP -> InternalKeyBindings -> OcspKeyBindings tab and create a new OcspKeyBinding the references the Crypto Token and key pair.</li>
 <li>Go to AdminGUI of OCSP -> InternalKeyBindings and create a Certificate Signing Request for your new OcspKeyBinding. Save this file.</li>
 <li>Go to PublicWeb of CA -> Create Certificate from CSR -> Use the credentials for issuing an OCSP signing certificate and upload the CSR.</li>
 <li>...(CA publishes new OCSP signing certificate to OCSP instance)...</li>
@@ -157,7 +157,7 @@ The following application servers have been tested and confirmed to work as expe
 </subsection>
 <subsection name="No password in memory">
 <p>
-To avoid that passwords are kept in memory, use manual activation of your referenced CryptoTokens.
+To avoid that passwords are kept in memory, use manual activation of your referenced Crypto Tokens.
 </p>
 </subsection>
 </section>

@@ -75,11 +75,11 @@ It contains all information, that is specific to each individual end entity, for
 When adding a user in the PKI, the user must be connected with an end entity profile. The end entity profile specifies one or more certificate profiles used when generating certificates.
 </p>
 </subsection>
-<subsection name="CryptoToken">
+<subsection name="Crypto Token">
 <p>
-A CryptoToken is the token used by a CA to store it's keys. The CryptoToken's most important key are the CA signature keys.
-The CryptoToken can also contain other keys used for encryption of sensitive data in the database.
-A CryptoToken can be configured per CA or multiple CAs can share a CryptoToken.
+A Crypto Token is the token used by a CA to store it's keys. The Crypto Token's most important key are the CA signature keys.
+The Crypto Token can also contain other keys used for encryption of sensitive data in the database.
+A Crypto Token can be configured per CA or multiple CAs can share a Crypto Token.
 <br/>
 The different forms that are stored in the database are:
 <ul>
@@ -95,13 +95,13 @@ A publisher stores issued certificates to a central location. EJBCA have impleme
 </subsection>
 <subsection name="InternalKeyBinding">
 <p>
-An InternalKeyBinding can be used to make keys in a CryptoToken available for other uses than in a CA.
+An InternalKeyBinding can be used to make keys in a Crypto Token available for other uses than in a CA.
 It is a reference to a key pair available to the EJBCA instance, a non-CA certificate, an optional list of trusted certificates
 and properties for its purpose. It can be thought of as a simplified key store with purpose-specific properties.
 </p><p>
 Example:
 An OcspKeyBinding can be used to sign OCSP responses on behalf of a CA.
-It has a key in an HSM accessible from the EJBCA instance (via a CryptoToken) and an OCSP signing certificate.
+It has a key in an HSM accessible from the EJBCA instance (via a Crypto Token) and an OCSP signing certificate.
 Additionally the trusted certificates can be used to verify that OCSP requests are sent from a trusted source and additional
 properties can be used to specify how long an OCSP response should be valid.
 </p>
