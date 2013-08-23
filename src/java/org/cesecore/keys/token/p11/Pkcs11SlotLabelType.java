@@ -18,12 +18,29 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 /**
+ * This enum class represents the typing of a slot label. In PKCS#11 an HSM is split up into separate partitions known 
+ * as 'slots' and each slot contains a token in a 1:1 relationship. In a fixed HSM (such as a PCI HSM or a NetHSM) the slots
+ * can be viewed as partitions on a disk containing a token, while in a SmartCard based solution each slot can be viewed as a 
+ * card reader and the physical card as the token. 
+ * This is highly relevant, because it does not guarantee for any solution that token always resides in the same slot. Some 
+ * fixed HSMs guarantee this (such as SafeNet and Utimaco) while some don't (such as nCypher). In a smartcard based HSM, naturally
+ * cards will continuously switch slots. 
+ *
+ * For this reason there are at present four different ways of referring to a slot/token, and these are:
+ *  * Slot Number   - the numeric representation of a slot. 0-indexed on certain HSMs, not on others.
+ *  * Slot Index    - The index of the slot. Nearly always the same as the slot number. 
+ *  * Slot Label    - In actuality the label of the token, so will stay constant even if the slot number shifts. 
+ *  * Sun File      - Increasingly rare. Slot/token is defined by an external configuration file
+ *  
+ *  The Pkcs11SlotLabelType is made up of three fields. The first is the key, which is the string format in which the label
+ *  type is persisted to the database and will require an upgrade instruction if it is ever changed. The second is a description
+ *  which can be used for human friendly labels, and the last is a validator used to validate inputed values (such as checking that
+ *  a slot number can be cast to an integer). 
+ * 
  * @version $Id$
  *
  */
-/**
- * Defines how the slot is specified.
- */
+
 public enum Pkcs11SlotLabelType {
     SLOT_LABEL("SLOT_LABEL", "Slot Label", null), 
     SLOT_INDEX("SLOT_INDEX", "Slot Index", IndexValidator.class), 
@@ -65,22 +82,56 @@ public enum Pkcs11SlotLabelType {
         return this.description;
     }
     
+    /**
+     * 
+     * @return the key of this slot label type
+     */
     public String getKey() {
         return key;
     }
     
+    /**
+     * 
+     * @return the human friendly description of this slot label type
+     */
     public String getDescription() {
         return description;
     }
     
+    
+    /**
+     * Returns a Pkcs11SlotLabelType based on a key
+     * 
+     * @param key a key, must belong to one of the predefine types.
+     * @return the Pkcs11SlotLabelType. Never returns null. 
+     */
     public static Pkcs11SlotLabelType getFromKey(String key) {
-        return keyLookUpMap.get(key);
+        Pkcs11SlotLabelType type = keyLookUpMap.get(key);
+        if(type != null) {
+            return type;
+        } else {
+            throw new IllegalArgumentException(key + " was not a valid Pkcs11SlotLabelType.");
+        }
     }
     
+    /**
+     * Compares the keys of two slot label types. Defined because .equals for enums are final, which means that
+     * .equals isn't always applicable for serialized objects. 
+     * 
+     * @param otherType the Pkcs11SlotLabelType to compare with
+     * @return true if the two types have the same key.
+     */
     public boolean isEqual(Pkcs11SlotLabelType otherType) {
         return this.getKey().equals(otherType.getKey());
     }
     
+    /**
+     * Validates a given value, depending on what validator this enum type was instantiated with. If no validator
+     * has been defined, always return true. 
+     * 
+     * @param value the value to be validated
+     * @return true if the value can be used for this type.
+     */
     public boolean validate(String value) {
         if(validator != null) {
             return validator.validate(value);
@@ -89,10 +140,27 @@ public enum Pkcs11SlotLabelType {
         }
     }
     
+    /**
+     * An interface defining the private validator classes.
+     * 
+     * @version $Id$
+     *
+     */
     private static interface LabelTypeValidator {
+        /**
+         * 
+         * @param value the value to check
+         * @return true if the value is applicable
+         */
         boolean validate(String value);
     }
     
+    /**
+     * Validates true if the inputed string can be cast to long integer.
+     * 
+     * @version $Id$
+     *
+     */
     protected static class NumberValidator implements LabelTypeValidator {
         
         @Override
@@ -109,6 +177,12 @@ public enum Pkcs11SlotLabelType {
         }   
     }
 
+    /**
+     * Validates true if the inputed values is an 'i' followed by a string that can be cast to a long integer. 
+     * 
+     * @version $Id$
+     *
+     */
     protected static class IndexValidator extends NumberValidator {
         
         @Override
