@@ -23,7 +23,7 @@ import org.apache.log4j.Logger;
  * can be viewed as partitions on a disk containing a token, while in a SmartCard based solution each slot can be viewed as a 
  * card reader and the physical card as the token. 
  * This is highly relevant, because it does not guarantee for any solution that token always resides in the same slot. Some 
- * fixed HSMs guarantee this (such as SafeNet and Utimaco) while some don't (such as nCypher). In a smartcard based HSM, naturally
+ * fixed HSMs guarantee this (such as SafeNet and Utimaco) while some don't (such as Thales/nCipher). In a smartcard based HSM, naturally
  * cards will continuously switch slots. 
  *
  * For this reason there are at present four different ways of referring to a slot/token, and these are:
