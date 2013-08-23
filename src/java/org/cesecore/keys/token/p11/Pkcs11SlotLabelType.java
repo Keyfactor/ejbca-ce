@@ -103,15 +103,10 @@ public enum Pkcs11SlotLabelType {
      * Returns a Pkcs11SlotLabelType based on a key
      * 
      * @param key a key, must belong to one of the predefine types.
-     * @return the Pkcs11SlotLabelType. Never returns null. 
+     * @return the Pkcs11SlotLabelType. Returns null if not found. 
      */
     public static Pkcs11SlotLabelType getFromKey(String key) {
-        Pkcs11SlotLabelType type = keyLookUpMap.get(key);
-        if(type != null) {
-            return type;
-        } else {
-            throw new IllegalArgumentException(key + " was not a valid Pkcs11SlotLabelType.");
-        }
+        return keyLookUpMap.get(key);
     }
     
     /**
