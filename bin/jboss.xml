@@ -364,14 +364,14 @@
             <jboss:adm arg='/subsystem=web/connector=httpspriv/ssl=configuration:write-attribute(name=password, value="${httpsserver.password}")' />
             <jboss:adm arg='/subsystem=web/connector=httpspriv/ssl=configuration:write-attribute(name=certificate-key-file, value="${jboss.server.home.dir}/${keystore.file}")' />
             <jboss:adm arg="/subsystem=web/connector=httpspriv/ssl=configuration:write-attribute(name=verify-client, value=true)" />
-            <jboss:adm arg='/subsystem=web/connector=httpspriv/ssl=configuration:write-attribute(name=ca-certificate-file, value="${jboss.server.home.dir}/${keystore.file}")' />
+            <jboss:adm arg='/subsystem=web/connector=httpspriv/ssl=configuration:write-attribute(name=ca-certificate-password, value="${java.trustpassword}")' />
+            <jboss:adm arg='/subsystem=web/connector=httpspriv/ssl=configuration:write-attribute(name=ca-certificate-file, value="${jboss.server.home.dir}/${truststore.file}")' />
             <!-- Set-up the public SSL port which doesn't require the client certificate. -->
             <jboss:adm arg='/socket-binding-group=standard-sockets/socket-binding=httpspub:add(port="${httpserver.pubhttps}",interface="httpspub")' />
             <jboss:adm arg="/subsystem=web/connector=httpspub:add(protocol=HTTP/1.1, scheme=https, socket-binding=httpspub, secure=true)" />
             <jboss:adm arg='/subsystem=web/connector=httpspub/ssl=configuration:add(key-alias="${httpsserver.hostname}")' />
             <jboss:adm arg='/subsystem=web/connector=httpspub/ssl=configuration:write-attribute(name=password, value="${httpsserver.password}")' />
             <jboss:adm arg='/subsystem=web/connector=httpspub/ssl=configuration:write-attribute(name=certificate-key-file, value="${jboss.server.home.dir}/${keystore.file}")' />
-            <jboss:adm arg='/subsystem=web/connector=httpspub/ssl=configuration:write-attribute(name=ca-certificate-file, value="${jboss.server.home.dir}/${keystore.file}")' />
         	<!-- If the server is not so fast, we have to wait a little before we can reload, otherwise it will be bad -->
             <waitfor maxwait="5000">
                 <available file="${jboss.farm.dir}/ejbca.ear.deployed"/>
