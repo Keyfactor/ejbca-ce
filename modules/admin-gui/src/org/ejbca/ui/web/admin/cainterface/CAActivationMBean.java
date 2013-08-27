@@ -152,7 +152,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 
 	public List<TokenAndCaActivationGuiComboInfo> getAuthorizedTokensAndCas() {
 	    final Map<Integer,TokenAndCaActivationGuiInfo> sortMap = new HashMap<Integer,TokenAndCaActivationGuiInfo>();
-	    for (final Integer caId : caSession.getAvailableCAs(authenticationToken)) {
+	    for (final Integer caId : caSession.getAuthorizedCAs(authenticationToken)) {
 	        try {
                 final CAInfo caInfo = caSession.getCAInfoInternal(caId.intValue(), null, true);
                 final Integer cryptoTokenId = Integer.valueOf(caInfo.getCAToken().getCryptoTokenId());

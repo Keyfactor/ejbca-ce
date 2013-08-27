@@ -94,7 +94,7 @@ public class CertificateFinderBean {
 	    if(log.isTraceEnabled()) {
 		log.trace(">getAvailableCAs()");
 	    }
-		return mInitialized ? caSession.getAvailableCAs(mAdmin) : null;
+		return mInitialized ? caSession.getAuthorizedCAs(mAdmin) : null;
 	}
 
 	public int getCurrentCA() {

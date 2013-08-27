@@ -163,7 +163,7 @@ public class CertificateProfileDataHandler implements Serializable {
             editauth = authorizationsession.isAuthorizedNoLogging(administrator, "/ca_functionality/edit_certificate_profiles");
         }
         if (editauth) {
-            HashSet<Integer> authorizedcaids = new HashSet<Integer>(caSession.getAvailableCAs(administrator));
+            HashSet<Integer> authorizedcaids = new HashSet<Integer>(caSession.getAuthorizedCAs(administrator));
             if (profile != null) {
                 if (!issuperadministrator && profile.getType() != CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER) {
                     returnval = false;
