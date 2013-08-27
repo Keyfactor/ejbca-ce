@@ -492,11 +492,15 @@ public abstract class CmpTestCase extends CaTestCase {
         
         return new PKIMessage(header, body, bs);
     }
-
+    
     protected byte[] sendCmpHttp(byte[] message, int httpRespCode) throws IOException, NoSuchProviderException {
+        return sendCmpHttp(message, httpRespCode, null);
+    }
+
+    protected byte[] sendCmpHttp(byte[] message, int httpRespCode, String cmpAlias) throws IOException, NoSuchProviderException {
         // POST the CMP request
         // we are going to do a POST
-        final String resource = resourceCmp;
+        final String resource = resourceCmp + "/" + cmpAlias;
         final String urlString = getProperty("httpCmpProxyURL", httpReqPath + '/' + resource);
         log.info("http URL: " + urlString);
         URL url = new URL(urlString);
@@ -758,7 +762,7 @@ public abstract class CmpTestCase extends CaTestCase {
                 socket.close();
             }
         } catch (ConnectException e) {
-            assertTrue("This test requires a CMP TCP listener to be configured on " + host + ":" + port + ". Edit conf/cmp.properties and redeploy.",
+            assertTrue("This test requires a CMP TCP listener to be configured on " + host + ":" + port + ". Edit conf/cmptcp.properties and redeploy.",
                     false);
         } catch (EOFException e) {
             assertTrue("Response was malformed.", false);

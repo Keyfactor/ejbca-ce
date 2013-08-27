@@ -16,6 +16,7 @@ package org.ejbca.ui.cli.config;
 import java.util.Enumeration;
 import java.util.Properties;
 
+import org.ejbca.config.Configuration;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.ui.cli.BaseCommand;
 import org.ejbca.ui.cli.CliUsernameException;
@@ -51,7 +52,7 @@ public class ConfigDumpCommand extends BaseCommand {
         }
         getLogger().info("Trying to fetch currently used server properties...");
         try {
-            Properties properties = ejb.getRemoteSession(GlobalConfigurationSessionRemote.class).getAllProperties(getAdmin(cliUserName, cliPassword));
+            Properties properties = ejb.getRemoteSession(GlobalConfigurationSessionRemote.class).getAllProperties(getAdmin(cliUserName, cliPassword), Configuration.GlobalConfigID);
             Enumeration<Object> enumeration = properties.keys();
             while (enumeration.hasMoreElements()) {
                 String key = (String) enumeration.nextElement();

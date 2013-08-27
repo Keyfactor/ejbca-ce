@@ -90,7 +90,7 @@ public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHan
 			//final Admin administrator = new Admin(Admin.TYPE_RA_USER, handler.getHostAddress());
 			final ResponseMessage resp;
 			try {
-				 resp = getEjb().getCmpMessageDispatcherSession().dispatch(administrator, cmpTcpMessage.message, null);
+				 resp = getEjb().getCmpMessageDispatcherSession().dispatch(administrator, cmpTcpMessage.message, "tcp");
 			} catch (IOException e) {
 				LOG.error( INTRES.getLocalizedMessage("cmp.errornoasn1"), e );
 				handler.closeConnection();

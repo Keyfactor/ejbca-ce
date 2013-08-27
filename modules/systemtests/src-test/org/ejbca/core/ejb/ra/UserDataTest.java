@@ -34,10 +34,10 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.config.Configuration;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
-import org.ejbca.core.ejb.config.GlobalConfigurationProxySessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -75,7 +75,6 @@ public class UserDataTest extends CaTestCase {
     private EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
     private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);;
     private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
-    private GlobalConfigurationProxySessionRemote globalConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private EndEntityManagementProxySessionRemote endEntityManagementProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
@@ -85,10 +84,10 @@ public class UserDataTest extends CaTestCase {
         // Global configuration must have "Enable End Entity Profile Limitations" set to true in order for
         // the request counter tests to pass, we check if we are allowed to set this value or not
         // The value is reset to whatever it was from the beginning in the last "clean up" test.
-        GlobalConfiguration gc = globalConfigurationSession.getCachedGlobalConfiguration();
+        GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
         gcEELimitations = gc.getEnableEndEntityProfileLimitations();
         gc.setEnableEndEntityProfileLimitations(true);
-        globalConfigurationProxySession.saveGlobalConfigurationRemote(admin, gc);
+        globalConfigurationSession.saveConfiguration(admin, gc, Configuration.GlobalConfigID);
         createNewUser();
     }
 
@@ -97,9 +96,9 @@ public class UserDataTest extends CaTestCase {
         super.tearDown();
 
         // Reset the value of "EnableEndEntityProfileLimitations" to whatever it was before we ran test00SetEnableEndEntityProfileLimitations
-        GlobalConfiguration gc = globalConfigurationSession.getCachedGlobalConfiguration();
+        GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
         gc.setEnableEndEntityProfileLimitations(gcEELimitations);
-        globalConfigurationProxySession.saveGlobalConfigurationRemote(admin, gc);
+        globalConfigurationSession.saveConfiguration(admin, gc, Configuration.GlobalConfigID);
 
         // Delete test users we created
 

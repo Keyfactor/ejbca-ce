@@ -116,6 +116,7 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.config.Configuration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -123,7 +124,6 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueProxySessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
-import org.ejbca.core.ejb.config.GlobalConfigurationProxySessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
@@ -243,7 +243,6 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     protected final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     protected final EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
-    private GlobalConfigurationProxySessionRemote globalConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final PublisherProxySessionRemote publisherSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final PublisherQueueProxySessionRemote publisherQueueSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherQueueProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     protected final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
@@ -1388,10 +1387,10 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
     protected void genTokenCertificates(boolean onlyOnce) throws Exception {
 
-        GlobalConfiguration gc = globalConfigurationSession.getCachedGlobalConfiguration();
+        GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
         boolean originalProfileSetting = gc.getEnableEndEntityProfileLimitations();
         gc.setEnableEndEntityProfileLimitations(false);
-        globalConfigurationProxySession.saveGlobalConfigurationRemote(intAdmin, gc);
+        globalConfigurationSession.saveConfiguration(intAdmin, gc, Configuration.GlobalConfigID);
         if (certificateProfileSession.getCertificateProfileId(WSTESTPROFILE) != 0) {
             certificateProfileSession.removeCertificateProfile(intAdmin, WSTESTPROFILE);
         }
@@ -1465,7 +1464,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
         certificateProfileSession.removeCertificateProfile(intAdmin, WSTESTPROFILE);
         gc.setEnableEndEntityProfileLimitations(originalProfileSetting);
-        globalConfigurationProxySession.saveGlobalConfigurationRemote(intAdmin, gc);
+        globalConfigurationSession.saveConfiguration(intAdmin, gc, Configuration.GlobalConfigID);
 
     }
 
@@ -1642,11 +1641,11 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
     protected void keyRecover() throws Exception {
         log.trace(">keyRecover");
-        GlobalConfiguration gc = globalConfigurationSession.getCachedGlobalConfiguration();
+        GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
         boolean krenabled = gc.getEnableKeyRecovery();
         if (krenabled == true) {
             gc.setEnableKeyRecovery(false);
-            globalConfigurationProxySession.saveGlobalConfigurationRemote(intAdmin, gc);
+            globalConfigurationSession.saveConfiguration(intAdmin, gc, Configuration.GlobalConfigID);
         }
 
         boolean trows = false;
@@ -1662,7 +1661,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
         // Set key recovery enabled
         gc.setEnableKeyRecovery(true);
-        globalConfigurationProxySession.saveGlobalConfigurationRemote(intAdmin, gc);
+        globalConfigurationSession.saveConfiguration(intAdmin, gc, Configuration.GlobalConfigID);
 
         trows = false;
         try {

@@ -53,6 +53,8 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.FileTools;
 import org.cesecore.util.StringTools;
+import org.ejbca.config.Configuration;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
@@ -281,7 +283,7 @@ public class RequestInstance {
 			// Check user
 			int tokentype = SecConst.TOKEN_SOFT_BROWSERGEN;
 
-			usekeyrecovery = globalConfigurationSession.getCachedGlobalConfiguration().getEnableKeyRecovery();
+			usekeyrecovery = ((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID)).getEnableKeyRecovery();
 
 			EndEntityInformation data = endEntityAccessSession.findUser(administrator, username);
 

@@ -40,6 +40,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.config.Configuration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.junit.After;
@@ -63,7 +64,6 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
     private AccessControlSessionRemote authorizationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessControlSessionRemote.class);
     private AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("GlobalConfigurationSessionBeanTest"));
     private GlobalConfiguration original = null;
-    private GlobalConfigurationProxySessionRemote globalConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     private AuthenticationToken[] nonCliAdmins;
 
@@ -76,7 +76,7 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
 
         // First save the original
         if (original == null) {
-            original = this.globalConfigurationSession.getCachedGlobalConfiguration();
+            original = (GlobalConfiguration) this.globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
         }
         caids = caSession.getAvailableCAs(internalAdmin);
         assertFalse("No CAs exists so this test will not work", caids.isEmpty());
@@ -97,7 +97,7 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
     @After
     public void tearDown() throws Exception {
         super.tearDown();
-        globalConfigurationProxySession.saveGlobalConfigurationRemote(internalAdmin, original);
+        globalConfigurationSession.saveConfiguration(internalAdmin, original, Configuration.GlobalConfigID);
         enableCLI(true);
         internalAdmin = null;
     }
@@ -117,17 +117,17 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
     public void testAddAndReadGlobalConfigurationCache() throws Exception {
 
         // Read a value to reset the timer
-        globalConfigurationSession.getCachedGlobalConfiguration();
+        globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
         setInitialValue();
 
         // Set a brand new value
         GlobalConfiguration newValue = new GlobalConfiguration();
         newValue.setEjbcaTitle("BAR");
-        globalConfigurationProxySession.saveGlobalConfigurationRemote(internalAdmin, newValue);
+        globalConfigurationSession.saveConfiguration(internalAdmin, newValue, Configuration.GlobalConfigID);
 
-        GlobalConfiguration cachedValue = globalConfigurationSession.getCachedGlobalConfiguration();
+        GlobalConfiguration cachedValue = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
 
-        cachedValue = globalConfigurationSession.getCachedGlobalConfiguration();
+        cachedValue = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
         assertEquals("The GlobalConfigfuration cache was not automatically updated.", "BAR", cachedValue.getEjbcaTitle());
 
     }
@@ -141,7 +141,7 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
 
         GlobalConfiguration initial = new GlobalConfiguration();
         initial.setEjbcaTitle("FOO");
-        globalConfigurationProxySession.saveGlobalConfigurationRemote(internalAdmin, initial);
+        globalConfigurationSession.saveConfiguration(internalAdmin, initial, Configuration.GlobalConfigID);
     }
 
     /**
@@ -187,14 +187,14 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
      * @throws AuthorizationDeniedException 
      */
     private void enableCLI(final boolean enable) throws AuthorizationDeniedException {
-        final GlobalConfiguration config = globalConfigurationSession.flushCache();
+        final GlobalConfiguration config = (GlobalConfiguration) globalConfigurationSession.flushCache(Configuration.GlobalConfigID);
         final GlobalConfiguration newConfig;
         if (config.getEnableCommandLineInterface() == enable) {
             newConfig = config;
         } else {
             config.setEnableCommandLineInterface(enable);
-            globalConfigurationProxySession.saveGlobalConfigurationRemote(internalAdmin, config);
-            newConfig = globalConfigurationSession.flushCache();
+            globalConfigurationSession.saveConfiguration(internalAdmin, config, Configuration.GlobalConfigID);
+            newConfig = (GlobalConfiguration) globalConfigurationSession.flushCache(Configuration.GlobalConfigID);
         }
         assertEquals("CLI should have been enabled/disabled", enable, newConfig.getEnableCommandLineInterface());
         authorizationSession.forceCacheExpire();

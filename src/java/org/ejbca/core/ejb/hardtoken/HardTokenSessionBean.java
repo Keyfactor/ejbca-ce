@@ -62,6 +62,8 @@ import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.ProfileID;
+import org.ejbca.config.Configuration;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
@@ -747,7 +749,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             throw new HardTokenExistsException("Hard token with serial number '" + tokensn+ "' does exist.");
         }
         entityManager.persist(new org.ejbca.core.ejb.hardtoken.HardTokenData(tokensn, username, new java.util.Date(), new java.util.Date(),
-                tokentype, bcdn, setHardToken(admin, globalConfigurationSession.getCachedGlobalConfiguration().getHardTokenEncryptCA(),
+                tokentype, bcdn, setHardToken(admin, ((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID)).getHardTokenEncryptCA(),
                         hardtokendata)));
         if (certificates != null) {
             for ( Certificate cert : certificates ) {
@@ -781,7 +783,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             throw new HardTokenDoesntExistsException(errorMessage);
         }
         htd.setTokenType(tokentype);
-        htd.setData(setHardToken(admin, globalConfigurationSession.getCachedGlobalConfiguration().getHardTokenEncryptCA(), hardtokendata));
+        htd.setData(setHardToken(admin, ((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID)).getHardTokenEncryptCA(), hardtokendata));
         htd.setModifyTime(new java.util.Date());
         int caid = htd.getSignificantIssuerDN().hashCode();
         String msg = intres.getLocalizedMessage("hardtoken.changedtoken", tokensn);
@@ -867,7 +869,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             }
             if (htd != null) {
                 returnval = new HardTokenInformation(htd.getTokenSN(), htd.getUsername(), htd.getCreateTime(), htd.getModifyTime(), htd.getTokenType(), htd
-                        .getSignificantIssuerDN(), getHardToken(admin, globalConfigurationSession.getCachedGlobalConfiguration().getHardTokenEncryptCA(),
+                        .getSignificantIssuerDN(), getHardToken(admin, ((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID)).getHardTokenEncryptCA(),
                         includePUK, htd.getData()), copyof, copies);
                 int caid = htd.getSignificantIssuerDN().hashCode();
                 String msg = intres.getLocalizedMessage("hardtoken.viewedtoken", tokensn);
@@ -914,7 +916,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
                 }
             }
             returnval.add(new HardTokenInformation(htd.getTokenSN(), htd.getUsername(), htd.getCreateTime(), htd.getModifyTime(), htd.getTokenType(), htd
-                    .getSignificantIssuerDN(), getHardToken(admin, globalConfigurationSession.getCachedGlobalConfiguration().getHardTokenEncryptCA(),
+                    .getSignificantIssuerDN(), getHardToken(admin, ((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID)).getHardTokenEncryptCA(),
                     includePUK, htd.getData()), copyof, copies));
             int caid = htd.getSignificantIssuerDN().hashCode();
             String msg = intres.getLocalizedMessage("hardtoken.viewedtoken", htd.getTokenSN());

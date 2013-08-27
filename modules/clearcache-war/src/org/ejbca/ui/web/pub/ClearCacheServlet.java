@@ -31,6 +31,7 @@ import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
+import org.ejbca.config.Configuration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
@@ -83,11 +84,16 @@ public class ClearCacheServlet extends HttpServlet {
         		}
         		res.sendError(HttpServletResponse.SC_UNAUTHORIZED, "The remote host "+req.getRemoteHost()+" is unknown");
         	} else {       
-        		globalconfigurationsession.flushGlobalConfigurationCache();
+        		globalconfigurationsession.flushConfigurationCache(Configuration.GlobalConfigID);
         		if(log.isDebugEnabled()){
         			log.debug("Global Configuration cache cleared");
         		}
         			
+                globalconfigurationsession.flushConfigurationCache(Configuration.CMPConfigID);
+                if(log.isDebugEnabled()){
+                    log.debug("CMP Configuration cache cleared");
+                }
+                
         		endentitysession.flushProfileCache();
         		if(log.isDebugEnabled()) {
         			log.debug("RA Profile cache cleared");
@@ -134,7 +140,7 @@ public class ClearCacheServlet extends HttpServlet {
 			log.trace(">acceptedHost: "+remotehost);
 		}    	
 		boolean ret = false;
-		GlobalConfiguration gc = globalconfigurationsession.getCachedGlobalConfiguration();
+		GlobalConfiguration gc = (GlobalConfiguration) globalconfigurationsession.getCachedConfiguration(Configuration.GlobalConfigID);
 		Set<String> nodes = gc.getNodesInCluster();
 		Iterator<String> itr = nodes.iterator();
 		String nodename = null;

@@ -40,8 +40,10 @@ import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.CmpConfiguration;
+import org.ejbca.config.Configuration;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
@@ -97,6 +99,10 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 	private WebAuthenticationProviderSessionLocal authenticationProviderSession;
 	@EJB
 	private CryptoTokenSessionLocal cryptoTokenSession;
+	@EJB
+	private GlobalConfigurationSessionLocal globalConfigSession;
+	
+	private CmpConfiguration cmpConfiguration;
 	
 	@PostConstruct
 	public void postConstruct() {
@@ -141,42 +147,51 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 			if (log.isDebugEnabled()) {
 	            final PKIHeader header = req.getHeader();
 				log.debug("Received CMP message with pvno="+header.getPvno()+", sender="+header.getSender().toString()+", recipient="+header.getRecipient().toString());
+				log.debug("Cmp configuration alias: " + confAlias);
 				log.debug("The CMP message is already authenticated: " + authenticated);
 				log.debug("Body is of type: "+tagno);
 				log.debug("Transaction id: "+header.getTransactionID());
 				//log.debug(ASN1Dump.dumpAsString(req));
 			}
 
+	        this.cmpConfiguration = (CmpConfiguration) this.globalConfigSession.getCachedConfiguration(Configuration.CMPConfigID);
+			
 			BaseCmpMessage cmpMessage = null;
 			ICmpMessageHandler handler = null;
 			int unknownMessageType = -1;
 			switch (tagno) {
 			case 0:
 				// 0 (ir, Initialization Request) and 2 (cr, Certification Req) are both certificate requests
-				handler = new CrmfMessageHandler(admin, confAlias, caSession,  certificateProfileSession, certificateRequestSession, endEntityAccessSession, endEntityProfileSession, signSession, certificateStoreSession, authSession, authenticationProviderSession, endEntityManagementSession);
-				cmpMessage = new CrmfRequestMessage(req, CmpConfiguration.getDefaultCA(confAlias), CmpConfiguration.getAllowRAVerifyPOPO(confAlias), CmpConfiguration.getExtractUsernameComponent(confAlias));
+				handler = new CrmfMessageHandler(admin, confAlias, caSession,  certificateProfileSession, certificateRequestSession, endEntityAccessSession, 
+				                        endEntityProfileSession, signSession, certificateStoreSession, authSession, authenticationProviderSession, 
+				                        endEntityManagementSession, globalConfigSession);
+				cmpMessage = new CrmfRequestMessage(req, this.cmpConfiguration.getCMPDefaultCA(confAlias), this.cmpConfiguration.getAllowRAVerifyPOPO(confAlias), this.cmpConfiguration.getExtractUsernameComponent(confAlias));
 				break;
 			case 2:
-				handler = new CrmfMessageHandler(admin, confAlias, caSession, certificateProfileSession, certificateRequestSession, endEntityAccessSession, endEntityProfileSession, signSession, certificateStoreSession, authSession, authenticationProviderSession, endEntityManagementSession);
-				cmpMessage = new CrmfRequestMessage(req, CmpConfiguration.getDefaultCA(confAlias), CmpConfiguration.getAllowRAVerifyPOPO(confAlias), CmpConfiguration.getExtractUsernameComponent(confAlias));
+				handler = new CrmfMessageHandler(admin, confAlias, caSession, certificateProfileSession, certificateRequestSession, endEntityAccessSession, 
+				                        endEntityProfileSession, signSession, certificateStoreSession, authSession, authenticationProviderSession, 
+				                        endEntityManagementSession, globalConfigSession);
+				cmpMessage = new CrmfRequestMessage(req, this.cmpConfiguration.getCMPDefaultCA(confAlias), this.cmpConfiguration.getAllowRAVerifyPOPO(confAlias), this.cmpConfiguration.getExtractUsernameComponent(confAlias));
 				break;
 			case 7:
 			    // Key Update request (kur, Key Update Request)
-			    handler = new CrmfKeyUpdateHandler(admin, confAlias, caSession, certificateProfileSession, endEntityAccessSession, endEntityProfileSession, signSession, certificateStoreSession, authSession, authenticationProviderSession, endEntityManagementSession);
-			    cmpMessage = new CrmfRequestMessage(req, CmpConfiguration.getDefaultCA(confAlias), CmpConfiguration.getAllowRAVerifyPOPO(confAlias), CmpConfiguration.getExtractUsernameComponent(confAlias));
+			    handler = new CrmfKeyUpdateHandler(admin, confAlias, caSession, certificateProfileSession, endEntityAccessSession, endEntityProfileSession, 
+			                            signSession, certificateStoreSession, authSession, authenticationProviderSession, endEntityManagementSession, 
+			                            globalConfigSession);
+			    cmpMessage = new CrmfRequestMessage(req, this.cmpConfiguration.getCMPDefaultCA(confAlias), this.cmpConfiguration.getAllowRAVerifyPOPO(confAlias), this.cmpConfiguration.getExtractUsernameComponent(confAlias));
 			    break;
 			case 19:
 				// PKI confirm (pkiconf, Confirmation)
 			case 24:
 				// Certificate confirmation (certConf, Certificate confirm)
-				handler = new ConfirmationMessageHandler(admin, confAlias, caSession, endEntityProfileSession, certificateProfileSession, certificateStoreSession, authSession,
-				        endEntityAccessSession, authenticationProviderSession, cryptoTokenSession);
+				handler = new ConfirmationMessageHandler(admin, confAlias, caSession, endEntityProfileSession, certificateProfileSession, certificateStoreSession, 
+				                        authSession, endEntityAccessSession, authenticationProviderSession, cryptoTokenSession, globalConfigSession);
 				cmpMessage = new GeneralCmpMessage(req);
 				break;
 			case 11:
 				// Revocation request (rr, Revocation Request)
 				handler = new RevocationMessageHandler(admin, confAlias, endEntityManagementSession, caSession, endEntityProfileSession, certificateProfileSession,
-				        certificateStoreSession, authSession, endEntityAccessSession, authenticationProviderSession, cryptoTokenSession);
+				        certificateStoreSession, authSession, endEntityAccessSession, authenticationProviderSession, cryptoTokenSession, globalConfigSession);
 				cmpMessage = new GeneralCmpMessage(req);
 				break;
             case 20:
@@ -185,7 +200,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
                     log.debug("Received a NestedMessageContent");
                 }
 
-                final NestedMessageContent nestedMessage = new NestedMessageContent(req, confAlias);
+                final NestedMessageContent nestedMessage = new NestedMessageContent(req, confAlias, globalConfigSession);
                 if(nestedMessage.verify()) {
                     if(log.isDebugEnabled()) {
                         log.debug("The NestedMessageContent was verified successfully");
@@ -197,13 +212,13 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
                     } catch (IllegalArgumentException e) {
                         final String errMsg = e.getLocalizedMessage();
                         log.info(errMsg, e);
-                        cmpMessage = new NestedMessageContent(req, confAlias);
+                        cmpMessage = new NestedMessageContent(req, confAlias, globalConfigSession);
                         return CmpMessageHelper.createUnprotectedErrorMessage(cmpMessage, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, errMsg); 
                     }
                 } else {
                     final String errMsg = "Could not verify the RA, signature verification on NestedMessageContent failed.";
                     log.info(errMsg);
-                    cmpMessage = new NestedMessageContent(req, confAlias);
+                    cmpMessage = new NestedMessageContent(req, confAlias, globalConfigSession);
                     return CmpMessageHelper.createUnprotectedErrorMessage(cmpMessage, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, errMsg);
                 }
 

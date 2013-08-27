@@ -68,18 +68,17 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
     private String password;
     private String errorMessage;
     private String confAlias;
+    private CmpConfiguration cmpConfiguration;
     
     private CmpPbeVerifyer verifyer;
         
-    public HMACAuthenticationModule(final String parameter, final String confAlias) {
-        this.raAuthSecret = parameter;
+    public HMACAuthenticationModule(final String confAlias, CmpConfiguration cmpConfig) {
+        this.raAuthSecret = cmpConfig.getAuthenticationParameter(getName(), confAlias);
         this.confAlias = confAlias;
-        if(StringUtils.equals(raAuthSecret, "-")) {
-            this.raAuthSecret = CmpConfiguration.getRAAuthenticationSecret(this.confAlias);
-        }
         this.cainfo = null;
         this.password = null;
         this.errorMessage = null;
+        this.cmpConfiguration = cmpConfig;
         
         this.admin = null;
         this.eeAccessSession = null;
@@ -192,7 +191,7 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
             return false;
         }
             
-        if(CmpConfiguration.getRAOperationMode(this.confAlias)) { //RA mode
+        if(this.cmpConfiguration.getRAMode(this.confAlias)) { //RA mode
             if(LOG.isDebugEnabled()) {
                 LOG.debug("Verifying HMAC in RA mode");
             }
@@ -215,12 +214,15 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
                 } catch (InvalidKeyException e) {
                     errorMessage = e.getLocalizedMessage();
                     LOG.error(errorMessage, e);
+                    return false;
                 } catch (NoSuchAlgorithmException e) {
                     errorMessage = e.getLocalizedMessage();
                     LOG.error(errorMessage, e);
+                    return false;
                 } catch (NoSuchProviderException e) {
                     errorMessage = e.getLocalizedMessage();
                     LOG.error(errorMessage, e);
+                    return false;
                 }
             }
 
@@ -253,12 +255,15 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
                     } catch (InvalidKeyException e) {
                         errorMessage = INTRES.getLocalizedMessage("cmp.errorgeneral");
                         LOG.error(errorMessage, e);
+                        return false;
                     } catch (NoSuchAlgorithmException e) {
                         errorMessage = INTRES.getLocalizedMessage("cmp.errorgeneral");
                         LOG.error(errorMessage, e);
+                        return false;
                     } catch (NoSuchProviderException e) {
                         errorMessage = INTRES.getLocalizedMessage("cmp.errorgeneral");
                         LOG.error(errorMessage, e);
+                        return false;
                     }
                 } else {
                     if (LOG.isDebugEnabled()) {
@@ -360,12 +365,15 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
                     } catch (InvalidKeyException e) {
                         errorMessage = INTRES.getLocalizedMessage("cmp.errorgeneral");
                         LOG.error(errorMessage, e);
+                        return false;
                     } catch (NoSuchAlgorithmException e) {
                         errorMessage = INTRES.getLocalizedMessage("cmp.errorgeneral");
                         LOG.error(errorMessage, e);
+                        return false;
                     } catch (NoSuchProviderException e) {
                         errorMessage = INTRES.getLocalizedMessage("cmp.errorgeneral");
                         LOG.error(errorMessage, e);
+                        return false;
                     }
                 } else {
                     errorMessage = "No clear text password for user '"+userdata.getUsername()+"', not possible to check authentication.";

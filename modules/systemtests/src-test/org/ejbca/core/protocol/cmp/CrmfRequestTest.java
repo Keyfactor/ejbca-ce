@@ -64,8 +64,9 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
+import org.ejbca.config.Configuration;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -95,14 +96,15 @@ public class CrmfRequestTest extends CmpTestCase {
     private static String userDN = "CN=" + user + ", O=PrimeKey Solutions AB, C=SE";
     private static String issuerDN = "CN=TestCA";
     private KeyPair keys = null;
-
     private static int caid = 0;
     private static X509Certificate cacert = null;
     private CA testx509ca;
+    private CmpConfiguration cmpConfiguration;
+    private String cmpAlias = "CrmfRequestTestCmpConfigAlias";
 
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    private ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
 
     @BeforeClass
     public static void beforeClass() throws CertificateEncodingException, CertificateException, CADoesntExistsException, AuthorizationDeniedException {
@@ -115,6 +117,8 @@ public class CrmfRequestTest extends CmpTestCase {
     public void setUp() throws Exception {
         super.setUp();
 
+        cmpConfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.CMPConfigID);
+        
         int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
         testx509ca = CaSessionTest.createTestX509CA(issuerDN, null, false, keyusage);
         caid = testx509ca.getCAId();
@@ -123,11 +127,15 @@ public class CrmfRequestTest extends CmpTestCase {
         
         log.debug("issuerDN: " + issuerDN);
         log.debug("caid: " + caid);
-        updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "normal");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RESPONSEPROTECTION, "signature");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_DEFAULTCA, issuerDN);
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "-;-");
+        
+        cmpConfiguration.addAlias(cmpAlias);
+        cmpConfiguration.setRAMode(cmpAlias, false);
+        cmpConfiguration.setResponseProtection(cmpAlias, "signature");
+        cmpConfiguration.setCMPDefaultCA(cmpAlias, issuerDN);
+        cmpConfiguration.setAuthenticationModule(cmpAlias, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
+        cmpConfiguration.setAuthenticationParameters(cmpAlias, "-;-");
+        cmpConfiguration.setExtractUsernameComponent(cmpAlias, "CN");
+        globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
 
         if (keys == null) {
             keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
@@ -141,17 +149,15 @@ public class CrmfRequestTest extends CmpTestCase {
         CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
         caSession.removeCA(admin, caid);
         
-        boolean cleanUpOk = true;
         try {
             endEntityManagementSession.deleteUser(admin, "cmptest");
         } catch (NotFoundException e) {
             // A test probably failed before creating the entity
             log.debug("Failed to delete user \"cmptest\".");
         }
-        if (!configurationSession.restoreConfiguration()) {
-            cleanUpOk = false;
-        }
-        assertTrue("Unable to clean up properly.", cleanUpOk);
+
+        cmpConfiguration.removeAlias(cmpAlias);
+        globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
     }
     
     public String getRoleName() {
@@ -176,7 +182,7 @@ public class CrmfRequestTest extends CmpTestCase {
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
 
-        byte[] resp = sendCmpHttp(ba, 200);
+        byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         checkCmpFailMessage(resp, "User " + user + " not found.", 1, reqId, 7); // Expects a CertificateResponse (reject) message with error
                                                                                 // FailInfo.INCORRECT_DATA
@@ -202,7 +208,7 @@ public class CrmfRequestTest extends CmpTestCase {
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
         // Send request and receive response
-        byte[] resp = sendCmpHttp(ba, 200);
+        byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         checkCmpFailMessage(resp, "User " + user + " not found.", 1, reqId, 7); // Expects a CertificateResponse (reject) message with error
                                                                                 // FailInfo.INCORRECT_DATA
@@ -226,7 +232,7 @@ public class CrmfRequestTest extends CmpTestCase {
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
         // Send request and receive response
-        byte[] resp = sendCmpHttp(ba, 200);
+        byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         X509Certificate cert = checkCmpCertRepMessage(userDN, cacert, resp, reqId);
         String altNames = CertTools.getSubjectAlternativeName(cert);
@@ -241,7 +247,7 @@ public class CrmfRequestTest extends CmpTestCase {
         out.writeObject(confirm);
         ba = bao.toByteArray();
         // Send request and receive response
-        resp = sendCmpHttp(ba, 200);
+        resp = sendCmpHttp(ba, 200, cmpAlias);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         checkCmpPKIConfirmMessage(userDN, cacert, resp);
 
@@ -253,7 +259,7 @@ public class CrmfRequestTest extends CmpTestCase {
         outrev.writeObject(rev);
         byte[] barev = baorev.toByteArray();
         // Send request and receive response
-        resp = sendCmpHttp(barev, 200);
+        resp = sendCmpHttp(barev, 200, cmpAlias);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         checkCmpFailMessage(resp, "PKI Message is not athenticated properly. No HMAC protection was found.", 23, reqId, PKIFailureInfo.badMessageCheck);
         log.trace("<test03CrmfHttpOkUser");
@@ -262,7 +268,7 @@ public class CrmfRequestTest extends CmpTestCase {
     @Test
     public void test04BlueXCrmf() throws Exception {
         log.trace(">test04BlueXCrmf");
-        byte[] resp = sendCmpHttp(bluexir, 200);
+        byte[] resp = sendCmpHttp(bluexir, 200, cmpAlias);
         assertNotNull(resp);
         checkCmpPKIErrorMessage(resp, "C=NL,O=A.E.T. Europe B.V.,OU=Development,CN=Test CA 1", "", PKIFailureInfo.badPOP, null); // expecting a bad_pop
         log.trace("<test04BlueXCrmf");
@@ -279,7 +285,7 @@ public class CrmfRequestTest extends CmpTestCase {
         msg[56] = 0;
         msg[88] = 0;
         // Bad request will return HTTP 400 (bad request)
-        byte[] resp = sendCmpHttp(msg, 400);
+        byte[] resp = sendCmpHttp(msg, 400, cmpAlias);
         assertNull(resp);
         log.trace("<test05BadBytes");
     }
@@ -368,7 +374,7 @@ public class CrmfRequestTest extends CmpTestCase {
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
         // Send request and receive response
-        byte[] resp = sendCmpHttp(ba, 200);
+        byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         X509Certificate cert = checkCmpCertRepMessage(userDN, cacert, resp, reqId);
         
@@ -382,7 +388,7 @@ public class CrmfRequestTest extends CmpTestCase {
         outrev.writeObject(rev);
         byte[] barev = baorev.toByteArray();
         // Send request and receive response
-        resp = sendCmpHttp(barev, 200);
+        resp = sendCmpHttp(barev, 200,cmpAlias);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         int revStatus = checkRevokeStatus(issuerDN, CertTools.getSerialNumber(cert));
         assertNotSame("Revocation request failed to revoke the certificate", RevokedCertInfo.NOT_REVOKED, revStatus);
@@ -399,7 +405,7 @@ public class CrmfRequestTest extends CmpTestCase {
         out.writeObject(req);
         ba = bao.toByteArray();
         // Send request and receive response
-        resp = sendCmpHttp(ba, 200);
+        resp = sendCmpHttp(ba, 200, cmpAlias);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         cert = checkCmpCertRepMessage(userDN, cacert, resp, reqId);
         
@@ -413,7 +419,7 @@ public class CrmfRequestTest extends CmpTestCase {
         outrev.writeObject(rev);
         barev = baorev.toByteArray();
         // Send request and receive response
-        resp = sendCmpHttp(barev, 200);
+        resp = sendCmpHttp(barev, 200, cmpAlias);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         revStatus = checkRevokeStatus(issuerDN, CertTools.getSerialNumber(cert));
         assertNotSame("Revocation request failed to revoke the certificate", RevokedCertInfo.NOT_REVOKED, revStatus);

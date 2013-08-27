@@ -51,6 +51,8 @@ org.ejbca.core.ejb.keybind.InternalKeyBindingRules
                                                     + "/logconfiguration/logconfiguration.jsp";
     final String CONFIGURATION_LINK       =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath() 
                                                     + "/configuration.jsp";
+    final String CMPCONFIGURATION_LINK    =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath()
+           											+ "/cmpconfiguration.jsp";
     
     final String SERVICES_LINK            =   ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "services/listservices.jsf";
     final String INTERNALKEYBINDING_LINK  = ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "keybind/keybindings.jsf";
@@ -85,6 +87,7 @@ org.ejbca.core.ejb.keybind.InternalKeyBindingRules
     final String SERVICES_RESOURCE                      = "/super_administrator";
     final String INTERNALKEYBINDING_RESOURCE            = InternalKeyBindingRules.BASE.resource();
     final String ADMINPRIVILEGES_RESOURCE               = "/system_functionality/edit_administrator_privileges";
+    final String EDITCMPCONFIG_RESOURCE					 = "/edit_cmp_configuration"; 
  %>
 <%  
   boolean caheaderprinted     =false;
@@ -388,6 +391,18 @@ org.ejbca.core.ejb.keybind.InternalKeyBindingRules
    }catch(AuthorizationDeniedException e){}
 %>
 
+<%
+    // If authorized to configure Ejbca then display related links.
+    try{
+      if(ejbcawebbean.isAuthorizedNoLog(EDITCMPCONFIG_RESOURCE)){ 
+          if(!systemheaderprinted){      
+        out.write("<li id=\"cat7\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMFUNCTIONS")+"</strong><ul>");
+        systemheaderprinted = true;
+          } %>
+				<li><a href="<%= CMPCONFIGURATION_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_CMPCONFIGURATION") %></a></li>
+<%   }
+   }catch(AuthorizationDeniedException e){}
+%>
 
 <%
    if(systemheaderprinted){

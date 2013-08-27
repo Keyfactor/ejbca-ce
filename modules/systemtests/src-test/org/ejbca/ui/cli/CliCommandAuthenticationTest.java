@@ -28,12 +28,12 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.config.Configuration;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderSessionRemote;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationTestHelperSessionRemote;
 import org.ejbca.core.ejb.authentication.cli.exception.CliAuthenticationFailedException;
-import org.ejbca.core.ejb.config.GlobalConfigurationProxySessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
@@ -56,7 +56,6 @@ public class CliCommandAuthenticationTest {
     private MockCliCommand mockCliCommand;
     private EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
     private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
-    private GlobalConfigurationProxySessionRemote globalConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private CliAuthenticationTestHelperSessionRemote cliAuthenticationTestHelperSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CliAuthenticationTestHelperSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private CliAuthenticationProviderSessionRemote cliAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(CliAuthenticationProviderSessionRemote.class);
@@ -271,19 +270,19 @@ public class CliCommandAuthenticationTest {
     }
 
     private boolean setCliEnabled(boolean enabled) throws AuthorizationDeniedException {
-        GlobalConfiguration config = globalConfigurationSession.getCachedGlobalConfiguration();
+        GlobalConfiguration config = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
         boolean oldValue = config.getEnableCommandLineInterface();
         config.setEnableCommandLineInterface(enabled);
-        globalConfigurationProxySession.saveGlobalConfigurationRemote(internalAdmin, config);
+        globalConfigurationSession.saveConfiguration(internalAdmin, config, Configuration.GlobalConfigID);
         log.debug("Updated globalconfiguration with clienabled: "+config.getEnableCommandLineInterface());
         return oldValue;
     }
 
     private boolean setCliUserEnabled(boolean enabled) throws AuthorizationDeniedException {
-        GlobalConfiguration config = globalConfigurationSession.getCachedGlobalConfiguration();
+        GlobalConfiguration config = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
         boolean oldValue = config.getEnableCommandLineInterfaceDefaultUser();
         config.setEnableCommandLineInterfaceDefaultUser(enabled);
-        globalConfigurationProxySession.saveGlobalConfigurationRemote(internalAdmin, config);
+        globalConfigurationSession.saveConfiguration(internalAdmin, config, Configuration.GlobalConfigID);
         log.debug("Updated globalconfiguration with cliuserenabled: "+config.getEnableCommandLineInterfaceDefaultUser());
         return oldValue;
     }

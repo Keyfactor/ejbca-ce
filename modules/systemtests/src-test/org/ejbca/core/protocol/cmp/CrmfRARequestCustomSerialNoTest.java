@@ -50,7 +50,8 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
+import org.ejbca.config.Configuration;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
@@ -70,22 +71,24 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
     final private static Logger log = Logger.getLogger(CrmfRARequestCustomSerialNoTest.class);
 
     final private static String PBEPASSWORD = "password";
-
     private String issuerDN;
-
     private int caid;
     final private AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CrmfRARequestCustomSerialNoTest"));
     private X509Certificate cacert;
+    private CmpConfiguration cmpConfiguration;
+    private String cmpAlias = "CrmfRARequestCustomSerialNoTestCmpConfigAlias";
 
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    private ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-    private EndEntityProfileSession eeProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);;
+    private EndEntityProfileSession eeProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     private CertificateProfileSession certProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+    private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
 
     @Before
     public void setUp() throws Exception {
         super.setUp();
+        cmpConfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.CMPConfigID);
+        
         // Configure CMP for this test, we allow custom certificate serial numbers
     	CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
     	//profile.setAllowCertSerialNumberOverride(true);
@@ -110,19 +113,21 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
 		} catch (EndEntityProfileExistsException e) {
 			log.error("Could not create end entity profile.", e);
 		}
+        
         // Configure CMP for this test
-        updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO, "true");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RESPONSEPROTECTION, "signature");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET, PBEPASSWORD);
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, "CMPTESTPROFILE");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, "CMPTESTPROFILE");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, "ManagementCA");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_NAMEGENERATIONSCHEME, "DN");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_NAMEGENERATIONPARAMS, "CN");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ALLOWCUSTOMCERTSERNO, "false");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "-;-");
+        cmpConfiguration.addAlias(cmpAlias);
+        cmpConfiguration.setRAMode(cmpAlias, true);
+        cmpConfiguration.setAllowRAVerifyPOPO(cmpAlias, true);
+        cmpConfiguration.setResponseProtection(cmpAlias, "signature");
+        cmpConfiguration.setRAEEProfile(cmpAlias, "CMPTESTPROFILE");
+        cmpConfiguration.setRACertProfile(cmpAlias, "CMPTESTPROFILE");
+        cmpConfiguration.setRACAName(cmpAlias, "ManagementCA");
+        cmpConfiguration.setRANameGenScheme(cmpAlias, "DN");
+        cmpConfiguration.setRANameGenParams(cmpAlias, "CN");
+        cmpConfiguration.setAllowRACustomSerno(cmpAlias, false);
+        cmpConfiguration.setAuthenticationModule(cmpAlias, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
+        cmpConfiguration.setAuthenticationParameters(cmpAlias, "-;" + PBEPASSWORD);
+        globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
 
         CryptoProviderTools.installBCProvider();
         // Try to use ManagementCA if it exists
@@ -202,7 +207,7 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
             out.writeObject(req);
             final byte[] ba = bao.toByteArray();
             // Send request and receive response
-            final byte[] resp = sendCmpHttp(ba, 200);
+            final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
             // do not check signing if we expect a failure (sFailMessage==null)
             checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, sFailMessage == null, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
             if (sFailMessage == null) {
@@ -226,7 +231,7 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
             out.writeObject(confirm);
             final byte[] ba = bao.toByteArray();
             // Send request and receive response
-            final byte[] resp = sendCmpHttp(ba, 200);
+            final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
             checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
             checkCmpPKIConfirmMessage(userDN, cacert, resp);
         }
@@ -247,12 +252,18 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
             // Actually it does not fail here, but returns good answer
     		X509Certificate cert = crmfHttpUserTest(userDN1, key1, null, null);
     		assertFalse("SerialNumbers should not be equal when custom serialnumbers are not allowed.", bint.equals(cert.getSerialNumber()));
+    		
+    		
             // Second it should fail when the certificate profile does not allow serial number override
-            // crmfHttpUserTest checks the returned serno if bint parameter is not null 
-            updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ALLOWCUSTOMCERTSERNO, "true");
+            // crmfHttpUserTest checks the returned serno if bint parameter is not null
+    		cmpConfiguration.setAllowRACustomSerno(cmpAlias, true);
+    		globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
     		crmfHttpUserTest(userDN1, key1, "Used certificate profile ('"+cpId+"') is not allowing certificate serial number override.", bint);
+    		
+    		
     		// Third it should succeed and we should get our custom requested serialnumber
-            updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ALLOWCUSTOMCERTSERNO, "true");
+    		cmpConfiguration.setAllowRACustomSerno(cmpAlias, true);
+    		globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
     		CertificateProfile cp = certProfileSession.getCertificateProfile("CMPTESTPROFILE");
     		cp.setAllowCertSerialNumberOverride(true);
     		// Now when the profile allows serial number override it should work
@@ -268,7 +279,8 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
     @After
     public void tearDown() throws Exception {
     	super.tearDown();
-        assertTrue("Unable to restore server configuration.", configurationSession.restoreConfiguration());
+        cmpConfiguration.removeAlias(cmpAlias);
+        globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
         // Remove test profiles
         certProfileSession.removeCertificateProfile(admin, "CMPTESTPROFILE");
         eeProfileSession.removeEndEntityProfile(admin, "CMPTESTPROFILE");
