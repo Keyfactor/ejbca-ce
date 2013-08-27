@@ -41,8 +41,10 @@ public class VerifyPKIMessage {
     private CAInfo cainfo;
     private ICMPAuthenticationModule authModule;
     private String confAlias;
-    
+    private String errMsg;
+    private CmpConfiguration cmpConfiguration;
     private AuthenticationToken admin;
+    
     private CaSession caSession;
     private EndEntityAccessSession eeAccessSession;
     private CertificateStoreSession certificateStoreSession;
@@ -51,14 +53,15 @@ public class VerifyPKIMessage {
     private WebAuthenticationProviderSessionLocal authenticationProviderSession;
     private EndEntityManagementSession eeManagementSession;
     
-    private String errMsg;
 
     public VerifyPKIMessage() {
         this.cainfo = null;
         this.authModule = null;
         this.confAlias = null;
-        
+        this.errMsg = null;
+        this.cmpConfiguration = null;
         this.admin = null;
+        
         this.caSession = null;
         this.eeAccessSession = null;
         this.certificateStoreSession = null;
@@ -67,17 +70,17 @@ public class VerifyPKIMessage {
         this.authenticationProviderSession = null;
         this.eeManagementSession = null;
         
-        this.errMsg = null;
     }
     
     public VerifyPKIMessage(final CAInfo cainfo, final String confAlias, final AuthenticationToken admin, final CaSession casession, final EndEntityAccessSession userSession, 
             final CertificateStoreSession certSession, final AccessControlSession authSession, final EndEntityProfileSession eeprofSession, 
-            final WebAuthenticationProviderSessionLocal authProvSession, final EndEntityManagementSession endEntityManagementSession) {
+            final WebAuthenticationProviderSessionLocal authProvSession, final EndEntityManagementSession endEntityManagementSession, 
+            final CmpConfiguration cmpConfig) {
         this.cainfo = cainfo;
         this.authModule = null;
         this.confAlias = confAlias;
-        
         this.admin = admin;
+        
         this.caSession = casession;
         this.eeAccessSession = userSession;
         this.certificateStoreSession = certSession;
@@ -86,6 +89,8 @@ public class VerifyPKIMessage {
         this.authenticationProviderSession = authProvSession;
         this.eeManagementSession = endEntityManagementSession;
         
+        this.cmpConfiguration = cmpConfig;
+        //this.cmpConfiguration = (CmpConfiguration) globalConfigSession.getCachedConfiguration(Configuration.CMPConfigID);
     }
     
     
@@ -124,11 +129,11 @@ public class VerifyPKIMessage {
             log.trace(">verify");
         }
         boolean ret = false;
-        final String authModules = CmpConfiguration.getAuthenticationModule(this.confAlias);
-        final String authparameters = CmpConfiguration.getAuthenticationParameters(this.confAlias);
+        final String authModules = this.cmpConfiguration.getAuthenticationModule(this.confAlias);
+        final String authparameters = this.cmpConfiguration.getAuthenticationParameters(this.confAlias);
         final String modules[] = authModules.split(";");
         final String params[] = authparameters.split(";");
-                
+        
         ICMPAuthenticationModule module = null;
         int i=0;
         while(i<modules.length) {
@@ -164,18 +169,18 @@ public class VerifyPKIMessage {
      */
     private ICMPAuthenticationModule getAuthModule(final String module, final String parameter, final PKIMessage pkimsg) {
         
-        if(CmpConfiguration.getRAOperationMode(this.confAlias) && (StringUtils.equals(module, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD) || StringUtils.equals(module, CmpConfiguration.AUTHMODULE_DN_PART_PWD))) {
+        if(this.cmpConfiguration.getRAMode(this.confAlias) && (StringUtils.equals(module, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD) || StringUtils.equals(module, CmpConfiguration.AUTHMODULE_DN_PART_PWD))) {
             errMsg = "The authentication module '" + module + "' cannot be used in RA mode";
             return null;
         }
         
         if(StringUtils.equals(module, CmpConfiguration.AUTHMODULE_HMAC)) {
-            final HMACAuthenticationModule hmacmodule = new HMACAuthenticationModule(parameter, this.confAlias);
+            final HMACAuthenticationModule hmacmodule = new HMACAuthenticationModule(this.confAlias, this.cmpConfiguration);
             hmacmodule.setSession(this.admin, this.eeAccessSession, this.certificateStoreSession);
             hmacmodule.setCaInfo(this.cainfo);
             return hmacmodule;
         } else if(StringUtils.equals(module, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE)) {
-            final EndEntityCertificateAuthenticationModule eemodule = new EndEntityCertificateAuthenticationModule(parameter, this.confAlias);
+            final EndEntityCertificateAuthenticationModule eemodule = new EndEntityCertificateAuthenticationModule(parameter, this.confAlias, this.cmpConfiguration);
             eemodule.setSession(this.admin, this.caSession, this.certificateStoreSession, this.authorizationSessoin, this.eeProfileSession, 
                         this.eeAccessSession, authenticationProviderSession, eeManagementSession);
             return eemodule;

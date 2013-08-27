@@ -14,6 +14,8 @@
 package org.ejbca.ui.cli.ra;
 
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.ejbca.config.Configuration;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
@@ -45,7 +47,7 @@ public class RaKeyRecoverNewestCommand extends BaseRaAdminCommand {
     			return;
     		}
     		String username = args[1];
-    		boolean usekeyrecovery = ejb.getRemoteSession(GlobalConfigurationSessionRemote.class).getCachedGlobalConfiguration().getEnableKeyRecovery();  
+    		boolean usekeyrecovery = ((GlobalConfiguration) ejb.getRemoteSession(GlobalConfigurationSessionRemote.class).getCachedConfiguration(Configuration.GlobalConfigID)).getEnableKeyRecovery();  
     		if(!usekeyrecovery){
     			getLogger().error("Keyrecovery have to be enabled in the system configuration in order to use this command.");
     			return;                   

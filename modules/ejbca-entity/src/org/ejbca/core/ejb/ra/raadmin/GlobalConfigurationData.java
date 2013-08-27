@@ -24,10 +24,13 @@ import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.JBossUnmarshaller;
+import org.ejbca.config.CmpConfiguration;
+import org.ejbca.config.Configuration;
 import org.ejbca.config.GlobalConfiguration;
 
 /**
@@ -53,9 +56,9 @@ public class GlobalConfigurationData extends ProtectedData implements Serializab
 	 * @param id the unique id of global configuration.
 	 * @param globalconfiguration is the serialized string representation of the global configuration.
 	 */
-	public GlobalConfigurationData(String configurationId, GlobalConfiguration globalConfiguration) {
+	public GlobalConfigurationData(String configurationId, Configuration configuration) {
 		setConfigurationId(configurationId);
-		setGlobalConfiguration(globalConfiguration);
+		setConfiguration(configuration);
 		log.debug("Created global configuration "+configurationId);
 	}
 	
@@ -93,8 +96,13 @@ public class GlobalConfigurationData extends ProtectedData implements Serializab
 	 * Method that returns the global configuration and updates it if necessary.
 	 */
 	@Transient
-	public GlobalConfiguration getGlobalConfiguration(){
-		GlobalConfiguration returnval = new GlobalConfiguration();
+	public Configuration getConfiguration(String configID){
+	    Configuration returnval = null;
+	    if(StringUtils.equals(configID, Configuration.GlobalConfigID) ) {
+	        returnval = new GlobalConfiguration();
+	    } else if(StringUtils.equals(configID, Configuration.CMPConfigID)) {
+	        returnval = new CmpConfiguration();
+	    }
 		returnval.loadData(getData());
 		return returnval;
 	}
@@ -103,8 +111,8 @@ public class GlobalConfigurationData extends ProtectedData implements Serializab
 	 * Method that saves the global configuration to database.
 	 */
 	@SuppressWarnings("rawtypes")
-    public void setGlobalConfiguration(GlobalConfiguration globalconfiguration){
-		setData((HashMap) globalconfiguration.saveData());   
+    public void setConfiguration(Configuration configuration){
+		setData((HashMap) configuration.saveData());   
 	}
 
     //

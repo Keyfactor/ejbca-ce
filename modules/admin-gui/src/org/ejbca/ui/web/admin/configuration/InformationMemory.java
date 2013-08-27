@@ -37,6 +37,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.management.RoleManagementSession;
 import org.cesecore.roles.management.RoleManagementSessionLocal;
+import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSession;
@@ -93,6 +94,7 @@ public class InformationMemory implements Serializable {
     HashSet<String> authorizedaccessrules = null;
 
     GlobalConfiguration globalconfiguration = null;
+    CmpConfiguration cmpconfiguration = null;
     EndEntityProfileNameProxy endentityprofilenameproxy = null;
     CertificateProfileNameProxy certificateprofilenameproxy = null;
 
@@ -101,7 +103,7 @@ public class InformationMemory implements Serializable {
             ComplexAccessControlSessionLocal complexAccessControlSession, EndEntityProfileSession endEntityProfileSession,
             HardTokenSession hardtokensession, PublisherSessionLocal publishersession, UserDataSourceSession userdatasourcesession,
             CertificateProfileSession certificateProfileSession, GlobalConfigurationSession globalConfigurationSession, RoleManagementSessionLocal roleManagementSession,
-            GlobalConfiguration globalconfiguration) {
+            GlobalConfiguration globalconfiguration, CmpConfiguration cmpconfig) {
         this.caadminsession = caadminsession;
         this.casession = caSession;
         this.administrator = administrator;
@@ -109,6 +111,7 @@ public class InformationMemory implements Serializable {
         this.publishersession = publishersession;
         this.userdatasourcesession = userdatasourcesession;
         this.globalconfiguration = globalconfiguration;
+        this.cmpconfiguration = cmpconfig;
         this.certificateProfileSession = certificateProfileSession;
         this.raauthorization = new RAAuthorization(administrator, globalConfigurationSession, authorizationsession, complexAccessControlSession,
                 caSession, endEntityProfileSession);
@@ -490,6 +493,10 @@ public class InformationMemory implements Serializable {
         caauthorization.clear();
         hardtokenauthorization.clear();
         authorizedaccessrules = null;
+    }
+    
+    public void cmpConfigurationEdited(CmpConfiguration cmpconfig) {
+        this.cmpconfiguration = cmpconfig;
     }
 
     /**

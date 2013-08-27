@@ -43,8 +43,10 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
+import org.ejbca.config.Configuration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -76,7 +78,11 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
     private static X509Certificate caCertificate1;
     private static X509Certificate caCertificate2;
     
+    private CmpConfiguration cmpConfiguration;
+    private String configAlias = "CmpRAAuthenticationTestConfigAlias";
+    
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
 
     @BeforeClass
     public static void beforeClass() {
@@ -90,16 +96,33 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
         // Create and configure CAs with different CMP RA secrets
         caCertificate1 = setupCA(CA_NAME_1, null, PBE_SECRET_1);
         caCertificate2 = setupCA(CA_NAME_2, null, PBE_SECRET_2);
+        
+        cmpConfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.CMPConfigID);
+        
+        cmpConfiguration.addAlias(configAlias);
+        
         // Configure CMP for this test. RA mode with individual shared PBE secrets for each CA.
-        updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO, "true");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RESPONSEPROTECTION, "pbe");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET, null);
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, "EMPTY");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, "ENDUSER");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, "KeyId");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "-;-");
+        cmpConfiguration.setRAMode(configAlias, true);
+        cmpConfiguration.setAllowRAVerifyPOPO(configAlias, true);
+        cmpConfiguration.setResponseProtection(configAlias, "pbe");
+        cmpConfiguration.setRAEEProfile(configAlias, "EMPTY");
+        cmpConfiguration.setRACertProfile(configAlias, "ENDUSER");
+        cmpConfiguration.setRACAName(configAlias, "KeyId");
+        cmpConfiguration.setAuthenticationModule(configAlias, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
+        cmpConfiguration.setAuthenticationParameters(configAlias, "-;-");
+        globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration, Configuration.CMPConfigID);
+    }
+    
+    /** Remove CAs and restore configuration that was used by the tests. */
+    @After
+    public void tearDown() throws Exception {
+        super.tearDown();
+        removeTestCA(CA_NAME_1);
+        removeTestCA(CA_NAME_2);
+        EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST).restoreConfiguration();
+        EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).removeEndEntityProfile(ADMIN, EEP_1);
+        cmpConfiguration.removeAlias(configAlias);
+        globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration, Configuration.CMPConfigID);
     }
 
     private X509Certificate setupCA(String caName, String caDN, String pbeSecret) throws Exception {
@@ -138,7 +161,8 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
     @Test
     public void test03IssueConfirmRevokeWithCommonSecret() throws Exception {
         LOG.trace(">test03IssueConfirmRevokeWithCommonSecret");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET, PBE_SECRET_3);
+        cmpConfiguration.setAuthenticationParameters(configAlias , "-;" + PBE_SECRET_3);
+        globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration, Configuration.CMPConfigID);
         testIssueConfirmRevoke(caCertificate2, PBE_SECRET_3, CA_NAME_2, false);
         LOG.trace("<test03IssueConfirmRevokeWithCommonSecret");
     }
@@ -147,9 +171,9 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
     @Test
     public void test04IssueConfirmRevokeEEP() throws Exception {
         LOG.trace(">test04IssueConfirmRevokeEEP");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET, null);
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, "ProfileDefault");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, EEP_1);
+        cmpConfiguration.setRACAName(configAlias, "ProfileDefault");
+        cmpConfiguration.setRAEEProfile(configAlias, EEP_1);
+        globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration, Configuration.CMPConfigID);
         // Create EEP
         if (EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfile(EEP_1) == null) {
             // Configure an EndEntity profile that allows CN, O, C in DN and rfc822Name, MS UPN in altNames.
@@ -179,9 +203,9 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
         String caDN = "CN=" + caName + ",O=PrimeKey";
         X509Certificate dnOrderCA = setupCA(caName, caDN, PBE_SECRET_1);
         
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET, null);
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, caName);
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, EEP_1);
+        cmpConfiguration.setRACAName(configAlias, caName);
+        cmpConfiguration.setRAEEProfile(configAlias, EEP_1);
+        globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration, Configuration.CMPConfigID);
         
         // Create EEP
         if (EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfile(EEP_1) == null) {
@@ -238,7 +262,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
             ByteArrayOutputStream bao = new ByteArrayOutputStream();
             new DEROutputStream(bao).writeObject(req);
             byte[] ba = bao.toByteArray();
-            byte[] resp = sendCmpHttp(ba, 200);
+            byte[] resp = sendCmpHttp(ba, 200, configAlias);
             checkCmpResponseGeneral(resp, CertTools.getSubjectDN(caCertificate), subjectDN, caCertificate, nonce, transid, false, pbeSecret, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
             X509Certificate cert = checkCmpCertRepMessage(subjectDN, caCertificate, resp, reqId);
 
@@ -252,7 +276,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
             bao = new ByteArrayOutputStream();
             new DEROutputStream(bao).writeObject(req1);
             ba = bao.toByteArray();
-            resp = sendCmpHttp(ba, 200);
+            resp = sendCmpHttp(ba, 200, configAlias);
             checkCmpResponseGeneral(resp, caCertificate.getSubjectX500Principal().getName(), subjectDN, caCertificate, nonce, transid, false, pbeSecret, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
             checkCmpPKIConfirmMessage(subjectDN, caCertificate, resp);
 
@@ -263,7 +287,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
             bao = new ByteArrayOutputStream();
             new DEROutputStream(bao).writeObject(revReq);
             ba = bao.toByteArray();
-            resp = sendCmpHttp(ba, 200);
+            resp = sendCmpHttp(ba, 200, configAlias);
             checkCmpResponseGeneral(resp, caCertificate.getSubjectX500Principal().getName(), subjectDN, caCertificate, nonce, transid, false, pbeSecret, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
             checkCmpRevokeConfirmMessage(caCertificate.getSubjectX500Principal().getName(), subjectDN, cert.getSerialNumber(), caCertificate, resp, true);
             int reason = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class).getStatus(CertTools.getSubjectDN(caCertificate), cert.getSerialNumber()).revocationReason;
@@ -272,16 +296,6 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
         } finally {
             endEntityManagementSession.deleteUser(ADMIN, USERNAME);
         }
-    }
-
-    /** Remove CAs and restore configuration that was used by the tests. */
-    @After
-    public void tearDown() throws Exception {
-        super.tearDown();
-        removeTestCA(CA_NAME_1);
-        removeTestCA(CA_NAME_2);
-        EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST).restoreConfiguration();
-        EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).removeEndEntityProfile(ADMIN, EEP_1);
     }
     
     public String getRoleName() {

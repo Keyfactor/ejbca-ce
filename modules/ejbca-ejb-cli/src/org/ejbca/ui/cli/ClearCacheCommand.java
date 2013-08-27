@@ -19,6 +19,7 @@ import org.cesecore.authorization.control.AccessControlSessionRemote;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.config.Configuration;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.util.CliTools;
@@ -58,7 +59,11 @@ public class ClearCacheCommand extends BaseCommand {
 			if (globalconf) {
 				getLogger().info("Flushing global configuration cache.");
 				// Flush GlobalConfiguration
-				ejb.getRemoteSession(GlobalConfigurationSessionRemote.class).flushGlobalConfigurationCache();    			
+				ejb.getRemoteSession(GlobalConfigurationSessionRemote.class).flushConfigurationCache(Configuration.GlobalConfigID);
+				
+                getLogger().info("Flushing CMP configuration cache.");
+                // Flush CMPConfiguration
+                ejb.getRemoteSession(GlobalConfigurationSessionRemote.class).flushConfigurationCache(Configuration.CMPConfigID);
 			}
 			if (eeprofile) {
 				getLogger().info("Flushing end entity profile cache.");

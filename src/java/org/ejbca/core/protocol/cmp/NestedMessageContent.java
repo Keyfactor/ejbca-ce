@@ -45,6 +45,8 @@ import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.ejbca.config.CmpConfiguration;
+import org.ejbca.config.Configuration;
+import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 
 /**
  * Nested Message Content according to RFC4210. The PKI message is signed by an RA authority.
@@ -61,6 +63,7 @@ public class NestedMessageContent extends BaseCmpMessage implements RequestMessa
     
     private PKIMessage raSignedMessage;
     private String confAlias;
+    private CmpConfiguration cmpConfiguration;
     
     /** Because PKIMessage is not serializable we need to have the serializable bytes save as well, so 
      * we can restore the PKIMessage after serialization/deserialization. */ 
@@ -70,9 +73,10 @@ public class NestedMessageContent extends BaseCmpMessage implements RequestMessa
         this.confAlias = null;
     }
     
-    public NestedMessageContent(final PKIMessage pkiMsg, String configAlias) {
+    public NestedMessageContent(final PKIMessage pkiMsg, String configAlias, GlobalConfigurationSession globalConfigSession) {
         this.raSignedMessage = pkiMsg;
         this.confAlias = configAlias;
+        this.cmpConfiguration = (CmpConfiguration) globalConfigSession.getCachedConfiguration(Configuration.CMPConfigID);
         setPKIMessageBytes(pkiMsg);
         init();
     }
@@ -129,10 +133,10 @@ public class NestedMessageContent extends BaseCmpMessage implements RequestMessa
         try {
             final List<X509Certificate> racerts = getRaCerts();
             if(log.isDebugEnabled()) {
-                log.debug("Found " + racerts.size() + " certificates in " + CmpConfiguration.getRaCertificatePath(this.confAlias));
+                log.debug("Found " + racerts.size() + " certificates in " + this.cmpConfiguration.getRACertPath(this.confAlias));
             }
             if(racerts.size() <= 0) {
-                String errorMessage = "No certificate files were found in " + CmpConfiguration.getRaCertificatePath(this.confAlias);
+                String errorMessage = "No certificate files were found in " + this.cmpConfiguration.getRACertPath(this.confAlias);
                 log.info(errorMessage);
             }
 
@@ -221,7 +225,7 @@ public class NestedMessageContent extends BaseCmpMessage implements RequestMessa
     private List<X509Certificate> getRaCerts() throws CertificateException, IOException {
             
         final List<X509Certificate> racerts = new ArrayList<X509Certificate>();
-        final String raCertsPath = CmpConfiguration.getRaCertificatePath(this.confAlias);
+        final String raCertsPath = this.cmpConfiguration.getRACertPath(this.confAlias);
         if(log.isDebugEnabled()) {
             log.debug("Looking for trusted RA certificate in " + raCertsPath);
         }

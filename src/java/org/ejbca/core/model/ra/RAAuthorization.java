@@ -24,6 +24,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CaSession;
+import org.ejbca.config.Configuration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSession;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
@@ -52,7 +53,8 @@ public class RAAuthorization implements Serializable {
     private EndEntityProfileSession endEntityProfileSession;
     
     /** Creates a new instance of RAAuthorization. */
-    public RAAuthorization(AuthenticationToken admin, GlobalConfigurationSession globalConfigurationSession, AccessControlSessionLocal authorizationsession, ComplexAccessControlSession complexAccessControlSession, CaSession caSession, EndEntityProfileSession endEntityProfileSession) {
+    public RAAuthorization(AuthenticationToken admin, GlobalConfigurationSession globalConfigurationSession, AccessControlSessionLocal authorizationsession, 
+                    ComplexAccessControlSession complexAccessControlSession, CaSession caSession, EndEntityProfileSession endEntityProfileSession) {
     	this.admin = admin;
     	this.globalConfigurationSession = globalConfigurationSession;
     	this.authorizationsession = authorizationsession;
@@ -105,7 +107,7 @@ public class RAAuthorization implements Serializable {
         }
 
     	String endentityauth = null;
-        GlobalConfiguration globalconfiguration = globalConfigurationSession.getCachedGlobalConfiguration();
+        GlobalConfiguration globalconfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
         if (globalconfiguration.getEnableEndEntityProfileLimitations()){
         	endentityauth = getEndEntityProfileAuthorizationString(true);
         	if(authorizedToApproveCAActions && authorizedToApproveRAActions){

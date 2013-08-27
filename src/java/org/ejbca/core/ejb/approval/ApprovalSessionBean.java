@@ -49,6 +49,7 @@ import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.ProfileID;
+import org.ejbca.config.Configuration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
@@ -127,7 +128,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 approvalData.setExpiredate((new Date()).getTime() + approvalRequest.getRequestValidity());
                 approvalData.setRemainingapprovals(approvalRequest.getNumOfRequiredApprovals());
                 entityManager.persist(approvalData);
-                final GlobalConfiguration gc = globalConfigurationSession.getCachedGlobalConfiguration();
+                final GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
                 if (gc.getUseApprovalNotifications()) {
                     sendApprovalNotification(admin, gc.getApprovalAdminEmailAddress(), gc.getApprovalNotificationFromAddress(), gc.getBaseUrl()
                             + "adminweb/approval/approveaction.jsf?uniqueId=" + freeId,
@@ -199,7 +200,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
 
         try {
             reject(adl, approval);
-            final GlobalConfiguration gc = globalConfigurationSession.getCachedGlobalConfiguration();
+            final GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
             if (gc.getUseApprovalNotifications()) {
                 final ApprovalDataVO approvalDataVO = getApprovalDataVO(adl);
                 sendApprovalNotification(admin, gc.getApprovalAdminEmailAddress(), gc.getApprovalNotificationFromAddress(), gc.getBaseUrl()

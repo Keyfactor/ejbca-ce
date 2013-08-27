@@ -205,7 +205,7 @@ public class CaSessionTest extends RoleUsingTestCase {
                 false, // useCertReqHistory
                 true, // useUserStorage
                 true, // useCertificateStorage
-                null // cmpRaAuthSecret
+                "foo123" // cmpRaAuthSecret
         );
 
         X509CA x509ca = new X509CA(cainfo);

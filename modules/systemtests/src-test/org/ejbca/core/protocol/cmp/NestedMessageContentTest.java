@@ -127,11 +127,11 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.config.EjbcaConfigurationHolder;
+import org.ejbca.config.Configuration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
-import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
@@ -164,18 +164,18 @@ public class NestedMessageContentTest extends CmpTestCase {
     private static final Logger log = Logger.getLogger(NestedMessageContentTest.class);
     
     final private AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("NestedMessageContentTest"));
-
+    
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private CertificateProfileSession certProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     private EndEntityProfileSession eeProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);;
-    private ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private CertificateStoreSession certSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
     private RoleAccessSessionRemote roleAccessSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     
     private int caid;
     private Certificate cacert;
@@ -183,6 +183,8 @@ public class NestedMessageContentTest extends CmpTestCase {
     private String subjectDN;
     private String issuerDN;
     private String raCertsPath = "/tmp/racerts";
+    private CmpConfiguration cmpConfiguration;
+    private String cmpAlias = "NestedMessageContentTestCmpConfigAlias";
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
     
@@ -191,6 +193,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         super.setUp();
         
         CryptoProviderTools.installBCProvider();
+        cmpConfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.CMPConfigID);
         
         subjectDN = "CN=nestedCMPTest,C=SE";
         issuerDN = "CN=TestCA";
@@ -230,21 +233,21 @@ public class NestedMessageContentTest extends CmpTestCase {
         } catch (EndEntityProfileExistsException e) {
             log.error("Could not create end entity profile.", e);
         }
+        
         // Configure CMP for this test
-        configurationSession.backupConfiguration();
-        updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO, "true");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, "CMPTESTPROFILE");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, "CMPTESTPROFILE");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, "TestCA");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_NAMEGENERATIONSCHEME, "DN");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_NAMEGENERATIONPARAMS, "CN");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RACERT_PATH, raCertsPath);
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE + ";" + CmpConfiguration.AUTHMODULE_HMAC);
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "TestCA;foo123");
-        // Also update raCerts path locally to be able to verify locally
-        EjbcaConfigurationHolder.instance().setProperty(CmpConfiguration.CONFIG_RACERT_PATH, raCertsPath);
-       
+        cmpConfiguration.addAlias(cmpAlias);
+        cmpConfiguration.setRAMode(cmpAlias, true);
+        cmpConfiguration.setAllowRAVerifyPOPO(cmpAlias, true);
+        cmpConfiguration.setRAEEProfile(cmpAlias, "CMPTESTPROFILE");
+        cmpConfiguration.setRACertProfile(cmpAlias, "CMPTESTPROFILE");
+        cmpConfiguration.setRACAName(cmpAlias, "TestCA");
+        cmpConfiguration.setRANameGenScheme(cmpAlias, "DN");
+        cmpConfiguration.setRANameGenParams(cmpAlias, "CN");
+        cmpConfiguration.setRACertPath(cmpAlias, raCertsPath);
+        cmpConfiguration.setAuthenticationModule(cmpAlias, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE + ";" + CmpConfiguration.AUTHMODULE_HMAC);
+        cmpConfiguration.setAuthenticationParameters(cmpAlias, "TestCA;foo123");
+        cmpConfiguration.setRACertPath(cmpAlias, raCertsPath);
+        globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
     }
 
     @After
@@ -255,6 +258,9 @@ public class NestedMessageContentTest extends CmpTestCase {
         
         CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
         caSession.removeCA(admin, caid);
+        
+        cmpConfiguration.removeAlias(cmpAlias);
+        globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
     }
 
     @Test
@@ -320,7 +326,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         out.writeObject(myPKIMessage);
         final byte[] ba = bao.toByteArray();
         // Send request and receive response
-        final byte[] resp = sendCmpHttp(ba, 200);
+        final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         
         // do not check signing if we expect a failure (sFailMessage==null)
         checkCmpResponseGeneral(resp, issuerDN, subjectDN, cacert, crmfMsg.getHeader().getSenderNonce().getOctets(), 
@@ -376,7 +382,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         assertNotNull("myPKIBody is null", myPKIBody);
         assertNotNull("myPKIMessage is null", myPKIMessage);
             
-        NestedMessageContent nestedMsg = new NestedMessageContent(myPKIMessage, null);
+        NestedMessageContent nestedMsg = new NestedMessageContent(myPKIMessage, cmpAlias, globalConfigurationSession);
         boolean verify = nestedMsg.verify();
         assertTrue("NestedMessageVerification failed.", verify);
         
@@ -445,7 +451,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         out.writeObject(myPKIMessage);
         final byte[] ba = bao.toByteArray();
         // Send request and receive response
-        final byte[] resp = sendCmpHttp(ba, 200);        
+        final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);        
         checkCmpResponseGeneral(resp, issuerDN, subjectDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         int revStatus = checkRevokeStatus(issuerDN, CertTools.getSerialNumber(cert));
         assertNotSame("Revocation request failed to revoke the certificate", RevokedCertInfo.NOT_REVOKED, revStatus);
@@ -507,7 +513,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         out.writeObject(myPKIMessage);
         final byte[] ba = bao.toByteArray();
         // Send request and receive response
-        final byte[] resp = sendCmpHttp(ba, 200);
+        final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         //final byte[] resp = sendCmpHttp(myPKIMessage.toASN1Primitive().toASN1Object().getEncoded(), 200);
         // do not check signing if we expect a failure (sFailMessage==null)
         checkCmpResponseGeneral(resp, issuerDN, reqSubjectDN, cacert, crmfMsg.getHeader().getSenderNonce().getOctets(), 
@@ -515,7 +521,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         Certificate cert = checkCmpCertRepMessage(subjectDN, cacert, resp, reqID);
         assertNotNull("CrmfRequest did not return a certificate", cert);
         
-        NestedMessageContent nestedContent = new NestedMessageContent(myPKIMessage, null);
+        NestedMessageContent nestedContent = new NestedMessageContent(myPKIMessage, cmpAlias, globalConfigurationSession);
         boolean ret = nestedContent.verify();
         assertTrue("The message verification failed, yet the a certificate was returned.", ret);
         
@@ -574,7 +580,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         out.writeObject(myPKIMessage);
         final byte[] ba = bao.toByteArray();
         // Send request and receive response
-        final byte[] resp = sendCmpHttp(ba, 200);
+        final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
 
         PKIMessage respObject = null;
         ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
@@ -591,7 +597,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
         assertEquals("Wrong error message", "Could not verify the RA, signature verification on NestedMessageContent failed.", errMsg);
         
-        NestedMessageContent nestedContent = new NestedMessageContent(myPKIMessage, null);
+        NestedMessageContent nestedContent = new NestedMessageContent(myPKIMessage, cmpAlias, globalConfigurationSession);
         boolean ret = nestedContent.verify();
         assertFalse("The message verification failed, yet the a certificate was returned.", ret);
         
@@ -673,7 +679,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         out.writeObject(myPKIMessage);
         final byte[] ba = bao.toByteArray();
         // Send request and receive response
-        final byte[] resp = sendCmpHttp(ba, 200);
+        final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
 
         PKIMessage respObject = null;
         ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
@@ -748,7 +754,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         out.writeObject(myPKIMessage);
         final byte[] ba = bao.toByteArray();
         // Send request and receive response
-        final byte[] resp = sendCmpHttp(ba, 200);
+        final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         //final byte[] resp = sendCmpHttp(myPKIMessage.toASN1Primitive().toASN1Object().getEncoded(), 200);
         // do not check signing if we expect a failure (sFailMessage==null)
         
@@ -819,7 +825,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         out.writeObject(myPKIMessage);
         final byte[] ba = bao.toByteArray();
         // Send request and receive response
-        final byte[] resp = sendCmpHttp(ba, 200);
+        final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         //final byte[] resp = sendCmpHttp(myPKIMessage.toASN1Primitive().toASN1Object().getEncoded(), 200);
         // do not check signing if we expect a failure (sFailMessage==null)
         
@@ -845,7 +851,9 @@ public class NestedMessageContentTest extends CmpTestCase {
     @Test
     public void test09CrmfWrongIssuerAndDoNotCheckAdmin() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException, EjbcaException, UserDoesntFullfillEndEntityProfileException, WaitingForApprovalException, Exception {
         
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "-;foo123");
+        cmpConfiguration.setAuthenticationParameters(cmpAlias, "-;foo123");
+        //updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "-;foo123");
+        globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
 
         
         //-----------------Creating CRMF request
@@ -907,7 +915,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         out.writeObject(myPKIMessage);
         final byte[] ba = bao.toByteArray();
         // Send request and receive response
-        final byte[] resp = sendCmpHttp(ba, 200);
+        final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         //final byte[] resp = sendCmpHttp(myPKIMessage.toASN1Primitive().toASN1Object().getEncoded(), 200);
         // do not check signing if we expect a failure (sFailMessage==null)
         checkCmpResponseGeneral(resp, issuerDN, subjectDN, cacert, crmfMsg.getHeader().getSenderNonce().getOctets(), 
@@ -920,14 +928,15 @@ public class NestedMessageContentTest extends CmpTestCase {
     @Test
     public void test23NestedMessageIn3GPPMode() throws Exception {
      
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "TestCA");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "normal");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_VENDORCERTIFICATEMODE, "true");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_VENDORCA, "3GPPCA");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_EXTRACTUSERNAMECOMPONENT, "UID");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWUPDATEWITHSAMEKEY, "true");
+        cmpConfiguration.setAuthenticationModule(cmpAlias, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
+        cmpConfiguration.setAuthenticationParameters(cmpAlias, "TestCA");
+        cmpConfiguration.setRAMode(cmpAlias, false);
+        cmpConfiguration.setVendorMode(cmpAlias, true);
+        cmpConfiguration.setVendorCA(cmpAlias, "3GPPCA");
+        cmpConfiguration.setExtractUsernameComponent(cmpAlias, "UID");
+        cmpConfiguration.setKurAllowAutomaticUpdate(cmpAlias, true);
+        cmpConfiguration.setKurAllowSameKey(cmpAlias, true);
+        globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
         
         byte[] gppCA = Base64.decode( ("MIICHDCCAYWgAwIBAgIId2qio28kX2EwDQYJKoZIhvcNAQEFBQAwHjEPMA0GA1UE" +
                 "AwwGM0dQUENBMQswCQYDVQQGEwJTRTAeFw0xMzAxMTYxMTM4MjRaFw0xNDAxMTYx" +
@@ -1036,7 +1045,7 @@ public class NestedMessageContentTest extends CmpTestCase {
             DEROutputStream out = new DEROutputStream(bao);
             out.writeObject(msg);
             byte[] ba = bao.toByteArray();
-            byte[] resp = sendCmpHttp(ba, 200);
+            byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
             CertReqMessages ir = (CertReqMessages) msg.getBody().getContent();
             Certificate cert = checkCmpCertRepMessage(testUserDN, cacert, resp, ir.toCertReqMsgArray()[0].getCertReq().getCertReqId()
                     .getValue().intValue());
@@ -1071,8 +1080,6 @@ public class NestedMessageContentTest extends CmpTestCase {
         certProfileSession.removeCertificateProfile(admin, "CMPTESTPROFILE");        
         eeProfileSession.removeEndEntityProfile(admin, "CMPTESTPROFILE");
         
-        assertTrue("Could not restore CMP configurations", configurationSession.restoreConfiguration());
-        
         log.trace("<testZZZCleanUp");
     }
     
@@ -1080,7 +1087,7 @@ public class NestedMessageContentTest extends CmpTestCase {
             Date notAfter) throws AuthorizationDeniedException, EjbcaException, CertificateException, FileNotFoundException,
             IOException, UserDoesntFullfillEndEntityProfileException, ObjectNotFoundException, Exception {
         
-        assertTrue("RACertPath is suppose to be '" + raCertsPath + "', instead it is '" + configurationSession.getProperty(CmpConfiguration.CONFIG_RACERT_PATH) + "'.", configurationSession.verifyProperty(CmpConfiguration.CONFIG_RACERT_PATH, raCertsPath));
+        assertEquals("RACertPath is suppose to be '" + raCertsPath + "', instead it is '" + cmpConfiguration.getRACertPath(cmpAlias) + "'.", cmpConfiguration.getRACertPath(cmpAlias), raCertsPath);
         
         createUser(username, "CN="+username, password);
         Certificate racert = signSession.createCertificate(admin, username, password, keys.getPublic(), X509KeyUsage.digitalSignature|X509KeyUsage.keyCertSign, notBefore, notAfter, certProfileSession.getCertificateProfileId("CMPTESTPROFILE"), caid);
@@ -1090,7 +1097,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         certCollection.add(racert);
         byte[] pemRaCert = CertTools.getPemFromCertificateChain(certCollection);
         
-        String raCertPath = configurationSession.getProperty(CmpConfiguration.CONFIG_RACERT_PATH);
+        String raCertPath = cmpConfiguration.getRACertPath(cmpAlias);
         String filename = raCertPath + "/" + username + ".pem";
         FileOutputStream fout = new FileOutputStream(filename);
         fout.write(pemRaCert);

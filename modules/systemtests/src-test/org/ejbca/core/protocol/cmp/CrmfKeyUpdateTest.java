@@ -96,10 +96,12 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
+import org.ejbca.config.Configuration;
 import org.ejbca.config.EjbcaConfigurationHolder;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -134,6 +136,8 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
     private int caid;
     private Certificate cacert;
     private CA testx509ca;
+    private CmpConfiguration cmpConfiguration;
+    private String cmpAlias = "CrmfKeyUpdateTestCmpConfigAlias";
     
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
@@ -142,6 +146,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
     private CertificateStoreSession certStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
     private RoleAccessSessionRemote roleAccessSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
+    private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     
     @Before
     public void setUp() throws Exception {
@@ -154,6 +159,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         transid = CmpMessageHelper.createSenderNonce();
 
         CryptoProviderTools.installBCProvider();
+        cmpConfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.CMPConfigID);
         
         int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
         testx509ca = CaSessionTest.createTestX509CA(issuerDN, null, false, keyusage);
@@ -163,19 +169,39 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         
         // Initialize config in here
         EjbcaConfigurationHolder.instance();
-        
-        confSession.backupConfiguration();
-        
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, "EMPTY");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, "ENDUSER");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, "TestCA");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_DEFAULTCA, "TestCA");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "normal");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, "RegTokenPwd;HMAC");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "-;-");
+        //confSession.backupConfiguration();
 
+        
+        cmpConfiguration.addAlias(cmpAlias);
+        cmpConfiguration.setRAEEProfile(cmpAlias, "EMPTY");
+        cmpConfiguration.setRACertProfile(cmpAlias, "ENDUSER");
+        cmpConfiguration.setRACAName(cmpAlias, "TestCA");
+        cmpConfiguration.setCMPDefaultCA(cmpAlias, "TestCA");
+        cmpConfiguration.setRAMode(cmpAlias, false);
+        cmpConfiguration.setAuthenticationModule(cmpAlias, "RegTokenPwd;HMAC");
+        cmpConfiguration.setAuthenticationParameters(cmpAlias, "-;-");
+        globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
     }
 
+    @After
+    public void tearDown() throws Exception {
+
+        super.tearDown();
+        
+        CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
+        caSession.removeCA(admin, caid);
+        
+        try {
+            endEntityManagementSession.revokeAndDeleteUser(admin, username, ReasonFlags.unused);
+            endEntityManagementSession.revokeAndDeleteUser(admin, "fakeuser", ReasonFlags.unused);
+
+        } catch(Exception e){}
+        
+        cmpConfiguration.removeAlias(cmpAlias);
+        globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
+    }
+
+    
     /**
      * A "Happy Path" test. Sends a KeyUpdateRequest and receives a new certificate.
      * 
@@ -205,9 +231,9 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             log.trace(">test01KeyUpdateRequestOK");
         }
         
-        updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true");
-        assertTrue("The CMP Authentication module was not configured correctly.", confSession.verifyProperty(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true"));
-        updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWUPDATEWITHSAMEKEY, "true");
+        cmpConfiguration.setKurAllowAutomaticUpdate(cmpAlias, true);
+        cmpConfiguration.setKurAllowSameKey(cmpAlias, true);
+        globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
         
         //--------------- create the user and issue his first certificate -----------------
         createUser(username, userDN, "foo123");
@@ -242,7 +268,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
         // Send request and receive response
-        byte[] resp = sendCmpHttp(ba, 200);
+        byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         X509Certificate cert = checkKurCertRepMessage(userDN, cacert, resp, reqId);
         assertNotNull("Failed to renew the certificate", cert);
@@ -285,9 +311,9 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             log.trace(">test02AutomaticUpdateNotAllowed");
         }
         
-        updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "false");
-        assertTrue("The CMP Authentication module was not configured correctly.", confSession.verifyProperty(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "false"));
-        updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWUPDATEWITHSAMEKEY, "true");
+        cmpConfiguration.setKurAllowAutomaticUpdate(cmpAlias, false);
+        cmpConfiguration.setKurAllowSameKey(cmpAlias, true);
+        globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
 
         //--------------- create the user and issue his first certificate -----------------
         createUser(username, userDN, "foo123");
@@ -321,7 +347,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
         // Send request and receive response
-        byte[] resp = sendCmpHttp(ba, 200);
+        byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         
         PKIMessage respObject = null;
@@ -377,8 +403,8 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             log.trace(">test03UpdateRevokedCert");
         }
         
-        updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true");
-        assertTrue("The CMP Authentication module was not configured correctly.", confSession.verifyProperty(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true"));
+        cmpConfiguration.setKurAllowAutomaticUpdate(cmpAlias, true);
+        globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
         
         //--------------- create the user and issue his first certificate -----------------
         createUser(username, userDN, "foo123");
@@ -415,7 +441,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
         // Send request and receive response
-        byte[] resp = sendCmpHttp(ba, 200);
+        byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         
         PKIMessage respObject = null;
@@ -470,8 +496,8 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             log.trace(">test04UpdateKeyWithFakeCert");
         }
         
-        updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true");
-        assertTrue("The CMP Authentication module was not configured correctly.", confSession.verifyProperty(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true"));
+        cmpConfiguration.setKurAllowAutomaticUpdate(cmpAlias, true);
+        globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
         
         //--------------- create the user and issue his first certificate -----------------
         final String fakeUsername = "fakeuser";
@@ -498,7 +524,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
         // Send request and receive response
-        byte[] resp = sendCmpHttp(ba, 200);
+        byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         
         PKIMessage respObject = null;
@@ -546,7 +572,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         out.writeObject(req);
         ba = bao.toByteArray();
         // Send request and receive response
-        resp = sendCmpHttp(ba, 200);
+        resp = sendCmpHttp(ba, 200, cmpAlias);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         
         respObject = null;
@@ -603,10 +629,10 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             log.trace(">test07UpdateWithSameKeyNotAllowed");
         }
         
-        updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "normal");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true");
-        assertTrue("The CMP Authentication module was not configured correctly.", confSession.verifyProperty(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true"));
-        updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWUPDATEWITHSAMEKEY, "false");
+        cmpConfiguration.setRAMode(cmpAlias, false);
+        cmpConfiguration.setKurAllowAutomaticUpdate(cmpAlias, true);
+        cmpConfiguration.setKurAllowSameKey(cmpAlias, false);
+        globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
 
         //--------------- create the user and issue his first certificate -----------------
         createUser(username, userDN, "foo123");
@@ -628,7 +654,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
         // Send request and receive response
-        byte[] resp = sendCmpHttp(ba, 200);
+        byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         
         PKIMessage respObject = null;
@@ -682,10 +708,10 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             log.trace(">test08UpdateWithDifferentKey");
         }
         
-        updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "normal");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true");
-        assertTrue("The CMP Authentication module was not configured correctly.", confSession.verifyProperty(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true"));
-        updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWUPDATEWITHSAMEKEY, "false");
+        cmpConfiguration.setRAMode(cmpAlias, false);
+        cmpConfiguration.setKurAllowAutomaticUpdate(cmpAlias, true);
+        cmpConfiguration.setKurAllowSameKey(cmpAlias, false);
+        globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
         
         //--------------- create the user and issue his first certificate -----------------
         createUser(username, userDN, "foo123");
@@ -717,7 +743,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
         // Send request and receive response
-        byte[] resp = sendCmpHttp(ba, 200);
+        byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         X509Certificate cert = checkKurCertRepMessage(userDN, cacert, resp, reqId);
         assertNotNull("Failed to renew the certificate", cert);
@@ -761,10 +787,11 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             log.trace("test09RAMode()");
         }
         
-        updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "TestCA");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true");
+        cmpConfiguration.setRAMode(cmpAlias, true);
+        cmpConfiguration.setAuthenticationModule(cmpAlias, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
+        cmpConfiguration.setAuthenticationParameters(cmpAlias, "TestCA");
+        cmpConfiguration.setKurAllowAutomaticUpdate(cmpAlias, true);
+        globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
 
         //------------------ create the user and issue his first certificate -------------
         createUser(username, userDN, "foo123");
@@ -793,7 +820,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
         //send request and recieve response
-        byte[] resp = sendCmpHttp(ba, 200);
+        byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         X509Certificate cert = checkKurCertRepMessage(userDN, cacert, resp, reqId);
         assertNotNull("Failed to renew the certificate", cert);
@@ -838,9 +865,10 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             log.trace("test10RAModeNonAdmin()");
         }
         
-        updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "TestCA");
+        cmpConfiguration.setRAMode(cmpAlias, true);
+        cmpConfiguration.setAuthenticationModule(cmpAlias, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
+        cmpConfiguration.setAuthenticationParameters(cmpAlias, "TestCA");
+        globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
 
         //------------------ create the user and issue his first certificate -------------
         createUser(username, userDN, "foo123");
@@ -861,7 +889,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
         //send request and recieve response
-        byte[] resp = sendCmpHttp(ba, 200);
+        byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         
         PKIMessage respObject = null;
@@ -918,10 +946,11 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             log.trace("test11RANoIssuer()");
         }
         
-        updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "TestCA");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true");
+        cmpConfiguration.setRAMode(cmpAlias, true);
+        cmpConfiguration.setAuthenticationModule(cmpAlias, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
+        cmpConfiguration.setAuthenticationParameters(cmpAlias, "TestCA");
+        cmpConfiguration.setKurAllowAutomaticUpdate(cmpAlias, true);
+        globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
         
         //------------------ create the user and issue his first certificate -------------
         createUser(username, userDN, "foo123");
@@ -948,7 +977,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
         //send request and recieve response
-        byte[] resp = sendCmpHttp(ba, 200);
+        byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         X509Certificate cert = checkKurCertRepMessage(userDN, cacert, resp, reqId);
         assertNotNull("Failed to renew the certificate", cert);
@@ -994,9 +1023,10 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             log.trace("test12RANoIssuerNoSubjetDN()");
         }
         
-        updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "TestCA");
+        cmpConfiguration.setRAMode(cmpAlias, true);
+        cmpConfiguration.setAuthenticationModule(cmpAlias, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
+        cmpConfiguration.setAuthenticationParameters(cmpAlias, "TestCA");
+        globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
 
         //------------------ create the user and issue his first certificate -------------
         createUser(username, userDN, "foo123");
@@ -1021,7 +1051,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
         //send request and recieve response
-        byte[] resp = sendCmpHttp(ba, 200);
+        byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         
         PKIMessage respObject = null;
@@ -1080,11 +1110,12 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             log.trace("test13RAMultipleAuthenticationModules");
         }
         
-        updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
+        cmpConfiguration.setRAMode(cmpAlias, true);
         String authmodules = CmpConfiguration.AUTHMODULE_HMAC + ";" + CmpConfiguration.AUTHMODULE_DN_PART_PWD + ";" + CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE;
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, authmodules);
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "-;OU;TestCA");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true");
+        cmpConfiguration.setAuthenticationModule(cmpAlias, authmodules);
+        cmpConfiguration.setAuthenticationParameters(cmpAlias, "-;OU;TestCA");
+        cmpConfiguration.setKurAllowAutomaticUpdate(cmpAlias, true);
+        globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
 
         //------------------ create the user and issue his first certificate -------------
         createUser(username, userDN, "foo123");
@@ -1111,7 +1142,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
         //send request and recieve response
-        byte[] resp = sendCmpHttp(ba, 200);
+        byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         X509Certificate cert = checkKurCertRepMessage(userDN, cacert, resp, reqId);
         assertNotNull("Failed to renew the certificate", cert);
@@ -1156,12 +1187,13 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             log.trace("test12RANoCA()");
         }
         
-        updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_DN_PART_PWD);
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "OU");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWUPDATEWITHSAMEKEY, "true");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_DEFAULTCA, "");
+        cmpConfiguration.setRAMode(cmpAlias, true);
+        cmpConfiguration.setAuthenticationModule(cmpAlias, CmpConfiguration.AUTHMODULE_DN_PART_PWD);
+        cmpConfiguration.setAuthenticationParameters(cmpAlias, "OU");
+        cmpConfiguration.setKurAllowAutomaticUpdate(cmpAlias, true);
+        cmpConfiguration.setKurAllowSameKey(cmpAlias, true);
+        cmpConfiguration.setCMPDefaultCA(cmpAlias, "");
+        globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
 
         //------------------ create the user and issue his first certificate -------------
         createUser(username, userDN, "foo123");
@@ -1186,7 +1218,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
         //send request and recieve response
-        byte[] resp = sendCmpHttp(ba, 200);
+        byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         
         PKIMessage respObject = null;
@@ -1246,10 +1278,11 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             log.trace("test09RAMode()");
         }
         
-        updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "normal");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "TestCA");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true");
+        cmpConfiguration.setRAMode(cmpAlias, false);
+        cmpConfiguration.setAuthenticationModule(cmpAlias, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
+        cmpConfiguration.setAuthenticationParameters(cmpAlias, "TestCA");
+        cmpConfiguration.setKurAllowAutomaticUpdate(cmpAlias, true);
+        globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
         
         //------------------ create the user and issue his first certificate -------------
         createUser(username, userDN, "foo123");
@@ -1276,7 +1309,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
         //send request and recieve response
-        byte[] resp = sendCmpHttp(ba, 200);
+        byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         PKIMessage respObject = null;
         ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
@@ -1346,10 +1379,10 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             log.trace(">test14KeyUpdateRequestOK");
         }
         
-        updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true");
-        assertTrue("The CMP Authentication module was not configured correctly.", confSession.verifyProperty(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true"));
-        updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWUPDATEWITHSAMEKEY, "true");
+        cmpConfiguration.setRAMode(cmpAlias, true);
+        cmpConfiguration.setKurAllowAutomaticUpdate(cmpAlias, true);
+        cmpConfiguration.setKurAllowSameKey(cmpAlias, true);
+        globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
         
         //--------------- create the user and issue his first certificate -----------------
         createUser(username, userDN, "foo123");
@@ -1384,7 +1417,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
         // Send request and receive response
-        byte[] resp = sendCmpHttp(ba, 200);
+        byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         
         PKIMessage respObject = null;
@@ -1423,9 +1456,9 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             log.trace(">test15KeyUpdateMixAlgorithms");
         }
         
-        updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true");
-        assertTrue("The CMP Authentication module was not configured correctly.", confSession.verifyProperty(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true"));
-        updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWUPDATEWITHSAMEKEY, "true");
+        cmpConfiguration.setKurAllowAutomaticUpdate(cmpAlias, true);
+        cmpConfiguration.setKurAllowSameKey(cmpAlias, true);
+        globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
         
         //--------------- create the user and issue his first certificate -----------------
         createUser(username, userDN, "foo123");
@@ -1460,7 +1493,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
         // Send request and receive response
-        byte[] resp = sendCmpHttp(ba, 200);
+        byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
         X509Certificate cert = checkKurCertRepMessage(userDN, cacert, resp, reqId);
         assertNotNull("Failed to renew the certificate", cert);
@@ -1475,26 +1508,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
     
 
     
-    @After
-    public void tearDown() throws Exception {
-
-        super.tearDown();
-        
-        CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
-        caSession.removeCA(admin, caid);
-        
-        try {
-            endEntityManagementSession.revokeAndDeleteUser(admin, username, ReasonFlags.unused);
-            endEntityManagementSession.revokeAndDeleteUser(admin, "fakeuser", ReasonFlags.unused);
-
-        } catch(Exception e){}
-        
-        boolean cleanUpOk = true;
-        if (!confSession.restoreConfiguration()) {
-            cleanUpOk = false;
-        }
-        assertTrue("Unable to clean up properly.", cleanUpOk);
-    }
     
     private CMPCertificate getCMPCert(Certificate cert) throws CertificateEncodingException, IOException {
         ASN1InputStream ins = new ASN1InputStream(cert.getEncoded());

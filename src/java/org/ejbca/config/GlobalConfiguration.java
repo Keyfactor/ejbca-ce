@@ -27,7 +27,7 @@ import org.ejbca.core.model.InternalEjbcaResources;
  *
  * @version $Id$
  */
-public class GlobalConfiguration extends UpgradeableDataHashMap implements Serializable {
+public class GlobalConfiguration extends Configuration implements Serializable {
 
     private static final long serialVersionUID = -2051789798029184421L;
 
@@ -235,7 +235,7 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements Seria
        return availablethemes;
     }
 
-    /** Returns the default avaiable theme used by administrator preferences. */
+    /** Returns the default available theme used by administrator preferences. */
     public String getDefaultAvailableTheme(){
       return getAvailableThemes()[0];
     }
@@ -436,7 +436,7 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements Seria
 	       @SuppressWarnings("unchecked")
     	   Set<String> ret = (Set<String>) data.get(NODESINCLUSTER);
     	   return (ret == null ? NODESINCLUSTER_DEFAULT : ret);
-    	   }
+       }
 
        public void setEnableCommandLineInterface(final boolean enable) { data.put(ENABLECOMMANDLINEINTERFACE, Boolean.valueOf(enable)); }
        public boolean getEnableCommandLineInterface() {

@@ -53,8 +53,10 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
+import org.ejbca.config.Configuration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -88,11 +90,14 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
     private static int caid = 0;
     private static X509Certificate cacert = null;
     private CA testx509ca;
+    private CmpConfiguration cmpConfiguration;
+    private String cmpAlias = "tcp";
 
 
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     
     @BeforeClass
     public static void beforeClass() throws CertificateEncodingException, CertificateException, CADoesntExistsException, AuthorizationDeniedException {
@@ -103,22 +108,30 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
     public void setUp() throws Exception {
         super.setUp();
         
+        cmpConfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.CMPConfigID);
+        
         int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
         testx509ca = CaSessionTest.createTestX509CA(issuerDN, null, false, keyusage);
         caid = testx509ca.getCAId();
         cacert = (X509Certificate) testx509ca.getCACertificate();
         caSession.addCA(admin, testx509ca);
         
+        configurationSession.backupConfiguration();
+        
         // Configure CMP for this test
-        updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO, "true");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RESPONSEPROTECTION, "signature");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET, PBEPASSWORD);
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, "EMPTY");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, "ENDUSER");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, "TestCA");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "-;-");
+        if(cmpConfiguration.aliasExists(cmpAlias)) {
+            cmpConfiguration.renameAlias(cmpAlias, "backupTcpAlias");
+        }
+        cmpConfiguration.addAlias(cmpAlias);
+        cmpConfiguration.setRAMode(cmpAlias, true);
+        cmpConfiguration.setAllowRAVerifyPOPO(cmpAlias, true);
+        cmpConfiguration.setResponseProtection(cmpAlias, "signature");
+        cmpConfiguration.setRAEEProfile(cmpAlias, "EMPTY");
+        cmpConfiguration.setRACertProfile(cmpAlias, "ENDUSER");
+        cmpConfiguration.setRACAName(cmpAlias, "TestCA");
+        cmpConfiguration.setAuthenticationModule(cmpAlias, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
+        cmpConfiguration.setAuthenticationParameters(cmpAlias, "-;" + PBEPASSWORD);
+        globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
         
         if (keys == null) {
             keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
@@ -133,11 +146,15 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         if (!configurationSession.restoreConfiguration()) {
             cleanUpOk = false;
         }
+        assertTrue("Unable to clean up properly.", cleanUpOk);
+        cmpConfiguration.removeAlias(cmpAlias);
+        if(cmpConfiguration.aliasExists("backupTcpAlias")) {
+            cmpConfiguration.renameAlias("backupTcpAlias", cmpAlias);
+        }
+        globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
         
         CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
         caSession.removeCA(admin, caid);
-        
-        assertTrue("Unable to clean up properly.", cleanUpOk);
     }
 
     public String getRoleName() {

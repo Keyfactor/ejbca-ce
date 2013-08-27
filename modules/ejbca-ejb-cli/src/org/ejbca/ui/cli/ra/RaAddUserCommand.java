@@ -27,6 +27,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRem
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.config.Configuration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
@@ -75,7 +76,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
         }
         
         try {
-            GlobalConfiguration globalconfiguration = ejb.getRemoteSession(GlobalConfigurationSessionRemote.class).getCachedGlobalConfiguration();
+            GlobalConfiguration globalconfiguration = (GlobalConfiguration) ejb.getRemoteSession(GlobalConfigurationSessionRemote.class).getCachedConfiguration(Configuration.GlobalConfigID);
             boolean usehardtokens = globalconfiguration.getIssueHardwareTokens();
             boolean usekeyrecovery = globalconfiguration.getEnableKeyRecovery();
             String[] hardtokenissueraliases = null;

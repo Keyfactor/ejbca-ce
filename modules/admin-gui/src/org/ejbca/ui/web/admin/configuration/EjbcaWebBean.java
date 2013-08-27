@@ -62,6 +62,8 @@ import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
+import org.ejbca.config.CmpConfiguration;
+import org.ejbca.config.Configuration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
@@ -136,6 +138,7 @@ public class EjbcaWebBean implements Serializable {
     private AdminPreferenceDataHandler adminspreferences;
     private AdminPreference currentadminpreference;
     private GlobalConfiguration globalconfiguration;
+    private CmpConfiguration cmpconfiguration = null;
     private ServletContext servletContext = null;
     private AuthorizationDataHandler authorizedatahandler;
     private WebLanguages adminsweblanguage;
@@ -162,10 +165,11 @@ public class EjbcaWebBean implements Serializable {
 
     private void commonInit() throws Exception {
         reloadGlobalConfiguration();
+        reloadCMPConfiguration();
         if (informationmemory == null) {
             informationmemory = new InformationMemory(administrator, caAdminSession, caSession, authorizationSession, complexAccessControlSession,
                     endEntityProfileSession, hardTokenSession, publisherSession, userDataSourceSession, certificateProfileSession,
-                    globalConfigurationSession, roleManagementSession, globalconfiguration);
+                    globalConfigurationSession, roleManagementSession, globalconfiguration, cmpconfiguration);
         }
         authorizedatahandler = new AuthorizationDataHandler(administrator, informationmemory, roleAccessSession, roleManagementSession,
                 authorizationSession);
@@ -250,9 +254,10 @@ public class EjbcaWebBean implements Serializable {
                     currentadminpreference.getSecondaryLanguage());
             initialized = true;
         }
+
         return globalconfiguration;
     }
-
+    
     /**
      * Method that returns the servername, extracted from the HTTPServlet Request, no protocol, port or application path is returned
      * 
@@ -645,16 +650,29 @@ public class EjbcaWebBean implements Serializable {
     }
 
     public void reloadGlobalConfiguration() throws Exception {
-        globalconfiguration = globalConfigurationSession.getCachedGlobalConfiguration();
+        globalconfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
         globalconfiguration.initializeAdminWeb();
         if (informationmemory != null) {
             informationmemory.systemConfigurationEdited(globalconfiguration);
         }
     }
+    
+    public void reloadCMPConfiguration() throws Exception {
+        cmpconfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.CMPConfigID);
+        if (informationmemory != null) {
+            informationmemory.cmpConfigurationEdited(cmpconfiguration);
+        }
+        
+    }
 
     public void saveGlobalConfiguration() throws Exception {
-        globalConfigurationSession.saveGlobalConfiguration(administrator, globalconfiguration);
+        globalConfigurationSession.saveConfiguration(administrator, globalconfiguration, Configuration.GlobalConfigID);
         informationmemory.systemConfigurationEdited(globalconfiguration);
+    }
+    
+    public void saveCMPConfiguration() throws AuthorizationDeniedException {
+        globalConfigurationSession.saveConfiguration(administrator, cmpconfiguration, Configuration.CMPConfigID);
+        informationmemory.cmpConfigurationEdited(cmpconfiguration);
     }
 
     public boolean existsAdminPreference() throws Exception {
@@ -865,4 +883,39 @@ public class EjbcaWebBean implements Serializable {
     public EjbLocalHelper getEjb() {
         return ejbLocalHelper;
     }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    //**********************
+    //     CMP
+    //**********************
+    
+    public CmpConfiguration getCMPConfiguration() throws Exception {
+        if(cmpconfiguration == null) {
+            reloadCMPConfiguration();
+        }
+        return cmpconfiguration;
+    }
+    
+    public Collection<String> getAuthorizedEEProfileNames() {
+        Map<String, Integer> eeps = this.informationmemory.getAuthorizedEndEntityProfileNames();
+        return eeps.keySet();
+    }
+    
+    public Collection<String> getAuthorizedCertProfileNames() {
+        Map<String, Integer> cps = this.informationmemory.getAuthorizedEndEntityCertificateProfileNames();
+        return cps.keySet();
+    }
+    
 }

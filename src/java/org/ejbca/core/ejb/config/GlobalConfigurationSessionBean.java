@@ -25,6 +25,7 @@ import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
@@ -40,6 +41,8 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.jndi.JndiConstants;
+import org.ejbca.config.CmpConfiguration;
+import org.ejbca.config.Configuration;
 import org.ejbca.config.EjbcaConfigurationHolder;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
@@ -68,9 +71,10 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
      * threads in the same VM. Uses volatile internal to make it thread friendly.
      */
     private static final GlobalConfigurationCache globalconfigurationCache = new GlobalConfigurationCache();
+    private static final CMPConfigurationCache cmpConfigurationCache = new CMPConfigurationCache();
     
     private final AlwaysAllowLocalAuthenticationToken internalAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Internal GlobalConfiguration Admin"));
-
+    
     @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;
 
@@ -80,63 +84,81 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
     private AccessControlSessionLocal accessSession;
 
     @Override
-    public GlobalConfiguration flushCache() {
-        GlobalConfigurationData gcdata = GlobalConfigurationData.findByConfigurationId(entityManager, "0");
-        GlobalConfiguration result = null;
+    public Configuration flushCache(String configID) {
+        GlobalConfigurationData gcdata = GlobalConfigurationData.findByConfigurationId(entityManager, configID);
+        Configuration result = null;
         if (gcdata != null) {
-            result = gcdata.getGlobalConfiguration();
-            globalconfigurationCache.setGlobalconfiguration(result);
+            result = gcdata.getConfiguration(configID);
+            updateConfigurationCache(result, configID);
         }
         return result;
     }
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public Properties getAllProperties(AuthenticationToken admin) throws AuthorizationDeniedException {
-        if (!accessSession.isAuthorized(admin, StandardRules.ROLE_ROOT.resource())) {
-            String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.ROLE_ROOT, null);
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);
-            auditSession.log(EventTypes.ACCESS_CONTROL, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), null, null, null, details);
-            throw new AuthorizationDeniedException(msg);
-        } 
+    public Properties getAllProperties(AuthenticationToken admin, String configID) throws AuthorizationDeniedException {
+        if(StringUtils.equals(configID, Configuration.GlobalConfigID)) {
+            if (!accessSession.isAuthorized(admin, StandardRules.ROLE_ROOT.resource())) {
+                String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.ROLE_ROOT, null);
+                Map<String, Object> details = new LinkedHashMap<String, Object>();
+                details.put("msg", msg);
+                auditSession.log(EventTypes.ACCESS_CONTROL, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), null, null, null, details);
+                throw new AuthorizationDeniedException(msg);
+            } 
 
-        Properties ejbca = EjbcaConfigurationHolder.getAsProperties();
-        Properties cesecore = ConfigurationHolder.getAsProperties();
-        for (Iterator<Object> iterator = ejbca.keySet().iterator(); iterator.hasNext();) {
-            String key = (String)iterator.next();
-            cesecore.setProperty(key, ejbca.getProperty(key));            
+            Properties ejbca = EjbcaConfigurationHolder.getAsProperties();
+            Properties cesecore = ConfigurationHolder.getAsProperties();
+            for (Iterator<Object> iterator = ejbca.keySet().iterator(); iterator.hasNext();) {
+                String key = (String)iterator.next();
+                cesecore.setProperty(key, ejbca.getProperty(key));            
+            }
+            return cesecore;
+        } else if(StringUtils.equals(configID, Configuration.CMPConfigID)) {
+            if (!accessSession.isAuthorized(admin, StandardRules.ROLE_ROOT.resource())) {
+                String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.ROLE_ROOT, null);
+                Map<String, Object> details = new LinkedHashMap<String, Object>();
+                details.put("msg", msg);
+                auditSession.log(EventTypes.ACCESS_CONTROL, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), null, null, null, details);
+                throw new AuthorizationDeniedException(msg);
+            } 
+            
+            CmpConfiguration cmpConfig = (CmpConfiguration) getCachedConfiguration(configID);
+            return cmpConfig.getAsProperties();
         }
-        return cesecore;
+        
+        return null;
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public GlobalConfiguration getCachedGlobalConfiguration() {
-        GlobalConfiguration result;
+    public Configuration getCachedConfiguration(String configID) {
+        
+        Configuration result;
         try {
             if (log.isTraceEnabled()) {
-                log.trace(">loadGlobalConfiguration()");
+                log.trace(">loadConfiguration()");
             }
             // Only do the actual SQL query if we might update the configuration
             // due to cache time anyhow
-            if (!globalconfigurationCache.needsUpdate()) {
+            if (StringUtils.equals(configID, Configuration.GlobalConfigID) && !globalconfigurationCache.needsUpdate()) {
                 result = globalconfigurationCache.getGlobalconfiguration();
+            } else if(StringUtils.equals(configID, Configuration.CMPConfigID) && !cmpConfigurationCache.needsUpdate()) {
+                result = cmpConfigurationCache.getCMPConfiguration();
             } else {
                 if (log.isDebugEnabled()) {
-                    log.debug("Reading GlobalConfiguration");
+                    log.debug("Reading Configuration");
                 }
-                GlobalConfigurationData gcdata = GlobalConfigurationData.findByConfigurationId(entityManager, "0");
+                GlobalConfigurationData gcdata = GlobalConfigurationData.findByConfigurationId(entityManager, configID);
                 if (gcdata != null) {
-                    result = gcdata.getGlobalConfiguration();
-                    globalconfigurationCache.setGlobalconfiguration(result);
+                    result = gcdata.getConfiguration(configID);
+                    updateConfigurationCache(result, configID);
                 } else {
                     if (log.isDebugEnabled()) {
                         log.debug("No default GlobalConfiguration exists. Trying to create a new one.");
                     }
-                    result = new GlobalConfiguration();
+                    result = getNewConfiguration(configID);
                     try {
-                        saveGlobalConfiguration(internalAdmin, result);
+                        saveConfiguration(internalAdmin, result, configID);
                     } catch (AuthorizationDeniedException e) {
                         throw new RuntimeException("Internal admin was denied access. This should not be able to happen.");
                     }
@@ -151,20 +173,19 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
     }
     
     @Override
-    public void saveGlobalConfiguration(final AuthenticationToken admin, final GlobalConfiguration globconf) throws AuthorizationDeniedException {
+    public void saveConfiguration(final AuthenticationToken admin, final Configuration conf, final String configID) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
-            log.trace(">saveGlobalConfiguration()");
+            log.trace(">saveConfiguration()");
         }
         if (this.accessSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource())) {
-            final String pk = "0";
-            final GlobalConfigurationData gcdata = GlobalConfigurationData.findByConfigurationId(entityManager, pk);
+            final GlobalConfigurationData gcdata = GlobalConfigurationData.findByConfigurationId(entityManager, configID);
             if (gcdata != null) {
                 // Save object and create a diff over what has changed
                 @SuppressWarnings("unchecked")
-                final Map<Object, Object> orgmap = (Map<Object, Object>) gcdata.getGlobalConfiguration().saveData();
-                gcdata.setGlobalConfiguration(globconf);
+                final Map<Object, Object> orgmap = (Map<Object, Object>) gcdata.getConfiguration(configID).saveData();
+                gcdata.setConfiguration(conf);
                 @SuppressWarnings("unchecked")
-                final Map<Object, Object> newmap = (Map<Object, Object>) globconf.saveData();
+                final Map<Object, Object> newmap = (Map<Object, Object>) conf.saveData();
                 // Get the diff of what changed
                 final Map<Object, Object> diff = UpgradeableDataHashMap.diffMaps(orgmap, newmap);
                 // Make security audit log record
@@ -179,8 +200,9 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
             } else {
                 // Global configuration doesn't yet exists.
                 try {
-                    entityManager.persist(new GlobalConfigurationData(pk, globconf));
-                    final String msg = intres.getLocalizedMessage("ra.createdconf", pk);
+                    GlobalConfigurationData gcd = new GlobalConfigurationData(configID, conf);
+                    entityManager.persist(gcd);
+                    final String msg = intres.getLocalizedMessage("ra.createdconf", configID);
                     final Map<String, Object> details = new LinkedHashMap<String, Object>();
                     details.put("msg", msg);
                     auditSession.log(EjbcaEventTypes.SYSTEMCONF_CREATE, EventStatus.SUCCESS, EjbcaModuleTypes.GLOBALCONF, EjbcaServiceTypes.EJBCA,
@@ -195,7 +217,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
                             admin.toString(), null, null, null, details);
                 }
             }
-            globalconfigurationCache.setGlobalconfiguration(globconf);
+            updateConfigurationCache(conf, configID);
         } else {
             throw new AuthorizationDeniedException("Authorization was denied to user " + admin
                     + " to resource /. Could not save configuration.");
@@ -206,25 +228,55 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
     }
 
     @Override
-    public void flushGlobalConfigurationCache()  {
+    public void flushConfigurationCache(final String configID)  {
     	if (log.isTraceEnabled()) {
-    		log.trace(">flushGlobalConfigurationCache()");
+    		log.trace(">flushConfigurationCache()");
     	}
-    	globalconfigurationCache.clearCache();
-    	getCachedGlobalConfiguration();
-    	if (log.isDebugEnabled()) {
-    		log.debug("Flushed global configuration cache.");
-    	}
+    	
+    	clearConfigCache(configID);
+    	getCachedConfiguration(configID);
+
     	if (log.isTraceEnabled()) {
-    		log.trace("<flushGlobalConfigurationCache()");
+    		log.trace("<flushConfigurationCache()");
     	}
     }
 
     @Override
     public void setSettingIssueHardwareTokens(AuthenticationToken admin, boolean value) throws AuthorizationDeniedException {
-    	final GlobalConfiguration config = flushCache();
+    	final GlobalConfiguration config = (GlobalConfiguration) flushCache(Configuration.GlobalConfigID);
     	config.setIssueHardwareTokens(value);
-    	saveGlobalConfiguration(admin, config);
+    	saveConfiguration(admin, config, Configuration.GlobalConfigID);
+    }
+    
+    private void updateConfigurationCache(Configuration conf, String configID) {
+        if(StringUtils.equals(configID, Configuration.GlobalConfigID)) {
+            globalconfigurationCache.setGlobalconfiguration((GlobalConfiguration) conf);
+        } else if(StringUtils.equals(configID, Configuration.CMPConfigID)) {
+            cmpConfigurationCache.setCMPConfiguration((CmpConfiguration) conf);
+        }
     }
 
+    private void clearConfigCache(String configID) {
+        if(StringUtils.equals(configID, Configuration.GlobalConfigID)) {
+            globalconfigurationCache.clearCache();
+            if (log.isDebugEnabled()) {
+                log.debug("Flushed global configuration cache.");
+            }
+        } else if(StringUtils.equals(configID, Configuration.CMPConfigID)) {
+            cmpConfigurationCache.clearCache();
+            if (log.isDebugEnabled()) {
+                log.debug("Flushed CMP configuration cache.");
+            }
+        }
+    }
+    
+    private Configuration getNewConfiguration(String configID) {
+        if(StringUtils.equals(configID, Configuration.GlobalConfigID)) {
+            return new GlobalConfiguration();
+        } else if(StringUtils.endsWith(configID, Configuration.CMPConfigID)) {
+            return new CmpConfiguration();
+        }
+        return null;
+    }
+    
 }

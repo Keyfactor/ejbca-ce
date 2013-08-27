@@ -42,9 +42,11 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.ejbca.config.CmpConfiguration;
+import org.ejbca.config.Configuration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSession;
+import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
@@ -101,9 +103,9 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
     public CrmfKeyUpdateHandler(final AuthenticationToken admin, String configAlias, CaSessionLocal caSession, CertificateProfileSession certificateProfileSession, 
             EndEntityAccessSession endEntityAccessSession, EndEntityProfileSessionLocal endEntityProfileSession, SignSession signSession, 
             CertificateStoreSession certStoreSession, AccessControlSession authSession, WebAuthenticationProviderSessionLocal authProviderSession, 
-            EndEntityManagementSession endEntityManagementSession) {
+            EndEntityManagementSession endEntityManagementSession, GlobalConfigurationSession globalConfigSession) {
         
-        super(admin, configAlias, caSession, endEntityProfileSession, certificateProfileSession);
+        super(admin, configAlias, caSession, endEntityProfileSession, certificateProfileSession, (CmpConfiguration) globalConfigSession.getCachedConfiguration(Configuration.CMPConfigID));
         this.signSession = signSession;
         this.endEntityAccessSession = endEntityAccessSession;
         this.certStoreSession = certStoreSession;
@@ -146,7 +148,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
         }
         
         if(LOG.isDebugEnabled()) {
-            LOG.debug("CMP running on RA mode: " + CmpConfiguration.getRAOperationMode(this.confAlias));
+            LOG.debug("CMP running on RA mode: " + this.cmpConfiguration.getRAMode(this.confAlias));
         }
 
         ResponseMessage resp = null;
@@ -158,7 +160,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                 crmfreq.getMessage();               
                 
                 // Authenticate the request
-                EndEntityCertificateAuthenticationModule eecmodule = new EndEntityCertificateAuthenticationModule(getEECCA(), this.confAlias);
+                EndEntityCertificateAuthenticationModule eecmodule = new EndEntityCertificateAuthenticationModule(getEECCA(), this.confAlias, this.cmpConfiguration);
                 eecmodule.setSession(this.admin, this.caSession, this.certStoreSession, this.authorizationSession, this.endEntityProfileSession, 
                         this.endEntityAccessSession, authenticationProviderSession, endEntityManagementSession);
                 if(!eecmodule.verifyOrExtract(crmfreq.getPKIMessage(), null, authenticated)) {
@@ -180,7 +182,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                 String subjectDN = null;
                 String issuerDN = null;
 
-                if(CmpConfiguration.getRAOperationMode(this.confAlias)) {
+                if(this.cmpConfiguration.getRAMode(this.confAlias)) {
                     CertReqMessages kur = (CertReqMessages) crmfreq.getPKIMessage().getBody().getContent();
                     CertReqMsg certmsg;
                     try {
@@ -253,7 +255,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                 // Set the appropriate parameters in the end entity
                 userdata.setPassword(password);
                 endEntityManagementSession.changeUser(admin, userdata, true);
-                if(CmpConfiguration.getAllowAutomaticKeyUpdate(this.confAlias)) {
+                if(this.cmpConfiguration.getKurAllowAutomaticUpdate(this.confAlias)) {
                     if(LOG.isDebugEnabled()) {
                         LOG.debug("Setting the end entity status to 'NEW'. Username: " + userdata.getUsername());
                     }
@@ -269,7 +271,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                 }
 
                 // Check the public key, whether it is allowed to use the old keys or not.
-                if(!CmpConfiguration.getAllowUpdateWithSameKey(this.confAlias)) {
+                if(!this.cmpConfiguration.getKurAllowSameKey(this.confAlias)) {
                     PublicKey certPublicKey = oldCert.getPublicKey();
                     PublicKey requestPublicKey = crmfreq.getRequestPublicKey();
                     if(LOG.isDebugEnabled()) {
@@ -354,14 +356,14 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
     private String getEECCA() {
 
         // Read the CA from the properties file first
-        String parameter = CmpConfiguration.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE, this.confAlias);
+        String parameter = this.cmpConfiguration.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE, this.confAlias);
         if(!StringUtils.equals("-", parameter) && (parameter != null) && StringUtils.isNotEmpty(parameter)) {
             return parameter;
         }
     	
     	// The CA is not set in the cmp.authenticationparameters. Set the CA depending on the operation mode
-    	if(CmpConfiguration.getRAOperationMode(this.confAlias)) {
-    	    String defaultCA = CmpConfiguration.getDefaultCA(this.confAlias);
+    	if(this.cmpConfiguration.getRAMode(this.confAlias)) {
+    	    String defaultCA = this.cmpConfiguration.getCMPDefaultCA(this.confAlias);
     	    if( StringUtils.isNotEmpty(defaultCA) ) {
     	        return defaultCA;
     	    } else {

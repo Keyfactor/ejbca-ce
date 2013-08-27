@@ -38,10 +38,10 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.config.Configuration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
-import org.ejbca.core.ejb.config.GlobalConfigurationProxySessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
@@ -79,7 +79,6 @@ public class AuthenticationSessionTest extends CaTestCase {
     private EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
     private KeyRecoverySessionRemote keyRecoverySession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyRecoverySessionRemote.class);
     private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
-    private GlobalConfigurationProxySessionRemote globalConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 
@@ -200,10 +199,10 @@ public class AuthenticationSessionTest extends CaTestCase {
     public void testUnmarkKeyRecoveryOnFinish() throws Exception {
         log.trace(">test05UnmarkKeyRecoveryOnFinish()");
 
-        GlobalConfiguration config = globalConfigurationSession.getCachedGlobalConfiguration();
+        GlobalConfiguration config = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
         boolean orgkeyrecconfig = config.getEnableKeyRecovery();
         config.setEnableKeyRecovery(true);
-        globalConfigurationProxySession.saveGlobalConfigurationRemote(internalAdmin, config);
+        globalConfigurationSession.saveConfiguration(internalAdmin, config, Configuration.GlobalConfigID);
 
         // create certificate for user
         // Set status to NEW
@@ -231,7 +230,7 @@ public class AuthenticationSessionTest extends CaTestCase {
         keyRecoverySession.removeAllKeyRecoveryData(internalAdmin, username1);
 
         config.setEnableKeyRecovery(orgkeyrecconfig);
-        globalConfigurationProxySession.saveGlobalConfigurationRemote(internalAdmin, config);
+        globalConfigurationSession.saveConfiguration(internalAdmin, config, Configuration.GlobalConfigID);
         log.trace("<test05UnmarkKeyRecoveryOnFinish()");
     }
 

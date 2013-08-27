@@ -18,6 +18,8 @@ import java.security.cert.X509Certificate;
 
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.ejbca.config.Configuration;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
@@ -51,7 +53,7 @@ public class RaKeyRecoverCommand extends BaseRaAdminCommand {
             }
             BigInteger certificatesn = new BigInteger(args[1], 16);
             String issuerdn = args[2];
-            boolean usekeyrecovery = ejb.getRemoteSession(GlobalConfigurationSessionRemote.class).getCachedGlobalConfiguration().getEnableKeyRecovery();  
+            boolean usekeyrecovery = ((GlobalConfiguration) ejb.getRemoteSession(GlobalConfigurationSessionRemote.class).getCachedConfiguration(Configuration.GlobalConfigID)).getEnableKeyRecovery();  
             if(!usekeyrecovery){
             	getLogger().error("Keyrecovery have to be enabled in the system configuration in order to use this command.");
             	return;                   

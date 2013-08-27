@@ -34,9 +34,9 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.config.Configuration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
-import org.ejbca.core.ejb.config.GlobalConfigurationProxySessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.hardtoken.HardTokenInformation;
@@ -73,7 +73,6 @@ public class HardTokenSessionTest extends CaTestCase {
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private HardTokenSessionRemote hardTokenSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(HardTokenSessionRemote.class);
     private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
-    private GlobalConfigurationProxySessionRemote globalConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
 
     @BeforeClass
@@ -101,10 +100,10 @@ public class HardTokenSessionTest extends CaTestCase {
     public void test01AddHardToken() throws Exception {
         log.trace(">test01AddHardToken()");
 
-        GlobalConfiguration gc = globalConfigurationSession.getCachedGlobalConfiguration();
+        GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
         orgEncryptCAId = gc.getHardTokenEncryptCA();
         gc.setHardTokenEncryptCA(0);
-        globalConfigurationProxySession.saveGlobalConfigurationRemote(internalAdmin, gc);
+        globalConfigurationSession.saveConfiguration(internalAdmin, gc, Configuration.GlobalConfigID);
 
         SwedishEIDHardToken token = new SwedishEIDHardToken("1234", "1234", "123456", "123456", 1);
 
@@ -165,9 +164,9 @@ public class HardTokenSessionTest extends CaTestCase {
     public void test04EncryptHardToken() throws Exception {
         log.trace(">test04EncryptHardToken()");
 
-        GlobalConfiguration gc = globalConfigurationSession.getCachedGlobalConfiguration();
+        GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
         gc.setHardTokenEncryptCA(getTestCAId());
-        globalConfigurationProxySession.saveGlobalConfigurationRemote(internalAdmin, gc);
+        globalConfigurationSession.saveConfiguration(internalAdmin, gc, Configuration.GlobalConfigID);
         boolean ret = false;
 
         // Make sure the old data can be read
@@ -197,9 +196,9 @@ public class HardTokenSessionTest extends CaTestCase {
 
     @Test
     public void test05removeHardTokens() throws AuthorizationDeniedException {
-        GlobalConfiguration gc = globalConfigurationSession.getCachedGlobalConfiguration();
+        GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
         gc.setHardTokenEncryptCA(orgEncryptCAId);
-        globalConfigurationProxySession.saveGlobalConfigurationRemote(internalAdmin, gc);
+        globalConfigurationSession.saveConfiguration(internalAdmin, gc, Configuration.GlobalConfigID);
     
         try {
             hardTokenSessionRemote.removeHardToken(internalAdmin, "1234");

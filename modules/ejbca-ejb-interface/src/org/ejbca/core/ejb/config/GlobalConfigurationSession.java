@@ -16,7 +16,7 @@ import java.util.Properties;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.config.Configuration;
 
 /** 
  * Session bean to handle global configuration and such.
@@ -32,7 +32,7 @@ public interface GlobalConfigurationSession {
      * @return a fresh GlobalConfiguration from persistence, or null of no such
      *         configuration exists.
      */
-    GlobalConfiguration flushCache();
+    Configuration flushCache(String configID);
     
     /**
      * Retrieves the cached GlobalConfiguration. This cache is updated from
@@ -43,14 +43,23 @@ public interface GlobalConfigurationSession {
      * 
      * @return the cached GlobalConfiguration value.
      */
-    GlobalConfiguration getCachedGlobalConfiguration();
+    Configuration getCachedConfiguration(String configID);
 
     /** Clear and load global configuration cache. */
-    void flushGlobalConfigurationCache();
+    void flushConfigurationCache(String configID);
     
     /** @return all currently used properties (configured in conf/*.properties.
      * Required admin access to '/' to dump these properties. 
      */
-    Properties getAllProperties(AuthenticationToken admin) throws AuthorizationDeniedException;
+    Properties getAllProperties(AuthenticationToken admin, String configID) throws AuthorizationDeniedException;
+    
+    /** Saves the GlobalConfiguration. 
+    *
+    * @param admin an authentication token
+    * @param globconf the new Global Configuration
+    * 
+    * @throws AuthorizationDeniedException if admin was not authorized to /super_administrator 
+    */
+   void saveConfiguration(AuthenticationToken admin, Configuration conf, String configID) throws AuthorizationDeniedException;
 
 }

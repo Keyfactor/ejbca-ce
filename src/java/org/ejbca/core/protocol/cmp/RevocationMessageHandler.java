@@ -57,7 +57,9 @@ import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.ejbca.config.CmpConfiguration;
+import org.ejbca.config.Configuration;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
+import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
@@ -95,9 +97,9 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 	public RevocationMessageHandler(final AuthenticationToken admin, String configAlias, final EndEntityManagementSession endEntityManagementSession, final CaSessionLocal caSession, 
 	        final EndEntityProfileSessionLocal endEntityProfileSession, final CertificateProfileSession certificateProfileSession, final CertificateStoreSession certStoreSession,
 	        final AccessControlSession authSession, final EndEntityAccessSession eeAccessSession, final WebAuthenticationProviderSessionLocal authProviderSession,
-	        final CryptoTokenSessionLocal cryptoTokenSession) {
-		super(admin, configAlias, caSession, endEntityProfileSession, certificateProfileSession);
-		responseProtection = CmpConfiguration.getResponseProtection(this.confAlias);
+	        final CryptoTokenSessionLocal cryptoTokenSession, GlobalConfigurationSession globalConfigSession) {
+		super(admin, configAlias, caSession, endEntityProfileSession, certificateProfileSession, (CmpConfiguration) globalConfigSession.getCachedConfiguration(Configuration.CMPConfigID));
+		responseProtection = this.cmpConfiguration.getResponseProtection(this.confAlias);
 		this.endEntityManagementSession = endEntityManagementSession;
         this.certificateStoreSession = certStoreSession;
         this.authorizationSession = authSession;
@@ -141,7 +143,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 
 		//Verify the authenticity of the message
 		final VerifyPKIMessage messageVerifyer = new VerifyPKIMessage(ca.getCAInfo(), this.confAlias, admin, caSession, endEntityAccessSession, certificateStoreSession, 
-		        authorizationSession, endEntityProfileSession, authenticationProviderSession, endEntityManagementSession);
+		        authorizationSession, endEntityProfileSession, authenticationProviderSession, endEntityManagementSession, this.cmpConfiguration);
 		ICMPAuthenticationModule authenticationModule = null;
 		if(messageVerifyer.verify(msg.getMessage(), null, authenticated)) {
 		    authenticationModule = messageVerifyer.getUsedAuthenticationModule();

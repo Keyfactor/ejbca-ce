@@ -31,9 +31,7 @@ import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.util.CeSecoreNameStyle;
-import org.ejbca.config.CmpAliasConfiguration;
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.config.EjbcaConfigurationHolder;
 import org.ejbca.core.protocol.ExtendedUserDataHandler.HandlerException;
 import org.ejbca.core.protocol.cmp.ICrmfRequestMessage;
 import org.ejbca.core.protocol.unid.UnidFnrHandler.Storage;
@@ -46,24 +44,33 @@ import org.junit.Test;
  */
 public class UnidFnrHandlerTest {
 	
+    CmpConfiguration cmpConfiguration = new CmpConfiguration();
+    String configAlias = "UnidFnrHandlerTestCmpConfigAlias";
+    
     @Test
     public void test01() throws Exception {
+        
+        
+        cmpConfiguration.addAlias(configAlias);
+        
     	final String unidPrefix = "1234-5678-";
     	final String fnr = "90123456789";
     	final String lra = "01234";
     	final MyStorage storage = new MyStorage(unidPrefix, fnr, lra);
     	final RequestMessage reqIn = new MyIRequestMessage(fnr+'-'+lra);
     	final UnidFnrHandler handler = new UnidFnrHandler(storage);
-    	final RequestMessage reqOut = handler.processRequestMessage(reqIn, unidPrefix+"_a_profile_name", CmpConfiguration.getUnidDataSource(null));
+    	final RequestMessage reqOut = handler.processRequestMessage(reqIn, unidPrefix+"_a_profile_name", cmpConfiguration.getUnidDataSource(configAlias));
     	assertEquals(storage.unid, (reqOut.getRequestX500Name().getRDNs(CeSecoreNameStyle.SN)[0].getFirst().getValue()).toString());
+    	
+    	cmpConfiguration.removeAlias(configAlias);
     }
     
     @Test
     public void test02() throws Exception {
         
-        String alias = "unid";
-        EjbcaConfigurationHolder.updateConfiguration(CmpAliasConfiguration.CONFIG_PREFIX + alias + CmpAliasConfiguration.CONFIG_CERTREQHANDLER_CLASS, "org.ejbca.core.protocol.unid.UnidFnrHandler");
-        EjbcaConfigurationHolder.updateConfiguration(CmpAliasConfiguration.CONFIG_PREFIX + alias + CmpAliasConfiguration.CONFIG_UNIDDATASOURCE, "java:/UnidDS");
+        cmpConfiguration.addAlias(configAlias);
+        cmpConfiguration.setCertReqHandlerClass(configAlias, "org.ejbca.core.protocol.unid.UnidFnrHandler");
+        cmpConfiguration.setUnidDataSource(configAlias, "java:/UnidDS");
         
         final String unidPrefix = "1234-5678-";
         final String fnr = "90123456789";
@@ -71,8 +78,10 @@ public class UnidFnrHandlerTest {
         final MyStorage storage = new MyStorage(unidPrefix, fnr, lra);
         final RequestMessage reqIn = new MyIRequestMessage(fnr+'-'+lra);
         final UnidFnrHandler handler = new UnidFnrHandler(storage);
-        final RequestMessage reqOut = handler.processRequestMessage(reqIn, unidPrefix+"_a_profile_name", CmpConfiguration.getUnidDataSource(alias));
+        final RequestMessage reqOut = handler.processRequestMessage(reqIn, unidPrefix+"_a_profile_name", cmpConfiguration.getUnidDataSource(configAlias));
         assertEquals(storage.unid, (reqOut.getRequestX500Name().getRDNs(CeSecoreNameStyle.SN)[0].getFirst().getValue()).toString());
+        
+        cmpConfiguration.removeAlias(configAlias);
     }
     
 	private static class MyStorage implements Storage {
