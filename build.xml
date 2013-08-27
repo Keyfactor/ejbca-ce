@@ -867,6 +867,15 @@
     	<ant dir="modules" target="clientToolBox" />
     </target>
     
+	<target name="statedump" depends="deprecated:check" description="Build EJBCA StateDump tool">
+		<ant dir="modules" target="statedump" />
+    </target>
+	
+	<!-- Secret build command for statedump to make Jocke happy -->
+	<target name="poop" >
+		<antcall target="statedump" />
+	</target>
+	
     <target name="validationtool" depends="doc, deprecated:check" description="Builds the ValidationTool standalone client application">
     	<ant dir="modules" target="validationtool" />
     </target>

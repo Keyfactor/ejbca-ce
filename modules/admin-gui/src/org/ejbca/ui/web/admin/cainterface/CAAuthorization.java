@@ -67,7 +67,7 @@ public class CAAuthorization implements Serializable {
      */
     public List<Integer> getAuthorizedCAIds() {         
     	if(authcas == null || authcas.size() == 0){
-    		authcas = caSession.getAvailableCAs(admin);
+    		authcas = caSession.getAuthorizedCAs(admin);
     	}
     	return authcas;
     } 

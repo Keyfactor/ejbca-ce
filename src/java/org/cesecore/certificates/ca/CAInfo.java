@@ -28,11 +28,10 @@ import org.cesecore.util.StringTools;
  *
  * @version $Id$
  */
-public class CAInfo implements Serializable {
+public abstract class CAInfo implements Serializable {
 
-	private static final long serialVersionUID = 1L;
-
-	public static final int CATYPE_X509 = 1;  
+	private static final long serialVersionUID = -2239787217241985136L;
+    public static final int CATYPE_X509 = 1;  
 	public static final int CATYPE_CVC = 2;  
     
     /** 
@@ -112,8 +111,6 @@ public class CAInfo implements Serializable {
 	protected boolean useCertReqHistory;
 	protected boolean useUserStorage;
 	protected boolean useCertificateStorage;
-	
-    public CAInfo(){}
     
     public String getSubjectDN() {return subjectdn;}
     public void setSubjectDN(final String subjectdn) {this.subjectdn = CertTools.stringToBCDNString(StringTools.strip(subjectdn));}

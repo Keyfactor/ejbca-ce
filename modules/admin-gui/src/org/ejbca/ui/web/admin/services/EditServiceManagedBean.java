@@ -259,7 +259,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
      */
     public List<SelectItem> getAvailableCAs() {
         List<SelectItem> availableCANames = new ArrayList<SelectItem>();
-        for (Integer caid : ejb.getCaSession().getAvailableCAs(getAdmin())) {
+        for (Integer caid : ejb.getCaSession().getAuthorizedCAs(getAdmin())) {
             try {
                 availableCANames.add(new SelectItem(caid.toString(), ejb.getCaSession().getCAInfo(getAdmin(), caid).getName()));
             } catch (CADoesntExistsException e) {
@@ -294,7 +294,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
      */
     public Collection<SelectItem> getCertificateProfiles() {
         TreeMap<String, SelectItem> certificateProfiles = new TreeMap<String, SelectItem>();
-        Collection<Integer> caIds = ejb.getCaSession().getAvailableCAs(getAdmin());
+        Collection<Integer> caIds = ejb.getCaSession().getAuthorizedCAs(getAdmin());
 
         final Integer[] certificateProfileTypes = new Integer[] { CertificateConstants.CERTTYPE_ENDENTITY,
                 CertificateConstants.CERTTYPE_ROOTCA, CertificateConstants.CERTTYPE_SUBCA };

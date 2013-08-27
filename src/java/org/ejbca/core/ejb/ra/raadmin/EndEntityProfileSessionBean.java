@@ -276,7 +276,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     @Override
     public Collection<Integer> getAuthorizedEndEntityProfileIds(final AuthenticationToken admin) {
     	final ArrayList<Integer> returnval = new ArrayList<Integer>();
-    	final HashSet<Integer> authorizedcaids = new HashSet<Integer>(caSession.getAvailableCAs(admin));
+    	final HashSet<Integer> authorizedcaids = new HashSet<Integer>(caSession.getAuthorizedCAs(admin));
 		// If this is the special value ALLCAs we are authorized
     	authorizedcaids.add(Integer.valueOf(SecConst.ALLCAS));
         if (authSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource())) {
@@ -491,7 +491,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         if (profile == null) {
             return;
         }
-        final HashSet<Integer> authorizedcaids = new HashSet<Integer>(caSession.getAvailableCAs(admin));
+        final HashSet<Integer> authorizedcaids = new HashSet<Integer>(caSession.getAuthorizedCAs(admin));
         final String availablecasstring = profile.getValue(EndEntityProfile.AVAILCAS, 0);
         if (StringUtils.isNotEmpty(availablecasstring)) {
             /*

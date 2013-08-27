@@ -208,7 +208,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 		String existingCas = "";
 		Collection<Integer> cas = null;
 		try {
-			cas = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAvailableCAs(getAdmin(cliUserName, cliPassword));
+			cas = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCAs(getAdmin(cliUserName, cliPassword));
 			Iterator<Integer> iter = cas.iterator();
 			while (iter.hasNext()) {
 				int caid = ((Integer)iter.next()).intValue();

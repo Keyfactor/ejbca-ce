@@ -44,7 +44,7 @@ public class CaGetCrlInfo extends BaseCaAdminCommand {
         }
 	    
         try {
-        	Collection<Integer> caIds = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAvailableCAs(getAdmin(cliUserName, cliPassword));
+        	Collection<Integer> caIds = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCAs(getAdmin(cliUserName, cliPassword));
         	for (Integer caId : caIds) {
         		final CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), caId);
         		final StringBuilder sb = new StringBuilder();

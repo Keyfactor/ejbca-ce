@@ -184,7 +184,7 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
 		// List available CAs by name
 		final StringBuilder existingCas = new StringBuilder();
 		try {
-			for (final Integer nextId : EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAvailableCAs(getAdmin(cliUserName, cliPassword))) {
+			for (final Integer nextId : EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCAs(getAdmin(cliUserName, cliPassword))) {
 				final String caName = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), nextId.intValue()).getName();
 				if (existingCas.length()>0) {
 					existingCas.append(", ");
@@ -218,7 +218,7 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
 		// List available CAs by name
 		final StringBuilder existingCas = new StringBuilder();
 		try {
-			for (final Integer nextId : ejb.getRemoteSession(CertificateProfileSessionRemote.class).getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_ENDENTITY, EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAvailableCAs(getAdmin(cliUserName, cliPassword)))) {
+			for (final Integer nextId : ejb.getRemoteSession(CertificateProfileSessionRemote.class).getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_ENDENTITY, EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCAs(getAdmin(cliUserName, cliPassword)))) {
 				final String caName = ejb.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfileName(nextId.intValue());
 				if (existingCas.length()>0) {
 					existingCas.append(", ");

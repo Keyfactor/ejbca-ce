@@ -138,7 +138,7 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
         if (managementca == null) {
             final Collection<Integer> caids;
 
-            caids = caSession.getAvailableCAs(admin);
+            caids = caSession.getAuthorizedCAs(admin);
 
             final Iterator<Integer> iter = caids.iterator();
             int tmp = 0;
