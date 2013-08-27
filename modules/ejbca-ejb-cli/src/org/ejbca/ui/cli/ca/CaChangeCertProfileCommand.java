@@ -88,7 +88,7 @@ public class CaChangeCertProfileCommand extends BaseCaAdminCommand {
 		Collection<Integer> cas = null;
 		try {
 			// Print available CAs
-			cas = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAvailableCAs(getAdmin(cliUserName, cliPassword));
+			cas = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCAs(getAdmin(cliUserName, cliPassword));
 			boolean first = true;
 			for (Integer caid : cas) {
 				if (first) {

@@ -26,6 +26,7 @@ public final class CAConstants {
     public static final int CA_REVOKED = 4;
     public static final int CA_OFFLINE = 5;
     public static final int CA_EXTERNAL = 6;
+    public static final int CA_UNINITIALIZED = 7;
 
 
     /**

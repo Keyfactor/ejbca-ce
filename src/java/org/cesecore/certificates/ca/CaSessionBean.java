@@ -438,7 +438,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public List<Integer> getAvailableCAs(final AuthenticationToken admin) {
+    public List<Integer> getAuthorizedCAs(final AuthenticationToken admin) {
         final Collection<Integer> availableCaIds = getAvailableCAs();
         final ArrayList<Integer> returnval = new ArrayList<Integer>();
         for (Integer caid : availableCaIds) {

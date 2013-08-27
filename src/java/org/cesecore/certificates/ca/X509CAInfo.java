@@ -180,10 +180,7 @@ public class X509CAInfo extends CAInfo{
         setCmpRaAuthSecret(_cmpRaAuthSecret);
         this.authorityInformationAccess = authorityInformationAccess;
     }
-  
-  
-  public X509CAInfo(){}
-    
+   
   public List<CertificatePolicy> getPolicies() {
 	  return this.policies;
   }

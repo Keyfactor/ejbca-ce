@@ -76,7 +76,7 @@ public class CaChangeCATokenSignAlg extends BaseCaAdminCommand {
 		getLogger().info(" Existing CAs: ");
 		try {
 			// Print available CAs
-			Collection<Integer> cas = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAvailableCAs(getAdmin(cliUserName, cliPassword));
+			Collection<Integer> cas = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCAs(getAdmin(cliUserName, cliPassword));
 			for (Integer caid : cas) {
 				CAInfo info = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), caid);
 				getLogger().info("    "+info.getName()+": "+info.getCAToken().getSignatureAlgorithm());				

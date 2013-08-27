@@ -2201,7 +2201,7 @@ public class EjbcaWS implements IEjbcaWS {
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         logAdminName(admin,logger);
 		try {
-			Collection<Integer> caids = caSession.getAvailableCAs(admin);
+			Collection<Integer> caids = caSession.getAuthorizedCAs(admin);
 			HashMap<Integer, String> map = caSession.getCAIdToNameMap();
 			for (Integer id : caids ) {
 				String name = (String)map.get(id);

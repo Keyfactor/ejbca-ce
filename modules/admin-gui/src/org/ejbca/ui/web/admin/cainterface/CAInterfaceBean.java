@@ -1328,7 +1328,7 @@ public class CAInterfaceBean implements Serializable {
         final Map<Integer, String> idToNameMap = certificateProfileSession.getCertificateProfileIdToNameMap();
         final List<Entry<String,String>> ret = new ArrayList<Entry<String,String>>();
 	    for (int type : types) {
-	        final Collection<Integer> ids = certificateProfileSession.getAuthorizedCertificateProfileIds(type, caSession.getAvailableCAs(authenticationToken));
+	        final Collection<Integer> ids = certificateProfileSession.getAuthorizedCertificateProfileIds(type, caSession.getAuthorizedCAs(authenticationToken));
 	        for (final Integer id : ids) {
 	            ret.add(new SimpleEntry<String,String>(id.toString(), (type==CertificateConstants.CERTTYPE_ROOTCA ? "(RootCAs) " : "(SubCAs) ") + idToNameMap.get(id)));
 	        }

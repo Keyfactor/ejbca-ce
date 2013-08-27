@@ -109,8 +109,4 @@ public class CVCCAInfo extends CAInfo {
         this.useUserStorage = _useUserStorage;
         this.useCertificateStorage = _useCertificateStorage;
 	}  
-
-
-	public CVCCAInfo(){}
-
 }

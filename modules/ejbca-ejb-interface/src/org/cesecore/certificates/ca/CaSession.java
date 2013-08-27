@@ -75,10 +75,9 @@ public interface CaSession {
     public void editCA(final AuthenticationToken admin, final CAInfo cainfo) throws CADoesntExistsException, AuthorizationDeniedException, IllegalCryptoTokenException;
 
     /**
-     * Method returning id's of all CA's available to the system. i.e. not
-     * having status "external" or "waiting for certificate response"
+     * Method returning id's of all CA's available to the system.
      * 
-     * @return a List (Integer) of available CA id's
+     * @return a List (Integer) of CA id's
      */
     public List<Integer> getAvailableCAs();
 
@@ -93,7 +92,7 @@ public interface CaSession {
      * @param admin AuthenticationToken of admin
      * @return a List<Integer> of available CA id's
      */
-    public List<Integer> getAvailableCAs(AuthenticationToken admin);
+    public List<Integer> getAuthorizedCAs(AuthenticationToken admin);
     
     /**
      * Method returning names of all CA's available to the system that the

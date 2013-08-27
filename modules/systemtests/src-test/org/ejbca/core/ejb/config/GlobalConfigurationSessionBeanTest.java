@@ -78,7 +78,7 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
         if (original == null) {
             original = (GlobalConfiguration) this.globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
         }
-        caids = caSession.getAvailableCAs(internalAdmin);
+        caids = caSession.getAuthorizedCAs(internalAdmin);
         assertFalse("No CAs exists so this test will not work", caids.isEmpty());
 
         // Add the credentials and new principal
@@ -209,7 +209,7 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
      */
     private void operationGetAvailabeCAs(final AuthenticationToken admin) {
         // Get some CA ids: should be empty now
-        final Collection<Integer> emptyCaids = caSession.getAvailableCAs(admin);
+        final Collection<Integer> emptyCaids = caSession.getAuthorizedCAs(admin);
         assertTrue("Should not have got any CAs as admin of type " + admin.toString(), emptyCaids.isEmpty());
     }
 
