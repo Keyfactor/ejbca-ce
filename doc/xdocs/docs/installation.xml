@@ -618,8 +618,6 @@ data-source add --name=unidds --jta=false --driver-name="org.mariadb.jdbc.Driver
 </subsubsection>
 
 <subsubsection name="JBoss 7/EAP 6 PKCS11">
-<p>Note: This is not needed in JBoss EAP 6.1/JBoss 7.2, because these classes are exported by default since <a href="https://issues.jboss.org/browse/JBPAPP6-1748">JBPAPP6-1748</a>
-</p>
 <p>
 JBoss 7/EAP 6 isolates away most sun classes. That means you will not be able to send certificates through remote EJB calls, and will not be able to use the Sun PKCS#11 provider.
 These classes can be made available by editing the file
@@ -628,10 +626,17 @@ These classes can be made available by editing the file
 <source>
 &lt;path name="sun/security/x509"/&gt;
 &lt;path name="sun/security/pkcs11"/&gt;
+&lt;path name="sun/security/pkcs11/wrapper"/&gt;
 </source>
 <p>
 This will allow an application to use these internal Sun/Oracle/OpenJDK classes.
 </p>
+<p>This is not needed in JBoss EAP 6.1/JBoss 7.2, because the two first packages are exported by default since <a href="https://issues.jboss.org/browse/JBPAPP6-1748">JBPAPP6-1748</a>.
+One package is however needed if you want to be able to use 'Slot Label' to configure PKCS#11 Crypto Tokens. In JBoss EAP 6.1 the file is located in <i>modules/system/layers/base/sun/jdk/main/module.xml</i>.
+</p>
+<source>
+&lt;path name="sun/security/pkcs11/wrapper"/&gt;
+</source>
 </subsubsection>
 
 <subsubsection name="JBoss 7/EAP 6 CMP TCP">
