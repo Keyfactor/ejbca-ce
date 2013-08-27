@@ -42,6 +42,9 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.RSAKeyGenParameterSpec;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.asn1.x9.X962Parameters;
 import org.bouncycastle.jce.ECGOST3410NamedCurveTable;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -233,6 +236,12 @@ public class KeyToolsTest {
     @Test
     public void testGenKeysECDSAx9() throws Exception {
         KeyPair keys = KeyTools.genKeys("prime192v1", AlgorithmConstants.KEYALGORITHM_ECDSA);
+        // Verify that the keys are using maned curves, and not explicit parameters
+        PrivateKeyInfo priv2 = PrivateKeyInfo.getInstance(keys.getPrivate().getEncoded());
+        assertTrue("Private key is not encoded with named curves, but using explicit parameters", X962Parameters.getInstance(priv2.getPrivateKeyAlgorithm().getParameters()).isNamedCurve());
+        SubjectPublicKeyInfo pub2 = SubjectPublicKeyInfo.getInstance(keys.getPublic().getEncoded());
+        assertTrue("Public key is not encoded with named curves, but using explicit parameters", X962Parameters.getInstance(pub2.getAlgorithm().getParameters()).isNamedCurve());
+
         assertNotNull("keys must not be null", keys);
         String b64private = new String(Base64.encode(keys.getPrivate().getEncoded()));
         assertNotNull("b64private must not be null", b64private);
