@@ -46,6 +46,7 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.config.Configuration;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderSessionRemote;
@@ -119,7 +120,7 @@ public abstract class BaseCommand implements CliCommandPlugin {
         if (gcsession == null) {
             throw new ErrorAdminCommandException("Can not get configuration from server. Is server started and communication working?");
         }
-        GlobalConfiguration configuration = gcsession.getCachedGlobalConfiguration();
+        GlobalConfiguration configuration = (GlobalConfiguration) gcsession.getCachedConfiguration(Configuration.GlobalConfigID);
 
         //Check if ClI is enabled
         if(!configuration.getEnableCommandLineInterface()) {

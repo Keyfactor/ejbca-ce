@@ -63,6 +63,8 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
+import org.ejbca.config.Configuration;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSession;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
@@ -207,7 +209,7 @@ public class KRSSResponseGenerator extends
 		if((!recover && endEntityInformation.getStatus() == EndEntityConstants.STATUS_NEW) || (recover && endEntityInformation.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY)){
 				
 			try{		
-				boolean usekeyrecovery = !reissue && globalConfigurationSession.getCachedGlobalConfiguration().getEnableKeyRecovery();
+				boolean usekeyrecovery = !reissue && ((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID)).getEnableKeyRecovery();
 
 				boolean savekeys = endEntityInformation.getKeyRecoverable() && usekeyrecovery &&  (endEntityInformation.getStatus() != EndEntityConstants.STATUS_KEYRECOVERY);
 				boolean loadkeys = (endEntityInformation.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY) && usekeyrecovery;

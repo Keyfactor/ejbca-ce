@@ -693,14 +693,13 @@ Certificate requests use the CRMF (RFC4211).
 </p>
 <p>EJBCA can work in two modes with CMP:</p>
 <ul>
-<li><b>Client mode</b> - This is the default mode. Client mode works like any other enrollment in EJBCA. When a request comes in EJBCA verifies the request (see User authentication below)
+<li><b>Client mode</b> - This is the default mode. Client mode works like any other enrollment in EJBCA. When a request comes in, EJBCA verifies the request (see User authentication below)
 and issues a certificate to a user that has been previously registered in EJBCA.</li>
-<li><b>RA mode</b> - RA mode is used when the CMP client will act as an RA to EJBCA. When the RA sends a certificate request to EJBCA. No user is pre-registered in EJBCA, 
+<li><b>RA mode</b> - RA mode is used when the CMP client will act as an RA to EJBCA (the RA sends a certificate request to EJBCA). No user is pre-registered in EJBCA, 
 but when authenticated RA CMP messages arrive a user is created in EJBCA and a certificate is issued.</li>
 </ul>
 <p>
-CMP support in RA mode (see below) can support several CAs and profiles based on the keyId of the
-password used to protect the CMP messages (PBE protection).
+In RA mode, EJBCA supports several CAs and profiles based on the use of configuration alias specified in the URL used (see below).
 </p>
 
 <subsection name="CMP and 3GPP/4G/LTE configuration guide">
@@ -712,19 +711,7 @@ configure EJBCA for 3GPP/4G/LTE networks using CMP. You can purchase it easily i
 
 <subsection name="Configuration">
 <p>
-Copy conf/cmp.properties.sample to conf/cmp.properties and configure. The options in the configuration file should
-be documented there. These are the configurations that will be used when sending the CMP requests to the default CMP URL.
-</p>
-<p>
-To be able to use more custom CMP configurations, an alias specific URL can be used. The alias specified in the URL can be used to mark configuration 
-options in conf/cmpaliasconf.properties. Just like with the default configurations, copy conf/cmpaliasconf.properties.sample to conf/cmpaliasconf.properties 
-and configure. For example, if the alias is '123', to set the CMP operation mode to RA, the cmpaliasconf.properties file should contain: <code>cmp.123.operationmode=ra</code>
-</p>
-<p>
-The configuration alias can be any String as long as it is alphanumeric.
-</p>
-<p>
-The custom configurations can only be used when sending the CMP request over http and does not work with TCP.
+Configurating CMP is done in the Admin GUI, under 'CMP Configuration'. To be able to edit CMP configuration, you have to have the 'edit_cmp_configuration' access.
 </p>
 </subsection>
 <subsection name="CMP over http">
@@ -732,57 +719,73 @@ The custom configurations can only be used when sending the CMP request over htt
 By default EJBCA support CMP over the http transport protocol.
 The URL for the CMP servlet is:
 <br/>
-http://127.0.0.1:8080/ejbca/publicweb/cmp
+http://127.0.0.1:8080/ejbca/publicweb/cmp/ALIAS
 </p>
 <p>
-The URL used to apply specific CMP configuration is:
-<br/>
-http://127.0.0.1:8080/ejbca/publicweb/cmp/customconfig/aliasALIAS
-<br/>
-For example:
-<br/>
-http://127.0.0.1:8080/ejbca/publicweb/cmp/customconfig/alias123
+ALIAS is a configuration alias specifying the set of CMP configurations to be used when handling a request sent through this specific URL. ALIAS can be any alphanumeric 
+string. You can specify as many aliases as you need in the Admin GUI.
 </p>
 <p>
-where '123' will be the alias used to exatract the relative configurations from conf/cmpaliasconf.properties
+Example:<br/>
+http://127.0.0.1:8080/ejbca/publicweb/cmp/cmpalias
+<br/>
+Any CMP request sent through this URL will use the CMP configurations associated with the alias "cmpalias"
 </p>
 </subsection>
 <subsection name="CMP over TCP">
 <p>
-You can enable a CMP TCP service by changing the option 'cmp.tcp.enabled' in conf/cmp.properties.
+You can enable a CMP TCP service by changing the option "cmp.tcp.enabled" in conf/cmptcp.properties (copy conf/cmptcp.properties.sample to conf/cmptcp.properties first).
 <br/>
 When re-deploying EJBCA this will start a TCP listener on the default port for CMP over TCP. You must run the application server as root to use the default port, since it is a low port (&lt;1024).
 See the documentation in conf/cmp.properties for information about configuration options for TCP. We recommend using a non standard port > 1024.
 </p>
+<p>
+CMP requests sent over TCP will be using CMP configurations associated with the configuration alias "tcp". Note that a CMP configuration alias with the name "tcp" 
+does not exist per default. It has to be created (and/or altered) through the Admin GUI before any CMP request arrives through TCP. 
+</p>
+<p>
+Although EJBCA still supports CMP over TCP for now, it will not be supported for much longer. That is why we strongly recommend using CMP over HTTP instead.
+</p>
 </subsection>
 <subsection name="CMP Message Authentication">
-<p>EJBCA supports 4 modules for message authentication. Which modules to use can be set in the properties file in the option "cmp.authenticationmodule" and the parameters required by each module are
-set in the option "cmp.authenticationparameters".</p>
-<p>The four supported modules are either password extractors or PKIMessage verifiers:</p>
-<p>The password extractors are:</p>
-<ul>
-<li>RegTokenPwd: Extracts the password from the CMP request. </li>
-<li>DnPartPwd: Extracts the password from the subjectDN of the user the request concerns.</li>
-</ul>
-<p>The PKIMessage verifiers are:</p>
-<ul>
-<li>HMAC: To authenticate the message, this module uses:</li>
-<ul>
-<li>A global shared secret specified in the properties file under cmp.ra.authenticationsecret</li>
-<li>If there was no global shared secret, it will extract the CMP authentication secret specified in the CA</li>
-<li>In client mode, the pre-registered end entity, that sent the request, will be looked up in the database, and if there was a clear text password there,
-this password will be used to authenticate the message</li>
-</ul>
-<li>EndEntityCertificate: When this module is used, the request sender should attach his certificate to the extraCert field in the PKIMessage and then 
-sign the message with his private key. In client mode, a user may only send a CMP request regarding his/her own certificate. Ejbca will then check if the 
-certificate in extraCert does exist in its database and verifies that it belongs to the sender before verifying the signature. 
-In RA mode, the "cmp.authenticationparameters" in cmp.properties file is exptected to hold the name of the certificate that has issued the certificate in the 
-extraCert field. If "cmp.authenticationparameters" is set, EJBCA will then check if the certificate in extraCert does exist in its 
-database and make a check to determin that it was issued by the right CA and that it belongs to a registerd administrator in EJBCA with the right authorizations 
-to perform the operations required in the request. If "cmp.authenticationparameters" is not set, none of the mentioned checks will be performed, however, Ejbca 
-expect the CMP request to have been previously authenticated by other ways, for example, by sending the request inside a signed NestedMessageContent</li>
-</ul>
-<p>For details about how to set which modules to use and their parameters, see the documentation in the properties file.</p>
+  <p>EJBCA supports 4 modules for message authentication. Which modules to use, along with their parameters, can be set in the Admin GUI under 'CMP Configuration'.</p>
+  <p>The four supported modules are either password extractors or PKIMessage verifiers:</p>
+  <p>Password extractors (client mode only):</p>
+  <ul>
+    <li>RegTokenPwd: Extracts the password from the CMP request through the means of a regToken control (id-regCtrl-regToken) in the CRMF message. The regToken is a 
+        UTF8String containing the users password as registered in EJBCA. This module requires no parameters </li>
+    <li>DnPartPwd: Extracts the password from the subjectDN of the user the request concerns. As a parameter, the DN part that contains the password should be 
+        specified. For example, if the subjectDN is "CN=name,C=se,UID=PASSWORD", the parameters should be set to "UID"</li>
+  </ul>
+  <p>PKIMessage verifiers:</p>
+  <ul>
+    <li>HMAC: This module uses a shared secret to authenticate the CMP message:
+      <ul>
+        <li>In RA mode, the shared secret is set as a parameter to this module. If no parameter is specified, EJBCA will use the shared secret specified in the CA 
+            under "CMP RA Authentication Secret"</li>
+        <li>In client mode, the pre-registered end entity will be looked up in the database, and if there was a clear text password there, this password will be used 
+            to authenticate the message. If there is no clear text password associated with that end entity, the authentication will fail.</li>
+      </ul>
+    </li>
+    <li>EndEntityCertificate: When this module is used, the request sender should attach his certificate in the extraCert field in the PKIMessage and then 
+        sign the message with his private key. 
+      <ul>
+        <li>In client mode, a user may only send a CMP request regarding his/her own certificate. Ejbca will then check if the 
+            certificate in extraCert does exist in its database and verifies that it belongs to the sender before verifying the signature. No parameters should be specified for 
+            this module in client mode.</li>
+        <li>In RA mode, as a parameter, this module expects the name of the CA that that has issued the certificate in the extraCert field. If a parameter is specified, 
+            EJBCA will then check if the certificate in extraCert does exist in the database, that it was issued by the right CA (the CA specified as a parameter) and that it 
+            belongs to a registerd administrator in EJBCA with the right authorizations to perform the operations required in the request. If no parameter is specified, 
+            none of the mentioned checks will be performed, however, Ejbca will expect the CMP request to have been previously authenticated by other ways, for example, 
+            by sending the request inside a signed NestedMessageContent</li>
+      </ul>
+    </li>
+  </ul>
+<p>
+More than one module can be specified by separating them with a ";". In case of more than one module specified, the first module will be used to for 
+authentication testing. If the first module fails, the second module will be used for authentication testing, and so on until a successful authentication is 
+done or all alternatives fail.
+</p>
 </subsection>
 <subsection name="Client mode for CMP">
 <p>
@@ -798,15 +801,12 @@ with this pre-registered end entity before a certificate is issued. This is the 
 After the user has been authenticated in EJBCA, a certificate is generated as usual and sent back to the client.
 </p>
 <p>To use client mode, no particular configuration is needed, since this is the default mode.</p>
-<subsubsection name="User authentication">
+<subsubsection name="User look-up">
 <p>
 Initialization and certification requests uses the CRMF request message (RFC4211).
-There messages are interesting as there are a zillion options how to authenticate them.
-EJBCA currently does authentication through the means of a regToken control (id-regCtrl-regToken) in the CRMF message.
-The regToken is a UTF8String which is the users password as registered in EJBCA.
 </p>
 <p>
-Users can be looked up from the request in different ways, as configured in conf/cmp.properties.
+Users can be looked up from the request in different ways, as configured in the Admin GUI under "CMP Configuration".
 By default the subject DN from the certTemplate in the request is used to look up the used in EJBCA. 
 You can also configure EJBCA to use the CN or the UID from the subject DN as the username in EJBCA.
 </p>
@@ -815,16 +815,15 @@ You can also configure EJBCA to use the CN or the UID from the subject DN as the
 
 <subsection name="RA mode for CMP">
 <p>
-RA mode is used when the CMP client will act as an RA to EJBCA. When the RA sends a certificate request to EJBCA, no user is pre-registered in EJBCA. 
-When EJBCA receives the request, the message will be authenticated using PasswordBasedMac, as defined in the CMP spec, using a pre-shared password.
-When the message has been authenticated, a user is created in EJBCA and a certificate is issued.
+RA mode is used when the CMP client will act as an RA to EJBCA. When the RA sends a certificate request to EJBCA, no user needs to be pre-registered in EJBCA. 
+When EJBCA receives the request, the message will be authenticated. After it has been authenticated, a user is created and a certificate is issued.
 <ul>
 <li>The users DN is taken from the CertTemplate in the request message send from the RA (i.e. the DN requested by the RA).</li>
-<li>The username in EJBCA is generated according to the options set in conf/cmp.properties.</li>
+<li>The username in EJBCA is generated according to the options configured</li>
 <li>The password for the user in EJBCA is random.</li>
 <li>If the Certificate Profile allows it, keyUsage, validity and extensions are also taken from the CertTemplate in the request message.</li>
 <li>raVerify POPO is used.</li>
-<li>Messages are authenticated using PasswordBasedMac, using a shared secret between the CA and the RA.</li>
+<li>Messages are authenticated using one of the configured authentication modules.</li>
 </ul>
 After the user has been created in EJBCA, a certificate is generated as usual and sent back to the RA, who will distribute it to the end-user.
 </p>
@@ -833,7 +832,8 @@ If the same username is constructed (for example UID) as an already existing use
 the existing user will be modified with new values for profile etc, and a new certificate will be issued for that user.
 </p>
 <p>
-To allow requests with different KeyId to be mapped to different CAs and profiles in EJBCA, see the documentation for the options in conf/cmp.properties.sample.
+To allow requests to specify the CAs and profiles to be used, the CA and profiles configuration values should be set to "KeyId". This means that the CA and/or 
+profiles that has the same name as the KeyId sent in the CMP request (UTF-8 encoding is used) will be used to create the end entity.
 </p>
 <subsubsection name="Multiprotection support">
 <p>
@@ -896,30 +896,24 @@ Users will be created using UID from the request DN and with a prefix, so the re
 End entity profiles names CMP_ENTITY and CMP_CERT is created in EJBCA allowing the request DN.
 </p>
 <source>
-cmp.operationmode=ra
-cmp.allowraverifypopo=true
-cmp.responseprotection=pbe
-cmp.ra.authenticationsecret=password
-cmp.ra.namegenerationscheme=DN
-cmp.ra.namegenerationparameters=UID
-cmp.ra.namegenerationprefix=cmp
-#cmp.ra.namegenerationpostfix=
-cmp.ra.endentityprofile=CMP_ENTITY
-cmp.ra.certificateprofile=CMP_CERT
-cmp.ra.caname=ManagementCA
+CMP Operational Mode : RA Mode
+Allow RA Verify Proof-of-Possession : check
+CMP Response Protection : pbe
+CMP Authentication Module : HMAC
+CMP Authentication Parameters : password
+RA Name Generation Scheme : DN
+RA Name Generation Parameters : UID
+RA Name Generation Prefix : cmp
+RA End Entity Profile : CMP_ENTITY
+RA Certificate Profile : CMP_CERT
+RA CA Name : ManagementCA
 </source>
 </subsubsection>
 
 <subsubsection name="Using one authentication secret per CA">
 <p>
 Edit each CAs that should be used for CMP certificate issuance and enter new CMP RA Authentication Secret.
-The global secret in cmp.properties has to be commented out (and applied to EJBCA by rebuilding and redploying).
-</p>
-<source>
-#cmp.ra.authenticationsecret=
-</source>
-<p>
-This property will otherwise override the CA specific configuration. 
+There should be no parameter specified for the HMAC authentication module, otherwise, this parameter will override the CA specific configuration. 
 </p>
 </subsubsection>
 </subsection>
@@ -948,7 +942,7 @@ Proof of Possession (POP) is another part where CMP has gazillions of different 
 <br/>
 The following POPs in the CRMF are supported by EJBCA:
 <ul>
-<li>raVerify - if configured so in conf/cmp.properties EJBCA will support the raVerify POP and in that case not do any verification of POP. By default this is false, because the standard does not recommend this option.</li>
+<li>raVerify - if "Allow RA Verify Proof-of-Possession" is checked, EJBCA will support the raVerify POP and in that case not do any verification of POP. By default this is false, because the standard does not recommend this option.</li>
 <li>signature - where the PublicKey is in the CertTemplate and the signature is calculated over the CertReqMsg.certReq (the standard procedure when the CertTemplate contains the subject and publicKey values).</li>
 <li>signature with POPOSigningKeyInput - where the PublicKey and subject DN is in POPOSigningKeyInput, possibly just copied from the CertTemplate. The signature is calculated over the POPOSigningKeyInput (if the values are also in the CertTemplate they must be identical).</li>
 </ul>
@@ -975,10 +969,11 @@ key usage in the CRMF request template, this key usage will be used.
 <p>CMP has been tested using RSA jCert toolkit for initialization requests. To run this as an RA you should configure CMP 
 with:
 <ul>
-<li>cmp.operationmode=ra</li>
-<li>cmp.allowraverifypopo=true</li>
-<li>cmp.responseprotection=pbe</li>
-<li>cmp.ra.authenticationsecret=your shared password</li>
+<li>CMP Operational Mode : RA Mode</li>
+<li>Allow RA Verify Proof-of-Possession : check</li>
+<li>CMP Response Protection : pbe</li>
+<li>CMP Authentication Module : HMAC</li>
+<li>CMP Authentication Parameters : your shared password</li>
 <li>and other configurations you want for your RA.</li>
 </ul>
 </p>
@@ -1080,26 +1075,28 @@ Cmpforopenssl works with EJBCA. The current client tool, cmpclient, works with E
 </p>
 <p><strong>RA mode</strong></p>
 <p>
-Cmpforopenssl works with with EJBCA in RA mode with the following EJBCA configuration (cmp.properties, unset properties = default):</p>
+Cmpforopenssl works with with EJBCA in RA mode with the following EJBCA configuration with alias tex. "opensslra" (unmentioned configurations = default):</p>
 <source>
-cmp.operationmode=ra
-cmp.responseprotection=pbe
-cmp.ra.authenticationsecret=password
+CMP Operational Mode : RA Mode
+CMP Response Protection : pbe
+CMP Authentication Module : HMAC
+CMP Authentication Parameters : password
 </source>
 <p>
 You can then use cmpclient (as an RA):</p>
 <source>
-./openssl cmp -cmd ir -server localhost:8080 -path ejbca/publicweb/cmp -srvcert ManagementCA.cacert.pem -user NewUser -pass password -certout clcert1.pem -newkey key1.pem -keyfmt PEM -certfmt PEM -subject "/CN=NewUser/O=My Organization/C=SE"
+./openssl cmp -cmd ir -server localhost:8080 -path ejbca/publicweb/cmp/opensslra -srvcert ManagementCA.cacert.pem -user NewUser -pass password -certout clcert1.pem -newkey key1.pem -keyfmt PEM -certfmt PEM -subject "/CN=NewUser/O=My Organization/C=SE"
 </source>
 <p>This requests a certificate, defining the subject DN that will be used. The CA used to sign the certificate is specified in the EJBCA cmp configuration, and can be taken from the keyid.
 EJBCA authenticated the request using the HMAC protection with the password, and accepts any request upon correct authentication. See the CMP documentation above for more advanced configuration.
 </p>
 <p><strong>Client mode, HMAC password authentication</strong></p>
 <p>
-Cmpforopenssl works with with EJBCA in client mode, with HMAC password authentication, using the following EJBCA configuration (cmp.properties, unset properties = default):</p>
+Cmpforopenssl works with with EJBCA in client mode, with HMAC password authentication, using the following EJBCA configuration with alias tex. "opensslclient" (unmentioned configurations = default):</p>
 <source>
-cmp.authenticationmodule=HMAC
-cmp.extractusernamecomponent=CN
+CMP Authentication Module : HMAC
+CMP Authentication Parameters : password
+Extract Username Component : CN
 </source>
 <p>You can now add a new user in EJBCA:</p>
 <source>
@@ -1110,18 +1107,18 @@ bin/ejbca.sh ra setuserstatus user1 10
 <p>
 You can then use cmpclient (as a client):</p>
 <source>
-./openssl cmp -cmd ir -server localhost:8080 -path ejbca/publicweb/cmp -srvcert ManagementCA.cacert.pem -user user1 -pass password -certout clcert1.pem -newkey key1.pem -keyfmt PEM -certfmt PEM -subject "/CN=user1/O=My Organization/C=SE"
+./openssl cmp -cmd ir -server localhost:8080 -path ejbca/publicweb/cmp/opensslclient -srvcert ManagementCA.cacert.pem -user user1 -pass password -certout clcert1.pem -newkey key1.pem -keyfmt PEM -certfmt PEM -subject "/CN=user1/O=My Organization/C=SE"
 </source>
 <p>This requests a certificate, and the requested subject DN must match the registered subject DN.
 EJBCA authenticates the request using the HMAC protection with the password of the registered user. See the CMP documentation above for more advanced configuration.</p>
 
 <p><strong>Client mode, client certificate authentication</strong></p>
 <p>
-Cmpforopenssl works with with EJBCA in client mode, with certificate authentication, using the following EJBCA configuration (cmp.properties, unset properties = default):</p>
+Cmpforopenssl works with with EJBCA in client mode, with certificate authentication, using the following EJBCA configuration with alias tex. "openssleec" (unmentioned configurations = default):</p>
 <source>
-cmp.authenticationmodule=EndEntityCertificate
-cmp.authenticationparameters=ManagementCA (use the CA that issues your client authentication certificate)
-cmp.extractusernamecomponent=CN
+CMP Authentication Module : EndEntityCertificate
+CMP Authentication Parameters : ManagementCA (use the CA that issues your client authentication certificate)
+Extract Username Component : CN
 </source>
 <p>You can now issue a certificate using certificate authentication in EJBCA (the end entity needs a certificate before so we re-use user1 from above):</p>
 <source>
@@ -1131,37 +1128,37 @@ bin/ejbca.sh ra setuserstatus user1 10
 <p>
 You can then use cmpclient (as a client):</p>
 <source>
-./openssl cmp -cmd ir -server localhost:8080 -path ejbca/publicweb/cmp -srvcert ManagementCA.cacert.pem -cert clcert.pem -key key.pem -certout clcert1.pem -newkey key1.pem -keyfmt PEM -certfmt PEM -subject "/CN=user1/O=My Organization/C=SE"
+./openssl cmp -cmd ir -server localhost:8080 -path ejbca/publicweb/cmp/openssleec -srvcert ManagementCA.cacert.pem -cert clcert.pem -key key.pem -certout clcert1.pem -newkey key1.pem -keyfmt PEM -certfmt PEM -subject "/CN=user1/O=My Organization/C=SE"
 </source>
 <p>This requests a certificate, and the requested subject DN must match the registered subject DN.
 EJBCA authenticates the request using the signature protection with the certificate of the registered user. See the CMP documentation above for more advanced configuration.</p>
 <p>You can also use a 'cr' instead of an 'ir';</p>
 <source>
 bin/ejbca.sh ra setuserstatus user1 10
-./openssl cmp -cmd cr -server localhost:8080 -path ejbca/publicweb/cmp -srvcert ManagementCA.cacert.pem -cert clcert.pem -key key.pem -certout clcert1.pem -newkey key1.pem -keyfmt PEM -certfmt PEM -subject "/CN=user1/O=My Organization/C=SE"
+./openssl cmp -cmd cr -server localhost:8080 -path ejbca/publicweb/cmp/openssleec -srvcert ManagementCA.cacert.pem -cert clcert.pem -key key.pem -certout clcert1.pem -newkey key1.pem -keyfmt PEM -certfmt PEM -subject "/CN=user1/O=My Organization/C=SE"
 </source>
 
 <p><strong>Client mode, Vendor certificate authentication</strong></p>
 <p>
 If the end entity has a Vendor certificate with which it should identify itself for initial enrollment, as specified in 3GPP for example, it can also do that. 
 In this case the CA issuing the end entity certificate is not the same as the Vendor CA. The vendor CA must be imported in EJBCA as an External CA ('Import CA certificate' in the admin GUI).
-To enable vendor certificate authentication add the following to the CMP configuration for client certificate authentication:
+To enable vendor certificate authentication add the following to the CMP configuration with alias tex. "3gpp" for client certificate authentication:
 </p>
 <source>
-cmp.vendorcertificatemode=true
-cmp.vendorca=3GPP-CA
+Use Vendor Certificate Mode : checked
+Vendor CA : 3GPP-CA
 </source>
 <p>With this configuration you can now request an initial certificate with the following command:
 </p>
 <source>
-./openssl cmp -cmd ir -server localhost:8080 -path ejbca/publicweb/cmp -srvcert ManagementCA.cacert.pem -cert devicecert.pem -key devicekey.pem -certout clcert1.pem -newkey key1.pem -keyfmt PEM -certfmt PEM -subject "/CN=device/O=My Organization/C=SE"
+./openssl cmp -cmd ir -server localhost:8080 -path ejbca/publicweb/cmp/3gpp -srvcert ManagementCA.cacert.pem -cert devicecert.pem -key devicekey.pem -certout clcert1.pem -newkey key1.pem -keyfmt PEM -certfmt PEM -subject "/CN=device/O=My Organization/C=SE"
 </source>
 <p>
 In this configuration 'devicecert.pem' and 'devicekey.pem' are the device's private key and the certificate issued by the Vendor CA (3GPP-CA). 
 ManagementCA.cacert.pem is the CA certificate of the CA in EJBCA issuing the new certificate for the device.
 </p>
 <p>
-It is possible to specify more than one vendor CA. The vendor CA names should, in this case, be separated by ';'. An example is available in cmp.properties file.
+It is possible to specify more than one vendor CA. The vendor CA names should, in this case, be separated by ';'.
 </p>
 </subsubsection>
 </subsection>
@@ -1170,12 +1167,20 @@ It is possible to specify more than one vendor CA. The vendor CA names should, i
 It is possible to add a custom plug-in class to handle a certificate request.
 The class implementing this plug-in must implement the org.ejbca.core.protocol.ExtendedUserDataHandler interface.
 </p><p>
-The idea is that the implementation uses information from the certificate profile or name and the request itself to manipulate the request before it is processed the normal way. This is done when 'processRequestMessage' (see source code of the interface) is called. The used certificate profile name is passed as 'otherData'.
+The idea is that the implementation uses information from the certificate profile or name and the request itself to manipulate the request before it is 
+processed the normal way. This is done when 'processRequestMessage' (see source code of the interface) is called. The used certificate profile name is 
+passed as 'otherData'.
 </p><p>
-Set the property cmp.certreqhandler.class in $EJBCA_HOME/conf/cmp.properties to the name of the plug-in class to enable it. You may then add additional properties that you can use in your implementation.
+In the Admin GUI under "CMP Configuration", set "Certificate Request Handler Class" to the name of the plug-in class to enable it. You may then add 
+additional properties that you can use in your implementation.
 </p><p>
-In EJBCA there is already an implementation included. This implementation writes to the unid-fnr DB (see separate <a href="unid.html">unid document</a>). To activate this plug-in just uncomment the cmp.unidclass property line and also set the data source on the following line.
+In EJBCA there is already an implementation included. This implementation writes to the unid-fnr DB (see separate <a href="unid.html">unid document</a>). 
+To activate this plug-in just set the following configurations:
 </p>
+<source>
+Certificate Request Handler Class : org.ejbca.core.protocol.unid.UnidFnrHandler
+Unid Data Source : java:/UnidDS
+</source>
 </subsection>
 <subsection name="CMP Proxy">
 <p>
@@ -1191,25 +1196,29 @@ See EJBCA_HOME/modules/cmpProxy/resources/README for information how to build an
 
 <subsection name="CMP Response Message">
 <p>
-When a CMP request is successfull, EJBCA returns a protected CMP response message. The protection type of the response message can be configered in $EJBCA_HOME/conf/cmp.properties.
+When a CMP request is successfull, EJBCA returns a protected CMP response message. The protection type of the response message can also be configered in the 
+Adminb GUI under "CMP Configuration".
 EJBCA supports two types of response message protection: 'pbe' and 'signature'.
 </p>
+<p>If a CMP request fails, EJBCA returns an unprotected, unencrypted CMP error message.</p>
 <subsubsection name="pbe">
 <p>
-This type of protection of the response message can be used only when the request was authenticaed using HMAC authentication module. The parameters used for the 'pbe' protection are based on the parameters used in the recieved HMAC authentication.
+This type of protection of the response message can be used only when the request was authenticaed using HMAC authentication module. The parameters used for 
+the 'pbe' protection are based on the parameters used in the recieved HMAC authentication.
 </p>
 </subsubsection>
 <subsubsection name="signature">
 <p>
-The CA used to handle the CMP request signs the CMP response message using the same protection algorithm specified in the CMP request. If a conflict occures between the protection algorithm in the request and the CA's signature algorithm,
-the CA's key algorithm will be used in combination with a digest algorithm based on the protection algorithm in the CMP request. If a conflict occures even on the digest algorithm level, a default digest algorithm will be used.
-For example, if the CMP request uses the protection algorithm ECDSA with SHA1 and the CA's signature algorithm is RSA with SHA256, the CMP response will be signed using RSA with SHA1.
+The CA used to handle the CMP request signs the CMP response message using the same protection algorithm specified in the CMP request. If a conflict occures 
+between the protection algorithm in the request and the CA's signature algorithm, the CA's key algorithm will be used in combination with a digest algorithm 
+based on the protection algorithm in the CMP request. If a conflict occures even on the digest algorithm level, a default digest algorithm will be used.
+For example, if the CMP request uses the protection algorithm ECDSA with SHA1 and the CA's signature algorithm is RSA with SHA256, the CMP response will be 
+signed using RSA with SHA1.
 </p>
 <p>
 The 'signature' type of response protection can be used regardless of what authentication module was used to authenticate the CMP request.
 </p>
 </subsubsection>
-<p>If a CMP request fails, EJBCA returns an unprotected, unencrypted CMP error message.</p>
 </subsection>
 
 </section>

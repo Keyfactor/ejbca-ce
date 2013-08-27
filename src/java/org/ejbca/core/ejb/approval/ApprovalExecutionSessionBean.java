@@ -29,6 +29,7 @@ import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.jndi.JndiConstants;
+import org.ejbca.config.Configuration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
@@ -95,7 +96,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
 		approval.setApprovalAdmin(true, admin);
         try {
             approve(adl, approval);
-            GlobalConfiguration gc = globalConfigurationSession.getCachedGlobalConfiguration();
+            GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
             if (gc.getUseApprovalNotifications()) {
             	final ApprovalDataVO approvalDataVO = approvalSession.getApprovalDataVO(adl);
                 if (approvalDataVO.getRemainingApprovals() != 0) {

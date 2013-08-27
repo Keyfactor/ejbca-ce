@@ -35,7 +35,9 @@ import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.jndi.JndiConstants;
+import org.ejbca.config.Configuration;
 import org.ejbca.config.EjbcaConfiguration;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.authentication.cli.exception.CliAuthenticationFailedException;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
@@ -89,7 +91,7 @@ public class CliAuthenticationProviderSessionBean implements CliAuthenticationPr
          * An extra check if CLI authentication is allowed. This must be done on the
          * server and not the client to avoid spoofing.
          */
-        if (!globalConfigurationSession.getCachedGlobalConfiguration().getEnableCommandLineInterface()) {
+        if (!((GlobalConfiguration)globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID)).getEnableCommandLineInterface()) {
             log.info("CLI authentication attempted, but CLI is disabled.");
             throw new CliAuthenticationFailedException("Could not authenticate from CLI, CLI is disabled.");
         } else {
@@ -106,7 +108,7 @@ public class CliAuthenticationProviderSessionBean implements CliAuthenticationPr
 
             UsernamePrincipal usernamePrincipal = subjectPrincipals.toArray((new UsernamePrincipal[subjectPrincipals.size()]))[0];
             
-            if(!globalConfigurationSession.getCachedGlobalConfiguration().getEnableCommandLineInterfaceDefaultUser() 
+            if(!((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID)).getEnableCommandLineInterfaceDefaultUser() 
                 && usernamePrincipal.getName().equals(EjbcaConfiguration.getCliDefaultUser())) {
                 log.info("CLI authentication attempted, but the default user ("+EjbcaConfiguration.getCliDefaultUser()+") is disabled.");
                 throw new CliAuthenticationFailedException("Could not authenticate from CLI, use of default user is prohibited.");

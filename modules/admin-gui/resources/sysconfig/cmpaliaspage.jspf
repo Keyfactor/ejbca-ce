@@ -1,0 +1,591 @@
+
+
+<%
+   java.util.TreeMap canames = ejbcawebbean.getInformationMemory().getAllCANames();
+   int row = 0;
+   String[] raauthmodules = {"HMAC", "EndEntityCertificate", "HMAC;EndEntityCertificate", "EndEntityCertificate;HMAC"};
+%>
+
+<script type="text/javascript">
+<!--  
+
+
+function checkraoperationalmode(){
+  if(document.cmpconfiguration.<%=CHECKBOX_CMP_RAMODE %>.checked){
+    document.cmpconfiguration.<%= CHECKBOX_CMP_CLIENTMODE %>.disabled = true;
+    document.cmpconfiguration.<%= LIST_CMPRESPONSEPROTECTION_CLIENT %>.disabled = true;
+    document.cmpconfiguration.<%= TEXTFIELD_CMP_CLIENTAUTHENTICATIONMODULE %>.disabled = true;
+    document.cmpconfiguration.<%= TEXTFIELD_CMP_CLIENTAUTHENTICATIONPARAM %>.disabled = true;
+    document.cmpconfiguration.<%= TEXTFIELD_CMP_EXTRACTUSERNAMECOMP %>.disabled = true;
+    document.cmpconfiguration.<%= CHECKBOX_CMP_VENDORMODE %>.disabled = true;
+    document.cmpconfiguration.<%= TEXTFIELD_CMP_VENDORCA %>.disabled = true;
+  } else {
+	document.cmpconfiguration.<%= CHECKBOX_CMP_CLIENTMODE %>.disabled = false;
+    document.cmpconfiguration.<%= LIST_CMPRESPONSEPROTECTION_CLIENT %>.disabled = false;
+    document.cmpconfiguration.<%= TEXTFIELD_CMP_CLIENTAUTHENTICATIONMODULE %>.disabled = false;
+    document.cmpconfiguration.<%= TEXTFIELD_CMP_CLIENTAUTHENTICATIONPARAM %>.disabled = false;
+    document.cmpconfiguration.<%= TEXTFIELD_CMP_EXTRACTUSERNAMECOMP %>.disabled = false;
+    document.cmpconfiguration.<%= CHECKBOX_CMP_VENDORMODE %>.disabled = false;
+    document.cmpconfiguration.<%= TEXTFIELD_CMP_VENDORCA %>.disabled = false;
+  }
+}
+
+function checkclientoperationalmode(){
+	  if(document.cmpconfiguration.<%=CHECKBOX_CMP_CLIENTMODE %>.checked){
+		  document.cmpconfiguration.<%= CHECKBOX_CMP_RAMODE %>.disabled = true;
+		  document.cmpconfiguration.<%= LIST_CMPRESPONSEPROTECTION_RA %>.disabled = true;
+		  document.cmpconfiguration.<%= LIST_CMPAUTHMODULES_RA %>.disabled = true;
+		  document.cmpconfiguration.<%= TEXTFIELD_CMP_RAAUTHENTICATIONPARAM %>.disabled = true;
+		  document.cmpconfiguration.<%= CHECKBOX_CMP_ALLOWRAVERIFYPOPO %>.disabled = true;
+		  document.cmpconfiguration.<%= LIST_CMPRANAMEGENERATIONSCHEME %>.disabled = true;
+		  document.cmpconfiguration.<%= TEXTFIELD_CMP_RANAMEGENPARAM %>.disabled = true;
+		  document.cmpconfiguration.<%= TEXTFIELD_CMP_RANAMEGENPREFIX %>.disabled = true;
+		  document.cmpconfiguration.<%= TEXTFIELD_CMP_RANAMEGENPOSTFIX %>.disabled = true;
+		  document.cmpconfiguration.<%= TEXTFIELD_CMP_RAPASSWORDGENPARAM %>.disabled = true;
+		  document.cmpconfiguration.<%= CHECKBOX_CMP_ALLOWCUSTOMSERNO %>.disabled = true;
+		  document.cmpconfiguration.<%= LIST_CMPEEPROFILES %>.disabled = true;
+		  document.cmpconfiguration.<%= LIST_CMPCERTPROFILES %>.disabled = true;
+		  document.cmpconfiguration.<%= LIST_CMPRACAS %>.disabled = true;
+	  } else {
+		  document.cmpconfiguration.<%= CHECKBOX_CMP_RAMODE %>.disabled = false;
+		  document.cmpconfiguration.<%= LIST_CMPRESPONSEPROTECTION_RA %>.disabled = false;
+		  document.cmpconfiguration.<%= LIST_CMPAUTHMODULES_RA %>.disabled = false;
+		  document.cmpconfiguration.<%= TEXTFIELD_CMP_RAAUTHENTICATIONPARAM %>.disabled = false;
+		  document.cmpconfiguration.<%= CHECKBOX_CMP_ALLOWRAVERIFYPOPO %>.disabled = false;
+		  document.cmpconfiguration.<%= LIST_CMPRANAMEGENERATIONSCHEME %>.disabled = false;
+		  document.cmpconfiguration.<%= TEXTFIELD_CMP_RANAMEGENPARAM %>.disabled = false;
+		  document.cmpconfiguration.<%= TEXTFIELD_CMP_RANAMEGENPREFIX %>.disabled = false;
+		  document.cmpconfiguration.<%= TEXTFIELD_CMP_RANAMEGENPOSTFIX %>.disabled = false;
+		  document.cmpconfiguration.<%= TEXTFIELD_CMP_RAPASSWORDGENPARAM %>.disabled = false;
+		  document.cmpconfiguration.<%= CHECKBOX_CMP_ALLOWCUSTOMSERNO %>.disabled = false;
+		  document.cmpconfiguration.<%= LIST_CMPEEPROFILES %>.disabled = false;
+		  document.cmpconfiguration.<%= LIST_CMPCERTPROFILES %>.disabled = false;
+		  document.cmpconfiguration.<%= LIST_CMPRACAS %>.disabled = false;
+	  }
+}
+
+function checkvendormode(){
+	  if(document.cmpconfiguration.<%=CHECKBOX_CMP_VENDORMODE %>.checked){
+		  document.cmpconfiguration.<%= TEXTFIELD_CMP_VENDORCA %>.disabled = false;
+	  } else {
+		  document.cmpconfiguration.<%= TEXTFIELD_CMP_VENDORCA %>.disabled = true;
+	  }
+}
+
+
+-->
+</script>
+
+
+
+<div align="center"> 
+  <h2><c:out value="<%= ejbcawebbean.getText(\"CMPEDITALIAS\") %>" /></h2>
+  <h3><c:out value="<%= ejbcawebbean.getText(\"CMPALIAS\")+ \" : \" + alias %>" /></h3>
+</div>
+
+<form name="cmpconfiguration" method="post" action="<%=THIS_FILENAME %>">
+  <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_ALIAS %>'>
+  <input type="hidden" name='<%= HIDDEN_ALIAS %>' value='<c:out value="<%=alias %>"/>'>
+  <table class="edit" width="100%" border="0" cellspacing="3" cellpadding="3">
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="left"> 
+          &nbsp;
+        </div>
+      </td>
+      <td width="50%" valign="top" align="right"> 
+        <a href="<%=THIS_FILENAME %>"><c:out value="<%= ejbcawebbean.getText(\"CMPBACKTOALIASES\") %>" /></a>
+        <!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ca_help.html") + "#certificateprofiles"%>")'>
+        <c:out value="<%= ejbcawebbean.getText(\"HELP\") %>" /></a> -->
+      </td>
+    </tr>
+
+    
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" align="right"> 
+        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPDEFAULTCA\") %>" /></h3>
+        <p class="help"><c:out value="Enforce a particual CA instead of taking it from the request."/></p>
+      </td>
+      <td width="50%"> 
+        <select name="<%=LIST_CMPDEFAULTCAS%>" >
+           <%  String currentCA = cmpconfig.getCMPDefaultCA(alias); %>
+           <% java.util.Iterator iter = canames.keySet().iterator();
+           	  while(iter.hasNext()) {
+           		  String caname = (String) iter.next();
+           %>     <option <% if(currentCA.equals(caname)) { %> selected <% } %>
+                  value='<c:out value="<%= caname%>"/>'><c:out value="<%= caname %>"/></option> 
+           <% } %>
+        </select>
+      </td>
+    </tr>
+
+        
+
+    
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" align="right"> 
+        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPOPERATIONALMODE\") %>"/>
+        <%= ejbcawebbean.getExternalHelpReference("http://www.ejbca.org/adminguide.html#Client%20mode%20for%20CMP") %>
+        </h3>
+        <p class="help"><c:out value="If the CMP service should work in 'client' or 'ra' mode (see Admin Guide)."/></p>
+      </td>
+      <td width="50%"> 
+        <input type="checkbox" name="<%=CHECKBOX_CMP_CLIENTMODE%>" value="<%=VALUE_TRUE %>" onchange="checkclientoperationalmode()" 
+			<% 
+				if(!cmpconfig.getRAMode(alias)) { 
+					out.write(" CHECKED ");
+					ramode = false;
+				}
+				else if(cmpconfig.getRAMode(alias)) out.write(" disabled ");
+			%>
+			id="<%=CHECKBOX_CMP_CLIENTMODE%>" />
+		<label for="<%=CHECKBOX_CMP_CLIENTMODE%>"><c:out value="<%= ejbcawebbean.getText(\"CMPCLIENTMODE\") %>" /></label>
+		
+		<input type="checkbox" name="<%=CHECKBOX_CMP_RAMODE%>" onchange="checkraoperationalmode()" value="<%=VALUE_FALSE %>"  
+			<% 
+				if(cmpconfig.getRAMode(alias)) {
+					out.write(" CHECKED ");
+					ramode = true;
+				}
+				else if(!cmpconfig.getRAMode(alias)) out.write(" disabled ");
+			%>
+			id="<%=CHECKBOX_CMP_RAMODE%>" />
+		<label for="<%=CHECKBOX_CMP_RAMODE%>"><c:out value="<%= ejbcawebbean.getText(\"CMPRAMODE\") %>" /></label> 
+      </td>
+    </tr> 
+
+
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" align="right"> 
+        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPRESPONSEPROTECTION\") %>"/>
+        <%= ejbcawebbean.getExternalHelpReference("http://www.ejbca.org/adminguide.html#CMP%20Response%20Message") %>
+        </h3>
+        <p class="help"><c:out value="Which sort of protection the response messages will have."/></p>
+										 
+		<select name="<%= LIST_CMPRESPONSEPROTECTION_CLIENT %>"
+			<%
+				if(ramode) out.write(" disabled ");
+			%>
+		>
+          <% String currentProtection = cmpconfig.getResponseProtection(alias); %>
+          <% java.util.Iterator iterp = cmpconfig.getCmpResponseProtectionList(false).iterator();
+             while(iterp.hasNext()){
+            	String p = (String) iterp.next(); 
+          %>   <option <% if(p.equals(currentProtection)){ %> selected <% } %>
+                  value='<c:out value="<%= p%>"/>'><c:out value="<%= p %>"/></option>
+          <% } %>
+        </select>
+      </td>
+      <td width="50%"> 
+        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPRESPONSEPROTECTION\") %>"/>
+        <%= ejbcawebbean.getExternalHelpReference("http://www.ejbca.org/adminguide.html#CMP%20Response%20Message") %>
+        </h3>
+        <p class="help"><c:out value="Which sort of protection the response messages will have."/></p>
+      
+        <select name="<%= LIST_CMPRESPONSEPROTECTION_RA %>"
+        	<%
+				if(!ramode) out.write(" disabled ");
+        	%>
+        >
+          <% currentProtection = cmpconfig.getResponseProtection(alias); %>
+          <% iterp = cmpconfig.getCmpResponseProtectionList(true).iterator();
+             while(iterp.hasNext()){
+            	String p = (String) iterp.next(); 
+          %>   <option <% if(p.equals(currentProtection)){ %> selected <% } %>
+                  value='<c:out value="<%= p%>"/>'><c:out value="<%= p %>"/></option>
+          <% } %>
+        </select>
+      </td>
+    </tr>
+    
+    
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" align="right"> 
+        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPAUTHENTICATIONMODULE\") %>"/>
+        <%= ejbcawebbean.getExternalHelpReference("http://www.ejbca.org/adminguide.html#CMP%20Message%20Authentication") %>
+        </h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPAUTHENTICATIONMODULE_HELP\") %>"/></p>
+        <p class="help"><c:out value="Possible values are: 'RegTokenPwd', 'DnPartPwd', 'HMAC', 'EndEntityCertificate' or a combination separated by ';'"/></p>
+        <input type="text" name="<%=TEXTFIELD_CMP_CLIENTAUTHENTICATIONMODULE %>" value='<c:out value="<%= cmpconfig.getAuthenticationModule(alias) %>"/>'
+        	<%
+				if(ramode) out.write(" disabled ");
+        	%> 
+        	maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>"/>
+        
+      </td>
+      <td width="50%"> 
+        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPAUTHENTICATIONMODULE\") %>"/>
+        <%= ejbcawebbean.getExternalHelpReference("http://www.ejbca.org/adminguide.html#CMP%20Message%20Authentication") %>
+        </h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPAUTHENTICATIONMODULE_HELP\") %>"/></p>
+        <p class="help"><c:out value="Possible values are: 'HMAC', 'EndEntityCertificate' or a combination of those separated by ';'"/></p>
+		<select name="<%= LIST_CMPAUTHMODULES_RA %>"
+        	<%
+				if(!ramode) out.write(" disabled ");
+        	%>
+        >
+          <% String authmodule = cmpconfig.getAuthenticationModule(alias); %>
+          <% for(String am : raauthmodules) {
+          %>   <option <% if(am.equals(authmodule)){ %> selected <% } %>
+                  value='<c:out value="<%= am%>"/>'><c:out value="<%= am %>"/></option>
+          <% } %>
+        </select>
+
+      </td>
+    </tr>
+    
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" align="right"> 
+        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPAUTHENTICATIONPARAMETERS\") %>"/>
+        <%= ejbcawebbean.getExternalHelpReference("http://www.ejbca.org/adminguide.html#CMP%20Message%20Authentication") %>
+        </h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPAUTHENTICATIONPARAMETERS_HELP\") %>"/></p>
+        <p class="help"><c:out value="Specify the parameters for the authentication module set above. In case of more than one
+									module specified, the corresponding parameters are separated with a ';'. The number and order of the parameters should match
+									the number and order of the authentication modules specified. If an authentication module does not require any parameters,
+									'-' should be specified."/></p>
+        <input type="text" name="<%=TEXTFIELD_CMP_CLIENTAUTHENTICATIONPARAM %>" value='<c:out value="<%= cmpconfig.getAuthenticationParameters(alias) %>"/>' 
+        	<%
+				if(ramode) out.write(" disabled ");
+        	%>
+        	maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>">
+        
+      </td>
+      <td width="50%"> 
+        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPAUTHENTICATIONPARAMETERS\") %>"/>
+        <%= ejbcawebbean.getExternalHelpReference("http://www.ejbca.org/adminguide.html#CMP%20Message%20Authentication") %>
+        </h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPAUTHENTICATIONPARAMETERS_HELP\") %>"/></p>
+        <p class="help"><c:out value="Specify the parameters for the authentication module set above. In case of more than one
+									module specified, the corresponding parameters are separated with a ';'. The number and order of the parameters should match
+									the number and order of the authentication modules specified. If an authentication module does not require any parameters,
+									'-' should be specified."/></p>
+        <input type="text" name="<%=TEXTFIELD_CMP_RAAUTHENTICATIONPARAM %>" value='<c:out value="<%= cmpconfig.getAuthenticationParameters(alias) %>"/>' 
+        	<%
+				if(!ramode) out.write(" disabled ");
+        	%>
+        	maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>">
+ 
+      </td>
+    </tr>
+    
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" align="right"> 
+        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPEXTRCTUSERNAMECOMPONENT\") %>"/></h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPEXTRCTUSERNAMECOMPONENT_HELP\") %>"/></p>
+        <p class="help"><c:out value="Any DN attribute can be specified, tex. CN, UID...etc. Default is to use the entire DN as username."/></p> 
+        <input type="text" name="<%=TEXTFIELD_CMP_EXTRACTUSERNAMECOMP %>" value='<c:out value="<%= cmpconfig.getExtractUsernameComponent(alias) %>"/>' 
+        	<%
+				if(ramode) out.write(" disabled ");
+        	%>
+        	maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>">
+        
+      </td>
+      <td width="50%"> 
+        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPALLOWVERIFYPOPO\") %>"/></h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPALLOWVERIFYPOPO_HELP\") %>"/></p>
+        <p class="help"><c:out value=""/></p>
+        <input type="checkbox" name="<%=CHECKBOX_CMP_ALLOWRAVERIFYPOPO%>" value="<%=VALUE_FALSE %>" 
+			<% 
+				if(cmpconfig.getAllowRAVerifyPOPO(alias)) out.write(" CHECKED ");
+        		if(!ramode) out.write(" disabled ");
+			%>
+			id="<%=CHECKBOX_CMP_ALLOWRAVERIFYPOPO%>" />
+      </td>
+    </tr> 
+    
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" align="right"> 
+        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPVENDORCERT_USE\") %>"/>
+        <%= ejbcawebbean.getExternalHelpReference("http://www.ejbca.org/adminguide.html#CMP%20and%203GPP/4G/LTE%20configuration%20guide") %>
+        </h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPVENDORCERT_USE_HELP\") %>"/></p>
+		<p class="help"><c:out value="Keep unchecked if you do not know what it is."/></p> 
+
+        <input type="checkbox" name="<%=CHECKBOX_CMP_VENDORMODE%>" onchange="checkvendormode()" value="<%=VALUE_FALSE %>" 
+			<% 
+				if(cmpconfig.getVendorMode(alias)) out.write(" CHECKED ");
+        		if(ramode) out.write(" disabled ");
+			%>
+			id="<%=CHECKBOX_CMP_VENDORMODE%>" />        
+      </td>
+      <td width="50%"> 
+      
+        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPRANAMEGENERATIONSCHEME\") %>"/></h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPRANAMEGENERATIONSCHEME_HELP\") %>"/></p>
+      	<p class="help"><c:out value="Possible values: FIXED, RANDOM, DN or USERNAME for base username."/></p>
+      	<p class="help"><c:out value="FIXED - to have a fixed username specified in 'RA Name Generation Parameters'"/></p>
+		<p class="help"><c:out value="RANDOM - will generate a 12 character long random username."/></p>
+		<p class="help"><c:out value="DN - will take a part of the request DN (the part specified in 'RA Name Generation Parameters' below, and use it 
+									  as the username. Several DN attributes can be specifed to have fall-back, for example UID;SN;CN. First try UID, 
+									  if it does not exist try SN etc."/></p>
+		<p class="help"><c:out value="USERNAME - will use the request DN as username."/></p>
+		<p class="help"><c:out value="If the same construced username already exists, the existing user will be modified and a new certificate will be issued for that user."/></p>
+        <select name="<%= LIST_CMPRANAMEGENERATIONSCHEME %>" <%if(!ramode) out.write(" disabled ");%> >
+          <% String defScheme = cmpconfig.getRANameGenScheme(alias); %>
+          <% java.util.Iterator iters = cmpconfig.getCmpRANameGenerationSchemes().iterator();
+             while(iters.hasNext()){
+            	String s = (String) iters.next(); 
+          %>   <option <% if(s.equals(defScheme)){ %> selected <% } %>
+                  value='<c:out value="<%= s%>"/>'><c:out value="<%= s %>"/></option>
+          <% } %>
+        </select>
+      </td>
+    </tr>
+    
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" align="right"> 
+        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPVENDORCA\") %>"/>
+        <%= ejbcawebbean.getExternalHelpReference("http://www.ejbca.org/adminguide.html#CMP%20and%203GPP/4G/LTE%20configuration%20guide") %>
+        </h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPVENDORCA_HELP\") %>"/></p>
+        <p class="help"><c:out value="If more than one vendor CA specified, the CA names should be separated by ';'"/></p>
+        <input type="text" name="<%=TEXTFIELD_CMP_VENDORCA %>" value='<c:out value="<%= cmpconfig.getVendorCA(alias) %>"/>' 
+        	<% 
+        		if(ramode || !cmpconfig.getVendorMode(alias)){ out.write(" disabled "); }
+        	%> 
+        	maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>">
+        
+      </td>
+      <td width="50%"> 
+        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPRANAMEGENERATIONPARAMETER\") %>"/></h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPRANAMEGENERATIONPARAMETER_HELP\") %>"/></p>
+        <p class="help"><c:out value=""/></p>
+        <input type="text" name="<%=TEXTFIELD_CMP_RANAMEGENPARAM %>" value='<c:out value="<%= cmpconfig.getRANameGenParams(alias) %>"/>'
+        	<% if(!ramode) out.write(" disabled "); %> 
+        	maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>">
+        
+      </td>
+    </tr> 
+    
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" align="right"> 
+      </td>
+      <td width="50%"> 
+        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPRANAMEGENERATIONPREFIX\") %>"/>
+        <%= ejbcawebbean.getExternalHelpReference("http://www.ejbca.org/guides.html#Setting%20up%20Autoenrollment%20for%20Windows%20clients%20with%20EJBCA") %>
+        </h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPRANAMEGENERATIONPREFIX_HELP\") %>"/></p>
+        
+        <input type="text" name="<%=TEXTFIELD_CMP_RANAMEGENPREFIX %>" value='<c:out value="<%= cmpconfig.getRANameGenPrefix(alias) %>"/>' 
+        	<% if(!ramode) out.write(" disabled "); %>
+        	maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>">
+        
+      </td>
+    </tr>
+    
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" align="right"> 
+      </td>
+      <td width="50%"> 
+        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPRANAMEGENERATIONPOSTFIX\") %>"/>
+        <%= ejbcawebbean.getExternalHelpReference("http://www.ejbca.org/guides.html#Setting%20up%20Autoenrollment%20for%20Windows%20clients%20with%20EJBCA") %>
+        </h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPRANAMEGENERATIONPOSTFIX_HELP\") %>"/></p>
+        
+        <input type="text" name="<%=TEXTFIELD_CMP_RANAMEGENPOSTFIX %>" value='<c:out value="<%= cmpconfig.getRANameGenPostfix(alias) %>"/>' 
+        	<% if(!ramode) out.write(" disabled "); %>
+        	maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>">
+        
+      </td>
+    </tr>
+    
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" align="right"> 
+      </td>
+      <td width="50%"> 
+        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPRAPASSWORDGENPARAMS\") %>"/>
+        <%= ejbcawebbean.getExternalHelpReference("http://www.ejbca.org/guides.html#Setting%20up%20Autoenrollment%20for%20Windows%20clients%20with%20EJBCA") %>
+        </h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPRAPASSWORDGENPARAMS_HELP\") %>"/></p>
+        
+        <input type="text" name="<%=TEXTFIELD_CMP_RAPASSWORDGENPARAM %>" value='<c:out value="<%= cmpconfig.getRAPwdGenParams(alias) %>"/>' 
+        	<% if(!ramode) out.write(" disabled "); %>
+        	maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>">
+        
+      </td>
+    </tr>
+    
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" align="right"> 
+      </td>
+      <td width="50%"> 
+        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPRAALLOWCUSTOMSERNO\") %>"/></h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPRAALLOWCUSTOMSERNO_HELP\") %>"/></p>
+        <p class="help"><c:out value="If this setting is true, a requested serial number can be passed in the non-standard field serialNumber 
+									in the CRMF certTemplate."/></p>
+        <input type="checkbox" name="<%=CHECKBOX_CMP_ALLOWCUSTOMSERNO%>" onchange="checkuseautoenroll()" value="<%=VALUE_FALSE %>" 
+			<% 
+				if(cmpconfig.getAllowRACustomSerno(alias)) out.write(" CHECKED ");
+        		if(!ramode) out.write(" disabled ");
+			%>
+			id="<%=CHECKBOX_CMP_ALLOWCUSTOMSERNO%>" />         
+      </td>
+    </tr>
+    
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" align="right"> 
+      </td>
+      <td width="50%"> 
+        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPRAEEPROFILE\") %>"/>
+        <%= ejbcawebbean.getExternalHelpReference("http://www.ejbca.org/guides.html#Setting%20up%20Autoenrollment%20for%20Windows%20clients%20with%20EJBCA") %>
+        </h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPRAEEPROFILE_HELP\") %>"/></p>
+        
+        <select name="<%= LIST_CMPEEPROFILES %>" <% if(!ramode) out.write(" disabled "); %> >
+          <% String defeep = cmpconfig.getRAEEProfile(alias); %>
+          <option <% if("KeyId".equals(defeep)){ %> selected <% } %> value='<c:out value="KeyId"/>'><c:out value="KeyId (Deprecated)"/></option>
+          <% java.util.Iterator eeps = ejbcawebbean.getAuthorizedEEProfileNames().iterator();
+             while(eeps.hasNext()){
+            	String eep = (String) eeps.next(); 
+          %>   <option <% if(eep.equals(defeep)){ %> selected <% } %>
+                  value='<c:out value="<%= eep%>"/>'><c:out value="<%= eep %>"/></option>
+          <% } %>
+        </select>
+        
+        
+      </td>
+    </tr>
+    
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" align="right"> 
+      </td>
+      <td width="50%"> 
+        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPRACERTPROFILE\") %>"/>
+        <%= ejbcawebbean.getExternalHelpReference("http://www.ejbca.org/guides.html#Setting%20up%20Autoenrollment%20for%20Windows%20clients%20with%20EJBCA") %>
+        </h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPRACERTPROFILE_HELP\") %>"/></p>
+        <p class="help"><c:out value="Use 'ProfileDefault' to use the Default Certificate Profile specified in the End Entity Profile"/></p>
+        <select name="<%= LIST_CMPCERTPROFILES %>" <% if(!ramode) out.write(" disabled "); %> >
+          <% String defcp = cmpconfig.getRACertProfile(alias); %>
+          <option <% if("KeyId".equals(defcp)){ %> selected <% } %> value='<c:out value="KeyId"/>'><c:out value="KeyId (Deprecated)"/></option>
+          <option <% if("ProfileDefault".equals(defcp)){ %> selected <% } %> value='<c:out value="ProfileDefault"/>'><c:out value="ProfileDefault"/></option>
+          <% java.util.Iterator cps = ejbcawebbean.getAuthorizedCertProfileNames().iterator();
+             while(cps.hasNext()){
+            	String cp = (String) cps.next(); 
+          %>   <option <% if(cp.equals(defcp)){ %> selected <% } %>
+                  value='<c:out value="<%= cp%>"/>'><c:out value="<%= cp %>"/></option>
+          <% } %>
+        </select>
+      </td>
+    </tr>
+    
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" align="right"> 
+      </td>
+      <td width="50%"> 
+        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPRACANAME\") %>"/>
+        <%= ejbcawebbean.getExternalHelpReference("http://www.ejbca.org/guides.html#Setting%20up%20Autoenrollment%20for%20Windows%20clients%20with%20EJBCA") %>
+        </h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPRACANAME_HELP\") %>"/></p>
+        <p class="help"><c:out value="Use 'ProfileDefault' to use the Default CA specified in the End Entity Profile"/></p>
+        <select name="<%= LIST_CMPRACAS %>" <% if(!ramode) out.write(" disabled "); %> >
+          <% String defca = cmpconfig.getRACAName(alias); %>
+          <option <% if("KeyId".equals(defca)){ %> selected <% } %> value='<c:out value="KeyId"/>'><c:out value="KeyId (Deprecated)"/></option>
+          <option <% if("ProfileDefault".equals(defca)){ %> selected <% } %> value='<c:out value="ProfileDefault"/>'><c:out value="ProfileDefault"/></option>
+          <% java.util.Iterator cas = canames.keySet().iterator();
+             while(cas.hasNext()){
+            	String caname = (String) cas.next();
+          %>   <option <% if(caname.equals(defca)){ %> selected <% } %>
+                  value='<c:out value="<%= caname%>"/>'><c:out value="<%= caname %>"/></option>
+          <% } %>
+        </select>
+      </td>
+    </tr>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+
+
+    
+    
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" align="right"> 
+        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPALLOWAUTOMATICKEYUPDATE\") %>"/>
+        <%= ejbcawebbean.getExternalHelpReference("http://www.ejbca.org/guides.html#Setting%20up%20Autoenrollment%20for%20Windows%20clients%20with%20EJBCA") %>
+        </h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPALLOWAUTOMATICKEYUPDATE_HELP\") %>"/></p>
+      </td>
+      <td width="50%"> 
+        <input type="checkbox" name="<%=CHECKBOX_CMP_KUR_USEAUTOMATICKEYUPDATE%>" value="<%=VALUE_FALSE %>" 
+			<% if(cmpconfig.getKurAllowAutomaticUpdate(alias)) out.write(" CHECKED "); %>
+			id="<%=CHECKBOX_CMP_KUR_USEAUTOMATICKEYUPDATE%>" />
+		<label for="<%=CHECKBOX_CMP_KUR_USEAUTOMATICKEYUPDATE%>"><c:out value="<%= ejbcawebbean.getText(\"ACTIVATE\") %>" /></label>
+      </td>
+    </tr> 
+    
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" align="right"> 
+        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPALLOWKURWITHSAMEKEY\") %>"/>
+        <%= ejbcawebbean.getExternalHelpReference("http://www.ejbca.org/guides.html#Setting%20up%20Autoenrollment%20for%20Windows%20clients%20with%20EJBCA") %>
+        </h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPALLOWKURWITHSAMEKEY_HELP\") %>"/></p>
+      </td>
+      <td width="50%"> 
+        <input type="checkbox" name="<%=CHECKBOX_CMP_KUR_USESAMEKEYS%>" value="<%=VALUE_FALSE %>" 
+			<% if(cmpconfig.getKurAllowSameKey(alias)) out.write(" CHECKED "); %>
+			id="<%=CHECKBOX_CMP_KUR_USESAMEKEYS%>" />
+		<label for="<%=CHECKBOX_CMP_KUR_USESAMEKEYS%>"><c:out value="<%= ejbcawebbean.getText(\"ACTIVATE\") %>" /></label> 
+      </td>
+    </tr> 
+    
+    
+    
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" align="right">
+      	<h3><c:out value="<%= ejbcawebbean.getText(\"CMPCERTREQHANDLERCLASS\") %>"/></h3>
+      	<p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPCERTREQHANDLERCLASS_HELP\") %>"/></p>
+      </td>
+      <td width="50%"> 
+        <input type="text" name="<%=TEXTFIELD_CMP_CERTREQHANDLERCLASS %>" value='<c:out value="<%= cmpconfig.getCertReqHandlerClass(alias) %>"/>' 
+        				maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>">
+      </td>
+    </tr>
+    
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" align="right">
+      	<h3><c:out value="<%= ejbcawebbean.getText(\"CMPUNIDDATASOURCE\") %>"/></h3>
+      	<p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPUNIDDATASOURCE_HELP\") %>"/></p>
+      </td>
+      <td width="50%"> 
+        <input type="text" name="<%=TEXTFIELD_CMP_UNIDDATASOURCE %>" value='<c:out value="<%= cmpconfig.getUnidDataSource(alias) %>"/>' maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>">
+      </td>
+    </tr>
+    
+    
+    
+    
+    
+    
+    
+    
+    <%-- Form buttons --%>
+	
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top">
+        &nbsp;
+      </td>
+      <td width="50%" valign="top"> 
+        <input type="submit" name="<%= BUTTON_SAVE %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE") %>">
+        &nbsp;&nbsp;&nbsp;
+        <input type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>">
+      </td>
+    </tr>
+
+  </table>
+</form>

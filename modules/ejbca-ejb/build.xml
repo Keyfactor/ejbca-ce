@@ -166,6 +166,8 @@
 		<include name="org/ejbca/core/ejb/keybind/InternalKeyBinding.java"/>
 		<include name="org/ejbca/core/ejb/keybind/InternalKeyBindingInfo.java"/>
 		<include name="org/ejbca/core/ejb/keybind/InternalKeyBindingRules.java"/>
+		<include name="org/ejbca/config/CmpConfiguration.java"/>
+			<include name="org/ejbca/config/CmpTcpConfiguration.java"/>
 		<include name="org/ejbca/config/EjbcaConfiguration.java"/>
 		<include name="org/ejbca/core/model/approval/ApprovalException.java"/>
 		<include name="org/ejbca/core/model/approval/ApprovalRequestExpiredException.java"/>
@@ -339,7 +341,7 @@
 		<include name="org/ejbca/ui/web/pub/cluster/IHealthCheck.java"/>
 		<include name="org/ejbca/ui/web/pub/cluster/CommonHealthCheck.java"/>
 		<!-- Dependecies from CMP TCP WAR -->
-		<include name="org/ejbca/config/CmpConfiguration.java"/>
+		<include name="org/ejbca/config/CmpTcpConfiguration.java"/>
 		<!-- Dependecies from ExternalRA Service -->
 		<include name="org/ejbca/core/model/approval/approvalrequests/AddEndEntityApprovalRequest.java"/>
 		<include name="org/ejbca/core/model/approval/approvalrequests/EditEndEntityApprovalRequest.java"/>

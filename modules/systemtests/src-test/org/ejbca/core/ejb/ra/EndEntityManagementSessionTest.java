@@ -74,12 +74,12 @@ import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.config.Configuration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
-import org.ejbca.core.ejb.config.GlobalConfigurationProxySessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -125,7 +125,6 @@ public class EndEntityManagementSessionTest extends CaTestCase {
     private RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private AccessControlSessionRemote accessControlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessControlSessionRemote.class);
     private GlobalConfigurationSessionRemote globalConfSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
-    private GlobalConfigurationProxySessionRemote globalConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private EndEntityManagementProxySessionRemote endEntityManagementProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST); 
 
     @BeforeClass
@@ -535,7 +534,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         final X509Certificate adminCert = adminTokenNoAuth.getCertificate();
 
         final String testRole = "EndEntityManagementSessionTestAuthRole";
-        GlobalConfiguration gc = globalConfSession.getCachedGlobalConfiguration();
+        GlobalConfiguration gc = (GlobalConfiguration) globalConfSession.getCachedConfiguration(Configuration.GlobalConfigID);
         boolean eelimitation = gc.getEnableEndEntityProfileLimitations();
 
         final String authUsername = genRandomUserName();
@@ -582,12 +581,12 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             accessControlSession.forceCacheExpire();
             // We must enforce end entity profile limitations for this, with false it should be ok now
             gc.setEnableEndEntityProfileLimitations(false);
-            globalConfigurationProxySession.saveGlobalConfigurationRemote(roleMgmgToken, gc);
+            globalConfSession.saveConfiguration(roleMgmgToken, gc, Configuration.GlobalConfigID);
             // Do the same test, now it should work since we are authorized to CA and we don't enforce EE profile authorization
             endEntityManagementSession.changeUser(adminTokenNoAuth, userdata, false);
             // Enforce EE profile limitations
             gc.setEnableEndEntityProfileLimitations(true);
-            globalConfigurationProxySession.saveGlobalConfigurationRemote(roleMgmgToken, gc);
+            globalConfSession.saveConfiguration(roleMgmgToken, gc, Configuration.GlobalConfigID);
             // Do the same test, now we should get auth denied on EE profiles instead
             try {
                 endEntityManagementSession.changeUser(adminTokenNoAuth, userdata, false);
@@ -598,7 +597,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
 
         } finally {
             gc.setEnableEndEntityProfileLimitations(eelimitation);
-            globalConfigurationProxySession.saveGlobalConfigurationRemote(roleMgmgToken, gc);
+            globalConfSession.saveConfiguration(roleMgmgToken, gc, Configuration.GlobalConfigID);
             try {
                 endEntityManagementSession.deleteUser(admin, authUsername);
             } catch (Exception e) { // NOPMD

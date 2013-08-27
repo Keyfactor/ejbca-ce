@@ -15,7 +15,6 @@ package org.ejbca.core.protocol.cmp;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.security.KeyPair;
@@ -44,9 +43,10 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
+import org.ejbca.config.Configuration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertReqHistoryProxySessionRemote;
-import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.junit.After;
 import org.junit.Before;
@@ -69,6 +69,11 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
     private static final String PBE_SECRET = "password";
 
     private static X509Certificate caCertificate;
+    
+    private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+    
+    private CmpConfiguration cmpConfiguration;
+    private String configAlias = "CmpRaThrowAwayTestCmpConfigAlias";
 
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -85,19 +90,32 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         caCertificate = (X509Certificate) EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(ADMIN, getTestCAId(TESTCA_NAME)).getCertificateChain().iterator()
                 .next();
         assertCAConfig(false, true, true);
+        
         // Configure CMP for this test. RA mode with individual shared PBE secrets for each CA.
-        updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO, "true");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RESPONSEPROTECTION, "pbe");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET, PBE_SECRET);
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_NAMEGENERATIONSCHEME, "DN");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_NAMEGENERATIONPARAMS, "CN");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, "EMPTY");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, "ENDUSER");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, TESTCA_NAME);
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "-;-");
+        cmpConfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.CMPConfigID);
+        cmpConfiguration.addAlias(configAlias);
+        cmpConfiguration.setRAMode(configAlias, true);
+        cmpConfiguration.setAllowRAVerifyPOPO(configAlias, true);
+        cmpConfiguration.setResponseProtection(configAlias, "pbe");
+        cmpConfiguration.setRANameGenScheme(configAlias, "DN");
+        cmpConfiguration.setRANameGenParams(configAlias, "CN");
+        cmpConfiguration.setRAEEProfile(configAlias, "EMPTY");
+        cmpConfiguration.setRACertProfile(configAlias, "ENDUSER");
+        cmpConfiguration.setRACAName(configAlias, TESTCA_NAME);
+        cmpConfiguration.setAuthenticationModule(configAlias, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
+        cmpConfiguration.setAuthenticationParameters(configAlias, "-;" + PBE_SECRET);
+        globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration, Configuration.CMPConfigID);
         LOG.trace("<test000Setup");
+    }
+    
+    @After
+    public void tearDown() throws Exception {
+        super.tearDown();
+        LOG.trace(">testZZZTearDown");
+        removeTestCA(TESTCA_NAME);
+        cmpConfiguration.removeAlias(configAlias);
+        globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration, Configuration.CMPConfigID);
+        LOG.trace("<testZZZTearDown");
     }
 
     @Test
@@ -114,16 +132,6 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         LOG.trace("<testIssueConfirmRevokeCombination1");
     }
 
-    @After
-    public void tearDown() throws Exception {
-        super.tearDown();
-        LOG.trace(">testZZZTearDown");
-        boolean cleanUpOk = true;
-        cleanUpOk &= EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST).restoreConfiguration();
-        removeTestCA(TESTCA_NAME);
-        assertTrue("Clean up failed!", cleanUpOk);
-        LOG.trace("<testZZZTearDown");
-    }
 
     public String getRoleName() {
         return this.getClass().getSimpleName(); 
@@ -152,7 +160,7 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
         new DEROutputStream(bao).writeObject(req);
-        byte[] resp = sendCmpHttp(bao.toByteArray(), 200);
+        byte[] resp = sendCmpHttp(bao.toByteArray(), 200, configAlias);
         checkCmpResponseGeneral(resp, CertTools.getSubjectDN(caCertificate), subjectDN, caCertificate, nonce, transid, false, PBE_SECRET, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         X509Certificate cert = checkCmpCertRepMessage(subjectDN, caCertificate, resp, reqId);
         assertEquals("Certificate history data was or wasn't stored: ", useCertReqHistory, EjbRemoteHelper.INSTANCE.getRemoteSession(CertReqHistoryProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST)
@@ -168,7 +176,7 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         PKIMessage req1 = protectPKIMessage(confirm, false, PBE_SECRET, "unusedKeyId", 567);
         bao = new ByteArrayOutputStream();
         new DEROutputStream(bao).writeObject(req1);
-        resp = sendCmpHttp(bao.toByteArray(), 200);
+        resp = sendCmpHttp(bao.toByteArray(), 200, configAlias);
         checkCmpResponseGeneral(resp, CertTools.getSubjectDN(caCertificate), subjectDN, caCertificate, nonce, transid, false, PBE_SECRET, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         checkCmpPKIConfirmMessage(subjectDN, caCertificate, resp);
 
@@ -181,7 +189,7 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
             assertNotNull("Could not create revocation message.", revReq);
             bao = new ByteArrayOutputStream();
             new DEROutputStream(bao).writeObject(revReq);
-            resp = sendCmpHttp(bao.toByteArray(), 200);
+            resp = sendCmpHttp(bao.toByteArray(), 200, configAlias);
             checkCmpResponseGeneral(resp, CertTools.getSubjectDN(caCertificate), subjectDN, caCertificate, nonce, transid, false, PBE_SECRET, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
             checkCmpRevokeConfirmMessage(CertTools.getSubjectDN(caCertificate), subjectDN, cert.getSerialNumber(), caCertificate, resp, true);
             int reason = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class).getStatus(CertTools.getSubjectDN(caCertificate), cert.getSerialNumber()).revocationReason;

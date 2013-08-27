@@ -45,7 +45,9 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
+import org.ejbca.config.Configuration;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.ra.NotFoundException;
@@ -84,12 +86,15 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
     private static int caid = 0;
     private static X509Certificate cacert = null;
     private CA testx509ca;
+    private CmpConfiguration cmpConfiguration;
+    private String cmpAlias = "tcp";
 
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);;
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
 
     /**
      * This is the same constructor as in CrmtRAPbeRequestTest, but it's hard to refactor not to duplicate this code.
@@ -109,19 +114,26 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
         caid = testx509ca.getCAId();
         cacert = (X509Certificate) testx509ca.getCACertificate();
         caSession.addCA(admin, testx509ca);
+        cmpConfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.CMPConfigID);
+        
+        configurationSession.backupConfiguration();
         
         // Configure CMP for this test
-        updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO, "true");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RESPONSEPROTECTION, "pbe");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET, "password");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, CPNAME);
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, EEPNAME);
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "-;-");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, testx509ca.getName());
-        // Configure a Certificate profile (CmpRA) using ENDUSER as template and check "Allow validity override".
+        if(cmpConfiguration.aliasExists(cmpAlias)) {
+            cmpConfiguration.renameAlias(cmpAlias, "backupTcpAlias");
+        }
+        cmpConfiguration.addAlias(cmpAlias);
+        cmpConfiguration.setRAMode(cmpAlias, true);
+        cmpConfiguration.setAllowRAVerifyPOPO(cmpAlias, true);
+        cmpConfiguration.setResponseProtection(cmpAlias, "pbe");
+        cmpConfiguration.setRACertProfile(cmpAlias, CPNAME);
+        cmpConfiguration.setRAEEProfile(cmpAlias, EEPNAME);
+        cmpConfiguration.setAuthenticationModule(cmpAlias, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
+        cmpConfiguration.setAuthenticationParameters(cmpAlias, "-;" + PBEPASSWORD);
+        cmpConfiguration.setRACAName(cmpAlias, testx509ca.getName());
+        globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
         
+        // Configure a Certificate profile (CmpRA) using ENDUSER as template and check "Allow validity override".
         if (certificateProfileSession.getCertificateProfile(CPNAME) == null) {
             CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
             cp.setAllowValidityOverride(true);
@@ -165,14 +177,20 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
         }
         endEntityProfileSession.removeEndEntityProfile(admin, EEPNAME);
         certificateProfileSession.removeCertificateProfile(admin, CPNAME);
+        
         if (!configurationSession.restoreConfiguration()) {
             cleanUpOk = false;
         }
-        
         CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
         caSession.removeCA(admin, caid);
         
         assertTrue("Unable to clean up properly.", cleanUpOk);
+        
+        cmpConfiguration.removeAlias(cmpAlias);
+        if(cmpConfiguration.aliasExists("backupTcpAlias")) {
+            cmpConfiguration.renameAlias("backupTcpAlias", cmpAlias);
+        }
+        globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
     }
     
     public String getRoleName() {

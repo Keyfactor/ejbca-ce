@@ -75,6 +75,7 @@ import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
+import org.ejbca.config.Configuration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.config.XkmsConfiguration;
@@ -173,7 +174,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
 
     /** Gets the Global Configuration from ra admin session bean */
     private GlobalConfiguration getGlobalConfiguration() {
-        return globalConfigurationSession.getCachedGlobalConfiguration();
+        return (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
     }
 
     private boolean authorizedToCA(final AuthenticationToken admin, final int caid) {

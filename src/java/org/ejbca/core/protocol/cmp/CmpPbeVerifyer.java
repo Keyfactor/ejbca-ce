@@ -81,7 +81,7 @@ public class CmpPbeVerifyer {
 		//log.info("Salt: "+new String(salt));
 	}
 	
-	public boolean verify(String raAuthenticationSecret) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException {
+	public boolean verify(String raAuthenticationSecret) throws  InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
 		lastUsedRaSecret = raAuthenticationSecret;
 		boolean ret = false;
 		// Verify the PasswordBased protection of the message

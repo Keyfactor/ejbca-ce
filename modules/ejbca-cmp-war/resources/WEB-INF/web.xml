@@ -24,12 +24,17 @@
         <servlet-class>org.ejbca.ui.web.protocol.CmpServlet</servlet-class>
         <load-on-startup>99</load-on-startup>
     </servlet>
-
+<!-- 
     <servlet-mapping>
         <servlet-name>CmpServlet</servlet-name>
         <url-pattern>/cmp</url-pattern>
     </servlet-mapping>
-
+-->
+    <servlet-mapping>
+        <servlet-name>CmpServlet</servlet-name>
+        <url-pattern>/cmp</url-pattern>
+    </servlet-mapping>
+ 
     <servlet-mapping>
         <servlet-name>CmpAliasServlet</servlet-name>
         <url-pattern>/cmp/*</url-pattern>

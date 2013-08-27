@@ -33,7 +33,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang.StringUtils;
-import org.ejbca.config.CmpConfiguration;
+import org.ejbca.config.CmpTcpConfiguration;
 import org.quickserver.net.AppException;
 import org.quickserver.net.server.QuickServer;
 
@@ -54,8 +54,8 @@ public class CmpTcpServer {
 
 		myServer = new QuickServer();
 		myServer.setClientAuthenticationHandler(null);
-		myServer.setBindAddr(CmpConfiguration.getTCPBindAdress());
-		myServer.setPort(CmpConfiguration.getTCPPortNumber());
+		myServer.setBindAddr(CmpTcpConfiguration.getTCPBindAdress());
+		myServer.setPort(CmpTcpConfiguration.getTCPPortNumber());
 		myServer.setName("CMP TCP Server v " + VER);
 		if(QuickServer.getVersionNo() >= 1.2) {
 			LOG.info("Using 1.2 feature");
@@ -69,7 +69,7 @@ public class CmpTcpServer {
 		//setup logger to log to file
 		Logger logger = null;
 		FileHandler txtLog = null;
-		final String logDir = CmpConfiguration.getTCPLogDir();
+		final String logDir = CmpTcpConfiguration.getTCPLogDir();
 		final File logFile = new File(logDir + "/");
 		if(!logFile.canRead()) {
 			logFile.mkdir();
@@ -94,7 +94,7 @@ public class CmpTcpServer {
 			LOG.error("Could not create xmlLog FileHandler : ", e);
 		}
 		try	{
-			final String confFile = CmpConfiguration.getTCPConfigFile();
+			final String confFile = CmpTcpConfiguration.getTCPConfigFile();
 			if (!StringUtils.isEmpty(confFile)) {
 				final Object config[] = new Object[] {confFile};
 				if (!myServer.initService(config)) {

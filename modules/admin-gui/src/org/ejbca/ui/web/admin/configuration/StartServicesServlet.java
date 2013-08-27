@@ -51,6 +51,7 @@ import org.cesecore.dbprotection.ProtectedDataConfiguration;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.util.CryptoProviderTools;
+import org.ejbca.config.Configuration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
@@ -286,14 +287,14 @@ public class StartServicesServlet extends HttpServlet {
             // Requires a transaction in order to create the initial global configuration
             tx.begin();
             try {
-                final GlobalConfiguration config = globalConfigurationSession.getCachedGlobalConfiguration();
+                final GlobalConfiguration config = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
                 final Set<String> nodes = config.getNodesInCluster();
                 final String hostname = getHostName();
                 if (hostname != null && !nodes.contains(hostname)) {
                     log.debug("Adding this node the list of nodes");
                     nodes.add(hostname);
                     config.setNodesInCluster(nodes);
-                    globalConfigurationSession.saveGlobalConfiguration(admin, config);
+                    globalConfigurationSession.saveConfiguration(admin, config, Configuration.GlobalConfigID);
                 }
             } finally {
                 tx.commit();
