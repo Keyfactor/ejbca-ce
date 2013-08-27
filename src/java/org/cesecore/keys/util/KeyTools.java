@@ -140,7 +140,7 @@ public final class KeyTools {
      * 
      * @return KeyPair the generated keypair
      * @throws InvalidAlgorithmParameterException
-     * @see org.cesecore.certificates.util.core.model.AlgorithmConstants#KEYALGORITHM_RSA
+     * @see org.cesecore.certificates.util.AlgorithmConstants#KEYALGORITHM_RSA
      */
     public static KeyPair genKeys(final String keySpec, final AlgorithmParameterSpec algSpec, final String keyAlg) throws InvalidAlgorithmParameterException {
         if (log.isTraceEnabled()) {
@@ -160,22 +160,28 @@ public final class KeyTools {
             if ((keySpec != null) && !StringUtils.equals(keySpec, "implicitlyCA")) {
                 log.debug("Generating named curve ECDSA key pair: " + keySpec);
                 // We have EC keys
-                ecSpec = ECNamedCurveTable.getParameterSpec(keySpec);
-                if (ecSpec == null) {
-                    throw new InvalidAlgorithmParameterException("keySpec " + keySpec + " is invalid for ECDSA.");
-                }
+                ECGenParameterSpec bcSpec = new ECGenParameterSpec(keySpec);
+                keygen.initialize(bcSpec, new SecureRandom());
+                // The old code should work in BC v1.50b6 and later, but in vesions prior to that the below produces a key with explicit parameter encoding instead of named curves.
+                // There is a test for this in KeyToolsTest.testGenKeysECDSAx9
+//                ecSpec = ECNamedCurveTable.getParameterSpec(keySpec);
+//                if (ecSpec == null) {
+//                    throw new InvalidAlgorithmParameterException("keySpec " + keySpec + " is invalid for ECDSA.");
+//                }
+//                keygen.initialize(ecSpec, new SecureRandom());
             } else if (algSpec != null) {
                 log.debug("Generating ECDSA key pair from AlgorithmParameterSpec: " + algSpec);
                 ecSpec = algSpec;
+                keygen.initialize(ecSpec, new SecureRandom());
             } else if (StringUtils.equals(keySpec, "implicitlyCA")) {
                 log.debug("Generating implicitlyCA encoded ECDSA key pair");
                 // If the keySpec is null, we have "implicitlyCA" defined EC parameters
                 // The parameters were already installed when we installed the provider
                 // We just make sure that ecSpec == null here
+                keygen.initialize(ecSpec, new SecureRandom());
             } else {
                 throw new InvalidAlgorithmParameterException("No keySpec no algSpec and no implicitlyCA specified");
             }
-            keygen.initialize(ecSpec, new SecureRandom());
         } else if(keyAlg.equals(AlgorithmConstants.KEYALGORITHM_ECGOST3410)) {
             AlgorithmParameterSpec ecSpec = null;
             if(keySpec != null) {
