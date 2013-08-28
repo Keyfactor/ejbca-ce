@@ -1044,8 +1044,8 @@ Subject alternative names can be: rfc822Name=&lt;email>, dNSName=&lt;host name>,
 <li>Email field - registers a user email in the EJBCA database.</li>
 <li>Subject alternative name field - add an email address to the SubjectAlternativeName field in an issued certificate.</li>
 </ol>
-<p>These two fields can be the same, but does not have to be, which is why configuration can be a bit tricky if you configure the individually.</p>
-<p>The the Subject alternative name field there are different options:</p>
+<p>These two fields can be the same, but does not have to be, which is why configuration can be a bit tricky if you configure them individually.</p>
+<p>For the Subject alternative name field there are different options:</p>
 <ul>
 <li>Use entity e-mail field checked: this results in a single entry for 'End Entity E-mail' when adding a new end entity.</li>
 <ul><li>Required: if checked the 'End Entity E-mail' field must be filled and can not be omitted.</li></ul>
