@@ -1683,8 +1683,13 @@ In jboss-log4j.xml 'org.ejbca.core.protocol.ws.logger.TransactionLogger' should 
 </section>
 <section name="XKMS Service">
 <subsection name="Introduction">
+<note>It is a rather old, generally unused protocol with poor interoperability and client suppport. There are many better options, like CMP, available.</note>
 <p>
-From EJBCA 3.4 the XKMS protocol is supported as a service as a complement to the EJBCA Web Service interface.
+From EJBCA 6.0 the XKMS protocol is usable on selected platforms, see more in the installation guide.
+<ul>
+<li>JBoss 5.1.0.GA and JBoss EAP 5.1 on Java 6.</li>
+<li>JBoss EAP 6.1 on Java 7.</li>
+</ul>
 </p><p>
 It's disabled in the standard installation (from EJBCA 3.10) and have the Web Service URL http://"hostname":8080/ejbca/xkms/xkms
 </p>
