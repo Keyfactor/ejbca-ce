@@ -4,7 +4,7 @@
     <deployment>
         <dependencies>
             <!-- Export of XALAN classes in JBoss 7/EAP6 is needed for XKMS, we could probably do it with a sub-deployment as well, 
-            but the we would have to do build.xml magic to only include it when XKMS is enabled. Since we have no XALAN of our own included 
+            but then we would have to do build.xml magic to only include it when XKMS is enabled. Since we have no XALAN of our own included 
             we might as well export the system one. -->
             <module name="org.apache.xalan" export="true"/>
         </dependencies>

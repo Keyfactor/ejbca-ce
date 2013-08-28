@@ -767,8 +767,22 @@ If persisted timers needs to be removed in JBoss 7 the directory <i>jboss/standa
 <p>EJBCA may deprecate XKMS in the future, and it is a best effort, cummunity based, support only.</p>
 <p>If you decide to use XKMS anyhow you may stumble into some issues.</p>
 <p>
+<u>JBoss 7 / EAP 6</u>:
+To run XKMS there are three conditions for running XKMS:
+<ul>
+<li>Use JBoss EAP 6.1 (at least).</li>
+<li>Use JDK 7.</li>
+<li>Export some internal sun classes by adding the below to modules/system/layers/base/sun/jdk/main/module.xml in JBoss EAP 6.</li>
+</ul>
+</p>
+<source>
+&lt;path name="com/sun/xml/internal/bind/marshaller"/&gt;
+&lt;path name="com/sun/xml/bind/marshaller"/&gt;
+&lt;path name="sun/security/action"/&gt;
+</source>
+<p>
 <u>JBoss EAP 5.1</u>:
-In JBoss EAP 5.1 it seems neccessary to use the Java parameter "-Dorg.jboss.ws.enable_doctype_decl=true" to the JBoss starup parameters, otherwise EJBCA will fail to deploy.
+In JBoss EAP 5.1 it seems neccessary to use the Java parameter "-Dorg.jboss.ws.enable_doctype_decl=true" to the JBoss startup parameters, otherwise EJBCA will fail to deploy.
 Add the parameter to bin/run.sh for example.
 </p>
 
