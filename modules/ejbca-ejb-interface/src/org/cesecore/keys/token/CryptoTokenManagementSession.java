@@ -53,19 +53,41 @@ public interface CryptoTokenManagementSession {
     boolean isCryptoTokenStatusActive(AuthenticationToken authenticationToken, int cryptoTokenId) throws AuthorizationDeniedException;
 
     /**
+     * Creates a crypto token with a known ID. Note that using an already existing ID will lead to an error at a later state. 
      * 
-     * @param authenticationToken
-     * @param tokenName
-     * @param className
-     * @param properties
-     * @param data
-     * @param authenticationCode
+     * @param authenticationToken an authentication token
+     * @param tokenName the name of the token
+     * @param cryptoTokenId a known and unused ID value. 
+     * @param className the class name of the crypto token
+     * @param properties a properties file containing implementation specific values
+     * @param data the keystore data. If null a new, empty keystore will be created
+     * @param authenticationCode the authentication code to the slot. Will not activate the slot if offline
+     *
+     * @throws AuthorizationDeniedException
+     * @throws CryptoTokenNameInUseException
+     * @throws CryptoTokenOfflineException
+     * @throws CryptoTokenAuthenticationFailedException
+     * @throws NoSuchSlotException if no PKCS#11 slot as defined by the label in properties could be found
+     */
+     void createCryptoToken(AuthenticationToken authenticationToken, String tokenName, Integer cryptoTokenId, String className, Properties properties,
+            byte[] data, char[] authenticationCode) throws AuthorizationDeniedException, CryptoTokenNameInUseException, CryptoTokenOfflineException,
+            CryptoTokenAuthenticationFailedException, NoSuchSlotException;
+    
+    /**
+     * Create a crypto token. This method will generate its own ID. 
+     * 
+     * @param authenticationToken an authentication token
+     * @param tokenName the name of the token
+     * @param className the class name of the crypto token
+     * @param properties a properties file containing implementation specific values
+     * @param data  the keystore data. If null a new, empty keystore will be created
+     * @param authenticationCode authenticationCode the authentication code to the slot
      * @return the ID of a newly persisted CryptoToken from the supplied parameters.
      * @throws AuthorizationDeniedException
      * @throws CryptoTokenOfflineException
      * @throws CryptoTokenAuthenticationFailedException
      * @throws CryptoTokenNameInUseException
-     * @throws NoSuchSlotException if no slot as defined by the label in properties could be found
+     * @throws NoSuchSlotException if no PKCS#11 slot as defined by the label in properties could be found
      */
     int createCryptoToken(AuthenticationToken authenticationToken, String tokenName, String className, Properties properties, byte[] data,
             char[] authenticationCode) throws AuthorizationDeniedException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
@@ -160,4 +182,6 @@ public interface CryptoTokenManagementSession {
      * @return true if the alias is in use.
      */
     boolean isAliasUsedInCryptoToken(int cryptoTokenId, String alias);
+
+
 }

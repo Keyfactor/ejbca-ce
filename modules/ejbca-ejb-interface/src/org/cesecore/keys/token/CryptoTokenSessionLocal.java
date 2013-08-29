@@ -22,7 +22,7 @@ import javax.ejb.Local;
  * @version $Id$
  */
 @Local
-public interface CryptoTokenSessionLocal {
+public interface CryptoTokenSessionLocal extends CryptoTokenSession {
 
     /** @return the specified CryptoToken */
     CryptoToken getCryptoToken(int cryptoTokenId);
@@ -44,9 +44,6 @@ public interface CryptoTokenSessionLocal {
 
     /** Clears the CryptoToken cache. */
     void flushCache();
-
-    /** @return true if the specified name is already in use by another CryptoToken (checks the database, not the cache) */
-    boolean isCryptoTokenNameUsed(String cryptoTokenName);
 
     /** @return true if the specified name is used by exactly one CryptoToken and that cryptoToken has the same id (checks the database, not the cache) */
     boolean isCryptoTokenNameUsedByIdOnly(String cryptoTokenName, int cryptoTokenId);
