@@ -156,7 +156,7 @@ public class CliCommandAuthenticationTest {
                 mockCliCommand.execute(new String[] { "foo", "-u", CliAuthenticationTestHelperSessionRemote.USERNAME,
                 "-password=file:"+f.getAbsolutePath() });
             } catch (ErrorAdminCommandException e) {
-                fail("/tmp/fileshouldnotexist.txt should not have contained a password.");
+                fail("/tmp/fileshouldnotexist.txt should have contained a password, and command sould have worked. "+e.getMessage());
             }
             // Insert a line with a password, some whitespace and newline should work as well
             fout = new FileWriter(f);
@@ -166,7 +166,7 @@ public class CliCommandAuthenticationTest {
                 mockCliCommand.execute(new String[] { "foo", "-u", CliAuthenticationTestHelperSessionRemote.USERNAME,
                 "-password=file:"+f.getAbsolutePath() });
             } catch (ErrorAdminCommandException e) {
-                fail("/tmp/fileshouldnotexist.txt should not have contained a password.");
+                fail("/tmp/fileshouldnotexist.txt should have contained a password, and command sould have worked. "+e.getMessage());
             }            
         } catch (CliTestRuntimeException e) {
             fail("Exception was thrown when authenticating with a known user.");
