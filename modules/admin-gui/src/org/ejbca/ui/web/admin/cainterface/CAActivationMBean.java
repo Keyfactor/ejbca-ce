@@ -19,6 +19,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -33,6 +34,7 @@ import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.token.NullCryptoToken;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.BaseManagedBean;
@@ -102,8 +104,8 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	    }
 
 	    public TokenAndCaActivationGuiInfo(Integer cryptoTokenId) {
-            this.cryptoTokenInfo = new CryptoTokenInfo(cryptoTokenId, "CryptoToken id " + cryptoTokenId,
-                    false, false, "NullCryptoToken", false, "", "", null, "");
+            this.cryptoTokenInfo = new CryptoTokenInfo(cryptoTokenId, "CryptoToken id " + cryptoTokenId, false, false, NullCryptoToken.class,
+                    new Properties());
             this.cryptoTokenNewState = false;
             this.allowedActivation = false;
             this.allowedDeactivation = false;
