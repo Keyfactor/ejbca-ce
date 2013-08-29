@@ -27,6 +27,7 @@ import javax.persistence.Query;
 import org.apache.log4j.Logger;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
+import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.QueryResultWrapper;
@@ -36,9 +37,9 @@ import org.cesecore.util.QueryResultWrapper;
  * 
  * @version $Id$
  */
-@Stateless  //(mappedName = JndiConstants.APP_JNDI_PREFIX + "CryptoTokenSessionRemote")
+@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CryptoTokenSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
-public class CryptoTokenSessionBean implements CryptoTokenSessionLocal {
+public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTokenSessionRemote {
 
     private static final Logger log = Logger.getLogger(CryptoTokenSessionBean.class);
     private static final InternalResources intres = InternalResources.getInstance();

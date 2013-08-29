@@ -36,7 +36,6 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.management.RuntimeErrorException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
@@ -54,7 +53,6 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -128,34 +126,49 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         final boolean isActive = cryptoToken.getTokenStatus() == CryptoToken.STATUS_ACTIVE;
         final Properties cryptoTokenProperties = cryptoToken.getProperties();
         final boolean autoActivation = BaseCryptoToken.getAutoActivatePin(cryptoTokenProperties) != null;
-        final boolean allowExportPrivateKey = Boolean.valueOf(cryptoTokenProperties.getProperty(SoftCryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY));
-        final String p11Library = cryptoTokenProperties.getProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY, "");
-        final String p11SlotLabel = cryptoTokenProperties.getProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE);
-        final Pkcs11SlotLabelType p11SlotLabelType = Pkcs11SlotLabelType.getFromKey(cryptoTokenProperties.getProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE));
-        final String p11AttributeFile = cryptoTokenProperties.getProperty(PKCS11CryptoToken.ATTRIB_LABEL_KEY, "");
-        final String type = cryptoToken.getClass().getSimpleName();
-        return new CryptoTokenInfo(cryptoTokenId, cryptoToken.getTokenName(), isActive, autoActivation, type, allowExportPrivateKey, p11Library,
-                p11SlotLabel, p11SlotLabelType, p11AttributeFile);
+        return new CryptoTokenInfo(cryptoTokenId, cryptoToken.getTokenName(), isActive, autoActivation, cryptoToken.getClass(), cryptoTokenProperties);
     }
 
+    @Override
+    public void createCryptoToken(final AuthenticationToken authenticationToken, final String tokenName, final Integer cryptoTokenId,
+            final String className, final Properties properties, final byte[] data, final char[] authenticationCode)
+            throws AuthorizationDeniedException, CryptoTokenNameInUseException, CryptoTokenOfflineException,
+            CryptoTokenAuthenticationFailedException, NoSuchSlotException {
+        if (log.isTraceEnabled()) {
+            log.trace(">createCryptoToken: " + tokenName + ", " + className);
+        }
+        assertAuthorizedToModifyCryptoTokens(authenticationToken);
+        if (CryptoTokenFactory.instance().getAvailableCryptoToken(className) == null) {
+            throw new CryptoTokenClassNotFoundException("Invalid token class name: " + className);
+        }
+
+        // Note: if data is null, a new empty keystore will be created
+        final CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, data, cryptoTokenId.intValue(), tokenName);
+        if (authenticationCode != null) {
+            cryptoToken.activate(authenticationCode);
+        }
+        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        details.put("msg", "Created CryptoToken with id " + cryptoTokenId);
+        details.put("name", cryptoToken.getTokenName());
+        details.put("encProviderName", cryptoToken.getEncProviderName());
+        details.put("signProviderName", cryptoToken.getSignProviderName());
+        putDelta(new Properties(), cryptoToken.getProperties(), details);
+        cryptoTokenSession.mergeCryptoToken(cryptoToken);
+        securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_CREATE, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
+                authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, details);
+        if (log.isTraceEnabled()) {
+            log.trace("<createCryptoToken: " + tokenName + ", " + className);
+        }
+    }
+    
     @Override
     public int createCryptoToken(final AuthenticationToken authenticationToken, final String tokenName, final String className,
             final Properties properties, final byte[] data, final char[] authenticationCode) throws AuthorizationDeniedException,
             CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException, NoSuchSlotException,
             AuditRecordStorageException {
-        if (log.isTraceEnabled()) {
-            log.trace(">createCryptoToken: "+tokenName+", "+className);
-        }
-        if (!accessControlSessionSession.isAuthorized(authenticationToken, CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource())) {
-            final String msg = INTRES.getLocalizedMessage("authorization.notuathorizedtoresource", CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource(), authenticationToken.toString());
-            throw new AuthorizationDeniedException(msg);
-        }
-        if (CryptoTokenFactory.instance().getAvailableCryptoToken(className) == null) {
-            throw new RuntimeException("Invalid token class name: "+className);
-        }
         final List<Integer> allCryptoTokenIds = cryptoTokenSession.getCryptoTokenIds();
         Integer cryptoTokenId = null;
-        for (int i=0; i<100; i++) {
+        for (int i = 0; i < 100; i++) {
             final int current = Integer.valueOf(rnd.nextInt());
             if (!allCryptoTokenIds.contains(current)) {
                 cryptoTokenId = current;
@@ -165,21 +178,21 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         if (cryptoTokenId == null) {
             throw new RuntimeException("Failed to allocate a new cryptoTokenId.");
         }
-        // Note: if data is null, a new empty keystore will be created
-        final CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, data, cryptoTokenId.intValue(), tokenName);
-        cryptoToken.activate(authenticationCode);
-        final Map<String, Object> details = new LinkedHashMap<String, Object>();
-        details.put("msg", "Created CryptoToken with id " + cryptoTokenId);
-        details.put("name", cryptoToken.getTokenName());
-        details.put("encProviderName", cryptoToken.getEncProviderName());
-        details.put("signProviderName", cryptoToken.getSignProviderName());
-        putDelta(new Properties(), cryptoToken.getProperties(), details);
-        cryptoTokenSession.mergeCryptoToken(cryptoToken);
-        securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_CREATE, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE, authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, details);
-        if (log.isTraceEnabled()) {
-            log.trace("<createCryptoToken: "+tokenName+", "+className);
-        }
+        createCryptoToken(authenticationToken, tokenName, cryptoTokenId, className, properties, data, authenticationCode);
         return cryptoTokenId.intValue();
+    }
+    
+    /**
+     * Asserts if an authentication token is authorized to modify crypto tokens
+     * 
+     * @param authenticationToken the authentication token to check
+     * @throws AuthorizationDeniedException thrown if authorization was denied.
+     */
+    private void assertAuthorizedToModifyCryptoTokens(AuthenticationToken authenticationToken) throws AuthorizationDeniedException  {
+        if (!accessControlSessionSession.isAuthorized(authenticationToken, CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource())) {
+            final String msg = INTRES.getLocalizedMessage("authorization.notuathorizedtoresource", CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource(), authenticationToken.toString());
+            throw new AuthorizationDeniedException(msg);
+        }
     }
     
     @Override
