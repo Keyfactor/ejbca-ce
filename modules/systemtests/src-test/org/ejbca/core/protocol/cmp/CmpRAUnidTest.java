@@ -18,6 +18,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -31,8 +32,11 @@ import java.sql.SQLException;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.asn1.cmp.ErrorMsgContent;
+import org.bouncycastle.asn1.cmp.PKIBody;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
@@ -249,7 +253,7 @@ public class CmpRAUnidTest extends CmpTestCase {
         final byte[] nonce = CmpMessageHelper.createSenderNonce();
         final byte[] transid = CmpMessageHelper.createSenderNonce();
         final int reqId;
-        final String unid;
+        String unid = null;
         {
             // In this test SUBJECT_DN contains special, escaped characters to verify
             // that that works with CMP RA as well
@@ -265,10 +269,21 @@ public class CmpRAUnidTest extends CmpTestCase {
             final byte[] ba = bao.toByteArray();
             // Send request and receive response
             final byte[] resp = sendCmpHttp(ba, 200, configAlias);
-            checkCmpResponseGeneral(resp, this.issuerDN, SUBJECT_DN, this.cacert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-            final X509Certificate cert = checkCmpCertRepMessage(SUBJECT_DN, this.cacert, resp, reqId);
-            unid = (String) new X509Principal(cert.getSubjectX500Principal().getEncoded()).getValues(BCStrictStyle.SN).get(0);
-            log.debug("Unid: " + unid);
+            
+            ASN1InputStream inputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
+            PKIMessage respObject = PKIMessage.getInstance(inputStream.readObject());
+            PKIBody body = respObject.getBody();
+            if(body.getContent() instanceof ErrorMsgContent) {
+                ErrorMsgContent err = (ErrorMsgContent) body.getContent();
+                String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString(); 
+                log.error(errMsg);
+                return;
+            } else {
+                checkCmpResponseGeneral(resp, this.issuerDN, SUBJECT_DN, this.cacert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                final X509Certificate cert = checkCmpCertRepMessage(SUBJECT_DN, this.cacert, resp, reqId);
+                unid = (String) new X509Principal(cert.getSubjectX500Principal().getEncoded()).getValues(BCStrictStyle.SN).get(0);
+                log.debug("Unid: " + unid);
+            }
         }
         {
             final PreparedStatement ps = dbConn.prepareStatement("select fnr from UnidFnrMapping where unid=?");
