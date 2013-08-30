@@ -277,7 +277,7 @@ public class CmpRAUnidTest extends CmpTestCase {
                 ErrorMsgContent err = (ErrorMsgContent) body.getContent();
                 String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString(); 
                 log.error(errMsg);
-                return;
+                assertTrue(false);
             } else {
                 checkCmpResponseGeneral(resp, this.issuerDN, SUBJECT_DN, this.cacert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
                 final X509Certificate cert = checkCmpCertRepMessage(SUBJECT_DN, this.cacert, resp, reqId);
