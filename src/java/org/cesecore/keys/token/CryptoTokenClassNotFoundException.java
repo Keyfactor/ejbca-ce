@@ -26,10 +26,6 @@ public class CryptoTokenClassNotFoundException extends RuntimeException {
         super();
     }
 
-    public CryptoTokenClassNotFoundException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
-    }
-
     public CryptoTokenClassNotFoundException(String message, Throwable cause) {
         super(message, cause);
     }
