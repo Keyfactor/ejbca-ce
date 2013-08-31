@@ -17,6 +17,7 @@ package org.ejbca.core.protocol.cmp;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -277,7 +278,7 @@ public class CmpRAUnidTest extends CmpTestCase {
                 ErrorMsgContent err = (ErrorMsgContent) body.getContent();
                 String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString(); 
                 log.error(errMsg);
-                assertTrue(false);
+                fail("CMP ErrorMsg received: "+errMsg);
             } else {
                 checkCmpResponseGeneral(resp, this.issuerDN, SUBJECT_DN, this.cacert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
                 final X509Certificate cert = checkCmpCertRepMessage(SUBJECT_DN, this.cacert, resp, reqId);
