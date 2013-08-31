@@ -156,8 +156,9 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         //Make sure timers don't run while we debug
         cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNING_TRUSTSTORE_VALID_TIME, Integer.toString(Integer.MAX_VALUE/1000));
         internalKeyBindingId = OcspTestUtils.createInternalKeyBinding(authenticationToken, cryptoTokenId, OcspKeyBinding.IMPLEMENTATION_ALIAS,
-                TESTCLASSNAME);
-        ocspSigningCertificate = OcspTestUtils.createOcspSigningCertificate(authenticationToken, internalKeyBindingId, x509ca.getCAId());
+                TESTCLASSNAME, "RSA2048", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        String signerDN = "CN=ocspTestSigner";
+        ocspSigningCertificate = OcspTestUtils.createOcspSigningCertificate(authenticationToken, OcspTestUtils.OCSP_END_USER_NAME, signerDN, internalKeyBindingId, x509ca.getCAId());
         caCertificate = createCaCertificate();
     }
 

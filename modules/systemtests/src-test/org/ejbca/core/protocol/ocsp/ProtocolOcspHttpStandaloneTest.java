@@ -63,6 +63,7 @@ import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemo
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorTestSessionRemote;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
+import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
@@ -113,8 +114,9 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         x509ca = CryptoTokenTestUtils.createTestCA(authenticationToken, CA_DN);
         cryptoTokenId = CryptoTokenTestUtils.createCryptoToken(authenticationToken, TESTCLASSNAME);
         internalKeyBindingId = OcspTestUtils.createInternalKeyBinding(authenticationToken, cryptoTokenId,
-                OcspKeyBinding.IMPLEMENTATION_ALIAS, TESTCLASSNAME);
-        ocspSigningCertificate = OcspTestUtils.createOcspSigningCertificate(authenticationToken, internalKeyBindingId, x509ca.getCAId());
+                OcspKeyBinding.IMPLEMENTATION_ALIAS, TESTCLASSNAME, "RSA2048", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        String signerDN = "CN=ocspTestSigner";
+        ocspSigningCertificate = OcspTestUtils.createOcspSigningCertificate(authenticationToken, OcspTestUtils.OCSP_END_USER_NAME, signerDN, internalKeyBindingId, x509ca.getCAId());
         OcspTestUtils.updateInternalKeyBindingCertificate(authenticationToken, internalKeyBindingId);
         OcspTestUtils.setInternalKeyBindingStatus(authenticationToken, internalKeyBindingId, InternalKeyBindingStatus.ACTIVE);
         caCertificate = createCaCertificate(authenticationToken, x509ca.getCACertificate());
