@@ -26,8 +26,6 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.security.spec.AlgorithmParameterSpec;
-import java.security.spec.RSAKeyGenParameterSpec;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -222,15 +220,6 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
      * @throws KeyRenewalFailedException if any error occurs during signing
      */
     private void renewKeyStore(EjbcaWS ejbcaWS, OcspSigningCacheEntry ocspSigningCacheEntry) throws InvalidKeyException, CryptoTokenOfflineException, KeyRenewalFailedException {
-        final X509Certificate ocspSigningCertificate = ocspSigningCacheEntry.getOcspSigningCertificate();
-        final X500Principal src = ocspSigningCertificate.getSubjectX500Principal();
-        //Firstly, generate a new key pair and retrieve the public and private keys for future use.                
-        PublicKey oldPublicKey = ocspSigningCertificate.getPublicKey();
-        final AlgorithmParameterSpec algorithmParameterSpec = KeyTools.getKeyGenSpec(oldPublicKey);
-        if (!(algorithmParameterSpec instanceof RSAKeyGenParameterSpec)) {
-            log.info("Could not rekey " + src.getName() + ". Only RSA keys may be rekeyed");
-            return;
-        }
         //Generate the new key pair
         final int internalKeyBindingId = ocspSigningCacheEntry.getOcspKeyBinding().getId();
         try {
@@ -403,20 +392,27 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
         final PublicKey caCertificatePublicKey = caCertificate.getPublicKey();
         for (X509Certificate certificate : certificates) {
             if (log.isDebugEnabled()) {
-                log.debug("Verifying certificate with SubjectDN : " + CertTools.getSubjectDN(certificate) +
-                        " using public key from CA certificate with subject " + CertTools.getSubjectDN(caCertificate));
+                log.debug("Verifying certificate with SubjectDN : '" + CertTools.getSubjectDN(certificate) +
+                        "' using public key from CA certificate with subject '" + CertTools.getSubjectDN(caCertificate) +"'.");
             }
             try {
                 certificate.verify(caCertificatePublicKey);
             } catch (Exception e) {
                 //Ugly, but inherited from legacy code
                 signedCertificate = null;
-                log.error("Exception was caught when verifying cerficate", e);
+                log.error("Exception was caught when verifying certificate", e);
                 continue;
             }
-            if (nextPublicKey.equals(certificate.getPublicKey())) {
+            // Comparing public keys is dependent on provider used, so we must ensure same provider is used for the public keys
+            // Otherwise this will fail, even though it should work
+            final PublicKey certPublicKey = KeyTools.getPublicKeyFromBytes(certificate.getPublicKey().getEncoded());
+            if (nextPublicKey.equals(certPublicKey)) {
                 signedCertificate = certificate;
                 break;
+            } else if (log.isDebugEnabled()) {
+                log.debug("Matching public keys failed: ");
+                log.debug("Certificate public key: "+certificate.getPublicKey());
+                log.debug("Next public key: "+nextPublicKey);
             }
         }
         if (signedCertificate == null) {

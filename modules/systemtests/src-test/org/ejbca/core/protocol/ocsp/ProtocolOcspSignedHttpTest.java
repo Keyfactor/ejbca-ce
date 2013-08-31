@@ -53,6 +53,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorTestSessionRemote;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
+import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.keys.util.KeyTools;
@@ -135,7 +136,7 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
         originalSigRequiredValue =  configurationSessionRemote.getConfigurationValue(OcspConfiguration.SIGNATUREREQUIRED);
     	configurationSessionRemote.setConfigurationValue(OcspConfiguration.SIGNATUREREQUIRED, "true");
     	internalKeyBindingId = OcspTestUtils.createInternalKeyBinding(admin, caSession.getCAInfo(admin, getTestCAId()).getCAToken().getCryptoTokenId(),
-    	        OcspKeyBinding.IMPLEMENTATION_ALIAS, ProtocolOcspSignedHttpTest.class.getSimpleName());
+    	        OcspKeyBinding.IMPLEMENTATION_ALIAS, ProtocolOcspSignedHttpTest.class.getSimpleName(), "RSA2048", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
     	ocspResponseGeneratorTestSession.reloadOcspSigningCache();
     }
 

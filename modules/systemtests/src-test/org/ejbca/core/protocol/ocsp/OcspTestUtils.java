@@ -42,7 +42,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
@@ -66,8 +65,7 @@ import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfileExcepti
 public class OcspTestUtils {
 
     private static final String PROPERTY_ALIAS = OcspKeyBinding.PROPERTY_NON_EXISTING_GOOD;
-    private static final String SIGNER_DN = "CN=ocspTestSigner";
-    private static final String OCSP_END_USER_NAME = "OcspSigningUser";
+    public static final String OCSP_END_USER_NAME = "OcspSigningUser";
     private static final String CLIENTSSL_END_USER_NAME = "ClientSSLUser";
     private static final String CLIENTSSL_END_USER_DN = "CN=clientSSLUser";
 
@@ -88,19 +86,35 @@ public class OcspTestUtils {
         }
     }
 
-    public static int createInternalKeyBinding(AuthenticationToken authenticationToken, int cryptoTokenId, String type, String testName) throws InvalidKeyException,
+    /**
+     * 
+     * @param authenticationToken
+     * @param cryptoTokenId
+     * @param type internal key binding typ, i.e. OcspKeyBinding.IMPLEMENTATION_ALIAS
+     * @param testName 
+     * @param keyspec keyspec for new key binding crypto token, i. "RSA2048", "secp256r1"
+     * @param signAlg  is the signature algorithm that this InternalKeyBinding will use for signatures (if applicable), i.e. AlgorithmConstants.SIGALG_SHA1_WITH_RSA
+     * @return internalKeyBindingId
+     * @throws InvalidKeyException
+     * @throws CryptoTokenOfflineException
+     * @throws InvalidAlgorithmParameterException
+     * @throws AuthorizationDeniedException
+     * @throws InternalKeyBindingNameInUseException
+     * @throws InvalidAlgorithmException
+     */
+    public static int createInternalKeyBinding(AuthenticationToken authenticationToken, int cryptoTokenId, String type, String testName, String keyspec, String sigAlg) throws InvalidKeyException,
             CryptoTokenOfflineException, InvalidAlgorithmParameterException, AuthorizationDeniedException, InternalKeyBindingNameInUseException, InvalidAlgorithmException {
         CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
                 .getRemoteSession(CryptoTokenManagementSessionRemote.class);
         InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE
                 .getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
         // First create a new CryptoToken
-        cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, testName, "RSA2048");
+        cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, testName, keyspec);
         // Create a new InternalKeyBinding with a implementation specific property and bind it to the previously generated key
         final Map<Object, Object> dataMap = new LinkedHashMap<Object, Object>();
         dataMap.put(PROPERTY_ALIAS, Boolean.FALSE);
         int internalKeyBindingId = internalKeyBindingMgmtSession.createInternalKeyBinding(authenticationToken, type,
-                testName, InternalKeyBindingStatus.ACTIVE, null, cryptoTokenId, testName, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, dataMap);
+                testName, InternalKeyBindingStatus.ACTIVE, null, cryptoTokenId, testName, sigAlg, dataMap);
         return internalKeyBindingId;
     }
     
@@ -144,7 +158,7 @@ public class OcspTestUtils {
         return oldValue;
     }
 
-    public static X509Certificate createOcspSigningCertificate(AuthenticationToken authenticationToken, int internalKeyBindingId, int caId)
+    public static X509Certificate createOcspSigningCertificate(AuthenticationToken authenticationToken, String username, String signerDN, int internalKeyBindingId, int caId)
             throws AuthorizationDeniedException, CustomCertSerialNumberException, IllegalKeyException, CADoesntExistsException,
             CertificateCreateException, CesecoreException, RemoveException, PersistenceException, UserDoesntFullfillEndEntityProfileException,
             WaitingForApprovalException, EjbcaException {
@@ -155,13 +169,13 @@ public class OcspTestUtils {
         PublicKey publicKey = KeyTools.getPublicKeyFromBytes(internalKeyBindingMgmtSession.getNextPublicKeyForInternalKeyBinding(authenticationToken,
                 internalKeyBindingId));
         // Issue a certificate in EJBCA for the public key
-        final EndEntityInformation user = new EndEntityInformation(OCSP_END_USER_NAME, SIGNER_DN, caId, null, null,
+        final EndEntityInformation user = new EndEntityInformation(username, signerDN, caId, null, null,
                 EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER,
                 EndEntityConstants.TOKEN_USERGEN, 0, null);
         user.setPassword("foo123");
         EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
         try {
-            endEntityManagementSession.deleteUser(authenticationToken, OCSP_END_USER_NAME);
+            endEntityManagementSession.deleteUser(authenticationToken, username);
         } catch (NotFoundException e) {
             //Ignore
         }

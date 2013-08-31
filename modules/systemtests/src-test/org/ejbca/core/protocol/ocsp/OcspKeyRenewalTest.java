@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ocsp;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -36,6 +37,8 @@ import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorTestSessionRemote;
+import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
@@ -66,6 +69,9 @@ import org.junit.rules.TestRule;
 public class OcspKeyRenewalTest {
 
     private static final String CA_DN = "CN=OcspDefaultTestCA";
+    private static final String CA_ECC_DN = "CN=OcspDefaultECCTestCA";
+    private static final String OCSP_ECC_END_USER_NAME = OcspTestUtils.OCSP_END_USER_NAME+"Ecc";
+    
     private static final String TESTCLASSNAME = OcspKeyRenewalTest.class.getSimpleName();
     private static final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(TESTCLASSNAME);
     private static final Logger log = Logger.getLogger(OcspKeyRenewalTest.class);
@@ -93,10 +99,15 @@ public class OcspKeyRenewalTest {
     public TestRule traceLogMethodsRule = new TraceLogMethodsRule();
 
     private static X509CA x509ca;
+    private static X509CA x509eccca;
     private static int cryptoTokenId;
+    private static int cryptoTokenIdEcc;
     private static int ocspKeyBindingId;
+    private static int ocspKeyBindingIdEcc;
     private static X509Certificate ocspSigningCertificate;
+    private static X509Certificate ocspEccSigningCertificate;
     private static X509Certificate caCertificate;
+    private static X509Certificate caEccCertificate;
     private static int authenticationKeyBindingId;
     private static X509Certificate clientSSLCertificate;
     private static int managementCaId = 0;
@@ -108,18 +119,31 @@ public class OcspKeyRenewalTest {
         
         x509ca = CryptoTokenTestUtils.createTestCA(authenticationToken, CA_DN);
         log.debug("OCSP CA Id: " + x509ca.getCAId() + " CA SubjectDN: " + x509ca.getSubjectDN());
+        x509eccca = CryptoTokenTestUtils.createTestCA(authenticationToken, CA_ECC_DN);
+        log.debug("OCSP ECC CA Id: " + x509eccca.getCAId() + " CA SubjectDN: " + x509eccca.getSubjectDN());
         cryptoTokenId = CryptoTokenTestUtils.createCryptoToken(authenticationToken, TESTCLASSNAME);
-        ocspKeyBindingId = OcspTestUtils.createInternalKeyBinding(authenticationToken, cryptoTokenId, OcspKeyBinding.IMPLEMENTATION_ALIAS,
-                TESTCLASSNAME + "-ocsp");
-        ocspSigningCertificate = OcspTestUtils.createOcspSigningCertificate(authenticationToken, ocspKeyBindingId, x509ca.getCAId());
+        cryptoTokenIdEcc = CryptoTokenTestUtils.createCryptoToken(authenticationToken, TESTCLASSNAME+"ECC");
+        ocspKeyBindingId = OcspTestUtils.createInternalKeyBinding(authenticationToken, cryptoTokenId, OcspKeyBinding.IMPLEMENTATION_ALIAS, TESTCLASSNAME + "-ocsp", "RSA2048", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        ocspKeyBindingIdEcc = OcspTestUtils.createInternalKeyBinding(authenticationToken, cryptoTokenIdEcc, OcspKeyBinding.IMPLEMENTATION_ALIAS, TESTCLASSNAME + "-ocspecc", "secp256r1", AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA);
+        assertNotEquals("key binding Ids should not be the same", ocspKeyBindingId, ocspKeyBindingIdEcc);
+        String signerDN = "CN=ocspTestSigner";
+        ocspSigningCertificate = OcspTestUtils.createOcspSigningCertificate(authenticationToken, OcspTestUtils.OCSP_END_USER_NAME, signerDN, ocspKeyBindingId, x509ca.getCAId());
+        // RSA key right?
+        assertEquals("Signing key algo should be RSA", AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmTools.getKeyAlgorithm(ocspSigningCertificate.getPublicKey()));
+        ocspEccSigningCertificate = OcspTestUtils.createOcspSigningCertificate(authenticationToken, OCSP_ECC_END_USER_NAME, signerDN+"Ecc", ocspKeyBindingIdEcc, x509eccca.getCAId());
+        // ECC key right?
+        assertEquals("Signing key algo should be EC", AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmTools.getKeyAlgorithm(ocspEccSigningCertificate.getPublicKey()));
         OcspTestUtils.updateInternalKeyBindingCertificate(authenticationToken, ocspKeyBindingId);
+        OcspTestUtils.updateInternalKeyBindingCertificate(authenticationToken, ocspKeyBindingIdEcc);
         OcspTestUtils.setInternalKeyBindingStatus(authenticationToken, ocspKeyBindingId, InternalKeyBindingStatus.ACTIVE);
+        OcspTestUtils.setInternalKeyBindingStatus(authenticationToken, ocspKeyBindingIdEcc, InternalKeyBindingStatus.ACTIVE);
         caCertificate = ProtocolOcspHttpStandaloneTest.createCaCertificate(authenticationToken, x509ca.getCACertificate());
-        // Ensure that the new ocsp signing certificate is picked up by the cache
+        caEccCertificate = ProtocolOcspHttpStandaloneTest.createCaCertificate(authenticationToken, x509eccca.getCACertificate());
+        // Ensure that the new ocsp signing certificates are picked up by the cache
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
         // Reuse the same CryptoToken for the client SSL authentication
         authenticationKeyBindingId = OcspTestUtils.createInternalKeyBinding(authenticationToken, cryptoTokenId, AuthenticationKeyBinding.IMPLEMENTATION_ALIAS,
-                TESTCLASSNAME + "-ssl");
+                TESTCLASSNAME + "-ssl", "RSA2048", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         // We need to issue the SSL certificate from an issuer trusted by the server (AdminCA1/ManagementCA)
         try {
             managementCaId = caSession.getCAInfo(authenticationToken, "AdminCA1").getCAId();
@@ -155,12 +179,30 @@ public class OcspKeyRenewalTest {
             //Ignore any failures.
         }
         try {
-            internalCertificateStoreSession.removeCertificate(ocspSigningCertificate);
+            // find all certificates for Ocsp signing user and remove them
+            List<Certificate> certs = certificateStoreSession.findCertificatesByUsername(OcspTestUtils.OCSP_END_USER_NAME);
+            for (Certificate certificate : certs) {
+                internalCertificateStoreSession.removeCertificate(certificate);                
+            }
+        } catch (Exception e) {
+            //Ignore any failures.
+        }
+        try {
+            // find all certificates for Ocsp ECC signing user and remove them
+            List<Certificate> certs = certificateStoreSession.findCertificatesByUsername(OCSP_ECC_END_USER_NAME);
+            for (Certificate certificate : certs) {
+                internalCertificateStoreSession.removeCertificate(certificate);                
+            }
         } catch (Exception e) {
             //Ignore any failures.
         }
         try {
             internalCertificateStoreSession.removeCertificate(caCertificate);
+        } catch (Exception e) {
+            //Ignore any failures.
+        }
+        try {
+            internalCertificateStoreSession.removeCertificate(caEccCertificate);
         } catch (Exception e) {
             //Ignore any failures.
         }
@@ -173,6 +215,7 @@ public class OcspKeyRenewalTest {
         // Delete KeyBindings
         cleanupKeyBinding(TESTCLASSNAME + "-ssl"); // authentication key binding
         cleanupKeyBinding(TESTCLASSNAME + "-ocsp"); // ocsp key binding
+        cleanupKeyBinding(TESTCLASSNAME + "-ocspecc"); // ocsp key binding
         
         // Delete CryptoToken
         cleanupCryptoToken(TESTCLASSNAME);
@@ -188,6 +231,16 @@ public class OcspKeyRenewalTest {
             // Get out of loop and ignore
         }
         cleanupCryptoToken(caName);
+        final String caEccName = CertTools.getPartFromDN(CA_ECC_DN, "CN");
+        try {
+            while (true) {
+                CAInfo info = caSession.getCAInfo(authenticationToken, caEccName);
+                caSession.removeCA(authenticationToken, info.getCAId());
+            }
+        } catch (Exception e) {
+            // Get out of loop and ignore
+        }
+        cleanupCryptoToken(caEccName);
         
         // Ensure that the removed signing certificate is removed from the cache
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
@@ -223,12 +276,16 @@ public class OcspKeyRenewalTest {
         assertNotEquals("This test cannot run without a ManagementCA that issued the localhost SSL certificate.", 0, managementCaId);
         // Make renewal call through our proxy
         ocspKeyRenewalProxySession.renewKeyStores("CN=ocspTestSigner");
+        // Old certificate has RSA key right?
+        assertEquals("Signing key algo should be RSA", AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmTools.getKeyAlgorithm(ocspSigningCertificate.getPublicKey()));
         // Check that back-end InternalKeyBinding has been updated
         final String oldFingerprint = CertTools.getFingerprintAsString(ocspSigningCertificate);
         InternalKeyBinding ocspKeyBindingInfo = internalKeyBindingMgmtSession.getInternalKeyBindingInfo(authenticationToken, ocspKeyBindingId);
         final String newFingerprint = ocspKeyBindingInfo.getCertificateId();
         final Certificate newOcspCertificate = certificateStoreSession.findCertificateByFingerprint(newFingerprint);
         assertNotEquals("The same certificate was returned after the renewal process. Key renewal failed", newFingerprint, oldFingerprint);
+        // New certificate has RSA key right?
+        assertEquals("Signing key algo should be RSA", AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmTools.getKeyAlgorithm(newOcspCertificate.getPublicKey()));
         // Check that OcspSigningCache has been updated
         final List<X509Certificate> cachedOcspCertificates = standaloneOcspResponseGeneratorTestSession.getCacheOcspCertificates();
         assertNotEquals("No OCSP certificates in cache after renewal!", 0, cachedOcspCertificates);
@@ -247,7 +304,41 @@ public class OcspKeyRenewalTest {
             fail("The new signing certificate was not signed correctly.");
         }
     }
-    
+
+    @Test
+    public void testKeyRenewalEcc() throws Exception {
+        assertNotEquals("This test cannot run without a ManagementCA that issued the localhost SSL certificate.", 0, managementCaId);
+        // Make renewal call through our proxy
+        ocspKeyRenewalProxySession.renewKeyStores("CN=ocspTestSignerEcc");
+        // Old certificate has ECC key right?
+        assertEquals("Signing key algo should be ECC", AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmTools.getKeyAlgorithm(ocspEccSigningCertificate.getPublicKey()));
+        // Check that back-end InternalKeyBinding has been updated
+        final String oldFingerprint = CertTools.getFingerprintAsString(ocspEccSigningCertificate);
+        InternalKeyBinding ocspKeyBindingInfo = internalKeyBindingMgmtSession.getInternalKeyBindingInfo(authenticationToken, ocspKeyBindingIdEcc);
+        final String newFingerprint = ocspKeyBindingInfo.getCertificateId();
+        final Certificate newOcspCertificate = certificateStoreSession.findCertificateByFingerprint(newFingerprint);
+        assertNotEquals("The same certificate was returned after the renewal process. Key renewal failed", newFingerprint, oldFingerprint);
+        // New certificate has EC key right?
+        assertEquals("Signing key algo should be ECC", AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmTools.getKeyAlgorithm(newOcspCertificate.getPublicKey()));
+        // Check that OcspSigningCache has been updated
+        final List<X509Certificate> cachedOcspCertificates = standaloneOcspResponseGeneratorTestSession.getCacheOcspCertificates();
+        assertNotEquals("No OCSP certificates in cache after renewal!", 0, cachedOcspCertificates);
+        boolean newCertificateExistsInCache = false;
+        for (final X509Certificate cachedCertificate : cachedOcspCertificates) {
+            if (CertTools.getFingerprintAsString(cachedCertificate).equals(newFingerprint)) {
+                newCertificateExistsInCache = true;
+                break;
+            }
+        }
+        assertTrue("Renewed certificate does not exist in OCSP cache.", newCertificateExistsInCache);
+        //Make sure that the new certificate is signed by the CA certificate
+        try {
+            newOcspCertificate.verify(caEccCertificate.getPublicKey());
+        } catch (SignatureException e) {
+            fail("The new signing certificate was not signed correctly.");
+        }
+    }
+
     @Test
     public void testAutomaticKeyRenewal() throws InvalidKeyException, KeyStoreException, CryptoTokenOfflineException, AuthorizationDeniedException, CertificateException, NoSuchAlgorithmException, NoSuchProviderException, InterruptedException {
         if (managementCaId == 0) {
