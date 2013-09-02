@@ -267,6 +267,8 @@
             <jboss:adm arg='data-source add --name=ejbcads --driver-name="${database.driver}" --connection-url="${database.url}" --jndi-name="java:/${datasource.jndi-name}" --use-ccm=true --user-name="${database.username}" --password="${database.password}" --validate-on-match=false --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=5 --max-pool-size=150 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --check-valid-connection-sql="select 1;"' />
             <!-- If we don't reload now, JBoss AS 7 will get stuck. @TODO: Try this out with JBoss EAP 6, and see if we can report a bug. -->
             <jboss:admsilent arg=":reload" />
+            <!-- We must wait a few seconds, or some race conditions could happen. The problem is that :reload is a non-blocking operation, and JBoss CLI is not very stable... -->
+            <sleep seconds="5"/>
             <jboss:admsilent arg="deploy --name=ejbca.ear" failonerror="false" />
         </target>
 
@@ -277,6 +279,8 @@
             <jboss:adm arg='data-source add --name=ocspds --driver-name="${ocsp-database.driver}" --connection-url="${ocsp-database.url}" --jndi-name="java:/${ocsp-datasource.jndi-name}" --use-ccm=true --user-name="${ocsp-database.username}" --password="${ocsp-database.password}" --validate-on-match=false --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=5 --max-pool-size=20 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --jta=false --check-valid-connection-sql="select 1;"' />
             <!-- If we don't reload now, JBoss AS 7 will get stuck. @TODO: Try this out with JBoss EAP 6, and see if we can report a bug. -->
             <jboss:admsilent arg=":reload" />
+            <!-- We must wait a few seconds, or some race conditions could happen. The problem is that :reload is a non-blocking operation, and JBoss CLI is not very stable... -->
+            <sleep seconds="5"/>
             <jboss:admsilent arg="deploy --name=ejbca.ear" failonerror="false" />
         </target>
 
