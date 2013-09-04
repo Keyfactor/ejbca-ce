@@ -36,7 +36,8 @@
   boolean signbyexternal = false;
   boolean isexternal = false;
   boolean waitingresponse = false;  
-
+  boolean isUninitialized = false;
+  
   OCSPCAServiceInfo ocspcainfo = null; 
   XKMSCAServiceInfo xkmscainfo = null; 
   java.security.cert.X509Certificate xkmscert = null; 
@@ -49,6 +50,7 @@
     isexternal = cainfo.getStatus() == CAConstants.CA_EXTERNAL;
     revokable = cainfo.getStatus() != CAConstants.CA_REVOKED  && cainfo.getStatus() != CAConstants.CA_WAITING_CERTIFICATE_RESPONSE && !cadatahandler.isCARevoked(cainfo);
     waitingresponse = cainfo.getStatus() == CAConstants.CA_WAITING_CERTIFICATE_RESPONSE;
+    isUninitialized = cainfo.getStatus() == CAConstants.CA_UNINITIALIZED;
 
     if (!isexternal) {
 	    for (final ExtendedCAServiceInfo extendedCAServiceInfo : cainfo.getExtendedCAServiceInfos()) {
@@ -175,7 +177,7 @@ function isExternalGeneric(){
 <% } %>
 function gendefaultcrldistpoint(){
  <% if(!editca){ %>
-    document.ca.<%=TEXTFIELD_DEFAULTCRLDISTPOINT%>.value = "<%=globalconfiguration.getStandardCRLDistributionPointURINoDN() %>" + encodeURI(document.ca.<%=TEXTFIELD_SUBJECTDN%>.value);
+    document.ca.<%=TEXTFIELD_DEFAULTCRLDISTPOINT%>.value = "<%=globalconfiguration.getStandardCRLDistributionPointURINoDN() %>" + encodeURI(document.ca.<%=TEXTFIELD_SUBJECTDN%>.value);	
  <% }else{ %>
     document.ca.<%=TEXTFIELD_DEFAULTCRLDISTPOINT%>.value = "<%=globalconfiguration.getStandardCRLDistributionPointURINoDN() %>" + encodeURI("<%=cainfo.getSubjectDN()%>");
  <% } %>
@@ -796,8 +798,10 @@ function checkallfields(){
         <strong><%= ejbcawebbean.getText("CERT_SUBJECTDN") %></strong>
       </td>
       <td width="50%"> 
-        <% if (editca) { %>
+        <% if (editca && !isUninitialized) { %>
               <span class="dn"><c:out value="<%= cainfo.getSubjectDN() %>"/></span>
+        <% } else if (editca && isUninitialized) { %>  
+             <input type="text" name="<%=TEXTFIELD_SUBJECTDN%>" size="45" maxlength="225" value="<%= cainfo.getSubjectDN() %>" title="<%= ejbcawebbean.getText("FORMAT_DN") %>">
           <% } else { %>
         <% /* Maxlength for the CA subject DN is based on 250 chars MySQL String mapping minus the "CN=xxxxSignerCertificate," string that is added for services. */ %>
         <input type="text" name="<%=TEXTFIELD_SUBJECTDN%>" size="45" maxlength="225" value="CN=<%= caname %>" title="<%= ejbcawebbean.getText("FORMAT_DN") %>">
