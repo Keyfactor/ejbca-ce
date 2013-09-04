@@ -189,7 +189,9 @@ public abstract class BaseCryptoToken implements CryptoToken {
      * @param id ID of this crypto token.
      */
     protected void init(Properties properties, boolean doAutoActivate, int id) {
-
+        if (log.isDebugEnabled()) {
+            log.debug(">init: doAutoActivate=" + doAutoActivate);
+        }
         this.id = id;
         // Set basic properties that are of dynamic nature
         setProperties(properties);
