@@ -236,7 +236,7 @@ public final class ProtectedDataConfiguration {
                                 try {
                                     token = CryptoTokenFactory.createCryptoToken(classname, properties, keydata, Integer.valueOf(keyid), String.valueOf(keyid));
                                 } catch (NoSuchSlotException e) {
-                                    throw new DatabaseProtectionException("Slot labeled as definied by label in properties file not found", e);
+                                    throw new DatabaseProtectionException("Slot labeled as defined by label in properties file not found", e);
                                 }
 	        					// We must activate the token as well (if not using a default pwd of course, in which case we assume the tokenpin property is not set)
 	        					final String pin = conf.getString(pinstr+i);
