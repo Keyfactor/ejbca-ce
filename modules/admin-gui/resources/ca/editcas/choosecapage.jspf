@@ -1,7 +1,7 @@
 <%
   TreeMap<String,Integer> canames     = info.getAllCANames(); 
 
-  String[] statustexts = {"", "ACTIVE", "WAITINGFORCERTRESPONSE", "EXPIRED", "REVOKED", "OFFLINE","EXTERNALCA"};
+  String[] statustexts = {"", "ACTIVE", "WAITINGFORCERTRESPONSE", "EXPIRED", "REVOKED", "OFFLINE","EXTERNALCA", "UNINITIALIZED"};
 
 %>
 
