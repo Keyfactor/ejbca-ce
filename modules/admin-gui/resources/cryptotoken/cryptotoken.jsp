@@ -50,6 +50,8 @@ org.cesecore.authorization.control.CryptoTokenRules
 			  document.getElementById('currentCryptoTokenForm:currentCryptoTokenP11LibraryLabel').style.display = '';
 			  document.getElementById('currentCryptoTokenForm:currentCryptoTokenP11Slot').style.display = '';
 			  document.getElementById('currentCryptoTokenForm:currentCryptoTokenP11SlotLabel').style.display = '';
+			  document.getElementById('currentCryptoTokenForm:currentCryptoTokenP11SlotLabelType').style.display = '';
+			  document.getElementById('currentCryptoTokenForm:currentCryptoTokenP11SlotLabelTypeLabel').style.display = '';
 			  document.getElementById('currentCryptoTokenForm:currentCryptoTokenP11AttributeFile').style.display = '';
 			  document.getElementById('currentCryptoTokenForm:currentCryptoTokenP11AttributeFileLabel').style.display = '';
 		  } else if (selectOneMenu.value == 'SoftCryptoToken') {
@@ -59,6 +61,8 @@ org.cesecore.authorization.control.CryptoTokenRules
 			  document.getElementById('currentCryptoTokenForm:currentCryptoTokenP11LibraryLabel').style.display = 'none';
 			  document.getElementById('currentCryptoTokenForm:currentCryptoTokenP11Slot').style.display = 'none';
 			  document.getElementById('currentCryptoTokenForm:currentCryptoTokenP11SlotLabel').style.display = 'none';
+			  document.getElementById('currentCryptoTokenForm:currentCryptoTokenP11SlotLabelType').style.display = 'none';
+			  document.getElementById('currentCryptoTokenForm:currentCryptoTokenP11SlotLabelTypeLabel').style.display = '';
 			  document.getElementById('currentCryptoTokenForm:currentCryptoTokenP11AttributeFile').style.display = 'none';
 			  document.getElementById('currentCryptoTokenForm:currentCryptoTokenP11AttributeFileLabel').style.display = 'none';
 		  } else {
@@ -134,8 +138,7 @@ org.cesecore.authorization.control.CryptoTokenRules
 		<h:panelGroup id="currentCryptoTokenP11SlotLabelType" rendered="#{cryptoTokenMBean.currentCryptoToken.showP11CryptoToken}">		
 			<h:selectOneMenu value="#{cryptoTokenMBean.currentCryptoToken.p11SlotLabelType}" rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}">
 				<f:selectItems value="#{cryptoTokenMBean.availableCryptoTokenP11SlotLabelTypes}"/>
-			</h:selectOneMenu>
-			
+			</h:selectOneMenu>		
 			<h:outputText value="#{cryptoTokenMBean.currentCryptoToken.p11SlotLabelType}" rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}"/>
 		</h:panelGroup>
 		
