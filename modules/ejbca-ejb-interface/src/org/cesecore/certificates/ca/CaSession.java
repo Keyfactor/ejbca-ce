@@ -156,4 +156,12 @@ public interface CaSession {
      * @throws AuthorizationDeniedException if not authorized to rename CA
      */
     public void renameCA(AuthenticationToken admin, String oldname, String newname) throws CAExistsException, CADoesntExistsException, AuthorizationDeniedException;
+
+    /**
+     * Check if a CA with given ID exists
+     * 
+     * @param caId the CA ID
+     * @return true if a CA with the given ID exists
+     */
+    boolean existsCa(int caId);
 }

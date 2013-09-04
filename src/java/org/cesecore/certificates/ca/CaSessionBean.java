@@ -36,6 +36,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -232,6 +233,11 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         } else {
             log.debug("Trying to edit null CA, nothing done.");
         }    	
+    }
+    
+    @Override
+    public boolean existsCa(final int caId) {
+        return entityManager.find(CAData.class, caId) != null;
     }
 
 	/** Ensure that the caller is authorized to the CA we are about to edit and that the CA name and subjectDN matches. */
