@@ -36,7 +36,6 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -66,7 +65,6 @@ import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
-import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.util.CertTools;
@@ -125,7 +123,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     }
 
     @Override
-    public void addCA(final AuthenticationToken admin, final CA ca) throws CAExistsException, AuthorizationDeniedException, IllegalCryptoTokenException {
+    public void addCA(final AuthenticationToken admin, final CA ca) throws CAExistsException, AuthorizationDeniedException {
         if (ca != null) {
             final int cryptoTokenId = ca.getCAToken().getCryptoTokenId();
             if (!accessSession.isAuthorized(admin, StandardRules.CAADD.resource(), CryptoTokenRules.USE.resource() + "/" + cryptoTokenId)) {
@@ -158,7 +156,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     }
 
     @Override
-    public void editCA(final AuthenticationToken admin, final CAInfo cainfo) throws CADoesntExistsException, AuthorizationDeniedException, IllegalCryptoTokenException {
+    public void editCA(final AuthenticationToken admin, final CAInfo cainfo) throws CADoesntExistsException, AuthorizationDeniedException {
         if (cainfo != null) {
         	if (log.isTraceEnabled()) {
         		log.trace(">editCA (CAInfo): "+cainfo.getName());
@@ -203,8 +201,8 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     }
     
     @Override
-    public void editCA(final AuthenticationToken admin, final CA ca, boolean auditlog) throws CADoesntExistsException, AuthorizationDeniedException, IllegalCryptoTokenException {
-        if (ca != null) {
+    public void editCA(final AuthenticationToken admin, final CA ca, boolean auditlog) throws CADoesntExistsException, AuthorizationDeniedException {
+    if (ca != null) {
         	if (log.isTraceEnabled()) {
         		log.trace(">editCA (CA): "+ca.getName());
         	}

@@ -1085,7 +1085,7 @@ public class CAInterfaceBean implements Serializable {
 	    return illegaldnoraltname;
 	}
 
-	public CAInfo actionEditCa(int caid, String caname, int catype,
+	public CAInfo createCaInfo(int caid, String caname, int catype,
 	        String keySequenceFormat, String keySequence, String description, String validityString,
 	        long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, boolean finishUser,
 	        boolean isDoEnforceUniquePublicKeys, boolean isDoEnforceUniqueDistinguishedName, boolean isDoEnforceUniqueSubjectDNSerialnumber,

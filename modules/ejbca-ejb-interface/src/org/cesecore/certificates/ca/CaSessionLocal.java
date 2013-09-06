@@ -135,9 +135,8 @@ public interface CaSessionLocal extends CaSession {
      * @param auditlog if audit logging of the edit should be done or not, not needed if called from other internal methods that already does audit logging.
      * @throws CADoesntExistsException
      * @throws AuthorizationDeniedException
-     * @throws IllegalCryptoTokenException if the CA token is not proper
      */
-    void editCA(final AuthenticationToken admin, final CA ca, boolean auditlog) throws CADoesntExistsException, AuthorizationDeniedException, IllegalCryptoTokenException;
+    void editCA(final AuthenticationToken admin, final CA ca, boolean auditlog) throws CADoesntExistsException, AuthorizationDeniedException;
 
     /**
      * Verify that a CA exists.

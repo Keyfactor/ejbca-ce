@@ -223,6 +223,41 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
     }
 
+    @Override
+    public void initializeCa(AuthenticationToken authenticationToken, CAInfo caInfo) throws AuthorizationDeniedException,
+            CryptoTokenOfflineException, InvalidKeyException, CADoesntExistsException, CryptoTokenAuthenticationFailedException,
+            InvalidAlgorithmException, CAExistsException, IllegalCryptoTokenException {
+
+        if (caInfo.getStatus() != CAConstants.CA_UNINITIALIZED) {
+            throw new IllegalArgumentException("CA Status was not " + CAConstants.CA_UNINITIALIZED);
+        } else {
+            //Find the intended status
+            caInfo.setStatus(getCaStatus(caInfo));
+        }
+        //Since it's acceptable that SubjectDN changes, in initializing we'll simply kill the old unitialized CA and then recreate it if anything has changed.
+        CAInfo caFromDatabase = caSession.getCAInfo(authenticationToken, caInfo.getCAId());
+        if (!caFromDatabase.getSubjectDN().equals(caInfo.getSubjectDN())) {
+            caSession.removeCA(authenticationToken, caFromDatabase.getCAId());
+            caInfo.setCAId(CertTools.stringToBCDNString(caInfo.getSubjectDN()).hashCode());
+            createCA(authenticationToken, caInfo);
+        } else {
+            CAToken caToken = caInfo.getCAToken();
+            CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(caToken.getCryptoTokenId());
+            // See if CA token is OK before generating keys
+            cryptoToken.testKeyPair(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYTEST));
+            caSession.editCA(authenticationToken, caInfo);
+            CA ca = caSession.getCA(authenticationToken, caInfo.getCAId());
+            ca.setCAToken(caToken);
+            CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(caInfo.getCertificateProfileId());
+            Collection<Certificate> certificatechain = createCertificateChain(authenticationToken, ca, cryptoToken, certprofile);
+            ca.setCertificateChain(certificatechain);
+            //Store the chain and new status.
+            // We need to save all this, audit logging that the CA is changed
+            caSession.editCA(authenticationToken, ca, true);
+        }
+
+    }
+
     private CA createCAObject(CAInfo cainfo, CAToken catoken, CertificateProfile certprofile) throws InvalidAlgorithmException {
         CA ca = null;
         // X509 CA is the most normal type of CA
@@ -307,11 +342,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(cainfo.getCertificateProfileId());
         // Create CA
         CA ca = createCAObject(cainfo, caToken, certprofile);
-        // AltName is not implemented for all CA types
-        String caAltName = null;
-        if (cainfo instanceof X509CAInfo) {
-            caAltName = ((X509CAInfo) cainfo).getSubjectAltName();
-        }
+
         if (cainfo.getStatus() != CAConstants.CA_UNINITIALIZED) {
             // See if CA token is OK before storing CA, but skip if no keys can be guaranteed to exist.
             try {
@@ -331,92 +362,11 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     null, null, details);
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
             throw e;
-        } catch (IllegalCryptoTokenException e) {
-            String msg = intres.getLocalizedMessage("caadmin.errorcreatetoken");
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);
-            details.put("error", e.getMessage());
-            auditSession.log(EventTypes.CA_CREATION, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid),
-                    null, null, details);
-            throw new EJBException(e);
-        }
+        } 
         // Create certificate chain if CA is meant to be initialized
         if (cainfo.getStatus() != CAConstants.CA_UNINITIALIZED) {
-            Collection<Certificate> certificatechain = null;
-            String sequence = caToken.getKeySequence(); // get from CAtoken to make sure it is fresh
-            final String aliasCertSign = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
-            if (cainfo.getSignedBy() == CAInfo.SELFSIGNED) {
-                try {
-                    // create selfsigned certificate
-                    Certificate cacertificate = null;
-                    log.debug("CAAdminSessionBean : " + cainfo.getSubjectDN());
-                    EndEntityInformation cadata = new EndEntityInformation("nobody", cainfo.getSubjectDN(), cainfo.getSubjectDN().hashCode(),
-                            caAltName, null, 0, new EndEntityType(EndEntityTypes.INVALID), 0, cainfo.getCertificateProfileId(), null, null, 0, 0,
-                            null);
-                    cacertificate = ca.generateCertificate(cryptoToken, cadata, cryptoToken.getPublicKey(aliasCertSign), -1, null,
-                            cainfo.getValidity(), certprofile, sequence);
-                    log.debug("CAAdminSessionBean : " + CertTools.getSubjectDN(cacertificate));
-                    // Build Certificate Chain
-                    certificatechain = new ArrayList<Certificate>();
-                    certificatechain.add(cacertificate);
-                    // set status to active
-                    castatus = CAConstants.CA_ACTIVE;
-                } catch (CryptoTokenOfflineException e) {
-                    final String detailsMsg = intres.getLocalizedMessage("error.catokenoffline", cainfo.getName());
-                    auditSession.log(EventTypes.CA_CREATION, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(),
-                            String.valueOf(caid), null, null, detailsMsg);
-                    sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
-                    throw e;
-                } catch (Exception fe) {
-                    String msg = intres.getLocalizedMessage("caadmin.errorcreateca", cainfo.getName());
-                    Map<String, Object> details = new LinkedHashMap<String, Object>();
-                    details.put("msg", msg);
-                    details.put("error", fe.getMessage());
-                    auditSession.log(EventTypes.CA_CREATION, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(),
-                            String.valueOf(caid), null, null, details);
-                    throw new EJBException(fe);
-                }
-            } else if (cainfo.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA) {
-                certificatechain = new ArrayList<Certificate>();
-                // set status to waiting certificate response.
-                castatus = CAConstants.CA_WAITING_CERTIFICATE_RESPONSE;
-            } else if (cainfo.getSignedBy() > CAInfo.SPECIALCAIDBORDER || cainfo.getSignedBy() < 0) {
-                // Create CA signed by other internal CA.
-                try {
-                    final CA signca = caSession.getCAForEdit(admin, Integer.valueOf(cainfo.getSignedBy()));
-                    // Check that the signer is valid
-                    assertSignerValidity(admin, signca);
-                    // Create CA certificate
-                    EndEntityInformation cadata = new EndEntityInformation("nobody", cainfo.getSubjectDN(), cainfo.getSubjectDN().hashCode(),
-                            caAltName, null, 0, new EndEntityType(EndEntityTypes.INVALID), 0, cainfo.getCertificateProfileId(), null, null, 0, 0,
-                            null);
-                    CryptoToken signCryptoToken = cryptoTokenSession.getCryptoToken(signca.getCAToken().getCryptoTokenId());
-                    Certificate cacertificate = signca.generateCertificate(signCryptoToken, cadata, cryptoToken.getPublicKey(aliasCertSign), -1,
-                            null, cainfo.getValidity(), certprofile, sequence);
-                    // Build Certificate Chain
-                    Collection<Certificate> rootcachain = signca.getCertificateChain();
-                    certificatechain = new ArrayList<Certificate>();
-                    certificatechain.add(cacertificate);
-                    certificatechain.addAll(rootcachain);
-                    // set status to active
-                    castatus = CAConstants.CA_ACTIVE;
-                } catch (CryptoTokenOfflineException e) {
-                    final String detailsMsg = intres.getLocalizedMessage("error.catokenoffline", cainfo.getName());
-                    auditSession.log(EventTypes.CA_CREATION, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(),
-                            String.valueOf(caid), null, null, detailsMsg);
-                    sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
-                    throw e;
-                } catch (Exception fe) {
-                    String msg = intres.getLocalizedMessage("caadmin.errorcreateca", cainfo.getName());
-                    Map<String, Object> details = new LinkedHashMap<String, Object>();
-                    details.put("msg", msg);
-                    details.put("error", fe.getMessage());
-                    auditSession.log(EventTypes.CA_CREATION, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(),
-                            String.valueOf(caid), null, null, details);
-                    throw new EJBException(fe);
-                }
-            }
-
+            Collection<Certificate> certificatechain = createCertificateChain(admin, ca, cryptoToken, certprofile);
+            castatus = getCaStatus(cainfo);
             // Set Certificate Chain
             ca.setCertificateChain(certificatechain);
             if (log.isDebugEnabled()) {
@@ -434,16 +384,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             auditSession.log(EventTypes.CA_EDITING, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid),
                     null, null, detailsMsg);
             throw new EJBException(e);
-        } catch (IllegalCryptoTokenException e) {
-            String msg = intres.getLocalizedMessage("caadmin.errorcreatetoken");
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);
-            details.put("error", e.getMessage());
-            auditSession.log(EventTypes.CA_EDITING, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid),
-                    null, null, details);
-            throw new EJBException(e);
-        }
-
+        } 
         // Publish CA certificates if CA is initialized
         if (castatus != CAConstants.CA_UNINITIALIZED) {
             publishCACertificate(admin, ca.getCertificateChain(), ca.getCRLPublishers(), ca.getSubjectDN());
@@ -473,15 +414,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 auditSession.log(EventTypes.CA_CREATION, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(),
                         String.valueOf(caid), null, null, details);
                 throw new EJBException(e);
-            } catch (IllegalCryptoTokenException e) {
-                String msg = intres.getLocalizedMessage("caadmin.errorcreateca", cainfo.getName());
-                Map<String, Object> details = new LinkedHashMap<String, Object>();
-                details.put("msg", msg);
-                details.put("error", e.getMessage());
-                auditSession.log(EventTypes.CA_CREATION, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(),
-                        String.valueOf(caid), null, null, details);
-                throw new EJBException(e);
-            }
+            } 
             break;
         case CAConstants.CA_UNINITIALIZED:
             break;
@@ -499,7 +432,105 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             log.trace("<createCA: " + cainfo.getName());
         }
     }
+    
+    private int getCaStatus(CAInfo cainfo) {
+        int castatus = CAConstants.CA_OFFLINE;
+        if (cainfo.getSignedBy() == CAInfo.SELFSIGNED) {
+            castatus = CAConstants.CA_ACTIVE;
+        } else if (cainfo.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA) {
+         // set status to waiting certificate response.
+            castatus = CAConstants.CA_WAITING_CERTIFICATE_RESPONSE;
+        } else if (cainfo.getSignedBy() > CAInfo.SPECIALCAIDBORDER || cainfo.getSignedBy() < 0) {
+            castatus = CAConstants.CA_ACTIVE;
+        }
+        return castatus;
+    }
 
+    private Collection<Certificate> createCertificateChain(AuthenticationToken authenticationToken, CA ca, CryptoToken cryptoToken, CertificateProfile certprofile) throws CryptoTokenOfflineException {
+        CAInfo cainfo = ca.getCAInfo();
+        CAToken caToken = cainfo.getCAToken();
+        Collection<Certificate> certificatechain = null;
+        String sequence = caToken.getKeySequence(); // get from CAtoken to make sure it is fresh
+        final String aliasCertSign = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+        int caid = cainfo.getCAId();
+        String caAltName = null;
+        if (cainfo instanceof X509CAInfo) {
+            caAltName = ((X509CAInfo) cainfo).getSubjectAltName();
+        }
+        if (cainfo.getSignedBy() == CAInfo.SELFSIGNED) {
+            try {
+                // create selfsigned certificate
+                Certificate cacertificate = null;
+                log.debug("CAAdminSessionBean : " + cainfo.getSubjectDN());
+                // AltName is not implemented for all CA types              
+                EndEntityInformation cadata = new EndEntityInformation("nobody", cainfo.getSubjectDN(), cainfo.getSubjectDN().hashCode(), caAltName,
+                        null, 0, new EndEntityType(EndEntityTypes.INVALID), 0, cainfo.getCertificateProfileId(), null, null, 0, 0, null);
+                cacertificate = ca.generateCertificate(cryptoToken, cadata, cryptoToken.getPublicKey(aliasCertSign), -1, null,
+                        cainfo.getValidity(), certprofile, sequence);
+                log.debug("CAAdminSessionBean : " + CertTools.getSubjectDN(cacertificate));
+                // Build Certificate Chain
+                certificatechain = new ArrayList<Certificate>();
+                certificatechain.add(cacertificate);
+                // set status to active
+               
+            } catch (CryptoTokenOfflineException e) {
+                final String detailsMsg = intres.getLocalizedMessage("error.catokenoffline", cainfo.getName());
+                auditSession.log(EventTypes.CA_CREATION, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, authenticationToken.toString(),
+                        String.valueOf(caid), null, null, detailsMsg);
+                sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
+                throw e;
+            } catch (Exception fe) {
+                String msg = intres.getLocalizedMessage("caadmin.errorcreateca", cainfo.getName());
+                Map<String, Object> details = new LinkedHashMap<String, Object>();
+                details.put("msg", msg);
+                details.put("error", fe.getMessage());
+                auditSession.log(EventTypes.CA_CREATION, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, authenticationToken.toString(),
+                        String.valueOf(caid), null, null, details);
+                throw new EJBException(fe);
+            }
+        } else if (cainfo.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA) {
+            certificatechain = new ArrayList<Certificate>();
+            
+        } else if (cainfo.getSignedBy() > CAInfo.SPECIALCAIDBORDER || cainfo.getSignedBy() < 0) {
+            // Create CA signed by other internal CA.
+            try {
+                final CA signca = caSession.getCAForEdit(authenticationToken, Integer.valueOf(cainfo.getSignedBy()));
+                // Check that the signer is valid
+                assertSignerValidity(authenticationToken, signca);
+                // Create CA certificate
+                EndEntityInformation cadata = new EndEntityInformation("nobody", cainfo.getSubjectDN(), cainfo.getSubjectDN().hashCode(),
+                        caAltName, null, 0, new EndEntityType(EndEntityTypes.INVALID), 0, cainfo.getCertificateProfileId(), null, null, 0, 0,
+                        null);
+                CryptoToken signCryptoToken = cryptoTokenSession.getCryptoToken(signca.getCAToken().getCryptoTokenId());
+                Certificate cacertificate = signca.generateCertificate(signCryptoToken, cadata, cryptoToken.getPublicKey(aliasCertSign), -1,
+                        null, cainfo.getValidity(), certprofile, sequence);
+                // Build Certificate Chain
+                Collection<Certificate> rootcachain = signca.getCertificateChain();
+                certificatechain = new ArrayList<Certificate>();
+                certificatechain.add(cacertificate);
+                certificatechain.addAll(rootcachain);
+                // set status to active
+               
+            } catch (CryptoTokenOfflineException e) {
+                final String detailsMsg = intres.getLocalizedMessage("error.catokenoffline", cainfo.getName());
+                auditSession.log(EventTypes.CA_CREATION, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, authenticationToken.toString(),
+                        String.valueOf(caid), null, null, detailsMsg);
+                sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
+                throw e;
+            } catch (Exception fe) {
+                String msg = intres.getLocalizedMessage("caadmin.errorcreateca", cainfo.getName());
+                Map<String, Object> details = new LinkedHashMap<String, Object>();
+                details.put("msg", msg);
+                details.put("error", fe.getMessage());
+                auditSession.log(EventTypes.CA_CREATION, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, authenticationToken.toString(),
+                        String.valueOf(caid), null, null, details);
+                throw new EJBException(fe);
+            }        
+        }
+        return certificatechain;
+
+    }
+    
     @Override
     public void editCA(AuthenticationToken admin, CAInfo cainfo) throws AuthorizationDeniedException {
         boolean xkmsrenewcert = false;
@@ -907,11 +938,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
             throw e;
         } catch (CADoesntExistsException e) {
-            String msg = intres.getLocalizedMessage("caadmin.errorcertresp", Integer.valueOf(caid));
-            log.info(msg);
-            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
-            throw e;
-        } catch (IllegalCryptoTokenException e) {
             String msg = intres.getLocalizedMessage("caadmin.errorcertresp", Integer.valueOf(caid));
             log.info(msg);
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
@@ -2199,11 +2225,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     String.valueOf(caid), null, null, detailsMsg);
             CA ca = caSession.getCAForEdit(admin, caid);
             ca.setStatus(CAConstants.CA_ACTIVE);
-            try {
-                caSession.editCA(admin, ca, false);
-            } catch (IllegalCryptoTokenException e) {
-                throw new RuntimeException(e.getMessage());
-            }
+            caSession.editCA(admin, ca, false);
         } else {
             final String detailsMsg = intres.getLocalizedMessage("caadmin.errornotoffline", cainfo.getName());
             auditSession.log(EventTypes.CA_SERVICEACTIVATE, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(),
@@ -2227,14 +2249,10 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         final CA ca = caSession.getCAForEdit(admin, caid);
         if (ca.getStatus() == CAConstants.CA_ACTIVE) {
             ca.setStatus(CAConstants.CA_OFFLINE);
-            try {
-                caSession.editCA(admin, ca, false);
-                final String detailsMsg = intres.getLocalizedMessage("catoken.deactivated", caid);
-                auditSession.log(EventTypes.CA_SERVICEDEACTIVATE, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(),
-                        String.valueOf(caid), null, null, detailsMsg);
-            } catch (IllegalCryptoTokenException e) {
-                throw new RuntimeException(e);
-            }
+            caSession.editCA(admin, ca, false);
+            final String detailsMsg = intres.getLocalizedMessage("catoken.deactivated", caid);
+            auditSession.log(EventTypes.CA_SERVICEDEACTIVATE, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(),
+                    String.valueOf(caid), null, null, detailsMsg);
         } else {
             final String detailsMsg = intres.getLocalizedMessage("caadmin.errornotonline", ca.getName());
             auditSession.log(EventTypes.CA_SERVICEDEACTIVATE, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(),

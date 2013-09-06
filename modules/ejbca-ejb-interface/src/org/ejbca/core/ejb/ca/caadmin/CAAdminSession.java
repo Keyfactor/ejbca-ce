@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.caadmin;
 
+import java.security.InvalidKeyException;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
@@ -136,6 +137,25 @@ public interface CAAdminSession {
     public void initExternalCAService(AuthenticationToken admin, int caid, ExtendedCAServiceInfo info)
             throws CADoesntExistsException, AuthorizationDeniedException, IllegalCryptoTokenException, CAOfflineException;
 
+    /**
+     * Unlike the similarily named method initializeAndUpgradeCAs(), this method initializes a
+     * previously uninitialized CA by setting its status to active and generating certificate chains
+     * for it. 
+     * 
+     * @param authenticationToken an authentication token
+     * @param caInfo representing the CA
+     * @throws AuthorizationDeniedException if user was denied authorization to edit CAs 
+     * @throws CryptoTokenOfflineException if the keystore defined by the cryptotoken in caInfo has no keys 
+     * @throws InvalidKeyException if the cryptotoken owned by this CA lacks keystores
+     * @throws CADoesntExistsException if the CA defined by caInfo doesn't exist.
+     * @throws InvalidAlgorithmException 
+     * @throws CryptoTokenAuthenticationFailedException 
+     * @throws CAExistsException 
+     * @throws IllegalCryptoTokenException 
+     */
+    void initializeCa(AuthenticationToken authenticationToken, CAInfo caInfo) throws AuthorizationDeniedException, CryptoTokenOfflineException,
+            InvalidKeyException, CADoesntExistsException, CAExistsException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException, IllegalCryptoTokenException;
+    
     /**
      * Renews a existing CA certificate using the requested keys or by
      * generating new keys. The specified notBefore date will be used. 
