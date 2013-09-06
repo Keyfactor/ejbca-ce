@@ -17,6 +17,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.security.InvalidKeyException;
 import java.security.KeyStore;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
@@ -53,7 +54,7 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
@@ -81,7 +82,7 @@ public class CADataHandler implements Serializable {
     
     private AccessRuleManagementSessionLocal accessRuleManagementSession;
     private AccessUserAspectManagerSessionLocal accessUserAspectManagerSession;
-    private CAAdminSession caadminsession; 
+    private CAAdminSessionLocal caadminsession; 
     private CaSession caSession;
     private CertificateProfileSession certificateProfileSession;
     private EndEntityProfileSession endEntityProfileSession;
@@ -169,6 +170,24 @@ public class CADataHandler implements Serializable {
 	  info.cAsEdited();
   }
 
+    /**
+     * Update any values in the CA with the ones in caInfo, and  set status to active and generate certificates. t
+     * 
+     * @param  caInfo CAInfo class containing updated information for the CA to initialize
+     * @throws AuthorizationDeniedException if user was denied authorization to edit CAs 
+     * @throws CryptoTokenOfflineException if the keystore defined by the cryptotoken in caInfo has no keys 
+     * @throws InvalidKeyException if the cryptotoken owned by this CA lacks keystores
+     * @throws CADoesntExistsException if the CA defined by caInfo doesn't exist.
+     * @throws InvalidAlgorithmException 
+     * @throws CryptoTokenAuthenticationFailedException 
+     * @throws CAExistsException 
+     */
+    public void initializeCA(CAInfo caInfo) throws AuthorizationDeniedException, InvalidKeyException, CryptoTokenOfflineException,
+            CADoesntExistsException, IllegalCryptoTokenException, CAExistsException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
+        caadminsession.initializeCa(administrator, caInfo);
+        info.cAsEdited();
+    }
+  
   /**
    *  @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
    */  

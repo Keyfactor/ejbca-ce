@@ -74,7 +74,6 @@ import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
-import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
@@ -459,8 +458,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 				log.error("CA does not exist during upgrade: "+caid, e);
 			} catch (AuthorizationDeniedException e) {
 				log.error("Authorization denied to CA during upgrade: "+caid, e);
-			} catch (IllegalCryptoTokenException e) {
-				log.error("Illegal Crypto Token editing CA during upgrade: "+caid, e);
 			} catch (InvalidAlgorithmException e) {
                 log.error("Illegal Crypto Token algortihm during upgrade. CA Id: "+caid, e);
             }
@@ -679,9 +676,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 log.error("CA does not exist during upgrade: "+caid, e);
             } catch (AuthorizationDeniedException e) {
                 log.error("Authorization denied to CA during upgrade: "+caid, e);
-            } catch (IllegalCryptoTokenException e) {
-                log.error("Illegal Crypto Token editing CA during upgrade: "+caid, e);
-            }
+            } 
         }
         
     	boolean exists = upgradeSession.checkColumnExists500();
