@@ -14,9 +14,6 @@ package org.cesecore.certificates.certificate;
 
 import org.cesecore.CesecoreException;
 
-
-
-
 /**
  * Error due to malformed key. The cause of failure can be related to illegal key length etc.
  *
@@ -25,6 +22,11 @@ import org.cesecore.CesecoreException;
 public class IllegalKeyException extends CesecoreException {
 
     private static final long serialVersionUID = -3144774253953346584L;
+    
+    public IllegalKeyException(String message, Throwable cause) {
+        super(message, cause);
+    }
+   
     /**
      * Constructor used to create exception with an errormessage. Calls the same constructor in
      * baseclass <code>Exception</code>.
