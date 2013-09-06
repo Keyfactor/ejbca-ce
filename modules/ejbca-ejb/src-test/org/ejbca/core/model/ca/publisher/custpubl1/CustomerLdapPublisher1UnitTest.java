@@ -16,6 +16,7 @@ import com.novell.ldap.LDAPAttributeSet;
 import com.novell.ldap.LDAPEntry;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
+import org.ejbca.core.model.ca.publisher.custpubl1.CustomerLdapPublisher1.LogInfo;
 import static org.junit.Assert.*;
 
 import java.security.cert.Certificate;
@@ -501,5 +502,47 @@ public class CustomerLdapPublisher1UnitTest {
         assertNull(attributeSet.getAttribute("sn"));
         assertNotNull(attributeSet.getAttribute("checksum"));
         assertNotNull(attributeSet.getAttribute("objectclass"));
+    }
+    
+    /** Tests the logic in storeLog. */
+    @Test
+    public void testStoreLog() throws Exception {
+        // Create mocked instance
+        ThirdMockedCustomerLdapPublisher1 instance = new ThirdMockedCustomerLdapPublisher1();
+        instance.setTime(1378451489999L);
+        instance.init(GOOD_PROPERTIES);
+        
+        // Successfull logging
+        instance.storeLog(LogInfo.LEVEL_DEBUG, true, "Testing logging", null);
+        assertTrue("writeLog called", instance.isWriteLogEntryToLDAPCalled());
+        assertEquals("log DN", "logTime=20130906071129.999Z,cn=log,dc=test.example.com,dc=com", instance.getWriteCertEntryToLDAPParameters().get(0).getNewEntry().getDN());
+        
+        // Test logging again with same time => should use time +1ms
+        instance.clearWriteCertEntryToLDAPParameters();
+        
+        instance.storeLog(LogInfo.LEVEL_DEBUG, true, "Testing logging 2", null);
+        assertTrue("writeLog called", instance.isWriteLogEntryToLDAPCalled());
+        // First same DN again
+        assertEquals("log DN", "logTime=20130906071129.999Z,cn=log,dc=test.example.com,dc=com", instance.getWriteCertEntryToLDAPParameters().get(0).getNewEntry().getDN());
+        
+        // Then with logTime +1ms
+        assertEquals("two calls", 2, instance.getWriteCertEntryToLDAPParameters().size());
+        assertEquals("log DN", "logTime=20130906071130.000Z,cn=log,dc=test.example.com,dc=com", instance.getWriteCertEntryToLDAPParameters().get(1).getNewEntry().getDN());
+        
+        
+        // This time it will now work as there are already entry 0 and 0+1 available
+        instance.clearWriteCertEntryToLDAPParameters();
+        try {
+            instance.storeLog(LogInfo.LEVEL_DEBUG, true, "Testing logging 3", null);
+            fail("Should have thrown exception");
+        } catch (PublisherException expected) {} // NOPMD
+        assertTrue("writeLog called", instance.isWriteLogEntryToLDAPCalled());
+        // First same DN again
+        assertEquals("log DN", "logTime=20130906071129.999Z,cn=log,dc=test.example.com,dc=com", instance.getWriteCertEntryToLDAPParameters().get(0).getNewEntry().getDN());
+        
+        // Then with logTime +1ms
+        assertEquals("two calls", 2, instance.getWriteCertEntryToLDAPParameters().size());
+        assertEquals("log DN", "logTime=20130906071130.000Z,cn=log,dc=test.example.com,dc=com", instance.getWriteCertEntryToLDAPParameters().get(1).getNewEntry().getDN());
+        
     }
 }

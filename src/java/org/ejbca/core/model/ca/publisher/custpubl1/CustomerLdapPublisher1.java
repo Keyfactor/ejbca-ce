@@ -124,10 +124,12 @@ import javax.security.auth.x500.X500Principal;
  * objectCreator: EJBCA
  * </pre>
  * 
+ * If an log entry with the same name already exists it is retried one time with time +1 ms.
+ * 
  * Note the escaping of commas in the DN, this is needed since the "CN" of the LDAP DN contains commas (CN=C=SE\,O=foo\,CN=cscav1).
  * OpenLDAP implement very old escaping rules and will replace = with \3D and things like that. Better to use OpenDJ, easy to install and run, and works correctly.
  * 
- * Version: 0.9
+ * Version: 0.9.1
  *
  * @version $Id$
  */
@@ -497,15 +499,36 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
         }
 
         // Construct LogInfo lines
-        final Date now = new Date();
-        final String generalizedTime = LogInfo.toGeneralizedTime(now);
+        final Date now = getCurrentTime();
+        try {
+            doStoreLog(level, success, message, exception, now);
+        } catch (PublisherException ex) {
+            if (ex.getCause() instanceof LDAPException) {
+                final LDAPException le = (LDAPException) ex.getCause();
+                // If entry already exists, retry one time with time +1 ms
+                if (le.getResultCode() == LDAPException.ENTRY_ALREADY_EXISTS) {
+                    log.info("Log entry already exists, retrying with time +1 ms");
+                    doStoreLog(level, success, message, exception, new Date(now.getTime() + 1));
+                }
+            } else {
+                throw ex;
+            }
+        }
+
+        if (log.isTraceEnabled()) {
+            log.trace("<storeLog");
+        }
+    }
+    
+    protected void doStoreLog(final String level, final boolean success, final String message, Exception exception, final Date time) throws PublisherException {
+        final String generalizedTime = LogInfo.toGeneralizedTime(time);
         final LinkedList<String> logEntries = new LinkedList<String>();
         final StringBuilder buff = new StringBuilder();
         buff.append(message);
         if (!success) {
             buff.append(": ").append(exception.getLocalizedMessage());
         }
-        logEntries.add(new LogInfo(now, 1, "objectupload", level, null, buff.toString(), null, null).getEncoded());
+        logEntries.add(new LogInfo(time, 1, "objectupload", level, null, buff.toString(), null, null).getEncoded());
 
         // Connect
         final LDAPConnection lc = createLdapConnection();
@@ -521,10 +544,10 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
         // Finally write the object
         final LDAPEntry newEntry = new LDAPEntry(dn, attributeSet);
         writeLogEntryToLDAP(lc, newEntry);
+    }
 
-        if (log.isTraceEnabled()) {
-            log.trace("<storeLog");
-        }
+    protected Date getCurrentTime() {
+        return new Date();
     }
     
     interface LDAPConnectionAction<T, E extends Throwable> {
@@ -689,7 +712,7 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
         });
     }
     
-    private void writeLogEntryToLDAP(final LDAPConnection lc, final LDAPEntry newEntry) throws PublisherException {
+    protected void writeLogEntryToLDAP(final LDAPConnection lc, final LDAPEntry newEntry) throws PublisherException {
         executeLDAPAction(lc, new LDAPConnectionAction<Void,PublisherException>() {
             @Override
             public Void performAction(final LDAPConnection lc) throws LDAPException {
@@ -703,7 +726,9 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
             public void failed(final LDAPException ex) throws PublisherException {
                 String msg = intres.getLocalizedMessage("publisher.errorldapstore", "log", newEntry.getAttributeSet(), newEntry.getAttribute("objectclass"), newEntry.getDN(), ex.getMessage());
                 log.error(msg, ex);
-                throw new PublisherException(msg);
+                final PublisherException pe = new PublisherException();
+                pe.initCause(ex);
+                throw pe;
             }
         });
     }
