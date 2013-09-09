@@ -62,7 +62,7 @@ org.cesecore.authorization.control.CryptoTokenRules
 			  document.getElementById('currentCryptoTokenForm:currentCryptoTokenP11Slot').style.display = 'none';
 			  document.getElementById('currentCryptoTokenForm:currentCryptoTokenP11SlotLabel').style.display = 'none';
 			  document.getElementById('currentCryptoTokenForm:currentCryptoTokenP11SlotLabelType').style.display = 'none';
-			  document.getElementById('currentCryptoTokenForm:currentCryptoTokenP11SlotLabelTypeLabel').style.display = '';
+			  document.getElementById('currentCryptoTokenForm:currentCryptoTokenP11SlotLabelTypeLabel').style.display = 'none';
 			  document.getElementById('currentCryptoTokenForm:currentCryptoTokenP11AttributeFile').style.display = 'none';
 			  document.getElementById('currentCryptoTokenForm:currentCryptoTokenP11AttributeFileLabel').style.display = 'none';
 		  } else {
