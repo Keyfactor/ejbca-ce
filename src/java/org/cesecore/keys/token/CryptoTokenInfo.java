@@ -37,7 +37,7 @@ public class CryptoTokenInfo implements Serializable {
         this.name = name;
         this.active = active;
         this.autoActivation = autoActivation;
-        this.type = type.getName();
+        this.type = type.getSimpleName();
         this.cryptoTokenProperties = cryptoTokenProperties;
     }
 

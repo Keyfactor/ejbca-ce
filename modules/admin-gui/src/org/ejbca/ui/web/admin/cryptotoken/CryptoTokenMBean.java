@@ -153,10 +153,10 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
 
         public String getP11LibraryAlias() { return CryptoTokenMBean.this.getP11LibraryAlias(p11Library); }
         public String getP11AttributeFileAlias() { return CryptoTokenMBean.this.getP11AttributeFileAlias(p11AttributeFile); }
-        public boolean isShowSoftCryptoToken() { return getCurrentCryptoTokenId()==0 || SoftCryptoToken.class.getName().equals(getType()); }
+        public boolean isShowSoftCryptoToken() { return getCurrentCryptoTokenId()==0 || SoftCryptoToken.class.getSimpleName().equals(getType()); }
 
         public boolean isShowP11CryptoToken() {
-            return (getCurrentCryptoTokenId() == 0 && isAnyP11LibraryAvailable()) || PKCS11CryptoToken.class.getName().equals(getType());
+            return (getCurrentCryptoTokenId() == 0 && isAnyP11LibraryAvailable()) || PKCS11CryptoToken.class.getSimpleName().equals(getType());
         }
     }
     
