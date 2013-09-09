@@ -1718,7 +1718,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         // This should work now
         ejbcaraws.keyRecoverNewest("WSTESTUSERKEYREC1");
 
-        // Set status to new
+        // Set status to keyrecovery
         UserMatch usermatch = new UserMatch();
         usermatch.setMatchwith(UserMatch.MATCH_WITH_USERNAME);
         usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
@@ -1734,6 +1734,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         assertNotNull(ks2);
         en = ks2.aliases();
         alias = (String) en.nextElement();
+        // You never know in which order the certificates in the KS are returned, it's different between java 6 and 7 for ex 
         if(!ks2.isKeyEntry(alias)) {
             alias = (String) en.nextElement();
         }
@@ -1748,6 +1749,110 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         String key2 = new String(Hex.encode(privK2.getEncoded()));
         assertEquals(key1, key2);
         log.trace("<keyRecover");
+    }
+
+    protected void keyRecoverAny() throws Exception {
+        log.trace(">keyRecoverAny");
+        GlobalConfiguration gc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
+        boolean krenabled = gc.getEnableKeyRecovery();
+        if (!krenabled == true) {
+            gc.setEnableKeyRecovery(true);
+            globalConfigurationSession.saveConfiguration(intAdmin, gc, Configuration.GlobalConfigID);
+        }
+
+        // Add a new user, set token to P12, status to new and end entity
+        // profile to key recovery
+        UserDataVOWS user1 = new UserDataVOWS();
+        user1.setKeyRecoverable(true);
+        user1.setUsername("WSTESTUSERKEYREC2");
+        user1.setPassword("foo456");
+        user1.setClearPwd(true);
+        user1.setSubjectDN("CN=WSTESTUSERKEYREC2");
+        user1.setCaName(getAdminCAName());
+        user1.setEmail(null);
+        user1.setSubjectAltName(null);
+        user1.setStatus(UserDataVOWS.STATUS_NEW);
+        user1.setTokenType(UserDataVOWS.TOKEN_TYPE_P12);
+        user1.setEndEntityProfileName("KEYRECOVERY");
+        user1.setCertificateProfileName("ENDUSER");
+        ejbcaraws.editUser(user1);
+        
+        UserMatch usermatch = new UserMatch();
+        usermatch.setMatchwith(UserMatch.MATCH_WITH_USERNAME);
+        usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
+        usermatch.setMatchvalue("WSTESTUSERKEYREC2");
+        
+        List<java.security.KeyStore> keyStores = new ArrayList<java.security.KeyStore>();
+        
+        // generate 4 certificates
+        for (int i=0; i < 4; i++) {
+            List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
+            assertTrue(userdatas != null);
+            assertTrue(userdatas.size() == 1);
+            user1 = userdatas.get(0);
+            // Surely not all of these properties need to be set again?
+            user1.setKeyRecoverable(true);
+            user1.setUsername("WSTESTUSERKEYREC2");
+            user1.setPassword("foo456");
+            user1.setClearPwd(true);
+            user1.setSubjectDN("CN=WSTESTUSERKEYREC2");
+            user1.setCaName(getAdminCAName());
+            user1.setEmail(null);
+            user1.setSubjectAltName(null);
+            user1.setStatus(UserDataVOWS.STATUS_NEW);
+            user1.setTokenType(UserDataVOWS.TOKEN_TYPE_P12);
+            user1.setEndEntityProfileName("KEYRECOVERY");
+            user1.setCertificateProfileName("ENDUSER");
+            ejbcaraws.editUser(user1);
+            
+            KeyStore ksenv = ejbcaraws.pkcs12Req("WSTESTUSERKEYREC2", "foo456", null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
+            java.security.KeyStore ks = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(), "PKCS12", "foo456");
+            assertNotNull(ks);
+            keyStores.add(ks);
+        }
+        
+        // user should have 4 certificates
+        assertTrue(keyStores.size() == 4);
+        
+        // recover all keys
+        for (java.security.KeyStore ks : keyStores){
+            Enumeration<String> en = ks.aliases();
+            String alias = (String) en.nextElement();
+            // You never know in which order the certificates in the KS are returned, it's different between java 6 and 7 for ex 
+            if(!ks.isKeyEntry(alias)) {
+                alias = (String) en.nextElement();
+            }
+            X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
+            assertEquals(cert.getSubjectDN().toString(), "CN=WSTESTUSERKEYREC2");
+            PrivateKey privK = (PrivateKey) ks.getKey(alias, "foo456".toCharArray());
+            log.info("recovering key. sn "+ cert.getSerialNumber().toString(16) + " issuer "+ cert.getIssuerDN().toString());
+            
+            // recover key
+            ejbcaraws.keyRecover("WSTESTUSERKEYREC2",cert.getSerialNumber().toString(16),cert.getIssuerDN().toString());
+            
+            // A new PK12 request now should return the same key and certificate
+            KeyStore ksenv = ejbcaraws.pkcs12Req("WSTESTUSERKEYREC2", "foo456", null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
+            java.security.KeyStore ks2 = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(), "PKCS12", "foo456");
+            assertNotNull(ks2);
+            en = ks2.aliases();
+            alias = (String) en.nextElement();
+            // You never know in which order the certificates in the KS are returned, it's different between java 6 and 7 for ex 
+            if(!ks.isKeyEntry(alias)) {
+                alias = (String) en.nextElement();
+            }
+            X509Certificate cert2 = (X509Certificate) ks2.getCertificate(alias);
+            assertEquals(cert2.getSubjectDN().toString(), "CN=WSTESTUSERKEYREC2");
+            PrivateKey privK2 = (PrivateKey) ks2.getKey(alias, "foo456".toCharArray());
+
+            // Compare certificates
+            assertEquals(cert.getSerialNumber().toString(16), cert2.getSerialNumber().toString(16));
+            // Compare keys
+            String key1 = new String(Hex.encode(privK.getEncoded()));
+            String key2 = new String(Hex.encode(privK2.getEncoded()));
+            assertEquals(key1, key2);
+
+        }
+        log.trace("<keyRecoverAny");
     }
 
     protected void getAvailableCAs() throws Exception {
