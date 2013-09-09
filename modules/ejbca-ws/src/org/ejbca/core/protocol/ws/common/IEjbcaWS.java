@@ -485,6 +485,31 @@ public interface IEjbcaWS {
 			CADoesntExistsException, AuthorizationDeniedException,
 			NotFoundException, EjbcaException, ApprovalException,
 			WaitingForApprovalException;
+
+	/**
+     * Marks a user's certificate for key recovery.
+     * 
+     * Authorization requirements:<pre>
+     * - /administrator
+     * - /ra_functionality/keyrecovery
+     * - /endentityprofilesrules/&lt;end entity profile&gt;/keyrecovery
+     * - /ca/<ca of users certificate>
+     * </pre>
+     * 
+     * @param username unique username i EJBCA
+     * @param certSNinHex unique certificate serialnumber i EJBCA, hex encoded 
+     * @param issuerDN DN of CA, i EJBCA, that issued the certificate 
+     * @throws CADoesntExistsException if a referenced CA does not exist 
+     * @throws AuthorizationDeniedException if client isn't authorized.
+     * @throws NotFoundException if user doesn't exist
+     * @throws WaitingForApprovalException if request has bean added to list of tasks to be approved
+     * @throws ApprovalException if there already exists an approval request for this task
+     * @throws EjbcaException if there is a configuration or other error
+     */
+    public abstract void keyRecover(String username, String certSNinHex, String issuerDN) throws
+            CADoesntExistsException, AuthorizationDeniedException,
+            NotFoundException, EjbcaException, ApprovalException,
+            WaitingForApprovalException;
 	
 	/**
 	 * Revokes all certificates mapped to a hardtoken.

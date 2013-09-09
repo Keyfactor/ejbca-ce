@@ -406,6 +406,11 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     }
 
     @Test
+    public void test20bKeyRecoverAny() throws Exception {
+        keyRecoverAny();
+    }
+    
+    @Test
     public void test21GetAvailableCAs() throws Exception {
         getAvailableCAs();
     }
