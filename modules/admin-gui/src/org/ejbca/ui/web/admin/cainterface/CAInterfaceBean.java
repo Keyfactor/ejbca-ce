@@ -1085,7 +1085,7 @@ public class CAInterfaceBean implements Serializable {
 	    return illegaldnoraltname;
 	}
 
-	public CAInfo createCaInfo(int caid, String caname, int catype,
+	public CAInfo createCaInfo(int caid, String caname, String subjectDn, int catype,
 	        String keySequenceFormat, String keySequence, String description, String validityString,
 	        long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, boolean finishUser,
 	        boolean isDoEnforceUniquePublicKeys, boolean isDoEnforceUniqueDistinguishedName, boolean isDoEnforceUniqueSubjectDNSerialnumber,
@@ -1198,7 +1198,9 @@ public class CAInterfaceBean implements Serializable {
                        useUserStorage,
                        useCertificateStorage);
            }
-           return cainfo;
+            cainfo.setSubjectDN(subjectDn);
+            cainfo.setStatus(infoView.getCAInfo().getStatus());
+            return cainfo;
         }
         return null;
 	}
