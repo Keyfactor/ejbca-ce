@@ -184,6 +184,8 @@ public class CADataHandler implements Serializable {
      */
     public void initializeCA(CAInfo caInfo) throws AuthorizationDeniedException, InvalidKeyException, CryptoTokenOfflineException,
             CADoesntExistsException, IllegalCryptoTokenException, CAExistsException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
+        CAInfo oldinfo = caSession.getCAInfo(administrator, caInfo.getCAId());
+        caInfo.setName(oldinfo.getName());
         caadminsession.initializeCa(administrator, caInfo);
         info.cAsEdited();
     }

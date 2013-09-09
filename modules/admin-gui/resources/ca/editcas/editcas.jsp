@@ -506,8 +506,8 @@ java.security.InvalidAlgorithmParameterException
                 final boolean serviceXkmsActive = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACTIVATEXKMSSERVICE));
                 final boolean serviceCmsActive = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACTIVATECMSSERVICE));
                 final String sharedCmpRaSecret = requestMap.get(TEXTFIELD_SHAREDCMPRASECRET);
-
-                final CAInfo cainfo = cabean.createCaInfo(caid, caname, catype,
+                final String subjectdn = requestMap.get(TEXTFIELD_SUBJECTDN); 
+                final CAInfo cainfo = cabean.createCaInfo(caid, caname, subjectdn, catype,
             		keySequenceFormatParam, keySequence, description, validityString,
             		crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, finishUser,
             		isDoEnforceUniquePublicKeys, isDoEnforceUniqueDistinguishedName, isDoEnforceUniqueSubjectDNSerialnumber,
@@ -542,6 +542,7 @@ java.security.InvalidAlgorithmParameterException
                 // Create and save CA
                 caname = requestMap.get(HIDDEN_CANAME);
                 catype = Integer.parseInt(requestMap.get(HIDDEN_CATYPE));
+                final String subjectdn = requestMap.get(TEXTFIELD_SUBJECTDN); 
                 final String keySequenceFormatParam = requestMap.get(SELECT_KEY_SEQUENCE_FORMAT);
                 final String keySequence = requestMap.get(TEXTFIELD_KEYSEQUENCE);
                 final String description = requestMap.get(TEXTFIELD_DESCRIPTION);
@@ -578,8 +579,9 @@ java.security.InvalidAlgorithmParameterException
                 final boolean serviceXkmsActive = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACTIVATEXKMSSERVICE));
                 final boolean serviceCmsActive = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACTIVATECMSSERVICE));
                 final String sharedCmpRaSecret = requestMap.get(TEXTFIELD_SHAREDCMPRASECRET);
-
-                final CAInfo cainfo = cabean.createCaInfo(caid, caname, catype,
+                final String certificateProfileIdString = requestMap.get(SELECT_CERTIFICATEPROFILE);
+                int certprofileid = (certificateProfileIdString==null ? 0 : Integer.parseInt(certificateProfileIdString));
+                final CAInfo cainfo = cabean.createCaInfo(caid, caname, subjectdn, catype,
             		keySequenceFormatParam, keySequence, description, validityString,
             		crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, finishUser,
             		isDoEnforceUniquePublicKeys, isDoEnforceUniqueDistinguishedName, isDoEnforceUniqueSubjectDNSerialnumber,
@@ -589,7 +591,11 @@ java.security.InvalidAlgorithmParameterException
             		caDefinedFreshestCrl, useutf8policytext, useprintablestringsubjectdn, useldapdnorder, usecrldistpointoncrl,
             		crldistpointoncrlcritical, serviceOcspActive, serviceXkmsActive, serviceCmsActive, sharedCmpRaSecret
             		);
-                cadatahandler.editCA(cainfo);
+                final String signedByString = requestMap.get(SELECT_SIGNEDBY);
+                int signedby = (signedByString==null ? 0 : Integer.parseInt(signedByString));
+                cainfo.setSignedBy(signedby);
+                cainfo.setCertificateProfileId(certprofileid);
+                cadatahandler.initializeCA(cainfo);
             }
         }
         
