@@ -553,14 +553,38 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             assertNotNull("Failed to create certificate", cert);
             String dn = cert.getSubjectDN().getName();
             assertEquals(CertTools.stringToBCDNString("cn=qc,c=SE"), CertTools.stringToBCDNString(dn));
-            assertEquals("rfc822name=qc@primekey.se", QCStatementExtension.getQcStatementAuthorities(cert));
+            // Since we do not have pkixQCSyntax_v1 or pkixQCSyntax_v2, no semanticsId will be added
+            assertNull("rfc822name=qc@primekey.se", QCStatementExtension.getQcStatementAuthorities(cert));
             Collection<String> ids = QCStatementExtension.getQcStatementIds(cert);
-            assertTrue(ids.contains(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v1.getId()));
+            // This certificate should neither have the deprecated pkixQCSyntax_v1 (we do not support it) or pkixQCSyntax_v2 (not selected9
+            assertFalse(ids.contains(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v1.getId()));
+            assertFalse(ids.contains(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2.getId()));
             assertTrue(ids.contains(ETSIQCObjectIdentifiers.id_etsi_qcs_QcCompliance.getId()));
             assertTrue(ids.contains(ETSIQCObjectIdentifiers.id_etsi_qcs_QcSSCD.getId()));
             assertTrue(ids.contains(ETSIQCObjectIdentifiers.id_etsi_qcs_LimiteValue.getId()));
             String limit = QCStatementExtension.getQcStatementValueLimit(cert);
             assertEquals("50000 SEK", limit);
+
+            // Test pkixQCSyntax_v2, where a semanticsId will also be added
+            certprof.setUsePkixQCSyntaxV2(true);
+            certificateProfileSession.changeCertificateProfile(internalAdmin, qcCertProfileName, certprof);
+            endEntityManagementSession.changeUser(internalAdmin, endEntity, false); 
+            log.debug("created user: foo, foo123, C=SE, CN=qc");
+
+            cert = (X509Certificate) signSession.createCertificate(internalAdmin, qcCertEndEntityName, "foo123", anotheKey.getPublic());
+            assertNotNull("Failed to create certificate", cert);
+            dn = cert.getSubjectDN().getName();
+            assertEquals(CertTools.stringToBCDNString("cn=qc,c=SE"), CertTools.stringToBCDNString(dn));
+            // Since we have pkixQCSyntax_v2, a semanticsId will be added
+            assertEquals("rfc822name=qc@primekey.se", QCStatementExtension.getQcStatementAuthorities(cert));
+            ids = QCStatementExtension.getQcStatementIds(cert);
+            // This certificate should neither have the deprecated pkixQCSyntax_v1 (we do not support it) or pkixQCSyntax_v2 (not selected9
+            assertFalse(ids.contains(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v1.getId()));
+            assertTrue(ids.contains(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2.getId()));
+            assertTrue(ids.contains(ETSIQCObjectIdentifiers.id_etsi_qcs_QcCompliance.getId()));
+            assertTrue(ids.contains(ETSIQCObjectIdentifiers.id_etsi_qcs_QcSSCD.getId()));
+            assertTrue(ids.contains(ETSIQCObjectIdentifiers.id_etsi_qcs_LimiteValue.getId()));
+            assertEquals("50000 SEK", QCStatementExtension.getQcStatementValueLimit(cert));
         } finally {
             // Clean up
             endEntityProfileSession.removeEndEntityProfile(internalAdmin, qcCertProfileName);
