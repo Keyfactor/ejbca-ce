@@ -82,7 +82,6 @@ java.security.InvalidAlgorithmParameterException
   static final String ACTION_CHOOSE_CATYPE                = "choosecatype";
   static final String ACTION_CHOOSE_CATOKENTYPE           = "choosecatokentype";
   static final String ACTION_CHOOSE_CASIGNALGO            = "choosecasignalgo";
-  static final String ACTION_INITIALIZE_CA                = "initializeca";
   static final String ACTION_SIGNREQUEST                  = "signrequest";
   static final String ACTION_IMPORTCA		              = "importca";
   static final String ACTION_IMPORTCACERT	              = "importcacert";
@@ -466,7 +465,8 @@ java.security.InvalidAlgorithmParameterException
                 cadatahandler.publishCA(caid);
                 capublished = true;             
             }
-            if (requestMap.get(BUTTON_SAVE)  != null || requestMap.get(BUTTON_MAKEREQUEST) != null) {
+            if (requestMap.get(BUTTON_SAVE)  != null || requestMap.get(BUTTON_MAKEREQUEST) != null ||
+                requestMap.get(BUTTON_INITIALIZE) != null) {
                 // Create and save CA
                 caname = requestMap.get(HIDDEN_CANAME);
                 catype = Integer.parseInt(requestMap.get(HIDDEN_CATYPE));
@@ -518,10 +518,33 @@ java.security.InvalidAlgorithmParameterException
             		crldistpointoncrlcritical, serviceOcspActive, serviceXkmsActive, serviceCmsActive, sharedCmpRaSecret
             		);
                 
+                if (cadatahandler.getCAInfo(caid).getCAInfo().getStatus() == CAConstants.CA_UNINITIALIZED) {
+                    // Allow changing of subjectDN etc. for uninitialized CAs
+                    final long validity = ValidityDate.encode(validityString);
+                    if (validity<0) {
+                        throw new ParameterException(ejbcawebbean.getText("INVALIDVALIDITYORCERTEND"));
+                    }
+                    
+                    cainfo.setName(caname);
+                    cainfo.setSubjectDN(subjectdn);
+                    cainfo.setValidity(validity);
+                }
+                
                 if (requestMap.get(BUTTON_SAVE) != null) {
                     // Save the CA info but do nothing More
-                    cadatahandler.editCA(cainfo);                
+                    cadatahandler.editCA(cainfo);
                 }
+                
+                if (requestMap.get(BUTTON_INITIALIZE) != null) {
+                    final String certificateProfileIdString = requestMap.get(SELECT_CERTIFICATEPROFILE);
+                    int certprofileid = (certificateProfileIdString==null ? 0 : Integer.parseInt(certificateProfileIdString));
+                    final String signedByString = requestMap.get(SELECT_SIGNEDBY);
+                    int signedby = (signedByString==null ? 0 : Integer.parseInt(signedByString));
+                    cainfo.setSignedBy(signedby);
+                    cainfo.setCertificateProfileId(certprofileid);
+                    cadatahandler.initializeCA(cainfo);
+                }
+                
                 // Make Request Button Pushed down, this will create a certificate request but not do anything
                 // else with the CA. For creating cross-certificate requests of similar.
                 if (requestMap.get(BUTTON_MAKEREQUEST) != null) {
@@ -534,68 +557,6 @@ java.security.InvalidAlgorithmParameterException
             }
             if (requestMap.get(BUTTON_CANCEL) != null) {
                // Don't save changes.
-            }
-        }
-
-        if (ACTION_INITIALIZE_CA.equals(action)) {           
-            if (requestMap.get(BUTTON_INITIALIZE)  != null ) {
-                // Create and save CA
-                caname = requestMap.get(HIDDEN_CANAME);
-                catype = Integer.parseInt(requestMap.get(HIDDEN_CATYPE));
-                final String subjectdn = requestMap.get(TEXTFIELD_SUBJECTDN); 
-                final String keySequenceFormatParam = requestMap.get(SELECT_KEY_SEQUENCE_FORMAT);
-                final String keySequence = requestMap.get(TEXTFIELD_KEYSEQUENCE);
-                final String description = requestMap.get(TEXTFIELD_DESCRIPTION);
-                final String validityString = requestMap.get(TEXTFIELD_VALIDITY);
-                final long crlperiod = CombineTime.getInstance(requestMap.get(TEXTFIELD_CRLPERIOD), "0"+CombineTime.TYPE_MINUTES).getLong();
-                final long crlIssueInterval = CombineTime.getInstance(requestMap.get(TEXTFIELD_CRLISSUEINTERVAL), "0"+CombineTime.TYPE_MINUTES).getLong();
-                final long crlOverlapTime = CombineTime.getInstance(requestMap.get(TEXTFIELD_CRLOVERLAPTIME), "0"+CombineTime.TYPE_MINUTES).getLong();
-                final long deltacrlperiod = CombineTime.getInstance(requestMap.get(TEXTFIELD_DELTACRLPERIOD), "0"+CombineTime.TYPE_MINUTES).getLong();              
-                final boolean finishUser = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_FINISHUSER));
-                final boolean isDoEnforceUniquePublicKeys = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_DOENFORCEUNIQUEPUBLICKEYS));
-                final boolean isDoEnforceUniqueDistinguishedName = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_DOENFORCEUNIQUEDN));
-                final boolean isDoEnforceUniqueSubjectDNSerialnumber = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_DOENFORCEUNIQUESUBJECTDNSERIALNUMBER));
-                final boolean useCertReqHistory = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USECERTREQHISTORY));
-                final boolean useUserStorage = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USEUSERSTORAGE));
-                final boolean useCertificateStorage = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USECERTIFICATESTORAGE));
-                final String approvalSettingValues = requestMap.get(SELECT_APPROVALSETTINGS);//request.getParameterValues(SELECT_APPROVALSETTINGS);
-                final String numofReqApprovalsParam = requestMap.get(SELECT_NUMOFREQUIREDAPPROVALS);
-                final String availablePublisherValues = requestMap.get(SELECT_AVAILABLECRLPUBLISHERS);//request.getParameterValues(SELECT_AVAILABLECRLPUBLISHERS);
-                final boolean useauthoritykeyidentifier = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_AUTHORITYKEYIDENTIFIER));
-                final boolean authoritykeyidentifiercritical = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_AUTHORITYKEYIDENTIFIERCRITICAL));
-                final boolean usecrlnumber = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USECRLNUMBER));
-                final boolean crlnumbercritical = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_CRLNUMBERCRITICAL));
-                final String defaultcrldistpoint = requestMap.get(TEXTFIELD_DEFAULTCRLDISTPOINT);
-                final String defaultcrlissuer = requestMap.get(TEXTFIELD_DEFAULTCRLISSUER);
-                final String defaultocsplocator  = requestMap.get(TEXTFIELD_DEFAULTOCSPLOCATOR);
-                final String authorityInformationAccess = requestMap.get(TEXTFIELD_AUTHORITYINFORMATIONACCESS);
-                final String caDefinedFreshestCrl = requestMap.get(TEXTFIELD_CADEFINEDFRESHESTCRL);
-                final boolean useutf8policytext = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USEUTF8POLICYTEXT));
-                final boolean useprintablestringsubjectdn = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USEPRINTABLESTRINGSUBJECTDN));
-                final boolean useldapdnorder = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USELDAPDNORDER));
-                final boolean usecrldistpointoncrl = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USECRLDISTRIBUTIONPOINTONCRL));
-                final boolean crldistpointoncrlcritical = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_CRLDISTRIBUTIONPOINTONCRLCRITICAL));
-                final boolean serviceOcspActive = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACTIVATEOCSPSERVICE));
-                final boolean serviceXkmsActive = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACTIVATEXKMSSERVICE));
-                final boolean serviceCmsActive = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACTIVATECMSSERVICE));
-                final String sharedCmpRaSecret = requestMap.get(TEXTFIELD_SHAREDCMPRASECRET);
-                final String certificateProfileIdString = requestMap.get(SELECT_CERTIFICATEPROFILE);
-                int certprofileid = (certificateProfileIdString==null ? 0 : Integer.parseInt(certificateProfileIdString));
-                final CAInfo cainfo = cabean.createCaInfo(caid, caname, subjectdn, catype,
-            		keySequenceFormatParam, keySequence, description, validityString,
-            		crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, finishUser,
-            		isDoEnforceUniquePublicKeys, isDoEnforceUniqueDistinguishedName, isDoEnforceUniqueSubjectDNSerialnumber,
-            		useCertReqHistory, useUserStorage, useCertificateStorage, approvalSettingValues, numofReqApprovalsParam,
-            		availablePublisherValues, useauthoritykeyidentifier, authoritykeyidentifiercritical, usecrlnumber,
-            		crlnumbercritical, defaultcrldistpoint, defaultcrlissuer, defaultocsplocator, authorityInformationAccess,
-            		caDefinedFreshestCrl, useutf8policytext, useprintablestringsubjectdn, useldapdnorder, usecrldistpointoncrl,
-            		crldistpointoncrlcritical, serviceOcspActive, serviceXkmsActive, serviceCmsActive, sharedCmpRaSecret
-            		);
-                final String signedByString = requestMap.get(SELECT_SIGNEDBY);
-                int signedby = (signedByString==null ? 0 : Integer.parseInt(signedByString));
-                cainfo.setSignedBy(signedby);
-                cainfo.setCertificateProfileId(certprofileid);
-                cadatahandler.initializeCA(cainfo);
             }
         }
         
