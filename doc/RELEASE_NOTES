@@ -10,6 +10,12 @@ EJBCA 6.0.0
 * Changes to the CLI
 - The 'cryptotoken create' command has been been given an additional argument for PKCS11 crypto tokens to define the slot labeling type.
 
+Note: Changes to certificate profiles
+- The PKIX QCSyntax-v1 identifier from RFC3739 has been removed and will never be generated.
+  if "PKIX QCSyntax-v2" in the Certificate Profile is unchecked, no QCStatement with QCSyntax will be generated (new behavior).
+  if "PKIX QCSyntax-v2" in the Certificate Profile is checked, a QCStatement with PKIX QCSyntax-v2 will be generated (same as before).
+We do not think this will affect anyone, since the QCSyntax-v1 has probably never been used in the wild.  
+  
 Read the full Changelog for details.
 For upgrade instructions, please see UPGRADE.
 

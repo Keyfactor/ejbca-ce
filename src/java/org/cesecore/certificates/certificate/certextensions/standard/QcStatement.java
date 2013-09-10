@@ -74,16 +74,17 @@ public class QcStatement extends StandardCertificateExtension {
 		final ArrayList<QCStatement> qcs = new ArrayList<QCStatement>();
 		QCStatement qc = null;
 		// First the standard rfc3739 QCStatement with an optional SematicsInformation
-		ASN1ObjectIdentifier pkixQcSyntax = RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v1;
+		// We never add RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v1. This is so old so we think it has never been used in the wild basically.
+		// That means no need to have code we have to maintain for that.
 		if (certProfile.getUsePkixQCSyntaxV2()) {
-			pkixQcSyntax = RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2;
-		}
-		if ( (si != null)  ) {
-			qc = new QCStatement(pkixQcSyntax, si);
-			qcs.add(qc);
-		} else {
-			qc = new QCStatement(pkixQcSyntax);
-			qcs.add(qc);
+		    ASN1ObjectIdentifier pkixQcSyntax = RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2;
+	        if ( (si != null)  ) {
+	            qc = new QCStatement(pkixQcSyntax, si);
+	            qcs.add(qc);
+	        } else {
+	            qc = new QCStatement(pkixQcSyntax);
+	            qcs.add(qc);
+	        }
 		}
 		// ETSI Statement that the certificate is a Qualified Certificate
 		if (certProfile.getUseQCEtsiQCCompliance()) {
@@ -138,8 +139,9 @@ public class QcStatement extends StandardCertificateExtension {
 			ret = new DERSequence(vec);
 		}
 		if (ret == null) {
-			log.error("QcStatements is used, but no statement defined!");
+		    log.error("Qualified certificate statements extension has been enabled, but no statements were included!");
+		    throw new CertificateExtentionConfigurationException("If qualified certificate statements extension has been enabled, at least one statement must be included!");
 		}
 		return ret;
-	}	
+    }	
 }
