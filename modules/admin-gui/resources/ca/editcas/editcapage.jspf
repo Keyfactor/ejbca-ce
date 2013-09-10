@@ -517,7 +517,7 @@ function checkallfields(){
     <input type="hidden" name='<%= HIDDEN_CAID %>' value='<%=caid %>'>
     <input type="hidden" name='<%= HIDDEN_CANAME %>' value='<c:out value="<%= cainfo.getName() %>"/>'>
   <%   } else if (editca && isUninitialized) { %>
-    <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_INITIALIZE_CA %>'>
+    <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_CA %>'>
     <input type="hidden" name='<%= HIDDEN_CAID %>' value='<%=caid %>'>
     <input type="hidden" name='<%= HIDDEN_CANAME %>' value='<c:out value="<%= cainfo.getName() %>"/>'>
   <%   } else { %>
@@ -1425,7 +1425,8 @@ function checkallfields(){
             if (editca && !isUninitialized) { %>
                 <input style="font-weight:bold;" type="submit" name="<%= BUTTON_SAVE %>"  onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE") %>">
         <%  } else if (editca && isUninitialized) { %>
-                <input style="font-weight:bold;" type="submit" name="<%= BUTTON_INITIALIZE %>"  onClick='return checkallfields()' value="<%= ejbcawebbean.getText("INITIALIZE") %>">
+                <input style="font-weight:bold;" type="submit" name="<%= BUTTON_SAVE %>"  onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE") %>">
+                <input style="font-weight:bold;" type="submit" name="<%= BUTTON_INITIALIZE %>"  onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE_AND_INITIALIZE") %>">
         <%  } else { %>
                 <input style="font-weight:bold;" type="submit" name="<%= BUTTON_CREATE %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("CREATE") %>">
         <%  } %>
