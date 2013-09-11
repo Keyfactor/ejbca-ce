@@ -31,6 +31,8 @@ import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.ca.AuthLoginException;
+import org.cesecore.certificates.ca.AuthStatusException;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.jndi.JndiConstants;
@@ -41,8 +43,6 @@ import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.ca.AuthLoginException;
-import org.ejbca.core.model.ca.AuthStatusException;
 
 /**
  * Authenticates users towards a user database.
