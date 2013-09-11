@@ -15,9 +15,9 @@ package org.ejbca.core.ejb.ca.auth;
 import javax.ejb.ObjectNotFoundException;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.ca.AuthLoginException;
+import org.cesecore.certificates.ca.AuthStatusException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.ejbca.core.model.ca.AuthLoginException;
-import org.ejbca.core.model.ca.AuthStatusException;
 
 /**
  * Provides access to authentication system.
