@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA: The OpenSource Certificate Authority                          *
+ *  CESeCore: CE Security Core                                           *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -11,20 +11,20 @@
  *                                                                       *
  *************************************************************************/
  
-package org.ejbca.core.model.ca;
+package org.cesecore.certificates.ca;
 
-import org.ejbca.core.EjbcaException;
+import org.cesecore.CesecoreException;
 
 
 
 /**
- * Authentication error due to wrong status of user object. To authenticate a user the user must
- * have status new, failed or inprocess.
+ * Authentication error due to wrong credentials of user object. To authenticate a user the user
+ * must have valid credentials, i.e. password.
  *
- * @version $Id$
+ * @version $Id: AuthLoginException.java 13258 2011-12-05 15:55:40Z mikekushner $
  */
-public class AuthStatusException extends EjbcaException {
-    private static final long serialVersionUID = -1399828365257002586L;
+public class AuthLoginException extends CesecoreException {
+    private static final long serialVersionUID = -1950899421562556793L;
 
     /**
      * Constructor used to create exception with an errormessage. Calls the same constructor in
@@ -32,7 +32,7 @@ public class AuthStatusException extends EjbcaException {
      *
      * @param message Human redable error message, can not be NULL.
      */
-    public AuthStatusException(String message) {
+    public AuthLoginException(String message) {
         super(message);
     }
 }

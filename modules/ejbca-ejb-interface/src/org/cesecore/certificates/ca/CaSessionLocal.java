@@ -20,8 +20,6 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
-import org.ejbca.core.model.ca.AuthLoginException;
-import org.ejbca.core.model.ca.AuthStatusException;
 
 /**
  * Local interface for CaSession
