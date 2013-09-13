@@ -163,6 +163,7 @@ public class OCSPUtil {
      * Does also print a WARN if the certificate is about to expire.
      * @param signerCert the certificate to be tested
      * @return true if the certificate is valid
+     * @deprecated Moved to OcspResponseGeneratorSessionBean, should be removed when this whole class is removed, as it should be in EJBCA 6.0.0.
      */
     public static boolean isCertificateValid( X509Certificate signerCert ) {
     	try {
