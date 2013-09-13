@@ -18,8 +18,6 @@ import javax.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.certificate.request.RequestMessage;
-import org.cesecore.keys.token.IllegalCryptoTokenException;
 
 /**
  * Local interface for CaSession
@@ -210,18 +208,4 @@ public interface CaSessionLocal extends CaSession {
      */
     int mergeCa(CA ca);
 
-    /**
-     * Returns a CA from used in a given request
-     * 
-     * @param admin an authenticating token
-     * @param req the request
-     * @param doLog if this operation should log.
-     * @return
-     * @throws AuthStatusException
-     * @throws AuthLoginException
-     * @throws CADoesntExistsException
-     * @throws AuthorizationDeniedException
-     */
-    CA getCAFromRequest(AuthenticationToken admin, RequestMessage req, boolean doLog) throws AuthStatusException, AuthLoginException,
-            CADoesntExistsException, AuthorizationDeniedException;
 }
