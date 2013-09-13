@@ -29,7 +29,7 @@
 <li>Enrollment for other applications through open APIs and tools.</li>
 <li>Enrollment generating complete OpenVPN installers for VPN users.</li>
 <li>Mobile enrollment, i.e. iOS using <a href="docs/adminguide.html#Tested devices">SCEP</a>.</li>
-<li><a href="http://www.3gpp.org/">3GPP</a>, i.e. LTE/4G, compatible PKI.</li>
+<li><a href="http://www.3gpp.org/">3GPP</a>, i.e. LTE/4G, compatible PKI, using <a href="docs/adminguide.html#CMP">CMP</a>.</li>
 <li>Revocation and Certificate Revocation Lists (CRLs).</li>
 <li>CRL creation and URL-based CRLDistribution Points according to RFC5280.</li> 
 <li>Smart card logon certificates for Windows, Linux and Mac OS X.</li>
