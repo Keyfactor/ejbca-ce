@@ -132,7 +132,7 @@ public class RequestHelperTest {
         EasyMock.expect(responseMessage.getResponseMessage()).andReturn(signedCert.getEncoded());
         CaSessionLocal caSession = EasyMock.createMock(CaSessionLocal.class);
         CA ca = EasyMock.createMock(CA.class);
-        EasyMock.expect(caSession.getCAFromRequest(EasyMock.anyObject(AuthenticationToken.class), EasyMock.anyObject(RequestMessage.class),
+        EasyMock.expect(signsession.getCAFromRequest(EasyMock.anyObject(AuthenticationToken.class), EasyMock.anyObject(RequestMessage.class),
                 EasyMock.anyBoolean())).andReturn(ca);
         CAInfo caInfo = EasyMock.createMock(CAInfo.class);
         EasyMock.expect(ca.getCAInfo()).andReturn(caInfo);

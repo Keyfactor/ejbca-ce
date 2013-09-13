@@ -14,10 +14,27 @@ package org.ejbca.core.ejb.ca.sign;
 
 import javax.ejb.Local;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.certificate.request.RequestMessage;
+
 /**
  * Local interface for RSASignSession.
  */
 @Local
 public interface SignSessionLocal extends SignSession {
-   
+    /**
+     * Returns a CA that a request is targeted for. Uses different methods in priority order to try to find it.
+     * 
+     * @param admin an authenticating token
+     * @param req the request
+     * @param doLog if this operation should log in the audit log.
+     * @return CA object
+     * @throws CADoesntExistsException
+     * @throws AuthorizationDeniedException
+     */
+    CA getCAFromRequest(AuthenticationToken admin, RequestMessage req, boolean doLog) throws CADoesntExistsException, AuthorizationDeniedException;
+
 }

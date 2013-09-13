@@ -227,7 +227,7 @@ public class RequestHelper {
             result = Base64.encode(cert.getEncoded(), doSplitLines);
             break;
         case ENCODED_CERTIFICATE_CHAIN:
-            CAInfo caInfo = caSession.getCAFromRequest(administrator, req, false).getCAInfo();
+            CAInfo caInfo = signsession.getCAFromRequest(administrator, req, false).getCAInfo();
             LinkedList<Certificate> chain = new LinkedList<Certificate>(caInfo.getCertificateChain());
             chain.addFirst(cert);
             result = CertTools.getPemFromCertificateChain(chain);
