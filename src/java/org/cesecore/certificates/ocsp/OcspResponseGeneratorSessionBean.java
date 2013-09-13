@@ -153,7 +153,6 @@ import org.ejbca.core.ejb.keybind.InternalKeyBindingTrustEntry;
 import org.ejbca.core.ejb.keybind.impl.AuthenticationKeyBinding;
 import org.ejbca.core.ejb.keybind.impl.OcspKeyBinding;
 import org.ejbca.core.ejb.keybind.impl.OcspKeyBinding.ResponderIdType;
-import org.ejbca.core.protocol.ocsp.OCSPUtil;
 
 /**
  * This SSB generates OCSP responses. 
@@ -1326,12 +1325,13 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     }
 
     /**
-     * Checks if a certificate is valid Does also print a WARN if the certificate is about to expire.
+     * Checks if a certificate is valid.
+     * Does also print a WARN if the certificate is about to expire.
      * 
      * @param signerCert the certificate to be tested
      * @return true if the certificate is valid
      */
-    private static boolean isCertificateValid(X509Certificate signerCert) {
+    private static boolean isCertificateValid(final X509Certificate signerCert) {
         try {
             signerCert.checkValidity();
         } catch (CertificateExpiredException e) {
@@ -1733,7 +1733,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         continue;
                     }
                     final String providerName = ocspSigningCacheEntry.getSignatureProviderName();
-                    if (OcspConfiguration.getHealthCheckCertificateValidity() && !OCSPUtil.isCertificateValid(ocspSigningCertificate) ) {
+                    if (OcspConfiguration.getHealthCheckCertificateValidity() && !isCertificateValid(ocspSigningCertificate) ) {
                         sb.append('\n').append(errMsg);
                         continue;
                     }
