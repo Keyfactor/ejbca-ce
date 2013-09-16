@@ -222,6 +222,10 @@ public abstract class ProtectedData {
 		// the signature, and for that we do not need the private key, only the public
 		// Decrypt the signature (realprot) and extract the desired hash
 		final CryptoToken token = ProtectedDataConfiguration.instance().getCryptoToken(keyid);
+        if ( token==null ) {
+            final String msg = INTRES.getLocalizedMessage("databaseprotection.notokenwithid", Integer.valueOf(keyid));
+            log.error(msg);
+        }
 		final String sigalg = ProtectedDataConfiguration.instance().getSigAlg(keyid);
 		final Signature signature = Signature.getInstance(sigalg);
 		final PublicKey pubKey = token.getPublicKey(ProtectedDataConfiguration.instance().getKeyLabel(keyid));
