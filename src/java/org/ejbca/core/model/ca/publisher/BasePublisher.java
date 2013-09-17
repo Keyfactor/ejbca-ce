@@ -47,6 +47,10 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
     // Default values
     public static final boolean DEFAULT_ONLYUSEQUEUE 			 = false;
     
+    // Values used for lookup that are not stored in the data hashmap
+    private int id;
+    private String name;
+    
     // Public Methods
 
     /**
@@ -58,6 +62,14 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
     }
 
     // Public Methods
+    public int getPublisherId() { return id; }
+    public String getName() { return name; }
+    
+    /** Sets the id. Used internally by PublisherSessionBean */ 
+    public void setPublisherId(int id) { this.id = id; }
+    /** Sets the name. Used internally by PublisherSessionBean */
+    public void setName(String name) { this.name = name; }
+    
     /**
      * Returns the description of publisher
      */
