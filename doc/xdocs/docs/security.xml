@@ -78,6 +78,9 @@ curl -v -XDELETE http://hostname:port/appContex
 <subsubsection name="Content Security Policy">
 <p>You can do the same as described for JBoss 7 below.</p>
 </subsubsection>
+<subsubsection name="Write protect deploy">
+<p>After deploying EJBCA you can write protect the server/default/deploy directory. In runtime files are only read from this directory, and write protecting it (owned by root, JBoss runs as jboss user) can prevent malicious code to be deployed.</p>
+</subsubsection>
 </subsection>
 <subsection name="JBoss 7">
 <subsubsection name="Secure Management Interfaces">
@@ -109,6 +112,9 @@ Header set Content-Security-Policy "default-src 'self'"
 &lt;/IfModule&gt;
 </source>
 <p>This is not thoroughly tested, so if something does not work you may have to alter the above statement.</p>
+</subsubsection>
+<subsubsection name="Write protect deploy">
+<p>After deploying EJBCA you can write protect the standalone/deployments directory. In runtime files are only read from this directory, and write protecting it (owned by root, JBoss runs as jboss user) can prevent malicious code to be deployed.</p>
 </subsubsection>
 </subsection>
 <p>
