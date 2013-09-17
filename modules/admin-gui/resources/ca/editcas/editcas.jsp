@@ -506,7 +506,9 @@ java.security.InvalidAlgorithmParameterException
                 final boolean serviceXkmsActive = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACTIVATEXKMSSERVICE));
                 final boolean serviceCmsActive = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACTIVATECMSSERVICE));
                 final String sharedCmpRaSecret = requestMap.get(TEXTFIELD_SHAREDCMPRASECRET);
-                final String subjectdn = requestMap.get(TEXTFIELD_SUBJECTDN); 
+                // Subject DN changing is disabled for now
+                //final String subjectdn = requestMap.get(TEXTFIELD_SUBJECTDN);
+                final String subjectdn = cadatahandler.getCAInfo(caid).getCAInfo().getSubjectDN();
                 final CAInfo cainfo = cabean.createCaInfo(caid, caname, subjectdn, catype,
             		keySequenceFormatParam, keySequence, description, validityString,
             		crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, finishUser,
@@ -525,8 +527,9 @@ java.security.InvalidAlgorithmParameterException
                         throw new ParameterException(ejbcawebbean.getText("INVALIDVALIDITYORCERTEND"));
                     }
                     
-                    cainfo.setName(caname);
-                    cainfo.setSubjectDN(subjectdn);
+                    // Subject DN changing is disabled for now
+                    //cainfo.setName(caname);
+                    //cainfo.setSubjectDN(subjectdn);
                     cainfo.setValidity(validity);
                 }
                 
