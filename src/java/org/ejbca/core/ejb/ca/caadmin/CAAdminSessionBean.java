@@ -239,6 +239,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         if (!caFromDatabase.getSubjectDN().equals(caInfo.getSubjectDN())) {
             caSession.removeCA(authenticationToken, caFromDatabase.getCAId());
             caInfo.setCAId(CertTools.stringToBCDNString(caInfo.getSubjectDN()).hashCode());
+            // Changing the SubjectDN will break cert chains in extended CA services
+            caInfo.getExtendedCAServiceInfos().clear();
             createCA(authenticationToken, caInfo);
         } else {
             CAToken caToken = caInfo.getCAToken();
