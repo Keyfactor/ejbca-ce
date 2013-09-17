@@ -84,14 +84,7 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
                 final byte[] data = cryptoTokenData.getTokenDataAsBytes();
                 final String tokenName = cryptoTokenData.getTokenName();
                 // Create new token and store it in the cache.
-                String inClassname = null;
-                for (final AvailableCryptoToken act : CryptoTokenFactory.instance().getAvailableCryptoTokens()) {
-                    if (act.getClassPath().endsWith(tokenType)) {
-                        // We found a available token with the same Class.getSimpleName() as the CryptoToken's type, so use it!
-                        // (By only storing the "simple" classname we can switch implementation package without care)
-                        inClassname = act.getClassPath();
-                    }
-                }
+                String inClassname = getClassNameForType(tokenType);
                 CryptoToken cryptoToken;
                 try {
                     cryptoToken = CryptoTokenFactory.createCryptoToken(inClassname, properties, data, cryptoTokenId, tokenName);
@@ -106,6 +99,18 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
         }
         // 5. Get CryptoToken from cache (or null) and be merry
         return CryptoTokenCache.INSTANCE.getEntry(cryptoTokenId);
+    }
+
+    public String getClassNameForType(String tokenType) {
+        String inClassname = null;
+        for (final AvailableCryptoToken act : CryptoTokenFactory.instance().getAvailableCryptoTokens()) {
+            if (act.getClassPath().endsWith(tokenType)) {
+                // We found a available token with the same Class.getSimpleName() as the CryptoToken's type, so use it!
+                // (By only storing the "simple" classname we can switch implementation package without care)
+                inClassname = act.getClassPath();
+            }
+        }
+        return inClassname;
     }
 
     @Override

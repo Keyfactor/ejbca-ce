@@ -20,4 +20,7 @@ public interface CryptoTokenSession {
 
     /** @return true if the specified name is already in use by another CryptoToken (checks the database, not the cache) */
     boolean isCryptoTokenNameUsed(String cryptoTokenName);
+    
+    /** @return the full class name (including package names) for a CryptoToken type */
+    public String getClassNameForType(String tokenType);
 }
