@@ -660,6 +660,8 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                 publisher = new ValidationAuthorityPublisher();
                 break;
             }
+            publisher.setPublisherId(pData.getId());
+            publisher.setName(pData.getName());
             publisher.loadData(data);
         }
         return publisher;
