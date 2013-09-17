@@ -162,7 +162,7 @@ public class StartServicesServlet extends HttpServlet {
 
         
         // Log a startup message
-		String iMsg = intres.getLocalizedMessage("startservice.startup", GlobalConfiguration.EJBCA_VERSION);
+        String iMsg = intres.getLocalizedMessage("startservice.startup", GlobalConfiguration.EJBCA_VERSION);
         log.info(iMsg);
 
         // Reinstall BC-provider to help re-deploys to work
@@ -210,7 +210,7 @@ public class StartServicesServlet extends HttpServlet {
         // Make a log row that EJBCA is starting
         Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", iMsg);
-        logSession.log(EjbcaEventTypes.EJBCA_STARTING, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);				
+        logSession.log(EjbcaEventTypes.EJBCA_STARTING, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA, admin.toString(), null, getHostName(), null, details);				
 
         // Log the type of security audit configuration that we have enabled.
         log.trace(">init security audit device configuration");
@@ -291,7 +291,7 @@ public class StartServicesServlet extends HttpServlet {
                 final Set<String> nodes = config.getNodesInCluster();
                 final String hostname = getHostName();
                 if (hostname != null && !nodes.contains(hostname)) {
-                    log.debug("Adding this node the list of nodes");
+                    log.debug("Adding this node ("+hostname+") to the list of nodes");
                     nodes.add(hostname);
                     config.setNodesInCluster(nodes);
                     globalConfigurationSession.saveConfiguration(admin, config, Configuration.GlobalConfigID);
