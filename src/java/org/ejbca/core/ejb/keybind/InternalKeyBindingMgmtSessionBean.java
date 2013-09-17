@@ -73,9 +73,6 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.KeyPairInfo;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
-import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
-import org.ejbca.util.passgen.IPasswordGenerator;
-import org.ejbca.util.passgen.PasswordGeneratorFactory;
 
 /**
  * Generic Management implementation for InternalKeyBindings.
@@ -101,8 +98,6 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     private InternalKeyBindingDataSessionLocal internalKeyBindingDataSession;
     @EJB
     private CertificateCreateSessionLocal certificateCreateSession;
-    @EJB
-    private EndEntityAccessSessionLocal endEntityAccessSessionSession;
 
     @SuppressWarnings("unchecked")
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -546,28 +541,21 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
-    public String renewInternallyIssuedCertificate(AuthenticationToken authenticationToken, int internalKeyBindingId)
+    public String renewInternallyIssuedCertificate(AuthenticationToken authenticationToken, int internalKeyBindingId,
+            EndEntityInformation endEntityInformation)
             throws AuthorizationDeniedException, CryptoTokenOfflineException, CertificateImportException {
         // Assert authorization
         assertAuthorization(authenticationToken, InternalKeyBindingRules.MODIFY.resource() + "/" + internalKeyBindingId);
-        // Find username and current data for this user
-        final InternalKeyBinding internalKeyBinding = internalKeyBindingDataSession.getInternalKeyBinding(internalKeyBindingId);
-        final String currentCertificateId = internalKeyBinding.getCertificateId();
-        if (currentCertificateId == null) {
-            throw new CertificateImportException("Can only renew certificate when there already is one.");
-        }
-        final String endEntityId = certificateStoreSession.findUsernameByFingerprint(currentCertificateId);
-        if (endEntityId == null) {
-            throw new CertificateImportException("Cannot renew certificate without an existing end entity.");
-        }
-        final EndEntityInformation endEntityInformation = endEntityAccessSessionSession.findUser(authenticationToken, endEntityId);
         if (endEntityInformation == null) {
             throw new CertificateImportException("Cannot renew certificate without an existing end entity.");
         }
-        // Re-use the end entity's information with the current "next" public key to request a certificate
+        final InternalKeyBinding internalKeyBinding = internalKeyBindingDataSession.getInternalKeyBinding(internalKeyBindingId);
+        final String endEntityId = certificateStoreSession.findUsernameByFingerprint(internalKeyBinding.getCertificateId());
+        if (endEntityId == null || !endEntityId.equals(endEntityInformation.getUsername())) {
+            // We expect renewals to re-use the same end entity template as before
+            throw new CertificateImportException("Not allowed to switch end entity during renewal.");
+        }
         final PublicKey publicKey = getNextPublicKeyForInternalKeyBinding(authenticationToken, internalKeyBinding);
-        final IPasswordGenerator passwordGenerator = PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_ALLPRINTABLE);
-        endEntityInformation.setPassword(passwordGenerator.getNewPassword(12, 12));
         final RequestMessage req = new SimpleRequestMessage(publicKey, endEntityInformation.getUsername(), endEntityInformation.getPassword());
         final CertificateResponseMessage response;
         try {

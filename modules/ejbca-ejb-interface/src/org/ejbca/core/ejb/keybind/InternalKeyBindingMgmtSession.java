@@ -21,6 +21,7 @@ import java.util.Map;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 
 /**
@@ -181,12 +182,13 @@ public interface InternalKeyBindingMgmtSession {
      * 
      * @param authenticationToken is the authentication token
      * @param internalKeyBindingId is the unique identifier of the InternalKeyBinding
+     * @param endEntityInformation is the template to use for the renewal
      * @return the newly issued certificate's fingerprint
      * @throws AuthorizationDeniedException if the authentication token is not authorized to this operation
      * @throws CryptoTokenOfflineException if the mapped CryptoToken or keys are not available
      * @throws CertificateImportException if the newly issued certificate cannot be used with this InternalKeyBinding (e.g. the EEP might have changed)
      */
-    String renewInternallyIssuedCertificate(AuthenticationToken authenticationToken, int internalKeyBindingId)
+    String renewInternallyIssuedCertificate(AuthenticationToken authenticationToken, int internalKeyBindingId, EndEntityInformation endEntityInformation)
             throws AuthorizationDeniedException, CryptoTokenOfflineException, CertificateImportException;
     
     /**

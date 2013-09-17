@@ -203,7 +203,7 @@ public class InternalKeyBindingMgmtTest {
             assertEquals("Wrong certificate was found for InternalKeyBinding", CertTools.getFingerprintAsString(keyBindingCertificate), boundCertificateFingerprint);
             // ...so now we have a mapping between a certificate in the database and a key pair in a CryptoToken
             // Since we no have a certificate issued by an internal CA, we should be able to renew it
-            final String renewedCertificateFingerprint = internalKeyBindingMgmtSession.renewInternallyIssuedCertificate(alwaysAllowToken, internalKeyBindingId);
+            final String renewedCertificateFingerprint = internalKeyBindingMgmtSession.renewInternallyIssuedCertificate(alwaysAllowToken, internalKeyBindingId, endEntityInformation);
             assertNotNull("Renewal returned null which is an undefined state.", renewedCertificateFingerprint);
             assertFalse("After certificate renewal the same certificate was returned",
                     boundCertificateFingerprint.equals(renewedCertificateFingerprint));

@@ -45,6 +45,7 @@ import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
@@ -59,7 +60,10 @@ import org.ejbca.core.ejb.keybind.InternalKeyBindingProperty;
 import org.ejbca.core.ejb.keybind.InternalKeyBindingRules;
 import org.ejbca.core.ejb.keybind.InternalKeyBindingStatus;
 import org.ejbca.core.ejb.keybind.InternalKeyBindingTrustEntry;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.util.passgen.IPasswordGenerator;
+import org.ejbca.util.passgen.PasswordGeneratorFactory;
 
 /**
  * JavaServer Faces Managed Bean for managing InternalKeyBindings.
@@ -133,6 +137,8 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     private final AuthenticationToken authenticationToken = getAdmin();
     private final CertificateStoreSessionLocal certificateStoreSession = getEjbcaWebBean().getEjb().getCertificateStoreSession();
     private final CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
+    private final EndEntityAccessSessionLocal endEntityAccessSessionSession = getEjbcaWebBean().getEjb().getEndEntityAccessSession();
+
 
     ////
     //// Below is code related to viewing and/or interacting with the list of InternalKeyBindings
@@ -276,7 +282,23 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         try {
             final GuiInfo guiInfo = (GuiInfo) internalKeyBindingGuiList.getRowData();
             final int internalKeyBindingId = guiInfo.getInternalKeyBindingId();
-            final String certificateId = internalKeyBindingSession.renewInternallyIssuedCertificate(authenticationToken, internalKeyBindingId);
+            // Find username and current data for this user
+            final InternalKeyBindingInfo internalKeyBindingInfo = internalKeyBindingSession.getInternalKeyBindingInfo(authenticationToken, internalKeyBindingId);
+            final String currentCertificateId = internalKeyBindingInfo.getCertificateId();
+            if (currentCertificateId == null) {
+                throw new CertificateImportException("Can only renew certificate when there already is one.");
+            }
+            final String endEntityId = certificateStoreSession.findUsernameByFingerprint(currentCertificateId);
+            if (endEntityId == null) {
+                throw new CertificateImportException("Cannot renew certificate without an existing end entity.");
+            }
+            // Re-use the end entity's information with the current "next" public key to request a certificate
+            final EndEntityInformation endEntityInformation = endEntityAccessSessionSession.findUser(authenticationToken, endEntityId);
+            if (endEntityInformation!=null) {
+                final IPasswordGenerator passwordGenerator = PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_ALLPRINTABLE);
+                endEntityInformation.setPassword(passwordGenerator.getNewPassword(12, 12));
+            }
+            final String certificateId = internalKeyBindingSession.renewInternallyIssuedCertificate(authenticationToken, internalKeyBindingId, endEntityInformation);
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("New certificate with fingerprint " + certificateId + " has been issed."));
         } catch (AuthorizationDeniedException e) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
