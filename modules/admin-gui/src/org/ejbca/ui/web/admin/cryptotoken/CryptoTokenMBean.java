@@ -13,6 +13,7 @@
 package org.ejbca.ui.web.admin.cryptotoken;
 
 import java.io.Serializable;
+import java.security.InvalidKeyException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -609,9 +610,16 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                         processedCurveNames.put(ecNamedCurve, getEcKeySpecAliases(ecNamedCurve));
                     }
                 }
+            } catch (InvalidKeyException e) {
+                // Ignore very silently
+                if (log.isTraceEnabled()) {
+                    log.trace("Not adding keys that are not allowed to key list: "+e.getMessage());
+                }
             } catch (Exception e) {
                 // Ignore
-                log.debug(e);
+                if (log.isDebugEnabled()) {
+                    log.debug(e);
+                }
             }
         }
         String[] keys = processedCurveNames.keySet().toArray(new String[0]);
