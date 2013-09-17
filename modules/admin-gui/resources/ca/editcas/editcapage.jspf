@@ -886,7 +886,7 @@ function checkallfields(){
                     } else {
                         out.write(ejbcawebbean.getText("NOTUSED"));
                     }
-                 %> else if (editca && isUninitialized)  {
+                 } else if (editca && isUninitialized)  { %>
                     <select name="<%= SELECT_CERTIFICATEPROFILE %>" size="1">
                     <%  for (final Entry<String,String> entry : cabean.getAvailableCaCertificateProfiles()) { %>
                             <option value="<%=entry.getKey() %>" <% if(entry.getKey().equals(info.getCertificateProfileName(cainfo.getCertificateProfileId()))) { %> selected <%}%>>
