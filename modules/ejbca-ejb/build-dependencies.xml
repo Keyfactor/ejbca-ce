@@ -263,8 +263,6 @@
 					<include name="org/cesecore/certificates/ca/extendedservices/*.java"/>
 					<include name="org/cesecore/certificates/ca/internal/*Manager.java"/>
 					<include name="org/cesecore/certificates/ca/SignRequestException.java"/>
-					<include name="org/cesecore/certificates/ca/AuthLoginException.java"/>
-					<include name="org/cesecore/certificates/ca/AuthStatusException.java"/>
 					<include name="org/cesecore/certificates/certificate/request/RequestMessage.java"/>
 					<include name="org/cesecore/certificates/certificate/request/ResponseMessage.java"/>
 					<include name="org/cesecore/certificates/certificate/request/CertificateResponseMessage.java"/>

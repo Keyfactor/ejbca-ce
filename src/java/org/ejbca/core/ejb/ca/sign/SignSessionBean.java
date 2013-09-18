@@ -41,8 +41,6 @@ import org.bouncycastle.asn1.x509.Extensions;
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.AuthLoginException;
-import org.cesecore.certificates.ca.AuthStatusException;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -83,6 +81,8 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.ca.AuthLoginException;
+import org.ejbca.core.model.ca.AuthStatusException;
 
 /**
  * Creates and signs certificates.
