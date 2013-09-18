@@ -19,6 +19,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
+import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 
 
 /**
@@ -39,6 +40,10 @@ public interface PublisherSession {
      *         not exist. Uses cache to get the object as quickly as possible.
      */
     BasePublisher getPublisher(String name);
+
+    /** Adds publisher data. 
+     * @throws AuthorizationDeniedException */
+    void addPublisher(AuthenticationToken admin, int id, String name, BasePublisher publisher) throws PublisherExistsException, AuthorizationDeniedException;
 
     /** Updates publisher data. 
      * @throws AuthorizationDeniedException */
