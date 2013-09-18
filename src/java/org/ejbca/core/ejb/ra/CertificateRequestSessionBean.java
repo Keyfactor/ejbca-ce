@@ -43,8 +43,6 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.certificates.ca.AuthLoginException;
-import org.cesecore.certificates.ca.AuthStatusException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -284,7 +282,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             boolean createJKS) throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, InvalidKeyException,
             InvalidKeySpecException, NoSuchProviderException, SignatureException, IOException, ObjectNotFoundException, CertificateException,
             UserDoesntFullfillEndEntityProfileException, ApprovalException, EjbcaException, KeyStoreException, NoSuchAlgorithmException,
-            InvalidAlgorithmParameterException, PersistenceException, AuthStatusException, AuthLoginException {
+            InvalidAlgorithmParameterException, PersistenceException {
 
         // This is the secret sauce, do the end entity handling automagically here before we get the cert
         addOrEditUser(admin, userdata, true, true);
@@ -349,12 +347,6 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
             throw e;
         } catch (CertificateException e) {
-            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
-            throw e;
-        } catch (AuthLoginException e) { 
-            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
-            throw e;
-        } catch (AuthStatusException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
             throw e;
         } catch (EjbcaException e) {
