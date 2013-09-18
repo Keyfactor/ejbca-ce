@@ -53,8 +53,8 @@ public class CryptoTokenCreateCommand extends BaseCryptoTokenCommand {
             getLogger().info("Usage: " + getCommand() + " <name> <pin or \"null\" to prompt> <auto activate: true|false> <type> <type specific arguments...>");
             getLogger().info("  Available types: " + SoftCryptoToken.class.getSimpleName() + ", " + PKCS11CryptoToken.class.getSimpleName());
             getLogger().info("   " + SoftCryptoToken.class.getSimpleName() + " arguments: <allow private key export: true|false>");
-            getLogger().info("   " + PKCS11CryptoToken.class.getSimpleName() + " arguments: <PKCS#11 library file> <PKCS#11 slot> <Slot Label Type> <PKCS#11 attribute file or \"null\">");
-            getLogger().info("   " + PKCS11CryptoToken.class.getSimpleName() + " Slot Label Types:");
+            getLogger().info("   " + PKCS11CryptoToken.class.getSimpleName() + " arguments: <PKCS#11 library file> <Slot Reference Type> <Slot reference> <PKCS#11 attribute file or \"null\">");
+            getLogger().info("   " + PKCS11CryptoToken.class.getSimpleName() + " Slot Reference Types:");
             for(Pkcs11SlotLabelType type : Pkcs11SlotLabelType.values()) {
                 getLogger().info("    " + type.getKey() + " - " + type.getDescription());
             }           
@@ -77,9 +77,9 @@ public class CryptoTokenCreateCommand extends BaseCryptoTokenCommand {
                 return;
             }
             cryptoTokenPropertes.setProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY, args[5]);
-            String slotPropertyValue = args[6];
+            Pkcs11SlotLabelType labelType = Pkcs11SlotLabelType.getFromKey(args[6]);
+            String slotPropertyValue = args[7];
             cryptoTokenPropertes.setProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE, slotPropertyValue);
-            Pkcs11SlotLabelType labelType = Pkcs11SlotLabelType.getFromKey(args[7]);
             //If an index was given, accept just numbers as well
             if(labelType.isEqual(Pkcs11SlotLabelType.SLOT_INDEX)) {
                 if(slotPropertyValue.charAt(0) != 'i') {

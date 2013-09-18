@@ -60,26 +60,27 @@ org.cesecore.authorization.control.CryptoTokenRules
 		</h:column>
 		<h:column>
    			<f:facet name="header"><h:outputText value="#{web.text.CRYPTOTOKEN_NAME}"/></f:facet>
-			<h:outputLink value="adminweb/cryptotoken/cryptotoken.jsf?cryptoTokenId=#{cryptoTokenGuiInfo.cryptoTokenId}&ref=cryptotokens">
+			<h:outputLink value="adminweb/cryptotoken/cryptotoken.jsf?cryptoTokenId=#{cryptoTokenGuiInfo.cryptoTokenId}&ref=default">
 				<h:outputText value="#{cryptoTokenGuiInfo.tokenName}" title="#{web.text.CRYPTOTOKEN_VIEWWITH} #{cryptoTokenGuiInfo.cryptoTokenId}"/>
 			</h:outputLink>
 		</h:column>
 		<h:column>
    			<f:facet name="header"><h:outputText value="#{web.text.CRYPTOTOKEN_TYPE}"/></f:facet>
-			<h:outputText value="#{cryptoTokenGuiInfo.tokenType}"/>
+			<h:outputText value="#{web.text.CRYPTOTOKEN_TYPE_P11}" rendered="#{cryptoTokenGuiInfo.p11SlotType}"/>
+			<h:outputText value="#{web.text.CRYPTOTOKEN_TYPE_SOFT}" rendered="#{!cryptoTokenGuiInfo.p11SlotType}"/>
 		</h:column>
 		<h:column>
    			<f:facet name="header"><h:outputText value="#{web.text.CRYPTOTOKEN_LIBRARY}"/></f:facet>
 			<h:outputText value="#{cryptoTokenGuiInfo.p11LibraryAlias}"/>
 		</h:column>
+        <h:column>
+            <f:facet name="header"><h:outputText value="#{web.text.CRYPTOTOKEN_LABEL_TYPE}"/></f:facet>
+            <h:outputText value="#{cryptoTokenGuiInfo.p11SlotLabelTypeText}"/>
+        </h:column>
 		<h:column>
    			<f:facet name="header"><h:outputText value="#{web.text.CRYPTOTOKEN_SLOT}"/></f:facet>
 			<h:outputText value="#{cryptoTokenGuiInfo.p11Slot}"/>
 		</h:column>
-        <h:column>
-            <f:facet name="header"><h:outputText value="#{web.text.CRYPTOTOKEN_LABEL_TYPE}"/></f:facet>
-            <h:outputText value="#{cryptoTokenGuiInfo.p11SlotLabelTypeDescription}"/>
-        </h:column>
 		<h:column>
    			<f:facet name="header"><h:outputText value="#{web.text.CRYPTOTOKEN_ACTIVE}"/></f:facet>
 			<h:graphicImage height="16" width="16" url="#{cryptoTokenGuiInfo.statusImg}" styleClass="statusIcon"/>

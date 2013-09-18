@@ -23,6 +23,8 @@ import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.security.Provider;
 import java.security.Security;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -146,6 +148,35 @@ public class Pkcs11SlotLabel {
         return null;
     }
 
+    /** @return a List of "slotId;tokenLabel" in the (indexed) order we get the from the P11 */
+    public static List<String> getExtendedTokenLabels(final File libFile) {
+        final List<String> tokenLabels = new ArrayList<String>();
+        doC_Initialize(libFile);
+        slotIDLock.lock(); // only one thread at a time may use the p11 object
+        try {
+            final Pkcs11Wrapper p11 = Pkcs11Wrapper.getInstance(libFile);
+            final long slots[] = p11.C_GetSlotList();
+            if (log.isDebugEnabled()) {
+                log.debug("Found numer of slots:\t" + slots.length);
+            }
+            for (int i=0; i<slots.length; i++) {
+                final long slotID = slots[i];
+                final char label[] = p11.getTokenLabel(slotID);
+                if (label == null) {
+                    continue;
+                }
+                final String tokenLabel = new String(label);
+                if (log.isDebugEnabled()) {
+                    log.debug(i+": Found token label:\t" + tokenLabel + "\tid="+slotID);
+                }
+                tokenLabels.add(slotID+";"+tokenLabel.trim());
+            }
+        } finally {
+            slotIDLock.unlock();// lock must always be unlocked.
+        }
+        return tokenLabels;
+    }
+    
     /**
      * Get slot ID for a token label.
      * @param tokenLabel the label.
