@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.keybind;
+package org.cesecore.keybind;
 
 import java.io.Serializable;
 import java.security.cert.Certificate;

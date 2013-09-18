@@ -18,11 +18,11 @@ import java.util.Map;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
+import org.cesecore.keybind.InternalKeyBindingNameInUseException;
+import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.ejbca.core.ejb.keybind.InternalKeyBindingMgmtSessionRemote;
-import org.ejbca.core.ejb.keybind.InternalKeyBindingNameInUseException;
-import org.ejbca.core.ejb.keybind.InternalKeyBindingStatus;
 import org.ejbca.util.CliTools;
 
 /**

@@ -7,7 +7,7 @@ org.cesecore.authorization.control.AuditLogRules,
 org.cesecore.authorization.control.CryptoTokenRules,
 org.ejbca.config.GlobalConfiguration,
 org.ejbca.core.model.authorization.AccessRulesConstants,
-org.ejbca.core.ejb.keybind.InternalKeyBindingRules
+org.cesecore.keybind.InternalKeyBindingRules
 "%>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />

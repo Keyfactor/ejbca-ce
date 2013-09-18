@@ -13,7 +13,7 @@
 package org.ejbca.ui.cli.keybind;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.ejbca.core.ejb.keybind.InternalKeyBindingMgmtSessionRemote;
+import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
 
 /**
  * See getDescription().
