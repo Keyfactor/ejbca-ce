@@ -10,14 +10,14 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.keybind;
+package org.cesecore.keybind;
 
-/** 
- * Status representation of an InternalKeyBinding 
- * 
+import javax.ejb.Local;
+
+/**
+ * @see InternalKeyBindingMgmtSession
  * @version $Id$
- *
  */
-public enum InternalKeyBindingStatus {
-    ACTIVE, DISABLED;
+@Local
+public interface InternalKeyBindingMgmtSessionLocal extends InternalKeyBindingMgmtSession {
 }

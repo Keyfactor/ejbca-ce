@@ -24,11 +24,11 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.keybind.InternalKeyBinding;
+import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
+import org.cesecore.keybind.InternalKeyBindingProperty;
+import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
-import org.ejbca.core.ejb.keybind.InternalKeyBinding;
-import org.ejbca.core.ejb.keybind.InternalKeyBindingMgmtSessionRemote;
-import org.ejbca.core.ejb.keybind.InternalKeyBindingProperty;
-import org.ejbca.core.ejb.keybind.InternalKeyBindingTrustEntry;
 import org.ejbca.util.CliTools;
 
 /**

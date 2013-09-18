@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.keybind.impl;
+package org.cesecore.keybind.impl;
 
 import java.net.Socket;
 import java.security.Principal;

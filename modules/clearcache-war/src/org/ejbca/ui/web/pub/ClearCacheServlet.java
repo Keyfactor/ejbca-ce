@@ -30,12 +30,12 @@ import org.apache.log4j.Logger;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.ejbca.config.Configuration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
-import org.ejbca.core.ejb.keybind.InternalKeyBindingDataSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 
 /**

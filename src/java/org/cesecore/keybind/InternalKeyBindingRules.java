@@ -10,14 +10,32 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.keybind;
 
-import javax.ejb.Remote;
+package org.cesecore.keybind;
 
 /**
- * @see InternalKeyBindingMgmtSession
+ * Authorization Rules for InternalKeyBindings.
+ * 
  * @version $Id$
  */
-@Remote
-public interface InternalKeyBindingMgmtSessionRemote extends InternalKeyBindingMgmtSession {
+public enum InternalKeyBindingRules {
+    BASE("/internalkeybinding"),
+    DELETE(BASE.resource() + "/delete"),
+    MODIFY(BASE.resource() + "/modify"),
+    VIEW(BASE.resource() + "/view"),
+    ;
+
+    private final String resource;
+    
+    private InternalKeyBindingRules(String resource) {
+        this.resource = resource;
+    }
+
+    public String resource() {
+        return this.resource;
+    }
+
+    public String toString() {
+        return this.resource;
+    }
 }

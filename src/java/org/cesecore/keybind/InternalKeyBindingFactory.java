@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.keybind;
+package org.cesecore.keybind;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -21,8 +21,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.keybind.impl.AuthenticationKeyBinding;
-import org.ejbca.core.ejb.keybind.impl.OcspKeyBinding;
+import org.cesecore.keybind.impl.AuthenticationKeyBinding;
+import org.cesecore.keybind.impl.OcspKeyBinding;
 
 /**
  * Factory class with an internal registry of known implementations.

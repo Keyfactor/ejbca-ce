@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.keybind;
+package org.cesecore.keybind;
 
 import java.io.Serializable;
 import java.security.InvalidAlgorithmParameterException;
@@ -22,6 +22,11 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.keybind.CertificateImportException;
+import org.cesecore.keybind.InternalKeyBinding;
+import org.cesecore.keybind.InternalKeyBindingInfo;
+import org.cesecore.keybind.InternalKeyBindingProperty;
+import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 
 /**
@@ -216,7 +221,7 @@ public interface InternalKeyBindingMgmtSession {
      * 
      * @param authenticationToken is the authentication token
      * @param internalKeyBindingId is the unique identifier of the InternalKeyBinding
-     * @param status is one of org.ejbca.core.ejb.keybind.InternalKeyBindingStatus enum
+     * @param status is one of org.cesecore.keybind.InternalKeyBindingStatus enum
      * @return true if the status was modified
      * @throws AuthorizationDeniedException of the authentication token is not authorized to this operation
      */

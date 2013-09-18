@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.keybind.impl;
+package org.cesecore.keybind.impl;
 
 import java.io.Serializable;
 import java.security.cert.Certificate;
@@ -21,10 +21,10 @@ import java.util.Arrays;
 
 import org.apache.log4j.Logger;
 import org.cesecore.config.ExtendedKeyUsageConfiguration;
+import org.cesecore.keybind.CertificateImportException;
+import org.cesecore.keybind.InternalKeyBindingBase;
+import org.cesecore.keybind.InternalKeyBindingProperty;
 import org.cesecore.util.CertTools;
-import org.ejbca.core.ejb.keybind.CertificateImportException;
-import org.ejbca.core.ejb.keybind.InternalKeyBindingBase;
-import org.ejbca.core.ejb.keybind.InternalKeyBindingProperty;
 
 /**
  * Used when this EJBCA instance authenticates to other instances.

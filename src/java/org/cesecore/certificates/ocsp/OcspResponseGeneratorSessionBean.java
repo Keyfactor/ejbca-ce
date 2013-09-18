@@ -130,6 +130,16 @@ import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.keybind.CertificateImportException;
+import org.cesecore.keybind.InternalKeyBinding;
+import org.cesecore.keybind.InternalKeyBindingInfo;
+import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
+import org.cesecore.keybind.InternalKeyBindingNameInUseException;
+import org.cesecore.keybind.InternalKeyBindingStatus;
+import org.cesecore.keybind.InternalKeyBindingTrustEntry;
+import org.cesecore.keybind.impl.AuthenticationKeyBinding;
+import org.cesecore.keybind.impl.OcspKeyBinding;
+import org.cesecore.keybind.impl.OcspKeyBinding.ResponderIdType;
 import org.cesecore.keys.token.BaseCryptoToken;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
@@ -143,16 +153,6 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.log.ProbableErrorHandler;
 import org.cesecore.util.log.SaferAppenderListener;
 import org.cesecore.util.log.SaferDailyRollingFileAppender;
-import org.ejbca.core.ejb.keybind.CertificateImportException;
-import org.ejbca.core.ejb.keybind.InternalKeyBinding;
-import org.ejbca.core.ejb.keybind.InternalKeyBindingInfo;
-import org.ejbca.core.ejb.keybind.InternalKeyBindingMgmtSessionLocal;
-import org.ejbca.core.ejb.keybind.InternalKeyBindingNameInUseException;
-import org.ejbca.core.ejb.keybind.InternalKeyBindingStatus;
-import org.ejbca.core.ejb.keybind.InternalKeyBindingTrustEntry;
-import org.ejbca.core.ejb.keybind.impl.AuthenticationKeyBinding;
-import org.ejbca.core.ejb.keybind.impl.OcspKeyBinding;
-import org.ejbca.core.ejb.keybind.impl.OcspKeyBinding.ResponderIdType;
 
 /**
  * This SSB generates OCSP responses. 

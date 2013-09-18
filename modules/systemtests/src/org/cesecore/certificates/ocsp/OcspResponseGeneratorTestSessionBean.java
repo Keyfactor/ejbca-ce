@@ -25,8 +25,8 @@ import javax.ejb.TransactionAttributeType;
 import org.cesecore.certificates.ocsp.cache.OcspSigningCache;
 import org.cesecore.certificates.ocsp.cache.OcspSigningCacheEntry;
 import org.cesecore.jndi.JndiConstants;
-import org.ejbca.core.ejb.keybind.InternalKeyBinding;
-import org.ejbca.core.ejb.keybind.impl.OcspKeyBinding;
+import org.cesecore.keybind.InternalKeyBinding;
+import org.cesecore.keybind.impl.OcspKeyBinding;
 
 /**
  * Test session bean used to do some nasty manipulation on StandaloneOcspResponseGeneratorSessionBean

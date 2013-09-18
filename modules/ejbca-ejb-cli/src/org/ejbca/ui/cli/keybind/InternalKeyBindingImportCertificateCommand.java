@@ -20,9 +20,9 @@ import java.security.cert.CertificateException;
 import java.util.List;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.keybind.CertificateImportException;
+import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.cesecore.util.CertTools;
-import org.ejbca.core.ejb.keybind.CertificateImportException;
-import org.ejbca.core.ejb.keybind.InternalKeyBindingMgmtSessionRemote;
 
 /**
  * See getDescription().

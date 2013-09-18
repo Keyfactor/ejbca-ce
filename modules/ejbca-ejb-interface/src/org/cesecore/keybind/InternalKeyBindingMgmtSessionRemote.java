@@ -10,14 +10,14 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.keybind;
+package org.cesecore.keybind;
 
-import javax.ejb.Local;
+import javax.ejb.Remote;
 
 /**
  * @see InternalKeyBindingMgmtSession
  * @version $Id$
  */
-@Local
-public interface InternalKeyBindingMgmtSessionLocal extends InternalKeyBindingMgmtSession {
+@Remote
+public interface InternalKeyBindingMgmtSessionRemote extends InternalKeyBindingMgmtSession {
 }

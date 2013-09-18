@@ -37,6 +37,7 @@
         <class>org.cesecore.certificates.certificateprofile.CertificateProfileData</class>
         <class>org.cesecore.certificates.crl.CRLData</class>
         <class>org.cesecore.keys.token.CryptoTokenData</class>
+        <class>org.cesecore.keybind.InternalKeyBindingData</class>
         <class>org.ejbca.core.ejb.approval.ApprovalData</class>
         <class>org.ejbca.core.ejb.ca.publisher.PublisherData</class>
         <class>org.ejbca.core.ejb.ca.publisher.PublisherQueueData</class>
@@ -53,7 +54,6 @@
         <class>org.ejbca.core.ejb.ra.raadmin.GlobalConfigurationData</class>
         <class>org.ejbca.core.ejb.ra.userdatasource.UserDataSourceData</class>
         <class>org.ejbca.core.ejb.services.ServiceData</class>
-        <class>org.ejbca.core.ejb.keybind.InternalKeyBindingData</class>
         <properties>
             <property name="hibernate.dialect" value="${hibernate.dialect}"/>
             <property name="hibernate.connection.url" value="${database.url}"/>

@@ -10,32 +10,14 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
+package org.cesecore.keybind;
 
-package org.ejbca.core.ejb.keybind;
-
-/**
- * Authorization Rules for InternalKeyBindings.
+/** 
+ * Status representation of an InternalKeyBinding 
  * 
  * @version $Id$
+ *
  */
-public enum InternalKeyBindingRules {
-    BASE("/internalkeybinding"),
-    DELETE(BASE.resource() + "/delete"),
-    MODIFY(BASE.resource() + "/modify"),
-    VIEW(BASE.resource() + "/view"),
-    ;
-
-    private final String resource;
-    
-    private InternalKeyBindingRules(String resource) {
-        this.resource = resource;
-    }
-
-    public String resource() {
-        return this.resource;
-    }
-
-    public String toString() {
-        return this.resource;
-    }
+public enum InternalKeyBindingStatus {
+    ACTIVE, DISABLED;
 }
