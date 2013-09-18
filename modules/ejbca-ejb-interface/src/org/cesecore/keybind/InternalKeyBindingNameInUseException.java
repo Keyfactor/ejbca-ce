@@ -12,23 +12,18 @@
  *************************************************************************/
 package org.cesecore.keybind;
 
+import org.cesecore.CesecoreException;
 import org.cesecore.ErrorCode;
-import org.ejbca.core.EjbcaException;
 
 /**
  * An exception thrown when someone tries to create an InternalKeyBinding with an existing name.
  *
  * @version $Id$
  */
-public class InternalKeyBindingNameInUseException extends EjbcaException {
+public class InternalKeyBindingNameInUseException extends CesecoreException {
 
     private static final long serialVersionUID = 1L;
-    private static final String _INTERNAL_KEY_BINDING_NAME_IN_USE = "INTERNAL_KEY_BINDING_NAME_IN_USE";
-    public static final ErrorCode INTERNAL_KEY_BINDING_NAME_IN_USE = ErrorCode.NOT_SPECIFIED;
-    {
-        // Work-around for a not so convenient API
-        INTERNAL_KEY_BINDING_NAME_IN_USE.setInternalErrorCode(_INTERNAL_KEY_BINDING_NAME_IN_USE);
-    }
+    public static final ErrorCode INTERNAL_KEY_BINDING_NAME_IN_USE = ErrorCode.INTERNAL_KEY_BINDING_NAME_IN_USE;
 
     /**
      * Creates a new instance of <code>InternalKeyBindingNameInUseException</code> without detail message.
