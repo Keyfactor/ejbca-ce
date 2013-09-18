@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.cryptotoken;
 
+import java.io.File;
 import java.io.Serializable;
 import java.security.InvalidKeyException;
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
+import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
@@ -54,10 +56,12 @@ import org.cesecore.keys.token.KeyPairInfo;
 import org.cesecore.keys.token.NullCryptoToken;
 import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
+import org.cesecore.keys.token.p11.Pkcs11SlotLabel;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.keys.util.KeyTools;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 import org.ejbca.util.SlotList;
 
 /**
@@ -68,6 +72,8 @@ import org.ejbca.util.SlotList;
  */
 public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
 
+    private static final String CRYPTOTOKEN_LABEL_TYPE_TEXTPREFIX = "CRYPTOTOKEN_LABEL_TYPE_";
+    
     /** GUI table representation of a CryptoToken that can be interacted with. */
     public class CryptoTokenGuiInfo {
         private final CryptoTokenInfo cryptoTokenInfo;
@@ -99,19 +105,25 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
          */
         public String getP11Slot() { return cryptoTokenInfo.getP11Slot(); }
         public String getP11SlotLabelType() { return cryptoTokenInfo.getP11SlotLabelType(); }
-        public String getP11SlotLabelTypeDescription() { return cryptoTokenInfo.getP11SlotLabelTypeDescription(); }
+        public String getP11SlotLabelTypeText() {
+            if (!isP11SlotType()) {
+                return "";
+            }
+            return EjbcaJSFHelper.getBean().getText().get(CRYPTOTOKEN_LABEL_TYPE_TEXTPREFIX + cryptoTokenInfo.getP11SlotLabelType());
+        }
         public String getP11LibraryAlias() { return p11LibraryAlias; }
         public String getAuthenticationCode() { return authenticationCode; }
         public void setAuthenticationCode(String authenticationCode) { this.authenticationCode = authenticationCode; }
         public boolean isAllowedActivation() { return allowedActivation; }
         public boolean isAllowedDeactivation() { return allowedDeactivation; }
         public boolean isReferenced() { return referenced; }
+        public boolean isP11SlotType() { return PKCS11CryptoToken.class.getSimpleName().equals(cryptoTokenInfo.getType()); }
     }
 
     /** GUI edit/view representation of a CryptoToken that can be interacted with. */
     public class CurrentCryptoTokenGuiInfo {
         private String name = "New CryptoToken";
-        private String type = "";
+        private String type = SoftCryptoToken.class.getSimpleName();
         private String secret1 = "";
         private String secret2 = "";
         private boolean autoActivate = false;
@@ -145,6 +157,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         public void setP11SlotLabelType(String p11SlotLabelType) {
             this.p11SlotLabelType = Pkcs11SlotLabelType.getFromKey(p11SlotLabelType);
         }
+        public String getP11SlotLabelTypeText() {
+            return EjbcaJSFHelper.getBean().getText().get(CRYPTOTOKEN_LABEL_TYPE_TEXTPREFIX + getP11SlotLabelType());
+        }
         public String getP11AttributeFile() { return p11AttributeFile; }
         public void setP11AttributeFile(String p11AttributeFile) { this.p11AttributeFile = p11AttributeFile; }
         public boolean isActive() { return active; }
@@ -154,10 +169,16 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
 
         public String getP11LibraryAlias() { return CryptoTokenMBean.this.getP11LibraryAlias(p11Library); }
         public String getP11AttributeFileAlias() { return CryptoTokenMBean.this.getP11AttributeFileAlias(p11AttributeFile); }
-        public boolean isShowSoftCryptoToken() { return getCurrentCryptoTokenId()==0 || SoftCryptoToken.class.getSimpleName().equals(getType()); }
+        public boolean isShowSoftCryptoToken() {
+            return SoftCryptoToken.class.getSimpleName().equals(getType());
+        }
 
         public boolean isShowP11CryptoToken() {
-            return (getCurrentCryptoTokenId() == 0 && isAnyP11LibraryAvailable()) || PKCS11CryptoToken.class.getSimpleName().equals(getType());
+            return PKCS11CryptoToken.class.getSimpleName().equals(getType());
+        }
+
+        public boolean isSlotOfTokenLabelType() {
+            return p11SlotLabelType.equals(Pkcs11SlotLabelType.SLOT_LABEL);
         }
     }
     
@@ -457,8 +478,43 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     
     public List<SelectItem> getAvailableCryptoTokenP11SlotLabelTypes() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
-        for(Pkcs11SlotLabelType type : Pkcs11SlotLabelType.values()) {
-            ret.add(new SelectItem(type.name(), type.toString()));
+        for (Pkcs11SlotLabelType type : Pkcs11SlotLabelType.values()) {
+            if (type.equals(Pkcs11SlotLabelType.SUN_FILE)) {
+                // jeklund doesn't believe that this is used anywhere, but he might be wrong
+                continue;
+            }
+            final String display = EjbcaJSFHelper.getBean().getText().get(CRYPTOTOKEN_LABEL_TYPE_TEXTPREFIX + type.name());
+            ret.add(new SelectItem(type.name(), display));
+        }
+        return ret;
+    }
+
+    /** Tries to retrieve the list of PKCS#11 slots (including token labels) using the Sun PKCS#11 Wrapper */
+    public List<SelectItem> getAvailableCryptoTokenP11SlotTokenLabels() {
+        final List<SelectItem> ret = new ArrayList<SelectItem>();
+        try {
+            final File p11Library = new File(currentCryptoToken.getP11Library());
+            SlotList allowedSlots = getP11SlotList();
+            if (p11Library.exists()) {
+                int index = 0;
+                for (final String extendedTokenLabel : Pkcs11SlotLabel.getExtendedTokenLabels(p11Library)) {
+                    // Returned list is in form "slotId;tokenLabel"
+                    final String slotId = extendedTokenLabel.substring(0, extendedTokenLabel.indexOf(';'));
+                    final String tokenLabel = extendedTokenLabel.substring(extendedTokenLabel.indexOf(';')+1);
+                    if (!tokenLabel.isEmpty()) {
+                        // Bravely assume that slots without a token label are not initialized or irrelevant
+                        if (allowedSlots == null || allowedSlots.contains(slotId)) {
+                            // Only show white-listed slots
+                            ret.add(new SelectItem(tokenLabel, tokenLabel + " (index="+index + ", id="+slotId+")"));
+                        }
+                    }
+                    index++;
+                }
+            }
+        } catch (Exception e) {
+            log.info("Administrator " + authenticationToken.toString() + " tries to list pkcs#11 slots using token label. Failed with: ", e);
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    "Unable to retrieve token labels.", ""));
         }
         return ret;
     }
@@ -502,7 +558,11 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
 
     /** Used to draw the back link. No white-listing to the calling method must be careful to only use this for branching. */
     public String getParamRef() {
-        return FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("ref");        
+        final String reference = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("ref");
+        if (reference==null || reference.isEmpty()) {
+            return "default";
+        }
+        return reference;
     }
     
     /** @return the id of the CryptoToken that is subject to view or edit */
@@ -556,6 +616,14 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             this.currentCryptoToken = currentCryptoToken;
         }
         return this.currentCryptoToken;
+    }
+    
+    public void selectCryptoTokenType() {
+        // NOOP: Only for page reload
+    }
+    public void selectCryptoTokenLabelType() {
+        // Clear slot reference when we change type
+        currentCryptoToken.setP11Slot("");
     }
 
     public boolean isCurrentCryptoTokenEditMode() { return currentCryptoTokenEditMode; }
