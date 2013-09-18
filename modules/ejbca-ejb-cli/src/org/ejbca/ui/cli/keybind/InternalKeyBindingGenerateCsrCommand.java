@@ -20,10 +20,10 @@ import java.security.InvalidKeyException;
 import java.util.List;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.keybind.InternalKeyBinding;
+import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.CertTools;
-import org.ejbca.core.ejb.keybind.InternalKeyBinding;
-import org.ejbca.core.ejb.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.ejbca.util.CliTools;
 
 /**

@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bouncycastle.cert.ocsp.CertificateID;
-import org.ejbca.core.ejb.keybind.impl.OcspKeyBinding;
+import org.cesecore.keybind.impl.OcspKeyBinding;
 
 /**
  * Hold information needed for creating an OCSP response without database lookups.
