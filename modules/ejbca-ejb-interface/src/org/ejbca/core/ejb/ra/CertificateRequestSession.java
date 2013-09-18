@@ -29,8 +29,6 @@ import javax.persistence.PersistenceException;
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.AuthLoginException;
-import org.cesecore.certificates.ca.AuthStatusException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
@@ -91,5 +89,5 @@ public interface CertificateRequestSession {
     public byte[] processSoftTokenReq(AuthenticationToken admin, EndEntityInformation userdata, String hardTokenSN, String keyspec, String keyalg, boolean createJKS) throws CADoesntExistsException,
             AuthorizationDeniedException, NotFoundException, InvalidKeyException, InvalidKeySpecException, NoSuchProviderException, SignatureException, IOException,
             ObjectNotFoundException, CreateException, CertificateException, UserDoesntFullfillEndEntityProfileException, ApprovalException, EjbcaException,
-            KeyStoreException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, PersistenceException, AuthStatusException, AuthLoginException;
+            KeyStoreException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, PersistenceException;
 }
