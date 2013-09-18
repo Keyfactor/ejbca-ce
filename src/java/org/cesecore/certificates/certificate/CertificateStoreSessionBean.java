@@ -1010,25 +1010,20 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean isUniqueCertificateSerialNumberIndex() {
         // Must always run in a transaction in order to store certificates, EntityManager requires use within a transaction
-        checkForUniqueCertificateSerialNumberIndex();
-        return UniqueSernoHelper.getIsUniqueCertificateSerialNumberIndex()!=null && UniqueSernoHelper.getIsUniqueCertificateSerialNumberIndex().booleanValue();
-    }
-
-    /**
-     * Sets variables (but only once) that can be checked with isUniqueCertificateSerialNumberIndex().
-     * This method must be called first (at least once).
-     */
-    private final void checkForUniqueCertificateSerialNumberIndex() {
         if (UniqueSernoHelper.getIsUniqueCertificateSerialNumberIndex() == null) {
             // Only create a new transaction and call this, if the variable is not initialized.
             // If it is already set we don't have to waste time creating a new transaction
             try {
+                 // Sets variables (but only once) that can be checked with isUniqueCertificateSerialNumberIndex().
+                 // This method must be called first (at least once).
                 certificateStoreSession.checkForUniqueCertificateSerialNumberIndexInTransaction();
             } catch (Throwable t) { // NOPMD: we just want to not throw the check exception all the way out
                 log.debug("certificateStoreSession.checkForUniqueCertificateSerialNumberIndexInTransaction threw Throwable (normal if there is a unique issuerDN/serialNumber index): "+t.getMessage());
             }
         }
+        return UniqueSernoHelper.getIsUniqueCertificateSerialNumberIndex()!=null && UniqueSernoHelper.getIsUniqueCertificateSerialNumberIndex().booleanValue();
     }
+
 
     // We want each storage of a certificate to run in a new transactions, so we can catch errors as they happen..
     @Override
