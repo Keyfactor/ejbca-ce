@@ -12,23 +12,18 @@
  *************************************************************************/
 package org.cesecore.keybind;
 
+import org.cesecore.CesecoreException;
 import org.cesecore.ErrorCode;
-import org.ejbca.core.EjbcaException;
 
 /**
  * An exception thrown when someone tries to import a Certificate that is not compatible with an InternalKeyBinding implementation.
  *
  * @version $Id$
  */
-public class CertificateImportException extends EjbcaException {
+public class CertificateImportException extends CesecoreException {
 
     private static final long serialVersionUID = 1L;
-    private static final String _CERTIFICATE_IMPORT = "CERTIFICATE_IMPORT";
-    public static final ErrorCode CERTIFICATE_IMPORT = ErrorCode.NOT_SPECIFIED;
-    {
-        // Work-around for a not so convenient API
-        CERTIFICATE_IMPORT.setInternalErrorCode(_CERTIFICATE_IMPORT);
-    }
+    public static final ErrorCode CERTIFICATE_IMPORT = ErrorCode.CERTIFICATE_IMPORT;
 
     /** Creates a new instance of <code>CertificateImportException</code> without detail message. */
     public CertificateImportException() {
