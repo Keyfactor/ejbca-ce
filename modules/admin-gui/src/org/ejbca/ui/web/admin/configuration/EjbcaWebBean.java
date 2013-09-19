@@ -840,44 +840,72 @@ public class EjbcaWebBean implements Serializable {
             log.trace(">clearClusterCache");
         }
         final Set<String> nodes = globalconfiguration.getNodesInCluster();
-        final Iterator<String> itr = nodes.iterator();
-        String host = null;
-        final StringBuffer failedHosts = new StringBuffer();
-        final StringBuffer succeededHost = new StringBuffer();
-        while (itr.hasNext()) {
-            host = (String) itr.next();
+        final StringBuilder failedHosts = new StringBuilder();
+        final StringBuilder succeededHost = new StringBuilder();
+        for (final String host : nodes) {
             if (host != null) {
-                // get http port of remote host, this requires that all cluster nodes uses the same public htt port
-                final int pubport = WebConfiguration.getPublicHttpPort();
-                final String requestUrl = "http://" + host + ":" + pubport + "/ejbca/clearcache?command=clearcaches";
-                final URL url = new URL(requestUrl);
-                final HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                if (log.isDebugEnabled()) {
-                    log.debug("Contacting host with url:" + requestUrl);
-                }
-                try {
-                    final int responseCode = con.getResponseCode();
-                    if (responseCode != 200) {
-                        log.info("Failed to clear caches for host: " + host + ", responseCode=" + responseCode);
-                        failedHosts.append(' ').append(host);
+                if (checkHost(host)) {
+                    succeededHost.append(' ').append(host);
+                } else {
+                    if (isLocalHost(host)) {
+                        // If we are trying to clear the cache on this instance and failed,
+                        // we give it another chance using 127.0.0.1 (which is allowed by default)
+                        log.info("Failed to clear cache on local node using '"+host+"'. Will try with 'localhost'.");
+                        if (checkHost("localhost")) {
+                            succeededHost.append(' ').append(host);
+                        } else {
+                            failedHosts.append(' ').append(host);
+                        }
                     } else {
-                        succeededHost.append(' ').append(host);
+                        failedHosts.append(' ').append(host);
                     }
-                } catch (SocketException e) {
-                    log.info("Failed to clear caches for host: " + host + ", message=" + e.getMessage());
-                    failedHosts.append(' ').append(host);
-                } catch (IOException e) {
-                    log.info("Failed to clear caches for host: " + host + ", message=" + e.getMessage());
-                    failedHosts.append(' ').append(host);
                 }
             }
         }
+        // Invalidate local GUI cache
+        initialized = false;
         if (failedHosts.length() > 0) {
             throw new Exception("Failed to clear cache on hosts ("+failedHosts.toString()+"), but succeeded on ("+succeededHost.toString()+").");
         }
         if (log.isTraceEnabled()) {
             log.trace("<clearClusterCache");
         }
+    }
+    
+    /** Perform HTTP connection to the cluster nodes clear-cache Servlet */
+    private boolean checkHost(String hostname) throws IOException {
+        // get http port of remote host, this requires that all cluster nodes uses the same public htt port
+        final int pubport = WebConfiguration.getPublicHttpPort();
+        final String requestUrl = "http://" + hostname + ":" + pubport + "/ejbca/clearcache?command=clearcaches";
+        final URL url = new URL(requestUrl);
+        final HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        if (log.isDebugEnabled()) {
+            log.debug("Contacting host with url:" + requestUrl);
+        }
+        try {
+            final int responseCode = con.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                return true;
+            }
+            log.info("Failed to clear caches for host: " + hostname + ", responseCode=" + responseCode);
+        } catch (SocketException e) {
+            log.info("Failed to clear caches for host: " + hostname + ", message=" + e.getMessage());
+        } catch (IOException e) {
+            log.info("Failed to clear caches for host: " + hostname + ", message=" + e.getMessage());
+        }
+        return false;
+    }
+    
+    /** @return true if the provided hostname matches the name reported by the system for localhost */
+    private boolean isLocalHost(final String hostname) {
+        try {
+            if (hostname.equals(InetAddress.getLocalHost().getHostName())) {
+                return true;
+            }
+        } catch (UnknownHostException e) {
+            log.error("Hostname could not be determined", e);
+        }
+        return false;
     }
 
     public EjbLocalHelper getEjb() {
