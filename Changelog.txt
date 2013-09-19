@@ -1,3 +1,23 @@
+EJBCA 5.0.11, 2013-09-30
+---
+Bug
+    [ECA-2984] - ejbcaClientToolBox.sh CMPKeyUpdateStressTest works only with one thread
+    [ECA-3083] - SaferLog4j jar does not build correctly
+
+Improvement
+    [ECA-2951] - Clean up CSS for new pages in 5.0 and 6.0 branches
+    [ECA-3037] - Support for multiple Vendor CA authentication certificates for CMP
+    [ECA-3050] - Base64CertData table
+    [ECA-3053] - Don't show password in build summary
+    [ECA-3066] - Support ECDSA for OCSP automatic key renewal
+    [ECA-3071] - Allow reference of PKCS#11 slots by token label
+    [ECA-3151] - Add hostname to startup log message
+
+New Feature
+    [ECA-2990] - Customer specific LDAP publisher
+    [ECA-3025] - Built in profiling capabilities
+    [ECA-3070] - Add WS keyrecovery method for specified certificate
+
 EJBCA 5.0.10, 2013-05-31
 ---
 Bug

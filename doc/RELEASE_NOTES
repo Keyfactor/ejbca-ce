@@ -19,9 +19,21 @@ We do not think this will affect anyone, since the QCSyntax-v1 has probably neve
 Read the full Changelog for details.
 For upgrade instructions, please see UPGRADE.
 
-EJBCA 5.1.0
+EJBCA 5.0.11
 -----------
-Internal work that never made a release.
+This is a maintenance release with new features, improvements and bug fixes. In all 12 issues have been fixed.
+
+* Noteworthy changes:
+- Possibility to store the Base64 certificate data in a separate table.
+- Fixed possible database rollback when CRL publishing failed.
+- Support for multiple Vendor CA in CMP for 3GPP/LTE networks.
+- Allow to use token label to reference PKCS#11 slots.
+- Support ECDSA for automatic key renewal in OCSP responder.
+- Added a new WS keyrecovery method for specified certificates.
+- Add hostname in startup log.
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE.
 
 EJBCA 5.0.10
 -----------
