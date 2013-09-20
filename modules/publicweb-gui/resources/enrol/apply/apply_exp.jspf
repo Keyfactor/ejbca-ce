@@ -390,9 +390,8 @@
     <c:if test="${minKeyLength <= 1024}">
         <label for="keysize">Key size:</label>
         <select name="keysize" id="keysize">
-          <option value="512">512</option>
-          <option value="1024" selected="selected">1024</option>
-          <option value="2048">2048</option>
+          <option value="1024">1024</option>
+          <option value="2048" selected="selected">2048</option>
         </select>
         <br />
     </c:if>

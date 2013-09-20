@@ -34,10 +34,13 @@
                 <a href="../enrol/browser.jsp">Create Browser Certificate</a>
               </li>
               <li>
-                <a href="../enrol/server.jsp">Create Server Certificate</a>
+                <a href="../enrol/server.jsp">Create Certificate from CSR</a>
               </li>
               <li>
                 <a href="../enrol/keystore.jsp">Create Keystore</a>
+              </li>
+              <li>
+                <a href="../enrol/cvcert.jsp">Create CV certificate</a>
               </li>
               <li>
                 <a href="../enrol/reg.jsp">Request Registration</a>
