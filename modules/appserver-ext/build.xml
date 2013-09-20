@@ -19,6 +19,7 @@
 		<path refid="lib.commons-httpclient.classpath"/>
 		<path refid="lib.commons-config.classpath"/>
 		<path refid="lib.commons-lang.classpath"/>
+                <path location="${mod.cesecore-common.lib}"/>
 	</path>
 	
 	<path id="compile-jbosslog4jsafer.classpath">
@@ -42,7 +43,7 @@
         <jar basedir="${build-jbosslogsigning.dir}" jarfile="${mod.logsigning.lib}"/>
     </target>
 	
-    <target name="compile-jbosslogsigning">
+    <target name="compile-jbosslogsigning" depends="cesecore-common">
     	<mkdir dir="${build-jbosslogsigning.dir}" />
         <javac srcdir="${src.dir}" destdir="${build-jbosslogsigning.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}" classpathref="compile-jbosslogsigning.classpath">
         	<sourcepath location="${ejbca.home}/src/java"/>
