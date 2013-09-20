@@ -105,7 +105,7 @@
 		<path location="${mod.cesecore-ejb-interface.lib}"/>
 	</path>
 
-	<target name="build" description="Build this module" depends="va-ejbca-war, build-libs, compile-tests" /> 
+	<target name="build" description="Build this module" depends="cesecore-ejb, va-ejbca-war, build-libs, compile-tests" /> 
 	
 	<target name="clean" description="Clean up this module">
 		<delete dir="${build.dir}" />
