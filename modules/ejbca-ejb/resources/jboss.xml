@@ -22,18 +22,6 @@
     </session>
 
     <session>
-      <ejb-name>CrlCreateSessionBean</ejb-name>
-      <jndi-name>ejbca/CrlCreateSessionRemote</jndi-name>
-      <exception-on-rollback>true</exception-on-rollback>
-      <method-attributes>
-        <method>
-          <method-name>*</method-name>
-          <transaction-timeout>3600</transaction-timeout>
-        </method>
-      </method-attributes>
-    </session>
-
-    <session>
       <ejb-name>UpgradeSessionBean</ejb-name>
       <jndi-name>ejbca/UpgradeSessionRemote</jndi-name>
       <exception-on-rollback>true</exception-on-rollback>

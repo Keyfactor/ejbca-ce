@@ -23,6 +23,17 @@
     <property name="mod.ejbca-entity.lib" location="${mod.dist.path}/ejbca-entity.jar" />
     <property name="mod.ejbca-db-cli.dist" location="${ejbca.dist.path}/ejbca-db-cli" />
     <property name="mod.ejbca-db-cli.lib" location="${mod.ejbca-db-cli.dist}/ejbca-db-cli.jar" />
+    <property name="mod.cesecore-common.path" location="${mod.path}/cesecore-common" />
+    <property name="mod.cesecore-common.lib" location="${mod.dist.path}/cesecore-common.jar" />
+    <property name="mod.cesecore-entity.path" location="${mod.path}/cesecore-entity" />
+    <property name="mod.cesecore-entity.lib" location="${mod.dist.path}/cesecore-entity.jar" />
+    <property name="mod.cesecore-ejb.path" location="${mod.path}/cesecore-ejb" />
+    <property name="mod.cesecore-ejb.lib" location="${mod.dist.path}/cesecore-ejb.jar" />
+    <property name="mod.cesecore-ejb-interface.path" location="${mod.path}/cesecore-ejb-interface" />
+    <property name="mod.cesecore-ejb-interface.lib" location="${mod.dist.path}/cesecore-ejb-interface.jar" />
+    <property name="mod.cesecore-other-entity.lib" location="${mod.dist.path}/cesecore-other-entity.jar" />
+    <property name="mod.cesecore-other-ejb.lib" location="${mod.dist.path}/cesecore-other-ejb.jar" />
+    <property name="mod.cesecore-other-ejb-interface.lib" location="${mod.dist.path}/cesecore-other-ejb-interface.jar" />
     <property name="mod.ejbca-ejb.lib" location="${mod.dist.path}/ejbca-ejb.jar" />
     <property name="mod.ejbca-ejb.path" location="${mod.path}/ejbca-ejb" />
     <property name="mod.ejbca-ejb-cli.dist" location="${ejbca.dist.path}/ejbca-ejb-cli" />
@@ -387,6 +398,10 @@
 	<path id="lib.clientToolBox.classpath">
         <path location="${mod.clientToolBox.dist}/properties" />
         <path location="${mod.clientToolBox.lib}" />
+        <path location="${mod.ejbca-entity.lib}"/>
+                <path location="${mod.cesecore-entity.lib}"/>
+                <path location="${mod.cesecore-common.lib}"/>
+                <path location="${mod.cesecore-ejb-interface.lib}"/>
         <path>
 			<fileset dir="${mod.clientToolBox.dist}/lib" includes="*.jar" />
 		</path>
