@@ -36,10 +36,13 @@
 	<path id="jdoc.classpath">
 		<path location="dist/ejbca-util.jar" />
 		<path location="modules/dist/ejbca-ejb.jar" />
+                <path location="modules/dist/cesecore-common.jar"/>
+                <path location="modules/dist/cesecore-entity.jar"/>
+                <path location="modules/dist/cesecore-ejb-interface.jar"/>
 		<path location="lib/bcprov-jdk15on-149.jar" />
 		<path location="lib/bcpkix-jdk15on-149.jar" />
     </path>
-
+    
     <!-- =================================================================== -->
     <!-- Build doc part                                                                                                                             -->
     <!-- =================================================================== -->
