@@ -81,9 +81,10 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 
 
 # If true a certificate that does not exist in the database, but is issued by a CA the responder handles
-# will be treated as not revoked. Default (when value is true) is to treat is as "unknown".
-# This is useful if you want an External OCSP responder database to only contain revoked certificates, and not
-# all certificates.
+# will be treated as not revoked. Default (when value is false) is to treat is as "unknown". Since the OCSP responders database normally contains all issued certificate
+# this gives sensible values (in line with RFC6960) to "ok", "revoked" and "unknown" certificates.
+# Setting this value to true is useful if you want an External OCSP responder database to only contain revoked certificates, and not
+# all certificates. In this case the responder will answer "ok" to requests for certificates that do not exist in the database. 
 #
 # Default: false
 #ocsp.nonexistingisgood=false
