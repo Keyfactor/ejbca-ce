@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="cesecore-entity" basedir="../.." default="jar">
+    <property environment="env" />
+    <dirname property="cesecore-entity.dir" file="${ant.file.cesecore-entity}"/>
+    
+    <import file="${cesecore-entity.dir}/../build.xml"/>
+    <import file="${cesecore-entity.dir}/../cesecore-common/build.xml"/>
+    
+    <target name="jar" depends="cesecore-common.jar">
+        <mkdir dir="${cesecore-entity.dir}/build/classes"/>
+        <javac srcdir="${cesecore-entity.dir}/src" destdir="${cesecore-entity.dir}/build/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}">
+            <classpath refid="lib.jee.classpath" />
+            <classpath refid="lib.jpa.classpath"/>
+            <classpath refid="lib.cert-cvc.classpath"/>
+            <classpath refid="lib.bouncycastle.classpath"/>
+            <classpath refid="lib.log4j.classpath"/>
+            <classpath refid="lib.commons-logging.classpath"/>
+            <classpath refid="lib.commons-lang.classpath"/>
+            <classpath refid="lib.commons-config.classpath"/>
+            <classpath refid="lib.commons-collections.classpath"/>
+            <classpath refid="lib.ldap.classpath"/>
+            <classpath location="${cesecore-entity.dir}/../cesecore-common/dist/cesecore-common.jar"/>
+        </javac>
+        <mkdir dir="${cesecore-entity.dir}/dist"/>
+        <jar destfile="${cesecore-entity.dir}/dist/cesecore-entity.jar" basedir="${cesecore-entity.dir}/build/classes"/>
+    </target>
+        
+    <target name="clean" depends="cesecore-common.clean">
+        <delete dir="${cesecore-entity.dir}/dist"/>
+        <delete dir="${cesecore-entity.dir}/build"/>
+    </target>
+
+</project>
+
