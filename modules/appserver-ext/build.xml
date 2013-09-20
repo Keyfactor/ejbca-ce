@@ -60,19 +60,17 @@
     <!-- =================================================================== -->
     <!-- Create Log4j ErrorHandler and appender                              -->
     <!-- =================================================================== -->
-	<target name="jbosslog4jsafer" depends="compile-jbosslog4jsafer">
-    	<mkdir dir="${mod.dist.path}"/>
-		<jar basedir="${build-jbosslog4jsafer.dir}" jarfile="${mod.jbosslog4jsafer.lib}"/>
-	</target>
+    <target name="jbosslog4jsafer" depends="cesecore-common">
+    <mkdir dir="${mod.dist.path}"/>
 
-	<target name="compile-jbosslog4jsafer">
-    	<mkdir dir="${build-jbosslog4jsafer.dir}" />
-        <javac srcdir="${ejbcasrc.dir}" destdir="${build-jbosslog4jsafer.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}" classpathref="compile-jbosslog4jsafer.classpath">
-        	<sourcepath location="${ejbca.home}/src/java"/>
-			<include name="org/cesecore/util/log/SaferDailyRollingFileAppender.java"/>
-			<include name="org/cesecore/util/log/ProbableErrorHandler.java"/>
-        	<include name="org/cesecore/util/log/SaferAppenderListener.java"/>
-    	</javac>
+    <!-- Create a special version of cesecore-common with only some Appenders. -->
+    <jar destfile="${mod.jbosslog4jsafer.lib}">
+        <zipfileset src="${mod.cesecore-common.lib}">
+            <include name="org/cesecore/util/log/SaferDailyRollingFileAppender.class"/>
+            <include name="org/cesecore/util/log/ProbableErrorHandler.class"/>
+            <include name="org/cesecore/util/log/SaferAppenderListener.class"/>
+        </zipfileset>
+    </jar>
     </target>
 
 </project>
