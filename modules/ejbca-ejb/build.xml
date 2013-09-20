@@ -517,7 +517,7 @@
         	includes="${source.fileset.ejbca-ejb.files}" classpathref="compile-ejbca-ejb.classpath"/>
 	</target>
 
-	<target name="compile-util" depends="with.clover">
+	<target name="compile-util" depends="with.clover, cesecore-ejb-interface">
 		<mkdir dir="${build-util.dir}" />
 		<javac srcdir="${src.dir}" destdir="${build-util.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
         	includes="${source.fileset.ejbca-util.files}" classpathref="compile-util.classpath"/>

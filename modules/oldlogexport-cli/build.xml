@@ -21,6 +21,8 @@
 		<path refid="lib.bouncycastle-provonly.classpath"/>
 		<path refid="lib.cert-cvc.classpath"/>
 		<path refid="lib.ldap.classpath"/>
+                <path location="${mod.cesecore-entity.lib}"/>
+                <path location="${mod.cesecore-common.lib}"/>
 	</path>
 
     <target name="build" description="Build this module" depends="compile">
@@ -44,7 +46,7 @@
 		<delete dir="${mod.oldlogexport.dist}" />
     </target>
 	
-    <target name="compile" depends="setup">
+    <target name="compile" depends="setup, cesecore-entity">
     	<mkdir dir="${build.dir}" />
         <javac destdir="${build.dir}" debug="on" includeantruntime="no" encoding="utf-8" target="${java.target.version}" classpathref="oldlogexport.lib.classpath">
             <src path="${ejbca.home}/src/java" />
