@@ -18,7 +18,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import javax.ejb.EJB;
+import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -82,6 +85,21 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
     private SecurityEventsLoggerSessionLocal auditSession;
     @EJB
     private AccessControlSessionLocal accessSession;
+
+    // Myself needs to be looked up in postConstruct
+    @Resource
+    private SessionContext sessionContext;
+    private GlobalConfigurationSessionLocal globalConfigSession;
+    
+    /** Default create for SessionBean without any creation Arguments. */
+    @PostConstruct
+    public void postConstruct() {
+        // We lookup the reference to our-self in PostConstruct, since we cannot inject this.
+        // We can not inject ourself, JBoss will not start then therefore we use this to get a reference to this session bean
+        // to call saveConfiguration from getCachedCOnfiguration we want to do it on the real bean in order to get
+        // the transaction setting (REQUIRED) which created a new transaction in order to create default config
+        globalConfigSession = sessionContext.getBusinessObject(GlobalConfigurationSessionLocal.class);
+    }
 
     @Override
     public Configuration flushCache(String configID) {
@@ -158,7 +176,8 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
                     }
                     result = getNewConfiguration(configID);
                     try {
-                        saveConfiguration(internalAdmin, result, configID);
+                        // Call self bean as external here in order to create a transaction if no transaction exists (this method only has SUPPORTS to be as fast as possible)
+                        globalConfigSession.saveConfiguration(internalAdmin, result, configID);
                     } catch (AuthorizationDeniedException e) {
                         throw new RuntimeException("Internal admin was denied access. This should not be able to happen.");
                     }
