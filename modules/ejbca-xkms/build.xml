@@ -20,6 +20,9 @@
 		<path refid="lib.commons-lang.classpath"/>
 		<path refid="lib.cert-cvc.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
+                <path location="${mod.cesecore-entity.lib}"/>
+                <path location="${mod.cesecore-common.lib}"/>
+                <path location="${mod.cesecore-ejb-interface.lib}"/>
 	</path>
 
 	<path id="compile-library.classpath">
@@ -28,6 +31,9 @@
 		<path refid="lib.xmlsec.classpath"/>
 		<path refid="lib.idn.classpath" />
 		<path refid="lib.jaxb-namespaceprfixmapper-interfaces.classpath" />
+                <path location="${mod.cesecore-entity.lib}"/>
+                <path location="${mod.cesecore-common.lib}"/>
+                <path location="${mod.cesecore-ejb-interface.lib}"/>
 	</path>
 
     <target name="clean" description="Clean up this module">

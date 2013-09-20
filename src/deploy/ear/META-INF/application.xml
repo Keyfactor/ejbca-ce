@@ -10,6 +10,9 @@
     <display-name>EJBCA</display-name>
 
     <module>
+        <ejb>cesecore-ejb.jar</ejb>
+    </module>
+    <module>
         <ejb>ejbca-ejb.jar</ejb>
     </module>
     <module>
