@@ -110,6 +110,22 @@
 	<target name="clientToolBox" description="Build EJBCA client toolbox">
 		<ant antfile="${mod.clientToolBox.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
+        
+        <target name="cesecore-ejb">
+            <ant antfile="${mod.cesecore-ejb.path}/build.xml" target="jar" inheritall="false"/>
+            <!-- TODO: Duplicate from EJBCA_HOME/modules/build.xml:  -->
+            <!-- Filter cesecore-entities.jar -->
+            <jar destfile="${ejbca.home}/modules/dist/cesecore-entity.jar">
+                <zipfileset src="${ejbca.home}/modules/cesecore-entity/dist/cesecore-entity.jar" excludes="META-INF/persistence.xml"/>
+            </jar>
+            <!-- Filter cesecore-common.jar -->
+            <jar destfile="${ejbca.home}/modules/dist/cesecore-common.jar">
+                <zipfileset src="${ejbca.home}/modules/cesecore-common/dist/cesecore-common.jar" excludes="defaultvalues.properties,profilemappings.properties"/>
+            </jar>
+            <!-- Copy the other jars -->
+            <copy file="${ejbca.home}/modules/cesecore-ejb/dist/cesecore-ejb.jar" todir="${ejbca.home}/modules/dist/" failonerror="true"/>
+            <copy file="${ejbca.home}/modules/cesecore-ejb-interface/dist/cesecore-ejb-interface.jar" todir="${ejbca.home}/modules/dist/" failonerror="true"/>
+        </target>
     
     <target name="validationtool" description="Build ValidationTool">
 		<ant antfile="${mod.validationtool.path}/build.xml" target="jar" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="basedir" value="${mod.validationtool.path}"/></ant>
