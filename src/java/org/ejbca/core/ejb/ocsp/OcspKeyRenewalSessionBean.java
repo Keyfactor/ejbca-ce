@@ -386,7 +386,6 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
         if (log.isDebugEnabled()) {
             log.debug("Number of certificates returned from WS: " + certificates.size());
         }
-        final PublicKey nextPublicKey = KeyTools.getPublicKeyFromBytes(publicKeyBytes);
         X509Certificate signedCertificate = null;
         final X509Certificate caCertificate = ocspSigningCacheEntry.getCaCertificateChain().get(0);
         final PublicKey caCertificatePublicKey = caCertificate.getPublicKey();
@@ -405,7 +404,9 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
             }
             // Comparing public keys is dependent on provider used, so we must ensure same provider is used for the public keys
             // Otherwise this will fail, even though it should work
+            // Both certPublicKey and nextPublicKey is obtained using KeyTools.getPublicKeyFromBytes, which uses the BC provider
             final PublicKey certPublicKey = KeyTools.getPublicKeyFromBytes(certificate.getPublicKey().getEncoded());
+            final PublicKey nextPublicKey = KeyTools.getPublicKeyFromBytes(publicKeyBytes);
             if (nextPublicKey.equals(certPublicKey)) {
                 signedCertificate = certificate;
                 break;
