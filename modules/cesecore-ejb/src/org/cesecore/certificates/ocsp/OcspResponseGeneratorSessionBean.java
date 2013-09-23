@@ -1408,7 +1408,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         //  ocsp.p11.sharedLibrary=/opt/nfast/toolkits/pkcs11/libcknfast.so
         //  or ocsp.p11.sunConfigurationFile=/home/ejbca/ocs4.cfg
         //  ocsp.p11.p11password=foo123
-        //  ocsp.p11.slot=i1
+        //  ocsp.p11.slot=1
         if (OcspConfiguration.getP11Password() != null || activationPassword != null) {
             log.info(" Processing PKCS#11..");
             final String p11SharedLibrary = OcspConfiguration.getP11SharedLibrary();
