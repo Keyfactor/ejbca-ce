@@ -2585,9 +2585,34 @@ See org.ejbca.core.model.services.actions.DummyAction for an example implementat
 EJBCA have support for several HSMs. Each HSM has it's own interface for key generation and maintenance, specific
 to the HSM and independent of EJBCA. You should make sure you are familiar with how your HSM works.
 </p>
+<subsection name="HSM modules available in the Admin GUI">
+<p>
+Since EJBCA 5.0 you can manage crypto tokens fully in the Admin GUI or EJBCA.
+The admin GUI tries to be user friendly and automatically show you the HSMs available in your system.
+When creating a new Crypto Token (Crypto Tokens-&gt;Create New) you can select between Soft and PKCS#11 crypto tokens. 
+</p>
+<ul>
+<li>The PKCS#11 option is only available if EJBCA can find any known PKCS#11 modules in the file system.</li>
+</ul>
+<p>
+If EJBCA finds any available known PKCS#11 modules in the file system, you can select PKCS#11 as <i>Type</i>. As <i>PKCS#11 Library</i> there is a
+list of the available known HSMs found in the file system.
+</p>
+<p>If the PKCS#11 option is not available or your desired HSM is not in the list of available Libraries there are a few options to configure:
+</p>
+<ul>
+<li>If you are using JBoss 7 you must make the java PKCS#11 classes exportable. See <a href="installation.html#JBoss">JBoss specific installation notes</a>.</li>
+<li>You can configure PKCS#11 modules that are not already known to EJBCA in conf/web.properties. See conf/web.properties.sample how to add new known modules and override existing (overriding should not be needed since you can add new locations with the same name).</li>
+</ul>
+<p>
+How to create and use Crypto Tokens for HSMs in the Admin GUI is describe in the User Guide, <a href="userguide.html#Managing%20Crypto%20Tokens">Managing Crypto Tokens</a> and <a href="userguide.html##Managing%20CAs">Managing CAs</a>.
+</p>
+<p>The rest of this chapter will mostly be more technical and describe the underlying operations and technical features of using HSMs and PKCS#11.</p>
+</subsection>
 <subsection name="Configuring HSMs">
 <p>
-When configuring a CA to use a HSM in the administration GUI it is a property field where properties unique to this very HSM is specified. All implemented HSM modules are using the same property keywords to define the identity and the purpose of the keys to be used. These keywords are:
+The GUI configuration of CAs is actually backed by a properties field where properties unique to a prticular CAs usage of the HSM is specified. All implemented HSM modules are using the same property keywords to define the identity and the purpose of the keys to be used. 
+These keywords are:
 <ul>
 <li>certSignKey      - the key to be used when signing certificates, can be RSA or ECDSA.</li>
 <li>crlSignKey       - the key to be used when signing CLSs, can be RSA or ECDSA.</li>
@@ -2604,7 +2629,7 @@ When implementing support for a new HSM the 'KeyStrings' class could be used to 
 </p><p>
 The same activation code must be used for all keys used by a CA. 
 </p><p>
-There are four additional key properties that can (optionally) be used when renewing CA keys and to produce roll-over certificates..
+There are four additional key properties that can (optionally) be used when renewing CA keys and to produce roll-over certificates. Some of these (in particular the 'next' keys) are only used when using API methods (such as WS).
 <ul>
   <li>previousCertSignKey - this is the alias of the previous signature key, as opposed to 'certSignKey' which is the current signature key.</li>
   <li>previousSequence - this is the sequence identifying the previous signature key, as opposed to the current sequence that is held in the CA token.
@@ -2616,28 +2641,8 @@ There are four additional key properties that can (optionally) be used when rene
 </p><p>
 Supported and tested HSMs are described below, with sample configurations and HSM specific documentation.
 </p><p>
-Since EJBCA 3.6 the recommended HSM connector is to use the PKCS#11 interface. Older JCE implementations will gradually be deprecated and removed. 
+Since EJBCA 3.6 the recommended HSM connector is to use the PKCS#11 interface. Older JCE implementations are deprecated and removed (contact us if you need to migrate). 
 </p>
-</subsection>
-<subsection name="HSM modules available in the Admin GUI">
-<p>
-Since EJBCA 5.0 you can manage crypto tokens fully in the Admin GUI or EJBCA.
-The admin GUI tries to be user friendly and automatically show you the HSMs available in your system.
-When creating a new Crypto Token (Crypto Tokens-&gt;Create New) you can select between Soft and PKCS#11 crypto tokens. 
-</p>
-<ul>
-<li>The PKCS#11 option is only available if EJBCA can find any known PKCS#11 modules in the file system.</li>
-</ul>
-<p>
-If EJBCA finds any available known PKCS#11 modules in the file system, you can select PKCS#11 as <i>Type</i>. As <i>(PKCS#11) Library</i> there is a
-list of the available known HSMs found in the file system.
-</p>
-<p>If the PKCS#11 option is not available or your desired HSM is not in the list of available Libraries there are a few options to configure:
-</p>
-<ul>
-<li>If you are using JBoss 7 you must make the java PKCS#11 classes exportable. See <a href="installation.html#JBoss">JBoss specific installation notes</a>.</li>
-<li>You can configure PKCS#11 modules that are not already known to EJBCA in conf/web.properties. See conf/web.properties.sample how to add new known modules and override existing (overriding should not be needed since you can add new locations with the same name).</li>
-</ul>
 </subsection>
 <subsection name="Testing PKCS#11 keys for use by EJBCA">
 <p>
@@ -2652,7 +2657,7 @@ cd dist/clientToolBox
 The command will give further instructions about the parameters requires, PKCS#11 library and slot.
 </p>
 </subsection>
-<subsection name="Auto-activation of CA tokens">
+<subsection name="Auto-activation of Crypto Tokens">
 <p>
 The 'pin' property is used to be able to automatically activate a CA token. The activation code may be specified in the property field with the keyword 'pin'. 
 If this property is not specified then the CA has to be manually activated after each restart or re-deployment of EJBCA. 
@@ -2700,19 +2705,19 @@ A PKCS#11 wrapper has been used to implement support for tokens with PKCS#11 lib
 tested with Utimaco CryptoServer and nCipher nShield/netHSM and SafeNet ProtectServer and SafeNet Luna and AEP Keyper and ARX CoSign and Bull TrustWay.
 </p>
 <p>
-Besides the keys previously described the property field of the Administration GUI should contain the following properties:
+Besides the keys previously described the Crypto Token property field (matching with user friendly valued of the Crypto Token in the Administration GUI) should contain the following properties:
 <ul>
-<li>(PKCS#11) Slot - the value of the slot labeling.</li>
-<li>(PKCS#11) Label Type	- the type of slot label</li>
-<li>(PKCS#11) Attribute file: - the shared PKCS#11 library to be used.</li>
+<li>sharedLibrary - the path to the HSM PKCS#11 library (/etc/utimaco/libcs2_pkcs11.so, /usr/safenet/lunaclient/lib/libCryptoki2_64.so etc)</li>
+<li>slotLabelType - the type of slot reference, see below</li>
+<li>slotLabelValue - the value of the slot reference (1, myslot etc).</li>
 </ul>
 </p><p>
 The slot label type can be one of the following
 <ul>
-<li>Slot Number		- Any positive integer, can be used to refer to slots in any HSM with consecutive slot numbering.</li>
-<li>Slot Index		- Any positive integer, prefaced by an 'i'. </li>
-<li>Slot Label		- The PKCS#11 standard allows for using strings for labeling slots. This label may also be an integer or an 'i' followed by an integer (like a number or an index)</li>
-<li>Sun File		- the slot specified by a SUN config file. The slot label can be left blank.</li>
+<li>SLOT_NUMBER - Any positive integer, can be used to refer to slots in any HSM with consecutive slot numbering.</li>
+<li>SLOT_INDEX  - Any positive integer, prefaced by an 'i'. </li>
+<li>SLOT_LABEL  - The PKCS#11 standard allows for using strings for labeling slots. This label may also be an integer or an 'i' followed by an integer (like a number or an index)</li>
+<li>SUN_FILE    - The slot specified by a SUN config file. The slot label can be left blank.</li>
 </ul>
 </p><p>
 </p>
@@ -2723,9 +2728,9 @@ The slot label type can be one of the following
 If keyspec is not given EJBCA tries to generate a key with the same specification as the current cert signing key.</li>
 </ul>
 </p><p>
-Attributes file is in the format specified in the <a href="http://download.oracle.com/javase/6/docs/technotes/guides/security/p11guide.html">JavaTM PKCS#11 Reference Guide</a> and the examples further down in this file.
+An attributes file is in the format specified in the <a href="http://download.oracle.com/javase/6/docs/technotes/guides/security/p11guide.html">JavaTM PKCS#11 Reference Guide</a> and the examples further down in this file.
 </p><p>
-Before there was no default used when no 'attributesFile' existed and HSM specific defaults was used instead. For most HSM these defaults was not usable and the file was needed. Often only the values needed to be changed from the HSM default was specified. But now there is a built in defaults used when the file is missing. These defaults works for most HSM and looks like this:
+Before EJBCA 3.11 there were no default attributes used when no 'attributesFile' existed. Now there is a built in defaults configuration used when no attributesFile is specified. These defaults works for most HSM and looks like this:
 </p>
 <source>
 attributes(*, *, *) = {
@@ -2745,7 +2750,7 @@ attributes(*, CKO_PRIVATE_KEY, *) = {
   CKA_UNWRAP = true
 }");
 </source>
-<p> Only occasion we know that the default is not working is when the module protected slot of an nCpher HSM is used; then the file must exist and have 'CKA_PRIVATE = false' (see below).
+<p>The only occasion that we know of where the default is not working is when the module protected slot of a Thales/nCipher HSM is used; then the file must exist and have 'CKA_PRIVATE = false' (see below).
 </p>
 <note>
 If you are using an attributesFile and have more than one CA using the same slot it is very important that BOTH CA token properties configurations contains the attributesFile. 
@@ -2885,13 +2890,14 @@ Creating certificate with entry testKey.
 This is a example of a property field when creating the CA:
 </p>
 <source>
-slot 1
 defaultKey defaultKey
 certSignKey signKey
 crlSignKey signKey
 testKey testKey
 pin user1
 sharedLibrary /opt/utimaco/p11/libcs2_pkcs11.so
+slotLabelType=SLOT_NUMBER
+slotLabelValue=1
 </source>
 <p>
 Utimaco have an emulator for their CryptoServer LAN HSM that can be used for test and development. 
@@ -3106,7 +3112,7 @@ Login as the user that is running the application server. This user must be a me
 The following environment variables should be set for this user:
 <ul>
 <li>JAVA_HOME (/usr/local/jdk1.6.0_16 or similar)</li>
-<li>APPSRV_HOME (/home/jboss/jboss-4.2.3.GA or similar)</li>
+<li>APPSRV_HOME (/home/jboss/jboss-5.1.0.GA or similar)</li>
 <li>EJBCA_HOME (/home/jboss/ejbca or similar)</li>
 <li>NFAST_HOME (/opt/nfast)</li>
 </ul>
@@ -3168,7 +3174,8 @@ testKey test
 keyEncryptKey cryptRoot
 hardTokenEncrypt cryptRoot
 pin dummy
-slotListIndex 1
+slotLabelType SLOT_LIST_IX
+slotLabelValue 1
 sharedLibrary /opt/nfast/toolkits/pkcs11/libcknfast.so
 </source>
 <strong>Using module protected keys</strong>
@@ -3373,7 +3380,8 @@ certSignKey defaultSign
 crlSignKey defaultSign
 testKey testKey
 sharedLibrary /opt/nfast/toolkits/pkcs11/libcknfast.so
-slotListIndex 1
+slotLabelType=SLOT_LIST_IX
+slotLabelValue 1
 </source>
 </subsection>
 
@@ -3515,7 +3523,8 @@ Signings per second: 68 No crypto available for this key.
 <p>This is a sample configuration of the Hard Token Properties for PKCS#11 token when creating a new CA.</p>
 <source>
 sharedLibrary=/usr/lunasa/lib/libCryptoki2_64.so
-slot=1
+slotLabelType=SLOT_NUMBER
+slotLabelValue=1
 certSignKey=myECCKey
 crlSignKey=myECCKey
 defaultKey=default
@@ -3595,7 +3604,8 @@ crlSignKey defaultSign
 defaultKey default
 testKey test
 sharedLibrary=/opt/PTK/lib/libcryptoki.so
-slot=5
+slotLabelType=SLOT_NUMBER
+slotLabelValue=5
 </source>
 </subsubsection>
 <subsubsection name="Test and list keys on slot 5">
@@ -3642,7 +3652,7 @@ To fix this you should set the environment variable ET_PTKC_SW_AUTOSEEDRNG=true.
 <subsubsection name="Generating keys using ProtectServer tools">
 <p>
 You can also generate keys, and the needed self signed certificate, using the SafeNet tools delivered with the HSM. This is for example suitable when you want
-to generate ECC keys, since there is a bug in the JDK which prevents this without patching the JDK.
+to generate ECC keys with curves not supported by JSK (although you may still have to patch the JDK in order to use them anyhow).
 </p>
 <p>
 For example, the below commands generates an ECC key with curve P-256 on slot 1, storing it on the HSM with alias 'foo', assigning a selfsigned certificate to it and finally listing the object of slot 1.
@@ -3662,29 +3672,10 @@ cd /opt/ETCprt/bin/linux-x86-64
 
 </subsection>
 
-<subsection name="Writing support for new HSMs">
+<subsection name="Support for new HSMs">
 <p>
-EJBCA have a modular API for HSMs, HardCAToken. For every CA that is created
-a HardCAToken object is also created. This object contains among other
-things references to keys (or the keys themselves of a soft token is used).
-
-For each HSM hardware that should be supported you need one HardCAToken
-class that implementes support for this particular HSM. A hard ca token
-plug-in must:
-</p>
-<ol>
-<li>implement CryptoToken</li>
-<li>it is recommended to extend BaseCryptoToken, since BaseCryptoToken implements handling of all properties, autoactivation and such</li>
-<li>be loaded at the static initialization if CATokenManager where it is
-registered with the CATokenManager using the method
-addAvailableCAToken()</li>
-<li>Provide a JCE Security Provider that is installed by the module and can be fetched by 
-the EJBCA crypto module (BouncyCastle) through the name returned in CryptoToken.getProvider().</li>
-</ol>
-<p>
-See HardCATokenSample and/or DummyHardCAToken for samples.
-Unlike the sample addAvailableCAToken() must be called with use=true, or
-the token will not be usable in EJBCA (as the flag suggests).
+EJBCA uses PKCS#11 so in theory can support any HSMs that provide a decent PKCS#11 implementation.
+If the HSM is peculiar you may have to provide specific attribute parameters as descibed for an 'attributesFile' above.
 </p>
 </subsection>
 
@@ -3719,12 +3710,12 @@ You can use PKCS11HSMKeyTool from the clientToolBox to generate keys and certifi
 PrimeKey has made a patches for the java issues with ECDSA. These patches are waiting for approval in the OpenJDK 7. 
 You can get a compiled patch together with an installation script for Linux operating systems (can be adapted for Windows as well) from <a href="http://www.primekey.se/">PrimeKey</a>. 
 </p>
-  <subsubsection name="Sun Java PKCS#11 ECC key issue">
-  <p>If you are using the clientToolBox tool in EJBCA to generate ECC keys in an HSM using the PKCS#11 interface you are likely
+  <subsubsection name="Sun Java PKCS#11 ECC key issue (fixed in recent JDKs)">
+  <p>If you are using an very old version of JAva/JDK, and the clientToolBox tool in EJBCA to generate ECC keys in an HSM using the PKCS#11 interface you are likely
   to stumble on a bug in the JDK which prevents reading of the public key from the HSM. The clientToolBox tool needs to read the public key,
   generate a "dummy" certificate and assign that to the key label, so we have a public key certificate in the keystore retrieved from 
   the Sun PKCS#11 provider.
-  </p><p>This bug is present at least up to and including Oracle JDK 1.6u23. A fix has been merged though and should hopefully be available in u24. The fix is already included in OpenJDK 1.6u21.</p>
+  </p><p>This bug is present at least up to and including Oracle JDK 1.6u23. A fix has been merged though and is available in new releases of OpenJDK and Oracle JDK.</p>
   <p>You can look at this issue in the EJBCA Jira for a solution to the problem: <a href="http://jira.primekey.se/browse/ECA-940">ECA-940</a>
   </p>
   </subsubsection>
@@ -3825,7 +3816,8 @@ ptk_c_administration_manual_rev-c.pdf, Appendix G, Sample EC Domain Parameter Fi
 <source>
 sharedLibrary=/opt/PTK/lib/libcryptoki.so
 defaultKey=bpkey
-slot=1
+slotLabelType=SLOT_NUMBER
+slotLabelValue=1
 </source>
   </subsubsection>
 </subsection>
