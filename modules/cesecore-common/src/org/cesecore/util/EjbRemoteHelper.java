@@ -25,8 +25,8 @@ import org.cesecore.jndi.JndiHelper;
 public enum EjbRemoteHelper {
     INSTANCE;
 
-    /** NOTE: diff between EJBCA and CESeCore */
     public final static String MODULE_EJBCA = "ejbca-ejb";
+    public final static String MODULE_CESECORE = "cesecore-ejb";
     public final static String MODULE_TEST = "systemtests-ejb";
     
     private Map<Class<?>, Object> interfaceCache; 
@@ -56,8 +56,11 @@ public enum EjbRemoteHelper {
         T session = (T) interfaceCache.get(key);
         if (session == null) {
             if (module == null) {
-                // NOTE: diff between EJBCA and CESeCore
-                module = EjbRemoteHelper.MODULE_EJBCA;
+                if (key.getName().startsWith("org.cesecore")) {
+                    module = EjbRemoteHelper.MODULE_CESECORE;
+                } else {
+                    module = EjbRemoteHelper.MODULE_EJBCA;
+                }
             }
             session = JndiHelper.getRemoteSession(key, module);
             if (session != null) {
