@@ -110,6 +110,11 @@ deprecated by) web.properties. You should migrate these configuration changes.
 You will be warned during build if you are using these options and have not
 migrated them.
 
+NOTE: HSM configuration options have been updated to support different slot reference types (slot id, index or label).
+See Admin Guide, databaseprotection.properties.sample, ocsp.properties.sample and catoken.properties.sample for information
+and examples how to update you current PKCS#11 configuration in these files. 
+Configuration in the Admin GUI should be automatically upgraded.
+ 
 NOTE: batchtool.properties is no longer searched for in bin/ but in conf/
 instead. Note that everything in this file is commented out by default, so it
 can be removed if it hasn't been modified.
@@ -118,7 +123,7 @@ NOTE: In EJBCA 6.0.0 new versions of BouncyCastle jars are included. If you have
 been copying ejbca/lib/bc*.jar files to JBoss (jboss/server/default/lib), you
 must remove the old jars from JBoss and copy new jars from EJBCA.
 
-NOTE: In EJBCA 6.0.0 the API for custom certificate extensions was changed. If you have created your own custom certificate extension classes,
+NOTE: In EJBCA 6.0.0 the API for custom certificate extensions was changed. If you have created your own custom certificate extension java classes,
 you need to update the API with one new argument (can be null). There is no effect if you used standard custom extensions in the certextensions.properties, only custom java classes.
 
 NOTE: Starting with EJBCA 6.0.0 custom services and publishers are automatically
