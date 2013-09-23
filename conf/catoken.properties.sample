@@ -3,7 +3,7 @@
 # This is a combination of the CA and CryptoToken properties in Admin-GUI.
 # Remove everything in the file and add your own configuration.
 #
-# See the User's Guide locally or at ejbca.org for details and the latest news.
+# See the Admin Guide locally or at ejbca.org for details and the latest news.
 #
 # Possible values differ depending on which HSM you are using. 
 # Common for all HSM are:
@@ -14,9 +14,13 @@
 #   * hardTokenEncrypt - the key to be used for hardtoken encryption and decryption. PUK will be decrypted by this key.
 #   * defaultKey - the key to be used when no other key is defined for a purpose. If this is the only definition then this key will be used for all purposes.
 #
-# Utimaco HSM Example:
+
+# Utimaco HSM Crypto Token example:
 sharedLibrary /opt/utimaco/p11/libcs2_pkcs11.so
-slot 0
+slotLabelType=SLOT_NUMBER
+slotLabelValue=1
+
+# CA key configuration
 defaultKey defaultRoot
 certSignKey signRoot
 crlSignKey signRoot
