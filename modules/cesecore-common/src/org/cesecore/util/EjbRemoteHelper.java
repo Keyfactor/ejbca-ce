@@ -25,8 +25,16 @@ import org.cesecore.jndi.JndiHelper;
 public enum EjbRemoteHelper {
     INSTANCE;
 
+    /** The main EJBCA EJB jar. */
     public final static String MODULE_EJBCA = "ejbca-ejb";
+    
+    /** The main CESeCore EJB jar. */
     public final static String MODULE_CESECORE = "cesecore-ejb";
+    
+    /** The additional CESeCore EJB jar. */
+    public final static String MODULE_CESECORE_OTHER = "cesecore-other-ejb";
+    
+    /** The EJB used by system tests. */
     public final static String MODULE_TEST = "systemtests-ejb";
     
     private Map<Class<?>, Object> interfaceCache; 
@@ -45,7 +53,7 @@ public enum EjbRemoteHelper {
      * Returns a cached remote session bean.
      * 
      * @param key the @Remote-appended interface for this session bean
-     * @param module the module where the bean is deployed, i.e. systemtests-ejb, if null defaults to ejbca-ejb.
+     * @param module the module where the bean is deployed, i.e. systemtests-ejb or cesecore-other-ejb, if null defaults to cesecore-ejb for packages under org.cesecore, otherwise ejbca-ejb.
      * @return the sought interface, or null if it doesn't exist in JNDI context.
      */
     public <T> T getRemoteSession(final Class<T> key, String module) {
