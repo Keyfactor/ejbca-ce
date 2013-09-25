@@ -75,6 +75,7 @@ public interface InternalKeyBindingMgmtSession {
      * 
      * @param authenticationToken is the authentication token
      * @param type is the alias of the registered InternalKeyBinding's type
+     * @param id is the id to use for the new InternalKeyBinding, or 0 for automatic choice
      * @param name is the unique name that this InternalKeyBinding will be given
      * @param status the initial status to give the InternalKeyBinding
      * @param certificateId is the certificate fingerprint matching the mapped key pair or null
@@ -87,6 +88,14 @@ public interface InternalKeyBindingMgmtSession {
      * @throws InternalKeyBindingNameInUseException if the requested name was already in use by another InternalKeyBinding
      * @return the created InternalKeyBinding's unique identifier
      * @throws InvalidAlgorithmException if the requested signature algorithm is not available
+     */
+    int createInternalKeyBinding(AuthenticationToken authenticationToken, String type, int id, String name, InternalKeyBindingStatus status, String certificateId,
+            int cryptoTokenId, String keyPairAlias, String signatureAlgorithm, Map<Object, Object> dataMap) throws AuthorizationDeniedException, CryptoTokenOfflineException,
+            InternalKeyBindingNameInUseException, InvalidAlgorithmException;
+
+    /**
+     * A createInternalKeyBinding() that chooses the id of the new object automatically.
+     * @see createInternalKeyBinding
      */
     int createInternalKeyBinding(AuthenticationToken authenticationToken, String type, String name, InternalKeyBindingStatus status, String certificateId,
             int cryptoTokenId, String keyPairAlias, String signatureAlgorithm, Map<Object, Object> dataMap) throws AuthorizationDeniedException, CryptoTokenOfflineException,

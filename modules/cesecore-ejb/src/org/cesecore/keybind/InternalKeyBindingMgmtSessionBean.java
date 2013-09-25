@@ -196,7 +196,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     }
 
     @Override
-    public int createInternalKeyBinding(AuthenticationToken authenticationToken, String type, String name, InternalKeyBindingStatus status, String certificateId,
+    public int createInternalKeyBinding(AuthenticationToken authenticationToken, String type, int id, String name, InternalKeyBindingStatus status, String certificateId,
             int cryptoTokenId, String keyPairAlias, String signatureAlgorithm, Map<Object, Object> dataMap) throws AuthorizationDeniedException, CryptoTokenOfflineException,
             InternalKeyBindingNameInUseException, InvalidAlgorithmException {
         if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.MODIFY.resource(),
@@ -229,10 +229,18 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             status = InternalKeyBindingStatus.DISABLED;
         }
         // Finally, try to create an instance of this type and persist it
-        final InternalKeyBinding internalKeyBinding = InternalKeyBindingFactory.INSTANCE.create(type, 0, name, status, certificateId,
+        final InternalKeyBinding internalKeyBinding = InternalKeyBindingFactory.INSTANCE.create(type, id, name, status, certificateId,
                 cryptoTokenId, keyPairAlias, initDataMap);
         internalKeyBinding.setSignatureAlgorithm(signatureAlgorithm);
         return internalKeyBindingDataSession.mergeInternalKeyBinding(internalKeyBinding);
+    }
+    
+    @Override
+    public int createInternalKeyBinding(AuthenticationToken authenticationToken, String type, String name, InternalKeyBindingStatus status, String certificateId,
+            int cryptoTokenId, String keyPairAlias, String signatureAlgorithm, Map<Object, Object> dataMap) throws AuthorizationDeniedException, CryptoTokenOfflineException,
+            InternalKeyBindingNameInUseException, InvalidAlgorithmException {
+        return createInternalKeyBinding(authenticationToken, type, 0, name, status, certificateId,
+            cryptoTokenId, keyPairAlias, signatureAlgorithm, dataMap);
     }
 
     @Override
