@@ -46,6 +46,8 @@ public class CmpServlet extends HttpServlet {
     private static final Logger log = Logger.getLogger(CmpServlet.class);
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance(); // Internal localization of logs and errors
 
+    private static final String DEFAULT_CMP_ALIAS = "cmp";
+    
     @EJB
     private CmpMessageDispatcherSessionLocal cmpMessageDispatcherLocal;
 
@@ -81,13 +83,9 @@ public class CmpServlet extends HttpServlet {
                 output.write(buf, 0, n);
             }
             
-            String alias = null;
-            if(getServletName().equals("CmpAliasServlet")) {
-                alias = getAlias(request.getPathInfo());
-                if(alias == null) {
-                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Wrong CMP URL.");
-                    return;
-                }
+            String alias = getAlias(request.getPathInfo());
+            if(alias == null) {
+                alias = DEFAULT_CMP_ALIAS;
             }
             
             service(output.toByteArray(), request.getRemoteAddr(), response, alias);
@@ -165,28 +163,10 @@ public class CmpServlet extends HttpServlet {
 
             if((alias == null) || (alias.length() < 1)) {
                 log.error("Wrong CMP URL. A CMP configuration alias must be specified");
-                return null;
-            }
-                
-            if(!isAlphanumeric(alias)) {
-                log.error("Wrong CMP URL. A CMP configuration alias must consist of only number and/or letters");
-                return null;
+                return null;  //DEFAULT_CMP_ALIAS;
             }
         }
         return alias;
     }
     
-    private boolean isAlphanumeric(String str) {
-        if (str == null) {
-            return false;
-        }
-        int sz = str.length();
-        for (int i = 0; i < sz; i++) {
-            if (!Character.isLetterOrDigit(str.charAt(i))) {
-                return false;
-            }
-        }
-        return true;
-    }
-
 }
