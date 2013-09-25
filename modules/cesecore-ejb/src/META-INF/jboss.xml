@@ -7,6 +7,7 @@
   
     <session>
       <ejb-name>CrlCreateSessionBean</ejb-name>
+      <!-- NOTE: diff between EJBCA and CESeCore -->
       <jndi-name>ejbca/CrlCreateSessionRemote</jndi-name>
       <exception-on-rollback>true</exception-on-rollback>
       <method-attributes>
