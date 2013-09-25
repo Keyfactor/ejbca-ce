@@ -25,7 +25,10 @@
             <classpath location="${cesecore-ejb-interface.dir}/../cesecore-entity/dist/cesecore-entity.jar"/>
         </javac>
         <mkdir dir="${cesecore-ejb-interface.dir}/dist"/>
-        <jar destfile="${cesecore-ejb-interface.dir}/dist/cesecore-ejb-interface.jar" basedir="${cesecore-ejb-interface.dir}/build/classes"/>
+        <jar destfile="${cesecore-ejb-interface.dir}/dist/cesecore-ejb-interface.jar">
+            <fileset dir="${cesecore-ejb-interface.dir}/build/classes/" excludes="**/*.java"/>
+            <fileset dir="${cesecore-ejb-interface.dir}/src/" excludes="**/*.java"/>
+        </jar>
     </target>
         
     <target name="clean" depends="cesecore-common.clean, cesecore-entity.clean">
@@ -34,4 +37,3 @@
     </target>
 
 </project>
-

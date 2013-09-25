@@ -22,7 +22,10 @@
             <classpath location="${cesecore-entity.dir}/../cesecore-common/dist/cesecore-common.jar"/>
         </javac>
         <mkdir dir="${cesecore-entity.dir}/dist"/>
-        <jar destfile="${cesecore-entity.dir}/dist/cesecore-entity.jar" basedir="${cesecore-entity.dir}/build/classes"/>
+        <jar destfile="${cesecore-entity.dir}/dist/cesecore-entity.jar">
+            <fileset dir="${cesecore-entity.dir}/build/classes/" excludes="**/*.java"/>
+            <fileset dir="${cesecore-entity.dir}/src/" excludes="**/*.java"/>
+        </jar>
     </target>
         
     <target name="clean" depends="cesecore-common.clean">
@@ -31,4 +34,3 @@
     </target>
 
 </project>
-
