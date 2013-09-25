@@ -238,12 +238,8 @@
             <jboss:admsilent arg='/subsystem=mail/mail-session="${mail.jndi-name}":remove' failonerror="false" />
             <jboss:admsilent arg='/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=ejbca-mail-smtp:remove' failonerror="false" />
             <jboss:admsilent arg=':reload' />
-
             <!-- We must wait until the ejbca.ear has been redeployed, or jboss cli will not be available if it takes too long time to reload. -->
-            <waitfor maxwait="10000">
-                <available file="${jboss.farm.dir}/ejbca.ear.deployed"/>
-            </waitfor>
-
+			<jboss:admwaitreload/>
             <!-- Construct the parameters for adding the server based on whether we use authentication or not (not specifying the username/password means no authentication). -->
             <condition property="jboss7.ejbca-mail-smtp.params" value='outbound-socket-binding-ref=ejbca-mail-smtp, ssl="${mail.smtp.starttls.enable}", username="${mail.user}", password="${mail.password}"' else='outbound-socket-binding-ref=ejbca-mail-smtp, ssl="${mail.smtp.starttls.enable}"'>
                 <equals arg1="${mail.smtp.auth}" arg2="true" />
@@ -255,9 +251,7 @@
             <jboss:adm arg='/subsystem=mail/mail-session="${mail.jndi-name}"/server=smtp:add(${jboss7.ejbca-mail-smtp.params})' />
             <jboss:admsilent arg=":reload" />
             <!-- We must wait until the ejbca.ear has been redeployed, or some race conditions could happen. The problem is that :reload is a non-blocking operation. -->
-            <waitfor maxwait="20000">
-                <available file="${jboss.farm.dir}/ejbca.ear.deployed"/>
-            </waitfor>
+			<jboss:admwaitreload/>
         </target>
 
 	<target name="jee:deployDSJBoss7" if="jboss7" depends="set-paths,jee:assert-runJBoss7">
@@ -323,14 +317,9 @@
             <jboss:admsilent arg="/interfaces=/interface=http:remove" failonerror="false" />
             <jboss:admsilent arg="/interfaces=/interface=httpspub:remove" failonerror="false" />
             <jboss:admsilent arg="/interfaces=/interface=httpspriv:remove" failonerror="false" />
-        	<!-- If the server is not so fast, we have to wait a little before we can reload, otherwise it will be bad -->
-            <waitfor maxwait="5000">
-                <available file="${jboss.farm.dir}/ejbca.ear.deployed"/>
-            </waitfor>
+			<jboss:admwaitreload/>
             <jboss:admsilent arg=":reload" />
-            <waitfor maxwait="5000">
-                <available file="${jboss.farm.dir}/ejbca.ear.deployed"/>
-            </waitfor>
+			<jboss:admwaitreload/>
         </target>
 
         <target name="jee:web-configureJBoss7" depends="jee:check,jee:assert-runJBoss7" if="jboss7" unless="web.noconfigure">
@@ -349,13 +338,9 @@
             <jboss:adm arg="/subsystem=webservices:write-attribute(name=wsdl-host, value=jbossws.undefined.host)" />
             <jboss:adm arg="/subsystem=webservices:write-attribute(name=modify-wsdl-address, value=true)" />
         	<!-- If the server is not so fast, we have to wait a little before we can reload, otherwise it will be bad -->
-            <waitfor maxwait="5000">
-                <available file="${jboss.farm.dir}/ejbca.ear.deployed"/>
-            </waitfor>
+			<jboss:admwaitreload/>
             <jboss:adm arg=":reload" />
-            <waitfor maxwait="5000">
-                <available file="${jboss.farm.dir}/ejbca.ear.deployed"/>
-            </waitfor>
+			<jboss:admwaitreload/>
             <antcall target="jee:web-configureJBoss7SSL" />
         </target>
 
@@ -377,13 +362,9 @@
             <jboss:adm arg='/subsystem=web/connector=httpspub/ssl=configuration:write-attribute(name=password, value="${httpsserver.password}")' />
             <jboss:adm arg='/subsystem=web/connector=httpspub/ssl=configuration:write-attribute(name=certificate-key-file, value="${jboss.server.home.dir}/${keystore.file}")' />
         	<!-- If the server is not so fast, we have to wait a little before we can reload, otherwise it will be bad -->
-            <waitfor maxwait="5000">
-                <available file="${jboss.farm.dir}/ejbca.ear.deployed"/>
-            </waitfor>
+			<jboss:admwaitreload/>
             <jboss:adm arg=":reload" />
-            <waitfor maxwait="5000">
-                <available file="${jboss.farm.dir}/ejbca.ear.deployed"/>
-            </waitfor>
+			<jboss:admwaitreload/>
         </target>
 
         <target name="jee:assert-runJBoss7" if="jboss7">
@@ -535,6 +516,18 @@
                 </exec>
             </sequential>
         </macrodef>
-        
+
+        <macrodef name="admwaitreload" uri="jboss" description="JBoss 7 CLI reload wait macro">
+            <attribute name="failonerror" default="true" description="Fail the build if command exits with error."/>
+            <sequential>
+            	<!-- Wait up to 60 seconds for EJBCA to be properly deployed after a JBoss7 :reload. -->
+                <retry retrycount="30">
+                    <sequential>
+                        <sleep seconds="2"/>
+                        <jboss:admsilent arg="/deployment=ejbca.ear:read-attribute(name=status)" failonerror="true" />
+                    </sequential>
+                </retry>
+            </sequential>
+        </macrodef>
 </project>
 
