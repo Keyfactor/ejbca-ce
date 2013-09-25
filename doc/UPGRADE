@@ -132,6 +132,16 @@ specified manually. If you need to use old custom classes from before 6.0
 (i.e. not autodetected classes) you can enable manual entry with the
 option web.manualclasspathsenabled=true in web.properties.
 
+NOTE: In EJBCA 6.0.0, the CMP configuration handling has been rewritten. CMP configurations are no longer read from conf/cmp.properties file, instead, CMP 
+configurations can be set either in the admin GUI or in the command line (execute './bin/ejbca.sh config cmp' from EJBCA home directory for command line 
+documentation). If you do use CMP, you can upload your old cmp.properties file by executing the following command in EJBCA home directory:
+	./bin/ejbca.sh config cmp uploadfile conf/cmp.properties cmp
+
+NOTE: In EJBCA 6.0.0, TCP configurations have been moved from conf/cmp.properties file (which has been removed) to conf/cmptcp.properties. So if you are 
+a TCP (a deprecated protocol in EJBCA) user, you should set your TCP configuration values in the new file. You should also upload conf/cmp.properties file 
+according to the instructions above, and rename the alias 'cmp' to 'tcp'. See Admin Guide -> CMP -> 'CMP over TCP' and execute './bin/ejbca.sh config cmp' for 
+details.
+
 If you get a "java.lang.NoSuchMethodError" in the admin GUI it is because JBoss does not clean temporary files very well.
 Delete the directories JBOSS_HOME/server/default/tmp and JBOSS_HOME/server/default/work and restart JBoss to get it working.
 

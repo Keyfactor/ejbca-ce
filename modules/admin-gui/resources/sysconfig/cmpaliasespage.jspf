@@ -11,7 +11,7 @@
 
 <form name="editcmpaliases" method="post"  action="<%= THIS_FILENAME%>">
 
-  <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_ALIAS %>'>
+  <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_ALIASES %>'>
 
   <table class="list">
 

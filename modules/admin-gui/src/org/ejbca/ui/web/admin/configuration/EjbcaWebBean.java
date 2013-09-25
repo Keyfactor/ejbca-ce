@@ -41,6 +41,7 @@ import javax.ejb.EJBException;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
@@ -52,6 +53,8 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
@@ -80,6 +83,7 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.util.HTMLTools;
 
@@ -150,6 +154,7 @@ public class EjbcaWebBean implements Serializable {
     private final Boolean[] raauthorized = new Boolean[AUTHORIZED_RA_RESOURCES.length];
     private AuthenticationToken administrator;
     private String requestServerName;
+    private CmpConfiguration tempCmpConfig;
 
     /*
      * We should make this configurable, so GUI client can use their own time zone rather than the
@@ -940,10 +945,53 @@ public class EjbcaWebBean implements Serializable {
         Map<String, Integer> eeps = this.informationmemory.getAuthorizedEndEntityProfileNames();
         return eeps.keySet();
     }
-    
-    public Collection<String> getAuthorizedCertProfileNames() {
-        Map<String, Integer> cps = this.informationmemory.getAuthorizedEndEntityCertificateProfileNames();
-        return cps.keySet();
+
+    public CmpConfiguration getTempCmpConfig() {
+        return this.tempCmpConfig;
     }
     
+    public void setTempCmpConfig(CmpConfiguration cmpConfig) {
+        this.tempCmpConfig = cmpConfig;
+    }
+    
+    public Collection<String> getAvailableCAsOfEEProfile(String eep) throws NumberFormatException, CADoesntExistsException, AuthorizationDeniedException {
+        if(StringUtils.equals(eep, "KeyId")) {
+            return informationmemory.getAllCANames().keySet();
+        }
+        
+        EndEntityProfile p = endEntityProfileSession.getEndEntityProfile(eep);
+        ArrayList<String> caids = (ArrayList<String>) p.getAvailableCAs();
+        Set<String> cas = new HashSet<String>();
+        Iterator<String> itr = caids.iterator();
+        while(itr.hasNext()) {
+            String caid = itr.next();
+            if(caid.equals("1")) {
+                return informationmemory.getAllCANames().keySet();
+            }
+            CA ca = caSession.getCA(administrator, Integer.parseInt(caid));
+            cas.add(ca.getName());
+        }
+        return cas;
+    }
+    
+    public Collection<String> getAvailableCertProfilessOfEEProfile(String eep) throws CADoesntExistsException, AuthorizationDeniedException {
+        if(StringUtils.equals(eep, "KeyId")) {
+            //return getAuthorizedCertProfileNames();
+            Map<String, Integer> cps = this.informationmemory.getAuthorizedEndEntityCertificateProfileNames();
+            return cps.keySet();
+        }
+        
+        EndEntityProfile p = endEntityProfileSession.getEndEntityProfile(eep);
+        ArrayList<String> cpids = (ArrayList<String>) p.getAvailableCertificateProfileIds();
+        Set<String> cps = new HashSet<String>();
+        Iterator<String> itr = cpids.iterator();
+        while(itr.hasNext()) {
+            String cpid = itr.next();
+            String cpname = certificateProfileSession.getCertificateProfileName(Integer.parseInt(cpid));
+            cps.add(cpname);
+        }
+        return cps;
+    }
+    
+        
 }

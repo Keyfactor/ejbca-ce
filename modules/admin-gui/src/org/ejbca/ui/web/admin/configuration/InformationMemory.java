@@ -30,7 +30,11 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CAConstants;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
@@ -213,6 +217,25 @@ public class InformationMemory implements Serializable {
     }
 
     /**
+     * Returns a CA names as a treemap of name (String) -> id (Integer). Also includes external CAs
+     * @throws AuthorizationDeniedException 
+     * @throws CADoesntExistsException 
+     */
+    public TreeMap<String, Integer> getExternalCAs() throws CADoesntExistsException, AuthorizationDeniedException {
+        TreeMap<String, Integer> allcas = this.caauthorization.getAllCANames();
+        TreeMap<String, Integer> externalcas = new TreeMap<String, Integer>();
+        Iterator<String> itr = allcas.keySet().iterator();
+        while(itr.hasNext()) {
+            String caname = (String) itr.next();
+            CA ca = casession.getCA(administrator, caname);
+            if (ca.getStatus() == CAConstants.CA_EXTERNAL) {
+                externalcas.put(caname, allcas.get(caname));
+            }
+        }
+        return externalcas;
+    }
+    
+    /**
      * Returns CA authorization string used in userdata queries.
      */
     public String getUserDataQueryCAAuthoorizationString() {
@@ -238,6 +261,13 @@ public class InformationMemory implements Serializable {
      */
     public GlobalConfiguration getGlobalConfiguration() {
         return globalconfiguration;
+    }
+    
+    /**
+     * returns the CMP configuration (CMPConfiguration)
+     */
+    public CmpConfiguration getCMPConfiguration() {
+        return cmpconfiguration;
     }
 
     /**

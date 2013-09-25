@@ -107,6 +107,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 	@PostConstruct
 	public void postConstruct() {
 		CryptoProviderTools.installBCProviderIfNotAvailable();	// Install BouncyCastle provider, if not already available
+		this.cmpConfiguration = (CmpConfiguration) this.globalConfigSession.getCachedConfiguration(Configuration.CMPConfigID);
 	}
 
 	/** The message may have been received by any transport protocol, and is passed here in it's binary ASN.1 form.
