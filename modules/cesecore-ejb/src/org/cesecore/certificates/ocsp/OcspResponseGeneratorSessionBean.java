@@ -1708,14 +1708,13 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         if(!sb.toString().equals("")) {
             return sb.toString();
         }
-        
-       
         try {
             final Collection<OcspSigningCacheEntry> ocspSigningCacheEntries = OcspSigningCache.INSTANCE.getEntries();
             if (ocspSigningCacheEntries.isEmpty()) {
-                final String errMsg = intres.getLocalizedMessage("ocsp.errornosignkeys");
-                sb.append('\n').append(errMsg);
-                log.error(errMsg);
+                // Only report this in the server log. It is not an erroneous state to have no ACTIVE OcspKeyBindings.
+                if (log.isDebugEnabled()) {
+                    log.debug(intres.getLocalizedMessage("ocsp.errornosignkeys"));
+                }
             } else {
                 for (OcspSigningCacheEntry ocspSigningCacheEntry : ocspSigningCacheEntries) {
                     // Only verify non-CA responders
