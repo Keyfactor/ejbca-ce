@@ -816,21 +816,7 @@
 
 	
 	<target name="ejbca.ear.module-dependencies">
-            <ant antfile="modules/cesecore-ejb/build.xml" target="jar" inheritall="false"/>
-            
-            <!-- Filter cesecore-entities.jar -->
-            <jar destfile="${ejbca.home}/modules/dist/cesecore-entity.jar">
-                <zipfileset src="${ejbca.home}/modules/cesecore-entity/dist/cesecore-entity.jar" excludes="META-INF/persistence.xml"/>
-            </jar>
-            <!-- Filter cesecore-common.jar -->
-            <jar destfile="${ejbca.home}/modules/dist/cesecore-common.jar">
-                <zipfileset src="${ejbca.home}/modules/cesecore-common/dist/cesecore-common.jar" excludes="defaultvalues.properties,profilemappings.properties"/>
-            </jar>
-            <!-- Copy the other jars -->
-            <copy file="${ejbca.home}/modules/cesecore-ejb/dist/cesecore-ejb.jar" todir="${ejbca.home}/modules/dist/" failonerror="true"/>
-            <copy file="${ejbca.home}/modules/cesecore-ejb-interface/dist/cesecore-ejb-interface.jar" todir="${ejbca.home}/modules/dist/" failonerror="true"/>
-            
-    	<ant dir="modules" target="ejbca.ear.module-dependencies"/>
+            <ant dir="modules" target="ejbca.ear.module-dependencies"/>
 	</target>
 
     <target name="ejbca-entity">
@@ -1005,17 +991,34 @@
 	     Since EJBCA usually is the master for cesecore fies, this eases code merge very much.
 	-->
     <target name="cesecorecodedrop">
+        <copy todir="../cesecore/modules" overwrite="true">
+            <fileset dir="modules">
+                <!-- Include source files from all CESeCore modules -->
+                <include name="cesecore-*/**/*.java"/>
+                <include name="cesecore-*/**/*.properties"/>
+                <include name="cesecore-*/**/*.xml"/>
+                
+                <!-- Exclude temporary files -->
+                <exclude name="cesecore-*/dist/*"/>
+                <exclude name="cesecore-*/build/*"/>
+                
+                <!-- Exclude build system for now. When possible in the future, also include this. -->
+                <exclude name="cesecore-*/nbproject/**/*"/>
+                <exclude name="cesecore-*/build.xml"/>
+            </fileset>
+        </copy>
+        
+        <copy file="conf/cesecore.properties.sample" tofile="../cesecore/src/main/resources/conf/cesecore.properties" overwrite="true"/>
+        
+        <!-- 
+            TODO: Would be better if these where already placed in 
+            cesecore-common/src/ so no special handling would be needed but 
+            then EJBCA should also use the same place. 
+        -->
         <copy todir="../cesecore/src/main/java" overwrite="true">
             <fileset dir="src/java">
-                <include name="org/cesecore/**/*java"/>
                 <include name="certextensions.properties"/>
                 <include name="profilemappings.properties"/>
-            </fileset>
-            <fileset dir="modules/ejbca-ejb-interface/src">
-                <include name="org/cesecore/**/*java"/>
-            </fileset>
-            <fileset dir="modules/ejbca-entity/src">
-                <include name="org/cesecore/**/*java"/>
             </fileset>
         </copy>
         <copy todir="../cesecore/src/main/resources/intresources" overwrite="true">
@@ -1023,6 +1026,8 @@
                 <include name="intresources*.properties"/>
             </fileset>
         </copy>
+        
+        <!-- Test classes has not been modularized yet so filter out from the EJBCA modules for now -->
         <copy todir="../cesecore/src/test/java" overwrite="true">
             <fileset dir="modules/ejbca-ejb/src-test">
                 <include name="org/cesecore/**/*java"/>
@@ -1041,7 +1046,6 @@
                 <include name="org/cesecore/**/*java"/>
             </fileset>
         </copy>
-        <copy file="conf/cesecore.properties.sample" tofile="../cesecore/src/main/resources/conf/cesecore.properties" overwrite="true"/>
     </target>
 
 </project>
