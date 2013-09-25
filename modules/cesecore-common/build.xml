@@ -20,7 +20,10 @@
             <classpath refid="lib.ldap.classpath"/>
         </javac>
         <mkdir dir="${cesecore-common.dir}/dist"/>
-        <jar destfile="${cesecore-common.dir}/dist/cesecore-common.jar" basedir="${cesecore-common.dir}/build/classes"/>
+        <jar destfile="${cesecore-common.dir}/dist/cesecore-common.jar">
+            <fileset dir="${cesecore-common.dir}/build/classes/" excludes="**/*.java"/>
+            <fileset dir="${cesecore-common.dir}/src/" excludes="**/*.java"/>
+        </jar>
     </target>
         
     <target name="clean" depends="">
@@ -29,4 +32,3 @@
     </target>
 
 </project>
-
