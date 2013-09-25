@@ -17,6 +17,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -193,7 +194,7 @@ public class CmpConfigCommand extends BaseCommand {
             String oldalias = args[2];
             String newalias = args[3];
             // We check first because it is unnecessary to call saveConfiguration when it is not needed
-            if(cmpConfiguration.aliasExists(oldalias)) {
+            if(!cmpConfiguration.aliasExists(oldalias)) {
                 getLogger().info("Alias '" + oldalias + "' does not exist");
                 return;
             }
@@ -206,17 +207,26 @@ public class CmpConfigCommand extends BaseCommand {
                 getLogger().info("Failed to rename alias '" + oldalias + "' to '" + newalias + "': " + e.getLocalizedMessage());
                 return;
             }
-        } else if(StringUtils.equals(subsubcommand, "updateconfig")) {
+        } else if(StringUtils.equals(subsubcommand, UPDATEONECONFIG)) {
             if(args.length < 5) {
                 printUpdateUsage();
                 return;
             }
             String alias = args[2];
             String key = args[3];
-            String value = args[4];
-            key = alias + "." + key;
+            String value = args[4];            
+            List<String> bkeys = CmpConfiguration.CMP_BOOLEAN_KEYS;
+
+            if(StringUtils.equals(key, CmpConfiguration.CONFIG_OPERATIONMODE)) {
+                if(!StringUtils.equalsIgnoreCase(value, "ra")) {
+                    value = "client";
+                }
+            } else if(bkeys.contains(key)) {
+                value = Boolean.toString(StringUtils.equalsIgnoreCase(value, "true"));
+            }
             
-            getLogger().info("Configuration was: " + key + "=" + cmpConfiguration.getValue(key, alias));
+            key = alias + "." + key;
+            getLogger().info("Configuration was: " + key + "=" + cmpConfiguration.getValue(key, alias));            
             cmpConfiguration.setValue(key, value, alias);
             try {
                 globalConfigSession.saveConfiguration(getAdmin(cliUserName, cliPassword), cmpConfiguration, Configuration.CMPConfigID);
@@ -227,7 +237,7 @@ public class CmpConfigCommand extends BaseCommand {
             }
             
 
-        } else if(StringUtils.equals(subsubcommand, "uploadfile")) {
+        } else if(StringUtils.equals(subsubcommand, UPLOADFILE)) {
             
             if(args.length < 4) {
                 printUploadUsage();

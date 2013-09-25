@@ -15,10 +15,12 @@ package org.ejbca.config;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
@@ -65,6 +67,12 @@ public class CmpConfiguration extends Configuration implements Serializable {
     public static final String CONFIG_CERTREQHANDLER_CLASS    = "certreqhandler.class";
     public static final String CONFIG_UNIDDATASOURCE          = "uniddatasource";
     
+    
+    // This List is used in the command line handling of updating a config value to insure a correct value.
+    public static final List<String> CMP_BOOLEAN_KEYS = Arrays.asList(CONFIG_VENDORCERTIFICATEMODE, CONFIG_ALLOWRAVERIFYPOPO, CONFIG_RA_ALLOWCUSTOMCERTSERNO,
+                                                        CONFIG_ALLOWAUTOMATICKEYUPDATE, CONFIG_ALLOWUPDATEWITHSAMEKEY);
+    
+    
     private final String ALIAS_LIST = "aliaslist";
 
     
@@ -98,8 +106,6 @@ public class CmpConfiguration extends Configuration implements Serializable {
     private static final String DEFAULT_RA_EEPROFILE = "EMPTY";
     private static final String DEFAULT_RA_CERTPROFILE = "ENDUSER";
     private static final String DEFAULT_RA_CANAME = "ManagementCA";
-    private static final String DEFAULT_RA_AUTHENTICATION_MODULE = CmpConfiguration.AUTHMODULE_HMAC;
-    private static final String DEFAULT_RA_AUTHENTICATION_PARAMS = "-";
     private static final String DEFAULT_CLIENT_AUTHENTICATION_MODULE = CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC;
     private static final String DEFAULT_CLIENT_AUTHENTICATION_PARAMS = "-;-";
     private static final String DEFAULT_RACERT_PATH = "";
@@ -107,7 +113,7 @@ public class CmpConfiguration extends Configuration implements Serializable {
     private static final String DEFAULT_UNID_DATASOURCE = ""; //"java:/UnidDS";
 
     
-    /** Creates a new instance of GlobalConfiguration */
+    /** Creates a new instance of CmpConfiguration */
     public CmpConfiguration()  {
        super();
     }
@@ -118,9 +124,9 @@ public class CmpConfiguration extends Configuration implements Serializable {
     }
     
     
-    /** Initializes a new global configuration with data used in ra web interface. */
+    /** Initializes a new cmp configuration with default values. */
     public void initialize(String alias){
-        
+        if(StringUtils.isNotEmpty(alias)) {
             alias = alias + ".";
             data.put(alias + CONFIG_DEFAULTCA, DEFAULT_DEFAULTCA);
             data.put(alias + CONFIG_RESPONSEPROTECTION, DEFAULT_RESPONSE_PROTECTION);
@@ -145,20 +151,40 @@ public class CmpConfiguration extends Configuration implements Serializable {
             data.put(alias + CONFIG_ALLOWUPDATEWITHSAMEKEY, DEFAULT_KUR_ALLOW_SAME_KEY);
             data.put(alias + CONFIG_CERTREQHANDLER_CLASS, DEFAULT_CERTREQHANDLER);
             data.put(alias + CONFIG_UNIDDATASOURCE, DEFAULT_UNID_DATASOURCE);
-    }
-    
-    public void initializeCmpConfig(String alias) {
-        if(StringUtils.isNotEmpty(alias)) {
-            initialize(alias);
         }
     }
-
-    /** Checks if cmp configuration have been initialized. */
-    public boolean isInitialized(){
-      Set aliaslist = (Set) data.get(ALIAS_LIST);
-      return aliaslist.size() > 0;
+    
+    // return all the key with an alias
+    public static Set<String> getAllAliasKeys(String alias) {
+        alias = alias + ".";
+        Set<String> keys = new HashSet<String>();
+        keys.add(alias + CONFIG_DEFAULTCA);
+        keys.add(alias + CONFIG_RESPONSEPROTECTION);
+        keys.add(alias + CONFIG_OPERATIONMODE);
+        keys.add(alias + CONFIG_AUTHENTICATIONMODULE);
+        keys.add(alias + CONFIG_AUTHENTICATIONPARAMETERS);
+        keys.add(alias + CONFIG_EXTRACTUSERNAMECOMPONENT);
+        keys.add(alias + CONFIG_VENDORCERTIFICATEMODE);
+        keys.add(alias + CONFIG_VENDORCA);
+        keys.add(alias + CONFIG_ALLOWRAVERIFYPOPO);
+        keys.add(alias + CONFIG_RA_NAMEGENERATIONSCHEME);
+        keys.add(alias + CONFIG_RA_NAMEGENERATIONPARAMS);
+        keys.add(alias + CONFIG_RA_NAMEGENERATIONPREFIX);
+        keys.add(alias + CONFIG_RA_NAMEGENERATIONPOSTFIX);
+        keys.add(alias + CONFIG_RA_PASSWORDGENPARAMS);
+        keys.add(alias + CONFIG_RA_ALLOWCUSTOMCERTSERNO);
+        keys.add(alias + CONFIG_RA_ENDENTITYPROFILE);
+        keys.add(alias + CONFIG_RA_CERTIFICATEPROFILE);
+        keys.add(alias + CONFIG_RACANAME);
+        keys.add(alias + CONFIG_RACERT_PATH);
+        keys.add(alias + CONFIG_ALLOWAUTOMATICKEYUPDATE);       
+        keys.add(alias + CONFIG_ALLOWUPDATEWITHSAMEKEY);
+        keys.add(alias + CONFIG_CERTREQHANDLER_CLASS);
+        keys.add(alias + CONFIG_UNIDDATASOURCE);
+        return keys;
     }
 
+    
     /** Method used by the Admin GUI. */
     public String getCMPDefaultCA(String alias) {
         String key = alias + "." + CONFIG_DEFAULTCA;
@@ -180,6 +206,7 @@ public class CmpConfiguration extends Configuration implements Serializable {
     }
     
     
+    // Any value that is not "ra" or "RA" will be client mode, no matter what it is
     public boolean getRAMode(String alias) {
         String key = alias + "." + CONFIG_OPERATIONMODE;
         String value = getValue(key, alias);
@@ -188,6 +215,9 @@ public class CmpConfiguration extends Configuration implements Serializable {
     public void setRAMode(String alias, boolean ramode) {
         String key = alias + "." + CONFIG_OPERATIONMODE;
         setValue(key, ramode? "ra" : "client", alias);
+    }
+    public void setRAMode(String alias, String mode) {
+        setRAMode(alias, StringUtils.equalsIgnoreCase(mode, "ra"));
     }
     
 
@@ -199,6 +229,31 @@ public class CmpConfiguration extends Configuration implements Serializable {
         String key = alias + "." + CONFIG_AUTHENTICATIONMODULE;
         setValue(key, authModule, alias);
     }
+    public void setAuthenticationProperties(String alias, ArrayList<String> authmodules, ArrayList<String> authparams) {
+        if(authmodules.isEmpty()) {
+            if(log.isDebugEnabled()) {
+                log.debug("Did not update CMP Authentication modules or parameters because no Authentication module was specified");
+            }
+            return;
+        }
+        
+        if(authmodules.size() != authparams.size()) {
+            log.error("Did not update CMP Authentication settings because the number of authentication parameters is not " +
+            		"the same as the number of authentication modules");
+            return;
+        }
+        
+        String authmodule = "";
+        String authparam = "";
+        for(int i=0; i<authmodules.size(); i++) {
+            authmodule += ";" + authmodules.get(i);
+            authparam += ";" + authparams.get(i);
+        }
+        authmodule = authmodule.substring(1);
+        authparam = authparam.substring(1);
+        setAuthenticationModule(alias, authmodule);
+        setAuthenticationParameters(alias, authparams);
+    }
     
     
     public String getAuthenticationParameters(String alias) {
@@ -209,6 +264,14 @@ public class CmpConfiguration extends Configuration implements Serializable {
         String key = alias + "." + CONFIG_AUTHENTICATIONPARAMETERS;
         setValue(key, authParams, alias);
     }
+    public void setAuthenticationParameters(String alias, ArrayList<String> authparameters) {
+        String authparam = "";
+        for(String p : authparameters) {
+            authparam += ";" + p;
+        }
+        authparam = authparam.substring(1);
+        setAuthenticationParameters(alias, authparam);
+    }
     public String getAuthenticationParameter(String authModule, String alias) {
 
         if(StringUtils.isNotEmpty(alias)) {
@@ -218,17 +281,33 @@ public class CmpConfiguration extends Configuration implements Serializable {
             String modules[] = confModule.split(";");
             String params[] = confParams.split(";");
         
+            if(modules.length != params.length) {
+                log.error("There are not as many authentication parameters as authentication modules. " 
+                                    + modules.length + " modules but " + params.length + " parameters");
+                return "";
+            }
+            
             for(int i=0; i<modules.length; i++) {
                 if(StringUtils.equals(modules[i].trim(), authModule)) {
                     return params[i];
                 }
             }
-        
-            return "-";
+            log.error("The authentication module whose parameters are requested is not part of the set authentication modules");
+            return "";
         } else {
-            return "-";
+            log.error("No alias was specified");
+            return "";
         }
-
+    }
+    public boolean isInAuthModule(String alias, String authmodule) {
+        String authmodules = getAuthenticationModule(alias);
+        String[] modules = authmodules.split(";");
+        for(String m : modules) {
+            if(StringUtils.equals(authmodule, m)) {
+                return true;
+            }
+        }
+        return false;
     }
     
     
@@ -260,6 +339,14 @@ public class CmpConfiguration extends Configuration implements Serializable {
     public void setVendorCA(String alias, String vendorCA) {
         String key = alias + "." + CONFIG_VENDORCA;
         setValue(key, vendorCA, alias);
+    }
+    public void setVendorCA(String alias, ArrayList<String> vendorcas) {
+        String vcas = "";
+        for(String ca : vendorcas) {
+            vcas += ";" + ca;
+        }
+        vcas = vcas.substring(1);
+        setVendorCA(alias, vcas);
     }
     
     
@@ -413,6 +500,8 @@ public class CmpConfiguration extends Configuration implements Serializable {
     
     
     
+    
+    
     public String getValue(String key, String alias) {
         if(aliasExists(alias)) {
             if(data.containsKey(key)) {
@@ -452,17 +541,6 @@ public class CmpConfiguration extends Configuration implements Serializable {
         return pl;
     }
     
-    public Collection<String> getCmpRANameGenerationSchemes() {
-        ArrayList<String> sl = new ArrayList<String>();
-        sl.add("RANDOM");
-        sl.add("DN"); // DNComponent as username
-        sl.add("USERNAME"); // DN as username
-        sl.add("FIXED");
-        return sl;
-    }
-    
-    
-    
     
     
     public void setAliasList(final Set<String> aliaslist) { 
@@ -480,117 +558,124 @@ public class CmpConfiguration extends Configuration implements Serializable {
         }
         return false;
     }
+
     public void addAlias(String alias) {
-        if(StringUtils.isNotEmpty(alias)) {
-            Set<String> aliases = getAliasList();
-            if(!aliases.contains(alias)) {
-                initialize(alias);
-                aliases.add(alias);
-                data.put(ALIAS_LIST, aliases);
-            } else {
-                if(log.isDebugEnabled()) {
-                    log.debug("CMP alias '" + alias + "' already exists.");
-                }
-            }
-        } else {
+        if(log.isDebugEnabled()) {
+            log.debug("Adding CMP alias: " + alias);
+        }   
+            
+        if(StringUtils.isEmpty(alias)) {
             log.error("No alias is added because no alias was provided.");
+            return;
         }
-    }
-    public void removeAlias(String alias) {
+            
         Set<String> aliases = getAliasList();
         if(aliases.contains(alias)) {
-            Set<String> removeKeys = getAllAliasKeys(alias);
-            Iterator itr = removeKeys.iterator();
-            while(itr.hasNext()) {
-                String key = (String) itr.next();
-                data.remove(key);
+            if(log.isDebugEnabled()) {
+                log.debug("CMP alias '" + alias + "' already exists.");
             }
-            aliases.remove(alias);
-            data.put(ALIAS_LIST, aliases);
-        } else {
+            return;
+        }
+        
+        initialize(alias);
+        aliases.add(alias);
+        data.put(ALIAS_LIST, aliases);
+    }
+    public void removeAlias(String alias) {
+        if(log.isDebugEnabled()) {
+            log.debug("Removing CMP alias: " + alias);
+        }
+        
+        if(StringUtils.isEmpty(alias)) {
+            log.error("No alias is removed because no alias was provided.");
+            return;
+        }
+        
+        Set<String> aliases = getAliasList();
+        if(!aliases.contains(alias)) {
             if(log.isDebugEnabled()) {
                 log.debug("CMP alias '" + alias + "' does not exist");
             }
+            return;
         }
+        
+        Set<String> removeKeys = getAllAliasKeys(alias);
+        Iterator itr = removeKeys.iterator();
+        while(itr.hasNext()) {
+            String key = (String) itr.next();
+            data.remove(key);
+        }
+        aliases.remove(alias);
+        data.put(ALIAS_LIST, aliases);
     }
-    public void renameAlias(String oldAlias, String newAlias) { //throws CMPAliasExistsException, CMPAliasDoesNotExistException {
-        Set<String> aliases = getAliasList();
-        if(aliases.contains(oldAlias)) {
-            if(aliases.contains(newAlias)) {
-                //throw new CMPAliasExistsException("CMP alias '" + newAlias + "' exists already");
-                log.error("CMP alias '" + newAlias + "' already exists.");
-            } else {
-                Set<String> oldKeys = getAllAliasKeys(oldAlias);
-                Iterator itr = oldKeys.iterator();
-                while(itr.hasNext()) {
-                    String oldkey = (String) itr.next();
-                    String newkey = oldkey;
-                    newkey = StringUtils.replace(newkey, oldAlias, newAlias);
-                    Object value = data.get(oldkey);
-                    data.put(newkey, value);
-                }
-                removeAlias(oldAlias);
-                aliases.remove(oldAlias);
-                aliases.add(newAlias);
-                data.put(ALIAS_LIST, aliases);
-            }
-        } else {
-            //throw new CMPAliasDoesNotExistException("CMP alias '" + oldAlias + "' does not exist");
-            log.error("CMP alias '" + oldAlias + "' does not exists.");
+    public void renameAlias(String oldAlias, String newAlias) {
+        if(log.isDebugEnabled()) {
+            log.debug("Renaming CMP alias '" + oldAlias + "' to '" + newAlias + "'");
         }
+        
+        if(StringUtils.isEmpty(oldAlias) || StringUtils.isEmpty(newAlias)) {
+            log.error("No alias is renamed because one or both aliases were not provided.");
+            return;
+        }
+        
+        Set<String> aliases = getAliasList();
+        if(!aliases.contains(oldAlias)) {
+            log.error("Cannot rename. CMP alias '" + oldAlias + "' does not exists.");
+            return;
+        }
+        
+        if(aliases.contains(newAlias)) {
+            log.error("Cannot rename. CMP alias '" + newAlias + "' already exists.");
+            return;
+        }
+        
+        Set<String> oldKeys = getAllAliasKeys(oldAlias);
+        Iterator itr = oldKeys.iterator();
+        while(itr.hasNext()) {
+            String oldkey = (String) itr.next();
+            String newkey = oldkey;
+            newkey = StringUtils.replace(newkey, oldAlias, newAlias);
+            Object value = data.get(oldkey);
+            data.put(newkey, value);
+        }
+        removeAlias(oldAlias);
+        aliases.remove(oldAlias);
+        aliases.add(newAlias);
+        data.put(ALIAS_LIST, aliases);
     }
     public void cloneAlias(String originAlias, String cloneAlias) {
-        Set<String> aliases = getAliasList();
-        if(aliases.contains(originAlias)) {
-            if(aliases.contains(cloneAlias)) {
-                //ERROR MESSAGE: clonealias already exists
-                log.error("CMP alias '" + cloneAlias + "' already exists.");
-            } else {
-                Iterator itr = getAllAliasKeys(originAlias).iterator();
-                while(itr.hasNext()) {
-                    String originalKey = (String) itr.next();
-                    String cloneKey = originalKey;
-                    cloneKey = StringUtils.replace(cloneKey, originAlias, cloneAlias);
-                    Object value = data.get(originalKey);
-                    data.put(cloneKey, value);
-                }
-                aliases.add(cloneAlias);
-                data.put(ALIAS_LIST, aliases);
-            }
-        } else {
-            // ERROR MESSAGE: original alias does not exist
-            log.error("CMP alias '" + originAlias + "' does not exist.");
+        if(log.isDebugEnabled()) {
+            log.debug("Cloning CMP alias '" + originAlias + "' to '" + cloneAlias + "'");
         }
+        
+        if(StringUtils.isEmpty(originAlias) || StringUtils.isEmpty(cloneAlias)) {
+            log.error("No alias is cloned because one or both aliased were not provided");
+            return;
+        }
+        
+        Set<String> aliases = getAliasList();
+        if(!aliases.contains(originAlias)) {
+            log.error("Cannot clone. CMP alias '" + originAlias + "' does not exist.");
+            return;
+        }
+        
+        if(aliases.contains(cloneAlias)) {
+            log.error("Cannot clone. CMP alias '" + cloneAlias + "' already exists.");
+            return;
+        }
+        
+        Iterator itr = getAllAliasKeys(originAlias).iterator();
+        while(itr.hasNext()) {
+            String originalKey = (String) itr.next();
+            String cloneKey = originalKey;
+            cloneKey = StringUtils.replace(cloneKey, originAlias, cloneAlias);
+            Object value = data.get(originalKey);
+            data.put(cloneKey, value);
+        }
+        aliases.add(cloneAlias);
+        data.put(ALIAS_LIST, aliases);
     }
-    public static Set<String> getAllAliasKeys(String alias) {
-    	alias = alias + ".";
-    	
-        Set<String> keys = new HashSet<String>();
-        keys.add(alias + CONFIG_DEFAULTCA);
-        keys.add(alias + CONFIG_RESPONSEPROTECTION);
-        keys.add(alias + CONFIG_OPERATIONMODE);
-        keys.add(alias + CONFIG_AUTHENTICATIONMODULE);
-        keys.add(alias + CONFIG_AUTHENTICATIONPARAMETERS);
-        keys.add(alias + CONFIG_EXTRACTUSERNAMECOMPONENT);
-        keys.add(alias + CONFIG_VENDORCERTIFICATEMODE);
-        keys.add(alias + CONFIG_VENDORCA);
-        keys.add(alias + CONFIG_ALLOWRAVERIFYPOPO);
-        keys.add(alias + CONFIG_RA_NAMEGENERATIONSCHEME);
-        keys.add(alias + CONFIG_RA_NAMEGENERATIONPARAMS);
-        keys.add(alias + CONFIG_RA_NAMEGENERATIONPREFIX);
-        keys.add(alias + CONFIG_RA_NAMEGENERATIONPOSTFIX);
-        keys.add(alias + CONFIG_RA_PASSWORDGENPARAMS);
-        keys.add(alias + CONFIG_RA_ALLOWCUSTOMCERTSERNO);
-        keys.add(alias + CONFIG_RA_ENDENTITYPROFILE);
-        keys.add(alias + CONFIG_RA_CERTIFICATEPROFILE);
-        keys.add(alias + CONFIG_RACANAME);
-        keys.add(alias + CONFIG_RACERT_PATH);
-        keys.add(alias + CONFIG_ALLOWAUTOMATICKEYUPDATE);       
-        keys.add(alias + CONFIG_ALLOWUPDATEWITHSAMEKEY);
-        keys.add(alias + CONFIG_CERTREQHANDLER_CLASS);
-        keys.add(alias + CONFIG_UNIDDATASOURCE);
-        return keys;
-    }
+    
     
     
     /**
@@ -598,14 +683,13 @@ public class CmpConfiguration extends Configuration implements Serializable {
      */
     public Properties getAsProperties() {
         final Properties properties = new Properties();
-        final Iterator i = data.keySet().iterator();
-        while (i.hasNext()) {
-            final String key = (String) i.next();
-            final Object value = data.get(key);
-            if(value instanceof String) {
-                properties.setProperty(key, (String) data.get(key));
-            }
-        }
+        Set<String> aliases = getAliasList();
+        Iterator<String> itr = aliases.iterator();
+        while(itr.hasNext()) {
+            String alias = itr.next();
+            Properties aliasp = getAsProperties(alias);
+            properties.putAll(aliasp);
+        }   
         return properties;
     }
     
@@ -616,7 +700,7 @@ public class CmpConfiguration extends Configuration implements Serializable {
             while (i.hasNext()) {
                 final String key = (String) i.next();
                 final Object value = data.get(key);
-                properties.setProperty(key, value.toString());
+                properties.setProperty(key, value == null? "" : value.toString());
             }
             return properties;
         }
