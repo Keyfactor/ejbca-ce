@@ -239,7 +239,9 @@
             <jboss:admsilent arg='/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=ejbca-mail-smtp:remove' failonerror="false" />
             <jboss:admsilent arg=':reload' />
             <!-- We must wait until the ejbca.ear has been redeployed, or jboss cli will not be available if it takes too long time to reload. -->
-			<jboss:admwaitreload/>
+            <waitfor maxwait="10000">
+                <available file="${jboss.farm.dir}/ejbca.ear.deployed"/>
+            </waitfor>
             <!-- Construct the parameters for adding the server based on whether we use authentication or not (not specifying the username/password means no authentication). -->
             <condition property="jboss7.ejbca-mail-smtp.params" value='outbound-socket-binding-ref=ejbca-mail-smtp, ssl="${mail.smtp.starttls.enable}", username="${mail.user}", password="${mail.password}"' else='outbound-socket-binding-ref=ejbca-mail-smtp, ssl="${mail.smtp.starttls.enable}"'>
                 <equals arg1="${mail.smtp.auth}" arg2="true" />
@@ -251,7 +253,9 @@
             <jboss:adm arg='/subsystem=mail/mail-session="${mail.jndi-name}"/server=smtp:add(${jboss7.ejbca-mail-smtp.params})' />
             <jboss:admsilent arg=":reload" />
             <!-- We must wait until the ejbca.ear has been redeployed, or some race conditions could happen. The problem is that :reload is a non-blocking operation. -->
-			<jboss:admwaitreload/>
+            <waitfor maxwait="20000">
+                <available file="${jboss.farm.dir}/ejbca.ear.deployed"/>
+            </waitfor>
         </target>
 
 	<target name="jee:deployDSJBoss7" if="jboss7" depends="set-paths,jee:assert-runJBoss7">
