@@ -64,7 +64,7 @@
 		<delete dir="${mod.clientToolBox.dist}" />
     </target>
 	
-    <target name="compile" depends="setup">
+    <target name="compile" depends="cesecore-ejb-interface, setup">
     	<mkdir dir="${build.dir}" />
         <javac destdir="${build.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}">
             <classpath>
