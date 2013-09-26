@@ -21,9 +21,9 @@
       <td width="60%"></td>
     </tr>
   <% } %>
-  <% if(aliasexists){ %> 
+  <% if(triedrenametoexistingalias || triedclonetoexistingalias){ %> 
     <tr> 
-      <td width="40%" class="alert"><%= ejbcawebbean.getText("CMPALIASEXISTS") %></td>
+      <td width="40%" class="alert"><%= ejbcawebbean.getText("CMPCOULDNOTRENAMEORCLONE") %></td>
       <td width="60%"></td>
     </tr>
   <% } %>
