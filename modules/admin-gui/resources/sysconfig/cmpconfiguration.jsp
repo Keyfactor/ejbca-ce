@@ -31,6 +31,7 @@
 	static final String TEXTFIELD_CMP_RANAMEGENPOSTFIX		  		= "textfieldcmpranamegenerationpostfix";
 	static final String TEXTFIELD_CMP_RAPASSWORDGENPARAM		  	= "textfieldcmprapasswordgenerationparameter";
 	static final String TEXTFIELD_HMACPASSWORD						= "textfieldhmacpassword";
+	static final String TEXTFIELD_NESTEDMESSAGETRUSTEDCERTPATH		= "textfieldnestedmessagetrustedcertificatespath";
 	
 	static final String BUTTON_ADD_ALIAS						 	= "buttonaliasadd";
 	static final String BUTTON_DELETE_ALIAS					 	= "buttondeletealias";
@@ -388,6 +389,12 @@
     			            // KUR update with same key
     			            value = request.getParameter(CHECKBOX_CMP_KUR_USESAMEKEYS);
     			            cmpconfig.setKurAllowSameKey(alias, (value != null));
+    			            
+    			            
+    			            
+    			            // Nested message content
+    			            value = request.getParameter(TEXTFIELD_NESTEDMESSAGETRUSTEDCERTPATH);
+    			            cmpconfig.setRACertPath(alias, value == null ? "" : value);
     			            
     			            
     			            // ------------------- BUTTONS -------------------------
