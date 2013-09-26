@@ -150,6 +150,8 @@ function checkresponseprotection(sel) {
         <%= ejbcawebbean.getHelpReference("/adminguide.html#CMP%20Message%20Authentication") %>
         </h3>
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPAUTHENTICATIONMODULE_HELP\") %>"/></p>
+        <p class="help">In case of 'EndEntityCertificate', setting the issuer CA to '-' will skip some verification tests in combination with NestedMessageContent.
+        		Highly unrecommended unless you know what you are doing.</p>
       </td>
       <td width="50%"> 
       	<input type="checkbox" name="<%= CHECKBOX_HMAC %>" value="<%=cmpconfig.AUTHMODULE_HMAC %>" 
@@ -524,6 +526,15 @@ function checkresponseprotection(sel) {
     
     
 	<!-- -------------------------- KUR request ------------------------------ -->
+	<tr  id="Row<%=row++%2%>" class="section"> 
+      <td width="40%" valign="top" align="left"> 
+        <strong><c:out value="<%= ejbcawebbean.getText(\"CMPKEYUPDATEREQUEST\") %>" /></strong>
+      </td>
+      <td width="50%"> 
+        &nbsp;   
+      </td> 
+    </tr>
+    
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="top"> 
         <h3><c:out value="<%= ejbcawebbean.getText(\"CMPALLOWAUTOMATICKEYUPDATE\") %>"/>
@@ -535,7 +546,7 @@ function checkresponseprotection(sel) {
         <input type="checkbox" name="<%=CHECKBOX_CMP_KUR_USEAUTOMATICKEYUPDATE%>" value="<%=CHECKBOX_VALUE %>" 
 			<% if(cmpconfig.getKurAllowAutomaticUpdate(alias)) out.write(" CHECKED "); %>
 			id="<%=CHECKBOX_CMP_KUR_USEAUTOMATICKEYUPDATE%>" />
-		<label for="<%=CHECKBOX_CMP_KUR_USEAUTOMATICKEYUPDATE%>"><c:out value="<%= ejbcawebbean.getText(\"ACTIVATE\") %>" /></label>
+		<label for="<%=CHECKBOX_CMP_KUR_USEAUTOMATICKEYUPDATE%>"><c:out value="<%= ejbcawebbean.getText(\"ALLOW\") %>" /></label>
       </td>
     </tr> 
     
@@ -550,9 +561,36 @@ function checkresponseprotection(sel) {
         <input type="checkbox" name="<%=CHECKBOX_CMP_KUR_USESAMEKEYS%>" value="<%=CHECKBOX_VALUE %>" 
 			<% if(cmpconfig.getKurAllowSameKey(alias)) out.write(" CHECKED "); %>
 			id="<%=CHECKBOX_CMP_KUR_USESAMEKEYS%>" />
-		<label for="<%=CHECKBOX_CMP_KUR_USESAMEKEYS%>"><c:out value="<%= ejbcawebbean.getText(\"ACTIVATE\") %>" /></label> 
+		<label for="<%=CHECKBOX_CMP_KUR_USESAMEKEYS%>"><c:out value="<%= ejbcawebbean.getText(\"ALLOW\") %>" /></label> 
       </td>
     </tr> 
+    
+    
+    
+    
+    
+    <!-- -------------------------- Nested Message Content ------------------------------ -->
+	<tr  id="Row<%=row++%2%>" class="section"> 
+      <td width="40%" valign="top" align="left"> 
+        <strong><c:out value="<%= ejbcawebbean.getText(\"CMPNESTEDMESSAGECONTENT\") %>" /></strong>
+      </td>
+      <td width="50%"> 
+        &nbsp;   
+      </td> 
+    </tr>
+    
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" align="top"> 
+        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPTRUSTEDCERTPATH\") %>"/>
+        <%= ejbcawebbean.getHelpReference("/adminguide.html#Multiprotection%20support") %>
+        </h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPTRUSTEDCERTPATH_HELP\") %>"/></p>
+	  </td>
+      <td width="50%">        
+        <input type="text" name="<%=TEXTFIELD_NESTEDMESSAGETRUSTEDCERTPATH %>" value='<c:out value="<%= cmpconfig.getRACertPath(alias) %>"/>' 
+        	maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>">
+      </td>
+    </tr>
     
     
     
