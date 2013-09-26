@@ -11,7 +11,7 @@
 				org.cesecore.certificates.certificate.certextensions.AvailableCertificateExtension, org.cesecore.certificates.certificateprofile.CertificatePolicy,
                 org.cesecore.certificates.ca.CAInfo, org.cesecore.util.ValidityDate, org.ejbca.ui.web.ParameterException, 
                 org.cesecore.certificates.util.AlgorithmConstants, org.cesecore.certificates.certificate.CertificateConstants, 
-                org.ejbca.core.model.authorization.AccessRulesConstants,org.ejbca.config.CmpConfiguration"%>
+                org.ejbca.core.model.authorization.AccessRulesConstants,org.ejbca.config.CmpConfiguration, org.ejbca.core.model.ra.UsernameGeneratorParams"%>
                 
 <%@page import="org.cesecore.util.YearMonthDayTime"%>
 <html>
@@ -93,8 +93,9 @@
   String includefile = "cmpaliasespage.jspf"; 
 
   boolean  triedtoaddexistingalias    = false;
-  boolean  aliasexists             = false;
   boolean  aliasDeletionFailed = false;
+  boolean  triedrenametoexistingalias = false;
+  boolean  triedclonetoexistingalias = false;
   
   boolean ramode = false;
   boolean pbe = false;
@@ -151,8 +152,11 @@
           					alias = request.getParameter(SELECT_ALIASES);
           					if(alias != null && (!alias.trim().equals("")) ){
               						cmpconfig.removeAlias(alias);
+                					ejbcawebbean.saveCMPConfiguration();
+                					if(cmpconfig.aliasExists(alias)) {
+                						aliasDeletionFailed = true;
+                					}
           					}
-        					ejbcawebbean.saveCMPConfiguration();
           					includefile="cmpaliasespage.jspf";             
       				}
 
@@ -161,18 +165,26 @@
       					    String newalias = request.getParameter(TEXTFIELD_ALIAS);
       					    String oldalias = request.getParameter(SELECT_ALIASES);
       					    if(oldalias != null && newalias != null && !newalias.trim().equals("") && !oldalias.trim().equals("") ){
-      					    		cmpconfig.renameAlias(oldalias, newalias);
+      					    		if(cmpconfig.aliasExists(newalias)) {
+      					    				triedrenametoexistingalias = true;
+      					    		} else {
+      					    				cmpconfig.renameAlias(oldalias, newalias);
+			      					    	ejbcawebbean.saveCMPConfiguration();
+      					    		}
       					    }
-      					    ejbcawebbean.saveCMPConfiguration();
       					    includefile="cmpaliasespage.jspf"; 
       				}
       				
       				if( request.getParameter(BUTTON_ADD_ALIAS) != null){
       						alias = request.getParameter(TEXTFIELD_ALIAS);
       					    if(alias != null && (!alias.trim().equals("")) ) {
-      					    		cmpconfig.addAlias(alias);
+      					    		if(cmpconfig.aliasExists(alias)) {
+      					    			triedtoaddexistingalias = true;
+      					    		} else {
+      					    			cmpconfig.addAlias(alias);
+      					    			ejbcawebbean.saveCMPConfiguration();
+      					    		}
       					    }
-      					    ejbcawebbean.saveCMPConfiguration();
       					    includefile="cmpaliasespage.jspf"; 
       				}
       				
@@ -180,12 +192,14 @@
       						// clone profile and display profilespage.
       					    String newalias = request.getParameter(TEXTFIELD_ALIAS);
       					    String oldalias = request.getParameter(SELECT_ALIASES);
-      					    if(oldalias != null && newalias != null){
-      					    		if(!newalias.trim().equals("") && !oldalias.trim().equals("")){
-      					        			cmpconfig.cloneAlias(oldalias, newalias);
-      					           	}
+      					    if(oldalias != null && newalias != null && !newalias.trim().equals("") && !oldalias.trim().equals("")){
+      					    			if(cmpconfig.aliasExists(newalias)) {
+      					    					triedclonetoexistingalias = true;
+      					    			} else {
+      					        				cmpconfig.cloneAlias(oldalias, newalias);
+					      					    ejbcawebbean.saveCMPConfiguration();
+      					    			}
       					    }
-      					    ejbcawebbean.saveCMPConfiguration();
       					    includefile="cmpaliasespage.jspf"; 
       				}
 
@@ -248,7 +262,7 @@
     						// TODO fix it better
     			            ArrayList<String> authmodule = new ArrayList<String>();
     			            ArrayList<String> authparam = new ArrayList<String>();
-    			            if(pbe/*request.getParameter(LIST_CMPRESPONSEPROTECTION).equals("pbe")*/ && ramode) {
+    			            if(/*request.getParameter(LIST_CMPRESPONSEPROTECTION).equals("pbe")*/ pbe && ramode) {
     			            		value = CmpConfiguration.AUTHMODULE_HMAC;
     			            		//pbe = true;
     			            } else {
@@ -318,12 +332,12 @@
     			           			String namegenscheme = request.getParameter(RADIO_NAMEGENSCHEME);
     			           			if(namegenscheme != null) {
     			           					cmpconfig.setRANameGenScheme(alias, namegenscheme);
-    										if(namegenscheme.equals("FIXED")) {
+    										if(namegenscheme.equals(UsernameGeneratorParams.FIXED)) {
     												value = request.getParameter(TEXTFIELD_CMP_RANAMEGENPARAM);
     												if((value != null) && (value.length() > 0)) {
     														cmpconfig.setRANameGenParams(alias, value);
     												}
-											} else if(namegenscheme.equals("DN")) {
+											} else if(namegenscheme.equals(UsernameGeneratorParams.DN)) {
     												// do nothing here. handle it with the buttons
 											} else { 
 													cmpconfig.setRANameGenParams(alias, "");
@@ -422,7 +436,7 @@
     			            }
     			            
     			            if(request.getParameter(BUTTON_ADD_NAMEGENPARAM_DN)!= null) {
-    			            		if(request.getParameter(RADIO_NAMEGENSCHEME).equals("DN")) {
+    			            		if(request.getParameter(RADIO_NAMEGENSCHEME).equals(UsernameGeneratorParams.DN)) {
     			            				value = request.getParameter(LIST_NAMEGENPARAM_DN);
     			            				String namegenparam = cmpconfig.getRANameGenParams(alias);
     			            				String[] params = namegenparam.split(";");

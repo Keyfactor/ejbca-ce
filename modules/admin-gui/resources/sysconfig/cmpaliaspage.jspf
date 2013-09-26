@@ -103,10 +103,10 @@ function checkresponseprotection(sel) {
 				}
 			%> />
 		<label><c:out value="<%= ejbcawebbean.getText(\"CMPRAMODE\") %>" /></label>
-		<input type="submit" name="<%= BUTTON_RELOAD %>" id="<%= BUTTON_RELOAD %>" value="Reload" style="display:none">
+		<input type="submit" name="<%= BUTTON_RELOAD %>" id="<%= BUTTON_RELOAD %>" value="<%= ejbcawebbean.getText("RELOAD") %>" style="display:none">
 		<noscript>
 			&nbsp;&nbsp;&nbsp;&nbsp;
-			<input type="submit" name="<%= BUTTON_RELOAD %>" id="<%= BUTTON_RELOAD %>" value="Reload">
+			<input type="submit" name="<%= BUTTON_RELOAD %>" id="<%= BUTTON_RELOAD %>" value="<%= ejbcawebbean.getText("RELOAD") %>">
 		</noscript> 
       </td>
     </tr> 
@@ -134,7 +134,7 @@ function checkresponseprotection(sel) {
         <% if(ramode) { %>
        	<noscript>
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			<input type="submit" name="<%= BUTTON_RELOAD %>" id="<%= BUTTON_RELOAD %>" value="Reload">
+			<input type="submit" name="<%= BUTTON_RELOAD %>" id="<%= BUTTON_RELOAD %>" value="<%= ejbcawebbean.getText("RELOAD") %>">
 		</noscript>
 		<% } %>
       </td>
@@ -169,7 +169,7 @@ function checkresponseprotection(sel) {
 								secretvalue = "";
 							}
 						%> />
-					<label><c:out value="CA Shared Secret" /></label>
+					<label><c:out value="<%= ejbcawebbean.getText(\"CMPHMACCASECRET\") %>" /></label>
 					&nbsp;&nbsp;&nbsp;
 					<input type="radio" name="<%=RADIO_HMACPASSWORD%>" value="hmacsecret"  
 						<% 
@@ -177,7 +177,7 @@ function checkresponseprotection(sel) {
 								out.write(" CHECKED ");
 							}
 						%> />
-					<label><c:out value="Specify Secret" /></label>
+					<label><c:out value="<%= ejbcawebbean.getText(\"CMPHMACSPECIFYSECRET\") %>" /></label>
 					<input type="text" name="<%=TEXTFIELD_HMACPASSWORD %>" value='<c:out value="<%= secretvalue %>"/>' 
         				maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>">
         		<% } %>
@@ -190,7 +190,7 @@ function checkresponseprotection(sel) {
 				id="<%=CHECKBOX_EEC%>" />
 				<label for="<%=CHECKBOX_EEC%>"><c:out value="<%= cmpconfig.AUTHMODULE_ENDENTITY_CERTIFICATE %>" /></label>
 				&nbsp;&nbsp;&nbsp;
-				<label for="<%=LIST_ECCCAS%>"><c:out value="Issuer CA" /></label>
+				<label for="<%=LIST_ECCCAS%>"><c:out value="<%= ejbcawebbean.getText(\"CMPECCISSUERCA\") %>" /></label>
 				<select name="<%=LIST_ECCCAS%>" >
            				<%  String currentECCCA = cmpconfig.getAuthenticationParameter(cmpconfig.AUTHMODULE_ENDENTITY_CERTIFICATE, alias); %>
            				<% java.util.Iterator itrecc = canames.keySet().iterator();
@@ -198,6 +198,10 @@ function checkresponseprotection(sel) {
            		  			String eccca = (String) itrecc.next();
            			%>     <option <% if(currentECCCA.equals(eccca)) { %> selected <% } %>
                   				value='<c:out value="<%= eccca%>"/>'><c:out value="<%= eccca %>"/></option> 
+           			<% } %>
+           			<% if(ramode) { %>
+           				<option <% if(currentECCCA.equals("-")) { %> selected <% } %>
+                  				value='<c:out value="-"/>'><c:out value="- (not recommended)"/></option>
            			<% } %>
         		</select><br/>
 		<% } %>
@@ -214,7 +218,7 @@ function checkresponseprotection(sel) {
 				id="<%=CHECKBOX_DNPART%>" />
 				<label for="<%=CHECKBOX_DNPART%>"><c:out value="<%= cmpconfig.AUTHMODULE_DN_PART_PWD %>" /></label>
 				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-				<label for="<%=LIST_DNPARTS%>"><c:out value="SubjectDN Part" /></label>
+				<label for="<%=LIST_DNPARTS%>"><c:out value="<%= ejbcawebbean.getText(\"CMPAUTHSUBJECTDNPART\") %>" /></label>
 				<select name="<%=LIST_DNPARTS%>" >
            				<% String currentDnPart = cmpconfig.getAuthenticationParameter(cmpconfig.AUTHMODULE_DN_PART_PWD, alias);
            				   Iterator authdnitr = dnfields.iterator();
@@ -249,7 +253,8 @@ function checkresponseprotection(sel) {
         <input type="checkbox" name="<%=CHECKBOX_CMP_ALLOWRAVERIFYPOPO%>" value="<%=CHECKBOX_VALUE %>" 
 			<% if(cmpconfig.getAllowRAVerifyPOPO(alias)) out.write(" CHECKED "); %>
  			id="<%=CHECKBOX_CMP_ALLOWRAVERIFYPOPO%>" />
-       </td>
+ 		<label><c:out value="<%= ejbcawebbean.getText(\"ALLOW\") %>" /></label>
+      </td>
     </tr> 
     
     
@@ -267,8 +272,8 @@ function checkresponseprotection(sel) {
       <td width="50%"> 
       
       	<% boolean checked = false; %>
-		<input type="radio" name="<%=RADIO_NAMEGENSCHEME%>" value="DN"  
-			<% if("DN".equals(cmpconfig.getRANameGenScheme(alias))) {
+		<input type="radio" name="<%=RADIO_NAMEGENSCHEME%>" value=<%= UsernameGeneratorParams.DN %>  
+			<% if(UsernameGeneratorParams.DN.equals(cmpconfig.getRANameGenScheme(alias))) {
 					out.write(" CHECKED ");
 					checked = true;
 			   } %>
@@ -287,33 +292,33 @@ function checkresponseprotection(sel) {
            	 </option>
            <% } %>
          </select>
-		<input type="submit" name="<%= BUTTON_ADD_NAMEGENPARAM_DN%>" value="Add">	      	
-		<input type="submit" name="<%= BUTTON_REMOVE_NAMEGENPARAM_DN%>" value="REMOVE">	      	
+		<input type="submit" name="<%= BUTTON_ADD_NAMEGENPARAM_DN%>" value="<%= ejbcawebbean.getText("ADD") %>">	      	
+		<input type="submit" name="<%= BUTTON_REMOVE_NAMEGENPARAM_DN%>" value="<%= ejbcawebbean.getText("REMOVE") %>">
 		<br/>
 		
-		<input type="radio" name="<%=RADIO_NAMEGENSCHEME%>" value="RANDOM"  
-			<% if("RANDOM".equals(cmpconfig.getRANameGenScheme(alias))) { out.write(" CHECKED "); } %> />
-		<label><c:out value="RANDOM" /></label>
+		<input type="radio" name="<%=RADIO_NAMEGENSCHEME%>" value=<%= UsernameGeneratorParams.RANDOM %>  
+			<% if(UsernameGeneratorParams.RANDOM.equals(cmpconfig.getRANameGenScheme(alias))) { out.write(" CHECKED "); } %> />
+		<label><c:out value="<%= UsernameGeneratorParams.RANDOM %>" /></label>
 		<br/>
 		
 		<% checked = false; %>
-		<input type="radio" name="<%=RADIO_NAMEGENSCHEME%>" value="FIXED"  
-			<% if("FIXED".equals(cmpconfig.getRANameGenScheme(alias))) {
+		<input type="radio" name="<%=RADIO_NAMEGENSCHEME%>" value=<%= UsernameGeneratorParams.FIXED %>  
+			<% if(UsernameGeneratorParams.FIXED.equals(cmpconfig.getRANameGenScheme(alias))) {
 					out.write(" CHECKED ");
 					checked = true;
 				} %>
 			/>
-		<label><c:out value="FIXED" /></label>
+		<label><c:out value="<%= UsernameGeneratorParams.FIXED %>" /></label>
 		&nbsp;&nbsp;&nbsp;
 		<% pvalue = checked? cmpconfig.getRANameGenParams(alias) : ""; %>
         <input type="text" name="<%=TEXTFIELD_CMP_RANAMEGENPARAM %>" value='<c:out value="<%= pvalue %>"/>'
 			      	maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>" id="<%=TEXTFIELD_CMP_RANAMEGENPARAM %>" >
 		<br/>
 		
-		<input type="radio" name="<%=RADIO_NAMEGENSCHEME%>" value="USERNAME"  
-			<% if("USERNAME".equals(cmpconfig.getRANameGenScheme(alias))) { out.write(" CHECKED "); } %>
+		<input type="radio" name="<%=RADIO_NAMEGENSCHEME%>" value=<%= UsernameGeneratorParams.USERNAME %>  
+			<% if(UsernameGeneratorParams.USERNAME.equals(cmpconfig.getRANameGenScheme(alias))) { out.write(" CHECKED "); } %>
 			/>
-		<label><c:out value="Use entire request DN as username" /></label>
+		<label><c:out value="<%= ejbcawebbean.getText(\"CMPUSEENTIREDNASUSERNAME\") %>" /></label>
 			      	
        </td>
     </tr>
@@ -372,7 +377,8 @@ function checkresponseprotection(sel) {
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_CMP_ALLOWCUSTOMSERNO%>" value="<%=CHECKBOX_VALUE %>" 
 			<% if(cmpconfig.getAllowRACustomSerno(alias)) out.write(" CHECKED "); %>
- 			id="<%=CHECKBOX_CMP_ALLOWCUSTOMSERNO%>" />         
+ 			id="<%=CHECKBOX_CMP_ALLOWCUSTOMSERNO%>" />
+ 		<label><c:out value="<%= ejbcawebbean.getText(\"ALLOW\") %>" /></label>
       </td>
     </tr>
     
@@ -399,7 +405,7 @@ function checkresponseprotection(sel) {
         </select>
         <noscript>
 			&nbsp;&nbsp;&nbsp;&nbsp;
-			<input type="submit" name="<%= BUTTON_RELOAD %>" id="<%= BUTTON_RELOAD %>" value="Reload">
+			<input type="submit" name="<%= BUTTON_RELOAD %>" id="<%= BUTTON_RELOAD %>" value="<%= ejbcawebbean.getText("RELOAD") %>">
 		</noscript>
       </td>
     </tr>
@@ -501,8 +507,8 @@ function checkresponseprotection(sel) {
            %>     <option value='<c:out value="<%= vca%>"/>'><c:out value="<%= vca %>"/></option> 
            <% } %>
         </select>
-        <input type="submit" name="<%= BUTTON_ADDVENDORCA %>" value="Add"  >
-        <input type="submit" name="<%= BUTTON_REMOVEVENDORCA %>" value="Remove"  >
+        <input type="submit" name="<%= BUTTON_ADDVENDORCA %>" value="<%= ejbcawebbean.getText("ADD") %>"  >
+        <input type="submit" name="<%= BUTTON_REMOVEVENDORCA %>" value="<%= ejbcawebbean.getText("REMOVE") %>"  >
       </td>
     </tr>
     
