@@ -62,7 +62,7 @@ public class CryptoTokenInfo implements Serializable {
     }
 
     public boolean isAllowExportPrivateKey() {
-        return Boolean.valueOf(cryptoTokenProperties.getProperty(SoftCryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, ""));
+        return Boolean.valueOf(cryptoTokenProperties.getProperty(SoftCryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.FALSE.toString()));
     }
 
     

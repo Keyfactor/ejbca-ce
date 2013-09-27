@@ -74,7 +74,7 @@ public class P11Slot {
         this.slotNr = null;
         this.sharedLibrary = null;
         this.attributesFile = null;
-        this.slotLabelType = null;
+        this.slotLabelType = Pkcs11SlotLabelType.SUN_FILE;
         this.provider = createProvider();      
     }
     /* (non-Javadoc)
