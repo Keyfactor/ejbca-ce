@@ -33,6 +33,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.token.p11.P11Slot;
 import org.cesecore.keys.token.p11.P11SlotUser;
+import org.cesecore.keys.token.p11.Pkcs11SlotLabel;
 import org.cesecore.keys.token.p11.Pkcs11SlotLabelType;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.util.KeyStoreTools;
@@ -81,9 +82,9 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
     public PKCS11CryptoToken() throws InstantiationException {
         super();
         try {
-            Thread.currentThread().getContextClassLoader().loadClass(org.cesecore.keys.token.p11.Pkcs11SlotLabel.SUN_PKCS11_CLASS);
+            Thread.currentThread().getContextClassLoader().loadClass(Pkcs11SlotLabel.SUN_PKCS11_CLASS);
         } catch (ClassNotFoundException t) {
-            throw new InstantiationException("PKCS11 provider class " + org.cesecore.keys.token.p11.Pkcs11SlotLabel.SUN_PKCS11_CLASS + " not found.");
+            throw new InstantiationException("PKCS11 provider class " + Pkcs11SlotLabel.SUN_PKCS11_CLASS + " not found.");
         }
     }
 
@@ -92,24 +93,21 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
         // Don't autoactivate this right away, we must dynamically create the auth-provider with a slot
         setProperties(properties);
         init(properties, false, id);
-        Pkcs11SlotLabelType type = null;
-        this.sSlotLabel = null;
-        
-        this.sSlotLabel = getSlotLabel(SLOT_LABEL_VALUE, properties);
-        type = Pkcs11SlotLabelType.getFromKey(getSlotLabel(SLOT_LABEL_TYPE, properties));
+        sSlotLabel = getSlotLabel(SLOT_LABEL_VALUE, properties);
+        Pkcs11SlotLabelType type = Pkcs11SlotLabelType.getFromKey(getSlotLabel(SLOT_LABEL_TYPE, properties));
         String sharedLibrary = properties.getProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY);
         String attributesFile = properties.getProperty(PKCS11CryptoToken.ATTRIB_LABEL_KEY);
 
         String friendlyName = properties.getProperty(TOKEN_FRIENDLY_NAME);
 
         if(friendlyName != null){
-            this.p11slot = P11Slot.getInstance(friendlyName, this.sSlotLabel, sharedLibrary, type, attributesFile, this, id);
+            p11slot = P11Slot.getInstance(friendlyName, sSlotLabel, sharedLibrary, type, attributesFile, this, id);
         } else {
             // getInstance will run autoActivate()
-            this.p11slot = P11Slot.getInstance(this.sSlotLabel, sharedLibrary, type, attributesFile, this, id);
+            p11slot = P11Slot.getInstance(sSlotLabel, sharedLibrary, type, attributesFile, this, id);
             
         }
-        final Provider provider = this.p11slot.getProvider();
+        final Provider provider = p11slot.getProvider();
         setJCAProvider(provider);
     }
 
@@ -163,7 +161,7 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
         // The password parameter of the load method (this is the second parameter, which is null here) will be used if provided (i.e. if it is not
         // null). If it is null, the default login manager will use the configured method for prompting the PIN on demand. If the application just
         // provides the instance number as a string instead of the complete provider name, the key store will also accept it.
-        if (provider.getClass().getName().equals(org.cesecore.keys.token.p11.Pkcs11SlotLabel.IAIK_PKCS11_CLASS)) {
+        if (provider.getClass().getName().equals(Pkcs11SlotLabel.IAIK_PKCS11_CLASS)) {
             keyStore.load(new ByteArrayInputStream(getSignProviderName().getBytes("UTF-8")), authCode);
         } else {
             // For the Sun provider this works fine to initialize the provider using previously provided protection parameters.
@@ -285,8 +283,32 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
         for (Object key : properties.keySet()) {
             String keyString = (String) key;
             if (keyString.equals(SLOT_LABEL_KEY)) {
-                returnValue.setProperty(SLOT_LABEL_VALUE, properties.getProperty(keyString));
-                returnValue.setProperty(SLOT_LABEL_TYPE, Pkcs11SlotLabelType.SLOT_NUMBER.getKey());
+                String keyValue = properties.getProperty(keyString);
+                // In 5.0.11, the "slot" value may contain just an integer, but may also encode an integer, an index
+                // a token label or a config file. 
+                final String oldLabelPrefix = "TOKEN_LABEL:";
+                final String oldIndexPrefix = "SLOT_LIST_IX:";
+                final String oldSlotNumberPrefix = "SLOT_ID:";
+                final String oldSunFilePrefix = "SUN_FILE:";
+                final String delimiter = ":";
+                if(Pkcs11SlotLabelType.SLOT_NUMBER.validate(keyValue)) {
+                    //If it was a straight integer, then save as is
+                    returnValue.setProperty(SLOT_LABEL_VALUE, keyValue);
+                    returnValue.setProperty(SLOT_LABEL_TYPE, Pkcs11SlotLabelType.SLOT_NUMBER.getKey());
+                } else if(keyValue.startsWith(oldSlotNumberPrefix)) {
+                   //If not, check with the rest of the values 
+                    returnValue.setProperty(SLOT_LABEL_VALUE, keyValue.split(delimiter, 2)[1]);
+                    returnValue.setProperty(SLOT_LABEL_TYPE, Pkcs11SlotLabelType.SLOT_NUMBER.getKey());
+                } else if(keyValue.startsWith(oldLabelPrefix)) {
+                    returnValue.setProperty(SLOT_LABEL_VALUE, keyValue.split(delimiter, 2)[1]);
+                    returnValue.setProperty(SLOT_LABEL_TYPE, Pkcs11SlotLabelType.SLOT_INDEX.getKey());
+                } else if(keyValue.startsWith(oldIndexPrefix)) {
+                    returnValue.setProperty(SLOT_LABEL_VALUE, keyValue.split(delimiter, 2)[1]);
+                    returnValue.setProperty(SLOT_LABEL_TYPE, Pkcs11SlotLabelType.SLOT_LABEL.getKey());
+                } else if(keyValue.startsWith(oldSunFilePrefix)) {
+                    returnValue.setProperty(SLOT_LABEL_TYPE, Pkcs11SlotLabelType.SUN_FILE.getKey());
+                }
+                
             } else if (((String) key).equals(SLOT_LIST_INDEX_KEY)) {
                 String indexValue = properties.getProperty(keyString);
                 if (indexValue.charAt(0) != 'i') {
