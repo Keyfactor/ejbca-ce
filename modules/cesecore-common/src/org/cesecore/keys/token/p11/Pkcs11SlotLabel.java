@@ -38,8 +38,7 @@ import org.cesecore.util.FileTools;
 /**
  * @version $Id$
  *
- * Object to handle a p11 SLOT.
- * You can get a provider for the slot with {@link Pkcs11SlotLabel#getP11Provider(String, String, String)}
+ * Object for handling a PKCS#11 Slot Label.
  *
  */
 public class Pkcs11SlotLabel {

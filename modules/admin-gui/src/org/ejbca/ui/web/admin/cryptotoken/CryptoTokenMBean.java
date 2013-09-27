@@ -344,12 +344,16 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                     String slotLabelType =   getCurrentCryptoToken().getP11SlotLabelType();
                     //Perform some name validation
                     if(slotLabelType.equals(Pkcs11SlotLabelType.SLOT_NUMBER.getKey())) {
-                        Long.parseLong(slotTextValue);
+                        if(!Pkcs11SlotLabelType.SLOT_NUMBER.validate(slotTextValue)) {
+                            msg = "Slot must be an absolute number";
+                        }
                     } else if(slotLabelType.equals(Pkcs11SlotLabelType.SLOT_INDEX.getKey())) {
                         if(slotTextValue.charAt(0) != 'i') {
                             slotTextValue = "i" + slotTextValue;
                         }
-                        Long.parseLong(slotTextValue.substring(1));
+                        if(!Pkcs11SlotLabelType.SLOT_INDEX.validate(slotTextValue)) {
+                            msg = "Slot must be an absolute number or use prefix 'i' for indexed slots.";
+                        }                 
                     }
                  
                     // Verify that it is allowed
@@ -405,8 +409,6 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 msg = e.getMessage();
             } catch (AuthorizationDeniedException e) {
                 msg = e.getMessage();
-            } catch (NumberFormatException e) {
-                msg = "Slot must be an absolute number or use prefix 'i' for indexed slots.";
             } catch (IllegalArgumentException e) {
                 msg = e.getMessage();
             } catch (Throwable e) {
