@@ -193,9 +193,9 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 # Default: null
 #ocsp.p11.p11password=foo123
 
-# P11 slot number. Prefix with 'i' to indicate index in list.
-# Default: i1
-#ocsp.p11.slot=i1
+# P11 slot number. Prefix with 'i' to indicate index in list, i.e. 'i1', or use a string for slot label, i.e. 'ocspSigningKey'.
+# Default: 1
+#ocsp.p11.slot=1
 
 
 #------------------- Re-keying used by external OCSP responder------------------------------
