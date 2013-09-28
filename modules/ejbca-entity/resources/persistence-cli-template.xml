@@ -110,4 +110,24 @@
             <property name="hibernate.query.jpaql_strict_compliance" value="true"/>
         </properties>
     </persistence-unit>
+    
+    <!--
+        Persistence unit for reading and writing to an already existing AuditRecordData table.
+    -->
+    <persistence-unit name="audit-rw" transaction-type="RESOURCE_LOCAL">
+    	<!-- Since we use orm-ejbca here we use  hibernate.hbm2ddl.auto in order to not get database exception if not all EJBCA tables exist.
+    	     We could also create a new orm file, but that it much more work to make it nice -->
+        <mapping-file>META-INF/orm-ejbca-mysql.xml</mapping-file>
+        <class>org.cesecore.audit.impl.integrityprotected.AuditRecordData</class>
+        <properties>
+            <property name="hibernate.dialect" value="${hibernate.dialect}"/>
+            <property name="hibernate.connection.url" value="${database.url}"/>
+            <property name="hibernate.connection.driver_class" value="${database.driver}"/>
+            <property name="hibernate.connection.username" value="${database.username}"/>
+            <property name="hibernate.connection.password" value="${database.password}"/>
+            <property name="hibernate.hbm2ddl.auto" value="none"/>
+            <property name="hibernate.query.jpaql_strict_compliance" value="true"/>
+        </properties>
+    </persistence-unit>
+    
 </persistence>
