@@ -52,7 +52,12 @@ org.cesecore.keybind.InternalKeyBindingRules
 		</span>
 		</c:forEach>
 	</div>
-	<br/>
+	<p>
+		<h:outputText rendered="#{internalKeyBindingMBean.selectedInternalKeyBindingType eq 'OcspKeyBinding'}"
+			value="#{web.text.INTERNALKEYBINDING_OCSPKEYBINDING_DESCRIPTION}"/>
+		<h:outputText rendered="#{internalKeyBindingMBean.selectedInternalKeyBindingType eq 'AuthenticationKeyBinding'}"
+			value="#{web.text.INTERNALKEYBINDING_AUTHENTICATIONKEYBINDING_DESCRIPTION}"/>
+	</p>
 	<h:form id="internalkeybindings">
 	<h:dataTable value="#{internalKeyBindingMBean.internalKeyBindingGuiList}" var="guiInfo"
 		styleClass="grid" style="border-collapse: collapse; right: auto; left: auto">

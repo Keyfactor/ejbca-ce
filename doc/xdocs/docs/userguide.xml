@@ -1663,6 +1663,91 @@ Verification successful
 </section>
 
 
+<section name="Managing InternalKeyBindings">
+<p>
+See the <a href="concepts.html#InternalKeyBinding">concepts page</a> for a high level description of what InternalKeyBindings are.
+</p>
+<p>
+All InternalKeyBindings share the following properties: 
+</p>
+<ul>
+<li>Type: OcspKeyBinding or AuthenticationKeyBinding</li>
+<li>Id: Unique identifying number</li>
+<li>Name: A unique and human readable name</li>
+<li>Crypto Token: The Crypto Token where we reference a key pair</li>
+<li>Key Pair Alias: A reference to the currently used key pair in the specified Crypto Token</li>
+<li>Signature Algorithm: The signature algorithm user during signing, for example the signing of an OCSP response</li>
+<li>Next Key Pair Alias: A reference to the next key pair to use in the specified Crypto Token when renewing</li>
+<li>Bound Certificate: A certificate issued for the current key pair's public key</li>
+</ul>
+<subsection name="Actions">
+<p>
+From the overview page the following actions are avilable:
+</p>
+<ul>
+<li>Enable/Disable: Marks the InternalKeyBinding as Active/Disabled. Only Active ones will be used and processed
+by health-check.</li>
+<li>Delete: Removes the InternalKeyBinding, but will not remove the referenced key pair or certificates</li>
+<li>New keys: Generates a new key pair in the referenced Crypto Token using the same key specification as the current
+key has and an alias derived from the current alias</li>
+<li>CSR: Creates a Certificate Signing Request using the next key pair (or current key pair when no next key pair
+exists)</li>
+<li>Update: Searches the database for the latest issued matching certificate for the next key pair (or current key
+pair when no next key pair exists) by using SubjectKeyId.</li>
+<li>Renew: When the CA that issued the current certificate is active and resides in the same instance, this will create
+a new certificate using the same End Entity as the last one was issued with. If a next key pair exists, that key pair
+will be used.</li>
+</ul>
+</subsection>
+<subsection name="OcspKeyBinding">
+<p>
+A CA can delegate the signing of OCSP responses to a separate key pair.
+This is configured as an InternalKeyBinding.
+</p>
+<ul>
+<li>The certificate must have Key Usage: Digital Signature</li>
+<li>The certificate must have Extended Key Usage: OCSPSigner</li>
+<li>The certificate normally has the "OCSP No Check" extension enabled</li>
+<li>The list of trusted certificates will be used to validate that the OCSP request signature (if a signature is required).</li>
+<li>No implementation specific properties exists for this InternalKeyBinding.</li>
+</ul>
+<p>
+Implementation specific properties:
+</p>
+<ul>
+<li>Non existing is good: Respond OK if the certificate is not found.</li>
+<li>Max-Age HTTP header (seconds): A hint to caching proxies when using HTTP GET for how long to retain a response.</li>
+<li>Request must be signed a trusted certificate: When true, request signatures will be checked against the list of trusted certificates.</li>
+<li>Response validity (seconds): How long the OCSP response is valid and may be used.</li>
+<li>ResponderID: Defines the ResponderID type as defined in RFC2560.</li>
+<li>Include certificate chain in response: When true, the entire certificate chain will be included in the response.</li>
+</ul>
+<p>
+See the section <a href="installation-ocsp.html#OCSP Installation">OCSP installation</a>
+for the full description on how to set up delegated OCSP signing.
+</p>
+</subsection>
+<subsection name="AuthenticationKeyBinding">
+<p>
+The identity in outgoing SSL connections is configured as an InternalKeyBinding.
+</p>
+<ul>
+<li>The certificate must have Key Usage: Digital Signature and Key Encipherment</li>
+<li>The certificate must have Extended Key Usage: Client Authentication</li>
+<li>The list of trusted certificates will be used to validate the server side SSL certificate.</li>
+<li>No implementation specific properties exists for this InternalKeyBinding.</li>
+</ul>
+<p>
+No implementation specific properties exist.
+</p>
+<p>
+See the section <a href="installation-ocsp.html#Renewal of an OCSP signer via CA's WebService (a.k.a. Re-keying)">OCSP signer renewal</a>
+for an example of how this is used.
+</p>
+</subsection>
+</section>
+
+
 <section name="EJBCA client toolbox">
 <p>
 There is a set of tools that could be used without an EJBCA. Built from the EJBCA source, but the resulting distribution package can be moved to any machine. The client toolbox provides commands to function as a Web Service RA, to manage keys on PKCS#11 HSM, to perform EJBCA health checks, to enroll CVC EAC certificates, to test CMP and SCEP protocol, and much much more.  
