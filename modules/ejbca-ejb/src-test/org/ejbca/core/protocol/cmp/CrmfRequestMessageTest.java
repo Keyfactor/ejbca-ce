@@ -128,7 +128,7 @@ public class CrmfRequestMessageTest {
 	        params.setDNGeneratorComponent("");
 	        gen = UsernameGenerator.getInstance(params);
 	        username = gen.generateUsername(dnname.toString());
-	        assertEquals("Username was not constructed properly from DN", "CN=subject,SERIALNUMBER=000106716,O=Org,C=SE", username);
+	        assertEquals("Username was not constructed properly from DN", "CN=subject,SN=000106716,O=Org,C=SE", username);
 	    }
 	    {
 	        // DN order the other way around, should give username the other way around as well
@@ -143,7 +143,7 @@ public class CrmfRequestMessageTest {
 	        params.setDNGeneratorComponent("");
 	        gen = UsernameGenerator.getInstance(params);
 	        username = gen.generateUsername(dnname.toString());
-	        assertEquals("Username was not constructed properly from DN", "C=SE,O=Org,SERIALNUMBER=000106716,CN=subject", username);
+	        assertEquals("Username was not constructed properly from DN", "C=SE,O=Org,SN=000106716,CN=subject", username);
 	    }
 	}
 

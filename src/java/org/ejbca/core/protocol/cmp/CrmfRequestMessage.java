@@ -63,6 +63,7 @@ import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.util.Base64;
+import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.protocol.cmp.authentication.RegTokenPasswordExtractor;
 
@@ -348,7 +349,10 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
     @Override
     public X500Name getRequestX500Name() {
         final CertTemplate templ = getReq().getCertReq().getCertTemplate();
-        final X500Name name = templ.getSubject();
+        X500Name name = templ.getSubject();
+        if(name != null) {
+            name = new X500Name(new CeSecoreNameStyle(), name);
+        }
         if (log.isDebugEnabled()) {
             log.debug("Request X500Name is: " + name);
         }
