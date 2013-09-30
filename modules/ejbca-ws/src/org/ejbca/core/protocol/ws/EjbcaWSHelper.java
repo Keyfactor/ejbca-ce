@@ -86,7 +86,7 @@ import org.ejbca.core.model.hardtoken.types.EnhancedEIDHardToken;
 import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
 import org.ejbca.core.model.hardtoken.types.TurkishEIDHardToken;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfileException;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.ws.logger.TransactionTags;
 import org.ejbca.core.protocol.ws.objects.Certificate;
 import org.ejbca.core.protocol.ws.objects.ExtendedInformationWS;
@@ -794,7 +794,7 @@ public class EjbcaWSHelper {
 	}
 
 	protected boolean checkValidityAndSetUserPassword(AuthenticationToken admin, java.security.cert.Certificate cert, String username, String password) 
-	throws ServiceLocatorException, CertificateNotYetValidException, CertificateExpiredException, UserDoesntFullfillEndEntityProfileException, AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException {
+	throws ServiceLocatorException, CertificateNotYetValidException, CertificateExpiredException, UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException {
 		boolean ret = false;
 		try {
 			// Check validity of the certificate after verifying the signature

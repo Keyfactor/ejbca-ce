@@ -141,7 +141,7 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfileException;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.hibernate.ObjectNotFoundException;
 import org.junit.After;
 import org.junit.Before;
@@ -264,7 +264,7 @@ public class NestedMessageContentTest extends CmpTestCase {
     }
 
     @Test
-    public void test01CrmfReq() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException, EjbcaException, UserDoesntFullfillEndEntityProfileException, WaitingForApprovalException, Exception {
+    public void test01CrmfReq() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException, EjbcaException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, Exception {
         
         //-----------------Creating CRMF request
         //PKIMessage crmfMsg = createEESignedCrmfReq(subjectDN);
@@ -339,7 +339,7 @@ public class NestedMessageContentTest extends CmpTestCase {
     }
     
     @Test
-    public void test02Verify() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException, EjbcaException, UserDoesntFullfillEndEntityProfileException, WaitingForApprovalException, Exception {
+    public void test02Verify() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException, EjbcaException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, Exception {
         
         //------------------- Creating Certificate Request ---------------
         //PKIMessage crmfMsg = createEESignedCrmfReq(subjectDN);
@@ -460,7 +460,7 @@ public class NestedMessageContentTest extends CmpTestCase {
     }
 
     @Test
-    public void test04CrmfRACertExist() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException, EjbcaException, UserDoesntFullfillEndEntityProfileException, WaitingForApprovalException, Exception {
+    public void test04CrmfRACertExist() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException, EjbcaException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, Exception {
         
         //------------------- Creating Certificate Request ---------------
         //PKIMessage crmfMsg = createEESignedCrmfReq(subjectDN);
@@ -528,7 +528,7 @@ public class NestedMessageContentTest extends CmpTestCase {
     }
 
     @Test
-    public void test05CrmfRACertDoesNotExist() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException, EjbcaException, UserDoesntFullfillEndEntityProfileException, WaitingForApprovalException, Exception {
+    public void test05CrmfRACertDoesNotExist() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException, EjbcaException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, Exception {
 
         
         //------------------- Creating Certificate Request ---------------
@@ -604,7 +604,7 @@ public class NestedMessageContentTest extends CmpTestCase {
     }
     
     @Test
-    public void test06NotNestedMessage() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException, EjbcaException, UserDoesntFullfillEndEntityProfileException, WaitingForApprovalException, Exception {
+    public void test06NotNestedMessage() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException, EjbcaException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, Exception {
         
         ASN1EncodableVector optionaValidityV = new ASN1EncodableVector();
         org.bouncycastle.asn1.x509.Time nb = new org.bouncycastle.asn1.x509.Time(new DERGeneralizedTime("20030211002120Z"));
@@ -698,7 +698,7 @@ public class NestedMessageContentTest extends CmpTestCase {
     }
     
     @Test
-    public void test07ExpiredRACert() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException, EjbcaException, UserDoesntFullfillEndEntityProfileException, WaitingForApprovalException, Exception {
+    public void test07ExpiredRACert() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException, EjbcaException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, Exception {
         log.info(">test07ExpiredRACert()");
         
         //------------------- Creating Certificate Request ---------------
@@ -778,7 +778,7 @@ public class NestedMessageContentTest extends CmpTestCase {
     }
     
     @Test
-    public void test08MissingSignature() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException, EjbcaException, UserDoesntFullfillEndEntityProfileException, WaitingForApprovalException, Exception {
+    public void test08MissingSignature() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException, EjbcaException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, Exception {
         log.info(">test07ExpiredRACert()");
 
         
@@ -849,7 +849,7 @@ public class NestedMessageContentTest extends CmpTestCase {
     }
     
     @Test
-    public void test09CrmfWrongIssuerAndDoNotCheckAdmin() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException, EjbcaException, UserDoesntFullfillEndEntityProfileException, WaitingForApprovalException, Exception {
+    public void test09CrmfWrongIssuerAndDoNotCheckAdmin() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException, EjbcaException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, Exception {
         
         cmpConfiguration.setAuthenticationParameters(cmpAlias, "-;foo123");
         //updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "-;foo123");
@@ -1085,7 +1085,7 @@ public class NestedMessageContentTest extends CmpTestCase {
     
     private Certificate createRACertificate(String username, String password, KeyPair keys, Date notBefore, 
             Date notAfter) throws AuthorizationDeniedException, EjbcaException, CertificateException, FileNotFoundException,
-            IOException, UserDoesntFullfillEndEntityProfileException, ObjectNotFoundException, Exception {
+            IOException, UserDoesntFullfillEndEntityProfile, ObjectNotFoundException, Exception {
         
         assertEquals("RACertPath is suppose to be '" + raCertsPath + "', instead it is '" + cmpConfiguration.getRACertPath(cmpAlias) + "'.", cmpConfiguration.getRACertPath(cmpAlias), raCertsPath);
         
@@ -1109,7 +1109,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         return racert;
     }
 
-    private EndEntityInformation createUser(String username, String subjectDN, String password) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfileException, WaitingForApprovalException,
+    private EndEntityInformation createUser(String username, String subjectDN, String password) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException,
             EjbcaException, Exception {
         
         EndEntityInformation user = new EndEntityInformation(username, subjectDN, caid, null, username+"@primekey.se", new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE,
@@ -1201,7 +1201,7 @@ public class NestedMessageContentTest extends CmpTestCase {
                 createUser(adminName, dn, "foo123");
             } catch (AuthorizationDeniedException e1) {
                 throw new CertificateCreationException("Error encountered when creating admin user", e1);
-            } catch (UserDoesntFullfillEndEntityProfileException e1) {
+            } catch (UserDoesntFullfillEndEntityProfile e1) {
                 throw new CertificateCreationException("Error encountered when creating admin user", e1);
             } catch (WaitingForApprovalException e1) {
                 throw new CertificateCreationException("Error encountered when creating admin user", e1);

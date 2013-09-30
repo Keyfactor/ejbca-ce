@@ -36,7 +36,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.ra.NotFoundException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfileException;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 
 /**
  * @version $Id$
@@ -57,7 +57,7 @@ public interface CertificateRequestSession {
 	 */
     public byte[] processCertReq(AuthenticationToken admin, EndEntityInformation userdata, String req, int reqType, String hardTokenSN, int responseType) throws CADoesntExistsException,
             AuthorizationDeniedException, NotFoundException, InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException,
-            SignatureException, IOException, ObjectNotFoundException, CreateException, CertificateException, UserDoesntFullfillEndEntityProfileException,
+            SignatureException, IOException, ObjectNotFoundException, CreateException, CertificateException, UserDoesntFullfillEndEntityProfile,
             ApprovalException, EjbcaException, CesecoreException;
 
 	/**
@@ -72,7 +72,7 @@ public interface CertificateRequestSession {
 	 * @throws CesecoreException 
 	 */
     public ResponseMessage processCertReq(AuthenticationToken admin, EndEntityInformation userdata, RequestMessage req, Class<? extends ResponseMessage> responseClass) throws PersistenceException,
-            AuthorizationDeniedException, UserDoesntFullfillEndEntityProfileException, EjbcaException, CesecoreException;
+            AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, CesecoreException;
 
 	/**
 	 * Edits or adds a user and generates a keystore for that user in a single transaction.
@@ -88,6 +88,6 @@ public interface CertificateRequestSession {
      */
     public byte[] processSoftTokenReq(AuthenticationToken admin, EndEntityInformation userdata, String hardTokenSN, String keyspec, String keyalg, boolean createJKS) throws CADoesntExistsException,
             AuthorizationDeniedException, NotFoundException, InvalidKeyException, InvalidKeySpecException, NoSuchProviderException, SignatureException, IOException,
-            ObjectNotFoundException, CreateException, CertificateException, UserDoesntFullfillEndEntityProfileException, ApprovalException, EjbcaException,
+            ObjectNotFoundException, CreateException, CertificateException, UserDoesntFullfillEndEntityProfile, ApprovalException, EjbcaException,
             KeyStoreException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, PersistenceException;
 }

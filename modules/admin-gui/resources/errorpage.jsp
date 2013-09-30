@@ -33,7 +33,7 @@
     } else if (exception instanceof ParameterException) { %>
         <h2><c:out value="<%= exception.getLocalizedMessage() %>" /></h2><%
             response.setStatus(HttpServletResponse.SC_OK);
-            } else if (exception instanceof org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfileException) {
+            } else if (exception instanceof org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile) {
         %>
         <H2><c:out value='<%= WebConfiguration.notification(ejbcawebbean.getText(\"EXCEPTIONOCCURED\")) %>' /></H2>
         <H4><c:out value="<%= exception.getLocalizedMessage() %>" /></H4><%

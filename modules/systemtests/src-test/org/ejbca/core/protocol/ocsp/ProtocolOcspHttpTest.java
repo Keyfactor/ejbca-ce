@@ -128,7 +128,7 @@ import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfileException;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.certificatestore.CertificateCacheTstFactory;
 import org.ejbca.core.protocol.certificatestore.HashID;
 import org.ejbca.core.protocol.certificatestore.ICertificateCache;
@@ -1217,7 +1217,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         createUserCert(caid);
     }
 
-    private KeyPair createUserCert(int caid) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfileException, ApprovalException,
+    private KeyPair createUserCert(int caid) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ApprovalException,
             WaitingForApprovalException, Exception, ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException,
             CADoesntExistsException {
         final String USERNAME = "ocsptest";
