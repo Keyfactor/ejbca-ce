@@ -722,4 +722,13 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
         	internalCertStoreSession.removeCertificate(fingerprint);
         }
     }
+    
+    @Test
+    public void testSNRepresentation () {
+        SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), "dnorder", "foo123");
+        req.setIssuerDN(CertTools.getIssuerDN(testx509ca.getCACertificate()));
+        req.setRequestDN("C=SE,O=Foo Company,SN=12345,SURNAME=surname,CN=DnOrderTest"); // This should not matter now
+        X500Name reqname = req.getRequestX500Name();
+        assertEquals("C=SE,O=Foo Company,SN=12345,SURNAME=surname,CN=DnOrderTest", reqname.toString());
+    }
 }
