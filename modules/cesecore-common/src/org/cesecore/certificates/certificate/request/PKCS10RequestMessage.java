@@ -322,7 +322,7 @@ public class PKCS10RequestMessage implements RequestMessage {
             log.error("PKCS10 not inited: "+e.getMessage());
             return null;
         }
-        return pkcs10.getSubject();
+        return new X500Name(new CeSecoreNameStyle(), pkcs10.getSubject());
     }
     
     @Override
