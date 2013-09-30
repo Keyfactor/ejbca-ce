@@ -24,6 +24,7 @@ import java.util.Date;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.cms.CMSSignedGenerator;
+import org.cesecore.util.CeSecoreNameStyle;
 
 
 
@@ -155,7 +156,7 @@ public class SimpleRequestMessage implements RequestMessage {
     	if (this.requestDN == null) {
     		return null;
     	}
-    	return new X500Name(this.requestDN);
+    	return new X500Name(new CeSecoreNameStyle(), this.requestDN);
     }
 
     public void setRequestDN(String dn) {
