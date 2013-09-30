@@ -56,7 +56,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfileException;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -142,7 +142,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
     @Test
     public void test01CreateCertWithCustomSN() throws EndEntityProfileExistsException, InvalidKeyException, NoSuchAlgorithmException,
             NoSuchProviderException, SignatureException, IOException, PersistenceException, AuthorizationDeniedException,
-            UserDoesntFullfillEndEntityProfileException, EjbcaException, ClassNotFoundException, CertificateEncodingException, CertificateException,
+            UserDoesntFullfillEndEntityProfile, EjbcaException, ClassNotFoundException, CertificateEncodingException, CertificateException,
             WaitingForApprovalException, InvalidAlgorithmParameterException, CesecoreException, OperatorCreationException {
         log.trace(">test01CreateCustomCert()");
 
@@ -178,7 +178,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
     // Create certificate request for user: foo2 with random cert serialnumber
     @Test
     public void test02CreateCertWithRandomSN() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException,
-            IOException, PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfileException, EjbcaException,
+            IOException, PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException,
             ClassNotFoundException, CertificateEncodingException, CertificateException, InvalidAlgorithmParameterException, CesecoreException, OperatorCreationException {
 
         log.trace(">test02CreateCertWithRandomSN()");
@@ -213,7 +213,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
     @Test
     public void test03CreateCertWithDublicateSN() throws EndEntityProfileExistsException, InvalidKeyException, NoSuchAlgorithmException,
             NoSuchProviderException, SignatureException, IOException, PersistenceException, AuthorizationDeniedException,
-            UserDoesntFullfillEndEntityProfileException, ClassNotFoundException, CertificateEncodingException, CertificateException,
+            UserDoesntFullfillEndEntityProfile, ClassNotFoundException, CertificateEncodingException, CertificateException,
             WaitingForApprovalException, InvalidAlgorithmParameterException, EjbcaException, OperatorCreationException {
         log.trace(">test03CreateCertWithDublicateSN()");
 
@@ -249,7 +249,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
     @Test
     public void test04CreateCertWithCustomSNNotAllowed() throws EndEntityProfileExistsException, InvalidKeyException, NoSuchAlgorithmException,
             NoSuchProviderException, SignatureException, IOException, PersistenceException, AuthorizationDeniedException,
-            UserDoesntFullfillEndEntityProfileException, EjbcaException, ClassNotFoundException, CertificateEncodingException, CertificateException,
+            UserDoesntFullfillEndEntityProfile, EjbcaException, ClassNotFoundException, CertificateEncodingException, CertificateException,
             WaitingForApprovalException, InvalidAlgorithmParameterException, OperatorCreationException {
         log.trace(">test04CreateCertWithCustomSNNotAllowed()");
 

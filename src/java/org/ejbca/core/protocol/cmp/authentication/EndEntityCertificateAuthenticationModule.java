@@ -55,7 +55,7 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfileException;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.cmp.CmpMessageHelper;
 import org.ejbca.core.protocol.cmp.CmpPKIBodyConstants;
 import org.ejbca.util.passgen.IPasswordGenerator;
@@ -362,7 +362,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                         log.debug(errorMessage);
                     }
                     return false;
-                } catch (UserDoesntFullfillEndEntityProfileException e) {
+                } catch (UserDoesntFullfillEndEntityProfile e) {
                     errorMessage = e.getLocalizedMessage();
                     if(log.isDebugEnabled()) {
                         log.debug(errorMessage);

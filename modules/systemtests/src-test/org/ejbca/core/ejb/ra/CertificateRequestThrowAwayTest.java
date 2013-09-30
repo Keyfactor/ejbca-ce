@@ -65,7 +65,7 @@ import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertReqHistoryProxySessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfileException;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -149,7 +149,7 @@ public class CertificateRequestThrowAwayTest extends CaTestCase {
      * @throws OperatorCreationException 
      */
     private void generateCertificatePkcs10(boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, boolean raw)
-            throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfileException, EjbcaException, InvalidKeyException, NoSuchAlgorithmException,
+            throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, InvalidKeyException, NoSuchAlgorithmException,
             NoSuchProviderException, SignatureException, InvalidAlgorithmParameterException, CertificateEncodingException, CertificateException,
             IOException, RemoveException, InvalidKeySpecException, ObjectNotFoundException, CreateException, CADoesntExistsException,
             CesecoreException, OperatorCreationException {
@@ -224,7 +224,7 @@ public class CertificateRequestThrowAwayTest extends CaTestCase {
      * @throws OperatorCreationException 
      */
     private Certificate doPkcs10Request(EndEntityInformation userData, boolean raw) throws AuthorizationDeniedException,
-            UserDoesntFullfillEndEntityProfileException, EjbcaException, NoSuchAlgorithmException, NoSuchProviderException,
+            UserDoesntFullfillEndEntityProfile, EjbcaException, NoSuchAlgorithmException, NoSuchProviderException,
             InvalidAlgorithmParameterException, InvalidKeyException, SignatureException, CertificateEncodingException, CertificateException,
             IOException, InvalidKeySpecException, ObjectNotFoundException, CreateException, CADoesntExistsException, CesecoreException, OperatorCreationException {
         Certificate ret;
