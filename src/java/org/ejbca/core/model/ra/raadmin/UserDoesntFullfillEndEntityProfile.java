@@ -22,13 +22,13 @@ import javax.xml.ws.WebFault;
  * @version $Id$
  */
 @WebFault
-public class UserDoesntFullfillEndEntityProfileException extends Exception {
+public class UserDoesntFullfillEndEntityProfile extends Exception {
     private static final long serialVersionUID = 777317800935352658L;
 
     /**
      * Creates a new instance of <code>UserDoesntFullfillProfile</code> without detail message.
      */
-    public UserDoesntFullfillEndEntityProfileException() {
+    public UserDoesntFullfillEndEntityProfile() {
         super();
     }
 
@@ -38,7 +38,7 @@ public class UserDoesntFullfillEndEntityProfileException extends Exception {
      *
      * @param msg the detail message.
      */
-    public UserDoesntFullfillEndEntityProfileException(String msg) {
+    public UserDoesntFullfillEndEntityProfile(String msg) {
         super(msg);
     }
 }

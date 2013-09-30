@@ -133,7 +133,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfileException;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.cmp.authentication.HMACAuthenticationModule;
 import org.ejbca.core.protocol.cmp.authentication.VerifyPKIMessage;
 import org.junit.After;
@@ -810,7 +810,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
 
     @Test
     public void test14HMACModuleInClientMode() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException,
-            IOException, InvalidAlgorithmParameterException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfileException,
+            IOException, InvalidAlgorithmParameterException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
             WaitingForApprovalException, EjbcaException, java.lang.Exception {
 
         cmpConfiguration.setRAMode(configAlias, false);
@@ -1630,7 +1630,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
     }
 
     private EndEntityInformation createUser(String username, String subjectDN, String password, boolean clearpassword, int caid, int eepid, int cpid) throws AuthorizationDeniedException,
-            UserDoesntFullfillEndEntityProfileException, WaitingForApprovalException, EjbcaException, Exception {
+            UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException, Exception {
 
         EndEntityInformation user = new EndEntityInformation(username, subjectDN, caid, null, username + "@primekey.se", new EndEntityType(EndEntityTypes.ENDUSER),
                 eepid, cpid, SecConst.TOKEN_SOFT_PEM, 0, null);
@@ -1725,7 +1725,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             createUser(adminName, dn, "foo123", true, caid, eepid, cpid);
         } catch (AuthorizationDeniedException e1) {
             throw new CertificateCreationException("Error encountered when creating admin user", e1);
-        } catch (UserDoesntFullfillEndEntityProfileException e1) {
+        } catch (UserDoesntFullfillEndEntityProfile e1) {
             throw new CertificateCreationException("Error encountered when creating admin user", e1);
         } catch (WaitingForApprovalException e1) {
             throw new CertificateCreationException("Error encountered when creating admin user", e1);

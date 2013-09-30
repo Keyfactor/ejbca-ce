@@ -90,7 +90,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
           fail("Profile does not check DN at all.");
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " " + " = OK");
         }
 
@@ -100,7 +100,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
           log.debug("End Entity Profile Fulfill Test " + (currentSubTest++) + " " + " = OK");
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
         	fail(e.getMessage());
         }
         
@@ -110,7 +110,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
           fail("UserName is not checked even though it's required");
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
         	log.debug("End Entity Profile Fulfill Test " + (currentSubTest++) + " " + e.getMessage() + " = OK");	
         }
         
@@ -120,7 +120,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
           fail("Password is not checked even though it's required");
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
         	log.debug("End Entity Profile Test Fulfill " + (currentSubTest++) + " " + e.getMessage() + " = OK");
         }
         
@@ -130,7 +130,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
           fail("Error Required CN field wasn't checked");
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " " + e.getMessage() + " = OK");
         }
         
@@ -140,7 +140,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
           fail("Error Required OU field wasn't checked");
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " " + e.getMessage() + " = OK");
         }
         
@@ -150,7 +150,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
           fail("Error value of second OU field wasn't checked");
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " " + e.getMessage()+ " = OK");
         }
         
@@ -160,7 +160,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
           log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " " + " = OK");
-        }catch(UserDoesntFullfillEndEntityProfileException e){        	
+        }catch(UserDoesntFullfillEndEntityProfile e){        	
         	fail(e.getMessage());
         }
         
@@ -170,7 +170,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
           fail("Inproper check of C value.");
-        }catch(UserDoesntFullfillEndEntityProfileException e){        	        	
+        }catch(UserDoesntFullfillEndEntityProfile e){        	        	
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " " + e.getMessage() + " = OK");
         }
         
@@ -206,7 +206,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
           fail("Profile does not check altname at all.");
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " " + " = OK");
         }
 
@@ -216,7 +216,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
           log.debug("End Entity Profile Fulfill Test " + (currentSubTest++) + " " + " = OK");
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
         	fail(e.getMessage());
         }
                 
@@ -227,7 +227,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
           fail("Error Required RFC822NAME field wasn't checked");
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " " + e.getMessage() + " = OK");
         }
         
@@ -237,7 +237,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
           fail("To many RFC822 names fields wasn't checked");
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " " + e.getMessage() + " = OK");
         }
         
@@ -247,7 +247,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
            log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + "  = OK");
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
         	fail("Not only domains of RFC822NAME and UPN where checked: " + e.getMessage() );        	
         }
         
@@ -257,7 +257,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
           fail("Error value of DNS not checked.");
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " " + e.getMessage()+ " = OK");
         }
         
@@ -267,7 +267,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
           fail("Error not checking number of IPADDRESS properly.");
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " " + " = OK");
         	
         }
@@ -279,7 +279,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
           fail("Inproper check of email field.");
-        }catch(UserDoesntFullfillEndEntityProfileException e){        	        	
+        }catch(UserDoesntFullfillEndEntityProfile e){        	        	
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " " + e.getMessage() + " = OK");
         }
         
@@ -289,7 +289,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
           fail("Inproper check of email field.");
-        }catch(UserDoesntFullfillEndEntityProfileException e){        	        	
+        }catch(UserDoesntFullfillEndEntityProfile e){        	        	
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " " + e.getMessage() + " = OK");
         }
         
@@ -299,7 +299,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
           fail("Inproper check of email field.");
-        }catch(UserDoesntFullfillEndEntityProfileException e){        	        	
+        }catch(UserDoesntFullfillEndEntityProfile e){        	        	
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " " + e.getMessage() + " = OK");
         }
         
@@ -309,7 +309,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
           fail("Inproper check of email field values.");
-        }catch(UserDoesntFullfillEndEntityProfileException e){        	        	
+        }catch(UserDoesntFullfillEndEntityProfile e){        	        	
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " " + e.getMessage() + " = OK");
         }
         
@@ -323,7 +323,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
           fail("Inproper check of certificate profile values.");
-        }catch(UserDoesntFullfillEndEntityProfileException e){        	        	
+        }catch(UserDoesntFullfillEndEntityProfile e){        	        	
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " " + e.getMessage() + " = OK");
         }
         
@@ -333,7 +333,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca2, null);
           fail("Inproper check of available ca's.");
-        }catch(UserDoesntFullfillEndEntityProfileException e){        	        	
+        }catch(UserDoesntFullfillEndEntityProfile e){        	        	
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " " + e.getMessage() + " = OK");
         }
         
@@ -370,7 +370,7 @@ public class UserFullfillEndEntityProfileTest {
             		CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0,
             		TEST_CA_1, null);
             fail("Did not notice missing RFC822Name.");        	
-        } catch ( UserDoesntFullfillEndEntityProfileException e ) {
+        } catch ( UserDoesntFullfillEndEntityProfile e ) {
             log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + "  = OK (" + e.getMessage()+")");
         }
         // Try non-existing required "use end entity e-mail"
@@ -381,7 +381,7 @@ public class UserFullfillEndEntityProfileTest {
             		CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0,
             		TEST_CA_1, null);
             fail("Did not check RFC822Name against e-mail field.");
-        } catch ( UserDoesntFullfillEndEntityProfileException e ) {
+        } catch ( UserDoesntFullfillEndEntityProfile e ) {
             log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + "  = OK (" + e.getMessage()+")");
         }
         // Try to ignore a required non-modifyable domain
@@ -392,7 +392,7 @@ public class UserFullfillEndEntityProfileTest {
             		CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0,
             		TEST_CA_1, null);
             fail("Did not check RFC822Name against profile.");
-        } catch ( UserDoesntFullfillEndEntityProfileException e ) {
+        } catch ( UserDoesntFullfillEndEntityProfile e ) {
             log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + "  = OK (" + e.getMessage()+")");
         }
         // Use same as required non-mod field in non-req field
@@ -403,7 +403,7 @@ public class UserFullfillEndEntityProfileTest {
             		CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0,
             		TEST_CA_1, null);
             log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + "  = OK");
-        } catch ( UserDoesntFullfillEndEntityProfileException e ) {
+        } catch ( UserDoesntFullfillEndEntityProfile e ) {
             fail("Did not check RFC822Name against profile." + e.getMessage());
         }
 
@@ -443,7 +443,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
           log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
             fail("Error Required OU fields wasn't checked propertly: " + e.getMessage());
         	
         }     
@@ -454,7 +454,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
           log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
             fail("Error Required OU fields wasn't checked propertly: " + e.getMessage());        	
         } 
         
@@ -465,7 +465,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
           log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
             fail("Error Required OU fields wasn't checked propertly: " + e.getMessage());        	
         }        
         
@@ -475,7 +475,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
           fail("Error Required OU fields wasn't checked propertly");
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         }  
         }{
@@ -512,7 +512,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
           log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
             fail("Error Reverse OU fields wasn't checked propertly: " + e.getMessage());
         	
         }   
@@ -523,7 +523,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
           log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
             fail("Error Reverse OU fields wasn't checked propertly: " + e.getMessage());
         	
         }  
@@ -534,7 +534,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
           log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
         	fail("Error Reverse OU fields wasn't checked propertly: " + e.getMessage());
         	
         }  
@@ -545,7 +545,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
           fail("Error Reverse OU fields wasn't checked propertly");
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         	
         } 
@@ -557,7 +557,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
           fail("Error Reverse OU fields wasn't checked propertly");
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         	
         }   
@@ -570,7 +570,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
            log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
         	fail("Error Reverse OU fields wasn't checked propertly: " + e.getMessage());        	        	
         } 
         
@@ -581,7 +581,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
             fail("Error Reverse OU fields wasn't checked propertly");
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         	
         }  
@@ -593,7 +593,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
             fail("Error Reverse OU fields wasn't checked propertly");
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         	
         }  
@@ -629,7 +629,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
           log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
         	fail("Error Reverse IPADDRESS fields wasn't checked propertly: " + e.getMessage());
         	
         }        
@@ -640,7 +640,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
           log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
         	fail("Error Reverse IPADDRESS fields wasn't checked propertly: " + e.getMessage());
         	
         }  
@@ -651,7 +651,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
           log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
         	fail("Error Reverse IPADDRESS fields wasn't checked propertly: " + e.getMessage());
         	
         }  
@@ -662,7 +662,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
             fail("Error Reverse IPADDRESS fields wasn't checked propertly");
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         	
         } 
@@ -674,7 +674,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
             fail("Error Reverse IPADDRESS fields wasn't checked propertly");
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         	
         }   
@@ -687,7 +687,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
            log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
         	fail("Error Reverse IPADDRESS fields wasn't checked propertly: " + e.getMessage());        	        	
         } 
         
@@ -698,7 +698,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
             fail("Error Reverse IPADDRESS fields wasn't checked propertly");
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         	
         }  
@@ -710,7 +710,7 @@ public class UserFullfillEndEntityProfileTest {
                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
           		                                   false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
             fail("Error Reverse IPADDRESS fields wasn't checked propertly");
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         	
         }          
@@ -747,7 +747,7 @@ public class UserFullfillEndEntityProfileTest {
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
         	                                         false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
         	fail("Error CountryOfCitizenship wasn't checked propertly");        	        	
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
         	assertEquals("Invalid COUNTRYOFCITIZENSHIP. Must be of length two.", e.getMessage());
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         } 
@@ -756,7 +756,7 @@ public class UserFullfillEndEntityProfileTest {
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
         	                                         false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
         	fail("Error CountryOfCitizenship wasn't checked propertly");        	        	
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
         	assertEquals("Invalid COUNTRYOFRESIDENCE. Must be of length two.", e.getMessage());
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         } 
@@ -765,7 +765,7 @@ public class UserFullfillEndEntityProfileTest {
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
         	                                         false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
         	fail("Error CountryOfCitizenship wasn't checked propertly");        	        	
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
         	assertEquals("Field COUNTRYOFRESIDENCE data didn't match requirement of end entity profile.", e.getMessage());
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         } 
@@ -774,7 +774,7 @@ public class UserFullfillEndEntityProfileTest {
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
         	                                         false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
         	fail("Error Subject Dir Attributes wasn't checked propertly");        	        	
         } 
         try{ 
@@ -782,7 +782,7 @@ public class UserFullfillEndEntityProfileTest {
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
         	                                         false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
         	fail("Error DateOfBirth wasn't checked propertly");        	        	
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
         	assertEquals("Invalid DATEOFBIRTH. Must be of length eight.", e.getMessage());
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         } 
@@ -791,7 +791,7 @@ public class UserFullfillEndEntityProfileTest {
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
         			false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
         	fail("Error DateOfBirth wasn't checked propertly");        	        	
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
         	assertEquals("Invalid DATEOFBIRTH. Must be only numbers.", e.getMessage());
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         } 
@@ -800,7 +800,7 @@ public class UserFullfillEndEntityProfileTest {
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
         	                                         false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, null);
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
         	fail("Error DateOfBirth wasn't checked propertly");        	        	
         } 
         }{
@@ -830,7 +830,7 @@ public class UserFullfillEndEntityProfileTest {
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
         	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, ei);
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
-        } catch (UserDoesntFullfillEndEntityProfileException e) {
+        } catch (UserDoesntFullfillEndEntityProfile e) {
         	fail("Error: Empty start time was not checked correctly.");
         } 
         profile.setUse(EndEntityProfile.STARTTIME, 0, false);
@@ -842,7 +842,7 @@ public class UserFullfillEndEntityProfileTest {
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
         	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, ei);
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
-        } catch (UserDoesntFullfillEndEntityProfileException e) {
+        } catch (UserDoesntFullfillEndEntityProfile e) {
         	fail("Error: Empty end time was not checked correctly.");
         } 
         // Static times work?
@@ -855,7 +855,7 @@ public class UserFullfillEndEntityProfileTest {
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
         	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, ei);
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
-        } catch (UserDoesntFullfillEndEntityProfileException e) {
+        } catch (UserDoesntFullfillEndEntityProfile e) {
         	fail("Error: Static times does not work. ("+e.getMessage()+")");
         } 
         // Relative times work?
@@ -866,7 +866,7 @@ public class UserFullfillEndEntityProfileTest {
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
         	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, ei);
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
-        } catch (UserDoesntFullfillEndEntityProfileException e) {
+        } catch (UserDoesntFullfillEndEntityProfile e) {
         	fail("Error: Relative times does not work.");
         } 
         // Static start, rel end work?
@@ -877,7 +877,7 @@ public class UserFullfillEndEntityProfileTest {
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
         	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, ei);
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
-        } catch (UserDoesntFullfillEndEntityProfileException e) {
+        } catch (UserDoesntFullfillEndEntityProfile e) {
         	fail("Error: Static start time w relative end time does not work.");
         } 
         // Rel start, static end work?
@@ -888,7 +888,7 @@ public class UserFullfillEndEntityProfileTest {
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
         	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, ei);
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
-        } catch (UserDoesntFullfillEndEntityProfileException e) {
+        } catch (UserDoesntFullfillEndEntityProfile e) {
         	fail("Error: Relative start time w static end time does not work.");
         }
         // Negative relative start times work?
@@ -899,7 +899,7 @@ public class UserFullfillEndEntityProfileTest {
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
         	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, ei);
         	fail("Error: Possible to use negative start time.");
-        } catch (UserDoesntFullfillEndEntityProfileException e) {
+        } catch (UserDoesntFullfillEndEntityProfile e) {
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         } 
         // Negative relative end times work?
@@ -910,7 +910,7 @@ public class UserFullfillEndEntityProfileTest {
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
         	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, ei);
         	fail("Error: Possible to use negative end time.");
-        } catch (UserDoesntFullfillEndEntityProfileException e) {
+        } catch (UserDoesntFullfillEndEntityProfile e) {
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         } 
         // Static end before start ok?
@@ -921,7 +921,7 @@ public class UserFullfillEndEntityProfileTest {
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
         	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, ei);
         	fail("Error: Static end time before static start time allowed.");
-        } catch (UserDoesntFullfillEndEntityProfileException e) {
+        } catch (UserDoesntFullfillEndEntityProfile e) {
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         } 
         // Relative end before start ok?
@@ -932,7 +932,7 @@ public class UserFullfillEndEntityProfileTest {
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
         	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, ei);
         	fail("Error: Relative end time before relative start time allowed.");
-        } catch (UserDoesntFullfillEndEntityProfileException e) {
+        } catch (UserDoesntFullfillEndEntityProfile e) {
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         } 
         // Invalid static start ok?
@@ -943,7 +943,7 @@ public class UserFullfillEndEntityProfileTest {
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
         	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, ei);
         	fail("Error: Invalid static start time allowed.");
-        } catch (UserDoesntFullfillEndEntityProfileException e) {
+        } catch (UserDoesntFullfillEndEntityProfile e) {
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         } 
         // Invalid static end ok?
@@ -954,7 +954,7 @@ public class UserFullfillEndEntityProfileTest {
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
         	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, ei);
         	fail("Error: Invalid static start time allowed.");
-        } catch (UserDoesntFullfillEndEntityProfileException e) {
+        } catch (UserDoesntFullfillEndEntityProfile e) {
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         } 
         // Invalid relative start ok?
@@ -965,7 +965,7 @@ public class UserFullfillEndEntityProfileTest {
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
         	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, ei);
         	fail("Error: Invalid relative start time allowed.");
-        } catch (UserDoesntFullfillEndEntityProfileException e) {
+        } catch (UserDoesntFullfillEndEntityProfile e) {
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         } 
         // Invalid relative end ok?
@@ -976,7 +976,7 @@ public class UserFullfillEndEntityProfileTest {
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
         	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, ei);
         	fail("Error: Invalid relative start time allowed.");
-        } catch (UserDoesntFullfillEndEntityProfileException e) {
+        } catch (UserDoesntFullfillEndEntityProfile e) {
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         }
         // Is this Java-version parsing dates correctly?
@@ -1000,7 +1000,7 @@ public class UserFullfillEndEntityProfileTest {
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
         			false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, ei);
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
-        } catch (UserDoesntFullfillEndEntityProfileException e) {
+        } catch (UserDoesntFullfillEndEntityProfile e) {
         	fail("Error: Allowedrequests not checked correctly, should be allowed.");
         } 
         ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, "2");
@@ -1009,7 +1009,7 @@ public class UserFullfillEndEntityProfileTest {
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
         	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, ei);
         	fail("Error: Allowed requests was not checked correctly, should not be allowed.");
-        } catch (UserDoesntFullfillEndEntityProfileException e) {
+        } catch (UserDoesntFullfillEndEntityProfile e) {
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
         } 
         profile.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, true);
@@ -1018,7 +1018,7 @@ public class UserFullfillEndEntityProfileTest {
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
         	                                         false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, ei);
         	log.debug("End Entity Fulfill Profile Test " + (currentSubTest++) + " = OK");
-        } catch (UserDoesntFullfillEndEntityProfileException e) {
+        } catch (UserDoesntFullfillEndEntityProfile e) {
         	fail("Error: Allowedrequests not checked correctly, should be allowed.");
         } 
         }{
@@ -1042,7 +1042,7 @@ public class UserFullfillEndEntityProfileTest {
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
         	                                         false,false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, ei);
         	fail("Error: maxFailedLogins was not checked correctly, should not be allowed.");
-        } catch (UserDoesntFullfillEndEntityProfileException e) {
+        } catch (UserDoesntFullfillEndEntityProfile e) {
         	// OK
         }
         
@@ -1052,7 +1052,7 @@ public class UserFullfillEndEntityProfileTest {
         	profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith","","","",
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
         	                                         false,false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, TEST_CA_1, ei);
-        } catch (UserDoesntFullfillEndEntityProfileException e) {
+        } catch (UserDoesntFullfillEndEntityProfile e) {
         	log.error(e.getMessage(), e);
         	fail("Error: maxFailedLogins was not checked correctly, should be allowed.");
         }
@@ -1092,7 +1092,7 @@ public class UserFullfillEndEntityProfileTest {
         	profile.doesUserFullfillEndEntityProfile("username","password",STANDARD_DN,null,"","test11@test.com",
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, false,
         	                                         false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, null);
-        }catch(UserDoesntFullfillEndEntityProfileException e){        	        	
+        }catch(UserDoesntFullfillEndEntityProfile e){        	        	
         	fail(e.getMessage());
         }
         
@@ -1102,7 +1102,7 @@ public class UserFullfillEndEntityProfileTest {
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, false,
         	                                         false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca2, null);
         	fail("Improper check of available ca's.");
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
         	//log.debug(e.getMessage());
         	assertEquals("Couldn't find CA (3) among End Entity Profiles Available CAs.", e.getMessage());
         }
@@ -1115,7 +1115,7 @@ public class UserFullfillEndEntityProfileTest {
         	profile.doesUserFullfillEndEntityProfile("username","password",STANDARD_DN,null,"","test11@test.com",
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, false,
         	                                         false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, null);
-        }catch(UserDoesntFullfillEndEntityProfileException e){        	        	
+        }catch(UserDoesntFullfillEndEntityProfile e){        	        	
         	fail(e.getMessage());
         }
         
@@ -1124,7 +1124,7 @@ public class UserFullfillEndEntityProfileTest {
         	profile.doesUserFullfillEndEntityProfile("username","password",STANDARD_DN,null,"","test11@test.com",
         	                                         CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, false,
         	                                         false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca2, null);
-        }catch(UserDoesntFullfillEndEntityProfileException e){
+        }catch(UserDoesntFullfillEndEntityProfile e){
         	fail(e.getMessage());
         }
 
@@ -1201,7 +1201,7 @@ public class UserFullfillEndEntityProfileTest {
                     "dnsname=test.primekey.se, Upn=test12@primekey.se, ipaddress=11.11.1.2","","test@test.com",
                     CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false,false,SecConst.TOKEN_SOFT_BROWSERGEN, 0,
                     TEST_CA_1, null);
-        } catch ( UserDoesntFullfillEndEntityProfileException e ) {
+        } catch ( UserDoesntFullfillEndEntityProfile e ) {
             fail("Did not verify RFC822Name against email. "+e.getMessage());           
         } 
     }

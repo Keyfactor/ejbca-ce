@@ -380,7 +380,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
             userdata.setPassword("foo123");
     	    try {
     	        profile.doesUserFullfillEndEntityProfile(userdata, false);
-    	    } catch (UserDoesntFullfillEndEntityProfileException e) {
+    	    } catch (UserDoesntFullfillEndEntityProfile e) {
     	        log.debug(e.getMessage());
     	        ret = true;
     	    }
@@ -391,7 +391,7 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
     	    try {
     	        profile.doesUserFullfillEndEntityProfile(userdata, false);
     	        ret = true;
-    	    } catch (UserDoesntFullfillEndEntityProfileException e) {
+    	    } catch (UserDoesntFullfillEndEntityProfile e) {
     	        log.debug(e.getMessage());
     	        ret = false;
     	    }

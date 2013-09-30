@@ -33,7 +33,7 @@ import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfileException;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -67,12 +67,12 @@ public class EndEntityAccessSessionTest extends CaTestCase {
      * @throws CADoesntExistsException 
      * @throws EjbcaException 
      * @throws WaitingForApprovalException 
-     * @throws UserDoesntFullfillEndEntityProfileException 
+     * @throws UserDoesntFullfillEndEntityProfile 
      * @throws PersistenceException 
      * @throws RemoveException 
      */
     @Test
-    public void testFindUserBySubjectAndIssuerDnWithMultipleUsers() throws CADoesntExistsException, AuthorizationDeniedException, PersistenceException, UserDoesntFullfillEndEntityProfileException, WaitingForApprovalException, EjbcaException, RemoveException {
+    public void testFindUserBySubjectAndIssuerDnWithMultipleUsers() throws CADoesntExistsException, AuthorizationDeniedException, PersistenceException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException, RemoveException {
         String commonDn = "CN=foo";
         String firstUsername = "alpha";
         String secondUsername = "beta";

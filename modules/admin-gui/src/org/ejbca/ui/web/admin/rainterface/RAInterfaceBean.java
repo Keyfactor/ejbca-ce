@@ -67,7 +67,7 @@ import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfileException;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.CertificateView;
 import org.ejbca.ui.web.RevokedInfoView;
@@ -158,7 +158,7 @@ public class RAInterfaceBean implements Serializable {
     }
     
     /** Adds a user to the database, the string array must be in format defined in class UserView. */
-    public void addUser(UserView userdata) throws PersistenceException, CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfileException, WaitingForApprovalException, EjbcaException {
+    public void addUser(UserView userdata) throws PersistenceException, CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException {
         log.trace(">addUser()");
         if (userdata.getEndEntityProfileId() != 0) {
             EndEntityInformation uservo = new EndEntityInformation(userdata.getUsername(), userdata.getSubjectDN(), userdata.getCAId(), userdata.getSubjectAltName(), 
@@ -278,7 +278,7 @@ public class RAInterfaceBean implements Serializable {
     }
     
     /** Changes the userdata  */
-    public void changeUserData(UserView userdata) throws CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfileException, WaitingForApprovalException, EjbcaException {
+    public void changeUserData(UserView userdata) throws CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException {
         log.trace(">changeUserData()");
         addedusermemory.changeUser(userdata);
         if(userdata.getPassword() != null && userdata.getPassword().trim().equals("")) {

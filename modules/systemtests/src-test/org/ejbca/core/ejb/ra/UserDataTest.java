@@ -45,7 +45,7 @@ import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfileException;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -248,7 +248,7 @@ public class UserDataTest extends CaTestCase {
         boolean thrown = false;
         try {
             endEntityManagementSession.changeUser(admin, user, false);
-        } catch (UserDoesntFullfillEndEntityProfileException e) {
+        } catch (UserDoesntFullfillEndEntityProfile e) {
             thrown = true;
         }
         // This requires "Enable end entity profile limitations" to be checked in admin GUI->System configuration
@@ -280,7 +280,7 @@ public class UserDataTest extends CaTestCase {
         thrown = false;
         try {
             endEntityManagementSession.changeUser(admin, user, false);
-        } catch (UserDoesntFullfillEndEntityProfileException e) {
+        } catch (UserDoesntFullfillEndEntityProfile e) {
             thrown = true;
         }
         assertTrue(thrown);
