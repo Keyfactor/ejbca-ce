@@ -272,5 +272,13 @@ public class RequestMessageTest {
             assertEquals("Username was not constructed properly from DN", "C=SE,O=Org,SN=000106716,CN=subject", username);
         }
     }
+    
+    @Test
+    public void testSNRepresentation () {
+        SimpleRequestMessage req = new SimpleRequestMessage(keyPair.getPublic(), "dnorder", "foo123");
+        req.setRequestDN("C=SE,O=Foo Company,SN=12345,SURNAME=surname,CN=DnOrderTest"); // This should not matter now
+        X500Name reqname = req.getRequestX500Name();
+        assertEquals("C=SE,O=Foo Company,SN=12345,SURNAME=surname,CN=DnOrderTest", reqname.toString());
+    }
 
  }
