@@ -17,13 +17,14 @@ import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.cert.Certificate;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.GeneralName;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSession;
-import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -174,41 +175,47 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 	}
 	
 	private void signResponse(CmpConfirmResponseMessage cresp, BaseCmpMessage msg) {
-        try {
-            // Get the CA that should sign the response
-            String cadn = CertTools.stringToBCDNString(msg.getRecipient().getName().toString());
-            CA ca = null;
-            if (cadn == null) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Using Default CA to sign Certificate Confirm message: "+this.cmpConfiguration.getCMPDefaultCA(this.confAlias));
-                }
-                ca = caSession.getCA(admin, this.cmpConfiguration.getCMPDefaultCA(this.confAlias));
-            } else if (this.cmpConfiguration.getCMPDefaultCA(this.confAlias) != null) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Using recipient CA to sign Certificate Confirm message: '"+cadn+"', "+cadn.hashCode());
-                }
-                ca = caSession.getCA(admin, cadn.hashCode());
-            }
-            if (ca != null) {
-                CAToken catoken = ca.getCAToken();
-                final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(catoken.getCryptoTokenId());
-                cresp.setSignKeyInfo(ca.getCACertificate(), cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)), cryptoToken.getSignProviderName());
-                if(msg.getHeader().getProtectionAlg() != null) {
-                    cresp.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(msg.getHeader().getProtectionAlg().getAlgorithm().getId()));
-                }
-            } else {
-                if (LOG.isDebugEnabled()) {
-                    LOG.info("Could not find CA to sign Certificate Confirm, either from recipient ("+cadn+") or default ("+this.cmpConfiguration.getCMPDefaultCA(this.confAlias)+"). Not signing Certificate Confirm.");
-                }
-            }
-        } catch (CADoesntExistsException e) {
-            LOG.error("Exception during CMP response signing: ", e);            
-        } catch (CryptoTokenOfflineException e) {
-            LOG.error("Exception during CMP response signing: ", e);            
-        } catch (AuthorizationDeniedException e) {
-            LOG.error("Exception during CMP response signing: ", e);
-        }
 
+	    // Get the CA that should sign the response
+	    String cadn = CertTools.stringToBCDNString(msg.getRecipient().getName().toString());
+	    CAInfo cainfo = getCAInfo(cadn);
+	    if(cainfo != null) {
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Using CA '" + cainfo.getName() + "' to sing Certificate Confirm message");
+            }
+            cresp.setSender(new GeneralName(new X500Name(cainfo.getSubjectDN())));
+            
+	        try {        
+	            CAToken catoken = cainfo.getCAToken();
+	            Certificate cacert = cainfo.getCertificateChain().iterator().next();
+	            final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(catoken.getCryptoTokenId());
+	            cresp.setSignKeyInfo(cacert, cryptoToken.getPrivateKey(
+	                                                catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)), 
+	                                                cryptoToken.getSignProviderName());
+	            if(msg.getHeader().getProtectionAlg() != null) {
+	                cresp.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(msg.getHeader().getProtectionAlg().getAlgorithm().getId()));
+	            }
+
+	        } catch (CryptoTokenOfflineException e) {
+	            LOG.error("Exception during CMP response signing: ", e);            
+	        }
+	    }
+	}
+	
+	private CAInfo getCAInfo(String cadn) {
+	    CAInfo cainfo = null;
+	    try {
+	        cainfo = caSession.getCAInfoInternal(cadn.hashCode(), null, true);
+	    } catch(CADoesntExistsException e) {
+	        LOG.error("Could not find Recipient CA '" + cadn + "'. Will try to use CMP DefaultCA instead.");
+	        cadn = this.cmpConfiguration.getCMPDefaultCA(this.confAlias);
+	        try {
+	            cainfo = caSession.getCAInfoInternal(cadn.hashCode(), null, true);
+	        } catch(CADoesntExistsException e1) {
+	            LOG.error("Exception during CMP response signing. Cannot find CMP DefaultCA: " + cadn, e1);
+	        }
+	    }
+	    return cainfo;
 	}
 
 }
