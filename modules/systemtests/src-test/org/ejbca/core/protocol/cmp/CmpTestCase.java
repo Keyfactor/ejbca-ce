@@ -317,8 +317,12 @@ public abstract class CmpTestCase extends CaTestCase {
     protected PKIMessage genCertConfirm(String userDN, Certificate cacert, byte[] nonce, byte[] transid, String hash, int certReqId)
             throws NoSuchAlgorithmException, NoSuchProviderException, IOException {
 
-        PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(new X500Name(userDN)), new GeneralName(new X500Name(
-                ((X509Certificate) cacert).getSubjectDN().getName())));
+        String issuerDN = "CN=foobarNoCA";
+        if(cacert != null) {
+            issuerDN = ((X509Certificate) cacert).getSubjectDN().getName();
+        }
+        PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(new X500Name(userDN)), 
+                                                               new GeneralName(new X500Name(issuerDN)));
         myPKIHeader.setMessageTime(new DERGeneralizedTime(new Date()));
         // senderNonce
         myPKIHeader.setSenderNonce(new DEROctetString(nonce));
