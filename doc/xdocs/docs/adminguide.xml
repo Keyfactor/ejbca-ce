@@ -3539,7 +3539,7 @@ List objects and their handles:
 ./cmu list -display=index,handle,class,keyType,label
 </source>
 <p>
-If you have created keys with natvie commands, or imported keys, there is probably no certificate object as required by Java PKCS#11 provider.
+If you have created keys with native commands, or imported keys, there is probably no certificate object as required by Java PKCS#11 provider.
 Create a self signed certificate referencing the private handle:
 </p>
 <source>
