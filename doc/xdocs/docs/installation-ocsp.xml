@@ -65,7 +65,7 @@ by matching the key pair with the certificate.</li>
 <li>Go to AdminGUI of OCSP -> InternalKeyBindings and click "Activate" for your new OcspKeyBinding to start processing OCSP responses with it.</li>
 </ul>
 </subsubsection>
-<subsubsection name="Workflow for setting renewal of an OCSP signer">
+<subsubsection name="Workflow for renewal of an OCSP signer">
 <ul>
 <li>[Optional] Go to AdminGUI of OCSP -> InternalKeyBindings and create "New keys" for your OcspKeyBinding.</li>
 <li>Go to AdminGUI of OCSP -> InternalKeyBindings and create a Certificate Signing Request for your OcspKeyBinding. Save this file.</li>
