@@ -178,10 +178,11 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 
 	    // Get the CA that should sign the response
 	    String cadn = CertTools.stringToBCDNString(msg.getRecipient().getName().toString());
-	    CAInfo cainfo = getCAInfo(cadn);
-	    if(cainfo != null) {
+	    CAInfo cainfo;
+        try {
+            cainfo = getCAInfo(cadn);
             if(LOG.isDebugEnabled()) {
-                LOG.debug("Using CA '" + cainfo.getName() + "' to sing Certificate Confirm message");
+                LOG.debug("Using CA '" + cainfo.getName() + "' to sign Certificate Confirm message");
             }
             cresp.setSender(new GeneralName(new X500Name(cainfo.getSubjectDN())));
             
@@ -199,20 +200,26 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 	        } catch (CryptoTokenOfflineException e) {
 	            LOG.error("Exception during CMP response signing: ", e);            
 	        }
-	    }
+	    
+        } catch (CADoesntExistsException e1) {
+            LOG.error("Exception during CMP response signing: ", e1);            
+        }
 	}
 	
-	private CAInfo getCAInfo(String cadn) {
+	private CAInfo getCAInfo(String cadn) throws CADoesntExistsException {
 	    CAInfo cainfo = null;
-	    try {
-	        cainfo = caSession.getCAInfoInternal(cadn.hashCode(), null, true);
-	    } catch(CADoesntExistsException e) {
-	        LOG.error("Could not find Recipient CA '" + cadn + "'. Will try to use CMP DefaultCA instead.");
+	    if(cadn == null) {
 	        cadn = this.cmpConfiguration.getCMPDefaultCA(this.confAlias);
+	        cainfo = caSession.getCAInfoInternal(cadn.hashCode(), null, true);
+	    } else {
 	        try {
+	            // CertTools.stringToBCDNString must have been done on the cadn passed to this method.
 	            cainfo = caSession.getCAInfoInternal(cadn.hashCode(), null, true);
-	        } catch(CADoesntExistsException e1) {
-	            LOG.error("Exception during CMP response signing. Cannot find CMP DefaultCA: " + cadn, e1);
+	        } catch(CADoesntExistsException e) {
+	            LOG.info("Could not find Recipient CA '" + cadn + "'.");
+	            cadn = this.cmpConfiguration.getCMPDefaultCA(this.confAlias);
+	            LOG.info("Trying to use CMP DefaultCA instead. DN " + cadn + "  ID " + cadn.hashCode());
+	            cainfo = caSession.getCAInfoInternal(cadn.hashCode(), null, true);
 	        }
 	    }
 	    return cainfo;
