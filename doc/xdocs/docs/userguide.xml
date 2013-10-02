@@ -1719,7 +1719,9 @@ Implementation specific properties:
 <li>Max-Age HTTP header (seconds): A hint to caching proxies when using HTTP GET for how long to retain a response.</li>
 <li>Request must be signed a trusted certificate: When true, request signatures will be checked against the list of trusted certificates.</li>
 <li>Response validity (seconds): How long the OCSP response is valid and may be used.</li>
-<li>ResponderID: Defines the ResponderID type as defined in RFC2560.</li>
+<li>ResponderID: Defines the ResponderID type included in the response.
+The ResponderID is either a Name (SubjectDN of the singing certificate used for response) or
+Keyhash (SHA-1 digest of the public key of the singing certificate used for response)</li>
 <li>Include certificate chain in response: When true, the entire certificate chain will be included in the response.</li>
 </ul>
 <p>
