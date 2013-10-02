@@ -163,6 +163,7 @@ public class CmpConfirmMessageTest extends CmpTestCase {
 
         // Send a confirm message to the CA
         String hash = "foo123";
+        // the parameter 'null' is to  generate a confirm request for a recipient that does not exist
         PKIMessage confirm = genCertConfirm(userDN, null, nonce, transid, hash, 0);
         assertNotNull(confirm);
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
