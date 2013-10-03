@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -184,11 +184,11 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
             if(LOG.isDebugEnabled()) {
                 LOG.debug("Using CA '" + cainfo.getName() + "' to sign Certificate Confirm message");
             }
-            cresp.setSender(new GeneralName(new X500Name(cainfo.getSubjectDN())));
+            X509Certificate cacert = (X509Certificate) cainfo.getCertificateChain().iterator().next();
+            cresp.setSender(new GeneralName(new X500Name(cacert.getSubjectX500Principal().getName())));
             
 	        try {        
 	            CAToken catoken = cainfo.getCAToken();
-	            Certificate cacert = cainfo.getCertificateChain().iterator().next();
 	            final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(catoken.getCryptoTokenId());
 	            cresp.setSignKeyInfo(cacert, cryptoToken.getPrivateKey(
 	                                                catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)), 
@@ -207,13 +207,13 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 	}
 	
 	private CAInfo getCAInfo(String cadn) throws CADoesntExistsException {
+        // CertTools.stringToBCDNString must have been done on the cadn passed to this method.
 	    CAInfo cainfo = null;
 	    if(cadn == null) {
 	        cadn = this.cmpConfiguration.getCMPDefaultCA(this.confAlias);
 	        cainfo = caSession.getCAInfoInternal(cadn.hashCode(), null, true);
 	    } else {
 	        try {
-	            // CertTools.stringToBCDNString must have been done on the cadn passed to this method.
 	            cainfo = caSession.getCAInfoInternal(cadn.hashCode(), null, true);
 	        } catch(CADoesntExistsException e) {
 	            LOG.info("Could not find Recipient CA '" + cadn + "'.");
