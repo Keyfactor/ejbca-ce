@@ -185,7 +185,7 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
                 LOG.debug("Using CA '" + cainfo.getName() + "' to sign Certificate Confirm message");
             }
             X509Certificate cacert = (X509Certificate) cainfo.getCertificateChain().iterator().next();
-            cresp.setSender(new GeneralName(new X500Name(cacert.getSubjectX500Principal().getName())));
+            cresp.setSender(new GeneralName(X500Name.getInstance(cacert.getSubjectX500Principal().getEncoded())));
             
 	        try {        
 	            CAToken catoken = cainfo.getCAToken();
