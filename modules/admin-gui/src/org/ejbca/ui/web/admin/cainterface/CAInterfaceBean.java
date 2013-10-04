@@ -970,7 +970,7 @@ public class CAInterfaceBean implements Serializable {
 	                            useldapdnorder,
 	                            usecrldistpointoncrl,
 	                            crldistpointoncrlcritical,
-	                            true,
+	                            false, // Do not automatically include new CAs in health-check
 	                            isDoEnforceUniquePublicKeys,
 	                            isDoEnforceUniqueDistinguishedName,
 	                            isDoEnforceUniqueSubjectDNSerialnumber,
@@ -1021,7 +1021,7 @@ public class CAInterfaceBean implements Serializable {
 	                            useldapdnorder,
 	                            usecrldistpointoncrl,
 	                            crldistpointoncrlcritical,
-	                            true,
+	                            false, // Do not automatically include new CAs in health-check
 	                            isDoEnforceUniquePublicKeys,
 	                            isDoEnforceUniqueDistinguishedName,
 	                            isDoEnforceUniqueSubjectDNSerialnumber,
@@ -1056,7 +1056,7 @@ public class CAInterfaceBean implements Serializable {
 	                        finishUser, extendedcaservices,
 	                        approvalsettings,
 	                        numofreqapprovals,
-	                        true,
+	                        false, // Do not automatically include new CAs in health-check
 	                        isDoEnforceUniquePublicKeys,
 	                        isDoEnforceUniqueDistinguishedName,
 	                        isDoEnforceUniqueSubjectDNSerialnumber,
@@ -1093,7 +1093,7 @@ public class CAInterfaceBean implements Serializable {
 	        String availablePublisherValues, boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical, boolean usecrlnumber,
 	        boolean crlnumbercritical, String defaultcrldistpoint, String defaultcrlissuer, String defaultocsplocator, String authorityInformationAccessParam,
 	        String caDefinedFreshestCrl, boolean useutf8policytext, boolean useprintablestringsubjectdn, boolean useldapdnorder, boolean usecrldistpointoncrl,
-	        boolean crldistpointoncrlcritical, boolean serviceOcspActive, boolean serviceXkmsActive, boolean serviceCmsActive, String sharedCmpRaSecret
+	        boolean crldistpointoncrlcritical, boolean includeInHealthCheck, boolean serviceOcspActive, boolean serviceXkmsActive, boolean serviceCmsActive, String sharedCmpRaSecret
 	        ) throws Exception {
         // We need to pick up the old CAToken, so we don't overwrite with default values when we save the CA further down
         CAInfoView infoView = cadatahandler.getCAInfo(caid);  
@@ -1169,7 +1169,7 @@ public class CAInterfaceBean implements Serializable {
                        useldapdnorder,
                        usecrldistpointoncrl,
                        crldistpointoncrlcritical,
-                       true,
+                       includeInHealthCheck,
                        isDoEnforceUniquePublicKeys,
                        isDoEnforceUniqueDistinguishedName,
                        isDoEnforceUniqueSubjectDNSerialnumber,
@@ -1190,7 +1190,7 @@ public class CAInterfaceBean implements Serializable {
                        finishUser, extendedcaservices,
                        approvalsettings,
                        numofreqapprovals,
-                       true,
+                       includeInHealthCheck,
                        isDoEnforceUniquePublicKeys,
                        isDoEnforceUniqueDistinguishedName,
                        isDoEnforceUniqueSubjectDNSerialnumber,

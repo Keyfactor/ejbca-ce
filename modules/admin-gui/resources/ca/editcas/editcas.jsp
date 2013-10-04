@@ -190,6 +190,8 @@ java.security.InvalidAlgorithmParameterException
   static final String SELECT_APPROVALSETTINGS                     = "approvalsettings";
   static final String SELECT_NUMOFREQUIREDAPPROVALS               = "numofrequiredapprovals";
 
+  static final String HIDDEN_INCLUDEINHEALTHCHECK                 = "includeinhealthcheck";
+  
   static final String FILE_RECIEVEFILE                            = "filerecievefile";
   static final String FILE_RECIEVEFILE_MAKEREQUEST                = "filerecievefilemakerequest";
   static final String FILE_RECIEVEFILE_RECEIVEREQUEST             = "filerecievefilerecieverequest";
@@ -502,6 +504,7 @@ java.security.InvalidAlgorithmParameterException
                 final boolean useldapdnorder = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USELDAPDNORDER));
                 final boolean usecrldistpointoncrl = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USECRLDISTRIBUTIONPOINTONCRL));
                 final boolean crldistpointoncrlcritical = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_CRLDISTRIBUTIONPOINTONCRLCRITICAL));
+                final boolean includeInHealthCheck = Boolean.valueOf(requestMap.get(HIDDEN_INCLUDEINHEALTHCHECK));
                 final boolean serviceOcspActive = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACTIVATEOCSPSERVICE));
                 final boolean serviceXkmsActive = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACTIVATEXKMSSERVICE));
                 final boolean serviceCmsActive = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACTIVATECMSSERVICE));
@@ -517,7 +520,7 @@ java.security.InvalidAlgorithmParameterException
             		availablePublisherValues, useauthoritykeyidentifier, authoritykeyidentifiercritical, usecrlnumber,
             		crlnumbercritical, defaultcrldistpoint, defaultcrlissuer, defaultocsplocator, authorityInformationAccess,
             		caDefinedFreshestCrl, useutf8policytext, useprintablestringsubjectdn, useldapdnorder, usecrldistpointoncrl,
-            		crldistpointoncrlcritical, serviceOcspActive, serviceXkmsActive, serviceCmsActive, sharedCmpRaSecret
+            		crldistpointoncrlcritical, includeInHealthCheck, serviceOcspActive, serviceXkmsActive, serviceCmsActive, sharedCmpRaSecret
             		);
                 
                 if (cadatahandler.getCAInfo(caid).getCAInfo().getStatus() == CAConstants.CA_UNINITIALIZED) {
