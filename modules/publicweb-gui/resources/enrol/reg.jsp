@@ -6,7 +6,7 @@
 
 
 <% if (!org.ejbca.config.WebConfiguration.getSelfRegistrationEnabled()) { %>
-  <p>Self-registration is disbled.
+  <p>Self-registration is disabled.
   
   <% if (!"disabled".equalsIgnoreCase(org.ejbca.config.WebConfiguration.getDocBaseUri())) { %>
       For administrators: See the
