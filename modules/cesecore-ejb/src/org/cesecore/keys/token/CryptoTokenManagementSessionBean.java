@@ -223,6 +223,12 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
                 BaseCryptoToken.setAutoActivatePin(properties, currentPin, true);
                 authenticationCode = null;  // We have an auto-activation pin and it didn't change;
             }
+        } else if (authenticationCode==null || authenticationCode.length==0) {
+            // Check if the token was auto-activated before. it is now manually activated, so use the auto-activation code one last time
+            final String currentPin = BaseCryptoToken.getAutoActivatePin(currentCryptoToken.getProperties());
+            if (currentPin!=null) {
+                authenticationCode = currentPin.toCharArray();
+            }
         }
         // TODO: If the current token is active we would like to dig out the code used to activate it and activate the new one as well..
         // For SoftCryptoTokens, a new secret means that we should change it and it can only be done if the token is active
