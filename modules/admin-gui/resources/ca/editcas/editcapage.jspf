@@ -833,6 +833,7 @@ function checkallfields(){
           </td>
           <td width="50%">
               <span class="dn"><c:out value="<%= issuerDN %>"/></span>
+              <input type="hidden" name="<%=HIDDEN_INCLUDEINHEALTHCHECK %>" value="<%= Boolean.valueOf(cainfo!=null && cainfo.getIncludeInHealthCheck()).toString() %>"/>
           </td>
         </tr>
     <% } %>
