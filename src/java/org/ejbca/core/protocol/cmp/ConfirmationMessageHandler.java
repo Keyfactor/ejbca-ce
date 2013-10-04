@@ -210,7 +210,6 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 	}
 	
 	private CAInfo getCAInfo(String cadn) throws CADoesntExistsException {
-        // CertTools.stringToBCDNString must have been done on the cadn passed to this method.
 	    CAInfo cainfo = null;
 	    if(cadn == null) {
 	        cadn = CertTools.stringToBCDNString(this.cmpConfiguration.getCMPDefaultCA(this.confAlias));
