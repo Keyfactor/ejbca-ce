@@ -177,14 +177,17 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 	private void signResponse(CmpConfirmResponseMessage cresp, BaseCmpMessage msg) {
 
 	    // Get the CA that should sign the response
-	    String cadn = CertTools.stringToBCDNString(msg.getRecipient().getName().toString());
 	    CAInfo cainfo;
         try {
-            cainfo = getCAInfo(cadn);
+            cainfo = getCAInfo(msg.getRecipient().getName().toString());
             if(LOG.isDebugEnabled()) {
                 LOG.debug("Using CA '" + cainfo.getName() + "' to sign Certificate Confirm message");
             }
             X509Certificate cacert = (X509Certificate) cainfo.getCertificateChain().iterator().next();
+            // We use the actual asn.1 encoding from the cacert subjectDN here. This ensures that the DN is exactly as 
+            // encoded in the certificate (which it should be).
+            // If we use only the cainfo.getSubjectDN we will get "EJBCA encoding", and this may not be the same if the 
+            // CA certificate comes from an external CA that encodes thing differently than EJBCA.
             cresp.setSender(new GeneralName(X500Name.getInstance(cacert.getSubjectX500Principal().getEncoded())));
             
 	        try {        
@@ -210,14 +213,15 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
         // CertTools.stringToBCDNString must have been done on the cadn passed to this method.
 	    CAInfo cainfo = null;
 	    if(cadn == null) {
-	        cadn = this.cmpConfiguration.getCMPDefaultCA(this.confAlias);
+	        cadn = CertTools.stringToBCDNString(this.cmpConfiguration.getCMPDefaultCA(this.confAlias));
 	        cainfo = caSession.getCAInfoInternal(cadn.hashCode(), null, true);
 	    } else {
 	        try {
+	            cadn = CertTools.stringToBCDNString(cadn);
 	            cainfo = caSession.getCAInfoInternal(cadn.hashCode(), null, true);
 	        } catch(CADoesntExistsException e) {
 	            LOG.info("Could not find Recipient CA '" + cadn + "'.");
-	            cadn = this.cmpConfiguration.getCMPDefaultCA(this.confAlias);
+	            cadn = CertTools.stringToBCDNString(this.cmpConfiguration.getCMPDefaultCA(this.confAlias));
 	            LOG.info("Trying to use CMP DefaultCA instead. DN " + cadn + "  ID " + cadn.hashCode());
 	            cainfo = caSession.getCAInfoInternal(cadn.hashCode(), null, true);
 	        }
