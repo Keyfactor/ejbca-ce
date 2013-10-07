@@ -31,6 +31,7 @@
 					<include name="modules/ejbca-entity/src-test/**/${test.runone}.java" />
 					<include name="modules/systemtests/src-test/**/${test.runone}.java" />
 					<include name="modules/externalra/src-test/**/${test.runone}.java" />
+					<include name="modules/statedump/src-test/**/${test.runone}.java" />
 				</fileset>
     	    </path>
     		<map from="${ejbca.home}/" to=""/>
@@ -44,6 +45,9 @@
     	</condition>
     	<condition property="module" value="modules/externalra">
     		<matches string="${test-fullname}" pattern="^modules/externalra/.*$"/>
+    	</condition>
+    	<condition property="module" value="modules/statedump">
+    		<matches string="${test-fullname}" pattern="^modules/statedump/.*$"/>
     	</condition>
     	<condition property="module" value="modules/systemtests">
     		<matches string="${test-fullname}" pattern="^modules/systemtests/.*$"/>
@@ -100,5 +104,9 @@
 
     <target name="test:dbschema" description="run JUnit test to validate the schema of the configured database">
     	<ant antfile="build.xml" dir="modules/ejbca-entity" target="test-dbschema" />
+    </target>
+    
+    <target name="test:statedump" description="run JUnit Statedump test.">
+    	<ant antfile="build.xml" dir="modules/statedump" target="test" />
     </target>
 </project>
