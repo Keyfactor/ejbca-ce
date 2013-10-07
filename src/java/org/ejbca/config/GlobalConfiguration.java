@@ -18,7 +18,6 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.cesecore.internal.UpgradeableDataHashMap;
 import org.ejbca.core.model.InternalEjbcaResources;
 
 
