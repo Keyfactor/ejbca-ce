@@ -65,6 +65,10 @@ usefieldsinldapdn 1
  * With the configuration above certificate entries with LDAP DN "UID=123456789,dc=example,dc=com" (where 123456789 is the certificate serial number in decimal format)
  * will be added to the LDAP directory. The tree of the base DN (dc=example,dc=com) must exist already.
  * 
+ * If you want to use a custom LDAP schema, such as the inetOrgPersonWithCertSerno, you can set this property, for example:
+ * 
+userobjectclass top;person;organizationalPerson;inetOrgPerson;inetOrgPersonWithCertSerno
+ * 
  * Possible options for the properties field are (default values in parenthesis):
  * 
 baswdn (misspelled, but it must be like this)
