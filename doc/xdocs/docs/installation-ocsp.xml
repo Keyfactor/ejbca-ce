@@ -19,14 +19,13 @@
   If you are not using the responder with EJBCA you can skip the section about building and configuring EJBCA.
   </p>
   <subsection name="Building and configuring the Responder">
-<subsubsection name="General configuration">
 <p>
 You should first read the <a href="installation-va.html">Standalone VA installation</a> that specifies the general configuration for a VA.
 </p><p>
 All default options for the OCSP responders OCSP behavior is set in conf/ocsp.properties. All options are documented in this file.
 </p>
-</subsubsection>
-<subsubsection name="Responder signing keys">
+</subsection>
+<subsection name="Responder signing keys">
 <p>
 The keys used to sign the OCSP response are referenced through Crypto Tokens (that could be either soft or HSM/PKCS#11 based).
 There should be one key for each CA, and the each CA the responder answers for an OCSP signing certificate must be issued.
@@ -50,8 +49,8 @@ You should then create a user for each CA using this certificate profile. Use th
 Note: The OCSP responders certificate(s) AND the CA certificate(s) need to be published from the CA to the 
 OCSP responder. For the CA you do this by setting the CRL publisher to the OCSP publisher.
 </note>
-</subsubsection>
-<subsubsection name="Workflow for setting up a new OCSP signer">
+</subsection>
+<subsection name="Workflow for setting up a new OCSP signer">
 <p>This section requires the previous one to be completed first.</p>
 <ul>
 <li>Go to AdminGUI of OCSP -> Crypto Tokens and create a new Crypto Token (unless you want to reuse an existing).</li>
@@ -64,8 +63,8 @@ OCSP responder. For the CA you do this by setting the CRL publisher to the OCSP 
 by matching the key pair with the certificate.</li>
 <li>Go to AdminGUI of OCSP -> InternalKeyBindings and click "Activate" for your new OcspKeyBinding to start processing OCSP responses with it.</li>
 </ul>
-</subsubsection>
-<subsubsection name="Workflow for renewal of an OCSP signer">
+</subsection>
+<subsection name="Workflow for renewal of an OCSP signer">
 <ul>
 <li>[Optional] Go to AdminGUI of OCSP -> InternalKeyBindings and create "New keys" for your OcspKeyBinding.</li>
 <li>Go to AdminGUI of OCSP -> InternalKeyBindings and create a Certificate Signing Request for your OcspKeyBinding. Save this file.</li>
@@ -75,9 +74,8 @@ by matching the key pair with the certificate.</li>
 by matching the key pair with the certificate.</li>
 <li>Go to AdminGUI of OCSP -> InternalKeyBindings and click "Activate" for your new OcspKeyBinding to start processing OCSP responses with it.</li>
 </ul>
-</subsubsection>
 </subsection>
-<subsection name="Renewal of an OCSP signer via CA's WebService (a.k.a. Re-keying)">
+<subsection name="Automated renewal of an OCSP signer via CA's WebService (a.k.a. Re-keying)">
 <note>
 Re-keying as described below will change in a future version of EJBCA.
 The CA will keep track of the OCSP responders certificates and order key renewal and update the responder's certificates
