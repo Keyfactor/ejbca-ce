@@ -104,7 +104,6 @@ import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.util.EjbLocalHelper;
@@ -933,7 +932,6 @@ public class CAInterfaceBean implements Serializable {
 	                if (buttonCreateCa) {           
 	                    List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
                         // Create and active OSCP CA Service.
-	                    extendedcaservices.add(new OCSPCAServiceInfo(ocspactive));
 	                    extendedcaservices.add(
 	                            new XKMSCAServiceInfo(xkmsactive,
 	                                    "CN=XKMSCertificate, " + subjectdn,
@@ -983,8 +981,6 @@ public class CAInterfaceBean implements Serializable {
 
 	                if (buttonMakeRequest) {
 	                    List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
-                        // Create and OSCP CA Service.
-	                    extendedcaservices.add(new OCSPCAServiceInfo(ocspactive));
 	                    extendedcaservices.add(
 	                            new XKMSCAServiceInfo(xkmsactive,
 	                                    "CN=XKMSCertificate, " + subjectdn,
@@ -1144,7 +1140,6 @@ public class CAInterfaceBean implements Serializable {
                final int xkmsactive = serviceXkmsActive ? ExtendedCAServiceInfo.STATUS_ACTIVE : ExtendedCAServiceInfo.STATUS_INACTIVE;
                final int cmsactive = serviceCmsActive ? ExtendedCAServiceInfo.STATUS_ACTIVE : ExtendedCAServiceInfo.STATUS_INACTIVE;
                final ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
-               extendedcaservices.add(new OCSPCAServiceInfo(active));    
                extendedcaservices.add(new XKMSCAServiceInfo(xkmsactive, false)); 
                extendedcaservices.add(new CmsCAServiceInfo(cmsactive, false)); 
                // No need to add the HardTokenEncrypt or Keyrecovery extended service here, because they are only "updated" in EditCA, and there

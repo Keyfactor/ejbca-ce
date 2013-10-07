@@ -38,7 +38,6 @@
   boolean waitingresponse = false;  
   boolean isUninitialized = false;
   
-  OCSPCAServiceInfo ocspcainfo = null; 
   XKMSCAServiceInfo xkmscainfo = null; 
   java.security.cert.X509Certificate xkmscert = null; 
   CmsCAServiceInfo cmscainfo = null; 
@@ -54,9 +53,6 @@
 
     if (!isexternal) {
 	    for (final ExtendedCAServiceInfo extendedCAServiceInfo : cainfo.getExtendedCAServiceInfos()) {
-	        if (extendedCAServiceInfo instanceof OCSPCAServiceInfo) {
-	            ocspcainfo = (OCSPCAServiceInfo) extendedCAServiceInfo;
-	        }
 	        if (extendedCAServiceInfo instanceof XKMSCAServiceInfo) {
 	            xkmscainfo = (XKMSCAServiceInfo) extendedCAServiceInfo;
 	            if (xkmscainfo.getXKMSSignerCertificatePath() != null) {
@@ -1276,21 +1272,6 @@ function checkallfields(){
            <p class="help"><c:out value="<%= ejbcawebbean.getText(\"SERVICE_CA_DEFAULTURI_HELP\") %>" /></p>
       </td>
     </tr>
-
-    <% if(!editca || (editca && ocspcainfo != null)){ %>
-    <tr id="Row<%=row++%2%>"> 
-      <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("OCSPSERVICE") %>
-      </td>
-      <td width="50%">
-        <input type="checkbox" name="<%=CHECKBOX_ACTIVATEOCSPSERVICE %>" value="<%=CHECKBOX_VALUE %>" 
-           <% if(waitingresponse) out.write(" disabled ");%>
-            <% if((editca && (ocspcainfo.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE)) || !editca)
-                 out.write("CHECKED");%> id="<%=CHECKBOX_ACTIVATEOCSPSERVICE%>">
-                 <label for="<%=CHECKBOX_ACTIVATEOCSPSERVICE%>"><c:out value="<%= ejbcawebbean.getText(\"ACTIVATE\") %>" /></label>
-      </td>
-    </tr>    
-    <% } %>    
 
     <% if((!editca || (editca && xkmscainfo != null)) && org.ejbca.config.XkmsConfiguration.getEnabled()){ %>
     <tr id="Row<%=row++%2%>"> 
