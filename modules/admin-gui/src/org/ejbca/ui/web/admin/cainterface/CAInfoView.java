@@ -27,7 +27,6 @@ import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.util.SimpleTime;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.util.HTMLTools;
 
@@ -113,22 +112,6 @@ public static String[] CVCCA_CAINFODATATEXTS = {"NAME","CERT_SUBJECTDN","","CATY
         }
         
 		cainfodata[SECTION_SERVICE]          = "&nbsp;"; // Section row
-		
-		boolean active = false;		
-		Iterator<ExtendedCAServiceInfo> extendedServiceInfoIterator = ((X509CAInfo) cainfo).getExtendedCAServiceInfos().iterator();
-		while(extendedServiceInfoIterator.hasNext()){
-	      ExtendedCAServiceInfo next = extendedServiceInfoIterator.next();
-	      if(next instanceof OCSPCAServiceInfo){
-	      	active = next.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE;
-	      }
-		}
-		
-		if(active){
-	      cainfodata[OCSP] = ejbcawebbean.getText("ACTIVE");	
-		}else{
-		  cainfodata[OCSP] = ejbcawebbean.getText("INACTIVE");	
-		}
-       
         
       } else if (cainfo instanceof CVCCAInfo) {
           setupGeneralInfo(CVCCA_CAINFODATATEXTS, cainfo, ejbcawebbean);          

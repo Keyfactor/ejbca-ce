@@ -69,13 +69,10 @@ import org.ejbca.cvc.OIDField;
  * 
  * @version $Id$
  */
-public final class AlgorithmTools {
+public abstract class AlgorithmTools {
 	
 	/** Log4j instance */
 	private static final Logger log = Logger.getLogger(AlgorithmTools.class);
-
-    /** Should not be created */
-    private AlgorithmTools() {}
 
 	/** String used for an unkown keyspec in CA token properties */
 	public static final String KEYSPEC_UNKNOWN = "unknown";
@@ -118,6 +115,26 @@ public final class AlgorithmTools {
         SIG_ALGS_DSTU4145.add(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145);
 	}
 
+	   /**
+     * Returns a signing algorithm to use selecting from a list of possible algorithms.
+     * 
+     * @param sigalgs the list of possible algorithms, ;-separated. Example "SHA1WithRSA;SHA1WithECDSA".
+     * @param pk public key of signer, so we can choose between RSA, DSA and ECDSA algorithms
+     * @return A single algorithm to use Example: SHA1WithRSA, SHA1WithDSA or SHA1WithECDSA
+     */
+    public static String getSigningAlgFromAlgSelection(String sigalgs, PublicKey pk) {
+        String sigAlg = null;
+        String[] algs = StringUtils.split(sigalgs, ';');
+        for(int i = 0; i < algs.length; i++) {
+            if ( AlgorithmTools.isCompatibleSigAlg(pk, algs[i]) ) {
+                sigAlg = algs[i];
+                break;
+            }
+        }
+        log.debug("Using signature algorithm for response: "+sigAlg);
+        return sigAlg;
+    }
+	
 	/**
 	 * Gets the name of matching key algorithm from a public key as defined by 
 	 * <i>AlgorithmConstants</i>.

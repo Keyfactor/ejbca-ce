@@ -114,6 +114,7 @@ import org.bouncycastle.asn1.x509.X509NameEntryConverter;
 import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.BufferingContentSigner;
@@ -127,6 +128,8 @@ import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.config.OcspConfiguration;
+import org.cesecore.internal.InternalResources;
 import org.ejbca.cvc.AuthorizationRoleEnum;
 import org.ejbca.cvc.CVCAuthorizationTemplate;
 import org.ejbca.cvc.CVCObject;
@@ -144,9 +147,11 @@ import com.novell.ldap.LDAPDN;
  * 
  * @version $Id$
  */
-public class CertTools {
+public abstract class CertTools {
     private static final Logger log = Logger.getLogger(CertTools.class);
 
+    private static final InternalResources intres = InternalResources.getInstance();
+    
     // Initialize dnComponents
     static {
         DnComponents.getDnObjects(true);
@@ -1349,6 +1354,43 @@ public class CertTools {
         return ret;
     } // isSelfSigned
 
+    /**
+     * Checks if a certificate is valid.
+     * Does also print a WARN if the certificate is about to expire.
+     * 
+     * @param signerCert the certificate to be tested
+     * @return true if the certificate is valid
+     */
+    public static boolean isCertificateValid(final X509Certificate signerCert) {
+        try {
+            signerCert.checkValidity();
+        } catch (CertificateExpiredException e) {
+            log.error(intres.getLocalizedMessage("ocsp.errorcerthasexpired", signerCert.getSerialNumber(), signerCert.getIssuerDN()));
+            return false;
+        } catch (CertificateNotYetValidException e) {
+            log.error(intres.getLocalizedMessage("ocsp.errornotyetvalid", signerCert.getSerialNumber(), signerCert.getIssuerDN()));
+            return false;
+        }
+        final long warnBeforeExpirationTime = OcspConfiguration.getWarningBeforeExpirationTime();
+        if (warnBeforeExpirationTime < 1) {
+            return true;
+        }
+        final Date warnDate = new Date(new Date().getTime() + warnBeforeExpirationTime);
+        try {
+            signerCert.checkValidity(warnDate);
+        } catch (CertificateExpiredException e) {
+            log.warn(intres.getLocalizedMessage("ocsp.warncertwillexpire", signerCert.getSerialNumber(), signerCert.getIssuerDN(),
+                    signerCert.getNotAfter()));
+        } catch (CertificateNotYetValidException e) {
+            throw new Error("This should never happen.", e);
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("Time for \"certificate will soon expire\" not yet reached. You will be warned after: "
+                    + new Date(signerCert.getNotAfter().getTime() - warnBeforeExpirationTime));
+        }   
+        return true;
+    }
+    
     /**
      * Checks if a certificate is a CA certificate according to BasicConstraints (X.509), or role (CVC). If there is no basic constraints extension on
      * a X.509 certificate, false is returned.
@@ -3387,6 +3429,21 @@ public class CertTools {
      */
     public static ContentVerifierProvider genContentVerifierProvider(PublicKey pubkey) throws OperatorCreationException {
         return new JcaContentVerifierProviderBuilder().build(pubkey);
+    }
+    
+    /**
+     * Converts a X509Certificate chain into a JcaX509CertificateHolder chain.
+     * 
+     * @param certificateChain input chain to be converted
+     * @return the result
+     * @throws CertificateEncodingException if there is a problem extracting the certificate information.
+     */
+    public static final JcaX509CertificateHolder[] convertCertificateChainToCertificateHolderChain(X509Certificate[] certificateChain) throws CertificateEncodingException {
+        final JcaX509CertificateHolder[] certificateHolderChain = new JcaX509CertificateHolder[certificateChain.length];
+        for (int i = 0; i < certificateChain.length; ++i) {
+            certificateHolderChain[i] = new JcaX509CertificateHolder(certificateChain[i]);
+        }
+        return certificateHolderChain;
     }
     
 }
