@@ -29,6 +29,9 @@ import org.ejbca.core.model.ca.publisher.ICustomPublisher;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 
+import com.novell.ldap.LDAPAttribute;
+import com.novell.ldap.LDAPAttributeSet;
+
 /**
  * A custom LDAP publisher that publishes User Entries with Certificate Serial Number. 
  * The purpose is that you can search for certificates in the LDAP directory on certificate serial number, and each certificate is stored in one entry in the LDAP directory.
@@ -186,5 +189,15 @@ public class CertSernoCustomLdapPublisher extends LdapPublisher implements ICust
             log.debug("revokeCertificate: "+userDN);
         }
         super.revokeCertificate(admin, cert, username, reason, userDN);
+    }
+
+    @Override
+    protected LDAPAttributeSet getAttributeSet(Certificate cert, String objectclass, String dn, String email, boolean extra, boolean person,
+            String password, ExtendedInformation extendedinformation) {
+        LDAPAttributeSet set = super.getAttributeSet(cert, objectclass, dn, email, extra, person, password, extendedinformation);
+        // Add SerialNumber (from DN) attribute as well, it is not included by default by LDAPPublisher
+        String serno = CertTools.getPartFromDN(dn, "SN");
+        set.add(new LDAPAttribute("serialNumber", serno));
+        return set;
     }
 }
