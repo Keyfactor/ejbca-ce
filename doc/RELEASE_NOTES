@@ -5,9 +5,10 @@ EJBCA 6.0.0
 - The term 'Admin Group' has been mostly purged and replaced with 'Role'.
 - The installation work-flow and ant targets have changed.
 - 'Certificate Request History' is now disabled by default for new CAs.
-- There is a new concept of Crypto Tokens, separated from the CA configuration. 
-  For additional information see User Guide and http://blog.ejbca.org/2013/08/whats-new-in-ejbca-6-part-1-crypto.html.
+- There is a new concept of Crypto Tokens, separated from the CA configuration. For additional information,
+  see User Guide and http://blog.ejbca.org/2013/08/whats-new-in-ejbca-6-part-1-crypto.html.
 - PKCS11 crypto tokens can now be managed by slot label (in addition to slot number and index) 
+- Internal OCSP services are no longer configurable from the CA, but are instead automatically set up and always active. 
 
 Note: Changes to certificate profiles
 - The PKIX QCSyntax-v1 identifier from RFC3739 has been removed and will never be generated.

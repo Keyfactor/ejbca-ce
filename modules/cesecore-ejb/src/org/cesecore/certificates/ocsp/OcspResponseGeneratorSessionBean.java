@@ -458,7 +458,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 log.debug("Cert chain for OCSP signing is of size " + coll.size());
             }
 
-            if (isCertificateValid(signerCert)) {
+            if (CertTools.isCertificateValid(signerCert)) {
                 return ocspresp;
             } else {
                 throw new OcspFailureException("Response was not validly signed.");
@@ -1323,43 +1323,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         log.debug("Using signature algorithm for response: " + sigAlg);
         return sigAlg;
     }
-
-    /**
-     * Checks if a certificate is valid.
-     * Does also print a WARN if the certificate is about to expire.
-     * 
-     * @param signerCert the certificate to be tested
-     * @return true if the certificate is valid
-     */
-    private static boolean isCertificateValid(final X509Certificate signerCert) {
-        try {
-            signerCert.checkValidity();
-        } catch (CertificateExpiredException e) {
-            log.error(intres.getLocalizedMessage("ocsp.errorcerthasexpired", signerCert.getSerialNumber(), signerCert.getIssuerDN()));
-            return false;
-        } catch (CertificateNotYetValidException e) {
-            log.error(intres.getLocalizedMessage("ocsp.errornotyetvalid", signerCert.getSerialNumber(), signerCert.getIssuerDN()));
-            return false;
-        }
-        final long warnBeforeExpirationTime = OcspConfiguration.getWarningBeforeExpirationTime();
-        if (warnBeforeExpirationTime < 1) {
-            return true;
-        }
-        final Date warnDate = new Date(new Date().getTime() + warnBeforeExpirationTime);
-        try {
-            signerCert.checkValidity(warnDate);
-        } catch (CertificateExpiredException e) {
-            log.warn(intres.getLocalizedMessage("ocsp.warncertwillexpire", signerCert.getSerialNumber(), signerCert.getIssuerDN(),
-                    signerCert.getNotAfter()));
-        } catch (CertificateNotYetValidException e) {
-            throw new Error("This should never happen.", e);
-        }
-        if (log.isDebugEnabled()) {
-            log.debug("Time for \"certificate will soon expire\" not yet reached. You will be warned after: "
-                    + new Date(signerCert.getNotAfter().getTime() - warnBeforeExpirationTime));
-        }   
-        return true;
-    }
     
     private static enum CanLogCache {
         INSTANCE;
@@ -1732,7 +1695,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         continue;
                     }
                     final String providerName = ocspSigningCacheEntry.getSignatureProviderName();
-                    if (OcspConfiguration.getHealthCheckCertificateValidity() && !isCertificateValid(ocspSigningCertificate) ) {
+                    if (OcspConfiguration.getHealthCheckCertificateValidity() && !CertTools.isCertificateValid(ocspSigningCertificate) ) {
                         sb.append('\n').append(errMsg);
                         continue;
                     }

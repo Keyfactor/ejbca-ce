@@ -410,11 +410,8 @@
 							<include name="org/cesecore/config/OcspConfiguration.java"/>
 							<include name="org/cesecore/certificates/ocsp/SHA1DigestCalculator.java"/>
 							<include name="org/cesecore/certificates/ocsp/exception/NotSupportedException.java"/>
-							<include name="org/cesecore/certificates/ocsp/exception/OcspFailureException.java"/>
-							<include name="org/ejbca/core/protocol/ocsp/OCSPUtil.java"/>
-							<include name="org/ejbca/core/protocol/ocsp/OCSPResponseItem.java"/>
-							<include name="org/ejbca/core/protocol/ocsp/CertificateCache.java"/>
-							<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/OCSPCAService*.java"/>					
+							<include name="org/cesecore/certificates/ocsp/exception/OcspFailureException.java"/>				
+							<include name="org/ejbca/core/protocol/ocsp/CertificateCache.java"/>											
 							<!-- End Entity classes .. -->
 							<include name="org/cesecore/certificates/endentity/EndEntityConstants.java"/>
 							<include name="org/cesecore/certificates/endentity/ExtendedInformation.java"/>
@@ -1029,8 +1026,6 @@
 					<include name="org/cesecore/certificates/ocsp/exception/*Exception.java"/>
 					<include name="org/cesecore/certificates/ocsp/SHA1DigestCalculator.java"/>
 					<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/*CAService*.java"/>
-					<include name="org/ejbca/core/protocol/ocsp/OCSPUtil.java"/>
-					<include name="org/ejbca/core/protocol/ocsp/OCSPResponseItem.java"/>
 					<include name="org/ejbca/core/protocol/certificatestore/ICertificateCache.java"/>
 					<include name="org/ejbca/core/protocol/certificatestore/HashID.java"/>
 					<include name="org/ejbca/config/*Configuration.java"/>

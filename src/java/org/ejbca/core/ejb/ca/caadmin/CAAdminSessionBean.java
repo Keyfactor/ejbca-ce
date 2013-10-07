@@ -153,7 +153,6 @@ import org.ejbca.core.model.approval.approvalrequests.ActivateCATokenApprovalReq
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceTypes;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.protocol.certificatestore.CertificateCacheFactory;
@@ -1994,8 +1993,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         ArrayList<Integer> crlpublishers = new ArrayList<Integer>();
         if (caSignatureCertificate instanceof X509Certificate) {
             // Create an X509CA
-            // Create and active extended CA Services (OCSP, XKMS, CMS).
-            extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+            // Create and active extended CA Services (XKMS, CMS).
             // Create and active XKMS CA Service.
             extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=XKMSCertificate, "
                     + CertTools.getSubjectDN(caSignatureCertificate), "", keySpecification, keyAlgorithm));
@@ -2557,18 +2555,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         while (iter.hasNext()) {
             ExtendedCAServiceInfo info = (ExtendedCAServiceInfo) iter.next();
             ArrayList<Certificate> certificates = new ArrayList<Certificate>();
-            if (info instanceof OCSPCAServiceInfo) {
-                try {
-                    final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
-                    ca.initExtendedService(cryptoToken, ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE, ca);
-                    // The OCSP certificate is the same as the CA signing
-                    // certificate
-                } catch (Exception fe) {
-                    String msg = intres.getLocalizedMessage("caadmin.errorcreatecaservice", "OCSPCAService");
-                    log.error(msg, fe);
-                    throw new EJBException(fe);
-                }
-            }
             if (info instanceof XKMSCAServiceInfo) {
                 try {
                     final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
