@@ -47,4 +47,10 @@ public class Pkcs11SlotLabelTypeTest {
         assertTrue("Validator did not correctly validate a label", type.validate("i7"));
     }
     
+    @Test
+    public void testLongLabelValidation() {
+        assertFalse("Label of >32 characters validated.",
+                Pkcs11SlotLabelType.SLOT_LABEL.validate("thisisalotofcharactersthisisalotofcharactersthisisalotofcharactersthisisalotofcharacters"));
+    }
+    
 }
