@@ -42,7 +42,7 @@ import org.apache.log4j.Logger;
  */
 
 public enum Pkcs11SlotLabelType {
-    SLOT_LABEL("SLOT_LABEL", "Slot Label", null), 
+    SLOT_LABEL("SLOT_LABEL", "Slot Label", LabelValidator.class), 
     SLOT_INDEX("SLOT_INDEX", "Slot Index", IndexValidator.class), 
     SLOT_NUMBER("SLOT_NUMBER", "Slot Number", NumberValidator.class), 
     SUN_FILE("SUN_FILE", "Sun configuration file", null);
@@ -190,6 +190,23 @@ public enum Pkcs11SlotLabelType {
             }
             return super.validate(value.substring(1));
         }
+    }
+    
+    protected static class LabelValidator implements LabelTypeValidator {
+
+        @Override
+        public boolean validate(String value) {
+           //According to the PKCS#11 standard, the label field can be max 32 chars long
+            if(value.length() > 32) {
+                if(log.isDebugEnabled()) {
+                    log.debug("Value " + value + " was longer than the permitted 32 characters.");
+                }
+                return false;
+            } else {
+                return true;
+            }
+        }
+        
     }
     
 }
