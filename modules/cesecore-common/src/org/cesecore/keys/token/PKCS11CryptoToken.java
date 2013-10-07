@@ -299,10 +299,10 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
                    //If not, check with the rest of the values 
                     returnValue.setProperty(SLOT_LABEL_VALUE, keyValue.split(delimiter, 2)[1]);
                     returnValue.setProperty(SLOT_LABEL_TYPE, Pkcs11SlotLabelType.SLOT_NUMBER.getKey());
-                } else if(keyValue.startsWith(oldLabelPrefix)) {
+                } else if(keyValue.startsWith(oldIndexPrefix)) {
                     returnValue.setProperty(SLOT_LABEL_VALUE, keyValue.split(delimiter, 2)[1]);
                     returnValue.setProperty(SLOT_LABEL_TYPE, Pkcs11SlotLabelType.SLOT_INDEX.getKey());
-                } else if(keyValue.startsWith(oldIndexPrefix)) {
+                } else if(keyValue.startsWith(oldLabelPrefix)) {
                     returnValue.setProperty(SLOT_LABEL_VALUE, keyValue.split(delimiter, 2)[1]);
                     returnValue.setProperty(SLOT_LABEL_TYPE, Pkcs11SlotLabelType.SLOT_LABEL.getKey());
                 } else if(keyValue.startsWith(oldSunFilePrefix)) {
