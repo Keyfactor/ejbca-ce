@@ -122,50 +122,28 @@ public class PKCS11CryptoTokenTest extends CryptoTokenTestBase {
         Properties newIndexNumber = PKCS11CryptoToken.upgradePropertiesFileFrom5_0_x(indexProperties);
         assertEquals("i7", newIndexNumber.getProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE));
         assertEquals(Pkcs11SlotLabelType.SLOT_INDEX.getKey(), newIndexNumber.getProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE));
+        
     }
-
-//	private String attributesHmac = "attributes(*, *, *) = {\n"+
-//		  "CKA_TOKEN = true\n"+
-//		"}\n"+
-//		"attributes(*, CKO_PUBLIC_KEY, *) = {\n"+
-//		  "CKA_ENCRYPT = true\n"+
-//		  "CKA_VERIFY = true\n"+
-//		  "CKA_WRAP = true\n"+
-//		"}\n"+
-//		"attributes(*, CKO_PRIVATE_KEY, *) = {\n"+
-//		  "CKA_PRIVATE = true\n"+
-//		  "CKA_SENSITIVE = true\n"+
-//		  "CKA_EXTRACTABLE = false\n"+
-//		  "CKA_DECRYPT = true\n"+
-//		  "CKA_SIGN = true\n"+
-//		  "CKA_UNWRAP = true\n"+
-//		"}\n"+
-//		"attributes(*, CKO_SECRET_KEY, *) = {\n"+
-//		  "CKA_SENSITIVE = true\n"+
-//		  "CKA_EXTRACTABLE = false\n"+
-//		  "CKA_ENCRYPT = true\n"+
-//		  "CKA_DECRYPT = true\n"+
-//		  "CKA_SIGN = true\n"+
-//		  "CKA_VERIFY = true\n"+
-//		  "CKA_WRAP = true\n"+
-//		  "CKA_UNWRAP = true\n"+
-//		"}";
-
-	/**
-	 * This test is hard to make working on different HSMs due to algorithms restrictions
-	 * Not implemented yet, see CESECORE-42
-	 * @throws NoSuchSlotException 
-	 */
-//	@Test
-//    public void testGenerateHMACKey() throws Exception {
-//		File f = File.createTempFile("tokentest", "txt");
-//		f.deleteOnExit();
-//		FileOutputStream fos = new FileOutputStream(f);
-//		fos.write(attributesHmac.getBytes());
-//		fos.close();
-//    	CryptoToken token = createPKCS11TokenWithAttributesFile(f.getAbsolutePath());
-//    	doGenerateHmacKey(token);
-//	}
+    
+    @SuppressWarnings("deprecation")
+    @Test
+    public void testUpgradePropertiesFileFrom5_0_11() {
+        Properties slotPropertiesWithNumber = new Properties();
+        slotPropertiesWithNumber.setProperty("slot", "SLOT_ID:7");
+        Properties newSlotPropertiesWithNumber = PKCS11CryptoToken.upgradePropertiesFileFrom5_0_x(slotPropertiesWithNumber);
+        assertEquals("7", newSlotPropertiesWithNumber.getProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE));
+        assertEquals(Pkcs11SlotLabelType.SLOT_NUMBER.getKey(), newSlotPropertiesWithNumber.getProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE));
+        Properties slotPropertiesWithIndex = new Properties();
+        slotPropertiesWithIndex.setProperty("slot", "SLOT_LIST_IX:i7");
+        Properties newSlotPropertiesWithIndex = PKCS11CryptoToken.upgradePropertiesFileFrom5_0_x(slotPropertiesWithIndex);
+        assertEquals("i7", newSlotPropertiesWithIndex.getProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE));
+        assertEquals(Pkcs11SlotLabelType.SLOT_INDEX.getKey(), newSlotPropertiesWithIndex.getProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE));
+        Properties slotPropertiesWithLabel = new Properties();
+        slotPropertiesWithLabel.setProperty("slot", "TOKEN_LABEL:foo");
+        Properties newSlotPropertiesWithLabel = PKCS11CryptoToken.upgradePropertiesFileFrom5_0_x(slotPropertiesWithLabel);
+        assertEquals("foo", newSlotPropertiesWithLabel.getProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE));
+        assertEquals(Pkcs11SlotLabelType.SLOT_LABEL.getKey(), newSlotPropertiesWithLabel.getProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE));
+    }
 
     @Test
     public void testExtractKeyFalse() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, CryptoTokenOfflineException,
