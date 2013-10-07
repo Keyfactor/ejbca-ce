@@ -197,7 +197,9 @@ public class CertSernoCustomLdapPublisher extends LdapPublisher implements ICust
         LDAPAttributeSet set = super.getAttributeSet(cert, objectclass, dn, email, extra, person, password, extendedinformation);
         // Add SerialNumber (from DN) attribute as well, it is not included by default by LDAPPublisher
         String serno = CertTools.getPartFromDN(dn, "SN");
-        set.add(new LDAPAttribute("serialNumber", serno));
+        if (serno != null) {
+            set.add(new LDAPAttribute("serialNumber", serno));
+        }
         return set;
     }
 }
