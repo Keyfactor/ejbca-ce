@@ -63,7 +63,7 @@ For the certificate and CRL store service the sample file should be enough to un
 For the OCSP responder service there is separate <a href="installation-ocsp.html">setup instructions</a> for the Standalone OCSP installation.
   </p>
   <p>
-The validation authority is built and deployed in the way as a CA installation with (deploy-keystore step is not required if you have disabled SSL, with web.nosslconfigure, in web.properties):
+The validation authority is built and deployed in the way as a CA installation with (deploy-keystore and web-configure steps is not required if you have disabled SSL, with web.nosslconfigure, in web.properties):
   </p>
 <source>
 ant deploy
