@@ -133,6 +133,7 @@ import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.protocol.cmp.authentication.CMPAuthenticationException;
 import org.ejbca.core.protocol.cmp.authentication.HMACAuthenticationModule;
 import org.ejbca.core.protocol.cmp.authentication.VerifyPKIMessage;
 import org.junit.After;
@@ -226,6 +227,8 @@ public class AuthenticationModulesTest extends CmpTestCase {
     public void test01HMACModule() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException, IOException,
             InvalidAlgorithmParameterException, CADoesntExistsException, AuthorizationDeniedException {
 
+        log.trace(">test01HMACModule()");
+        
         cmpConfiguration.setRAMode(configAlias, true);
         globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration, Configuration.CMPConfigID);
 
@@ -235,17 +238,20 @@ public class AuthenticationModulesTest extends CmpTestCase {
         assertNotNull("cacert is null", cacert);
         PKIMessage msg = genCertReq(issuerDN, USER_DN, keys, cacert, nonce, transid, false, null, null, null, null, null, null);
         assertNotNull("Generating CrmfRequest failed.", msg);
+        // Using the CMP RA Authentication secret 
         PKIMessage req = protectPKIMessage(msg, false, "foo123", "mykeyid", 567);
         assertNotNull("Protecting PKIMessage with HMACPbe failed.", req);
 
-        HMACAuthenticationModule hmac = new HMACAuthenticationModule(configAlias, cmpConfiguration);
-        hmac.setCaInfo(caSession.getCAInfo(ADMIN, caid));
-        hmac.setSession(ADMIN, eeAccessSession, certStoreSession);
-        boolean res = hmac.verifyOrExtract(req, null, false);
-        assertTrue("Verifying the message authenticity using HMAC failed.", res);
-        assertNotNull("HMAC returned null password.", hmac.getAuthenticationString());
-        assertEquals("HMAC returned the wrong password", "foo123", hmac.getAuthenticationString());
-
+        HMACAuthenticationModule hmac = new HMACAuthenticationModule(ADMIN, "-", configAlias, cmpConfiguration, 
+                                caSession.getCAInfo(ADMIN, caid), eeAccessSession, certStoreSession);
+        try {
+            hmac.verifyOrExtract(req, null, false);
+            assertNotNull("HMAC returned null password.", hmac.getAuthenticationString());
+            assertEquals("HMAC returned the wrong password", "foo123", hmac.getAuthenticationString());
+        } catch(CMPAuthenticationException e) {
+            assertTrue("Authentication failed: " + e.getLocalizedMessage(), false);
+        }
+        log.trace("<test01HMACModule()");
     }
 
     @Test
@@ -586,9 +592,12 @@ public class AuthenticationModulesTest extends CmpTestCase {
 
         VerifyPKIMessage verifier = new VerifyPKIMessage(caSession.getCAInfo(ADMIN, caid), configAlias, ADMIN, caSession, eeAccessSession, certStoreSession,
                 authorizationSession, eeProfileSession, null, endEntityManagementSession, cmpConfiguration);
-        boolean verify = verifier.verify(req, null, false);
-        assertTrue("Verifying PKIMessage failed", verify);
-        assertEquals(CmpConfiguration.AUTHMODULE_HMAC, verifier.getUsedAuthenticationModule().getName());
+        try {
+            verifier.verify(req, null, false);
+            assertEquals(CmpConfiguration.AUTHMODULE_HMAC, verifier.getUsedAuthenticationModule().getName());
+        } catch(CMPAuthenticationException e) {
+            assertTrue("Authentication failed", false);
+        }
     }
 
     @Test
@@ -679,7 +688,8 @@ public class AuthenticationModulesTest extends CmpTestCase {
     @Test
     public void test12EECrmfNotCheckAdmin() throws NoSuchAlgorithmException, EjbcaException, IOException, Exception {
         cmpConfiguration.setAuthenticationModule(configAlias, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
-        cmpConfiguration.setAuthenticationParameters(configAlias, "-");
+        cmpConfiguration.setAuthenticationParameters(configAlias, "TestCA");
+        cmpConfiguration.setOmitVerificationsInECC(configAlias, true);
         cmpConfiguration.setRAMode(configAlias, true);
         globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration, Configuration.CMPConfigID);
 
@@ -722,9 +732,8 @@ public class AuthenticationModulesTest extends CmpTestCase {
             assertEquals(23, body.getType());
             ErrorMsgContent err = (ErrorMsgContent) body.getContent();
             String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
-            assertEquals(
-                    "The CMP message could not be authenticated in RA mode. No CA has been set in the configuration file and the message has not been authenticated previously",
-                    errMsg);
+            String expectedErrmsg = "Omitting some verifications can only be accepted in RA mode and when the CMP request has already been authenticated, for example, through the use of NestedMessageContent";
+            assertEquals(expectedErrmsg, errMsg);
         } finally {
             inputStream.close();
         }
@@ -828,9 +837,8 @@ public class AuthenticationModulesTest extends CmpTestCase {
         PKIMessage req = protectPKIMessage(msg, false, clientPassword, "mykeyid", 567);
         assertNotNull("Protecting PKIMessage failed", req);
 
-        HMACAuthenticationModule hmac = new HMACAuthenticationModule(configAlias, cmpConfiguration);
-        hmac.setCaInfo(caSession.getCAInfo(ADMIN, caid));
-        hmac.setSession(ADMIN, eeAccessSession, certStoreSession);
+        HMACAuthenticationModule hmac = new HMACAuthenticationModule(ADMIN, "-", configAlias, cmpConfiguration, 
+                                caSession.getCAInfo(ADMIN, caid), eeAccessSession, certStoreSession);
         boolean res = hmac.verifyOrExtract(req, null, false);
         assertTrue("Verifying the message authenticity using HMAC failed.", res);
         assertNotNull("HMAC returned null password.", hmac.getAuthenticationString());
@@ -918,9 +926,12 @@ public class AuthenticationModulesTest extends CmpTestCase {
 
         VerifyPKIMessage verifier = new VerifyPKIMessage(caSession.getCAInfo(ADMIN, caid), configAlias, ADMIN, caSession, eeAccessSession, certStoreSession,
                 authorizationSession, eeProfileSession, null, endEntityManagementSession, cmpConfiguration);
-        boolean verify = verifier.verify(msg, null, false);
-        assertTrue(verify);
-        assertEquals(CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD, verifier.getUsedAuthenticationModule().getName());
+        try {
+            verifier.verify(msg, null, false);
+            assertEquals(CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD, verifier.getUsedAuthenticationModule().getName());
+        } catch(CMPAuthenticationException e) {
+            assertTrue("Authentication failed", false);
+        }
     }
 
     @Test
@@ -1040,7 +1051,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
                     assertEquals(23, body.getType());
                     ErrorMsgContent err = (ErrorMsgContent) body.getContent();
                     String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
-                    String expectedErrMsg = "CA does not exist: " + testUserDN.hashCode();
+                    String expectedErrMsg = "CA '" + testUserDN + "' does not exist";
                     assertEquals(expectedErrMsg, errMsg);
                 } finally {
                     inputStream.close();
@@ -1085,7 +1096,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
                     ErrorMsgContent err = (ErrorMsgContent) body.getContent();
                     String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
                     String expectedErrMsg = "The End Entity certificate attached to the PKIMessage in the extraCert field does not belong to user '"
-                            + testUsername + "'.";
+                            + testUsername + "'";
                     assertEquals(expectedErrMsg, errMsg);
                 } finally {
                     inputStream.close();
@@ -1153,7 +1164,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
                         assertEquals(23, body3.getType());
                         err = (ErrorMsgContent) body3.getContent();
                         String errMsg3 = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
-                        String expectedErrMsg3 = "The certificate attached to the PKIMessage in the extraCert field is revoked.";
+                        String expectedErrMsg3 = "The certificate attached to the PKIMessage in the extraCert field is not active.";
                         assertEquals(expectedErrMsg3, errMsg3);
                     } finally {
                         inputStream3.close();

@@ -46,6 +46,7 @@ import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLoc
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
+import org.ejbca.core.protocol.cmp.authentication.CMPAuthenticationException;
 import org.ejbca.core.protocol.cmp.authentication.HMACAuthenticationModule;
 
 /**
@@ -154,10 +155,10 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
             LOG.error("Exception during CMP processing: ", e);          
         }
             
-        final HMACAuthenticationModule hmac = new HMACAuthenticationModule(this.confAlias, this.cmpConfiguration);
-        hmac.setSession(admin, endEntityAccessSession, certificateStoreSession);
-        hmac.setCaInfo(caInfo);
-        if(hmac.verifyOrExtract(msg.getMessage(), null, authenticated)) {
+        final HMACAuthenticationModule hmac = new HMACAuthenticationModule(admin, cmpConfiguration.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_HMAC, confAlias), 
+                                confAlias, cmpConfiguration, caInfo, endEntityAccessSession, certificateStoreSession);
+        try {
+            hmac.verifyOrExtract(msg.getMessage(), null, authenticated);
             cmpRaAuthSecret = hmac.getAuthenticationString();
             owfAlg = hmac.getCmpPbeVerifyer().getOwfOid();
             macAlg = hmac.getCmpPbeVerifyer().getMacOid();
@@ -165,7 +166,8 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
             if(LOG.isDebugEnabled()) {
                 LOG.debug("The CertConf message was verified successfully");
             }
-        }
+        } catch(CMPAuthenticationException e) {}
+        
         if((owfAlg != null) && (macAlg != null) && (keyId != null) && (cmpRaAuthSecret != null)) { 
             if (LOG.isDebugEnabled()) {
                 LOG.debug(responseProtection+", "+owfAlg+", "+macAlg+", "+keyId+", "+cmpRaAuthSecret);
@@ -176,8 +178,8 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 	
 	private void signResponse(CmpConfirmResponseMessage cresp, BaseCmpMessage msg) {
 
-	    // Get the CA that should sign the response
-	    CAInfo cainfo;
+        // Get the CA that should sign the response
+        CAInfo cainfo;
         try {
             cainfo = getCAInfo(msg.getRecipient().getName().toString());
             if(LOG.isDebugEnabled()) {
@@ -190,42 +192,42 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
             // CA certificate comes from an external CA that encodes thing differently than EJBCA.
             cresp.setSender(new GeneralName(X500Name.getInstance(cacert.getSubjectX500Principal().getEncoded())));
             
-	        try {        
-	            CAToken catoken = cainfo.getCAToken();
-	            final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(catoken.getCryptoTokenId());
-	            cresp.setSignKeyInfo(cacert, cryptoToken.getPrivateKey(
-	                                                catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)), 
-	                                                cryptoToken.getSignProviderName());
-	            if(msg.getHeader().getProtectionAlg() != null) {
-	                cresp.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(msg.getHeader().getProtectionAlg().getAlgorithm().getId()));
-	            }
+            try {
+                CAToken catoken = cainfo.getCAToken();
+                final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(catoken.getCryptoTokenId());
+                cresp.setSignKeyInfo(cacert, cryptoToken.getPrivateKey(
+                                                    catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)), 
+                                                    cryptoToken.getSignProviderName());
+                if(msg.getHeader().getProtectionAlg() != null) {
+                    cresp.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(msg.getHeader().getProtectionAlg().getAlgorithm().getId()));
+                }
 
-	        } catch (CryptoTokenOfflineException e) {
-	            LOG.error("Exception during CMP response signing: ", e);            
-	        }
-	    
+            } catch (CryptoTokenOfflineException e) {
+                LOG.error("Exception during CMP response signing: ", e);            
+            }
+        
         } catch (CADoesntExistsException e1) {
             LOG.error("Exception during CMP response signing: ", e1);            
         }
-	}
-	
-	private CAInfo getCAInfo(String cadn) throws CADoesntExistsException {
-	    CAInfo cainfo = null;
-	    if(cadn == null) {
-	        cadn = CertTools.stringToBCDNString(this.cmpConfiguration.getCMPDefaultCA(this.confAlias));
-	        cainfo = caSession.getCAInfoInternal(cadn.hashCode(), null, true);
-	    } else {
-	        try {
-	            cadn = CertTools.stringToBCDNString(cadn);
-	            cainfo = caSession.getCAInfoInternal(cadn.hashCode(), null, true);
-	        } catch(CADoesntExistsException e) {
-	            LOG.info("Could not find Recipient CA '" + cadn + "'.");
-	            cadn = CertTools.stringToBCDNString(this.cmpConfiguration.getCMPDefaultCA(this.confAlias));
-	            LOG.info("Trying to use CMP DefaultCA instead. DN " + cadn + "  ID " + cadn.hashCode());
-	            cainfo = caSession.getCAInfoInternal(cadn.hashCode(), null, true);
-	        }
-	    }
-	    return cainfo;
-	}
+    }
+    
+    private CAInfo getCAInfo(String cadn) throws CADoesntExistsException {
+        CAInfo cainfo = null;
+        if(cadn == null) {
+            cadn = CertTools.stringToBCDNString(this.cmpConfiguration.getCMPDefaultCA(this.confAlias));
+            cainfo = caSession.getCAInfoInternal(cadn.hashCode(), null, true);
+        } else {
+            try {
+                cadn = CertTools.stringToBCDNString(cadn);
+                cainfo = caSession.getCAInfoInternal(cadn.hashCode(), null, true);
+            } catch(CADoesntExistsException e) {
+                LOG.info("Could not find Recipient CA '" + cadn + "'.");
+                cadn = CertTools.stringToBCDNString(this.cmpConfiguration.getCMPDefaultCA(this.confAlias));
+                LOG.info("Trying to use CMP DefaultCA instead. DN " + cadn + "  ID " + cadn.hashCode());
+                cainfo = caSession.getCAInfoInternal(cadn.hashCode(), null, true);
+            }
+        }
+        return cainfo;
+    }
 
 }

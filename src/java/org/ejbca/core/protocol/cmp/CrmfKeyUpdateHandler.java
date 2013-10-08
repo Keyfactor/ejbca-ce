@@ -53,6 +53,7 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.protocol.cmp.authentication.CMPAuthenticationException;
 import org.ejbca.core.protocol.cmp.authentication.EndEntityCertificateAuthenticationModule;
 
 /**
@@ -157,31 +158,29 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
             CrmfRequestMessage crmfreq = null;
             if (msg instanceof CrmfRequestMessage) {
                 crmfreq = (CrmfRequestMessage) msg;
-                crmfreq.getMessage();               
-                
-                // Authenticate the request
-                EndEntityCertificateAuthenticationModule eecmodule = new EndEntityCertificateAuthenticationModule(getEECCA(), this.confAlias, this.cmpConfiguration);
-                eecmodule.setSession(this.admin, this.caSession, this.certStoreSession, this.authorizationSession, this.endEntityProfileSession, 
-                        this.endEntityAccessSession, authenticationProviderSession, endEntityManagementSession);
-                if(!eecmodule.verifyOrExtract(crmfreq.getPKIMessage(), null, authenticated)) {
-                    String errMsg = eecmodule.getErrorMessage();
-                    if( errMsg == null) {
-                        errMsg = "Failed to verify the request";
+                crmfreq.getMessage();
+
+                // Check PKIMessage authentication
+                String authparameter = cmpConfiguration.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE, confAlias);
+                EndEntityCertificateAuthenticationModule eecmodule = new EndEntityCertificateAuthenticationModule(admin, authparameter, 
+                        confAlias, cmpConfiguration, caSession, certStoreSession, authorizationSession, endEntityProfileSession, 
+                        endEntityAccessSession, authenticationProviderSession, endEntityManagementSession);
+                try {
+                    eecmodule.verifyOrExtract(crmfreq.getPKIMessage(), null, authenticated);
+                    if(LOG.isDebugEnabled()) {
+                        LOG.debug("The CMP KeyUpdate request was verified successfully");
                     }
-                    LOG.info(errMsg);
-                    return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, errMsg);
+                } catch(CMPAuthenticationException e) {
+                    LOG.info(e.getLocalizedMessage(), e);
+                    return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, e.getLocalizedMessage());
                 }
                 
-                if(LOG.isDebugEnabled()) {
-                    LOG.debug("The CMP KeyUpdate request was verified successfully");
-                }
-                // Get the certificate attached to the request
+                // Get the extraCert
                 X509Certificate oldCert = (X509Certificate) eecmodule.getExtraCert();
-            
-                // Find the end entity that the certificate belongs to
+                
+                // Find the subjectDN to look for
                 String subjectDN = null;
                 String issuerDN = null;
-
                 if(this.cmpConfiguration.getRAMode(this.confAlias)) {
                     CertReqMessages kur = (CertReqMessages) crmfreq.getPKIMessage().getBody().getContent();
                     CertReqMsg certmsg;
@@ -200,7 +199,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                     if(dn != null) {
                         issuerDN = dn.toString();
                     }
-                } else {
+                } else { // client mode
                     subjectDN = oldCert.getSubjectDN().toString(); 
                     issuerDN = oldCert.getIssuerDN().toString();
                 }
@@ -210,12 +209,11 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                     LOG.info(errMsg);
                     return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, errMsg);
                 }
-
+                
+                // Find the end entity that the certificate belongs to                
                 if(LOG.isDebugEnabled()) {
                     LOG.debug("Looking for an end entity with subjectDN: " + subjectDN);
                 }
-
-
                 EndEntityInformation userdata = null;
                 if(issuerDN == null) {
                     if(LOG.isDebugEnabled()) {
@@ -352,27 +350,5 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
         }
         return resp;
     }
-
-    private String getEECCA() {
-
-        // Read the CA from the properties file first
-        String parameter = this.cmpConfiguration.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE, this.confAlias);
-        if(!StringUtils.equals("-", parameter) && (parameter != null) && StringUtils.isNotEmpty(parameter)) {
-            return parameter;
-        }
-    	
-    	// The CA is not set in the cmp.authenticationparameters. Set the CA depending on the operation mode
-    	if(this.cmpConfiguration.getRAMode(this.confAlias)) {
-    	    String defaultCA = this.cmpConfiguration.getCMPDefaultCA(this.confAlias);
-    	    if( StringUtils.isNotEmpty(defaultCA) ) {
-    	        return defaultCA;
-    	    } else {
-    	        return "-";
-    	    }
-    	} else {
-    	    return "-";
-    	}
-    }
-
-
+    
 }

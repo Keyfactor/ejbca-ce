@@ -184,7 +184,7 @@ public class CrmfRequestTest extends CmpTestCase {
 
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        checkCmpFailMessage(resp, "User " + user + " not found.", 1, reqId, 7); // Expects a CertificateResponse (reject) message with error
+        checkCmpFailMessage(resp, "User " + user + " not found.", 1, reqId, 7, PKIFailureInfo.incorrectData); // Expects a CertificateResponse (reject) message with error
                                                                                 // FailInfo.INCORRECT_DATA
         log.trace("<test01CrmfHttpUnknowUser");
     }
@@ -210,7 +210,7 @@ public class CrmfRequestTest extends CmpTestCase {
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        checkCmpFailMessage(resp, "User " + user + " not found.", 1, reqId, 7); // Expects a CertificateResponse (reject) message with error
+        checkCmpFailMessage(resp, "User " + user + " not found.", 1, reqId, 7, PKIFailureInfo.incorrectData); // Expects a CertificateResponse (reject) message with error
                                                                                 // FailInfo.INCORRECT_DATA
     }
 
@@ -261,7 +261,8 @@ public class CrmfRequestTest extends CmpTestCase {
         // Send request and receive response
         resp = sendCmpHttp(barev, 200, cmpAlias);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        checkCmpFailMessage(resp, "PKI Message is not athenticated properly. No HMAC protection was found.", 23, reqId, PKIFailureInfo.badMessageCheck);
+        checkCmpFailMessage(resp, "PKI Message is not athenticated properly. No HMAC protection was found.", 23, reqId, 
+                                PKIFailureInfo.badMessageCheck, PKIFailureInfo.incorrectData);
         log.trace("<test03CrmfHttpOkUser");
     }
 

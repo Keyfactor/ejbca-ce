@@ -34,12 +34,10 @@ public class DnPartPasswordExtractor implements ICMPAuthenticationModule {
 
     private String dnPart;
     private String password;
-    private String errorMessage;
     
     public DnPartPasswordExtractor(String dnpart) {
         this.dnPart = dnpart;
         this.password = null;
-        this.errorMessage = null;
     }
     
     /**
@@ -49,33 +47,28 @@ public class DnPartPasswordExtractor implements ICMPAuthenticationModule {
      * @param username
      * @param authenticated
      * @return
+     * @throws CMPAuthenticationException 
      */
-    public boolean verifyOrExtract(final PKIMessage msg, final String username, boolean authenticated) {
+    public boolean verifyOrExtract(final PKIMessage msg, final String username, boolean authenticated) throws CMPAuthenticationException {
         
         CertReqMsg req = getReq(msg);
         if(req == null) {
-            return false;
+            throw new CMPAuthenticationException("No request was found in the PKIMessage");
         }
         
-        boolean ret = false;        
-            String pwd = null;
+        final String dnString = req.getCertReq().getCertTemplate().getSubject().toString();
+        if(log.isDebugEnabled()) {
+            log.debug("Extracting password from SubjectDN '" + dnString + "' and DN part '" + dnPart + "'");
+        }
+        if (dnString != null) {
+            password = CertTools.getPartFromDN(dnString, dnPart);
+        }
             
-            final String dnString = req.getCertReq().getCertTemplate().getSubject().toString();
-            if(log.isDebugEnabled()) {
-                log.debug("Extracting password from SubjectDN '" + dnString + "' and DN part '" + dnPart + "'");
-            }
-            if (dnString != null) {
-                pwd = CertTools.getPartFromDN(dnString, dnPart);
-            }
+        if(password == null) {
+            throw new CMPAuthenticationException("Could not extract password from CRMF request using the " + getName() + " authentication module");
+        }
             
-            if(pwd != null) {
-                this.password = pwd;
-                ret = true;
-            } else {
-                this.errorMessage = "Could not extract password from CRMF request using the " + getName() + " authentication module";
-            }
-        
-        return ret;
+        return true;
     }
     
     private CertReqMsg getReq(PKIMessage msg) {
@@ -90,11 +83,6 @@ public class DnPartPasswordExtractor implements ICMPAuthenticationModule {
     @Override
     public String getAuthenticationString() {
         return this.password;
-    }
-
-    @Override
-    public String getErrorMessage() {
-        return this.errorMessage;
     }
 
     @Override

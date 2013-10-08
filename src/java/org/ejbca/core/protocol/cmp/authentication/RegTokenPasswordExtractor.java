@@ -37,11 +37,9 @@ public class RegTokenPasswordExtractor implements ICMPAuthenticationModule {
     private static final Logger log = Logger.getLogger(RegTokenPasswordExtractor.class);
 
     private String password;
-    private String errorMessage;
     
     public RegTokenPasswordExtractor() {
         this.password = null;
-        this.errorMessage = null;
     }
     
     /**
@@ -51,14 +49,14 @@ public class RegTokenPasswordExtractor implements ICMPAuthenticationModule {
      * @param username
      * @param authenticated
      * @return the password extracted from the CRMF request. Null if no such password was found.
+     * @throws CMPAuthenticationException 
      */
-    public boolean verifyOrExtract(final PKIMessage msg, final String username, boolean authenticated) {
+    public boolean verifyOrExtract(final PKIMessage msg, final String username, boolean authenticated) throws CMPAuthenticationException {
         CertReqMsg req = getReq(msg);
         if(req == null) {
-            return false;
+            throw new CMPAuthenticationException("No request was found in the PKIMessage");
         }
         
-        boolean ret = false;
         String pwd = null;
             
         // If there is "Registration Token Control" in the CertReqMsg regInfo containing a password, we can use that
@@ -69,8 +67,8 @@ public class RegTokenPasswordExtractor implements ICMPAuthenticationModule {
             do {
                 av = avs[i];
                 if (av != null) {
-                    if (log.isTraceEnabled()) {
-                        log.trace("Found AttributeTypeAndValue (in CertReqMsg): "+av.getType().getId());
+                    if (log.isDebugEnabled()) {
+                        log.debug("Found AttributeTypeAndValue (in CertReqMsg): "+av.getType().getId());
                     }
                     if (StringUtils.equals(CRMFObjectIdentifiers.id_regCtrl_regToken.getId(), av.getType().getId())) {
                         final ASN1Encodable enc = av.getValue();
@@ -95,8 +93,8 @@ public class RegTokenPasswordExtractor implements ICMPAuthenticationModule {
                 do {
                     av = avs[i];
                     if (av != null) {
-                        if (log.isTraceEnabled()) {
-                            log.trace("Found AttributeTypeAndValue (in CertReq): "+av.getType().getId());
+                        if (log.isDebugEnabled()) {
+                            log.debug("Found AttributeTypeAndValue (in CertReq): "+av.getType().getId());
                         }
                         if (StringUtils.equals(CRMFObjectIdentifiers.id_regCtrl_regToken.getId(), av.getType().getId())) {
                             final ASN1Encodable enc = av.getValue();
@@ -111,15 +109,13 @@ public class RegTokenPasswordExtractor implements ICMPAuthenticationModule {
                 } while ( (av != null) && (pwd == null) );
             }
         }
-        
-        if(pwd != null) {
-            this.password = pwd;
-            ret = true;
-        } else {
-            this.errorMessage = "Could not extract password from CRMF request using the " + getName() + " authentication module";
+
+        if(pwd == null) {
+            throw new CMPAuthenticationException("Could not extract password from CRMF request using the " + getName() + " authentication module");
         }
         
-        return ret;
+        this.password = pwd;
+        return true;
     }
     
     private CertReqMsg getReq(PKIMessage msg) {
@@ -141,11 +137,6 @@ public class RegTokenPasswordExtractor implements ICMPAuthenticationModule {
     @Override
     public String getAuthenticationString() {
         return this.password;
-    }
-
-    @Override
-    public String getErrorMessage() {
-        return this.errorMessage;
     }
 
     @Override

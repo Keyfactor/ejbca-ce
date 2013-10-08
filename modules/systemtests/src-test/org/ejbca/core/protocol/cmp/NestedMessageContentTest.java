@@ -852,7 +852,7 @@ public class NestedMessageContentTest extends CmpTestCase {
     public void test09CrmfWrongIssuerAndDoNotCheckAdmin() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException, EjbcaException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, Exception {
         
         cmpConfiguration.setAuthenticationParameters(cmpAlias, "-;foo123");
-        //updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "-;foo123");
+        cmpConfiguration.setOmitVerificationsInECC(cmpAlias, true);
         globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
 
         

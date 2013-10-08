@@ -63,43 +63,27 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
     private EndEntityAccessSession eeAccessSession;
     private CertificateStoreSession certStoreSession;
     
-    private String raAuthSecret;
+    private String globalSharedSecret;
     private CAInfo cainfo;
     private String password;
-    private String errorMessage;
     private String confAlias;
     private CmpConfiguration cmpConfiguration;
     
     private CmpPbeVerifyer verifyer;
         
-    public HMACAuthenticationModule(final String confAlias, CmpConfiguration cmpConfig) {
-        this.raAuthSecret = cmpConfig.getAuthenticationParameter(getName(), confAlias);
+    public HMACAuthenticationModule(AuthenticationToken admin, String authParameter, String confAlias, CmpConfiguration cmpConfig, 
+            CAInfo cainfo, EndEntityAccessSession eeSession, CertificateStoreSession certStoreSession) {
+        this.globalSharedSecret = authParameter;
         this.confAlias = confAlias;
-        this.cainfo = null;
-        this.password = null;
-        this.errorMessage = null;
+        this.cainfo = cainfo;
         this.cmpConfiguration = cmpConfig;
         
-        this.admin = null;
-        this.eeAccessSession = null;
-        
-        this.verifyer = null;
-    }
-
-    public void setCaInfo(final CAInfo cainfo) {
-        this.cainfo = cainfo;
-    }
-    
-    /**
-     * Sets the sessions needed to perform the verification.
-     * 
-     * @param adm
-     * @param userSession
-     */
-    public void setSession(final AuthenticationToken adm, final EndEntityAccessSession eeSession, final CertificateStoreSession certStoreSession) {
-        this.admin = adm;
+        this.admin = admin;
         this.eeAccessSession = eeSession;
         this.certStoreSession = certStoreSession;
+        
+        this.verifyer = null;
+        this.password = null;
     }
     
     /**
@@ -121,18 +105,6 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
      */
     public String getAuthenticationString() {
         return this.password;
-    }
-    
-    @Override
-    /**
-     * Get the error message resulted from the failure of the verification process.
-     * 
-     * The error message is set if verify() returns false.
-     * 
-     * @return The error message as String. Null if no error had occurred.
-     */
-    public String getErrorMessage(){
-        return this.errorMessage;
     }
     
     public CmpPbeVerifyer getCmpPbeVerifyer() {
@@ -157,119 +129,114 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
      * @param authenticated
      * @return true if the message signature was verified successfully and false otherwise.
      */
-    public boolean verifyOrExtract(final PKIMessage msg, final String username, boolean authenticated) {
+    public boolean verifyOrExtract(final PKIMessage msg, final String username, boolean authenticated) throws CMPAuthenticationException {
         
         if(msg == null) {
-            errorMessage = "No PKIMessage was found";
-            LOG.error(errorMessage);
-            return false;
+            throw new CMPAuthenticationException("No PKIMessage was found");
         }
         
         if((msg.getProtection() == null) || (msg.getHeader().getProtectionAlg() == null)) {
-            errorMessage = "PKI Message is not athenticated properly. No HMAC protection was found.";
-            if(LOG.isDebugEnabled()) {
-                LOG.debug(errorMessage);
-            }
-            return false;
+            throw new CMPAuthenticationException("PKI Message is not athenticated properly. No HMAC protection was found.");
         }
 
         try {   
             verifyer = new CmpPbeVerifyer(msg);
         } catch(Exception e) {
-            errorMessage = "Could not create CmpPbeVerifyer. "+e.getMessage();
-            if(LOG.isDebugEnabled()) {
-                LOG.debug(errorMessage, e);
-            }
-            return false;
+            throw new CMPAuthenticationException("Could not create CmpPbeVerifyer. "+e.getMessage());
         }
         
         if(verifyer == null) {
-            errorMessage = "Could not create CmpPbeVerifyer Object";
-            if(LOG.isDebugEnabled()) {
-                LOG.debug(errorMessage);
-            }
-            return false;
+            throw new CMPAuthenticationException("Could not create CmpPbeVerifyer Object");
         }
             
         if(this.cmpConfiguration.getRAMode(this.confAlias)) { //RA mode
             if(LOG.isDebugEnabled()) {
                 LOG.debug("Verifying HMAC in RA mode");
             }
+            
             // If we use a globally configured shared secret for all CAs we check it right away
-            if (this.raAuthSecret != null) {
+            String authSecret = globalSharedSecret;
+
+            if (globalSharedSecret != null) {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("raAuthSecret is not null");
+                    LOG.debug("Verifying message using Global Shared secret");
                 }
                 try {
-                    if(!verifyer.verify(this.raAuthSecret)) {
-                        errorMessage = INTRES.getLocalizedMessage("cmp.errorauthmessage", "Global auth secret");
-                        LOG.info(errorMessage); // info because this is something we should expect and we handle it
-                        if (verifyer.getErrMsg() != null) {
-                            errorMessage = verifyer.getErrMsg();
-                            LOG.info(errorMessage);
-                        }   
+                    if(verifyer.verify(authSecret)) {
+                        this.password = authSecret;
                     } else {
-                        this.password = this.raAuthSecret;
+                        String errmsg = INTRES.getLocalizedMessage("cmp.errorauthmessage", "Global auth secret");
+                        LOG.info(errmsg); // info because this is something we should expect and we handle it
+                        if (verifyer.getErrMsg() != null) {
+                            errmsg = verifyer.getErrMsg();
+                            LOG.info(errmsg);
+                        }   
                     }
                 } catch (InvalidKeyException e) {
-                    errorMessage = e.getLocalizedMessage();
-                    LOG.error(errorMessage, e);
-                    return false;
+                    String errmsg = e.getLocalizedMessage();
+                    if(LOG.isDebugEnabled()) {
+                        LOG.debug(errmsg, e);
+                    }
+                    throw new CMPAuthenticationException(errmsg);
                 } catch (NoSuchAlgorithmException e) {
-                    errorMessage = e.getLocalizedMessage();
-                    LOG.error(errorMessage, e);
-                    return false;
+                    String errmsg = e.getLocalizedMessage();
+                    if(LOG.isDebugEnabled()) {
+                        LOG.debug(errmsg, e);
+                    }
+                    throw new CMPAuthenticationException(errmsg);
                 } catch (NoSuchProviderException e) {
-                    errorMessage = e.getLocalizedMessage();
-                    LOG.error(errorMessage, e);
-                    return false;
+                    String errmsg = e.getLocalizedMessage();
+                    if(LOG.isDebugEnabled()) {
+                        LOG.debug(errmsg, e);
+                    }
+                    throw new CMPAuthenticationException(errmsg);
                 }
             }
 
-            // Now we know which CA the request is for, if we didn't use a global shared secret we can check it now!
+            // If password is null, then we failed verification using global shared secret
             if (this.password == null) {
-                //CAInfo caInfo = this.caAdminSession.getCAInfo(this.admin, caId);
-                String cmpRaAuthSecret = null;  
+                
                 if (cainfo instanceof X509CAInfo) {
-                    cmpRaAuthSecret = ((X509CAInfo) cainfo).getCmpRaAuthSecret();
-                }       
-                if (StringUtils.isNotEmpty(cmpRaAuthSecret)) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Trying CMP password from CA '"+cainfo.getName()+"'.");
-                    }
-                    try {
-                        if(!verifyer.verify(cmpRaAuthSecret)) {
-                            errorMessage = INTRES.getLocalizedMessage("cmp.errorauthmessage", "Auth secret for CAId="+cainfo.getCAId());
-                            if (StringUtils.isEmpty(cmpRaAuthSecret)) {
-                                errorMessage += " Secret is empty";
-                            } else {
-                                errorMessage += " Secret fails verify";
-                            }
-                            LOG.info(errorMessage); // info because this is something we should expect and we handle it
-                            if (verifyer.getErrMsg() != null) {
-                                errorMessage = verifyer.getErrMsg();
-                            }
-                        } else {
-                            this.password = cmpRaAuthSecret;
+                    authSecret = ((X509CAInfo) cainfo).getCmpRaAuthSecret();
+               
+                    if (StringUtils.isNotEmpty(authSecret)) {
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("Verify message using 'CMP RA Authentication Secret' from CA '"+cainfo.getName()+"'.");
                         }
-                    } catch (InvalidKeyException e) {
-                        errorMessage = INTRES.getLocalizedMessage("cmp.errorgeneral");
-                        LOG.error(errorMessage, e);
-                        return false;
-                    } catch (NoSuchAlgorithmException e) {
-                        errorMessage = INTRES.getLocalizedMessage("cmp.errorgeneral");
-                        LOG.error(errorMessage, e);
-                        return false;
-                    } catch (NoSuchProviderException e) {
-                        errorMessage = INTRES.getLocalizedMessage("cmp.errorgeneral");
-                        LOG.error(errorMessage, e);
-                        return false;
-                    }
-                } else {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("CMP password is null from CA '"+cainfo.getName()+"'.");
+                        try {
+                            if(verifyer.verify(authSecret)) {
+                                this.password = authSecret;
+                            } else {
+                                // info because this is something we should expect and we handle it
+                                LOG.info(INTRES.getLocalizedMessage("cmp.errorauthmessage", "Auth secret for CA="+cainfo.getName()));
+                                if (verifyer.getErrMsg() != null) {
+                                    LOG.info(verifyer.getErrMsg());
+                                }
+                            }
+                        } catch (InvalidKeyException e) {
+                            String errmsg = INTRES.getLocalizedMessage("cmp.errorgeneral");
+                            LOG.error(errmsg, e);
+                            throw new CMPAuthenticationException(errmsg);
+                        } catch (NoSuchAlgorithmException e) {
+                            String errmsg = INTRES.getLocalizedMessage("cmp.errorgeneral");
+                            LOG.error(errmsg, e);
+                            throw new CMPAuthenticationException(errmsg);
+                        } catch (NoSuchProviderException e) {
+                            String errmsg = INTRES.getLocalizedMessage("cmp.errorgeneral");
+                            LOG.error(errmsg, e);
+                            throw new CMPAuthenticationException(errmsg);
+                        }
+                    } else {
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("CMP password is null from CA '"+cainfo.getName()+"'.");
+                        }
                     }
                 }
+            }
+            
+            // If password is still null, then we have failed verification with CA authentication secret too.
+            if(password == null) {
+                throw new CMPAuthenticationException("Failed to verify message using both Global Shared Secret and CMP RA Authentication Secret");
             }
 
         } else { //client mode
@@ -279,35 +246,8 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
             //If client mode, we try to get the pre-registered endentity from the DB, and if there is a 
             //clear text password we check HMAC using this password.
             EndEntityInformation userdata = null;
-            final CertTemplate certTemp = getCertTemplate(msg);
             String subjectDN = null;
-            String issuerDN = null;
-            if (certTemp == null) {
-                // No subject DN in request, it can be a CertConfirm, where we can get the certificate 
-                // serialNo fingerprint instead
-                final CertConfirmContent certConf = getCertConfirm(msg);
-                if (certConf != null) {
-                    byte[] certhash = certConf.toCertStatusArray()[0].getCertHash().getOctets();
-                    //final String fp = new String(Hex.encode(certhash));
-                    final String fphex = new String(certhash);
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Looking for issued certificate with fingerprint: "+fphex);
-                    }
-                    Certificate cert = certStoreSession.findCertificateByFingerprint(fphex);
-                    subjectDN = CertTools.getSubjectDN(cert);
-                    issuerDN = CertTools.getIssuerDN(cert);
-                } else {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("there was no certTemplate, and it was not a CertConfirm either...");
-                    }
-                }
-            } else {
-                subjectDN = certTemp.getSubject().toString();
-                final X500Name issuer = certTemp.getIssuer();
-                if (issuer != null) {
-                    issuerDN = issuer.toString();
-                }
-            }
+
             try {
                 if (username != null) {
                     if(LOG.isDebugEnabled()) {
@@ -316,7 +256,37 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
                     userdata = this.eeAccessSession.findUser(admin, username);
                 } else {
                     // No username given, so we try to find from subject/issuerDN from the certificate request
-                    if (issuerDN != null) {
+                    
+                    final CertTemplate certTemp = getCertTemplate(msg);
+                    String issuerDN = null;
+                    if (certTemp == null) {
+                        // No subject DN in request, it can be a CertConfirm, where we can get the certificate 
+                        // serialNo fingerprint instead
+                        final CertConfirmContent certConf = getCertConfirm(msg);
+                        if (certConf != null) {
+                            byte[] certhash = certConf.toCertStatusArray()[0].getCertHash().getOctets();
+                            //final String fp = new String(Hex.encode(certhash));
+                            final String fphex = new String(certhash);
+                            if (LOG.isDebugEnabled()) {
+                                LOG.debug("Looking for issued certificate with fingerprint: "+fphex);
+                            }
+                            Certificate cert = certStoreSession.findCertificateByFingerprint(fphex);
+                            subjectDN = CertTools.getSubjectDN(cert);
+                            issuerDN = CertTools.getIssuerDN(cert);
+                        } else {
+                            if (LOG.isDebugEnabled()) {
+                                LOG.debug("there was no certTemplate, and it was not a CertConfirm either...");
+                            }
+                        }
+                    } else {
+                        subjectDN = certTemp.getSubject().toString();
+                        final X500Name issuer = certTemp.getIssuer();
+                        if (issuer != null) {
+                            issuerDN = issuer.toString();
+                        }
+                    }
+
+                    if ((subjectDN != null) && (issuerDN != null)) {
                         List<EndEntityInformation> userdataList = eeAccessSession.findUserBySubjectAndIssuerDN(this.admin, subjectDN, issuerDN);
                         userdata = userdataList.get(0);
                         if (userdataList.size() > 1) {
@@ -339,6 +309,7 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
             } catch (AuthorizationDeniedException e) {
                 LOG.info("No EndEntity with subjectDN '" + subjectDN + "' could be found, which is expected if the request had been send in Client mode.");
             }
+            
             if(userdata != null) {
                 if(LOG.isDebugEnabled()) {
                     LOG.debug("Comparing HMAC password authentication for user '"+userdata.getUsername()+"'.");
@@ -346,44 +317,36 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
 
                 final String eepassword = userdata.getPassword();
                 if(StringUtils.isNotEmpty(eepassword)) {
-                    final CmpPbeVerifyer cmpverify = new CmpPbeVerifyer(msg);
                     try {
-                        if(cmpverify.verify(eepassword)) {
-                            if(LOG.isDebugEnabled()) {
-                                LOG.debug("HMAC password authentication succeeded for user '"+userdata.getUsername()+"'.");
-                            }
+                        if(verifyer.verify(eepassword)) {
                             this.password = eepassword;
-
                         } else {
-                            if(LOG.isDebugEnabled()) {
-                                LOG.debug("HMAC password authentication failed for user '"+userdata.getUsername()+"'.");
+                            String errmsg = INTRES.getLocalizedMessage("cmp.errorauthmessage", userdata.getUsername());
+                            LOG.info(errmsg); // info because this is something we should expect and we handle it
+                            if (verifyer.getErrMsg() != null) {
+                                errmsg = verifyer.getErrMsg();
+                                LOG.info(errmsg);
                             }
-
-                            errorMessage = INTRES.getLocalizedMessage("cmp.errorauthmessage", userdata.getUsername());
-                            
+                            throw new CMPAuthenticationException(errmsg);
                         }
                     } catch (InvalidKeyException e) {
-                        errorMessage = INTRES.getLocalizedMessage("cmp.errorgeneral");
-                        LOG.error(errorMessage, e);
-                        return false;
+                        String errmsg = INTRES.getLocalizedMessage("cmp.errorgeneral");
+                        LOG.error(errmsg, e);
+                        throw new CMPAuthenticationException(errmsg);
                     } catch (NoSuchAlgorithmException e) {
-                        errorMessage = INTRES.getLocalizedMessage("cmp.errorgeneral");
-                        LOG.error(errorMessage, e);
-                        return false;
+                        String errmsg = INTRES.getLocalizedMessage("cmp.errorgeneral");
+                        LOG.error(errmsg, e);
+                        throw new CMPAuthenticationException(errmsg);
                     } catch (NoSuchProviderException e) {
-                        errorMessage = INTRES.getLocalizedMessage("cmp.errorgeneral");
-                        LOG.error(errorMessage, e);
-                        return false;
+                        String errmsg = INTRES.getLocalizedMessage("cmp.errorgeneral");
+                        LOG.error(errmsg, e);
+                        throw new CMPAuthenticationException(errmsg);
                     }
                 } else {
-                    errorMessage = "No clear text password for user '"+userdata.getUsername()+"', not possible to check authentication.";
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug(errorMessage);
-                    }
+                    throw new CMPAuthenticationException("No clear text password for user '"+userdata.getUsername()+"', not possible to check authentication.");
                 }
             } else {
-                errorMessage = "End Entity with subjectDN '" + subjectDN +"' was not found";
-                LOG.error(errorMessage);
+                throw new CMPAuthenticationException("End Entity with subjectDN '" + subjectDN +"' or username '" + username + "' was not found");
             }
         }
         return this.password != null;

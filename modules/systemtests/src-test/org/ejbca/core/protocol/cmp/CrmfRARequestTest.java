@@ -210,7 +210,7 @@ public class CrmfRARequestTest extends CmpTestCase {
                             .getSerialNumber().equals(customCertSerno));
                 }
             } else {
-                checkCmpFailMessage(resp, sFailMessage, CmpPKIBodyConstants.ERRORMESSAGE, reqId, PKIFailureInfo.badRequest);
+                checkCmpFailMessage(resp, sFailMessage, CmpPKIBodyConstants.ERRORMESSAGE, reqId, PKIFailureInfo.badRequest, PKIFailureInfo.incorrectData);
             }
         }
         {
@@ -430,7 +430,8 @@ public class CrmfRARequestTest extends CmpTestCase {
             final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
             // do not check signing if we expect a failure (sFailMessage==null)
             checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-            checkCmpFailMessage(resp, "Subject DN field 'ORGANIZATION' must exist.", CmpPKIBodyConstants.INITIALIZATIONRESPONSE, reqId, PKIFailureInfo.badRequest);
+            checkCmpFailMessage(resp, "Subject DN field 'ORGANIZATION' must exist.", CmpPKIBodyConstants.INITIALIZATIONRESPONSE, reqId, 
+                                                                PKIFailureInfo.badRequest, PKIFailureInfo.incorrectData);
 
 
             // Create a new user that fulfills the end entity profile
@@ -608,7 +609,8 @@ public class CrmfRARequestTest extends CmpTestCase {
         resp = sendCmpHttp(ba, 200, cmpAlias);
         // do not check signing if we expect a failure (sFailMessage==null)
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        checkCmpFailMessage(resp, "Error: SubjectDN Serialnumber already exists.", CmpPKIBodyConstants.ERRORMESSAGE, reqId, PKIFailureInfo.badRequest);
+        checkCmpFailMessage(resp, "Error: SubjectDN Serialnumber already exists.", CmpPKIBodyConstants.ERRORMESSAGE, reqId, 
+                                                    PKIFailureInfo.badRequest, PKIFailureInfo.incorrectData);
 
         
         // Revoke the created certificate

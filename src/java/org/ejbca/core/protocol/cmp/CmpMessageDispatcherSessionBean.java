@@ -163,15 +163,15 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 			switch (tagno) {
 			case 0:
 				// 0 (ir, Initialization Request) and 2 (cr, Certification Req) are both certificate requests
-				handler = new CrmfMessageHandler(admin, confAlias, caSession,  certificateProfileSession, certificateRequestSession, endEntityAccessSession, 
-				                        endEntityProfileSession, signSession, certificateStoreSession, authSession, authenticationProviderSession, 
-				                        endEntityManagementSession, globalConfigSession);
+				handler = new CrmfMessageHandler(admin, confAlias, caSession,  certificateProfileSession, certificateRequestSession, 
+				                        endEntityAccessSession, endEntityProfileSession, signSession, certificateStoreSession, authSession, 
+				                        authenticationProviderSession, endEntityManagementSession, globalConfigSession);
 				cmpMessage = new CrmfRequestMessage(req, this.cmpConfiguration.getCMPDefaultCA(confAlias), this.cmpConfiguration.getAllowRAVerifyPOPO(confAlias), this.cmpConfiguration.getExtractUsernameComponent(confAlias));
 				break;
 			case 2:
-				handler = new CrmfMessageHandler(admin, confAlias, caSession, certificateProfileSession, certificateRequestSession, endEntityAccessSession, 
-				                        endEntityProfileSession, signSession, certificateStoreSession, authSession, authenticationProviderSession, 
-				                        endEntityManagementSession, globalConfigSession);
+				handler = new CrmfMessageHandler(admin, confAlias, caSession, certificateProfileSession, certificateRequestSession, 
+				                        endEntityAccessSession, endEntityProfileSession, signSession, certificateStoreSession, authSession, 
+				                        authenticationProviderSession, endEntityManagementSession, globalConfigSession);
 				cmpMessage = new CrmfRequestMessage(req, this.cmpConfiguration.getCMPDefaultCA(confAlias), this.cmpConfiguration.getAllowRAVerifyPOPO(confAlias), this.cmpConfiguration.getExtractUsernameComponent(confAlias));
 				break;
 			case 7:
@@ -185,9 +185,10 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 				// PKI confirm (pkiconf, Confirmation)
 			case 24:
 				// Certificate confirmation (certConf, Certificate confirm)
-				handler = new ConfirmationMessageHandler(admin, confAlias, caSession, endEntityProfileSession, certificateProfileSession, certificateStoreSession, 
-				                        authSession, endEntityAccessSession, authenticationProviderSession, cryptoTokenSession, globalConfigSession);
-				cmpMessage = new GeneralCmpMessage(req);
+			    handler = new ConfirmationMessageHandler(admin, confAlias, caSession, endEntityProfileSession, certificateProfileSession, 
+			                           certificateStoreSession, authSession, endEntityAccessSession, authenticationProviderSession, cryptoTokenSession, 
+			                           globalConfigSession);
+			    cmpMessage = new GeneralCmpMessage(req);
 				break;
 			case 11:
 				// Revocation request (rr, Revocation Request)

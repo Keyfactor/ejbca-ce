@@ -61,6 +61,7 @@ public class CmpConfiguration extends Configuration implements Serializable {
     public static final String CONFIG_RACANAME                = "ra.caname";
     public static final String CONFIG_VENDORCERTIFICATEMODE   = "vendorcertificatemode"; 
     public static final String CONFIG_VENDORCA                = "vendorca";
+    public static final String CONFIG_RA_OMITVERIFICATIONSINEEC = "ra.endentitycertificate.omitverifications";
     public static final String CONFIG_RACERT_PATH             = "racertificatepath";
     public static final String CONFIG_ALLOWAUTOMATICKEYUPDATE = "allowautomatickeyupdate";
     public static final String CONFIG_ALLOWUPDATEWITHSAMEKEY  = "allowupdatewithsamekey";
@@ -108,6 +109,7 @@ public class CmpConfiguration extends Configuration implements Serializable {
     private static final String DEFAULT_RA_CANAME = "ManagementCA";
     private static final String DEFAULT_CLIENT_AUTHENTICATION_MODULE = CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC;
     private static final String DEFAULT_CLIENT_AUTHENTICATION_PARAMS = "-;-";
+    private static final String DEFAULT_RA_OMITVERIFICATIONSINEEC = "false";
     private static final String DEFAULT_RACERT_PATH = "";
     private static final String DEFAULT_CERTREQHANDLER = ""; //"org.ejbca.core.protocol.unid.UnidFnrHandler";
     private static final String DEFAULT_UNID_DATASOURCE = ""; //"java:/UnidDS";
@@ -147,6 +149,7 @@ public class CmpConfiguration extends Configuration implements Serializable {
             data.put(alias + CONFIG_RA_CERTIFICATEPROFILE, DEFAULT_RA_CERTPROFILE);
             data.put(alias + CONFIG_RACANAME, DEFAULT_RA_CANAME);
             data.put(alias + CONFIG_RACERT_PATH, DEFAULT_RACERT_PATH);
+            data.put(alias + CONFIG_RA_OMITVERIFICATIONSINEEC, DEFAULT_RA_OMITVERIFICATIONSINEEC);
             data.put(alias + CONFIG_ALLOWAUTOMATICKEYUPDATE, DEFAULT_KUR_ALLOW_AUTOMATIC_KEYUPDATE);       
             data.put(alias + CONFIG_ALLOWUPDATEWITHSAMEKEY, DEFAULT_KUR_ALLOW_SAME_KEY);
             data.put(alias + CONFIG_CERTREQHANDLER_CLASS, DEFAULT_CERTREQHANDLER);
@@ -177,6 +180,7 @@ public class CmpConfiguration extends Configuration implements Serializable {
         keys.add(alias + CONFIG_RA_CERTIFICATEPROFILE);
         keys.add(alias + CONFIG_RACANAME);
         keys.add(alias + CONFIG_RACERT_PATH);
+        keys.add(alias + CONFIG_RA_OMITVERIFICATIONSINEEC);
         keys.add(alias + CONFIG_ALLOWAUTOMATICKEYUPDATE);       
         keys.add(alias + CONFIG_ALLOWUPDATEWITHSAMEKEY);
         keys.add(alias + CONFIG_CERTREQHANDLER_CLASS);
@@ -457,6 +461,16 @@ public class CmpConfiguration extends Configuration implements Serializable {
     public void setRACertPath(String alias, String certpath) {
         String key = alias + "." + CONFIG_RACERT_PATH;
         setValue(key, certpath, alias);
+    }
+    
+    public boolean getOmitVerificationsInEEC(String alias) {
+        String key = alias + "." + CONFIG_RA_OMITVERIFICATIONSINEEC;
+        String value = getValue(key, alias);
+        return StringUtils.equalsIgnoreCase(value, "true");
+    }
+    public void setOmitVerificationsInECC(String alias, boolean omit) {
+        String key = alias + "." + CONFIG_RA_OMITVERIFICATIONSINEEC;
+        setValue(key, Boolean.toString(omit), alias);
     }
     
     public boolean getKurAllowAutomaticUpdate(String alias) {
