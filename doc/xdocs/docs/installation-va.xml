@@ -7,14 +7,12 @@
 <section name="Standalone VA Installation">
   <subsection name="Building and configuring the EJBCA CA">
   <p>
-EJBCA should be configured the same when installing a VA as for any other installation, in addition to setting preferences
+The EJBCA CA should be configured the same when installing a VA as for any other installation, in addition to setting preferences
 for the VA database in conf/va-publisher.properties. 
 The VA database is the master database for standalone VA installations and where the master CA will 
 publish certificates when they are issued or revoked. 
   </p><p>
-As with any EJBCA installation, the VA is built and deployed as usual with the commands 'ant deploy', 'ant web-configure', and 'ant deploy-keystore'.
-  </p><p>
-The deploy command sets up a data source, <b>java:/OcspDS</b>, in JBoss. If you use another application server 
+The deploy command (ant deploy, or deploy-datasource) sets up a data source, <b>java:/OcspDS</b>, in JBoss (on the CA). If you use another application server 
 you must set up this data source manually. The VA data source should be not be involved in transactions
 (a <i>no-tx-datasource</i> in JBoss), and it should have autocommit (should be default in JBoss).
   </p><p>
@@ -65,13 +63,13 @@ For the certificate and CRL store service the sample file should be enough to un
 For the OCSP responder service there is separate <a href="installation-ocsp.html">setup instructions</a> for the Standalone OCSP installation.
   </p>
   <p>
-The validation authority is built and deployed in the way as a CA installation with (keystore step is not required if you you have disabled SSL in web.properties):
+The validation authority is built and deployed in the way as a CA installation with (deploy-keystore step is not required if you have disabled SSL, with web.nosslconfigure, in web.properties):
   </p>
-  <source>
-ant deployear
+<source>
+ant deploy
 ant deploy-keystore
 ant web-configure
-  </source>
+</source>
   <p>
 on the VA server.
   </p>
