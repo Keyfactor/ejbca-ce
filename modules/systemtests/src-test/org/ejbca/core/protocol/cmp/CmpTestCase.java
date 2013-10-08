@@ -902,7 +902,7 @@ public abstract class CmpTestCase extends CaTestCase {
      * @param err a number from FailInfo
      * @throws IOException
      */
-    protected void checkCmpFailMessage(byte[] retMsg, String failMsg, int exptag, int requestId, int err) throws IOException {
+    protected void checkCmpFailMessage(byte[] retMsg, String failMsg, int exptag, int requestId, int err, int expectedPKIFailInfo) throws IOException {
         //
         // Parse response message
         //
@@ -948,7 +948,7 @@ public abstract class CmpTestCase extends CaTestCase {
             int error = info.getStatus().intValue();
             assertEquals(ResponseStatus.FAILURE.getValue(), error); // 2 is
                                                                     // rejection
-            assertEquals(PKIFailureInfo.incorrectData, info.getFailInfo().intValue());
+            assertEquals(expectedPKIFailInfo, info.getFailInfo().intValue());
         }
         log.debug("expected fail message: '" + failMsg + "'. received fail message: '" + info.getStatusString().getStringAt(0).getString() + "'.");
         assertEquals(failMsg, info.getStatusString().getStringAt(0).getString());

@@ -30,8 +30,9 @@ public interface ICMPAuthenticationModule {
      * @param username that the PKIMessage should match or null
      * @param authenticated if the CMP message has already been authenticated in another way or not
      * @return true of msg was sent by a trusted source, and false otherwise
+     * @throws CMPAuthenticationException 
      */
-    public abstract boolean verifyOrExtract(PKIMessage msg, String username, boolean authenticated);
+    public abstract boolean verifyOrExtract(PKIMessage msg, String username, boolean authenticated) throws CMPAuthenticationException;
     
     /**
      * Returns the name of the used authentication module.
@@ -49,13 +50,4 @@ public interface ICMPAuthenticationModule {
      */
     public abstract String getAuthenticationString();
     
-    /**
-     * Returns the error message resulted in failing to authenticate the message.
-     * 
-     * The error message is set if verify() returns false.
-     * 
-     * @return The error message as String. Null if no error had occurred
-     */
-    public abstract String getErrorMessage();
-
 }

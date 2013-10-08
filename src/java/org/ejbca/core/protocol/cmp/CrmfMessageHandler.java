@@ -63,6 +63,7 @@ import org.ejbca.core.model.ra.UsernameGeneratorParams;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.ExtendedUserDataHandler;
 import org.ejbca.core.protocol.ExtendedUserDataHandler.HandlerException;
+import org.ejbca.core.protocol.cmp.authentication.CMPAuthenticationException;
 import org.ejbca.core.protocol.cmp.authentication.HMACAuthenticationModule;
 import org.ejbca.core.protocol.cmp.authentication.ICMPAuthenticationModule;
 import org.ejbca.core.protocol.cmp.authentication.VerifyPKIMessage;
@@ -217,44 +218,21 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 					// if extractUsernameComponent is null, we have to find the user from the DN
 					// if not empty the message will find the username itself, in the getUsername method
 					final String dn = crmfreq.getSubjectDN();
-					
-					EndEntityInformation data = null;
-					/** Defines which component from the DN should be used as username in EJBCA. Can be DN, UID or nothing. Nothing means that the DN will be used to look up the user. */
-					final String usernameComp = this.cmpConfiguration.getExtractUsernameComponent(this.confAlias);
-					if (LOG.isDebugEnabled()) {
-						LOG.debug("extractUsernameComponent: "+usernameComp);
-					}
-					if (StringUtils.isEmpty(usernameComp)) {
-						if (LOG.isDebugEnabled()) {
-							LOG.debug("looking for user with dn: "+dn);
-						}
-						List<EndEntityInformation> dataList = endEntityAccessSession.findUserBySubjectDN(admin, dn);
-                        if (dataList.size() > 0) {
-                            data = dataList.get(0);
-                        }
-						if(dataList.size() > 1) {
-						    LOG.warn("Multiple end entities with subject DN " + dn + " were found. This may lead to unexpected behavior.");
-						}
-					} else {
-						final String username = CertTools.getPartFromDN(dn,usernameComp);
-						if (LOG.isDebugEnabled()) {
-							LOG.debug("looking for user with username: "+username);
-						}						
-						data = endEntityAccessSession.findUser(admin, username);
-					}
+					EndEntityInformation data = getUserData(dn);
+
 					if (data != null) {
 						if (LOG.isDebugEnabled()) {
 							LOG.debug("Found username: "+data.getUsername());
 						}
 						crmfreq.setUsername(data.getUsername());
-                        ICMPAuthenticationModule authenticationModule = null;
-                        Object verified = verifyAndGetAuthModule(msg, crmfreq, data.getUsername(), 0, authenticated);
-                        if(verified instanceof ResponseMessage) {
-                            return (ResponseMessage) verified;
-                        } else {
-                            authenticationModule = (ICMPAuthenticationModule) verified;
-                        }
-                        crmfreq.setPassword(authenticationModule.getAuthenticationString());
+                        
+						try {
+						    ICMPAuthenticationModule authenticationModule = verifyAndGetAuthModule(msg, crmfreq, data.getUsername(), 0, authenticated);
+						    crmfreq.setPassword(authenticationModule.getAuthenticationString());
+						} catch(CMPAuthenticationException e) {
+						    LOG.info(e.getLocalizedMessage(), e);
+						    return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getLocalizedMessage());
+						}
 
 					} else {
 						final String errMsg = INTRES.getLocalizedMessage("cmp.infonouserfordn", dn);
@@ -353,11 +331,11 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
         ResponseMessage resp = null; // The CMP response message to be sent back to the client
         //Check the request's authenticity
         ICMPAuthenticationModule authenticationModule = null;
-        Object verified = verifyAndGetAuthModule(msg, crmfreq, null, caId, authenticated);
-        if(verified instanceof ResponseMessage) {
-            return (ResponseMessage) verified;
-        } else {
-            authenticationModule = (ICMPAuthenticationModule) verified;
+        try {
+            authenticationModule = verifyAndGetAuthModule(msg, crmfreq, null, caId, authenticated);
+        } catch(CMPAuthenticationException e) {
+            LOG.info(e.getLocalizedMessage(), e);
+            return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getLocalizedMessage());
         }
 
         try {
@@ -487,8 +465,10 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 	 * @return
 	 * @throws CADoesntExistsException
 	 * @throws AuthorizationDeniedException
+	 * @throws CMPAuthenticationException 
 	 */
-	private Object verifyAndGetAuthModule(final BaseCmpMessage msg, final CrmfRequestMessage crmfreq, final String username, final int caId, boolean authenticated) throws CADoesntExistsException, AuthorizationDeniedException {
+	private ICMPAuthenticationModule verifyAndGetAuthModule(final BaseCmpMessage msg, final CrmfRequestMessage crmfreq, final String username, 
+	                            final int caId, boolean authenticated) throws CADoesntExistsException, AuthorizationDeniedException, CMPAuthenticationException {
         final CAInfo caInfo;
         if (caId == 0) {
             caInfo = null;
@@ -499,21 +479,37 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
         }
 		final VerifyPKIMessage messageVerifyer = new VerifyPKIMessage(caInfo, this.confAlias, admin, caSession, endEntityAccessSession, certStoreSession, authorizationSession, 
 		                endEntityProfileSession, authenticationProviderSession, eeManagementSession, this.cmpConfiguration);
-		ICMPAuthenticationModule authenticationModule = null;
-		if(messageVerifyer.verify(crmfreq.getPKIMessage(), username, authenticated)) {
-			authenticationModule = messageVerifyer.getUsedAuthenticationModule();
-		}
-		if(authenticationModule == null) {
-			String errMsg = "";
-			if(messageVerifyer.getErrorMessage() != null) {
-				errMsg = messageVerifyer.getErrorMessage();
-			} else {
-				errMsg = "Unrecognized authentication modules";
-			}
-			LOG.info(errMsg);
-			return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, errMsg);
-		}
-		return authenticationModule;
+		
+		messageVerifyer.verify(crmfreq.getPKIMessage(),  username,  authenticated);
+		return messageVerifyer.getUsedAuthenticationModule();
+	}
+	
+	private EndEntityInformation getUserData(String dn) throws AuthorizationDeniedException {
+	    EndEntityInformation data = null;
+	    /** Defines which component from the DN should be used as username in EJBCA. Can be DN, UID or nothing. Nothing means that the DN will be used to look up the user. */
+        final String usernameComp = this.cmpConfiguration.getExtractUsernameComponent(this.confAlias);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("extractUsernameComponent: "+usernameComp);
+        }
+        if (StringUtils.isEmpty(usernameComp)) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("looking for user with dn: "+dn);
+            }
+            List<EndEntityInformation> dataList = endEntityAccessSession.findUserBySubjectDN(admin, dn);
+            if (dataList.size() > 0) {
+                data = dataList.get(0);
+            }
+            if(dataList.size() > 1) {
+                LOG.warn("Multiple end entities with subject DN " + dn + " were found. This may lead to unexpected behavior.");
+            }
+        } else {
+            final String username = CertTools.getPartFromDN(dn,usernameComp);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("looking for user with username: "+username);
+            }                       
+            data = endEntityAccessSession.findUser(admin, username);
+        }
+        return data;
 	}
 
 }
