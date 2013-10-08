@@ -23,9 +23,10 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  * Remove admin role
  */
 public class AdminsRemoveRoleCommand extends BaseAdminsCommand {
-
-	public String getMainCommand() { return MAINCOMMAND; }
-	public String getSubCommand() { return "removerole"; }
+    
+    @Override
+    public String getSubCommand() { return "removerole"; }
+	@Override
 	public String getDescription() { return "Remove admin role"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {

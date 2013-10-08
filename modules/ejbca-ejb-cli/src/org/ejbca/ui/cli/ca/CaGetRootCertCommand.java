@@ -31,9 +31,10 @@ import org.ejbca.util.CliTools;
  */
 public class CaGetRootCertCommand extends BaseCaAdminCommand {
 
-	public String getMainCommand() { return MAINCOMMAND; }
-	public String getSubCommand() { return "getrootcert"; }
-	public String getDescription() { return "Save root CA certificate (PEM- or DER-format) to file"; }
+    @Override
+    public String getSubCommand() { return "getrootcert"; }
+    @Override
+    public String getDescription() { return "Save root CA certificate (PEM- or DER-format) to file"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {

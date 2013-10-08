@@ -35,18 +35,17 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class CaActivateCACommand extends BaseCaAdminCommand {
 
-    public String getMainCommand() {
-        return MAINCOMMAND;
-    }
-
+    @Override
     public String getSubCommand() {
         return "activateca";
     }
 
+    @Override
     public String getDescription() {
         return "Activates the specified HSM CA";
     }
 
+    @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);

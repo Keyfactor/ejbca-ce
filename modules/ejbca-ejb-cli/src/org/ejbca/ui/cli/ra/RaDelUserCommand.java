@@ -29,14 +29,12 @@ import org.ejbca.util.CliTools;
  */
 public class RaDelUserCommand extends BaseRaAdminCommand {
 
-    public String getMainCommand() {
-        return MAINCOMMAND;
-    }
-
+    @Override
     public String getSubCommand() {
         return "deluser";
     }
 
+    @Override
     public String getDescription() {
         return "Deletes a user";
     }

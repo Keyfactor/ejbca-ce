@@ -28,10 +28,12 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class RaSetPwdCommand extends BaseRaAdminCommand {
 
-	public String getMainCommand() { return MAINCOMMAND; }
+	@Override
 	public String getSubCommand() { return "setpwd"; }
+	@Override
 	public String getDescription() { return "Set a (hashed) password for a user"; }
 
+	@Override
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);

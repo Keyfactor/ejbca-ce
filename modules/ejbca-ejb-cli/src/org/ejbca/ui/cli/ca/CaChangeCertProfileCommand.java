@@ -32,15 +32,16 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
 /**
  * Changes the certificate profile of a CA.
  *
- * @author Lars
  * @version $Id$
  */
 public class CaChangeCertProfileCommand extends BaseCaAdminCommand {
 
-	public String getMainCommand() { return MAINCOMMAND; }
+    @Override
 	public String getSubCommand() { return "changecertprofile"; }
+    @Override
 	public String getDescription() { return "Changes the certificate profile of a CA"; }
 
+    @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
 		getLogger().trace(">execute()");
 		CryptoProviderTools.installBCProvider(); // need this for CVC certificate

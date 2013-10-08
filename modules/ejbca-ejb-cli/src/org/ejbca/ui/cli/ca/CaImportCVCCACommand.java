@@ -49,10 +49,12 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class CaImportCVCCACommand extends BaseCaAdminCommand {
 
-	public String getMainCommand() { return MAINCOMMAND; }
+    @Override
 	public String getSubCommand() { return "importcvcca"; }
-	public String getDescription() { return "Imports a PKCS#8 file and created a new CVC CA from it"; }
+    @Override
+    public String getDescription() { return "Imports a PKCS#8 file and created a new CVC CA from it"; }
 
+    @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);

@@ -65,6 +65,16 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
     protected String privKeyAlias = "privateKey";
     protected char[] privateKeyPass = null;
 
+    @Override
+    public String[] getMainCommandAliases() {
+        return new String[]{};
+    }
+    
+    @Override
+    public String getMainCommand() {
+        return MAINCOMMAND;
+    }
+    
     /**
      * Retrieves the complete certificate chain from the CA
      * 

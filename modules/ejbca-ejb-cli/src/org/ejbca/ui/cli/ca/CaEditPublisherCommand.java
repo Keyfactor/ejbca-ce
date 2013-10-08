@@ -30,10 +30,12 @@ import org.ejbca.util.CliTools;
  */
 public class CaEditPublisherCommand extends BaseCaAdminCommand {
 
-    public String getMainCommand() { return MAINCOMMAND; }
+    @Override
     public String getSubCommand() { return "editpublisher"; }
+    @Override
     public String getDescription() { return "Edits publisher fields of an existing publisher in the CA."; }
 
+    @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
 
         if (args.length < 3) {
