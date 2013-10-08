@@ -27,13 +27,11 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
 /**
  * Changes the signature algorithm and possible keyspec of a CA token.
  *
- * @author Tomas Gustavsson
  * @version $Id$
  */
 public class CaChangeCATokenSignAlg extends BaseCaAdminCommand {
 
-    @Override
-	public String getMainCommand() { return MAINCOMMAND; }
+   
     @Override
 	public String getSubCommand() { return "changecatokensignalg"; }
     @Override

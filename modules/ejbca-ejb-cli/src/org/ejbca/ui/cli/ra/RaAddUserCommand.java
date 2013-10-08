@@ -56,18 +56,17 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
     private final String[] softtokennames = { USERGENERATED, P12, JKS, PEM };
     private final int[] softtokenids = { SecConst.TOKEN_SOFT_BROWSERGEN, SecConst.TOKEN_SOFT_P12, SecConst.TOKEN_SOFT_JKS, SecConst.TOKEN_SOFT_PEM };
 
-    public String getMainCommand() {
-        return MAINCOMMAND;
-    }
-
+    @Override
     public String getSubCommand() {
         return "adduser";
     }
 
+    @Override
     public String getDescription() {
         return "Adds a user";
     }
 
+    @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);
@@ -313,4 +312,5 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
         }
         return returnval;
     }
+
 }

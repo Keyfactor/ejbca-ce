@@ -61,4 +61,9 @@ public class Upgrade extends BaseCommand {
         }
 
     }
+
+    @Override
+    public String[] getMainCommandAliases() {
+        return new String[]{};
+    }
 }

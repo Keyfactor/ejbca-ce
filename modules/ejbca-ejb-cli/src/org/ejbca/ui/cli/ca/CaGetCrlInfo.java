@@ -31,9 +31,10 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class CaGetCrlInfo extends BaseCaAdminCommand {
 
-	public String getMainCommand() { return MAINCOMMAND; }
-	public String getSubCommand() { return "getcrlinfo"; }
-	public String getDescription() { return "List information about latest CRLs"; }
+    @Override
+    public String getSubCommand() { return "getcrlinfo"; }
+    @Override
+    public String getDescription() { return "List information about latest CRLs"; }
 
 	@Override
 	public void execute(String[] args) throws ErrorAdminCommandException {

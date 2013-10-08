@@ -29,10 +29,12 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class RaRevokeUserCommand extends BaseRaAdminCommand {
 
-	public String getMainCommand() { return MAINCOMMAND; }
+    @Override
 	public String getSubCommand() { return "revokeuser"; }
+    @Override
 	public String getDescription() { return "Revokes a user and all certificates for a user"; }
-
+    
+	@Override
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);

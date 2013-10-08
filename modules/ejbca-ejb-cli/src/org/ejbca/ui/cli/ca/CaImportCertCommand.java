@@ -44,15 +44,16 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
 /**
  * Imports a certificate file to the database.
  *
- * @author Marco Ferrante, (c) 2005 CSITA - University of Genoa (Italy)
  * @version $Id$
  */
 public class CaImportCertCommand extends BaseCaAdminCommand {
 
-	public String getMainCommand() { return MAINCOMMAND; }
+    @Override
 	public String getSubCommand() { return "importcert"; }
-	public String getDescription() { return "Imports a certificate file to the database"; }
+    @Override
+    public String getDescription() { return "Imports a certificate file to the database"; }
 
+    @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);

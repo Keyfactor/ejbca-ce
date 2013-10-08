@@ -33,10 +33,12 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class CaImportCACommand extends BaseCaAdminCommand {
 
-	public String getMainCommand() { return MAINCOMMAND; }
+    @Override
 	public String getSubCommand() { return "importca"; }
-	public String getDescription() { return "Imports a keystore and creates a new X509 CA from it"; }
+    @Override
+    public String getDescription() { return "Imports a keystore and creates a new X509 CA from it"; }
 
+    @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);

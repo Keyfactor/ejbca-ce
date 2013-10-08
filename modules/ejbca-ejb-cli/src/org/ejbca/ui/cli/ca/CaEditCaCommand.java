@@ -30,10 +30,12 @@ import org.ejbca.util.CliTools;
  */
 public class CaEditCaCommand extends BaseCaAdminCommand {
 
-	public String getMainCommand() { return MAINCOMMAND; }
-	public String getSubCommand() { return "editca"; }
+    @Override
+    public String getSubCommand() { return "editca"; }
+    @Override
     public String getDescription() { return "Edits CA fields of an existing CA."; }
 
+    @Override
     public void execute(String[] args) throws ErrorAdminCommandException {       
         if (args.length < 3) {
             getLogger().info("Description: " + getDescription());

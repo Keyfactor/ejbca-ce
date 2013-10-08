@@ -83,4 +83,8 @@ public class CreateCert extends BaseCommand {
 			throw new ErrorAdminCommandException(e);
 		}
 	}
+    @Override
+    public String[] getMainCommandAliases() {
+        return new String[]{};
+    }
 }

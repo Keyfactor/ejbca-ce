@@ -26,11 +26,13 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  * @version $Id$
  */
 public class RaGetUserCertCommand extends BaseRaAdminCommand {
-
-	public String getMainCommand() { return MAINCOMMAND; }
+    
+    @Override
 	public String getSubCommand() { return "getusercert"; }
-	public String getDescription() { return "Output all certificates for a user"; }
+    @Override
+    public String getDescription() { return "Output all certificates for a user"; }
 
+    @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             if (args.length < 2) {

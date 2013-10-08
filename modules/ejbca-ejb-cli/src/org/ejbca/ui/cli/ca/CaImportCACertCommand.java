@@ -32,10 +32,12 @@ import org.ejbca.util.CliTools;
  */
 public class CaImportCACertCommand extends BaseCaAdminCommand {
 
-	public String getMainCommand() { return MAINCOMMAND; }
-	public String getSubCommand() { return "importcacert"; }
-	public String getDescription() { return "Imports a PEM file and creates a new external CA representation from it"; }
+    @Override
+    public String getSubCommand() { return "importcacert"; }
+    @Override
+    public String getDescription() { return "Imports a PEM file and creates a new external CA representation from it"; }
 
+    @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);

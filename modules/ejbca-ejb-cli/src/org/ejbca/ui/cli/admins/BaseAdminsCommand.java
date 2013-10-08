@@ -30,8 +30,19 @@ import org.ejbca.ui.cli.BaseCommand;
  */
 public abstract class BaseAdminsCommand extends BaseCommand {
 
-    protected static final String MAINCOMMAND = "admins";
+    protected static final String OLD_COMMAND = "admins";
+    private static final String MAIN_COMMAND = "roles";
 
+    @Override
+    public String getMainCommand() {
+        return MAIN_COMMAND;
+    }
+    
+    @Override
+    public String[] getMainCommandAliases() {
+        return new String[]{OLD_COMMAND};
+    }
+    
     protected String getParsedAccessRule(AuthenticationToken authenticationToken, String resource) throws NumberFormatException, CADoesntExistsException, AuthorizationDeniedException {
         // Check if it is a profile rule, then replace profile id with profile
         // name.

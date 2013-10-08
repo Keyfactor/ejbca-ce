@@ -18,7 +18,6 @@ import java.util.Properties;
 
 import org.ejbca.config.Configuration;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
-import org.ejbca.ui.cli.BaseCommand;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -27,16 +26,14 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  * 
  * @version $Id$
  */
-public class ConfigDumpCommand extends BaseCommand {
+public class ConfigDumpCommand extends ConfigBaseCommand {
 
-    public String getMainCommand() {
-        return "config";
-    }
-
+    @Override
     public String getSubCommand() {
         return "dump";
     }
 
+    @Override
     public String getDescription() {
         return "Shows the current server configuration";
     }
@@ -44,6 +41,7 @@ public class ConfigDumpCommand extends BaseCommand {
     /**
      * Tries to fetch the server properties and dumps them to standard out
      */
+    @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);

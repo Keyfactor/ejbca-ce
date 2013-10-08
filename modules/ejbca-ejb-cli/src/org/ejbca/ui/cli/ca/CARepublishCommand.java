@@ -47,18 +47,15 @@ import org.ejbca.util.CliTools;
  */
 public class CARepublishCommand extends BaseCaAdminCommand {
 
-    public String getMainCommand() {
-        return MAINCOMMAND;
-    }
-
+    @Override
     public String getSubCommand() {
         return "republish";
     }
-
+    @Override
     public String getDescription() {
         return "Re-publishes the certificates of all users belonging to a particular CA";
     }
-
+    @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);

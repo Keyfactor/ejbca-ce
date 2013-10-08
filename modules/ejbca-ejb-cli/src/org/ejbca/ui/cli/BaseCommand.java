@@ -90,7 +90,7 @@ public abstract class BaseCommand implements CliCommandPlugin {
             log.error("Failure during match value initialization", e);
         }
     }
-    
+        
     public Logger getLogger() {
         if (log == null) {
             log = Logger.getLogger(this.getClass());
