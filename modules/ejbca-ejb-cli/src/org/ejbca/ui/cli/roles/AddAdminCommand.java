@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.ui.cli.admins;
+package org.ejbca.ui.cli.roles;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,7 +37,7 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  * 
  * @version $Id$
  */
-public class AdminsAddAdminCommand extends BaseAdminsCommand {
+public class AddAdminCommand extends BaseRolesCommand {
 
     @Override
     public String getSubCommand() {

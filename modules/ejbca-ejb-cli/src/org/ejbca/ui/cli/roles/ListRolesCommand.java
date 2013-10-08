@@ -11,32 +11,31 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.ui.cli.admins;
+package org.ejbca.ui.cli.roles;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.roles.RoleData;
-import org.cesecore.roles.access.RoleAccessSessionRemote;
+import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
- * Lists access rules for a role
- * 
+ * Lists admin roles
  * @version $Id$
  */
-public class AdminsListRulesCommand extends BaseAdminsCommand {
+public class ListRolesCommand extends BaseRolesCommand {
+
 
     @Override
     public String getSubCommand() {
-        return "listrules";
+        return "listroles";
     }
     @Override
     public String getDescription() {
-        return "Lists access rules for a role";
+        return "Lists admin roles";
     }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
@@ -45,26 +44,16 @@ public class AdminsListRulesCommand extends BaseAdminsCommand {
         } catch (CliUsernameException e) {
             return;
         }
+        
         try {
-            if (args.length < 2) {
-                getLogger().info("Description: " + getDescription());
-                getLogger().info("Usage: " + getCommand() + " <name of role>");
-                return;
-            }
-            String groupName = args[1];
-            RoleData role = ejb.getRemoteSession(RoleAccessSessionRemote.class).findRole(groupName);
-            if (role == null) {
-                getLogger().error("No such role \"" + groupName + "\".");
-                return;
-            }
-            List<AccessRuleData> list = new ArrayList<AccessRuleData>(role.getAccessRules().values());
-            Collections.sort(list);
-            for (AccessRuleData accessRule : list) {
-                getLogger().info(
-                        getParsedAccessRule(getAdmin(cliUserName, cliPassword), accessRule.getAccessRuleName()) + " " + accessRule.getInternalState().getName() + " "
-                                + (accessRule.getRecursive() ? "RECURSIVE" : ""));
+            Collection<RoleData> roles = ejb.getRemoteSession(RoleManagementSessionRemote.class).getAllRolesAuthorizedToEdit(getAdmin(cliUserName, cliPassword));            
+            Collections.sort((List<RoleData>) roles);
+            for (RoleData role : roles) {                
+                int numberOfAdmins = role.getAccessUsers().size();
+                getLogger().info(role.getRoleName() + " (" + numberOfAdmins + " admin" + (numberOfAdmins == 1 ? "" : "s") + ")");
             }
         } catch (Exception e) {
+            getLogger().error("", e);
             throw new ErrorAdminCommandException(e);
         }
     }

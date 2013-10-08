@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.ui.cli.admins;
+package org.ejbca.ui.cli.roles;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -28,7 +28,7 @@ import org.ejbca.ui.cli.BaseCommand;
 /**
  * Base for Admins commands, contains common functions for Admins operations
  */
-public abstract class BaseAdminsCommand extends BaseCommand {
+public abstract class BaseRolesCommand extends BaseCommand {
 
     protected static final String OLD_COMMAND = "admins";
     private static final String MAIN_COMMAND = "roles";

@@ -10,33 +10,24 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
-package org.ejbca.ui.cli.admins;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+ 
+package org.ejbca.ui.cli.roles;
 
 import org.cesecore.roles.RoleData;
+import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
- * Lists admin roles
- * @version $Id$
+ * Remove admin role
  */
-public class AdminsListRolesCommand extends BaseAdminsCommand {
-
-
+public class RemoveRoleCommand extends BaseRolesCommand {
+    
     @Override
-    public String getSubCommand() {
-        return "listroles";
-    }
-    @Override
-    public String getDescription() {
-        return "Lists admin roles";
-    }
+    public String getSubCommand() { return "removerole"; }
+	@Override
+	public String getDescription() { return "Remove admin role"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
@@ -46,15 +37,20 @@ public class AdminsListRolesCommand extends BaseAdminsCommand {
         }
         
         try {
-            Collection<RoleData> roles = ejb.getRemoteSession(RoleManagementSessionRemote.class).getAllRolesAuthorizedToEdit(getAdmin(cliUserName, cliPassword));            
-            Collections.sort((List<RoleData>) roles);
-            for (RoleData role : roles) {                
-                int numberOfAdmins = role.getAccessUsers().size();
-                getLogger().info(role.getRoleName() + " (" + numberOfAdmins + " admin" + (numberOfAdmins == 1 ? "" : "s") + ")");
+            if (args.length < 2) {
+    			getLogger().info("Description: " + getDescription());
+                getLogger().info("Usage: " + getCommand() + " <name of role>");
+                return;
             }
+            String roleName = args[1];
+            RoleData role = ejb.getRemoteSession(RoleAccessSessionRemote.class).findRole(roleName);
+            if (role == null) {
+            	getLogger().error("No such role \"" + roleName + "\".");
+                return;
+            }
+            ejb.getRemoteSession(RoleManagementSessionRemote.class).remove(getAdmin(cliUserName, cliPassword), role);
         } catch (Exception e) {
-            getLogger().error("", e);
             throw new ErrorAdminCommandException(e);
-        }
+		}
     }
 }

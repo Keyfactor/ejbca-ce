@@ -23,6 +23,7 @@ import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.ejbca.ui.cli.roles.ChangeRuleCommand;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,12 +43,12 @@ public class ChangeRulesTest {
     private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
     
     private AuthenticationToken internalToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ChangeRulesTest"));
-    private AdminsChangeRuleCommand command;
+    private ChangeRuleCommand command;
     
     @Before
     public void setUp() throws Exception {
         roleManagementSession.create(internalToken, ROLENAME);
-        command = new AdminsChangeRuleCommand();
+        command = new ChangeRuleCommand();
     }
     
     @After

@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.ui.cli.admins;
+package org.ejbca.ui.cli.roles;
 
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
@@ -30,7 +30,7 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  * Lists admins in a role
  * @version $Id$
  */
-public class AdminsListAdminsCommand extends BaseAdminsCommand {
+public class ListAdminsCommand extends BaseRolesCommand {
 
     @Override
     public String getSubCommand() {
