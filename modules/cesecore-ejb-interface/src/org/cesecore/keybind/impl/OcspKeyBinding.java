@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.cesecore.config.ExtendedKeyUsageConfiguration;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBindingBase;
@@ -134,10 +135,15 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
         }
         try {
             final X509Certificate x509Certificate = (X509Certificate) certificate;
-            log.debug("SubjectDN: " + CertTools.getSubjectDN(x509Certificate) + " IssuerDN: " + CertTools.getIssuerDN(x509Certificate));
-            log.debug("Key usages: " + Arrays.toString(x509Certificate.getKeyUsage()));
-            log.debug("Key usage (digitalSignature): " + x509Certificate.getKeyUsage()[0]);
-            log.debug("Key usage (keyEncipherment): " + x509Certificate.getKeyUsage()[2]);
+            if (log.isDebugEnabled()) {
+                log.debug("SubjectDN: " + CertTools.getSubjectDN(x509Certificate) + " IssuerDN: " + CertTools.getIssuerDN(x509Certificate));
+                final boolean[] ku = x509Certificate.getKeyUsage();
+                log.debug("Key usages: " + Arrays.toString(ku));
+                if (ku != null) {
+                    log.debug("Key usage (digitalSignature): " + x509Certificate.getKeyUsage()[0]);
+                    log.debug("Key usage (keyEncipherment): " + x509Certificate.getKeyUsage()[2]);
+                }
+            }
             if (x509Certificate.getExtendedKeyUsage() == null) {
                 log.debug("No EKU to verify.");
                 return false;
@@ -146,7 +152,7 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
                 log.debug("EKU: " + extendedKeyUsage + " (" +
                         ExtendedKeyUsageConfiguration.getExtendedKeyUsageOidsAndNames().get(extendedKeyUsage) + ")");
             }
-            if (!x509Certificate.getExtendedKeyUsage().contains("1.3.6.1.5.5.7.3.9")) {
+            if (!x509Certificate.getExtendedKeyUsage().contains(KeyPurposeId.id_kp_OCSPSigning.getId())) {
                 log.debug("Extended Key Usage 1.3.6.1.5.5.7.3.9 (EKU_PKIX_OCSPSIGNING) is required.");
                 return false;
             }

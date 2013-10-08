@@ -77,6 +77,7 @@ import org.bouncycastle.asn1.ocsp.RevokedInfo;
 import org.bouncycastle.asn1.x509.CRLReason;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.ocsp.BasicOCSPResp;
@@ -1294,14 +1295,13 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
      * @return true if the extended key usage for OCSP is check
      */
     private boolean isOCSPCert(X509Certificate cert) {
-        final String ocspKeyUsage = "1.3.6.1.5.5.7.3.9";
         final List<String> keyUsages;
         try {
             keyUsages = cert.getExtendedKeyUsage();
         } catch (CertificateParsingException e) {
             return false;
         }
-        return keyUsages != null && keyUsages.contains(ocspKeyUsage);
+        return keyUsages != null && keyUsages.contains(KeyPurposeId.id_kp_OCSPSigning.getId());
     }
     
     /**
@@ -1544,11 +1544,12 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         return p12;
     }
     
-    /** Create InternalKeyBindings for Ocsp signing and SSL client authentication certs */
+    /** Create InternalKeyBindings for Ocsp signing and SSL client authentication certs during ad-hoc upgrades. */
     private void createInternalKeyBindings(int cryptoTokenId, KeyStore keyStore, List<InternalKeyBindingTrustEntry> trustDefaults) throws KeyStoreException, CryptoTokenOfflineException, InternalKeyBindingNameInUseException, AuthorizationDeniedException, CertificateEncodingException, CertificateImportException, InvalidAlgorithmException {
         final Enumeration<String> aliases = keyStore.aliases();
         while (aliases.hasMoreElements()) {
             final String keyPairAlias = aliases.nextElement();
+            log.info("Found alias " + keyPairAlias + ", trying to figure out if this is something we should convert into a new KeyBinding...");
             final Certificate[] chain = keyStore.getCertificateChain(keyPairAlias);
             if (chain == null || chain.length==0) {
                 log.info("Alias " + keyPairAlias + " does not contain any certificate and will be ignored.");
@@ -1558,7 +1559,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             final String signatureAlgorithm = getSigningAlgFromAlgSelection(OcspConfiguration.getSignatureAlgorithm(), chain[0].getPublicKey());
             if (OcspKeyBinding.isOcspSigningCertificate(chain[0])) {
                 // Create the actual OcspKeyBinding
-                log.info("Alias " + keyPairAlias + " contains an OCSP certificate and will be converted.");
+                log.info("Alias " + keyPairAlias + " contains an OCSP certificate and will be converted to an OcspKeyBinding.");
                 int internalKeyBindingId = internalKeyBindingMgmtSession.createInternalKeyBinding(authenticationToken, OcspKeyBinding.IMPLEMENTATION_ALIAS,
                         "OcspKeyBinding for " + keyPairAlias, InternalKeyBindingStatus.DISABLED, null, cryptoTokenId, keyPairAlias, signatureAlgorithm,
                         getOcspKeyBindingDefaultProperties());
@@ -1568,7 +1569,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 internalKeyBindingMgmtSession.importCertificateForInternalKeyBinding(authenticationToken, internalKeyBindingId, chain[0].getEncoded());
                 internalKeyBindingMgmtSession.setStatus(authenticationToken, internalKeyBindingId, InternalKeyBindingStatus.ACTIVE);
             } else if (AuthenticationKeyBinding.isClientSSLCertificate(chain[0])) {
-                log.info("Alias " + keyPairAlias + " contains an SSL client certificate and will be converted.");
+                log.info("Alias " + keyPairAlias + " contains an SSL client certificate and will be converted to an AuthenticationKeyBinding.");
                 // We are looking for an SSL cert, use this to create an AuthenticationKeyBinding
                 int internalKeyBindingId = internalKeyBindingMgmtSession.createInternalKeyBinding(authenticationToken, AuthenticationKeyBinding.IMPLEMENTATION_ALIAS,
                         "AuthenticationKeyBinding for " + keyPairAlias, InternalKeyBindingStatus.DISABLED, null, cryptoTokenId, keyPairAlias,
