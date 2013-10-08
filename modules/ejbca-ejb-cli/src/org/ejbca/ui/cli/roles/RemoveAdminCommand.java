@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.ui.cli.admins;
+package org.ejbca.ui.cli.roles;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,7 +34,7 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  * Removes an admin
  * @version $Id$
  */
-public class AdminsRemoveAdminCommand extends BaseAdminsCommand {
+public class RemoveAdminCommand extends BaseRolesCommand {
 
     @Override
     public String getSubCommand() {

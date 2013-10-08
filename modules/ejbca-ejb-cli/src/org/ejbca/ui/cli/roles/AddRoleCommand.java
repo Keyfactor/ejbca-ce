@@ -11,24 +11,28 @@
  *                                                                       *
  *************************************************************************/
  
-package org.ejbca.ui.cli.admins;
+package org.ejbca.ui.cli.roles;
 
-import org.cesecore.roles.RoleData;
-import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
- * Remove admin role
+ * Adds a new admin role
+ * @version $Id$
  */
-public class AdminsRemoveRoleCommand extends BaseAdminsCommand {
-    
-    @Override
-    public String getSubCommand() { return "removerole"; }
-	@Override
-	public String getDescription() { return "Remove admin role"; }
+public class AddRoleCommand extends BaseRolesCommand {
 
+    @Override
+    public String getSubCommand() {
+        return "addrole";
+    }
+    @Override
+    public String getDescription() {
+        return "Adds an administrative role.";
+    }
+
+    /** @see org.ejbca.ui.cli.CliCommandPlugin */
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);
@@ -38,19 +42,14 @@ public class AdminsRemoveRoleCommand extends BaseAdminsCommand {
         
         try {
             if (args.length < 2) {
-    			getLogger().info("Description: " + getDescription());
+                getLogger().info("Description: " + getDescription());
                 getLogger().info("Usage: " + getCommand() + " <name of role>");
                 return;
             }
             String roleName = args[1];
-            RoleData role = ejb.getRemoteSession(RoleAccessSessionRemote.class).findRole(roleName);
-            if (role == null) {
-            	getLogger().error("No such role \"" + roleName + "\".");
-                return;
-            }
-            ejb.getRemoteSession(RoleManagementSessionRemote.class).remove(getAdmin(cliUserName, cliPassword), role);
+            ejb.getRemoteSession(RoleManagementSessionRemote.class).create(getAdmin(cliUserName, cliPassword), roleName);
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
-		}
+        }
     }
 }
