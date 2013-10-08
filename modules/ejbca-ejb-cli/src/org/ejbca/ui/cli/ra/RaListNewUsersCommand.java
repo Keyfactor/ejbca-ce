@@ -30,11 +30,12 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  * @see org.ejbca.core.ejb.ra.UserDataLocal
  */
 public class RaListNewUsersCommand extends BaseRaAdminCommand {
-
-	public String getMainCommand() { return MAINCOMMAND; }
+    
+    @Override
 	public String getSubCommand() { return "listnewusers"; }
-	public String getDescription() { return "List users with status 'NEW'"; }
-
+    @Override
+    public String getDescription() { return "List users with status 'NEW'"; }
+    @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);

@@ -33,6 +33,11 @@ public abstract class BaseCryptoTokenCommand extends BaseCommand {
         return "cryptotoken";
     }
 
+    @Override
+    public String[] getMainCommandAliases() {
+        return new String[]{};
+    }
+    
     /**
      * Overridable CryptoToken-specific execution methods that will parse and interpret the first parameter
      * (when present) as the name of a CryptoToken and lookup its cryptoTokenId.

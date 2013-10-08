@@ -30,10 +30,13 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class RaKeyRecoverNewestCommand extends BaseRaAdminCommand {
 
-	public String getMainCommand() { return MAINCOMMAND; }
+    @Override
 	public String getSubCommand() { return "keyrecovernewest"; }
-	public String getDescription() { return "Set status to key recovery for a user's newest certificate"; }
-
+    
+    @Override
+    public String getDescription() { return "Set status to key recovery for a user's newest certificate"; }
+    
+	@Override
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);

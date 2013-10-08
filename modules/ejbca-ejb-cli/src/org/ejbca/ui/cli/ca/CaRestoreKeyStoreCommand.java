@@ -25,15 +25,16 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
 /**
  * Restore a CA token keystore from a PKCS12 file.
  * 
- * @author Markus Kilås
  * @version $Id$
  */
 public class CaRestoreKeyStoreCommand extends BaseCaAdminCommand {
 
-	public String getMainCommand() { return MAINCOMMAND; }
+    @Override
 	public String getSubCommand() { return "restorekeystore"; }
-	public String getDescription() { return "Restore a CA token keystore from a PKCS12 file."; }
+    @Override
+    public String getDescription() { return "Restore a CA token keystore from a PKCS12 file."; }
 
+    @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);

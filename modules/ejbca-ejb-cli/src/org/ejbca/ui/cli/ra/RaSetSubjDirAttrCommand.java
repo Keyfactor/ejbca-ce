@@ -30,10 +30,12 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class RaSetSubjDirAttrCommand extends BaseRaAdminCommand {
 
-	public String getMainCommand() { return MAINCOMMAND; }
+    @Override
 	public String getSubCommand() { return "setsubjectdirattr"; }
-	public String getDescription() { return "Set the Subject Directory Attributes for a user"; }
+    @Override
+    public String getDescription() { return "Set the Subject Directory Attributes for a user"; }
 
+    @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);

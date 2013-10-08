@@ -36,7 +36,6 @@ import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.Configuration;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.ui.cli.BaseCommand;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -45,28 +44,26 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  * 
  * @version $Id: ConfigDumpCommand.java 13965 2012-02-05 14:59:12Z mikekushner $
  */
-public class CmpConfigCommand extends BaseCommand {
+public class CmpConfigCommand extends ConfigBaseCommand {
 
-    GlobalConfigurationSessionRemote globalConfigSession = ejb.getRemoteSession(GlobalConfigurationSessionRemote.class);
-    CmpConfiguration cmpConfiguration = (CmpConfiguration) globalConfigSession.getCachedConfiguration(Configuration.CMPConfigID);
+    private GlobalConfigurationSessionRemote globalConfigSession = ejb.getRemoteSession(GlobalConfigurationSessionRemote.class);
+    private CmpConfiguration cmpConfiguration = (CmpConfiguration) globalConfigSession.getCachedConfiguration(Configuration.CMPConfigID);
     
-    String DUMPALLCONFIG = "dumpall";
-    String DUMPALIASCONFIG = "dumpalias";
-    String LISTALIAS = "listalias";
-    String ADDALIAS = "addalias";
-    String REMOVEALIAS = "removealias";
-    String RENAMEALIAS = "renamealias";
-    String UPDATEONECONFIG = "updateconfig";
-    String UPLOADFILE = "uploadfile";
-    
-    public String getMainCommand() {
-        return "config";
-    }
-
+    private String DUMPALLCONFIG = "dumpall";
+    private String DUMPALIASCONFIG = "dumpalias";
+    private String LISTALIAS = "listalias";
+    private String ADDALIAS = "addalias";
+    private String REMOVEALIAS = "removealias";
+    private String RENAMEALIAS = "renamealias";
+    private String UPDATEONECONFIG = "updateconfig";
+    private String UPLOADFILE = "uploadfile";
+   
+    @Override
     public String getSubCommand() {
         return "cmp";
     }
 
+    @Override
     public String getDescription() {
         return "Edit CMP configuration";
     }
@@ -74,6 +71,7 @@ public class CmpConfigCommand extends BaseCommand {
     /**
      * Tries to fetch the server properties and dumps them to standard out
      */
+    @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
 
         try {

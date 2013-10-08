@@ -76,4 +76,12 @@ public abstract class BaseServiceCommand extends BaseCommand {
             }
         }
     }
+
+    /* (non-Javadoc)
+     * @see org.ejbca.ui.cli.CliCommandPlugin#getMainCommandAliases()
+     */
+    @Override
+    public String[] getMainCommandAliases() {
+        return new String[]{};
+    }
 }

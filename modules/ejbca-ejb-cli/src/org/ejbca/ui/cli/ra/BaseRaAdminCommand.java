@@ -23,4 +23,13 @@ import org.ejbca.ui.cli.BaseCommand;
 public abstract class BaseRaAdminCommand extends BaseCommand {
 
 	public static final String MAINCOMMAND = "ra";
+	
+    public String getMainCommand() {
+        return MAINCOMMAND;
+    }
+    
+    @Override
+    public String[] getMainCommandAliases() {
+        return new String[]{};
+    }
 }

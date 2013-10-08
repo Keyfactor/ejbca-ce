@@ -38,10 +38,11 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class CaExportProfilesCommand extends BaseCaAdminCommand {
 
-	public String getMainCommand() { return MAINCOMMAND; }
-	public String getSubCommand() { return "exportprofiles"; }
-	public String getDescription() { return "Export profiles from the database to XML-files."; }
-
+    @Override
+    public String getSubCommand() { return "exportprofiles"; }
+    @Override
+    public String getDescription() { return "Export profiles from the database to XML-files."; }
+    @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);

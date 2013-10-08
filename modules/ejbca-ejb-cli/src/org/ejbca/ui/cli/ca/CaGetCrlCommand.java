@@ -30,10 +30,12 @@ import org.ejbca.util.CliTools;
  */
 public class CaGetCrlCommand extends BaseCaAdminCommand {
 
-	public String getMainCommand() { return MAINCOMMAND; }
-	public String getSubCommand() { return "getcrl"; }
-	public String getDescription() { return "Retrieves the latest CRL from a CA"; }
+    @Override
+    public String getSubCommand() { return "getcrl"; }
+    @Override
+    public String getDescription() { return "Retrieves the latest CRL from a CA"; }
 
+    @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);

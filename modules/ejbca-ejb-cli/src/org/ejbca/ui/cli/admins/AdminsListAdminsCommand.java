@@ -32,14 +32,11 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class AdminsListAdminsCommand extends BaseAdminsCommand {
 
-    public String getMainCommand() {
-        return MAINCOMMAND;
-    }
-
+    @Override
     public String getSubCommand() {
         return "listadmins";
     }
-
+    @Override
     public String getDescription() {
         return "Lists admins in a role";
     }

@@ -21,10 +21,12 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class ImportMSCACertificates extends CaImportCertCommand {
 	
-	public String getMainCommand() { return MAINCOMMAND; }
-	public String getSubCommand() { return "importcertsms"; }
-	public String getDescription() { return "Used for importing certificates from a MS CA certificate dump"; }
+    @Override
+    public String getSubCommand() { return "importcertsms"; }
+    @Override
+    public String getDescription() { return "Used for importing certificates from a MS CA certificate dump"; }
 
+    @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
 		ArrayList<String>usedNames = new ArrayList<String>();
 		if (args.length < 3) {

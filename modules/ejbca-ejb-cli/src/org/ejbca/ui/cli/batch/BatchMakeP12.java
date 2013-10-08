@@ -76,19 +76,19 @@ public class BatchMakeP12 extends BaseCommand {
     //private final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
    // private final AuthenticationSubject subject = getAuthenticationSubject("BatchMakeP12", "BatchMakeP12");
     private Boolean usekeyrecovery = null;
-
+    @Override
     public String getMainCommand() {
         return null;
     }
-
+    @Override
     public String getSubCommand() {
         return "batch";
     }
-
+    @Override
     public String getDescription() {
         return "Generate keys and certificates for all users with status NEW";
     }
-
+    @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);
@@ -623,5 +623,10 @@ public class BatchMakeP12 extends BaseCommand {
             ejbcaHomeDir += File.separatorChar;
         }
         return ejbcaHomeDir;
+    }
+
+    @Override
+    public String[] getMainCommandAliases() {
+        return new String[]{};
     }
 }

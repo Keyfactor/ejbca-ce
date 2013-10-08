@@ -10,41 +10,26 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
+package org.ejbca.ui.cli.config;
 
-package org.ejbca.ui.cli;
+import org.ejbca.ui.cli.BaseCommand;
 
 /**
- * Classes that implement this interface automatically becomes available to the EJBCA EJB CLI if
- * they are available in the class path.
+ * Basic class for the "config" subcommands.
+ * 
+ * @version $Id$
+ *
  */
-public interface CliCommandPlugin {
-	
-	/**
-	 * Return the main/first argument used to invoke this command.
-	 */
-	public String getMainCommand();
-	
-	/**
-	 * Return the sub/second argument used to invoke this command.
-	 */
-	public String getSubCommand();
+public abstract class ConfigBaseCommand extends BaseCommand {
 
-	/**
-	 * Return a description for this command.
-	 */
-	public String getDescription();
-	
-    /**
-     * 
-     * @return an array of deprecated/unused/aliased commands to the main command. 
-     */
-    public String[] getMainCommandAliases();
-	
-	/**
-	 * Run the command.
-	 * @param args
-	 * @throws IllegalAdminCommandException
-	 * @throws ErrorAdminCommandException
-	 */
-	public void execute(String[] args) throws ErrorAdminCommandException;
+    @Override
+    public String getMainCommand() {
+        return "config";
+    }
+
+    @Override
+    public String[] getMainCommandAliases() {
+        return new String[] {};
+    }
+
 }

@@ -72,4 +72,8 @@ public class Asn1Dump extends BaseCommand {
     	}
     	
     }
+    @Override
+    public String[] getMainCommandAliases() {
+        return new String[]{};
+    }
 }

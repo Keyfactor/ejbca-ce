@@ -26,10 +26,12 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class CaExportCACommand extends BaseCaAdminCommand {
 
-	public String getMainCommand() { return MAINCOMMAND; }
+    @Override
 	public String getSubCommand() { return "exportca"; }
-	public String getDescription() { return "Exports CA as a PCKS#12 or PKCS#8 file"; }
+    @Override
+    public String getDescription() { return "Exports CA as a PCKS#12 or PKCS#8 file"; }
 
+    @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);

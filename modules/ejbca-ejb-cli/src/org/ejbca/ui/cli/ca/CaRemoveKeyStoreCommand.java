@@ -20,15 +20,16 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
 /**
  * Remove the CA token keystore from a CA.
  * 
- * @author Markus Kilås
  * @version $Id$
  */
 public class CaRemoveKeyStoreCommand extends BaseCaAdminCommand {
 
-	public String getMainCommand() { return MAINCOMMAND; }
-	public String getSubCommand() { return "removekeystore"; }
-	public String getDescription() { return "Remove the CA token keystore from a CA"; }
+    @Override
+    public String getSubCommand() { return "removekeystore"; }
+    @Override
+    public String getDescription() { return "Remove the CA token keystore from a CA"; }
 
+    @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);

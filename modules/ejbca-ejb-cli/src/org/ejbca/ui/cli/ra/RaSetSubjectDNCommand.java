@@ -25,16 +25,10 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
 /**
  * Set the SubjectDN for a user.
  *
- * @author aveen
  * @version $Id$
  */
 public class RaSetSubjectDNCommand extends BaseRaAdminCommand {
-
-	@Override
-	public String getMainCommand() {
-		return MAINCOMMAND;
-	}
-
+    
 	@Override
 	public String getSubCommand() {
 		return "setsubjectdn";

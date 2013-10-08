@@ -30,10 +30,12 @@ import org.ejbca.util.CliTools;
  */
 public class CaEditCertificateProfileCommand extends BaseCaAdminCommand {
 
-	public String getMainCommand() { return MAINCOMMAND; }
-	public String getSubCommand() { return "editcertificateprofile"; }
+    @Override
+    public String getSubCommand() { return "editcertificateprofile"; }
+    @Override
     public String getDescription() { return "Edits profile fields of an existing certificate profile in the CA."; }
 
+    @Override
     public void execute(String[] args) throws ErrorAdminCommandException {       
         if (args.length < 3) {
             getLogger().info("Description: " + getDescription());

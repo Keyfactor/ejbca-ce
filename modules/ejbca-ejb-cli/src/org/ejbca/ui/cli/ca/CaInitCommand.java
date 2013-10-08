@@ -113,18 +113,17 @@ enum CaType {
  */
 public class CaInitCommand extends BaseCaAdminCommand {
 
-    public String getMainCommand() {
-        return MAINCOMMAND;
-    }
-
+    @Override
     public String getSubCommand() {
         return "init";
     }
 
+    @Override
     public String getDescription() {
         return "Create a CA and its first CRL. Publishes the CRL and CA certificate";
     }
-
+    
+    @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
         // Install BC provider
         CryptoProviderTools.installBCProvider();

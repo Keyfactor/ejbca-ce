@@ -32,10 +32,12 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class CaListExpiredCommand extends BaseCaAdminCommand {
 
-	public String getMainCommand() { return MAINCOMMAND; }
+    @Override
 	public String getSubCommand() { return "listexpired"; }
-	public String getDescription() { return "List certificates that will expire within the given number of days"; }
+    @Override
+    public String getDescription() { return "List certificates that will expire within the given number of days"; }
 
+    @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
         if (args.length < 2) {
     		getLogger().info("Description: " + getDescription());

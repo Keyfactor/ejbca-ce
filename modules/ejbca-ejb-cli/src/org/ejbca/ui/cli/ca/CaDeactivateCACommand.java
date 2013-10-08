@@ -30,10 +30,12 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class CaDeactivateCACommand extends BaseCaAdminCommand {
 
-	public String getMainCommand() { return MAINCOMMAND; }
+    @Override
 	public String getSubCommand() { return "deactivateca"; }
-	public String getDescription() { return "Makes the specified HSM CA offline"; }
+    @Override
+    public String getDescription() { return "Makes the specified HSM CA offline"; }
 
+    @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);

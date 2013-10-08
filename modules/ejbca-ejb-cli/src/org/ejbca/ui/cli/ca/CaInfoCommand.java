@@ -32,18 +32,17 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class CaInfoCommand extends BaseCaAdminCommand {
 
-    public String getMainCommand() {
-        return MAINCOMMAND;
-    }
-
+    @Override
     public String getSubCommand() {
         return "info";
     }
 
+    @Override
     public String getDescription() {
         return "Shows info about a CA";
     }
 
+    @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);

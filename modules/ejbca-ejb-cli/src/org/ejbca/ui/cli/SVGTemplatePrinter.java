@@ -23,7 +23,6 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.ejbca.util.PrinterManager;
 
 /**
- * @author philip
  *
  * Class used as a help tool when creating hard token visual layout templates
  * @version $Id$
@@ -86,4 +85,8 @@ public class SVGTemplatePrinter extends BaseCommand {
 			System.exit(-1); // NOPMD
 		}
 	}
+    @Override
+    public String[] getMainCommandAliases() {
+        return new String[]{};
+    }
 }

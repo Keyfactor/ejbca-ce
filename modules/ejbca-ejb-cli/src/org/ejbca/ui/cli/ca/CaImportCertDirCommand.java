@@ -54,8 +54,6 @@ import org.ejbca.util.CliTools;
 public class CaImportCertDirCommand extends BaseCaAdminCommand {
 
 	@Override
-	public String getMainCommand() { return MAINCOMMAND; }
-	@Override
 	public String getSubCommand() { return "importcertdir"; }
 	@Override
 	public String getDescription() { return "Imports a directory with PEM encoded certficate file(s) to the database"; }

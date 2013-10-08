@@ -22,7 +22,6 @@ import org.apache.log4j.Logger;
 /**
  * Class used to manage the batch tool property file.
  *
- * @author Philip Vendil 2006 sep 19
  *
  * @version $Id$
  */

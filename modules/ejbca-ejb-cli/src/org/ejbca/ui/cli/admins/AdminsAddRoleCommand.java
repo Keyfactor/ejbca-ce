@@ -23,14 +23,11 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class AdminsAddRoleCommand extends BaseAdminsCommand {
 
-    public String getMainCommand() {
-        return MAINCOMMAND;
-    }
-
+    @Override
     public String getSubCommand() {
         return "addrole";
     }
-
+    @Override
     public String getDescription() {
         return "Adds an administrative role.";
     }

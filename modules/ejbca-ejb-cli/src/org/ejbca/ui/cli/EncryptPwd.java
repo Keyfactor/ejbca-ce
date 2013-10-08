@@ -41,4 +41,8 @@ public class EncryptPwd extends BaseCommand {
     		System.exit(-1); // NOPMD
     	}
     }
+    @Override
+    public String[] getMainCommandAliases() {
+        return new String[]{};
+    }
 }

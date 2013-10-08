@@ -62,13 +62,10 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
 /**
  * Imports a CRL file to the database.
  *
- * @author Anders Rundgren
  * @version $Id$
  */
 public class CaImportCRLCommand extends BaseCaAdminCommand {
 
-	@Override
-	public String getMainCommand() { return MAINCOMMAND; }
 	@Override
 	public String getSubCommand() { return "importcrl"; }
 	@Override

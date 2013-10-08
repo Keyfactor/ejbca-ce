@@ -29,10 +29,12 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class RaSetClearPwdCommand extends BaseRaAdminCommand {
 
-	public String getMainCommand() { return MAINCOMMAND; }
+    @Override
 	public String getSubCommand() { return "setclearpwd"; }
-	public String getDescription() { return "Set a clear text password for a user for batch generation"; }
-
+    @Override
+    public String getDescription() { return "Set a clear text password for a user for batch generation"; }
+    
+	@Override
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);

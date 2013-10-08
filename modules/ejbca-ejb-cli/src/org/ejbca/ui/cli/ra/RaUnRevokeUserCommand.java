@@ -37,10 +37,12 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class RaUnRevokeUserCommand extends BaseRaAdminCommand {
 
-	public String getMainCommand() { return MAINCOMMAND; }
+    @Override
 	public String getSubCommand() { return "unrevokeuser"; }
-	public String getDescription() { return "Reactivates a user's certificates if the revocation reason of certificates is 'on hold'. Does not change status of the user itself."; }
+    @Override
+    public String getDescription() { return "Reactivates a user's certificates if the revocation reason of certificates is 'on hold'. Does not change status of the user itself."; }
 
+    @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);

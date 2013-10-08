@@ -39,6 +39,11 @@ public abstract class BaseInternalKeyBindingCommand extends BaseCommand {
     public String getMainCommand() {
         return "keybind";
     }
+    
+    @Override
+    public String[] getMainCommandAliases() {
+        return new String[]{};
+    }
 
     /**
      * Overridable InternalKeyBinding-specific execution methods that will parse and interpret the first parameter

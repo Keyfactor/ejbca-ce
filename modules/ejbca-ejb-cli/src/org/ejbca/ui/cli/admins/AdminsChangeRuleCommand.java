@@ -39,14 +39,11 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class AdminsChangeRuleCommand extends BaseAdminsCommand {
 
-    public String getMainCommand() {
-        return MAINCOMMAND;
-    }
-
+    @Override
     public String getSubCommand() {
         return "changerule";
     }
-
+    @Override
     public String getDescription() {
         return "Changes an access rule";
     }

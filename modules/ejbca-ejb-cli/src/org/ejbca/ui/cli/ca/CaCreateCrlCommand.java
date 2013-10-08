@@ -25,10 +25,12 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class CaCreateCrlCommand extends BaseCaAdminCommand {
 
-	public String getMainCommand() { return MAINCOMMAND; }
+    @Override
 	public String getSubCommand() { return "createcrl"; }
+    @Override
 	public String getDescription() { return "Issues a new CRL from the CA"; }
 
+    @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);

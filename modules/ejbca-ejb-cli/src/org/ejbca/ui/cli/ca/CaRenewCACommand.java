@@ -44,7 +44,6 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  * Renews the CA certificate and optionally regenerates the key pair. This is the CLI equivalent of pushing 
  * the renewal button in EJBCA Admin Web.
  *
- * @author Markus Kilas
  * @version $Id$
  */
 public class CaRenewCACommand extends BaseCaAdminCommand {
@@ -52,10 +51,12 @@ public class CaRenewCACommand extends BaseCaAdminCommand {
 	private static final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZZ");
 	private static final String NEWLINE = System.getProperty("line.separator");
 	
-	public String getMainCommand() { return MAINCOMMAND; }
+    @Override
 	public String getSubCommand() { return "renewca"; }
-	public String getDescription() { return "Renew CA certificate and optionally regenerate keys"; }
+    @Override
+    public String getDescription() { return "Renew CA certificate and optionally regenerate keys"; }
 
+    @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);

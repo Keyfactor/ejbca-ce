@@ -36,14 +36,11 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class AdminsRemoveAdminCommand extends BaseAdminsCommand {
 
-    public String getMainCommand() {
-        return MAINCOMMAND;
-    }
-
+    @Override
     public String getSubCommand() {
         return "removeadmin";
     }
-
+    @Override
     public String getDescription() {
         return "Removes an admin";
     }

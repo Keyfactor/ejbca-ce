@@ -32,10 +32,12 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class CaListCAsCommand extends BaseCaAdminCommand {
 
-	public String getMainCommand() { return MAINCOMMAND; }
+    @Override
 	public String getSubCommand() { return "listcas"; }
-	public String getDescription() { return "Lists the names of all available CAs"; }
+    @Override
+    public String getDescription() { return "Lists the names of all available CAs"; }
 
+    @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);

@@ -27,10 +27,12 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class RaFindUserCommand extends BaseRaAdminCommand {
 
-	public String getMainCommand() { return MAINCOMMAND; }
+    @Override
 	public String getSubCommand() { return "finduser"; }
-	public String getDescription() { return "Find and show details of a user"; }
+    @Override
+    public String getDescription() { return "Find and show details of a user"; }
 
+    @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);

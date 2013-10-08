@@ -457,4 +457,9 @@ class DatabaseCliCommandStub extends DatabaseCliCommand {
         getNextBatch.setAccessible(true);
         return (List<T>) getNextBatch.invoke(this, ois, 1);
     }
+
+    @Override
+    public String[] getMainCommandAliases() {
+        return new String[]{};
+    }
 }
