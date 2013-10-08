@@ -98,6 +98,7 @@ import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAService;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceTypes;
 import org.cesecore.certificates.ca.internal.CertificateValidity;
 import org.cesecore.certificates.ca.internal.SernoGeneratorRandom;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -193,6 +194,7 @@ public class X509CA extends CA implements Serializable {
      * 
      * @throws IllegalCryptoTokenException
      */
+    @SuppressWarnings("deprecation")
     public X509CA(final HashMap<Object, Object> data, final int caId, final String subjectDN, final String name, final int status,
             final Date updateTime, final Date expireTime) {
         super(data);
@@ -200,9 +202,13 @@ public class X509CA extends CA implements Serializable {
                                    // EJBCA 3.6.1 and earlier.
         final List<ExtendedCAServiceInfo> externalcaserviceinfos = new ArrayList<ExtendedCAServiceInfo>();
         for (final Integer type : getExternalCAServiceTypes()) {
-            ExtendedCAServiceInfo info = this.getExtendedCAServiceInfo(type.intValue());
-            if (info != null) {
-                externalcaserviceinfos.add(info);
+            //Type was removed in 6.0.0. It is removed from the database in the upgrade method in this class, but it needs to be ignored 
+            //for instantiation. 
+            if (type != ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE) {
+                ExtendedCAServiceInfo info = this.getExtendedCAServiceInfo(type.intValue());
+                if (info != null) {
+                    externalcaserviceinfos.add(info);
+                }
             }
         }
         CAInfo info = new X509CAInfo(subjectDN, name, status, updateTime, getSubjectAltName(), getCertificateProfileId(), getValidity(),
@@ -1155,35 +1161,32 @@ public class X509CA extends CA implements Serializable {
      * Method to upgrade new (or existing external caservices) This method needs to be called outside the regular upgrade since the CA isn't
      * instantiated in the regular upgrade.
      */
-    @SuppressWarnings("rawtypes")
+    @SuppressWarnings({ "rawtypes", "deprecation" })
     public boolean upgradeExtendedCAServices() {
         boolean retval = false;
-        Collection<Integer> extendedServiceTypes = getExternalCAServiceTypes();
-
         // call upgrade, if needed, on installed CA services
-        for (Iterator<Integer> iterator = extendedServiceTypes.iterator(); iterator.hasNext();) {
-            Integer type = iterator.next();
-            ExtendedCAService service = getExtendedCAService(type);
-            if (service != null) {
-                if (Float.compare(service.getLatestVersion(), service.getVersion()) != 0) {
-                    retval = true;
-                    service.upgrade();
-                    setExtendedCAServiceData(service.getExtendedCAServiceInfo().getType(), (HashMap)service.saveData());
-                } else if (service.isUpgraded()) {
-                    // Also return true if the service was automatically upgraded by a UpgradeableDataHashMap.load, which calls upgrade automagically. 
-                    retval = true;
-                    setExtendedCAServiceData(service.getExtendedCAServiceInfo().getType(), (HashMap)service.saveData());
-                }
+        for (Integer type : getExternalCAServiceTypes()) {
+            if (type == ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE) {
+                //This type has been removed, so remove it from any CAs it's been added to as well.
+                data.remove(type);
+                retval = true;
             } else {
-            	log.error("Extended service is null, can not upgrade service of type: "+type);
+                ExtendedCAService service = getExtendedCAService(type);
+                if (service != null) {
+                    if (Float.compare(service.getLatestVersion(), service.getVersion()) != 0) {
+                        retval = true;
+                        service.upgrade();
+                        setExtendedCAServiceData(service.getExtendedCAServiceInfo().getType(), (HashMap) service.saveData());
+                    } else if (service.isUpgraded()) {
+                        // Also return true if the service was automatically upgraded by a UpgradeableDataHashMap.load, which calls upgrade automagically. 
+                        retval = true;
+                        setExtendedCAServiceData(service.getExtendedCAServiceInfo().getType(), (HashMap) service.saveData());
+                    }
+                } else {
+                    log.error("Extended service is null, can not upgrade service of type: " + type);
+                }
             }
         }
-
-        // TODO: in EJBCA we created external CA services (XKMS and CMS) if they did not exist here.
-        // We don't want to do that here because we want the CA object toi be independent of the "user defined" Extended services.
-        // So where will we do that in EJBCA? Is it needed, was that not only needed for an old upgrade when those services were introduced?
-        // Since EJBCA from 4.0 can only be upgraded from 3.11.x where those services already exists, it is not needed right?
-
         return retval;
     }
 
