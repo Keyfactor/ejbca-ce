@@ -833,7 +833,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         // reloadTokenAndChainCache cancels old timers and adds a new timer
         reloadOcspSigningCache();
         if (log.isTraceEnabled()) {
-            log.trace("<timeoutHandler, next timeout: "+timer.getNextTimeout().toString());
+            log.trace("<timeoutHandler");
         }
     }
 
