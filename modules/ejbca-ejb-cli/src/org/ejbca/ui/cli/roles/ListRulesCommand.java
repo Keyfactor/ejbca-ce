@@ -10,44 +10,60 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
-package org.ejbca.ui.cli.admins;
 
-import org.cesecore.roles.management.RoleManagementSessionRemote;
+package org.ejbca.ui.cli.roles;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.cesecore.authorization.rules.AccessRuleData;
+import org.cesecore.roles.RoleData;
+import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
- * Adds a new admin role
+ * Lists access rules for a role
+ * 
  * @version $Id$
  */
-public class AdminsAddRoleCommand extends BaseAdminsCommand {
+public class ListRulesCommand extends BaseRolesCommand {
 
     @Override
     public String getSubCommand() {
-        return "addrole";
+        return "listrules";
     }
     @Override
     public String getDescription() {
-        return "Adds an administrative role.";
+        return "Lists access rules for a role";
     }
 
-    /** @see org.ejbca.ui.cli.CliCommandPlugin */
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);
         } catch (CliUsernameException e) {
             return;
         }
-        
         try {
             if (args.length < 2) {
                 getLogger().info("Description: " + getDescription());
                 getLogger().info("Usage: " + getCommand() + " <name of role>");
                 return;
             }
-            String roleName = args[1];
-            ejb.getRemoteSession(RoleManagementSessionRemote.class).create(getAdmin(cliUserName, cliPassword), roleName);
+            String groupName = args[1];
+            RoleData role = ejb.getRemoteSession(RoleAccessSessionRemote.class).findRole(groupName);
+            if (role == null) {
+                getLogger().error("No such role \"" + groupName + "\".");
+                return;
+            }
+            List<AccessRuleData> list = new ArrayList<AccessRuleData>(role.getAccessRules().values());
+            Collections.sort(list);
+            for (AccessRuleData accessRule : list) {
+                getLogger().info(
+                        getParsedAccessRule(getAdmin(cliUserName, cliPassword), accessRule.getAccessRuleName()) + " " + accessRule.getInternalState().getName() + " "
+                                + (accessRule.getRecursive() ? "RECURSIVE" : ""));
+            }
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }

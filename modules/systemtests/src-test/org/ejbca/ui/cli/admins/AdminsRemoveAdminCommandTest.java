@@ -33,6 +33,7 @@ import org.cesecore.roles.RoleData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.ui.cli.roles.RemoveAdminCommand;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,7 +53,7 @@ public class AdminsRemoveAdminCommandTest {
 
     private AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("AdminsRemoveAdminCommandTest"));
 
-    private AdminsRemoveAdminCommand command = new AdminsRemoveAdminCommand();
+    private RemoveAdminCommand command = new RemoveAdminCommand();
     private RoleData role;
 
     @Before

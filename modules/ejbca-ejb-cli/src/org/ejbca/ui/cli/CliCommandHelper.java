@@ -48,13 +48,14 @@ public class CliCommandHelper {
                 final String mainCommand = cliCommandPlugin.getMainCommand();
                 final String subCommand = cliCommandPlugin.getSubCommand();
                 final String description = cliCommandPlugin.getDescription();
-                if (/*mainCommand == null || mainCommand.trim().length()==0 ||*/subCommand == null || subCommand.trim().length() == 0
+                final String[] commmandAliases = cliCommandPlugin.getMainCommandAliases();
+                if (subCommand == null || subCommand.trim().length() == 0
                         || description == null || description.trim().length() == 0) {
                     log.warn("Will not register plugin class " + command.getName() + ": Required getter returned an empty String.");
                     continue;
                 }
                 // log.debug(" main: " + mainCommand + " sub: " + subCommand + " description: " + description);
-                commandList.add(new CliCommand(mainCommand, subCommand, description, (Class<CliCommandPlugin>) command));
+                commandList.add(new CliCommand(mainCommand, commmandAliases, subCommand, description, (Class<CliCommandPlugin>) command));
                 if (!mainCommands.contains(mainCommand)) {
                     mainCommands.add(mainCommand);
                 }
@@ -79,13 +80,29 @@ public class CliCommandHelper {
         List<CliCommand> subTargets = new ArrayList<CliCommand>();
         List<String> subCommands = new ArrayList<String>();
         for (CliCommand cliCommand : commandList) {
-            if (args.length > 0 && cliCommand.getMainCommand() != null && cliCommand.getMainCommand().equalsIgnoreCase(args[0])) {
-                if (args.length > 1 && cliCommand.getSubCommand().equalsIgnoreCase(args[1])) {
-                    executeCommand(cliCommand.getCommandClass(), args, true);
-                    return;
+            //Check for the main command
+            if (args.length > 0 && cliCommand.getMainCommand() != null) {
+                boolean isMainCommand = cliCommand.getMainCommand().equalsIgnoreCase(args[0]);
+                //Check if one of the aliases was used.
+                boolean isAliasCommand = false;
+                for (String alias : cliCommand.getCommandAliases()) {
+                    if (alias.equalsIgnoreCase(args[0])) {
+                        isAliasCommand = true;                               
+                        break;
+                    }
                 }
-                subTargets.add(cliCommand);
-                subCommands.add(cliCommand.getSubCommand());
+                if (isMainCommand || isAliasCommand) {
+                    if (args.length > 1 && cliCommand.getSubCommand().equalsIgnoreCase(args[1])) {
+                        if(isAliasCommand) {
+                            log.error("WARNING: The command <" + args[0] + "> is deprecated and will soon be removed." + " Please change to using"
+                                    + " the command <"+ cliCommand.getMainCommand() + "> instead.");
+                        }
+                        executeCommand(cliCommand.getCommandClass(), args, true);
+                        return;
+                    }
+                    subTargets.add(cliCommand);
+                    subCommands.add(cliCommand.getSubCommand());
+                }
             }
         }
         // If we didn't execute something by now the command wasn't found
