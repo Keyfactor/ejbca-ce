@@ -828,12 +828,12 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void timeoutHandler(Timer timer) {
         if (log.isTraceEnabled()) {
-            log.trace(">timeoutHandler: " + timer.getInfo().toString() + ", " + timer.getNextTimeout().toString());
+            log.trace(">timeoutHandler: " + timer.getInfo().toString());
         }
         // reloadTokenAndChainCache cancels old timers and adds a new timer
         reloadOcspSigningCache();
         if (log.isTraceEnabled()) {
-            log.trace("<timeoutHandler");
+            log.trace("<timeoutHandler, next timeout: "+timer.getNextTimeout().toString());
         }
     }
 
