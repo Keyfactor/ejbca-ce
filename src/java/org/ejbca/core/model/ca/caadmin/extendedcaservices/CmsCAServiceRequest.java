@@ -17,6 +17,7 @@ import java.io.Serializable;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequest;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceTypes;
 
 /**
  * Class used when requesting CMS related services from a CA.  

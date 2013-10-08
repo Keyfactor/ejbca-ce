@@ -1,7 +1,14 @@
-package org.ejbca.core.model.ca.caadmin.extendedcaservices;
+package org.cesecore.certificates.ca.extendedservices;
+
+/**
+ * 
+ * @version $Id$
+ *
+ */
 
 public class ExtendedCAServiceTypes {
 
+    @Deprecated //Removed in EJBCA 6.0.0, and retained to support migration. Remove once support for upgrading from 4.0.x is dropped. 
 	public static final int TYPE_OCSPEXTENDEDSERVICE   = 1; 	
 	public static final int TYPE_XKMSEXTENDEDSERVICE   = 2; 
 	public static final int TYPE_CMSEXTENDEDSERVICE = 3; 

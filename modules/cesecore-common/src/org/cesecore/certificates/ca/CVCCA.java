@@ -40,6 +40,7 @@ import org.bouncycastle.cert.X509CRLHolder;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceTypes;
 import org.cesecore.certificates.ca.internal.CertificateValidity;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.request.RequestMessage;
@@ -94,11 +95,15 @@ public class CVCCA extends CA implements Serializable {
 	public CVCCA(HashMap<Object, Object> data, int caId, String subjectDN, String name, int status, Date updateTime) {
 		super(data);
 		final List<ExtendedCAServiceInfo> externalcaserviceinfos = new ArrayList<ExtendedCAServiceInfo>();
-		for (final Integer externalCAServiceType : getExternalCAServiceTypes()) {
-			final ExtendedCAServiceInfo info = this.getExtendedCAServiceInfo(externalCAServiceType.intValue());
-			if (info != null) {
-				externalcaserviceinfos.add(info);  	    			
-			}
+        for (final Integer externalCAServiceType : getExternalCAServiceTypes()) {
+            //Type was removed in 6.0.0. It is removed from the database in the upgrade method in this class, but it needs to be ignored 
+            //for instantiation. 
+            if (externalCAServiceType != ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE) {
+                final ExtendedCAServiceInfo info = this.getExtendedCAServiceInfo(externalCAServiceType.intValue());
+                if (info != null) {
+                    externalcaserviceinfos.add(info);
+                }
+            }
 		}
 		final CAInfo info = new CVCCAInfo(subjectDN, name, status, updateTime, getCertificateProfileId(),  
 				getValidity(), getExpireTime(), getCAType(), getSignedBy(), getCertificateChain(),
@@ -476,9 +481,17 @@ public class CVCCA extends CA implements Serializable {
 	 * This method needs to be called outside the regular upgrade
 	 * since the CA isn't instantiated in the regular upgrade.
 	 */
-	public boolean upgradeExtendedCAServices() {
-		// Nothing to upgrade yet
-		return false;
+	@SuppressWarnings("deprecation")
+    public boolean upgradeExtendedCAServices() {
+	    boolean retval = false;
+	    for (Integer type : getExternalCAServiceTypes()) {
+	        if (type == ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE) {
+                //This type has been removed, so remove it from any CAs it's been added to as well.
+                data.remove(type);
+                retval = true;
+            }
+	    }
+		return retval;
 	}
 
 	@Override

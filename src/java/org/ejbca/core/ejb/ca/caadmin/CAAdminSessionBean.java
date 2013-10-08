@@ -95,6 +95,7 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceNotActiveE
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequest;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestException;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceTypes;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateInfo;
@@ -152,7 +153,6 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.approvalrequests.ActivateCATokenApprovalRequest;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceTypes;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.protocol.certificatestore.CertificateCacheFactory;
@@ -900,9 +900,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     ca.initExtendedService(cryptoToken, type, ca);
                     final List<Certificate> extcacertificate = new ArrayList<Certificate>();
                     final ExtendedCAServiceInfo info = ca.getExtendedCAServiceInfo(type);
-                    if (type == ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE) {
-                        // The OCSP certificate is the same as the certificate singing certificate
-                    }
                     if (type == ExtendedCAServiceTypes.TYPE_XKMSEXTENDEDSERVICE) {
                         extcacertificate.add(((XKMSCAServiceInfo) info).getXKMSSignerCertificatePath().get(0));
                     }
