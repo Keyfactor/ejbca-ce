@@ -17,6 +17,8 @@ import java.io.Serializable;
 import java.security.cert.Certificate;
 import java.util.List;
 
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceTypes;
+
 /**
  * Class used mostly when creating service. Also used when info about the services 
  * is needed

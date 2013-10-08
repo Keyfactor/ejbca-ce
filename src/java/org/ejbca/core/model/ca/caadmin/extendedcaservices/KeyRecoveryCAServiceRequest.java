@@ -17,6 +17,7 @@ import java.io.Serializable;
 import java.security.KeyPair;
 
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequest;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceTypes;
 
 
 /**

@@ -16,6 +16,7 @@ package org.ejbca.core.model.ca.caadmin.extendedcaservices;
 import java.io.Serializable;
 
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequest;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceTypes;
 
 
 /**
