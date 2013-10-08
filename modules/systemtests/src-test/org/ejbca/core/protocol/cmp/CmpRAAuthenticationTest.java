@@ -240,6 +240,10 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
     private void testIssueConfirmRevoke(X509Certificate caCertificate, String pbeSecret, String keyId, boolean reverseIssuerDN) throws Exception {
         LOG.trace(">testIssueConfirmRevoke");
 
+        cmpConfiguration.setAuthenticationModule(configAlias, CmpConfiguration.AUTHMODULE_HMAC);
+        cmpConfiguration.setAuthenticationParameters(configAlias, pbeSecret);
+        globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration, Configuration.CMPConfigID);
+        
         String issuerDN = CertTools.getSubjectDN(caCertificate);
         if(reverseIssuerDN) {
             issuerDN = CertTools.reverseDN(issuerDN); 

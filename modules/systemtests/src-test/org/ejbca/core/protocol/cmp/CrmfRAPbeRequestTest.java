@@ -447,7 +447,8 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         assertNotNull(resp);
         assertTrue(resp.length > 0);
-        checkCmpFailMessage(resp, "Iteration count can not exceed 10000", 23, reqId, PKIFailureInfo.badMessageCheck); // We expect a FailInfo.BAD_MESSAGE_CHECK
+        checkCmpFailMessage(resp, "Iteration count can not exceed 10000", 23, reqId, PKIFailureInfo.badMessageCheck, 
+                                                    PKIFailureInfo.incorrectData); // We expect a FailInfo.BAD_MESSAGE_CHECK
     }
 
     @Test
@@ -511,7 +512,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             resp = sendCmpHttp(ba, 200, cmpAlias);
             checkCmpResponseGeneral(resp, cainfo.getSubjectDN(), userdata.getDN(), newCACert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
             checkCmpFailMessage(resp, "The request is already awaiting approval.", CmpPKIBodyConstants.REVOCATIONRESPONSE, 0,
-                    ResponseStatus.FAILURE.getValue());
+                    ResponseStatus.FAILURE.getValue(), PKIFailureInfo.incorrectData);
             reason = checkRevokeStatus(cainfo.getSubjectDN(), cert.getSerialNumber());
             assertEquals(reason, RevokedCertInfo.NOT_REVOKED);
             // Approve revocation and verify success
@@ -533,7 +534,8 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             ba = bao.toByteArray();
             resp = sendCmpHttp(ba, 200, cmpAlias);
             checkCmpResponseGeneral(resp, cainfo.getSubjectDN(), userdata.getDN(), newCACert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-            checkCmpFailMessage(resp, "Already revoked.", CmpPKIBodyConstants.REVOCATIONRESPONSE, 0, ResponseStatus.FAILURE.getValue());
+            checkCmpFailMessage(resp, "Already revoked.", CmpPKIBodyConstants.REVOCATIONRESPONSE, 0, ResponseStatus.FAILURE.getValue(), 
+                                                                    PKIFailureInfo.incorrectData);
         } finally {
             // Delete user
             endEntityManagementSession.deleteUser(admin, username);

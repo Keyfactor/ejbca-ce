@@ -67,6 +67,7 @@ import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
+import org.ejbca.core.protocol.cmp.authentication.CMPAuthenticationException;
 import org.ejbca.core.protocol.cmp.authentication.HMACAuthenticationModule;
 import org.ejbca.core.protocol.cmp.authentication.ICMPAuthenticationModule;
 import org.ejbca.core.protocol.cmp.authentication.VerifyPKIMessage;
@@ -145,18 +146,14 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		final VerifyPKIMessage messageVerifyer = new VerifyPKIMessage(ca.getCAInfo(), this.confAlias, admin, caSession, endEntityAccessSession, certificateStoreSession, 
 		        authorizationSession, endEntityProfileSession, authenticationProviderSession, endEntityManagementSession, this.cmpConfiguration);
 		ICMPAuthenticationModule authenticationModule = null;
-		if(messageVerifyer.verify(msg.getMessage(), null, authenticated)) {
+		try {
+		    messageVerifyer.verify(msg.getMessage(), null, authenticated);
 		    authenticationModule = messageVerifyer.getUsedAuthenticationModule();
-		} else {
-		    String errMsg = "";
-		    if(messageVerifyer.getErrorMessage() != null) {
-		        errMsg = messageVerifyer.getErrorMessage();
-		    } else {
-		        errMsg = "Unrecognized authentication modules";
-		    }
-		    LOG.error(errMsg);
-		    return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, errMsg);
+		} catch(CMPAuthenticationException e) {
+		    LOG.info(e.getMessage(), e);
+		    return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getLocalizedMessage());
 		}
+		
 		if(authenticationModule instanceof HMACAuthenticationModule) {
 		    final HMACAuthenticationModule hmacmodule = (HMACAuthenticationModule) authenticationModule;
 		    owfAlg = hmacmodule.getCmpPbeVerifyer().getOwfOid();
@@ -265,10 +262,8 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		    final String errMsg = INTRES.getLocalizedMessage("cmp.errorauthmessage");
 		    LOG.error(errMsg);
 		    failText = errMsg;
-		    if (authenticationModule.getErrorMessage() != null) {
-		        failText = authenticationModule.getErrorMessage();
-		    }
 		}
+		
 		if (LOG.isDebugEnabled()) {
 		    LOG.debug("Creating a PKI revocation message response");
 		}
