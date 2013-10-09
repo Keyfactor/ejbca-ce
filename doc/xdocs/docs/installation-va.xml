@@ -57,7 +57,7 @@ flexibility, audit trail of management operations and (optional) administration 
   </note>
   <p>
 The VA is configured using the same configuration files as EJBCA. Files of special interest to a installation acting as a VA are
-ocsp.properties, crlstore.properties and certstore.properties.
+va.properties, ocsp.properties, crlstore.properties and certstore.properties.
   </p><p>
 For the certificate and CRL store service the sample file should be enough to understand how to set it up.
 For the OCSP responder service there is separate <a href="installation-ocsp.html">setup instructions</a> for the Standalone OCSP installation.

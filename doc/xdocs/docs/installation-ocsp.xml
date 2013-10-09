@@ -22,7 +22,7 @@
 <p>
 You should first read the <a href="installation-va.html">Standalone VA installation</a> that specifies the general configuration for a VA.
 </p><p>
-All default options for the OCSP responders OCSP behavior is set in conf/ocsp.properties. All options are documented in this file.
+All default options for the OCSP responders OCSP behavior is set in conf/ocsp.properties and conf/va.properties. All options are documented in this file.
 </p>
 <p>You may also want to configure conf/cesecore.properties for "Secure audit log configuration", i.e. if you want to log to database or file. 
 The database audit log is only used for security events, i.e. access control and configuration change events when using the GUI or CLI.</p>
