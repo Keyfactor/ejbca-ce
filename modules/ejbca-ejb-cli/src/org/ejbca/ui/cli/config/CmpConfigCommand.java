@@ -91,7 +91,7 @@ public class CmpConfigCommand extends ConfigBaseCommand {
         String subsubcommand = args[1];
         if(StringUtils.equalsIgnoreCase(subsubcommand, DUMPALLCONFIG)) {
             try {
-                Properties properties = globalConfigSession.getAllProperties(getAdmin(cliUserName, cliPassword), Configuration.CMPConfigID);
+                Properties properties = globalConfigSession.getAllProperties(getAuthenticationToken(cliUserName, cliPassword), Configuration.CMPConfigID);
                 Enumeration<Object> enumeration = properties.keys();
                 while (enumeration.hasMoreElements()) {
                     String key = (String) enumeration.nextElement();
@@ -150,7 +150,7 @@ public class CmpConfigCommand extends ConfigBaseCommand {
             
             cmpConfiguration.addAlias(alias);
             try {
-                globalConfigSession.saveConfiguration(getAdmin(cliUserName, cliPassword), cmpConfiguration, Configuration.CMPConfigID);
+                globalConfigSession.saveConfiguration(getAuthenticationToken(cliUserName, cliPassword), cmpConfiguration, Configuration.CMPConfigID);
                 getLogger().info("Added CMP alias: " + alias);
             } catch (AuthorizationDeniedException e) {
                 getLogger().info("Failed to add alias '" + alias + "': " + e.getLocalizedMessage());
@@ -174,7 +174,7 @@ public class CmpConfigCommand extends ConfigBaseCommand {
             
             cmpConfiguration.removeAlias(alias);
             try {
-                globalConfigSession.saveConfiguration(getAdmin(cliUserName, cliPassword), cmpConfiguration, Configuration.CMPConfigID);
+                globalConfigSession.saveConfiguration(getAuthenticationToken(cliUserName, cliPassword), cmpConfiguration, Configuration.CMPConfigID);
                 getLogger().info("Removed CMP alias: " + alias);
             } catch (AuthorizationDeniedException e) {
                 getLogger().info("Failed to remove alias '" + alias + "': " + e.getLocalizedMessage());
@@ -199,7 +199,7 @@ public class CmpConfigCommand extends ConfigBaseCommand {
             
             cmpConfiguration.renameAlias(oldalias, newalias);
             try {
-                globalConfigSession.saveConfiguration(getAdmin(cliUserName, cliPassword), cmpConfiguration, Configuration.CMPConfigID);
+                globalConfigSession.saveConfiguration(getAuthenticationToken(cliUserName, cliPassword), cmpConfiguration, Configuration.CMPConfigID);
                 getLogger().info("Renamed CMP alias '" + oldalias + "' to '" + newalias + "'");
             } catch (AuthorizationDeniedException e) {
                 getLogger().info("Failed to rename alias '" + oldalias + "' to '" + newalias + "': " + e.getLocalizedMessage());
@@ -227,7 +227,7 @@ public class CmpConfigCommand extends ConfigBaseCommand {
             getLogger().info("Configuration was: " + key + "=" + cmpConfiguration.getValue(key, alias));            
             cmpConfiguration.setValue(key, value, alias);
             try {
-                globalConfigSession.saveConfiguration(getAdmin(cliUserName, cliPassword), cmpConfiguration, Configuration.CMPConfigID);
+                globalConfigSession.saveConfiguration(getAuthenticationToken(cliUserName, cliPassword), cmpConfiguration, Configuration.CMPConfigID);
                 getLogger().info("Configuration updated: " + key + "=" + cmpConfiguration.getValue(key, alias));
             } catch (AuthorizationDeniedException e) {
                 getLogger().info("Failed to update configuration: " + e.getLocalizedMessage());
@@ -292,7 +292,7 @@ public class CmpConfigCommand extends ConfigBaseCommand {
         // Save the new configurations.
         if(populated) {
             try {
-                globalConfigSession.saveConfiguration(getAdmin(cliUserName, cliPassword), cmpConfiguration, Configuration.CMPConfigID);
+                globalConfigSession.saveConfiguration(getAuthenticationToken(cliUserName, cliPassword), cmpConfiguration, Configuration.CMPConfigID);
                 getLogger().info("New configurations saved.");
             } catch (AuthorizationDeniedException e) {
                 getLogger().error("Failed to save configuration from file: " + e.getLocalizedMessage());
@@ -322,7 +322,7 @@ public class CmpConfigCommand extends ConfigBaseCommand {
         getLogger().info("The alias should be an existing CMP configration alias");
         getLogger().info("The key could be any of the following:");
         
-        Collection<String> canames = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAvailableCANames(getAdmin(cliUserName, cliPassword));
+        Collection<String> canames = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAvailableCANames(getAuthenticationToken(cliUserName, cliPassword));
         String existingCas = "";
         Iterator<String> itrname = canames.iterator();
         while (itrname.hasNext()) {
@@ -341,7 +341,7 @@ public class CmpConfigCommand extends ConfigBaseCommand {
         getLogger().info("    " + CmpConfiguration.CONFIG_RA_NAMEGENERATIONPOSTFIX + " - possible values: ${RANDOM} | any alphanumeric string");
         getLogger().info("    " + CmpConfiguration.CONFIG_RA_PASSWORDGENPARAMS + " - possible values: random | any alphanumeric string");
         
-        Collection<Integer> endentityprofileids = ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getAuthorizedEndEntityProfileIds(getAdmin(cliUserName, cliPassword));
+        Collection<Integer> endentityprofileids = ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getAuthorizedEndEntityProfileIds(getAuthenticationToken(cliUserName, cliPassword));
         Map<Integer, String> endentityprofileidtonamemap = ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfileIdToNameMap();
         String existingEeps = "";
         Iterator<Integer> itr = endentityprofileids.iterator();
@@ -350,7 +350,7 @@ public class CmpConfigCommand extends ConfigBaseCommand {
         }
         getLogger().info("    " + CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE + " - possible values: " + existingEeps);
         
-        Collection<Integer> caids = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCAs(getAdmin(cliUserName, cliPassword));
+        Collection<Integer> caids = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCAs(getAuthenticationToken(cliUserName, cliPassword));
         Collection<Integer> certprofileids = ejb.getRemoteSession(CertificateProfileSessionRemote.class).getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_ENDENTITY, caids);
         Map<Integer, String> certificateprofileidtonamemap = ejb.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfileIdToNameMap();
         String existingCps = "";

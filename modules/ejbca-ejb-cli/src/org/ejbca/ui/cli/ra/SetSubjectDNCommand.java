@@ -23,11 +23,11 @@ import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
- * Set the SubjectDN for a user.
+ * Set the SubjectDN for an end entity.
  *
  * @version $Id$
  */
-public class RaSetSubjectDNCommand extends BaseRaAdminCommand {
+public class SetSubjectDNCommand extends BaseRaCommand {
     
 	@Override
 	public String getSubCommand() {
@@ -36,9 +36,14 @@ public class RaSetSubjectDNCommand extends BaseRaAdminCommand {
 	
 	@Override
 	public String getDescription() {
-		return "Set or update the SubjectDN for a user";
+		return "Set or update the SubjectDN for an end entity";
 	}
 
+    @Override
+    public String[] getSubCommandAliases() {
+        return new String[]{};
+    }
+	
 	@Override
 	public void execute(String[] args) throws ErrorAdminCommandException {
 	    try {
@@ -67,15 +72,15 @@ public class RaSetSubjectDNCommand extends BaseRaAdminCommand {
             	getLogger().error("SubjectDN must be supplied.");
             	return;
             }
-            getLogger().info("Setting subjectDN '" + subjectDN + "' for user " + username);
+            getLogger().info("Setting subjectDN '" + subjectDN + "' for end entity with username " + username);
             try {
-            	EndEntityInformation uservo = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAdmin(cliUserName, cliPassword), username);
+            	EndEntityInformation uservo = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAuthenticationToken(cliUserName, cliPassword), username);
             	uservo.setDN(subjectDN);
-            	ejb.getRemoteSession(EndEntityManagementSessionRemote.class).changeUser(getAdmin(cliUserName, cliPassword), uservo, false);
+            	ejb.getRemoteSession(EndEntityManagementSessionRemote.class).changeUser(getAuthenticationToken(cliUserName, cliPassword), uservo, false);
             } catch (AuthorizationDeniedException e) {
-            	getLogger().error("Not authorized to change userdata.");
+            	getLogger().error("Not authorized to change end entity.");
             } catch (UserDoesntFullfillEndEntityProfile e) {
-            	getLogger().error("Given userdata doesn't fullfill end entity profile. : " + e.getMessage());
+            	getLogger().error("Given end entity doesn't fullfill end entity profile. : " + e.getMessage());
             }
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);

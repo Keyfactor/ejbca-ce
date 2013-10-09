@@ -65,7 +65,7 @@ public class RemoveAdminCommand extends BaseRolesCommand {
                 return;
             }
             String caName = args[2];
-            CAInfo caInfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), caName);
+            CAInfo caInfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(cliUserName, cliPassword), caName);
             if (caInfo == null) {
                 getLogger().error("No such CA \"" + caName + "\".");
                 return;
@@ -81,7 +81,7 @@ public class RemoveAdminCommand extends BaseRolesCommand {
                 return;
             }
             String matchValue = args[5];
-            int caId = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), caName).getCAId();
+            int caId = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(cliUserName, cliPassword), caName).getCAId();
             AccessUserAspectData accessUserAspectData = new AccessUserAspectData(roleName, caId, matchWith, matchType, matchValue);
             
             for (AccessUserAspectData currentAdminEntity : role.getAccessUsers().values()) {
@@ -90,7 +90,7 @@ public class RemoveAdminCommand extends BaseRolesCommand {
                     Collection<AccessUserAspectData> adminEntities = new ArrayList<AccessUserAspectData>();
                     adminEntities.add(accessUserAspectData);
                    
-                    ejb.getRemoteSession(RoleManagementSessionRemote.class).removeSubjectsFromRole(getAdmin(cliUserName, cliPassword), role, adminEntities);
+                    ejb.getRemoteSession(RoleManagementSessionRemote.class).removeSubjectsFromRole(getAuthenticationToken(cliUserName, cliPassword), role, adminEntities);
                    
                     return;
                 }

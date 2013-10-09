@@ -70,21 +70,21 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * System test class for RA revokeuser and unrevokeuser commands
+ * System test class for RA revokeendentity and unrevokeendentity commands
  * 
  * @version $Id$
  */
-public class RaRevokeUserCommandTest extends CaTestCase {
+public class RevokeEndEntityCommandTest extends CaTestCase {
 
     private static final String USER_NAME = "RaRevokeUserCommandTest_user1";
-    private static final String[] HAPPY_PATH_REVOKE_ONHOLD_ARGS = { "revokeuser", USER_NAME, String.valueOf(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) };
-    private static final String[] HAPPY_PATH_REVOKE_PERMANENT_ARGS = { "unrevokeuser", USER_NAME, String.valueOf(RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE) };
-    private static final String[] HAPPY_PATH_UNREVOKE_ARGS = { "unrevokeuser", USER_NAME, String.valueOf(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) };
+    private static final String[] HAPPY_PATH_REVOKE_ONHOLD_ARGS = { "revokeendentity", USER_NAME, String.valueOf(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) };
+    private static final String[] HAPPY_PATH_REVOKE_PERMANENT_ARGS = { "unrevokeendentity", USER_NAME, String.valueOf(RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE) };
+    private static final String[] HAPPY_PATH_UNREVOKE_ARGS = { "unrevokeendentity", USER_NAME, String.valueOf(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) };
 
     private int caid = getTestCAId();
 
-    private RaRevokeUserCommand command0;
-    private RaUnRevokeUserCommand command1;
+    private RevokeEndEntityCommand command0;
+    private UnRevokeEndEntityCommand command1;
     private AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("RaRevokeUserCommandTest"));
 
     private EndEntityManagementSessionRemote eeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
@@ -95,8 +95,8 @@ public class RaRevokeUserCommandTest extends CaTestCase {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        command0 = new RaRevokeUserCommand();
-        command1 = new RaUnRevokeUserCommand();
+        command0 = new RevokeEndEntityCommand();
+        command1 = new UnRevokeEndEntityCommand();
     }
 
     @After

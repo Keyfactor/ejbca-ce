@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.ui.cli.admins;
+package org.ejbca.ui.cli.roles;
 
 import static org.junit.Assert.assertNotNull;
 

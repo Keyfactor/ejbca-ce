@@ -47,7 +47,7 @@ public class AddRoleCommand extends BaseRolesCommand {
                 return;
             }
             String roleName = args[1];
-            ejb.getRemoteSession(RoleManagementSessionRemote.class).create(getAdmin(cliUserName, cliPassword), roleName);
+            ejb.getRemoteSession(RoleManagementSessionRemote.class).create(getAuthenticationToken(cliUserName, cliPassword), roleName);
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }

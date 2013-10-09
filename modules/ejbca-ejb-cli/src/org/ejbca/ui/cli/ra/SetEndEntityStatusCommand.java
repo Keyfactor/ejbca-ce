@@ -13,28 +13,35 @@
  
 package org.ejbca.ui.cli.ra;
 
-import java.util.Collection;
-import java.util.Iterator;
-
-import org.cesecore.certificates.endentity.EndEntityConstants;
-import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
- * List users with status NEW in the database.
+ * Changes status for an end entity in the database, status is defined in
+ * org.cesecore.certificates.endentity.EndEntityConstants
  *
  * @version $Id$
  *
  * @see org.ejbca.core.ejb.ra.UserDataLocal
  */
-public class RaListNewUsersCommand extends BaseRaAdminCommand {
+public class SetEndEntityStatusCommand extends BaseRaCommand {
+    
+    private static final String COMMAND = "setendentitystatus";
+    private static final String OLD_COMMAND = "setuserstatus";
     
     @Override
-	public String getSubCommand() { return "listnewusers"; }
+	public String getSubCommand() { return COMMAND; }
+
     @Override
-    public String getDescription() { return "List users with status 'NEW'"; }
+	public String getDescription() { return "Change status for an end entity"; }
+
+    @Override
+    public String[] getSubCommandAliases() {
+        return new String[]{OLD_COMMAND};
+    }
+    
     @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
@@ -44,13 +51,19 @@ public class RaListNewUsersCommand extends BaseRaAdminCommand {
         }
         
         try {
-            Collection<EndEntityInformation> coll = ejb.getRemoteSession(EndEntityManagementSessionRemote.class).findAllUsersByStatus(getAdmin(cliUserName, cliPassword), EndEntityConstants.STATUS_NEW);
-            Iterator<EndEntityInformation> iter = coll.iterator();
-            while (iter.hasNext()) {
-            	EndEntityInformation data = iter.next();
-                getLogger().info("New User: " + data.getUsername() + ", \"" + data.getDN() +
-                    "\", \"" + data.getSubjectAltName() + "\", " + data.getEmail() + ", " +
-                    data.getStatus() + ", " + data.getType().getHexValue() + ", " + data.getTokenType());
+            if (args.length < 3) {
+    			getLogger().info("Description: " + getDescription());
+            	getLogger().info("Usage: " + getCommand() + " <username> <status>");
+            	getLogger().info(" Status: NEW=10; FAILED=11; INITIALIZED=20; INPROCESS=30; GENERATED=40; HISTORICAL=50");
+                return;
+            }
+            String username = args[1];
+            int status = Integer.parseInt(args[2]);
+            try {
+                ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAuthenticationToken(cliUserName, cliPassword), username, status);
+                getLogger().info("New status for end entity " + username + " is " + status);
+            } catch (AuthorizationDeniedException e) {
+            	getLogger().error("Not authorized to change end entity.");
             }
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);

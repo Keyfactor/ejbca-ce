@@ -28,16 +28,21 @@ import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
- * Set status to key recovery for a user's certificate.
+ * Set status to key recovery for an end entity's certificate.
  *
  * @version $Id$
  */
-public class RaKeyRecoverCommand extends BaseRaAdminCommand {
+public class KeyRecoveryCommand extends BaseRaCommand {
 
     @Override
 	public String getSubCommand() { return "keyrecover"; }
     @Override
-	public String getDescription() { return "Set status to key recovery for a user's certificate"; }
+	public String getDescription() { return "Set status to key recovery for an end entity's certificate"; }
+    
+    @Override
+    public String[] getSubCommandAliases() {
+        return new String[]{};
+    }
 
     @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
@@ -75,12 +80,12 @@ public class RaKeyRecoverCommand extends BaseRaAdminCommand {
             	getLogger().error("User is already marked for recovery.");
             	return;                     
             }
-            EndEntityInformation userdata = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAdmin(cliUserName, cliPassword), username);
+            EndEntityInformation userdata = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAuthenticationToken(cliUserName, cliPassword), username);
             if(userdata == null){
             	getLogger().error("The user doesn't exist.");
             	return;
             }
-            if (ejb.getRemoteSession(EndEntityManagementSessionRemote.class).prepareForKeyRecovery(getAdmin(cliUserName, cliPassword), userdata.getUsername(), userdata.getEndEntityProfileId(), cert)) {
+            if (ejb.getRemoteSession(EndEntityManagementSessionRemote.class).prepareForKeyRecovery(getAuthenticationToken(cliUserName, cliPassword), userdata.getUsername(), userdata.getEndEntityProfileId(), cert)) {
                 getLogger().info("Keys corresponding to given certificate has been marked for recovery.");                           
             } else {
                 getLogger().info("Failed to mark keys corresponding to given certificate for recovery.");                           

@@ -101,7 +101,7 @@ public class CaEditCertificateProfileCommand extends BaseCaAdminCommand {
                 if (!fieldEditor.listGetOrSet(listOnly, getOnly, name, field, value, profile)) {
                     
                     getLogger().info("Storing modified profile '"+name+"'...");
-                    ejb.getRemoteSession(CertificateProfileSessionRemote.class).changeCertificateProfile(getAdmin(cliUserName, cliPassword), name, profile);
+                    ejb.getRemoteSession(CertificateProfileSessionRemote.class).changeCertificateProfile(getAuthenticationToken(cliUserName, cliPassword), name, profile);
                     // Verify our new value
                     getLogger().info("Reading modified value for verification...");
                     final CertificateProfile modprof = ejb.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfile(name);

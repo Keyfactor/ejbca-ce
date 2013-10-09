@@ -48,7 +48,7 @@ public class RemoveRoleCommand extends BaseRolesCommand {
             	getLogger().error("No such role \"" + roleName + "\".");
                 return;
             }
-            ejb.getRemoteSession(RoleManagementSessionRemote.class).remove(getAdmin(cliUserName, cliPassword), role);
+            ejb.getRemoteSession(RoleManagementSessionRemote.class).remove(getAuthenticationToken(cliUserName, cliPassword), role);
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
 		}

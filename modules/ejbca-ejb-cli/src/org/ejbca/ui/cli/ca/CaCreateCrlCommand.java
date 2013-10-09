@@ -63,7 +63,7 @@ public class CaCreateCrlCommand extends BaseCaAdminCommand {
               }
               CryptoProviderTools.installBCProvider();
               // createCRL prints info about crl generation
-              String issuerName = getIssuerDN(getAdmin(cliUserName, cliPassword), caname);
+              String issuerName = getIssuerDN(getAuthenticationToken(cliUserName, cliPassword), caname);
               if (issuerName != null) {
                   createCRL(cliUserName, cliPassword, issuerName, deltaCRL);
               } else {

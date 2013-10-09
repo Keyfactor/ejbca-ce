@@ -42,28 +42,35 @@ import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
- * Adds a user to the database.
+ * Adds an end entity to the database.
  * 
  * @version $Id$
  */
-public class RaAddUserCommand extends BaseRaAdminCommand {
+public class AddEndEntityCommand extends BaseRaCommand {
 
     private static final String USERGENERATED = "USERGENERATED";
     private static final String P12 = "P12";
     private static final String JKS = "JKS";
     private static final String PEM = "PEM";
+    private static final String OLD_SUBCOMMAND = "adduser";
+    private static final String SUBCOMMAND = "addendentity";
 
     private final String[] softtokennames = { USERGENERATED, P12, JKS, PEM };
     private final int[] softtokenids = { SecConst.TOKEN_SOFT_BROWSERGEN, SecConst.TOKEN_SOFT_P12, SecConst.TOKEN_SOFT_JKS, SecConst.TOKEN_SOFT_PEM };
 
     @Override
     public String getSubCommand() {
-        return "adduser";
+        return SUBCOMMAND;
+    }
+    
+    @Override
+    public String[] getSubCommandAliases() {
+        return new String[]{OLD_SUBCOMMAND};
     }
 
     @Override
     public String getDescription() {
-        return "Adds a user";
+        return "Adds an end entity";
     }
 
     @Override
@@ -83,9 +90,9 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             HashMap<Integer, String> hardtokenprofileidtonamemap = null;
 
             if (usehardtokens) {
-                hardtokenissueraliases = (String[]) ejb.getRemoteSession(HardTokenSessionRemote.class).getHardTokenIssuerAliases(getAdmin(cliUserName, cliPassword)).toArray(new String[0]);
+                hardtokenissueraliases = (String[]) ejb.getRemoteSession(HardTokenSessionRemote.class).getHardTokenIssuerAliases(getAuthenticationToken(cliUserName, cliPassword)).toArray(new String[0]);
 
-                authorizedhardtokenprofiles = ejb.getRemoteSession(HardTokenSessionRemote.class).getAuthorizedHardTokenProfileIds(getAdmin(cliUserName, cliPassword));
+                authorizedhardtokenprofiles = ejb.getRemoteSession(HardTokenSessionRemote.class).getAuthorizedHardTokenProfileIds(getAuthenticationToken(cliUserName, cliPassword));
                 hardtokenprofileidtonamemap = ejb.getRemoteSession(HardTokenSessionRemote.class).getHardTokenProfileIdToNameMap();
             }
 
@@ -96,12 +103,12 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
 
             if ((args.length < 9) || (args.length > 12)) {
                 getLogger().info("Description: " + getDescription());
-                Collection<Integer> caids = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCAs(getAdmin(cliUserName, cliPassword));
-                Collection<String> canames = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAvailableCANames(getAdmin(cliUserName, cliPassword));
+                Collection<Integer> caids = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCAs(getAuthenticationToken(cliUserName, cliPassword));
+                Collection<String> canames = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAvailableCANames(getAuthenticationToken(cliUserName, cliPassword));
                 Collection<Integer> certprofileids = ejb.getRemoteSession(CertificateProfileSessionRemote.class).getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_ENDENTITY, caids);
                 Map<Integer, String> certificateprofileidtonamemap = ejb.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfileIdToNameMap();
 
-                Collection<Integer> endentityprofileids = ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getAuthorizedEndEntityProfileIds(getAdmin(cliUserName, cliPassword));
+                Collection<Integer> endentityprofileids = ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getAuthorizedEndEntityProfileIds(getAuthenticationToken(cliUserName, cliPassword));
                 Map<Integer, String> endentityprofileidtonamemap = ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfileIdToNameMap();
 
                 if (usehardtokens) {
@@ -161,7 +168,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                     }
                 }
                 getLogger().info("Existing hardtoken issuers  : " + existingHtis);
-                getLogger().info("If the user does not have a SubjectAltName or an email address,");
+                getLogger().info("If the end entity does not have a SubjectAltName or an email address,");
                 getLogger().info("or you want the password to be auto-generated use the value 'null'.");
                 return;
             }
@@ -187,7 +194,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
 
             int caid = 0;
             try {
-                caid = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), caname).getCAId();
+                caid = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(cliUserName, cliPassword), caname).getCAId();
             } catch (CADoesntExistsException e) {
                 // NOPMD: let it be 0, we will print a suitable error message below
             }            
@@ -255,7 +262,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             }
 
             if (!error) {
-                getLogger().info("Trying to add user:");
+                getLogger().info("Trying to add end entity:");
                 getLogger().info("Username: " + username);
                 getLogger().info("Password: <password hidden>");
                 getLogger().info("DN: " + dn);
@@ -276,7 +283,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                     email = null;
                 }
                 try {
-                    ejb.getRemoteSession(EndEntityManagementSessionRemote.class).addUser(getAdmin(cliUserName, cliPassword), username, password, dn, subjectaltname, email, false, profileid, certificatetypeid, type, tokenid,
+                    ejb.getRemoteSession(EndEntityManagementSessionRemote.class).addUser(getAuthenticationToken(cliUserName, cliPassword), username, password, dn, subjectaltname, email, false, profileid, certificatetypeid, type, tokenid,
                             hardtokenissuerid, caid);
                     getLogger().info("User '" + username + "' has been added.");
                     getLogger().info("Note: If batch processing should be possible, also use 'ra setclearpwd " + username + " <pwd>'.");

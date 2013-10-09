@@ -30,18 +30,27 @@ import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
- * Reactivates user's certificates if the revocation reason of user certificates is 'on hold'.
- * Does not change status of the user itself.
+ * Reactivates end entity's certificates if the revocation reason of user certificates is 'on hold'.
+ * Does not change status of the end entity itself.
  *
  * @version $Id$
  */
-public class RaUnRevokeUserCommand extends BaseRaAdminCommand {
+public class UnRevokeEndEntityCommand extends BaseRaCommand {
+
+    private static final String COMMAND = "unrevokeendentity";
+    private static final String OLD_COMMAND = "unrevokeuser";
+    
+    @Override
+	public String getSubCommand() { return COMMAND; }
 
     @Override
-	public String getSubCommand() { return "unrevokeuser"; }
-    @Override
-    public String getDescription() { return "Reactivates a user's certificates if the revocation reason of certificates is 'on hold'. Does not change status of the user itself."; }
+    public String getDescription() { return "Reactivates an end entity's certificates if the revocation reason of certificates is 'on hold'. Does not change status of the end entity itself."; }
 
+    @Override
+    public String[] getSubCommandAliases() {
+        return new String[]{OLD_COMMAND};
+    }
+    
     @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
@@ -59,7 +68,7 @@ public class RaUnRevokeUserCommand extends BaseRaAdminCommand {
                 return;
             }
             String username = args[1];
-            EndEntityInformation data = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAdmin(cliUserName, cliPassword), username);
+            EndEntityInformation data = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAuthenticationToken(cliUserName, cliPassword), username);
             getLogger().info("Found user:");
             getLogger().info("username=" + data.getUsername());
             getLogger().info("dn=\"" + data.getDN() + "\"");
@@ -75,9 +84,9 @@ public class RaUnRevokeUserCommand extends BaseRaAdminCommand {
             				cert.getSerialNumber()).revocationReason == RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) {
             			foundCertificateOnHold = true;
             			try {
-            				ejb.getRemoteSession(EndEntityManagementSessionRemote.class).revokeCert(getAdmin(cliUserName, cliPassword), cert.getSerialNumber(), cert.getIssuerDN().toString(), RevokedCertInfo.NOT_REVOKED);
+            				ejb.getRemoteSession(EndEntityManagementSessionRemote.class).revokeCert(getAuthenticationToken(cliUserName, cliPassword), cert.getSerialNumber(), cert.getIssuerDN().toString(), RevokedCertInfo.NOT_REVOKED);
                         } catch (AlreadyRevokedException e) {
-                        	getLogger().error("The user was already reactivated while the request executed.");
+                        	getLogger().error("The end entity was already reactivated while the request executed.");
                         } catch (ApprovalException e) {
                         	getLogger().error("Reactivation already requested.");
                         } catch (WaitingForApprovalException e) {
@@ -86,13 +95,13 @@ public class RaUnRevokeUserCommand extends BaseRaAdminCommand {
             		}
             	}
             	if (!foundCertificateOnHold) {
-            		getLogger().error("No certificates with status 'On hold' were found for this user.");
+            		getLogger().error("No certificates with status 'On hold' were found for this end entity.");
             	} else {
-	                data = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAdmin(cliUserName, cliPassword), username);
+	                data = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAuthenticationToken(cliUserName, cliPassword), username);
 	                getLogger().info("New status=" + data.getStatus());
             	}
             } catch (AuthorizationDeniedException e) {
-            	getLogger().error("Not authorized to reactivate user.");
+            	getLogger().error("Not authorized to reactivate end entity.");
             }
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);

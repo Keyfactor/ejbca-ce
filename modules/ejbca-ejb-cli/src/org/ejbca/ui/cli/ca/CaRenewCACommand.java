@@ -73,7 +73,7 @@ public class CaRenewCACommand extends BaseCaAdminCommand {
             
         	// Get the CAs info and id
         	final String caname = args[1];
-        	CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), caname);
+        	CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(cliUserName, cliPassword), caname);
         	
         	boolean regenerateKeys = false;
         	String authCode = null;
@@ -140,9 +140,9 @@ public class CaRenewCACommand extends BaseCaAdminCommand {
                     System.console().readPassword();
     		}
             
-    		ejb.getRemoteSession(CAAdminSessionRemote.class).renewCA(getAdmin(cliUserName, cliPassword), cainfo.getCAId(), regenerateKeys, customNotBefore, regenerateKeys);
+    		ejb.getRemoteSession(CAAdminSessionRemote.class).renewCA(getAuthenticationToken(cliUserName, cliPassword), cainfo.getCAId(), regenerateKeys, customNotBefore, regenerateKeys);
             getLogger().info("New certificate created:");
-            cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), caname);
+            cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(cliUserName, cliPassword), caname);
             final Object newCertificate = cainfo.getCertificateChain().iterator().next();
             if (newCertificate instanceof Certificate) {
             	printCertificate((Certificate) newCertificate);

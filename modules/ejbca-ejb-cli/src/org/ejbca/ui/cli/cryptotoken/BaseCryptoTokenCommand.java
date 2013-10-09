@@ -29,6 +29,11 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
 public abstract class BaseCryptoTokenCommand extends BaseCommand {
 
     @Override
+    public String[] getSubCommandAliases() {
+        return new String[]{};
+    }
+    
+    @Override
     public String getMainCommand() {
         return "cryptotoken";
     }
@@ -78,7 +83,7 @@ public abstract class BaseCryptoTokenCommand extends BaseCommand {
     
     /** @return the EJB CLI admin */
     protected AuthenticationToken getAdmin() {
-        return getAdmin(cliUserName, cliPassword);
+        return getAuthenticationToken(cliUserName, cliPassword);
     }
 
     /** @return a deobfuscated version of the parameter or use input if the parameter equals "null" */

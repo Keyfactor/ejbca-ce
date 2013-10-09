@@ -70,7 +70,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
             String inpath = args[1];
             Integer caid = null;
             if (args.length > 2) {
-            	CAInfo ca = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), args[2]);
+            	CAInfo ca = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(cliUserName, cliPassword), args[2]);
             	if (ca != null) {
             		caid = ca.getCAId();
             	} else {
@@ -195,7 +195,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                             // The constant ALLCAS will not be searched for among available CAs
                                             try {
                                                 if (currentCAInt.intValue() != SecConst.ALLCAS) {                                               
-                                                    EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), currentCAInt);
+                                                    EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(cliUserName, cliPassword), currentCAInt);
                                                 }
                                                 availableCAs += (availableCAs.equals("") ? "" : ";" ) + currentCA; // No Exception means CA exists
                                             } catch (CADoesntExistsException e) {
@@ -222,7 +222,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         eprofile.setValue(EndEntityProfile.AVAILCAS, 0, availableCAs);
                                         eprofile.setValue(EndEntityProfile.DEFAULTCA, 0, defaultCA);
                                         try{                                        
-                                            ejb.getRemoteSession(EndEntityProfileSessionRemote.class).addEndEntityProfile(getAdmin(cliUserName, cliPassword),profileid,profilename,eprofile);
+                                            ejb.getRemoteSession(EndEntityProfileSessionRemote.class).addEndEntityProfile(getAuthenticationToken(cliUserName, cliPassword),profileid,profilename,eprofile);
                                             getLogger().info("Added entity profile '"+profilename+"' to database.");
                                         }catch(EndEntityProfileExistsException eepee){  
                                         	getLogger().error("Error adding entity profile '"+profilename+"' to database.");
@@ -238,7 +238,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                             // If the CA is not ANYCA and the CA does not exist, remove it from the profile before import
                                         	if (currentCA != CertificateProfile.ANYCA)  {
                                         	    try {
-                                        	        EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), currentCA);
+                                        	        EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(cliUserName, cliPassword), currentCA);
                                         	    } catch (CADoesntExistsException e) {
                                                     casToRemove.add(currentCA);
                                         	    }
@@ -282,11 +282,11 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         try{
                                         	if (profileid == -1) {
                                         		// id already existed, we need to create a new one
-                                        		profileid = ejb.getRemoteSession(CertificateProfileSessionRemote.class).addCertificateProfile(getAdmin(cliUserName, cliPassword),profilename,cprofile);
+                                        		profileid = ejb.getRemoteSession(CertificateProfileSessionRemote.class).addCertificateProfile(getAuthenticationToken(cliUserName, cliPassword),profilename,cprofile);
                                         		// make a mapping from the old id (that was already in use) to the new one so we can change end entity profiles
                                                 certificateProfileIdMapping.put(oldprofileid, profileid);
                                         	} else {
-                                        		ejb.getRemoteSession(CertificateProfileSessionRemote.class).addCertificateProfile(getAdmin(cliUserName, cliPassword),profileid,profilename,cprofile);
+                                        		ejb.getRemoteSession(CertificateProfileSessionRemote.class).addCertificateProfile(getAuthenticationToken(cliUserName, cliPassword),profileid,profilename,cprofile);
                                         	}
                                         	// Make a mapping from the new to the new id, so we have a mapping if the profile id did not change at all
                                             certificateProfileIdMapping.put(profileid, ejb.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfileId(profilename));

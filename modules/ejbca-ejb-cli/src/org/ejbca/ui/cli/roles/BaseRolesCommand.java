@@ -43,6 +43,11 @@ public abstract class BaseRolesCommand extends BaseCommand {
         return new String[]{OLD_COMMAND};
     }
     
+    @Override
+    public String[] getSubCommandAliases() {
+        return new String[]{};
+    }
+    
     protected String getParsedAccessRule(AuthenticationToken authenticationToken, String resource) throws NumberFormatException, CADoesntExistsException, AuthorizationDeniedException {
         // Check if it is a profile rule, then replace profile id with profile
         // name.

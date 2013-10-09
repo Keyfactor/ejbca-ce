@@ -22,17 +22,23 @@ import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
- * Set the (hashed) password for a user in the database.
+ * Set the (hashed) password for an end entity in the database.
  *
  * @version $Id$
  */
-public class RaSetPwdCommand extends BaseRaAdminCommand {
+public class SetPasswordCommand extends BaseRaCommand {
 
 	@Override
 	public String getSubCommand() { return "setpwd"; }
+	
 	@Override
-	public String getDescription() { return "Set a (hashed) password for a user"; }
+	public String getDescription() { return "Set a (hashed) password for an end entity"; }
 
+    @Override
+    public String[] getSubCommandAliases() {
+        return new String[]{};
+    }
+	
 	@Override
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
@@ -51,13 +57,13 @@ public class RaSetPwdCommand extends BaseRaAdminCommand {
             String password = args[2];
             getLogger().info("Setting password (hashed only) " + password + " for user " + username);
             try {
-                ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setPassword(getAdmin(cliUserName, cliPassword), username, password);
+                ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setPassword(getAuthenticationToken(cliUserName, cliPassword), username, password);
             } catch (AuthorizationDeniedException e) {
             	getLogger().error("Not authorized to change userdata.");
             } catch (UserDoesntFullfillEndEntityProfile e) {
-            	getLogger().error("Given userdata doesn't fullfill profile.");
+            	getLogger().error("Given end entity doesn't fullfill profile.");
             } catch (FinderException e) {
-            	getLogger().error("User '"+username+"' does not exist.");
+            	getLogger().error("End entity with username '"+username+"' does not exist.");
             }
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);

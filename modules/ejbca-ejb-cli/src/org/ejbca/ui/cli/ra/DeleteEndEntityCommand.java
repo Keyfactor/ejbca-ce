@@ -23,20 +23,28 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.CliTools;
 
 /**
- * Deletes a user from the database.
+ * Deletes an end entity from the database.
  * 
  * @version $Id$
  */
-public class RaDelUserCommand extends BaseRaAdminCommand {
+public class DeleteEndEntityCommand extends BaseRaCommand {
 
+    private static final String OLD_COMMAND = "deluser";
+    private static final String COMMAND = "delendentity";
+    
     @Override
     public String getSubCommand() {
-        return "deluser";
+        return COMMAND;
+    }
+    
+    @Override
+    public String[] getSubCommandAliases() {
+        return new String[]{OLD_COMMAND};
     }
 
     @Override
     public String getDescription() {
-        return "Deletes a user";
+        return "Deletes an and entity";
     }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
@@ -54,33 +62,35 @@ public class RaDelUserCommand extends BaseRaAdminCommand {
         if (args.length < 2) {
             getLogger().info("Description: " + getDescription());
             getLogger().info("Usage: " + getCommand() + " [-force] <username>");
-            getLogger().info(" -force   Don't ask if the user has been revoked.");
+            getLogger().info(" -force   Don't ask if the end entity has been revoked.");
             return;
         }
         try {
             String username = args[1];
             int inp = 121;
             if (!force) {
-                getLogger().info("Have you revoked the user [y/N]? ");
+                getLogger().info("Have you revoked the end entity [y/N]? ");
                 inp = System.in.read();
             }
             if ((inp == 121) || (inp == 89)) {
                 try {
-                    ejb.getRemoteSession(EndEntityManagementSessionRemote.class).deleteUser(getAdmin(cliUserName, cliPassword), username);
-                    getLogger().info("Deleted user " + username);
+                    ejb.getRemoteSession(EndEntityManagementSessionRemote.class).deleteUser(getAuthenticationToken(cliUserName, cliPassword), username);
+                    getLogger().info("Deleted end entity with username: " + username);
                 } catch (AuthorizationDeniedException e) {
-                    getLogger().error("Not authorized to remove user.");
+                    getLogger().error("Not authorized to remove end entity.");
                 }
             } else {
                 getLogger().info("Delete aborted!");
                 getLogger().info(
-                        "Please run '" + new RaRevokeUserCommand().getMainCommand() + " " + new RaRevokeUserCommand().getSubCommand() + " "
+                        "Please run '" + new RevokeEndEntityCommand().getMainCommand() + " " + new RevokeEndEntityCommand().getSubCommand() + " "
                                 + username + "'.");
             }
         } catch (NotFoundException e) {
-            getLogger().error("No such user.");
+            getLogger().error("No such end entity.");
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }
     }
+
+
 }

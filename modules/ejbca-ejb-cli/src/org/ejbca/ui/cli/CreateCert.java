@@ -67,7 +67,7 @@ public class CreateCert extends BaseCommand {
 				return;
 			}
 			// Call signsession to create a certificate
-			ResponseMessage resp = ejb.getRemoteSession(SignSessionRemote.class).createCertificate(getAdmin(cliUserName, cliPassword), req, X509ResponseMessage.class, null);
+			ResponseMessage resp = ejb.getRemoteSession(SignSessionRemote.class).createCertificate(getAuthenticationToken(cliUserName, cliPassword), req, X509ResponseMessage.class, null);
 			byte[] respBytes = resp.getResponseMessage();
 			// Convert to PEM
 			Certificate cert = CertTools.getCertfromByteArray(respBytes);
@@ -85,6 +85,11 @@ public class CreateCert extends BaseCommand {
 	}
     @Override
     public String[] getMainCommandAliases() {
+        return new String[]{};
+    }
+    
+    @Override
+    public String[] getSubCommandAliases() {
         return new String[]{};
     }
 }

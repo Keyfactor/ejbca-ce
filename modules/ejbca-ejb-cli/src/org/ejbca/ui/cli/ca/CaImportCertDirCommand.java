@@ -109,7 +109,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 				throw new Exception(usernameFilter + "is not a valid option. Currently only \"DN\", \"CN\" and \"FILE\" username-source are implemented");
 			}
 			// Fetch CA info
-			final CAInfo caInfo = getCAInfo(getAdmin(cliUserName, cliPassword), caName);
+			final CAInfo caInfo = getCAInfo(getAuthenticationToken(cliUserName, cliPassword), caName);
 			final X509Certificate cacert = (X509Certificate) caInfo.getCertificateChain().iterator().next();
 			final String issuer = CertTools.stringToBCDNString(cacert.getSubjectDN().toString());
 			getLogger().info("CA: " + issuer);
@@ -285,7 +285,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 		}
 		getLogger().debug("Loading/updating user " + username);
 		// Check if username already exists.
-		EndEntityInformation userdata = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAdmin(cliUserName, cliPassword), username);
+		EndEntityInformation userdata = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAuthenticationToken(cliUserName, cliPassword), username);
 		if (userdata==null) {
 			// Add a "user" to map this certificate to
 			final String subjectAltName = CertTools.getSubjectAlternativeName(certificate);
@@ -294,22 +294,22 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 			        EndEntityConstants.STATUS_GENERATED, new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId,
 					certificateProfileId, null, null, SecConst.TOKEN_SOFT_BROWSERGEN, SecConst.NO_HARDTOKENISSUER, null);
 			userdata.setPassword("foo123");
-			ejb.getRemoteSession(EndEntityManagementSessionRemote.class).addUser(getAdmin(cliUserName, cliPassword), userdata, false);
+			ejb.getRemoteSession(EndEntityManagementSessionRemote.class).addUser(getAuthenticationToken(cliUserName, cliPassword), userdata, false);
 			getLogger().info("User '" + username + "' has been added.");
 		}
 		// addUser always adds the user with STATUS_NEW (even if we specified otherwise)
 		// We always override the userdata with the info from the certificate even if the user existed.
 		userdata.setStatus(EndEntityConstants.STATUS_GENERATED);
-		ejb.getRemoteSession(EndEntityManagementSessionRemote.class).changeUser(getAdmin(cliUserName, cliPassword), userdata, false);
+		ejb.getRemoteSession(EndEntityManagementSessionRemote.class).changeUser(getAuthenticationToken(cliUserName, cliPassword), userdata, false);
 		getLogger().info("User '" + username + "' has been updated.");
 		// Finally import the certificate and revoke it if necessary
-		ejb.getRemoteSession(CertificateStoreSessionRemote.class).storeCertificate(getAdmin(cliUserName, cliPassword),
+		ejb.getRemoteSession(CertificateStoreSessionRemote.class).storeCertificate(getAuthenticationToken(cliUserName, cliPassword),
 		                                           certificate, username, fingerprint,
 		                                           CertificateConstants.CERT_ACTIVE,
 		                                           CertificateConstants.CERTTYPE_ENDENTITY, 
 		                                           certificateProfileId, null, now.getTime());
 		if (status == CertificateConstants.CERT_REVOKED) {
-			ejb.getRemoteSession(EndEntityManagementSessionRemote.class).revokeCert(getAdmin(cliUserName, cliPassword), certificate.getSerialNumber(), issuer, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+			ejb.getRemoteSession(EndEntityManagementSessionRemote.class).revokeCert(getAuthenticationToken(cliUserName, cliPassword), certificate.getSerialNumber(), issuer, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
 		}
 		getLogger().info("Certificate with serial '" + CertTools.getSerialNumberAsString(certificate) + "' has been added.");
 		return STATUS_OK;

@@ -61,8 +61,8 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
             	getLogger().error("Error: '"+outpath+"' is not a directory.");
                 return;
             }
-            Collection<Integer> certprofids = ejb.getRemoteSession(CertificateProfileSessionRemote.class).getAuthorizedCertificateProfileIds(0, EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCAs(getAdmin(cliUserName, cliPassword)));                                               
-			Collection<Integer> endentityprofids = ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getAuthorizedEndEntityProfileIds(getAdmin(cliUserName, cliPassword));
+            Collection<Integer> certprofids = ejb.getRemoteSession(CertificateProfileSessionRemote.class).getAuthorizedCertificateProfileIds(0, EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCAs(getAuthenticationToken(cliUserName, cliPassword)));                                               
+			Collection<Integer> endentityprofids = ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getAuthorizedEndEntityProfileIds(getAuthenticationToken(cliUserName, cliPassword));
             
 			getLogger().info("Exporting non-fixed certificate profiles: ");
             Iterator<Integer> iter = certprofids.iterator();

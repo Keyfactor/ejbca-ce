@@ -71,7 +71,7 @@ public class CaActivateCACommand extends BaseCaAdminCommand {
             }
             CryptoProviderTools.installBCProvider();
             // Get the CAs info and id
-            CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), caname);
+            CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(cliUserName, cliPassword), caname);
             if (cainfo == null) {
                 getLogger().error("Error: CA " + caname + " cannot be found");
                 return;
@@ -79,15 +79,15 @@ public class CaActivateCACommand extends BaseCaAdminCommand {
             // Check that CA has correct status.
             final int cryptoTokenId = cainfo.getCAToken().getCryptoTokenId();
             final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = ejb.getRemoteSession(CryptoTokenManagementSessionRemote.class);
-            final boolean tokenOffline = !cryptoTokenManagementSession.isCryptoTokenStatusActive(getAdmin(cliUserName, cliPassword), cryptoTokenId);
+            final boolean tokenOffline = !cryptoTokenManagementSession.isCryptoTokenStatusActive(getAuthenticationToken(cliUserName, cliPassword), cryptoTokenId);
             if (cainfo.getStatus()==CAConstants.CA_OFFLINE || tokenOffline) {
                 try {
                     if (cainfo.getStatus() == CAConstants.CA_OFFLINE) {
-                        ejb.getRemoteSession(CAAdminSessionRemote.class).activateCAService(getAdmin(cliUserName, cliPassword), cainfo.getCAId());
+                        ejb.getRemoteSession(CAAdminSessionRemote.class).activateCAService(getAuthenticationToken(cliUserName, cliPassword), cainfo.getCAId());
                         getLogger().info("CA Service activated.");
                     }
                     if (tokenOffline) {
-                        cryptoTokenManagementSession.activate(getAdmin(cliUserName, cliPassword), cryptoTokenId, authorizationcode.toCharArray());
+                        cryptoTokenManagementSession.activate(getAuthenticationToken(cliUserName, cliPassword), cryptoTokenId, authorizationcode.toCharArray());
                         getLogger().info("CA's CryptoToken activated.");
                     }
                 } catch (CryptoTokenAuthenticationFailedException e) {

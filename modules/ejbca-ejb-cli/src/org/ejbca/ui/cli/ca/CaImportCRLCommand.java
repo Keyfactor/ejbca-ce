@@ -97,7 +97,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
 			final boolean strict = args[3].equalsIgnoreCase(STRICT_OP);
 			final boolean adaptive = args[3].equalsIgnoreCase(ADAPTIVE_OP);
 			// Fetch CA and related info
-			final CAInfo cainfo = getCAInfo(getAdmin(cliUserName, cliPassword), caname);
+			final CAInfo cainfo = getCAInfo(getAuthenticationToken(cliUserName, cliPassword), caname);
 			final X509Certificate cacert = (X509Certificate) cainfo.getCertificateChain().iterator().next();
 			final String issuer = CertTools.stringToBCDNString(cacert.getSubjectDN().toString());
 			getLogger().info("CA: " + issuer);
@@ -143,7 +143,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
 	                    
 	                    final String fingerprint = CertTools.getFingerprintAsString(certificate);
 	                    // We add all certificates that does not have a user already to "missing_user_name"
-	                    final EndEntityInformation missingUserEndEntityInformation = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAdmin(cliUserName, cliPassword), missing_user_name);
+	                    final EndEntityInformation missingUserEndEntityInformation = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAuthenticationToken(cliUserName, cliPassword), missing_user_name);
 	                    if (missingUserEndEntityInformation == null) {
 	                        // Add the user and change status to REVOKED
 	                        getLogger().debug("Loading/updating user " + missing_user_name);
@@ -152,12 +152,12 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
 	                                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null,
 	                                SecConst.TOKEN_SOFT_BROWSERGEN, SecConst.NO_HARDTOKENISSUER, null);
 	                        userdataNew.setPassword("foo123");
-	                        ejb.getRemoteSession(EndEntityManagementSessionRemote.class).addUser(getAdmin(cliUserName, cliPassword), userdataNew, false);
+	                        ejb.getRemoteSession(EndEntityManagementSessionRemote.class).addUser(getAuthenticationToken(cliUserName, cliPassword), userdataNew, false);
 	                        getLogger().info("User '" + missing_user_name + "' has been added.");
-	                        ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAdmin(cliUserName, cliPassword), missing_user_name, EndEntityConstants.STATUS_REVOKED);
+	                        ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAuthenticationToken(cliUserName, cliPassword), missing_user_name, EndEntityConstants.STATUS_REVOKED);
 	                        getLogger().info("User '" + missing_user_name + "' has been updated.");
 	                    }
-	                    ejb.getRemoteSession(CertificateStoreSessionRemote.class).storeCertificate(getAdmin(cliUserName, cliPassword), certificate, missing_user_name, fingerprint,
+	                    ejb.getRemoteSession(CertificateStoreSessionRemote.class).storeCertificate(getAuthenticationToken(cliUserName, cliPassword), certificate, missing_user_name, fingerprint,
 	                            CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY, 
 	                            CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, new Date().getTime());
 	                    getLogger().info("Dummy certificate  '" + serialHex + "' has been stored.");
@@ -172,7 +172,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
 	                try {
 	                    int reason = getCRLReasonValue(entry);
 	                    getLogger().info("Reason code: "+reason);
-	                    ejb.getRemoteSession(EndEntityManagementSessionRemote.class).revokeCert(getAdmin(cliUserName, cliPassword), serialNr, entry.getRevocationDate(), issuer, reason, false);
+	                    ejb.getRemoteSession(EndEntityManagementSessionRemote.class).revokeCert(getAuthenticationToken(cliUserName, cliPassword), serialNr, entry.getRevocationDate(), issuer, reason, false);
 	                    revoked++;
 	                } catch (AlreadyRevokedException e) {
 	                    already_revoked++;
@@ -181,7 +181,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
 	            }	            
 	        } // if (entries != null)
 	        if (ejb.getRemoteSession(CrlStoreSessionRemote.class).getLastCRLNumber(issuer, false) < crl_no) {
-	        	ejb.getRemoteSession(CrlStoreSessionRemote.class).storeCRL(getAdmin(cliUserName, cliPassword), x509crl.getEncoded(), CertTools.getFingerprintAsString(cacert), crl_no, issuer, x509crl.getThisUpdate(), x509crl.getNextUpdate(), -1);
+	        	ejb.getRemoteSession(CrlStoreSessionRemote.class).storeCRL(getAuthenticationToken(cliUserName, cliPassword), x509crl.getEncoded(), CertTools.getFingerprintAsString(cacert), crl_no, issuer, x509crl.getThisUpdate(), x509crl.getNextUpdate(), -1);
 	        } else {
 	        	if (strict) {
 	        		throw new IOException("CRL #" + crl_no + " or higher is already in the database");

@@ -21,16 +21,24 @@ import org.cesecore.util.CertTools;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
- * Output all certificates for a user.
+ * Output all certificates for an end entity.
  *
  * @version $Id$
  */
-public class RaGetUserCertCommand extends BaseRaAdminCommand {
+public class GetEndEntityCertificateCommand extends BaseRaCommand {
+    
+    private static final String COMMAND = "getendentitycert";
+    private static final String OLD_COMMAND = "getusercert";
     
     @Override
-	public String getSubCommand() { return "getusercert"; }
+	public String getSubCommand() { return COMMAND; }
     @Override
-    public String getDescription() { return "Output all certificates for a user"; }
+    public String getDescription() { return "Output all certificates for an end entity"; }
+    
+    @Override
+    public String[] getSubCommandAliases() {
+        return new String[]{OLD_COMMAND};
+    }
 
     @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
@@ -45,7 +53,7 @@ public class RaGetUserCertCommand extends BaseRaAdminCommand {
             if (data != null) {
             	getLogger().info(new String(CertTools.getPemFromCertificateChain(data)));
             } else {
-            	getLogger().info("User '" + username + "' does not exist.");
+            	getLogger().info("End Entity with username '" + username + "' does not exist.");
             }
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);

@@ -24,17 +24,22 @@ import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
- * Set status to key recovery for a user's newest certificate
+ * Set status to key recovery for an end entity's newest certificate
  *
  * @version $Id$
  */
-public class RaKeyRecoverNewestCommand extends BaseRaAdminCommand {
+public class KeyRecoveryNewestCommand extends BaseRaCommand {
 
     @Override
 	public String getSubCommand() { return "keyrecovernewest"; }
     
     @Override
-    public String getDescription() { return "Set status to key recovery for a user's newest certificate"; }
+    public String getDescription() { return "Set status to key recovery for an end entity's newest certificate"; }
+    
+    @Override
+    public String[] getSubCommandAliases() {
+        return new String[]{};
+    }
     
 	@Override
     public void execute(String[] args) throws ErrorAdminCommandException {
@@ -56,15 +61,15 @@ public class RaKeyRecoverNewestCommand extends BaseRaAdminCommand {
     			return;                   
     		}   
     		if(ejb.getRemoteSession(KeyRecoverySessionRemote.class).isUserMarked(username)){
-    			getLogger().error("User is already marked for recovery.");
+    			getLogger().error("End entity is already marked for recovery.");
     			return;                     
     		}
-    		EndEntityInformation userdata = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAdmin(cliUserName, cliPassword), username);
+    		EndEntityInformation userdata = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAuthenticationToken(cliUserName, cliPassword), username);
     		if(userdata == null){
     			getLogger().error("The user doesn't exist.");
     			return;
     		}
-    		if (ejb.getRemoteSession(EndEntityManagementSessionRemote.class).prepareForKeyRecovery(getAdmin(cliUserName, cliPassword), userdata.getUsername(), userdata.getEndEntityProfileId(), null)) {
+    		if (ejb.getRemoteSession(EndEntityManagementSessionRemote.class).prepareForKeyRecovery(getAuthenticationToken(cliUserName, cliPassword), userdata.getUsername(), userdata.getEndEntityProfileId(), null)) {
         		getLogger().info("Key corresponding to users newest certificate has been marked for recovery.");             
     		} else {
         		getLogger().info("Failed to mark key corresponding to users newest certificate for recovery.");             

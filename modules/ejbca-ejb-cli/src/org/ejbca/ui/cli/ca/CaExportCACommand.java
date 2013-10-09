@@ -61,7 +61,7 @@ public class CaExportCACommand extends BaseCaAdminCommand {
             getLogger().info("Enter keystore password: ");
             String kspwd = new String(System.console().readPassword());
             
-            byte[] keyStoreBytes = ejb.getRemoteSession(CAAdminSessionRemote.class).exportCAKeyStore(getAdmin(cliUserName, cliPassword), caName, kspwd, kspwd, signatureKeyAlias, encryptionKeyAlias);
+            byte[] keyStoreBytes = ejb.getRemoteSession(CAAdminSessionRemote.class).exportCAKeyStore(getAuthenticationToken(cliUserName, cliPassword), caName, kspwd, kspwd, signatureKeyAlias, encryptionKeyAlias);
             FileOutputStream fos = new FileOutputStream(p12file);
             fos.write(keyStoreBytes);
             fos.close();

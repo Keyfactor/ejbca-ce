@@ -59,7 +59,7 @@ public class ChangeRuleCommand extends BaseRolesCommand {
             if (args.length < 4) {
                 getLogger().info("Description: " + getDescription());
                 getLogger().info("Usage: " + getCommand() + " <name of role> <access rule> <rule> [<recursive>]");
-                Collection<RoleData> roles = ejb.getRemoteSession(RoleManagementSessionRemote.class).getAllRolesAuthorizedToEdit(getAdmin(cliUserName, cliPassword));
+                Collection<RoleData> roles = ejb.getRemoteSession(RoleManagementSessionRemote.class).getAllRolesAuthorizedToEdit(getAuthenticationToken(cliUserName, cliPassword));
                 Collections.sort((List<RoleData>) roles);
                 String availableRoles = "";
                 for (RoleData role : roles) {
@@ -70,13 +70,13 @@ public class ChangeRuleCommand extends BaseRolesCommand {
                 GlobalConfiguration globalConfiguration = (GlobalConfiguration) ejb.getRemoteSession(GlobalConfigurationSessionRemote.class).getCachedConfiguration(Configuration.GlobalConfigID);
 
                 Collection<String> authorizedAvailableAccessRules = ejb.getRemoteSession(ComplexAccessControlSessionRemote.class).getAuthorizedAvailableAccessRules(
-                        getAdmin(cliUserName, cliPassword), globalConfiguration.getEnableEndEntityProfileLimitations(), globalConfiguration.getIssueHardwareTokens(),
-                        globalConfiguration.getEnableKeyRecovery(), ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getAuthorizedEndEntityProfileIds(getAdmin(cliUserName, cliPassword)),
-                        ejb.getRemoteSession(UserDataSourceSessionRemote.class).getAuthorizedUserDataSourceIds(getAdmin(cliUserName, cliPassword), true),
+                        getAuthenticationToken(cliUserName, cliPassword), globalConfiguration.getEnableEndEntityProfileLimitations(), globalConfiguration.getIssueHardwareTokens(),
+                        globalConfiguration.getEnableKeyRecovery(), ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getAuthorizedEndEntityProfileIds(getAuthenticationToken(cliUserName, cliPassword)),
+                        ejb.getRemoteSession(UserDataSourceSessionRemote.class).getAuthorizedUserDataSourceIds(getAuthenticationToken(cliUserName, cliPassword), true),
                         EjbcaConfiguration.getCustomAvailableAccessRules());
 
                 for (String current : authorizedAvailableAccessRules) {
-                    getLogger().info(" " + getParsedAccessRule(getAdmin(cliUserName, cliPassword), current));
+                    getLogger().info(" " + getParsedAccessRule(getAuthenticationToken(cliUserName, cliPassword), current));
                 }
                 String availableRules = "";
                 for (AccessRuleState current : AccessRuleState.values()) {
@@ -94,16 +94,16 @@ public class ChangeRuleCommand extends BaseRolesCommand {
             }
             String accessRule;
             try {
-                accessRule = getOriginalAccessRule(getAdmin(cliUserName, cliPassword), args[2]);
+                accessRule = getOriginalAccessRule(getAuthenticationToken(cliUserName, cliPassword), args[2]);
             } catch(EndEntityProfileNotFoundException e) {
                 getLogger().error(e.getMessage());
                 return;
             }
             GlobalConfiguration globalConfiguration = (GlobalConfiguration) ejb.getRemoteSession(GlobalConfigurationSessionRemote.class).getCachedConfiguration(Configuration.GlobalConfigID);
-            Collection<String> authorizedAvailableAccessRules = ejb.getRemoteSession(ComplexAccessControlSessionRemote.class).getAuthorizedAvailableAccessRules(getAdmin(cliUserName, cliPassword),
+            Collection<String> authorizedAvailableAccessRules = ejb.getRemoteSession(ComplexAccessControlSessionRemote.class).getAuthorizedAvailableAccessRules(getAuthenticationToken(cliUserName, cliPassword),
                     globalConfiguration.getEnableEndEntityProfileLimitations(), globalConfiguration.getIssueHardwareTokens(),
-                    globalConfiguration.getEnableKeyRecovery(), ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getAuthorizedEndEntityProfileIds(getAdmin(cliUserName, cliPassword)),
-                    ejb.getRemoteSession(UserDataSourceSessionRemote.class).getAuthorizedUserDataSourceIds(getAdmin(cliUserName, cliPassword), true),
+                    globalConfiguration.getEnableKeyRecovery(), ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getAuthorizedEndEntityProfileIds(getAuthenticationToken(cliUserName, cliPassword)),
+                    ejb.getRemoteSession(UserDataSourceSessionRemote.class).getAuthorizedUserDataSourceIds(getAuthenticationToken(cliUserName, cliPassword), true),
                     EjbcaConfiguration.getCustomAvailableAccessRules());
 
             if (!authorizedAvailableAccessRules.contains(accessRule)) {
@@ -130,13 +130,13 @@ public class ChangeRuleCommand extends BaseRolesCommand {
             List<String> accessRuleStrings = new ArrayList<String>();
             accessRuleStrings.add(accessRule);
             if (rule == AccessRuleState.RULE_NOTUSED) {
-                ejb.getRemoteSession(RoleManagementSessionRemote.class).removeAccessRulesFromRole(getAdmin(cliUserName, cliPassword), role, accessRuleStrings);
+                ejb.getRemoteSession(RoleManagementSessionRemote.class).removeAccessRulesFromRole(getAuthenticationToken(cliUserName, cliPassword), role, accessRuleStrings);
             } else {
-                ejb.getRemoteSession(RoleManagementSessionRemote.class).removeAccessRulesFromRole(getAdmin(cliUserName, cliPassword), role, accessRuleStrings);
+                ejb.getRemoteSession(RoleManagementSessionRemote.class).removeAccessRulesFromRole(getAuthenticationToken(cliUserName, cliPassword), role, accessRuleStrings);
                 AccessRuleData accessRuleObject = new AccessRuleData(role.getRoleName(), accessRule, rule, recursive);
                 Collection<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
                 accessRules.add(accessRuleObject);
-                ejb.getRemoteSession(RoleManagementSessionRemote.class).addAccessRulesToRole(getAdmin(cliUserName, cliPassword), role, accessRules);
+                ejb.getRemoteSession(RoleManagementSessionRemote.class).addAccessRulesToRole(getAuthenticationToken(cliUserName, cliPassword), role, accessRules);
             }
         } catch (Exception e) {
             getLogger().error("", e);

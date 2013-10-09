@@ -50,7 +50,7 @@ public class ConfigDumpCommand extends ConfigBaseCommand {
         }
         getLogger().info("Trying to fetch currently used server properties...");
         try {
-            Properties properties = ejb.getRemoteSession(GlobalConfigurationSessionRemote.class).getAllProperties(getAdmin(cliUserName, cliPassword), Configuration.GlobalConfigID);
+            Properties properties = ejb.getRemoteSession(GlobalConfigurationSessionRemote.class).getAllProperties(getAuthenticationToken(cliUserName, cliPassword), Configuration.GlobalConfigID);
             Enumeration<Object> enumeration = properties.keys();
             while (enumeration.hasMoreElements()) {
                 String key = (String) enumeration.nextElement();

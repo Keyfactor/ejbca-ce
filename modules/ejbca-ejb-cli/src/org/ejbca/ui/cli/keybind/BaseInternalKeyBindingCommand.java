@@ -45,6 +45,11 @@ public abstract class BaseInternalKeyBindingCommand extends BaseCommand {
         return new String[]{};
     }
 
+    @Override
+    public String[] getSubCommandAliases() {
+        return new String[]{};
+    }
+    
     /**
      * Overridable InternalKeyBinding-specific execution methods that will parse and interpret the first parameter
      * (when present) as the name of a InternalKeyBinding and lookup its InternalKeyBindingId.
@@ -122,6 +127,6 @@ public abstract class BaseInternalKeyBindingCommand extends BaseCommand {
     
     /** @return the EJB CLI admin */
     protected AuthenticationToken getAdmin() {
-        return getAdmin(cliUserName, cliPassword);
+        return getAuthenticationToken(cliUserName, cliPassword);
     }
 }

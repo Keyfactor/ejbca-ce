@@ -89,7 +89,7 @@ public class CaRestoreKeyStoreCommand extends BaseCaAdminCommand {
 				}
 				// else alias already contains the only alias, so we can use that
 			}
-			ejb.getRemoteSession(CAAdminSessionRemote.class).restoreCAKeyStore(getAdmin(cliUserName, cliPassword), caName, keystorebytes, kspwd, kspwd, alias, encryptionAlias);
+			ejb.getRemoteSession(CAAdminSessionRemote.class).restoreCAKeyStore(getAuthenticationToken(cliUserName, cliPassword), caName, keystorebytes, kspwd, kspwd, alias, encryptionAlias);
 		} catch (ErrorAdminCommandException e) {
 			throw e;
 		} catch (Exception e) {

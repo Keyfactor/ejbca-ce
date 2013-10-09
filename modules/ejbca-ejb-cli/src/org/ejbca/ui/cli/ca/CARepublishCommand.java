@@ -78,7 +78,7 @@ public class CARepublishCommand extends BaseCaAdminCommand {
             String caname = args[1];
             CryptoProviderTools.installBCProvider();
             // Get the CAs info and id
-            CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), caname);
+            CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(cliUserName, cliPassword), caname);
             if (cainfo == null) {
                 getLogger().info("CA with name '" + caname + "' does not exist.");
                 return;
@@ -98,12 +98,12 @@ public class CARepublishCommand extends BaseCaAdminCommand {
                     String fingerprint = CertTools.getFingerprintAsString(cacert);
                     String username = ejb.getRemoteSession(CertificateStoreSessionRemote.class).findUsernameByCertSerno(cacert.getSerialNumber(), cacert.getIssuerDN().getName());
                     CertificateInfo certinfo = ejb.getRemoteSession(CertificateStoreSessionRemote.class).getCertificateInfo(fingerprint);
-                    ejb.getRemoteSession(PublisherSessionRemote.class).storeCertificate(getAdmin(cliUserName, cliPassword), capublishers, cacert, username, null, cainfo.getSubjectDN(), fingerprint, certinfo
+                    ejb.getRemoteSession(PublisherSessionRemote.class).storeCertificate(getAuthenticationToken(cliUserName, cliPassword), capublishers, cacert, username, null, cainfo.getSubjectDN(), fingerprint, certinfo
                             .getStatus(), certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(), certinfo.getTag(),
                             certinfo.getCertificateProfileId(), certinfo.getUpdateTime().getTime(), null);
                     getLogger().info("Certificate published for " + caname);
                     if ( crlbytes!=null && crlbytes.length>0 && crlNumber>0 ) {
-                        ejb.getRemoteSession(PublisherSessionRemote.class).storeCRL(getAdmin(cliUserName, cliPassword), capublishers, crlbytes, fingerprint, crlNumber, cainfo.getSubjectDN());
+                        ejb.getRemoteSession(PublisherSessionRemote.class).storeCRL(getAuthenticationToken(cliUserName, cliPassword), capublishers, crlbytes, fingerprint, crlNumber, cainfo.getSubjectDN());
                         getLogger().info("CRL with number "+crlNumber+" published for " + caname);
                     } else {
                         getLogger().info("CRL not published, no CRL createed for CA?");
@@ -116,7 +116,7 @@ public class CARepublishCommand extends BaseCaAdminCommand {
             }
 
             // Get all users for this CA
-            Collection<EndEntityInformation> coll = ejb.getRemoteSession(EndEntityManagementSessionRemote.class).findAllUsersByCaId(getAdmin(cliUserName, cliPassword), cainfo.getCAId());
+            Collection<EndEntityInformation> coll = ejb.getRemoteSession(EndEntityManagementSessionRemote.class).findAllUsersByCaId(getAuthenticationToken(cliUserName, cliPassword), cainfo.getCAId());
             Iterator<EndEntityInformation> iter = coll.iterator();
             while (iter.hasNext()) {
             	EndEntityInformation data = iter.next();
@@ -144,12 +144,12 @@ public class CARepublishCommand extends BaseCaAdminCommand {
                                     Iterator<Certificate> i = certCol.iterator();
                                     while (i.hasNext()) {
                                         X509Certificate c = (X509Certificate) i.next();
-                                        publishCert(getAdmin(cliUserName, cliPassword), data, certProfile, c);
+                                        publishCert(getAuthenticationToken(cliUserName, cliPassword), data, certProfile, c);
                                     }
                                 } else {
                                     // Only publish the latest one (last expire date)
                                     // The latest one is the first in the List according to findCertificatesByUsername()
-                                    publishCert(getAdmin(cliUserName, cliPassword), data, certProfile, (X509Certificate)certCol.iterator().next());
+                                    publishCert(getAuthenticationToken(cliUserName, cliPassword), data, certProfile, (X509Certificate)certCol.iterator().next());
                                 }
                             } else {
                                 getLogger().info("Not publishing user " + data.getUsername() + ", no publisher in certificate profile.");

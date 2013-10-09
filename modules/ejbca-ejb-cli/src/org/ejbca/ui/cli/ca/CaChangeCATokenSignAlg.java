@@ -52,13 +52,13 @@ public class CaChangeCATokenSignAlg extends BaseCaAdminCommand {
 		}
 		try {
 			String caName = args[1];
-			CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), caName);
+			CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(cliUserName, cliPassword), caName);
 			String signAlg = args[2];
 			getLogger().info("Setting new signature algorithm: " + signAlg);
             final CAToken caToken = cainfo.getCAToken();
             caToken.setSignatureAlgorithm(signAlg);
             cainfo.setCAToken(caToken);
-			ejb.getRemoteSession(CAAdminSessionRemote.class).editCA(getAdmin(cliUserName, cliPassword), cainfo);
+			ejb.getRemoteSession(CAAdminSessionRemote.class).editCA(getAuthenticationToken(cliUserName, cliPassword), cainfo);
 			getLogger().info("CA token signature algorithm for CA changed.");
 		} catch (Exception e) {
 			getLogger().error(e.getMessage());
@@ -74,9 +74,9 @@ public class CaChangeCATokenSignAlg extends BaseCaAdminCommand {
 		getLogger().info(" Existing CAs: ");
 		try {
 			// Print available CAs
-			Collection<Integer> cas = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCAs(getAdmin(cliUserName, cliPassword));
+			Collection<Integer> cas = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCAs(getAuthenticationToken(cliUserName, cliPassword));
 			for (Integer caid : cas) {
-				CAInfo info = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), caid);
+				CAInfo info = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(cliUserName, cliPassword), caid);
 				getLogger().info("    "+info.getName()+": "+info.getCAToken().getSignatureAlgorithm());				
 			}
 		} catch (Exception e) {

@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.ui.cli.admins;
+package org.ejbca.ui.cli.roles;
 
 import static org.junit.Assert.assertNull;
 
@@ -42,7 +42,7 @@ import org.junit.Test;
  * @version $Id$
  *
  */
-public class AdminsRemoveAdminCommandTest {
+public class RemoveAdminCommandTest {
 
     private static final String ROLENAME = "AdminsRemoveAdminCommandTest";
 

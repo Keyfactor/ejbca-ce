@@ -52,21 +52,21 @@ public class CaDeactivateCACommand extends BaseCaAdminCommand {
             String caname = args[1];
             CryptoProviderTools.installBCProvider();
             // Get the CAs info and id
-            CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), caname);
+            CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(cliUserName, cliPassword), caname);
             if(cainfo == null){
             	getLogger().error("CA " + caname + " cannot be found");	
             	return;            	
             }
             final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = ejb.getRemoteSession(CryptoTokenManagementSessionRemote.class);
             final int cryptoTokenId = cainfo.getCAToken().getCryptoTokenId();
-            final boolean tokenOnline = cryptoTokenManagementSession.isCryptoTokenStatusActive(getAdmin(cliUserName, cliPassword), cryptoTokenId);
+            final boolean tokenOnline = cryptoTokenManagementSession.isCryptoTokenStatusActive(getAuthenticationToken(cliUserName, cliPassword), cryptoTokenId);
             if (cainfo.getStatus() == CAConstants.CA_ACTIVE || tokenOnline) {
                 if (cainfo.getStatus() == CAConstants.CA_ACTIVE) {
-                    ejb.getRemoteSession(CAAdminSessionRemote.class).deactivateCAService(getAdmin(cliUserName, cliPassword), cainfo.getCAId());
+                    ejb.getRemoteSession(CAAdminSessionRemote.class).deactivateCAService(getAuthenticationToken(cliUserName, cliPassword), cainfo.getCAId());
                     getLogger().info("CA Service deactivated.");
                 }
                 if (tokenOnline) {
-                    cryptoTokenManagementSession.deactivate(getAdmin(cliUserName, cliPassword), cryptoTokenId);
+                    cryptoTokenManagementSession.deactivate(getAuthenticationToken(cliUserName, cliPassword), cryptoTokenId);
                     getLogger().info("CA CryptoToken deactivated.");
                 }
             } else {

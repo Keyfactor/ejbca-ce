@@ -61,7 +61,7 @@ public class ListRulesCommand extends BaseRolesCommand {
             Collections.sort(list);
             for (AccessRuleData accessRule : list) {
                 getLogger().info(
-                        getParsedAccessRule(getAdmin(cliUserName, cliPassword), accessRule.getAccessRuleName()) + " " + accessRule.getInternalState().getName() + " "
+                        getParsedAccessRule(getAuthenticationToken(cliUserName, cliPassword), accessRule.getAccessRuleName()) + " " + accessRule.getInternalState().getName() + " "
                                 + (accessRule.getRecursive() ? "RECURSIVE" : ""));
             }
         } catch (Exception e) {

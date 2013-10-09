@@ -63,7 +63,7 @@ public class ListAdminsCommand extends BaseRolesCommand {
             for (AccessUserAspectData userAspect : role.getAccessUsers().values()) {
                 String caName;
                 try {  
-                    CAInfo info = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), userAspect.getCaId());
+                    CAInfo info = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(cliUserName, cliPassword), userAspect.getCaId());
                     caName = info.getName();
                 } catch(CADoesntExistsException e) {
                     caName = "Unknown CA with id " + userAspect.getCaId();
