@@ -93,7 +93,7 @@ The different forms that are stored in the database are:
 A publisher stores issued certificates to a central location. EJBCA have implemented support for LDAP and Active Directory but it's also possible to create customized plug-ins.
 </p>
 </subsection>
-<subsection name="InternalKeyBinding">
+<subsection name="Internal Key Binding">
 <p>
 An InternalKeyBinding can be used to make keys in a Crypto Token available for other uses than in a CA.
 It is a reference to a key pair available to the EJBCA instance, a non-CA certificate, an optional list of trusted certificates
