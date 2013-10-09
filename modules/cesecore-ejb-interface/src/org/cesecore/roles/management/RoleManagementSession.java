@@ -54,7 +54,7 @@ public interface RoleManagementSession {
     RoleData create(AuthenticationToken authenticationToken, String roleName) throws RoleExistsException, AuthorizationDeniedException;
 
     /**
-     * Remove a role. If the role does not exist nothing is done and the method silently returns.
+     * Remove a role.
      * 
      * @param authenticationToken An authentication token.
      * @param roleName The name of the role to remove.
@@ -64,8 +64,7 @@ public interface RoleManagementSession {
     void remove(AuthenticationToken authenticationToken, String roleName) throws RoleNotFoundException, AuthorizationDeniedException;
 
     /**
-     * Removes a known role. Will also remove all associated access rules and user aspects. If the role does not exist nothing is done and the method
-     * silently returns.
+     * Removes a known role. Will also remove all associated access rules and user aspects.
      * 
      * @param authenticationToken An authentication token.
      * @param role the role to remove.
