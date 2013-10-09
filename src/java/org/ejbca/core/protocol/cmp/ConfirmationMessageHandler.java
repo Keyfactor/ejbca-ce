@@ -143,37 +143,14 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
         String owfAlg = null;
         String macAlg = null;
         int iterationCount = 1024;
-        String cmpRaAuthSecret = null;
+        String sharedSecret = cmpConfiguration.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_HMAC, confAlias);
         
-        final int caId = CertTools.stringToBCDNString(msg.getHeader().getRecipient().getName().toString()).hashCode();
-        CAInfo caInfo = null;
-        try {
-            // No need for access control here for internal verification/protection of message, access control is done when we want to use
-            // the CA to issue a cert
-            caInfo = caSession.getCAInfoInternal(caId, null, true);
-        } catch (CADoesntExistsException e) {
-            LOG.error("Exception during CMP processing: ", e);          
-        }
-            
-        final HMACAuthenticationModule hmac = new HMACAuthenticationModule(admin, cmpConfiguration.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_HMAC, confAlias), 
-                                confAlias, cmpConfiguration, caInfo, endEntityAccessSession, certificateStoreSession);
-        try {
-            hmac.verifyOrExtract(msg.getMessage(), null, authenticated);
-            cmpRaAuthSecret = hmac.getAuthenticationString();
-            owfAlg = hmac.getCmpPbeVerifyer().getOwfOid();
-            macAlg = hmac.getCmpPbeVerifyer().getMacOid();
-            iterationCount = hmac.getCmpPbeVerifyer().getIterationCount();
-            if(LOG.isDebugEnabled()) {
-                LOG.debug("The CertConf message was verified successfully");
-            }
-        } catch(CMPAuthenticationException e) {}
+        CmpPbeVerifyer verifyer = new CmpPbeVerifyer(msg.getMessage());
+        owfAlg = verifyer.getOwfOid();
+        macAlg = verifyer.getMacOid();
+        iterationCount = verifyer.getIterationCount();
         
-        if((owfAlg != null) && (macAlg != null) && (keyId != null) && (cmpRaAuthSecret != null)) { 
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(responseProtection+", "+owfAlg+", "+macAlg+", "+keyId+", "+cmpRaAuthSecret);
-            }
-            cresp.setPbeParameters(keyId, cmpRaAuthSecret, owfAlg, macAlg, iterationCount);   
-        }
+        cresp.setPbeParameters(keyId, sharedSecret, owfAlg, macAlg, iterationCount);
 	}
 	
 	private void signResponse(CmpConfirmResponseMessage cresp, BaseCmpMessage msg) {
