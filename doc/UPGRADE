@@ -136,6 +136,14 @@ NOTE: In EJBCA 6.0.0, the CMP configuration handling has been rewritten. CMP con
 configurations can be set either in the admin GUI or in the command line (execute './bin/ejbca.sh config cmp' from EJBCA home directory for command line 
 documentation). If you do use CMP, you can upload your old cmp.properties file by executing the following command in EJBCA home directory:
 	./bin/ejbca.sh config cmp uploadfile conf/cmp.properties cmp
+In the adminGUI -> CMP Configuration, you will see the alias 'cmp' among the list of CMP alias. This alias will contain all your old CMP configurations 
+(except for one, see next note) and should be used to manage your CMP configurations in the future.
+
+NOTE: For CMP users who use NestedMessageContent in RA mode and use EndEntityCertificate as an authentication module: if you now skip performing some verifications 
+on the certificate in extraCert field by setting the authentication parameter of EndEntityCertificate to '-', this will no longer be possible in 
+EJBCA 6.0.0. Instead, a new configuration variable should be set to reflect this option. After uploading the conf/cmp.properties file according to the instructions 
+above, go to the admin GUI -> CMP Configurations; in the page for editing the CMP alias 'cmp', check the box that says 'Omit Verifications in EndEntityCertificate 
+Authentication Module'
 
 NOTE: In EJBCA 6.0.0, TCP configurations have been moved from conf/cmp.properties file (which has been removed) to conf/cmptcp.properties. So if you are 
 a TCP (a deprecated protocol in EJBCA) user, you should set your TCP configuration values in the new file. You should also upload conf/cmp.properties file 
