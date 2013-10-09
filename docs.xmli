@@ -147,7 +147,7 @@
 	    	     classpathref="jdoc.classpath"
 	             windowtitle="EJBCA WS">
 	        <packageset dir="${jdocs.ws.tmp}"/>
-	        <fileset dir="src/java" defaultexcludes="yes">
+	        <fileset dir="modules/cesecore-common/src" defaultexcludes="yes">
 	          <include name="**/AlgorithmConstants.java"/>
 	        </fileset>
 	        <fileset dir="${ws.common.dir}" defaultexcludes="yes">
