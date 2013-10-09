@@ -16,12 +16,10 @@ package org.ejbca.core.protocol.cmp.authentication;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.security.cert.Certificate;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.cmp.CertConfirmContent;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.cmp.RevReqContent;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
@@ -31,9 +29,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.X509CAInfo;
-import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.util.CertTools;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -61,7 +57,6 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
     
     private AuthenticationToken admin;
     private EndEntityAccessSession eeAccessSession;
-    private CertificateStoreSession certStoreSession;
     
     private String globalSharedSecret;
     private CAInfo cainfo;
@@ -72,7 +67,7 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
     private CmpPbeVerifyer verifyer;
         
     public HMACAuthenticationModule(AuthenticationToken admin, String authParameter, String confAlias, CmpConfiguration cmpConfig, 
-            CAInfo cainfo, EndEntityAccessSession eeSession, CertificateStoreSession certStoreSession) {
+            CAInfo cainfo, EndEntityAccessSession eeSession) {
         this.globalSharedSecret = authParameter;
         this.confAlias = confAlias;
         this.cainfo = cainfo;
@@ -80,7 +75,6 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
         
         this.admin = admin;
         this.eeAccessSession = eeSession;
-        this.certStoreSession = certStoreSession;
         
         this.verifyer = null;
         this.password = null;
@@ -256,37 +250,17 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
                     userdata = this.eeAccessSession.findUser(admin, username);
                 } else {
                     // No username given, so we try to find from subject/issuerDN from the certificate request
-                    
                     final CertTemplate certTemp = getCertTemplate(msg);
+                    subjectDN = certTemp.getSubject().toString();
+                    
                     String issuerDN = null;
-                    if (certTemp == null) {
-                        // No subject DN in request, it can be a CertConfirm, where we can get the certificate 
-                        // serialNo fingerprint instead
-                        final CertConfirmContent certConf = getCertConfirm(msg);
-                        if (certConf != null) {
-                            byte[] certhash = certConf.toCertStatusArray()[0].getCertHash().getOctets();
-                            //final String fp = new String(Hex.encode(certhash));
-                            final String fphex = new String(certhash);
-                            if (LOG.isDebugEnabled()) {
-                                LOG.debug("Looking for issued certificate with fingerprint: "+fphex);
-                            }
-                            Certificate cert = certStoreSession.findCertificateByFingerprint(fphex);
-                            subjectDN = CertTools.getSubjectDN(cert);
-                            issuerDN = CertTools.getIssuerDN(cert);
-                        } else {
-                            if (LOG.isDebugEnabled()) {
-                                LOG.debug("there was no certTemplate, and it was not a CertConfirm either...");
-                            }
+                    final X500Name issuer = certTemp.getIssuer();
+                    if ((issuer != null) && (subjectDN != null)) {
+                        issuerDN = issuer.toString();
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("Searching for an end entity with SubjectDN='" + subjectDN + "' and isserDN='" + issuerDN + "'");
                         }
-                    } else {
-                        subjectDN = certTemp.getSubject().toString();
-                        final X500Name issuer = certTemp.getIssuer();
-                        if (issuer != null) {
-                            issuerDN = issuer.toString();
-                        }
-                    }
-
-                    if ((subjectDN != null) && (issuerDN != null)) {
+                        
                         List<EndEntityInformation> userdataList = eeAccessSession.findUserBySubjectAndIssuerDN(this.admin, subjectDN, issuerDN);
                         userdata = userdataList.get(0);
                         if (userdataList.size() > 1) {
@@ -361,26 +335,15 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
      */
     private CertTemplate getCertTemplate(final PKIMessage msg) {
         final int tagnr = msg.getBody().getType();
-        if(tagnr == CmpPKIBodyConstants.INITIALIZATIONREQUEST || tagnr==CmpPKIBodyConstants.CERTIFICATAIONREQUEST) {
+        if(tagnr == CmpPKIBodyConstants.INITIALIZATIONREQUEST 
+                || tagnr==CmpPKIBodyConstants.CERTIFICATAIONREQUEST
+                || tagnr==CmpPKIBodyConstants.KEYUPDATEREQUEST) {
             CertReqMessages reqmsgs = (CertReqMessages) msg.getBody().getContent();
             return reqmsgs.toCertReqMsgArray()[0].getCertReq().getCertTemplate();
         }
         if(tagnr==CmpPKIBodyConstants.REVOCATIONREQUEST) {
             RevReqContent rev  =(RevReqContent) msg.getBody().getContent();
             return rev.toRevDetailsArray()[0].getCertDetails();
-        }
-        return null;
-    }
-
-    /**
-     * Returns the certificate confirmation embedded in msg.
-     * 
-     * @param msg
-     * @return the certificate confirmation embedded in msg. Null if no such confirmation was found.
-     */
-    private CertConfirmContent getCertConfirm(final PKIMessage msg) {
-        if(msg.getBody().getType() == CmpPKIBodyConstants.CERTIFICATECONFIRM) {
-            return (CertConfirmContent) msg.getBody().getContent();
         }
         return null;
     }
