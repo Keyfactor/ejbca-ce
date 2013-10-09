@@ -233,7 +233,7 @@
     		       						
     		       			//defaultCA
     		       			String value = request.getParameter(LIST_CMPDEFAULTCAS);
-    		       			if(value.length() == 0) {
+    		       			if((value==null) || (value.length() == 0)) {
     		       					cmpconfig.setCMPDefaultCA(alias, "");
     		       			} else {
     		                		String cadn = cabean.getCAInfo(value).getCAInfo().getSubjectDN();
