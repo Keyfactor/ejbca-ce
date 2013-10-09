@@ -153,6 +153,30 @@ details.
 If you get a "java.lang.NoSuchMethodError" in the admin GUI it is because JBoss does not clean temporary files very well.
 Delete the directories JBOSS_HOME/server/default/tmp and JBOSS_HOME/server/default/work and restart JBoss to get it working.
 
+Upgrading an External OCSP/VA responder to EJBCA 6.0
+-----
+The External OCSP/VA responder in EJBCA 6.0 has had major changes in order to support new functionality and usability. 
+The External OCSP/VA responder now includes all EJBCA modules and database tables, including Admin GUI. There is no real difference between a CA node and an OCSP node 
+except that the OCSP node does not have any CAs in the database. This enables the following feature on the OCSP responder:
+- Usage of Crypto Tokens, where you can configure multiple tokens to be used. The responder is not longer limited to one PKCS#11 configuration in ocsp.properties.
+- Usage of Internal Key Binding, where you can configure specific key pairs matching specific certificates in the database. This enables flexible and simple configuration 
+  of OCSP responder keys and certificates. It is no longer necessary to import the OCSP signer certificate into a slot on the HSM.
+- Usage of the Admin GUI. You can now use the EJBCA Admin GUI to manage Crypto Tokens and Key Bindings, making configuration and administration of the OCSP responder so much easier.
+
+ All this means that the upgrade from an earlier version of EJBCA OCSP is a process. Naturally EJBCA 6 handles all the upgrade for you and will try to automatically import your old 
+ configuration seamlessly. To benefit from all the new features you should read the VA Installation, OCSP Installation and User Guide in the documentation. 
+
+Upgrade process:
+- Copy configuration files, database.properties, ocsp.properties and web.properties from your old installation.
+- Note that there can be some deprecated properties (j2ee.web-noconfigure). You will be notified of this during build.
+- Configure logging in conf/cesecore.properties if you do not want to audit log security events in the database (see OCSP Installation).
+- Build and configure the EJBCA VA as described in "Standalone VA Installation".
+- When JBoss is started the first time new database tables will be created. These are the same tables as exist in an EJBCA installation. If your database user has restricted access, you
+  can create the tables manually from the database scripts in doc/sql-scripts.
+- When JBoss is started the first time your ocsp.properties will be read and automatically upgraded into Crypto Tokens and Internal Key Bindings. This will create objects in your database
+  in the CryptoTokenData and InternalKeyBindingData. Also initial access rules will be created, see "OCSP Installation" for more information about this.
+  
+
 From EJBCA 5.0.x to EJBCA 5.0.x
 -------------------------------
 See release notes for details between certain versions. 
