@@ -484,13 +484,13 @@ public class CVCCA extends CA implements Serializable {
 	@SuppressWarnings("deprecation")
     public boolean upgradeExtendedCAServices() {
 	    boolean retval = false;
-	    for (Integer type : getExternalCAServiceTypes()) {
-	        if (type == ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE) {
-                //This type has been removed, so remove it from any CAs it's been added to as well.
-                data.remove(type);
-                retval = true;
-            }
-	    }
+	    Collection<Integer> externalServiceTypes = getExternalCAServiceTypes();
+        if (externalServiceTypes.contains(ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE)) {
+            //This type has been removed, so remove it from any CAs it's been added to as well.
+            externalServiceTypes.remove(ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE);
+            data.put(EXTENDEDCASERVICES, externalServiceTypes);
+            retval = true;
+        }
 		return retval;
 	}
 
