@@ -1165,26 +1165,28 @@ public class X509CA extends CA implements Serializable {
     public boolean upgradeExtendedCAServices() {
         boolean retval = false;
         // call upgrade, if needed, on installed CA services
-        for (Integer type : getExternalCAServiceTypes()) {
-            if (type == ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE) {
-                //This type has been removed, so remove it from any CAs it's been added to as well.
-                data.remove(type);
-                retval = true;
-            } else {
-                ExtendedCAService service = getExtendedCAService(type);
-                if (service != null) {
-                    if (Float.compare(service.getLatestVersion(), service.getVersion()) != 0) {
-                        retval = true;
-                        service.upgrade();
-                        setExtendedCAServiceData(service.getExtendedCAServiceInfo().getType(), (HashMap) service.saveData());
-                    } else if (service.isUpgraded()) {
-                        // Also return true if the service was automatically upgraded by a UpgradeableDataHashMap.load, which calls upgrade automagically. 
-                        retval = true;
-                        setExtendedCAServiceData(service.getExtendedCAServiceInfo().getType(), (HashMap) service.saveData());
-                    }
-                } else {
-                    log.error("Extended service is null, can not upgrade service of type: " + type);
+        Collection<Integer> externalServiceTypes = getExternalCAServiceTypes();
+        if (externalServiceTypes.contains(ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE)) {
+            //This type has been removed, so remove it from any CAs it's been added to as well.
+            externalServiceTypes.remove(ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE);
+            data.put(EXTENDEDCASERVICES, externalServiceTypes);
+            retval = true;
+        }
+        
+        for (Integer type : externalServiceTypes) {
+            ExtendedCAService service = getExtendedCAService(type);
+            if (service != null) {
+                if (Float.compare(service.getLatestVersion(), service.getVersion()) != 0) {
+                    retval = true;
+                    service.upgrade();
+                    setExtendedCAServiceData(service.getExtendedCAServiceInfo().getType(), (HashMap) service.saveData());
+                } else if (service.isUpgraded()) {
+                    // Also return true if the service was automatically upgraded by a UpgradeableDataHashMap.load, which calls upgrade automagically. 
+                    retval = true;
+                    setExtendedCAServiceData(service.getExtendedCAServiceInfo().getType(), (HashMap) service.saveData());
                 }
+            } else {
+                log.error("Extended service is null, can not upgrade service of type: " + type);
             }
         }
         return retval;
