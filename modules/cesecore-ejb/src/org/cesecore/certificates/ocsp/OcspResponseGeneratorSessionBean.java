@@ -366,7 +366,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 }
                 final String signatureProviderName = cryptoToken.getSignProviderName();
                 if (log.isDebugEnabled()) {
-                    log.debug("Adding OcspKeyBinding.");
+                    log.debug("Adding OcspKeyBinding "+ocspKeyBinding.getId()+", "+ocspKeyBinding.getName());
                 }
                 OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificateChain, ocspSigningCertificate, privateKey, signatureProviderName, ocspKeyBinding));
             }
