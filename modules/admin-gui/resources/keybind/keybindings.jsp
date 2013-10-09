@@ -39,7 +39,7 @@ org.cesecore.keybind.InternalKeyBindingRules
 <body>
 	<h1>
 		<h:outputText value="#{web.text.INTERNALKEYBINDINGS}"/>
-		<%= ejbcawebbean.getHelpReference("/userguide.html#Managing%20InternalKeyBindings") %>
+		<%= ejbcawebbean.getHelpReference("/userguide.html#Managing%20Internal%20Key%20Bindings") %>
 	</h1>
 	<div class="message"><h:messages layout="table" errorClass="alert" infoClass="infoMessage"/></div>
 	<div class="tabLinks">

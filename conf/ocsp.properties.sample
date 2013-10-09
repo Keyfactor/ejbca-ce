@@ -1,5 +1,8 @@
 # ------------ OCSP responder configuration ---------------------
 # These configurations are used both for EJBCA and the Validation Authority (VA).
+#
+# These values are used for OCSP responses signed by a CA and as defaults for delegated OCSP signing by OcspKeyBindings.
+# Certificate Profile or URL specific configuration here will still override the configured values of an OcspKeyBinding.
 
 # OCSP servlet enabled. If false there will be no servlet.
 # Default is true.
@@ -47,38 +50,6 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 # If set to 0 the warning is disabled.
 # Default: 604800 (1 week)
 #ocsp.warningBeforeExpirationTime=10000
-
-# Specifies if the OCSP-responder should require signed requests or not.
-# If signature is required, the signature certificate must be issued by a CA handled by the OCSP responder.
-#
-# Default: false
-#ocsp.signaturerequired=false
-
-# Specifies if the OCSP-responder should require signatures to be issued by a list of allowed CA's.
-#
-# Default: false
-#ocsp.restrictsignatures=false
-
-# Specifies how to restrict OCSP-request signatures.
-# 'issuer' means that the OCSP-responder will require signatures to be issued by a CA in a list of allowed CA's.
-# 'signer' means that the OCSP-responder will require signatures to be in a list of allowed signatures.
-# Note that unless ocsp.restrictsignatures is set to true this variable will not be used.
-#
-# Default: issuer
-#ocsp.restrictsignaturesbymethod=issuer
-
-# Specifies a directory with CA's which are allowed
-# If signatures are restricted and required only requests signed by a certificate issued by a CA in this directory is accepted.
-# The easiest here is to configure the full path of the directory, otherwise it will be relative to some directory where you start you app server. 
-#
-#ocsp.signtrustdir=signtrustdir
-
-# Specifies an interval in seconds in which the server reloads certificates from the 'ocsp.signtrustdir'
-# if this variable is set to 0 certificates will not be reloaded after startup.
-#
-# Default: 180
-#ocsp.signtrustvalidtime=180
-
 
 # If true a certificate that does not exist in the database, but is issued by a CA the responder handles
 # will be treated as not revoked. Default (when value is false) is to treat is as "unknown". Since the OCSP responders database normally contains all issued certificate
@@ -156,7 +127,47 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 # No default value, must be set if the extension is used
 #ocsp.unidcacert=
 
-#------------------- Soft keys used by external OCSP responder------------------------------
+
+# Specifies if the OCSP-responder should require signed requests or not.
+# If signature is required, the signature certificate must be issued by a CA handled by the OCSP responder.
+#
+# Default: false
+#ocsp.signaturerequired=false
+
+#------------------- DEPRECATED CONFIG: Verification of OCSP request signatures------------------------------
+# DEPRECATION:
+# From EJBCA 6.0.0 used one last time during upgrade to configure trust anchors in OcspKeyBindings.
+# It is not possible to validate OCSP request signatures when using a CA to sign the response.
+
+# Specifies if the OCSP-responder should require signatures to be issued by a list of allowed CA's.
+#
+# Default: false
+#ocsp.restrictsignatures=false
+
+# Specifies how to restrict OCSP-request signatures.
+# 'issuer' means that the OCSP-responder will require signatures to be issued by a CA in a list of allowed CA's.
+# 'signer' means that the OCSP-responder will require signatures to be in a list of allowed signatures.
+# Note that unless ocsp.restrictsignatures is set to true this variable will not be used.
+#
+# Default: issuer
+#ocsp.restrictsignaturesbymethod=issuer
+
+# Specifies a directory with CA's which are allowed
+# If signatures are restricted and required only requests signed by a certificate issued by a CA in this directory is accepted.
+# The easiest here is to configure the full path of the directory, otherwise it will be relative to some directory where you start you app server. 
+#
+#ocsp.signtrustdir=signtrustdir
+
+# Specifies an interval in seconds in which the server reloads certificates from the 'ocsp.signtrustdir'
+# if this variable is set to 0 certificates will not be reloaded after startup.
+#
+# Default: 180
+#ocsp.signtrustvalidtime=180
+
+#------------------- DEPRECATED CONFIG: Soft keys used by external OCSP responder------------------------------
+# DEPRECATION:
+# From EJBCA 6.0.0 these values are used one last time during startup and converted to Crypto Tokens and
+# Internal Key Bindings.
 
 # Directory containing soft keys or certificates for keys on cards. The soft keys are in jks or p12 format.
 # The certificates of the cards keys are in pem format. All CAs using the OCSP responser must have a soft
@@ -177,7 +188,10 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 #ocsp.keys.keyPassword=foo123
 
 
-#------------------- PKCS#11 keys used by external OCSP responder------------------------------
+#------------------- DEPRECATED CONFIG: PKCS#11 keys used by external OCSP responder------------------------------
+# DEPRECATION:
+# From EJBCA 6.0.0 these values are used one last time during startup and converted to Crypto Tokens and
+# Internal Key Bindings.
 
 # P11 shared library path name. 
 # Must not be used if ocsp.p11.sunConfigurationFile is used.
@@ -201,6 +215,8 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 #------------------- Re-keying used by external OCSP responder------------------------------
 # When this feature is enabled a new signing key will automatically be generated a specified time before the certificate of the used key expires.
 # A certificate for the new key will be fetched by WS from EJBCA.
+# You also need to configure an AuthenticationKeyBinding as client SSL credential. (It will be created for you
+# during upgrade to EJBCA 6.0.0 where a client SSL keystore existed previously.)
 
 # Password for rekeying via the servlet. 
 # Default: null
@@ -225,7 +241,12 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 # Default: 127.0.0.1
 #ocsp.rekeying.trigging.hosts=
 
-#------------------- External OCSP responder activation------------------------------
+#------------------- DEPRECATED CONFIG: External OCSP responder activation------------------------------
+# DEPRECATION:
+# From EJBCA 6.0.0 the activation will be handled as a manually activated Crypto Token.
+# You need to use this activation one last time for the upgrade to take place. 
+
+#
 # 'ocsp.keys.storePassword' and 'ocsp.p11.p11password' and 'ocsp.keys.cardPassword' should not be defined if you are using the activation feature.
 # 
 
