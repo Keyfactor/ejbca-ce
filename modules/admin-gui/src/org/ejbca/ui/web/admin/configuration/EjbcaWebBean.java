@@ -275,6 +275,9 @@ public class EjbcaWebBean implements Serializable {
         int firstSlash = requestURL.indexOf("/");
         // Remove application path
         requestURL = requestURL.substring(0, firstSlash);
+        if (log.isDebugEnabled()) {
+            log.debug("requestServerName: "+requestURL);
+        }
         return requestURL;
     }
 

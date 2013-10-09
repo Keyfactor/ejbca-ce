@@ -24,6 +24,8 @@ You should first read the <a href="installation-va.html">Standalone VA installat
 </p><p>
 All default options for the OCSP responders OCSP behavior is set in conf/ocsp.properties. All options are documented in this file.
 </p>
+<p>You may also want to configure conf/cesecore.properties for "Secure audit log configuration", i.e. if you want to log to database or file. 
+The database audit log is only used for security events, i.e. access control and configuration change events when using the GUI or CLI.</p>
 </subsection>
 <subsection name="Responder signing keys">
 <p>
@@ -50,6 +52,32 @@ Note: The OCSP responders certificate(s) AND the CA certificate(s) need to be pu
 OCSP responder. For the CA you do this by setting the CRL publisher to the OCSP publisher.
 </note>
 </subsection>
+<subsection name="Accessing the Admin GUI">
+<p>
+The OCSP responder have the same Admin GUI as the CA, so you can manage all your Crypto Tokens and Key Bindings using the Admin GUI (or the CLI see below).
+In an OCSP responder you normally only use a few functions of the Admin GUI, although all of them are available.
+The important functions for an OCSP responder are:
+</p>
+<ul>
+<li>Crypto Tokens</li>
+<li>Internal Key Bindings</li>
+</ul>
+<p>In order to access the Admin GUI there are a few pre-requisites:</p>
+<ul>
+<li>TLS keystores available as p12/tomcat.jks and p12/truststore.jks, to be deployed with deploy-keystore and web-configure (may require configuration of keystore password in conf/web.properties).</li>
+<li>A Management CA certificate imported (the certificate of the CA that issues administrator certificates).</li>
+<li>Administrators configured with access rules.</li>
+</ul>
+<p>If you only want to set up a super administrator, the initial super administrator access rule is automatically set up during initial startup (see database tables AdminGroupData and AccessRulesData).
+You can run the following commands to import a Management CA certificate and add a SuperAdmin, that has a certificate with "CN=SuperAdmin" issued from this CA (this will create a record in database table AdminEntityData).</p>
+<source>
+bin/ejbca.sh ca importcacert ManagementCA /home/user/adminca1.pem
+bin/ejbca.sh roles addadmin "Super Administrator Role" ManagementCA WITH_COMMONNAME TYPE_EQUALCASE SuperAdmin
+</source>
+<p>
+If you do not want to import the administrator certificate into EJBCA you can configure "web.reqcertindb=false" in conf/web.properties, otherwise the administrator certificate must be present in the database. 
+</p>
+</subsection>
 <subsection name="Workflow for setting up a new OCSP signer">
 <p>This section requires the previous one to be completed first.</p>
 <ul>
@@ -75,7 +103,25 @@ by matching the key pair with the certificate.</li>
 <li>Go to AdminGUI of OCSP -> InternalKeyBindings and click "Activate" for your new OcspKeyBinding to start processing OCSP responses with it.</li>
 </ul>
 </subsection>
-<subsection name="Automated renewal of an OCSP signer via CA's WebService (a.k.a. Re-keying)">
+<subsection name="Using the CLI">
+<p>
+You can also use the local CLI to do the operations described above. The CLI contains on-line help when you run commands without parameters.
+</p>
+<source>
+bin/ejbca.sh cryptotoken
+</source>
+<source>
+bin/ejbca.sh keybind
+</source>
+</subsection>
+<subsection name="No password in memory">
+<p>
+To avoid that passwords are kept in memory, use manual activation of your referenced Crypto Tokens.
+</p>
+</subsection>
+</section>
+
+<section name="Automated renewal of an OCSP signer via CA's WebService (a.k.a. Re-keying)">
 <note>
 Re-keying as described below will change in a future version of EJBCA.
 The CA will keep track of the OCSP responders certificates and order key renewal and update the responder's certificates
@@ -152,12 +198,6 @@ The following application servers have been tested and confirmed to work as expe
 <li>JBoss 6.1.0.Final</li>
 </ol>
 </p>
-</subsection>
-<subsection name="No password in memory">
-<p>
-To avoid that passwords are kept in memory, use manual activation of your referenced Crypto Tokens.
-</p>
-</subsection>
 </section>
 
 <section name="Error handling">
@@ -172,7 +212,7 @@ Read about error handling and synchronization of the database in the
 
   <section name="Running several responders">
   <p>
-Additional OCSP DataSources for OCSP responders have to be added manually. The easiest way to do this
+Additional OCSP DataSources for publishers on the CA have to be added manually. The easiest way to do this
 on JBoss is to clone the initially deployed OCSP DataSource JBOSS_HOME/server/default/deploy/ocsp-ds.xml
 to JBOSS_HOME/server/default/deploy/ocsp2-ds.xml and change 
   </p>
