@@ -80,12 +80,12 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
                 // - If CA already exist, it might be a sub CA that waits for certificate from an external CA
                 // - If the CA does not already exist, we import the CA certificate as an "External CA" certificate in EJBCA, so we have the CA cert in EJBCA as a trust point
                 // getCAInfo throws an exception (CADoesntExistsException) if the CA does not exists, that is how we check if the CA exists 
-			    CAInfo cainfo = ejb.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), caName);
+			    CAInfo cainfo = ejb.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(cliUserName, cliPassword), caName);
 			    if (cainfo.getStatus() == CAConstants.CA_WAITING_CERTIFICATE_RESPONSE) {
 			        getLogger().info("CA '"+caName+"' is waiting for certificate response from external CA, importing certificate as certificate response to this CA.");
 			        X509ResponseMessage resp = new X509ResponseMessage();
 			        resp.setCertificate(certs.iterator().next());
-			        ejb.getRemoteSession(CAAdminSessionRemote.class).receiveResponse(getAdmin(cliUserName, cliPassword), cainfo.getCAId(), resp, null, null);
+			        ejb.getRemoteSession(CAAdminSessionRemote.class).receiveResponse(getAuthenticationToken(cliUserName, cliPassword), cainfo.getCAId(), resp, null, null);
 	                getLogger().info("Received certificate response and activated CA "+caName);                
 			    } else {
 			        throw new ErrorAdminCommandException("CA '"+caName+"' already exists and is not waiting for certificate response from an external CA.");                    
@@ -95,9 +95,9 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
 			    if (initAuth) {
 			        String subjectdn = CertTools.getSubjectDN(certs.iterator().next());
 			        Integer caid = Integer.valueOf(subjectdn.hashCode());
-			        initAuthorizationModule(getAdmin(cliUserName, cliPassword), caid.intValue(), superAdminCN);
+			        initAuthorizationModule(getAuthenticationToken(cliUserName, cliPassword), caid.intValue(), superAdminCN);
 			    }
-			    ejb.getRemoteSession(CAAdminSessionRemote.class).importCACertificate(getAdmin(cliUserName, cliPassword), caName, certs);
+			    ejb.getRemoteSession(CAAdminSessionRemote.class).importCACertificate(getAuthenticationToken(cliUserName, cliPassword), caName, certs);
 			    getLogger().info("Imported CA "+caName);
             }
 		} catch (CertificateException e) {

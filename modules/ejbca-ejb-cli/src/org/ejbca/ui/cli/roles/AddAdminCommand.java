@@ -60,14 +60,14 @@ public class AddAdminCommand extends BaseRolesCommand {
                 getLogger().info("Description: " + getDescription());
                 getLogger().info("Usage: " + getCommand() + " <name of role> <name of issuing CA> <match with> <match type> <match value>");
                 Collection<RoleData> roles = ejb.getRemoteSession(RoleManagementSessionRemote.class).getAllRolesAuthorizedToEdit(
-                        getAdmin(cliUserName, cliPassword));
+                        getAuthenticationToken(cliUserName, cliPassword));
                 Collections.sort((List<RoleData>) roles);
                 String availableRoles = "";
                 for (RoleData role : roles) {
                     availableRoles += (availableRoles.length() == 0 ? "" : ", ") + "\"" + role.getRoleName() + "\"";
                 }
                 getLogger().info("Available Roles: " + availableRoles);
-                Collection<String> canames = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAvailableCANames(getAdmin(cliUserName, cliPassword));
+                Collection<String> canames = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAvailableCANames(getAuthenticationToken(cliUserName, cliPassword));
                 String availableCas = "";
                 for (String caname : canames) {
                     availableCas += (availableCas.length() == 0 ? "" : ", ") + "\"" + caname + "\"";
@@ -91,7 +91,7 @@ public class AddAdminCommand extends BaseRolesCommand {
                 return;
             }
             String caName = args[2];
-            CAInfo caInfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), caName);
+            CAInfo caInfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(cliUserName, cliPassword), caName);
             if (caInfo == null) {
                 getLogger().error("No such CA \"" + caName + "\".");
                 return;
@@ -111,10 +111,11 @@ public class AddAdminCommand extends BaseRolesCommand {
             AccessUserAspectData accessUser = new AccessUserAspectData(roleName, caid, matchWith, matchType, matchValue);
             Collection<AccessUserAspectData> accessUsers = new ArrayList<AccessUserAspectData>();
             accessUsers.add(accessUser);
-            ejb.getRemoteSession(RoleManagementSessionRemote.class).addSubjectsToRole(getAdmin(cliUserName, cliPassword), ejb.getRemoteSession(RoleAccessSessionRemote.class).findRole(roleName),
+            ejb.getRemoteSession(RoleManagementSessionRemote.class).addSubjectsToRole(getAuthenticationToken(cliUserName, cliPassword), ejb.getRemoteSession(RoleAccessSessionRemote.class).findRole(roleName),
                     accessUsers);
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }
     }
+
 }

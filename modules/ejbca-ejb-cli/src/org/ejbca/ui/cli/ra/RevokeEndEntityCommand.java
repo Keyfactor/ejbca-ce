@@ -23,16 +23,24 @@ import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
- * Revokes a user in the database, and also revokes all the users certificates.
+ * Revokes an end entity in the database, and also revokes all that end entity's certificates.
  *
  * @version $Id$
  */
-public class RaRevokeUserCommand extends BaseRaAdminCommand {
+public class RevokeEndEntityCommand extends BaseRaCommand {
 
+    private static final String COMMAND = "revokeendentity";
+    private static final String OLD_COMMAND = "revokeuser";
+    
     @Override
-	public String getSubCommand() { return "revokeuser"; }
+	public String getSubCommand() { return COMMAND; }
     @Override
 	public String getDescription() { return "Revokes a user and all certificates for a user"; }
+    
+    @Override
+    public String[] getSubCommandAliases() {
+        return new String[]{OLD_COMMAND};
+    }
     
 	@Override
     public void execute(String[] args) throws ErrorAdminCommandException {
@@ -56,7 +64,7 @@ public class RaRevokeUserCommand extends BaseRaAdminCommand {
             if ((reason == 7) || (reason < 0) || (reason > 10)) {
             	getLogger().error("Reason must be an integer between 0 and 10 except 7.");
             } else {
-            	EndEntityInformation data = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAdmin(cliUserName, cliPassword), username);
+            	EndEntityInformation data = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAuthenticationToken(cliUserName, cliPassword), username);
                 if (data==null) {
                 	getLogger().error("User not found.");
                 	return;
@@ -67,8 +75,8 @@ public class RaRevokeUserCommand extends BaseRaAdminCommand {
                 getLogger().info("Old status=" + data.getStatus());
                 // Revoke users certificates
                 try {
-                    ejb.getRemoteSession(EndEntityManagementSessionRemote.class).revokeUser(getAdmin(cliUserName, cliPassword), username, reason);
-                    data = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAdmin(cliUserName, cliPassword), username);
+                    ejb.getRemoteSession(EndEntityManagementSessionRemote.class).revokeUser(getAuthenticationToken(cliUserName, cliPassword), username, reason);
+                    data = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAuthenticationToken(cliUserName, cliPassword), username);
                     getLogger().info("New status=" + data.getStatus());
                 } catch (AuthorizationDeniedException e) {
                 	getLogger().error("Not authorized to revoke user.");

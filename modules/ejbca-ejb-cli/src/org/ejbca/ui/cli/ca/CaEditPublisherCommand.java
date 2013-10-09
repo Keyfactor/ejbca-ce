@@ -100,7 +100,7 @@ public class CaEditPublisherCommand extends BaseCaAdminCommand {
                 if (!fieldEditor.listGetOrSet(listOnly, getOnly, name, field, value, pub)) {
                     // Store the modifies object
                     getLogger().info("Storing modified publisher '"+name+"'...");
-                    ejb.getRemoteSession(PublisherSessionRemote.class).changePublisher(getAdmin(cliUserName, cliPassword), name, pub);
+                    ejb.getRemoteSession(PublisherSessionRemote.class).changePublisher(getAuthenticationToken(cliUserName, cliPassword), name, pub);
                     // Verify our new value
                     getLogger().info("Reading modified value for verification...");
                     final BasePublisher modpub = ejb.getRemoteSession(PublisherSessionRemote.class).getPublisher(name);

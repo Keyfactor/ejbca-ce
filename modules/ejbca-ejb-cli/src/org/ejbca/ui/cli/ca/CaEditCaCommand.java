@@ -92,17 +92,17 @@ public class CaEditCaCommand extends BaseCaAdminCommand {
                 value = null;
             }
 
-            final CAInfo cainfo = ejb.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), name);
+            final CAInfo cainfo = ejb.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(cliUserName, cliPassword), name);
             if (cainfo == null) {
                 getLogger().info("CA '"+name+"' does not exist.");
             } else {
                 // List fields, get values or set value
                 if (!fieldEditor.listGetOrSet(listOnly, getOnly, name, field, value, cainfo)) {
                     getLogger().info("Storing modified CA info for CA '"+name+"'...");
-                    ejb.getRemoteSession(CaSessionRemote.class).editCA(getAdmin(cliUserName, cliPassword), cainfo);
+                    ejb.getRemoteSession(CaSessionRemote.class).editCA(getAuthenticationToken(cliUserName, cliPassword), cainfo);
                     // Verify our new value
                     getLogger().info("Reading modified value for verification...");
-                    final CAInfo cainfomod = ejb.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), name);
+                    final CAInfo cainfomod = ejb.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(cliUserName, cliPassword), name);
                     // Print return value
                     fieldEditor.getBeanValue(field, cainfomod);                    
                 }

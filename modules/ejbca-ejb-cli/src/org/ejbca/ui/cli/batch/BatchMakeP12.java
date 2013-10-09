@@ -156,7 +156,7 @@ public class BatchMakeP12 extends BaseCommand {
      */
     private Certificate[] getCACertChain(String cliUserName, String cliPassword, int caid) throws AuthorizationDeniedException {
         getLogger().trace(">getCACertChain()");
-        Certificate[] chain = (Certificate[]) ejb.getRemoteSession(SignSessionRemote.class).getCertificateChain(getAdmin(cliUserName, cliPassword), caid).toArray(new Certificate[0]);
+        Certificate[] chain = (Certificate[]) ejb.getRemoteSession(SignSessionRemote.class).getCertificateChain(getAuthenticationToken(cliUserName, cliPassword), caid).toArray(new Certificate[0]);
         getLogger().trace("<getCACertChain()");
         return chain;
     }
@@ -269,9 +269,9 @@ public class BatchMakeP12 extends BaseCommand {
 
         if (orgCert != null) {
             cert = orgCert;
-            boolean finishUser = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), caid).getFinishUser();
+            boolean finishUser = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(cliUserName, cliPassword), caid).getFinishUser();
             if (finishUser) {
-            	EndEntityInformation userdata = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAdmin(cliUserName, cliPassword), username);
+            	EndEntityInformation userdata = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAuthenticationToken(cliUserName, cliPassword), username);
                 ejb.getRemoteSession(EndEntityAuthenticationSessionRemote.class).finishUser(userdata);
             }
 
@@ -290,7 +290,7 @@ public class BatchMakeP12 extends BaseCommand {
             }
 
             X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, rsaKeys.getPrivate(), rsaKeys.getPublic(), sigAlg, false);
-            cert = (X509Certificate) ejb.getRemoteSession(SignSessionRemote.class).createCertificate(getAdmin(cliUserName, cliPassword), username, password, selfcert);
+            cert = (X509Certificate) ejb.getRemoteSession(SignSessionRemote.class).createCertificate(getAuthenticationToken(cliUserName, cliPassword), username, password, selfcert);
         }
 
         // System.out.println("issuer " + CertTools.getIssuerDN(cert) + ", " +
@@ -329,7 +329,7 @@ public class BatchMakeP12 extends BaseCommand {
 
         if (getUseKeyRecovery(cliUserName, cliPassword) && savekeys) {
             // Save generated keys to database.
-            ejb.getRemoteSession(KeyRecoverySessionRemote.class).addKeyRecoveryData(getAdmin(cliUserName, cliPassword), cert, username, rsaKeys);
+            ejb.getRemoteSession(KeyRecoverySessionRemote.class).addKeyRecoveryData(getAuthenticationToken(cliUserName, cliPassword), cert, username, rsaKeys);
         }
 
         // Use CN if as alias in the keystore, if CN is not present use username
@@ -376,9 +376,9 @@ public class BatchMakeP12 extends BaseCommand {
             boolean reusecertificate = ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfile(data.getEndEntityProfileId()).getReUseKeyRecoveredCertificate();
             // Recover Keys
 
-            KeyRecoveryInformation recoveryData = ejb.getRemoteSession(KeyRecoverySessionRemote.class).recoverKeys(getAdmin(cliUserName, cliPassword), data.getUsername(), data.getEndEntityProfileId());
+            KeyRecoveryInformation recoveryData = ejb.getRemoteSession(KeyRecoverySessionRemote.class).recoverKeys(getAuthenticationToken(cliUserName, cliPassword), data.getUsername(), data.getEndEntityProfileId());
             if (reusecertificate) {
-                ejb.getRemoteSession(KeyRecoverySessionRemote.class).unmarkUser(getAdmin(cliUserName, cliPassword), data.getUsername());
+                ejb.getRemoteSession(KeyRecoverySessionRemote.class).unmarkUser(getAuthenticationToken(cliUserName, cliPassword), data.getUsername());
             }
             if (recoveryData != null) {
                 rsaKeys = recoveryData.getKeyPair();
@@ -423,14 +423,14 @@ public class BatchMakeP12 extends BaseCommand {
             // request counter
             // meaning that we should not reset the clear text password yet.
 
-            EndEntityInformation vo = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAdmin(cliUserName, cliPassword), data.getUsername());
+            EndEntityInformation vo = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAuthenticationToken(cliUserName, cliPassword), data.getUsername());
             if ((vo.getStatus() == EndEntityConstants.STATUS_NEW) || (vo.getStatus() == EndEntityConstants.STATUS_FAILED)
                     || (vo.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY)) {
-                ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setClearTextPassword(getAdmin(cliUserName, cliPassword), data.getUsername(), data.getPassword());
+                ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setClearTextPassword(getAuthenticationToken(cliUserName, cliPassword), data.getUsername(), data.getPassword());
             } else {
                 // Delete clear text password, if we are not letting status be
                 // the same as originally
-                ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setClearTextPassword(getAdmin(cliUserName, cliPassword), data.getUsername(), null);
+                ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setClearTextPassword(getAuthenticationToken(cliUserName, cliPassword), data.getUsername(), null);
             }
             ret = true;
             String iMsg = intres.getLocalizedMessage("batch.generateduser", data.getUsername());
@@ -537,9 +537,9 @@ public class BatchMakeP12 extends BaseCommand {
                             failedusers += (":" + data.getUsername());
                             failcount++;
                             if (status == EndEntityConstants.STATUS_KEYRECOVERY) {
-                                ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAdmin(cliUserName, cliPassword), data.getUsername(), EndEntityConstants.STATUS_KEYRECOVERY);
+                                ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAuthenticationToken(cliUserName, cliPassword), data.getUsername(), EndEntityConstants.STATUS_KEYRECOVERY);
                             } else {
-                                ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAdmin(cliUserName, cliPassword), data.getUsername(), EndEntityConstants.STATUS_FAILED);
+                                ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAuthenticationToken(cliUserName, cliPassword), data.getUsername(), EndEntityConstants.STATUS_FAILED);
                             }
                         }
                     } else {
@@ -575,7 +575,7 @@ public class BatchMakeP12 extends BaseCommand {
         if (getLogger().isTraceEnabled()) {
             getLogger().trace(">createUser(" + username + ")");
         }
-        EndEntityInformation data = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAdmin(cliUserName, cliPassword), username);
+        EndEntityInformation data = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAuthenticationToken(cliUserName, cliPassword), username);
         if (data == null) {
             getLogger().error(intres.getLocalizedMessage("batch.errorunknown", username));
             return;
@@ -591,9 +591,9 @@ public class BatchMakeP12 extends BaseCommand {
                     String errMsg = intres.getLocalizedMessage("batch.errorsetstatus", "FAILED");
                     getLogger().error(errMsg, e);
                     if (status == EndEntityConstants.STATUS_KEYRECOVERY) {
-                        ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAdmin(cliUserName, cliPassword), data.getUsername(), EndEntityConstants.STATUS_KEYRECOVERY);
+                        ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAuthenticationToken(cliUserName, cliPassword), data.getUsername(), EndEntityConstants.STATUS_KEYRECOVERY);
                     } else {
-                        ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAdmin(cliUserName, cliPassword), data.getUsername(), EndEntityConstants.STATUS_FAILED);
+                        ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAuthenticationToken(cliUserName, cliPassword), data.getUsername(), EndEntityConstants.STATUS_FAILED);
                     }
                     errMsg = intres.getLocalizedMessage("batch.errorbatchfaileduser", username);
                     throw new Exception(errMsg);
@@ -627,6 +627,11 @@ public class BatchMakeP12 extends BaseCommand {
 
     @Override
     public String[] getMainCommandAliases() {
+        return new String[]{};
+    }
+    
+    @Override
+    public String[] getSubCommandAliases() {
         return new String[]{};
     }
 }

@@ -24,17 +24,23 @@ import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
- * Set the Subject Directory Attributes for a user.
+ * Set the Subject Directory Attributes for an end entity.
  *
  * @version $Id$
  */
-public class RaSetSubjDirAttrCommand extends BaseRaAdminCommand {
+public class SetSubjDirAttrCommand extends BaseRaCommand {
 
     @Override
 	public String getSubCommand() { return "setsubjectdirattr"; }
+    
     @Override
-    public String getDescription() { return "Set the Subject Directory Attributes for a user"; }
+    public String getDescription() { return "Set the Subject Directory Attributes for a end entity"; }
 
+    @Override
+    public String[] getSubCommandAliases() {
+        return new String[]{};
+    }
+    
     @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
@@ -56,20 +62,20 @@ public class RaSetSubjDirAttrCommand extends BaseRaAdminCommand {
             	getLogger().error("Subject directory attributes must be supplied.");
             	return;
             }
-            getLogger().info("Setting subject directory attributes '" + attributes + "' for user " + username);
+            getLogger().info("Setting subject directory attributes '" + attributes + "' for end entity " + username);
             try {
-            	EndEntityInformation uservo = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAdmin(cliUserName, cliPassword), username);
+            	EndEntityInformation uservo = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAuthenticationToken(cliUserName, cliPassword), username);
             	ExtendedInformation ext = uservo.getExtendedinformation();
             	if (ext == null) {
             		ext = new ExtendedInformation();
             	}
             	ext.setSubjectDirectoryAttributes(attributes);
             	uservo.setExtendedinformation(ext);
-            	ejb.getRemoteSession(EndEntityManagementSessionRemote.class).changeUser(getAdmin(cliUserName, cliPassword), uservo, false);
+            	ejb.getRemoteSession(EndEntityManagementSessionRemote.class).changeUser(getAuthenticationToken(cliUserName, cliPassword), uservo, false);
             } catch (AuthorizationDeniedException e) {
-            	getLogger().error("Not authorized to change userdata.");
+            	getLogger().error("Not authorized to change end entity.");
             } catch (UserDoesntFullfillEndEntityProfile e) {
-            	getLogger().error("Given userdata doesn't fullfill end entity profile. : " + e.getMessage());
+            	getLogger().error("Given end entity doesn't fullfill end entity profile. : " + e.getMessage());
             }
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);

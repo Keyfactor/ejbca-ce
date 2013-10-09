@@ -13,28 +13,39 @@
  
 package org.ejbca.ui.cli.ra;
 
-import javax.ejb.FinderException;
+import java.util.Collection;
+import java.util.Iterator;
 
-import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
- * Set the clear text password for a user in the database.  Clear text passwords are used for batch
- * generation of keystores (pkcs12/pem).
+ * List end entities with status NEW in the database.
  *
  * @version $Id$
+ *
+ * @see org.ejbca.core.ejb.ra.UserDataLocal
  */
-public class RaSetClearPwdCommand extends BaseRaAdminCommand {
-
-    @Override
-	public String getSubCommand() { return "setclearpwd"; }
-    @Override
-    public String getDescription() { return "Set a clear text password for a user for batch generation"; }
+public class ListNewEndEntitiesCommand extends BaseRaCommand {
     
-	@Override
+    private static final String COMMAND = "listnewendentities";
+    private static final String OLD_COMMAND = "listnewusers";
+    
+    @Override
+	public String getSubCommand() { return COMMAND; }
+    
+    @Override
+    public String getDescription() { return "List end entities with status 'NEW'"; }
+    
+    @Override
+    public String[] getSubCommandAliases() {
+        return new String[]{OLD_COMMAND};
+    }
+    
+    @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);
@@ -43,23 +54,13 @@ public class RaSetClearPwdCommand extends BaseRaAdminCommand {
         }
         
         try {
-            if (args.length < 3) {
-    			getLogger().info("Description: " + getDescription());
-            	getLogger().info("Usage: " + getCommand() + " <username> <password>");
-                return;
-            }
-            String username = args[1];
-            String password = args[2];
-            getLogger().info("Setting clear text password for user " + username);
-
-            try {
-                ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setClearTextPassword(getAdmin(cliUserName, cliPassword), username, password);
-            } catch (AuthorizationDeniedException e) {
-            	getLogger().error("Not authorized to change userdata.");
-            } catch (UserDoesntFullfillEndEntityProfile e) {
-            	getLogger().error("Given userdata doesn't fullfill end entity profile. : " + e.getMessage());
-            } catch (FinderException e) {
-                getLogger().error("User '"+username+"' does not exist.");
+            Collection<EndEntityInformation> coll = ejb.getRemoteSession(EndEntityManagementSessionRemote.class).findAllUsersByStatus(getAuthenticationToken(cliUserName, cliPassword), EndEntityConstants.STATUS_NEW);
+            Iterator<EndEntityInformation> iter = coll.iterator();
+            while (iter.hasNext()) {
+            	EndEntityInformation data = iter.next();
+                getLogger().info("New end entity: " + data.getUsername() + ", \"" + data.getDN() +
+                    "\", \"" + data.getSubjectAltName() + "\", " + data.getEmail() + ", " +
+                    data.getStatus() + ", " + data.getType().getHexValue() + ", " + data.getTokenType());
             }
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);

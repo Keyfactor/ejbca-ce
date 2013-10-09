@@ -46,7 +46,7 @@ public class ListRolesCommand extends BaseRolesCommand {
         }
         
         try {
-            Collection<RoleData> roles = ejb.getRemoteSession(RoleManagementSessionRemote.class).getAllRolesAuthorizedToEdit(getAdmin(cliUserName, cliPassword));            
+            Collection<RoleData> roles = ejb.getRemoteSession(RoleManagementSessionRemote.class).getAllRolesAuthorizedToEdit(getAuthenticationToken(cliUserName, cliPassword));            
             Collections.sort((List<RoleData>) roles);
             for (RoleData role : roles) {                
                 int numberOfAdmins = role.getAccessUsers().size();

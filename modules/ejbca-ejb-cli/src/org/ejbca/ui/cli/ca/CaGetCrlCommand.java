@@ -61,7 +61,7 @@ public class CaGetCrlCommand extends BaseCaAdminCommand {
 			// Perform CRL fetch
 			String caname = args[1];
 			String outfile = args[2];
-			String issuerdn = getIssuerDN(getAdmin(cliUserName, cliPassword), caname);
+			String issuerdn = getIssuerDN(getAuthenticationToken(cliUserName, cliPassword), caname);
 			byte[] crl = ejb.getRemoteSession(CrlStoreSessionRemote.class).getLastCRL(issuerdn, deltaSelector);
 			if (crl != null) {
 				FileOutputStream fos = new FileOutputStream(outfile);

@@ -20,7 +20,7 @@ import org.ejbca.ui.cli.BaseCommand;
  *
  * @version $Id$
  */
-public abstract class BaseRaAdminCommand extends BaseCommand {
+public abstract class BaseRaCommand extends BaseCommand {
 
 	public static final String MAINCOMMAND = "ra";
 	
