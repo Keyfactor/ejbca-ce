@@ -150,8 +150,6 @@ function checkresponseprotection(sel) {
         <%= ejbcawebbean.getHelpReference("/adminguide.html#CMP%20Message%20Authentication") %>
         </h3>
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPAUTHENTICATIONMODULE_HELP\") %>"/></p>
-        <p class="help">In case of 'EndEntityCertificate', setting the issuer CA to '-' will skip some verification tests in combination with NestedMessageContent.
-        		Highly unrecommended unless you know what you are doing.</p>
       </td>
       <td width="50%"> 
       	<input type="checkbox" name="<%= CHECKBOX_HMAC %>" value="<%=cmpconfig.AUTHMODULE_HMAC %>" 
@@ -191,6 +189,7 @@ function checkresponseprotection(sel) {
 					}%>
 				id="<%=CHECKBOX_EEC%>" />
 				<label for="<%=CHECKBOX_EEC%>"><c:out value="<%= cmpconfig.AUTHMODULE_ENDENTITY_CERTIFICATE %>" /></label>
+				<% if(ramode) {%>
 				&nbsp;&nbsp;&nbsp;
 				<label for="<%=LIST_ECCCAS%>"><c:out value="<%= ejbcawebbean.getText(\"CMPECCISSUERCA\") %>" /></label>
 				<select name="<%=LIST_ECCCAS%>" >
@@ -201,11 +200,9 @@ function checkresponseprotection(sel) {
            			%>     <option <% if(currentECCCA.equals(eccca)) { %> selected <% } %>
                   				value='<c:out value="<%= eccca%>"/>'><c:out value="<%= eccca %>"/></option> 
            			<% } %>
-           			<% if(ramode) { %>
-           				<option <% if(currentECCCA.equals("-")) { %> selected <% } %>
-                  				value='<c:out value="-"/>'><c:out value="- (not recommended)"/></option>
-           			<% } %>
-        		</select><br/>
+        		</select>
+        		<% } %>
+        		<br/>
 		<% } %>
 		<% if(!ramode) { %>
 		<input type="checkbox" name="<%= CHECKBOX_REGTOKEN %>" value="<%=cmpconfig.AUTHMODULE_REG_TOKEN_PWD %>" 
@@ -591,6 +588,26 @@ function checkresponseprotection(sel) {
         	maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>">
       </td>
     </tr>
+    
+    <% if(ramode) { %>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" align="top"> 
+        <h3><c:out value="<%= ejbcawebbean.getText(\"CMPOMITVERIFICATIONSINECC\") %>"/>
+        </h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPOMITVERIFICATIONSINECC_HELP\") %>"/></p>
+        <p class="help">Checking this box will skip verifying that the certificate attached in the extraCert field:
+        		exists in the database, is issued by the right CA, is active, is valid and that it belongs to an authorized  administrator</p>
+      </td>
+      <td width="50%"> 
+        <input type="checkbox" name="<%=CHECKBOX_OMITVERIFICATIONINECC%>" value="<%=CHECKBOX_VALUE %>" 
+			<% if(cmpconfig.getOmitVerificationsInEEC(alias)) out.write(" CHECKED "); %>
+			id="<%=CHECKBOX_OMITVERIFICATIONINECC%>" />
+		<label for="<%=CHECKBOX_OMITVERIFICATIONINECC%>"><c:out value="<%= ejbcawebbean.getText(\"OMIT\") %>" /></label> 
+      </td>
+    </tr>
+    <% } %>
+    
+    
     
     
     
