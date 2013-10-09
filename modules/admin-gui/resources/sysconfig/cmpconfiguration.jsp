@@ -60,6 +60,7 @@
 	static final String CHECKBOX_EEC								= "checkboxeec";
 	static final String CHECKBOX_REGTOKEN							= "checkboxregtoken";
 	static final String CHECKBOX_DNPART							= "checkboxdnpart";
+	static final String CHECKBOX_OMITVERIFICATIONINECC				= "checkboxomitverificationsinecc";
 
 	
 	static final String LIST_CMPDEFAULTCAS					   		= "listcmpdefaultcas";
@@ -263,12 +264,10 @@
     						// TODO fix it better
     			            ArrayList<String> authmodule = new ArrayList<String>();
     			            ArrayList<String> authparam = new ArrayList<String>();
-    			            if(/*request.getParameter(LIST_CMPRESPONSEPROTECTION).equals("pbe")*/ pbe && ramode) {
+    			            if(pbe && ramode) {
     			            		value = CmpConfiguration.AUTHMODULE_HMAC;
-    			            		//pbe = true;
     			            } else {
     			            		value = request.getParameter(CHECKBOX_HMAC);
-    			            		//pbe = false;
     			            }
     			            if(value !=null) {
     			            		authmodule.add(value);
@@ -290,7 +289,7 @@
     			            		value = request.getParameter(CHECKBOX_EEC);
     			            		if(value != null) {
     			            				authmodule.add(value);
-    			            				authparam.add(request.getParameter(LIST_ECCCAS));
+    			            				authparam.add(ramode ? request.getParameter(LIST_ECCCAS) : "-");
     			            		}
     			            		if(!ramode) {
     			            				value = request.getParameter(CHECKBOX_REGTOKEN);
@@ -395,6 +394,11 @@
     			            // Nested message content
     			            value = request.getParameter(TEXTFIELD_NESTEDMESSAGETRUSTEDCERTPATH);
     			            cmpconfig.setRACertPath(alias, value == null ? "" : value);
+    			            
+    			            // Nested message content - omit some verifications in EndEntityCertificate authentication module
+    			            value = request.getParameter(CHECKBOX_OMITVERIFICATIONINECC);
+    			            cmpconfig.setOmitVerificationsInECC(alias, (value != null));
+    			            
     			            
     			            
     			            // ------------------- BUTTONS -------------------------
