@@ -102,7 +102,7 @@ public enum OcspSigningCache {
             log.debug("Committing the following to OCSP cache:");
             for (final Integer key : staging.keySet()) {
                 final OcspSigningCacheEntry entry = staging.get(key);
-                log.debug(" KeyBindingId: " + key + ", SubjectDN '" + CertTools.getSubjectDN(entry.getFullCertificateChain().get(0))+"', IssuerDN '"+CertTools.getSubjectDN(entry.getFullCertificateChain().get(0))+" SerialNumber "+entry.getFullCertificateChain().get(0).getSerialNumber().toString()+"/"+entry.getFullCertificateChain().get(0).getSerialNumber().toString(16));
+                log.debug(" KeyBindingId: " + key + ", SubjectDN '" + CertTools.getSubjectDN(entry.getFullCertificateChain().get(0))+"', IssuerDN '"+CertTools.getIssuerDN(entry.getFullCertificateChain().get(0))+"', SerialNumber "+entry.getFullCertificateChain().get(0).getSerialNumber().toString()+"/"+entry.getFullCertificateChain().get(0).getSerialNumber().toString(16));
                 if (entry.getOcspKeyBinding() != null) {
                     log.debug("   keyPairAlias: " + entry.getOcspKeyBinding().getKeyPairAlias());
                 }
