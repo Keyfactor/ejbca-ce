@@ -218,7 +218,8 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 					// if extractUsernameComponent is null, we have to find the user from the DN
 					// if not empty the message will find the username itself, in the getUsername method
 					final String dn = crmfreq.getSubjectDN();
-					EndEntityInformation data = getUserData(dn);
+			        final String username = getUsername(dn);
+					EndEntityInformation data = getUserData(dn, username);
 
 					if (data != null) {
 						if (LOG.isDebugEnabled()) {
@@ -233,27 +234,31 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 						    LOG.info(e.getLocalizedMessage(), e);
 						    return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getLocalizedMessage());
 						}
+						
+			              // Get the certificate
+		                if(crmfreq.getHeader().getProtectionAlg() != null) {
+		                    crmfreq.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(crmfreq.getHeader().getProtectionAlg().getAlgorithm().getId()));
+		                }
+		                resp = signSession.createCertificate(admin, crmfreq, org.ejbca.core.protocol.cmp.CmpResponseMessage.class, data);
 
 					} else {
 						final String errMsg = INTRES.getLocalizedMessage("cmp.infonouserfordn", dn);
 						LOG.info(errMsg);
+						
+		                // If we didn't find the entity return error message
+		                final String failText = INTRES.getLocalizedMessage("signsession.nosuchuser", username);
+		                LOG.info(failText);
+		                resp = signSession.createRequestFailedResponse(admin, crmfreq, org.ejbca.core.protocol.cmp.CmpResponseMessage.class, FailInfo.INCORRECT_DATA, failText);
 					}
 				}
 			} else {
 				final String errMsg = INTRES.getLocalizedMessage("cmp.errornocmrfreq");
 				LOG.error(errMsg);
 			}
-			// This is a request message, so we want to enroll for a certificate, if we have not created an error already
+			
 			if (resp == null) {
-				// Get the certificate
-			    if(crmfreq.getHeader().getProtectionAlg() != null) {
-			        crmfreq.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(crmfreq.getHeader().getProtectionAlg().getAlgorithm().getId()));
-			    }
-				resp = signSession.createCertificate(admin, crmfreq, org.ejbca.core.protocol.cmp.CmpResponseMessage.class, null);				
-			}
-			if (resp == null) {
-				final String errMsg = INTRES.getLocalizedMessage("cmp.errornullresp");
-				LOG.error(errMsg);
+                final String errMsg = INTRES.getLocalizedMessage("cmp.errornullresp");
+                LOG.error(errMsg);
 			}
 		} catch (AuthorizationDeniedException e) {
 			final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
@@ -484,14 +489,10 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 		return messageVerifyer.getUsedAuthenticationModule();
 	}
 	
-	private EndEntityInformation getUserData(String dn) throws AuthorizationDeniedException {
+	private EndEntityInformation getUserData(String dn, String username) throws AuthorizationDeniedException {
 	    EndEntityInformation data = null;
 	    /** Defines which component from the DN should be used as username in EJBCA. Can be DN, UID or nothing. Nothing means that the DN will be used to look up the user. */
-        final String usernameComp = this.cmpConfiguration.getExtractUsernameComponent(this.confAlias);
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("extractUsernameComponent: "+usernameComp);
-        }
-        if (StringUtils.isEmpty(usernameComp)) {
+        if (StringUtils.isEmpty(username)) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("looking for user with dn: "+dn);
             }
@@ -503,13 +504,23 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
                 LOG.warn("Multiple end entities with subject DN " + dn + " were found. This may lead to unexpected behavior.");
             }
         } else {
-            final String username = CertTools.getPartFromDN(dn,usernameComp);
             if (LOG.isDebugEnabled()) {
                 LOG.debug("looking for user with username: "+username);
             }                       
             data = endEntityAccessSession.findUser(admin, username);
         }
         return data;
+	}
+	
+	private String getUsername(String dn) {
+        final String usernameComp = this.cmpConfiguration.getExtractUsernameComponent(this.confAlias);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("extractUsernameComponent: "+usernameComp);
+        }
+        if(StringUtils.isNotEmpty(usernameComp)) {
+            return CertTools.getPartFromDN(dn,usernameComp);
+        }
+        return null;
 	}
 
 }
