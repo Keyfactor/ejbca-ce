@@ -35,7 +35,6 @@ public class CliCommandHelper {
         List<CliCommand> commandList = new ArrayList<CliCommand>();
         List<String> mainCommands = new ArrayList<String>();
         List<Class<?>> list = PluginTool.getSome(basePackage, CliCommandPlugin.class, true);
-        // List<Class<?>> list = PluginTool.getSome(null, CliCommandPlugin.class, true); // This is painfully slow!
         // Extract all the commands from the plugins
         for (final Class<?> command : list) {
             try {
@@ -79,7 +78,6 @@ public class CliCommandHelper {
         }
         // Look for all sub commands (and execute if found)
         List<CliCommand> subTargets = new ArrayList<CliCommand>();
-       // List<String> subCommands = new ArrayList<String>();
         for (CliCommand cliCommand : commandList) {
             //Check for the main command
             if (args.length > 0 && cliCommand.getMainCommand() != null) {
@@ -115,7 +113,6 @@ public class CliCommandHelper {
                         }
                     }
                     subTargets.add(cliCommand);
-                    // subCommands.add(cliCommand.getSubCommand());
                 }
             }
         }
