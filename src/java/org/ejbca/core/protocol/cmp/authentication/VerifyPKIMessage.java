@@ -173,8 +173,7 @@ public class VerifyPKIMessage {
         }
         
         if(StringUtils.equals(module, CmpConfiguration.AUTHMODULE_HMAC)) {
-            return new HMACAuthenticationModule(admin, parameter, confAlias, cmpConfiguration, cainfo, 
-            		        eeAccessSession, certificateStoreSession);
+            return new HMACAuthenticationModule(admin, parameter, confAlias, cmpConfiguration, cainfo, eeAccessSession);
         } else if(StringUtils.equals(module, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE)) {
             return new EndEntityCertificateAuthenticationModule(admin, parameter, confAlias, cmpConfiguration, 
                             caSession, certificateStoreSession, authorizationSessoin, eeProfileSession, 

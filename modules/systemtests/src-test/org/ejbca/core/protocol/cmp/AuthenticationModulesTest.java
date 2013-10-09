@@ -243,7 +243,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         assertNotNull("Protecting PKIMessage with HMACPbe failed.", req);
 
         HMACAuthenticationModule hmac = new HMACAuthenticationModule(ADMIN, "-", configAlias, cmpConfiguration, 
-                                caSession.getCAInfo(ADMIN, caid), eeAccessSession, certStoreSession);
+                                caSession.getCAInfo(ADMIN, caid), eeAccessSession);
         try {
             hmac.verifyOrExtract(req, null, false);
             assertNotNull("HMAC returned null password.", hmac.getAuthenticationString());
@@ -838,7 +838,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         assertNotNull("Protecting PKIMessage failed", req);
 
         HMACAuthenticationModule hmac = new HMACAuthenticationModule(ADMIN, "-", configAlias, cmpConfiguration, 
-                                caSession.getCAInfo(ADMIN, caid), eeAccessSession, certStoreSession);
+                                caSession.getCAInfo(ADMIN, caid), eeAccessSession);
         boolean res = hmac.verifyOrExtract(req, null, false);
         assertTrue("Verifying the message authenticity using HMAC failed.", res);
         assertNotNull("HMAC returned null password.", hmac.getAuthenticationString());
