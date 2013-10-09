@@ -49,13 +49,14 @@ public class CliCommandHelper {
                 final String subCommand = cliCommandPlugin.getSubCommand();
                 final String description = cliCommandPlugin.getDescription();
                 final String[] commmandAliases = cliCommandPlugin.getMainCommandAliases();
+                final String[] subcommandAliases = cliCommandPlugin.getSubCommandAliases();
                 if (subCommand == null || subCommand.trim().length() == 0
                         || description == null || description.trim().length() == 0) {
                     log.warn("Will not register plugin class " + command.getName() + ": Required getter returned an empty String.");
                     continue;
                 }
                 // log.debug(" main: " + mainCommand + " sub: " + subCommand + " description: " + description);
-                commandList.add(new CliCommand(mainCommand, commmandAliases, subCommand, description, (Class<CliCommandPlugin>) command));
+                commandList.add(new CliCommand(mainCommand, commmandAliases, subCommand, subcommandAliases, description, (Class<CliCommandPlugin>) command));
                 if (!mainCommands.contains(mainCommand)) {
                     mainCommands.add(mainCommand);
                 }
@@ -78,7 +79,7 @@ public class CliCommandHelper {
         }
         // Look for all sub commands (and execute if found)
         List<CliCommand> subTargets = new ArrayList<CliCommand>();
-        List<String> subCommands = new ArrayList<String>();
+       // List<String> subCommands = new ArrayList<String>();
         for (CliCommand cliCommand : commandList) {
             //Check for the main command
             if (args.length > 0 && cliCommand.getMainCommand() != null) {
@@ -92,21 +93,34 @@ public class CliCommandHelper {
                     }
                 }
                 if (isMainCommand || isAliasCommand) {
-                    if (args.length > 1 && cliCommand.getSubCommand().equalsIgnoreCase(args[1])) {
-                        if(isAliasCommand) {
-                            log.error("WARNING: The command <" + args[0] + "> is deprecated and will soon be removed." + " Please change to using"
-                                    + " the command <"+ cliCommand.getMainCommand() + "> instead.");
+                    if (args.length > 1) {
+                        boolean isSubCommand = cliCommand.getSubCommand().equalsIgnoreCase(args[1]);
+                        boolean isSubCommandAlias = false;
+                        for(String subCommandAlias : cliCommand.getSubCommandAliases()) {
+                            if(subCommandAlias.equalsIgnoreCase(args[1])) {
+                                isSubCommandAlias = true;
+                            }
                         }
-                        executeCommand(cliCommand.getCommandClass(), args, true);
-                        return;
+                        if (isSubCommand || isSubCommandAlias) {
+                            if (isAliasCommand) {
+                                log.error("WARNING: The command <" + args[0] + "> is deprecated and will soon be removed."
+                                        + " Please change to using" + " the command <" + cliCommand.getMainCommand() + "> instead.");
+                            }
+                            if (isSubCommandAlias) {
+                                log.error("WARNING: The subcommand <" + args[1] + "> is deprecated and will soon be removed."
+                                        + " Please change to using" + " the command <" + cliCommand.getSubCommand() + "> instead.");
+                            }
+                            executeCommand(cliCommand.getCommandClass(), args, true);
+                            return;
+                        }
                     }
                     subTargets.add(cliCommand);
-                    subCommands.add(cliCommand.getSubCommand());
+                    // subCommands.add(cliCommand.getSubCommand());
                 }
             }
         }
         // If we didn't execute something by now the command wasn't found
-        if (subTargets.isEmpty()) { /*args.length<2 && */
+        if (subTargets.isEmpty()) { 
             String mainCommandsString = "";
             for (String mainCommand : mainCommands) {
                 mainCommandsString += (mainCommandsString.length() == 0 ? "" : " | ") + (mainCommand != null ? mainCommand : "");

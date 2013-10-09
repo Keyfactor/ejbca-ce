@@ -58,9 +58,9 @@ public class CaInfoCommand extends BaseCaAdminCommand {
 
         CryptoProviderTools.installBCProvider();
         String caname = args[1];     
-        CAInfo cainfo = getCAInfo(getAdmin(cliUserName, cliPassword), caname);
+        CAInfo cainfo = getCAInfo(getAuthenticationToken(cliUserName, cliPassword), caname);
         if (cainfo != null) {
-            ArrayList<Certificate> chain = new ArrayList<Certificate>(getCertChain(getAdmin(cliUserName, cliPassword), caname));
+            ArrayList<Certificate> chain = new ArrayList<Certificate>(getCertChain(getAuthenticationToken(cliUserName, cliPassword), caname));
             getLogger().info("CA name: " + caname);
             getLogger().info("CA type: " + cainfo.getCAType());
             getLogger().info("CA ID: " + cainfo.getCAId());

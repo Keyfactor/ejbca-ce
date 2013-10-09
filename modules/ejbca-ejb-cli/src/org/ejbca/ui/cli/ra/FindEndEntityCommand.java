@@ -21,16 +21,24 @@ import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
- * Find details of a user in the database.
+ * Find details of an end entity in the database.
  *
  * @version $Id$
  */
-public class RaFindUserCommand extends BaseRaAdminCommand {
+public class FindEndEntityCommand extends BaseRaCommand {
 
+    private static final String COMMAND = "findendentity";
+    private static final String OLD_COMMAND = "finduser";
+    
     @Override
-	public String getSubCommand() { return "finduser"; }
+	public String getSubCommand() { return COMMAND; }
     @Override
-    public String getDescription() { return "Find and show details of a user"; }
+    public String getDescription() { return "Find and show details of an end entity"; }
+    
+    @Override
+    public String[] getSubCommandAliases() {
+        return new String[]{OLD_COMMAND};
+    }
 
     @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
@@ -48,9 +56,9 @@ public class RaFindUserCommand extends BaseRaAdminCommand {
             }
             String username = args[1];
             try {
-                EndEntityInformation data = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAdmin(cliUserName, cliPassword), username);
+                EndEntityInformation data = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAuthenticationToken(cliUserName, cliPassword), username);
                 if (data != null) {
-                	getLogger().info("Found user:");
+                	getLogger().info("Found end entity:");
                 	getLogger().info("Username: " + data.getUsername());
                     getLogger().info("Password: " + (data.getPassword() != null ? data.getPassword() : "<hidden>"));
                     getLogger().info("DN: \"" + data.getDN() + "\"");
@@ -67,10 +75,10 @@ public class RaFindUserCommand extends BaseRaAdminCommand {
                     getLogger().info("Created: " + data.getTimeCreated());
                     getLogger().info("Modified: " + data.getTimeModified());
                 } else {
-                    getLogger().error("User '" + username + "' does not exist.");
+                    getLogger().error("End entity '" + username + "' does not exist.");
                 }
             } catch (AuthorizationDeniedException e) {
-                getLogger().error("Error : Not authorized to view user.");
+                getLogger().error("Error : Not authorized to view end entity.");
             }
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);

@@ -59,7 +59,7 @@ public class CaChangeCertProfileCommand extends BaseCaAdminCommand {
 		try {
 		    final String caName = args[1];
 		    {
-		        final CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), caName);
+		        final CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(cliUserName, cliPassword), caName);
 		        final String certProfileName = args[2];
 		        getLogger().debug("Searching for Certificate Profile " + certProfileName);
 		        final int certificateprofileid = ejb.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfileId(certProfileName);
@@ -68,9 +68,9 @@ public class CaChangeCertProfileCommand extends BaseCaAdminCommand {
 		            throw new Exception("Certificate Profile '" + certProfileName + "' does not exist.");
 		        }
                 cainfo.setCertificateProfileId(certificateprofileid);
-                ejb.getRemoteSession(CAAdminSessionRemote.class).editCA(getAdmin(cliUserName, cliPassword), cainfo);
+                ejb.getRemoteSession(CAAdminSessionRemote.class).editCA(getAuthenticationToken(cliUserName, cliPassword), cainfo);
 		    }{
-                final CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), caName);
+                final CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(cliUserName, cliPassword), caName);
                 getLogger().info("Certificate profile for CA changed:");
                 getLogger().info("CA Name: " + caName);
                 getLogger().info("Certificate Profile: " + ejb.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfileName(cainfo.getCertificateProfileId()));
@@ -89,7 +89,7 @@ public class CaChangeCertProfileCommand extends BaseCaAdminCommand {
 		Collection<Integer> cas = null;
 		try {
 			// Print available CAs
-			cas = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCAs(getAdmin(cliUserName, cliPassword));
+			cas = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCAs(getAuthenticationToken(cliUserName, cliPassword));
 			boolean first = true;
 			for (Integer caid : cas) {
 				if (first) {
@@ -97,7 +97,7 @@ public class CaChangeCertProfileCommand extends BaseCaAdminCommand {
 				} else {
 					existingCasInfo += ", ";
 				}
-				CAInfo info = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), caid);
+				CAInfo info = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(cliUserName, cliPassword), caid);
 				existingCasInfo += info.getName();				
 			}
 		} catch (Exception e) {

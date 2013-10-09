@@ -45,7 +45,7 @@ public class CaRemoveKeyStoreCommand extends BaseCaAdminCommand {
 		}
 		try {
 			String caName = args[1];
-			ejb.getRemoteSession(CAAdminSessionRemote.class).removeCAKeyStore(getAdmin(cliUserName, cliPassword), caName);
+			ejb.getRemoteSession(CAAdminSessionRemote.class).removeCAKeyStore(getAuthenticationToken(cliUserName, cliPassword), caName);
 		} catch (Exception e) {
 			throw new ErrorAdminCommandException(e);
 		}

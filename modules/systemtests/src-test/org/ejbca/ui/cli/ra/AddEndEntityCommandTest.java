@@ -56,7 +56,7 @@ import org.junit.Test;
  * 
  * @version $Id$
  */
-public class RaAddUserCommandTest {
+public class AddEndEntityCommandTest {
 
     private static final String USER_NAME = "RaSetPwdCommandTest_user1";
     private static final String USER_NAME_INVALID = "RaSetPwdCommandTest_user12";
@@ -67,9 +67,9 @@ public class RaAddUserCommandTest {
     private static final String[] INVALIDUSER_PATH_SETPWDPWD_ARGS = { "setpwd", USER_NAME_INVALID, "foo123bar" };
     private static final String[] INVALIDUSER_PATH_SETCLEARPWD_ARGS = { "setclearpwd", USER_NAME_INVALID, "foo123bar" };
 
-    private RaAddUserCommand command0;
-    private RaSetPwdCommand command1;
-    private RaSetClearPwdCommand command2;
+    private AddEndEntityCommand command0;
+    private SetPasswordCommand command1;
+    private SetCleartextPasswordCommand command2;
     private CA testx509ca;
     private AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("RaSetPwdCommandTest"));
 
@@ -83,9 +83,9 @@ public class RaAddUserCommandTest {
         testx509ca = CaSessionTest.createTestX509CA("CN=" + CA_NAME, null, false, keyusage);
         caSession.addCA(admin, testx509ca);
         
-        command0 = new RaAddUserCommand();
-        command1 = new RaSetPwdCommand();
-        command2 = new RaSetClearPwdCommand();
+        command0 = new AddEndEntityCommand();
+        command1 = new SetPasswordCommand();
+        command2 = new SetCleartextPasswordCommand();
     }
     
     @After
@@ -168,7 +168,7 @@ public class RaAddUserCommandTest {
             assertFalse(eeSession.verifyPassword(admin, USER_NAME, "bar123"));
             // Verify that we had a nice error message that the user did not exist
             List<LoggingEvent> log = appender1.getLog();
-            assertEquals("User '"+USER_NAME_INVALID+"' does not exist.", log.get(1).getMessage());
+            assertEquals("End entity with username '"+USER_NAME_INVALID+"' does not exist.", log.get(1).getMessage());
 
             // Append our test appender to the commands logger, so we can check the output of the command 
             // after running
@@ -186,7 +186,7 @@ public class RaAddUserCommandTest {
             assertFalse(eeSession.verifyPassword(admin, USER_NAME, "foo123bar"));
             // Verify that we had a nice error message that the user did not exist
             log = appender2.getLog();
-            assertEquals("User '"+USER_NAME_INVALID+"' does not exist.", log.get(1).getMessage());
+            assertEquals("End entity with username '"+USER_NAME_INVALID+"' does not exist.", log.get(1).getMessage());
         } finally {
             try {
                 eeSession.deleteUser(admin, USER_NAME);

@@ -63,7 +63,7 @@ public abstract class BaseServiceCommand extends BaseCommand {
     
     /** @return the EJB CLI admin */
     protected AuthenticationToken getAdmin() {
-        return getAdmin(cliUserName, cliPassword);
+        return getAuthenticationToken(cliUserName, cliPassword);
     }
     
     /** Activates timers for services which change from not active to active */
@@ -77,11 +77,13 @@ public abstract class BaseServiceCommand extends BaseCommand {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.ejbca.ui.cli.CliCommandPlugin#getMainCommandAliases()
-     */
     @Override
     public String[] getMainCommandAliases() {
+        return new String[]{};
+    }
+    
+    @Override
+    public String[] getSubCommandAliases() {
         return new String[]{};
     }
 }

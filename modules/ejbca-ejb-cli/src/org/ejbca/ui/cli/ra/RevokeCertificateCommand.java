@@ -28,13 +28,18 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  *
  * @version $Id$
  */
-public class RaRevokeCertCommand extends BaseRaAdminCommand {
+public class RevokeCertificateCommand extends BaseRaCommand {
 
     @Override
 	public String getSubCommand() { return "revokecert"; }
     @Override
     public String getDescription() { return "Revokes a certificate"; }
 
+    @Override
+    public String[] getSubCommandAliases() {
+        return new String[]{};
+    }
+    
     @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
@@ -73,7 +78,7 @@ public class RaRevokeCertCommand extends BaseRaAdminCommand {
         			// Revoke or unrevoke, will throw appropriate exceptions if parameters are wrong, such as trying to unrevoke a certificate
         			// that was permanently revoked
         			try {
-            			ejb.getRemoteSession(EndEntityManagementSessionRemote.class).revokeCert(getAdmin(cliUserName, cliPassword), serno, issuerDN, reason);
+            			ejb.getRemoteSession(EndEntityManagementSessionRemote.class).revokeCert(getAuthenticationToken(cliUserName, cliPassword), serno, issuerDN, reason);
                         getLogger().info( (reason == 8 ? "Unrevoked":"Revoked") + " certificate with issuerDN '"+issuerDN+"' and serialNumber "+certserno+". Revocation reason="+reason);        				
                     } catch (AlreadyRevokedException e) {
                     	if (reason == 8) {

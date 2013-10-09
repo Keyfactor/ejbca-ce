@@ -45,4 +45,9 @@ public class EncryptPwd extends BaseCommand {
     public String[] getMainCommandAliases() {
         return new String[]{};
     }
+    
+    @Override
+    public String[] getSubCommandAliases() {
+        return new String[]{};
+    }
 }

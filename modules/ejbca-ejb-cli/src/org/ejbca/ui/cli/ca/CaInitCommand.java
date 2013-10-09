@@ -288,7 +288,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             
             // Check that the CA doesn't exist already
             getLogger().debug("Checking that CA doesn't exist: "+caname);
-            if (getCAInfo(getAdmin(cliUserName, cliPassword), caname) != null) {
+            if (getCAInfo(getAuthenticationToken(cliUserName, cliPassword), caname) != null) {
                 getLogger().error("Error: CA '"+caname+"' exists already");
                 return;
             }
@@ -353,7 +353,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             String signedByStr = "Signed by: ";
             if ((signedByCAId != CAInfo.SELFSIGNED) && (signedByCAId != CAInfo.SIGNEDBYEXTERNALCA)) { 
                 try {
-                    CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), signedByCAId);
+                    CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(cliUserName, cliPassword), signedByCAId);
                     signedByStr += cainfo.getName();
                 } catch (CADoesntExistsException e) {
                     throw new IllegalArgumentException("CA with id " + signedByCAId + " does not exist.");
@@ -366,7 +366,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             getLogger().info(signedByStr);
 
             if (superAdminCN != null) {
-                initAuthorizationModule(getAdmin(cliUserName, cliPassword), dn.hashCode(), superAdminCN);
+                initAuthorizationModule(getAuthenticationToken(cliUserName, cliPassword), dn.hashCode(), superAdminCN);
             }
             // Transform our mixed properties into CA Token properties and cryptoTokenProperties
             final Properties caTokenProperties = new Properties();
@@ -413,11 +413,11 @@ public class CaInitCommand extends BaseCaAdminCommand {
             final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
             int cryptoTokenId;
             try {
-                cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(getAdmin(cliUserName, cliPassword), caname, className, cryptoTokenProperties, null, authenticationCode);
+                cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(getAuthenticationToken(cliUserName, cliPassword), caname, className, cryptoTokenProperties, null, authenticationCode);
             } catch (CryptoTokenNameInUseException e) {
                 // If the name was already in use we simply add a timestamp to the name to make it unique
                 final String postfix = "_" + new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
-                cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(getAdmin(cliUserName, cliPassword), caname+postfix, className, cryptoTokenProperties, null, authenticationCode);
+                cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(getAuthenticationToken(cliUserName, cliPassword), caname+postfix, className, cryptoTokenProperties, null, authenticationCode);
             }
             // Create the CA Token
             final CAToken caToken = new CAToken(cryptoTokenId, caTokenProperties);
@@ -427,11 +427,11 @@ public class CaInitCommand extends BaseCaAdminCommand {
             if ("soft".equals(catokentype)) {
                 final String signKeyAlias = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
                 final String signKeySpecification = "DSA".equals(keytype) ? "DSA" + keyspec : keyspec;
-                cryptoTokenManagementSession.createKeyPair(getAdmin(cliUserName, cliPassword), cryptoTokenId, signKeyAlias, signKeySpecification);
+                cryptoTokenManagementSession.createKeyPair(getAuthenticationToken(cliUserName, cliPassword), cryptoTokenId, signKeyAlias, signKeySpecification);
                 final String defaultKeyAlias = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
                 // Decryption key must be RSA
                 final String defaultKeySpecification = "RSA".equals(keytype) ? keyspec : "2048";
-                cryptoTokenManagementSession.createKeyPair(getAdmin(cliUserName, cliPassword), cryptoTokenId, defaultKeyAlias, defaultKeySpecification);
+                cryptoTokenManagementSession.createKeyPair(getAuthenticationToken(cliUserName, cliPassword), cryptoTokenId, defaultKeyAlias, defaultKeySpecification);
             }
             // Create the CA Info
             CAInfo cainfo = null;
@@ -483,22 +483,22 @@ public class CaInitCommand extends BaseCaAdminCommand {
                     throw new ErrorAdminCommandException(extcachainName + " does not seem to exist or contain any certificates in PEM format.");
                 }
             }
-            ejb.getRemoteSession(CAAdminSessionRemote.class).createCA(getAdmin(cliUserName, cliPassword), cainfo);
+            ejb.getRemoteSession(CAAdminSessionRemote.class).createCA(getAuthenticationToken(cliUserName, cliPassword), cainfo);
 
             if (StringUtils.equalsIgnoreCase(explicitEcc, "true")) {
                 getLogger().info("Not re-reading CAInfo, since explicit ECC parameters were used, which is not serializable on Java 6. Use Web GUI for further interactions.");                
             } else {
-                CAInfo newInfo = ejb.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), caname);
+                CAInfo newInfo = ejb.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(cliUserName, cliPassword), caname);
                 int caid = newInfo.getCAId();
                 getLogger().info("CAId for created CA: " + caid);
             }
             if (cainfo.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA) {
                 getLogger().info("Creating a CA signed by an external CA, creating certificate request.");
-                CAInfo info = ejb.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), caname);
+                CAInfo info = ejb.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(cliUserName, cliPassword), caname);
                 if (info.getStatus() != CAConstants.CA_WAITING_CERTIFICATE_RESPONSE) {
                     throw new ErrorAdminCommandException("Creating a CA signed by an external CA should result in CA having status, CA_WAITING_CERTIFICATE_RESPONSE. Terminating process, please troubleshoot.");
                 }
-                byte[] request = ejb.getRemoteSession(CAAdminSessionRemote.class).makeRequest(getAdmin(cliUserName, cliPassword), info.getCAId(), cachain, info.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+                byte[] request = ejb.getRemoteSession(CAAdminSessionRemote.class).makeRequest(getAuthenticationToken(cliUserName, cliPassword), info.getCAId(), cachain, info.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
                 final String filename = info.getName()+"_csr.der";
                 FileOutputStream fos = new FileOutputStream(filename);
                 fos.write(request);
