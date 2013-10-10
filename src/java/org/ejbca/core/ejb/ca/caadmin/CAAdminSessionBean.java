@@ -1339,7 +1339,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         try {
             CA ca = caSession.getCAForEdit(authenticationToken, caid);
             if (ca.getStatus() == CAConstants.CA_OFFLINE
-                    || ca.getCAToken().getTokenStatus(cryptoTokenSession.getCryptoToken(ca.getCAToken().getCryptoTokenId())) == CryptoToken.STATUS_OFFLINE) {
+                    || ca.getCAToken().getTokenStatus(true, cryptoTokenSession.getCryptoToken(ca.getCAToken().getCryptoTokenId())) == CryptoToken.STATUS_OFFLINE) {
                 String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getName());
                 throw new CryptoTokenOfflineException(msg);
             }
@@ -2446,8 +2446,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         for (final Integer caid : caSession.getAvailableCAs()) {
             try {
                 final CAInfo cainfo = caSession.getCAInfoInternal(caid.intValue());
-                if (caTokenSignTest && (cainfo.getStatus() == CAConstants.CA_ACTIVE) && cainfo.getIncludeInHealthCheck()) {
-                    final int tokenstatus = cainfo.getCAToken().getTokenStatus(
+                if (cainfo.getStatus() == CAConstants.CA_ACTIVE && cainfo.getIncludeInHealthCheck()) {
+                    // Verify that the CA's mapped keys exist and optionally that the test-key is usable
+                    final int tokenstatus = cainfo.getCAToken().getTokenStatus(caTokenSignTest,
                             cryptoTokenSession.getCryptoToken(cainfo.getCAToken().getCryptoTokenId()));
                     if (tokenstatus == CryptoToken.STATUS_OFFLINE) {
                         sb.append("\nCA: Error CA Token is disconnected, CA Name : ").append(cainfo.getName());
