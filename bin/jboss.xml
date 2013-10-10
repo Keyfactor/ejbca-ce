@@ -525,9 +525,10 @@
             <attribute name="failonerror" default="true" description="Fail the build if command exits with error."/>
             <sequential>
             	<!-- Wait up to 60 seconds for EJBCA to be properly deployed after a JBoss7 :reload. -->
-                <retry retrycount="30">
+                <retry retrycount="15">
                     <sequential>
-                        <sleep seconds="2"/>
+                    	<echo message="Waiting (up to 60 seconds in total) for the application server to become ready for the next step..."/>
+                        <sleep seconds="4"/>
                         <jboss:admsilent arg="/deployment=ejbca.ear:read-attribute(name=status)" failonerror="true" />
                     </sequential>
                 </retry>
