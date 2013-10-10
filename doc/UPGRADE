@@ -145,6 +145,9 @@ EJBCA 6.0.0. Instead, a new configuration variable should be set to reflect this
 above, go to the admin GUI -> CMP Configurations; in the page for editing the CMP alias 'cmp', check the box that says 'Omit Verifications in EndEntityCertificate 
 Authentication Module'
 
+NOTE: For CMP users who use KeyUpdateRequest in RA mode, in EJBCA 6.0.0, the authentication module EndEntityCertificate would have to be set among the configured 
+authentication modules, otherwise, the request will fail.
+
 NOTE: In EJBCA 6.0.0, TCP configurations have been moved from conf/cmp.properties file (which has been removed) to conf/cmptcp.properties. So if you are 
 a TCP (a deprecated protocol in EJBCA) user, you should set your TCP configuration values in the new file. You should also upload conf/cmp.properties file 
 according to the instructions above, and rename the alias 'cmp' to 'tcp'. See Admin Guide -> CMP -> 'CMP over TCP' and execute './bin/ejbca.sh config cmp' for 
