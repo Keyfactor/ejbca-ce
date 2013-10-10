@@ -44,6 +44,7 @@ import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmTools;
@@ -85,13 +86,15 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         private final String status;
         private final String certificateId;
         private final String certificateIssuerDn;
+        private final String certificateSerialNumber;
+        private final String caCertificateIssuerDn;
+        private final String caCertificateSerialNumber;
         private final String certificateInternalCaName;
         private final int certificateInternalCaId;
-        private final String certificateSerialNumber;
 
         private GuiInfo(int internalKeyBindingId, String name, int cryptoTokenId, String cryptoTokenName, boolean cryptoTokenAvailable,
                 boolean cryptoTokenActive, String keyPairAlias, String nextKeyPairAlias, String status, String certificateId,
-                String certificateIssuerDn, String certificateInternalCaName, int certificateInternalCaId, String certificateSerialNumber) {
+                String certificateIssuerDn, String certificateInternalCaName, int certificateInternalCaId, String certificateSerialNumber, String caCertificateIssuerDn, String caCertificateSerialNumber) {
             this.internalKeyBindingId = internalKeyBindingId;
             this.name = name;
             this.cryptoTokenId = cryptoTokenId;
@@ -103,9 +106,11 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             this.status = status;
             this.certificateId = certificateId;
             this.certificateIssuerDn = certificateIssuerDn;
+            this.certificateSerialNumber = certificateSerialNumber;
+            this.caCertificateIssuerDn = caCertificateIssuerDn;
+            this.caCertificateSerialNumber = caCertificateSerialNumber;
             this.certificateInternalCaName = certificateInternalCaName;
             this.certificateInternalCaId = certificateInternalCaId;
-            this.certificateSerialNumber = certificateSerialNumber;
         }
 
         public int getInternalKeyBindingId() { return internalKeyBindingId; }
@@ -117,9 +122,11 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         public String getStatus() { return status; }
         public String getCertificateId() { return certificateId; }
         public String getCertificateIssuerDn() { return certificateIssuerDn; }
+        public String getCertificateSerialNumber() { return certificateSerialNumber; }
+        public String getCaCertificateIssuerDn() { return caCertificateIssuerDn; }
+        public String getCaCertificateSerialNumber() { return caCertificateSerialNumber; }
         public String getCertificateInternalCaName() { return certificateInternalCaName; }
         public int getCertificateInternalCaId() { return certificateInternalCaId; }
-        public String getCertificateSerialNumber() { return certificateSerialNumber; }
 
         public boolean isCertificateBound() { return certificateId != null; }
         public boolean isIssuedByInternalCa() { return getCertificateInternalCaName() != null; }
@@ -243,8 +250,10 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                 final Certificate certificate = certificateId == null ? null : certificateStoreSession.findCertificateByFingerprint(certificateId);
                 String certificateIssuerDn = "";
                 String certificateSerialNumber = "";
+                String caCertificateIssuerDn = "";
+                String caCertificateSerialNumber = "";
                 String certificateInternalCaName = null;
-                int certificateInternalCaId = certificateIssuerDn.hashCode();
+                int certificateInternalCaId = 0;
                 if (certificate != null) {
                     certificateIssuerDn = CertTools.getIssuerDN(certificate);
                     certificateSerialNumber = CertTools.getSerialNumberAsString(certificate);
@@ -253,16 +262,22 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                         final CA ca = caSession.getCA(authenticationToken, certificateIssuerDn.hashCode());
                         certificateInternalCaName = ca.getName();
                         certificateInternalCaId = ca.getCAId();
+                        caCertificateIssuerDn = CertTools.getIssuerDN(ca.getCACertificate());
+                        caCertificateSerialNumber = CertTools.getSerialNumberAsString(ca.getCACertificate());                        
                     } catch (Exception e) {
                         // CADoesntExistsException or AuthorizationDeniedException
                         // The CA is for the purpose of "internal" renewal not available to this administrator.
-                        certificateInternalCaName = certificateIssuerDn;
+                        // Try to find the issuer (CA) certificate by other means, trying to get it through CA certificate link from the bound certificate 
+                        CertificateInfo info = certificateStoreSession.getCertificateInfo(certificateId);
+                        final Certificate cacertificate = info.getCAFingerprint() == null ? null : certificateStoreSession.findCertificateByFingerprint(info.getCAFingerprint());
+                        caCertificateIssuerDn = CertTools.getIssuerDN(cacertificate);
+                        caCertificateSerialNumber = CertTools.getSerialNumberAsString(cacertificate);                        
                     }
                 }
                 internalKeyBindingList.add(new GuiInfo(current.getId(), current.getName(), cryptoTokenId, cryptoTokenName,
                         cryptoTokenAvailable, cryptoTokenActive, current.getKeyPairAlias(), current.getNextKeyPairAlias(),
                         current.getStatus().name(), current.getCertificateId(), certificateIssuerDn, certificateInternalCaName,
-                        certificateInternalCaId, certificateSerialNumber));
+                        certificateInternalCaId, certificateSerialNumber, caCertificateIssuerDn, caCertificateSerialNumber));
                 Collections.sort(internalKeyBindingList, new Comparator<GuiInfo>() {
                     @Override
                     public int compare(final GuiInfo guiInfo1, final GuiInfo guiInfo2) {
@@ -542,6 +557,8 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     private String boundCertificateId = null;
     private String boundCertificateIssuerDn = "";
     private String boundCertificateSerialNumber = "";
+    private String boundCaCertificateIssuerDn = "";
+    private String boundCaCertificateSerialNumber = "";
     private String boundCertificateInternalCaName = null;
     private String boundCertificateInternalCaId = null;
     public String getBoundCertificateId() {
@@ -555,6 +572,14 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     public String getBoundCertificateSerialNumber() {
         loadCurrentCertificate();
         return boundCertificateSerialNumber;
+    }
+    public String getBoundCaCertificateIssuerDn() {
+        loadCurrentCertificate();
+        return boundCaCertificateIssuerDn;
+    }
+    public String getBoundCaCertificateSerialNumber() {
+        loadCurrentCertificate();
+        return boundCaCertificateSerialNumber;
     }
     public String getBoundCertificateInternalCaName() {
         loadCurrentCertificate();
@@ -586,10 +611,16 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                     final CA ca = caSession.getCA(authenticationToken, boundCertificateIssuerDn.hashCode());
                     boundCertificateInternalCaName = ca.getName();
                     certificateInternalCaId = ca.getCAId();
+                    boundCaCertificateIssuerDn = CertTools.getIssuerDN(ca.getCACertificate());
+                    boundCaCertificateSerialNumber = CertTools.getSerialNumberAsString(ca.getCACertificate());                        
                 } catch (Exception e) {
                     // CADoesntExistsException or AuthorizationDeniedException
                     // The CA is for the purpose of "internal" renewal not available to this administrator.
-                    boundCertificateInternalCaName = boundCertificateIssuerDn;
+                    // Try to find the issuer (CA) certificate by other means, trying to get it through CA certificate link from the bound certificate 
+                    CertificateInfo info = certificateStoreSession.getCertificateInfo(boundCertificateId);
+                    final Certificate cacertificate = info.getCAFingerprint() == null ? null : certificateStoreSession.findCertificateByFingerprint(info.getCAFingerprint());
+                    boundCaCertificateIssuerDn = CertTools.getIssuerDN(cacertificate);
+                    boundCaCertificateSerialNumber = CertTools.getSerialNumberAsString(cacertificate);                        
                 }
             }
             this.boundCertificateInternalCaId = Integer.valueOf(certificateInternalCaId).toString();
