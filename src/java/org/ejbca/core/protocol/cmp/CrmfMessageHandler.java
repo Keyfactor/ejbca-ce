@@ -219,7 +219,12 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 					// if not empty the message will find the username itself, in the getUsername method
 					final String dn = crmfreq.getSubjectDN();
 			        final String username = getUsername(dn);
-					EndEntityInformation data = getUserData(dn, username);
+					EndEntityInformation data = null;
+					if(StringUtils.isEmpty(username)) {
+					    data = getUserDataByDN(dn);
+					} else {
+					    data = endEntityAccessSession.findUser(admin, username);
+					}
 
 					if (data != null) {
 						if (LOG.isDebugEnabled()) {
@@ -489,26 +494,18 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 		return messageVerifyer.getUsedAuthenticationModule();
 	}
 	
-	private EndEntityInformation getUserData(String dn, String username) throws AuthorizationDeniedException {
+	private EndEntityInformation getUserDataByDN(String dn) throws AuthorizationDeniedException {
 	    EndEntityInformation data = null;
-	    /** Defines which component from the DN should be used as username in EJBCA. Can be DN, UID or nothing. Nothing means that the DN will be used to look up the user. */
-        if (StringUtils.isEmpty(username)) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("looking for user with dn: "+dn);
-            }
-            List<EndEntityInformation> dataList = endEntityAccessSession.findUserBySubjectDN(admin, dn);
-            if (dataList.size() > 0) {
-                data = dataList.get(0);
-            }
-            if(dataList.size() > 1) {
-                LOG.warn("Multiple end entities with subject DN " + dn + " were found. This may lead to unexpected behavior.");
-            }
-        } else {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("looking for user with username: "+username);
-            }                       
-            data = endEntityAccessSession.findUser(admin, username);
-        }
+	    if (LOG.isDebugEnabled()) {
+	        LOG.debug("looking for user with dn: "+dn);
+	    }
+	    List<EndEntityInformation> dataList = endEntityAccessSession.findUserBySubjectDN(admin, dn);
+	    if (dataList.size() > 0) {
+	        data = dataList.get(0);
+	    }
+	    if(dataList.size() > 1) {
+	        LOG.warn("Multiple end entities with subject DN " + dn + " were found. This may lead to unexpected behavior.");
+	    }
         return data;
 	}
 	
