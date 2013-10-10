@@ -112,8 +112,8 @@ public class CAToken extends UpgradeableDataHashMap {
         internalInit(caTokenProperties);
     }
     
-    /** Verifies that the all the mapped keys are present in the CryptoToken and that the test key is usable. */
-    public int getTokenStatus(CryptoToken cryptoToken) {
+    /** Verifies that the all the mapped keys are present in the CryptoToken and optionally that the test key is usable. */
+    public int getTokenStatus(boolean caTokenSignTest, CryptoToken cryptoToken) {
         if (log.isTraceEnabled()) {
             log.trace(">getCATokenStatus");
         }
@@ -151,7 +151,9 @@ public class CAToken extends UpgradeableDataHashMap {
         			if (privateKey != null && publicKey != null) {
         				// Check that that the testkey is usable by doing a test signature.
         				try {
-        				    cryptoToken.testKeyPair(aliasTestKey);
+        				    if (caTokenSignTest) {
+                                cryptoToken.testKeyPair(aliasTestKey);
+        				    }
         					// If we can test the testkey, we are finally active!
         					ret = CryptoToken.STATUS_ACTIVE;
         				} catch (Throwable th) { // NOPMD: we need to catch _everything_ when dealing with HSMs
