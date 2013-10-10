@@ -160,28 +160,32 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                 crmfreq = (CrmfRequestMessage) msg;
                 crmfreq.getMessage();
 
-                // Check PKIMessage authentication
-                String authparameter = cmpConfiguration.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE, confAlias);
-                EndEntityCertificateAuthenticationModule eecmodule = new EndEntityCertificateAuthenticationModule(admin, authparameter, 
-                        confAlias, cmpConfiguration, caSession, certStoreSession, authorizationSession, endEntityProfileSession, 
-                        endEntityAccessSession, authenticationProviderSession, endEntityManagementSession);
-                try {
-                    eecmodule.verifyOrExtract(crmfreq.getPKIMessage(), null, authenticated);
-                    if(LOG.isDebugEnabled()) {
-                        LOG.debug("The CMP KeyUpdate request was verified successfully");
-                    }
-                } catch(CMPAuthenticationException e) {
-                    LOG.info(e.getLocalizedMessage(), e);
-                    return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, e.getLocalizedMessage());
-                }
-                
-                // Get the extraCert
-                X509Certificate oldCert = (X509Certificate) eecmodule.getExtraCert();
-                
+                EndEntityCertificateAuthenticationModule eecmodule = null;
+                X509Certificate oldCert = null;
+                        
                 // Find the subjectDN to look for
                 String subjectDN = null;
                 String issuerDN = null;
                 if(this.cmpConfiguration.getRAMode(this.confAlias)) {
+                    
+                    // Check that EndEntityCertificate authentication module is set
+                    if(!cmpConfiguration.isInAuthModule(confAlias, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE)) {
+                        String errmsg = "EndEnityCertificate authentication module is not configured. For a KeyUpdate request to be authentication in RA mode, EndEntityCertificate " +
+                        		"authentication module has to be set and configured";
+                        LOG.info(errmsg);
+                        return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, errmsg);
+                    }
+                    
+                    // Check PKIMessage authentication
+                    String authparameter = cmpConfiguration.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE, confAlias);
+                    try {
+                        eecmodule = verifyRequest(crmfreq, authparameter, authenticated);
+                    } catch(CMPAuthenticationException e) {
+                        LOG.info(e.getLocalizedMessage());
+                        return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, e.getLocalizedMessage());
+                    }
+                    oldCert = (X509Certificate) eecmodule.getExtraCert();
+                    
                     CertReqMessages kur = (CertReqMessages) crmfreq.getPKIMessage().getBody().getContent();
                     CertReqMsg certmsg;
                     try {
@@ -200,6 +204,15 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                         issuerDN = dn.toString();
                     }
                 } else { // client mode
+                    
+                    try {
+                        eecmodule = verifyRequest(crmfreq, null, authenticated);
+                    } catch(CMPAuthenticationException e) {
+                        LOG.info(e.getLocalizedMessage());
+                        return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, e.getLocalizedMessage());
+                    }
+                    oldCert = (X509Certificate) eecmodule.getExtraCert();
+                    
                     subjectDN = oldCert.getSubjectDN().toString(); 
                     issuerDN = oldCert.getIssuerDN().toString();
                 }
@@ -349,6 +362,17 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
             LOG.trace("<handleMessage");
         }
         return resp;
+    }
+    
+    private EndEntityCertificateAuthenticationModule verifyRequest(CrmfRequestMessage crmfreq, String authparameter, boolean authenticated) throws CMPAuthenticationException {
+        EndEntityCertificateAuthenticationModule eecmodule = new EndEntityCertificateAuthenticationModule(admin, authparameter, 
+                confAlias, cmpConfiguration, caSession, certStoreSession, authorizationSession, endEntityProfileSession, 
+                endEntityAccessSession, authenticationProviderSession, endEntityManagementSession);
+        eecmodule.verifyOrExtract(crmfreq.getPKIMessage(), null, authenticated);
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("The CMP KeyUpdate request was verified successfully");
+        }
+        return eecmodule;
     }
     
 }
