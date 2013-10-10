@@ -83,24 +83,24 @@ If you do not want to import the administrator certificate into EJBCA you can co
 <ul>
 <li>Go to AdminGUI of OCSP -> Crypto Tokens and create a new Crypto Token (unless you want to reuse an existing).</li>
 <li>Go to AdminGUI of OCSP -> Crypto Tokens -> <i>Your created Crypto Token</i> and generate a new key pair.</li>
-<li>Go to AdminGUI of OCSP -> InternalKeyBindings -> OcspKeyBindings tab and create a new OcspKeyBinding the references the Crypto Token and key pair.</li>
-<li>Go to AdminGUI of OCSP -> InternalKeyBindings and create a Certificate Signing Request for your new OcspKeyBinding. Save this file.</li>
+<li>Go to AdminGUI of OCSP -> Internal Key Bindings -> OcspKeyBindings tab and create a new OcspKeyBinding the references the Crypto Token and key pair.</li>
+<li>Go to AdminGUI of OCSP -> Internal Key Bindings and create a Certificate Signing Request for your new OcspKeyBinding. Save this file.</li>
 <li>Go to PublicWeb of CA -> Create Certificate from CSR -> Use the credentials for issuing an OCSP signing certificate and upload the CSR.</li>
 <li>...(CA publishes new OCSP signing certificate to OCSP instance)...</li>
-<li>Go to AdminGUI of OCSP -> InternalKeyBindings and click "Update" for your new OcspKeyBinding. This will find the published certificate
+<li>Go to AdminGUI of OCSP -> Internal Key Bindings and click "Update" for your new OcspKeyBinding. This will find the published certificate
 by matching the key pair with the certificate.</li>
-<li>Go to AdminGUI of OCSP -> InternalKeyBindings and click "Activate" for your new OcspKeyBinding to start processing OCSP responses with it.</li>
+<li>Go to AdminGUI of OCSP -> Internal Key Bindings and click "Activate" for your new OcspKeyBinding to start processing OCSP responses with it.</li>
 </ul>
 </subsection>
 <subsection name="Workflow for renewal of an OCSP signer">
 <ul>
-<li>[Optional] Go to AdminGUI of OCSP -> InternalKeyBindings and create "New keys" for your OcspKeyBinding.</li>
-<li>Go to AdminGUI of OCSP -> InternalKeyBindings and create a Certificate Signing Request for your OcspKeyBinding. Save this file.</li>
+<li>[Optional] Go to AdminGUI of OCSP -> Internal Key Bindings and create "New keys" for your OcspKeyBinding.</li>
+<li>Go to AdminGUI of OCSP -> Internal Key Bindings and create a Certificate Signing Request for your OcspKeyBinding. Save this file.</li>
 <li>Go to PublicWeb of CA -> Create Certificate from CSR -> Use the credentials for issuing an OCSP signing certificate and upload the CSR.</li>
 <li>...(CA publishes new OCSP signing certificate to OCSP instance)...</li>
-<li>Go to AdminGUI of OCSP -> InternalKeyBindings and click "Update" for your new OcspKeyBinding. This will find the published certificate
+<li>Go to AdminGUI of OCSP -> Internal Key Bindings and click "Update" for your new OcspKeyBinding. This will find the published certificate
 by matching the key pair with the certificate.</li>
-<li>Go to AdminGUI of OCSP -> InternalKeyBindings and click "Activate" for your new OcspKeyBinding to start processing OCSP responses with it.</li>
+<li>Go to AdminGUI of OCSP -> Internal Key Bindings and click "Activate" for your new OcspKeyBinding to start processing OCSP responses with it.</li>
 </ul>
 </subsection>
 <subsection name="Using the CLI">
