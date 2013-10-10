@@ -932,7 +932,8 @@ certificate in extraCert to find which certificate is to be updated.</p>
 attaching his own certificate to the CMP message. Either only the subjectDN or both the subjectDN and the issuerDN of the certificate to be updated 
 are specified in the CertificateTemplate field in the CMP message.</p>
 
-<p>In order for this request to succeed, the administrator sending the update request has to be authorized to perform this operation.</p>   
+<p>In order for this request to succeed, the administrator sending the update request has to be authorized to perform this operation. Also, EndEntityCertificate 
+authentication module would have to be set among the configured authentication modules.</p>
 </subsubsection>
 </subsection>
 
