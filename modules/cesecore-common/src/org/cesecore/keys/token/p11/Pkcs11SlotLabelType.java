@@ -196,10 +196,10 @@ public enum Pkcs11SlotLabelType {
 
         @Override
         public boolean validate(String value) {
-           //According to the PKCS#11 standard, the label field can be max 128 chars long
-            if(value.length() > 128) {
+           //According to the PKCS#11 standard, the label field can be max 32 chars long
+            if(value.length() > 32) {
                 if(log.isDebugEnabled()) {
-                    log.debug("Value " + value + " was longer than the permitted 128 characters.");
+                    log.debug("Value " + value + " was longer than the permitted 32 characters.");
                 }
                 return false;
             } else {
