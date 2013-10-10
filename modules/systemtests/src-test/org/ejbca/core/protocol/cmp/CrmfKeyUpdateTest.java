@@ -1179,7 +1179,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
      * @throws Exception
      */
     @Test
-    public void test12RANoCA() throws Exception {
+    public void test12ECCNotSetInRA() throws Exception {
         if(log.isTraceEnabled()) {
             log.trace("test12RANoCA()");
         }
@@ -1231,7 +1231,8 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertEquals(23, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
         final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
-        final String expectedErrMsg = "CA '' does not exist";
+        final String expectedErrMsg = "EndEnityCertificate authentication module is not configured. For a KeyUpdate request to be authentication " +
+        		                        "in RA mode, EndEntityCertificate authentication module has to be set and configured";
         assertEquals(expectedErrMsg, errMsg);
 
         removeAuthenticationToken(admToken, admCert, "cmpTestAdmin");
@@ -1350,24 +1351,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
      * Sends a KeyUpdateRequest by an EndEntity concerning its own certificate in RA mode. 
      * A CMP error message is expected and no certificate renewal.
      * 
-     * - Pre-configuration: Sets the operational mode to client mode (cmp.raoperationalmode=ra)
-     * - Pre-configuration: Sets cmp.allowautomatickeyuodate to 'true' and tests that the resetting of configuration has worked.
-     * - Pre-configuration: Sets cmp.allowupdatewithsamekey to 'true'
-     * - Creates a new user and obtains a certificate, cert, for this user. Tests whether obtaining the certificate was successful.
-     * - Generates a CMP KeyUpdate Request and tests that such request has been created.
-     * - Signs the CMP request using cert and attaches cert to the CMP request. Tests that the CMP request is still not null
-     * - Sends the request using HTTP and receives a response.
-     * - Examines the response:
-     *      - Checks that the response is not empty or null
-     *      - Checks that the protection algorithm is sha1WithRSAEncryption
-     *      - Checks that the signer is the expected CA
-     *      - Verifies the response signature
-     *      - Checks that the response's senderNonce is 16 bytes long
-     *      - Checks that the request's senderNonce is the same as the response's recipientNonce
-     *      - Checks that the request and the response has the same transactionID
-     *      - Obtains the certificate from the response
-     *      - Checks that the obtained certificate has the right subjectDN and issuerDN
-     * 
      * @throws Exception
      */
     @Test
@@ -1377,6 +1360,8 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         }
         
         cmpConfiguration.setRAMode(cmpAlias, true);
+        cmpConfiguration.setAuthenticationModule(cmpAlias, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
+        cmpConfiguration.setAuthenticationParameters(cmpAlias, "TestCA");
         cmpConfiguration.setKurAllowAutomaticUpdate(cmpAlias, true);
         cmpConfiguration.setKurAllowSameKey(cmpAlias, true);
         globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
@@ -1431,10 +1416,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
         final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
         
-        // The old commented errormessage is more acurate than the new one, but the code handling this combination of settings 
-        // will be changed soon and so will the error message anyway.
-        //final String expectedErrMsg = "'CN=certRenewalUser,O=PrimeKey Solutions AB,C=SE' is not an authorized administrator.";
-        final String expectedErrMsg = "CA '' does not exist";
+        final String expectedErrMsg = "'CN=certRenewalUser,O=PrimeKey Solutions AB,C=SE' is not an authorized administrator.";
         assertEquals(expectedErrMsg, errMsg);
         
         if(log.isTraceEnabled()) {
