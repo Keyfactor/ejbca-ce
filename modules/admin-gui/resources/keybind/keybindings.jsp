@@ -70,7 +70,7 @@ org.cesecore.keybind.InternalKeyBindingRules
 		</h:column>
 		<h:column>
    			<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_CERTIFICATEISSUER}"/></f:facet>
-			<h:outputLink value="adminweb/viewcertificate.jsp?caid=#{guiInfo.certificateInternalCaId}&ref=keybindings"
+			<h:outputLink value="adminweb/viewcertificate.jsp?certsernoparameter=#{guiInfo.caCertificateSerialNumber},#{guiInfo.caCertificateIssuerDn}&ref=keybindings"
 				rendered="#{guiInfo.certificateBound}">
 				<h:outputText value="#{guiInfo.certificateInternalCaName}" rendered="#{guiInfo.issuedByInternalCa}"/>
 				<h:outputText value="#{guiInfo.certificateIssuerDn}" rendered="#{!guiInfo.issuedByInternalCa}"/>
