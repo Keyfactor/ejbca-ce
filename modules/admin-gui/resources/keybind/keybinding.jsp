@@ -135,13 +135,11 @@ org.cesecore.keybind.InternalKeyBindingRules
 		<h:outputLabel for="certificateId" value="#{web.text.INTERNALKEYBINDING_FIELD_BOUNDCERT}"
 			rendered="#{internalKeyBindingMBean.boundToCertificate}"/>
 		<h:panelGroup id="certificateId" rendered="#{internalKeyBindingMBean.boundToCertificate}">
-			<h:outputLink value="adminweb/viewcertificate.jsp?caid=#{internalKeyBindingMBean.boundCertificateInternalCaId}&ref=keybindings"
-				rendered="#{internalKeyBindingMBean.boundCertificateInternalCaName != null}">
-				<h:outputText value="#{internalKeyBindingMBean.boundCertificateInternalCaName}"/>
+			<h:outputLink value="adminweb/viewcertificate.jsp?certsernoparameter=#{internalKeyBindingMBean.boundCaCertificateSerialNumber},#{internalKeyBindingMBean.boundCaCertificateIssuerDn}&ref=keybindings">
+				<h:outputText value="#{internalKeyBindingMBean.boundCertificateInternalCaName}" rendered="#{internalKeyBindingMBean.boundCertificateInternalCaName != null}"/>
+				<h:outputText value="#{internalKeyBindingMBean.boundCertificateIssuerDn}" rendered="#{internalKeyBindingMBean.boundCertificateInternalCaName == null}"/>
 			</h:outputLink>
-			<h:outputText value="#{internalKeyBindingMBean.boundCertificateIssuerDn}"
-				rendered="#{internalKeyBindingMBean.boundCertificateInternalCaName == null}"/>
-			<h:outputText value=" "/>
+			<h:outputText value="  "/>
 			<h:outputLink value="adminweb/viewcertificate.jsp?certsernoparameter=#{internalKeyBindingMBean.boundCertificateSerialNumber},#{internalKeyBindingMBean.boundCertificateIssuerDn}&ref=keybindings">
 				<h:outputText style="font-family: monospace; text-align: right;" value="#{internalKeyBindingMBean.boundCertificateSerialNumber}"/>
 			</h:outputLink>
