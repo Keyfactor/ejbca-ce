@@ -374,7 +374,9 @@ function checkresponseprotection(sel) {
         <select name="<%= LIST_CMPEEPROFILES %>" onchange="changemode()" >
           <% String defeep = cmpconfig.getRAEEProfile(alias); %>
           <% ceep = defeep; %>
-          <option <% if("KeyId".equals(defeep)){ %> selected <% } %> value='<c:out value="KeyId"/>'><c:out value="KeyId (Deprecated)"/></option>
+          <!--  The possibility to use 'KeyId' is deprecated. As a preparation to remove it completely, we make choosing it possible only for those 
+          		who already use 'KeyId' but not for new installations/aliases -->
+          <% if("KeyId".equals(defeep)) { %> <option selected value='<c:out value="KeyId"/>'><c:out value="KeyId (Deprecated)"/></option> <% } %>
           <% java.util.Iterator eeps = ejbcawebbean.getAuthorizedEEProfileNames().iterator();
              while(eeps.hasNext()){
             	String eep = (String) eeps.next(); 
@@ -401,7 +403,9 @@ function checkresponseprotection(sel) {
       <td width="50%"> 
         <select name="<%= LIST_CMPCERTPROFILES %>">
           <% String defcp = cmpconfig.getRACertProfile(alias); %>
-          <option <% if("KeyId".equals(defcp)){ %> selected <% } %> value='<c:out value="KeyId"/>'><c:out value="KeyId (Deprecated)"/></option>
+          <!--  The possibility to use 'KeyId' is deprecated. As a preparation to remove it completely, we make choosing it possible only for those 
+          		who already use 'KeyId' but not for new installations/aliases -->
+          <% if("KeyId".equals(defcp)){ %> <option selected value='<c:out value="KeyId"/>'><c:out value="KeyId (Deprecated)"/></option> <% } %>
           <option <% if("ProfileDefault".equals(defcp)){ %> selected <% } %> value='<c:out value="ProfileDefault"/>'><c:out value="ProfileDefault"/></option>
           <% java.util.Iterator cps = ejbcawebbean.getAvailableCertProfilessOfEEProfile(ceep).iterator(); //ejbcawebbean.getAuthorizedCertProfileNames().iterator();
              while(cps.hasNext()){
@@ -425,7 +429,9 @@ function checkresponseprotection(sel) {
       <td width="50%"> 
         <select name="<%= LIST_CMPRACAS %>">
           <% String defca = cmpconfig.getRACAName(alias); %>
-          <option <% if("KeyId".equals(defca)){ %> selected <% } %> value='<c:out value="KeyId"/>'><c:out value="KeyId (Deprecated)"/></option>
+          <!--  The possibility to use 'KeyId' is deprecated. As a preparation to remove it completely, we make choosing it possible only for those 
+          		who already use 'KeyId' but not for new installations/aliases -->
+          <% if("KeyId".equals(defca)){ %> <option selected value='<c:out value="KeyId"/>'><c:out value="KeyId (Deprecated)"/></option> <% } %>
           <option <% if("ProfileDefault".equals(defca)){ %> selected <% } %> value='<c:out value="ProfileDefault"/>'><c:out value="ProfileDefault"/></option>
           <% java.util.Iterator cas = ejbcawebbean.getAvailableCAsOfEEProfile(ceep).iterator(); //canames.keySet().iterator();
              while(cas.hasNext()){
