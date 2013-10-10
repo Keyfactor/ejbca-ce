@@ -45,6 +45,7 @@
   if (editca) {
     cainfo = cabean.getCAInfo(caid).getCAInfo();
     catoken = cainfo.getCAToken();
+    signatureAlgorithmParam = catoken.getSignatureAlgorithm();
     signbyexternal = cainfo.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA;
     isexternal = cainfo.getStatus() == CAConstants.CA_EXTERNAL;
     revokable = cainfo.getStatus() != CAConstants.CA_REVOKED  && cainfo.getStatus() != CAConstants.CA_WAITING_CERTIFICATE_RESPONSE && !cadatahandler.isCARevoked(cainfo);
