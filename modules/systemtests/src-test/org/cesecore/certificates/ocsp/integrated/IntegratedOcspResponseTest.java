@@ -520,7 +520,7 @@ public class IntegratedOcspResponseTest extends RoleUsingTestCase {
     @Test
     public void testGetOcspResponseWithIncorrectDefaultResponder() throws OCSPException, AuthorizationDeniedException, IOException,
             MalformedRequestException, CADoesntExistsException, IllegalCryptoTokenException, CertificateEncodingException {
-        // Restore the default value
+        // Set a fake value
         cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.DEFAULT_RESPONDER, "CN=FancyPants");
 
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
