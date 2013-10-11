@@ -78,15 +78,19 @@ public enum OcspSigningCache {
     public void stagingCommit() {
         OcspSigningCacheEntry defaultResponderCacheEntry = null;
         for (final OcspSigningCacheEntry entry : staging.values()) {
-            final String subjectOfSigningCertificate;
+            
             if (entry.getOcspSigningCertificate() == null) {
-                subjectOfSigningCertificate = CertTools.getSubjectDN(entry.getCaCertificateChain().get(0));
+                final X509Certificate signingCertificate = entry.getCaCertificateChain().get(0);
+                if(CertTools.getSubjectDN(signingCertificate).equals(OcspConfiguration.getDefaultResponderId())) {
+                    defaultResponderCacheEntry = entry;
+                    break;
+                }
             } else {
-                subjectOfSigningCertificate = CertTools.getSubjectDN(entry.getOcspSigningCertificate());
-            }
-            if (subjectOfSigningCertificate.equals(OcspConfiguration.getDefaultResponderId())) {
-                defaultResponderCacheEntry = entry;
-                break;
+                final X509Certificate signingCertificate = entry.getOcspSigningCertificate();
+                if(CertTools.getIssuerDN(signingCertificate).equals(OcspConfiguration.getDefaultResponderId())) {
+                    defaultResponderCacheEntry = entry;
+                    break;
+                }
             }
         }
         if (defaultResponderCacheEntry == null) {

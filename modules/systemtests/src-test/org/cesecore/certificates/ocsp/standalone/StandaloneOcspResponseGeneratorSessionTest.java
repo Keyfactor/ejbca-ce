@@ -45,6 +45,7 @@ import org.bouncycastle.cert.ocsp.OCSPReq;
 import org.bouncycastle.cert.ocsp.OCSPReqBuilder;
 import org.bouncycastle.cert.ocsp.OCSPResp;
 import org.bouncycastle.cert.ocsp.SingleResp;
+import org.bouncycastle.cert.ocsp.UnknownStatus;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.ContentSigner;
@@ -158,8 +159,9 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         internalKeyBindingId = OcspTestUtils.createInternalKeyBinding(authenticationToken, cryptoTokenId, OcspKeyBinding.IMPLEMENTATION_ALIAS,
                 TESTCLASSNAME, "RSA2048", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         String signerDN = "CN=ocspTestSigner";
-        ocspSigningCertificate = OcspTestUtils.createOcspSigningCertificate(authenticationToken, OcspTestUtils.OCSP_END_USER_NAME, signerDN, internalKeyBindingId, x509ca.getCAId());
         caCertificate = createCaCertificate();
+        ocspSigningCertificate = OcspTestUtils.createOcspSigningCertificate(authenticationToken, OcspTestUtils.OCSP_END_USER_NAME, signerDN, internalKeyBindingId, x509ca.getCAId());
+        
     }
 
     @After
@@ -192,6 +194,38 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         final OCSPResp response = sendRequest(ocspRequest);
         assertEquals("Response status not zero.", OCSPResp.SUCCESSFUL, response.getStatus());
         validateSuccessfulResponse((BasicOCSPResp) response.getResponseObject(), ocspSigningCertificate.getPublicKey());
+    }
+    
+    /** Tests asking about an unknown CA, and making sure that the response is correctly signed */
+    @Test
+    public void testStandAloneOcspResponseDefaultResponder() throws Exception {
+        // Make sure that a default responder is set
+        cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.DEFAULT_RESPONDER, CertTools.getIssuerDN(ocspSigningCertificate));
+        cesecoreConfigurationProxySession.setConfigurationValue("ocsp.nonexistingisgood", "false");
+        try {
+              //Now delete the original CA, making this test completely standalone.
+            OcspTestUtils.deleteCa(authenticationToken, x509ca);
+            activateKeyBinding(internalKeyBindingId);
+            ocspResponseGeneratorSession.reloadTokenAndChainCache(PASSWORD);
+            // Do the OCSP request
+            final KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+            final X509Certificate fakeIssuerCertificate = CertTools.genSelfCert("CN=fakeCA", 365, null, keys.getPrivate(), keys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);       
+            final BigInteger fakeSerialNumber = new BigInteger("4711");
+            final OCSPReq ocspRequest = buildOcspRequest(null, null, fakeIssuerCertificate, fakeSerialNumber);
+            final OCSPResp response = sendRequest(ocspRequest);
+            assertEquals("Response status not zero.", OCSPResp.SUCCESSFUL, response.getStatus());
+            BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
+            //Response will be signed with the OCSP signing certificate, because that certificate's issuing CA was given as a default responder.
+            assertTrue("OCSP response was not signed correctly.",
+                    basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().build(ocspSigningCertificate.getPublicKey())));
+            SingleResp[] singleResponses = basicOcspResponse.getResponses();
+            assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
+            assertEquals("Response cert did not match up with request cert", fakeSerialNumber, singleResponses[0].getCertID()
+                    .getSerialNumber());
+            assertTrue(singleResponses[0].getCertStatus() instanceof UnknownStatus);
+        } finally {
+            cesecoreConfigurationProxySession.setConfigurationValue("ocsp.nonexistingisgood", "false");
+        }
     }
     
     /** Tests the case where there exists both a CA and a key binding for that CA on the same machine. The Key Binding should have priority. */
