@@ -115,6 +115,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.dn.PrintableStringEntryConverter;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -1166,7 +1167,7 @@ public class X509CA extends CA implements Serializable {
         boolean retval = false;
         // call upgrade, if needed, on installed CA services
         Collection<Integer> externalServiceTypes = getExternalCAServiceTypes();
-        if (externalServiceTypes.contains(ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE)) {
+        if (!CesecoreConfiguration.getCaKeepOcspExtendedService() && externalServiceTypes.contains(ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE)) {
             //This type has been removed, so remove it from any CAs it's been added to as well.
             externalServiceTypes.remove(ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE);
             data.put(EXTENDEDCASERVICES, externalServiceTypes);
