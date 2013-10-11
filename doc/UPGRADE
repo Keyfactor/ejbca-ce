@@ -45,6 +45,13 @@ Settings relevant for 100% up-time upgrades are:
 - db.keepjbossserialization (4.0->5.0)
 - app.version.effective (3.11->4.0)
 
+The service for running OCSP services on internal CAs has now become an integral part of the OCSP responder. For this reason, the old 
+CA Extended Service will be at first upstart when a system has been upgraded from 5.0 to 6.0. The result of this is that for nodes sharing 
+a database, those nodes that haven't been upgraded to 6.0 will lose OCSP services until they've been upgraded as well. In order to keep 
+OCSP services running on the entire cluster during the whole upgrade process, set "ca.keepocspextendedservice" to 'true' for all nodes except
+the last one, which then finally remove the service from the database. 
+- ca.keepocspextendedservice (5.0 -> 6.0)
+
 PKCS#11 libraries for presentation in the AdminGUI are autodetected. If you have a library that is not automatically detected by 
 EJBCA you can add it to the configuration. See web.properties.sample for PKCS#11 library auto-detection configuration.
 

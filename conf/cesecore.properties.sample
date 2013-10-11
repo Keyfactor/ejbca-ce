@@ -133,3 +133,7 @@ securityeventsaudit.exporter.1=org.cesecore.audit.impl.AuditExporterXml
 # ecdsa.implicitlyca.g=020ffa963cdca8816ccc33b8642bedf905c3d358573d3f27fbbd3b3cb9aaaf
 # ecdsa.implicitlyca.n=883423532389192164791648750360308884807550341691627752275345424702807307
 
+# When upgrading a 100% up-time cluster, all nodes should be deployed with ca.keepocspextendedservice=true.
+# Once all nodes are running > 6.0, set to true to increase efficiency and portability.
+# Default: false
+#ca.keepocspextendedservice=true

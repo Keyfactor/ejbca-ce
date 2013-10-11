@@ -48,6 +48,7 @@ import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -485,7 +486,7 @@ public class CVCCA extends CA implements Serializable {
     public boolean upgradeExtendedCAServices() {
 	    boolean retval = false;
 	    Collection<Integer> externalServiceTypes = getExternalCAServiceTypes();
-        if (externalServiceTypes.contains(ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE)) {
+        if (!CesecoreConfiguration.getCaKeepOcspExtendedService() && externalServiceTypes.contains(ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE)) {
             //This type has been removed, so remove it from any CAs it's been added to as well.
             externalServiceTypes.remove(ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE);
             data.put(EXTENDEDCASERVICES, externalServiceTypes);

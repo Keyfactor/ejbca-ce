@@ -304,4 +304,10 @@ public final class CesecoreConfiguration {
         final String value = ConfigurationHolder.getString("database.useSeparateCertificateTable");
         return value!=null && Boolean.parseBoolean(value.trim());
     }
+    
+    
+    public static boolean getCaKeepOcspExtendedService() {
+        return Boolean.valueOf(ConfigurationHolder.getString("ca.keepocspextendedservice").toLowerCase());
+    }
 }
+
