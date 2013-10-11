@@ -1615,6 +1615,50 @@ public class AuthenticationModulesTest extends CmpTestCase {
     }
 
     
+    @Test
+    public void test24HMACUnacceptedKeyId() throws Exception {
+        
+        cmpConfiguration.setRAMode(configAlias, true);
+        cmpConfiguration.setAuthenticationModule(configAlias, CmpConfiguration.AUTHMODULE_HMAC);
+        cmpConfiguration.setAuthenticationParameters(configAlias, "foo123hmac");
+        cmpConfiguration.setRAEEProfile(configAlias, "KeyId");
+        cmpConfiguration.setRACertProfile(configAlias, "ProfileDefault");
+        cmpConfiguration.setRACAName(configAlias, "TestCA");
+        globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration, Configuration.CMPConfigID);
+
+        KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+
+        PKIMessage msg = genCertReq(issuerDN, USER_DN, keys, cacert, nonce, transid, false, null, null, null, null, null, null);
+        assertNotNull("Generating CrmfRequest failed.", msg);
+        PKIMessage req = protectPKIMessage(msg, false, "foo123hmac", "EMPTY", 567);
+        assertNotNull("Protecting PKIMessage with HMACPbe failed.", req);
+
+        final ByteArrayOutputStream bao = new ByteArrayOutputStream();
+        final DEROutputStream out = new DEROutputStream(bao);
+        out.writeObject(req);
+        final byte[] ba = bao.toByteArray();
+        // Send request and receive response
+        final byte[] resp = sendCmpHttp(ba, 200, configAlias);
+        checkCmpResponseGeneral(resp, issuerDN, USER_DN, cacert, req.getHeader().getSenderNonce().getOctets(), req.getHeader().getTransactionID()
+                .getOctets(), false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+
+        ASN1InputStream inputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
+        try {
+            PKIMessage respObject = PKIMessage.getInstance(inputStream.readObject());
+            assertNotNull(respObject);
+
+            final PKIBody body = respObject.getBody();
+            assertEquals(23, body.getType());
+            ErrorMsgContent err = (ErrorMsgContent) body.getContent();
+            final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+            final String expectedErrMsg = "Not allowed to use KeyId 'EMPTY' in CMP request";
+            assertEquals(expectedErrMsg, errMsg);
+        } finally {
+            inputStream.close();
+        }
+    }
+    
+    
     
     
 
