@@ -13,6 +13,7 @@ EJBCA 6.0.0
 - 'Certificate Request History' is now disabled by default for new CAs.
 - PKCS11 crypto tokens can now be managed by slot label (in addition to slot number and index) 
 - Internal OCSP services are no longer configurable from the CA, but are instead automatically set up and always active. 
+- Many many minor features, improvements and bug fixes.
 
 Note: Changes to certificate profiles
 - The PKIX QCSyntax-v1 identifier from RFC3739 has been removed and will never be generated.
