@@ -223,7 +223,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
 
     @Test
     public void test05OcspUnknownCA() throws Exception {
-        configurationSession.setConfigurationValue(OcspConfiguration.DEFAULT_RESPONDER, CertTools.getSubjectDN(ocspSigningCertificate));
+        configurationSession.setConfigurationValue(OcspConfiguration.DEFAULT_RESPONDER, CertTools.getIssuerDN(ocspSigningCertificate));
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
         super.test05OcspUnknownCA();
     }
