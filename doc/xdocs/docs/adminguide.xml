@@ -3175,7 +3175,7 @@ testKey test
 keyEncryptKey cryptRoot
 hardTokenEncrypt cryptRoot
 pin dummy
-slotLabelType SLOT_LIST_IX
+slotLabelType SLOT_INDEX
 slotLabelValue 1
 sharedLibrary /opt/nfast/toolkits/pkcs11/libcknfast.so
 </source>
@@ -3381,7 +3381,7 @@ certSignKey defaultSign
 crlSignKey defaultSign
 testKey testKey
 sharedLibrary /opt/nfast/toolkits/pkcs11/libcknfast.so
-slotLabelType=SLOT_LIST_IX
+slotLabelType=SLOT_INDEX
 slotLabelValue 1
 </source>
 </subsection>
