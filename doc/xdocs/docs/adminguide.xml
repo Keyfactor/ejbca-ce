@@ -2612,7 +2612,7 @@ How to create and use Crypto Tokens for HSMs in the Admin GUI is describe in the
 </subsection>
 <subsection name="Configuring HSMs">
 <p>
-The GUI configuration of CAs is actually backed by a properties field where properties unique to a prticular CAs usage of the HSM is specified. All implemented HSM modules are using the same property keywords to define the identity and the purpose of the keys to be used. 
+The GUI configuration of CAs is actually backed by a properties field where properties unique to a particular CAs usage of the HSM is specified. All implemented HSM modules are using the same property keywords to define the identity and the purpose of the keys to be used. 
 These keywords are:
 <ul>
 <li>certSignKey      - the key to be used when signing certificates, can be RSA or ECDSA.</li>
@@ -2706,7 +2706,7 @@ A PKCS#11 wrapper has been used to implement support for tokens with PKCS#11 lib
 tested with Utimaco CryptoServer and nCipher nShield/netHSM and SafeNet ProtectServer and SafeNet Luna and AEP Keyper and ARX CoSign and Bull TrustWay.
 </p>
 <p>
-Besides the keys previously described the Crypto Token property field (matching with user friendly valued of the Crypto Token in the Administration GUI) should contain the following properties:
+Besides the keys previously described the Crypto Token property field (matching with user friendly values of the Crypto Token in the Administration GUI) should contain the following properties:
 <ul>
 <li>sharedLibrary - the path to the HSM PKCS#11 library (/etc/utimaco/libcs2_pkcs11.so, /usr/safenet/lunaclient/lib/libCryptoki2_64.so etc)</li>
 <li>slotLabelType - the type of slot reference, see below</li>
@@ -2731,7 +2731,7 @@ If keyspec is not given EJBCA tries to generate a key with the same specificatio
 </p><p>
 An attributes file is in the format specified in the <a href="http://download.oracle.com/javase/6/docs/technotes/guides/security/p11guide.html">JavaTM PKCS#11 Reference Guide</a> and the examples further down in this file.
 </p><p>
-Before EJBCA 3.11 there were no default attributes used when no 'attributesFile' existed. Now there is a built in defaults configuration used when no attributesFile is specified. These defaults works for most HSM and looks like this:
+Before EJBCA 3.11 there were no default attributes used when no 'attributesFile' existed. Now there is a built in default configuration used when no attributesFile is specified. These defaults works for most HSM and looks like this:
 </p>
 <source>
 attributes(*, *, *) = {
@@ -3374,7 +3374,7 @@ ejbca@host:/usr/local/ejbca> CKNFAST_LOADSHARING=1 ../jboss/bin/run.sh
 </source><p>
 When activating a CA you need a smart card from the OCS of the corresponding slot inserted in both HSMs. The OCS got to be 1/n since preload can not be used.
 </p>
-<p>Sample catoken.properties for generating the initial AdminCA on the netHSM, or entering in the admin-GUI when creating a new CA.</p>
+<p>Sample catoken.properties for generating the initial AdminCA on the netHSM.</p>
 <source>
 defaultKey defaultKey
 certSignKey defaultSign
@@ -3653,7 +3653,7 @@ To fix this you should set the environment variable ET_PTKC_SW_AUTOSEEDRNG=true.
 <subsubsection name="Generating keys using ProtectServer tools">
 <p>
 You can also generate keys, and the needed self signed certificate, using the SafeNet tools delivered with the HSM. This is for example suitable when you want
-to generate ECC keys with curves not supported by JSK (although you may still have to patch the JDK in order to use them anyhow).
+to generate ECC keys with curves not supported by JDK (although you may still have to patch the JDK in order to use them anyhow).
 </p>
 <p>
 For example, the below commands generates an ECC key with curve P-256 on slot 1, storing it on the HSM with alias 'foo', assigning a selfsigned certificate to it and finally listing the object of slot 1.
@@ -3712,7 +3712,7 @@ PrimeKey has made a patches for the java issues with ECDSA. These patches are wa
 You can get a compiled patch together with an installation script for Linux operating systems (can be adapted for Windows as well) from <a href="http://www.primekey.se/">PrimeKey</a>. 
 </p>
   <subsubsection name="Sun Java PKCS#11 ECC key issue (fixed in recent JDKs)">
-  <p>If you are using an very old version of JAva/JDK, and the clientToolBox tool in EJBCA to generate ECC keys in an HSM using the PKCS#11 interface you are likely
+  <p>If you are using an very old version of Java/JDK, and the clientToolBox tool in EJBCA to generate ECC keys in an HSM using the PKCS#11 interface you are likely
   to stumble on a bug in the JDK which prevents reading of the public key from the HSM. The clientToolBox tool needs to read the public key,
   generate a "dummy" certificate and assign that to the key label, so we have a public key certificate in the keystore retrieved from 
   the Sun PKCS#11 provider.
