@@ -4,12 +4,12 @@ Set up a database for EJBCA in JBoss
 The following databases have in some stage been tested with EJBCA:
 
 * Hypersoniq (hsqldb) (default in JBoss)
-* PostegreSQL 7.2 and 8.x (http://www.postgresql.org/)
-* MySQL 4.x and 5.x (http://www.mysql.com/)
+* PostegreSQL 8.x and 9.x (http://www.postgresql.org/)
+* MySQL and MariaDB 5.x (http://www.mysql.com/)
 * Oracle 10g and 11g (http://www.oracle.com/)
-* Sybase
+* DB2 10.5
 * MS-SQL2000, 2003, 2008
-* DB2
+* Sybase
 * Informix 9.2, 11.50
 * Derby
 * Ingres 10.1 Community Edition
@@ -106,7 +106,7 @@ table rights on AuditRecordData.
 
 MySQL specifics
 ---------------
-EJBCA have been tested with MySQL 5.x.
+EJBCA have been tested with MySQL and MariaDB 5.x.
 
 It is NOT recommended to use the MyISAM storage engine, since it only supports
 table locks and not row-locking.
@@ -162,7 +162,7 @@ Restart you application server after this.
 
 PostgreSQL specifics
 --------------------
-EJBCA have been tested with PostgreSQL 7.x and 8.x.
+EJBCA have been tested with PostgreSQL 8.x and 9.x.
 
 JDBC driver: 
 For v8.x the 8.4 driver works fine.
@@ -187,11 +187,6 @@ so you can actually connect locally as the ejbca user.
 
 Oracle specifics
 ----------------
-Note that the default Oracle JDBC driver for Oracle 8 and 9 is seriously flawed and will not update 
-BLOBS larger than a certain size. EJBCA uses some CLOBs/BLOBs, so unfortunately is doesn't work.
-The driver from Oracle 11 works fine and can be downloaded from:
-http://www.oracle.com/technetwork/database/features/jdbc/
-
 JDBC driver for Java 6: ojdbc6.zip
 
 Use latest driver from at least Oracle 11 that can be downloaded from http://www.oracle.com/.
@@ -205,6 +200,91 @@ modules/ejbca-entity/resources/persistense-ds-template.xml, and then do a "ant c
 
 The SQL command to show tables in Oracle is:
 select table_name from user_tables;
+
+
+DB2 specifics
+----------------
+DB2 Express 10.5 and DB2 Enterprise has been tested.
+
+IBMs JDBC driver for DB2 is named "db2jcc.jar" or "db2jcc_license_c.jar".
+
+1. DB2 does not manage users, so DB2 users have to be local's or ldap's. We create a system user
+called "ejbca" to be used by DB2.
+2. Login as db2inst1 ("su - db2inst1"). Type db2cc, it will launch the administration control
+center of DB2.
+3. Choose your DB2 server and your instance db2inst1 and the Databases directory
+4. Create a new database named "EJBCA" and the rest default.
+5. Create a new Schema for the EJBCA database with "EJBCA" as "Schema Name" and "EJBCA" as
+"Authorization name".
+6. Create a new BufferPool "BP16K" with SIZE 2500 and PAGESIZE 16K.
+7. Create a new Tablespace "EJBCADB_DATA_01" with PAGESIZE 16K, EXTENTSIZE 32 and PREFETCHSIZE 32.
+8. Verify that that your temporary tablespace (e.g. TEMPSPACE1) uses a bufferpool
+(e.g. IMBDEFAULTBP or BP16K) with a page size of 16K.
+9. Configure EJBCA_HOME/conf/database.properties and install EJBCA.
+
+
+DB2 through installation creates the instance db2inst1  (user) with the group  db2iadm1.  Let's give him the password foo123. 
+His home directory is /home/db2inst1 and when we create new database (ex. custom) then it is located in:
+*/home/db2inst1/
+               NODE0000/
+                       CUSTOM/
+
+JBOSS-EAP-6.1 configuration:
+We have to create the following directories ($APPSRV_HOME/modules/system/layers/base pre-exist)
+$APPSRV_HOME/modules/system/layers/base/com/ibm/db2/main/
+
+Then put the following there:
+- db2jcc4.jar (DB2 driver located in /opt/ibm/db2/V10.5/java/ if is installed as root)
+- module.xml (which its contents are the following)
+
+<?xml version="1.0" encoding="UTF-8"?>
+<module xmlns="urn:jboss:module:1.0" name="com.ibm.db2">
+  <resources>
+    <resource-root path="db2jcc4.jar"/>
+  </resources>
+  <dependencies>
+    <module name="javax.api"/>
+    <module name="javax.transaction.api"/>
+  </dependencies>
+</module>
+
+Then we have to register the driver through jboss-cli:
+$ /subsystem=datasources/jdbc-driver=com.ibm.db2.jcc.DB2Driver:add(driver-name=com.ibm.db2.jcc.DB2Driver,driver-module-name=com.ibm.db2,driver-xa-datasource-class-name=com.ibm.db2.jcc.DB2XADataSource)
+$ :reload
+
+The database can be registered again through jboss-cli:
+$ data-source add --name=customds --driver-name="com.ibm.db2.jcc.DB2Driver" --connection-url="jdbc:db2://127.0.0.1:50000/custom" --jndi-name="java:/CustomDS" --use-ccm=true --driver-class="com.ibm.db2.jcc.DB2Driver" --user-name="db2inst1" --password="foo123" --validate-on-match=false --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=5 --max-pool-size=20 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --jta=false --check-valid-connection-sql=select 1;"
+
+EJBCA configuration:
+in database.properties:
+database.name=db2
+database.url=jdbc:db2://127.0.0.1:50000/ejbca
+database.driver=com.ibm.db2.jcc.DB2Driver
+database.username=db2inst1
+database.password=foo123
+
+
+Table space:
+Using "Select Tools→Command Editor", 6 & 7 would look something like this:
+    CREATE BUFFERPOOL "BP16K" SIZE 2500 PAGESIZE 16384 NOT EXTENDED STORAGE;
+    CONNECT RESET;
+    CONNECT TO EJBCA;
+    CREATE REGULAR TABLESPACE EJBCADB_DATA_01 IN DATABASE PARTITION
+    GROUP IBMDEFAULTGROUP PAGESIZE 16384 MANAGED BY DATABASE USING
+    (FILE '/home/db2inst1/db2inst1/EJBCA/ejbcadb_data_01.dbf'512000) EXTENTSIZE 32
+    PREFETCHSIZE 32 BUFFERPOOL BP16K OVERHEAD 7.500000
+    TRANSFERRATE 0.060000 FILE SYSTEM CACHING DROPPED TABLE RECOVERY ON;
+'512000' here is not the size of the table space in pages, so 512000*16384 equal 7.9 Gb. You can
+add more space for your database by selecting the tablespace "EJBCA_DATA_01", click on
+"Alter Tablespace", then click on "Containers", then select the only container and click on
+"Change..." and now change the value of the container size.
+
+
+On DB2 you have a database, a schema id and a table name. The default database properties works,
+because when you don't specify a schema id, the userid is used. But you can specify the schema name
+in the connection string: 
+    database.url=jdbc:db2://bigfatiron.foo.com:5021/DB2T:currentSchema=EJBCA;
+
 
 
 MS-SQL specifics
@@ -226,46 +306,6 @@ enabled and that everything else is disabled. When configuring the TCP/IP protoc
 Under SQL Native Client Configuration, make sure that TCP/IP is enabled and
 that everything else is disabled. When configuring the TCP/IP (the properties
 view), make sure that 'Default Port' is set to 1433
-
-
-DB2 specifics
-----------------
-DB2 Express 9.7.1 and Enterprise 9.1 has been tested.
-
-IBMs JDBC driver for DB2 is named "db2jcc.jar" or "db2jcc_license_c.jar".
-
-1. DB2 does not manage users, so DB2 users have to be local's or ldap's. We create a system user
-called "ejbca" to be used by DB2.
-2. Login as db2inst1 ("su - db2inst1"). Type db2cc, it will launch the administration control
-center of DB2.
-3. Choose your DB2 server and your instance db2inst1 and the Databases directory
-4. Create a new database named "EJBCA" and the rest default.
-5. Create a new Schema for the EJBCA database with "EJBCA" as "Schema Name" and "EJBCA" as
-"Authorization name".
-6. Create a new BufferPool "BP16K" with SIZE 2500 and PAGESIZE 16K.
-7. Create a new Tablespace "EJBCADB_DATA_01" with PAGESIZE 16K, EXTENTSIZE 32 and PREFETCHSIZE 32.
-8. Verify that that your temporary tablespace (e.g. TEMPSPACE1) uses a bufferpool
-(e.g. IMBDEFAULTBP or BP16K) with a page size of 16K.
-9. Configure EJBCA_HOME/conf/database.properties and install EJBCA.
-
-Using "Select Tools→Command Editor", 6 & 7 would look something like this:
-    CREATE BUFFERPOOL "BP16K" SIZE 2500 PAGESIZE 16384 NOT EXTENDED STORAGE;
-    CONNECT RESET;
-    CONNECT TO EJBCA;
-    CREATE REGULAR TABLESPACE EJBCADB_DATA_01 IN DATABASE PARTITION
-    GROUP IBMDEFAULTGROUP PAGESIZE 16384 MANAGED BY DATABASE USING
-    (FILE '/home/db2inst1/db2inst1/EJBCA/ejbcadb_data_01.dbf'512000) EXTENTSIZE 32
-    PREFETCHSIZE 32 BUFFERPOOL BP16K OVERHEAD 7.500000
-    TRANSFERRATE 0.060000 FILE SYSTEM CACHING DROPPED TABLE RECOVERY ON;
-'512000' here is not the size of the table space in pages, so 512000*16384 equal 7.9 Gb. You can
-add more space for your database by selecting the tablespace "EJBCA_DATA_01", click on
-"Alter Tablespace", then click on "Containers", then select the only container and click on
-"Change..." and now change the value of the container size.
-
-On DB2 you have a database, a schema id and a table name. The default database properties works,
-because when you don't specify a schema id, the userid is used. But you can specify the schema name
-in the connection string: 
-    database.url=jdbc:db2://bigfatiron.foo.com:5021/DB2T:currentSchema=EJBCA;
 
 
 Informix specifics
