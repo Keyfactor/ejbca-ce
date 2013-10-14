@@ -2,11 +2,15 @@ EJBCA 6.0.0
 -----------
 
 * Noteworthy changes:
-- The term 'Admin Group' has been mostly purged and replaced with 'Role'.
-- The installation work-flow and ant targets have changed.
-- 'Certificate Request History' is now disabled by default for new CAs.
 - There is a new concept of Crypto Tokens, separated from the CA configuration. For additional information,
   see User Guide and http://blog.ejbca.org/2013/08/whats-new-in-ejbca-6-part-1-crypto.html.
+- CMP is now fully configurable in the Admin GUI, and you can simultaneously use multiple different CMP configurations, called CMP aliases.
+  For additional information see Admin Guide and http://blog.ejbca.org/2013/09/whats-new-in-ejbca-6-part-2-cmp-aliases.html.
+- There is a new concept of Internal Key Bindings to bind a Crypto Token to a certificate for different usages, OCSP signing and TLS authentication.
+  For additional information see User Guide and http://blog.ejbca.org/2013/10/whats-new-in-ejbca-6-part-3-internal.html.
+- The term 'Admin Group' has been mostly purged and replaced with 'Role'.
+- The installation work-flow and ant targets have changed to be more logical for deployment and installation.
+- 'Certificate Request History' is now disabled by default for new CAs.
 - PKCS11 crypto tokens can now be managed by slot label (in addition to slot number and index) 
 - Internal OCSP services are no longer configurable from the CA, but are instead automatically set up and always active. 
 
