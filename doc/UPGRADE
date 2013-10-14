@@ -48,7 +48,7 @@ Settings relevant for 100% up-time upgrades are:
 The service for running OCSP services on internal CAs has now become an integral part of the OCSP responder. For this reason, the old 
 CA Extended Service will be removed at first upstart when a system has been upgraded from 5.0 to 6.0. The result of this is that for nodes sharing 
 a database, those nodes that haven't been upgraded to 6.0 will lose OCSP services until they've been upgraded as well. In order to keep internal
-OCSP services running (external OCSP services are not affectedon the entire cluster during the whole upgrade process, set "ca.keepocspextendedservice" 
+OCSP services running (external OCSP services are not affected) on the entire cluster during the whole upgrade process, set "ca.keepocspextendedservice" 
 to 'true' for all nodes except the last one, which then finally remove the service from the database. 
 - ca.keepocspextendedservice (5.0 -> 6.0)
 
