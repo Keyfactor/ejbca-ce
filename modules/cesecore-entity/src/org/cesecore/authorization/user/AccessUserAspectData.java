@@ -188,9 +188,14 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
 
     public static int generatePrimaryKey(final String roleName, final int caId, final AccessMatchValue matchWith, final AccessMatchType matchType,
             final String matchValue) {
+        return generatePrimaryKey(roleName, caId, matchWith.getNumericValue(), matchType, matchValue);
+    }
+    
+    public static int generatePrimaryKey(final String roleName, final int caId, final int matchWith, final AccessMatchType matchType,
+            final String matchValue) {
         final int roleNameHash = roleName == null ? 0 : roleName.hashCode();
         final int matchValueHash = matchValue == null ? 0 : matchValue.hashCode();
-        return (roleNameHash & matchValueHash) ^ caId ^ matchWith.getNumericValue() ^ matchType.getNumericValue();
+        return (roleNameHash & matchValueHash) ^ caId ^ matchWith ^ matchType.getNumericValue();
     }
 
     @Override
