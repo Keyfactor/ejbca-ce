@@ -316,11 +316,24 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
     public void testRenameRole() throws RoleExistsException, AuthorizationDeniedException, RoleNotFoundException {
         RoleData kip = roleManagementSession.create(authenticationToken, "Kip");
         RoleData cubert = roleManagementSession.create(authenticationToken, "Cubert");
+        
+        Collection<AccessRuleData> accessRules = new LinkedList<AccessRuleData>();
+        AccessRuleData accessRule = new AccessRuleData(kip.getRoleName(), "/TestRule", AccessRuleState.RULE_ACCEPT, false);
+        accessRules.add(accessRule);
+        kip = roleManagementSession.addAccessRulesToRole(alwaysAllowAuthenticationToken, kip, accessRules);
 
         try {
             kip = roleManagementSession.renameRole(authenticationToken, kip, "Amy");
             assertEquals("Amy", kip.getRoleName());
             assertEquals(kip, roleAccessSession.findRole("Amy"));
+            assertNull(roleAccessSession.findRole("Kip"));
+            
+            // Try to edit the renamed role. The primary keys should have been updated.
+            // We should NOT get "Role Amy did not match up with the role that created this rule." here
+            accessRules = new ArrayList<AccessRuleData>(kip.getAccessRules().values());
+            roleManagementSession.replaceAccessRulesInRole(authenticationToken, kip, accessRules);
+            
+            // Try renaming to an existing name
             boolean caught = false;
             try {
             roleManagementSession.renameRole(authenticationToken, kip, "Cubert");
