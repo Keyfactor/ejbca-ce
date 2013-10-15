@@ -160,6 +160,10 @@ a TCP (a deprecated protocol in EJBCA) user, you should set your TCP configurati
 according to the instructions above, and rename the alias 'cmp' to 'tcp'. See Admin Guide -> CMP -> 'CMP over TCP' and execute './bin/ejbca.sh config cmp' for 
 details.
 
+NOTE: CLI commands have been updated to reflect the new nomenclature introduced in EJBCA 5.0. This mainly involves the change of the command 'admins' -> 'roles' 
+(to reflect that Admin Groups have been renamed Roles) and to the subcommmands under 'ra' which have been renamed to reflect the namechange from 'User' to 'End 
+Entity' (e.g. adduser -> addendentity). The old commands have been deprecated but are still functional, and may be removed entirely in a future version. 
+
 If you get a "java.lang.NoSuchMethodError" in the admin GUI it is because JBoss does not clean temporary files very well.
 Delete the directories JBOSS_HOME/server/default/tmp and JBOSS_HOME/server/default/work and restart JBoss to get it working.
 
