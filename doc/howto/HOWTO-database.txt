@@ -58,10 +58,10 @@ Configuring EJBCA
    Specify the 'datasource.jndi-name' to the one you chose.
    For example: 'EjbcaDS'
    There is a database.properties.sample that is heavily commented.
-2. On JBoss: Use 'ant deploy', it will configure automatically all deployment descriptors according to the
+2. On JBoss: Use 'ant deploy-datasource', it will configure automatically all deployment descriptors according to the
    database/jndi-name you chose before.
 
-   It will also copy ejbca-ds.xml to ${jboss.home}/server/default/deploy.
+   On JBoss 5, iIt will also copy ejbca-ds.xml to ${jboss.home}/server/default/deploy.
    This file defines your database configuration such as the driver, url, username, password.
    All other parameters are optional, so don't bother with them unless you know what you're doing.
    Of course this ejbca-ds.xml should define the jndi-name as 'EjbcaDS' (or whatever name you chose
@@ -82,7 +82,7 @@ JBoss and run. To remove an old installation, shut down JBoss and delete the
 
 The following is only if you want to replace the default database with another for EJBCA.
 
-The description given here is for JBoss 5.1.0 Consider consulting the official JBoss documentation.
+The description given here is for JBoss 5.1.0. Consider consulting the official JBoss documentation.
 
 Database configuration files in JBoss are located in the
 <jboss-home>/server/default/deploy. EJBCA automatically deploys a new datasource
@@ -106,7 +106,7 @@ table rights on AuditRecordData.
 
 MySQL specifics
 ---------------
-EJBCA have been tested with MySQL and MariaDB 5.x.
+EJBCA have been tested with MySQL 5.x and MariaDB 5.x.
 
 It is NOT recommended to use the MyISAM storage engine, since it only supports
 table locks and not row-locking.
@@ -123,8 +123,8 @@ It is recommended to configure my.cnf with at least the following:
  default-collation = utf8_general_ci
  default-character-set = utf8
 
-The JDBC driver (e.g. mysql-connector-java-5.x.x.jar) can be downloaded from
-http://www.mysql.com/ or installed using your Linux repositories.
+The JDBC driver (e.g. mysql-connector or mariadb-java-client) can be downloaded from
+http://www.mysql.com/ or http://www.mariadb.org/.
 
 Sometimes there can be problems with MySQL related to case sensitivity of database tables.
 
@@ -139,9 +139,9 @@ Basic database, user, table and index creation:
   mysql> CREATE DATABASE ejbca CHARACTER SET utf8 COLLATE utf8_general_ci;
   mysql> GRANT ALL PRIVILEGES ON ejbca.* TO 'ejbca'@'<host>' IDENTIFIED BY '<password>';
   mysql> exit
-  $ mysql -u root -p ejbca < doc/sql-scripts/create-tables-ejbca5-mysql.sql
-  $ mysql -u root -p ejbca < doc/sql-scripts/create-index-ejbca5.sql
-  $ mysql -u root -p ejbca < doc/sql-scripts/optimize-ejbca5-mysql.sql
+  $ mysql -u root -p ejbca < doc/sql-scripts/create-tables-ejbca-mysql.sql
+  $ mysql -u root -p ejbca < doc/sql-scripts/create-index-ejbca.sql
+  $ mysql -u root -p ejbca < doc/sql-scripts/optimize-ejbca-mysql.sql
 
 List your tables, indexes and partitions:
   $ mysql -u root -p ejbca 
