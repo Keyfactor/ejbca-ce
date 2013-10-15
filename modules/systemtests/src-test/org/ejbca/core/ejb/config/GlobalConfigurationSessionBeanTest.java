@@ -132,6 +132,40 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
 
     }
 
+    /** Tests that NodesInCluster maintains the same order across saving 
+     */
+    @Test
+    public void testNodesInClusterOrder() throws Exception {
+        // Set a brand new value
+        GlobalConfiguration gc = new GlobalConfiguration();
+        Set<String> nodes = gc.getNodesInCluster();
+        assertEquals("nodes should be a LinkedHashSet", "java.util.LinkedHashSet", nodes.getClass().getName());
+        // Test automatic upgrade to LinkedHashSet
+        HashSet<String> hs = new HashSet<String>();
+        hs.add("foo");
+        gc.setNodesInCluster(hs);
+        nodes = gc.getNodesInCluster();
+        assertEquals("nodes should be a LinkedHashSet", "java.util.LinkedHashSet", nodes.getClass().getName());
+        nodes.add("node2");
+        nodes.add("node1");
+        nodes.add("node3");
+        nodes.add("foo"); // foo already exists, and was inserted first, so it should be first in the iterator
+        nodes.add("4711");
+        nodes.add("bar");
+        nodes.add("1node2");
+        gc.setNodesInCluster(nodes);
+        String str = nodes.toString();
+        assertEquals("String should be the same order as inserted", "[foo, node2, node1, node3, 4711, bar, 1node2]", str);
+        String str1 = gc.getNodesInCluster().toString();
+        assertEquals("Strings should be the same across read and write", "[foo, node2, node1, node3, 4711, bar, 1node2]", str1);
+        // Save and make sure it's ok across database saves as well
+        globalConfigurationSession.saveConfiguration(internalAdmin, gc, Configuration.GlobalConfigID);
+        globalConfigurationSession.flushCache(Configuration.GlobalConfigID);
+        GlobalConfiguration newgc = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
+        String str2 = newgc.getNodesInCluster().toString();
+        assertEquals("Strings should be the same across read and write", "[foo, node2, node1, node3, 4711, bar, 1node2]", str2);
+    }
+
     /**
      * Set a preliminary value and allows the cache to set it.
      * 
