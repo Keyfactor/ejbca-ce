@@ -183,9 +183,29 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
         if (roleAccessSession.findRole(newName) == null) {
             assertAuthorizedToEditRole(authenticationToken, role);
             final String oldName = role.getRoleName();
-            role.setRoleName(newName);
-
-            result = entityManager.merge(role);
+            
+            // Create the role again with the new name to get the correct primary keys etc.
+            Collection<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
+            for (AccessRuleData oldRule : role.getAccessRules().values()) {
+                // Copy so we get a new id
+                accessRules.add(new AccessRuleData(newName, oldRule.getAccessRuleName(), oldRule.getInternalState(), oldRule.getRecursive()));
+            }
+            
+            Collection<AccessUserAspectData> subjects = new ArrayList<AccessUserAspectData>();
+            for (AccessUserAspectData user : role.getAccessUsers().values()) {
+                // The matchWith is difficult to copy so just change the id
+                user.setPrimaryKey(AccessUserAspectData.generatePrimaryKey(newName, user.getCaId(), user.getMatchWith(), user.getMatchTypeAsType(), user.getMatchValue()));
+                subjects.add(user);
+            }
+            
+            result = create(authenticationToken, newName);
+            try {
+                result = addAccessRulesToRole(authenticationToken, result, accessRules);
+                result = addSubjectsToRole(authenticationToken, result, subjects);
+                remove(authenticationToken, oldName);
+            } catch (RoleNotFoundException e) {
+                throw new RuntimeException(e); // Should never happen
+            }
 
             accessTreeUpdateSession.signalForAccessTreeUpdate();
             accessControlSession.forceCacheExpire();
