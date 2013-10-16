@@ -39,7 +39,7 @@ public class InternalKeyBindingProperty<T extends Serializable> implements Seria
     /** Constructor required by Serializable */
     public InternalKeyBindingProperty() { }
     
-    /** Constructor. Not the T must implement toString() . */
+    /** Constructor. Note the T must implement toString() . */
     public InternalKeyBindingProperty(final String name, final T defaultValue, final T...possibleValues) {
         this.name = name;
         this.defaultValue = defaultValue;
