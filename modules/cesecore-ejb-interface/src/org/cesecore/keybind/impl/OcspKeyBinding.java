@@ -56,8 +56,8 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
             add(new InternalKeyBindingProperty<Boolean>(PROPERTY_INCLUDE_CERT_CHAIN, Boolean.TRUE));
             add(new InternalKeyBindingProperty<String>(PROPERTY_RESPONDER_ID_TYPE, ResponderIdType.KEYHASH.name(), ResponderIdType.KEYHASH.name(), ResponderIdType.NAME.name()));
             add(new InternalKeyBindingProperty<Boolean>(PROPERTY_REQUIRE_TRUSTED_SIGNATURE, Boolean.FALSE));
-            add(new InternalKeyBindingProperty<Integer>(PROPERTY_UNTIL_NEXT_UPDATE, 0));
-            add(new InternalKeyBindingProperty<Integer>(PROPERTY_MAX_AGE, 0));
+            add(new InternalKeyBindingProperty<Integer>(PROPERTY_UNTIL_NEXT_UPDATE, Integer.valueOf(0)));
+            add(new InternalKeyBindingProperty<Integer>(PROPERTY_MAX_AGE, Integer.valueOf(0)));
         }});
     }
     
