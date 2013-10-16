@@ -89,7 +89,7 @@ If you do not want to import the administrator certificate into EJBCA you can co
 <li>...(CA publishes new OCSP signing certificate to OCSP instance)...</li>
 <li>Go to AdminGUI of OCSP -> Internal Key Bindings and click "Update" for your new OcspKeyBinding. This will find the published certificate
 by matching the key pair with the certificate.</li>
-<li>Go to AdminGUI of OCSP -> Internal Key Bindings and click "Activate" for your new OcspKeyBinding to start processing OCSP responses with it.</li>
+<li>Go to AdminGUI of OCSP -> Internal Key Bindings and click "Enable" for your new OcspKeyBinding to start processing OCSP responses with it.</li>
 </ul>
 </subsection>
 <subsection name="Workflow for renewal of an OCSP signer">
@@ -100,7 +100,7 @@ by matching the key pair with the certificate.</li>
 <li>...(CA publishes new OCSP signing certificate to OCSP instance)...</li>
 <li>Go to AdminGUI of OCSP -> Internal Key Bindings and click "Update" for your new OcspKeyBinding. This will find the published certificate
 by matching the key pair with the certificate.</li>
-<li>Go to AdminGUI of OCSP -> Internal Key Bindings and click "Activate" for your new OcspKeyBinding to start processing OCSP responses with it.</li>
+<li>Go to AdminGUI of OCSP -> Internal Key Bindings and click "Enable" for your new OcspKeyBinding to start processing OCSP responses with it.</li>
 </ul>
 </subsection>
 <subsection name="Using the CLI">
