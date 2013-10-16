@@ -1878,6 +1878,22 @@ public class CAsTest extends CaTestCase {
        }
     }
 
+   @Test
+   public void test23GetAuthorizedPublisherIdsAccessTest() throws Exception {
+       log.trace(">test23GetAuthorizedPublisherIdsAccessTest()");
+       Set<Principal> principals = new HashSet<Principal>();
+       principals.add(new X500Principal("C=SE,O=UnlovedUser,CN=UnlovedUser"));
+       AuthenticationToken unpriviledgedUser = simpleAuthenticationProvider.authenticate(new AuthenticationSubject(principals, null));
+       // Superadmin should get several IDs
+       Collection<Integer> caids = caAdminSession.getAuthorizedPublisherIds(admin);
+       assertNotNull(caids);
+       assertFalse("Superadmin should read some publisher IDs", caids.isEmpty());
+       // Unprivilegeduser should get no IDs
+       caids = caAdminSession.getAuthorizedPublisherIds(unpriviledgedUser);
+       assertTrue("Unprivileged admin should not be allowed to read and publisher IDs", caids.isEmpty());
+       log.trace("<test23GetAuthorizedPublisherIdsAccessTest()");
+   }
+
     /**
      * Preemtively remove CA in case it was created by a previous run:
      * 

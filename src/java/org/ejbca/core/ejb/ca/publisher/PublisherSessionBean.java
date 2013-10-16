@@ -466,7 +466,11 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     }
 
     @Override
-    public Collection<Integer> getAllPublisherIds() throws AuthorizationDeniedException {
+    public Collection<Integer> getAllPublisherIds(AuthenticationToken admin) throws AuthorizationDeniedException {
+        if (!authorizationSession.isAuthorized(admin, StandardRules.ROLE_ROOT.resource())) {
+            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", admin.toString(), "Can not retrieve all publishers IDs.");
+            throw new AuthorizationDeniedException(msg);
+        }
         HashSet<Integer> returnval = new HashSet<Integer>();
         Iterator<PublisherData> i = PublisherData.findAll(entityManager).iterator();
         while (i.hasNext()) {
