@@ -108,7 +108,7 @@ public interface PublisherSessionLocal extends PublisherSession {
      * @throws AuthorizationDeniedException
      *             if the admin does not have superadmin credentials
      */
-    Collection<Integer> getAllPublisherIds() throws AuthorizationDeniedException;
+    Collection<Integer> getAllPublisherIds(AuthenticationToken admin) throws AuthorizationDeniedException;
 
     /** @return mapping of publisher id (Integer) to publisher name (String). */
     HashMap<Integer,String> getPublisherIdToNameMap();
