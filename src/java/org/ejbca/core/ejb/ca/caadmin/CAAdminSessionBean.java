@@ -2419,7 +2419,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         final HashSet<Integer> returnval = new HashSet<Integer>();
         try {
             // If superadmin return all available publishers
-            returnval.addAll(publisherSession.getAllPublisherIds());
+            returnval.addAll(publisherSession.getAllPublisherIds(admin));
         } catch (AuthorizationDeniedException e1) {
             // If regular CA-admin return publishers he is authorized to
             for (final Integer caid : caSession.getAuthorizedCAs(admin)) {
