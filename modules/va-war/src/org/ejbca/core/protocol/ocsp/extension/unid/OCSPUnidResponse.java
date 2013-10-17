@@ -84,7 +84,7 @@ public class OCSPUnidResponse {
     public static final int ERROR_INVALID_NONCE = 8;
 
 	/*
-	 * Private vaiables
+	 * Private variables
 	 */
 	private OCSPResp resp = null;
 	private String fnr = null;

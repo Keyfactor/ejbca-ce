@@ -35,7 +35,6 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
-import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -77,7 +76,6 @@ import org.bouncycastle.asn1.ocsp.RevokedInfo;
 import org.bouncycastle.asn1.x509.CRLReason;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
-import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.ocsp.BasicOCSPResp;
@@ -408,7 +406,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             throws CryptoTokenOfflineException {
         final X509Certificate[] certChain = ocspSigningCacheEntry.getFullCertificateChain().toArray(new X509Certificate[0]);
         final X509Certificate signerCert = certChain[0];
-        if(!isOCSPCert(signerCert) && ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
+        if(!CertTools.isOCSPCert(signerCert) && ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
             log.warn("Signing with non OCSP certificate (no 'OCSP Signing' Extended Key Usage) bound by OcspKeyBinding '" + ocspSigningCacheEntry.getOcspKeyBinding().getName() + "'.");
         }
         final String sigAlg;
@@ -1286,22 +1284,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             log.error("Audit and/or account logging failed since " + startTime);
         }
         return result;
-    }
-
-    /**
-     * Is OCSP extended key usage set for a certificate?
-     * 
-     * @param cert to check.
-     * @return true if the extended key usage for OCSP is check
-     */
-    private boolean isOCSPCert(X509Certificate cert) {
-        final List<String> keyUsages;
-        try {
-            keyUsages = cert.getExtendedKeyUsage();
-        } catch (CertificateParsingException e) {
-            return false;
-        }
-        return keyUsages != null && keyUsages.contains(KeyPurposeId.id_kp_OCSPSigning.getId());
     }
     
     /**
