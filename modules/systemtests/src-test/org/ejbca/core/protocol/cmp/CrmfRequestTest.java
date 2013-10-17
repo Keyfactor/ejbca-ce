@@ -63,6 +63,7 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.StringTools;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.Configuration;
 import org.ejbca.core.EjbcaException;
@@ -133,7 +134,7 @@ public class CrmfRequestTest extends CmpTestCase {
         cmpConfiguration.setResponseProtection(cmpAlias, "signature");
         cmpConfiguration.setCMPDefaultCA(cmpAlias, issuerDN);
         cmpConfiguration.setAuthenticationModule(cmpAlias, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
-        cmpConfiguration.setAuthenticationParameters(cmpAlias, "-;-");
+        cmpConfiguration.setAuthenticationParameters(cmpAlias, "-;foo123");
         cmpConfiguration.setExtractUsernameComponent(cmpAlias, "CN");
         globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
 
@@ -446,6 +447,113 @@ public class CrmfRequestTest extends CmpTestCase {
         log.trace("<test09KeyIdTest()");
     }
 
+    @Test
+    public void  test10EscapedCharsInDN() throws Exception {
+        log.trace(">test10EscapedCharsInDN");
+
+        cmpConfiguration.setExtractUsernameComponent(cmpAlias, "DN");
+        globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
+        
+
+        byte[] nonce = CmpMessageHelper.createSenderNonce();
+        byte[] transid = CmpMessageHelper.createSenderNonce();
+        
+        // --------------- Send a CRMF request with the whole DN as username with escapable characters --------------- //
+        final String requestName = "CN=another\0nullguy%00";
+        // Create a new good user
+        createCmpUser(requestName, requestName);
+
+        try {
+            PKIMessage req = genCertReq(issuerDN, requestName, keys, cacert, nonce, transid, false, null, null, null, null, null, null);
+            assertNotNull(req);
+            CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
+            int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+            ByteArrayOutputStream bao = new ByteArrayOutputStream();
+            DEROutputStream out = new DEROutputStream(bao);
+            out.writeObject(req);
+            byte[] ba = bao.toByteArray();
+            // Send request and receive response
+            byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
+            checkCmpResponseGeneral(resp, issuerDN, requestName, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+            X509Certificate cert = checkCmpCertRepMessage(StringTools.getBase64String(StringTools.strip(requestName)), cacert, resp, reqId);
+            assertNotNull(cert);
+
+            // Now revoke the bastard!
+            PKIMessage rev = genRevReq(issuerDN, requestName, cert.getSerialNumber(), cacert, nonce, transid, true, null, null);
+            assertNotNull(rev);
+            rev = protectPKIMessage(rev, false, "foo123", 567);
+            ByteArrayOutputStream baorev = new ByteArrayOutputStream();
+            DEROutputStream outrev = new DEROutputStream(baorev);
+            outrev.writeObject(rev);
+            byte[] barev = baorev.toByteArray();
+            // Send request and receive response
+            resp = sendCmpHttp(barev, 200, cmpAlias);
+            checkCmpResponseGeneral(resp, issuerDN, requestName, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+            int revStatus = checkRevokeStatus(issuerDN, CertTools.getSerialNumber(cert));
+            assertNotSame("Revocation request failed to revoke the certificate", RevokedCertInfo.NOT_REVOKED, revStatus);
+        } finally {
+            String escapedName = StringTools.getBase64String(StringTools.strip(requestName));
+            try {
+                endEntityManagementSession.deleteUser(admin, escapedName);
+            } catch (NotFoundException e) {
+                // A test probably failed before creating the entity
+                log.debug("Failed to delete user: " + escapedName);
+            }
+        }
+        
+        
+        // --------------- Send a CRMF request with a username with escapable characters --------------- //
+        final String username = "another\0nullguy%00";
+        final String dn = "CN=" + username + ", C=SE";
+        KeyPair key2 = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        
+        // Create a new good user
+        createCmpUser(username, dn);
+
+        try {
+        
+            PKIMessage req = genCertReq(issuerDN, dn, key2, cacert, nonce, transid, false, null, null, null, null, null, null);
+            assertNotNull(req);
+            CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
+            int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+            ByteArrayOutputStream bao = new ByteArrayOutputStream();
+            DEROutputStream out = new DEROutputStream(bao);
+            out.writeObject(req);
+            byte[] ba = bao.toByteArray();
+            // Send request and receive response
+            byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
+            checkCmpResponseGeneral(resp, issuerDN, dn, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+            X509Certificate cert = checkCmpCertRepMessage(StringTools.getBase64String(StringTools.strip(dn)), cacert, resp, reqId);
+            assertNotNull(cert);
+
+            // Now revoke the bastard!
+            PKIMessage rev = genRevReq(issuerDN, dn, cert.getSerialNumber(), cacert, nonce, transid, true, null, null);
+            assertNotNull(rev);
+            rev = protectPKIMessage(rev, false, "foo123", 567);
+            ByteArrayOutputStream baorev = new ByteArrayOutputStream();
+            DEROutputStream outrev = new DEROutputStream(baorev);
+            outrev.writeObject(rev);
+            byte[] barev = baorev.toByteArray();
+            // Send request and receive response
+            resp = sendCmpHttp(barev, 200, cmpAlias);
+            checkCmpResponseGeneral(resp, issuerDN, dn, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+            int revStatus = checkRevokeStatus(issuerDN, CertTools.getSerialNumber(cert));
+            assertNotSame("Revocation request failed to revoke the certificate", RevokedCertInfo.NOT_REVOKED, revStatus);
+        
+        } finally {
+            String escapedName = StringTools.getBase64String(StringTools.strip(username));
+            try {
+                endEntityManagementSession.deleteUser(admin, escapedName);
+            } catch (NotFoundException e) {
+                // A test probably failed before creating the entity
+                log.debug("Failed to delete user: " + escapedName);
+            }
+        }
+        
+        log.trace("<test10EscapedCharsInDN");
+    }
+    
+    
     private void createCmpUser(String username, String dn) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException,
             EjbcaException, FinderException, CADoesntExistsException {
         // Make user that we know...
