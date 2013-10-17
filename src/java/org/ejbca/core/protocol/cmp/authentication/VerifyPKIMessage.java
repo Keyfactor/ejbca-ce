@@ -142,6 +142,8 @@ public class VerifyPKIMessage {
                 break;
             } catch (CmpAuthenticationException e) {
                 errmsg = e.getLocalizedMessage();
+            } catch (IllegalArgumentException e) {
+                errmsg = e.getLocalizedMessage();
             }
             
             i++;
