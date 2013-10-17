@@ -23,25 +23,25 @@ import javax.xml.ws.WebFault;
  */
 @WebFault
 @ApplicationException(rollback=true)  
-public class CMPAuthenticationException extends Exception {
+public class CmpAuthenticationException extends Exception {
     
 
     private static final long serialVersionUID = 4400551462100867374L;
 
 
     /**
-     * Creates a new instance of <code>AuthorizationDeniedException</code> without detail message.
+     * Creates a new instance of <code>CmpAuthenticationException</code> without detail message.
      */
-    public CMPAuthenticationException() {
+    public CmpAuthenticationException() {
       super();  
     }
     
     
     /**
-     * Constructs an instance of <code>AuthorizationDeniedException</code> with the specified detail message.
+     * Constructs an instance of <code>CmpAuthenticationException</code> with the specified detail message.
      * @param msg the detail message.
      */
-    public CMPAuthenticationException(String msg) {
+    public CmpAuthenticationException(String msg) {
         super(msg);
     }
 }
