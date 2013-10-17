@@ -105,7 +105,6 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
         return this.verifyer;
     }
     
-    @Override
     /**
      * Verifies that 'msg' is sent by a trusted source. 
      * 
