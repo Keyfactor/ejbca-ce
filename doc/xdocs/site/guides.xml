@@ -448,7 +448,7 @@ Router#debug crypto pki validation
   </p>
 <source>
   $ cd $EJBCA_HOME
-  $ bin/ejbca.sh ra adduser apache-ssl foo123 "CN=ca-server.company.local,O=EJBCA Sample,C=SE" "" ManagementCA "" 1 PEM SERVER
+  $ bin/ejbca.sh ra addendentity apache-ssl foo123 "CN=ca-server.company.local,O=EJBCA Sample,C=SE" "" ManagementCA "" 1 PEM SERVER
   $ bin/ejbca.sh ra setclearpwd apache-ssl foo123
   $ bin/ejbca.sh batch
   $ ls p12/pem/ca-server.company.local*
@@ -834,7 +834,7 @@ nameserver 192.168.0.101
   </p>
 <source>
 $cd $EJBCA_HOME
-$bin/ejbca.sh ra adduser apache-ssl foo123 "CN=ca-server.company.local,O=EJBCA Sample,C=SE" "" ManagementCA "" 1 PEM SERVER
+$bin/ejbca.sh ra addendentity apache-ssl foo123 "CN=ca-server.company.local,O=EJBCA Sample,C=SE" "" ManagementCA "" 1 PEM SERVER
 $bin/ejbca.sh ra setclearpwd apache-ssl foo123
 $bin/ejbca.sh batch
 $ls p12/pem/ca-server.company.local*

@@ -47,11 +47,6 @@ public class RevokeCommand extends XKMSCLIBaseCommand implements IAdminCommand{
 	private static final int ARG_CERTENCODING       = 2;
 	private static final int ARG_REVOCATIONCODE     = 3;	
 
-    /**
-     * Creates a new instance of RaAddUserCommand
-     *
-     * @param args command line arguments
-     */
     public RevokeCommand(String[] args) {
         super(args);
     }

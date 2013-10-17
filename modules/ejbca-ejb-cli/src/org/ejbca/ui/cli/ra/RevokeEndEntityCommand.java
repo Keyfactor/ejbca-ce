@@ -35,7 +35,7 @@ public class RevokeEndEntityCommand extends BaseRaCommand {
     @Override
 	public String getSubCommand() { return COMMAND; }
     @Override
-	public String getDescription() { return "Revokes a user and all certificates for a user"; }
+	public String getDescription() { return "Revokes an end enity and all certificates for that end entity."; }
     
     @Override
     public String[] getSubCommandAliases() {

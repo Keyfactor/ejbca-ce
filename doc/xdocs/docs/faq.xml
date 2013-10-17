@@ -449,9 +449,9 @@ This will fire up a rudimentary database interface. Only works on the same machi
 	one-time-password scheme. To issue a new certificate to the user his/her status must be reset to NEW, FAILED or INPROCESS.
 	This can be done with the Admin GUI or:
 	<source>
-	bin/ejbca.sh ra setuserstatus username status
+	bin/ejbca.sh ra setendentitystatus username status
 	</source>
-	Status '10' is NEW. Just enter 'bin/ejbca.sh ra setuserstatus' to see a list of all status codes.
+	Status '10' is NEW. Just enter 'bin/ejbca.sh ra setendentitystatus' to see a list of all status codes.
 	</p>
 	</answer>
 	</faq>

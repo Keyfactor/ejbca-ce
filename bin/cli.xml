@@ -115,13 +115,13 @@ appserver.home         : ${appserver.home}
 	    </condition>
 		
 		
-		<ejbca:cli-hideargs arg='ra adduser tomcat ${httpsserver.password} "${httpsserver.dn}" "${httpsserver.an}" "${ca.name}" null 1 JKS SERVER'/>
+		<ejbca:cli-hideargs arg='ra addendentity tomcat ${httpsserver.password} "${httpsserver.dn}" "${httpsserver.an}" "${ca.name}" null 1 JKS SERVER'/>
 		<ejbca:cli-hideargs arg="ra setclearpwd tomcat ${httpsserver.password}"/>
 		<ejbca:cli arg="batch tomcat"/>
         <condition property="superadmin.keystoretype" value="P12" else="USERGENERATED">
            	<istrue value="${superadmin.batch}" />
         </condition>
-		<ejbca:cli-hideargs arg='ra adduser superadmin ${superadmin.password} "${superadmin.dn}" null "${ca.name}" null 1 ${superadmin.keystoretype}'/>
+		<ejbca:cli-hideargs arg='ra addendentity superadmin ${superadmin.password} "${superadmin.dn}" null "${ca.name}" null 1 ${superadmin.keystoretype}'/>
 		<ejbca:cli-hideargs arg="ra setclearpwd superadmin ${superadmin.password}" />
 		
 		<!--
@@ -148,7 +148,7 @@ appserver.home         : ${appserver.home}
 	</target>
 	
         <target name="ejbca:renew-keystore" description="Renews the keystore used by the application server for https access.">
-                <ejbca:cli-hideargs arg="ra setuserstatus tomcat 10"/>
+                <ejbca:cli-hideargs arg="ra setendentitystatus tomcat 10"/>
                 <ejbca:cli-hideargs arg="ra setclearpwd tomcat ${httpsserver.password}"/>
                 <ejbca:cli arg="batch tomcat"/>
         </target>

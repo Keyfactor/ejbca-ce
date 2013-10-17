@@ -56,13 +56,6 @@ public class ReissueCommand extends XKMSCLIBaseCommand implements IAdminCommand{
 	private static final int ARG_ENCODING           = 5;
 	private static final int ARG_OUTPUTPATH         = 6;
 	    
-   
-	
-    /**
-     * Creates a new instance of RaAddUserCommand
-     *
-     * @param args command line arguments
-     */
     public ReissueCommand(String[] args) {
         super(args);
     }
