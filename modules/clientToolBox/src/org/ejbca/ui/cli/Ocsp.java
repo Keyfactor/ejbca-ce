@@ -28,6 +28,7 @@ import java.io.StreamCorruptedException;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -52,7 +53,7 @@ public class Ocsp extends ClientToolBox {
     private class StressTest {
         final PerformanceTest performanceTest;
         final String ocspurl;
-        final Certificate cacert;
+        final X509Certificate cacert;
         final SerialNrs serialNrs;
         final String keyStoreFileName;
         final String keyStorePassword;
@@ -208,9 +209,9 @@ public class Ocsp extends ClientToolBox {
         }
     }
 
-    static Certificate getCertFromPemFile(String fileName) throws IOException, CertificateException {
+    static X509Certificate getCertFromPemFile(String fileName) throws IOException, CertificateException {
         byte[] bytes = FileTools.getBytesFromPEM(FileTools.readFiletoBuffer(fileName), "-----BEGIN CERTIFICATE-----", "-----END CERTIFICATE-----");
-        return CertTools.getCertfromByteArray(bytes);
+        return (X509Certificate) CertTools.getCertfromByteArray(bytes);
     }
 
     /* (non-Javadoc)

@@ -104,6 +104,7 @@ import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.PolicyInformation;
 import org.bouncycastle.asn1.x509.PrivateKeyUsagePeriod;
 import org.bouncycastle.asn1.x509.ReasonFlags;
@@ -1339,7 +1340,7 @@ public abstract class CertTools {
     /**
      * Checks if a certificate is self signed by verifying if subject and issuer are the same.
      * 
-     * @param cert the certificate that skall be checked.
+     * @param cert the certificate that shall be checked.
      * 
      * @return boolean true if the certificate has the same issuer and subject, false otherwise.
      */
@@ -1425,8 +1426,25 @@ public abstract class CertTools {
             log.trace("<isCA:" + ret);
         }
         return ret;
-    } // isSelfSigned
+    } 
 
+    /**
+     * Is OCSP extended key usage set for a certificate?
+     * 
+     * @param cert to check.
+     * @return true if the extended key usage for OCSP is check
+     */
+    public static boolean isOCSPCert(X509Certificate cert) {
+        final List<String> keyUsages;
+        try {
+            keyUsages = cert.getExtendedKeyUsage();
+        } catch (CertificateParsingException e) {
+            return false;
+        }
+        return keyUsages != null && keyUsages.contains(KeyPurposeId.id_kp_OCSPSigning.getId());
+    }
+    
+    
     /**
      * Generate a selfsigned certiicate.
      * 

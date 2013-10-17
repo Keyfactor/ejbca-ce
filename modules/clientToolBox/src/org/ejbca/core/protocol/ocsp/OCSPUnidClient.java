@@ -25,11 +25,15 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.GeneralSecurityException;
+import java.security.KeyManagementException;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -179,7 +183,7 @@ public class OCSPUnidClient {
 	 * @throws OperatorCreationException 
 	 * @throws IllegalArgumentException 
 	 */
-	public OCSPUnidResponse lookup(Certificate cert, Certificate cacert, boolean useGet) throws OCSPException, IOException, GeneralSecurityException, IllegalArgumentException, OperatorCreationException {
+	public OCSPUnidResponse lookup(Certificate cert, X509Certificate cacert, boolean useGet) throws OCSPException, IOException, GeneralSecurityException, IllegalArgumentException, OperatorCreationException {
         return lookup( CertTools.getSerialNumber(cert), cacert, useGet);
     }
     /**
@@ -188,13 +192,16 @@ public class OCSPUnidClient {
      * @param useGet if true GET will be used instead of POST as HTTP method
      * @return response can contain and an error code but the fnr is allways null, never returns null.
      * @throws OCSPException 
-     * @throws IllegalArgumentException 
      * @throws IOException
-     * @throws GeneralSecurityException
      * @throws OperatorCreationException if Signer couldn't be created
+     * @throws KeyStoreException 
+     * @throws NoSuchAlgorithmException 
+     * @throws CertificateException 
+     * @throws KeyManagementException 
+     * @throws UnrecoverableKeyException 
      */
-    public OCSPUnidResponse lookup(BigInteger serialNr, Certificate cacert, boolean useGet) throws OCSPException, IOException,
-            IllegalArgumentException, OperatorCreationException, GeneralSecurityException {
+    public OCSPUnidResponse lookup(BigInteger serialNr, X509Certificate cacert, boolean useGet) throws OCSPException, IOException,
+             OperatorCreationException, UnrecoverableKeyException, KeyManagementException, CertificateException, NoSuchAlgorithmException, KeyStoreException {
         if (this.httpReqPath == null) {
             // If we didn't pass a url to the constructor and the cert does not have the URL, we will fail...
             OCSPUnidResponse ret = new OCSPUnidResponse();
@@ -232,9 +239,11 @@ public class OCSPUnidClient {
     // Private helper methods
     //
     
-    private OCSPUnidResponse sendOCSPRequest(byte[] ocspPackage, Certificate cacert, boolean useGet) throws IOException, OCSPException, GeneralSecurityException, OperatorCreationException {
-    	final HttpURLConnection con;
-    	if (useGet) {
+    private OCSPUnidResponse sendOCSPRequest(byte[] ocspPackage, X509Certificate knownTrustAnchor, boolean useGet) throws IOException, OCSPException,
+            OperatorCreationException, CertificateException, UnrecoverableKeyException, KeyManagementException, NoSuchAlgorithmException,
+            KeyStoreException {
+        final HttpURLConnection con;
+        if (useGet) {
         	String b64 = new String(Base64.encode(ocspPackage, false));
         	URL url = new URL(httpReqPath + '/' + b64);
             con = (HttpURLConnection)url.openConnection();
@@ -324,25 +333,56 @@ public class OCSPUnidClient {
         	ret.setErrorCode(OCSPUnidResponse.ERROR_INVALID_SIGNATURE);
         	return ret;
         }
-        // Verify the certificate chain.
-        for (int i=0; i<chain.length; i++) {
-            final X509Certificate cert1 = converter.getCertificate(chain[i]);
-            final X509Certificate cert2 = converter.getCertificate(chain[Math.min(i+1, chain.length-1)]);
-            try {
-                cert1.verify(cert2.getPublicKey());          
-            } catch (GeneralSecurityException e) {
-                m_log.debug("verifying problem with", e);
-                m_log.debug("cert to be verified: "+cert1);
-                m_log.debug("verifying cert: "+cert2);
-                ret.setErrorCode(OCSPUnidResponse.ERROR_INVALID_SIGNERCERT);
-                return ret;         
+        
+        /* 
+         * Okay, at this point we have three different variables and six different possible valid use cases. These
+         * variables are:
+         *          1. If the OCSP reply is from a CA (integrated) or an OCSP responder (standalone) 
+         *          2. If it was from a CA, then if that CA is self signed or a subCA
+         *          3. If the server (in the integrated case) or keybinding (standalone case) was set to include the certificate chain
+         */
+      
+        //If we have a chain, verify it
+        if(chain.length > 1) {
+            for (int i = 0; i < chain.length; i++) {
+                final X509Certificate cert1 = converter.getCertificate(chain[i]);
+                final X509Certificate cert2 = converter.getCertificate(chain[Math.min(i + 1, chain.length - 1)]);
+                try {
+                    cert1.verify(cert2.getPublicKey());
+                } catch (GeneralSecurityException e) {
+                    m_log.info("Verifying problem with", e);
+                    m_log.info("Certificate to be verified: " + cert1);
+                    m_log.info("Verifying certificate: " + cert2);
+                    ret.setErrorCode(OCSPUnidResponse.ERROR_INVALID_SIGNERCERT);
+                    return ret;
+                }
             }
         }
-        // the CA could either have signed the respons directly or else it might have been signed a special ocsp responder signing key with a certificate signed by the CA.
-        if ( !chain[0].equals(cacert) && !chain[1].equals(cacert) ) {
+        
+        if (CertTools.isCA(signerCertificate)) {
+            //Verify that the signer certificate was the same as the trust anchor
+            if (!signerCertificate.getSerialNumber().equals(knownTrustAnchor.getSerialNumber())) {
+                m_log.info("Signing certificate for integrated OCSP was not the provided trust anchor.");
+                ret.setErrorCode(OCSPUnidResponse.ERROR_INVALID_SIGNERCERT);
+                return ret;
+            }
+        } else if (CertTools.isOCSPCert(signerCertificate)) {
+            //If an OCSP certificate was used to sign
+            try {
+                signerCertificate.verify(knownTrustAnchor.getPublicKey());
+            } catch (GeneralSecurityException e) {
+                m_log.info("Signing certificate was not signed by known trust anchor.");
+                ret.setErrorCode(OCSPUnidResponse.ERROR_INVALID_SIGNERCERT);
+                return ret;
+            }
+        } else {
+            m_log.info("Signing certificate was not an OCSP certificate.");
             ret.setErrorCode(OCSPUnidResponse.ERROR_INVALID_SIGNERCERT);
-            return ret;         
+            return ret;
         }
+        
+  
+
         String fnr = getFnr(brep);
         if (fnr != null) {
         	ret.setFnr(fnr);
@@ -351,18 +391,19 @@ public class OCSPUnidClient {
     }
 
     private String getFnr(BasicOCSPResp brep) throws IOException {
-        byte[] fnrrep = brep.getExtension(FnrFromUnidExtension.FnrFromUnidOid).getExtnValue().getEncoded();
+        Extension fnrrep = brep.getExtension(FnrFromUnidExtension.FnrFromUnidOid);
         if (fnrrep == null) {
             return null;            
         }
-        ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(fnrrep));
+        ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(fnrrep.getExtnValue().getEncoded()));
         ASN1OctetString octs = (ASN1OctetString) aIn.readObject();
         aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
         FnrFromUnidExtension fnrobj = FnrFromUnidExtension.getInstance(aIn.readObject());
         return fnrobj.getFnr();
     }
 
-    private SSLSocketFactory getSSLFactory() throws GeneralSecurityException, IOException {
+    private SSLSocketFactory getSSLFactory() throws IOException, NoSuchAlgorithmException, UnrecoverableKeyException, KeyStoreException,
+            CertificateException, KeyManagementException {
 
         final KeyManager km[];
         final TrustManager tm[];
@@ -402,11 +443,16 @@ public class OCSPUnidClient {
      * @param url
      * @return URLConnection
      * @throws IOException
-     * @throws GeneralSecurityException
+     * @throws CertificateException 
+     * @throws KeyStoreException 
+     * @throws NoSuchAlgorithmException 
+     * @throws UnrecoverableKeyException 
+     * @throws KeyManagementException 
      */
-    private URLConnection getUrlConnection(URL url) throws IOException, GeneralSecurityException {
+    private URLConnection getUrlConnection(URL url) throws IOException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException,
+            CertificateException, KeyManagementException {
         final URLConnection orgcon = url.openConnection();
-        if (orgcon instanceof HttpsURLConnection) {
+       if (orgcon instanceof HttpsURLConnection) {
             HttpsURLConnection con = (HttpsURLConnection) orgcon;
             con.setHostnameVerifier(new SimpleVerifier());
             con.setSSLSocketFactory(getSSLFactory());
