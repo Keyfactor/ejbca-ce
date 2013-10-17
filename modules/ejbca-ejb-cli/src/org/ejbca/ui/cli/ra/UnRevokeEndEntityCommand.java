@@ -64,7 +64,7 @@ public class UnRevokeEndEntityCommand extends BaseRaCommand {
     			getLogger().info("Description: " + getDescription());
             	getLogger().info("Usage: " + getCommand() + " <username>");
             	getLogger().info(" A users certificate can unly be unrevoked if the revocation reason is certificate_hold.");
-                getLogger().info(" The user status on the user itself is not changed, it is still revoked. Use setuserstatus command to change status of a user.");
+                getLogger().info(" The user status on the user itself is not changed, it is still revoked. Use setendentitystatus command to change status of a user.");
                 return;
             }
             String username = args[1];

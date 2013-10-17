@@ -53,11 +53,6 @@ public class RecoverCommand extends XKMSCLIBaseCommand implements IAdminCommand{
 	private static final int ARG_ENCODING           = 4;
 	private static final int ARG_OUTPUTPATH         = 5;
 
-    /**
-     * Creates a new instance of RaAddUserCommand
-     *
-     * @param args command line arguments
-     */
     public RecoverCommand(String[] args) {
         super(args);
     }
