@@ -131,7 +131,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
 	                        continue;
 	                    }
 	                    final Date time = new Date();              // time from which certificate is valid
-	                    final KeyPair key_pair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);     
+	                    final KeyPair key_pair = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);     
 
 	                    final SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo((ASN1Sequence)ASN1Primitive.fromByteArray(key_pair.getPublic().getEncoded()));
 	                    final X500Name dnName = new X500Name("CN=Dummy Missing in Imported CRL, serialNumber=" + serialHex);
