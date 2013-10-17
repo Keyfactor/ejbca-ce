@@ -21,6 +21,8 @@ import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.util.HashSet;
 import java.util.Set;
@@ -52,7 +54,6 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.cmp.CmpMessageHelper;
@@ -225,7 +226,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         } else if(ramode) {
             
             // Get the CA to use for the authentication
-            CAInfo cainfo = getCAInfo(authenticationparameter, false);
+            CAInfo cainfo = getCAInfoByName(authenticationparameter);
             
             // Check that extraCert is in the Database
             CertificateInfo certinfo = certSession.getCertificateInfo(CertTools.getFingerprintAsString(extraCert));
@@ -263,7 +264,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             } else {
                 
                 // Get the CA to use for the authentication
-                CAInfo cainfo = getCAInfo(CertTools.getIssuerDN(extraCert), true);
+                CAInfo cainfo = getCAInfoByIssuer(CertTools.getIssuerDN(extraCert));
 
                 // Check that extraCert is in the Database
                 CertificateInfo certinfo = certSession.getCertificateInfo(CertTools.getFingerprintAsString(extraCert));
@@ -385,23 +386,14 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     /**
      * Checks if cert belongs to an administrator who is authorized to process the request.
      * 
-     * @param cert
+     * @param certInfo
      * @param msg
      * @param caid
      * @return true if the administrator is authorized to process the request and false otherwise.
-     * @throws NotFoundException
-     * @throws CmpAuthenticationException 
      */
-    private boolean isAuthorizedAdmin(final CertificateInfo certInfo, final PKIMessage msg, final int caid) throws CmpAuthenticationException {
+    private boolean isAuthorizedAdmin(final CertificateInfo certInfo, final PKIMessage msg, final int caid) {
         final String username = certInfo.getUsername();
-        if(authenticationProviderSession == null) {
-            String errMsg = "WebAuthenticationProviderSession is null";
-            if(log.isDebugEnabled()) {
-                log.debug(errMsg);
-            }
-            return false;
-        }
-        
+    
         X509Certificate x509cert = (X509Certificate) extraCert;
         Set<X509Certificate> credentials = new HashSet<X509Certificate>();
         credentials.add(x509cert);
@@ -416,7 +408,14 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             return false;
         }
         
-        final int eeprofid = getUsedEndEntityProfileId((DEROctetString) msg.getHeader().getSenderKID());
+        final int eeprofid;
+        try {
+            eeprofid = getUsedEndEntityProfileId((DEROctetString) msg.getHeader().getSenderKID());
+        } catch (EndEntityProfileNotFoundException e) {
+            log.error(e.getLocalizedMessage(), e);
+            return false;
+        }
+        
         final int tagnr = msg.getBody().getType();
         if( (tagnr == CmpPKIBodyConstants.CERTIFICATAIONREQUEST) || (tagnr == CmpPKIBodyConstants.INITIALIZATIONREQUEST) || (tagnr == CmpPKIBodyConstants.KEYUPDATEREQUEST) ) {
         
@@ -482,11 +481,10 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     /**
      * Return the ID of EndEntityProfile that is used for CMP purposes. 
      * @param keyId
-     * @return the ID of EndEntityProfile used for CMP purposes. 0 if no such EndEntityProfile exists. 
-     * @throws NotFoundException
-     * @throws CmpAuthenticationException 
+     * @return the ID of EndEntityProfile used for CMP purposes. 
+     * @throws EndEntityProfileNotFoundException 
      */
-    private int getUsedEndEntityProfileId(final DEROctetString keyId) throws CmpAuthenticationException {
+    private int getUsedEndEntityProfileId(final DEROctetString keyId) throws EndEntityProfileNotFoundException {
         String endEntityProfile = this.cmpConfiguration.getRAEEProfile(this.confAlias);
         if (StringUtils.equals(endEntityProfile, "KeyId") && (keyId != null)) {
             endEntityProfile = CmpMessageHelper.getStringFromOctets(keyId);
@@ -494,15 +492,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 log.debug("Using End Entity Profile with same name as KeyId in request: "+endEntityProfile);
             }
         } 
-        try {
-            return eeProfileSession.getEndEntityProfileId(endEntityProfile);
-        } catch (EndEntityProfileNotFoundException e) {
-            String errmsg = "No end entity profile found with name: "+endEntityProfile;
-            if(log.isDebugEnabled()) {
-                log.debug(errmsg + " - " + e.getLocalizedMessage());
-            }
-            throw new CmpAuthenticationException(errmsg);
-        }
+        return eeProfileSession.getEndEntityProfileId(endEntityProfile);
     }
     
     private void checkExtraCertIsValid() throws CmpAuthenticationException {
@@ -512,7 +502,13 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             if(log.isDebugEnabled()) {
                 log.debug("The certificate in extraCert is valid");
             }
-        } catch(Exception e) {
+        } catch (CertificateExpiredException e) {
+            String errmsg = "The certificate attached to the PKIMessage in the extraCert field in not valid.";
+            if(log.isDebugEnabled()) {
+                log.debug(errmsg + " SubjectDN=" + CertTools.getSubjectDN(cert) + " - " + e.getLocalizedMessage());
+            }
+            throw new CmpAuthenticationException(errmsg);
+        } catch (CertificateNotYetValidException e) {
             String errmsg = "The certificate attached to the PKIMessage in the extraCert field in not valid.";
             if(log.isDebugEnabled()) {
                 log.debug(errmsg + " SubjectDN=" + CertTools.getSubjectDN(cert) + " - " + e.getLocalizedMessage());
@@ -549,27 +545,6 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         }
     }
     
-    private CAInfo getCAInfo(String caString, boolean issuer) throws CmpAuthenticationException {
-        try {
-            if(issuer)
-                return caSession.getCAInfo(admin, caString.hashCode());
-            else
-                return caSession.getCAInfo(admin, caString);
-        } catch (CADoesntExistsException e) {
-            String errmsg = "CA '" + caString + "' does not exist";
-            if(log.isDebugEnabled()) {
-                log.debug(errmsg + " - " + e.getLocalizedMessage());
-            }
-            throw new CmpAuthenticationException(errmsg);
-        } catch (AuthorizationDeniedException e) {
-            String errmsg = "Authorization denied for CA: " + caString;
-            if(log.isDebugEnabled()) {
-                log.debug(errmsg + " - " + e.getLocalizedMessage());
-            }
-            throw new CmpAuthenticationException(errmsg);
-        }
-    }
-    
     private boolean checkExtraCertIssuedByVendorCA() {
         String vendorCAsStr = this.cmpConfiguration.getVendorCA(this.confAlias);
         String[] vendorcas = vendorCAsStr.split(";");
@@ -598,6 +573,42 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             }
         }
         return false;
+    }
+    
+    private CAInfo getCAInfoByName(String caname) throws CmpAuthenticationException {
+        try {
+            return caSession.getCAInfo(admin, caname);
+        } catch (CADoesntExistsException e) {
+            String errmsg = "CA '" + caname + "' does not exist";
+            if(log.isDebugEnabled()) {
+                log.debug(errmsg + " - " + e.getLocalizedMessage());
+            }
+            throw new CmpAuthenticationException(errmsg);
+        } catch (AuthorizationDeniedException e) {
+            String errmsg = "Authorization denied for CA: " + caname;
+            if(log.isDebugEnabled()) {
+                log.debug(errmsg + " - " + e.getLocalizedMessage());
+            }
+            throw new CmpAuthenticationException(errmsg);
+        }
+    }
+    
+    private CAInfo getCAInfoByIssuer(String issuerDN) throws CmpAuthenticationException {
+        try {
+            return caSession.getCAInfo(admin, issuerDN.hashCode());
+        } catch (CADoesntExistsException e) {
+            String errmsg = "CA '" + issuerDN + "' does not exist";
+            if(log.isDebugEnabled()) {
+                log.debug(errmsg + " - " + e.getLocalizedMessage());
+            }
+            throw new CmpAuthenticationException(errmsg);
+        } catch (AuthorizationDeniedException e) {
+            String errmsg = "Authorization denied for CA: " + issuerDN;
+            if(log.isDebugEnabled()) {
+                log.debug(errmsg + " - " + e.getLocalizedMessage());
+            }
+            throw new CmpAuthenticationException(errmsg);
+        }
     }
     
     /**
