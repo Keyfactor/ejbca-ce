@@ -47,11 +47,9 @@ public class RegTokenPasswordExtractor implements ICMPAuthenticationModule {
      * 
      * @param msg
      * @param username
-     * @param authenticated
-     * @return the password extracted from the CRMF request. Null if no such password was found.
-     * @throws CmpAuthenticationException 
+     * @throws CmpAuthenticationException if the password extraction fails.
      */
-    public boolean verifyOrExtract(final PKIMessage msg, final String username, boolean authenticated) throws CmpAuthenticationException {
+    public void verifyOrExtract(final PKIMessage msg, final String username) throws CmpAuthenticationException {
         CertReqMsg req = getReq(msg);
         if(req == null) {
             throw new CmpAuthenticationException("No request was found in the PKIMessage");
@@ -115,7 +113,6 @@ public class RegTokenPasswordExtractor implements ICMPAuthenticationModule {
         }
         
         this.password = pwd;
-        return true;
     }
     
     private CertReqMsg getReq(PKIMessage msg) {

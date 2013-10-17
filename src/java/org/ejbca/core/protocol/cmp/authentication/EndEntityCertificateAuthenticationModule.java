@@ -75,6 +75,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     private Certificate extraCert;
     private String confAlias;
     private CmpConfiguration cmpConfiguration;
+    private boolean authenticated;
 
     private AuthenticationToken admin;
     private CaSession caSession;
@@ -85,7 +86,8 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     private WebAuthenticationProviderSessionLocal authenticationProviderSession;
     private EndEntityManagementSession eeManagementSession;
 
-    public EndEntityCertificateAuthenticationModule( final AuthenticationToken admin, String authparam, String confAlias, CmpConfiguration cmpConfig, 
+    public EndEntityCertificateAuthenticationModule( final AuthenticationToken admin, String authparam, String confAlias, 
+            CmpConfiguration cmpConfig, boolean authenticated, 
             final CaSession caSession, final CertificateStoreSession certSession, final AccessControlSession authSession, 
             final EndEntityProfileSession eeprofSession, final EndEntityAccessSession eeaccessSession, 
             final WebAuthenticationProviderSessionLocal authProvSession, final EndEntityManagementSession endEntityManagementSession) {
@@ -94,6 +96,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         extraCert = null;
         this.confAlias = confAlias;
         this.cmpConfiguration = cmpConfig;
+        this.authenticated = authenticated;
         
         this.admin = admin;
         this.caSession = caSession;
@@ -168,19 +171,16 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     }
     
     /**
-     * Verifies the signature of 'msg'. msg should be signed by an authorized administrator in EJBCA and 
-     * the administrator's cerfificate should be attached in msg in the extraCert field.  
+     * Verifies the signature of 'msg'. msg should be signed and the signer's certificate should be  
+     * attached in msg in the extraCert field.  
      * 
-     * When successful, the password is set to the randomly generated 16-digit String.
-     * When failed, the error message is set.
+     * When successful, the authentication string is set.
      * 
      * @param msg PKIMessage
      * @param username
-     * @param authenticated
-     * @return true if the message signature was verified successfully and false otherwise.
-     * @throws CmpAuthenticationException 
+     * @throws CmpAuthenticationException if the verification fails.
      */
-    public boolean verifyOrExtract(final PKIMessage msg, final String username, boolean authenticated) throws CmpAuthenticationException {
+    public void verifyOrExtract(final PKIMessage msg, final String username) throws CmpAuthenticationException {
         
         //Check that msg is signed
         if(msg.getProtection() == null) {
@@ -370,7 +370,6 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             }
             throw new CmpAuthenticationException(e.getLocalizedMessage());
         }
-        return true;
     }
 
     /**

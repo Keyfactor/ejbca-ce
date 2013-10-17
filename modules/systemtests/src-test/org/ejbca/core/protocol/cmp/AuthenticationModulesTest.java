@@ -245,7 +245,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         HMACAuthenticationModule hmac = new HMACAuthenticationModule(ADMIN, "-", configAlias, cmpConfiguration, 
                                 caSession.getCAInfo(ADMIN, caid), eeAccessSession);
         try {
-            hmac.verifyOrExtract(req, null, false);
+            hmac.verifyOrExtract(req, null);
             assertNotNull("HMAC returned null password.", hmac.getAuthenticationString());
             assertEquals("HMAC returned the wrong password", "foo123", hmac.getAuthenticationString());
         } catch(CmpAuthenticationException e) {
@@ -839,8 +839,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
 
         HMACAuthenticationModule hmac = new HMACAuthenticationModule(ADMIN, "-", configAlias, cmpConfiguration, 
                                 caSession.getCAInfo(ADMIN, caid), eeAccessSession);
-        boolean res = hmac.verifyOrExtract(req, null, false);
-        assertTrue("Verifying the message authenticity using HMAC failed.", res);
+        hmac.verifyOrExtract(req, null);
         assertNotNull("HMAC returned null password.", hmac.getAuthenticationString());
         assertEquals("HMAC returned the wrong password", clientPassword, hmac.getAuthenticationString());
 
@@ -849,8 +848,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         assertNotNull("Generating CrmfRequest failed.", msg);
         req = protectPKIMessage(msg, false, clientPassword, "mykeyid", 567);
         assertNotNull("Protecting PKIMessage failed", req);
-        res = hmac.verifyOrExtract(req, null, false);
-        assertTrue("Verifying the message authenticity using HMAC failed.", res);
+        hmac.verifyOrExtract(req, null);
         assertNotNull("HMAC returned null password.", hmac.getAuthenticationString());
         assertEquals("HMAC returned the wrong password", clientPassword, hmac.getAuthenticationString());
     }
