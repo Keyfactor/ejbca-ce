@@ -126,8 +126,8 @@ public final class KeyTools {
      * Generates a keypair
      * 
      * @param keySpec
-     *            string specification of keys to generate, typical value is 1024 for RSA or DSA keys, or secp256r1 for ECDSA keys or null of algspec
-     *            is to be used.
+     *            string specification of keys to generate, typical value is 2048 for RSA keys,
+     *            1024 for DSA keys, secp256r1 for ECDSA keys, or null if algspec is to be used.
      * @param algSpec
      *            AlgorithmParameterSpec of keys to generate, typically an EXParameterSpec for EC keys, or null if keySpec is to be used.
      * @param keyAlg

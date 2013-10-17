@@ -106,7 +106,7 @@ public class RequestInstance {
 	private String username=null;
 	private String openvpn=null;
 	private String certprofile=null;
-	private String keylength="1024";
+	private String keylength="2048";
 	private String keyalg=AlgorithmConstants.KEYALGORITHM_RSA;
 	// Possibility to override by code and ignore parameters
 	private String keylengthstring=null;
