@@ -64,7 +64,7 @@ import org.ejbca.core.model.ra.UsernameGeneratorParams;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.ExtendedUserDataHandler;
 import org.ejbca.core.protocol.ExtendedUserDataHandler.HandlerException;
-import org.ejbca.core.protocol.cmp.authentication.CMPAuthenticationException;
+import org.ejbca.core.protocol.cmp.authentication.CmpAuthenticationException;
 import org.ejbca.core.protocol.cmp.authentication.HMACAuthenticationModule;
 import org.ejbca.core.protocol.cmp.authentication.ICMPAuthenticationModule;
 import org.ejbca.core.protocol.cmp.authentication.VerifyPKIMessage;
@@ -236,7 +236,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 						try {
 						    ICMPAuthenticationModule authenticationModule = verifyAndGetAuthModule(msg, crmfreq, data.getUsername(), 0, authenticated);
 						    crmfreq.setPassword(authenticationModule.getAuthenticationString());
-						} catch(CMPAuthenticationException e) {
+						} catch(CmpAuthenticationException e) {
 						    LOG.info(e.getLocalizedMessage(), e);
 						    return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getLocalizedMessage());
 						}
@@ -344,7 +344,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
         ICMPAuthenticationModule authenticationModule = null;
         try {
             authenticationModule = verifyAndGetAuthModule(msg, crmfreq, null, caId, authenticated);
-        } catch(CMPAuthenticationException e) {
+        } catch(CmpAuthenticationException e) {
             LOG.info(e.getLocalizedMessage(), e);
             return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getLocalizedMessage());
         }
@@ -491,10 +491,10 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 	 * @return
 	 * @throws CADoesntExistsException
 	 * @throws AuthorizationDeniedException
-	 * @throws CMPAuthenticationException 
+	 * @throws CmpAuthenticationException 
 	 */
 	private ICMPAuthenticationModule verifyAndGetAuthModule(final BaseCmpMessage msg, final CrmfRequestMessage crmfreq, final String username, 
-	                            final int caId, boolean authenticated) throws CADoesntExistsException, AuthorizationDeniedException, CMPAuthenticationException {
+	                            final int caId, boolean authenticated) throws CADoesntExistsException, AuthorizationDeniedException, CmpAuthenticationException {
         final CAInfo caInfo;
         if (caId == 0) {
             caInfo = null;
