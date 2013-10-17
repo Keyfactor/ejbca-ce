@@ -49,10 +49,10 @@ public class RegTokenPasswordExtractor implements ICMPAuthenticationModule {
      * @param username
      * @throws CmpAuthenticationException if the password extraction fails.
      */
-    public void verifyOrExtract(final PKIMessage msg, final String username) throws CmpAuthenticationException {
+    public void verifyOrExtract(final PKIMessage msg, final String username) throws CmpAuthenticationException, IllegalArgumentException {
         CertReqMsg req = getReq(msg);
         if(req == null) {
-            throw new CmpAuthenticationException("No request was found in the PKIMessage");
+            throw new IllegalArgumentException("No request was found in the PKIMessage");
         }
         
         String pwd = null;
