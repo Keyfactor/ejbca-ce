@@ -247,7 +247,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
         // In regTokenExtractor.verifyOrExtract(), at this point, it does not matter what 
         // value "authenticated" (the boolean parameter) has, so we send 'false' only because such a parameter is required
         try {
-            regTokenExtractor.verifyOrExtract(getPKIMessage(), null, false);
+            regTokenExtractor.verifyOrExtract(getPKIMessage(), null);
             this.password = regTokenExtractor.getAuthenticationString();
         } catch(CmpAuthenticationException e) {
             if(log.isDebugEnabled()) {

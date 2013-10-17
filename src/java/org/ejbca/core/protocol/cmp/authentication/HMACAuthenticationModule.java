@@ -115,15 +115,13 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
      *  In client mode, the clear-text password set in the pre-registered end entity in the database will be used to 
      *  authenticate the message. 
      * 
-     * When successful, the password will be set to the password that was successfully used in authenticating the message.
-     * When failed, the error message will be set.
+     * When successful, the authentication string will be set to the password that was successfully used in authenticating the message.
      * 
      * @param msg
      * @param username
-     * @param authenticated
-     * @return true if the message signature was verified successfully and false otherwise.
+     * @throws CmpAuthenticationException if the verification fails.
      */
-    public boolean verifyOrExtract(final PKIMessage msg, final String username, boolean authenticated) throws CmpAuthenticationException {
+    public void verifyOrExtract(final PKIMessage msg, final String username) throws CmpAuthenticationException {
         
         if(msg == null) {
             throw new CmpAuthenticationException("No PKIMessage was found");
@@ -323,7 +321,6 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
                 throw new CmpAuthenticationException("End Entity with subjectDN '" + subjectDN +"' or username '" + username + "' was not found");
             }
         }
-        return this.password != null;
     }
 
     

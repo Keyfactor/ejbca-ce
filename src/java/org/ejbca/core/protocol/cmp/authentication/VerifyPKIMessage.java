@@ -107,8 +107,7 @@ public class VerifyPKIMessage {
      * @param msg PKIMessage to verify
      * @param username that the PKIMessage should match or null
      * @param authenticated if the CMP message has already been authenticated in another way or not
-     * @return True if verification is successful. False otherwise
-     * @throws CmpAuthenticationException 
+     * @throws CmpAuthenticationException if verification using all configured Authentication Modules fails.
      */
     public void verify(final PKIMessage msg, final String username, boolean authenticated) throws CmpAuthenticationException {
         if (log.isTraceEnabled()) {
@@ -136,8 +135,8 @@ public class VerifyPKIMessage {
             }
 
             try {
-                module = getAuthModule(modules[i].trim(), params[i].trim(), msg);
-                module.verifyOrExtract(msg, username, authenticated);
+                module = getAuthModule(modules[i].trim(), params[i].trim(), msg, authenticated);
+                module.verifyOrExtract(msg, username);
                 this.authModule = module;
                 log.info("PKIMessage was successfully authenticated using " + module.getName());
                 break;
@@ -165,7 +164,7 @@ public class VerifyPKIMessage {
      * @return The authentication module whose name is 'module'. Null if no such module is implemented.
      * @throws CmpAuthenticationException 
      */
-    private ICMPAuthenticationModule getAuthModule(final String module, final String parameter, final PKIMessage pkimsg) throws CmpAuthenticationException {
+    private ICMPAuthenticationModule getAuthModule(final String module, final String parameter, final PKIMessage pkimsg, final boolean authenticated) throws CmpAuthenticationException {
         
         if(this.cmpConfiguration.getRAMode(this.confAlias) && (StringUtils.equals(module, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD) || StringUtils.equals(module, CmpConfiguration.AUTHMODULE_DN_PART_PWD))) {
             String errmsg = "The authentication module '" + module + "' cannot be used in RA mode";
@@ -175,7 +174,7 @@ public class VerifyPKIMessage {
         if(StringUtils.equals(module, CmpConfiguration.AUTHMODULE_HMAC)) {
             return new HMACAuthenticationModule(admin, parameter, confAlias, cmpConfiguration, cainfo, eeAccessSession);
         } else if(StringUtils.equals(module, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE)) {
-            return new EndEntityCertificateAuthenticationModule(admin, parameter, confAlias, cmpConfiguration, 
+            return new EndEntityCertificateAuthenticationModule(admin, parameter, confAlias, cmpConfiguration, authenticated,
                             caSession, certificateStoreSession, authorizationSessoin, eeProfileSession, 
                             eeAccessSession, authenticationProviderSession, eeManagementSession);
         } else if(StringUtils.equals(module, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD)){

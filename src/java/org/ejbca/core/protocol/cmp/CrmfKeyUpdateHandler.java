@@ -366,9 +366,9 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
     
     private EndEntityCertificateAuthenticationModule verifyRequest(CrmfRequestMessage crmfreq, String authparameter, boolean authenticated) throws CmpAuthenticationException {
         EndEntityCertificateAuthenticationModule eecmodule = new EndEntityCertificateAuthenticationModule(admin, authparameter, 
-                confAlias, cmpConfiguration, caSession, certStoreSession, authorizationSession, endEntityProfileSession, 
+                confAlias, cmpConfiguration, authenticated, caSession, certStoreSession, authorizationSession, endEntityProfileSession, 
                 endEntityAccessSession, authenticationProviderSession, endEntityManagementSession);
-        eecmodule.verifyOrExtract(crmfreq.getPKIMessage(), null, authenticated);
+        eecmodule.verifyOrExtract(crmfreq.getPKIMessage(), null);
         if(LOG.isDebugEnabled()) {
             LOG.debug("The CMP KeyUpdate request was verified successfully");
         }
