@@ -468,7 +468,7 @@ points to an entry in UserData, so this joins the certificate to the user.
 Perhaps it's easiest if you just generate a new certificate for your superadmin.
 
 By typing:
-bin/ejbca.sh ra setuserstatus superadmin 10
+bin/ejbca.sh ra setendentitystatus superadmin 10
 bin/ejbca.sh ra setclearpwd superadmin password
 bin/ejbca.sh batch
 

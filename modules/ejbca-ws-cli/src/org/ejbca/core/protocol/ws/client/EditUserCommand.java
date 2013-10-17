@@ -58,11 +58,7 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
 
 	private static final int NR_OF_MANDATORY_ARGS = ARG_CERTIFICATEPROFILE+1;
 	private static final int MAX_NR_OF_ARGS = ARG_ENDTIME+1;
-    /**
-     * Creates a new instance of RaAddUserCommand
-     *
-     * @param args command line arguments
-     */
+
     public EditUserCommand(String[] args) {
         super(args);
     }

@@ -82,11 +82,6 @@ public class FindUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
     	                                        EndEntityConstants.STATUS_REVOKED, EndEntityConstants.STATUS_HISTORICAL,
     	                                        EndEntityConstants.STATUS_KEYRECOVERY};
 	
-    /**
-     * Creates a new instance of RaAddUserCommand
-     *
-     * @param args command line arguments
-     */
     public FindUserCommand(String[] args) {
         super(args);
     }

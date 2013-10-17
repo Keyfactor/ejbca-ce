@@ -69,11 +69,6 @@ public class GenerateNewUserCommand extends EJBCAWSRABaseCommand implements IAdm
 	private static final int NR_OF_MANDATORY_ARGS = ARG_HARDTOKENSN+1;
 	private static final int MAX_NR_OF_ARGS = ARG_OUTPUTPATH+1;
 
-	/**
-     * Creates a new instance of RaAddUserCommand
-     *
-     * @param args command line arguments
-     */
     public GenerateNewUserCommand(String[] args) {
         super(args);
     }

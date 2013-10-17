@@ -70,21 +70,10 @@ public class LocateCommand extends XKMSCLIBaseCommand implements IAdminCommand{
 	private static final int ARG_VALIDATEFLAG       = 5;
 	private static final int ARG_ENCODING           = 6;
 	private static final int ARG_OUTPUTPATH         = 7;
-	
-
-	
-
-        
+	        
     private static final String VALIDATION_VALIDATE        = "validate";
     private static final String VALIDATION_NOVALIDATION    = "novalidation";
 
-
-	
-    /**
-     * Creates a new instance of RaAddUserCommand
-     *
-     * @param args command line arguments
-     */
     public LocateCommand(String[] args) {
         super(args);
     }

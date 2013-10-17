@@ -40,11 +40,6 @@ public class FindCertsCommand extends EJBCAWSRABaseCommand implements IAdminComm
 	private static final int ARG_ENCODING                 = 3;
 	private static final int ARG_OUTPUTPATH               = 4;
 	
-    /**
-     * Creates a new instance of RaAddUserCommand
-     *
-     * @param args command line arguments
-     */
     public FindCertsCommand(String[] args) {
         super(args);
     }

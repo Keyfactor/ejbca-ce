@@ -38,7 +38,7 @@ them without arguments, i.e:
 </p>
 <source>
 bin/ejbca.sh ca
-bin/ejbca.sh ra adduser
+bin/ejbca.sh ra addendentity
 etc etc
 </source>
 <p>
@@ -1184,7 +1184,7 @@ When editing an existing end entity and setting the status to new, from a non-ne
 <subsection name="Creating Users">
 <p>
 Users are added in the Admin GUI, 'Add End Entity' or with the CLI
-'bin/ejbca.sh ra adduser'.
+'bin/ejbca.sh ra addendentity'.
 The users DN is normally entered in the CLI as "C=SE,O=MyOrg,OU=MyOrgUnit,CN=MyName".
 If a ',' is needed in the DN the comma must be escaped using '\,'.
 </p></subsection>
@@ -1473,7 +1473,7 @@ The superadmin certificate is normally issued as a PKCS#12 keystore (if not issu
 </ul>
 <p>Using the CLI:</p>
 <source>
-bin/ejbca.sh ra setuserstatus superadmin 10
+bin/ejbca.sh ra setendentitystatus superadmin 10
 bin/ejbca.sh ra setclearpwd superadmin password
 bin/ejbca.sh batch
 </source>
@@ -1894,7 +1894,7 @@ You can do this through the Admin GUI by:
 <p>
 You can also do everything using the CLI:
 <ol>
-<li>bin/ejbca.sh ra setuserstatus tomcat 10</li>
+<li>bin/ejbca.sh ra setendentitystatus tomcat 10</li>
 <li>bin/ejbca.sh ra setclearpwd tomcat &lt;password from httpsserver.password&gt;</li>
 <li>bin/ejbca.sh batch tomcat</li>
 <li>cp p12/tomcat.jks $APPSRV_HOME/server/default/conf/keystore.jks</li>

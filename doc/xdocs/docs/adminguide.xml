@@ -1101,9 +1101,9 @@ Extract Username Component : CN
 </source>
 <p>You can now add a new user in EJBCA:</p>
 <source>
-bin/ejbca.sh ra adduser user1 password "CN=user1,O=My Organization,C=SE" null ManagementCA null 1 USERGENERATED
+bin/ejbca.sh ra addendentity user1 password "CN=user1,O=My Organization,C=SE" null ManagementCA null 1 USERGENERATED
 bin/ejbca.sh ra setclearpwd user1 password
-bin/ejbca.sh ra setuserstatus user1 10
+bin/ejbca.sh ra setendentitystatus user1 10
 </source>
 <p>
 You can then use cmpclient (as a client):</p>
@@ -1124,7 +1124,7 @@ Extract Username Component : CN
 <p>You can now issue a certificate using certificate authentication in EJBCA (the end entity needs a certificate before so we re-use user1 from above):</p>
 <source>
 bin/ejbca.sh ra setclearpwd user1 password
-bin/ejbca.sh ra setuserstatus user1 10
+bin/ejbca.sh ra setendentitystatus user1 10
 </source>
 <p>
 You can then use cmpclient (as a client):</p>
@@ -1135,7 +1135,7 @@ You can then use cmpclient (as a client):</p>
 EJBCA authenticates the request using the signature protection with the certificate of the registered user. See the CMP documentation above for more advanced configuration.</p>
 <p>You can also use a 'cr' instead of an 'ir';</p>
 <source>
-bin/ejbca.sh ra setuserstatus user1 10
+bin/ejbca.sh ra setendentitystatus user1 10
 ./openssl cmp -cmd cr -server localhost:8080 -path ejbca/publicweb/cmp/openssleec -srvcert ManagementCA.cacert.pem -cert clcert.pem -key key.pem -certout clcert1.pem -newkey key1.pem -keyfmt PEM -certfmt PEM -subject "/CN=user1/O=My Organization/C=SE"
 </source>
 
@@ -1379,10 +1379,10 @@ superadmin.p12 keystore generated during the installation or generate a new JKS 
 Below is a short description how to create a JKS for a user on the command line, and adding the new user to the superadministrator role.
 </p>
 <source>
-bin/ejbca.sh ra adduser &lt;1> &lt;2> "C=..,O=..,CN=&lt;1>" null AdminCA null 1 JKS
+bin/ejbca.sh ra addendentity &lt;1> &lt;2> "C=..,O=..,CN=&lt;1>" null AdminCA null 1 JKS
 bin/ejbca.sh ra setclearpwd &lt;1> &lt;2>
 bin/ejbca.sh batch &lt;1>
-bin/ejbca.sh admins addadmin 'username' 'password' "Temporary Super Administrator Group" AdminCA WITHCOMMONNAME EQUALCASEINS &lt;1>
+bin/ejbca.sh roles addadmin 'username' 'password' "Temporary Super Administrator Group" AdminCA WITHCOMMONNAME EQUALCASEINS &lt;1>
 </source>
 </subsection>
 
@@ -1403,7 +1403,7 @@ for detailed help how to use the cli.
 Example usage:
 ejbcaClientToolBox.sh EjbcaWsRaCli pkcs12req testuser2 foo123 2048 NONE tmp
 </p><p>
-ejbcaClientToolBox.sh EjbcaWsRaCli revokeuser testuser2 SUPERSEDED false
+ejbcaClientToolBox.sh EjbcaWsRaCli revokeendentity testuser2 SUPERSEDED false
 </p>
 </subsection>
 
@@ -4096,7 +4096,7 @@ in the LDAP servers certificate is the same as the hostname.
 An example of adding a user for the LDAP server with the CLI interface is:
 </p>e
 <source>
-bin/ejbca.sh ra adduser ldap password "C=SE,O=Foo,CN=ldap.foo.se" null MyCA null 1 PEM SERVER
+bin/ejbca.sh ra addendentity ldap password "C=SE,O=Foo,CN=ldap.foo.se" null MyCA null 1 PEM SERVER
 </source>
 <p>
 where ldap.foo.se is the hostname of the LDAP server that Outlook should use.
@@ -4458,7 +4458,7 @@ interface, adding a user with the admin-GUI works just as fine).
 In the mail ejbca directory type (use simply 'ra' on windows):
 </p>
 <source>
-bin/ejbca.sh ra adduser ldap foo123 "C=SE,O=Foo,CN=ldap" null ManagementCA null 1 PEM SERVER
+bin/ejbca.sh ra addendentity ldap foo123 "C=SE,O=Foo,CN=ldap" null ManagementCA null 1 PEM SERVER
 bin/ejbca.sh ra setclearpwd ldap foo123
 </source>
 <p>
@@ -4906,7 +4906,7 @@ src/adminweb/ejbcajslib.js
 And change all methods 'checkfield*()' to always return true directly.
 </p><p>
 If you can't get you national characters to work with the Admin GUI, you can try using the CLI instead
-(bin/ejbca.sh ra adduser ...). That usually works.
+(bin/ejbca.sh ra addendentity ...). That usually works.
 </p>
 <p>
 To make everything work perfect you MAY have to also configure the encoding of URIs according to your settings in
@@ -5320,7 +5320,7 @@ bin/ejbca.sh ra
 this will give a list of all available cli commands. To find out which options are available for a specific command, simply run 
 the command with no options:
 <source>
-bin/ejbca.sh ra adduser
+bin/ejbca.sh ra addendentity
 </source>
 This will give documentation about available options. 
 To access the usage information for some commands, that does not take parameters, the option '-?' can normally be provided.
@@ -5530,7 +5530,7 @@ with clear text passwords. To set a clear text password for a user use
 </p>
 <source>
 bin/ejbca.sh ra setclearpwd username password
-bin/ejbca.sh ra setuserstatus username 10
+bin/ejbca.sh ra setendentitystatus username 10
 </source>
 <p>
 The same is accomplished in the Admin-GUI by checking the checkbox 'Batch generation' when adding the user.
@@ -5557,7 +5557,7 @@ it will be created.
 Make sure this directory is WELL protected, since the
 information contained in keystore files are secret (private keys).
 The format of keystores generated, PKCS12, JKS or PEM, is defined when adding the 
-user in the database (using 'bin/ejbca.sh ra adduser' or the admin-GUI).
+user in the database (using 'bin/ejbca.sh ra addendentity' or the admin-GUI).
 </p></subsection>
 
 <subsection name="Fetching certificates and CRLs">

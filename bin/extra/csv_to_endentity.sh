@@ -156,7 +156,7 @@ while read line; do
     # Construct some of the derived parameters.
     dn="CN=${cn},${dnSuffix}"
     # Set-up EJBCA command that should be executed.
-    command=("bin/ejbca.sh" "ra" "adduser")
+    command=("bin/ejbca.sh" "ra" "addendentity")
     # Set-up username/password parameters.
     command+=("$name" "$password")
     # Set-up subject/alt names parameters.
