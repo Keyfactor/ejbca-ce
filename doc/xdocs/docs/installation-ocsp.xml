@@ -48,7 +48,7 @@ You should then create a user for each CA using this certificate profile. Use th
 </p><p>
 </p>
 <note>
-Note: The OCSP responders certificate(s) AND the CA certificate(s) need to be published from the CA to the 
+The OCSP responders certificate(s) AND the CA certificate(s) need to be published from the CA to the 
 OCSP responder. For the CA you do this by setting the CRL publisher to the OCSP publisher.
 </note>
 </subsection>
@@ -74,9 +74,10 @@ You can run the following commands to import a Management CA certificate and add
 bin/ejbca.sh ca importcacert ManagementCA /home/user/adminca1.pem
 bin/ejbca.sh roles addadmin "Super Administrator Role" ManagementCA WITH_COMMONNAME TYPE_EQUALCASE SuperAdmin
 </source>
-<p>
-If you do not want to import the administrator certificate into EJBCA you can configure "web.reqcertindb=false" in conf/web.properties, otherwise the administrator certificate must be present in the database. 
-</p>
+<note>
+If you do not want to import the administrator certificate into EJBCA you can configure "web.reqcertindb=false" in conf/web.properties, otherwise the administrator certificate must be present in the database
+(can be imported using the CLI). 
+</note>
 </subsection>
 <subsection name="Workflow for setting up a new OCSP signer">
 <p>This section requires the previous one to be completed first.</p>
