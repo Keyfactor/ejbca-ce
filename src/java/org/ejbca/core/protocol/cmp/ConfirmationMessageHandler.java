@@ -31,7 +31,6 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
-import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.util.AlgorithmTools;
@@ -44,10 +43,7 @@ import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.Configuration;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
-import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
-import org.ejbca.core.protocol.cmp.authentication.CmpAuthenticationException;
-import org.ejbca.core.protocol.cmp.authentication.HMACAuthenticationModule;
 
 /**
  * Message handler for certificate request confirmation message.
@@ -71,22 +67,16 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 	private String responseProtection = null;
 	/** CA Session used to sign the response */
 	private CaSessionLocal caSession;
-    /** User Admin Session used to authenticate the request */
-    private EndEntityAccessSession endEntityAccessSession;
-    /** Certificate Store Session used to authenticate the request */
-    private CertificateStoreSession certificateStoreSession;
     private CryptoTokenSessionLocal cryptoTokenSession;
     
-	public ConfirmationMessageHandler(AuthenticationToken admin, String configAlias, CaSessionLocal caSession, EndEntityProfileSessionLocal endEntityProfileSession,
-            CertificateProfileSession certificateProfileSession, CertificateStoreSession certStoreSession, AccessControlSession authSession,
-            EndEntityAccessSession eeAccessSession, WebAuthenticationProviderSessionLocal authProvSession, CryptoTokenSessionLocal cryptoTokenSession, 
-            GlobalConfigurationSession globalConfigSession) {
+	public ConfirmationMessageHandler(AuthenticationToken admin, String configAlias, CaSessionLocal caSession, 
+	        EndEntityProfileSessionLocal endEntityProfileSession, CertificateProfileSession certificateProfileSession, 
+	        AccessControlSession authSession, WebAuthenticationProviderSessionLocal authProvSession, 
+	        CryptoTokenSessionLocal cryptoTokenSession, GlobalConfigurationSession globalConfigSession) {
 
 		super(admin, configAlias, caSession, endEntityProfileSession, certificateProfileSession, (CmpConfiguration) globalConfigSession.getCachedConfiguration(Configuration.CMPConfigID));
 		responseProtection = this.cmpConfiguration.getResponseProtection(this.confAlias);
 		this.caSession = caSession;
-        this.endEntityAccessSession = eeAccessSession;
-        this.certificateStoreSession = certStoreSession;
         this.cryptoTokenSession = cryptoTokenSession;
 	}
 	public ResponseMessage handleMessage(BaseCmpMessage msg, boolean authenticated) {

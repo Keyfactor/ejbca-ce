@@ -186,8 +186,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 			case 24:
 				// Certificate confirmation (certConf, Certificate confirm)
 			    handler = new ConfirmationMessageHandler(admin, confAlias, caSession, endEntityProfileSession, certificateProfileSession, 
-			                           certificateStoreSession, authSession, endEntityAccessSession, authenticationProviderSession, cryptoTokenSession, 
-			                           globalConfigSession);
+			                           authSession, authenticationProviderSession, cryptoTokenSession, globalConfigSession);
 			    cmpMessage = new GeneralCmpMessage(req);
 				break;
 			case 11:
