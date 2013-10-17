@@ -103,11 +103,13 @@ import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
+import org.ejbca.core.model.ca.publisher.ValidationAuthorityPublisher;
 import org.ejbca.core.protocol.cmp.CmpResponseMessage;
 import org.ejbca.cvc.CVCAuthenticatedRequest;
 import org.ejbca.cvc.CVCObject;
@@ -130,14 +132,15 @@ public class CAsTest extends CaTestCase {
     private static final Logger log = Logger.getLogger(CAsTest.class);
     private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CAsTest"));
 
-    private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
-    private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-    private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
-    private CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+    private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    private final PublisherProxySessionRemote publisherProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
+    private final InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+    private final CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private final SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
-    private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     // private AuthenticationToken adminTokenNoAuth;
 
@@ -1884,13 +1887,23 @@ public class CAsTest extends CaTestCase {
        Set<Principal> principals = new HashSet<Principal>();
        principals.add(new X500Principal("C=SE,O=UnlovedUser,CN=UnlovedUser"));
        AuthenticationToken unpriviledgedUser = simpleAuthenticationProvider.authenticate(new AuthenticationSubject(principals, null));
-       // Superadmin should get several IDs
-       Collection<Integer> caids = caAdminSession.getAuthorizedPublisherIds(admin);
-       assertNotNull(caids);
-       assertFalse("Superadmin should read some publisher IDs", caids.isEmpty());
-       // Unprivilegeduser should get no IDs
-       caids = caAdminSession.getAuthorizedPublisherIds(unpriviledgedUser);
-       assertTrue("Unprivileged admin should not be allowed to read and publisher IDs", caids.isEmpty());
+       final String publisherName = CAsTest.class.getSimpleName();
+       try {
+           // Create at least one publisher so we know we have something
+           final ValidationAuthorityPublisher publ = new ValidationAuthorityPublisher();
+           publ.setDataSource("foo");
+           publ.setDescription("foobar");
+           publisherProxySession.addPublisher(admin, publisherName, publ);
+           // Superadmin should get several IDs
+           Collection<Integer> caids = caAdminSession.getAuthorizedPublisherIds(admin);
+           assertNotNull(caids);
+           assertFalse("Superadmin should read some publisher IDs", caids.isEmpty());
+           // Unprivilegeduser should get no IDs
+           caids = caAdminSession.getAuthorizedPublisherIds(unpriviledgedUser);
+           assertTrue("Unprivileged admin should not be allowed to read and publisher IDs", caids.isEmpty());
+       } finally {
+           publisherProxySession.removePublisher(admin, publisherName);
+       }
        log.trace("<test23GetAuthorizedPublisherIdsAccessTest()");
    }
 
