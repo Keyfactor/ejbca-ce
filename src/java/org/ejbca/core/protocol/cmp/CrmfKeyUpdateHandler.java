@@ -53,7 +53,7 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
-import org.ejbca.core.protocol.cmp.authentication.CMPAuthenticationException;
+import org.ejbca.core.protocol.cmp.authentication.CmpAuthenticationException;
 import org.ejbca.core.protocol.cmp.authentication.EndEntityCertificateAuthenticationModule;
 
 /**
@@ -180,7 +180,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                     String authparameter = cmpConfiguration.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE, confAlias);
                     try {
                         eecmodule = verifyRequest(crmfreq, authparameter, authenticated);
-                    } catch(CMPAuthenticationException e) {
+                    } catch(CmpAuthenticationException e) {
                         LOG.info(e.getLocalizedMessage());
                         return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, e.getLocalizedMessage());
                     }
@@ -207,7 +207,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                     
                     try {
                         eecmodule = verifyRequest(crmfreq, null, authenticated);
-                    } catch(CMPAuthenticationException e) {
+                    } catch(CmpAuthenticationException e) {
                         LOG.info(e.getLocalizedMessage());
                         return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, e.getLocalizedMessage());
                     }
@@ -364,7 +364,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
         return resp;
     }
     
-    private EndEntityCertificateAuthenticationModule verifyRequest(CrmfRequestMessage crmfreq, String authparameter, boolean authenticated) throws CMPAuthenticationException {
+    private EndEntityCertificateAuthenticationModule verifyRequest(CrmfRequestMessage crmfreq, String authparameter, boolean authenticated) throws CmpAuthenticationException {
         EndEntityCertificateAuthenticationModule eecmodule = new EndEntityCertificateAuthenticationModule(admin, authparameter, 
                 confAlias, cmpConfiguration, caSession, certStoreSession, authorizationSession, endEntityProfileSession, 
                 endEntityAccessSession, authenticationProviderSession, endEntityManagementSession);

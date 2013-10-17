@@ -108,9 +108,9 @@ public class VerifyPKIMessage {
      * @param username that the PKIMessage should match or null
      * @param authenticated if the CMP message has already been authenticated in another way or not
      * @return True if verification is successful. False otherwise
-     * @throws CMPAuthenticationException 
+     * @throws CmpAuthenticationException 
      */
-    public void verify(final PKIMessage msg, final String username, boolean authenticated) throws CMPAuthenticationException {
+    public void verify(final PKIMessage msg, final String username, boolean authenticated) throws CmpAuthenticationException {
         if (log.isTraceEnabled()) {
             log.trace(">verify");
         }
@@ -123,7 +123,7 @@ public class VerifyPKIMessage {
         if(modules.length != params.length) {
             log.error("The number of authentication modules does not match the number of authentication parameters. " +
                     modules.length + " modules - " + params.length + " paramters");
-            throw new CMPAuthenticationException("Configuration error. Please contact the CA administrator");
+            throw new CmpAuthenticationException("Configuration error. Please contact the CA administrator");
         }
         
         ICMPAuthenticationModule module = null;
@@ -141,7 +141,7 @@ public class VerifyPKIMessage {
                 this.authModule = module;
                 log.info("PKIMessage was successfully authenticated using " + module.getName());
                 break;
-            } catch (CMPAuthenticationException e) {
+            } catch (CmpAuthenticationException e) {
                 errmsg = e.getLocalizedMessage();
             }
             
@@ -149,7 +149,7 @@ public class VerifyPKIMessage {
         }
         
         if(this.authModule == null) {
-            throw new CMPAuthenticationException(errmsg != null ? errmsg : "Failed to authentication PKIMessage using authentication modules: " + authModules);
+            throw new CmpAuthenticationException(errmsg != null ? errmsg : "Failed to authentication PKIMessage using authentication modules: " + authModules);
         }
         if (log.isTraceEnabled()) {
             log.trace("<verify: "+true);
@@ -163,13 +163,13 @@ public class VerifyPKIMessage {
      * @param parameter
      * @param pkimsg
      * @return The authentication module whose name is 'module'. Null if no such module is implemented.
-     * @throws CMPAuthenticationException 
+     * @throws CmpAuthenticationException 
      */
-    private ICMPAuthenticationModule getAuthModule(final String module, final String parameter, final PKIMessage pkimsg) throws CMPAuthenticationException {
+    private ICMPAuthenticationModule getAuthModule(final String module, final String parameter, final PKIMessage pkimsg) throws CmpAuthenticationException {
         
         if(this.cmpConfiguration.getRAMode(this.confAlias) && (StringUtils.equals(module, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD) || StringUtils.equals(module, CmpConfiguration.AUTHMODULE_DN_PART_PWD))) {
             String errmsg = "The authentication module '" + module + "' cannot be used in RA mode";
-            throw new CMPAuthenticationException(errmsg);
+            throw new CmpAuthenticationException(errmsg);
         }
         
         if(StringUtils.equals(module, CmpConfiguration.AUTHMODULE_HMAC)) {
@@ -184,7 +184,7 @@ public class VerifyPKIMessage {
             return new DnPartPasswordExtractor(parameter);
         }
         
-        throw new CMPAuthenticationException("Unrecognized authentication module: " + module);
+        throw new CmpAuthenticationException("Unrecognized authentication module: " + module);
     }
 
 }

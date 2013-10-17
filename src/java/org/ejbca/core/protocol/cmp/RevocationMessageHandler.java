@@ -67,7 +67,7 @@ import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
-import org.ejbca.core.protocol.cmp.authentication.CMPAuthenticationException;
+import org.ejbca.core.protocol.cmp.authentication.CmpAuthenticationException;
 import org.ejbca.core.protocol.cmp.authentication.HMACAuthenticationModule;
 import org.ejbca.core.protocol.cmp.authentication.ICMPAuthenticationModule;
 import org.ejbca.core.protocol.cmp.authentication.VerifyPKIMessage;
@@ -149,7 +149,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		try {
 		    messageVerifyer.verify(msg.getMessage(), null, authenticated);
 		    authenticationModule = messageVerifyer.getUsedAuthenticationModule();
-		} catch(CMPAuthenticationException e) {
+		} catch(CmpAuthenticationException e) {
 		    LOG.info(e.getMessage(), e);
 		    return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getLocalizedMessage());
 		}

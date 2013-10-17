@@ -133,7 +133,7 @@ import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
-import org.ejbca.core.protocol.cmp.authentication.CMPAuthenticationException;
+import org.ejbca.core.protocol.cmp.authentication.CmpAuthenticationException;
 import org.ejbca.core.protocol.cmp.authentication.HMACAuthenticationModule;
 import org.ejbca.core.protocol.cmp.authentication.VerifyPKIMessage;
 import org.junit.After;
@@ -248,7 +248,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             hmac.verifyOrExtract(req, null, false);
             assertNotNull("HMAC returned null password.", hmac.getAuthenticationString());
             assertEquals("HMAC returned the wrong password", "foo123", hmac.getAuthenticationString());
-        } catch(CMPAuthenticationException e) {
+        } catch(CmpAuthenticationException e) {
             assertTrue("Authentication failed: " + e.getLocalizedMessage(), false);
         }
         log.trace("<test01HMACModule()");
@@ -595,7 +595,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         try {
             verifier.verify(req, null, false);
             assertEquals(CmpConfiguration.AUTHMODULE_HMAC, verifier.getUsedAuthenticationModule().getName());
-        } catch(CMPAuthenticationException e) {
+        } catch(CmpAuthenticationException e) {
             assertTrue("Authentication failed", false);
         }
     }
@@ -929,7 +929,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         try {
             verifier.verify(msg, null, false);
             assertEquals(CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD, verifier.getUsedAuthenticationModule().getName());
-        } catch(CMPAuthenticationException e) {
+        } catch(CmpAuthenticationException e) {
             assertTrue("Authentication failed", false);
         }
     }
