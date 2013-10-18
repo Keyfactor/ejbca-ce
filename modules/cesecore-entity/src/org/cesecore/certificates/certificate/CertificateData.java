@@ -516,7 +516,14 @@ public class CertificateData extends ProtectedData implements Serializable {
     @Transient
     public Certificate getCertificate(EntityManager entityManager) {
         try {
-            return CertTools.getCertfromByteArray(Base64.decode(getBase64Cert(entityManager).getBytes()));
+            String certEncoded = getBase64Cert(entityManager);
+            if (certEncoded == null || certEncoded.isEmpty()) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Certificate data was null or empty. Fingerprint of certificate: " + this.fingerprint);
+                }
+                return null;
+            }
+            return CertTools.getCertfromByteArray(Base64.decode(certEncoded.getBytes()));
         } catch (CertificateException ce) {
             log.error("Can't decode certificate.", ce);
             return null;

@@ -13,6 +13,7 @@
 
 package org.ejbca.core.ejb.ca.store;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -23,20 +24,33 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminTestSessionRemote;
+import org.ejbca.core.ejb.ra.CertificateRequestSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.ra.NotFoundException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -372,5 +386,73 @@ public class CertificateRetrievalTest {
                     + rci.revocationReason + "\n");
         }
         log.trace("<test08LoadRevocationInfo()");
+    }
+    
+    @Test
+    public void test09FindWithMissingCertData() throws Exception {
+        log.trace(">test09FindWithMissingCertData()");
+        final String username = "TestWithMissingCertData";
+        final String dn = "CN="+username;
+        
+        AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+        EndEntityManagementSessionRemote endEntityMgmtSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+        CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+        CertificateRequestSessionRemote certReqSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateRequestSessionRemote.class);
+        CAAdminTestSessionRemote caAdminTestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+        InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+        
+        // Clean up left over test data
+        internalCertStoreSession.removeCertificatesBySubject(dn);
+        
+        List<Certificate> certs = certificateStoreSession.findCertificatesByUsername(username);
+        assertNotNull("failed to list certs", certs);
+        assertEquals("cert list should be empty", 0, certs.size());
+        
+        int caid;
+        try {
+            caid = caSession.getCAInfo(admin, "ManagementCA").getCAId();
+        } catch (CADoesntExistsException e1) {
+            caid = caSession.getCAInfo(admin, "AdminCA1").getCAId();
+        }
+        
+        EndEntityInformation userdata = new EndEntityInformation(username,  dn, caid, "", null,
+            EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER),
+            SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+            new Date(), new Date(), SecConst.TOKEN_SOFT_P12, 0, null);
+        userdata.setPassword("foo123");
+        String fingerprint = null;
+        try {
+            endEntityMgmtSession.addUser(admin, userdata, true);
+            certReqSession.processSoftTokenReq(admin, userdata, null, "1024", "RSA", false);
+            
+            // First test as usual
+            List<Certificate> certfps = certificateStoreSession.findCertificatesByUsername(username);
+            assertNotNull("failed to list certs", certfps);
+            assertEquals("failed to list certs", 1, certfps.size());
+            fingerprint = CertTools.getFingerprintAsString(certfps.get(0));
+            
+            // Set the certificate to ""
+            caAdminTestSession.clearCertData(certfps.get(0));
+            
+            log.debug("Trying with removed cert data.");
+            
+            Collection<Certificate> certcollection = certificateStoreSession.findCertificatesByType(CertificateConstants.CERTTYPE_ENDENTITY, caSession.getCAInfo(admin, caid).getSubjectDN());
+            assertNotNull("failed to list certs", certcollection);
+            
+            certfps = certificateStoreSession.findCertificatesByUsername(username);
+            assertNotNull("failed to list certs", certfps);
+            assertEquals("failed to list certs", 1, certfps.size());
+        } finally {
+            // Delete user and certificates
+            if (fingerprint != null) {
+                internalCertStoreSession.removeCertificate(fingerprint);
+            }
+            while (true) {
+                try {
+                    endEntityMgmtSession.deleteUser(admin, username);
+                } catch (NotFoundException e) { break; }
+            }
+        }
+        log.trace("<test09FindWithMissingCertData()");
     }
 }
