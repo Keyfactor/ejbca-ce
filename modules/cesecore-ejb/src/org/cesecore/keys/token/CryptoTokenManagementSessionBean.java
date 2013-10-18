@@ -277,26 +277,6 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         final CryptoToken cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
         return cryptoToken.getTokenStatus() == CryptoToken.STATUS_ACTIVE;
     }
-
-    @TransactionAttribute(TransactionAttributeType.REQUIRED) 
-    @Override
-    public synchronized void adhocUpgradeWithin6_0_x(AuthenticationToken authenticationToken) {
-        List<Integer> cryptoTokenIds = cryptoTokenSession.getCryptoTokenIds();
-        for(int cryptoTokenId : cryptoTokenIds) {
-            CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
-            Properties oldProperties = cryptoToken.getProperties();
-            if(!oldProperties.containsKey(PKCS11CryptoToken.SLOT_LABEL_VALUE)) {
-                Properties newProperties = PKCS11CryptoToken.upgradePropertiesFileFrom5_0_x(oldProperties);
-                cryptoToken.setProperties(newProperties);
-                try {
-                    cryptoTokenSession.mergeCryptoToken(cryptoToken);
-                } catch (CryptoTokenNameInUseException e) {
-                    //This should not be able to happen
-                    throw new RuntimeException("Attempted to merge a crypto token with one ID to another with the same name.", e);
-                }
-            }
-        }
-    }
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
