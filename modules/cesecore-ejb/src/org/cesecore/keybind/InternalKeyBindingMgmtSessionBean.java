@@ -124,7 +124,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         }
         return clone;
     }
-
+    
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<Integer> getInternalKeyBindingIds(AuthenticationToken authenticationToken, String internalKeyBindingType) {
@@ -148,6 +148,18 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             authorizedInternalKeyBindingInfos.add(new InternalKeyBindingInfo(internalKeyBindingInstance));
         }
         return authorizedInternalKeyBindingInfos;
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public List<InternalKeyBindingInfo> getAllInternalKeyBindingInfos(String internalKeyBindingType) {
+        final List<Integer> ids = internalKeyBindingDataSession.getIds(internalKeyBindingType);
+        final List<InternalKeyBindingInfo> internalKeyBindingInfos = new ArrayList<InternalKeyBindingInfo>(ids.size());
+        for (final Integer current : ids) {
+            final InternalKeyBinding internalKeyBindingInstance = internalKeyBindingDataSession.getInternalKeyBinding(current.intValue());
+            internalKeyBindingInfos.add(new InternalKeyBindingInfo(internalKeyBindingInstance));
+        }
+        return internalKeyBindingInfos;
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
