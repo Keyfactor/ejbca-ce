@@ -59,8 +59,9 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
     private EndEntityAccessSession eeAccessSession;
     
     private String globalSharedSecret;
-    private CAInfo cainfo;
     private String password;
+    private String errorMessage;
+    private CAInfo cainfo;
     private String confAlias;
     private CmpConfiguration cmpConfiguration;
     
@@ -78,6 +79,7 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
         
         this.verifyer = null;
         this.password = null;
+        this.errorMessage = null;
     }
     
     /**
@@ -89,7 +91,6 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
         return CmpConfiguration.AUTHMODULE_HMAC;
     }
     
-    @Override
     /**
      * Returns the password resulted from the verification process.
      * 
@@ -99,6 +100,10 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
      */
     public String getAuthenticationString() {
         return this.password;
+    }
+    
+    public String getErrorMessage() {
+        return this.errorMessage;
     }
     
     public CmpPbeVerifyer getCmpPbeVerifyer() {
@@ -118,26 +123,29 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
      * 
      * @param msg
      * @param username
-     * @throws CmpAuthenticationException if the verification fails.
      */
-    public void verifyOrExtract(final PKIMessage msg, final String username) throws CmpAuthenticationException {
+    public boolean verifyOrExtract(final PKIMessage msg, final String username) {
         
         if(msg == null) {
-            throw new CmpAuthenticationException("No PKIMessage was found");
+            this.errorMessage = "No PKIMessage was found";
+            return false;
         }
         
         if((msg.getProtection() == null) || (msg.getHeader().getProtectionAlg() == null)) {
-            throw new CmpAuthenticationException("PKI Message is not athenticated properly. No HMAC protection was found.");
+            this.errorMessage = "PKI Message is not athenticated properly. No HMAC protection was found.";
+            return false;
         }
 
-        try {   
+        try {
             verifyer = new CmpPbeVerifyer(msg);
         } catch(Exception e) {
-            throw new CmpAuthenticationException("Could not create CmpPbeVerifyer. "+e.getMessage());
+            this.errorMessage = "Could not create CmpPbeVerifyer. "+e.getMessage();
+            return false;
         }
         
         if(verifyer == null) {
-            throw new CmpAuthenticationException("Could not create CmpPbeVerifyer Object");
+            this.errorMessage = "Could not create CmpPbeVerifyer Object";
+            return false;
         }
             
         if(this.cmpConfiguration.getRAMode(this.confAlias)) { //RA mode
@@ -164,23 +172,23 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
                         }   
                     }
                 } catch (InvalidKeyException e) {
-                    String errmsg = e.getLocalizedMessage();
+                    this.errorMessage = e.getLocalizedMessage();
                     if(LOG.isDebugEnabled()) {
-                        LOG.debug(errmsg, e);
+                        LOG.debug(this.errorMessage, e);
                     }
-                    throw new CmpAuthenticationException(errmsg);
+                    return false;
                 } catch (NoSuchAlgorithmException e) {
-                    String errmsg = e.getLocalizedMessage();
+                    this.errorMessage = e.getLocalizedMessage();
                     if(LOG.isDebugEnabled()) {
-                        LOG.debug(errmsg, e);
+                        LOG.debug(this.errorMessage, e);
                     }
-                    throw new CmpAuthenticationException(errmsg);
+                    return false;
                 } catch (NoSuchProviderException e) {
-                    String errmsg = e.getLocalizedMessage();
+                    this.errorMessage = e.getLocalizedMessage();
                     if(LOG.isDebugEnabled()) {
-                        LOG.debug(errmsg, e);
+                        LOG.debug(this.errorMessage, e);
                     }
-                    throw new CmpAuthenticationException(errmsg);
+                    return false;
                 }
             }
 
@@ -205,17 +213,17 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
                                 }
                             }
                         } catch (InvalidKeyException e) {
-                            String errmsg = INTRES.getLocalizedMessage("cmp.errorgeneral");
-                            LOG.error(errmsg, e);
-                            throw new CmpAuthenticationException(errmsg);
+                            this.errorMessage = INTRES.getLocalizedMessage("cmp.errorgeneral");
+                            LOG.error(this.errorMessage, e);
+                            return false;
                         } catch (NoSuchAlgorithmException e) {
-                            String errmsg = INTRES.getLocalizedMessage("cmp.errorgeneral");
-                            LOG.error(errmsg, e);
-                            throw new CmpAuthenticationException(errmsg);
+                            this.errorMessage = INTRES.getLocalizedMessage("cmp.errorgeneral");
+                            LOG.error(this.errorMessage, e);
+                            return false;
                         } catch (NoSuchProviderException e) {
-                            String errmsg = INTRES.getLocalizedMessage("cmp.errorgeneral");
-                            LOG.error(errmsg, e);
-                            throw new CmpAuthenticationException(errmsg);
+                            this.errorMessage = INTRES.getLocalizedMessage("cmp.errorgeneral");
+                            LOG.error(this.errorMessage, e);
+                            return false;
                         }
                     } else {
                         if (LOG.isDebugEnabled()) {
@@ -227,7 +235,8 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
             
             // If password is still null, then we have failed verification with CA authentication secret too.
             if(password == null) {
-                throw new CmpAuthenticationException("Failed to verify message using both Global Shared Secret and CMP RA Authentication Secret");
+                this.errorMessage = "Failed to verify message using both Global Shared Secret and CMP RA Authentication Secret";
+                return false;
             }
 
         } else { //client mode
@@ -298,28 +307,33 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
                                 errmsg = verifyer.getErrMsg();
                                 LOG.info(errmsg);
                             }
-                            throw new CmpAuthenticationException(errmsg);
+                            this.errorMessage = errmsg;
+                            return false;
                         }
                     } catch (InvalidKeyException e) {
-                        String errmsg = INTRES.getLocalizedMessage("cmp.errorgeneral");
-                        LOG.error(errmsg, e);
-                        throw new CmpAuthenticationException(errmsg);
+                        this.errorMessage = INTRES.getLocalizedMessage("cmp.errorgeneral");
+                        LOG.error(this.errorMessage, e);
+                        return false;
                     } catch (NoSuchAlgorithmException e) {
-                        String errmsg = INTRES.getLocalizedMessage("cmp.errorgeneral");
-                        LOG.error(errmsg, e);
-                        throw new CmpAuthenticationException(errmsg);
+                        this.errorMessage = INTRES.getLocalizedMessage("cmp.errorgeneral");
+                        LOG.error(this.errorMessage, e);
+                        return false;
                     } catch (NoSuchProviderException e) {
-                        String errmsg = INTRES.getLocalizedMessage("cmp.errorgeneral");
-                        LOG.error(errmsg, e);
-                        throw new CmpAuthenticationException(errmsg);
+                        this.errorMessage = INTRES.getLocalizedMessage("cmp.errorgeneral");
+                        LOG.error(this.errorMessage, e);
+                        return false;
                     }
                 } else {
-                    throw new CmpAuthenticationException("No clear text password for user '"+userdata.getUsername()+"', not possible to check authentication.");
+                    this.errorMessage = "No clear text password for user '"+userdata.getUsername()+"', not possible to check authentication.";
+                    return false;
                 }
             } else {
-                throw new CmpAuthenticationException("End Entity with subjectDN '" + subjectDN +"' or username '" + username + "' was not found");
+                this.errorMessage = "End Entity with subjectDN '" + subjectDN +"' or username '" + username + "' was not found";
+                return false;
             }
         }
+        
+        return this.password != null;
     }
 
     
