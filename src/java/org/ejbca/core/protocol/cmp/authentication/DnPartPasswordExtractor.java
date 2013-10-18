@@ -34,10 +34,12 @@ public class DnPartPasswordExtractor implements ICMPAuthenticationModule {
 
     private String dnPart;
     private String password;
+    private String errorMessage;
     
     public DnPartPasswordExtractor(String dnpart) {
         this.dnPart = dnpart;
         this.password = null;
+        this.errorMessage = null;
     }
     
     /**
@@ -45,13 +47,13 @@ public class DnPartPasswordExtractor implements ICMPAuthenticationModule {
      * 
      * @param msg
      * @param username
-     * @throws CmpAuthenticationException if the password extraction fails.
      */
-    public void verifyOrExtract(final PKIMessage msg, final String username) throws CmpAuthenticationException {
+    public boolean verifyOrExtract(final PKIMessage msg, final String username) {
         
         CertReqMsg req = getReq(msg);
         if(req == null) {
-            throw new CmpAuthenticationException("No request was found in the PKIMessage");
+            this.errorMessage = "No request was found in the PKIMessage";
+            return false;
         }
         
         final String dnString = req.getCertReq().getCertTemplate().getSubject().toString();
@@ -63,9 +65,11 @@ public class DnPartPasswordExtractor implements ICMPAuthenticationModule {
         }
             
         if(password == null) {
-            throw new CmpAuthenticationException("Could not extract password from CRMF request using the " + getName() + " authentication module");
+            this.errorMessage = "Could not extract password from CRMF request using the " + getName() + " authentication module";
+            return false;
         }
-            
+        
+        return true;    
     }
     
     private CertReqMsg getReq(PKIMessage msg) {
@@ -77,12 +81,14 @@ public class DnPartPasswordExtractor implements ICMPAuthenticationModule {
         return req;
     }
 
-    @Override
     public String getAuthenticationString() {
         return this.password;
     }
+    
+    public String getErrorMessage() {
+        return this.errorMessage;
+    }
 
-    @Override
     public String getName() {
         return CmpConfiguration.AUTHMODULE_DN_PART_PWD;
     }

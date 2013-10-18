@@ -37,9 +37,11 @@ public class RegTokenPasswordExtractor implements ICMPAuthenticationModule {
     private static final Logger log = Logger.getLogger(RegTokenPasswordExtractor.class);
 
     private String password;
+    private String errorMessage;
     
     public RegTokenPasswordExtractor() {
         this.password = null;
+        this.errorMessage = null;
     }
     
     /**
@@ -47,12 +49,12 @@ public class RegTokenPasswordExtractor implements ICMPAuthenticationModule {
      * 
      * @param msg
      * @param username
-     * @throws CmpAuthenticationException if the password extraction fails.
      */
-    public void verifyOrExtract(final PKIMessage msg, final String username) throws CmpAuthenticationException, IllegalArgumentException {
+    public boolean verifyOrExtract(final PKIMessage msg, final String username) {
         CertReqMsg req = getReq(msg);
         if(req == null) {
-            throw new IllegalArgumentException("No request was found in the PKIMessage");
+            this.errorMessage = "No request was found in the PKIMessage";
+            return false;
         }
         
         String pwd = null;
@@ -109,10 +111,12 @@ public class RegTokenPasswordExtractor implements ICMPAuthenticationModule {
         }
 
         if(pwd == null) {
-            throw new CmpAuthenticationException("Could not extract password from CRMF request using the " + getName() + " authentication module");
+            this.errorMessage = "Could not extract password from CRMF request using the " + getName() + " authentication module";
+            return false;
         }
         
         this.password = pwd;
+        return this.password != null;
     }
     
     private CertReqMsg getReq(PKIMessage msg) {
@@ -131,12 +135,14 @@ public class RegTokenPasswordExtractor implements ICMPAuthenticationModule {
         return req;
     }
 
-    @Override
     public String getAuthenticationString() {
         return this.password;
     }
+    
+    public String getErrorMessage() {
+        return this.errorMessage;
+    }
 
-    @Override
     public String getName() {
         return CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD;
     }

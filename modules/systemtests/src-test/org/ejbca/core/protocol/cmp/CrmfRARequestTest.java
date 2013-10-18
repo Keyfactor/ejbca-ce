@@ -166,6 +166,8 @@ public class CrmfRARequestTest extends CmpTestCase {
 
         CryptoProviderTools.installBCProvider();
         
+        caSession.removeCA(admin, issuerDN.hashCode());
+        
         int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
         testx509ca = CaSessionTest.createTestX509CA(issuerDN, null, false, keyusage);
         caSession.addCA(admin, testx509ca);

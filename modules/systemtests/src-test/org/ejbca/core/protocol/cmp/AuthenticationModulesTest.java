@@ -133,8 +133,8 @@ import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
-import org.ejbca.core.protocol.cmp.authentication.CmpAuthenticationException;
 import org.ejbca.core.protocol.cmp.authentication.HMACAuthenticationModule;
+import org.ejbca.core.protocol.cmp.authentication.ICMPAuthenticationModule;
 import org.ejbca.core.protocol.cmp.authentication.VerifyPKIMessage;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -244,13 +244,11 @@ public class AuthenticationModulesTest extends CmpTestCase {
 
         HMACAuthenticationModule hmac = new HMACAuthenticationModule(ADMIN, "-", configAlias, cmpConfiguration, 
                                 caSession.getCAInfo(ADMIN, caid), eeAccessSession);
-        try {
-            hmac.verifyOrExtract(req, null);
-            assertNotNull("HMAC returned null password.", hmac.getAuthenticationString());
-            assertEquals("HMAC returned the wrong password", "foo123", hmac.getAuthenticationString());
-        } catch(CmpAuthenticationException e) {
-            assertTrue("Authentication failed: " + e.getLocalizedMessage(), false);
-        }
+        boolean ret = hmac.verifyOrExtract(req, null);
+        assertTrue("Authentication using HMAC faied", ret);
+        assertNotNull("HMAC returned null password.", hmac.getAuthenticationString());
+        assertEquals("HMAC returned the wrong password", "foo123", hmac.getAuthenticationString());
+        
         log.trace("<test01HMACModule()");
     }
 
@@ -592,12 +590,8 @@ public class AuthenticationModulesTest extends CmpTestCase {
 
         VerifyPKIMessage verifier = new VerifyPKIMessage(caSession.getCAInfo(ADMIN, caid), configAlias, ADMIN, caSession, eeAccessSession, certStoreSession,
                 authorizationSession, eeProfileSession, null, endEntityManagementSession, cmpConfiguration);
-        try {
-            verifier.verify(req, null, false);
-            assertEquals(CmpConfiguration.AUTHMODULE_HMAC, verifier.getUsedAuthenticationModule().getName());
-        } catch(CmpAuthenticationException e) {
-            assertTrue("Authentication failed", false);
-        }
+        ICMPAuthenticationModule authmodule = verifier.getUsedAuthenticationModule(req, null, false);
+        assertEquals(CmpConfiguration.AUTHMODULE_HMAC, authmodule.getName());
     }
 
     @Test
@@ -924,12 +918,9 @@ public class AuthenticationModulesTest extends CmpTestCase {
 
         VerifyPKIMessage verifier = new VerifyPKIMessage(caSession.getCAInfo(ADMIN, caid), configAlias, ADMIN, caSession, eeAccessSession, certStoreSession,
                 authorizationSession, eeProfileSession, null, endEntityManagementSession, cmpConfiguration);
-        try {
-            verifier.verify(msg, null, false);
-            assertEquals(CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD, verifier.getUsedAuthenticationModule().getName());
-        } catch(CmpAuthenticationException e) {
-            assertTrue("Authentication failed", false);
-        }
+
+        ICMPAuthenticationModule authmodule = verifier.getUsedAuthenticationModule(msg, null, false);
+        assertEquals(CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD, authmodule.getName());
     }
 
     @Test
@@ -1049,7 +1040,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
                     assertEquals(23, body.getType());
                     ErrorMsgContent err = (ErrorMsgContent) body.getContent();
                     String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
-                    String expectedErrMsg = "CA '" + testUserDN + "' does not exist";
+                    String expectedErrMsg = "The certificate attached to the PKIMessage in the extraCert field could not be found in the database.";
                     assertEquals(expectedErrMsg, errMsg);
                 } finally {
                     inputStream.close();
@@ -1655,10 +1646,6 @@ public class AuthenticationModulesTest extends CmpTestCase {
             inputStream.close();
         }
     }
-    
-    
-    
-    
 
     
     @AfterClass
