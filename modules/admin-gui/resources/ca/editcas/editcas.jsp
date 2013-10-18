@@ -214,6 +214,7 @@ java.security.InvalidAlgorithmParameterException
   boolean  xkmsrenewed          = false;
   boolean  cmsrenewed           = false;
   boolean  catokenoffline       = false;
+  boolean  initcatokenoffline   = false;
   boolean  catokenauthfailed    = false;
   String errormessage = null;
 
@@ -547,7 +548,13 @@ java.security.InvalidAlgorithmParameterException
                     int signedby = (signedByString==null ? 0 : Integer.parseInt(signedByString));
                     cainfo.setSignedBy(signedby);
                     cainfo.setCertificateProfileId(certprofileid);
-                    cadatahandler.initializeCA(cainfo);
+                    try {
+                        cadatahandler.initializeCA(cainfo);
+                    } catch (CryptoTokenOfflineException ctoe) {
+                        initcatokenoffline = true;
+                        errormessage = ctoe.getMessage();
+                        includefile="choosecapage.jspf";
+                    }
                 }
                 
                 // Make Request Button Pushed down, this will create a certificate request but not do anything
