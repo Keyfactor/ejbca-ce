@@ -15,6 +15,7 @@ package org.ejbca.core.ejb.ca.caadmin;
 
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
 
 import javax.ejb.Remote;
 
@@ -31,4 +32,9 @@ public interface CAAdminTestSessionRemote {
      * @param caname the name of the CA whose fingerprint should be retrieved.
      */
     public String getKeyFingerPrint(String caname) throws CADoesntExistsException, UnsupportedEncodingException, IllegalCryptoTokenException, CryptoTokenOfflineException, NoSuchAlgorithmException;
+    
+    /**
+     * Removes only the data of a certificate.
+     */
+    public void clearCertData(Certificate cert);
 }

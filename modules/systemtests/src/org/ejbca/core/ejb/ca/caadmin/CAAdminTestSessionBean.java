@@ -17,6 +17,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
+import java.security.cert.Certificate;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -31,12 +32,14 @@ import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
+import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.keys.token.SoftCryptoToken;
+import org.cesecore.util.CertTools;
 
 /**
  * Some test methods that are used from system tests
@@ -71,6 +74,13 @@ public class CAAdminTestSessionBean implements CAAdminTestSessionRemote {
     	md.update(p12PrivateCertSignKey.getEncoded());
     	md.update(p12PrivateCRLSignKey.getEncoded());
     	return new String(Hex.encode(md.digest()));
+    }
+    
+    @Override
+    public void clearCertData(Certificate cert) {
+        final String fingerprint = CertTools.getFingerprintAsString(cert);
+        CertificateData data = CertificateData.findByFingerprint(entityManager, fingerprint);
+        data.setBase64Cert("");
     }
 
 }
