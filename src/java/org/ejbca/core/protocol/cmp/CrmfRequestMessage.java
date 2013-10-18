@@ -65,7 +65,6 @@ import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CeSecoreNameStyle;
 import org.cesecore.util.CertTools;
-import org.ejbca.core.protocol.cmp.authentication.CmpAuthenticationException;
 import org.ejbca.core.protocol.cmp.authentication.RegTokenPasswordExtractor;
 
 /**
@@ -244,14 +243,11 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
 
         RegTokenPasswordExtractor regTokenExtractor = new RegTokenPasswordExtractor();
 
-        // In regTokenExtractor.verifyOrExtract(), at this point, it does not matter what 
-        // value "authenticated" (the boolean parameter) has, so we send 'false' only because such a parameter is required
-        try {
-            regTokenExtractor.verifyOrExtract(getPKIMessage(), null);
+        if(regTokenExtractor.verifyOrExtract(getPKIMessage(), null)) {
             this.password = regTokenExtractor.getAuthenticationString();
-        } catch(CmpAuthenticationException e) {
+        } else {
             if(log.isDebugEnabled()) {
-                log.debug(e.getLocalizedMessage());
+                log.debug(regTokenExtractor.getErrorMessage());
             }
         }
         return this.password;

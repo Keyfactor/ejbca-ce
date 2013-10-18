@@ -538,8 +538,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertEquals(23, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
         String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
-        // This is the expected error message because fetching the CA is done before checking whether the attached certificate is in the database.
-        String expectedErrMsg = "CA '" + fakeUserDN + "' does not exist";
+        String expectedErrMsg = "The certificate attached to the PKIMessage in the extraCert field could not be found in the database.";
         assertEquals(expectedErrMsg, errMsg);
 
         // sending another renewal request with a certificate issued by an existing CA but the certificate itself is not in the database        
