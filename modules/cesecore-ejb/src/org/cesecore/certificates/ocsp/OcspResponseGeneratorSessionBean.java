@@ -131,6 +131,7 @@ import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBinding;
+import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingNameInUseException;
@@ -170,10 +171,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     private static final Logger log = Logger.getLogger(OcspResponseGeneratorSessionBean.class);
 
     private static final InternalResources intres = InternalResources.getInstance();
-
-    // TODO: See if we can create local business methods for all calls where this is required
-    private static final AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
-            "Integrated OCSP cache update"));
     
     @Resource
     private SessionContext sessionContext;
@@ -190,6 +187,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     private CryptoTokenSessionLocal cryptoTokenSession;
     @EJB
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
+    @EJB
+    private InternalKeyBindingDataSessionLocal internalKeyBindingDataSession;
     @EJB
     private InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession;
 
@@ -316,14 +315,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 }
             }
             // Add all potential InternalKeyBindings as OCSP responders to the staging area, overwriting CA entries from before
-            for (final int internalKeyBindingId : internalKeyBindingMgmtSession.getInternalKeyBindingIds(authenticationToken, OcspKeyBinding.IMPLEMENTATION_ALIAS)) {
-                final OcspKeyBinding ocspKeyBinding;
-                try {
-                    ocspKeyBinding = (OcspKeyBinding) internalKeyBindingMgmtSession.getInternalKeyBinding(authenticationToken, internalKeyBindingId);
-                } catch (AuthorizationDeniedException e) {
-                    log.error("Internal modules were not able to communicate.", e);
-                    continue;
-                }
+            for (final int internalKeyBindingId : internalKeyBindingDataSession.getIds(OcspKeyBinding.IMPLEMENTATION_ALIAS)) {
+                final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingDataSession.getInternalKeyBinding(internalKeyBindingId);  
                 if (log.isDebugEnabled()) {
                     log.debug("Processing " + ocspKeyBinding.getName() + " (" + ocspKeyBinding.getId() + ")");
                 }
@@ -1327,8 +1320,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     // TODO: Test this throughly! 
     @Override
     public void adhocUpgradeFromPre60(char[] activationPassword) {
+        AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
+                OcspResponseGeneratorSessionBean.class.getSimpleName() + ".adhocUpgradeFromPre60"));
         // Check if there are any OcspKeyBindings already, if so return
-        if (!internalKeyBindingMgmtSession.getInternalKeyBindingIds(authenticationToken, OcspKeyBinding.IMPLEMENTATION_ALIAS).isEmpty()) {
+        if (!internalKeyBindingDataSession.getIds(OcspKeyBinding.IMPLEMENTATION_ALIAS).isEmpty()) {
             return;
         }
         // If ocsp.activation.doNotStorePasswordsInMemory=true, new CryptoTokens should not be auto-actived
@@ -1347,7 +1342,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         final String swKeystorePassword = ConfigurationHolder.getString("ocsp.rekeying.swKeystorePassword");
         if (swKeystorePath != null && (swKeystorePassword != null || activationPassword!=null)) {
             final String password = swKeystorePassword==null ? new String(activationPassword) : swKeystorePassword;
-            processSoftKeystore(new File(swKeystorePath), password, password, globalDoNotStorePasswordsInMemory, trustDefaults);
+            processSoftKeystore(authenticationToken, new File(swKeystorePath), password, password, globalDoNotStorePasswordsInMemory, trustDefaults);
         }
         // Create CryptoTokens and OcspKeyBindings from soft OCSP signers configured using:
         //  ocsp.p11.sharedLibrary=/opt/nfast/toolkits/pkcs11/libcknfast.so
@@ -1422,7 +1417,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     final Method m = BaseCryptoToken.class.getDeclaredMethod("getKeyStore");
                     m.setAccessible(true);
                     final KeyStore keyStore = (KeyStore) m.invoke(cryptoTokenManagementSession.getCryptoToken(p11CryptoTokenId));
-                    createInternalKeyBindings(p11CryptoTokenId, keyStore, trustDefaults);
+                    createInternalKeyBindings(authenticationToken, p11CryptoTokenId, keyStore, trustDefaults);
                 }
             } catch (Exception e) {
                 log.error("", e);
@@ -1441,16 +1436,16 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 if (directory.isDirectory()) {
                     log.info(" Processing Soft KeyStores..");
                     for (final File file : directory.listFiles()) {
-                        processSoftKeystore(file, softStorePassword, softKeyPassword, globalDoNotStorePasswordsInMemory, trustDefaults);
+                        processSoftKeystore(authenticationToken, file, softStorePassword, softKeyPassword, globalDoNotStorePasswordsInMemory, trustDefaults);
                     }
                 }
             }
         }
     }
     
-    private void processSoftKeystore(File file, String softStorePassword, String softKeyPassword, boolean doNotStorePasswordsInMemory,
-            List<InternalKeyBindingTrustEntry> trustDefaults) {
-        KeyStore keyStore;
+    private void processSoftKeystore(AuthenticationToken authenticationToken, File file, String softStorePassword, String softKeyPassword,
+            boolean doNotStorePasswordsInMemory, List<InternalKeyBindingTrustEntry> trustDefaults) {
+     KeyStore keyStore;
         final char[] passwordChars = softStorePassword.toCharArray();
         // Load keystore (JKS or PKCS#12)
         try {
@@ -1496,7 +1491,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             }
             final int softCryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, name,
                     SoftCryptoToken.class.getName(), cryptoTokenProperties, baos.toByteArray(), softKeyPassword.toCharArray());
-            createInternalKeyBindings(softCryptoTokenId, keyStore, trustDefaults);
+            createInternalKeyBindings(authenticationToken, softCryptoTokenId, keyStore, trustDefaults);
         } catch (Exception e) {
             log.warn(e.getMessage());
         }
@@ -1527,7 +1522,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     }
     
     /** Create InternalKeyBindings for Ocsp signing and SSL client authentication certs during ad-hoc upgrades. */
-    private void createInternalKeyBindings(int cryptoTokenId, KeyStore keyStore, List<InternalKeyBindingTrustEntry> trustDefaults) throws KeyStoreException, CryptoTokenOfflineException, InternalKeyBindingNameInUseException, AuthorizationDeniedException, CertificateEncodingException, CertificateImportException, InvalidAlgorithmException {
+    private void createInternalKeyBindings(AuthenticationToken authenticationToken, int cryptoTokenId, KeyStore keyStore, List<InternalKeyBindingTrustEntry> trustDefaults) throws KeyStoreException, CryptoTokenOfflineException, InternalKeyBindingNameInUseException, AuthorizationDeniedException, CertificateEncodingException, CertificateImportException, InvalidAlgorithmException {
         final Enumeration<String> aliases = keyStore.aliases();
         while (aliases.hasMoreElements()) {
             final String keyPairAlias = aliases.nextElement();
@@ -1585,9 +1580,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                 if (OcspConfiguration.getRestrictSignaturesByMethod()==OcspConfiguration.RESTRICTONSIGNER) {
                                     final int caId = issuerDn.hashCode();
                                     final BigInteger serialNumber = CertTools.getSerialNumber(chain.get(0));
-                                    try {
-                                        caSession.getCA(authenticationToken, caId);
-                                    } catch (CADoesntExistsException e) {
+                                    if(!caSession.existsCa(caId)) { 
                                         log.warn("Trusted certificate with serialNumber " + serialNumber.toString(16) +
                                                 " is issued by an unknown CA with subject '" + issuerDn +
                                                 "'. You should import this CA certificate as en external CA to make it known to the system.");
@@ -1595,17 +1588,13 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                     trustedCertificateReferences.add(new InternalKeyBindingTrustEntry(caId, serialNumber));
                                 } else {
                                     final int caId = subjectDn.hashCode();
-                                    try {
-                                        caSession.getCA(authenticationToken, caId);
-                                    } catch (CADoesntExistsException e) {
+                                    if(!caSession.existsCa(caId)) { 
                                         log.warn("Trusted CA certificate with with subject '" + subjectDn +
                                                 "' should be imported as en external CA to make it known to the system.");
                                     }
                                     trustedCertificateReferences.add(new InternalKeyBindingTrustEntry(caId, null));
                                 }
                             }
-                        } catch (AuthorizationDeniedException e) {
-                            log.warn(e.getMessage());
                         } catch (CertificateException e) {
                             log.warn(e.getMessage());
                         } catch (FileNotFoundException e) {
@@ -1641,8 +1630,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     public String healthCheck() {
         final StringBuilder sb = new StringBuilder();
         // Check that there are no ACTIVE OcspKeyBindings that are not in the cache before checking usability..
-        for (InternalKeyBindingInfo internalKeyBindingInfo : internalKeyBindingMgmtSession.getInternalKeyBindingInfos(authenticationToken,
-                OcspKeyBinding.IMPLEMENTATION_ALIAS)) {
+        for (InternalKeyBindingInfo internalKeyBindingInfo : internalKeyBindingMgmtSession
+                .getAllInternalKeyBindingInfos(OcspKeyBinding.IMPLEMENTATION_ALIAS)) {
             if (internalKeyBindingInfo.getStatus().equals(InternalKeyBindingStatus.ACTIVE)) {
                 if (OcspSigningCache.INSTANCE.getEntry(internalKeyBindingInfo.getId()) == null) {
                     final String errMsg = intres.getLocalizedMessage("ocsp.signingkeynotincache", internalKeyBindingInfo.getName());
