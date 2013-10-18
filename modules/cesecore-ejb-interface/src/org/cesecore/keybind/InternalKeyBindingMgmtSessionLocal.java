@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.cesecore.keybind;
 
+import java.util.List;
+
 import javax.ejb.Local;
 
 /**
@@ -20,4 +22,12 @@ import javax.ejb.Local;
  */
 @Local
 public interface InternalKeyBindingMgmtSessionLocal extends InternalKeyBindingMgmtSession {
+    
+    /**
+     * Returns a list of all internal key bindings of a certain type, as {@link InternalKeyBindingInfo}s
+     * 
+     * @param internalKeyBindingType the key binding type
+     * @return a list of all internal key bindings of that type, as {@link InternalKeyBindingInfo}s
+     */
+    List<InternalKeyBindingInfo> getAllInternalKeyBindingInfos(String internalKeyBindingType);
 }
