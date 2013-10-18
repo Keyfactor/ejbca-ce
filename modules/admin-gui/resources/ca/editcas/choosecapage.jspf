@@ -42,6 +42,12 @@
       <td width="60%"></td>
     </tr>
   <% } %>
+  <% if(initcatokenoffline){ %> 
+    <tr> 
+      <td width="40%" class="alert"><%= ejbcawebbean.getText("INITCATOKENISOFFLINE") %></td>
+      <td width="60%"></td>
+    </tr>
+  <% } %>
   <% if(catokenauthfailed){ %> 
     <tr> 
       <td width="40%" class="alert"><%= ejbcawebbean.getText("CATOKENAUTHFAILED") %></td>
