@@ -52,7 +52,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * System test class for RA adduser and setpwd commands
+ * System test class for RA addendentity and setpwd commands
  * 
  * @version $Id$
  */
