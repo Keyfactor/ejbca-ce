@@ -326,8 +326,7 @@ public class StartServicesServlet extends HttpServlet {
         ocspResponseGeneratorSession.adhocUpgradeFromPre60(null);
         // Start key reload timer
         ocspResponseGeneratorSession.initTimers();
-        
-        cryptoTokenManagementSession.adhocUpgradeWithin6_0_x(admin);
+
     }
     
     /**
