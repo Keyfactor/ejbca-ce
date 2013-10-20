@@ -95,7 +95,7 @@ public class CmpConfiguration extends Configuration implements Serializable {
     private static final String DEFAULT_VENDOR_MODE = "false";
     private static final String DEFAULT_VENDOR_CA = "";
     private static final String DEFAULT_KUR_ALLOW_AUTOMATIC_KEYUPDATE = "false";
-    private static final String DEFAULT_KUR_ALLOW_SAME_KEY = "false";
+    private static final String DEFAULT_KUR_ALLOW_SAME_KEY = "true";
     private static final String DEFAULT_RESPONSE_PROTECTION = "signature";
     private static final String DEFAULT_ALLOW_RA_VERIFY_POPO = "false"; 
     private static final String DEFAULT_RA_USERNAME_GENERATION_SCHEME = "DN";

@@ -152,6 +152,7 @@ public class CmpConfigCommand extends ConfigBaseCommand {
             try {
                 globalConfigSession.saveConfiguration(getAuthenticationToken(cliUserName, cliPassword), cmpConfiguration, Configuration.CMPConfigID);
                 getLogger().info("Added CMP alias: " + alias);
+                globalConfigSession.flushConfigurationCache(Configuration.CMPConfigID);
             } catch (AuthorizationDeniedException e) {
                 getLogger().info("Failed to add alias '" + alias + "': " + e.getLocalizedMessage());
                 return;
@@ -176,6 +177,7 @@ public class CmpConfigCommand extends ConfigBaseCommand {
             try {
                 globalConfigSession.saveConfiguration(getAuthenticationToken(cliUserName, cliPassword), cmpConfiguration, Configuration.CMPConfigID);
                 getLogger().info("Removed CMP alias: " + alias);
+                globalConfigSession.flushConfigurationCache(Configuration.CMPConfigID);
             } catch (AuthorizationDeniedException e) {
                 getLogger().info("Failed to remove alias '" + alias + "': " + e.getLocalizedMessage());
                 return;
@@ -201,6 +203,7 @@ public class CmpConfigCommand extends ConfigBaseCommand {
             try {
                 globalConfigSession.saveConfiguration(getAuthenticationToken(cliUserName, cliPassword), cmpConfiguration, Configuration.CMPConfigID);
                 getLogger().info("Renamed CMP alias '" + oldalias + "' to '" + newalias + "'");
+                globalConfigSession.flushConfigurationCache(Configuration.CMPConfigID);
             } catch (AuthorizationDeniedException e) {
                 getLogger().info("Failed to rename alias '" + oldalias + "' to '" + newalias + "': " + e.getLocalizedMessage());
                 return;
@@ -229,6 +232,7 @@ public class CmpConfigCommand extends ConfigBaseCommand {
             try {
                 globalConfigSession.saveConfiguration(getAuthenticationToken(cliUserName, cliPassword), cmpConfiguration, Configuration.CMPConfigID);
                 getLogger().info("Configuration updated: " + key + "=" + cmpConfiguration.getValue(key, alias));
+                globalConfigSession.flushConfigurationCache(Configuration.CMPConfigID);
             } catch (AuthorizationDeniedException e) {
                 getLogger().info("Failed to update configuration: " + e.getLocalizedMessage());
                 return;
@@ -294,6 +298,7 @@ public class CmpConfigCommand extends ConfigBaseCommand {
             try {
                 globalConfigSession.saveConfiguration(getAuthenticationToken(cliUserName, cliPassword), cmpConfiguration, Configuration.CMPConfigID);
                 getLogger().info("New configurations saved.");
+                globalConfigSession.flushConfigurationCache(Configuration.CMPConfigID);
             } catch (AuthorizationDeniedException e) {
                 getLogger().error("Failed to save configuration from file: " + e.getLocalizedMessage());
             }
@@ -375,14 +380,14 @@ public class CmpConfigCommand extends ConfigBaseCommand {
     private void printUploadUsage() {
         getLogger().info("Description: Reads CMP configurations from a file.");
         getLogger().info("Usage: cmp uploadfile <filename> <alias>");
-        
-        getLogger().info("Each line that starts with '#' in the file will be ignored");
-        getLogger().info("Each line that does NOT start with '#' should have the format 'ALIAS.key=VALUE'");
+        getLogger().info("\n");
+        getLogger().info("Each line that has the format 'ALIAS.key=VALUE' will be read");
         getLogger().info("Only one alias will be read. If one file contains configurations of several aliases, you have to repeat the command with a " +
         		"different alias each time to have all configurations of all aliases read");
-        
+        getLogger().info("Note that the alias 'cmp' is the default alias used when sending the CMP request through the URL 'http://HOST:PORT/ejbca/publicweb/cmp'. " +
+        		"Note also that the alias 'cmp' does not exist per default and should be created before using this URL");
         getLogger().info("The following keys (if present) will be read from the file:");
-        Set<String> keys = CmpConfiguration.getAllAliasKeys("ALIAS");
+        Set<String> keys = CmpConfiguration.getAllAliasKeys("<ALIAS>");
         Iterator<String> itr = keys.iterator();
         while(itr.hasNext()) {
             getLogger().info("     " + itr.next());
