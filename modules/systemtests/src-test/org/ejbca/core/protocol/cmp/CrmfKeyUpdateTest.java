@@ -1180,7 +1180,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
     @Test
     public void test12ECCNotSetInRA() throws Exception {
         if(log.isTraceEnabled()) {
-            log.trace("test12RANoCA()");
+            log.trace("test12ECCNotSetInRA()");
         }
         
         cmpConfiguration.setRAMode(cmpAlias, true);
@@ -1237,7 +1237,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         removeAuthenticationToken(admToken, admCert, "cmpTestAdmin");
         
         if(log.isTraceEnabled()) {
-            log.trace("<test12RANoCA()");
+            log.trace("<test12ECCNotSetInRA()");
         }
 
     }
