@@ -214,5 +214,42 @@ public class CmpConfirmMessageTest extends CmpTestCase {
 
         log.trace("<test03ConfRespPbeProtected");
     }
+    
+    /**
+     * This test sends a CmpConfirmMessage and expects a successful CmpConfirmResponse message
+     * protected with PBE using the global shared secret set as authentication module parameter 
+     * in cmp.authenticationparameter.
+     * @throws Exception
+     */
+    @Test
+    public void test04ConfRespPbeProtectedByCACmpSecret() throws Exception {
+        log.trace(">test03ConfRespPbeProtected");
+
+        cmpConfiguration.setRAMode(cmpAlias, true);
+        cmpConfiguration.setResponseProtection(cmpAlias, "pbe");
+        cmpConfiguration.setCMPDefaultCA(cmpAlias, issuerDN);
+        cmpConfiguration.setAuthenticationModule(cmpAlias, CmpConfiguration.AUTHMODULE_HMAC);
+        cmpConfiguration.setAuthenticationParameters(cmpAlias, "-");
+        globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
+
+        byte[] nonce = CmpMessageHelper.createSenderNonce();
+        byte[] transid = CmpMessageHelper.createSenderNonce();
+
+        // Send a confirm message to the CA
+        String hash = "foo123";
+        PKIMessage confirm = genCertConfirm(userDN, cacert, nonce, transid, hash, 0);
+        confirm = protectPKIMessage(confirm, false, "foo123", 567);
+        assertNotNull(confirm);
+        ByteArrayOutputStream bao = new ByteArrayOutputStream();
+        DEROutputStream out = new DEROutputStream(bao);
+        out.writeObject(confirm);
+        byte[] ba = bao.toByteArray();
+        // Send request and receive response
+        byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
+        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, "foo123", PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        checkCmpPKIConfirmMessage(userDN, cacert, resp);
+
+        log.trace("<test03ConfRespPbeProtected");
+    }
 
 }
