@@ -56,7 +56,7 @@ public enum DirectoryCache {
     private long trustDirValidTo;
 
     private DirectoryCache()  {
-        loadTrustDir();
+
     }
 
     public void loadTrustDir() throws OcspFailureException {
@@ -133,6 +133,13 @@ public enum DirectoryCache {
      * @return the trustedReqSigIssuers
      */
     public Map<String, X509Certificate> getTrustedReqSigIssuers() {
+       if(requestRestrictMethod != OcspConfiguration.RESTRICTONISSUER) {
+           throw new IllegalStateException("trustedReqSigIssuers requested, but unavailable due to configuration");
+       }     
+        //Lazy initialization
+        if(trustedReqSigIssuers == null) {
+            loadTrustDir();
+        }
         return trustedReqSigIssuers;
     }
 
@@ -140,6 +147,13 @@ public enum DirectoryCache {
      * @return the trustedReqSigSigners
      */
     public Map<String, X509Certificate> getTrustedReqSigSigners() {
+        if (requestRestrictMethod == OcspConfiguration.RESTRICTONSIGNER) {
+            throw new IllegalStateException("trustedReqSigSigners requested, but unavailable due to configuration");
+        }
+        //Lazy initialization
+        if (trustedReqSigIssuers == null) {
+            loadTrustDir();
+        }
         return trustedReqSigSigners;
     }
 
