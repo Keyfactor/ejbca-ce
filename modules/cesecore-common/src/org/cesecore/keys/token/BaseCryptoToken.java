@@ -156,17 +156,18 @@ public abstract class BaseCryptoToken implements CryptoToken {
      * Reads the public key object, does so from the certificate retrieved from the alias from the KeyStore.
      *
      * @param alias alias the key alias to retrieve from the token
+     * @param warn if we should log a warning if the key does not exist
      * @return the public key for the certificate represented by the given alias.
      * @throws KeyStoreException if the keystore has not been initialized.
      * @throws CryptoTokenOfflineException if Crypto Token is not available or connected.
      */
-    protected PublicKey readPublicKey(String alias) throws KeyStoreException, CryptoTokenOfflineException {
+    protected PublicKey readPublicKey(String alias, boolean warn) throws KeyStoreException, CryptoTokenOfflineException {
         try {
             Certificate cert = getKeyStore().getCertificate(alias);
             PublicKey pubk = null;
             if (cert != null) {
                 pubk = cert.getPublicKey();
-            } else {
+            } else if (warn) {
                 log.warn(intres.getLocalizedMessage("token.nopublic", alias));
                 if (log.isDebugEnabled()) {
                     Enumeration<String> en = getKeyStore().aliases();
@@ -411,17 +412,47 @@ public abstract class BaseCryptoToken implements CryptoToken {
     }
 
     @Override
+    public boolean isAliasUsed(final String alias) {
+        boolean aliasInUse = false;
+        try {
+            getPublicKey(alias, false);
+            aliasInUse = true;
+        } catch (CryptoTokenOfflineException e) {
+            try {
+                getPrivateKey(alias, false);
+                aliasInUse = true;
+            } catch (CryptoTokenOfflineException e2) {
+                try {
+                    getKey(alias, false);
+                    aliasInUse = true;
+                } catch (CryptoTokenOfflineException e3) {
+                }
+            }
+        }
+        return aliasInUse;
+    }
+    
+    @Override
     public PrivateKey getPrivateKey(final String alias) throws CryptoTokenOfflineException {
+        return getPrivateKey(alias, true);
+    }
+
+    /** @see #getPrivateKey(String) 
+     * @param warn if we should log a warning if the key does not exist
+     */
+    private PrivateKey getPrivateKey(final String alias, boolean warn) throws CryptoTokenOfflineException {
         // Auto activate is done in the call to getKeyStore below
         try {
             final PrivateKey privateK = (PrivateKey) getKeyStore().getKey(alias, (mAuthCode != null && mAuthCode.length > 0) ? mAuthCode : null);
             if (privateK == null) {
-                log.warn(intres.getLocalizedMessage("token.noprivate", alias));
-                if (log.isDebugEnabled()) {
-                    final Enumeration<String> aliases;
-                    aliases = getKeyStore().aliases();
-                    while (aliases.hasMoreElements()) {
-                        log.debug("Existing alias: " + aliases.nextElement());
+                if (warn) {
+                    log.warn(intres.getLocalizedMessage("token.noprivate", alias));
+                    if (log.isDebugEnabled()) {
+                        final Enumeration<String> aliases;
+                        aliases = getKeyStore().aliases();
+                        while (aliases.hasMoreElements()) {
+                            log.debug("Existing alias: " + aliases.nextElement());
+                        }
                     }
                 }
                 final String msg = intres.getLocalizedMessage("token.errornosuchkey", alias);
@@ -441,9 +472,16 @@ public abstract class BaseCryptoToken implements CryptoToken {
 
     @Override
     public PublicKey getPublicKey(final String alias) throws CryptoTokenOfflineException {
+        return getPublicKey(alias, true);
+    }
+    
+    /** @see #getPublicKey(String)
+     * @param warn if we should log a warning if the key does not exist 
+     */
+    private PublicKey getPublicKey(final String alias, boolean warn) throws CryptoTokenOfflineException {
         // Auto activate is done in the call to getKeyStore below (from readPublicKey)
         try {
-            PublicKey publicK = readPublicKey(alias);
+            PublicKey publicK = readPublicKey(alias, warn);
             if (publicK == null) {
                 final String msg = intres.getLocalizedMessage("token.errornosuchkey", alias);
                 throw new CryptoTokenOfflineException(msg);
@@ -469,7 +507,14 @@ public abstract class BaseCryptoToken implements CryptoToken {
     }
 
     @Override
-    public Key getKey(String alias) throws CryptoTokenOfflineException {
+    public Key getKey(final String alias) throws CryptoTokenOfflineException {
+        return getKey(alias, true);
+    }
+
+    /** see {@link #getKey(String)}
+     * @param warn if we should log a warning if the key does not exist 
+     */
+    private Key getKey(final String alias, final boolean warn) throws CryptoTokenOfflineException {
         // Auto activate is done in the call to getKeyStore below
         try {
             Key key = getKeyStore().getKey(alias, (mAuthCode != null && mAuthCode.length > 0) ? mAuthCode : null);
@@ -477,12 +522,14 @@ public abstract class BaseCryptoToken implements CryptoToken {
                 // Do we have it stored as a soft key in properties?
                 key = getKeyFromProperties(alias);
                 if (key == null) {
-                    log.warn(intres.getLocalizedMessage("token.errornosuchkey", alias));
-                    if (log.isDebugEnabled()) {
-                        Enumeration<String> aliases;
-                        aliases = getKeyStore().aliases();
-                        while (aliases.hasMoreElements()) {
-                            log.debug("Existing alias: " + aliases.nextElement());
+                    if (warn) {
+                        log.warn(intres.getLocalizedMessage("token.errornosuchkey", alias));
+                        if (log.isDebugEnabled()) {
+                            Enumeration<String> aliases;
+                            aliases = getKeyStore().aliases();
+                            while (aliases.hasMoreElements()) {
+                                log.debug("Existing alias: " + aliases.nextElement());
+                            }
                         }
                     }
                     final String msg = intres.getLocalizedMessage("token.errornosuchkey", alias);

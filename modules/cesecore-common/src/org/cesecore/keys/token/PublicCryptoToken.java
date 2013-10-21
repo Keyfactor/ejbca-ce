@@ -103,6 +103,15 @@ public class PublicCryptoToken implements CryptoToken {
 		// no private key to deactivate
 	}
 
+    @Override
+    public boolean isAliasUsed(String alias) {
+        try {
+            return (getPublicKey(alias) != null);
+        } catch (CryptoTokenOfflineException e) {
+            return false;
+        }
+    }
+
 	@Override
 	public PrivateKey getPrivateKey(String alias)
 			throws CryptoTokenOfflineException {
