@@ -112,7 +112,7 @@ public class VerifyPKIMessage {
         final String modules[] = authModules.split(";");
         final String params[] = authparameters.split(";");
         
-        if(modules.length != params.length) {
+        if(modules.length > params.length) {
             log.error("The number of authentication modules does not match the number of authentication parameters. " +
                     modules.length + " modules - " + params.length + " paramters");
             this.errorMessage = "Configuration error. Please contact the CA administrator";
