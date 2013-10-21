@@ -297,7 +297,8 @@ public class CmpConfigCommand extends ConfigBaseCommand {
         if(populated) {
             try {
                 globalConfigSession.saveConfiguration(getAuthenticationToken(cliUserName, cliPassword), cmpConfiguration, Configuration.CMPConfigID);
-                getLogger().info("New configurations saved.");
+                getLogger().info("\nNew configurations saved successfully.");
+                getLogger().info("If there are any issues with the configurations, check them in the AdminGUI and click 'Save'");
                 globalConfigSession.flushConfigurationCache(Configuration.CMPConfigID);
             } catch (AuthorizationDeniedException e) {
                 getLogger().error("Failed to save configuration from file: " + e.getLocalizedMessage());
@@ -380,7 +381,7 @@ public class CmpConfigCommand extends ConfigBaseCommand {
     private void printUploadUsage() {
         getLogger().info("Description: Reads CMP configurations from a file.");
         getLogger().info("Usage: cmp uploadfile <filename> <alias>");
-        getLogger().info("\n");
+        getLogger().info("");
         getLogger().info("Each line that has the format 'ALIAS.key=VALUE' will be read");
         getLogger().info("Only one alias will be read. If one file contains configurations of several aliases, you have to repeat the command with a " +
         		"different alias each time to have all configurations of all aliases read");
