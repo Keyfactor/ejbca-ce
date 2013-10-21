@@ -284,7 +284,7 @@
 		</jar>
         <copy file="${resources.dir}/log4j-cli.xml" tofile="${mod.ejbca-db-cli.dist}/log4j.xml"/>
         <copy file="${build-cli.dir}/META-INF/persistence.xml" tofile="${mod.ejbca-db-cli.dist}/META-INF/persistence.xml" failonerror="true"/>
-        <copy file="${ejbca.home}/conf/databaseprotection.properties" tofile="${mod.ejbca-db-cli.dist}/conf/databaseprotection.properties" failonerror="false"/>
+        <copy file="${ejbca.home}/conf/databaseprotection.properties" tofile="${mod.ejbca-db-cli.dist}/conf/databaseprotection.properties" failonerror="false" quiet="true"/>
         <copy file="${resources.dir}/run.sh" tofile="${mod.ejbca-db-cli.dist}/run.sh" failonerror="true"/>
         <chmod file="${mod.ejbca-db-cli.dist}/run.sh" perm="a+rx"/>
     </target>
