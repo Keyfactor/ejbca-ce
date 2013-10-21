@@ -129,6 +129,11 @@ public class CachedCryptoToken implements CryptoToken {
     }
 
     @Override
+    public boolean isAliasUsed(String alias) {
+        return wrappedCryptoToken.isAliasUsed(alias);
+    }
+    
+    @Override
     public Key getKey(String alias) throws CryptoTokenOfflineException {
         if (cachedKey==null) {
             cachedKey = wrappedCryptoToken.getKey(alias);
