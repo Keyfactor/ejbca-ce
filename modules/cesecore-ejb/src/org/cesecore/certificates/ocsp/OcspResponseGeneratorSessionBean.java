@@ -219,6 +219,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     	if (log.isTraceEnabled()) {
     		log.trace(">reloadOcspSigningCache");
     	}
+    	
         // Cancel any waiting timers
         cancelTimers();
         try {
@@ -230,7 +231,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             }
         } finally {
             // Schedule a new timer
-            addTimer(OcspConfiguration.getSignTrustValidTimeInSeconds(), OcspSigningCache.INSTANCE.hashCode());
+            addTimer(OcspConfiguration.getSigningCertsValidTimeInSeconds(), OcspSigningCache.INSTANCE.hashCode());
+            
         }
     }
 
@@ -857,9 +859,12 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         if (log.isTraceEnabled()) {
             log.trace(">addTimer: " + id + ", interval: " + interval);
         }
-        Timer ret = timerService.createTimer(interval, id);
-        if (log.isTraceEnabled()) {
-            log.trace("<addTimer: " + id + ", interval: " + interval + ", " + ret.getNextTimeout().toString());
+        Timer ret = null;
+        if (interval > 0) {
+            ret = timerService.createTimer(interval, id);
+            if (log.isTraceEnabled()) {
+                log.trace("<addTimer: " + id + ", interval: " + interval + ", " + ret.getNextTimeout().toString());
+            }
         }
         return ret;
     }
