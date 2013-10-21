@@ -544,10 +544,10 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         return inEditMode;
     }
 
-    /** @return true if loaded InternalKeyBinding's referenced CryptoToken is active */
+    /** @return true if loaded InternalKeyBinding's referenced CryptoToken exists and is active */
     public boolean isCryptoTokenActive() {
         final CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(currentCryptoToken);
-        return cryptoTokenInfo==null || cryptoTokenInfo.isActive();
+        return cryptoTokenInfo!=null && cryptoTokenInfo.isActive();
     }
     
     public boolean isBoundToCertificate() {
