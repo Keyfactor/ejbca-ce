@@ -546,8 +546,14 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
 
     /** @return true if loaded InternalKeyBinding's referenced CryptoToken exists and is active */
     public boolean isCryptoTokenActive() {
-        final CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(currentCryptoToken);
-        return cryptoTokenInfo!=null && cryptoTokenInfo.isActive();
+        final boolean ret;
+        if (currentCryptoToken != null) {
+            final CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(currentCryptoToken);
+            ret = (cryptoTokenInfo!=null && cryptoTokenInfo.isActive());
+        } else {
+            ret = false;
+        }
+        return ret;
     }
     
     public boolean isBoundToCertificate() {
