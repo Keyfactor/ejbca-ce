@@ -130,6 +130,11 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 	 */
 	private ResponseMessage dispatch(final AuthenticationToken admin, final ASN1Primitive derObject, final boolean authenticated, String confAlias) {
 	    
+	    if(!cmpConfiguration.aliasExists(confAlias)) {
+	        log.error("There is no CMP alias: " + confAlias);
+	        return CmpMessageHelper.createUnprotectedErrorMessage(null, ResponseStatus.FAILURE, FailInfo.INCORRECT_DATA, "Wrong URL. CMP alias '" + confAlias + "' does not exist");
+	    }
+	    
 		final PKIMessage req;
 		try {
 			req = PKIMessage.getInstance(derObject);
