@@ -89,6 +89,12 @@ public interface CryptoToken extends Serializable {
      */
     void deactivate();
 
+    /** Checks if an alias is in use by a Crypto Token
+     * @param the alias that we want to check
+     * @return true if there is a private, public or symmetric entry with this alias in the CryptoToken 
+     */
+    boolean isAliasUsed(String alias);
+
     /** Returns the private key (if possible) of token.
     *
     * @param alias the key alias to retrieve from the token

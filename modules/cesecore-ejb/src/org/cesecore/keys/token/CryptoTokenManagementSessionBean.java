@@ -541,33 +541,12 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
 
     @Override
     public boolean isAliasUsedInCryptoToken(final int cryptoTokenId, final String alias) {
-        return isAliasUsed(getCryptoToken(cryptoTokenId), alias);
-    }
-    
-    /** @return true if there is a private, public or symmetric entry with this alias in the CryptoToken */
-    private boolean isAliasUsed(final CryptoToken cryptoToken, final String alias) {
-        boolean aliasInUse = false;
-        try {
-            cryptoToken.getPublicKey(alias);
-            aliasInUse = true;
-        } catch (CryptoTokenOfflineException e) {
-            try {
-                cryptoToken.getPrivateKey(alias);
-                aliasInUse = true;
-            } catch (CryptoTokenOfflineException e2) {
-                try {
-                    cryptoToken.getKey(alias);
-                    aliasInUse = true;
-                } catch (CryptoTokenOfflineException e3) {
-                }
-            }
-        }
-        return aliasInUse;
+        return getCryptoToken(cryptoTokenId).isAliasUsed(alias);
     }
     
     /** @throws InvalidKeyException if the alias is in use by a private, public or symmetric key */
     private void assertAliasNotInUse(final CryptoToken cryptoToken, final String alias) throws InvalidKeyException {
-        if (isAliasUsed(cryptoToken, alias)) {
+        if (cryptoToken.isAliasUsed(alias)) {
             throw new InvalidKeyException("alias " + alias + " is in use");
         }
     }
@@ -578,7 +557,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         assertAuthorization(authenticationToken, cryptoTokenId, CryptoTokenRules.REMOVE_KEYS.resource()+"/"+cryptoTokenId);
         final CryptoToken cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
         // Check if alias is in use
-        if (!isAliasUsed(cryptoToken, alias)) {
+        if (!cryptoToken.isAliasUsed(alias)) {
             throw new InvalidKeyException("Alias " + alias + " is not in use");
         }
         final Map<String, Object> details = new LinkedHashMap<String, Object>();
