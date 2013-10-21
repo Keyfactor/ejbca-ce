@@ -284,11 +284,18 @@
 		</jar>
         <copy file="${resources.dir}/log4j-cli.xml" tofile="${mod.ejbca-db-cli.dist}/log4j.xml"/>
         <copy file="${build-cli.dir}/META-INF/persistence.xml" tofile="${mod.ejbca-db-cli.dist}/META-INF/persistence.xml" failonerror="true"/>
-        <copy file="${ejbca.home}/conf/databaseprotection.properties" tofile="${mod.ejbca-db-cli.dist}/conf/databaseprotection.properties" failonerror="false" />
-        <copy file="${resources.dir}/run.sh" tofile="${mod.ejbca-db-cli.dist}/run.sh" failonerror="true"/>
+    	<condition property="databaseprotection.properties.exists">	
+    		<available file="${ejbca.home}/conf/databaseprotection.properties" type="file"/>
+    	</condition>
+    	<antcall target="copydatabaseprotection"/>
+    	<copy file="${resources.dir}/run.sh" tofile="${mod.ejbca-db-cli.dist}/run.sh" failonerror="true"/>
         <chmod file="${mod.ejbca-db-cli.dist}/run.sh" perm="a+rx"/>
     </target>
 
+	<target name="copydatabaseprotection" if="${databaseprotection.properties.exists}">
+		<copy file="${ejbca.home}/conf/databaseprotection.properties" tofile="${mod.ejbca-db-cli.dist}/conf/databaseprotection.properties" failonerror="false" />
+	</target>
+	
 	<target name="runone" depends="compile-test">
 		<fail message="'test.runone' is not set. Example -Dtest.runone=ApprovalExecutorUtilTest" unless="test.runone" />
         <copy file="${log4j.test.file}" tofile="${build-test.dir}/log4j.xml" failonerror="true"/>
