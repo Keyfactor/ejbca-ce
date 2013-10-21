@@ -462,7 +462,7 @@ public class IntegratedOcspResponseTest extends RoleUsingTestCase {
         } finally {
             // Reset sign trust valid time.
             cesecoreConfigurationProxySession.setConfigurationValue("ocsp.signtrustvalidtime",
-                    Integer.toString(OcspConfiguration.getSigningCertsValidTime()));
+                    Integer.toString(OcspConfiguration.getSigningCertsValidTimeInSeconds()));
 
         }
     }

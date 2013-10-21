@@ -89,7 +89,7 @@ public class OcspConfiguration {
     /**
      * The interval on which new OCSP signing certificates are loaded in seconds
      */
-    public static int getSigningCertsValidTime() {
+    public static int getSigningCertsValidTimeInSeconds() {
         int timeInSeconds;
         final int defaultTimeInSeconds = 300; // 5 minutes
         try {
