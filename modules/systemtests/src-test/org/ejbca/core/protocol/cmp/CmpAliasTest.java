@@ -15,12 +15,20 @@ package org.ejbca.core.protocol.cmp;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.cmp.ErrorMsgContent;
+import org.bouncycastle.asn1.cmp.PKIBody;
+import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
@@ -187,6 +195,48 @@ public class CmpAliasTest extends CmpTestCase {
         assertFalse(cmpConfig.aliasExists(renamealias));
     }
 
+    @Test
+    public void test03NonExistingAlias() throws Exception {
+        
+        String urlString = httpReqPath + '/' + baseResource + "/noneExistingAlias"; 
+        log.info("http URL: " + urlString);
+        URL url = new URL(urlString);
+        final HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        con.setDoOutput(true);
+        con.setRequestMethod("POST");
+        con.setRequestProperty("Content-type", "application/pkixcmp");
+        con.connect();
+        assertEquals("Unexpected HTTP response code.", 200, con.getResponseCode()); // OK response (will use alias "alias123")
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        // This works for small requests, and CMP requests are small enough
+        InputStream in = con.getInputStream();
+        int b = in.read();
+        while (b != -1) {
+            baos.write(b);
+            b = in.read();
+        }
+        baos.flush();
+        in.close();
+        byte[] respBytes = baos.toByteArray();
+        assertNotNull(respBytes);
+        assertTrue(respBytes.length > 0);
+
+        ASN1InputStream inputStream = new ASN1InputStream(new ByteArrayInputStream(respBytes));
+        try {
+            PKIMessage respObject = PKIMessage.getInstance(inputStream.readObject());
+            assertNotNull(respObject);
+
+            final PKIBody body = respObject.getBody();
+            assertEquals(23, body.getType());
+            ErrorMsgContent err = (ErrorMsgContent) body.getContent();
+            final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+            final String expectedErrMsg = "Wrong URL. CMP alias 'noneExistingAlias' does not exist";
+            assertEquals(expectedErrMsg, errMsg);
+        } finally {
+            inputStream.close();
+        }
+    }
     
     @Override
     public String getRoleName() {

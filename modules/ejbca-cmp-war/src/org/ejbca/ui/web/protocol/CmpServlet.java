@@ -84,9 +84,6 @@ public class CmpServlet extends HttpServlet {
             }
             
             String alias = getAlias(request.getPathInfo());
-            if(alias == null) {
-                alias = DEFAULT_CMP_ALIAS;
-            }
             
             service(output.toByteArray(), request.getRemoteAddr(), response, alias);
         } catch (Exception e) {
@@ -120,7 +117,7 @@ public class CmpServlet extends HttpServlet {
 
     private void service(final byte[] ba, final String remoteAddr, final HttpServletResponse response, String alias) throws IOException {
         try {
-            log.info(intres.getLocalizedMessage("cmp.receivedmsg", remoteAddr));
+            log.info(intres.getLocalizedMessage("cmp.receivedmsg", remoteAddr, alias));
             final long startTime = System.currentTimeMillis();
             final ResponseMessage resp;
             try {
@@ -160,12 +157,12 @@ public class CmpServlet extends HttpServlet {
             if(log.isDebugEnabled()) {
                 log.debug("Using CMP configuration alias: " + alias);
             }
-
-            if((alias == null) || (alias.length() < 1)) {
-                log.error("Wrong CMP URL. A CMP configuration alias must be specified");
-                return null;  //DEFAULT_CMP_ALIAS;
-            }
         }
+        if((alias == null) || (alias.length() < 1)) {
+            log.info("No CMP alias specified in the URL. Using the default alias: " + DEFAULT_CMP_ALIAS);
+            return DEFAULT_CMP_ALIAS;
+        }
+        
         return alias;
     }
     
