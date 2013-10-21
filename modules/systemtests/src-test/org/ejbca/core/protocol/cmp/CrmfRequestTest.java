@@ -475,7 +475,7 @@ public class CrmfRequestTest extends CmpTestCase {
             // Send request and receive response
             byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
             checkCmpResponseGeneral(resp, issuerDN, requestName, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-            X509Certificate cert = checkCmpCertRepMessage(StringTools.getBase64String(StringTools.strip(requestName)), cacert, resp, reqId);
+            X509Certificate cert = checkCmpCertRepMessage(StringTools.strip(requestName), cacert, resp, reqId);
             assertNotNull(cert);
 
             // Now revoke the bastard!
@@ -492,7 +492,7 @@ public class CrmfRequestTest extends CmpTestCase {
             int revStatus = checkRevokeStatus(issuerDN, CertTools.getSerialNumber(cert));
             assertNotSame("Revocation request failed to revoke the certificate", RevokedCertInfo.NOT_REVOKED, revStatus);
         } finally {
-            String escapedName = StringTools.getBase64String(StringTools.strip(requestName));
+            String escapedName = StringTools.strip(requestName);
             try {
                 endEntityManagementSession.deleteUser(admin, escapedName);
             } catch (NotFoundException e) {
@@ -523,7 +523,7 @@ public class CrmfRequestTest extends CmpTestCase {
             // Send request and receive response
             byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
             checkCmpResponseGeneral(resp, issuerDN, dn, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-            X509Certificate cert = checkCmpCertRepMessage(StringTools.getBase64String(StringTools.strip(dn)), cacert, resp, reqId);
+            X509Certificate cert = checkCmpCertRepMessage(StringTools.strip(dn), cacert, resp, reqId);
             assertNotNull(cert);
 
             // Now revoke the bastard!
@@ -541,7 +541,7 @@ public class CrmfRequestTest extends CmpTestCase {
             assertNotSame("Revocation request failed to revoke the certificate", RevokedCertInfo.NOT_REVOKED, revStatus);
         
         } finally {
-            String escapedName = StringTools.getBase64String(StringTools.strip(username));
+            String escapedName = StringTools.strip(username);
             try {
                 endEntityManagementSession.deleteUser(admin, escapedName);
             } catch (NotFoundException e) {
