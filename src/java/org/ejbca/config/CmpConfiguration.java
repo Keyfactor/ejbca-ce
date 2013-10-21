@@ -17,9 +17,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -88,7 +88,7 @@ public class CmpConfiguration extends Configuration implements Serializable {
     public static final String EJBCA_VERSION = InternalConfiguration.getAppVersion();
     
     // Default values
-    private static final Set<String> DEFAULT_ALIAS_LIST      = new HashSet<String>();
+    private static final Set<String> DEFAULT_ALIAS_LIST      = new LinkedHashSet<String>();
     private static final String DEFAULT_DEFAULTCA = "";
     private static final String DEFAULT_OPERATION_MODE = "client";
     private static final String DEFAULT_EXTRACT_USERNAME_COMPONENT = "DN";
@@ -160,7 +160,7 @@ public class CmpConfiguration extends Configuration implements Serializable {
     // return all the key with an alias
     public static Set<String> getAllAliasKeys(String alias) {
         alias = alias + ".";
-        Set<String> keys = new HashSet<String>();
+        Set<String> keys = new LinkedHashSet<String>();
         keys.add(alias + CONFIG_DEFAULTCA);
         keys.add(alias + CONFIG_RESPONSEPROTECTION);
         keys.add(alias + CONFIG_OPERATIONMODE);
