@@ -699,9 +699,9 @@ public class CrmfRARequestTest extends CmpTestCase {
         final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         // do not check signing if we expect a failure (sFailMessage==null)
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        checkCmpCertRepMessage(StringTools.getBase64String(StringTools.strip(userDN)), cacert, resp, reqId);
+        checkCmpCertRepMessage(StringTools.strip(userDN), cacert, resp, reqId);
         } finally {
-            String escapedName = StringTools.getBase64String(StringTools.strip(username));
+            String escapedName = StringTools.strip(username);
             try {
                 endEntityManagementSession.revokeAndDeleteUser(admin, escapedName, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
             } catch (NotFoundException e) {
