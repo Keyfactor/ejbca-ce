@@ -19,6 +19,7 @@ import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ocsp.exception.OcspFailureException;
@@ -95,6 +96,11 @@ public enum DirectoryCache {
         }
     }
 
+    /** 
+     * @param certificateDir the directory to read certificates from
+     * @return Map with "cert.getIssuerDN() + ";" + cert.getSerialNumber().toString(16)" and certificate
+     * @throws IOException if directory does not exist or can not be read
+     */
     private Map<String, X509Certificate> getCertificatesFromDirectory(String certificateDir) throws IOException {
         // read all files from trustDir, expect that they are PEM formatted certificates
         CryptoProviderTools.installBCProvider();
@@ -124,6 +130,13 @@ public enum DirectoryCache {
             } catch (IOException e) {
                 String errMsg = intres.getLocalizedMessage("ocsp.errorreadingfile", fileName, "trustDir", e.getMessage());
                 log.error(errMsg, e);
+            }
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("Loaded certificates from directory: "+certificateDir);
+            final Set<String> keys = trustedCerts.keySet();
+            for (String string : keys) {
+                log.debug("Key: '"+string+"'.");
             }
         }
         return trustedCerts;

@@ -653,9 +653,13 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
      * @param trustedCerts the list (Hashtable) to look in
      * @return true if cert is in trustedCerts, false otherwise
      */
-    private boolean checkCertInList(X509Certificate cert, Map<String, X509Certificate> trustedCerts) {
-        String key = cert.getIssuerDN() + ";" + cert.getSerialNumber().toString(16);
-        return trustedCerts.get(key) != null;
+    private boolean checkCertInList(final X509Certificate cert, final Map<String, X509Certificate> trustedCerts) {
+        final String key = cert.getIssuerDN() + ";" + cert.getSerialNumber().toString(16);
+        final boolean ret = trustedCerts.get(key) != null;
+        if (!ret && log.isDebugEnabled()) {
+            log.debug("Can not find certificate in list of trustedCerts: '"+key+"'.");
+        }
+        return ret;
     }
     
     /**
