@@ -279,9 +279,11 @@ org.cesecore.keybind.InternalKeyBindingRules
      // If authorized to edit the hard token profiles then display related links.
      try{
        if(ejbcawebbean.isAuthorizedNoLog(HTEDITHARDTOKENPROFILES_RESOURCE)){ 
-           htheaderprinted=true;%> 
+           if(!htheaderprinted){
+               htheaderprinted=true;%> 
 		<li id="cat3" class="section"><strong><%=ejbcawebbean.getText("NAV_HARDTOKENFUNCTIONS") %></strong>
 			<ul>
+           <% } %>
 				<li><a href="<%= HT_EDITHARDTOKENPROFILES_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_HARDTOKENPROFILES") %></a></li>
 <%     }
       }catch(AuthorizationDeniedException e){}
