@@ -82,6 +82,7 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
         this.errorMessage = null;
     }
     
+    @Override
     /**
      * Returns the name of this authentication module as String
      * 
@@ -91,6 +92,7 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
         return CmpConfiguration.AUTHMODULE_HMAC;
     }
     
+    @Override
     /**
      * Returns the password resulted from the verification process.
      * 
@@ -102,6 +104,7 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
         return this.password;
     }
     
+    @Override
     public String getErrorMessage() {
         return this.errorMessage;
     }
@@ -110,6 +113,7 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
         return this.verifyer;
     }
     
+    @Override
     /**
      * Verifies that 'msg' is sent by a trusted source. 
      * 

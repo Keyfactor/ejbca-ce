@@ -111,6 +111,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         eeManagementSession = endEntityManagementSession;
     }
     
+    @Override
     /**
      * Returns the name of this authentication module as String
      * 
@@ -120,6 +121,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         return CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE;
     }
     
+    @Override
     /**
      * Returns the password resulted from the verification process.
      * 
@@ -131,6 +133,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         return this.password;
     }
     
+    @Override
     /**
      * Return the error message if the verification (verifyOrExtract()) had failed
      * 
@@ -182,6 +185,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         return excert;
     }
     
+    @Override
     /**
      * Verifies the signature of 'msg'. msg should be signed and the signer's certificate should be  
      * attached in msg in the extraCert field.  

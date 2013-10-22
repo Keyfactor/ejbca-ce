@@ -42,6 +42,7 @@ public class DnPartPasswordExtractor implements ICMPAuthenticationModule {
         this.errorMessage = null;
     }
     
+    @Override
     /**
      * Extracts the value of 'dnPart' from the subjectDN of the certificate request template.
      * 
@@ -81,14 +82,17 @@ public class DnPartPasswordExtractor implements ICMPAuthenticationModule {
         return req;
     }
 
+    @Override
     public String getAuthenticationString() {
         return this.password;
     }
     
+    @Override
     public String getErrorMessage() {
         return this.errorMessage;
     }
 
+    @Override
     public String getName() {
         return CmpConfiguration.AUTHMODULE_DN_PART_PWD;
     }
