@@ -87,9 +87,9 @@ public class OcspConfiguration {
     }
     
     /**
-     * The interval on which new OCSP signing certificates are loaded in seconds
+     * The interval on which new OCSP signing certificates are loaded in milliseconds
      */
-    public static int getSigningCertsValidTimeInSeconds() {
+    public static int getSigningCertsValidTimeInMilliseconds() {
         int timeInSeconds;
         final int defaultTimeInSeconds = 300; // 5 minutes
         try {
@@ -98,7 +98,7 @@ public class OcspConfiguration {
             timeInSeconds = defaultTimeInSeconds;
             log.warn(SIGNING_CERTD_VALID_TIME + " is not a decimal number. Using default 5 minutes");
         }
-        return timeInSeconds * 1000;
+        return timeInSeconds*1000;
     }
 
     /**

@@ -64,7 +64,7 @@ class CertificateCache implements ICertificateCache {
 	final private Set<X509Certificate> rootCertificates = new HashSet<X509Certificate>();
 
 	/** The interval in milliseconds on which new OCSP signing certs are loaded. */
-	final private int m_valid_time = OcspConfiguration.getSigningCertsValidTimeInSeconds();
+	final private int m_valid_time = OcspConfiguration.getSigningCertsValidTimeInMilliseconds();
 
 	/** A collection that can be used to JUnit test this class. Set responder type to OCSPUtil.RESPONDER_TYPE_TEST
 	 * and give a Collection of CA certificate in the initialization properties.

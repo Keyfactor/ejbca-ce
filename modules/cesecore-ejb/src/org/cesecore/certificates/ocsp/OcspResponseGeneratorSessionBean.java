@@ -231,7 +231,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             }
         } finally {
             // Schedule a new timer
-            addTimer(OcspConfiguration.getSigningCertsValidTimeInSeconds(), OcspSigningCache.INSTANCE.hashCode());
+            addTimer(OcspConfiguration.getSigningCertsValidTimeInMilliseconds(), OcspSigningCache.INSTANCE.hashCode());
             
         }
     }
