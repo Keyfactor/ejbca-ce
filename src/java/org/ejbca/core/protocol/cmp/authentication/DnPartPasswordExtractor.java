@@ -43,7 +43,7 @@ public class DnPartPasswordExtractor implements ICMPAuthenticationModule {
     }
     
     @Override
-    /**
+    /*
      * Extracts the value of 'dnPart' from the subjectDN of the certificate request template.
      */
     public boolean verifyOrExtract(final PKIMessage msg, final String username) {

@@ -102,7 +102,7 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
     }
     
     @Override
-    /**
+    /*
      * Verifies that 'msg' is sent by a trusted source. 
      * 
      * In RA mode:
