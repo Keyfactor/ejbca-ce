@@ -103,26 +103,6 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
     private final AccessControlSession authorizationSession;
     private final WebAuthenticationProviderSessionLocal authenticationProviderSession;
     private final EndEntityManagementSession eeManagementSession;
-
-	/**
-	 * Used only by unit test.
-	 */
-	public CrmfMessageHandler() {
-		super();
-		this.usernameGenParams = null;
-		this.userPwdParams = "random";
-		this.responseProt = null;
-		this.allowCustomCertSerno = false;
-		
-		this.signSession =null;
-		this.certificateRequestSession = null;
-		this.extendedUserDataHandler = null;
-		this.endEntityAccessSession = null;
-		this.certStoreSession = null;
-		this.authorizationSession = null;
-		this.authenticationProviderSession = null;
-		this.eeManagementSession = null;
-	}
 	
 	/**
 	 * Construct the message handler.
