@@ -509,9 +509,9 @@ public class CertificateData extends ProtectedData implements Serializable {
         return res.getBase64Cert();
     }
     /**
-     * certificate itself
+     * Returns the certificate as an object.
      * 
-     * @return certificate
+     * @return Certificate or null if it doesn't exist in the database
      */
     @Transient
     public Certificate getCertificate(EntityManager entityManager) {
