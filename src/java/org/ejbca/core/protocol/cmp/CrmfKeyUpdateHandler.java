@@ -117,16 +117,6 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
      * The KeyUpdateRequet is processed only in client mode.
      * 
      * @param msg
-     * @throws AuthorizationDeniedException when the concerned end entity is not found
-     * @throws CADoesntExistsException when updating the end entity fails
-     * @throws UserDoesntFullfillEndEntityProfile when updating the end entity fails
-     * @throws WaitingForApprovalException when updating the end entity fails
-     * @throws EjbcaException when updating the end entity fails
-     * @throws FinderException when end entity status fails to update
-     * @throws CesecoreException
-     * @throws InvalidKeyException when failing to read the key from the crmf request
-     * @throws NoSuchAlgorithmException when failing to read the key from the crmf request
-     * @throws NoSuchProviderException when failing to read the key from the crmf request
      */
     public ResponseMessage handleMessage(final BaseCmpMessage msg, boolean authenticated) {
         if (LOG.isTraceEnabled()) {
