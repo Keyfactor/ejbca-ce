@@ -28,29 +28,30 @@ public interface ICMPAuthenticationModule {
      * 
      * @param msg PKIMessage to verify
      * @param username that the PKIMessage should match or null
+     * @return true if msg was sent by a trusted source, and false otherwise
      */
-    public abstract boolean verifyOrExtract(PKIMessage msg, String username);
+    boolean verifyOrExtract(PKIMessage msg, String username);
     
     /**
      * Returns the name of the used authentication module.
      * 
      * @return the name of the used authentication module.
      */
-    public abstract String getName();
+    String getName();
     
     /**
      * Returns the password that was successfully used to authenticate the message.
      * 
-     * This password is set if verify() returns true.
+     * This password is set if verifyOrExtract() returns true.
      * 
      * @return the password that was successfully used to authenticate the message. Null if the authentication had failed.
      */
-    public abstract String getAuthenticationString();
+    String getAuthenticationString();
     
     /**
      * Returns the error message resulted in failing to authenticate the message.
      * 
-     * The error message is set if verifyOrExtract() returns false.
+     * The error message should be set if verifyOrExtract() returns false.
      * 
      * @return The error message as String. Null if no error had occurred
      */
