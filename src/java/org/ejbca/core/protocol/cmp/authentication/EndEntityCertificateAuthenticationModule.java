@@ -152,7 +152,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         return extraCert;
     }
 
-    public Certificate getExtraCert(final PKIMessage msg) {
+    private Certificate getExtraCert(final PKIMessage msg) {
         final CMPCertificate[] extraCerts = msg.getExtraCerts();
         if ((extraCerts == null) || (extraCerts.length == 0)) {
             if(log.isDebugEnabled()) {
