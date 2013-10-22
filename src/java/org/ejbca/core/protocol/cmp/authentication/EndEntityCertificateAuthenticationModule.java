@@ -169,7 +169,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     }
     
     @Override
-    /**
+    /*
      * Verifies the signature of 'msg'. msg should be signed and the signer's certificate should be  
      * attached in msg in the extraCert field.  
      * 

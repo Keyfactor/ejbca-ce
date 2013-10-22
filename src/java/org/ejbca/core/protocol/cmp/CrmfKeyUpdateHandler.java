@@ -101,7 +101,8 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
 
     }
 
-    /**
+    @Override
+    /*
      * Handles the CMP message
      * 
      * Expects the CMP message to be a CrmfRequestMessage. The message is authenticated using 
@@ -115,8 +116,6 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
      * certificate.
      * 
      * The KeyUpdateRequet is processed only in client mode.
-     * 
-     * @param msg
      */
     public ResponseMessage handleMessage(final BaseCmpMessage msg, boolean authenticated) {
         if (LOG.isTraceEnabled()) {
