@@ -81,10 +81,12 @@ org.cesecore.keybind.InternalKeyBindingRules
 				<h:commandButton id="reloadCryptoToken" value="#{web.text.INTERNALKEYBINDING_CRYPTOTOKEN_UPDATENEXT}" action="#{internalKeyBindingMBean.reloadCryptoToken}"/>
 				<script>document.getElementById('internalkeybinding:reloadCryptoToken').style.display = 'none';</script>
 			</h:panelGroup>
-			<h:outputText rendered="#{internalKeyBindingMBean.inEditMode and !internalKeyBindingMBean.cryptoTokenActive}"
+			<h:outputText rendered="#{internalKeyBindingMBean.inEditMode and !internalKeyBindingMBean.cryptoTokenActive and internalKeyBindingMBean.currentCryptoTokenName != null}"
 				value=" #{web.text.INTERNALKEYBINDING_CRYPTOTOKEN_NOTACTIVE}"/>
 			<h:outputText rendered="#{!internalKeyBindingMBean.inEditMode or !internalKeyBindingMBean.cryptoTokenActive}"
 				value="#{internalKeyBindingMBean.currentCryptoTokenName}" title="#{internalKeyBindingMBean.currentCryptoToken}"/>
+			<h:outputText rendered="#{(!internalKeyBindingMBean.inEditMode or !internalKeyBindingMBean.cryptoTokenActive) and internalKeyBindingMBean.currentCryptoTokenName == null}"
+                value="#{web.text.INTERNALKEYBINDING_CRYPTOTOKEN_MISSING}"/>
 		</h:panelGroup>
 		<h:message for="cryptoToken"/>
 		<h:outputLabel for="keyPairAlias" value="#{web.text.INTERNALKEYBINDING_FIELD_KEYPAIRALIAS}"/>
