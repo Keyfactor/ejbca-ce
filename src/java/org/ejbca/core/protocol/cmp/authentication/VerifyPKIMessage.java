@@ -90,6 +90,12 @@ public class VerifyPKIMessage {
         this.cmpConfiguration = cmpConfig;
     }
     
+    /**
+     * Returns the error message resulted in failing to verify the PKIMessage. The error message  is set in the 
+     * getUsedAuthenticationModule() method.
+     * 
+     * @return the error message as String. Null if the verification succeeded.
+     */
     public String getErrorMessage() {
         return this.errorMessage;
     }
@@ -100,12 +106,10 @@ public class VerifyPKIMessage {
      * @param msg PKIMessage to verify
      * @param username that the PKIMessage should match or null
      * @param authenticated if the CMP message has already been authenticated in another way or not
-     * @throws CmpAuthenticationException if verification using all configured Authentication Modules fails.
+     * @return The authentication module that succeeded in authenticating msg. Null if message authentication failed using all 
+     * configured authentication modules.
      */
     public ICMPAuthenticationModule getUsedAuthenticationModule(final PKIMessage msg, final String username, boolean authenticated) {
-        if (log.isTraceEnabled()) {
-            log.trace(">verify");
-        }
         
         final String authModules = this.cmpConfiguration.getAuthenticationModule(this.confAlias);
         final String authparameters = this.cmpConfiguration.getAuthenticationParameters(this.confAlias);
@@ -155,7 +159,6 @@ public class VerifyPKIMessage {
      * @param parameter
      * @param pkimsg
      * @return The authentication module whose name is 'module'. Null if no such module is implemented.
-     * @throws CmpAuthenticationException 
      */
     private ICMPAuthenticationModule getAuthModule(final String module, final String parameter, final PKIMessage pkimsg, final boolean authenticated) {
         
