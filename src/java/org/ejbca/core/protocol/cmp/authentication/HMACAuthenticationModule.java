@@ -83,23 +83,11 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
     }
     
     @Override
-    /**
-     * Returns the name of this authentication module as String
-     * 
-     * @return the name of this authentication module as String
-     */
     public String getName() {
         return CmpConfiguration.AUTHMODULE_HMAC;
     }
     
     @Override
-    /**
-     * Returns the password resulted from the verification process.
-     * 
-     * This password is set if verify() returns true.
-     * 
-     * @return The password as String. Null if the verification had failed.
-     */
     public String getAuthenticationString() {
         return this.password;
     }
@@ -124,9 +112,6 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
      *  authenticate the message. 
      * 
      * When successful, the authentication string will be set to the password that was successfully used in authenticating the message.
-     * 
-     * @param msg
-     * @param username
      */
     public boolean verifyOrExtract(final PKIMessage msg, final String username) {
         

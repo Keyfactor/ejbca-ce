@@ -112,33 +112,16 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     }
     
     @Override
-    /**
-     * Returns the name of this authentication module as String
-     * 
-     * @return the name of this authentication module as String
-     */
     public String getName() {
         return CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE;
     }
     
     @Override
-    /**
-     * Returns the password resulted from the verification process.
-     * 
-     * This password is set if verifyOrExtract() returns true.
-     * 
-     * @return The password as String. Null if the verification had failed.
-     */
     public String getAuthenticationString() {
         return this.password;
     }
     
     @Override
-    /**
-     * Return the error message if the verification (verifyOrExtract()) had failed
-     * 
-     * @return The error message if the message verification failed. Null otherwise
-     */
     public String getErrorMessage() {
         return this.errorMessage;
     }
@@ -191,9 +174,6 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
      * attached in msg in the extraCert field.  
      * 
      * When successful, the authentication string is set.
-     * 
-     * @param msg PKIMessage
-     * @param username
      */
     public boolean verifyOrExtract(final PKIMessage msg, final String username) {
         
