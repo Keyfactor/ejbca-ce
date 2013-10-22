@@ -666,7 +666,8 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                 currentCryptoToken = (Integer) availableCryptoTokens.get(0).getValue();
             }
         }
-        return cryptoTokenManagementSession.getCryptoTokenInfo(currentCryptoToken.intValue()).getName();
+        CryptoTokenInfo info = cryptoTokenManagementSession.getCryptoTokenInfo(currentCryptoToken.intValue());
+        return info != null ? info.getName() : null;
     }
 
     public String getCurrentName() { return currentName; }
