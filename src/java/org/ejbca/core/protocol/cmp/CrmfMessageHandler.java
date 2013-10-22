@@ -242,6 +242,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			if (resp == null) {
                 final String errMsg = INTRES.getLocalizedMessage("cmp.errornullresp");
                 LOG.error(errMsg);
+                throw new RuntimeException(errMsg);
 			}
 		} catch (AuthorizationDeniedException e) {
 			final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
