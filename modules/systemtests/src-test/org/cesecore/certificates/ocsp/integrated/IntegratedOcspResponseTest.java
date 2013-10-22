@@ -396,7 +396,7 @@ public class IntegratedOcspResponseTest extends RoleUsingTestCase {
             CADoesntExistsException, IllegalCryptoTokenException, CertificateEncodingException {
         final Integer timeToWait = 2;
         // Set the validity time to a single second for testing purposes.
-        cesecoreConfigurationProxySession.setConfigurationValue("ocsp.signtrustvalidtime", timeToWait.toString());
+        cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNING_CERTD_VALID_TIME, timeToWait.toString());
 
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
 
@@ -461,8 +461,8 @@ public class IntegratedOcspResponseTest extends RoleUsingTestCase {
 
         } finally {
             // Reset sign trust valid time.
-            cesecoreConfigurationProxySession.setConfigurationValue("ocsp.signtrustvalidtime",
-                    Integer.toString(OcspConfiguration.getSigningCertsValidTimeInSeconds()));
+            cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNING_CERTD_VALID_TIME,
+                    Integer.toString(OcspConfiguration.getSigningCertsValidTimeInMilliseconds()));
 
         }
     }
