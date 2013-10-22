@@ -291,7 +291,7 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
                     }                    
                 }
             } catch (AuthorizationDeniedException e) {
-                LOG.info("No EndEntity with subjectDN '" + subjectDN + "' could be found, which is expected if the request had been send in Client mode.");
+                LOG.info("No EndEntity with subjectDN '" + subjectDN + "' could be found. " + e.getLocalizedMessage() );
             }
             
             if(userdata != null) {
