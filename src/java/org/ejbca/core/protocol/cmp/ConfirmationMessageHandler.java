@@ -144,6 +144,7 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
                 LOG.error("Exception during CMP response protection: ", e);
             }
         }
+        // We don't need to check the shared secret in client mode (= the EndEntiy password) because PBE protection is only supported in RA mode
         
         CmpPbeVerifyer verifyer = new CmpPbeVerifyer(msg.getMessage());
         owfAlg = verifyer.getOwfOid();
