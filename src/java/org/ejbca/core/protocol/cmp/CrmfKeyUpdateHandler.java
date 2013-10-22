@@ -75,20 +75,6 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
     private final EndEntityManagementSession endEntityManagementSession;
     private final SignSession signSession;
     private final WebAuthenticationProviderSessionLocal authenticationProviderSession;
-   
-
-    /**
-     * Used only by unit test.
-     */
-    public CrmfKeyUpdateHandler() {
-        super();
-        this.signSession =null;
-        this.endEntityAccessSession = null;
-        this.certStoreSession = null;
-        this.authorizationSession = null;
-        this.authenticationProviderSession = null;
-        this.endEntityManagementSession = null;
-    }
     
     /**
      * Construct the message handler.
