@@ -44,6 +44,7 @@ public class RegTokenPasswordExtractor implements ICMPAuthenticationModule {
         this.errorMessage = null;
     }
     
+    @Override
     /**
      * Extracts password from the CMRF request message parameters
      * 
@@ -135,14 +136,17 @@ public class RegTokenPasswordExtractor implements ICMPAuthenticationModule {
         return req;
     }
 
+    @Override
     public String getAuthenticationString() {
         return this.password;
     }
     
+    @Override
     public String getErrorMessage() {
         return this.errorMessage;
     }
 
+    @Override
     public String getName() {
         return CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD;
     }
