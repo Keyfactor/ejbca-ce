@@ -511,7 +511,7 @@ public class CertificateData extends ProtectedData implements Serializable {
     /**
      * Returns the certificate as an object.
      * 
-     * @return Certificate or null if it doesn't exist in the database
+     * @return The certificate or null if it doesn't exist or is blank/null in the database
      */
     @Transient
     public Certificate getCertificate(EntityManager entityManager) {
