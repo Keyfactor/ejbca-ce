@@ -212,13 +212,7 @@
     
     		
     		if(request.getParameter(ACTION).equals(ACTION_EDIT_ALIAS)) {
-		    	if(request.getParameter(BUTTON_CANCEL) != null) {
-	    			// Don't save changes.
-	            	//ejbcawebbean.clearCMPCache();
-	            	ejbcawebbean.setTempCmpConfig(null);
-	            	includefile="cmpaliasespage.jspf";
-	    		} else {
-    			
+   			
     				alias = request.getParameter(HIDDEN_ALIAS);
     		       	if(alias != null) {
     		       		if(!alias.trim().equals("")) {
@@ -399,104 +393,105 @@
     			            value = request.getParameter(CHECKBOX_OMITVERIFICATIONINECC);
     			            cmpconfig.setOmitVerificationsInECC(alias, (value != null));
     			            
+    		       		
     			            
+    			   			// ------------------- BUTTONS -------------------------
     			            
-    			            // ------------------- BUTTONS -------------------------
-    			            if(request.getParameter(BUTTON_RELOAD) != null) {
-    			            		includefile = "cmpaliaspage.jspf";
-    			            }
+    			        	if(request.getParameter(BUTTON_ADDVENDORCA) != null) {
+    			        			if(request.getParameter(CHECKBOX_CMP_VENDORMODE) != null) {
+    			        					value = request.getParameter(LIST_VENDORCA);
+    			           					String vendorcas = cmpconfig.getVendorCA(alias);
+    			           					String[] vcas = vendorcas.split(";");
+    			           					boolean present = false;
+    			           					for(String vca : vcas) {
+    			           							if(vca.equals(value)) {
+    			           									present = true;
+    			           									break;
+    			           							}
+    			           					}
+    			           					if(!present) {
+    			           							vendorcas += (vendorcas.length() > 0 ? ";" : "") + value;
+    				           						cmpconfig.setVendorCA(alias, vendorcas);
+    			           					}
+    			        			} else {
+    			           					cmpconfig.setVendorCA(alias, "");
+    			        			}
+    			        	}
     			            
-    			            if(request.getParameter(BUTTON_ADDVENDORCA) != null) {
-    			            		if(request.getParameter(CHECKBOX_CMP_VENDORMODE) != null) {
-    			            				value = request.getParameter(LIST_VENDORCA);
-    			            				String vendorcas = cmpconfig.getVendorCA(alias);
-    			            				String[] vcas = vendorcas.split(";");
-    			            				boolean present = false;
-    			            				for(String vca : vcas) {
-    			            						if(vca.equals(value)) {
-    			            								present = true;
-    			            								break;
-    			            						}
-    			            				}
-    			            				if(!present) {
-    			            						vendorcas += (vendorcas.length() > 0 ? ";" : "") + value;
-    				            					cmpconfig.setVendorCA(alias, vendorcas);
-    			            				}
-    			            		} else {
-    			            				cmpconfig.setVendorCA(alias, "");
-    			            		}
-    			            		includefile = "cmpaliaspage.jspf";
-    			            }
+    			        	if(request.getParameter(BUTTON_REMOVEVENDORCA) != null) {
+    			           			value = request.getParameter(LIST_VENDORCA);
+    			           			String vendorcas = cmpconfig.getVendorCA(alias);
+    			           			String[] cas = vendorcas.split(";");
+    			           			ArrayList<String> vcas = new ArrayList<String>();
+    			           			for(String ca : cas) {
+    			           					if(!ca.equals(value)) {
+    			           							vcas.add(ca);
+    			           					}
+    			           			}
+    			           			if(vcas.size() > 0) { 
+    			           					cmpconfig.setVendorCA(alias, vcas);
+    			           			} else {
+    			           					cmpconfig.setVendorCA(alias, "");
+    			           			}
+	    			        }
     			            
-    			            if(request.getParameter(BUTTON_REMOVEVENDORCA) != null) {
-    			            		value = request.getParameter(LIST_VENDORCA);
-    			            		String vendorcas = cmpconfig.getVendorCA(alias);
-    			            		String[] cas = vendorcas.split(";");
-    			            		ArrayList<String> vcas = new ArrayList<String>();
-    			            		for(String ca : cas) {
-    			            				if(!ca.equals(value)) {
-    			            						vcas.add(ca);
-    			            				}
-    			            		}
-    			            		if(vcas.size() > 0) { 
-    			            				cmpconfig.setVendorCA(alias, vcas);
-    			            		} else {
-    			            				cmpconfig.setVendorCA(alias, "");
-    			            		}
-    			            		includefile = "cmpaliaspage.jspf";
-    			            }
-    			            
-    			            if(request.getParameter(BUTTON_ADD_NAMEGENPARAM_DN)!= null) {
-    			            		if(request.getParameter(RADIO_NAMEGENSCHEME).equals(UsernameGeneratorParams.DN)) {
-    			            				value = request.getParameter(LIST_NAMEGENPARAM_DN);
-    			            				String namegenparam = cmpconfig.getRANameGenParams(alias);
-    			            				String[] params = namegenparam.split(";");
-    			            				if((params.length > 0) && ( dnfields.contains(params[0]) )) {
-    			            						boolean present = false;
-    			            						for(String p : params) {
-    			            								if(p.equals(value)) {
-    			            										present = true;
-    			            										break;
-    			            								}
-    			            						}
-    			            						if(!present)	namegenparam += ";" + value;
-    			            				} else {
-    			            						namegenparam = value;
-    			            				}
+    				        if(request.getParameter(BUTTON_ADD_NAMEGENPARAM_DN)!= null) {
+    				           		if(request.getParameter(RADIO_NAMEGENSCHEME).equals(UsernameGeneratorParams.DN)) {
+    				           				value = request.getParameter(LIST_NAMEGENPARAM_DN);
+    				           				String namegenparam = cmpconfig.getRANameGenParams(alias);
+    			    	       				String[] params = namegenparam.split(";");
+    			        	   				if((params.length > 0) && ( dnfields.contains(params[0]) )) {
+    			           							boolean present = false;
+    			           							for(String p : params) {
+    			           									if(p.equals(value)) {
+    			           											present = true;
+    			           											break;
+    			           									}
+    			           							}
+    			           							if(!present)	namegenparam += ";" + value;
+    			           					} else {
+    			           							namegenparam = value;
+    			           					}
     										cmpconfig.setRANameGenParams(alias, namegenparam);
-    			            		}
-    								includefile = "cmpaliaspage.jspf";
-    			            }
+    			           			}
+	    			        }
     			            			
-    			            if(request.getParameter(BUTTON_REMOVE_NAMEGENPARAM_DN) != null) {
-    			            		value = request.getParameter(LIST_NAMEGENPARAM_DN);
-    			            		String namegenparam = cmpconfig.getRANameGenParams(alias);
-    			            		String[] params = namegenparam.split(";");
-    			            		String newparams = "";
-    			            		for(String p : params) {
-    			            				if(!p.equals(value)) {
-    			            						newparams += ";" + p;
-    			            				}
-    			            		}
-    			            		if(newparams.length() > 0) { 
-    			            				newparams = newparams.substring(1);
-    			            		}
-    			            		cmpconfig.setRANameGenParams(alias, newparams);
-    			            		includefile = "cmpaliaspage.jspf";
-    			            }
-    			            			
-    			            if(request.getParameter(BUTTON_SAVE) != null) {
-    			            		ejbcawebbean.saveCMPConfiguration();
-    			                	ejbcawebbean.setTempCmpConfig(null);
-    			              		includefile="cmpaliasespage.jspf";
-    			            }
+    			        	if(request.getParameter(BUTTON_REMOVE_NAMEGENPARAM_DN) != null) {
+    			           			value = request.getParameter(LIST_NAMEGENPARAM_DN);
+    			           			String namegenparam = cmpconfig.getRANameGenParams(alias);
+    			           			String[] params = namegenparam.split(";");
+    			           			String newparams = "";
+    			           			for(String p : params) {
+    			           					if(!p.equals(value)) {
+    			           							newparams += ";" + p;
+    			           					}
+    			           			}
+    			           			if(newparams.length() > 0) { 
+    			           					newparams = newparams.substring(1);
+    			           			}
+    			           			cmpconfig.setRANameGenParams(alias, newparams);
+	    			        }
+    			        	
+    				        includefile="cmpaliaspage.jspf";
+    				        ejbcawebbean.setTempCmpConfig(cmpconfig);
+    			        
+    				        if(request.getParameter(BUTTON_SAVE) != null) {
+    				           		ejbcawebbean.saveCMPConfiguration();
+    			    	           	ejbcawebbean.setTempCmpConfig(null);
+    			        	   		includefile="cmpaliasespage.jspf";
+    			        	}
+    				        
     		       		} // if(!alias.trim().equals(""))
-    			            			
-
-    									
+    		       			
+               			if(request.getParameter(BUTTON_CANCEL) != null){
+              				// Don't save changes.
+              				ejbcawebbean.setTempCmpConfig(null);
+              				ejbcawebbean.clearClusterCache();
+             				includefile="cmpaliasespage.jspf";
+           				}
+    		       		
     		       	} // if((alias != null) )
-	    		} // if(request.getParameter(BUTTON_CANCEL) != null) else
-    		   } // if(request.getParameter(ACTION).equals(ACTION_EDIT_ALIAS))
+    	    } // if(request.getParameter(ACTION).equals(ACTION_EDIT_ALIAS))
 
   		} // if( request.getParameter(ACTION) != null)
 
