@@ -151,7 +151,7 @@ public enum DirectoryCache {
             throw new IllegalStateException("trustedReqSigSigners requested, but unavailable due to configuration");
         }
         //Lazy initialization
-        if (trustedReqSigIssuers == null) {
+        if (trustedReqSigSigners == null) {
             loadTrustDir();
         }
         return trustedReqSigSigners;
