@@ -173,12 +173,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 		}
 	}
 
-	/**
-	 * @param msg
-     * @param authenticated if the CMP message has already been authenticated in another way or not
-     * 
-     * @return
-	 */
+	@Override
 	public ResponseMessage handleMessage(final BaseCmpMessage msg, boolean authenticated) {
 		if (LOG.isTraceEnabled()) {
 			LOG.trace(">handleMessage");

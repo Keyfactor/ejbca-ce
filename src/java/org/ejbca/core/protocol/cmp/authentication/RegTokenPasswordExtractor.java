@@ -45,7 +45,7 @@ public class RegTokenPasswordExtractor implements ICMPAuthenticationModule {
     }
     
     @Override
-    /**
+    /*
      * Extracts password from the CMRF request message parameters
      */
     public boolean verifyOrExtract(final PKIMessage msg, final String username) {
