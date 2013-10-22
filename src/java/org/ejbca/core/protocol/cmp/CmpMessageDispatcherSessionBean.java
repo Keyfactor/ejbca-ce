@@ -130,6 +130,8 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 	 */
 	private ResponseMessage dispatch(final AuthenticationToken admin, final ASN1Primitive derObject, final boolean authenticated, String confAlias) {
 	    
+        this.cmpConfiguration = (CmpConfiguration) this.globalConfigSession.getCachedConfiguration(Configuration.CMPConfigID);
+
 	    if(!cmpConfiguration.aliasExists(confAlias)) {
 	        log.info("There is no CMP alias: " + confAlias);
 	        return CmpMessageHelper.createUnprotectedErrorMessage(null, ResponseStatus.FAILURE, FailInfo.INCORRECT_DATA, "Wrong URL. CMP alias '" + confAlias + "' does not exist");
@@ -159,8 +161,6 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 				log.debug("Transaction id: "+header.getTransactionID());
 				//log.debug(ASN1Dump.dumpAsString(req));
 			}
-
-	        this.cmpConfiguration = (CmpConfiguration) this.globalConfigSession.getCachedConfiguration(Configuration.CMPConfigID);
 			
 			BaseCmpMessage cmpMessage = null;
 			ICmpMessageHandler handler = null;
