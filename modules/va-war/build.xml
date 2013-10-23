@@ -65,19 +65,8 @@
 				<equals arg1="${ocsp.extensionclass}" arg2=""/>
 			</not>
 	</condition>
-	<condition property="none.existing.ocsp.extensionclass">
-		<and>
-			<not>
-				<isset property="use.ocsp.extensionclass"/>
-			</not>
-			<isset property="ocsp.extensionclass"/>
-		</and>
-	</condition>
-	<target name="none-existing-ocsp-extensionclass" if="none.existing.ocsp.extensionclass">
-		<echo>WARNING: ocsp.extensionclass ${ocsp.extensionclass} does not exist and can't be compiled.</echo>
-	</target>
-	<target name="use-ocsp-extensionclass" depends="none-existing-ocsp-extensionclass" if="use.ocsp.extensionclass">
-		<echo>Compiling ocsp.extensionclass ${ocsp.extensionclass}</echo>
+	<target name="use-ocsp-extensionclass" if="use.ocsp.extensionclass">
+		<echo>Compiling ocsp.extensionclass ${ocsp.extensionclass}, if it exists.</echo>
 	</target>
 	
 	<target name="extensions-build">
