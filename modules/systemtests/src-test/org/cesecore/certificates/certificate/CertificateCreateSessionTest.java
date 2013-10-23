@@ -35,6 +35,7 @@ import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.cesecore.CaTestUtils;
 import org.cesecore.CesecoreException;
 import org.cesecore.ErrorCode;
 import org.cesecore.RoleUsingTestCase;
@@ -49,7 +50,6 @@ import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.certificates.ca.CaSessionTest;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
@@ -113,7 +113,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
         // Set up base role that can edit roles
         setUpAuthTokenAndRole("CertCreateSessionTest");
 
-        testx509ca = CaSessionTest.createTestX509CA(X509CADN, null, false);
+        testx509ca = CaTestUtils.createTestX509CA(X509CADN, null, false);
 
     	// Now we have a role that can edit roles, we can edit this role to include more privileges
     	RoleData role = roleAccessSession.findRole("CertCreateSessionTest");

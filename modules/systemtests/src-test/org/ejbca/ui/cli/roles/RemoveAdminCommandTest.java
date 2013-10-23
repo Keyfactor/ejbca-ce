@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import org.bouncycastle.jce.X509KeyUsage;
+import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.user.AccessMatchType;
@@ -26,7 +27,6 @@ import org.cesecore.authorization.user.AccessUserAspectManagerTestSessionRemote;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.certificates.ca.CaSessionTest;
 import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.RoleData;
@@ -74,7 +74,7 @@ public class RemoveAdminCommandTest {
     public void testRemoveAccessUser() throws Exception {
         
         int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
-        CA testx509ca = CaSessionTest.createTestX509CA("CN=TestCA", null, false, keyusage);
+        CA testx509ca = CaTestUtils.createTestX509CA("CN=TestCA", null, false, keyusage);
         final int caId = testx509ca.getCAId();
         caSession.addCA(internalAdmin, testx509ca);
         
