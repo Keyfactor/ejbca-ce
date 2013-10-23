@@ -1603,7 +1603,11 @@ public class AuthenticationModulesTest extends CmpTestCase {
         log.trace("<test23EECAuthWithRSAandECDSA()");
     }
 
-    
+    /**
+     * Sending a Crmf Request in RA mode. The request is authenticated using HMAC and is expected to contain the EndEntityProfile 'EMPTY' in the KeyId field.
+     * The request should fail because specifying 'EMPTY' or 'ENDUSER' as the KeyId is not allowed in combination with RA mode and HMAC authentication module 
+     * @throws Exception
+     */
     @Test
     public void test24HMACUnacceptedKeyId() throws Exception {
         
