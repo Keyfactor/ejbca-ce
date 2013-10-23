@@ -119,6 +119,7 @@ public class IntegratedOcspResponseTest extends RoleUsingTestCase {
 
     private static final String DN = "C=SE,O=Test,CN=TEST";
 
+    private static final String CLASS_NAME = IntegratedOcspResponseTest.class.getSimpleName();
     
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
@@ -166,16 +167,15 @@ public class IntegratedOcspResponseTest extends RoleUsingTestCase {
 
         final Properties cryptoTokenProperties = new Properties();
         cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, "foo123");
-        final String className = IntegratedOcspResponseTest.class.getSimpleName();
-        final CA testx509ca = CaTestUtils.createX509Ca(internalAdmin, className, className, "CN=TEST,O=Test,C=SE");
+        final CA testx509ca = CaTestUtils.createX509Ca(internalAdmin, CLASS_NAME, CLASS_NAME, "CN=TEST,O=Test,C=SE");
         caId = testx509ca.getCAId();
         accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAACCESS.resource() + caId, AccessRuleState.RULE_ACCEPT, true));
-        roleManagementSession.addAccessRulesToRole(roleMgmgToken, role, accessRules);
+        roleManagementSession.addAccessRulesToRole(internalAdmin, role, accessRules);
 
         // Remove any lingering testca before starting the tests
-        caSession.removeCA(roleMgmgToken, caId);
-        caSession.addCA(roleMgmgToken, testx509ca);
-        CAInfo testx509caInfo = caSession.getCAInfo(roleMgmgToken, caId);
+        caSession.removeCA(internalAdmin, caId);
+        caSession.addCA(internalAdmin, testx509ca);
+        CAInfo testx509caInfo = caSession.getCAInfo(internalAdmin, caId);
 
         caCertificate = (X509Certificate) testx509caInfo.getCertificateChain().iterator().next();
 
@@ -203,8 +203,12 @@ public class IntegratedOcspResponseTest extends RoleUsingTestCase {
     @After
     public void tearDown() throws AuthorizationDeniedException, RoleNotFoundException {
         try {
-            caSession.removeCA(roleMgmgToken, caId);
-            cryptoTokenManagementSession.deleteCryptoToken(roleMgmgToken, cryptoTokenId);
+            caSession.removeCA(internalAdmin, caId);
+            cryptoTokenManagementSession.deleteCryptoToken(internalAdmin, cryptoTokenId);
+            Integer classCryptoTokenId = cryptoTokenManagementSession.getIdFromName(CLASS_NAME);
+            if (classCryptoTokenId != null) {
+                cryptoTokenManagementSession.deleteCryptoToken(internalAdmin, classCryptoTokenId);
+            }
         } finally {
             // Be sure to to this, even if the above fails
             tearDownRemoveRole();

@@ -42,13 +42,13 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.certificates.ca.CaSessionTest;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -121,7 +121,7 @@ public class CrmfRequestTest extends CmpTestCase {
         cmpConfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.CMPConfigID);
         
         int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
-        testx509ca = CaSessionTest.createTestX509CA(issuerDN, null, false, keyusage);
+        testx509ca = CaTestUtils.createTestX509CA(issuerDN, null, false, keyusage);
         caid = testx509ca.getCAId();
         cacert = (X509Certificate) testx509ca.getCACertificate();
         caSession.addCA(admin, testx509ca);

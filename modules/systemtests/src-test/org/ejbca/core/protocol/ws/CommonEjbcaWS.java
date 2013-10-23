@@ -67,6 +67,7 @@ import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -83,7 +84,6 @@ import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CVCCAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.certificates.ca.CaSessionTest;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
@@ -2868,9 +2868,9 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     private void createCVCCA(String rootcadn, String rootcaname, String subcadn, String subcaname, String keyspec, String signalg)
             throws Exception {
         final int cryptoTokenId1 = CryptoTokenManagementSessionTest.createCryptoTokenForCA(intAdmin, rootcaname, keyspec);
-        final CAToken catoken1 = CaSessionTest.createCaToken(cryptoTokenId1, signalg, AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
+        final CAToken catoken1 = CaTestUtils.createCaToken(cryptoTokenId1, signalg, AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
         final int cryptoTokenId2 = CryptoTokenManagementSessionTest.createCryptoTokenForCA(intAdmin, subcaname, keyspec);
-        final CAToken catoken2 = CaSessionTest.createCaToken(cryptoTokenId2, signalg, AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
+        final CAToken catoken2 = CaTestUtils.createCaToken(cryptoTokenId2, signalg, AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
         // No CA Services.
         List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>(0);
         java.security.cert.Certificate cvcacert = null;
@@ -2938,7 +2938,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     /** Create a DVCA, signed by an external CVCA */
     private String createDVCCASignedByExternal(final String dvcaname, final String dvcaMnemonic, final String keyspec, final String signalg) throws Exception {
         final int cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(intAdmin, PASSWORD.toCharArray(), true, false, dvcaname, keyspec);
-        final CAToken catoken = CaSessionTest.createCaToken(cryptoTokenId, signalg, signalg);
+        final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, signalg, signalg);
         final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>(0);
         try {
             String dvcadn = "CN=" + dvcaMnemonic + ",C=SE";

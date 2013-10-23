@@ -85,6 +85,7 @@ import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.ReasonFlags;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.cesecore.CaTestUtils;
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -97,7 +98,6 @@ import org.cesecore.certificates.CertificateCreationException;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.certificates.ca.CaSessionTest;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
@@ -199,7 +199,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         issuerDN = "CN=TestCA";
         
         int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
-        testx509ca = CaSessionTest.createTestX509CA(issuerDN, null, false, keyusage);
+        testx509ca = CaTestUtils.createTestX509CA(issuerDN, null, false, keyusage);
         caid = testx509ca.getCAId();
         cacert = (X509Certificate) testx509ca.getCACertificate();
         caSession.addCA(admin, testx509ca); 

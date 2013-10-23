@@ -41,6 +41,7 @@ import org.bouncycastle.asn1.x509.DistributionPointName;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.IssuingDistributionPoint;
+import org.cesecore.CaTestUtils;
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -52,7 +53,6 @@ import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.certificates.ca.CaSessionTest;
 import org.cesecore.certificates.ca.CaTestSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -123,7 +123,7 @@ public class PublishingCrlSessionTest extends RoleUsingTestCase {
         // Set up base role that can edit roles
         setUpAuthTokenAndRole(PublishingCrlSessionTest.class.getSimpleName());
         keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        testx509ca = CaSessionTest.createTestX509CA(X509CADN, null, false);
+        testx509ca = CaTestUtils.createTestX509CA(X509CADN, null, false);
     }
 
     @AfterClass

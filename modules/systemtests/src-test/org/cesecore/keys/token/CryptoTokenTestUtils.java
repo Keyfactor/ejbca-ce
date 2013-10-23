@@ -12,11 +12,11 @@
  *************************************************************************/
 package org.cesecore.keys.token;
 
+import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.certificates.ca.CaSessionTest;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.util.EjbRemoteHelper;
@@ -31,7 +31,7 @@ public class CryptoTokenTestUtils {
         CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
         CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
         
-        X509CA x509ca = CaSessionTest.createTestX509CA(dN, "foo123".toCharArray(), false);
+        X509CA x509ca = CaTestUtils.createTestX509CA(dN, "foo123".toCharArray(), false);
         // Remove any lingering test CA before starting the tests
         try {
             final int oldCaCryptoTokenId = caSession.getCAInfo(authenticationToken, x509ca.getCAId()).getCAToken().getCryptoTokenId();
