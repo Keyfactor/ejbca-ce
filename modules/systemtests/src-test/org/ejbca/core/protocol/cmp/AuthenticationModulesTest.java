@@ -1606,6 +1606,10 @@ public class AuthenticationModulesTest extends CmpTestCase {
     /**
      * Sending a Crmf Request in RA mode. The request is authenticated using HMAC and is expected to contain the EndEntityProfile 'EMPTY' in the KeyId field.
      * The request should fail because specifying 'EMPTY' or 'ENDUSER' as the KeyId is not allowed in combination with RA mode and HMAC authentication module 
+     * 
+     * The test is only done for HMAC and not EndEntityCertificate because in the later, the use of profiles can be restricted through Administrator privileges.
+     * Other authentication modules are not used in RA mode
+     * 
      * @throws Exception
      */
     @Test
