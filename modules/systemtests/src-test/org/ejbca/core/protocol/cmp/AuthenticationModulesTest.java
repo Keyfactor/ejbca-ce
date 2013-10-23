@@ -1644,7 +1644,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             assertEquals(23, body.getType());
             ErrorMsgContent err = (ErrorMsgContent) body.getContent();
             final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
-            final String expectedErrMsg = "Not allowed to use KeyId 'EMPTY' in CMP request";
+            final String expectedErrMsg = "Unaccepted KeyId 'EMPTY' in CMP request";
             assertEquals(expectedErrMsg, errMsg);
         } finally {
             inputStream.close();
