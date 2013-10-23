@@ -154,7 +154,6 @@ public class EjbcaWebBean implements Serializable {
     private final Boolean[] raauthorized = new Boolean[AUTHORIZED_RA_RESOURCES.length];
     private AuthenticationToken administrator;
     private String requestServerName;
-    private CmpConfiguration tempCmpConfig;
 
     /*
      * We should make this configurable, so GUI client can use their own time zone rather than the
@@ -944,17 +943,14 @@ public class EjbcaWebBean implements Serializable {
         return cmpconfiguration;
     }
     
+    public void clearCMPCache() throws Exception {
+        globalConfigurationSession.flushConfigurationCache(Configuration.CMPConfigID);
+        reloadCMPConfiguration();
+    }
+    
     public Collection<String> getAuthorizedEEProfileNames() {
         Map<String, Integer> eeps = this.informationmemory.getAuthorizedEndEntityProfileNames();
         return eeps.keySet();
-    }
-
-    public CmpConfiguration getTempCmpConfig() {
-        return this.tempCmpConfig;
-    }
-    
-    public void setTempCmpConfig(CmpConfiguration cmpConfig) {
-        this.tempCmpConfig = cmpConfig;
     }
     
     public Collection<String> getAvailableCAsOfEEProfile(String eep) throws NumberFormatException, CADoesntExistsException, AuthorizationDeniedException {
