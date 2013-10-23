@@ -22,11 +22,11 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.util.Collection;
 
+import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.certificates.ca.CaSessionTest;
 import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
@@ -92,7 +92,7 @@ public class CaExportImportProfilesCommandTest {
         int cryptoTokenId = 0;
         try {
             // Create a CA that we can delete later
-            CA ca = CaSessionTest.createTestX509CAOptionalGenKeys(CA_DN, "foo".toCharArray(), false, false);
+            CA ca = CaTestUtils.createTestX509CAOptionalGenKeys(CA_DN, "foo".toCharArray(), false, false);
             cryptoTokenId = ca.getCAToken().getCryptoTokenId();
             caid = ca.getCAId();
             caSession.addCA(admin, ca);

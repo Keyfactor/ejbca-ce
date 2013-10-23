@@ -71,10 +71,13 @@ public class OcspKeyRenewalTest {
     private static final String CA_DN = "CN=OcspDefaultTestCA";
     private static final String CA_ECC_DN = "CN=OcspDefaultECCTestCA";
     private static final String OCSP_ECC_END_USER_NAME = OcspTestUtils.OCSP_END_USER_NAME+"Ecc";
+
     
     private static final String TESTCLASSNAME = OcspKeyRenewalTest.class.getSimpleName();
     private static final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(TESTCLASSNAME);
     private static final Logger log = Logger.getLogger(OcspKeyRenewalTest.class);
+    
+    private static final String ECC_CRYPTOTOKEN_NAME = TESTCLASSNAME+"ECC";
 
     private static CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
@@ -122,7 +125,7 @@ public class OcspKeyRenewalTest {
         x509eccca = CryptoTokenTestUtils.createTestCA(authenticationToken, CA_ECC_DN);
         log.debug("OCSP ECC CA Id: " + x509eccca.getCAId() + " CA SubjectDN: " + x509eccca.getSubjectDN());
         cryptoTokenId = CryptoTokenTestUtils.createCryptoToken(authenticationToken, TESTCLASSNAME);
-        cryptoTokenIdEcc = CryptoTokenTestUtils.createCryptoToken(authenticationToken, TESTCLASSNAME+"ECC");
+        cryptoTokenIdEcc = CryptoTokenTestUtils.createCryptoToken(authenticationToken, ECC_CRYPTOTOKEN_NAME);
         ocspKeyBindingId = OcspTestUtils.createInternalKeyBinding(authenticationToken, cryptoTokenId, OcspKeyBinding.IMPLEMENTATION_ALIAS, TESTCLASSNAME + "-ocsp", "RSA2048", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         ocspKeyBindingIdEcc = OcspTestUtils.createInternalKeyBinding(authenticationToken, cryptoTokenIdEcc, OcspKeyBinding.IMPLEMENTATION_ALIAS, TESTCLASSNAME + "-ocspecc", "secp256r1", AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA);
         assertNotEquals("key binding Ids should not be the same", ocspKeyBindingId, ocspKeyBindingIdEcc);
@@ -219,6 +222,7 @@ public class OcspKeyRenewalTest {
         
         // Delete CryptoToken
         cleanupCryptoToken(TESTCLASSNAME);
+        cleanupCryptoToken(ECC_CRYPTOTOKEN_NAME);
         
         // Delete CA
         final String caName = CertTools.getPartFromDN(CA_DN, "CN");

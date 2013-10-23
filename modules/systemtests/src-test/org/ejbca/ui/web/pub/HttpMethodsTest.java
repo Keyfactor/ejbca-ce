@@ -27,11 +27,11 @@ import java.net.URL;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.certificates.ca.CaSessionTest;
 import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
@@ -72,7 +72,7 @@ public class HttpMethodsTest {
         httpBaseUrl = "http://127.0.0.1:" + httpPort;
         
         int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
-        testx509ca = CaSessionTest.createTestX509CA("CN=TestCA", null, false, keyusage);
+        testx509ca = CaTestUtils.createTestX509CA("CN=TestCA", null, false, keyusage);
         caSession.addCA(admin, testx509ca);
     }
     

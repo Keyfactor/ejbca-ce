@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
+import org.cesecore.CaTestUtils;
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
 import org.cesecore.util.CryptoProviderTools;
@@ -43,7 +44,7 @@ public class CaPKCS11SessionTest extends RoleUsingTestCase {
         // Initialize role system
         setUpAuthTokenAndRole("CaPKCS11SessionTestRoleInitialization");
         // Don't use PKCS11 for the authentication CA, it's not part of the P11 test
-        authenticationx509ca = CaSessionTest.createTestX509CA(X509CADN, tokenpin.toCharArray(), false);
+        authenticationx509ca = CaTestUtils.createTestX509CA(X509CADN, tokenpin.toCharArray(), false);
         testBase = new CaSessionTestBase(authenticationx509ca, null);
     }
 
@@ -70,14 +71,14 @@ public class CaPKCS11SessionTest extends RoleUsingTestCase {
     @Test
     public void addCAGenerateKeysLater() throws Exception {
         final String cadn = "CN=TEST GEN KEYS, O=CaPKCS11SessionTest, C=SE";
-        final CA ca = CaSessionTest.createTestX509CAOptionalGenKeys(cadn, tokenpin.toCharArray(), false, true);
+        final CA ca = CaTestUtils.createTestX509CAOptionalGenKeys(cadn, tokenpin.toCharArray(), false, true);
         testBase.addCAGenerateKeysLater(ca, cadn, tokenpin);
     }
     
     @Test
     public void addCAUseSessionBeanToGenerateKeys2() throws Exception {
         final String cadn = "CN=TEST GEN KEYS, O=CaPKCS11SessionTest, C=SE";
-        final CA ca = CaSessionTest.createTestX509CAOptionalGenKeys(cadn, tokenpin.toCharArray(), false, true);
+        final CA ca = CaTestUtils.createTestX509CAOptionalGenKeys(cadn, tokenpin.toCharArray(), false, true);
         testBase.addCAUseSessionBeanToGenerateKeys2(ca, cadn, tokenpin);
     }
 

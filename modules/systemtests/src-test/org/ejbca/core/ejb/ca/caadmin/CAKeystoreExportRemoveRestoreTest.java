@@ -21,12 +21,12 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
+import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.certificates.ca.CaSessionTest;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
@@ -149,7 +149,7 @@ public class CAKeystoreExportRemoveRestoreTest {
         int cryptoTokenId = 0;
         try {
             cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(internalAdmin, cryptoTokenName, signKeySpecification);
-            CAToken catoken = CaSessionTest.createCaToken(cryptoTokenId, signatureAlgorithm, encryptionAlgorithm);
+            CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, signatureAlgorithm, encryptionAlgorithm);
             exportRemoveRestore(catoken);
         } finally {
             // Remove original keystore if it would still exist
@@ -172,17 +172,17 @@ public class CAKeystoreExportRemoveRestoreTest {
             // CA using SHA1withRSA and 2048 bit RSA KEY
             final String CANAME1 = "TestExportRemoveRestoreCA1";
             cryptoTokenId1 = CryptoTokenManagementSessionTest.createCryptoTokenForCA(internalAdmin, CANAME1, "1024");
-            final CAToken catoken1 = CaSessionTest.createCaToken(cryptoTokenId1, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            final CAToken catoken1 = CaTestUtils.createCaToken(cryptoTokenId1, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             final X509CAInfo cainfo1 = getNewCAInfo(CANAME1, catoken1);
             // This CA uses DSA instead
             final String CANAME2 = "TestExportRemoveRestoreCA2";
             cryptoTokenId2 = CryptoTokenManagementSessionTest.createCryptoTokenForCA(internalAdmin, CANAME2, "DSA1024");
-            final CAToken catoken2 = CaSessionTest.createCaToken(cryptoTokenId2, AlgorithmConstants.SIGALG_SHA1_WITH_DSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            final CAToken catoken2 = CaTestUtils.createCaToken(cryptoTokenId2, AlgorithmConstants.SIGALG_SHA1_WITH_DSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             final X509CAInfo cainfo2 = getNewCAInfo(CANAME2, catoken2);
             // This CA uses RSA but with 1024 bits
             final String CANAME3 = "TestExportRemoveRestoreCA3";
             cryptoTokenId3 = CryptoTokenManagementSessionTest.createCryptoTokenForCA(internalAdmin, CANAME3, "1024");
-            final CAToken catoken3 = CaSessionTest.createCaToken(cryptoTokenId3, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            final CAToken catoken3 = CaTestUtils.createCaToken(cryptoTokenId3, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             final X509CAInfo cainfo3 = getNewCAInfo(CANAME3, catoken3);
             // Remove CAs if they already exists
             caSession.removeCA(internalAdmin, cainfo1.getCAId());
@@ -252,7 +252,7 @@ public class CAKeystoreExportRemoveRestoreTest {
             // CA using SHA1withRSA and 2048 bit RSA KEY
             final String CANAME = "TestExportRemoveRestoreCA1";
             cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(internalAdmin, CANAME, "1024");
-            final CAToken catoken = CaSessionTest.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             final X509CAInfo cainfo = getNewCAInfo(CANAME, catoken);
 
             String capassword = "foo123";

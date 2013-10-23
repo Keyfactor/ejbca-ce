@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.cesecore.CaTestUtils;
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -37,7 +38,6 @@ import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.certificates.ca.CaSessionTest;
 import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
@@ -99,7 +99,7 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
         CryptoProviderTools.installBCProvider();
         // Set up base role that can edit roles
         setUpAuthTokenAndRole(PublishingCrlSessionDeltaCRLTest.class.getSimpleName());
-        testx509ca = CaSessionTest.createTestX509CA(X509CADN, null, false);
+        testx509ca = CaTestUtils.createTestX509CA(X509CADN, null, false);
         keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
     }
     
