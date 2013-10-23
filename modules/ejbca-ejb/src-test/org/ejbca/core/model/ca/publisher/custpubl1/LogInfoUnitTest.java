@@ -12,11 +12,13 @@
  *************************************************************************/
 package org.ejbca.core.model.ca.publisher.custpubl1;
 
-import static org.junit.Assert.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.util.Date;
+
+import org.apache.log4j.Logger;
 import org.junit.Test;
 
 /**
@@ -25,6 +27,8 @@ import org.junit.Test;
  * @version $Id$
  */
 public class LogInfoUnitTest {
+
+    private static final Logger log = Logger.getLogger(LogInfoUnitTest.class);
 
     @Test
     public void testConstructAndEncode() throws Exception {
@@ -64,7 +68,7 @@ public class LogInfoUnitTest {
         assertEquals("get pid", expectedPid, instance.getPid());
         assertEquals("get msgext", expectedMsgext, instance.getMsgext());
         
-        System.out.println(instance.getEncoded());
+        log.debug(instance.getEncoded());
         assertEquals("get encoded 2", " time:19700101000004.711Z sqn:13 stage:Download level:info msgid:023 msg:Some message pid:123123 msgext:uploadtype=DSC lastTryTime=20121030121233Z lastTryTime=20121030121233.12Z", instance.getEncoded());
         
         // Test erroneus msgid

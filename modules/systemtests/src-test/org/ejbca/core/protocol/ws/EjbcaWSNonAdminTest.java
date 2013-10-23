@@ -322,7 +322,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
 
             Approval approval1 = new Approval("ap1test");
             try {
-                System.out.println("ID: "+approvalRequest.generateApprovalId());
+                log.debug("ID: "+approvalRequest.generateApprovalId());
                 approvalExecutionSession.approve(admin1, approvalRequest.generateApprovalId(), approval1);
                 getHardTokenData(serialNumber, true);
                 try {

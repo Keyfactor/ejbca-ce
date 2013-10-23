@@ -186,7 +186,6 @@ public class CaInitCommandTest {
         assertNotNull("ECC CA was not created.", cainfo);
         Certificate cert = cainfo.getCertificateChain().iterator().next();
         assertEquals("EC", cert.getPublicKey().getAlgorithm());
-        System.out.println(cert.getPublicKey());
     }
 
     /** Test happy path for creating an ECDSA CA with explicit ECC parameters. Requires some special handling. */
