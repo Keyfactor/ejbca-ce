@@ -83,7 +83,7 @@ org.cesecore.keybind.InternalKeyBindingRules
 			</h:panelGroup>
 			<h:outputText rendered="#{internalKeyBindingMBean.inEditMode and !internalKeyBindingMBean.cryptoTokenActive and internalKeyBindingMBean.currentCryptoTokenName != null}"
 				value=" #{web.text.INTERNALKEYBINDING_CRYPTOTOKEN_NOTACTIVE}"/>
-			<h:outputText rendered="#{!internalKeyBindingMBean.inEditMode or !internalKeyBindingMBean.cryptoTokenActive}"
+			<h:outputText rendered="#{(!internalKeyBindingMBean.inEditMode or !internalKeyBindingMBean.cryptoTokenActive) and internalKeyBindingMBean.currentCryptoTokenName != null}"
 				value="#{internalKeyBindingMBean.currentCryptoTokenName}" title="#{internalKeyBindingMBean.currentCryptoToken}"/>
 			<h:outputText rendered="#{(!internalKeyBindingMBean.inEditMode or !internalKeyBindingMBean.cryptoTokenActive) and internalKeyBindingMBean.currentCryptoTokenName == null}"
                 value="#{web.text.INTERNALKEYBINDING_CRYPTOTOKEN_MISSING}"/>
