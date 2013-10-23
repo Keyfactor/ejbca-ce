@@ -335,7 +335,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             ret.add(certificate.getCertificate(this.entityManager));
         }
         if (log.isTraceEnabled()) {
-            log.trace("<findCertificatesBySubject(), dn='" + subjectDN + "'");
+            log.trace("<findCertificatesBySubject(), dn='" + subjectDN + "': "+ret.size());
         }
         return ret;
     }

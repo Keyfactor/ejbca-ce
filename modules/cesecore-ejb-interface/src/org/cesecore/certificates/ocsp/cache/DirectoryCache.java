@@ -72,8 +72,7 @@ public enum DirectoryCache {
                 throw new OcspFailureException("An error was encountered when extracting canonical path from directory " + signTrustDir, e);
             }
             if (log.isDebugEnabled()) {
-                log.debug("Loaded " + trustedReqSigIssuers == null ? "0" : trustedReqSigIssuers.size()
-                        + " CA-certificates as trusted for OCSP-request signing");
+                log.debug("Loaded " + (trustedReqSigIssuers == null ? "0" : trustedReqSigIssuers.size()) + " CA-certificates as trusted for OCSP-request signing");
             }
             trustDirValidTo = signTrustValidTime > 0 ? new Date().getTime() + signTrustValidTime : Long.MAX_VALUE;
 
