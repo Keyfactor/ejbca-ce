@@ -83,10 +83,8 @@ org.cesecore.keybind.InternalKeyBindingRules
 			</h:panelGroup>
 			<h:outputText rendered="#{internalKeyBindingMBean.inEditMode and !internalKeyBindingMBean.cryptoTokenActive and internalKeyBindingMBean.currentCryptoTokenName != null}"
 				value=" #{web.text.INTERNALKEYBINDING_CRYPTOTOKEN_NOTACTIVE}"/>
-			<h:outputText rendered="#{(!internalKeyBindingMBean.inEditMode or !internalKeyBindingMBean.cryptoTokenActive) and internalKeyBindingMBean.currentCryptoTokenName != null}"
-				value="#{internalKeyBindingMBean.currentCryptoTokenName}" title="#{internalKeyBindingMBean.currentCryptoToken}"/>
-			<h:outputText rendered="#{(!internalKeyBindingMBean.inEditMode or !internalKeyBindingMBean.cryptoTokenActive) and internalKeyBindingMBean.currentCryptoTokenName == null}"
-                value="#{web.text.INTERNALKEYBINDING_CRYPTOTOKEN_MISSING}"/>
+			<h:outputText rendered="#{!internalKeyBindingMBean.inEditMode or !internalKeyBindingMBean.cryptoTokenActive}"
+				value="#{internalKeyBindingMBean.currentCryptoTokenName != null ? internalKeyBindingMBean.currentCryptoTokenName : web.text.INTERNALKEYBINDING_CRYPTOTOKEN_MISSING}" title="#{internalKeyBindingMBean.currentCryptoToken}"/>
 		</h:panelGroup>
 		<h:message for="cryptoToken"/>
 		<h:outputLabel for="keyPairAlias" value="#{web.text.INTERNALKEYBINDING_FIELD_KEYPAIRALIAS}"/>
