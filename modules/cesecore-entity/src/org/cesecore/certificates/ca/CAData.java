@@ -172,6 +172,7 @@ public class CAData extends ProtectedData implements Serializable {
             final Map<?, ?> h = (Map<?, ?>)decoder.readObject();
             decoder.close();
             // Handle Base64 encoded string values
+            @SuppressWarnings("unchecked")
             final LinkedHashMap<Object, Object> dataMap = new Base64GetHashMap(h);
             return dataMap;
         } catch (UnsupportedEncodingException e) {

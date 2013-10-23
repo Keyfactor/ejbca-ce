@@ -121,6 +121,7 @@ public class CmpConfiguration extends Configuration implements Serializable {
     }
     
     public CmpConfiguration(Serializable dataobj) {
+        @SuppressWarnings("unchecked")
         LinkedHashMap<Object, Object> d = (LinkedHashMap<Object, Object>) dataobj;
         data = d;
     }
@@ -614,9 +615,9 @@ public class CmpConfiguration extends Configuration implements Serializable {
         }
         
         Set<String> removeKeys = getAllAliasKeys(alias);
-        Iterator itr = removeKeys.iterator();
+        Iterator<String> itr = removeKeys.iterator();
         while(itr.hasNext()) {
-            String key = (String) itr.next();
+            String key = itr.next();
             data.remove(key);
         }
         aliases.remove(alias);
@@ -644,9 +645,9 @@ public class CmpConfiguration extends Configuration implements Serializable {
         }
         
         Set<String> oldKeys = getAllAliasKeys(oldAlias);
-        Iterator itr = oldKeys.iterator();
+        Iterator<String> itr = oldKeys.iterator();
         while(itr.hasNext()) {
-            String oldkey = (String) itr.next();
+            String oldkey = itr.next();
             String newkey = oldkey;
             newkey = StringUtils.replace(newkey, oldAlias, newAlias);
             Object value = data.get(oldkey);
@@ -678,9 +679,9 @@ public class CmpConfiguration extends Configuration implements Serializable {
             return;
         }
         
-        Iterator itr = getAllAliasKeys(originAlias).iterator();
+        Iterator<String> itr = getAllAliasKeys(originAlias).iterator();
         while(itr.hasNext()) {
-            String originalKey = (String) itr.next();
+            String originalKey = itr.next();
             String cloneKey = originalKey;
             cloneKey = StringUtils.replace(cloneKey, originAlias, cloneAlias);
             Object value = data.get(originalKey);
@@ -710,9 +711,9 @@ public class CmpConfiguration extends Configuration implements Serializable {
     public Properties getAsProperties(String alias) {
         if(aliasExists(alias)) {
             final Properties properties = new Properties();
-            final Iterator i = getAllAliasKeys(alias).iterator();
+            final Iterator<String> i = getAllAliasKeys(alias).iterator();
             while (i.hasNext()) {
-                final String key = (String) i.next();
+                final String key = i.next();
                 final Object value = data.get(key);
                 properties.setProperty(key, value == null? "" : value.toString());
             }

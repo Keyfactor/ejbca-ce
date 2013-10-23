@@ -74,6 +74,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
      */
     @Override
     public AuthenticationToken authenticate(AuthenticationSubject subject) {
+        @SuppressWarnings("unchecked")
         final Set<X509Certificate> certs = (Set<X509Certificate>) subject.getCredentials();
         if (certs.size() != 1) {
             if (LOG.isDebugEnabled()) {
