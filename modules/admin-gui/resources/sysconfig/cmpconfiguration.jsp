@@ -105,6 +105,7 @@
   GlobalConfiguration gc = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_EDITCERTIFICATEPROFILES); 
                                             cabean.initialize(ejbcawebbean); 
   
+  ejbcawebbean.clearCMPCache();
   CmpConfiguration cmpconfig = ejbcawebbean.getCMPConfiguration();
 
   String THIS_FILENAME            = gc.getAdminWebPath() +  "/sysconfig/cmpconfiguration.jsp";
