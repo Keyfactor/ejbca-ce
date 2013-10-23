@@ -144,6 +144,8 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
             }
 
             // Check that the value of KeyId from the request is allowed 
+            // Note that this restriction only applies to HMAC and not EndEntityCertificate because in the later, the use of profiles can be restricted through 
+            // Administrator privileges. Other authentication modules are not used in RA mode
             if(StringUtils.equals(cmpConfiguration.getRAEEProfile(confAlias), "KeyId") ||  StringUtils.equals(cmpConfiguration.getRACertProfile(confAlias), "KeyId") ) {
                 final String keyId = CmpMessageHelper.getStringFromOctets(msg.getHeader().getSenderKID());
                 if(StringUtils.equals(keyId, "EMPTY") || StringUtils.equals(keyId, "ENDUSER")) {
