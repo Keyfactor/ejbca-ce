@@ -33,6 +33,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.model.InternalEjbcaResources;
+import org.ejbca.core.protocol.cmp.CmpMessageHelper;
 import org.ejbca.core.protocol.cmp.CmpPKIBodyConstants;
 import org.ejbca.core.protocol.cmp.CmpPbeVerifyer;
 
@@ -141,6 +142,17 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
             if(LOG.isDebugEnabled()) {
                 LOG.debug("Verifying HMAC in RA mode");
             }
+
+            // Check that the value of KeyId from the request is allowed 
+            if(StringUtils.equals(cmpConfiguration.getRAEEProfile(confAlias), "KeyId") ||  StringUtils.equals(cmpConfiguration.getRACertProfile(confAlias), "KeyId") ) {
+                final String keyId = CmpMessageHelper.getStringFromOctets(msg.getHeader().getSenderKID());
+                if(StringUtils.equals(keyId, "EMPTY") || StringUtils.equals(keyId, "ENDUSER")) {
+                    errorMessage = "Unaccepted KeyId '" + keyId + "' in CMP request";
+                    LOG.info(errorMessage);
+                    return false;
+                }
+            }
+            
             
             // If we use a globally configured shared secret for all CAs we check it right away
             String authSecret = globalSharedSecret;

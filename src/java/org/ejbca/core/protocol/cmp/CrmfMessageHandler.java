@@ -327,22 +327,6 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
             return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, errmsg);
         }
         
-        
-        // TODO this is a very NOT neat way to do this but it is temporary because the use of KeyId is deprecated
-        // Using EMPTY and/or ENDUSER as 'KeyId' is not permissible in HMAC authentication module for security reason. But since multiple authentication modules can be 
-        // set, we cannot check this before authenticating the request.
-        // On the other hand, the end entity profile is needed to figure our what CA to use to handle the request, and this CA is also needed verify request's authenticity  
-        // using HMAC, so these configuration values have to be read before the authenticity verification
-        if(StringUtils.equals(authenticationModule.getName(), CmpConfiguration.AUTHMODULE_HMAC)) {
-            boolean keyidEMPTY = StringUtils.equals(cmpConfiguration.getRAEEProfile(confAlias), "KeyId") && StringUtils.equals(keyId, "EMPTY");
-            boolean keyidENDUSER = StringUtils.equals(cmpConfiguration.getRACertPath(confAlias), "KeyId") && StringUtils.equals(keyId, "ENDUSER");
-            if(keyidEMPTY || keyidENDUSER) {
-                LOG.info("Unaccepted  KeyId '" + keyId + "' in CMP request");
-                return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, "Not allowed to use KeyId '" + keyId + "' in CMP request");
-            }
-        }
-        
-
         try {
 			// Create a username and password and register the new user in EJBCA
 			final UsernameGenerator gen = UsernameGenerator.getInstance(this.usernameGenParams);
