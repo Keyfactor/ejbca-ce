@@ -15,12 +15,12 @@ package org.cesecore.util;
 import java.util.Date;
 import java.util.Iterator;
 
-import org.junit.Assert;
-
+import org.apache.log4j.Logger;
 import org.cesecore.audit.impl.integrityprotected.AuditRecordData;
 import org.cesecore.util.query.Criteria;
 import org.cesecore.util.query.QueryCriteria;
 import org.cesecore.util.query.QueryGenerator;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -29,6 +29,8 @@ import org.junit.Test;
  * @version $Id$
  */
 public class QueryCriteriaTest {
+
+    private static Logger log = Logger.getLogger(QueryCriteriaTest.class);
 
 	private static final String BAD_QUERY_GENERATED = "Invalid query generated.";
 	private static final String BAD_QUERY_PARAMTERS = "Invalid paramter values stored in query.";
@@ -51,7 +53,7 @@ public class QueryCriteriaTest {
             QueryCriteria criteria = QueryCriteria.create().add(Criteria.eq(FakeEntity.FIELDNAME1, "value"));
             QueryGenerator.generator(FakeEntity.class, criteria, "a").generate();
         } catch (QueryParameterException e) {
-            System.out.println(e.getMessage());
+            log.error("QueryCriteria unable to detect existing field.", e);
             Assert.fail("QueryCriteria unable to detect existing field.");
         }
         try {
