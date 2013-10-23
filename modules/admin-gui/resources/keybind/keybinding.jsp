@@ -168,7 +168,7 @@ org.cesecore.keybind.InternalKeyBindingRules
 				<h:inputText id="certificateSerialNumber" rendered="#{internalKeyBindingMBean.inEditMode}" required="false"
 					value="#{internalKeyBindingMBean.currentCertificateSerialNumber}"
 					title="#{web.text.INTERNALKEYBINDING_EMPTYFORANY}">
-					<f:validator validatorId="hexSerialNumberValidator"/>
+					<f:validator validatorId="optionalHexSerialNumberValidator"/>
    				</h:inputText>
 				<h:message for="certificateSerialNumber" rendered="#{internalKeyBindingMBean.inEditMode}"/>
 			</f:facet>

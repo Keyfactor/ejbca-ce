@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.ui.web.admin.administratorprivileges;
+package org.ejbca.ui.web.admin;
 
 import java.math.BigInteger;
 
