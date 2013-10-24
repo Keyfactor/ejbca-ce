@@ -16,6 +16,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -31,6 +32,8 @@ import java.util.List;
 import java.util.Random;
 
 import javax.ejb.CreateException;
+import javax.ejb.EJBException;
+import javax.persistence.PersistenceException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROctetString;
@@ -39,6 +42,7 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.cert.ocsp.BasicOCSPResp;
 import org.bouncycastle.cert.ocsp.OCSPException;
 import org.bouncycastle.cert.ocsp.OCSPReq;
@@ -69,6 +73,7 @@ import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionRemote;
 import org.cesecore.certificates.ocsp.OcspResponseInformation;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
+import org.cesecore.certificates.ocsp.exception.OcspFailureException;
 import org.cesecore.certificates.ocsp.logging.AuditLogger;
 import org.cesecore.certificates.ocsp.logging.GuidHolder;
 import org.cesecore.certificates.ocsp.logging.TransactionCounter;
@@ -88,6 +93,9 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.protocol.ocsp.OcspTestUtils;
 import org.ejbca.util.TraceLogMethodsRule;
 import org.junit.After;
@@ -114,20 +122,23 @@ public class StandaloneOcspResponseGeneratorSessionTest {
  
     private String originalSigningTruststoreValidTime;
 
-    private final CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST); 
+    private final CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(CertificateCreateSessionRemote.class);
+    private final CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(
+            CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CertificateStoreSessionRemote.class);
     private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CryptoTokenManagementSessionRemote.class);
-    private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(EndEntityManagementSessionRemote.class);
+    private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
+            InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
     private final OcspResponseGeneratorSessionRemote ocspResponseGeneratorSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(OcspResponseGeneratorSessionRemote.class);
-    private CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
-
+    private final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
 
     private final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(TESTCLASSNAME);
     
@@ -531,6 +542,86 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         assertEquals("We expected a 'Successful' status code: ", OCSPResp.SUCCESSFUL, ocspResponseSigned.getStatus());
         validateSuccessfulResponse((BasicOCSPResp)ocspResponseSigned.getResponseObject(), ocspSigningCertificate.getPublicKey());
     }
+    
+    @Test
+    public void testGetOcspResponseWithIncorrectDefaultResponder() throws Exception {
+        // Make user that we know...
+        final String endEntityName = "testGetOcspResponseWithIncorrectDefaultResponder";
+        endEntityManagementSession.addUser(authenticationToken, endEntityName, "foo123", "C=SE,O=AnaTom,CN=OCSPTest", null, "ocsptest@anatom.se",
+                false, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0, x509ca.getCAId());
+        
+        // Set a fake value
+        cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.DEFAULT_RESPONDER, "CN=FancyPants");
+        cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNATUREREQUIRED, "true");
+        
+       
+        X509Certificate ocspTestCert = null;
+        // An OCSP request
+        OCSPReqBuilder gen = new OCSPReqBuilder();
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), ocspSigningCertificate, ocspSigningCertificate
+                .getSerialNumber()));
+        Extension[] extensions = new Extension[1];
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+        gen.setRequestExtensions(new Extensions(extensions));
+        //Create a signed request in order to test all aspects 
+        KeyPair keys = KeyTools.genKeys("512", "RSA");
+        // user that we know exists...
+        ocspTestCert = (X509Certificate) signSession.createCertificate(authenticationToken, endEntityName, "foo123", keys.getPublic());
+        X509CertificateHolder chain[] = new JcaX509CertificateHolder[2];
+        chain[0] = new JcaX509CertificateHolder(ocspTestCert);
+        chain[1] = new JcaX509CertificateHolder(caCertificate);
+        gen.setRequestorName(chain[0].getSubject());
+        OCSPReq req = gen.build(new BufferingContentSigner(new JcaContentSignerBuilder("SHA1withRSA").build(keys.getPrivate()), 20480), chain);
+        
+        //Now delete the original CA, making this test completely standalone.
+        OcspTestUtils.deleteCa(authenticationToken, x509ca);
+        activateKeyBinding(internalKeyBindingId);
+        ocspResponseGeneratorSession.reloadTokenAndChainCache(PASSWORD);
+        
+        try {
+            // At first try, it should throw an exception because it can not find the default responder
+            try {
+                final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
+                // Create the transaction logger for this transaction.
+                TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+                // Create the audit logger for this transaction.
+                AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+                ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger, transactionLogger);
+                fail("Should throw OcspFailureException");
+            } catch (OcspFailureException e) {
+                // In JBoss this works, the client actually gets an OcspException
+                assertEquals("Unable to find CA certificate and key to generate OCSP response.", e.getMessage());
+            } catch (EJBException e) {
+                // In glassfish and JBoss 7, a RuntimeException causes an EJBException to be thrown, wrapping the OcspException in many layers...
+                Throwable e1 = e.getCausedByException();
+                // In JBoss 7 is is wrapped in only one layer
+                if (e1 instanceof OcspFailureException) {
+                    assertEquals("Unable to find CA certificate and key to generate OCSP response.", e1.getMessage());
+                } else {
+                    Throwable e2 = e1.getCause();
+                    Throwable e3 = e2.getCause();
+                    assertTrue(e3 instanceof OcspFailureException);
+                    OcspFailureException e4 = (OcspFailureException) e3;
+                    assertEquals("Unable to find CA certificate and key to generate OCSP response.", e4.getMessage());
+                }
+            }
+        } finally {
+            //Remove the created user
+            try {
+                endEntityManagementSession.deleteUser(authenticationToken, endEntityName);
+            } catch (Exception e) {
+                //NOPMD: Ignore
+            }
+            try {
+                if (ocspTestCert != null)
+                    internalCertificateStoreSession.removeCertificate(ocspTestCert);
+            } catch (Exception e) {
+                //NOPMD: Ignore
+            }
+        }
+    }
+    
     
     // Trusting a certificateSerialNumber of null means any certificate from the CA
     private void addTrustEntry(InternalKeyBinding internalKeyBinding, int caId, BigInteger certificateSerialNumber) {

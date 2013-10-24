@@ -486,22 +486,22 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     private OCSPReq translateRequestFromByteArray(byte[] request, String remoteAddress, TransactionLogger transactionLogger)
             throws MalformedRequestException, SignRequestException, SignRequestSignatureException, CertificateException, NoSuchAlgorithmException {
 
-        OCSPReq result = null;
+        OCSPReq ocspRequest = null;
         try {
-            result = new OCSPReq(request);
+            ocspRequest = new OCSPReq(request);
         } catch (IOException e) {
             throw new MalformedRequestException("Could not form OCSP request", e);
         }
 
-        if (result.getRequestorName() == null) {
+        if (ocspRequest.getRequestorName() == null) {
             if (log.isDebugEnabled()) {
                 log.debug("Requestor name is null");
             }
         } else {
             if (log.isDebugEnabled()) {
-                log.debug("Requestor name is: " + result.getRequestorName().toString());
+                log.debug("Requestor name is: " + ocspRequest.getRequestorName().toString());
             }
-            transactionLogger.paramPut(TransactionLogger.REQ_NAME, result.getRequestorName().toString());
+            transactionLogger.paramPut(TransactionLogger.REQ_NAME, ocspRequest.getRequestorName().toString());
         }
 
         /**
@@ -509,10 +509,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
          * signature is required we send back 'sigRequired' response.
          */
         if (log.isDebugEnabled()) {
-            log.debug("Incoming OCSP request is signed : " + result.isSigned());
+            log.debug("Incoming OCSP request is signed : " + ocspRequest.isSigned());
         }
-        if (result.isSigned()) {
-            X509Certificate signercert = checkRequestSignature(remoteAddress, result);
+        if (ocspRequest.isSigned()) {
+            X509Certificate signercert = checkRequestSignature(remoteAddress, ocspRequest);
             String signercertIssuerName = CertTools.getIssuerDN(signercert);
             BigInteger signercertSerNo = CertTools.getSerialNumber(signercert);
             String signercertSubjectName = CertTools.getSubjectDN(signercert);
@@ -565,18 +565,18 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             }
             // Next, check if there is an OcspKeyBinding where signing is required and configured for this request
             // In the case where multiple requests are bundled together they all must be trusting the signer
-            for (final Req ocspRequest : result.getRequestList()) {
-                OcspSigningCacheEntry ocspSigningCacheEntry = OcspSigningCache.INSTANCE.getEntry(ocspRequest.getCertID());
+            for (final Req req : ocspRequest.getRequestList()) {
+                OcspSigningCacheEntry ocspSigningCacheEntry = OcspSigningCache.INSTANCE.getEntry(req.getCertID());
                 if (ocspSigningCacheEntry==null) {
                     if (log.isTraceEnabled()) {
                         log.trace("Using default responder to check signature.");
                     }
                     ocspSigningCacheEntry = OcspSigningCache.INSTANCE.getDefaultEntry();
-                }
-                if (log.isTraceEnabled()) {
-                    log.trace("ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate: " + ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate());
-                }
+                }   
                 if (ocspSigningCacheEntry!=null && ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
+                    if (log.isTraceEnabled()) {
+                        log.trace("ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate: " + ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate());
+                    }
                     final OcspKeyBinding ocspKeyBinding = ocspSigningCacheEntry.getOcspKeyBinding();
                     if (log.isTraceEnabled()) {
                         log.trace("OcspKeyBinding " + ocspKeyBinding.getId() + ", RequireTrustedSignature: " + ocspKeyBinding.getRequireTrustedSignature());
@@ -630,8 +630,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             }
             // Next, check if there is an OcspKeyBinding where signing is required and configured for this request
             // In the case where multiple requests are bundled together they all must be trusting the signer
-            for (final Req ocspRequest : result.getRequestList()) {
-                OcspSigningCacheEntry ocspSigningCacheEntry = OcspSigningCache.INSTANCE.getEntry(ocspRequest.getCertID());
+            for (final Req req : ocspRequest.getRequestList()) {
+                OcspSigningCacheEntry ocspSigningCacheEntry = OcspSigningCache.INSTANCE.getEntry(req.getCertID());
                 if (ocspSigningCacheEntry==null) {
                     ocspSigningCacheEntry = OcspSigningCache.INSTANCE.getDefaultEntry();
                 }
@@ -643,7 +643,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 }
             }
         }
-        return result;
+        return ocspRequest;
     }
 
     /**
