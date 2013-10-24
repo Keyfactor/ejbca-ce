@@ -259,7 +259,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                     certificateSerialNumber = CertTools.getSerialNumberAsString(certificate);
                     try {
                         // Note that we can do lookups using the .hashCode, but we will use the objects id
-                        final CA ca = caSession.getCA(authenticationToken, certificateIssuerDn.hashCode());
+                        final CA ca = caSession.getCANoLog(authenticationToken, certificateIssuerDn.hashCode());
                         certificateInternalCaName = ca.getName();
                         certificateInternalCaId = ca.getCAId();
                         caCertificateIssuerDn = CertTools.getIssuerDN(ca.getCACertificate());
@@ -600,7 +600,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
         final int internalKeyBindingId = Integer.parseInt(getCurrentInternalKeyBindingId());
         InternalKeyBinding internalKeyBindingInfo;
         try {
-            internalKeyBindingInfo = internalKeyBindingSession.getInternalKeyBindingInfo(authenticationToken, internalKeyBindingId);
+            internalKeyBindingInfo = internalKeyBindingSession.getInternalKeyBindingInfoNoLog(authenticationToken, internalKeyBindingId);
         } catch (AuthorizationDeniedException e) {
             // Silently ignore that the admin has tried to access a token that he/she was npt authorized to..
             return;
@@ -614,7 +614,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                 boundCertificateSerialNumber = CertTools.getSerialNumberAsString(certificate);
                 try {
                     // Note that we can do lookups using the .hashCode, but we will use the objects id
-                    final CA ca = caSession.getCA(authenticationToken, boundCertificateIssuerDn.hashCode());
+                    final CA ca = caSession.getCANoLog(authenticationToken, boundCertificateIssuerDn.hashCode());
                     boundCertificateInternalCaName = ca.getName();
                     certificateInternalCaId = ca.getCAId();
                     boundCaCertificateIssuerDn = CertTools.getIssuerDN(ca.getCACertificate());

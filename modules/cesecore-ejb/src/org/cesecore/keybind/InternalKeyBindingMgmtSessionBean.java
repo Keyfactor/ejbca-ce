@@ -181,6 +181,16 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         }
         return new InternalKeyBindingInfo(internalKeyBindingDataSession.getInternalKeyBinding(id));
     }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public InternalKeyBindingInfo getInternalKeyBindingInfoNoLog(AuthenticationToken authenticationToken, int id) throws AuthorizationDeniedException {
+        if (!accessControlSessionSession.isAuthorizedNoLogging(authenticationToken, InternalKeyBindingRules.VIEW.resource()+"/"+id)) {
+            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.VIEW.resource(), authenticationToken.toString());
+            throw new AuthorizationDeniedException(msg);
+        }
+        return new InternalKeyBindingInfo(internalKeyBindingDataSession.getInternalKeyBinding(id));
+    }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
