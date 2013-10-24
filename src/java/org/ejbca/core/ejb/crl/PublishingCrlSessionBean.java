@@ -200,6 +200,14 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                 if (log.isDebugEnabled()) {
                     log.debug("Not trying to generate CRL for CA "+cainfo.getName() +" awaiting certificate response.");
                 }
+            } else if (cainfo.getStatus() == CAConstants.CA_REVOKED) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Not trying to generate CRL for CA "+cainfo.getName() +" that is revoked.");
+                }
+            } else if (cainfo.getStatus() == CAConstants.CA_UNINITIALIZED) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Not trying to generate CRL for CA "+cainfo.getName() +" that is uninitialized.");
+                }
             } else {
                 if (cainfo instanceof X509CAInfo) {
                     Collection<Certificate> certs = cainfo.getCertificateChain();
@@ -300,6 +308,14 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
             } else if (cainfo.getStatus() == CAConstants.CA_WAITING_CERTIFICATE_RESPONSE) {
                 if (log.isDebugEnabled()) {
                     log.debug("Not trying to generate delta CRL for CA "+cainfo.getName() +" awaiting certificate response.");
+                }
+            } else if (cainfo.getStatus() == CAConstants.CA_REVOKED) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Not trying to generate delta CRL for CA "+cainfo.getName() +" that is revoked.");
+                }
+            } else if (cainfo.getStatus() == CAConstants.CA_UNINITIALIZED) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Not trying to generate delta CRL for CA "+cainfo.getName() +" that is uninitialized.");
                 }
             } else {
                 if (cainfo instanceof X509CAInfo) {
@@ -470,7 +486,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                 //              }
             } else {
                 String msg = intres.getLocalizedMessage("createcrl.errornotactive", cainfo.getName(), Integer.valueOf(cainfo.getCAId()), cainfo.getStatus());                                                      
-                log.info(msg);   
+                log.info(msg);
                 throw new CAOfflineException(msg);
             }
         } catch (FinderException e) {
