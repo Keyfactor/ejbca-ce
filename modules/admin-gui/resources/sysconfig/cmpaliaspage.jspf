@@ -68,7 +68,7 @@ function checkresponseprotection(sel) {
       <td width="50%"> 
         <input type="radio" name="<%=RADIO_CMPMODE%>" value="client" onchange="changemode()" 
 			<% 
-				if(!cmpconfig.getRAMode(alias)) { 
+				if(!cmpConfigClone.getRAMode(alias) ) { 
 					out.write(" CHECKED ");
 					ramode = false;
 				}
@@ -77,7 +77,7 @@ function checkresponseprotection(sel) {
 		&nbsp;&nbsp;&nbsp;&nbsp;
 		<input type="radio" name="<%=RADIO_CMPMODE%>" value="ra" onchange="changemode()"  
 			<% 
-				if(cmpconfig.getRAMode(alias)) {
+				if(cmpConfigClone.getRAMode(alias)) {
 					out.write(" CHECKED ");
 					ramode = true;
 				}
@@ -102,9 +102,9 @@ function checkresponseprotection(sel) {
       </td>
       <td width="50%"> 
         <select name="<%= LIST_CMPRESPONSEPROTECTION %>" onchange="checkresponseprotection(this)">
-          <% String currentProtection = cmpconfig.getResponseProtection(alias); %>
+          <% String currentProtection = cmpConfigClone.getResponseProtection(alias); %>
           <% if(currentProtection.equals("pbe"))	pbe = true; %>
-          <% java.util.Iterator iterp = cmpconfig.getCmpResponseProtectionList(ramode).iterator();
+          <% java.util.Iterator iterp = cmpConfigClone.getCmpResponseProtectionList(ramode).iterator();
              while(iterp.hasNext()){
             	String p = (String) iterp.next(); 
           %>   <option <% if(p.equals(currentProtection)){ %> selected <% } %>
@@ -132,16 +132,16 @@ function checkresponseprotection(sel) {
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPAUTHENTICATIONMODULE_HELP\") %>"/></p>
       </td>
       <td width="50%"> 
-      	<input type="checkbox" name="<%= CHECKBOX_HMAC %>" value="<%=cmpconfig.AUTHMODULE_HMAC %>" 
-				<% if(cmpconfig.isInAuthModule(alias, cmpconfig.AUTHMODULE_HMAC)) {
+      	<input type="checkbox" name="<%= CHECKBOX_HMAC %>" value="<%=CmpConfiguration.AUTHMODULE_HMAC %>" 
+				<% if(cmpConfigClone.isInAuthModule(alias, CmpConfiguration.AUTHMODULE_HMAC)) {
 					out.write(" CHECKED ");
 				}%>
 				id="<%=CHECKBOX_HMAC%>" />
-				<label for="<%=CHECKBOX_HMAC%>"><c:out value="<%= cmpconfig.AUTHMODULE_HMAC %>" /></label>
+				<label for="<%=CHECKBOX_HMAC%>"><c:out value="<%= CmpConfiguration.AUTHMODULE_HMAC %>" /></label>
 				<% if(ramode) {%>
 					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 					
-					<% String secretvalue = cmpconfig.getAuthenticationParameter(cmpconfig.AUTHMODULE_HMAC, alias);	%>
+					<% String secretvalue = cmpConfigClone.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_HMAC, alias);	%>
 					<input type="radio" name="<%=RADIO_HMACPASSWORD%>" value="casecret"  
 						<% 
 							if(secretvalue.equals("-") || secretvalue.length()==0) { 
@@ -163,17 +163,17 @@ function checkresponseprotection(sel) {
         		<% } %>
         		<br/>
 		<% if(!pbe) { %>
-		<input type="checkbox" name="<%= CHECKBOX_EEC %>" value="<%=cmpconfig.AUTHMODULE_ENDENTITY_CERTIFICATE %>"
-				<% if(cmpconfig.isInAuthModule(alias, cmpconfig.AUTHMODULE_ENDENTITY_CERTIFICATE)) {
+		<input type="checkbox" name="<%= CHECKBOX_EEC %>" value="<%=CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE %>"
+				<% if(cmpConfigClone.isInAuthModule(alias, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE)) {
 						out.write(" CHECKED ");
 					}%>
 				id="<%=CHECKBOX_EEC%>" />
-				<label for="<%=CHECKBOX_EEC%>"><c:out value="<%= cmpconfig.AUTHMODULE_ENDENTITY_CERTIFICATE %>" /></label>
+				<label for="<%=CHECKBOX_EEC%>"><c:out value="<%= CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE %>" /></label>
 				<% if(ramode) {%>
 				&nbsp;&nbsp;&nbsp;
 				<label for="<%=LIST_ECCCAS%>"><c:out value="<%= ejbcawebbean.getText(\"CMPECCISSUERCA\") %>" /></label>
 				<select name="<%=LIST_ECCCAS%>" >
-           				<%  String currentECCCA = cmpconfig.getAuthenticationParameter(cmpconfig.AUTHMODULE_ENDENTITY_CERTIFICATE, alias); %>
+           				<%  String currentECCCA = cmpConfigClone.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE, alias); %>
            				<% java.util.Iterator itrecc = canames.keySet().iterator();
            	  			while(itrecc.hasNext()) {
            		  			String eccca = (String) itrecc.next();
@@ -185,21 +185,21 @@ function checkresponseprotection(sel) {
         		<br/>
 		<% } %>
 		<% if(!ramode) { %>
-		<input type="checkbox" name="<%= CHECKBOX_REGTOKEN %>" value="<%=cmpconfig.AUTHMODULE_REG_TOKEN_PWD %>" 
-				<% if(cmpconfig.isInAuthModule(alias, cmpconfig.AUTHMODULE_REG_TOKEN_PWD)) out.write(" CHECKED ");	%>
+		<input type="checkbox" name="<%= CHECKBOX_REGTOKEN %>" value="<%=CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD %>" 
+				<% if(cmpConfigClone.isInAuthModule(alias, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD)) out.write(" CHECKED ");	%>
 				id="<%=CHECKBOX_REGTOKEN%>" />
-				<label for="<%=CHECKBOX_REGTOKEN%>"><c:out value="<%= cmpconfig.AUTHMODULE_REG_TOKEN_PWD %>" /></label><br/>
+				<label for="<%=CHECKBOX_REGTOKEN%>"><c:out value="<%= CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD %>" /></label><br/>
 
-		<input type="checkbox" name="<%= CHECKBOX_DNPART %>" value="<%=cmpconfig.AUTHMODULE_DN_PART_PWD %>"
-				<% if(cmpconfig.isInAuthModule(alias, cmpconfig.AUTHMODULE_DN_PART_PWD)) {
+		<input type="checkbox" name="<%= CHECKBOX_DNPART %>" value="<%=CmpConfiguration.AUTHMODULE_DN_PART_PWD %>"
+				<% if(cmpConfigClone.isInAuthModule(alias, CmpConfiguration.AUTHMODULE_DN_PART_PWD)) {
 						out.write(" CHECKED ");
 					}%>
 				id="<%=CHECKBOX_DNPART%>" />
-				<label for="<%=CHECKBOX_DNPART%>"><c:out value="<%= cmpconfig.AUTHMODULE_DN_PART_PWD %>" /></label>
+				<label for="<%=CHECKBOX_DNPART%>"><c:out value="<%= CmpConfiguration.AUTHMODULE_DN_PART_PWD %>" /></label>
 				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 				<label for="<%=LIST_DNPARTS%>"><c:out value="<%= ejbcawebbean.getText(\"CMPAUTHSUBJECTDNPART\") %>" /></label>
 				<select name="<%=LIST_DNPARTS%>" >
-           				<% String currentDnPart = cmpconfig.getAuthenticationParameter(cmpconfig.AUTHMODULE_DN_PART_PWD, alias);
+           				<% String currentDnPart = cmpConfigClone.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_DN_PART_PWD, alias);
            				   Iterator authdnitr = dnfields.iterator();
            				   while(authdnitr.hasNext()) {
            				   		String dnpart = (String) authdnitr.next(); %>
@@ -230,7 +230,7 @@ function checkresponseprotection(sel) {
       </td>
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_CMP_ALLOWRAVERIFYPOPO%>" value="<%=CHECKBOX_VALUE %>" 
-			<% if(cmpconfig.getAllowRAVerifyPOPO(alias)) out.write(" CHECKED "); %>
+			<% if(cmpConfigClone.getAllowRAVerifyPOPO(alias)) out.write(" CHECKED "); %>
  			id="<%=CHECKBOX_CMP_ALLOWRAVERIFYPOPO%>" />
  		<label><c:out value="<%= ejbcawebbean.getText(\"ALLOW\") %>" /></label>
       </td>
@@ -252,14 +252,14 @@ function checkresponseprotection(sel) {
       
       	<% boolean checked = false; %>
 		<input type="radio" name="<%=RADIO_NAMEGENSCHEME%>" value=<%= UsernameGeneratorParams.DN %>  
-			<% if(UsernameGeneratorParams.DN.equals(cmpconfig.getRANameGenScheme(alias))) {
+			<% if(UsernameGeneratorParams.DN.equals(cmpConfigClone.getRANameGenScheme(alias))) {
 					out.write(" CHECKED ");
 					checked = true;
 			   } %>
 			/>
 		<label><c:out value="DN Parts:" /></label>
 		&nbsp;&nbsp;&nbsp;
-		<% String pvalue = checked? cmpconfig.getRANameGenParams(alias) : ""; %>
+		<% String pvalue = checked? cmpConfigClone.getRANameGenParams(alias) : ""; %>
 		<label><c:out value="<%= pvalue %>" /></label>
 		&nbsp;&nbsp;&nbsp;
 		<select name="<%=LIST_NAMEGENPARAM_DN%>" >
@@ -276,26 +276,26 @@ function checkresponseprotection(sel) {
 		<br/>
 		
 		<input type="radio" name="<%=RADIO_NAMEGENSCHEME%>" value=<%= UsernameGeneratorParams.RANDOM %>  
-			<% if(UsernameGeneratorParams.RANDOM.equals(cmpconfig.getRANameGenScheme(alias))) { out.write(" CHECKED "); } %> />
+			<% if(UsernameGeneratorParams.RANDOM.equals(cmpConfigClone.getRANameGenScheme(alias))) { out.write(" CHECKED "); } %> />
 		<label><c:out value="<%= UsernameGeneratorParams.RANDOM %>" /></label>
 		<br/>
 		
 		<% checked = false; %>
 		<input type="radio" name="<%=RADIO_NAMEGENSCHEME%>" value=<%= UsernameGeneratorParams.FIXED %>  
-			<% if(UsernameGeneratorParams.FIXED.equals(cmpconfig.getRANameGenScheme(alias))) {
+			<% if(UsernameGeneratorParams.FIXED.equals(cmpConfigClone.getRANameGenScheme(alias))) {
 					out.write(" CHECKED ");
 					checked = true;
 				} %>
 			/>
 		<label><c:out value="<%= UsernameGeneratorParams.FIXED %>" /></label>
 		&nbsp;&nbsp;&nbsp;
-		<% pvalue = checked? cmpconfig.getRANameGenParams(alias) : ""; %>
+		<% pvalue = checked? cmpConfigClone.getRANameGenParams(alias) : ""; %>
         <input type="text" name="<%=TEXTFIELD_CMP_RANAMEGENPARAM %>" value='<c:out value="<%= pvalue %>"/>'
 			      	maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>" id="<%=TEXTFIELD_CMP_RANAMEGENPARAM %>" >
 		<br/>
 		
 		<input type="radio" name="<%=RADIO_NAMEGENSCHEME%>" value=<%= UsernameGeneratorParams.USERNAME %>  
-			<% if(UsernameGeneratorParams.USERNAME.equals(cmpconfig.getRANameGenScheme(alias))) { out.write(" CHECKED "); } %>
+			<% if(UsernameGeneratorParams.USERNAME.equals(cmpConfigClone.getRANameGenScheme(alias))) { out.write(" CHECKED "); } %>
 			/>
 		<label><c:out value="<%= ejbcawebbean.getText(\"CMPUSEENTIREDNASUSERNAME\") %>" /></label>
 			      	
@@ -312,7 +312,7 @@ function checkresponseprotection(sel) {
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPRANAMEGENERATIONPREFIX_HELP\") %>"/></p>
       </td>
       <td width="50%"> 
-        <input type="text" name="<%=TEXTFIELD_CMP_RANAMEGENPREFIX %>" value='<c:out value="<%= cmpconfig.getRANameGenPrefix(alias) %>"/>' 
+        <input type="text" name="<%=TEXTFIELD_CMP_RANAMEGENPREFIX %>" value='<c:out value="<%= cmpConfigClone.getRANameGenPrefix(alias) %>"/>' 
         	maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>">
       </td>
     </tr>
@@ -325,7 +325,7 @@ function checkresponseprotection(sel) {
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPRANAMEGENERATIONPOSTFIX_HELP\") %>"/></p>
 	  </td>
       <td width="50%">        
-        <input type="text" name="<%=TEXTFIELD_CMP_RANAMEGENPOSTFIX %>" value='<c:out value="<%= cmpconfig.getRANameGenPostfix(alias) %>"/>' 
+        <input type="text" name="<%=TEXTFIELD_CMP_RANAMEGENPOSTFIX %>" value='<c:out value="<%= cmpConfigClone.getRANameGenPostfix(alias) %>"/>' 
         	maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>">
       </td>
     </tr>
@@ -339,7 +339,7 @@ function checkresponseprotection(sel) {
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPRAPASSWORDGENPARAMS_HELP\") %>"/></p>
 	  </td>
       <td width="50%">        
-        <input type="text" name="<%=TEXTFIELD_CMP_RAPASSWORDGENPARAM %>" value='<c:out value="<%= cmpconfig.getRAPwdGenParams(alias) %>"/>' 
+        <input type="text" name="<%=TEXTFIELD_CMP_RAPASSWORDGENPARAM %>" value='<c:out value="<%= cmpConfigClone.getRAPwdGenParams(alias) %>"/>' 
         	maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>">
       </td>
     </tr>
@@ -355,7 +355,7 @@ function checkresponseprotection(sel) {
       </td>
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_CMP_ALLOWCUSTOMSERNO%>" value="<%=CHECKBOX_VALUE %>" 
-			<% if(cmpconfig.getAllowRACustomSerno(alias)) out.write(" CHECKED "); %>
+			<% if(cmpConfigClone.getAllowRACustomSerno(alias)) out.write(" CHECKED "); %>
  			id="<%=CHECKBOX_CMP_ALLOWCUSTOMSERNO%>" />
  		<label><c:out value="<%= ejbcawebbean.getText(\"ALLOW\") %>" /></label>
       </td>
@@ -372,7 +372,7 @@ function checkresponseprotection(sel) {
       </td>
       <td width="50%"> 
         <select name="<%= LIST_CMPEEPROFILES %>" onchange="changemode()" >
-          <% String defeep = cmpconfig.getRAEEProfile(alias); %>
+          <% String defeep = cmpConfigClone.getRAEEProfile(alias); %>
           <% ceep = defeep; %>
           <!--  The possibility to use 'KeyId' is deprecated. As a preparation to remove it completely, we make choosing it possible only for those 
           		who already use 'KeyId' but not for new installations/aliases -->
@@ -402,7 +402,7 @@ function checkresponseprotection(sel) {
       </td>
       <td width="50%"> 
         <select name="<%= LIST_CMPCERTPROFILES %>">
-          <% String defcp = cmpconfig.getRACertProfile(alias); %>
+          <% String defcp = cmpConfigClone.getRACertProfile(alias); %>
           <!--  The possibility to use 'KeyId' is deprecated. As a preparation to remove it completely, we make choosing it possible only for those 
           		who already use 'KeyId' but not for new installations/aliases -->
           <% if("KeyId".equals(defcp)){ %> <option selected value='<c:out value="KeyId"/>'><c:out value="KeyId (Deprecated)"/></option> <% } %>
@@ -428,7 +428,7 @@ function checkresponseprotection(sel) {
       </td>
       <td width="50%"> 
         <select name="<%= LIST_CMPRACAS %>">
-          <% String defca = cmpconfig.getRACAName(alias); %>
+          <% String defca = cmpConfigClone.getRACAName(alias); %>
           <!--  The possibility to use 'KeyId' is deprecated. As a preparation to remove it completely, we make choosing it possible only for those 
           		who already use 'KeyId' but not for new installations/aliases -->
           <% if("KeyId".equals(defca)){ %> <option selected value='<c:out value="KeyId"/>'><c:out value="KeyId (Deprecated)"/></option> <% } %>
@@ -456,7 +456,7 @@ function checkresponseprotection(sel) {
       </td>
       <td width="50%"> 
       	<select name="<%=LIST_EXTRACTUSERNAMECOMP%>" >
-          <% String currentDnPart = cmpconfig.getExtractUsernameComponent(alias); %>
+          <% String currentDnPart = cmpConfigClone.getExtractUsernameComponent(alias); %>
           <option  value='<c:out value="DN"/>'  <% if(currentDnPart.equals("DN")) { %> selected <% } %> ><c:out value="DN"/></option>
           <% Iterator compdnitr = dnfields.iterator();
              while(compdnitr.hasNext()){ 
@@ -480,11 +480,11 @@ function checkresponseprotection(sel) {
       </td>
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_CMP_VENDORMODE%>" value="<%=CHECKBOX_VALUE %>" 
-			<% if(cmpconfig.getVendorMode(alias)) out.write(" CHECKED "); %>
+			<% if(cmpConfigClone.getVendorMode(alias)) out.write(" CHECKED "); %>
 			id="<%=CHECKBOX_CMP_VENDORMODE%>" />
 		<label for="<%=CHECKBOX_CMP_VENDORMODE%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
 		<br/>
-		<p class="help"><c:out value="<%= cmpconfig.getVendorCA(alias) %>"/></p>
+		<p class="help"><c:out value="<%= cmpConfigClone.getVendorCA(alias) %>"/></p>
         <select name="<%=LIST_VENDORCA%>" >
            <% java.util.Iterator iterv = externalcas.keySet().iterator();
            	  while(iterv.hasNext()) {
@@ -520,7 +520,7 @@ function checkresponseprotection(sel) {
       </td>
       <td width="50%"> 
         <select name="<%=LIST_CMPDEFAULTCAS%>" >
-           <%  String currentCA = cmpconfig.getCMPDefaultCA(alias); %>
+           <%  String currentCA = cmpConfigClone.getCMPDefaultCA(alias); %>
            <option <% if(currentCA.equals("")) { %> selected <% } %>
                  	value='<c:out value=""/>'><c:out value="(disabled)"/></option>
            <% java.util.Iterator iter = canames.keySet().iterator();
@@ -557,7 +557,7 @@ function checkresponseprotection(sel) {
       </td>
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_CMP_KUR_USEAUTOMATICKEYUPDATE%>" value="<%=CHECKBOX_VALUE %>" 
-			<% if(cmpconfig.getKurAllowAutomaticUpdate(alias)) out.write(" CHECKED "); %>
+			<% if(cmpConfigClone.getKurAllowAutomaticUpdate(alias)) out.write(" CHECKED "); %>
 			id="<%=CHECKBOX_CMP_KUR_USEAUTOMATICKEYUPDATE%>" />
 		<label for="<%=CHECKBOX_CMP_KUR_USEAUTOMATICKEYUPDATE%>"><c:out value="<%= ejbcawebbean.getText(\"ALLOW\") %>" /></label>
       </td>
@@ -572,7 +572,7 @@ function checkresponseprotection(sel) {
       </td>
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_CMP_KUR_USESAMEKEYS%>" value="<%=CHECKBOX_VALUE %>" 
-			<% if(cmpconfig.getKurAllowSameKey(alias)) out.write(" CHECKED "); %>
+			<% if(cmpConfigClone.getKurAllowSameKey(alias)) out.write(" CHECKED "); %>
 			id="<%=CHECKBOX_CMP_KUR_USESAMEKEYS%>" />
 		<label for="<%=CHECKBOX_CMP_KUR_USESAMEKEYS%>"><c:out value="<%= ejbcawebbean.getText(\"ALLOW\") %>" /></label> 
       </td>
@@ -600,7 +600,7 @@ function checkresponseprotection(sel) {
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPTRUSTEDCERTPATH_HELP\") %>"/></p>
 	  </td>
       <td width="50%">        
-        <input type="text" name="<%=TEXTFIELD_NESTEDMESSAGETRUSTEDCERTPATH %>" value='<c:out value="<%= cmpconfig.getRACertPath(alias) %>"/>' 
+        <input type="text" name="<%=TEXTFIELD_NESTEDMESSAGETRUSTEDCERTPATH %>" value='<c:out value="<%= cmpConfigClone.getRACertPath(alias) %>"/>' 
         	maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>">
       </td>
     </tr>
@@ -616,7 +616,7 @@ function checkresponseprotection(sel) {
       </td>
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_OMITVERIFICATIONINECC%>" value="<%=CHECKBOX_VALUE %>" 
-			<% if(cmpconfig.getOmitVerificationsInEEC(alias)) out.write(" CHECKED "); %>
+			<% if(cmpConfigClone.getOmitVerificationsInEEC(alias)) out.write(" CHECKED "); %>
 			id="<%=CHECKBOX_OMITVERIFICATIONINECC%>" />
 		<label for="<%=CHECKBOX_OMITVERIFICATIONINECC%>"><c:out value="<%= ejbcawebbean.getText(\"OMIT\") %>" /></label> 
       </td>

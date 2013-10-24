@@ -102,11 +102,12 @@
   boolean ramode = false;
   boolean pbe = false;
 
-  GlobalConfiguration gc = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_EDITCERTIFICATEPROFILES); 
+  GlobalConfiguration gc = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_EDITSYSTEMCONFIGURATION); 
                                             cabean.initialize(ejbcawebbean); 
   
   ejbcawebbean.clearCMPCache();
   CmpConfiguration cmpconfig = ejbcawebbean.getCMPConfiguration();
+  CmpConfiguration cmpConfigClone = null;
 
   String THIS_FILENAME            = gc.getAdminWebPath() +  "/sysconfig/cmpconfiguration.jsp";
   
@@ -141,6 +142,7 @@
         	   								if(!cmpconfig.aliasExists(alias)) {
         	   										cmpconfig.addAlias(alias);
         	   								}
+        	   							   	cmpConfigClone = ejbcawebbean.getCmpConfigForEdit(alias);
                								includefile="cmpaliaspage.jspf"; 
            							}
          					}
@@ -216,18 +218,18 @@
     				alias = request.getParameter(HIDDEN_ALIAS);
     		       	if(alias != null) {
     		       		if(!alias.trim().equals("")) {
-    		       	
-    		       			cmpconfig = ejbcawebbean.getCMPConfiguration();
-    		       						
+    		       	    	
+    		       		   cmpConfigClone = ejbcawebbean.getCmpConfigForEdit(alias);
+    		       			
     		       			//Save changes
     		       						
     		       			//defaultCA
     		       			String value = request.getParameter(LIST_CMPDEFAULTCAS);
     		       			if((value==null) || (value.length() == 0)) {
-    		       					cmpconfig.setCMPDefaultCA(alias, "");
+    		       					cmpConfigClone.setCMPDefaultCA(alias, "");
     		       			} else {
     		                		String cadn = cabean.getCAInfo(value).getCAInfo().getSubjectDN();
-    		    					cmpconfig.setCMPDefaultCA(alias, cadn);
+    		                		cmpConfigClone.setCMPDefaultCA(alias, cadn);
     		       			}
     		       						
     		    			//operational mode
@@ -239,11 +241,11 @@
     		    							ramode = true;
     		    					}
     		           		}
-    		           		cmpconfig.setRAMode(alias, ramode);
+    		           		cmpConfigClone.setRAMode(alias, ramode);
     		           					
     		           		//response protection
     		    			value = request.getParameter(LIST_CMPRESPONSEPROTECTION);
-    						cmpconfig.setResponseProtection(alias, value);
+    						cmpConfigClone.setResponseProtection(alias, value);
     						if(value.equals("pbe")) {
     								pbe = true;
     						} else {
@@ -294,7 +296,7 @@
     			            				}
     			            		}
     			            }
-	    			        cmpconfig.setAuthenticationProperties(alias, authmodule, authparam);
+	    			        cmpConfigClone.setAuthenticationProperties(alias, authmodule, authparam);
     		
     			            			
 	    			        
@@ -303,7 +305,7 @@
     			            		// extract username component
     			            		value = request.getParameter(LIST_EXTRACTUSERNAMECOMP);
     			            		if(value != null){
-    			            				cmpconfig.setExtractUsernameComponent(alias, value);
+    			            				cmpConfigClone.setExtractUsernameComponent(alias, value);
     			            		}
     			            		
     			            		// vendor mode
@@ -312,60 +314,60 @@
     			            		if(value != null){
     			            				vendormode = true;
     			            		}
-    			            		cmpconfig.setVendorMode(alias, vendormode);
+    			            		cmpConfigClone.setVendorMode(alias, vendormode);
     			            } else { // ra mode
     			            		// allow verify popo
     			            		value = request.getParameter(CHECKBOX_CMP_ALLOWRAVERIFYPOPO);
-    			            		cmpconfig.setAllowRAVerifyPOPO(alias, (value != null));
+    			            		cmpConfigClone.setAllowRAVerifyPOPO(alias, (value != null));
     			            		
     			            		// ra name generation scheme	           					
     			           			String namegenscheme = request.getParameter(RADIO_NAMEGENSCHEME);
     			           			if(namegenscheme != null) {
-    			           					cmpconfig.setRANameGenScheme(alias, namegenscheme);
+    			           					cmpConfigClone.setRANameGenScheme(alias, namegenscheme);
     										if(namegenscheme.equals(UsernameGeneratorParams.FIXED)) {
     												value = request.getParameter(TEXTFIELD_CMP_RANAMEGENPARAM);
     												if((value != null) && (value.length() > 0)) {
-    														cmpconfig.setRANameGenParams(alias, value);
+    														cmpConfigClone.setRANameGenParams(alias, value);
     												}
 											} else if(namegenscheme.equals(UsernameGeneratorParams.DN)) {
     												// do nothing here. handle it with the buttons
 											} else { 
-													cmpconfig.setRANameGenParams(alias, "");
+													cmpConfigClone.setRANameGenParams(alias, "");
 											}
     			           			}
     			           			
     			           			// ra name generation prefix
     			            		value = request.getParameter(TEXTFIELD_CMP_RANAMEGENPREFIX);
-    			            		cmpconfig.setRANameGenPrefix(alias, value == null ? "" : value);
+    			            		cmpConfigClone.setRANameGenPrefix(alias, value == null ? "" : value);
     			            		
     			            		// ra name generation postfix
     			            		value = request.getParameter(TEXTFIELD_CMP_RANAMEGENPOSTFIX);
-    			            		cmpconfig.setRANameGenPostfix(alias, value==null ? "" : value);
+    			            		cmpConfigClone.setRANameGenPostfix(alias, value==null ? "" : value);
     			            		
     			            		// ra password generation parameters
     			            		value = request.getParameter(TEXTFIELD_CMP_RAPASSWORDGENPARAM);
-    			            		cmpconfig.setRAPwdGenParams(alias, value==null ? "random" : value);
+    			            		cmpConfigClone.setRAPwdGenParams(alias, value==null ? "random" : value);
     			            		
     			            		// allow custom serno
     			            		value = request.getParameter(CHECKBOX_CMP_ALLOWCUSTOMSERNO);
-    			            		cmpconfig.setAllowRACustomSerno(alias, (value != null));
+    			            		cmpConfigClone.setAllowRACustomSerno(alias, (value != null));
     			            		
     			            		// ra endentity profile
     			            		value = request.getParameter(LIST_CMPEEPROFILES);
     			            		if(value != null){
-    			            				cmpconfig.setRAEEProfile(alias, value);
+    			            				cmpConfigClone.setRAEEProfile(alias, value);
     			            		}
     			            		
     			            		// ra certprofile
     			            		value = request.getParameter(LIST_CMPCERTPROFILES);
     			            		if(value != null) {
-    			            				cmpconfig.setRACertProfile(alias, value);
+    			            				cmpConfigClone.setRACertProfile(alias, value);
     			            		}
     			            		
     			            		// ra CA  
     					 			value = request.getParameter(LIST_CMPRACAS);
     			     				if ( (value != null) && (value.trim().length() > 0) ) {
-    			     					cmpconfig.setRACAName(alias, value);
+    			     					cmpConfigClone.setRACAName(alias, value);
     			     				}
     			     				
     			            } // if(ramode)
@@ -373,21 +375,21 @@
     			            	
     			            // KUR automatic keyupdate
     			            value = request.getParameter(CHECKBOX_CMP_KUR_USEAUTOMATICKEYUPDATE);
-    			            cmpconfig.setKurAllowAutomaticUpdate(alias, (value != null));
+    			            cmpConfigClone.setKurAllowAutomaticUpdate(alias, (value != null));
     			            
     			            // KUR update with same key
     			            value = request.getParameter(CHECKBOX_CMP_KUR_USESAMEKEYS);
-    			            cmpconfig.setKurAllowSameKey(alias, (value != null));
+    			            cmpConfigClone.setKurAllowSameKey(alias, (value != null));
     			            
     			            
     			            
     			            // Nested message content
     			            value = request.getParameter(TEXTFIELD_NESTEDMESSAGETRUSTEDCERTPATH);
-    			            cmpconfig.setRACertPath(alias, value == null ? "" : value);
+    			            cmpConfigClone.setRACertPath(alias, value == null ? "" : value);
     			            
     			            // Nested message content - omit some verifications in EndEntityCertificate authentication module
     			            value = request.getParameter(CHECKBOX_OMITVERIFICATIONINECC);
-    			            cmpconfig.setOmitVerificationsInECC(alias, (value != null));
+    			            cmpConfigClone.setOmitVerificationsInECC(alias, (value != null));
     			            
     		       		
     			            
@@ -396,7 +398,7 @@
     			        	if(request.getParameter(BUTTON_ADDVENDORCA) != null) {
     			        			if(request.getParameter(CHECKBOX_CMP_VENDORMODE) != null) {
     			        					value = request.getParameter(LIST_VENDORCA);
-    			           					String vendorcas = cmpconfig.getVendorCA(alias);
+    			           					String vendorcas = cmpConfigClone.getVendorCA(alias);
     			           					String[] vcas = vendorcas.split(";");
     			           					boolean present = false;
     			           					for(String vca : vcas) {
@@ -407,16 +409,16 @@
     			           					}
     			           					if(!present) {
     			           							vendorcas += (vendorcas.length() > 0 ? ";" : "") + value;
-    				           						cmpconfig.setVendorCA(alias, vendorcas);
+    				           						cmpConfigClone.setVendorCA(alias, vendorcas);
     			           					}
     			        			} else {
-    			           					cmpconfig.setVendorCA(alias, "");
+    			           					cmpConfigClone.setVendorCA(alias, "");
     			        			}
     			        	}
     			            
     			        	if(request.getParameter(BUTTON_REMOVEVENDORCA) != null) {
     			           			value = request.getParameter(LIST_VENDORCA);
-    			           			String vendorcas = cmpconfig.getVendorCA(alias);
+    			           			String vendorcas = cmpConfigClone.getVendorCA(alias);
     			           			String[] cas = vendorcas.split(";");
     			           			ArrayList<String> vcas = new ArrayList<String>();
     			           			for(String ca : cas) {
@@ -425,16 +427,16 @@
     			           					}
     			           			}
     			           			if(vcas.size() > 0) { 
-    			           					cmpconfig.setVendorCA(alias, vcas);
+    			           					cmpConfigClone.setVendorCA(alias, vcas);
     			           			} else {
-    			           					cmpconfig.setVendorCA(alias, "");
+    			           					cmpConfigClone.setVendorCA(alias, "");
     			           			}
 	    			        }
     			            
     				        if(request.getParameter(BUTTON_ADD_NAMEGENPARAM_DN)!= null) {
     				           		if(request.getParameter(RADIO_NAMEGENSCHEME).equals(UsernameGeneratorParams.DN)) {
     				           				value = request.getParameter(LIST_NAMEGENPARAM_DN);
-    				           				String namegenparam = cmpconfig.getRANameGenParams(alias);
+    				           				String namegenparam = cmpConfigClone.getRANameGenParams(alias);
     			    	       				String[] params = namegenparam.split(";");
     			        	   				if((params.length > 0) && ( dnfields.contains(params[0]) )) {
     			           							boolean present = false;
@@ -448,13 +450,13 @@
     			           					} else {
     			           							namegenparam = value;
     			           					}
-    										cmpconfig.setRANameGenParams(alias, namegenparam);
+    										cmpConfigClone.setRANameGenParams(alias, namegenparam);
     			           			}
 	    			        }
     			            			
     			        	if(request.getParameter(BUTTON_REMOVE_NAMEGENPARAM_DN) != null) {
     			           			value = request.getParameter(LIST_NAMEGENPARAM_DN);
-    			           			String namegenparam = cmpconfig.getRANameGenParams(alias);
+    			           			String namegenparam = cmpConfigClone.getRANameGenParams(alias);
     			           			String[] params = namegenparam.split(";");
     			           			String newparams = "";
     			           			for(String p : params) {
@@ -465,12 +467,13 @@
     			           			if(newparams.length() > 0) { 
     			           					newparams = newparams.substring(1);
     			           			}
-    			           			cmpconfig.setRANameGenParams(alias, newparams);
+    			           			cmpConfigClone.setRANameGenParams(alias, newparams);
 	    			        }
     			        	
     				        includefile="cmpaliaspage.jspf";
     			        
     				        if(request.getParameter(BUTTON_SAVE) != null) {
+    				        		ejbcawebbean.updateCmpConfigFromClone(alias);
     				           		ejbcawebbean.saveCMPConfiguration();
     			        	   		includefile="cmpaliasespage.jspf";
     			        	}
@@ -479,7 +482,8 @@
     		       			
                			if(request.getParameter(BUTTON_CANCEL) != null){
               				// Don't save changes.
-              				ejbcawebbean.clearCMPCache();
+              				cmpConfigClone = null;
+              				ejbcawebbean.clearCmpConfigClone();
              				includefile="cmpaliasespage.jspf";
            				}
     		       		

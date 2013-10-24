@@ -32,6 +32,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -143,6 +144,7 @@ public class EjbcaWebBean implements Serializable {
     private AdminPreference currentadminpreference;
     private GlobalConfiguration globalconfiguration;
     private CmpConfiguration cmpconfiguration = null;
+    private CmpConfiguration cmpConfigForEdit = null;
     private ServletContext servletContext = null;
     private AuthorizationDataHandler authorizedatahandler;
     private WebLanguages adminsweblanguage;
@@ -941,6 +943,39 @@ public class EjbcaWebBean implements Serializable {
             reloadCMPConfiguration();
         }
         return cmpconfiguration;
+    }
+    
+    public CmpConfiguration getCmpConfigForEdit(String alias) throws Exception {
+        if(cmpConfigForEdit != null) {
+            return cmpConfigForEdit;
+        }
+
+        reloadCMPConfiguration();
+        cmpConfigForEdit = new CmpConfiguration();
+        cmpConfigForEdit.setAliasList(new LinkedHashSet<String>());
+        cmpConfigForEdit.addAlias(alias);
+        Iterator<String> itr = CmpConfiguration.getAllAliasKeys(alias).iterator();
+        while(itr.hasNext()) {
+            String key = itr.next();
+            String value = cmpconfiguration.getValue(key, alias);
+            cmpConfigForEdit.setValue(key, value, alias);
+        }
+        return cmpConfigForEdit;
+    }
+    
+    public void updateCmpConfigFromClone(String alias) {
+        if(cmpconfiguration.aliasExists(alias) && cmpConfigForEdit.aliasExists(alias)) {
+            Iterator<String> itr = CmpConfiguration.getAllAliasKeys(alias).iterator();
+            while(itr.hasNext()) {
+                String key = itr.next();
+                String value = cmpConfigForEdit.getValue(key, alias);
+                cmpconfiguration.setValue(key, value, alias);
+            }
+        }
+    }
+    
+    public void clearCmpConfigClone() {
+        cmpConfigForEdit = null;
     }
     
     public void clearCMPCache() throws Exception {
