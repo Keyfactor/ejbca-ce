@@ -49,6 +49,33 @@
 # Default: false
 #ca.doPermitExtractablePrivateKeys=true
 
+# Forbidden characters in DB.
+# When one of these characters is found in any string that should be stored in
+# the DB it will be replaced by a forward slash (/). Same replacement will also
+# be done when searching for strings in the DB.
+# Example of strings affected by this:
+# * user names
+# * issuer and subject DN of certificates.
+# * profile names
+# It will also be impossible to use any of these characters in any field of a
+# certificate (like issuer or subject DN).
+# It is strongly discouraged to change this property. Instead set it to the
+# desired value before you install EJBCA.
+# If you change these characters later it might be that some search for a string
+# that include one of the characters that have been changed will fail. This could
+# result in that some important functionality stops working. Examples what could
+# fail is:
+# * An administrator user can not be used any more.
+# * A certificate can not be found.
+# * A certificate can not be issued since the used profile can not be found.
+# The default are these characters: '\n', '\r', ';', '!', '\0', '%', '`', '?', '$', '~'.
+# The property value is a string with all forbidden characters concatenated
+# (without any space). Note that '\' is an escape character.
+# This will be the same as not defining the property:
+#forbidden.characters = \n\r;!\u0000%`?$~
+# And nothing forbidden will be:
+#forbidden.characters  =
+
 # ------------- Core language configuration -------------
 # The language that should be used internally for logging, exceptions and approval notifications.
 # The languagefile is stored in 'src/intresources/ejbcaresources.xx.properties/intresources.xx.properties'.
