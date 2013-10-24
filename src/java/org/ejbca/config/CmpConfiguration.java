@@ -346,15 +346,6 @@ public class CmpConfiguration extends Configuration implements Serializable {
         String key = alias + "." + CONFIG_VENDORCA;
         setValue(key, vendorCA, alias);
     }
-    public void setVendorCA(String alias, ArrayList<String> vendorcas) {
-        String vcas = "";
-        for(String ca : vendorcas) {
-            vcas += ";" + ca;
-        }
-        vcas = vcas.substring(1);
-        setVendorCA(alias, vcas);
-    }
-    
     
     public boolean getAllowRAVerifyPOPO(String alias) {
         String key = alias + "." + CONFIG_ALLOWRAVERIFYPOPO;
