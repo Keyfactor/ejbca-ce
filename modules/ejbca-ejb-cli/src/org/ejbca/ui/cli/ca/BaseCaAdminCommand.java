@@ -161,7 +161,7 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
                 getLogger().info("  " + createddeltacrls + " delta CRLs have been created.");
             }
         } catch (Exception e) {
-            getLogger().error("Error while getting certficate chain from CA.", e);
+            getLogger().error("Error while creating CRL for CA: "+issuerdn, e);
         }
         getLogger().trace(">createCRL()");
     }
