@@ -1,3 +1,5 @@
+<%@page import="org.apache.commons.lang.StringUtils"%>
+<%@page import="org.apache.commons.lang.ArrayUtils"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ page pageEncoding="ISO-8859-1"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
@@ -401,37 +403,32 @@
     			        			if(request.getParameter(CHECKBOX_CMP_VENDORMODE) != null) {
     			        					value = request.getParameter(LIST_VENDORCA);
     			           					String vendorcas = cmpConfigClone.getVendorCA(alias);
-    			           					String[] vcas = vendorcas.split(";");
-    			           					boolean present = false;
-    			           					for(String vca : vcas) {
-    			           							if(vca.equals(value)) {
-    			           									present = true;
-    			           									break;
+    			           					if(!StringUtils.contains(vendorcas, value)) {
+    			           							if(StringUtils.isEmpty(vendorcas)) {
+    			           								vendorcas = value;
+    			           							} else {
+    			           								vendorcas += ";" + value;
     			           							}
+    			           							cmpConfigClone.setVendorCA(alias, vendorcas);
     			           					}
-    			           					if(!present) {
-    			           							vendorcas += (vendorcas.length() > 0 ? ";" : "") + value;
-    				           						cmpConfigClone.setVendorCA(alias, vendorcas);
-    			           					}
-    			        			} else {
-    			           					cmpConfigClone.setVendorCA(alias, "");
     			        			}
     			        	}
     			            
     			        	if(request.getParameter(BUTTON_REMOVEVENDORCA) != null) {
     			           			value = request.getParameter(LIST_VENDORCA);
     			           			String vendorcas = cmpConfigClone.getVendorCA(alias);
-    			           			String[] cas = vendorcas.split(";");
-    			           			ArrayList<String> vcas = new ArrayList<String>();
-    			           			for(String ca : cas) {
-    			           					if(!ca.equals(value)) {
-    			           							vcas.add(ca);
+    			           			if(StringUtils.contains(vendorcas, value)) {
+    			           					String[] cas = vendorcas.split(";");
+    			           					if(cas.length == 1) {
+    			           							vendorcas = "";
+    			           					} else {
+    			           							if(StringUtils.equals(cas[0], value)) {
+	           											vendorcas = StringUtils.remove(vendorcas, value + ";");
+	           										} else {
+	           											vendorcas = StringUtils.remove(vendorcas, ";" + value);
+	           										}
     			           					}
-    			           			}
-    			           			if(vcas.size() > 0) { 
-    			           					cmpConfigClone.setVendorCA(alias, vcas);
-    			           			} else {
-    			           					cmpConfigClone.setVendorCA(alias, "");
+    		           						cmpConfigClone.setVendorCA(alias, vendorcas);
     			           			}
 	    			        }
     			            
@@ -440,15 +437,14 @@
     				           				value = request.getParameter(LIST_NAMEGENPARAM_DN);
     				           				String namegenparam = cmpConfigClone.getRANameGenParams(alias);
     			    	       				String[] params = namegenparam.split(";");
-    			        	   				if((params.length > 0) && ( dnfields.contains(params[0]) )) {
-    			           							boolean present = false;
-    			           							for(String p : params) {
-    			           									if(p.equals(value)) {
-    			           											present = true;
-    			           											break;
-    			           									}
-    			           							}
-    			           							if(!present)	namegenparam += ";" + value;
+    			        	   				if((params.length > 0) && ( dnfields.contains(params[0]) )) { // the dnfields check is to 
+    			        	   																			// ensure that the parameter 
+    			        	   																			// from the start is a list of DN fields 
+    			        	   																			// and not parameter left from another previously 
+    			        	   																			// chosen namegenscheme
+    			        	   						if(!ArrayUtils.contains(params, value)) {
+    			        	   							namegenparam += ";" + value;
+    			        	   						}
     			           					} else {
     			           							namegenparam = value;
     			           					}
@@ -459,17 +455,19 @@
     			        	if(request.getParameter(BUTTON_REMOVE_NAMEGENPARAM_DN) != null) {
     			           			value = request.getParameter(LIST_NAMEGENPARAM_DN);
     			           			String namegenparam = cmpConfigClone.getRANameGenParams(alias);
-    			           			String[] params = namegenparam.split(";");
-    			           			String newparams = "";
-    			           			for(String p : params) {
-    			           					if(!p.equals(value)) {
-    			           							newparams += ";" + p;
-    			           					}
+    			           			if(StringUtils.contains(namegenparam, value)) {
+			           						String[] params = namegenparam.split(";");
+			           						if(params.length == 1) {
+			           								namegenparam = "";
+			           						} else {
+			           								if(StringUtils.equals(params[0], value)) {
+           													namegenparam = StringUtils.remove(namegenparam, value + ";");
+           											} else {
+           													namegenparam = StringUtils.remove(namegenparam, ";" + value);
+           											}
+			           						}
+		           							cmpConfigClone.setRANameGenParams(alias, namegenparam);
     			           			}
-    			           			if(newparams.length() > 0) { 
-    			           					newparams = newparams.substring(1);
-    			           			}
-    			           			cmpConfigClone.setRANameGenParams(alias, newparams);
 	    			        }
     			        	
     				        includefile="cmpaliaspage.jspf";
@@ -484,8 +482,6 @@
     		       			
                			if(request.getParameter(BUTTON_CANCEL) != null){
               				// Don't save changes.
-              				cmpConfigClone = null;
-              				ejbcawebbean.clearCmpConfigClone();
              				includefile="cmpaliasespage.jspf";
            				}
     		       		
