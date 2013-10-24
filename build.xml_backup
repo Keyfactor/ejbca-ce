@@ -1,0 +1,998 @@
+<!DOCTYPE project [
+      <!ENTITY propertiesAndPaths SYSTEM "propertiesAndPaths.xmli">
+      <!ENTITY compile SYSTEM "compile.xmli">
+    ]>  
+    
+<project name="ejbca" default="build" basedir=".">
+
+	<!-- include the standard properties and paths -->
+    &propertiesAndPaths;
+	
+
+    <property name="CRAP4J_HOME" value="/home/hudson/"/> 
+	
+
+    <taskdef name="crap4j" classname="org.crap4j.anttask.Crap4jAntTask" >
+
+    <classpath>
+
+    <fileset dir="${CRAP4J_HOME}">
+
+    <include name="crap4j_ant_latest.jar" />
+
+    </fileset>
+
+    </classpath>
+
+    </taskdef>
+
+
+    <target name="run-crap4j">
+
+<crap4j projectdir="${basedir}"
+
+outputDir="agitar/reports/crap4j"
+
+dontTest="false" debug="false">
+
+<classDirs>
+
+<pathElement location="tmp/bin/classes" />
+
+</classDirs>
+
+<srcDirs>
+
+<pathElement location="src" />
+
+</srcDirs>
+
+<testClassDirs>
+
+<pathElement location="tmp/bin/junit" />
+
+</testClassDirs>
+
+<libClasspath>
+
+<fileset dir="lib">
+
+<include name="**/*.jar" />
+
+</fileset>
+
+</libClasspath>
+
+</crap4j>
+
+</target> 
+	<!-- include the main compile targets -->
+	&compile;
+
+	<import file="bin/${appserver.type}.xml" />
+	<import file="./jaxws.xmli" />
+	<import file="./xkms.xmli" />
+	<import file="./cmptcp.xmli" />
+	<import file="./test.xmli" />
+	<import file="./docs.xmli" />
+	
+    <!-- =================================================================== -->
+    <!-- Build ALL                                                           -->
+    <!-- =================================================================== -->
+    <target name="build" depends="testforgnujava, ca.ear" description="Compiles EJBCA, developers can run with '-Dno-xdoc=true' for faster build"/>
+
+	<!--
+	  EJBCA need to be run before the app.server (or the webapp) is fully ssl configured with the keystore
+	  So we are 'bootstrapping' it, the 'j2ee.web-noconfigure' property will skip all the serverside
+	  -->
+    <target name="bootstrap" depends="testforgnujava" description="Bootstrap EJBCA application">
+        <ant target="deploy">
+        	<property name="j2ee.web-noconfigure" value="true"/>
+        </ant>
+    </target>
+
+	<!--
+	  Installs EJBCA by creating an initial CA, configuring the web container and generating certs for
+	  SSL and the super administrator.
+	  -->
+    <target name="install" description="Install EJBCA application (only once)">
+        <ant dir="${ejbca.home}/bin" antfile="cli.xml" target="ejbca:install" />
+    </target>
+	
+    <target name="javatruststore" depends="testforgnujava" description="Install RootCA ceritficate in Java trust store (can be run wih -Dca.name=FooCA -Dtrust.keystore=trust.jks -Dtrust.password=foo123)">
+        <ant dir="${ejbca.home}/bin" antfile="cli.xml" target="ejbca:javatruststore" />
+        <antcall target="j2ee:deploytruststore" />
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- Compile ocsp resonder java sources                                  -->
+    <!-- =================================================================== -->
+    <target name="ocsp-compile" depends="ocsp-run-xdoc">
+        <javac srcdir="${src.java}:${ocsp-src.gen}" destdir="${ocsp-build}" debug="on" includeantruntime="no" encoding="iso8859-1">
+            <classpath refid="compile.classpath" />
+            <include name="org/ejbca/ui/web/protocol/OCSPServletStandAlone.java" />
+            <include name="org/ejbca/core/ejb/protect/TableProtect*.java" />
+            <include name="org/ejbca/core/ejb/ca/store/CertificateStoreOnlyDataSessionSession.java" />
+            <include name="org/ejbca/core/ejb/ca/store/ICertificateStoreOnlyDataSessionHome.java" />
+            <include name="org/ejbca/core/protocol/ocsp/OCSPUnidExtension.java" />
+            <include name="org/ejbca/ui/web/pub/HealthCheckServlet.java" />
+            <include name="org/ejbca/ui/web/pub/cluster/TextResponse.java" />
+            <include name="org/ejbca/ui/web/pub/cluster/ExtOCSPHealthCheck.java" />
+        </javac>
+    </target>
+
+    <!-- =================================================================== -->
+	<!-- Make sure the user isn't using the GNU version of java              -->
+    <!-- =================================================================== -->
+	<target name="testforgnujava">
+		<exec executable="java" outputproperty="testforgnujava.temp">
+			<arg value="-version" />
+		</exec>
+
+		<fail>
+			<condition>
+				<contains string="${testforgnujava.temp}" substring="gij" />
+			</condition>
+			..
+			You are currently using the GNU version of JAVA. Please install the version from Sun
+			or make sure that the Sun version of java is in the path. If this was run using 'sudo'
+			or 'su', make sure that the superuser has the correct path too.
+		</fail>
+	</target>
+	
+	<!-- =================================================================== -->
+    <!-- Build SCEP part  (public web)                                                  -->
+    <!-- =================================================================== -->
+    <target name="scep.war" depends="compile">
+        <war destfile="${scepwar}" webxml="${scep.src}/WEB-INF/web.xml">
+            <fileset dir="${scep.src}" excludes="WEB-INF/web.xml" />
+        </war>
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- Build status part                                                                                                                             -->
+    <!-- =================================================================== -->
+    <target name="status.war" depends="compile">
+        <war destfile="${statuswar}" webxml="${src.dd}/status/WEB-INF/web.xml">
+            <fileset dir="${status.src}" excludes="WEB-INF/web.xml" />
+        </war>
+    </target>
+	
+    <!-- =================================================================== -->
+    <!-- Build doc part                                                                                                                             -->
+    <!-- =================================================================== -->
+    <target name="doc.war" if="doc.war.enabled">
+    	<antcall target="doc" />
+		<replace file="${eardd.src}/META-INF/application.xml"
+		token="!--@doc.war@-->" value="module>&lt;web>&lt;web-uri>doc.war&lt;/web-uri>&lt;context-root>/${app.name}/doc&lt;/context-root>&lt;/web>&lt;/module>"/>
+		<war destfile="${docwar}" webxml="${mainsrc}/publicweb/empty_webxml.xml">
+            <fileset dir="${doc.src}" />
+        </war>
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- Build CMP part                                                                                                                             -->
+    <!-- =================================================================== -->
+    <target name="cmp.war" depends="compile">
+        <war destfile="${cmpwar}" webxml="${src.dd}/cmp/WEB-INF/web.xml">
+            <fileset dir="${cmp.src}" excludes="WEB-INF/web.xml" />
+        </war>
+    </target>
+	
+    <!-- =================================================================== -->
+    <!-- Build health check part                                                                                                                             -->
+    <!-- =================================================================== -->
+    <target name="healthcheck.war" depends="compile">
+        <war destfile="${healthcheckwar}" webxml="${healthcheck.src}/WEB-INF/web.xml">
+            <fileset dir="${healthcheck.src}" excludes="WEB-INF/web.xml" />
+
+        </war>
+    </target>
+		
+    <!-- =================================================================== -->
+    <!-- Build ocsp health check part                                                                                                                             -->
+    <!-- =================================================================== -->
+    <target name="ocsphealthcheck.war" depends="ocsp-compile">
+        <war destfile="${ocsphealthcheckwar}" webxml="${ocsphealthcheck.src}/WEB-INF/web.xml">
+            <fileset dir="${ocsphealthcheck.src}" excludes="WEB-INF/web.xml" />
+
+        </war>
+    </target>	
+
+    <!-- =================================================================== -->
+    <!-- Build standalone ocsp part                                          -->
+    <!-- =================================================================== -->
+    <target name="ocsp-war" depends="ocsp-compile">
+        <war destfile="${ocspwar}" webxml="${ocsp-src.dd}/status/WEB-INF/web.xml">
+            <fileset dir="${status.src}" excludes="WEB-INF/web.xml" />
+        </war>
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- Build sampleauth part                                               -->
+    <!-- =================================================================== -->
+    <target name="sampleauth.war" depends="compile">
+        <war destfile="${sampleauthwar}" webxml="${sampleauth.src}/WEB-INF/web.xml">
+            <fileset dir="${sampleauth.src}" excludes="WEB-INF/web.xml" />
+        </war>
+    </target>
+    
+    <!-- =================================================================== -->
+    <!-- Build webdist part                                                  -->
+    <!-- =================================================================== -->
+    <target name="webdist.war" depends="compile">
+        <war destfile="${webdistwar}" webxml="${webdist.src}/WEB-INF/web.xml">
+            <fileset dir="${webdist.src}" excludes="WEB-INF/web.xml" />
+        </war>
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- Build admin web part                                                -->
+    <!-- =================================================================== -->
+    <target name="adminweb.war" depends="compile">
+	    <mkdir dir="${adminweb.build}/WEB-INF/lib"/>
+    	<mkdir dir="${adminweb.build}/reports"/>
+        <copy todir="${adminweb.build}">
+            <fileset dir="${adminweb.src}" />
+        </copy>
+    	<delete file="${adminweb.build}/languages/languagefile.zh.properties"/>
+    	<native2ascii encoding="GBK" 
+    		src="${adminweb.src}/languages" 
+    		dest="${adminweb.build}/languages"
+    		includes="languagefile.zh.properties" 
+    	/>
+        <copy todir="${adminweb.build}/WEB-INF">
+            <fileset dir="${src.dd}/WEB-INF" />
+        </copy>
+        <copy todir="${adminweb.build}/WEB-INF/lib">
+            <fileset dir="${lib}/myfaces" includes="${jar.jsftaglibs}" />
+        </copy>
+        <copy todir="${adminweb.build}/WEB-INF/lib">
+            <fileset dir="${lib}/reports" 
+            	includes="lib/reports/jasperreports-1.3.3.jar lib/reports/jfreechart-1.0.0.jar lib/reports/jcommon-1.0.8.jar" />
+        </copy>
+
+	    <!-- Test compile the admin pages to see it compiles ok-->	    
+    	<jsp-compile uriroot="${adminweb.build}" /> 
+
+        <war destfile="${adminwebwar}" webxml="${src.dd}/WEB-INF/web.xml">
+            <manifest>
+                <attribute name="Class-Path" value="${jar.extclasspath}" />
+            </manifest>
+            <fileset dir="${adminweb.build}">
+                <exclude name="WEB-INF/*-service.xml" />
+                <exclude name="WEB-INF/web.xml"/>
+            </fileset>
+        </war>
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- Build public web part                                               -->
+    <!-- =================================================================== -->
+    <target name="publicweb.war" depends="compile, ejbca-ejb.jar">
+	    <mkdir dir="${publicweb.build}/WEB-INF/lib"/>
+	    <copy todir="${publicweb.build}">
+	        <fileset dir="${publicweb.src}" />
+	    </copy>
+        <copy todir="${publicweb.build}/WEB-INF/lib">
+            <fileset dir="${lib}/myfaces" >
+				<include name="jstl*.jar"/>
+				<include name="standard*.jar"/>
+            </fileset>
+        </copy>
+
+        <!-- Test compile the public pages to see it compiles ok -->
+    	<!-- Pre-compilating the public web does not work on weblogic, so it is disabled
+    	<jsp-compile uriroot="${publicweb.build}" />
+    	-->	
+
+        <war destfile="${publicwebwar}" webxml="${publicweb.build}/WEB-INF/web.xml">
+            <fileset dir="${publicweb.build}" excludes="WEB-INF/web.xml" />
+        </war>
+    </target>   
+
+	
+    <!-- =================================================================== -->
+    <!-- Build ca ejb part                                                    -->
+    <!-- =================================================================== -->
+    <target name="ejbca-ejb.jar" depends="compile, jbosscmptcpclasspath">
+        <!-- create empty directory for HW tokens if not existing -->
+        <mkdir dir="${hwtoken.class.dir}"/>
+    	<!-- Temp space where we will unpack jars to include in this jar file -->
+        <mkdir dir="${tmp}/caTokenClasses"/>
+    	<unjar dest="${tmp}/caTokenClasses">
+    		<fileset dir="${hwtoken.class.dir}">
+    			<include name="*.jar"/>
+    		</fileset>
+    	</unjar>
+        <jar jarfile="${dist.dir}/ejbca-ejb.jar">
+            <manifest>
+                <!-- todo: autogenerate this from a fileset -->
+                <attribute name="Class-Path" value="${jar.extclasspath} ${jar.jsfclasspath} ${jar.cmptcpclasspath}" />
+            </manifest>
+            <fileset dir="${src.dd}">
+            	<exclude name="WEB-INF/**"/>
+            	<exclude name="status/**"/>
+            	<exclude name="cmp/**"/>
+            </fileset>
+            <fileset dir="${build}">            	
+        	    <exclude name="org/ejbca/core/protocol/ws/**"/>
+            </fileset>
+            <fileset dir="${ejbca.home}">
+				<include name="conf/**/*.properties"/>
+			</fileset>	
+            <fileset dir="${src}/upgrade"/>
+            <fileset dir="${tmp}/caTokenClasses">
+        		<exclude name="**/META-INF/**"/>
+        	</fileset>	
+        </jar>
+    </target>
+	
+        <!-- =================================================================== -->
+        <!-- Build ejbca util part                                                    -->
+        <!-- =================================================================== -->
+        <target name="ejbca-util.jar" depends="compile" description="Creates ejbca util classes for use in other projects.jar">
+        <!-- create empty direktory for HW tokens if not existing -->
+            <jar jarfile="${dist.dir}/ejbca-util.jar">
+                <manifest>
+                    <!-- todo: autogenerate this from a fileset -->
+                    <attribute name="Class-Path" value="" />
+                </manifest>
+                <fileset dir="${build}">
+                	<include name="org/ejbca/util/**"/>
+                	<include name="org/ejbca/core/*" /> 
+                	<include name="org/ejbca/core/model/**"/>
+                	<include name="org/ejbca/core/protocol/*"/>
+                	<include name="org/ejbca/core/protocol/cmp/*"/>
+                	<include name="com/novosec/pkix/asn1/**"/>
+                	<include name="**/*Exception**"/>
+                	<include name="**/SecConst**"/>
+                	<include name="**/IAdminCommand**"/>
+                	<include name="**/UserDoesntFullfillEndEntityProfile**"/>
+                	<include name="**/RevokedCertInfo**"/>
+                	<include name="**/ServiceLocator**"/>
+                	<include name="**/SernoGenerator.*"/>
+                	<include name="**/ISernoGenerator.*"/>
+                    <include name="**/BaseEntityBean.*" />
+                    <include name="**/BaseSessionBean.*" /> 
+                	<include name="**/ServiceLocator.*"/>
+                	<include name="**/JNDINames.*"/>
+                	<include name="**/HealthCheckServlet.*"/>                	
+                    <include name="org/ejbca/ui/web/RequestHelper.*"/>
+                    <include name="org/ejbca/ui/cli/**"/>
+                	<include name="org/ejbca/ui/web/pub/cluster/**"/>
+                    <include name="org/ejbca/ui/web/pub/ServletUtils.*"/>   
+                    <include name="org/ejbca/ui/web/admin/configuration/LanguageProperties.*"/>
+                </fileset>
+            	<fileset dir="${src}/java">
+            	    <include name="dncomponents.properties"/>
+            		<include name="profilemappings.properties"/>
+            	</fileset>
+            </jar>
+        </target>    	
+	
+    
+    <!-- =================================================================== -->
+    <!-- Build ocsp ejb part                                                    -->
+    <!-- =================================================================== -->
+    <target name="ocsp-jar" depends="ocsp-compile">
+        <mkdir dir="${ocsp.hardToken.classes}"/>
+        <jar jarfile="${ocsp-dist.dir}/ejbca-ejb.jar">
+            <manifest>
+                <!-- todo: autogenerate this from a fileset -->
+                <attribute name="Class-Path" value="${jar.extclasspath}" />
+            </manifest>
+            <fileset dir="${ocsp-src.dd}">
+            	<exclude name="WEB-INF/**"/>
+            	<exclude name="status/**"/>
+            </fileset>
+            <fileset dir="${ocsp-build}"/>
+            <fileset dir="${ocsp.hardToken.classes}"/>
+        	<fileset dir="${src}">
+        	    <include name="intresources/*.properties"/>
+        	</fileset>	
+        	<fileset dir="${src}/java">
+        	    <include name="dncomponents.properties"/>
+        		<include name="profilemappings.properties"/>
+        	</fileset>	
+        </jar>
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- We need special handling of JSF jars and classpath because          -->
+    <!-- different appservers and different JSF implementations behaves differently. -->
+	<!-- JBoss does not need anything, because it uses Myfaces by default    -->
+    <!-- =================================================================== -->
+	<target name="webspheretargetcheck">
+			<condition property="websphere.enabled">
+				<equals arg1="${appserver.type}" arg2="websphere"/>
+			</condition>
+	</target>
+	<target name="wlstargetcheck">
+			<condition property="weblogic.enabled">
+				<equals arg1="${appserver.type}" arg2="weblogic"/>
+			</condition>
+	</target>
+	<target name="oc4jtargetcheck">
+			<condition property="oc4j.enabled">
+				<equals arg1="${appserver.type}" arg2="oracle"/>
+			</condition>
+	</target>
+	<target name="glassfishtargetcheck">
+			<condition property="glassfish.enabled">
+				<equals arg1="${appserver.type}" arg2="glassfish"/>
+			</condition>
+	</target>
+	<target name="jboss50targetcheck">
+			<condition property="jboss50.enabled">
+                <and>
+				  <equals arg1="${appserver.type}" arg2="jboss"/>
+                  <available file="${jboss.deploy.dir}/jbossweb.sar" type="dir"/>
+                </and>
+			</condition>
+	</target>
+	<target name="jboss42targetcheck">
+			<condition property="jboss42.enabled">
+                <and>
+				  <equals arg1="${appserver.type}" arg2="jboss"/>
+                  <available file="${jboss.deploy.dir}/jboss-web.deployer" type="dir"/>
+                </and>
+			</condition>
+	</target>
+	<target name="jboss40targetcheck">
+			<condition property="jboss40.enabled">
+                <and>
+				  <equals arg1="${appserver.type}" arg2="jboss"/>
+	              <not>
+                  <available file="${jboss.deploy.dir}/jboss-web.deployer" type="dir"/>
+                  </not>
+                </and>
+			</condition>
+	</target>
+	
+	<!-- We need to include all the myfaces libs in Weblogic 9 -->	
+	<target name="jsflibswls" depends="wlstargetcheck" if="weblogic.enabled">
+		<echo>Weblogic JSF target</echo>
+        <copy todir="${jsf.libdir}">
+            <fileset dir="${lib}/myfaces" >
+            	<include name="*.jar"/>
+            </fileset>
+        </copy>
+	    <copy todir="${jsf.libdir}">
+	        <fileset dir="${lib}" >
+	        	<include name="commons-*.jar"/>
+	        </fileset>
+	    </copy>
+        <property name="jar.jsfclasspath" value="lib/jstl-1.1.0.jar lib/myfaces-api-1.1.5.jar lib/myfaces-impl-1.1.5.jar lib/commons-logging.jar lib/commons-digester-1.8.jar lib/commons-el-1.0.jar lib/commons-beanutils.jar lib/commons-codec-1.3.jar lib/commons-collections-3.2" />
+        <property name="jar.jsftaglibs" value="tomahawk-1.1.6.jar,myfaces-impl-1.1.5.jar,jstl-1.1.0.jar" />
+	</target>
+
+	<!-- We need to include all the myfaces libs in Oc4j -->	
+	<target name="jsflibsoc4j" depends="oc4jtargetcheck" if="oc4j.enabled">
+		<echo>OC4J JSF target</echo>
+        <copy todir="${jsf.libdir}">
+            <fileset dir="${lib}/myfaces" >
+            	<include name="*.jar"/>
+            </fileset>
+        </copy>
+	    <copy todir="${jsf.libdir}">
+	        <fileset dir="${lib}" >
+	        	<include name="commons-*.jar"/>
+	        </fileset>
+	    </copy>
+        <property name="jar.jsfclasspath" value="lib/jstl-1.1.0.jar lib/myfaces-api-1.1.5.jar lib/myfaces-impl-1.1.5.jar lib/commons-logging.jar lib/commons-digester-1.8.jar lib/commons-el-1.0.jar lib/commons-beanutils.jar lib/commons-codec-1.3.jar lib/commons-collections-3.2" />
+        <property name="jar.jsftaglibs" value="tomahawk-1.1.6.jar,myfaces-impl-1.1.5.jar,jstl-1.1.0.jar" />
+	</target>
+
+	<!-- We need to include commons on the classpath for Glassfish -->	
+	<target name="jsflibsglassfish" depends="glassfishtargetcheck" if="glassfish.enabled">
+		<echo>Glassfish JSF target</echo>
+	    <copy todir="${jsf.libdir}">
+	        <fileset dir="${lib}" >
+	        	<include name="commons-*.jar"/>
+	        </fileset>
+	    </copy>
+        <property name="jar.jsfclasspath" value="lib/commons-logging.jar lib/commons-digester-1.8.jar lib/commons-el-1.0.jar lib/commons-beanutils.jar lib/commons-codec-1.3.jar lib/commons-collections-3.2" />
+	</target>
+	
+	<target name="jsflibspre">
+        <delete dir="${jsf.libdir}" />
+        <mkdir dir="${jsf.libdir}" />
+	</target>
+	
+	<target name="jsflibs" depends="jsflibspre,jsflibswls,jsflibsglassfish,jsflibsoc4j">
+        <property name="jar.jsfclasspath" value="" />
+        <property name="jar.jsftaglibs" value="tomahawk-1.1.6.jar" />
+	</target>
+
+    <!-- =================================================================== -->
+    <!-- Build CA-ear                                                        -->
+    <!-- =================================================================== -->
+	<target name="ca.ear" depends="jsflibs, publicweb.war, scep.war, webdist.war, status.war, cmp.war, healthcheck.war, adminweb.war, ejbca-ejb.jar, ejbca-util.jar, ejbcaws.war, ejbcaws.client, xkms.war, xkms.client, doc.war">
+        <ear destfile="${caear}" appxml="${eardd.src}/META-INF/application.xml"> 
+            <fileset dir="${eardd.src}">
+                <exclude name="META-INF/application.xml" />
+            </fileset>
+            <fileset dir=".">
+                <include name="${lib}/bcmail-jdk${java.ver}.jar" />
+                <include name="${lib}/bcprov-jdk${java.ver}.jar" />
+                <include name="${lib}/bctsp-jdk${java.ver}.jar" />
+                <include name="${lib}/cert-cvc.jar" />
+                <include name="${lib}/log4j.jar" />
+                <include name="${lib}/ldap.jar" />
+                <include name="${lib}/commons-*.jar" />
+                <include name="${lib}/batik/*.jar" />
+                <include name="${lib}/xmlsign/xmlsec-1.3.0.jar" />
+			    <include name="${lib}/reports/jasperreports-1.3.3.jar" />
+			    <include name="${lib}/reports/jfreechart-1.0.0.jar" />
+			    <include name="${lib}/reports/jcommon-1.0.8.jar" />
+            </fileset>
+            <fileset dir="${dist.dir}">
+                <include name="*-ejb.jar" />
+                <include name="*.war" />
+            </fileset>
+            <fileset dir="${jsf.dir}">
+                <include name="lib/*.jar" />
+            </fileset>
+	</ear>
+    <antcall target="signjar">
+        <param name="signjar.file" value="${caear}"/>
+    </antcall>
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- Build OCSP-ear                                                        -->
+    <!-- =================================================================== -->
+    <target name="ocsp-ear" depends="ocsp-war, ocsp-jar, ocsphealthcheck.war">
+        <ear destfile="${ocspear}" appxml="${ocsp-eardd.src}/META-INF/application.xml"> 
+            <fileset dir=".">
+                <include name="${lib}/bcmail-jdk${java.ver}.jar" />
+                <include name="${lib}/bcprov-jdk${java.ver}.jar" />
+                <include name="${lib}/cert-cvc.jar" />
+                <include name="${lib}/log4j.jar" />
+                <include name="${lib}/ldap.jar" />
+                <include name="${lib}/commons-lang-*.jar" />
+                <include name="${lib}/commons-collections-3.2.jar" />
+                <include name="${lib}/commons-fileupload-1.0.jar" />
+            </fileset>
+            <fileset dir="${ocsp-dist.dir}">
+                <include name="*-ejb.jar" />
+                <include name="*.war" />
+            </fileset>
+	</ear>
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- Build ocsp client part                                              -->
+    <!-- =================================================================== -->
+    <target name="ocspclient.jar" depends="init" description="Creates jar for ocspclient">
+        <javac destdir="${ocsp-client.build}" srcdir="${mainsrc}/java" debug="on" includeantruntime="no" encoding="iso8859-1">
+            <classpath refid="compile.classpath" />
+        	<include name="org/ejbca/ui/cli/Ocsp.java"/>
+        </javac>
+        <jar jarfile="${ocsp-dist.dir}/ocspclient.jar">
+        	<manifest>
+        	    <attribute name="Built-By" value="${user.name}"/>
+        	    <section name="OCSPUnidClient">
+        	      <attribute name="Implementation-Title" value="OCSPUnidClient"/>
+        	      <attribute name="Implementation-Version" value="${app.version} ${TODAY}"/> 
+        	      <attribute name="Implementation-Vendor" value="PrimeKey Solutions AB."/>
+        	    </section>
+                <attribute name="Class-Path" value="${jar.ocspclientclasspath}" />
+                <attribute name="Main-Class" value="org.ejbca.ui.cli.Ocsp" />
+        	  </manifest>
+            <fileset dir="${ocsp-client.build}"/>
+        	<fileset dir="${mainsrc}/java">
+        	    <include name="dncomponents.properties"/>
+        		<include name="profilemappings.properties"/>
+        	</fileset>	
+        </jar>
+        <copy todir="${ocsp-dist.dir}">
+            <fileset dir="${mainbin}">
+            	<include name="log4j.properties"/>
+            </fileset>
+        </copy>
+        <copy todir="${ocsp-dist.dir}/lib">
+            <fileset dir="${lib}">
+            	<include name="bcprov*.jar"/>
+            	<include name="cert-cvc*.jar"/>
+            	<include name="log4j*.jar" />
+            	<include name="commons-lang-*.jar" />
+            </fileset>
+        </copy>
+    	<zip destfile="${ocsp-dist.dir}/ocspclient.zip">
+    		<zipfileset dir="${ocsp-dist.dir}" prefix="ocspclient" filemode="600" dirmode="700"> 
+            	<include name="lib/*.jar"/>
+            	<include name="log4j.properties" />
+            	<include name="ocspclient.jar" />
+            </zipfileset>
+            <zipfileset dir="${mainbin}" prefix="ocspclient" filemode="700" dirmode="700">
+            	<include name="ocsp.sh"/>
+            </zipfileset>
+    	</zip>
+    </target>
+	
+    <!-- =================================================================== -->
+    <!-- Build Javadoc part                                                  -->
+    <!-- =================================================================== -->
+    <target name="javadoc" depends="">
+        <mkdir dir="${apidoc}" />
+        <javadoc packagenames="org.ejbca.*" maxmemory="256m" sourcepath="${src.java}" destdir="${apidoc}" extdirs="${lib}" author="true" version="true" use="true" windowtitle="EJBCA API" bottom="Copyright &#169; PrimeKey Solutions AB.">
+        </javadoc>
+    </target>
+
+    <!-- ========================================================================== -->
+    <!-- Upgrades the database for a new version of ejbca                           -->
+    <!-- ========================================================================== -->
+    <target name="upgrade">
+        <!-- Get input -->
+        <input message="Which version of EJBCA are you upgrading from:" addproperty="ejbca.upgradefromversion"
+        	validargs="3.1.x,3.2.x,3.3.x,3.4.x,3.5.x,3.6.x,3.7.x"/> 
+        <java classname="org.ejbca.ui.cli.Upgrade" fork="true">
+            <sysproperty key="ejbcaDB" value="${database.name}" />
+            <sysproperty key="ejbcaUpgradeFromVersion" value="${ejbca.upgradefromversion}" />
+            <classpath>
+                <pathelement location="./bin" />
+                <pathelement location="${build}" />
+                <fileset dir="${appserver.home}">
+                	<!-- jboss -->
+                    <include name="client/*.jar"/>
+                	<!-- glassfish -->
+                    <include name="lib/*.jar"/>
+                	<!-- welogic -->
+                    <include name="server/lib/weblogic.jar"/>
+                	<!-- oracle -->
+                    <include name="j2ee/home/oc4jclient.jar"/>
+                	<!-- websphere -->
+                    <include name="runtimes/com.ibm.*.jar"/>
+                </fileset>
+                <fileset dir="${lib}" includes="**/*.jar" />
+            </classpath>
+        </java>
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- Build Signing log4j log appended for JBoss                          -->
+    <!-- =================================================================== -->
+    <target name="jbosslogsigning" depends="compile">
+        <path id="jbosslogsigning.classpath">
+        </path>
+        <javac srcdir="${src.java}" extdirs="${lib}" destdir="${build}" debug="on" encoding="iso8859-1">
+            <exclude name="**/CVS/**" />
+            <include name="**/appserver/jboss/SigningDailyRollingFileAppender*" />
+            <include name="**/appserver/jboss/ScriptrunningDailyRollingFileAppender*" />
+            <include name="**/appserver/jboss/RollingCalendar*" />
+            <include name="**/appserver/jboss/SignerThread*" />
+            <include name="**/appserver/jboss/ScriptThread*" />
+            <!-- appserver specific files are built separtely-->
+            <classpath refid="jbosslogsigning.classpath" />
+            <classpath refid="compile.classpath" />
+        </javac>
+
+        <mkdir dir="${logsigning.build}" />
+        <copy todir="${logsigning.build}">
+            <fileset dir="${build}">
+                <include name="org/ejbca/appserver/jboss/SigningDailyRollingFileAppender*.class" />
+                <include name="org/ejbca/appserver/jboss/ScriptrunningDailyRollingFileAppender*.class" />
+                <include name="org/ejbca/appserver/jboss/RollingCalendar.class" />   
+                <include name="org/ejbca/appserver/jboss/SignerThread.class" />   
+                <include name="org/ejbca/appserver/jboss/ScriptThread.class" />   
+                <include name="org/ejbca/util/CertTools*.class" />
+                <include name="org/ejbca/util/FileTools*.class" />
+                <exclude name="se/anatom/ejbca/**/*Test*" />
+            </fileset>
+        </copy>
+        <jar basedir="${logsigning.build}" jarfile="${logsigningjar}">
+            <manifest>
+                <!-- <attribute name="Class-Path" value="${jar.extclasspath}" /> -->
+            </manifest>
+        </jar>
+    </target>
+	
+    <!-- =================================================================== -->
+    <!-- Create Log4j ErrorHandler and appender                              -->
+    <!-- =================================================================== -->
+	<target name="jbosslog4jsafer" depends="compile">
+	        <path id="jbosslog4jsafer.classpath">
+	        </path>
+	        <javac srcdir="${src.java}" extdirs="${lib}" destdir="${build}" debug="on" encoding="iso8859-1">
+	            <exclude name="**/CVS/**" />
+	            <include name="**/appserver/jboss/SaferDailyRollingFileAppender*" />
+	            <include name="**/appserver/jboss/ProbeableErrorHandler*" />
+	        	<include name="**/protocol/ocsp/ISaferAppenderListener*" />
+	            <!-- appserver specific files are built separtely-->
+	            <classpath refid="jbosslog4jsafer.classpath" />
+	            <classpath refid="compile.classpath" />
+	        </javac>
+
+	        <mkdir dir="${jbosslog4jsafer.build}" />
+	        <copy todir="${jbosslog4jsafer.build}">
+	            <fileset dir="${build}">
+	                <include name="org/ejbca/appserver/jboss/SaferDailyRollingFileAppender.class" />
+	                <include name="org/ejbca/appserver/jboss/ProbeableErrorHandler.class" />
+	            	<include name="org/ejbca/core/protocol/ocsp/ISaferAppenderListener.class" />
+	                <exclude name="se/anatom/ejbca/**/*Test*" />
+	            </fileset>
+	        </copy>
+	        <jar basedir="${jbosslog4jsafer.build}" jarfile="${jbosslog4jsaferjar}">
+	            <manifest>
+	                <!-- <attribute name="Class-Path" value="${jar.extclasspath}" /> -->
+	            </manifest>
+	        </jar>
+	    </target>
+
+    <!-- ======================================================================= -->
+    <!-- Deploy EJBCA ear to JBoss                                               -->
+    <!-- ======================================================================= -->
+    <target name="deploy" depends="build, buildwithcmptcpservice" description="Deploy the main EJBCA application">
+        <antcall target="j2ee:deploy" />
+    </target>
+    <target name="ocsp-deploy" depends="ocsp-ear" description="Deploy the standalone OCSP reponder" >
+        <antcall target="j2ee:deployocsp" />
+    </target>
+
+    <!-- ======================================================================= -->
+    <!-- Macro for test/pre-compiling JSP web pages    -->
+    <!-- ======================================================================= -->
+    <macrodef name="jsp-compile">
+        <attribute name="uriroot"/>
+        <attribute name="todir" default="@{uriroot}"/>
+        <sequential>
+		    <path id="jasper.classpath">
+		        <fileset dir="lib/jasper" includes="*.jar"/>
+		        <path refid="compile.classpath"/>
+		        <path location="${build}"/>
+		    </path>
+		    <property name="jasper.classpath" refid="jasper.classpath"/>
+	        <!-- loadderref is essential here ,otherwise this taskdef can not be called twice -->
+			<taskdef name="jasper2" classname="org.apache.jasper.JspC" 
+				classpathref="jasper.classpath"
+				loaderref="jasper"/>
+	        <mkdir dir="@{todir}/WEB-INF/jspc"/>
+	        <!--echo message="jasper.classpath = ${jasper.classpath}"/-->
+			<jasper2 uriroot="@{uriroot}"
+				package="org.apache.jasper.jspc"
+				outputdir="@{todir}/WEB-INF/jspc"
+				validatexml="false"
+				webXmlFragment="@{todir}/WEB-INF/generated_web.xml"
+				addWebXmlMappings="true"
+	            verbose="0"
+	            classpath="${jasper.classpath}"/>
+			<!--
+			  Compile them cleanly, jasper is not nice for this so use javac directly
+			  Note that precompilation may not work with weblogic (see weblogic docs)
+			  -->
+			<mkdir dir="@{todir}/WEB-INF/classes"/>
+			<depend srcdir="@{todir}/WEB-INF/jspc" destdir="@{todir}/WEB-INF/classes">
+				<classpath refid="jasper.classpath"/>
+			</depend>
+			<javac srcdir="@{todir}/WEB-INF/jspc" destdir="@{todir}/WEB-INF/classes" debug="on"
+	            includeantruntime="no" encoding="iso8859-1">
+	            <classpath refid="jasper.classpath"/>
+	        </javac>
+        </sequential>
+    </macrodef>    
+	
+    <!-- ======================================================================= -->
+    <!-- Make a ZIP release file of EJBCA, and a SHA1 checksum of the release    -->
+	<!-- The ZIP file contains all the files used, but not temporary or compile files etc -->
+    <!-- ======================================================================= -->
+	<target name="ziprelease" description="Make a zip file for EJBCA release">
+		<antcall target="clean" />
+
+	<!-- A small script that converts the version x.y.z to x_y_z to be used in the file -->
+	<scriptdef name="convertdot" language="javascript">
+	    <![CDATA[
+          ver = project.getProperty("app.version.number");
+		  relstring = ver.replace('.','_');
+	      //self.log(ver);
+	      //self.log(relstring);
+		  project.setProperty("ejbca.zipversion", relstring);
+          str = project.getProperty("ejbca.zipversion");
+	    ]]>
+    </scriptdef>
+		
+		<antcall target="update-svnrev" /> <!-- update svn revision version property -->
+		<convertdot/> <!-- convert dots to underscores in version string -->
+        <!-- <input message="Version tag for zipfile (ex 3_2_1):" addproperty="ejbca.zipversion" /> -->
+		<zip destfile="../ejbca_${ejbca.zipversion}.zip">
+		    <zipfileset dir="." prefix="ejbca_${ejbca.zipversion}" filemode="600" dirmode="700"> 
+		    	<include name="**/**" />
+		    	<exclude name="**/CVS/**" />
+		    	<exclude name="tmp/**" />
+		    	<exclude name="dist/**" />
+		    	<exclude name="ocsp-dist/**" />
+		    	<exclude name="bin/META_INF/**" />
+		    	<exclude name="out/**" />
+		    	<exclude name="p12*/**" />
+		    	<exclude name="hwtoken/**" />
+		        <exclude name="ocspHardTokenClasses/**" />
+		    	<exclude name="**/*.class" />
+		    	<exclude name=".classpath" />
+		    	<exclude name=".project" />
+		    	<exclude name="**/.cvsignore" />
+		    	<exclude name="**/ejbca.properties" />
+		    	<exclude name="conf/*.properties" />
+		    	<exclude name="conf/logdevices/*.properties" />
+		    	<exclude name="**/*.sh" />
+		    	<exclude name="**/jndi.properties" />
+		    	<exclude name="**/hs_err*" />
+		    </zipfileset>
+		    <zipfileset dir="." prefix="ejbca_${ejbca.zipversion}" filemode="700" dirmode="700"> 
+		    	<include name="**/*.sh" />
+		    </zipfileset>
+		</zip>
+        <antcall target="signjar">
+            <param name="signjar.file" value="../ejbca_${ejbca.zipversion}.zip"/>
+        </antcall>
+        <checksum file="../ejbca_${ejbca.zipversion}.zip" algorithm="SHA1" forceOverwrite="yes"/>      
+        <checksum file="../ejbca_${ejbca.zipversion}.zip" algorithm="SHA1" property="ejbcaSHA1"/>      
+        <echo message="SHA1 checksum: ${ejbcaSHA1}" />
+	</target>
+
+    <!-- ======================================================================= -->
+    <!-- Display application version string                                      -->
+    <!-- ======================================================================= -->
+	<target name="ejbcaversion" description="Output application version string.">
+		<echo>${app.version}</echo>
+	</target>
+
+    <!-- ======================================================================= -->
+    <!-- Target updating svn revision string in propertiesAndPaths.xml           -->
+    <!-- ======================================================================= -->
+	<target name="update-svnrev" description="Updates propertiesAndPaths.xmli file with current trunk SVN revision">
+		<echo>Updating propertiesAndPAths.xmli with SVN revision of COMMITTED.</echo>
+        <property name="revision" value="COMMITTED"/>	
+		
+        <!-- find out svn.revision of HEAD, need svn.exe installed on local machine will end up in property ${Revision} -->
+        <exec executable="svn" output="svnlog.out">
+            <arg line="info -r ${revision}"/>
+        </exec>
+		<loadproperties srcFile="svnlog.out">
+		      <filterchain>
+		        <linecontains>
+		          <contains value="Revision"/>
+		        </linecontains>
+		      </filterchain>
+		</loadproperties>
+		<delete file="svnlog.out"/>
+
+		<replaceregexp file="propertiesAndPaths.xmli" encoding="UTF-8" match='(\x3Cproperty name="svn.revision" value=")[^\x3C]*(" />)'
+			replace='\1r${Revision}\2' />
+	
+		<echo>Updated "svn.revision" to: r${Revision}</echo>
+    </target>
+
+     
+	<!--
+        Target for signing a JAR (JAR, EAR, WAR or ZIP)
+        parameter: signjar.file=file to sign 
+	-->
+    <target name="signjar">
+        <available file="${signjar.keystore}" property="signjar.keystorepresent" value="true"/>	
+    	<condition property="signjar.message" value="Using keystore ${signjar.keystore}."
+    		else="Specify -Dsignjar.keystore=/path/keystore.jks if you want to sign the release." >
+            <isset property="signjar.keystorepresent" />
+    	</condition>
+    	<echo message="${signjar.message}" />
+        <antcall target="signjar.internal" />
+    </target>
+
+    <target name="signjar.internal" if="signjar.keystorepresent">
+        <echo message="Signing ${signjar.file}" />
+        <input message="Enter alias for keystore ${signjar.keystore}:"
+        	addproperty="signjar.keystorealias" defaultvalue="releasesigner" /> 
+        <input message="Enter password for keystore ${signjar.keystore}:"
+        	addproperty="signjar.keystorepass" defaultvalue="foo123" /> 
+        <signjar keystore="${signjar.keystore}" jar="${signjar.file}"
+        	alias="${signjar.keystorealias}" storepass="${signjar.keystorepass}" />
+    </target>
+
+	<!--
+        Target that finds duplicated code. 
+        You must install jar files from pmd.sourceforge.net in ANT_HOME/lib so the taskdef finds the class
+	-->
+	<!--
+	<target name="cpd">
+	    <taskdef name="cpd" classname="net.sourceforge.pmd.cpd.CPDTask" />
+	    <cpd minimumTokenCount="100" outputFile="${src}/cpd.txt">
+	        <fileset dir="${src.java}/org.ejbca">
+	            <include name="**/*.java"/>
+	        </fileset>
+	    </cpd>
+	</target>
+	-->
+
+	<!-- Target that runs the Lint code check from http://www.jutils.com/.
+         You must install lint4j.jar in ANT_HOME/lib so the taskdef finds the class
+	-->
+	<!--
+	<target name="lint" description="Perform checks on EJBCA source code">
+		<taskdef name="lint4j" classname="com.jutils.lint4j.ant.Lint4jAntTask" />
+	  <lint4j packages="org.ejbca.*" level="3">
+	    <sourcepath>
+		  <dirset dir="${src}">
+			<include name="**/java" />
+		  </dirset>
+		</sourcepath>
+		<classpath>
+		  <fileset dir="${lib}">
+			<include name="**/*.jar" />
+		  </fileset>
+		  <dirset dir="${tmp}">
+			<include name="bin/classes" />
+		  </dirset>
+          <path refid="j2ee.classpath" />
+		</classpath>
+	    <formatters>
+	      <formatter type="text" />
+	      <formatter type="text" toFile="ejbca-lint.out"/>
+	    </formatters>
+	  </lint4j>
+	</target>
+    -->
+
+    <target name="clientToolBox" description="Builds command line clients as separate toolbox that can be deployed separately">
+        <mkdir dir="${clientToolBox.build}"/>
+        <copy todir="${clientToolBox-dist.dir}/endorsed">
+            <fileset dir="${lib}/jaxws">
+                <include name="jaxb*.jar"/>
+                <include name="saaj-*.jar"/>
+                <include name="jaxws-api.jar"/>
+                <include name="jaxws-rt.jar"/>
+                <include name="sjsxp.jar"/>
+                <include name="jsr181-api.jar"/>
+                <include name="jsr173_api.jar"/>
+                <include name="activation.jar"/>
+            </fileset>
+        </copy>
+        <copy todir="${clientToolBox-dist.dir}/lib">
+            <fileset dir="${lib}">
+                <include name="log4j.jar"/>
+                <include name="bcprov-jdk${java.ver}.jar"/>
+                <include name="commons-lang-2.4.jar"/>
+                <include name="bcmail-jdk${java.ver}.jar"/>
+                <include name="cert-cvc.jar"/>
+                <include name="ldap.jar"/>
+                <include name="jline-0.9.94.jar"/>
+            </fileset>
+        </copy>
+        <copy todir="${clientToolBox-dist.dir}">
+            <fileset file="${mainsrc}/jaxws/cli/ejbcawsracli.properties"/>
+            <fileset dir="${mainsrc}/clientToolBox"/>
+        </copy>
+        <chmod file="${clientToolBox-dist.dir}/*.sh" perm="a+rx"/>
+        <copy todir="${clientToolBox-dist.dir}/properties">
+            <fileset file="${mainbin}/log4j.properties"/>
+        </copy>
+        <copy todir="${src.java}">
+            <fileset dir="${mainsrc}/java" />
+        </copy>
+        <replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@ejbca.version@" value="${app.version}"/>
+        <replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@hardtoken.diplaysensitiveinfo@" value="${hardtoken.diplaysensitiveinfo}"/>
+        <replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@intresources.preferredlanguage@" value="${intresources.preferredlanguage}"/>               
+        <replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@intresources.secondarylanguage@" value="${intresources.secondarylanguage}"/>               
+        <replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@web.docbaseuri@" value="${web.docbaseuri}"/>               
+        <javac destdir="${clientToolBox.build}" debug="on">
+            <include name="org/ejbca/ui/cli/ClientToolBox.java" />
+            <include name="org/ejbca/core/protocol/ws/client/ejbcawsracli.java" />
+            <include name="org/ejbca/core/protocol/ws/client/gen/*.java" />
+            <classpath>
+                <fileset dir="${clientToolBox-dist.dir}/lib" />
+                <fileset dir="${clientToolBox-dist.dir}/endorsed" />
+            </classpath>
+            <src path="${src.java}" />
+            <src path="${mainsrc}/jaxws/gen-java/client" />
+        </javac>
+        <jar jarfile="${clientToolBox-dist.dir}/clientToolBox.jar">
+            <fileset dir="${clientToolBox.build}"/>
+            <fileset dir="${mainsrc}">
+                <include name="intresources/**"/>
+            </fileset>
+            <fileset dir="${mainsrc}/java">
+                <include name="dncomponents.properties"/>
+                <include name="profilemappings.properties"/>
+            </fileset>  
+        </jar>
+    </target>
+</project>
