@@ -133,7 +133,9 @@
 
   	if( request.getParameter(ACTION) != null){
     		if( request.getParameter(ACTION).equals(ACTION_EDIT_ALIASES)){
-    					
+    				
+    				ejbcawebbean.clearCmpConfigClone();
+    			
       				if( request.getParameter(BUTTON_EDIT_ALIAS) != null){
           					// Display  cmpaliaspage.jsp
          					alias = request.getParameter(SELECT_ALIASES);
@@ -219,7 +221,7 @@
     		       	if(alias != null) {
     		       		if(!alias.trim().equals("")) {
     		       	    	
-    		       		   cmpConfigClone = ejbcawebbean.getCmpConfigForEdit(alias);
+    		       		   	cmpConfigClone = ejbcawebbean.getCmpConfigForEdit(alias);
     		       			
     		       			//Save changes
     		       						
