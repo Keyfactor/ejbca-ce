@@ -16,6 +16,9 @@ import java.util.List;
 
 import javax.ejb.Local;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+
 /**
  * @see InternalKeyBindingMgmtSession
  * @version $Id$
@@ -30,4 +33,12 @@ public interface InternalKeyBindingMgmtSessionLocal extends InternalKeyBindingMg
      * @return a list of all internal key bindings of that type, as {@link InternalKeyBindingInfo}s
      */
     List<InternalKeyBindingInfo> getAllInternalKeyBindingInfos(String internalKeyBindingType);
+    
+    /**
+     * Internal (local only) method to get keybinding info without logging the authorization check
+     * (the auth check is performed though).
+     * 
+     * @see getInternalKeyBindingInfo
+     */
+    InternalKeyBindingInfo getInternalKeyBindingInfoNoLog(AuthenticationToken authenticationToken, int internalKeyBindingId) throws AuthorizationDeniedException;
 }
