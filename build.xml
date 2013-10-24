@@ -407,7 +407,7 @@
 		</condition>
 		<!-- Do we need special WebSphere handling? -->
     	<condition property="websphere-specials" value="true"><equals arg1="websphere" arg2="${appserver.type}"/></condition>
-		<!-- Do we need special JBoss EAP 6 handling? -->
+		<!-- Special JBoss EAP 6 handling -->
     	<condition property="jbosseap6-specials" value="true"><equals arg1="jbosseap6" arg2="${appserver.subtype}"/></condition>
 		<!-- Remove possible "leftovers" from previous plugin runs! -->
 	    <delete dir="${ejbca.plugin.gen.path}"/>
@@ -419,7 +419,7 @@
             <zipfileset prefix="META-INF" dir="${eardd.src}/META-INF" includes="log4j.xml"/>
     		<!-- Specify that we will use a specific WS implementation -->
             <zipfileset prefix="META-INF/services" dir="${ejbca.home}/src/deploy/ear/META-INF/services/" includes="javax.xml.soap.MetaFactory"/>
-        	<!-- Add aplplication server specific XML files -->
+        	<!-- Add application server specific XML files -->
             <zipfileset prefix="META-INF" dir="${ejbca.home}/src/deploy/ear/META-INF" includes="weblogic-application.xml jboss-deployment-structure.xml"/>
         	<!-- The place where to find plugins -->
 		    <zipfileset dir="${ejbca.plugin.gen.path}" erroronmissingdir="false"/>
@@ -428,6 +428,7 @@
                 <include name="bcpkix-jdk15on-149.jar" unless="websphere-specials"/>
                 <include name="bcprov-jdk15on-149.jar" unless="websphere-specials"/>
                 <include name="cert-cvc.jar" />
+            	<!-- JBoss EAP 6 comes with a new Log4j and there may be issues if we bundle it. -->
                 <include name="log4j-1.2.16.jar" unless="jbosseap6-specials"/>
                 <include name="ldap.jar" />
                 <include name="commons-*.jar" />
@@ -469,8 +470,12 @@
                 <include name="jbosslog4jsafer.jar" if="jbosseap6-specials"/>
         		<include name="${in-test-mode-include}systemtests-interfaces.jar"/>
         	</zipfileset>
-        	<zipfileset prefix="lib" dir="${mod.ejbca-ws-cli.dist}">
-        		<include name="ejbca-ws-cli.jar" />
+        	<zipfileset prefix="lib" dir="${mod.dist.path}">
+        		<!-- ejbca-ws-client is needed for automatic OCSP Renewal via WS
+        		     There are classpath issues using the ejbca-ws-cli.jar though, since this jar contain class-patch in META-INF/MANIFEST 
+        		     and the appserver wants to manage the classpath when running in an ear, therefore we have a ejbca-ws-client.jar, that is the 
+        		     same as the ejbca-ws-cli.jar, except there is no classpath and mainclass in the META-INF/MANIFEST file. -->
+        		<include name="${mod.ejbca-ws-client.libname}" />
         	</zipfileset>
         	<zipfileset prefix="lib" dir="${lib}/hibernate" excludes="${bundle-hibernate-exclude}"/>
         	<zipfileset prefix="lib" dir="${dist.dir}" includes="ejbca-util.jar"/>

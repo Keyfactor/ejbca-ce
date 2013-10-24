@@ -46,6 +46,11 @@
             </manifest>
         	<fileset dir="${build.dir}" includes="**"/>
     	</jar>
+        <!-- Also make a jar file with no Class-path inside it, this is used when including the client lib in an ear file
+             where the class path is set by the container -->
+    	<jar destfile="${mod.ejbca-ws-client.lib}">
+        	<fileset dir="${build.dir}" includes="**"/>
+    	</jar>
     </target>
 
     <target name="clean" description="Clean up this module">
