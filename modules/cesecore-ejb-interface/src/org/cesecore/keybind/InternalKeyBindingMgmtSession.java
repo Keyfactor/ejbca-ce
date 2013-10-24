@@ -223,6 +223,11 @@ public interface InternalKeyBindingMgmtSession {
      * @throws AuthorizationDeniedException of the authentication token is not authorized to this operation
      */
     InternalKeyBindingInfo getInternalKeyBindingInfo(AuthenticationToken authenticationToken, int internalKeyBindingId) throws AuthorizationDeniedException;
+    
+    /**
+     * @see getInternalKeyBindingInfo
+     */
+    InternalKeyBindingInfo getInternalKeyBindingInfoNoLog(AuthenticationToken authenticationToken, int internalKeyBindingId) throws AuthorizationDeniedException;
 
     /**
      * Update the status of the InternalKeyBinding. Note that it is not possible to enable an InternalKeyBinding that
