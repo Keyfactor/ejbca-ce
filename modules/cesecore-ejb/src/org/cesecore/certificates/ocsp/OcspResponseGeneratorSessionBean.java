@@ -1335,7 +1335,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         if (!internalKeyBindingDataSession.getIds(OcspKeyBinding.IMPLEMENTATION_ALIAS).isEmpty()) {
             return;
         }
-        // If ocsp.activation.doNotStorePasswordsInMemory=true, new CryptoTokens should not be auto-actived
+        // If ocsp.activation.doNotStorePasswordsInMemory=true, new Crypto Tokens should not be auto-actived
         final boolean globalDoNotStorePasswordsInMemory = OcspConfiguration.getDoNotStorePasswordsInMemory();
         if (globalDoNotStorePasswordsInMemory && activationPassword == null) {
             log.info("Postponing conversion of ocsp.properties configuration to OcspKeyBindings since password is not yet available.");
