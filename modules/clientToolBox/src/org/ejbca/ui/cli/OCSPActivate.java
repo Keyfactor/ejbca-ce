@@ -29,7 +29,7 @@ public class OCSPActivate extends ClientToolBox {
 	protected void execute(String[] args) {
         if (args.length < 2) {
             System.out.println(args[0] + " <hostname:port>");
-            System.out.println(" Useed for HSM activation on an OCSP server install.");
+            System.out.println(" Used for HSM activation on an OCSP server install.");
             System.out.println(" hostname:port  the address of where the OCSP serrver is running. Only use 127.0.0.1 in a production environment.");
             return;
         }

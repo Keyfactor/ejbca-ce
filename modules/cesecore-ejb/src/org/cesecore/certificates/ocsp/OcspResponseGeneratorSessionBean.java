@@ -1326,8 +1326,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         }
     }
 
-    // TODO: Test this throughly! 
+    // TODO: Test this thoroughly! 
     @Override
+    @Deprecated //Remove this method once upgrading from 5-6 is dropped
     public void adhocUpgradeFromPre60(char[] activationPassword) {
         AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
                 OcspResponseGeneratorSessionBean.class.getSimpleName() + ".adhocUpgradeFromPre60"));
@@ -1452,6 +1453,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         }
     }
     
+    @Deprecated //Remove this method as soon as upgrading from 5.0->6.x is dropped
     private void processSoftKeystore(AuthenticationToken authenticationToken, File file, String softStorePassword, String softKeyPassword,
             boolean doNotStorePasswordsInMemory, List<InternalKeyBindingTrustEntry> trustDefaults) {
      KeyStore keyStore;
@@ -1531,6 +1533,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     }
     
     /** Create InternalKeyBindings for Ocsp signing and SSL client authentication certs during ad-hoc upgrades. */
+    @Deprecated //Remove this method as soon as upgrading from 5->6 is dropped
     private void createInternalKeyBindings(AuthenticationToken authenticationToken, int cryptoTokenId, KeyStore keyStore, List<InternalKeyBindingTrustEntry> trustDefaults) throws KeyStoreException, CryptoTokenOfflineException, InternalKeyBindingNameInUseException, AuthorizationDeniedException, CertificateEncodingException, CertificateImportException, InvalidAlgorithmException {
         final Enumeration<String> aliases = keyStore.aliases();
         while (aliases.hasMoreElements()) {
@@ -1569,6 +1572,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     }
 
     /** @return a list of trusted signers or CAs */
+    @Deprecated //This method is only used for upgrading to version 6
     private List<InternalKeyBindingTrustEntry> getOcspKeyBindingTrustDefaults() {
         // Import certificates used to verify OCSP request signatures and add these to each OcspKeyBinding's trust-list
         //  ocsp.signtrustdir=signtrustdir

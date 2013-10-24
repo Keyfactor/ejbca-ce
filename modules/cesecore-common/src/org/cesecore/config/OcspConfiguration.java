@@ -112,6 +112,7 @@ public class OcspConfiguration {
     /**
      * If set to true the Servlet will restrict OCSP request signing
      */
+    @Deprecated
     public static boolean getRestrictSignatures() {
         String value = ConfigurationHolder.getString("ocsp.restrictsignatures");
         return "true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value);
