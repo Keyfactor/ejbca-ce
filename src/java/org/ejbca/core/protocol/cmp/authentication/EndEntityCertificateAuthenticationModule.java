@@ -626,8 +626,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     }
     
     /**
-     * Checks whether authentication by vendor-issued-certificate should be used. If authentication by vendor-issued-certificate is 
-     * activated in the Cmp.properties file, it can be used only in client mode and with initialization/certification requests.
+     * Checks whether authentication by vendor-issued-certificate should be used. It can be used only in client mode and with initialization/certification requests.
      *  
      * @param reqType
      * @return 'True' if authentication by vendor-issued-certificate is used. 'False' otherwise
