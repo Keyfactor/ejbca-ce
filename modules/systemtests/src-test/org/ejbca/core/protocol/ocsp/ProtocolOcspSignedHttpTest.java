@@ -209,7 +209,7 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
         chain[1] = new JcaX509CertificateHolder(cacert);
         gen.setRequestorName(chain[0].getSubject());
         OCSPReq req = gen.build(new BufferingContentSigner(new JcaContentSignerBuilder("SHA1withRSA").build(keys.getPrivate()), 20480), chain);
-        //OCSPReq req = gen.generate();
+        
         
         // Send the request and receive a singleResponse
         SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", OCSPResponseStatus.SUCCESSFUL, 200);
