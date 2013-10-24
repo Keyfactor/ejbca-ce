@@ -309,5 +309,26 @@ public final class CesecoreConfiguration {
     public static boolean getCaKeepOcspExtendedService() {
         return Boolean.valueOf(ConfigurationHolder.getString("ca.keepocspextendedservice").toLowerCase());
     }
+
+    /**
+     * Used just in {@link #getForbiddenCharacters()}. The method is called very
+     * often so we declare this String in the class so it does not have to be
+     * each time the method is called.
+     */
+    final static private String FORBIDDEN_CARACTERS_KEY = "forbidden.characters";
+    /**
+     * Characters forbidden in fields to be stored in the DB.
+     * @return all forbidden characters.
+     */
+    public static char[] getForbiddenCharacters() {
+        // Using 'instance().getString' instead of 'getString' since an empty
+        // String (size 0) must be returned when the property is defined without
+        // any value.
+        final String s = ConfigurationHolder.instance().getString(FORBIDDEN_CARACTERS_KEY);
+        if (s==null) {
+            return ConfigurationHolder.getDefaultValue(FORBIDDEN_CARACTERS_KEY).toCharArray();
+        }
+        return s.toCharArray();
+    }
 }
 

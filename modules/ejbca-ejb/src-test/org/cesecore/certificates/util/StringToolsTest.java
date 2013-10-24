@@ -21,7 +21,9 @@ import static org.junit.Assert.assertTrue;
 import java.util.Arrays;
 import java.util.Collections;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.log4j.Logger;
+import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.StringTools;
 import org.junit.Test;
@@ -94,6 +96,34 @@ public class StringToolsTest {
         assertEquals("String not stripped correctly! " + stripped, "CN=foo+CN=bar, O=Acme\\, Inc", stripped);
 
         log.trace("<test04Strip()");
+    }
+
+    final static String FORBIDDEN_CHARS_KEY = "forbidden.characters";
+    private static void forbiddenTest( final String forbidden, final String input, final String output ) {
+        ConfigurationHolder.instance().setProperty(FORBIDDEN_CHARS_KEY, forbidden);
+        final String stripped = StringTools.strip(input);
+        if ( input.equals(output) ) {
+            assertFalse("The string do NOT have chars that should be stripped!", StringTools.hasStripChars(input));
+        } else {
+            assertTrue("The string DO have chars that should be stripped!", StringTools.hasStripChars(input));
+        }
+        assertEquals("String not stripped correctly!", output, stripped);
+    }
+    @Test
+    public void test05Strip() throws Exception {
+        log.trace(">test05Strip()");
+        final Object originalValue = ConfigurationHolder.instance().getProperty(FORBIDDEN_CHARS_KEY);
+        try {
+            final String input =  "|\n|\r|;|foo bar|!|\u0000|`|?|$|~|";
+            final String defaultOutput = "|/|/|/|foo bar|/|/|/|/|/|/|";
+            forbiddenTest(null, input, defaultOutput);
+            forbiddenTest("\n\r;!\u0000%`?$~", input, defaultOutput);
+            forbiddenTest("", input, input);
+            forbiddenTest("rab| oof", input, "/\n/\r/;/////////!/\u0000/`/?/$/~/");
+        } finally {
+            ConfigurationHolder.instance().setProperty(FORBIDDEN_CHARS_KEY, originalValue);
+        }
+        log.trace("<test05Strip()");
     }
 
     @Test
