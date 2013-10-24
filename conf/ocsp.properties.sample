@@ -128,16 +128,18 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 #ocsp.unidcacert=
 
 
-# Specifies if the OCSP-responder should require signed requests or not.
-# If signature is required, the signature certificate must be issued by a CA handled by the OCSP responder.
-#
-# Default: false
-#ocsp.signaturerequired=false
+
 
 #------------------- DEPRECATED CONFIG: Verification of OCSP request signatures------------------------------
 # DEPRECATION:
 # From EJBCA 6.0.0 used one last time during upgrade to configure trust anchors in OcspKeyBindings.
 # It is not possible to validate OCSP request signatures when using a CA to sign the response.
+
+# Specifies if the OCSP-responder should require signed requests or not.
+# If signature is required, the signature certificate must be issued by a CA handled by the OCSP responder.
+#
+# Default: false
+#ocsp.signaturerequired=false
 
 # Specifies if the OCSP-responder should require signatures to be issued by a list of allowed CA's.
 #

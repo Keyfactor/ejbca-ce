@@ -36,6 +36,7 @@ import org.cesecore.util.FileTools;
  * @version $Id$
  * 
  */
+@Deprecated
 public enum DirectoryCache {
     INSTANCE;
 
@@ -159,7 +160,7 @@ public enum DirectoryCache {
      * @return the trustedReqSigSigners
      */
     public Map<String, X509Certificate> getTrustedReqSigSigners() {
-        if (requestRestrictMethod == OcspConfiguration.RESTRICTONSIGNER) {
+        if (requestRestrictMethod != OcspConfiguration.RESTRICTONSIGNER) {
             throw new IllegalStateException("trustedReqSigSigners requested, but unavailable due to configuration");
         }
         //Lazy initialization
