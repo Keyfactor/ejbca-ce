@@ -243,7 +243,7 @@ public class CmpConfiguration extends Configuration implements Serializable {
         }
         
         if(authmodules.size() != authparams.size()) {
-            log.error("Did not update CMP Authentication settings because the number of authentication parameters is not " +
+            log.info("Did not update CMP Authentication settings because the number of authentication parameters is not " +
             		"the same as the number of authentication modules");
             return;
         }
@@ -286,9 +286,9 @@ public class CmpConfiguration extends Configuration implements Serializable {
             String modules[] = confModule.split(";");
             String params[] = confParams.split(";");
         
-            if(modules.length != params.length) {
-                log.error("There are not as many authentication parameters as authentication modules. " 
-                                    + modules.length + " modules but " + params.length + " parameters");
+            if(modules.length > params.length) {
+                log.info("There are not as many authentication parameters as authentication modules. " 
+                                    + modules.length + " modules but " + params.length + " parameters. Returning an empty String");
                 return "";
             }
             
@@ -297,10 +297,11 @@ public class CmpConfiguration extends Configuration implements Serializable {
                     return params[i];
                 }
             }
-            log.error("The authentication module whose parameters are requested is not part of the set authentication modules");
             return "";
         } else {
-            log.error("No alias was specified");
+            if(log.isDebugEnabled()) {
+                log.debug("No CMP alias was specified. Returning an empty String");
+            }
             return "";
         }
     }
@@ -580,7 +581,9 @@ public class CmpConfiguration extends Configuration implements Serializable {
         }   
             
         if(StringUtils.isEmpty(alias)) {
-            log.error("No alias is added because no alias was provided.");
+            if(log.isDebugEnabled()) {
+                log.debug("No alias is added because no alias was provided.");
+            }
             return;
         }
             
@@ -602,7 +605,9 @@ public class CmpConfiguration extends Configuration implements Serializable {
         }
         
         if(StringUtils.isEmpty(alias)) {
-            log.error("No alias is removed because no alias was provided.");
+            if(log.isDebugEnabled()) {
+                log.debug("No alias is removed because no alias was provided.");
+            }
             return;
         }
         
@@ -629,18 +634,18 @@ public class CmpConfiguration extends Configuration implements Serializable {
         }
         
         if(StringUtils.isEmpty(oldAlias) || StringUtils.isEmpty(newAlias)) {
-            log.error("No alias is renamed because one or both aliases were not provided.");
+            log.info("No alias is renamed because one or both aliases were not provided.");
             return;
         }
         
         Set<String> aliases = getAliasList();
         if(!aliases.contains(oldAlias)) {
-            log.error("Cannot rename. CMP alias '" + oldAlias + "' does not exists.");
+            log.info("Cannot rename. CMP alias '" + oldAlias + "' does not exists.");
             return;
         }
         
         if(aliases.contains(newAlias)) {
-            log.error("Cannot rename. CMP alias '" + newAlias + "' already exists.");
+            log.info("Cannot rename. CMP alias '" + newAlias + "' already exists.");
             return;
         }
         
@@ -664,18 +669,18 @@ public class CmpConfiguration extends Configuration implements Serializable {
         }
         
         if(StringUtils.isEmpty(originAlias) || StringUtils.isEmpty(cloneAlias)) {
-            log.error("No alias is cloned because one or both aliased were not provided");
+            log.info("No alias is cloned because one or both aliased were not provided");
             return;
         }
         
         Set<String> aliases = getAliasList();
         if(!aliases.contains(originAlias)) {
-            log.error("Cannot clone. CMP alias '" + originAlias + "' does not exist.");
+            log.info("Cannot clone. CMP alias '" + originAlias + "' does not exist.");
             return;
         }
         
         if(aliases.contains(cloneAlias)) {
-            log.error("Cannot clone. CMP alias '" + cloneAlias + "' already exists.");
+            log.info("Cannot clone. CMP alias '" + cloneAlias + "' already exists.");
             return;
         }
         
