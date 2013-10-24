@@ -22,11 +22,6 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.keybind.CertificateImportException;
-import org.cesecore.keybind.InternalKeyBinding;
-import org.cesecore.keybind.InternalKeyBindingInfo;
-import org.cesecore.keybind.InternalKeyBindingProperty;
-import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 
 /**
@@ -223,11 +218,6 @@ public interface InternalKeyBindingMgmtSession {
      * @throws AuthorizationDeniedException of the authentication token is not authorized to this operation
      */
     InternalKeyBindingInfo getInternalKeyBindingInfo(AuthenticationToken authenticationToken, int internalKeyBindingId) throws AuthorizationDeniedException;
-    
-    /**
-     * @see getInternalKeyBindingInfo
-     */
-    InternalKeyBindingInfo getInternalKeyBindingInfoNoLog(AuthenticationToken authenticationToken, int internalKeyBindingId) throws AuthorizationDeniedException;
 
     /**
      * Update the status of the InternalKeyBinding. Note that it is not possible to enable an InternalKeyBinding that
