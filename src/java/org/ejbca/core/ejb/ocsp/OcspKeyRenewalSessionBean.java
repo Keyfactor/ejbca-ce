@@ -54,6 +54,7 @@ import javax.net.ssl.X509TrustManager;
 import javax.security.auth.x500.X500Principal;
 import javax.xml.namespace.QName;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
@@ -157,7 +158,9 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
         try {
             final EjbcaWS ejbcaWS = getEjbcaWS();
             if (ejbcaWS == null) {
-                log.error("Could not locate a suitable web service");
+                if (log.isDebugEnabled()) {
+                    log.debug("Could not locate a suitable web service for automatic OCSP key/certificate renewal.");
+                }
                 return;
             }
             final X500Principal target;
@@ -424,6 +427,14 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
 
     /** @return the EJBCA WS object. */
     private EjbcaWS getEjbcaWS() {
+        String webUrl = OcspConfiguration.getEjbcawsracliUrl();
+        if (StringUtils.isEmpty(webUrl)) {
+            // Automatic renewal is not enabled
+            if (log.isDebugEnabled()) {
+                log.debug("Automatic OCSP key/certificate renewal is not enabled, "+OcspConfiguration.REKEYING_WSURL+" is empty.");
+            }
+            return null;
+        }
         final SSLSocketFactory sslSocketFactory = getSSLSocketFactory();
         if (sslSocketFactory == null) {
             log.warn("No AuthenticationKeyBinding is configured. Unable to authenticate to EJBCA WebService.");
@@ -431,7 +442,6 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
         }
         HttpsURLConnection.setDefaultSSLSocketFactory(sslSocketFactory);
         final URL ws_url;
-        String webUrl = OcspConfiguration.getEjbcawsracliUrl();
         try {
             ws_url = new URL(webUrl + "?wsdl");
         } catch (MalformedURLException e) {
