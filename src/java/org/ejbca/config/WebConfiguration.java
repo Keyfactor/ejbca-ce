@@ -217,12 +217,12 @@ public class WebConfiguration {
                             displayName = fileName;
                         }
                         if (log.isDebugEnabled()) {
-                            log.info("Adding PKCS#11 library " + fileName + " with display name " + displayName);
+                            log.debug("Adding PKCS#11 library " + fileName + " with display name " + displayName);
                         }
                         ret.put(fileName, new P11LibraryInfo(displayName, slotList));
                     } else {
                         if (log.isDebugEnabled()) {
-                            log.info("PKCS#11 library " + fileName + " was not detected in file system and will not be available.");
+                            log.debug("PKCS#11 library " + fileName + " was not detected in file system and will not be available.");
                         }
                     }
                 }
