@@ -73,7 +73,7 @@ import org.ejbca.core.protocol.cmp.authentication.VerifyPKIMessage;
 
 /**
  * Message handler for the CMP revocation request messages
- * @author tomas
+ * 
  * @version $Id$
  */
 public class RevocationMessageHandler extends BaseCmpMessageHandler implements ICmpMessageHandler {
@@ -217,30 +217,32 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		        failInfo = FailInfo.NOT_AUTHORIZED;
 		        final String errMsg = INTRES.getLocalizedMessage("cmp.errornotauthrevoke", issuer.toString(), serno.getValue().toString(16));
 		        failText = errMsg; 
-		        LOG.error(failText);
+		        LOG.info(failText);
 		    } catch (FinderException e) {
 		        failInfo = FailInfo.BAD_CERTIFICATE_ID;
 		        final String errMsg = INTRES.getLocalizedMessage("cmp.errorcertnofound", issuer.toString(), serno.getValue().toString(16));
 		        failText = errMsg; 
-		        LOG.error(failText);
+                // This is already info logged in endEntityManagementSession.revokeCert
+                // LOG.info(failText);
 		    } catch (WaitingForApprovalException e) {
 		        status = ResponseStatus.GRANTED_WITH_MODS;
 		    } catch (ApprovalException e) {
 		        failInfo = FailInfo.BAD_REQUEST;
 		        final String errMsg = INTRES.getLocalizedMessage("cmp.erroralreadyrequested");
 		        failText = errMsg; 
-		        LOG.error(failText);
+		        LOG.info(failText);
 		    } catch (AlreadyRevokedException e) {
 		        failInfo = FailInfo.BAD_REQUEST;
 		        final String errMsg = INTRES.getLocalizedMessage("cmp.erroralreadyrevoked");
 		        failText = errMsg; 
-		        LOG.error(failText);
+		        // This is already info logged in endEntityManagementSession.revokeCert
+		        // LOG.info(failText);
 		    }
 		} else {
 		    failInfo = FailInfo.BAD_CERTIFICATE_ID;
 		    final String errMsg = INTRES.getLocalizedMessage("cmp.errormissingissuerrevoke", issuer.toString(), serno.getValue().toString(16));
 		    failText = errMsg; 
-		    LOG.error(failText);
+		    LOG.info(failText);
 		}
 
 		
