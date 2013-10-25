@@ -37,7 +37,7 @@
 <li>Standard and custom certificate extensions supported.</li>
 <li>Supports the Simple Certificate Enrollment Protocol (<a href="docs/adminguide.html#Scep">SCEP</a>).</li>
 <li>Qualified Certificate Statement (RFC3739) for issuing EU/ETSI qualified certificates.</li>
-<li>Supports the Online Certificate Status Protocol (<a href="docs/architecture-ocsp.html">OCSP</a> - RFC2560 and RFC5019), including AIA-extension.</li>
+<li>Supports the Online Certificate Status Protocol (<a href="docs/architecture-ocsp.html">OCSP</a> - RFC2560, RFC6960 and RFC5019), including AIA-extension.</li>
 <li>Supports RFC4387 for distribution of CA certificates and CRLs over HTTP.</li>
 <li>Validation Authority service serving OCSP responses (RFC2560/5019), CA certificates and CRLS (RFC4387).</li>
 <li>Supports the German <a href="http://www.common-pki.org/">Common PKI</a> SigG CertHash OCSP extension.</li> 
