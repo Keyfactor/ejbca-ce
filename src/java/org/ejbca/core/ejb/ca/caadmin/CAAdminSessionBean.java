@@ -2217,7 +2217,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalcaactivation"));
         }
         if (cainfo.getStatus() == CAConstants.CA_OFFLINE) {
-            final String detailsMsg = intres.getLocalizedMessage("catoken.activated", caid);
+            final String detailsMsg = intres.getLocalizedMessage("caadmin.activated", caid);
             auditSession.log(EventTypes.CA_SERVICEACTIVATE, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(),
                     String.valueOf(caid), null, null, detailsMsg);
             CA ca = caSession.getCAForEdit(admin, caid);
@@ -2247,7 +2247,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         if (ca.getStatus() == CAConstants.CA_ACTIVE) {
             ca.setStatus(CAConstants.CA_OFFLINE);
             caSession.editCA(admin, ca, false);
-            final String detailsMsg = intres.getLocalizedMessage("catoken.deactivated", caid);
+            final String detailsMsg = intres.getLocalizedMessage("caadmin.deactivated", caid);
             auditSession.log(EventTypes.CA_SERVICEDEACTIVATE, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(),
                     String.valueOf(caid), null, null, detailsMsg);
         } else {
