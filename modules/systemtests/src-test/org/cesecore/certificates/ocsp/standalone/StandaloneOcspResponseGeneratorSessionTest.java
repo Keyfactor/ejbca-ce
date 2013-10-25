@@ -113,7 +113,7 @@ import org.junit.rules.TestRule;
  */
 public class StandaloneOcspResponseGeneratorSessionTest {
 
-    private static final String PASSWORD = "foo123";
+    //private static final String PASSWORD = "foo123";
     private static final String CA_DN = "CN=OcspDefaultTestCA";
     
     private static final String TESTCLASSNAME = StandaloneOcspResponseGeneratorSessionTest.class.getSimpleName();
@@ -198,7 +198,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         //Now delete the original CA, making this test completely standalone.
         OcspTestUtils.deleteCa(authenticationToken, x509ca);
         activateKeyBinding(internalKeyBindingId);
-        ocspResponseGeneratorSession.reloadTokenAndChainCache(PASSWORD);
+        ocspResponseGeneratorSession.reloadOcspSigningCache();
         // Do the OCSP request
         final OCSPReq ocspRequest = buildOcspRequest(null, null, caCertificate, ocspSigningCertificate.getSerialNumber());
         final OCSPResp response = sendRequest(ocspRequest);
@@ -216,7 +216,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
               //Now delete the original CA, making this test completely standalone.
             OcspTestUtils.deleteCa(authenticationToken, x509ca);
             activateKeyBinding(internalKeyBindingId);
-            ocspResponseGeneratorSession.reloadTokenAndChainCache(PASSWORD);
+            ocspResponseGeneratorSession.reloadOcspSigningCache();
             // Do the OCSP request
             final KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
             final X509Certificate fakeIssuerCertificate = CertTools.genSelfCert("CN=fakeCA", 365, null, keys.getPrivate(), keys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);       
@@ -243,7 +243,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
     public void testStandAloneOcspResponseWithBothCaAndInternalKeyBinding() throws Exception {
         //Note: The CA never gets deleted in this test, so there exists both a CA and a key binding at the same time. 
         activateKeyBinding(internalKeyBindingId);
-        ocspResponseGeneratorSession.reloadTokenAndChainCache(PASSWORD);
+        ocspResponseGeneratorSession.reloadOcspSigningCache();
         // Do the OCSP request
         final OCSPReq ocspRequest = buildOcspRequest(null, null, caCertificate, ocspSigningCertificate.getSerialNumber());
         final OCSPResp response = sendRequest(ocspRequest);
@@ -277,7 +277,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
             }
         }
         assertTrue("Configured trust entry was no longer present after cache flush", found);
-        ocspResponseGeneratorSession.reloadTokenAndChainCache(PASSWORD);
+        ocspResponseGeneratorSession.reloadOcspSigningCache();
     }
 
     /**
@@ -294,7 +294,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingMgmtSession.getInternalKeyBinding(authenticationToken, internalKeyBindingId);
         ocspKeyBinding.setRequireTrustedSignature(true);
         internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, ocspKeyBinding);
-        ocspResponseGeneratorSession.reloadTokenAndChainCache(PASSWORD);
+        ocspResponseGeneratorSession.reloadOcspSigningCache();
         // Try to send an unsigned OCSP requests
         final OCSPReq ocspRequestUnsigned = buildOcspRequest(null, null, caCertificate, ocspSigningCertificate.getSerialNumber());
         final OCSPResp ocspResponseUnsigned = sendRequest(ocspRequestUnsigned);
@@ -321,7 +321,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingMgmtSession.getInternalKeyBinding(authenticationToken, internalKeyBindingId);
         ocspKeyBinding.setRequireTrustedSignature(false);
         internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, ocspKeyBinding);
-        ocspResponseGeneratorSession.reloadTokenAndChainCache(PASSWORD);
+        ocspResponseGeneratorSession.reloadOcspSigningCache();
         // Try to send a signed OCSP requests
         final OCSPReq ocspRequestSigned = buildOcspRequest(ocspAuthenticationCertificate, ocspAuthenticationKeyPair.getPrivate(),
                 caCertificate, ocspSigningCertificate.getSerialNumber());
@@ -349,7 +349,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingMgmtSession.getInternalKeyBinding(authenticationToken, internalKeyBindingId);
         ocspKeyBinding.setRequireTrustedSignature(true);
         internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, ocspKeyBinding);
-        ocspResponseGeneratorSession.reloadTokenAndChainCache(PASSWORD);
+        ocspResponseGeneratorSession.reloadOcspSigningCache();
         // Try to send a signed OCSP requests
         final OCSPReq ocspRequestSigned = buildOcspRequest(ocspAuthenticationCertificate, ocspAuthenticationKeyPair.getPrivate(),
                 caCertificate, ocspSigningCertificate.getSerialNumber());
@@ -379,7 +379,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         // Trust signatures from CA with id -1 (should not exist)
         addTrustEntry(ocspKeyBinding, -1, null);
         internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, ocspKeyBinding);
-        ocspResponseGeneratorSession.reloadTokenAndChainCache(PASSWORD);
+        ocspResponseGeneratorSession.reloadOcspSigningCache();
         // Try to send a signed OCSP requests
         final OCSPReq ocspRequestSigned = buildOcspRequest(ocspAuthenticationCertificate, ocspAuthenticationKeyPair.getPrivate(),
                 caCertificate, ocspSigningCertificate.getSerialNumber());
@@ -409,7 +409,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         // Trust signatures from our test CA
         addTrustEntry(ocspKeyBinding, x509ca.getCAId(), null);
         internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, ocspKeyBinding);
-        ocspResponseGeneratorSession.reloadTokenAndChainCache(PASSWORD);
+        ocspResponseGeneratorSession.reloadOcspSigningCache();
         // Try to send a signed OCSP requests
         final OCSPReq ocspRequestSigned = buildOcspRequest(ocspAuthenticationCertificate, ocspAuthenticationKeyPair.getPrivate(),
                 caCertificate, ocspSigningCertificate.getSerialNumber());
@@ -439,7 +439,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         // Trust signatures from our test CA and certificate serial number "0" (that should be the one we are using)
         addTrustEntry(ocspKeyBinding, x509ca.getCAId(), new BigInteger("0"));
         internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, ocspKeyBinding);
-        ocspResponseGeneratorSession.reloadTokenAndChainCache(PASSWORD);
+        ocspResponseGeneratorSession.reloadOcspSigningCache();
         // Try to send a signed OCSP requests
         final OCSPReq ocspRequestSigned = buildOcspRequest(ocspAuthenticationCertificate, ocspAuthenticationKeyPair.getPrivate(),
                 caCertificate, ocspSigningCertificate.getSerialNumber());
@@ -469,7 +469,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         // Trust signatures from our test CA and the certificate serial number from our auth cert
         addTrustEntry(ocspKeyBinding, x509ca.getCAId(), ocspAuthenticationCertificate.getSerialNumber());
         internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, ocspKeyBinding);
-        ocspResponseGeneratorSession.reloadTokenAndChainCache(PASSWORD);
+        ocspResponseGeneratorSession.reloadOcspSigningCache();
         // Try to send a signed OCSP requests
         final OCSPReq ocspRequestSigned = buildOcspRequest(ocspAuthenticationCertificate, ocspAuthenticationKeyPair.getPrivate(),
                 caCertificate, ocspSigningCertificate.getSerialNumber());
@@ -501,7 +501,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         addTrustEntry(ocspKeyBinding, -2, null);
         addTrustEntry(ocspKeyBinding, x509ca.getCAId(), new BigInteger("0"));
         internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, ocspKeyBinding);
-        ocspResponseGeneratorSession.reloadTokenAndChainCache(PASSWORD);
+        ocspResponseGeneratorSession.reloadOcspSigningCache();
         // Try to send a signed OCSP requests
         final OCSPReq ocspRequestSigned = buildOcspRequest(ocspAuthenticationCertificate, ocspAuthenticationKeyPair.getPrivate(),
                 caCertificate, ocspSigningCertificate.getSerialNumber());
@@ -533,7 +533,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         addTrustEntry(ocspKeyBinding, -2, null);
         addTrustEntry(ocspKeyBinding, x509ca.getCAId(), ocspAuthenticationCertificate.getSerialNumber());
         internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, ocspKeyBinding);
-        ocspResponseGeneratorSession.reloadTokenAndChainCache(PASSWORD);
+        ocspResponseGeneratorSession.reloadOcspSigningCache();
         // Try to send a signed OCSP requests
         final OCSPReq ocspRequestSigned = buildOcspRequest(ocspAuthenticationCertificate, ocspAuthenticationKeyPair.getPrivate(),
                 caCertificate, ocspSigningCertificate.getSerialNumber());
@@ -576,7 +576,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         //Now delete the original CA, making this test completely standalone.
         OcspTestUtils.deleteCa(authenticationToken, x509ca);
         activateKeyBinding(internalKeyBindingId);
-        ocspResponseGeneratorSession.reloadTokenAndChainCache(PASSWORD);
+        ocspResponseGeneratorSession.reloadOcspSigningCache();
         
         try {
             // At first try, it should throw an exception because it can not find the default responder

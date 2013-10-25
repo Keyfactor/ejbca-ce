@@ -38,13 +38,9 @@ public class OcspConfiguration {
     public static final String SIGNING_CERTD_VALID_TIME = "ocsp.signingCertsValidTime";
     public static final String SIGNING_TRUSTSTORE_VALID_TIME = "ocsp.signtrustvalidtime";
     public static final String SIGNATUREREQUIRED = "ocsp.signaturerequired";
-    public static final String STORE_PASSWORD = "ocsp.keys.storePassword";
     public static final String CARD_PASSWORD = "ocsp.keys.cardPassword";
     public static final String REKEYING_WSURL = "ocsp.rekeying.wsurl";
-    public static final String P11_PASSWORD = "ocsp.p11.p11password";
-    public static final String DO_NOT_STORE_PASSWORDS_IN_MEMORY = "ocsp.activation.doNotStorePasswordsInMemory";
     public static final String WARNING_BEFORE_EXPERATION_TIME = "ocsp.warningBeforeExpirationTime";
-    public static final String OCSP_KEYS_DIR= "ocsp.keys.dir";
     public static final String NONE_EXISTING_IS_GOOD = "ocsp.nonexistingisgood";
     public static final String NONE_EXISTING_IS_GOOD_URI = NONE_EXISTING_IS_GOOD+".uri.";
     public static final String NONE_EXISTING_IS_BAD_URI = "ocsp.nonexistingisbad.uri.";
@@ -57,7 +53,9 @@ public class OcspConfiguration {
     public static final String INCLUDE_CERT_CHAIN = "ocsp.includecertchain";
     public static final String RESPONDER_ID_TYPE = "ocsp.responderidtype";
     
+    @Deprecated //Remove this value once upgrading VAs to EJBCA 6 has been dropped
     public static final int RESTRICTONISSUER = 0;
+    @Deprecated //Remove this value once upgrading VAs to EJBCA 6 has been dropped
     public static final int RESTRICTONSIGNER = 1;
 
     public static final int RESPONDERIDTYPE_NAME = 1;
@@ -102,7 +100,7 @@ public class OcspConfiguration {
     }
 
     /**
-     * If set to true the Servlet will enforce OCSP request signing
+     * If set to true the responder will enforce OCSP request signing
      */
     public static boolean getEnforceRequestSigning() {
         String value = ConfigurationHolder.getString(SIGNATUREREQUIRED);
@@ -110,9 +108,9 @@ public class OcspConfiguration {
     }
 
     /**
-     * If set to true the Servlet will restrict OCSP request signing
+     * If set to true the responder will restrict OCSP request signing
      */
-    @Deprecated
+    @Deprecated //Remove this method once upgrading VAs to EJBCA 6 has been dropped
     public static boolean getRestrictSignatures() {
         String value = ConfigurationHolder.getString("ocsp.restrictsignatures");
         return "true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value);
@@ -123,6 +121,7 @@ public class OcspConfiguration {
      * 
      * @returns one of OcspConfiguration.RESTRICTONISSUER and OcspConfiguration.RESTRICTONSIGNER
      */
+    @Deprecated //Remove this method once upgrading VAs to EJBCA 6 has been dropped
     public static int getRestrictSignaturesByMethod() {
         if ("signer".equalsIgnoreCase(ConfigurationHolder.getString("ocsp.restrictsignaturesbymethod"))) {
             return RESTRICTONSIGNER;
@@ -133,24 +132,9 @@ public class OcspConfiguration {
     /**
      * If ocsp.restrictsignatures is true the Servlet will look in this directory for allowed signer certificates or issuers.
      */
+    @Deprecated //Remove this value once upgrading VAs to EJBCA 6 has been dropped
     public static String getSignTrustDir() {
         return ConfigurationHolder.getString("ocsp.signtrustdir");
-    }
-
-    /**
-     * The interval on which list of allowed OCSP request signing certificates are loaded from signTrustDir in seconds.
-     */
-    public static int getSignTrustValidTimeInSeconds() {
-        int result = 180;
-        try {
-            String configValue = ConfigurationHolder.getString(SIGNING_TRUSTSTORE_VALID_TIME);
-            if (configValue != null) {
-                result = Integer.parseInt(configValue);
-            }
-        } catch (NumberFormatException e) {
-            log.warn("\"ocsp.signtrustvalidtime\" is not a decimal number. Using default value: " + result);
-        }
-        return result * 1000;
     }
 
     /**
@@ -425,8 +409,9 @@ public class OcspConfiguration {
      * Directory name of the soft keystores. The signing keys will be fetched from all files in this directory. Valid formats of the files are JKS and
      * PKCS12 (p12)."
      */
+    @Deprecated //Remove this method once upgrading VAs to EJBCA 6 has been dropped
     public static String getSoftKeyDirectoryName() {
-        return ConfigurationHolder.getString(OCSP_KEYS_DIR);
+        return ConfigurationHolder.getString("ocsp.keys.dir");
     }
 
     /**
@@ -434,6 +419,7 @@ public class OcspConfiguration {
      * 
      * @return {@link #getStorePassword()} if property isn't set.
      */
+    @Deprecated //Remove this method once upgrading VAs to EJBCA 6 has been dropped
     public static String getKeyPassword() {
         final String value = ConfigurationHolder.getString("ocsp.keys.keyPassword");
         if (value != null) {
@@ -447,8 +433,9 @@ public class OcspConfiguration {
      * 
      * @return the value of getKeyPassword() if property isn't set.
      */
+    @Deprecated //Remove this method once upgrading VAs to EJBCA 6 has been dropped
     public static String getStorePassword() {
-        return ConfigurationHolder.getString(STORE_PASSWORD);
+        return ConfigurationHolder.getString("ocsp.keys.storePassword");
     }
 
     /**
@@ -468,6 +455,7 @@ public class OcspConfiguration {
     /**
      * @return Sun P11 configuration file name.
      */
+    @Deprecated //Remove this method once upgrading VAs to EJBCA 6 has been dropped
     public static String getSunP11ConfigurationFile() {
         return ConfigurationHolder.getString("ocsp.p11.sunConfigurationFile");
     }
@@ -505,6 +493,7 @@ public class OcspConfiguration {
      * 
      * @return The value;
      */
+    @Deprecated //Remove this method once upgrading VAs to EJBCA 6 has been dropped
     public static String getP11SharedLibrary() {
         return ConfigurationHolder.getString("ocsp.p11.sharedLibrary");
     }
@@ -514,8 +503,9 @@ public class OcspConfiguration {
      * 
      * @return The value
      */
+    @Deprecated //Remove this method once upgrading VAs to EJBCA 6 has been dropped
     public static String getP11Password() {
-        return ConfigurationHolder.getString(P11_PASSWORD);
+        return ConfigurationHolder.getString("ocsp.p11.p11password");
     }
 
     /**
@@ -523,6 +513,7 @@ public class OcspConfiguration {
      * 
      * @return The value.
      */
+    @Deprecated //Remove this method once upgrading VAs to EJBCA 6 has been dropped
     public static String getP11SlotIndex() {
         return ConfigurationHolder.getString("ocsp.p11.slot");
     }
@@ -534,8 +525,9 @@ public class OcspConfiguration {
      * 
      * @return True if password should not be stored in memory.
      */
+    @Deprecated //Remove this method once upgrading VAs to EJBCA 6 has been dropped
     public static boolean getDoNotStorePasswordsInMemory() {
-        final String s = ConfigurationHolder.getString(DO_NOT_STORE_PASSWORDS_IN_MEMORY);
+        final String s = ConfigurationHolder.getString("ocsp.activation.doNotStorePasswordsInMemory");
         if (s == null || s.toLowerCase().indexOf("false") >= 0 || s.toLowerCase().indexOf("no") >= 0) {
             return false;
         }
@@ -563,7 +555,4 @@ public class OcspConfiguration {
         return 1000 * (long) timeInSeconds;
     }
 
-    public static boolean isStandAlone() {
-        return ConfigurationHolder.getString("ocsp.isstandalone").equals("true");
-    }
 }

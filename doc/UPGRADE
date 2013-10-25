@@ -201,6 +201,20 @@ Upgrade process:
 7. If you are requiring signed requests, verified by specific CAs, you need to import those CA certificates as "External CAs" in EJBCA, and configure 
   the trust anchors in the OCSP Key Binding (use bin/ejbca.sh ca importcacert or the Admin GUI).
   
+Post Upgrade:
+Once all OCSP Responders have been recreated as OCSP Key Bindings and crypto tokens, the following properties can be removed from ocsp.properties
+* ocsp.restrictsignatures
+* ocsp.restrictsignaturesbymethod
+* ocsp.signtrustdir
+* ocsp.signtrustvalidtime
+* ocsp.keys.dir
+* ocsp.keys.storePassword
+* ocsp.keys.keyPassword
+* ocsp.activation.doNotStorePasswordsInMemory
+* ocsp.p11.sharedLibrary
+* ocsp.p11.sunConfigurationFile
+* ocsp.p11.p11password
+* ocsp.p11.slot
 
 From EJBCA 5.0.x to EJBCA 5.0.x
 -------------------------------
