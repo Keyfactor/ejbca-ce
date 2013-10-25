@@ -33,7 +33,6 @@ import java.util.Random;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
-import javax.persistence.PersistenceException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROctetString;
@@ -172,7 +171,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         String signerDN = "CN=ocspTestSigner";
         caCertificate = createCaCertificate();
         ocspSigningCertificate = OcspTestUtils.createOcspSigningCertificate(authenticationToken, OcspTestUtils.OCSP_END_USER_NAME, signerDN, internalKeyBindingId, x509ca.getCAId());
-        
+        cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNATUREREQUIRED, "false");
     }
 
     @After
@@ -619,6 +618,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
             } catch (Exception e) {
                 //NOPMD: Ignore
             }
+            cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.SIGNATUREREQUIRED, "false");
         }
     }
     
