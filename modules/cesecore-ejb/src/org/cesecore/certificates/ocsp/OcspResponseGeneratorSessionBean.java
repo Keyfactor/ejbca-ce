@@ -295,18 +295,18 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     try {
                         keyPairAlias = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
                     } catch (CryptoTokenOfflineException e) {
-                        log.warn("Referenced private key with purpose " + CATokenConstants.CAKEYPURPOSE_CERTSIGN + " could not be used.");
+                        log.warn("Referenced private key with purpose " + CATokenConstants.CAKEYPURPOSE_CERTSIGN + " could not be used. CryptoToken is off-line for CA with id "+caId+": " + e.getMessage());
                         continue;
                     }
                     final PrivateKey privateKey;
                     try {
                         privateKey = cryptoToken.getPrivateKey(keyPairAlias);
                     } catch (CryptoTokenOfflineException e) {
-                        log.warn("Referenced private key with alias " + keyPairAlias + " could not be used. CryptoToken is off-line: " + e.getMessage());
+                        log.warn("Referenced private key with alias " + keyPairAlias + " could not be used. CryptoToken is off-line for CA with id "+caId+": " + e.getMessage());
                         continue;
                     }
                     if (privateKey == null) {
-                        log.warn("Referenced private key with alias " + keyPairAlias + " does not exist. Ignoring CA with id " + caId);
+                        log.warn("Referenced private key with alias " + keyPairAlias + " does not exist. Ignoring CA with id "+caId);
                         continue;
                     }
                     final String signatureProviderName = cryptoToken.getSignProviderName();
@@ -336,12 +336,12 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 }
                 final List<X509Certificate> caCertificateChain = getCaCertificateChain(ocspSigningCertificate);
                 if (caCertificateChain == null) {
-                    log.warn("OcspKeyBinding " + ocspKeyBinding.getName() + " ( " + ocspKeyBinding.getId() + ") has an singing certificate, but no chain and will be ignored.");
+                    log.warn("OcspKeyBinding " + ocspKeyBinding.getName() + " ( " + ocspKeyBinding.getId() + ") has an signing certificate, but no chain and will be ignored.");
                     continue;
                 }
                 final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(ocspKeyBinding.getCryptoTokenId());
                 if (cryptoToken == null) {
-                    log.warn("Referenced CryptoToken with id " + ocspKeyBinding.getCryptoTokenId() + " does not exist. Ignoring internalKeyBinding with id "
+                    log.warn("Referenced CryptoToken with id " + ocspKeyBinding.getCryptoTokenId() + " does not exist. Ignoring OcspKeyBinding with id "
                             + ocspKeyBinding.getId());
                     continue;
                 }
@@ -349,12 +349,11 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 try {
                     privateKey = cryptoToken.getPrivateKey(ocspKeyBinding.getKeyPairAlias());
                 } catch (CryptoTokenOfflineException e) {
-                    log.warn("Referenced private key with alias " + ocspKeyBinding.getKeyPairAlias() + " could not be used. CryptoToken is off-line: " + e.getMessage());
+                    log.warn("Referenced private key with alias " + ocspKeyBinding.getKeyPairAlias() + " could not be used. CryptoToken is off-line for OcspKeyBinding with id "+ocspKeyBinding.getId()+": " + e.getMessage());
                     continue;
                 }
                 if (privateKey == null) {
-                    log.warn("Referenced private key with alias " + ocspKeyBinding.getKeyPairAlias() + " does not exist. Ignoring internalKeyBinding with id "
-                            + ocspKeyBinding.getId());
+                    log.warn("Referenced private key with alias " + ocspKeyBinding.getKeyPairAlias() + " does not exist. Ignoring OcspKeyBinding with id "+ ocspKeyBinding.getId());
                     continue;
                 }
                 final String signatureProviderName = cryptoToken.getSignProviderName();
