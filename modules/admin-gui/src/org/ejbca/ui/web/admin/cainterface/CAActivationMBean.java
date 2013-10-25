@@ -214,7 +214,9 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	    for (final TokenAndCaActivationGuiComboInfo tokenAndCaCombo : authorizedTokensAndCas) {
             if (tokenAndCaCombo.isFirst()) {
                 TokenAndCaActivationGuiInfo tokenAndCa = tokenAndCaCombo.getCryptoToken();
-	            log.info("isCryptoTokenActive(): " + tokenAndCa.isCryptoTokenActive() + " isCryptoTokenNewState(): " + tokenAndCa.isCryptoTokenNewState());
+                if (log.isDebugEnabled()) {
+                    log.debug("isCryptoTokenActive(): " + tokenAndCa.isCryptoTokenActive() + " isCryptoTokenNewState(): " + tokenAndCa.isCryptoTokenNewState());
+                }
 	            if (tokenAndCa.isCryptoTokenActive() != tokenAndCa.isCryptoTokenNewState()) {
 	                if (tokenAndCa.isCryptoTokenNewState()) {
 	                    // Assert that authcode is present
@@ -275,7 +277,9 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	                super.addNonTranslatedErrorMessage(e.getMessage());
 	            }
 	        }
-	        log.info("caId: " + ca.getCaId() + " monitored: " + ca.isMonitored() + " newCaStatus: " + ca.isNewState());
+	        if (log.isDebugEnabled()) {
+	            log.debug("caId: " + ca.getCaId() + " monitored: " + ca.isMonitored() + " newCaStatus: " + ca.isNewState());
+	        }
 	    }
 	}
 
