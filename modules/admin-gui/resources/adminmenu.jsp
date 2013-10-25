@@ -87,7 +87,6 @@ org.cesecore.keybind.InternalKeyBindingRules
     final String SERVICES_RESOURCE                      = "/super_administrator";
     final String INTERNALKEYBINDING_RESOURCE            = InternalKeyBindingRules.BASE.resource();
     final String ADMINPRIVILEGES_RESOURCE               = "/system_functionality/edit_administrator_privileges";
-    final String EDITCMPCONFIG_RESOURCE					 = "/edit_cmp_configuration"; 
  %>
 <%  
   boolean caheaderprinted     =false;
@@ -352,7 +351,7 @@ org.cesecore.keybind.InternalKeyBindingRules
 <%
     // If authorized to configure Ejbca then display related links.
     try{
-      if(ejbcawebbean.isAuthorizedNoLog(EDITCMPCONFIG_RESOURCE)){ 
+      if(ejbcawebbean.isAuthorizedNoLog(SYSTEMCONFIGURATION_RESOURCE)){ 
           if(!systemheaderprinted){      
         out.write("<li id=\"cat7\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMFUNCTIONS")+"</strong><ul>");
         systemheaderprinted = true;
