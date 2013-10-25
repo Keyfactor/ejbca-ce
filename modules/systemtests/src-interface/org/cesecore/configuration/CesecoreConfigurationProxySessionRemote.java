@@ -31,7 +31,5 @@ public interface CesecoreConfigurationProxySessionRemote {
      */
     void setConfigurationValue(String key, String value);
     
-    String getConfigurationValue(String key);
-    
-    //TrustedTimeProvider getTrustedTimeProvider() throws TrustedTimeProviderException;    
+    String getConfigurationValue(String key); 
 }                           
