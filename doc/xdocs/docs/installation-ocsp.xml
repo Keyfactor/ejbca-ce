@@ -362,8 +362,12 @@ For JBoss you can configure JBOSS_HOME/server/default/conf/jboss-log4j.xml to pu
    &lt;/category>   
   </source>
   <p>
-For other application servers you can configure conf/log4j-<i>appserver</i>.xml.
+For other application servers you can configure conf/log4j-<i>appserver</i>.xml. This configuration file will then be built into ejbca.ear.
   </p>
+<note>
+If you are using JBoss EAP 6 you need to have the property 'org.jboss.as.logging.per-deployment=true' if you use an application specific log4j configuration.
+This can be configured in standalone.xml, or using the JBoss CLI.
+</note>
   </subsection>
 
   <subsection name="Safer Log4j Logging">
