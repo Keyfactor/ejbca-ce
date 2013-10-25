@@ -156,7 +156,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 		}
 		// Checks if an extended user data hander is configured and if so, creates the handler class.
 		final String handlerClass = cmpConfiguration.getCertReqHandlerClass(this.confAlias);
-		if ( handlerClass!=null ) {
+		if (StringUtils.isNotEmpty(handlerClass)) {
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("CertReqHandlerClass="+handlerClass);
 			}
