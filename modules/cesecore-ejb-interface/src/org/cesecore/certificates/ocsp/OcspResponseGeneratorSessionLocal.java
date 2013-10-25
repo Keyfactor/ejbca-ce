@@ -22,7 +22,7 @@ import javax.ejb.Local;
 @Local
 public interface OcspResponseGeneratorSessionLocal extends OcspResponseGeneratorSession {
 
-    void reloadOcspSigningCache();
+
 
     void initTimers();
 

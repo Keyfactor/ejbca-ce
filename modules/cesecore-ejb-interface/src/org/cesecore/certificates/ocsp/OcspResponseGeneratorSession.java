@@ -49,24 +49,10 @@ public interface OcspResponseGeneratorSession {
     OcspResponseInformation getOcspResponse(byte[] requestBytes,
             X509Certificate[] requestCertificates, String remoteAddress, String remoteHost, StringBuffer requestUrl, AuditLogger auditLogger,
             TransactionLogger transactionLogger) throws MalformedRequestException, IOException, OCSPException;
+    
+    /**
+     * Reloads the chache of OCSP signers.
+     */
+    void reloadOcspSigningCache();
 
-    
-    /**
-     * Unlike the standard reloadTokenAndChainCache, this method also takes a password parameter. It's used in the case when the setting
-     * ocsp.activation.doNotStorePasswordsInMemory is true, and the cache hence needs to be manually updated. If
-     * ocsp.activation.doNotStorePasswordsInMemory, no automatic updating will occur.
-     * 
-     * @param password Password the keystore.
-     */
-    void reloadTokenAndChainCache(String password);
-    
-    /**
-     * Unlike the standard reloadTokenAndChainCache, this method three password parameters, one for the p11 store, one for the p12 store and one for
-     * all p12 keys. 
-     * 
-     * @param p11Password The password to the p11 store. If no such store exists, set as null.
-     * @param p12StorePassword The password to the p12 store. If no such store exists, set as null.
-     * @param p12KeyPassword The password to the p12 keys. If no such keys exist, set as null.
-     */
-    void reloadTokenAndChainCache(String p11Password, String p12StorePassword, String p12KeyPassword);
 }

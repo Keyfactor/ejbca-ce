@@ -128,92 +128,6 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 #ocsp.unidcacert=
 
 
-
-
-#------------------- DEPRECATED CONFIG: Verification of OCSP request signatures------------------------------
-# DEPRECATION:
-# From EJBCA 6.0.0 used one last time during upgrade to configure trust anchors in OcspKeyBindings.
-# It is not possible to validate OCSP request signatures when using a CA to sign the response.
-
-# Specifies if the OCSP-responder should require signed requests or not.
-# If signature is required, the signature certificate must be issued by a CA handled by the OCSP responder.
-#
-# Default: false
-#ocsp.signaturerequired=false
-
-# Specifies if the OCSP-responder should require signatures to be issued by a list of allowed CA's.
-#
-# Default: false
-#ocsp.restrictsignatures=false
-
-# Specifies how to restrict OCSP-request signatures.
-# 'issuer' means that the OCSP-responder will require signatures to be issued by a CA in a list of allowed CA's.
-# 'signer' means that the OCSP-responder will require signatures to be in a list of allowed signatures.
-# Note that unless ocsp.restrictsignatures is set to true this variable will not be used.
-#
-# Default: issuer
-#ocsp.restrictsignaturesbymethod=issuer
-
-# Specifies a directory with CA's which are allowed
-# If signatures are restricted and required only requests signed by a certificate issued by a CA in this directory is accepted.
-# The easiest here is to configure the full path of the directory, otherwise it will be relative to some directory where you start you app server. 
-#
-#ocsp.signtrustdir=signtrustdir
-
-# Specifies an interval in seconds in which the server reloads certificates from the 'ocsp.signtrustdir'
-# if this variable is set to 0 certificates will not be reloaded after startup.
-#
-# Default: 180
-#ocsp.signtrustvalidtime=180
-
-#------------------- DEPRECATED CONFIG: Soft keys used by external OCSP responder------------------------------
-# DEPRECATION:
-# From EJBCA 6.0.0 these values are used one last time during startup and converted to Crypto Tokens and
-# Internal Key Bindings.
-
-# Directory containing soft keys or certificates for keys on cards. The soft keys are in jks or p12 format.
-# The certificates of the cards keys are in pem format. All CAs using the OCSP responser must have a soft
-# key or a certificate to a card key in this directory.
-# Normally as with the default value, the target directory is actually JBOSS_HOME/bin/keys if started in JBOSS_HOME.
-# Default: ./keys
-#ocsp.keys.dir=./keys
-
-# The password to all soft keystores.
-# Default: null
-#ocsp.keys.storePassword=foo123
-
-# The password for the all the soft keys of the OCSP responder. All keys must have the same password.
-# Note that the key password must be specified even if the activation feature is used.
-# If the keystore is created by EJBCA then this password is equal to ocsp.keys.storePassword.
-# If it is equal you may leave it empty if ocsp.keys.storePassword is defined.
-# Default: same as ocsp.keys.storePassword if not null otherwise empty.
-#ocsp.keys.keyPassword=foo123
-
-
-#------------------- DEPRECATED CONFIG: PKCS#11 keys used by external OCSP responder------------------------------
-# DEPRECATION:
-# From EJBCA 6.0.0 these values are used one last time during startup and converted to Crypto Tokens and
-# Internal Key Bindings.
-
-# P11 shared library path name. 
-# Must not be used if ocsp.p11.sunConfigurationFile is used.
-# Default: empty
-#ocsp.p11.sharedLibrary=/opt/nfast/toolkits/pkcs11/libcknfast.so
-
-# Sun P11 Configuration file (see Admin Guide for examples). 
-# Must be used instead of 'ocsp.p11.sharedLibrary' if the feature 'rekeying' is used.
-# Default: empty
-#ocsp.p11.sunConfigurationFile=/home/ejbca/ocs4.cfg
-
-# P11 password.
-# Default: null
-#ocsp.p11.p11password=foo123
-
-# P11 slot number. Prefix with 'i' to indicate index in list, i.e. 'i1', or use a string for slot label, i.e. 'ocspSigningKey'.
-# Default: 1
-#ocsp.p11.slot=1
-
-
 #------------------- Re-keying used by external OCSP responder------------------------------
 # When this feature is enabled a new signing key will automatically be generated a specified time before the certificate of the used key expires.
 # A certificate for the new key will be fetched by WS from EJBCA.
@@ -242,21 +156,6 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 # Limits what hosts may request a manual rekeying via web service. Multiple hosts may be separated with a semicolon. 
 # Default: 127.0.0.1
 #ocsp.rekeying.trigging.hosts=
-
-#------------------- DEPRECATED CONFIG: External OCSP responder activation------------------------------
-# DEPRECATION:
-# From EJBCA 6.0.0 the activation will be handled as a manually activated Crypto Token.
-# You need to use this activation one last time for the upgrade to take place. 
-
-#
-# 'ocsp.keys.storePassword' and 'ocsp.p11.p11password' and 'ocsp.keys.cardPassword' should not be defined if you are using the activation feature.
-# 
-
-# This property defines whether the passwords should be stored in memory or not.
-# 
-# Default: false
-#ocsp.activation.doNotStorePasswordsInMemory=true
-
 
 #------------------- OCSP Logging settings -------------
 # Transaction logging logs summary lines for all OCSP request/responses, which can be used for charging clients if you are running a commercial OCSP service.
