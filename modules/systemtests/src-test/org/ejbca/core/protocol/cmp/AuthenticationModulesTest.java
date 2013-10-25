@@ -356,7 +356,6 @@ public class AuthenticationModulesTest extends CmpTestCase {
             PKIMessage msg = genCertReq(issuerDN, testUserDN, keys, cacert, nonce, transid, false, null, null, null, null, pAlg, new DEROctetString(nonce));
             assertNotNull("Generating CrmfRequest failed.", msg);
 
-            createUser(testUsername, testUserDN, "foo123", true, caid, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
             KeyPair admkeys = KeyTools.genKeys("512", "RSA");
             admToken = createAdminToken(admkeys, testUsername, testUserDN, caid, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
             admCert = getCertFromCredentials(admToken);
