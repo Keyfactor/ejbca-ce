@@ -65,7 +65,7 @@
 	static final String CHECKBOX_OMITVERIFICATIONINECC				= "checkboxomitverificationsinecc";
 
 	
-	static final String LIST_CMPDEFAULTCAS					   		= "listcmpdefaultcas";
+	static final String LIST_CMPDEFAULTCA					   		= "listcmpdefaultca";
 	static final String LIST_CMPRACAS						   		= "listcmpracas";
 	static final String LIST_CMPRESPONSEPROTECTION		   		    = "listcmpresponseprotection";
 	static final String LIST_CMPEEPROFILES					   		= "listcmpeeprofile";
@@ -228,7 +228,7 @@
     		       			//Save changes
     		       						
     		       			//defaultCA
-    		       			String value = request.getParameter(LIST_CMPDEFAULTCAS);
+    		       			String value = request.getParameter(LIST_CMPDEFAULTCA);
     		       			if((value==null) || (value.length() == 0)) {
     		       					cmpConfigClone.setCMPDefaultCA(alias, "");
     		       			} else {

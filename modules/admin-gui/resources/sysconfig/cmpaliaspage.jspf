@@ -241,12 +241,10 @@ function checkresponseprotection(sel) {
       <td width="50%" align="top"> 
         <h3><c:out value="<%= ejbcawebbean.getText(\"CMPRANAMEGENERATIONSCHEME\") %>"/></h3>
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPRANAMEGENERATIONSCHEME_HELP\") %>"/></p>
-		<p class="help"><c:out value="DN Parts- will take a part of the request DN, and use it as the username (use the list to choose which parts). 
-       								  Several DN attributes can be specifed to have fall-back, for example UID;SN;CN. First try UID, 
-									  if it does not exist try SN etc."/></p>
-		<p class="help"><c:out value="RANDOM - will generate a 12 character long random username."/></p>
-		<p class="help"><c:out value="FIXED - to have a fixed username specified in the text field"/></p>
-		<p class="help"><c:out value="If the same construced username already exists, the existing user will be modified and a new certificate will be issued for that user."/></p>
+		<p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPRANAMEGENERATIONSCHEME_HELP1\") %>"/></p>
+		<p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPRANAMEGENERATIONSCHEME_HELP2\") %>"/></p>
+		<p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPRANAMEGENERATIONSCHEME_HELP3\") %>"/></p>
+		<p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPRANAMEGENERATIONSCHEME_HELP4\") %>"/></p>
       </td>
       <td width="50%"> 
       
@@ -257,7 +255,7 @@ function checkresponseprotection(sel) {
 					checked = true;
 			   } %>
 			/>
-		<label><c:out value="DN Parts:" /></label>
+		<label><c:out value="<%= ejbcawebbean.getText(\"CMPDNPARTS\") %>" /></label>
 		&nbsp;&nbsp;&nbsp;
 		<% String pvalue = checked? cmpConfigClone.getRANameGenParams(alias) : ""; %>
 		<label><c:out value="<%= pvalue %>" /></label>
@@ -350,8 +348,7 @@ function checkresponseprotection(sel) {
       <td width="50%" align="top"> 
         <h3><c:out value="<%= ejbcawebbean.getText(\"CMPRAALLOWCUSTOMSERNO\") %>"/></h3>
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPRAALLOWCUSTOMSERNO_HELP\") %>"/></p>
-        <p class="help"><c:out value="If this setting is true, a requested serial number can be passed in the non-standard field serialNumber 
-									in the CRMF certTemplate."/></p>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPRAALLOWCUSTOMSERNO_HELP1\") %>"/></p>
       </td>
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_CMP_ALLOWCUSTOMSERNO%>" value="<%=CHECKBOX_VALUE %>" 
@@ -398,7 +395,7 @@ function checkresponseprotection(sel) {
         <h3><c:out value="<%= ejbcawebbean.getText(\"CMPRACERTPROFILE\") %>"/>
         </h3>
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPRACERTPROFILE_HELP\") %>"/></p>
-        <p class="help"><c:out value="Use 'ProfileDefault' to use the Default Certificate Profile specified in the End Entity Profile"/></p>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPRACERTPROFILE_HELP1\") %>"/></p>
       </td>
       <td width="50%"> 
         <select name="<%= LIST_CMPCERTPROFILES %>">
@@ -424,7 +421,7 @@ function checkresponseprotection(sel) {
         <h3><c:out value="<%= ejbcawebbean.getText(\"CMPRACANAME\") %>"/>
         </h3>
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPRACANAME_HELP\") %>"/></p>
-        <p class="help"><c:out value="Use 'ProfileDefault' to use the Default CA specified in the End Entity Profile"/></p>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPRACANAME_HELP1\") %>"/></p>
       </td>
       <td width="50%"> 
         <select name="<%= LIST_CMPRACAS %>">
@@ -452,7 +449,7 @@ function checkresponseprotection(sel) {
       <td width="50%" align="top"> 
         <h3><c:out value="<%= ejbcawebbean.getText(\"CMPEXTRCTUSERNAMECOMPONENT\") %>"/></h3>
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPEXTRCTUSERNAMECOMPONENT_HELP\") %>"/></p>
-        <p class="help"><c:out value="Any DN attribute can be specified, tex. CN, UID...etc. Default is to use the entire DN as username."/></p> 
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPEXTRCTUSERNAMECOMPONENT_HELP1\") %>"/></p> 
       </td>
       <td width="50%"> 
       	<select name="<%=LIST_EXTRACTUSERNAMECOMP%>" >
@@ -475,8 +472,7 @@ function checkresponseprotection(sel) {
         <%= ejbcawebbean.getHelpReference("/adminguide.html#CMP%20and%203GPP/4G/LTE%20configuration%20guide") %>
         </h3>
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPVENDORCERT_USE_HELP\") %>"/></p>
-		<p class="help"><c:out value="Keep unchecked if you do not know what it is."/></p> 
-		<p class="help"><c:out value="Note that more than one vendor CA can be specified"/></p>
+		<p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPVENDORCERT_USE_HELP1\") %>"/></p> 
       </td>
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_CMP_VENDORMODE%>" value="<%=CHECKBOX_VALUE %>" 
@@ -519,7 +515,7 @@ function checkresponseprotection(sel) {
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPDEFAULTCA_HELP\") %>" /></p>
       </td>
       <td width="50%"> 
-        <select name="<%=LIST_CMPDEFAULTCAS%>" >
+        <select name="<%=LIST_CMPDEFAULTCA%>" >
            <%  String currentCA = cmpConfigClone.getCMPDefaultCA(alias); %>
            <option <% if(currentCA.equals("")) { %> selected <% } %>
                  	value='<c:out value=""/>'><c:out value="(disabled)"/></option>
@@ -611,8 +607,8 @@ function checkresponseprotection(sel) {
         <h3><c:out value="<%= ejbcawebbean.getText(\"CMPOMITVERIFICATIONSINECC\") %>"/>
         </h3>
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPOMITVERIFICATIONSINECC_HELP\") %>"/></p>
-        <p class="help">Checking this box will skip verifying that the certificate attached in the extraCert field:
-        		exists in the database, is issued by the right CA, is active, is valid and that it belongs to an authorized  administrator</p>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPOMITVERIFICATIONSINECC_HELP1\") %>"/></p>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPOMITVERIFICATIONSINECC_HELP2\") %>"/></p>
       </td>
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_OMITVERIFICATIONINECC%>" value="<%=CHECKBOX_VALUE %>" 
