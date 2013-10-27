@@ -263,7 +263,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         CA ca = null;
         // X509 CA is the most normal type of CA
         if (cainfo instanceof X509CAInfo) {
-            log.info("Creating an X509 CA");
+            log.info("Creating an X509 CA: "+cainfo.getName());
             X509CAInfo x509cainfo = (X509CAInfo) cainfo;
             // Create X509CA
             ca = new X509CA(x509cainfo);
@@ -272,7 +272,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             mergeCertificatePoliciesFromCAAndProfile(x509cainfo, certprofile);
         } else {
             // CVC CA is a special type of CA for EAC electronic passports
-            log.info("Creating a CVC CA");
+            log.info("Creating a CVC CA: "+cainfo.getName());
             CVCCAInfo cvccainfo = (CVCCAInfo) cainfo;
             // Create CVCCA
             ca = new CVCCA(cvccainfo);
