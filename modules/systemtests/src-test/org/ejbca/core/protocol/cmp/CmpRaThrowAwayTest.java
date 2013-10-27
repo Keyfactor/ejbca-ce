@@ -222,6 +222,10 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         caInfo.setUseCertReqHistory(useCertReqHistory);
         caInfo.setUseUserStorage(useUserStorage);
         caInfo.setUseCertificateStorage(useCertificateStorage);
+        // We can not enforce unique subjectDN for issued certificates when we do not store certificates
+        caInfo.setDoEnforceUniqueDistinguishedName(false);
+        // We can not enforce unique subject public keys for issued certificates when we do not store certificates        
+        caInfo.setDoEnforceUniquePublicKeys(false);
         assertEquals("CAInfo did not store useCertReqHistory setting correctly: ", useCertReqHistory, caInfo.isUseCertReqHistory());
         assertEquals("CAInfo did not store useUserStorage setting correctly: ", useUserStorage, caInfo.isUseUserStorage());
         assertEquals("CAInfo did not store useCertificateStorage setting correctly: ", useCertificateStorage, caInfo.isUseCertificateStorage());
