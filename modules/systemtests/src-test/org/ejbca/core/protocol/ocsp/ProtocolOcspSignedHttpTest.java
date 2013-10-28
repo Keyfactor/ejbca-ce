@@ -168,19 +168,13 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
         // (send crap message and get good error)
 
         // Make user that we know...
-        boolean userExists = false;
-        try {
+        boolean userExists = endEntityManagementSession.existsUser(END_ENTITY_NAME);
+        if (!userExists) {
             endEntityManagementSession.addUser(admin, END_ENTITY_NAME, "foo123", "C=SE,O=AnaTom,CN=OCSPTest", null, "ocsptest@anatom.se", false,
                     SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(),
                     SecConst.TOKEN_SOFT_PEM, 0, caid);
             log.debug("created user: ocsptest, foo123, C=SE, O=AnaTom, CN=OCSPTest");
-        } catch (EJBException e) {
-            if (e.getCause() instanceof PersistenceException) {
-                userExists = true;
-        	}
-        }
-
-        if (userExists) {
+        } else {
             log.debug("User ocsptest already exists.");
             EndEntityInformation userData = new EndEntityInformation(END_ENTITY_NAME, "C=SE,O=AnaTom,CN=OCSPTest",
                     caid, null, "ocsptest@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
@@ -191,59 +185,58 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
             log.debug("Reset status to NEW");
         }
         try {
-        // Generate certificate for the new user
-        KeyPair keys = KeyTools.genKeys("512", "RSA");
+            // Generate certificate for the new user
+            KeyPair keys = KeyTools.genKeys("512", "RSA");
 
-        // user that we know exists...
-        ocspTestCert = (X509Certificate) signSession.createCertificate(admin, "ocsptest", "foo123", keys.getPublic());
-        assertNotNull("Failed to create a certificate", ocspTestCert);
+            // user that we know exists...
+            ocspTestCert = (X509Certificate) signSession.createCertificate(admin, "ocsptest", "foo123", keys.getPublic());
+            assertNotNull("Failed to create a certificate", ocspTestCert);
 
-        // And an OCSP request
-        OCSPReqBuilder gen = new OCSPReqBuilder();
-        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
-        Extension[] extensions = new Extension[1];
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
-        gen.setRequestExtensions(new Extensions(extensions));      
-        X509CertificateHolder chain[] = new JcaX509CertificateHolder[2];
-        chain[0] = new JcaX509CertificateHolder(ocspTestCert);
-        chain[1] = new JcaX509CertificateHolder(cacert);
-        gen.setRequestorName(chain[0].getSubject());
-        OCSPReq req = gen.build(new BufferingContentSigner(new JcaContentSignerBuilder("SHA1withRSA").build(keys.getPrivate()), 20480), chain);
-        
-        
-        // Send the request and receive a singleResponse
-        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", OCSPResponseStatus.SUCCESSFUL, 200);
-        assertEquals("Number of of SingResps should be 1.", 1, singleResps.length);
-        SingleResp singleResp = singleResps[0];
-        
-        CertificateID certId = singleResp.getCertID();
-        assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
-        Object status = singleResp.getCertStatus();
-        assertEquals("Status is not null (good)", null, status);
-        
-        // Try with an unsigned request, we should get a status code 5 back from the server (signature required)
-        req = gen.build();
-        // Send the request and receive a singleResponse, this response should have error code SIGNATURE_REQUIRED
-        singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", OCSPResponseStatus.SIG_REQUIRED, 200);
-        assertNull(singleResps);
+            // And an OCSP request
+            OCSPReqBuilder gen = new OCSPReqBuilder();
+            gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
+            Extension[] extensions = new Extension[1];
+            extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+            gen.setRequestExtensions(new Extensions(extensions));      
+            X509CertificateHolder chain[] = new JcaX509CertificateHolder[2];
+            chain[0] = new JcaX509CertificateHolder(ocspTestCert);
+            chain[1] = new JcaX509CertificateHolder(cacert);
+            gen.setRequestorName(chain[0].getSubject());
+            OCSPReq req = gen.build(new BufferingContentSigner(new JcaContentSignerBuilder("SHA1withRSA").build(keys.getPrivate()), 20480), chain);
 
-        // sign with a keystore where the CA-certificate is not known
-        KeyStore store = KeyStore.getInstance("PKCS12", "BC");
-        ByteArrayInputStream fis = new ByteArrayInputStream(ks3);
-        store.load(fis, "foo123".toCharArray());
-        Certificate[] certs = KeyTools.getCertChain(store, "privateKey");
-        chain[0] = new JcaX509CertificateHolder((X509Certificate)certs[0]);
-        chain[1] = new JcaX509CertificateHolder((X509Certificate)certs[1]);
-        PrivateKey pk = (PrivateKey)store.getKey("privateKey", "foo123".toCharArray());
-        req = gen.build(new BufferingContentSigner(new JcaContentSignerBuilder("SHA1withRSA").build(pk), 20480), chain);
-        // Send the request and receive a singleResponse, this response should have error code UNAUTHORIZED (6)
-        singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", OCSPResponseStatus.UNAUTHORIZED, 200);
-        assertNull(singleResps);
 
-        log.trace("<test01OcspGood()");
+            // Send the request and receive a singleResponse
+            SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", OCSPResponseStatus.SUCCESSFUL, 200);
+            assertEquals("Number of of SingResps should be 1.", 1, singleResps.length);
+            SingleResp singleResp = singleResps[0];
+
+            CertificateID certId = singleResp.getCertID();
+            assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
+            Object status = singleResp.getCertStatus();
+            assertEquals("Status is not null (good)", null, status);
+
+            // Try with an unsigned request, we should get a status code 5 back from the server (signature required)
+            req = gen.build();
+            // Send the request and receive a singleResponse, this response should have error code SIGNATURE_REQUIRED
+            singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", OCSPResponseStatus.SIG_REQUIRED, 200);
+            assertNull(singleResps);
+
+            // sign with a keystore where the CA-certificate is not known
+            KeyStore store = KeyStore.getInstance("PKCS12", "BC");
+            ByteArrayInputStream fis = new ByteArrayInputStream(ks3);
+            store.load(fis, "foo123".toCharArray());
+            Certificate[] certs = KeyTools.getCertChain(store, "privateKey");
+            chain[0] = new JcaX509CertificateHolder((X509Certificate)certs[0]);
+            chain[1] = new JcaX509CertificateHolder((X509Certificate)certs[1]);
+            PrivateKey pk = (PrivateKey)store.getKey("privateKey", "foo123".toCharArray());
+            req = gen.build(new BufferingContentSigner(new JcaContentSignerBuilder("SHA1withRSA").build(pk), 20480), chain);
+            // Send the request and receive a singleResponse, this response should have error code UNAUTHORIZED (6)
+            singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", OCSPResponseStatus.UNAUTHORIZED, 200);
+            assertNull(singleResps);
         } finally {
             endEntityManagementSession.deleteUser(roleMgmgToken, END_ENTITY_NAME);
         }
+        log.trace("<test01OcspGood()");
     }
 
 
