@@ -318,8 +318,8 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
 
         // Create user with a profile that does NOT require approvals for key
         // recovery
-        try {
-            String username1 = genRandomUserName("test04_1");
+        String username1 = genRandomUserName("test04_1");
+        try {           
             String email = "test@example.com";
             KeyPair keypair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
             endEntityManagementSession.addUser(admin1, username1, "foo123", "CN=TESTKEYREC1" + username1, 
@@ -336,24 +336,28 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
                     Arrays.equals(data.getKeyPair().getPrivate().getEncoded(), keypair.getPrivate().getEncoded()));
         } catch (WaitingForApprovalException ex) {
             fail("This profile should not require approvals");
+        } finally {
+            endEntityManagementSession.deleteUser(admin1, username1);
         }
 
         // Create user with a profile that does require approvals for key
         // recovery
+        String username2 = genRandomUserName("test04_2");
         try {
-            String username1 = genRandomUserName("test04_2");
             String email = "test@example.com";
             KeyPair keypair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-            endEntityManagementSession.addUser(admin1, username1, "foo123", "CN=TESTKEYREC2" + username1, null, email, false, endEntityProfileId,
+            endEntityManagementSession.addUser(admin1, username2, "foo123", "CN=TESTKEYREC2" + username2, null, email, false, endEntityProfileId,
                     certProfileIdKeyRecoveryApprovals, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, approvalCAID);
-            X509Certificate cert = (X509Certificate) signSession.createCertificate(admin1, username1, "foo123", keypair.getPublic());
-            keyRecoverySession.addKeyRecoveryData(admin1, cert, username1, keypair);
+            X509Certificate cert = (X509Certificate) signSession.createCertificate(admin1, username2, "foo123", keypair.getPublic());
+            keyRecoverySession.addKeyRecoveryData(admin1, cert, username2, keypair);
 
-            assertTrue("Couldn't mark user for recovery in database", !keyRecoverySession.isUserMarked(username1));
-            endEntityManagementSession.prepareForKeyRecovery(admin1, username1, endEntityProfileId, cert);
+            assertTrue("Couldn't mark user for recovery in database", !keyRecoverySession.isUserMarked(username2));
+            endEntityManagementSession.prepareForKeyRecovery(admin1, username2, endEntityProfileId, cert);
             fail("This should have caused an approval request");
         } catch (WaitingForApprovalException ex) {
             // OK
+        } finally {
+            endEntityManagementSession.deleteUser(admin1, username2);
         }
     }
 

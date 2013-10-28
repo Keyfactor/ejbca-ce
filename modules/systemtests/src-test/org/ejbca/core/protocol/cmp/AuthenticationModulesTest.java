@@ -330,7 +330,9 @@ public class AuthenticationModulesTest extends CmpTestCase {
             int revStatus = checkRevokeStatus(issuerDN, CertTools.getSerialNumber(cert));
             assertNotSame("Revocation request failed to revoke the certificate", RevokedCertInfo.NOT_REVOKED, revStatus);
         } finally {
-            endEntityManagementSession.revokeAndDeleteUser(ADMIN, revUsername, ReasonFlags.unused);
+            if (eeAccessSession.findUser(ADMIN, revUsername) != null) {
+                endEntityManagementSession.revokeAndDeleteUser(ADMIN, revUsername, ReasonFlags.unused);
+            }
             internalCertStoreSession.removeCertificate(fingerprint);
         }
 
@@ -461,11 +463,13 @@ public class AuthenticationModulesTest extends CmpTestCase {
                 break;
             }
         }
+        final String userName = "cmprevuser1";
         if (cert == null) {
-            createUser("cmprevuser1", "CN=cmprevuser1,C=SE", "foo123", true, caid, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+            createUser(userName, "CN="+ userName + ",C=SE", "foo123", true, caid, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
             KeyPair admkeys = KeyTools.genKeys("1024", "RSA");
             cert = signSession.createCertificate(ADMIN, "cmprevuser1", "foo123", admkeys.getPublic());
         }
+        try {
         assertNotNull("No certificate to revoke.", cert);
 
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
@@ -504,6 +508,9 @@ public class AuthenticationModulesTest extends CmpTestCase {
             removeAuthenticationToken(adminToken, admCert, adminName);
         } finally {
             asn1InputStream.close();
+        }
+        } finally {
+            endEntityManagementSession.deleteUser(ADMIN, userName);
         }
     }
 
