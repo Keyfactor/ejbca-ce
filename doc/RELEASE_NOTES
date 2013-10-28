@@ -36,6 +36,7 @@ This is a maintenance release with new features, improvements and bug fixes. In 
 - Support ECDSA for automatic key renewal in OCSP responder.
 - Added a new WS keyrecovery method for specified certificates.
 - Add hostname in startup log.
+- Add configuration option for forbidden characters.
 
 Read the full Changelog for details.
 For upgrade instructions, please see UPGRADE.
