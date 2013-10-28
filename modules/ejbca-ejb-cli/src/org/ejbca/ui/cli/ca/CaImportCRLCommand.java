@@ -66,6 +66,8 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class CaImportCRLCommand extends BaseCaAdminCommand {
 
+    public static final String MISSING_USERNAME_PREFIX = "*** Missing During CRL Import to: ";
+    
 	@Override
 	public String getSubCommand() { return "importcrl"; }
 	@Override
@@ -112,7 +114,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
 	        int miss_count = 0;	// Number of certs not already in database
 	        int revoked = 0;	// Number of certs activly revoked by this algorithm
 	        int already_revoked = 0;	// Number of certs already revoked in database and ignored in non-strict mode
-	        final String missing_user_name = "*** Missing During CRL Import to: " + caname;
+	        final String missing_user_name = MISSING_USERNAME_PREFIX + caname;
 	        @SuppressWarnings("unchecked")
             Set<X509CRLEntry> entries = (Set<X509CRLEntry>) x509crl.getRevokedCertificates();
 	        if (entries != null) {

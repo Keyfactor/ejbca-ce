@@ -36,6 +36,7 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorTestSessionRemote;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
@@ -54,6 +55,7 @@ import org.cesecore.roles.management.RoleInitializationSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.protocol.ocsp.standalone.OcspKeyRenewalProxySessionRemote;
 import org.ejbca.util.TraceLogMethodsRule;
 import org.junit.AfterClass;
@@ -248,6 +250,10 @@ public class OcspKeyRenewalTest {
         
         // Ensure that the removed signing certificate is removed from the cache
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
+        
+        final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE
+                .getRemoteSession(EndEntityManagementSessionRemote.class);
+        endEntityManagementSession.revokeAndDeleteUser(authenticationToken, OCSP_ECC_END_USER_NAME, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
     }
     
     private static void cleanupKeyBinding(String keybindingName) {
