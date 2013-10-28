@@ -711,7 +711,7 @@ configure EJBCA for 3GPP/4G/LTE networks using CMP.
 
 <subsection name="Configuration">
 <p>
-Configurating CMP is done in the Admin GUI, under 'CMP Configuration'. To be able to edit CMP configuration, you have to have the 'edit_cmp_configuration' access.
+Configuring CMP is done in the Admin GUI, under 'CMP Configuration'. To be able to edit CMP configuration, you have to have the 'edit_systemconfiguration' access.
 </p>
 </subsection>
 <subsection name="CMP over http">
