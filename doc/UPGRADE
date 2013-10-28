@@ -30,51 +30,24 @@ INSERT and DELETE. The SQL executed by database upgrades code is available in
 "src/upgrade/<oldversion>_<newversion>/<oldversion>_<newversion>-upgrade-<database>.sql".
 
 From EJBCA 5.0.x to EJBCA 6.0.x
--------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------------------
 See release notes for more details on changes.
 
-100% up-time upgrade notes:
-The CryptoToken concept has extended the internal CA Token concept. CA's now reference a named set of keys in a CryptoToken and CA Service and 
-CryptoToken activation are clearly separated. Upgrades are made during first startup. Older EJBCA nodes will continue to function during a 100% 
-up-time upgrade, as long as newer instances has been deployed with "db.keepinternalcakeystores" set to true. For 100% up-time upgrade, or possibility
-to back out of upgrade, set db.keepinternalcakeystores to true (default is false). 
-Settings relevant for 100% up-time upgrades are:
-- db.keepinternalcakeystores (5.0->5.2)
-- db.keepjbossserialization (4.0->5.0)
-- app.version.effective (3.11->4.0)
-
-The service for running OCSP services on internal CAs has now become an integral part of the OCSP responder. For this reason, the old 
-CA Extended Service will be removed at first upstart when a system has been upgraded from 5.0 to 6.0. The result of this is that for nodes sharing 
-a database, those nodes that haven't been upgraded to 6.0 will lose OCSP services until they've been upgraded as well. In order to keep internal
-OCSP services running (external OCSP services are not affected) on the entire cluster during the whole upgrade process, set "ca.keepocspextendedservice" 
-to 'true' for all nodes except the last one, which then finally remove the service from the database. 
-- ca.keepocspextendedservice (5.0 -> 6.0)
-
-PKCS#11 libraries for presentation in the AdminGUI are autodetected. If you have a library that is not automatically detected by 
-EJBCA you can add it to the configuration. See web.properties.sample for PKCS#11 library auto-detection configuration.
-
-The class CliAuthenticationToken and associated classes have been moved from the CLI module to reside next to the other 
-authentication classes under src. This means that approval requests using the CliAuthenticationToken created in 5.0.x will not 
-be forwards compatible.
-
-The external Validation Authority build has been removed and external VA deployments are now full EJBCA deployments.
-- Database privileges on the VA host must be the same as used by the CA (all tables must exist).
-- Key-stores, certificates and trust-stores (both soft and HSM based) will be automatically converted on first startup.
-(or as soon as the password has been made available using clientToolBox if ocsp.activation.doNotStorePasswordsInMemory=true)
-to CryptoTokens and OcspKeyBindings.
-- Trusted certificates (ocsp.signtrustdir) must be imported in EJBCA as "External CAs", for example using the "bin/ejbca.sh ca importcacert" command.
-- Health-check URL is now the same as for CA installations, and it will check the usability of ACTIVE OcspKeyBindings.
-- OcspKeyBindings and CryptoTokens can still be managed without the AdminGUI using the EJB CLI (bin/ejbca.sh).
-- OCSP signing or re-keying certificates no longer need to be present in the HSM slot (migrated to the CertificateData table).
-- Using a manually activated CryptoToken replaces the use of ocsp.activation.doNotStorePasswordsInMemory.
-- Behavior of OCSP responses (like untilNextUpdate etc) can now be configured per OcspKeyBinding.
-(Certificate Profile or URL specific settings in ocsp.properties has highest priority, then the OcspKeyBinding properties
-and finally the default configuration in ocsp.properties).
-- The re-keying key-store will be migrated to an AuthenticationKeyBinding.
-- Management of *KeyBindings and CryptoTokens will be audit logged. Configure it before the upgrade to have proper traceability
-from this point on.
-- The 'ejbca.productionmode' property should be set to 'true' or 'false'. 'va' or 'ocsp' options are no longer supported.
-
+Index: 
+	1.	Basic Upgrade Procedure for EJBCA
+	2.  Basic Upgrade Procedure for Validation Authorities
+			a. Notable Changes
+			b. Upgrade Process
+			c. Post Upgrade
+	3.	100% Uptime Upgrade Notes
+			a. Upgrading CryotoTokens
+			b. Upgrading the OCSP CA Extended Service
+	4.	CMP Configuration Handling
+	5.	CLI Commands Renamed
+	6.	Miscellaneous Issues
+	
+1. Basic Upgrade Procedure for EJBCA:
+***********************************************************
 The 'ant bootstrap' target has been deprecated, and now it's covered by the 'ant
 deploy' target. Behavior for the 'ant deploy' has been changed, and the old
 command is equivalent to the following sequence:
@@ -91,117 +64,78 @@ refer to EJBCA installation guide.
 Backup your database first! If the upgrade fails, you can always go back to the earlier version.
 If you are upgrading a cluster, update the software on all the nodes.
 
-1. Copy conf/*.properties from the earlier installation into the conf directory of the new release.
-   Or better yet, use the ejbca-custom feature for easier upgrades, see User Guide.
-
-2. Copy the directory 'p12' from the earlier installation. 
-
-3. Shut down JBoss.
-
-4. Run the 'ant deploy' target with new version.
-
-5. Run the 'ant deploy-keystore' target with new version.
-
-6. Run the 'ant web-configure' target with new version.
-
-7. Start up JBoss.
-
-8. If you are running in a cluster, you should now upgrade on all cluster nodes.
-   The newly deployed nodes should be running now.
-   
-8. Stop JBoss, clear the tmp and work directories in the servers, then start JBoss again to flush all caches.
-
-9. Go into the Admin GUI and verify your settings.
-
-NOTE: Some configuration options in ocsp.properties have moved to (or been
-deprecated by) web.properties. You should migrate these configuration changes.
-You will be warned during build if you are using these options and have not
-migrated them.
-
-NOTE: HSM configuration options have been updated to support different slot reference types (slot id, index or label).
-See Admin Guide, databaseprotection.properties.sample, ocsp.properties.sample and catoken.properties.sample for information
-and examples how to update you current PKCS#11 configuration in these files. 
-Configuration in the Admin GUI should be automatically upgraded.
- 
-NOTE: batchtool.properties is no longer searched for in bin/ but in conf/
-instead. Note that everything in this file is commented out by default, so it
-can be removed if it hasn't been modified.
-
-NOTE: In EJBCA 6.0.0 new versions of BouncyCastle jars are included. If you have
-been copying ejbca/lib/bc*.jar files to JBoss (jboss/server/default/lib), you
-must remove the old jars from JBoss and copy new jars from EJBCA.
-
-NOTE: In EJBCA 6.0.0 the API for custom certificate extensions was changed. If you have created your own custom certificate extension java classes,
-you need to update the API with one new argument (can be null). There is no effect if you used standard custom extensions in the certextensions.properties, only custom java classes.
-
-NOTE: Starting with EJBCA 6.0.0 custom services and publishers are automatically
-detected using meta-data in the Jar files, and class names can no longer be
-specified manually. If you need to use old custom classes from before 6.0
-(i.e. not autodetected classes) you can enable manual entry with the
-option web.manualclasspathsenabled=true in web.properties.
-
-NOTE: In EJBCA 6.0.0, the CMP configuration handling has been rewritten. CMP configurations are no longer read from conf/cmp.properties file, instead, CMP 
-configurations can be set either in the admin GUI or in the command line (execute './bin/ejbca.sh config cmp' from EJBCA home directory for command line 
-documentation). If you do use CMP, you can upload your old cmp.properties file by executing the following command in EJBCA home directory:
-	./bin/ejbca.sh config cmp uploadfile conf/cmp.properties cmp
-In the adminGUI -> CMP Configuration, you will see the alias 'cmp' among the list of CMP alias. This alias will contain all your old CMP configurations 
-(except for one, see next note) and should be used to manage your CMP configurations in the future.
-
-NOTE: For CMP users who use NestedMessageContent in RA mode and use EndEntityCertificate as an authentication module: if you now skip performing some verifications 
-on the certificate in extraCert field by setting the authentication parameter of EndEntityCertificate to '-', this will no longer be possible in 
-EJBCA 6.0.0. Instead, a new configuration variable should be set to reflect this option. After uploading the conf/cmp.properties file according to the instructions 
-above, go to the admin GUI -> CMP Configurations; in the page for editing the CMP alias 'cmp', check the box that says 'Omit Verifications in EndEntityCertificate 
-Authentication Module'
-
-NOTE: For CMP users who use KeyUpdateRequest in RA mode, in EJBCA 6.0.0, the authentication module EndEntityCertificate would have to be set among the configured 
-authentication modules, otherwise, the request will fail.
-
-NOTE: In EJBCA 6.0.0, TCP configurations have been moved from conf/cmp.properties file (which has been removed) to conf/cmptcp.properties. So if you are using TCP 
-(a deprecated protocol in EJBCA and the RFC), you should set your TCP configuration values in the new file. You should also upload conf/cmp.properties file 
-according to the instructions above, and rename the alias 'cmp' to 'tcp'. See Admin Guide -> CMP -> 'CMP over TCP' and execute './bin/ejbca.sh config cmp' for 
-details.
-
-NOTE: CLI commands have been updated to reflect the new nomenclature introduced in EJBCA 5.0. This mainly involves the change of the command 'admins' -> 'roles' 
-(to reflect that Admin Groups have been renamed Roles) and to the subcommmands under 'ra' which have been renamed to reflect the namechange from 'User' to 'End 
-Entity' (e.g. adduser -> addendentity). The old commands have been deprecated but are still functional, and may be removed entirely in a future version. 
+	1.	Copy conf/*.properties from the earlier installation into the conf directory of the new release.
+   		Or better yet, use the ejbca-custom feature for easier upgrades, see User Guide.
+	2.	Copy the directory 'p12' from the earlier installation. 
+	3. 	Shut down JBoss.
+	4. 	Run the 'ant deploy' target with new version.
+	5. 	Run the 'ant deploy-keystore' target with new version.
+	6. 	Run the 'ant web-configure' target with new version.
+	7. 	Start up JBoss.
+	8. 	If you are running in a cluster, you should now upgrade on all cluster nodes.
+   		The newly deployed nodes should be running now.
+	8. 	Stop JBoss, clear the tmp and work directories in the servers, then start JBoss again to flush all caches.
+	9. 	Go into the Admin GUI and verify your settings.
 
 If you get a "java.lang.NoSuchMethodError" in the admin GUI it is because JBoss does not clean temporary files very well.
 Delete the directories JBOSS_HOME/server/default/tmp and JBOSS_HOME/server/default/work and restart JBoss to get it working.
 
-Upgrading an External OCSP/VA responder to EJBCA 6.0
------
-The External OCSP/VA responder in EJBCA 6.0 has had major changes in order to support new functionality and usability. 
-The External OCSP/VA responder now includes all EJBCA modules and database tables, including Admin GUI. There is no real difference between a CA node 
-and an OCSP node except that the OCSP node does not have any CAs in the database. This enables the following feature on the OCSP responder:
-- Usage of Crypto Tokens, where you can configure multiple tokens to be used. The responder is not longer limited to one PKCS#11 configuration in 
-  ocsp.properties.
-- Usage of Internal Key Binding, where you can configure specific key pairs matching specific certificates in the database. This enables flexible and 
-  simple configuration of OCSP responder keys and certificates. It is no longer necessary to import the OCSP signer certificate into a slot on the HSM.
-- Usage of the Admin GUI. You can now use the EJBCA Admin GUI to manage Crypto Tokens and Key Bindings, making configuration and administration of the 
-  OCSP responder so much easier.
+2. Basic Upgrade Procedure for Validation Authorities:
+***********************************************************
+2.a. Notable Changes:
+*****************************
+The external Validation Authority build has been removed and external VA deployments are now full EJBCA deployments.
+- 	Database privileges on the VA host must be the same as used by the CA (all tables must exist).
+- 	Key-stores, certificates and trust-stores (both soft and HSM based) will be automatically converted on first startup.
+	(or as soon as the password has been made available using clientToolBox if ocsp.activation.doNotStorePasswordsInMemory=true)
+	to CryptoTokens and OcspKeyBindings.
+- 	Trusted certificates (ocsp.signtrustdir) must be imported in EJBCA as "External CAs", for example using the "bin/ejbca.sh ca importcacert" 
+	command.
+- 	Health-check URL is now the same as for CA installations, and it will check the usability of ACTIVE OcspKeyBindings.
+- 	OcspKeyBindings and CryptoTokens can still be managed without the AdminGUI using the EJB CLI (bin/ejbca.sh).
+- 	OCSP signing or re-keying certificates no longer need to be present in the HSM slot (migrated to the CertificateData table).
+- 	Using a manually activated CryptoToken replaces the use of ocsp.activation.doNotStorePasswordsInMemory.
+- 	Behavior of OCSP responses (like untilNextUpdate etc) can now be configured per OcspKeyBinding.
+	(Certificate Profile or URL specific settings in ocsp.properties has highest priority, then the OcspKeyBinding properties
+	and finally the default configuration in ocsp.properties).
+- 	The re-keying key-store will be migrated to an AuthenticationKeyBinding.
+- 	Management of *KeyBindings and CryptoTokens will be audit logged. Configure it before the upgrade to have proper traceability
+	from this point on.
+- 	The 'ejbca.productionmode' property should be set to 'true' or 'false'. 'va' or 'ocsp' options are no longer supported.
+-  	Some configuration options in ocsp.properties have moved to (or been deprecated by) web.properties. You should migrate these configuration 
+	changes. You will be warned during build if you are using these options and have not migrated them.
+- 	Usage of Crypto Tokens, where you can configure multiple tokens to be used. The responder is not longer limited to one PKCS#11 configuration in 
+  	ocsp.properties.
+- 	Usage of Internal Key Binding, where you can configure specific key pairs matching specific certificates in the database. This enables flexible 
+	and simple configuration of OCSP responder keys and certificates. It is no longer necessary to import the OCSP signer certificate into a slot on 
+	the HSM.
+- 	Usage of the Admin GUI. You can now use the EJBCA Admin GUI to manage Crypto Tokens and Key Bindings, making configuration and administration of 
+	the OCSP responder so much easier.
 
-All this means that the upgrade from an earlier version of EJBCA OCSP is a process. Naturally EJBCA 6 handles all the upgrade for you and will try to 
-automatically import your old configuration seamlessly. To benefit from all the new features you should read the VA Installation, OCSP Installation and 
-User Guide in the documentation. 
+All this means that the upgrade from an earlier version of EJBCA OCSP is a process. Naturally EJBCA 6 handles all the upgrade for you and will try to
+automatically import your old configuration seamlessly. To benefit from all the new features you should read the VA Installation, OCSP Installation 
+and User Guide in the documentation. 
 
-Upgrade process:
-1. Copy configuration files, database.properties, ocsp.properties and web.properties from your old installation.
-2. Note that there can be some deprecated properties (j2ee.web-noconfigure). You will be notified of this during build.
-3. Configure logging in conf/cesecore.properties if you do not want to audit log security events in the database (see OCSP Installation).
-4. Build and configure the EJBCA VA as described in "Standalone VA Installation".
-5. When JBoss is started the first time new database tables will be created. These are the same tables as exist in an EJBCA installation. If your 
-  database user has restricted access, you can create the tables manually from the database scripts in doc/sql-scripts.
-6. The next step involves creating OCSP Key Bindings, which are objects that represent an external OCSP responder. 
-  a. If passwords are allowed to be store in memory (ocsp.activation.doNotStorePasswordsInMemory=true in ocsp.properties) then all key bindings are
-     created automatically. When JBoss is started the first time your ocsp.properties will be read and upgraded into crypto tokens and ocsp key 
-     bindings. This will create objects in your database in the CryptoTokenData and InternalKeyBindingData. Also initial access rules will be created, 
-     see "OCSP Installation" for more information about this.
-  b. If passwords are not stored in memory, the slot has to be opened up. To do this, make a call via the OCSPActivate command in clientToolBox, and the 
-     internal key binding will be created automatically at the first call. 
-7. If you are requiring signed requests, verified by specific CAs, you need to import those CA certificates as "External CAs" in EJBCA, and configure 
-  the trust anchors in the OCSP Key Binding (use bin/ejbca.sh ca importcacert or the Admin GUI).
+2.b. Upgrade Process:
+*****************************
+	1. 	Copy configuration files, database.properties, ocsp.properties and web.properties from your old installation.
+	2. 	Note that there can be some deprecated properties (j2ee.web-noconfigure). You will be notified of this during build.
+	3. 	Configure logging in conf/cesecore.properties if you do not want to audit log security events in the database (see OCSP Installation).
+	4. 	Build and configure the EJBCA VA as described in "Standalone VA Installation".
+	5. 	When JBoss is started the first time new database tables will be created. These are the same tables as exist in an EJBCA installation. If 
+		your database user has restricted access, you can create the tables manually from the database scripts in doc/sql-scripts.
+	6.	The next step involves creating OCSP Key Bindings, which are objects that represent an external OCSP responder. 
+  		a. 	If passwords are allowed to be store in memory (ocsp.activation.doNotStorePasswordsInMemory=true in ocsp.properties) then all key 
+  			bindings are created automatically. When JBoss is started the first time your ocsp.properties will be read and upgraded into crypto 
+  			tokens and ocsp key bindings. This will create objects in your database in the CryptoTokenData and InternalKeyBindingData. Also initial 
+  			access rules will be created, see "OCSP Installation" for more information about this.
+  		b. 	If passwords are not stored in memory, the slot has to be opened up. To do this, make a call via the OCSPActivate command in 
+  			clientToolBox, and the internal key binding will be created automatically at the first call. 
+	7. 	If you are requiring signed requests, verified by specific CAs, you need to import those CA certificates as "External CAs" in EJBCA, and 
+		configure the trust anchors in the OCSP Key Binding (use bin/ejbca.sh ca importcacert or the Admin GUI).
   
-Post Upgrade:
+2.c. Post Upgrade:
+*****************************
 Once all OCSP Responders have been recreated as OCSP Key Bindings and crypto tokens, the following properties can be removed from ocsp.properties
 * ocsp.restrictsignatures
 * ocsp.restrictsignaturesbymethod
@@ -215,6 +149,84 @@ Once all OCSP Responders have been recreated as OCSP Key Bindings and crypto tok
 * ocsp.p11.sunConfigurationFile
 * ocsp.p11.p11password
 * ocsp.p11.slot
+
+3. 100% Uptime Upgrade Notes:
+***********************************************************
+
+3.a. Upgrading CryotoTokens:
+*****************************
+The CryptoToken concept has extended the internal CA Token concept. CA's now reference a named set of keys in a CryptoToken and CA Service and 
+CryptoToken activation are clearly separated. Upgrades are made during first startup. Older EJBCA nodes will continue to function during a 100% 
+up-time upgrade, as long as newer instances has been deployed with "db.keepinternalcakeystores" set to true. For 100% up-time upgrade, or possibility
+to back out of upgrade, set db.keepinternalcakeystores to true (default is false). 
+Settings relevant for 100% up-time upgrades are:
+- db.keepinternalcakeystores (5.0->5.2)
+- db.keepjbossserialization (4.0->5.0)
+- app.version.effective (3.11->4.0)
+
+3.b. Upgrading the OCSP CA Extended Service:
+*****************************
+The service for running OCSP services on internal CAs has now become an integral part of the OCSP responder. For this reason, the old 
+CA Extended Service will be removed at first upstart when a system has been upgraded from 5.0 to 6.0. The result of this is that for nodes sharing 
+a database, those nodes that haven't been upgraded to 6.0 will lose OCSP services until they've been upgraded as well. In order to keep internal
+OCSP services running (external OCSP services are not affected) on the entire cluster during the whole upgrade process, set "ca.keepocspextendedservice" 
+to 'true' for all nodes except the last one, which then finally remove the service from the database. 
+- ca.keepocspextendedservice (5.0 -> 6.0)
+
+4. CMP Configuration Handling:
+***********************************************************
+In EJBCA 6.0.0, the CMP configuration handling has been rewritten. CMP configurations are no longer read from conf/cmp.properties file, instead, CMP 
+configurations can be set either in the admin GUI or in the command line (execute './bin/ejbca.sh config cmp' from EJBCA home directory for command 
+line documentation). If you do use CMP, you can upload your old cmp.properties file by executing the following command in EJBCA home directory:
+
+$ ./bin/ejbca.sh config cmp uploadfile conf/cmp.properties cmp
+
+In the adminGUI -> CMP Configuration, you will see the alias 'cmp' among the list of CMP alias. This alias will contain all your old CMP 
+configurations (except for one, see next note) and should be used to manage your CMP configurations in the future.
+
+For CMP users who use NestedMessageContent in RA mode and use EndEntityCertificate as an authentication module: if you now skip performing some 
+verifications on the certificate in extraCert field by setting the authentication parameter of EndEntityCertificate to '-', this will no longer be 
+possible in EJBCA 6.0.0. Instead, a new configuration variable should be set to reflect this option. After uploading the conf/cmp.properties file 
+according to the instructions above, go to the admin GUI -> CMP Configurations; in the page for editing the CMP alias 'cmp', check the box that says 
+'Omit Verifications in EndEntityCertificate Authentication Module'
+
+For CMP users who use KeyUpdateRequest in RA mode, in EJBCA 6.0.0, the authentication module EndEntityCertificate would have to be set among the 
+configured authentication modules, otherwise, the request will fail.
+
+In EJBCA 6.0.0, TCP configurations have been moved from conf/cmp.properties file (which has been removed) to conf/cmptcp.properties. So if you are 
+using TCP (a deprecated protocol in EJBCA and the RFC), you should set your TCP configuration values in the new file. You should also upload 
+conf/cmp.properties file according to the instructions above, and rename the alias 'cmp' to 'tcp'. See Admin Guide -> CMP -> 'CMP over TCP' and 
+execute './bin/ejbca.sh config cmp' for details.
+
+5. CLI Commands Renamed:
+***********************************************************
+CLI commands have been updated to reflect the new nomenclature introduced in EJBCA 5.0. This mainly involves the change of the command 
+'admins' -> 'roles' (to reflect that Admin Groups have been renamed Roles) and to the subcommmands under 'ra' which have been renamed to reflect the 
+name change from 'User' to 'End Entity' (e.g. adduser -> addendentity). The old commands have been deprecated but are still functional, and may be 
+removed entirely in a future version. 
+
+6. Miscellaneous Issues:
+***********************************************************
+-	batchtool.properties is no longer searched for in bin/ but in conf/ instead. Note that everything in this file is commented out by default, so 
+	it can be removed if it hasn't been modified.
+-	In EJBCA 6.0.0 new versions of BouncyCastle jars are included. If you have been copying ejbca/lib/bc*.jar files to JBoss 
+	(jboss/server/default/lib), you must remove the old jars from JBoss and copy new jars from EJBCA.
+-	In EJBCA 6.0.0 the API for custom certificate extensions was changed. If you have created your own custom certificate extension java classes,
+	you need to update the API with one new argument (can be null). There is no effect if you used standard custom extensions in the 
+	certextensions.properties, only custom java classes.
+-	Starting with EJBCA 6.0.0 custom services and publishers are automatically detected using meta-data in the Jar files, and class names can no 
+	longer be specified manually. If you need to use old custom classes from before 6.0 (i.e. not autodetected classes) you can enable manual entry 
+	with the option web.manualclasspathsenabled=true in web.properties.
+-	The class CliAuthenticationToken and associated classes have been moved from the CLI module to reside next to the other 
+	authentication classes under src. This means that approval requests using the CliAuthenticationToken created in 5.0.x will not 
+	be forwards compatible.
+-	PKCS#11 libraries for presentation in the AdminGUI are autodetected. If you have a library that is not automatically detected by 
+	EJBCA you can add it to the configuration. See web.properties.sample for PKCS#11 library auto-detection configuration.
+- 	HSM configuration options have been updated to support different slot reference types (slot id, index or label).
+	See Admin Guide, databaseprotection.properties.sample, ocsp.properties.sample and catoken.properties.sample for information and examples how to 
+	update you current PKCS#11 configuration in these files. Configuration in the Admin GUI should be automatically upgraded.
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
 
 From EJBCA 5.0.x to EJBCA 5.0.x
 -------------------------------
