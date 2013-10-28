@@ -127,6 +127,11 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 # No default value, must be set if the extension is used
 #ocsp.unidcacert=
 
+# Specifies if the OCSP-responder should require signed requests or not.
+# If signature is required, the signature certificate must be issued by a CA handled by the OCSP responder.
+#
+# Default: false
+#ocsp.signaturerequired=false
 
 #------------------- Re-keying used by external OCSP responder------------------------------
 # When this feature is enabled a new signing key will automatically be generated a specified time before the certificate of the used key expires.
