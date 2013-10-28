@@ -37,6 +37,7 @@ import java.util.Random;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
+import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.Timeout;
@@ -584,7 +585,13 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
     private void cancelTimers() {
         Collection<Timer> timers = timerService.getTimers();
         for (Timer timer : timers) {
-            timer.cancel();
+            try {
+                timer.cancel();
+            } catch (NoSuchObjectLocalException e) {
+            	if (log.isDebugEnabled()) {
+            	    log.debug("Timer was already expired or canceled: "+timer.getInfo());
+            	}
+            }
         }
     }
 }
