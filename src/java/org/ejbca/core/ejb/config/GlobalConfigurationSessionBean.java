@@ -196,7 +196,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
         if (log.isTraceEnabled()) {
             log.trace(">saveConfiguration()");
         }
-        if (this.accessSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource())) {
+        if (this.accessSession.isAuthorized(admin, StandardRules.ROLE_ROOT.resource())) {
             final GlobalConfigurationData gcdata = GlobalConfigurationData.findByConfigurationId(entityManager, configID);
             if (gcdata != null) {
                 // Save object and create a diff over what has changed
