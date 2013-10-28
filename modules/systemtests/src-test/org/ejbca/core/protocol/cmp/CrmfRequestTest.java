@@ -362,8 +362,11 @@ public class CrmfRequestTest extends CmpTestCase {
     public void test08SubjectDNSerialnumber() throws Exception {
         log.trace(">test08SubjectDNSerialnumber");
         // Create a new good user
-        createCmpUser("cmpsntest", "C=SE,SN=12234567,CN=cmpsntest");
-
+        String cmpsntestUsername = "cmpsntest";
+        String cmpsntest2Username = "cmpsntest2";
+        createCmpUser(cmpsntestUsername, "C=SE,SN=12234567,CN=cmpsntest");
+        
+        try {
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
         
@@ -397,7 +400,8 @@ public class CrmfRequestTest extends CmpTestCase {
 
         // Create another user with the subjectDN serialnumber spelled "SERIALNUMBER" instead of "SN"
         KeyPair keys2 = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        createCmpUser("cmpsntest2", "C=SE,SERIALNUMBER=123456789,CN=cmpsntest2");
+        
+        createCmpUser(cmpsntest2Username, "C=SE,SERIALNUMBER=123456789,CN=cmpsntest2");
         req = genCertReq(issuerDN, userDN, keys2, cacert, nonce, transid, false, null, null, null, null, null, null);
         assertNotNull(req);
         ir = (CertReqMessages) req.getBody().getContent();
@@ -427,6 +431,10 @@ public class CrmfRequestTest extends CmpTestCase {
         assertNotSame("Revocation request failed to revoke the certificate", RevokedCertInfo.NOT_REVOKED, revStatus);
         
         log.trace("<test08SubjectDNSerialnumber");
+        } finally {
+            endEntityManagementSession.deleteUser(admin, cmpsntestUsername);
+            endEntityManagementSession.deleteUser(admin, cmpsntest2Username);
+        }
     }
 
 
