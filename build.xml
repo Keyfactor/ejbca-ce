@@ -514,26 +514,30 @@
 	<target name="create-log4config-bundle">
 		<mkdir dir="tmp"/>
 		<!-- For appservers that don't come with Log4J we need to bundle a configuration file in the classpath (in the EARs lib/ directory in a JAR) -->
-		<copy overwrite="true" tofile="tmp/log4j.xml" failonerror="false">
+		<copy overwrite="true" todir="tmp" failonerror="false">
     		<fileset dir="${ejbca.home}/conf">
     		      <include name="log4j-${appserver.type}.xml.sample"/>
    		    </fileset>
+   		    <mapper type="regexp" from="log4j-.*" to="log4j.xml"/>
 		</copy>
-		<copy overwrite="true" tofile="tmp/log4j.xml" failonerror="false">
+		<copy overwrite="true" todir="tmp" failonerror="false">
 			<fileset dir="${ejbca.home}/conf">
 		      <include name="log4j-${appserver.type}.xml"/>
 		    </fileset>
+   		    <mapper type="regexp" from="log4j-.*" to="log4j.xml"/>
 		</copy>
 		<!-- If we don't have a specific file for an appserver, perhaps we have one for the subtype (i.e. jboss and jboss6) -->
-		<copy overwrite="true" tofile="tmp/log4j.xml" failonerror="false">
+		<copy overwrite="true" todir="tmp" failonerror="false">
     		<fileset dir="${ejbca.home}/conf">
     		      <include name="log4j-${appserver.subtype}.xml.sample"/>
    		    </fileset>
+   		    <mapper type="regexp" from="log4j-.*" to="log4j.xml"/>
 		</copy>
-		<copy overwrite="true" tofile="tmp/log4j.xml" failonerror="false">
+		<copy overwrite="true" todir="tmp" failonerror="false">
     		<fileset dir="${ejbca.home}/conf">
     		      <include name="log4j-${appserver.subtype}.xml"/>
    		    </fileset>
+   		    <mapper type="regexp" from="log4j-.*" to="log4j.xml"/>
 		</copy>
 		<jar destfile="modules/dist/log4jconfig.jar" whenempty="skip" basedir="tmp" includes="log4j.xml"/>
 		<delete file="tmp/log4j.xml"/>
