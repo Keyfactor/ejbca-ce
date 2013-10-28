@@ -3,6 +3,8 @@ EJBCA 5.0.11, 2013-09-30
 Bug
     [ECA-2984] - ejbcaClientToolBox.sh CMPKeyUpdateStressTest works only with one thread
     [ECA-3083] - SaferLog4j jar does not build correctly
+    [ECA-3211] - End entity username should be stripped when doing end entity look-up in CMP
+    [ECA-3217] - Nodes in cluster not database protection stable
 
 Improvement
     [ECA-2951] - Clean up CSS for new pages in 5.0 and 6.0 branches
@@ -12,11 +14,13 @@ Improvement
     [ECA-3066] - Support ECDSA for OCSP automatic key renewal
     [ECA-3071] - Allow reference of PKCS#11 slots by token label
     [ECA-3151] - Add hostname to startup log message
+    [ECA-3178] - Add configuration option for specifying non-allowed characters in subject DN
 
 New Feature
     [ECA-2990] - Customer specific LDAP publisher
     [ECA-3025] - Built in profiling capabilities
     [ECA-3070] - Add WS keyrecovery method for specified certificate
+    [ECA-3194] - Allow ejbca-db-cli to work on database with only AuditRecordData
 
 EJBCA 5.0.10, 2013-05-31
 ---
