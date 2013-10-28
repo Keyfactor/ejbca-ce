@@ -199,6 +199,7 @@ public class CaImportCRLCommandTest {
         } finally {
             cleanUp();
             endEntityManagementSession.revokeAndDeleteUser(admin, testUsername, ReasonFlags.unused);
+            endEntityManagementSession.revokeAndDeleteUser(admin, CaImportCRLCommand.MISSING_USERNAME_PREFIX+CA_NAME, ReasonFlags.unused);
             internalCertStoreSession.removeCertificate(fingerprint);
         }
     }
