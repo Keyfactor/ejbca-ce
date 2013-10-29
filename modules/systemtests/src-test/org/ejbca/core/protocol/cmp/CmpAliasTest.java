@@ -82,7 +82,7 @@ public class CmpAliasTest extends CmpTestCase {
      * @param extractedAlias the alias that EJBCA will use to handle the CMP request
      * @throws Exception
      */
-    private void SendCmpRequest(CmpConfiguration cmpconfig, String requestAlias, String extractedAlias) throws Exception {
+    private void sendCmpRequest(CmpConfiguration cmpconfig, String requestAlias, String extractedAlias) throws Exception {
         
         if(cmpconfig.aliasExists(extractedAlias)) {
             cmpconfig.renameAlias(extractedAlias, "backUpAlias" + extractedAlias + "ForAliasTesting001122334455");
@@ -150,19 +150,19 @@ public class CmpAliasTest extends CmpTestCase {
         
         CmpConfiguration cmpConfig = (CmpConfiguration) globalConfSession.getCachedConfiguration(Configuration.CMPConfigID);
         
-        SendCmpRequest(cmpConfig, "alias123", "alias123"); // "alias123" in the request causes Ejbca to use "alias123" as CMP alias
-        SendCmpRequest(cmpConfig, "123", "123"); // "123" in the request causes Ejbca to use "123" as CMP alias
-        SendCmpRequest(cmpConfig, "", "cmp"); // No alias in the request causes Ejbca to use "cmp" (the default alias) as CMP alias
-        SendCmpRequest(cmpConfig, null, "cmp"); // No alias in the request causes Ejbca to use "cmp" (the default alias) as CMP alias
-        SendCmpRequest(cmpConfig, "alias??&!!foo", "alias"); // Specifying alias with non-alphanumeric characters cause Ejbca to use, 
+        sendCmpRequest(cmpConfig, "alias123", "alias123"); // "alias123" in the request causes Ejbca to use "alias123" as CMP alias
+        sendCmpRequest(cmpConfig, "123", "123"); // "123" in the request causes Ejbca to use "123" as CMP alias
+        sendCmpRequest(cmpConfig, "", "cmp"); // No alias in the request causes Ejbca to use "cmp" (the default alias) as CMP alias
+        sendCmpRequest(cmpConfig, null, "cmp"); // No alias in the request causes Ejbca to use "cmp" (the default alias) as CMP alias
+        sendCmpRequest(cmpConfig, "alias??&!!foo", "alias"); // Specifying alias with non-alphanumeric characters cause Ejbca to use, 
                                                              // as CMP alias, a substring of the first alphanumeric characters, in this 
                                                              // case: alias
-        SendCmpRequest(cmpConfig, "??##!!&", "cmp"); // Specifying alias with non-alphanumeric characters cause Ejbca to use, 
+        sendCmpRequest(cmpConfig, "??##!!&", "cmp"); // Specifying alias with non-alphanumeric characters cause Ejbca to use, 
                                                      // as CMP alias, a substring of the first alphanumeric characters, in this 
                                                      // case: empty string, which means that the default alias "cmp" will be used
 
         String longAlias = "abcdefghijklmnopqrstuvwxyz0123456789"; 
-        SendCmpRequest(cmpConfig, longAlias, "cmp"); // Specifying an alias that is longer than 32 characters causes 
+        sendCmpRequest(cmpConfig, longAlias, "cmp"); // Specifying an alias that is longer than 32 characters causes 
                                                      // Ejbca to use the default CMP alias "cmp"
 
         log.trace("<test01Access()");
