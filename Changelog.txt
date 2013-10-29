@@ -1,4 +1,4 @@
-EJBCA 5.0.11, 2013-09-30
+EJBCA 5.0.11, 2013-10-30
 ---
 Bug
     [ECA-2984] - ejbcaClientToolBox.sh CMPKeyUpdateStressTest works only with one thread
