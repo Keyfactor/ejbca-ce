@@ -149,8 +149,8 @@ public class CmpServlet extends HttpServlet {
     private String getAlias(String pathInfo) {
         // PathInfo contains the alias used for CMP configuration. 
         // The CMP URL for custom configuration looks like: http://HOST:PORT/ejbca/publicweb/cmp/*
-        // pathInfo contains what * is and should have the form "/<SOME IDENTIFYING TEXT>". We extract the "SOME IDENTIFYING TEXT" and that will be
-        // the CMP configuration alias.
+        // pathInfo contains what * is and should have the form "/<SOME IDENTIFYING TEXT>". We extract the "SOME IDENTIFYING 
+        // TEXT" and that will be the CMP configuration alias.
         String alias = null;
         if((pathInfo != null) && (pathInfo.length() > 0) ) {
             alias = pathInfo.substring(1);
@@ -158,8 +158,14 @@ public class CmpServlet extends HttpServlet {
                 log.debug("Using CMP configuration alias: " + alias);
             }
         }
+        
         if((alias == null) || (alias.length() < 1)) {
             log.info("No CMP alias specified in the URL. Using the default alias: " + DEFAULT_CMP_ALIAS);
+            return DEFAULT_CMP_ALIAS;
+        }
+        
+        if(alias.length() > 32) {
+            log.info("Unaccepted alias more than 32 characters. Using the default alias: " + DEFAULT_CMP_ALIAS);
             return DEFAULT_CMP_ALIAS;
         }
         
