@@ -161,10 +161,6 @@ public class CmpAliasTest extends CmpTestCase {
                                                      // as CMP alias, a substring of the first alphanumeric characters, in this 
                                                      // case: empty string, which means that the default alias "cmp" will be used
 
-        String longAlias = "abcdefghijklmnopqrstuvwxyz0123456789"; 
-        sendCmpRequest(cmpConfig, longAlias, "cmp"); // Specifying an alias that is longer than 32 characters causes 
-                                                     // Ejbca to use the default CMP alias "cmp"
-
         log.trace("<test01Access()");
     }
 
@@ -222,6 +218,21 @@ public class CmpAliasTest extends CmpTestCase {
         assertFalse(cmpConfig.aliasExists(renamealias));
     }
    
+    @Test
+    public void test03AliasTooLongTest() throws Exception {
+        
+        String longAlias = "abcdefghijklmnopqrstuvwxyz0123456789"; 
+        String urlString = httpReqPath + '/' + baseResource + '/' + longAlias; 
+        log.info("http URL: " + urlString);
+        URL url = new URL(urlString);
+        final HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        con.setDoOutput(true);
+        con.setRequestMethod("POST");
+        con.setRequestProperty("Content-type", "application/pkixcmp");
+        con.connect();
+        assertEquals("Unexpected HTTP response code.", 400, con.getResponseCode()); // 400 = HttpServletResponse.SC_BAD_REQUEST
+    }
+    
     @Override
     public String getRoleName() {
         return this.getClass().getSimpleName();
