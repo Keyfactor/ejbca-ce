@@ -55,6 +55,7 @@ import org.cesecore.roles.management.RoleInitializationSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.protocol.ocsp.standalone.OcspKeyRenewalProxySessionRemote;
 import org.ejbca.util.TraceLogMethodsRule;
@@ -81,24 +82,27 @@ public class OcspKeyRenewalTest {
     
     private static final String ECC_CRYPTOTOKEN_NAME = TESTCLASSNAME+"ECC";
 
-    private static CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private OcspKeyRenewalProxySessionRemote ocspKeyRenewalProxySession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(OcspKeyRenewalProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private OcspResponseGeneratorTestSessionRemote standaloneOcspResponseGeneratorTestSession = EjbRemoteHelper.INSTANCE
-        .getRemoteSession(OcspResponseGeneratorTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private static final OcspResponseGeneratorTestSessionRemote ocspResponseGeneratorTestSession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(OcspResponseGeneratorTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private static final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);       
+    private static final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    private static final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(CertificateStoreSessionRemote.class);
+    private static CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(
+            CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private static final EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(EndEntityAccessSessionRemote.class);
+    private OcspKeyRenewalProxySessionRemote ocspKeyRenewalProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(
+        OcspKeyRenewalProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private OcspResponseGeneratorTestSessionRemote standaloneOcspResponseGeneratorTestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
+            OcspResponseGeneratorTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private static final OcspResponseGeneratorTestSessionRemote ocspResponseGeneratorTestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
+            OcspResponseGeneratorTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private static final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
+            InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private static final InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
     private static final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CryptoTokenManagementSessionRemote.class);
-    private static final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(CertificateStoreSessionRemote.class);       
-    private static final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    private static final RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
+    private static final RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(RoleManagementSessionRemote.class);
 
     @Rule
     public TestRule traceLogMethodsRule = new TraceLogMethodsRule();
@@ -253,7 +257,10 @@ public class OcspKeyRenewalTest {
         
         final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE
                 .getRemoteSession(EndEntityManagementSessionRemote.class);
-        endEntityManagementSession.revokeAndDeleteUser(authenticationToken, OCSP_ECC_END_USER_NAME, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+        if (endEntityAccessSession.findUser(authenticationToken, OCSP_ECC_END_USER_NAME) != null) {
+            endEntityManagementSession
+                    .revokeAndDeleteUser(authenticationToken, OCSP_ECC_END_USER_NAME, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+        }
     }
     
     private static void cleanupKeyBinding(String keybindingName) {
