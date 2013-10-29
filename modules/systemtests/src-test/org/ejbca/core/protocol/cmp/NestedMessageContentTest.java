@@ -184,7 +184,7 @@ public class NestedMessageContentTest extends CmpTestCase {
     private String issuerDN;
     private String raCertsPath = "/tmp/racerts";
     private CmpConfiguration cmpConfiguration;
-    private String cmpAlias = "NestedMessageContentTestCmpConfigAlias";
+    private String cmpAlias = "NestedMessageContentTstConfAlias";
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
     

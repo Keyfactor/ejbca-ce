@@ -79,7 +79,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
     private static X509Certificate caCertificate2;
     
     private CmpConfiguration cmpConfiguration;
-    private String configAlias = "CmpRAAuthenticationTestConfigAlias";
+    private String configAlias = "CmpRAAuthenticationConfigAlias";
     
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);

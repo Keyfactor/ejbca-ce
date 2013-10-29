@@ -121,7 +121,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
     private final String cliUserName = EjbcaConfiguration.getCliDefaultUser();
     private final String cliPassword = EjbcaConfiguration.getCliDefaultPassword();
     private CmpConfiguration cmpConfiguration;
-    private String cmpAlias = "CrmfRAPbeRequestTestCmpConfigAlias";
+    private String cmpAlias = "CrmfRAPbeRequestTestConfigAlias";
     
     private ApprovalExecutionSessionRemote approvalExecutionSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalExecutionSessionRemote.class);
     private ApprovalSessionRemote approvalSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionRemote.class);

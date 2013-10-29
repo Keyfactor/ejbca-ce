@@ -66,7 +66,7 @@ public class CmpConfirmMessageTest extends CmpTestCase {
     private static X509Certificate cacert = null;
     private CA testx509ca;
     private CmpConfiguration cmpConfiguration;
-    private String cmpAlias = "CmpConfirmMessageTestCmpConfigAlias";
+    private String cmpAlias = "CmpConfirmMessageTestConfAlias";
 
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);

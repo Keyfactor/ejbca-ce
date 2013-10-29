@@ -141,17 +141,18 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
     @After
     public void tearDown() throws Exception {
         super.tearDown();
-        boolean cleanUpOk = true;
-
-        if (!configurationSession.restoreConfiguration()) {
-            cleanUpOk = false;
-        }
-        assertTrue("Unable to clean up properly.", cleanUpOk);
+        
         cmpConfiguration.removeAlias(cmpAlias);
         if(cmpConfiguration.aliasExists("backupTcpAlias")) {
             cmpConfiguration.renameAlias("backupTcpAlias", cmpAlias);
         }
         globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
+        
+        boolean cleanUpOk = true;
+        if (!configurationSession.restoreConfiguration()) {
+            cleanUpOk = false;
+        }
+        assertTrue("Unable to clean up properly.", cleanUpOk);
         
         CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
         caSession.removeCA(admin, caid);
