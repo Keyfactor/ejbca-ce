@@ -17,6 +17,7 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -852,5 +853,34 @@ public class RAInterfaceBean implements Serializable {
     	}
     	return serialnumber;
 
+    }
+
+    /**
+     * Handle the combinations of AnyCA and default CA to get the correct available CAs line.
+     * @param availableCasArray an array of CA Ids
+     * @param defaultCa the CA Id of the selected default CA
+     * @return the ;-seperated list of CA Ids
+     */
+    public String getAvailableCasString(final String[] availableCasArray, final String defaultCa) {
+        final List<String> availableCasList = Arrays.asList(availableCasArray);
+        final StringBuilder sb = new StringBuilder();
+        if (availableCasList.contains(String.valueOf(SecConst.ALLCAS)) || availableCasList.contains(defaultCa)) {
+            // If the AnyCA or the default CA is selected we will just keep list of selected CAs as is
+            // (the admin might want to use AnyCA with additional selections for awkward access control)
+            for (final String current : availableCasList) {
+                if (sb.length()>0) {
+                    sb.append(EndEntityProfile.SPLITCHAR);
+                }
+                sb.append(current);
+            }
+        } else {
+            // If AnyCA isn't selected and the not the default either we need to add the default CA to the list of available CAs
+            sb.append(defaultCa);
+            for (final String current : availableCasList) {
+                sb.append(EndEntityProfile.SPLITCHAR);
+                sb.append(current);
+            }
+        }
+        return sb.toString();
     }
 }
