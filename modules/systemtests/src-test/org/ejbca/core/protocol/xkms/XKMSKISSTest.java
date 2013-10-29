@@ -36,6 +36,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
@@ -91,7 +92,6 @@ import org.w3._2002._03.xkms_.ValidateResultType;
  * "CN=AdminCA1,O=EJBCA Sample,C=SE", and it must have XKMS service enabled.
  * Also you have to enable XKMS in conf/xkms.properties.
  * 
- * @author Philip Vendil 2006 sep 27
  * 
  * @version $Id$
  */
@@ -1193,17 +1193,28 @@ public class XKMSKISSTest {
     }
 
     @AfterClass
-    public static void cleanDatabase() throws Exception {
+    public static void cleanDatabase() throws AuthorizationDeniedException  {
         AuthenticationToken administrator = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
         
         CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
         EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
         EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-        
-        endEntityManagementSession.deleteUser(administrator, username1);
-        endEntityManagementSession.deleteUser(administrator, username2);
-        endEntityManagementSession.deleteUser(administrator, username3);
 
+        try {
+            endEntityManagementSession.deleteUser(administrator, username1);
+        } catch (Exception e) {
+            //NOPMD: Ignore
+        }
+        try {
+            endEntityManagementSession.deleteUser(administrator, username2);
+        } catch (Exception e) {
+            //NOPMD: Ignore
+        }
+        try {
+            endEntityManagementSession.deleteUser(administrator, username3);
+        } catch (Exception e) {
+            //NOPMD: Ignore
+        }
         endEntityProfileSession.removeEndEntityProfile(administrator, "XKMSTESTPROFILE");
 
         certificateProfileSession.removeCertificateProfile(administrator, "XKMSTESTSIGN");
