@@ -29,6 +29,9 @@ import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.cmp.ErrorMsgContent;
 import org.bouncycastle.asn1.cmp.PKIBody;
 import org.bouncycastle.asn1.cmp.PKIMessage;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
@@ -44,6 +47,7 @@ import org.junit.Test;
 public class CmpAliasTest extends CmpTestCase {
     
     private static final Logger log = Logger.getLogger(CmpAliasTest.class);
+    private static final AuthenticationToken ADMIN = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CmpAliasTest"));
 
     private ConfigurationSessionRemote confSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private GlobalConfigurationSessionRemote globalConfSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
@@ -71,73 +75,96 @@ public class CmpAliasTest extends CmpTestCase {
     }
 
     /**
-     * Tests the CMP URLs with configuration alias
+     * Sends a CMP request with the alias requestAlias in the URL and expects a CMP error message 
+     * that extractedAlias does not  exist.
+     * 
+     * @param requestAlias the alias that is  specified in the URL
+     * @param extractedAlias the alias that EJBCA will use to handle the CMP request
+     * @throws Exception
+     */
+    private void SendCmpRequest(CmpConfiguration cmpconfig, String requestAlias, String extractedAlias) throws Exception {
+        
+        if(cmpconfig.aliasExists(extractedAlias)) {
+            cmpconfig.renameAlias(extractedAlias, "backUpAlias" + extractedAlias + "ForAliasTesting001122334455");
+            globalConfSession.saveConfiguration(ADMIN, cmpconfig, Configuration.CMPConfigID);
+        }
+        
+        try {
+            String urlString = httpReqPath + '/' + baseResource;
+            if(requestAlias != null) {
+                urlString += "/" + requestAlias; 
+            }
+            log.info("http URL: " + urlString);
+            URL url = new URL(urlString);
+            final HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setDoOutput(true);
+            con.setRequestMethod("POST");
+            con.setRequestProperty("Content-type", "application/pkixcmp");
+            con.connect();
+            assertEquals("Unexpected HTTP response code.", 200, con.getResponseCode()); // OK response (will use alias "alias123")
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            // This works for small requests, and CMP requests are small enough
+            InputStream in = con.getInputStream();
+            int b = in.read();
+            while (b != -1) {
+                baos.write(b);
+                b = in.read();
+            }
+            baos.flush();
+            in.close();
+            byte[] respBytes = baos.toByteArray();
+            assertNotNull(respBytes);
+            assertTrue(respBytes.length > 0);
+
+            ASN1InputStream inputStream = new ASN1InputStream(new ByteArrayInputStream(respBytes));
+            PKIMessage respObject = PKIMessage.getInstance(inputStream.readObject());
+            assertNotNull(respObject);
+            
+            final PKIBody body = respObject.getBody();
+            assertEquals(23, body.getType());
+            ErrorMsgContent err = (ErrorMsgContent) body.getContent();
+            final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+            final String expectedErrMsg = "Wrong URL. CMP alias '" + extractedAlias + "' does not exist";
+            assertEquals(expectedErrMsg, errMsg);
+            inputStream.close();
+        } finally {
+            if(cmpconfig.aliasExists("backUpAlias" + extractedAlias + "ForAliasTesting001122334455")) {
+                cmpconfig.renameAlias("backUpAlias" + extractedAlias + "ForAliasTesting001122334455", extractedAlias);
+                globalConfSession.saveConfiguration(ADMIN, cmpconfig, Configuration.CMPConfigID);
+            }
+        }
+    }
+    
+    
+    /**
+     * Tests that the right configuration alias is extracted from the CMP URL. 
+     * 
+     * A CMP request for a non-existing alias is sent. Expected an error message caused by the absence of the expected CMP alias 
+     * 
      * @throws Exception
      */
     @Test
     public void test01Access() throws Exception {
         log.trace(">test01Access()");
         
-        String urlString = httpReqPath + '/' + baseResource + "/alias123"; 
-        log.info("http URL: " + urlString);
-        URL url = new URL(urlString);
-        final HttpURLConnection con = (HttpURLConnection) url.openConnection();
-        con.setDoOutput(true);
-        con.setRequestMethod("POST");
-        con.setRequestProperty("Content-type", "application/pkixcmp");
-        con.connect();
-        assertEquals("Unexpected HTTP response code.", 200, con.getResponseCode()); // OK response (will use alias "alias123")
+        CmpConfiguration cmpConfig = (CmpConfiguration) globalConfSession.getCachedConfiguration(Configuration.CMPConfigID);
         
-        urlString = httpReqPath + '/' + baseResource + "/123"; 
-        log.info("http URL: " + urlString);
-        url = new URL(urlString);
-        final HttpURLConnection con2 = (HttpURLConnection) url.openConnection();
-        con2.setDoOutput(true);
-        con2.setRequestMethod("POST");
-        con2.setRequestProperty("Content-type", "application/pkixcmp");
-        con2.connect();
-        assertEquals("Unexpected HTTP response code.", 200, con2.getResponseCode()); // OK response (will use alias "123")
-        
-        urlString = httpReqPath + '/' + baseResource + "/"; 
-        log.info("http URL: " + urlString);
-        url = new URL(urlString);
-        final HttpURLConnection con3 = (HttpURLConnection) url.openConnection();
-        con3.setDoOutput(true);
-        con3.setRequestMethod("POST");
-        con3.setRequestProperty("Content-type", "application/pkixcmp");
-        con3.connect();
-        assertEquals("Unexpected HTTP response code.", 200, con3.getResponseCode()); // OK response (will use alias "cmp")
-        
-        urlString = httpReqPath + '/' + baseResource; 
-        log.info("http URL: " + urlString);
-        url = new URL(urlString);
-        final HttpURLConnection con5 = (HttpURLConnection) url.openConnection();
-        con5.setDoOutput(true);
-        con5.setRequestMethod("POST");
-        con5.setRequestProperty("Content-type", "application/pkixcmp");
-        con5.connect();
-        assertEquals("Unexpected HTTP response code.", 200, con5.getResponseCode()); // OK response (will use alias "cmp")
-        
-        urlString = httpReqPath + '/' + baseResource + "/alias??&!!foo"; 
-        log.info("http URL: " + urlString);
-        url = new URL(urlString);
-        final HttpURLConnection con6 = (HttpURLConnection) url.openConnection();
-        con6.setDoOutput(true);
-        con6.setRequestMethod("POST");
-        con6.setRequestProperty("Content-type", "application/pkixcmp");
-        con6.connect();
-        assertEquals("Unexpected HTTP response code.", 200, con6.getResponseCode()); // OK response (will use alias "alias")
-        
-        urlString = httpReqPath + '/' + baseResource + "/??##!!&"; 
-        log.info("http URL: " + urlString);
-        url = new URL(urlString);
-        final HttpURLConnection con7 = (HttpURLConnection) url.openConnection();
-        con7.setDoOutput(true);
-        con7.setRequestMethod("POST");
-        con7.setRequestProperty("Content-type", "application/pkixcmp");
-        con7.connect();
-        assertEquals("Unexpected HTTP response code.", 200, con7.getResponseCode()); // OK response (will use alias "cmp")
-        
+        SendCmpRequest(cmpConfig, "alias123", "alias123"); // "alias123" in the request causes Ejbca to use "alias123" as CMP alias
+        SendCmpRequest(cmpConfig, "123", "123"); // "123" in the request causes Ejbca to use "123" as CMP alias
+        SendCmpRequest(cmpConfig, "", "cmp"); // No alias in the request causes Ejbca to use "cmp" (the default alias) as CMP alias
+        SendCmpRequest(cmpConfig, null, "cmp"); // No alias in the request causes Ejbca to use "cmp" (the default alias) as CMP alias
+        SendCmpRequest(cmpConfig, "alias??&!!foo", "alias"); // Specifying alias with non-alphanumeric characters cause Ejbca to use, 
+                                                             // as CMP alias, a substring of the first alphanumeric characters, in this 
+                                                             // case: alias
+        SendCmpRequest(cmpConfig, "??##!!&", "cmp"); // Specifying alias with non-alphanumeric characters cause Ejbca to use, 
+                                                     // as CMP alias, a substring of the first alphanumeric characters, in this 
+                                                     // case: empty string, which means that the default alias "cmp" will be used
+
+        String longAlias = "abcdefghijklmnopqrstuvwxyz0123456789"; 
+        SendCmpRequest(cmpConfig, longAlias, "cmp"); // Specifying an alias that is longer than 32 characters causes 
+                                                     // Ejbca to use the default CMP alias "cmp"
+
         log.trace("<test01Access()");
     }
 
@@ -194,50 +221,7 @@ public class CmpAliasTest extends CmpTestCase {
         assertFalse(cmpConfig.aliasExists(clonealias));
         assertFalse(cmpConfig.aliasExists(renamealias));
     }
-
-    @Test
-    public void test03NonExistingAlias() throws Exception {
-        
-        String urlString = httpReqPath + '/' + baseResource + "/noneExistingAlias"; 
-        log.info("http URL: " + urlString);
-        URL url = new URL(urlString);
-        final HttpURLConnection con = (HttpURLConnection) url.openConnection();
-        con.setDoOutput(true);
-        con.setRequestMethod("POST");
-        con.setRequestProperty("Content-type", "application/pkixcmp");
-        con.connect();
-        assertEquals("Unexpected HTTP response code.", 200, con.getResponseCode()); // OK response (will use alias "alias123")
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        // This works for small requests, and CMP requests are small enough
-        InputStream in = con.getInputStream();
-        int b = in.read();
-        while (b != -1) {
-            baos.write(b);
-            b = in.read();
-        }
-        baos.flush();
-        in.close();
-        byte[] respBytes = baos.toByteArray();
-        assertNotNull(respBytes);
-        assertTrue(respBytes.length > 0);
-
-        ASN1InputStream inputStream = new ASN1InputStream(new ByteArrayInputStream(respBytes));
-        try {
-            PKIMessage respObject = PKIMessage.getInstance(inputStream.readObject());
-            assertNotNull(respObject);
-
-            final PKIBody body = respObject.getBody();
-            assertEquals(23, body.getType());
-            ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-            final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
-            final String expectedErrMsg = "Wrong URL. CMP alias 'noneExistingAlias' does not exist";
-            assertEquals(expectedErrMsg, errMsg);
-        } finally {
-            inputStream.close();
-        }
-    }
-    
+   
     @Override
     public String getRoleName() {
         return this.getClass().getSimpleName();
