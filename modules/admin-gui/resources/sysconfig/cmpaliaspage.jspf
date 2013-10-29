@@ -8,20 +8,9 @@
 <script type="text/javascript">
 <!--  
 
-function changemode() {
-		document.cmpconfiguration.<%= BUTTON_RELOAD %>.click();
+function reload() {
+	document.cmpconfiguration.<%= BUTTON_RELOAD %>.click();
 }
-
-function checkresponseprotection(sel) {
-		var value = sel.options[sel.selectedIndex].value;
-		if(value == "pbe") {
-			pbe = true;
-		} else {
-			pbe = false;	
-		}
-		document.cmpconfiguration.<%= BUTTON_RELOAD %>.click();
-}
-
 
 -->
 </script>
@@ -66,7 +55,7 @@ function checkresponseprotection(sel) {
         <p class="help"><c:out value="If the CMP service should work in 'client' or 'ra' mode."/></p>
       </td>
       <td width="50%"> 
-        <input type="radio" name="<%=RADIO_CMPMODE%>" value="client" onchange="changemode()" 
+        <input type="radio" name="<%=RADIO_CMPMODE%>" value="client" onchange="reload()" 
 			<% 
 				if(!cmpConfigClone.getRAMode(alias) ) { 
 					out.write(" CHECKED ");
@@ -75,7 +64,7 @@ function checkresponseprotection(sel) {
 			%> />
 		<label><c:out value="<%= ejbcawebbean.getText(\"CMPCLIENTMODE\") %>" /></label>
 		&nbsp;&nbsp;&nbsp;&nbsp;
-		<input type="radio" name="<%=RADIO_CMPMODE%>" value="ra" onchange="changemode()"  
+		<input type="radio" name="<%=RADIO_CMPMODE%>" value="ra" onchange="reload()"  
 			<% 
 				if(cmpConfigClone.getRAMode(alias)) {
 					out.write(" CHECKED ");
@@ -101,7 +90,7 @@ function checkresponseprotection(sel) {
         <p class="help"><c:out value="Which sort of protection the response messages will have."/></p>
       </td>
       <td width="50%"> 
-        <select name="<%= LIST_CMPRESPONSEPROTECTION %>" onchange="checkresponseprotection(this)">
+        <select name="<%= LIST_CMPRESPONSEPROTECTION %>" onchange="reload()">
           <% String currentProtection = cmpConfigClone.getResponseProtection(alias); %>
           <% if(currentProtection.equals("pbe"))	pbe = true; %>
           <% java.util.Iterator iterp = cmpConfigClone.getCmpResponseProtectionList(ramode).iterator();
@@ -368,7 +357,7 @@ function checkresponseprotection(sel) {
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPRAEEPROFILE_HELP\") %>"/></p>
       </td>
       <td width="50%"> 
-        <select name="<%= LIST_CMPEEPROFILES %>" onchange="changemode()" >
+        <select name="<%= LIST_CMPEEPROFILES %>" onchange="reload()" >
           <% String defeep = cmpConfigClone.getRAEEProfile(alias); %>
           <% ceep = defeep; %>
           <!--  The possibility to use 'KeyId' is deprecated. As a preparation to remove it completely, we make choosing it possible only for those 
