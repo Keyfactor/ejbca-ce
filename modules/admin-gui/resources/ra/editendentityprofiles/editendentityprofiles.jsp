@@ -502,15 +502,8 @@
 
              values = request.getParameterValues(SELECT_AVAILABLECAS);
  
-             if(defaultca != null){
-               String availablecas = defaultca;
-               if(values!= null){
-                 for(int i=0; i< values.length; i++){
-                     if(!values[i].equals(defaultca))
-                       availablecas += EndEntityProfile.SPLITCHAR + values[i];                      
-                 }
-               } 
-               
+             if (defaultca != null) {
+               String availablecas = ejbcarabean.getAvailableCasString(values, defaultca);
                profiledata.setValue(EndEntityProfile.AVAILCAS, 0,availablecas);
                profiledata.setRequired(EndEntityProfile.AVAILCAS, 0,true);    
              }
