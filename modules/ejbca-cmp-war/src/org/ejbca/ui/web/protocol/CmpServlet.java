@@ -84,6 +84,11 @@ public class CmpServlet extends HttpServlet {
             }
             
             String alias = getAlias(request.getPathInfo());
+            if(alias.length() > 32) {
+                log.info("Unaccepted alias more than 32 characters.");
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Unaccepted alias more than 32 characters.");
+                return;
+            }
             
             service(output.toByteArray(), request.getRemoteAddr(), response, alias);
         } catch (Exception e) {
@@ -161,11 +166,6 @@ public class CmpServlet extends HttpServlet {
         
         if((alias == null) || (alias.length() < 1)) {
             log.info("No CMP alias specified in the URL. Using the default alias: " + DEFAULT_CMP_ALIAS);
-            return DEFAULT_CMP_ALIAS;
-        }
-        
-        if(alias.length() > 32) {
-            log.info("Unaccepted alias more than 32 characters. Using the default alias: " + DEFAULT_CMP_ALIAS);
             return DEFAULT_CMP_ALIAS;
         }
         
