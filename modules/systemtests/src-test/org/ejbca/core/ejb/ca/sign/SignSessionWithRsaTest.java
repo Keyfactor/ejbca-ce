@@ -910,20 +910,22 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
     @Test
     public void testProfileSignatureAlgorithm() throws Exception {
         // Create a good certificate profile (good enough), using QC statement
-        certificateProfileSession.removeCertificateProfile(internalAdmin, "TESTSIGALG");
+        final String testName = "TESTSIGALG";
+        certificateProfileSession.removeCertificateProfile(internalAdmin, testName);
         final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         // Default profile uses "inherit from CA"
-        certificateProfileSession.addCertificateProfile(internalAdmin, "TESTSIGALG", certprof);
-        int cprofile = certificateProfileSession.getCertificateProfileId("TESTSIGALG");
+        certificateProfileSession.addCertificateProfile(internalAdmin, testName, certprof);
+        int cprofile = certificateProfileSession.getCertificateProfileId(testName);
         // Create a good end entity profile (good enough)
-        endEntityProfileSession.removeEndEntityProfile(internalAdmin, "TESTSIGALG");
+        endEntityProfileSession.removeEndEntityProfile(internalAdmin, testName);
         EndEntityProfile profile = new EndEntityProfile();
         profile.addField(DnComponents.COUNTRY);
         profile.addField(DnComponents.COMMONNAME);
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cprofile));
-        endEntityProfileSession.addEndEntityProfile(internalAdmin, "TESTSIGALG", profile);
-        int eeprofile = endEntityProfileSession.getEndEntityProfileId("TESTSIGALG");
+        endEntityProfileSession.addEndEntityProfile(internalAdmin, testName, profile);
+        try {
+        int eeprofile = endEntityProfileSession.getEndEntityProfileId(testName);
         int rsacaid = caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId();
         EndEntityInformation user = new EndEntityInformation(RSA_USERNAME, "C=SE,CN=testsigalg", rsacaid, null, "foo@anatom.nu", new EndEntityType(EndEntityTypes.ENDUSER), eeprofile, cprofile,
                 SecConst.TOKEN_SOFT_PEM, 0, null);
@@ -952,13 +954,17 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         // Change so that we can override signature algorithm
         CertificateProfile prof = certificateProfileSession.getCertificateProfile(cprofile);
         prof.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
-        certificateProfileSession.changeCertificateProfile(internalAdmin, "TESTSIGALG", prof);
+        certificateProfileSession.changeCertificateProfile(internalAdmin, testName, prof);
         endEntityManagementSession.changeUser(internalAdmin, user, false);
         resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
         cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         assertEquals("CN=testsigalg,C=SE", cert.getSubjectDN().getName());
         assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmTools.getSignatureAlgorithm(cert));
+        } finally {
+            endEntityProfileSession.removeEndEntityProfile(internalAdmin, testName);
+            certificateProfileSession.removeCertificateProfile(internalAdmin, testName);
+        }
     } 
     
     @Test
@@ -967,22 +973,24 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
                 +"dNSName=foo8.bar.com,dNSName=foo9.bar.com,dNSName=foo10.bar.com,dNSName=foo11.bar.com,dNSName=foo12.bar.com,dNSName=foo13.bar.com,dNSName=foo14.bar.com,"
                 +"dNSName=foo15.bar.com,dNSName=foo16.bar.com,dNSName=foo17.bar.com,dNSName=foo18.bar.com,dNSName=foo19.bar.com,dNSName=foo20.bar.com,dNSName=foo21.bar.com";
         // Create a good certificate profile (good enough), using QC statement
-        certificateProfileSession.removeCertificateProfile(internalAdmin, "TESTEXTENSIONOVERRIDE");
+        final String profileName = "TESTEXTENSIONOVERRIDE";
+        certificateProfileSession.removeCertificateProfile(internalAdmin, profileName);
         final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         // Default profile does not allow Extension override
         certprof.setValidity(298);
-        certificateProfileSession.addCertificateProfile(internalAdmin, "TESTEXTENSIONOVERRIDE", certprof);
-        int cprofile = certificateProfileSession.getCertificateProfileId("TESTEXTENSIONOVERRIDE");
+        certificateProfileSession.addCertificateProfile(internalAdmin, profileName, certprof);
+        int cprofile = certificateProfileSession.getCertificateProfileId(profileName);
         // Create a good end entity profile (good enough), allowing multiple UPN
         // names
-        endEntityProfileSession.removeEndEntityProfile(internalAdmin, "TESTEXTENSIONOVERRIDE");
+        endEntityProfileSession.removeEndEntityProfile(internalAdmin, profileName);
         EndEntityProfile profile = new EndEntityProfile();
         profile.addField(DnComponents.COUNTRY);
         profile.addField(DnComponents.COMMONNAME);
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cprofile));
-        endEntityProfileSession.addEndEntityProfile(internalAdmin, "TESTEXTENSIONOVERRIDE", profile);
-        int eeprofile = endEntityProfileSession.getEndEntityProfileId("TESTEXTENSIONOVERRIDE");
+        endEntityProfileSession.addEndEntityProfile(internalAdmin, profileName, profile);
+        try {
+        int eeprofile = endEntityProfileSession.getEndEntityProfileId(profileName);
         int rsacaid = caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId();
         EndEntityInformation user = new EndEntityInformation(RSA_USERNAME, "C=SE,CN=extoverride", rsacaid, null, "foo@anatom.nu", new EndEntityType(EndEntityTypes.ENDUSER), eeprofile, cprofile,
                 SecConst.TOKEN_SOFT_PEM, 0, null);
@@ -1012,9 +1020,6 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         dOut.writeObject(req.toASN1Structure());
         dOut.close();
         byte[] p10bytes = bOut.toByteArray();
-        // FileOutputStream fos = new FileOutputStream("/tmp/foo.der");
-        // fos.write(p10bytes);
-        // fos.close();
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(p10bytes);
         p10.setUsername(RSA_USERNAME);
         p10.setPassword("foo123");
@@ -1031,7 +1036,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         // Change so that we allow override of validity time
         CertificateProfile prof = certificateProfileSession.getCertificateProfile(cprofile);
         prof.setAllowExtensionOverride(true);
-        certificateProfileSession.changeCertificateProfile(internalAdmin, "TESTEXTENSIONOVERRIDE", prof);
+        certificateProfileSession.changeCertificateProfile(internalAdmin, profileName, prof);
         endEntityManagementSession.changeUser(internalAdmin, user, false);
         resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
         cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
@@ -1045,6 +1050,10 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         List<String> originalNames = Arrays.asList(altnames.split(","));
         List<String> returnNames = Arrays.asList(retAltNames.split(", "));
         assertTrue(originalNames.containsAll(returnNames));
+        } finally {
+            certificateProfileSession.removeCertificateProfile(internalAdmin, profileName);
+            endEntityProfileSession.removeEndEntityProfile(internalAdmin, profileName);
+        }
     } 
     
     /**
