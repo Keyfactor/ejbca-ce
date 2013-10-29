@@ -63,8 +63,12 @@ import org.junit.Test;
  * @version $Id$
  */
 public class ExtendedKeyUsageTest extends CaTestCase {
+      
     private static final Logger log = Logger.getLogger(ExtendedKeyUsageTest.class);
-
+    
+    private static final String CERT_PROFILE_NAME = "EXTKEYUSAGECERTPROFILE";
+    private static final String EE_PROFILE_NAME = "EXTKEYUSAGEEEPROFILE";
+    
     private static KeyPair rsakeys = null;
     private static int rsacaid = 0;
     private final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ExtendedKeyUsageTest"));
@@ -98,15 +102,19 @@ public class ExtendedKeyUsageTest extends CaTestCase {
 
     @After
     public void tearDown() throws Exception {
-        super.tearDown();
+        try {
+            super.tearDown();
+        } catch (Exception e) {
+            //NOPMD: Ignore
+        }
         // Delete test end entity profile
-        endEntityProfileSession.removeEndEntityProfile(internalAdmin, "EXTKEYUSAGECERTPROFILE");
-        certificateProfileSession.removeCertificateProfile(internalAdmin, "EXTKEYUSAGEEEPROFILE");
+        endEntityProfileSession.removeEndEntityProfile(internalAdmin, EE_PROFILE_NAME);
+        certificateProfileSession.removeCertificateProfile(internalAdmin, CERT_PROFILE_NAME);
         // delete users that we know...
         try {
             endEntityManagementSession.deleteUser(internalAdmin, "extkeyusagefoo");
             log.debug("deleted user: foo, foo123, C=SE, O=AnaTom, CN=extkeyusagefoo");
-        } catch (Exception e) { /* ignore */
+        } catch (Exception e) { //NOPMD: Ignore
         }
     }
     
@@ -119,20 +127,20 @@ public class ExtendedKeyUsageTest extends CaTestCase {
      */
     @Test
     public void test01CodeSigning() throws Exception {
-        certificateProfileSession.removeCertificateProfile(internalAdmin, "EXTKEYUSAGECERTPROFILE");
+        certificateProfileSession.removeCertificateProfile(internalAdmin, CERT_PROFILE_NAME);
         final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         ArrayList<String> list = new ArrayList<String>();
         list.add("1.3.6.1.4.1.311.2.1.21"); // MS individual code signing
         list.add("1.3.6.1.4.1.311.2.1.22"); // MS commercial code signing
         certprof.setExtendedKeyUsage(list);
-        certificateProfileSession.addCertificateProfile(internalAdmin, "EXTKEYUSAGECERTPROFILE", certprof);
-        final int fooCertProfile = certificateProfileSession.getCertificateProfileId("EXTKEYUSAGECERTPROFILE");
+        certificateProfileSession.addCertificateProfile(internalAdmin, CERT_PROFILE_NAME, certprof);
+        final int fooCertProfile = certificateProfileSession.getCertificateProfileId(CERT_PROFILE_NAME);
 
-        endEntityProfileSession.removeEndEntityProfile(internalAdmin, "EXTKEYUSAGEEEPROFILE");
+        endEntityProfileSession.removeEndEntityProfile(internalAdmin, EE_PROFILE_NAME);
         final EndEntityProfile profile = new EndEntityProfile(true);
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(fooCertProfile));
-        endEntityProfileSession.addEndEntityProfile(internalAdmin, "EXTKEYUSAGEEEPROFILE", profile);
-        final int fooEEProfile = endEntityProfileSession.getEndEntityProfileId("EXTKEYUSAGEEEPROFILE");
+        endEntityProfileSession.addEndEntityProfile(internalAdmin, EE_PROFILE_NAME, profile);
+        final int fooEEProfile = endEntityProfileSession.getEndEntityProfileId(EE_PROFILE_NAME);
 
         createOrEditUser(fooCertProfile, fooEEProfile);
 
@@ -150,18 +158,19 @@ public class ExtendedKeyUsageTest extends CaTestCase {
      */
     @Test
     public void test02SSH() throws Exception {
-        certificateProfileSession.removeCertificateProfile(internalAdmin, "EXTKEYUSAGECERTPROFILE");
+     
+        certificateProfileSession.removeCertificateProfile(internalAdmin, CERT_PROFILE_NAME);
         final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         ArrayList<String> list = new ArrayList<String>();
         certprof.setExtendedKeyUsage(list);
-        certificateProfileSession.addCertificateProfile(internalAdmin, "EXTKEYUSAGECERTPROFILE", certprof);
-        final int fooCertProfile = certificateProfileSession.getCertificateProfileId("EXTKEYUSAGECERTPROFILE");
+        certificateProfileSession.addCertificateProfile(internalAdmin, CERT_PROFILE_NAME, certprof);
+        final int fooCertProfile = certificateProfileSession.getCertificateProfileId(CERT_PROFILE_NAME);
 
-        endEntityProfileSession.removeEndEntityProfile(internalAdmin, "EXTKEYUSAGEEEPROFILE");
+        endEntityProfileSession.removeEndEntityProfile(internalAdmin, EE_PROFILE_NAME);
         final EndEntityProfile profile = new EndEntityProfile(true);
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(fooCertProfile));
-        endEntityProfileSession.addEndEntityProfile(internalAdmin, "EXTKEYUSAGEEEPROFILE", profile);
-        final int fooEEProfile = endEntityProfileSession.getEndEntityProfileId("EXTKEYUSAGEEEPROFILE");
+        endEntityProfileSession.addEndEntityProfile(internalAdmin, EE_PROFILE_NAME, profile);
+        final int fooEEProfile = endEntityProfileSession.getEndEntityProfileId(EE_PROFILE_NAME);
 
         createOrEditUser(fooCertProfile, fooEEProfile);
 
@@ -175,7 +184,7 @@ public class ExtendedKeyUsageTest extends CaTestCase {
         list.add("1.3.6.1.5.5.7.3.21"); // SSH client
         list.add("1.3.6.1.5.5.7.3.22"); // SSH server
         certprof.setExtendedKeyUsage(list);
-        certificateProfileSession.changeCertificateProfile(internalAdmin, "EXTKEYUSAGECERTPROFILE", certprof);
+        certificateProfileSession.changeCertificateProfile(internalAdmin, CERT_PROFILE_NAME, certprof);
         createOrEditUser(fooCertProfile, fooEEProfile);
         cert = (X509Certificate) signSession.createCertificate(internalAdmin, "extkeyusagefoo", "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create certificate", cert);
