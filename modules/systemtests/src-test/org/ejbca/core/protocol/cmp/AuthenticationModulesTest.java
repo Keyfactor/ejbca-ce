@@ -201,7 +201,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         cacert = testx509ca.getCACertificate();
         caSession.addCA(ADMIN, testx509ca);
 
-        configAlias = "AuthenticationModuleTestConfigAlias";
+        configAlias = "AuthenticationModuleTstConfAlias";
         
         cmpConfiguration.addAlias(configAlias);
         cmpConfiguration.setRAEEProfile(configAlias, "EMPTY");
@@ -216,11 +216,11 @@ public class AuthenticationModulesTest extends CmpTestCase {
     public void tearDown() throws Exception {
         super.tearDown();
 
-        CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
-        caSession.removeCA(ADMIN, caid);
-        
         cmpConfiguration.removeAlias(configAlias);
         globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration, Configuration.CMPConfigID);
+        
+        CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
+        caSession.removeCA(ADMIN, caid);
     }
 
     @Test
