@@ -17,7 +17,6 @@ import static org.junit.Assert.assertEquals;
 import java.util.List;
 
 import javax.ejb.RemoveException;
-import javax.persistence.PersistenceException;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -68,11 +67,11 @@ public class EndEntityAccessSessionTest extends CaTestCase {
      * @throws EjbcaException 
      * @throws WaitingForApprovalException 
      * @throws UserDoesntFullfillEndEntityProfile 
-     * @throws PersistenceException 
+     * @throws EndEntityExistsException 
      * @throws RemoveException 
      */
     @Test
-    public void testFindUserBySubjectAndIssuerDnWithMultipleUsers() throws CADoesntExistsException, AuthorizationDeniedException, PersistenceException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException, RemoveException {
+    public void testFindUserBySubjectAndIssuerDnWithMultipleUsers() throws CADoesntExistsException, AuthorizationDeniedException, EndEntityExistsException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException, RemoveException {
         String commonDn = "CN=foo";
         String firstUsername = "alpha";
         String secondUsername = "beta";

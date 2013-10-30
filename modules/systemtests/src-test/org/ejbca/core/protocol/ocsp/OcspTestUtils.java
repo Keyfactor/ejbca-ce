@@ -22,7 +22,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.ejb.RemoveException;
-import javax.persistence.PersistenceException;
 
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -52,6 +51,7 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -160,7 +160,7 @@ public class OcspTestUtils {
 
     public static X509Certificate createOcspSigningCertificate(AuthenticationToken authenticationToken, String username, String signerDN, int internalKeyBindingId, int caId)
             throws AuthorizationDeniedException, CustomCertSerialNumberException, IllegalKeyException, CADoesntExistsException,
-            CertificateCreateException, CesecoreException, RemoveException, PersistenceException, UserDoesntFullfillEndEntityProfile,
+            CertificateCreateException, CesecoreException, RemoveException, EndEntityExistsException, UserDoesntFullfillEndEntityProfile,
             WaitingForApprovalException, EjbcaException {
         CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
         InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE

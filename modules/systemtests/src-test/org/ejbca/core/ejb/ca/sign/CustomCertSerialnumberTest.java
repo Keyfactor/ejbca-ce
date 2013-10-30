@@ -16,8 +16,6 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
-import javax.persistence.PersistenceException;
-
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -50,6 +48,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -141,7 +140,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
     // Create certificate request for user: foo with cert serialnumber=1234567890
     @Test
     public void test01CreateCertWithCustomSN() throws EndEntityProfileExistsException, InvalidKeyException, NoSuchAlgorithmException,
-            NoSuchProviderException, SignatureException, IOException, PersistenceException, AuthorizationDeniedException,
+            NoSuchProviderException, SignatureException, IOException, EndEntityExistsException, AuthorizationDeniedException,
             UserDoesntFullfillEndEntityProfile, EjbcaException, ClassNotFoundException, CertificateEncodingException, CertificateException,
             WaitingForApprovalException, InvalidAlgorithmParameterException, CesecoreException, OperatorCreationException {
         log.trace(">test01CreateCustomCert()");
@@ -178,7 +177,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
     // Create certificate request for user: foo2 with random cert serialnumber
     @Test
     public void test02CreateCertWithRandomSN() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException,
-            IOException, PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException,
+            IOException, EndEntityExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException,
             ClassNotFoundException, CertificateEncodingException, CertificateException, InvalidAlgorithmParameterException, CesecoreException, OperatorCreationException {
 
         log.trace(">test02CreateCertWithRandomSN()");
@@ -212,7 +211,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
     // Create certificate request for user: foo3 with cert serialnumber=1234567890 (the same as cert serialnumber of user foo)
     @Test
     public void test03CreateCertWithDublicateSN() throws EndEntityProfileExistsException, InvalidKeyException, NoSuchAlgorithmException,
-            NoSuchProviderException, SignatureException, IOException, PersistenceException, AuthorizationDeniedException,
+            NoSuchProviderException, SignatureException, IOException, EndEntityExistsException, AuthorizationDeniedException,
             UserDoesntFullfillEndEntityProfile, ClassNotFoundException, CertificateEncodingException, CertificateException,
             WaitingForApprovalException, InvalidAlgorithmParameterException, EjbcaException, OperatorCreationException {
         log.trace(">test03CreateCertWithDublicateSN()");
@@ -248,7 +247,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 
     @Test
     public void test04CreateCertWithCustomSNNotAllowed() throws EndEntityProfileExistsException, InvalidKeyException, NoSuchAlgorithmException,
-            NoSuchProviderException, SignatureException, IOException, PersistenceException, AuthorizationDeniedException,
+            NoSuchProviderException, SignatureException, IOException, EndEntityExistsException, AuthorizationDeniedException,
             UserDoesntFullfillEndEntityProfile, EjbcaException, ClassNotFoundException, CertificateEncodingException, CertificateException,
             WaitingForApprovalException, InvalidAlgorithmParameterException, OperatorCreationException {
         log.trace(">test04CreateCertWithCustomSNNotAllowed()");

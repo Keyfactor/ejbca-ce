@@ -280,6 +280,7 @@
 					<include name="org/cesecore/roles/Role*Exception.java"/>
 					<include name="org/cesecore/util/ProfileID.java"/>
 					<include name="org/ejbca/config/*.java"/>			
+					<include name="org/ejbca/core/ejb/ra/EndEntityExistsException.java"/>
 					<include name="org/ejbca/core/model/authorization/*.java"/>
 					<include name="org/ejbca/core/model/ca/AuthLoginException.java"/>
 					<include name="org/ejbca/core/model/ca/AuthStatusException.java"/>

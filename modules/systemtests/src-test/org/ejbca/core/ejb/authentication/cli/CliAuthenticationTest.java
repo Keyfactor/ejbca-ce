@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.ejb.RemoveException;
-import javax.persistence.PersistenceException;
 
 import org.cesecore.audit.AuditLogEntry;
 import org.cesecore.audit.audit.SecurityEventsAuditorSessionRemote;
@@ -50,6 +49,7 @@ import org.cesecore.util.query.Criteria;
 import org.cesecore.util.query.QueryCriteria;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -124,7 +124,7 @@ public class CliAuthenticationTest {
     }
 
     @Test
-    public void testInstallCliAuthenticationWithBCrypt() throws PersistenceException, CADoesntExistsException, AuthorizationDeniedException,
+    public void testInstallCliAuthenticationWithBCrypt() throws EndEntityExistsException, CADoesntExistsException, AuthorizationDeniedException,
             UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException, RemoveException {
         cliAuthenticationTestHelperSession.createUser(CliAuthenticationTestHelperSessionRemote.USERNAME, CliAuthenticationTestHelperSessionRemote.PASSWORD);
         Set<Principal> principals = new HashSet<Principal>();

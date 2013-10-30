@@ -28,8 +28,6 @@ import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.rmi.RemoteException;
-import java.rmi.ServerException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
@@ -40,9 +38,6 @@ import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
-
-import javax.ejb.EJBException;
-import javax.persistence.PersistenceException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -66,6 +61,7 @@ import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.NotFoundException;
@@ -550,24 +546,8 @@ public class CertRequestHttpTest extends CaTestCase {
             endEntityManagementSession.addUser(admin, TEST_USERNAME, "foo123", "C=SE,O=PrimeKey,CN=ReqTest", null, "reqtest@primekey.se", clearpwd,
                     SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), tokentype, 0, caid);
             log.debug("created user: "+TEST_USERNAME+", foo123, C=SE, O=PrimeKey, CN=ReqTest");
-        } catch (EJBException ejbException) {
-            // On Glassfish, ejbException.getCause() returns null, getCausedByException() should be used.
-            Exception e = ejbException.getCausedByException();
-            log.debug("Exception cause thrown: " + e.getClass().getName() + " message: " + e.getMessage());
-            if (e instanceof PersistenceException) {
-                userExists = true; // This is what we want
-            } else if (e instanceof ServerException) {
-                // Glassfish 2 throws EJBException(java.rmi.ServerException(java.rmi.RemoteException(javax.persistence.EntityExistsException)))), can
-                // you believe this?
-                Throwable t = e.getCause();
-                if (t != null && t instanceof RemoteException) {
-                    t = t.getCause();
-                    log.debug("Exception cause thrown: " + t.getClass().getName() + " message: " + t.getMessage());
-                    if (t != null && t instanceof PersistenceException) {
-                        userExists = true; // This is what we want
-                    }
-                }
-            }
+        } catch (EndEntityExistsException e) {
+            userExists = true; // This is what we want
         }
         if (userExists) {
             log.debug("User "+TEST_USERNAME+" already exists.");

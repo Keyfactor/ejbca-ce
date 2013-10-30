@@ -21,8 +21,6 @@ import static org.junit.Assert.fail;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 
-import javax.persistence.PersistenceException;
-
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -45,6 +43,7 @@ import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -110,7 +109,7 @@ public class AuthenticationSessionTest extends CaTestCase {
     }
 
     private void createUser(AuthenticationToken admin, String username, String password, int caID, int endEntityProfileId, int certProfileId, int maxFailedLogins)
-            throws PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ApprovalException,
+            throws EndEntityExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ApprovalException,
             WaitingForApprovalException, Exception {
         log.info("createUser: username=" + username + ", certProfileId=" + certProfileId);
         EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null, new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, certProfileId, SecConst.TOKEN_SOFT_P12, 0,

@@ -20,8 +20,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.rmi.RemoteException;
-import java.rmi.ServerException;
 import java.security.KeyPair;
 import java.security.Principal;
 import java.security.cert.Certificate;
@@ -34,8 +32,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
-import javax.ejb.EJBException;
-import javax.persistence.PersistenceException;
 import javax.security.auth.x500.X500Principal;
 
 import org.apache.commons.lang.StringUtils;
@@ -192,26 +188,10 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         try {
             endEntityManagementSession.addUser(admin, username, pwd, "C=SE, O=AnaTom, CN=" + username, "rfc822name=" + email, email, true,
                     SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, caid);
-        } catch (EJBException ejbException) {
-            // On Glassfish, ejbException.getCause() returns null, getCausedByException() should be used.
-            Exception e = ejbException.getCausedByException();
-            log.debug("Exception cause thrown: " + e.getClass().getName() + " message: " + e.getMessage());
-            if (e instanceof PersistenceException) {
-                userexists = true; // This is what we want
-            } else if (e instanceof ServerException) {
-                // Glassfish 2 throws EJBException(java.rmi.ServerException(java.rmi.RemoteException(javax.persistence.EntityExistsException)))), can
-                // you believe this?
-                Throwable t = e.getCause();
-                if (t != null && t instanceof RemoteException) {
-                    t = t.getCause();
-                    log.debug("Exception cause thrown: " + t.getClass().getName() + " message: " + t.getMessage());
-                    if (t != null && t instanceof PersistenceException) {
-                        userexists = true; // This is what we want
-                    }
-                }
-            }
+        } catch (EndEntityExistsException e) {
+            userexists = true; // This is what we want
         }
-        assertTrue("User already exist does not throw DuplicateKeyException", userexists);
+        assertTrue("Trying to create the same user twice didn't throw EndEntityExistsException", userexists);
 
         // try to add user with non-existing CA-id
         String username2 = genRandomUserName();

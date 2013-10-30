@@ -23,9 +23,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
-import javax.ejb.EJBException;
 import javax.ejb.FinderException;
-import javax.persistence.PersistenceException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -57,6 +55,7 @@ import org.ejbca.config.Configuration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -336,17 +335,15 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
     // Private helper methods
     //
     private void createCmpUser(String username, String userDN) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
-            ApprovalException, WaitingForApprovalException, EjbcaException, FinderException, PersistenceException, CADoesntExistsException {
+            ApprovalException, WaitingForApprovalException, EjbcaException, FinderException, CADoesntExistsException {
         // Make user that we know...
         boolean userExists = false;
         try {
             endEntityManagementSession.addUser(admin, username, "foo123", userDN, null, "cmptest@primekey.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
                     CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0, caid);
             log.debug("created user: " + username + ", foo123, " + userDN);
-        } catch (EJBException e) {
-            if (e.getCause() instanceof PersistenceException) {
-                userExists = true;
-            }
+        } catch (EndEntityExistsException e) {
+            userExists = true;
         }
 
         if (userExists) {

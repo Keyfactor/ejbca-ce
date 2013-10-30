@@ -20,7 +20,6 @@ import java.util.List;
 
 import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
-import javax.persistence.PersistenceException;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -30,6 +29,7 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
@@ -70,8 +70,8 @@ public interface EndEntityManagementSession {
      */
     void addUser(AuthenticationToken admin, String username, String password, String subjectdn, String subjectaltname, String email,
     		boolean clearpwd, int endentityprofileid, int certificateprofileid, EndEntityType type, int tokentype, int hardwaretokenissuerid, int caid)
-    		throws PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException,
-    		CADoesntExistsException, EjbcaException;
+    		throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException,
+    		CADoesntExistsException, EndEntityExistsException, EjbcaException;
 
     /**
      * addUserFromWS is called from EjbcaWS if profile specifies merge data from
@@ -86,7 +86,7 @@ public interface EndEntityManagementSession {
      *             if administrator isn't authorized to add user
      * @throws UserDoesntFullfillEndEntityProfile
      *             if data doesn't fullfil requirements of end entity profile
-     * @throws PersistenceException
+     * @throws EndEntityExistsException
      *             if user already exists or some other database error occur during commit
      * @throws WaitingForApprovalException
      *             if approval is required and the action have been added in the
@@ -99,7 +99,7 @@ public interface EndEntityManagementSession {
      *             the CA that it should be unique.
      */
     void addUserFromWS(AuthenticationToken admin, EndEntityInformation userdata, boolean clearpwd) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
-            PersistenceException, WaitingForApprovalException, CADoesntExistsException, EjbcaException;
+            EndEntityExistsException, WaitingForApprovalException, CADoesntExistsException, EjbcaException;
 
     /**
      * Add a new user.
@@ -113,7 +113,7 @@ public interface EndEntityManagementSession {
      *             if administrator isn't authorized to add user
      * @throws UserDoesntFullfillEndEntityProfile
      *             if data doesn't fullfil requirements of end entity profile
-     * @throws PersistenceException
+     * @throws EndEntityExistsException
      *             if user already exists or some other database error occur during commit
      * @throws WaitingForApprovalException
      *             if approval is required and the action have been added in the
@@ -125,7 +125,7 @@ public interface EndEntityManagementSession {
      * @throws WaitingForApprovalException
      */
     void addUser(AuthenticationToken admin, EndEntityInformation userdata, boolean clearpwd) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
-            PersistenceException, WaitingForApprovalException, CADoesntExistsException, EjbcaException;
+            EndEntityExistsException, WaitingForApprovalException, CADoesntExistsException, EjbcaException;
 
     /**
      * Validates the name and DN in an end entity and canonicalizes/strips
