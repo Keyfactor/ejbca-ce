@@ -2862,6 +2862,8 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         } catch (Exception e) {
         	// NOPMD: ignore
         }
+        CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+        certificateProfileSession.removeCertificateProfile(intAdmin, WS_CERTPROF_EI);
     } // cleanUpAdmins
 
     /** Create a CVCA, and a DV CA signed by the CVCA */
