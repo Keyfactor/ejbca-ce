@@ -27,7 +27,6 @@ import java.util.TreeMap;
 
 import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
-import javax.persistence.PersistenceException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
@@ -54,6 +53,7 @@ import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSession;
@@ -159,7 +159,7 @@ public class RAInterfaceBean implements Serializable {
     }
     
     /** Adds a user to the database, the string array must be in format defined in class UserView. */
-    public void addUser(UserView userdata) throws PersistenceException, CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException {
+    public void addUser(UserView userdata) throws EndEntityExistsException, CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException {
         log.trace(">addUser()");
         if (userdata.getEndEntityProfileId() != 0) {
             EndEntityInformation uservo = new EndEntityInformation(userdata.getUsername(), userdata.getSubjectDN(), userdata.getCAId(), userdata.getSubjectAltName(), 

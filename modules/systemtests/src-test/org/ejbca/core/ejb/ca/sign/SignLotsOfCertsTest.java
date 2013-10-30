@@ -26,7 +26,6 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.Date;
 
 import javax.ejb.EJBException;
-import javax.persistence.PersistenceException;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -41,8 +40,10 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.ra.NotFoundException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -120,10 +121,8 @@ public class SignLotsOfCertsTest extends CaTestCase {
                     CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(),
                     SecConst.TOKEN_SOFT_PEM, 0, caid);
             log.debug("created user: performancefoo" + post + ", foo123, C=SE, O=AnaTom, OU=Performance Test,CN=performancefoo");
-        } catch (EJBException e) {
-            if (e.getCause() instanceof PersistenceException) {
-                userExists = true;
-            }
+        } catch (EndEntityExistsException e) {
+            userExists = true;
         }
         if (userExists) {
             log.info("User performancefoo already exists, resetting status.");
@@ -137,6 +136,8 @@ public class SignLotsOfCertsTest extends CaTestCase {
         try {
             endEntityManagementSession.deleteUser(admin, "performancefoo" + post);
             log.debug("deleted user: performancefoo" + post);
+        } catch (NotFoundException e) {
+            log.debug("Delete operation failed.. User probably did not exist, which is fine so do nothing." + e.getMessage());
         } catch (EJBException e) {
         	log.debug("Delete operation failed.. User probably did not exist, which is fine so do nothing." + e.getMessage());
         }

@@ -17,7 +17,6 @@ import java.math.BigInteger;
 import java.util.List;
 
 import javax.ejb.EJBException;
-import javax.persistence.PersistenceException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -53,6 +52,7 @@ import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.ra.CertificateRequestSession;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
+import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -418,10 +418,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 						LOG.debug("Creating new request with eeProfileId '"+eeProfileId+"', certProfileId '"+certProfileId+"', caId '"+caId+"'");                                                               
 					}
 					resp = this.certificateRequestSession.processCertReq(this.admin, userdata, req, org.ejbca.core.protocol.cmp.CmpResponseMessage.class);
-				} catch (PersistenceException e) {
-					// CreateException will catch also DuplicateKeyException because DuplicateKeyException is a subclass of CreateException 
-					// This was very strange, we didn't find it before, but now it exists?
-					// This should never happen when using the "single transaction" request session??
+				} catch (EndEntityExistsException e) {
 					final String updateMsg = INTRES.getLocalizedMessage("cmp.erroradduserupdate", username);
 					LOG.info(updateMsg);
 					// Try again
@@ -433,7 +430,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			} catch (ApprovalException e) {
 				LOG.error(INTRES.getLocalizedMessage(CMP_ERRORADDUSER, username), e);
 				resp = CmpMessageHelper.createErrorMessage(msg, FailInfo.NOT_AUTHORIZED, e.getMessage(), requestId, requestType, verifyer, keyId, this.responseProt);
-			} catch (PersistenceException e) {
+			} catch (EndEntityExistsException e) {
 				LOG.error(INTRES.getLocalizedMessage(CMP_ERRORADDUSER, username), e);
 				resp = CmpMessageHelper.createErrorMessage(msg, FailInfo.NOT_AUTHORIZED, e.getMessage(), requestId, requestType, verifyer, keyId, this.responseProt);
 			}

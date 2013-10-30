@@ -32,6 +32,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
+import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.approval.ApprovalDataText;
@@ -76,8 +77,8 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 		log.debug("Executing AddEndEntity for user:" + userdata.getUsername());
 		try{
 			endEntityManagementSession.addUser(getRequestAdmin(), userdata, clearpwd);
-		} catch( PersistenceException e){
-			throw new ApprovalRequestExecutionException("Error, user already exists or a database error ocurred", e);		
+		} catch (EndEntityExistsException e) {
+			throw new ApprovalRequestExecutionException("Error, user already exists ocurred", e);		
 		} catch (AuthorizationDeniedException e) {
 			throw new ApprovalRequestExecutionException("Authorization Denied :" + e.getMessage(), e);
 		} catch (UserDoesntFullfillEndEntityProfile e) {
@@ -90,6 +91,8 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 			throw new ApprovalRequestExecutionException("CA does not exist :" + e.getMessage(), e);
 		} catch (EjbcaException e){
 			throw new ApprovalRequestExecutionException("Failed adding user :" + e.getErrorCode() + e.getMessage(), e);
+		} catch (PersistenceException e) {
+		  throw new ApprovalRequestExecutionException("Database error", e);
 		}
 	}
 

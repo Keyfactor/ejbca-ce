@@ -34,7 +34,6 @@ import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.persistence.PersistenceException;
 
 import org.apache.log4j.Logger;
 import org.cesecore.CesecoreException;
@@ -179,7 +178,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
 
     @Override
     public ResponseMessage processCertReq(AuthenticationToken admin, EndEntityInformation userdata, RequestMessage req, Class<? extends ResponseMessage> responseClass)
-            throws PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, CesecoreException {
+            throws EndEntityExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, CesecoreException {
         // Check tokentype
         if (userdata.getTokenType() != SecConst.TOKEN_SOFT_BROWSERGEN) {
             throw new WrongTokenTypeException("Error: Wrong Token Type of user, must be 'USERGENERATED' for PKCS10/SPKAC/CRMF/CVC requests");
@@ -203,7 +202,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
      * @throws CADoesntExistsException if userdata.caId is not a valid caid. This is checked in editUser or addUserFromWS
      */
     private void addOrEditUser(AuthenticationToken admin, EndEntityInformation userdata, boolean clearpwd, boolean fromwebservice)
-            throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ApprovalException, PersistenceException,
+            throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ApprovalException, EndEntityExistsException,
             CADoesntExistsException, EjbcaException {
 
         int caid = userdata.getCAId();
@@ -282,7 +281,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             boolean createJKS) throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, InvalidKeyException,
             InvalidKeySpecException, NoSuchProviderException, SignatureException, IOException, ObjectNotFoundException, CertificateException,
             UserDoesntFullfillEndEntityProfile, ApprovalException, EjbcaException, KeyStoreException, NoSuchAlgorithmException,
-            InvalidAlgorithmParameterException, PersistenceException {
+            InvalidAlgorithmParameterException, EndEntityExistsException {
 
         // This is the secret sauce, do the end entity handling automagically here before we get the cert
         addOrEditUser(admin, userdata, true, true);

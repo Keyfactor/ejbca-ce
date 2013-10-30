@@ -27,7 +27,6 @@ import java.util.Collection;
 import java.util.Date;
 
 import javax.ejb.RemoveException;
-import javax.persistence.PersistenceException;
 
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -56,6 +55,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -110,7 +110,7 @@ public class RevokeEndEntityCommandTest extends CaTestCase {
     }
 
     @Test
-    public void testExecuteHappyPath() throws PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException, IllegalQueryException, RemoveException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, CustomCertSerialNumberException, IllegalKeyException, CertificateCreateException, CesecoreException  {
+    public void testExecuteHappyPath() throws EndEntityExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException, IllegalQueryException, RemoveException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, CustomCertSerialNumberException, IllegalKeyException, CertificateCreateException, CesecoreException  {
 
         String fingerprint = null;
         try {

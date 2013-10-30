@@ -54,7 +54,6 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.jws.WebService;
-import javax.persistence.PersistenceException;
 import javax.security.auth.x500.X500Principal;
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.bind.DatatypeConverter;
@@ -131,6 +130,7 @@ import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
@@ -318,8 +318,7 @@ public class EjbcaWS implements IEjbcaWS {
 			log.info(errorMessage);
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), errorMessage);
 			throw e;
-		} catch (PersistenceException e) {
-			// The most likely reason is that the user already existed.
+		} catch (EndEntityExistsException e) {
             throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.USER_ALREADY_EXISTS, Level.INFO);
         } catch (RuntimeException e) {	// ClassCastException, EJBException, ...
             throw EjbcaWSHelper.getInternalException(e, logger);
@@ -2536,7 +2535,9 @@ public class EjbcaWS implements IEjbcaWS {
            throw EjbcaWSHelper.getInternalException(e, logger);
         } catch (RuntimeException e) {	// EJBException, ...
             throw EjbcaWSHelper.getInternalException(e, logger);
-		} finally {
+		} catch (EndEntityExistsException e) {
+            throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.USER_ALREADY_EXISTS, Level.INFO);
+        } finally {
             logger.writeln();
             logger.flush();
         }

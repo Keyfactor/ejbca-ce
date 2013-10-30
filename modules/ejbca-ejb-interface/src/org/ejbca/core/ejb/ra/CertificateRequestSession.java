@@ -24,7 +24,6 @@ import java.security.spec.InvalidKeySpecException;
 
 import javax.ejb.CreateException;
 import javax.ejb.ObjectNotFoundException;
-import javax.persistence.PersistenceException;
 
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -71,7 +70,7 @@ public interface CertificateRequestSession {
      * @return a response message of the type specified in responseClass 
 	 * @throws CesecoreException 
 	 */
-    public ResponseMessage processCertReq(AuthenticationToken admin, EndEntityInformation userdata, RequestMessage req, Class<? extends ResponseMessage> responseClass) throws PersistenceException,
+    public ResponseMessage processCertReq(AuthenticationToken admin, EndEntityInformation userdata, RequestMessage req, Class<? extends ResponseMessage> responseClass) throws EndEntityExistsException,
             AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, CesecoreException;
 
 	/**
@@ -89,5 +88,5 @@ public interface CertificateRequestSession {
     public byte[] processSoftTokenReq(AuthenticationToken admin, EndEntityInformation userdata, String hardTokenSN, String keyspec, String keyalg, boolean createJKS) throws CADoesntExistsException,
             AuthorizationDeniedException, NotFoundException, InvalidKeyException, InvalidKeySpecException, NoSuchProviderException, SignatureException, IOException,
             ObjectNotFoundException, CreateException, CertificateException, UserDoesntFullfillEndEntityProfile, ApprovalException, EjbcaException,
-            KeyStoreException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, PersistenceException;
+            KeyStoreException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, EndEntityExistsException;
 }
