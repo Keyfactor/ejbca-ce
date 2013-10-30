@@ -29,7 +29,6 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
@@ -321,7 +320,7 @@ public interface EndEntityManagementSession {
     void revokeUser(AuthenticationToken admin, String username, int reason) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException;
 
     /**
-     * Same as {@link #revokeCert(Admin, BigInteger, String, int)} but also sets the revocation date.
+     * Same as {@link #revokeCert(AuthenticationToken, BigInteger, String, int)} but also sets the revocation date.
      * @param admin
      * @param certserno
      * @param revocationdate after this the the certificate is not valid
