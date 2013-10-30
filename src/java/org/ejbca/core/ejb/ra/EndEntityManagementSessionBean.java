@@ -37,10 +37,8 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.naming.InvalidNameException;
-import javax.persistence.EntityExistsException;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -104,13 +102,13 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.CustomFieldException;
+import org.ejbca.core.model.ra.EndEntityInformationFiller;
 import org.ejbca.core.model.ra.EndEntityManagementConstants;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.FieldValidator;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RAAuthorization;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
-import org.ejbca.core.model.ra.EndEntityInformationFiller;
 import org.ejbca.core.model.ra.UserNotificationParamGen;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.ICustomNotificationRecipient;
@@ -229,7 +227,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     @Override
     public void addUser(final AuthenticationToken admin, final String username, final String password, final String subjectdn, final String subjectaltname, final String email,
             final boolean clearpwd, final int endentityprofileid, final int certificateprofileid, final EndEntityType type, final int tokentype, final int hardwaretokenissuerid, final int caid)
-            throws PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException,
+            throws EndEntityExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException,
             CADoesntExistsException, EjbcaException {
         final EndEntityInformation userdata = new EndEntityInformation(username, subjectdn, caid, subjectaltname, email, EndEntityConstants.STATUS_NEW,
                 type, endentityprofileid, certificateprofileid, null, null, tokentype, hardwaretokenissuerid, null);
@@ -242,7 +240,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
 
     @Override
     public void addUserFromWS(final AuthenticationToken admin, EndEntityInformation userdata, final boolean clearpwd) throws AuthorizationDeniedException,
-            UserDoesntFullfillEndEntityProfile, PersistenceException, WaitingForApprovalException, CADoesntExistsException, EjbcaException {
+            UserDoesntFullfillEndEntityProfile, EndEntityExistsException, WaitingForApprovalException, CADoesntExistsException, EjbcaException {
         final int profileId = userdata.getEndEntityProfileId();
         final EndEntityProfile profile = endEntityProfileSession.getEndEntityProfileNoClone(profileId);
         if (profile.getAllowMergeDnWebServices()) {
@@ -267,11 +265,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         endEntity.setEmail(StringTools.strip(endEntity.getEmail()));
     }
 
-    // TODO: Try to throw an application exception instead if the PersistenceException, since this becomes
-    // EJBException(java.rmi.ServerException(java.rmi.RemoteException(javax.persistence.EntityExistsException)))) on Glassfish
     @Override
     public void addUser(final AuthenticationToken admin, final EndEntityInformation endEntity, final boolean clearpwd) throws AuthorizationDeniedException,
-            EjbcaException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, PersistenceException, CADoesntExistsException {
+            EjbcaException, EndEntityExistsException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, CADoesntExistsException {
         final int endEntityProfileId = endEntity.getEndEntityProfileId();
         final int caid = endEntity.getCAId();
         // Check if administrator is authorized to add user to CA.
@@ -364,7 +360,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 // Since persist will not commit and fail if the user already exists, we need to check for this
                 // Flushing the entityManager will not allow us to rollback the persisted user if this is a part of a larger transaction.
                 if (UserData.findByUsername(entityManager, userData.getUsername()) != null) {
-                    throw new EntityExistsException("User " + userData.getUsername() + " already exists.");
+                    throw new EndEntityExistsException("User " + userData.getUsername() + " already exists.");
                 }
                 entityManager.persist(userData);
                 // Although EndEntityInformation should always have a null password for
@@ -388,8 +384,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 details.put("msg", intres.getLocalizedMessage("ra.addedentity", username));
                 auditSession.log(EjbcaEventTypes.RA_ADDENDENTITY, EventStatus.SUCCESS, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(),
                         String.valueOf(caid), null, username, details);
-            } catch (PersistenceException e) {
-                // PersistenceException could also be caused by various database problems.
+            } catch (EndEntityExistsException e) {
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", intres.getLocalizedMessage("ra.errorentityexist", username));
                 details.put("error", e.getMessage());

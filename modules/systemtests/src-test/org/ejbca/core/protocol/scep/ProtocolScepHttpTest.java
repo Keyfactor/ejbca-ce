@@ -48,7 +48,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Random;
 
-import javax.persistence.PersistenceException;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.httpclient.NameValuePair;
@@ -92,6 +91,7 @@ import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
@@ -473,7 +473,7 @@ public class ProtocolScepHttpTest extends CaTestCase {
         return data;
     }
 
-    private void createScepUser(String userName, String userDN) throws PersistenceException, CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException {
+    private void createScepUser(String userName, String userDN) throws EndEntityExistsException, CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException {
         if(!endEntityManagementSession.existsUser(userName)) {
             endEntityManagementSession.addUser(admin, getEndEntityInformation(userName, userDN), false);
         } else {
