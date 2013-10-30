@@ -52,6 +52,7 @@ import org.apache.xml.security.encryption.XMLEncryptionException;
 import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.signature.XMLSignatureException;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.CesecoreException;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -283,9 +284,13 @@ public class KRSSResponseGenerator extends
 				}
 
 				retval = cert;
-			}catch (Exception e) {
-				log.error(intres.getLocalizedMessage("xkms.errorregisteringreq"),e);				
-			} 
+			} catch (CesecoreException e) {
+			    // CesecoreExceptions are handled
+				log.info(intres.getLocalizedMessage("xkms.errorregisteringreq")+": "+e.getMessage());				
+            } catch (Exception e) {
+                // Unexpected error?
+                log.error(intres.getLocalizedMessage("xkms.errorregisteringreq"),e);             
+            } 
 
 			if(retval == null){
 				resultMajor = XKMSConstants.RESULTMAJOR_RECIEVER;
@@ -293,7 +298,7 @@ public class KRSSResponseGenerator extends
 			}
 			
 		}else{
-			log.error(intres.getLocalizedMessage("xkms.errorinreqwrongstatus",Integer.valueOf(endEntityInformation.getStatus()),endEntityInformation.getUsername()));			
+			log.info(intres.getLocalizedMessage("xkms.errorinreqwrongstatus",Integer.valueOf(endEntityInformation.getStatus()),endEntityInformation.getUsername()));			
 			resultMajor = XKMSConstants.RESULTMAJOR_SENDER;
 			resultMinor = XKMSConstants.RESULTMINOR_REFUSED;
 		}
