@@ -19,7 +19,7 @@ import org.ejbca.core.EjbcaException;
 
 
 /**
- * Thrown when an objekt cannot be found in the database and the error is not critical so we want
+ * Thrown when an object cannot be found in the database and the error is not critical so we want
  * to inform the client in a nice way.
  *
  * @version $Id$
