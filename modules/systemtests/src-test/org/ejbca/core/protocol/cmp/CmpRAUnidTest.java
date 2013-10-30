@@ -62,6 +62,7 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.Configuration;
+import org.ejbca.core.TestAssertionFailedException;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
@@ -239,8 +240,7 @@ public class CmpRAUnidTest extends CmpTestCase {
             pw.println("Example how to the test with this property:");
             pw.println("ant -Dmysql.lib=/usr/share/java/mysql.jar test:run");
             log.error(sw, e);
-            assertTrue(sw.toString(), false);
-            return;
+            throw new TestAssertionFailedException(sw.toString());
         }
         try {
             doTest(connection);
@@ -272,18 +272,23 @@ public class CmpRAUnidTest extends CmpTestCase {
             final byte[] resp = sendCmpHttp(ba, 200, configAlias);
             
             ASN1InputStream inputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
-            PKIMessage respObject = PKIMessage.getInstance(inputStream.readObject());
-            PKIBody body = respObject.getBody();
-            if(body.getContent() instanceof ErrorMsgContent) {
-                ErrorMsgContent err = (ErrorMsgContent) body.getContent();
-                String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString(); 
-                log.error(errMsg);
-                fail("CMP ErrorMsg received: "+errMsg);
-            } else {
-                checkCmpResponseGeneral(resp, this.issuerDN, SUBJECT_DN, this.cacert, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-                final X509Certificate cert = checkCmpCertRepMessage(SUBJECT_DN, this.cacert, resp, reqId);
-                unid = (String) new X509Principal(cert.getSubjectX500Principal().getEncoded()).getValues(BCStrictStyle.SN).get(0);
-                log.debug("Unid: " + unid);
+            try {
+                PKIMessage respObject = PKIMessage.getInstance(inputStream.readObject());
+                PKIBody body = respObject.getBody();
+                if (body.getContent() instanceof ErrorMsgContent) {
+                    ErrorMsgContent err = (ErrorMsgContent) body.getContent();
+                    String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+                    log.error(errMsg);
+                    fail("CMP ErrorMsg received: " + errMsg);
+                } else {
+                    checkCmpResponseGeneral(resp, this.issuerDN, SUBJECT_DN, this.cacert, nonce, transid, false, PBEPASSWORD,
+                            PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+                    final X509Certificate cert = checkCmpCertRepMessage(SUBJECT_DN, this.cacert, resp, reqId);
+                    unid = (String) new X509Principal(cert.getSubjectX500Principal().getEncoded()).getValues(BCStrictStyle.SN).get(0);
+                    log.debug("Unid: " + unid);
+                }
+            } finally {
+                inputStream.close();
             }
         }
         {
