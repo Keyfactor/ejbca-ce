@@ -1219,6 +1219,8 @@ public class XKMSKISSTest {
 
         certificateProfileSession.removeCertificateProfile(administrator, "XKMSTESTSIGN");
         certificateProfileSession.removeCertificateProfile(administrator, "XKMSTESTEXCHANDENC");
+        certificateProfileSession.removeCertificateProfile(administrator, "XKMSTESTSIGN"+baseUsername+"-");
+        certificateProfileSession.removeCertificateProfile(administrator, "XKMSTESTEXCHANDENC"+baseUsername+"-");
     }
 
     private String genUserName() throws Exception {

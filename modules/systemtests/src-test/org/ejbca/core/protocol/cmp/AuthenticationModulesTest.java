@@ -1551,13 +1551,21 @@ public class AuthenticationModulesTest extends CmpTestCase {
             assertNotSame("Revocation request failed to revoke the certificate", RevokedCertInfo.NOT_REVOKED, revStatus);
             
         } finally {
-            removeAuthenticationToken(admToken, admCert, testAdminName);
-            endEntityManagementSession.revokeAndDeleteUser(ADMIN, "cmpecdsauser", ReasonFlags.unused);
+            try {
+                removeAuthenticationToken(admToken, admCert, testAdminName);
+            } catch (Exception e) {
+                //NOPMD: Ignore
+            }
+            try {
+                endEntityManagementSession.revokeAndDeleteUser(ADMIN, "cmpecdsauser", ReasonFlags.unused);
+            } catch (Exception e) {
+                //NOPMD: Ignore
+            }
             internalCertStoreSession.removeCertificate(fp);
             internalCertStoreSession.removeCertificate(fp2);
             eeProfileSession.removeEndEntityProfile(ADMIN, "ECDSAEEP");
             certProfileSession.removeCertificateProfile(ADMIN, "ECDSACP");
-            
+
             removeTestCA("CmpECDSATestCA");
         }
         log.trace("<test22EECAuthWithSHA256AndECDSA()");

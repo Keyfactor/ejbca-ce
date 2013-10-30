@@ -51,6 +51,7 @@ import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
@@ -115,6 +116,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
 
     public final static String WS_ADMIN_ROLENAME = "WsTEstRole";
     public final static String WS_TEST_ROLENAME = "WsTestRoleMgmt";
+    private final static String WS_TEST_CERTIFICATE_PROFILE_NAME = "WSTESTPROFILE"; 
     
     private final String cliUserName = EjbcaConfiguration.getCliDefaultUser();
     private final String cliPassword = EjbcaConfiguration.getCliDefaultPassword();
@@ -159,6 +161,8 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         cleanUpAdmins(WS_ADMIN_ROLENAME);
         cleanUpAdmins(WS_TEST_ROLENAME);
         cesecoreConfigurationProxySession.setConfigurationValue(forbiddenCharsKey, originalForbiddenChars);
+        CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+        certificateProfileSession.removeCertificateProfile(intAdmin, WS_TEST_CERTIFICATE_PROFILE_NAME);
     }
 
     @Override
@@ -853,12 +857,12 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         boolean originalProfileSetting = gc.getEnableEndEntityProfileLimitations();
         gc.setEnableEndEntityProfileLimitations(false);
         raAdminSession.saveConfiguration(intAdmin, gc, Configuration.GlobalConfigID);
-        if (certificateProfileSession.getCertificateProfileId("WSTESTPROFILE") != 0) {
-            certificateProfileSession.removeCertificateProfile(intAdmin, "WSTESTPROFILE");
+        if (certificateProfileSession.getCertificateProfileId(WS_TEST_CERTIFICATE_PROFILE_NAME) != 0) {
+            certificateProfileSession.removeCertificateProfile(intAdmin, WS_TEST_CERTIFICATE_PROFILE_NAME);
         }
         CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         profile.setAllowValidityOverride(true);
-        certificateProfileSession.addCertificateProfile(intAdmin, "WSTESTPROFILE", profile);
+        certificateProfileSession.addCertificateProfile(intAdmin, WS_TEST_CERTIFICATE_PROFILE_NAME, profile);
         UserDataVOWS tokenUser1 = new UserDataVOWS();
         tokenUser1.setUsername(username);
         tokenUser1.setPassword(PASSWORD);
@@ -877,7 +881,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         ArrayList<TokenCertificateRequestWS> requests = new ArrayList<TokenCertificateRequestWS>();
         TokenCertificateRequestWS tokenCertReqWS = new TokenCertificateRequestWS();
         tokenCertReqWS.setCAName(caName);
-        tokenCertReqWS.setCertificateProfileName("WSTESTPROFILE");
+        tokenCertReqWS.setCertificateProfileName(WS_TEST_CERTIFICATE_PROFILE_NAME);
         tokenCertReqWS.setValidityIdDays("1");
         tokenCertReqWS.setPkcs10Data(basicpkcs10.getEncoded());
         tokenCertReqWS.setType(HardTokenConstants.REQUESTTYPE_PKCS10_REQUEST);
@@ -905,7 +909,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         hardTokenDataWS.getPinDatas().add(signaturePinDataWS);
         List<TokenCertificateResponseWS> responses = ejbcaraws.genTokenCertificates(tokenUser1, requests, hardTokenDataWS, true, false);
         assertTrue(responses.size() == 2);
-        certificateProfileSession.removeCertificateProfile(intAdmin, "WSTESTPROFILE");
+        certificateProfileSession.removeCertificateProfile(intAdmin, WS_TEST_CERTIFICATE_PROFILE_NAME);
         gc.setEnableEndEntityProfileLimitations(originalProfileSetting);
         raAdminSession.saveConfiguration(intAdmin, gc, Configuration.GlobalConfigID);
     } // createHardToken

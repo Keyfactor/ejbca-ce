@@ -283,7 +283,7 @@ public class CertificateExpireTest extends CaTestCase {
      */
     @Test
     public void testExpireCertificateWithCertificateProfiles() throws Exception {
-        final String certificateprofilename = "foo";
+        final String certificateprofilename = "testExpireCertificateWithCertificateProfiles";
         int certificateProfileId = certificateProfileSession.addCertificateProfile(admin, certificateprofilename, new CertificateProfile());
         try {
             createCertificate(certificateProfileId);
