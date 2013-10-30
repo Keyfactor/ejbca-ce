@@ -108,6 +108,7 @@ public class PublicCryptoToken implements CryptoToken {
         try {
             return (getPublicKey(alias) != null);
         } catch (CryptoTokenOfflineException e) {
+            // This will never happen
             return false;
         }
     }
