@@ -82,7 +82,7 @@ public final class ConfigurationHolder {
             // read cesecore.properties, from config file built into jar, and see if we allow configuration by external files
             boolean allowexternal = false;
             try {
-                final URL url = ConfigurationHolder.class.getResource(CONFIG_FILES[0]);
+                final URL url = ConfigurationHolder.class.getResource("/conf/"+CONFIG_FILES[0]);
                 if (url != null) {
                     final PropertiesConfiguration pc = new PropertiesConfiguration(url);
                     allowexternal = "true".equalsIgnoreCase(pc.getString(CONFIGALLOWEXTERNAL, "false"));
