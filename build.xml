@@ -344,7 +344,12 @@
 		<mkdir dir="${eardd.src}/META-INF"/>
 		<copy todir="${eardd.src}/META-INF" file="src/deploy/ear/META-INF/application.xml" overwrite="true" flatten="true" failonerror="true"/>
 		<!-- Currently (2013-08) for JBoss 6, include a user defined log4j.xml in META-INF for per-deployment log configuration, re-usable for other appservers using the appserver.subtype var. -->
-		<copy tofile="${eardd.src}/META-INF/log4j.xml" file="conf/log4j-${appserver.subtype}.xml" overwrite="true" failonerror="false"/>
+		<copy overwrite="true" todir="${eardd.src}/META-INF" failonerror="false">
+    		<fileset dir="${ejbca.home}/conf">
+    		      <include name="log4j-${appserver.subtype}.xml"/>
+   		    </fileset>
+   		    <mapper type="regexp" from="log4j-.*" to="log4j.xml"/>
+		</copy>
 		<war-replacement-in-module
 			replacement-tag="!--@doc.war@-->"
 			replacement-file="${eardd.src}/META-INF/application.xml"
