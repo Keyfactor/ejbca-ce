@@ -16,8 +16,10 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 /**
  * Represents a subset of WS tests to quickly get an estimate of CC compliance.
@@ -25,6 +27,7 @@ import org.junit.Test;
  * @version $Id$
  *
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Ignore
 public class EjbcaWsCommonCriteriaTest {
 
@@ -85,9 +88,11 @@ public class EjbcaWsCommonCriteriaTest {
     }
     
     @Test
-    public void testIsAuthorized() throws Exception {
+    public void testZZIsAuthorized() throws Exception {
         test.isAuthorized(true);
         // Test non authorized by revoking the certificate
+        // Since this runs afterClass, we must run this test last. Do that by using
+        // @FixMethodOrder(MethodSorters.NAME_ASCENDING)
         EjbcaWSTest.afterClass();
         test.tearDown();
         test.isAuthorized(false);
