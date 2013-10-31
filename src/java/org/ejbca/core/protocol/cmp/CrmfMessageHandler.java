@@ -425,13 +425,13 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 					resp = this.certificateRequestSession.processCertReq(this.admin, userdata, req, org.ejbca.core.protocol.cmp.CmpResponseMessage.class);
 				}
 			} catch (UserDoesntFullfillEndEntityProfile e) {
-				LOG.error(INTRES.getLocalizedMessage(CMP_ERRORADDUSER, username), e);
+				LOG.info(INTRES.getLocalizedMessage(CMP_ERRORADDUSER, username), e);
 				resp = CmpMessageHelper.createErrorMessage(msg, FailInfo.INCORRECT_DATA, e.getMessage(), requestId, requestType, verifyer, keyId, this.responseProt);
 			} catch (ApprovalException e) {
-				LOG.error(INTRES.getLocalizedMessage(CMP_ERRORADDUSER, username), e);
+				LOG.info(INTRES.getLocalizedMessage(CMP_ERRORADDUSER, username), e);
 				resp = CmpMessageHelper.createErrorMessage(msg, FailInfo.NOT_AUTHORIZED, e.getMessage(), requestId, requestType, verifyer, keyId, this.responseProt);
 			} catch (EndEntityExistsException e) {
-				LOG.error(INTRES.getLocalizedMessage(CMP_ERRORADDUSER, username), e);
+				LOG.info(INTRES.getLocalizedMessage(CMP_ERRORADDUSER, username), e);
 				resp = CmpMessageHelper.createErrorMessage(msg, FailInfo.NOT_AUTHORIZED, e.getMessage(), requestId, requestType, verifyer, keyId, this.responseProt);
 			}
 		} catch (HandlerException e) {
