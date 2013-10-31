@@ -86,7 +86,7 @@ public abstract class ValueExtractor {
             } else if (objects[objects.length-1].getClass().equals(BigDecimal.class)) {
                 ret = objects[0];
             } else {
-                throw new RuntimeException("Unsupported object type to convert to "+clazz.getSimpleName() + "Was a " + object.getClass());
+                throw new RuntimeException("Unsupported object type to convert to "+clazz.getSimpleName() + ". Was a " + object.getClass().getName());
             }
         }
         return ret;
