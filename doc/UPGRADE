@@ -66,20 +66,22 @@ If you are upgrading a cluster, update the software on all the nodes.
 
 	1.	Copy conf/*.properties from the earlier installation into the conf directory of the new release.
    		Or better yet, use the ejbca-custom feature for easier upgrades, see User Guide.
+   		NOTE: if you are using the default Hypersonic database in JBoss 5, you now need to configure this in database.properties (default test database is now for JBoss 7/EAP6).
 	2.	Copy the directory 'p12' from the earlier installation. 
-	3. 	If using JBoss 5.1 or older, or JBoss 6.0 community edition, then shut down JBoss.
-	4. 	Run the 'ant deploy' target with new version.
-	5. 	Run the 'ant deploy-keystore' target with new version.
-	6. 	Run the 'ant web-configure' target with new version.
-	7. 	Restart JBoss.
-	8. 	If you are running in a cluster, you should now upgrade on all cluster nodes.
+	3. 	If using JBoss 5.1 or older, then shut down JBoss.
+	4. 	Run the 'ant deploy-keystore' target with new version (not needed if deploying to same JBoss instance as the old version).
+	5. 	Run the 'ant web-configure' target with new version (not needed if deploying to same JBoss instance as the old version).
+	6. 	Clear the tmp and work directories in the servers, then restart JBoss.
+	7. 	If you are running in a cluster, you should now upgrade on all cluster nodes.
    		The newly deployed nodes should be running now.
-	8. 	Stop JBoss, clear the tmp and work directories in the servers, then start JBoss again to flush all caches.
+	8. 	Restart JBoss to flush all caches.
 	9. 	Go into the Admin GUI and verify your settings.
 
-If you get a "java.lang.NoSuchMethodError" in the admin GUI it is because JBoss does not clean temporary files very well.
+If you get a "java.lang.NoSuchMethodError" in the admin GUI it is because JBoss 5 does not clean temporary files very well.
 Delete the directories JBOSS_HOME/server/default/tmp and JBOSS_HOME/server/default/work and restart JBoss to get it working.
 
+If you are upgrading from EJBCA 4.x, you also need to run additional upgrade targets, see upgrade notes from EJBCA 4 to EJBCA 5.
+ 
 2. Basic Upgrade Procedure for Validation Authorities:
 ***********************************************************
 2.a. Notable Changes:
@@ -225,6 +227,8 @@ removed entirely in a future version.
 - 	HSM configuration options have been updated to support different slot reference types (slot id, index or label).
 	See Admin Guide, databaseprotection.properties.sample, ocsp.properties.sample and catoken.properties.sample for information and examples how to 
 	update you current PKCS#11 configuration in these files. Configuration in the Admin GUI should be automatically upgraded.
+-   If you are using the default Hypersonic database in JBoss 5 for testing, you now need to configure this in database.properties. The default test database 
+    (when no database.properties is configured) is now H2 for JBoss 7/EAP6.
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------
 
