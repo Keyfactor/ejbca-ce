@@ -148,6 +148,8 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 
     public static final String DEFAULT_SUPERADMIN_CN = "SuperAdmin";
 
+    private static final String DSA_DN = "CN=OCSPDSATEST,O=Foo,C=SE";
+    
     private static final Logger log = Logger.getLogger(ProtocolOcspHttpTest.class);
 
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
@@ -542,8 +544,8 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
                 .getResponseCode() == 200);
 
-        int dsacaid = "CN=OCSPDSATEST".hashCode();
-        X509Certificate ecdsacacert = addDSACA("CN=OCSPDSATEST", "DSA1024");
+        int dsacaid = DSA_DN.hashCode();
+        X509Certificate ecdsacacert = addDSACA(DSA_DN, "DSA1024");
         helper.reloadKeys();
 
         // Make user and ocspTestCert that we know...
@@ -882,15 +884,15 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
                 .getResponseCode() == 200);
         try {
-            final int cryptoTokenId = caSession.getCAInfo(admin, "CN=OCSPDSATEST".hashCode()).getCAToken().getCryptoTokenId();
+            final int cryptoTokenId = caSession.getCAInfo(admin, DSA_DN.hashCode()).getCAToken().getCryptoTokenId();
             CryptoTokenManagementSessionTest.removeCryptoToken(admin, cryptoTokenId);
         } catch (Exception e) {
             log.error("",e);
         }
         try {
-            caSession.removeCA(admin, "CN=OCSPDSATEST".hashCode());
+            caSession.removeCA(admin, DSA_DN.hashCode());
         } catch (Exception e) {
-            log.info("Could not remove CA with SubjectDN CN=OCSPDSATEST");
+            log.info("Could not remove CA with SubjectDN " + DSA_DN);
         }
         try {
             caSession.removeCA(admin, "CN=OCSPDSAIMPCATEST".hashCode());
@@ -1194,16 +1196,17 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
             CAInfo info = caSession.getCAInfo(admin, dn);
 
             X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
-            assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals(dn));
-            assertTrue("Creating CA failed", info.getSubjectDN().equals(dn));
-            assertTrue(cert.getPublicKey() instanceof DSAPublicKey);
+            assertEquals("Error in created ca certificate", dn, CertTools.getSubjectDN(cert));
+            assertEquals("Creating CA failed, DN was incorrect.", dn, info.getSubjectDN());
+            assertTrue("Public key was not an instance of DSAPublicKey", cert.getPublicKey() instanceof DSAPublicKey);
 
             ret = true;
             Collection<Certificate> coll = info.getCertificateChain();
             Object[] certs = coll.toArray();
             cacert = (X509Certificate) certs[0];
-        } catch (CAExistsException pee) {
+        } catch (CAExistsException e) {
             log.info("CA exists.");
+            throw e;
         }
         assertTrue("Creating DSA CA failed", ret);
         log.trace("<addDSACA()");
@@ -1259,11 +1262,9 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
      * @throws InvalidKeyException if the certificate, or CA key is invalid
      * @throws OperatorCreationException 
      */
-    public static X509Certificate checkRequestSignature(String clientRemoteAddr, OCSPReq req, ICertificateCache cacerts)
-    throws SignRequestException, OCSPException,
-    NoSuchProviderException, CertificateException,
-    NoSuchAlgorithmException, InvalidKeyException,
-    SignRequestSignatureException, OperatorCreationException {
+    public static X509Certificate checkRequestSignature(String clientRemoteAddr, OCSPReq req, ICertificateCache cacerts) throws SignRequestException,
+            OCSPException, NoSuchProviderException, CertificateException, NoSuchAlgorithmException, InvalidKeyException,
+            SignRequestSignatureException, OperatorCreationException {
         
         X509Certificate signercert = null;
         
