@@ -81,12 +81,14 @@ public abstract class ValueExtractor {
                     LOG.trace(o.getClass().getName() + " isPrimitive=" + o.getClass().isPrimitive() + " toString=" + o.toString());
                 }
             }
+            // DB2 native queries returns a pair of {BigInteger, Integer} where the first value is row and the second is the value.
+            // Oracle native queries returns a pair of {BigDecimal, BigDecimal} where the first value is the value and the second is the row
             if (objects[0].getClass().equals(BigInteger.class)) {
                 ret = objects[objects.length-1];
             } else if (objects[objects.length-1].getClass().equals(BigDecimal.class)) {
                 ret = objects[0];
             } else {
-                throw new RuntimeException("Unsupported object type to convert to "+clazz.getSimpleName() + ". Was a " + object.getClass().getName());
+                throw new RuntimeException("Unsupported object type to convert to "+clazz.getSimpleName() + ". Was: objects.length="+objects.length+", objects[0] is a "+objects[0].getClass().getName());
             }
         }
         return ret;
