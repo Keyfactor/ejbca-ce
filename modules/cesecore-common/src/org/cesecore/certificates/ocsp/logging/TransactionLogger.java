@@ -67,7 +67,6 @@ public class TransactionLogger extends PatternLogger {
         paramPut(PatternLogger.CLIENT_IP, clientIp);
         
         paramPut(PatternLogger.STATUS, "0");
-     //   paramPut(PatternLogger.CLIENT_IP, "0");
         paramPut(REQ_NAME, "0");
         paramPut(SIGN_ISSUER_NAME_DN, "0");
         paramPut(SIGN_SUBJECT_NAME, "0");
