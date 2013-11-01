@@ -67,11 +67,11 @@ If you are upgrading a cluster, update the software on all the nodes.
 	1.	Copy conf/*.properties from the earlier installation into the conf directory of the new release.
    		Or better yet, use the ejbca-custom feature for easier upgrades, see User Guide.
 	2.	Copy the directory 'p12' from the earlier installation. 
-	3. 	Shut down JBoss.
+	3. 	If using JBoss 5.1 or older, or JBoss 6.0 community edition, then shut down JBoss.
 	4. 	Run the 'ant deploy' target with new version.
 	5. 	Run the 'ant deploy-keystore' target with new version.
 	6. 	Run the 'ant web-configure' target with new version.
-	7. 	Start up JBoss.
+	7. 	Restart JBoss.
 	8. 	If you are running in a cluster, you should now upgrade on all cluster nodes.
    		The newly deployed nodes should be running now.
 	8. 	Stop JBoss, clear the tmp and work directories in the servers, then start JBoss again to flush all caches.
