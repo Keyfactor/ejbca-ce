@@ -88,7 +88,11 @@ public abstract class ValueExtractor {
             } else if (objects[objects.length-1].getClass().equals(BigDecimal.class)) {
                 ret = objects[0];
             } else {
-                throw new RuntimeException("Unsupported object type to convert to "+clazz.getSimpleName() + ". Was: objects.length="+objects.length+", objects[0] is a "+objects[0].getClass().getName());
+                if (objects.length > 1) {
+                    throw new RuntimeException("Unsupported object type to convert to "+clazz.getSimpleName() + ". Was: objects.length="+objects.length+", objects[0] is a "+objects[0].getClass().getName()+": "+objects[0]+", objects[1] is a "+objects[1].getClass().getName()+": "+objects[1]);                    
+                } else {
+                    throw new RuntimeException("Unsupported object type to convert to "+clazz.getSimpleName() + ". Was: objects.length="+objects.length+", objects[0] is a "+objects[0].getClass().getName()+": "+objects[0]);                    
+                }
             }
         }
         return ret;
