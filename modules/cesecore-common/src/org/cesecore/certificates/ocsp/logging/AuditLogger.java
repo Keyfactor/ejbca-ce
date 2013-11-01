@@ -40,7 +40,7 @@ public class AuditLogger extends PatternLogger {
         paramPut(PatternLogger.SESSION_ID, sessionId);
         paramPut(PatternLogger.CLIENT_IP, clientIp);
         
-        paramPut(PatternLogger.CLIENT_IP, "0");
+     //   paramPut(PatternLogger.CLIENT_IP, "0");
         paramPut(OCSPREQUEST, "0");
         paramPut(OCSPRESPONSE, "0");
         paramPut(PatternLogger.STATUS, "-1");

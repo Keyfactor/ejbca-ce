@@ -46,6 +46,7 @@ import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.Base64;
+import org.cesecore.util.GUIDGenerator;
 import org.ejbca.core.ejb.ocsp.OcspKeyRenewalSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
@@ -63,6 +64,8 @@ public class OCSPServlet extends HttpServlet {
     private static final long serialVersionUID = 8081630219584820112L;
     private static final Logger log = Logger.getLogger(OCSPServlet.class);
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
+    
+    private final String sessionID = GUIDGenerator.generateGUID(this);
     
     @EJB
     private OcspResponseGeneratorSessionLocal integratedOcspResponseGeneratorSession;
@@ -217,7 +220,14 @@ public class OCSPServlet extends HttpServlet {
         TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), remoteAddress);
         // Create the audit logger for this transaction.
         AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), remoteAddress);
-        try {     
+        try {    
+            auditLogger.paramPut(PatternLogger.LOG_ID, Integer.valueOf(localTransactionId));
+            auditLogger.paramPut(PatternLogger.SESSION_ID, this.sessionID);
+            auditLogger.paramPut(PatternLogger.CLIENT_IP, remoteAddress);
+            transactionLogger.paramPut(PatternLogger.LOG_ID, Integer.valueOf(localTransactionId));
+            transactionLogger.paramPut(PatternLogger.SESSION_ID, this.sessionID);
+            transactionLogger.paramPut(PatternLogger.CLIENT_IP, remoteAddress);
+            
             OCSPRespBuilder responseGenerator = new OCSPRespBuilder();
             OcspResponseInformation ocspResponseInformation = null;
             try {
