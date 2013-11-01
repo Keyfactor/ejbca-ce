@@ -187,6 +187,11 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         		return false;
         	}
         }
+        
+        if (oldVersion < 600) {
+            displayNoUpgradeIn600Message();
+        }
+        
         return true;
     }
 
@@ -203,7 +208,15 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         	}
         }
 
+        if (oldVersion < 600) {
+            displayNoUpgradeIn600Message();
+        }
         return true;
+    }
+
+    private void displayNoUpgradeIn600Message() {
+        log.error("(this is not an error) Nothing to upgrade at this point for EJBCA 6.0.");
+        log.error("(this is not an error) The upgrade to 6.0 is performed when EJBCA is started.");
     }
 
     /**
