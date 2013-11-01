@@ -856,6 +856,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             if (log.isDebugEnabled()) {
                 log.debug("The OCSP request contains " + ocspRequests.length + " simpleRequests.");
             }
+            transactionLogger.paramPut(TransactionLogger.NUM_CERT_ID, ocspRequests.length);
             transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespBuilder.SUCCESSFUL);
             auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.SUCCESSFUL);
             OcspSigningCacheEntry ocspSigningCacheEntry = null;
@@ -870,7 +871,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 CertificateID certId = ocspRequest.getCertID();
                 transactionLogger.paramPut(TransactionLogger.SERIAL_NOHEX, certId.getSerialNumber().toByteArray());
                 // TODO:find text version of this or find out if it should be something else
-                transactionLogger.paramPut(TransactionLogger.DIGEST_ALGOR, certId.getHashAlgOID().getEncoded());
+                transactionLogger.paramPut(TransactionLogger.DIGEST_ALGOR, certId.getHashAlgOID().toString());
                 transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_HASH, certId.getIssuerNameHash());
                 transactionLogger.paramPut(TransactionLogger.ISSUER_KEY, certId.getIssuerKeyHash());
                 auditLogger.paramPut(AuditLogger.ISSUER_KEY, certId.getIssuerKeyHash());
@@ -894,7 +895,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                  * each certId in the request though, as we will check for revocation on the ca-cert as well when checking for revocation on the certId.
                  */
                 if (ocspSigningCacheEntry != null) {
-                    transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN, CertTools.getSubjectDN(ocspSigningCacheEntry.getCaCertificateChain().get(0)));
+                    transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN,
+                            CertTools.getSubjectDN(ocspSigningCacheEntry.getCaCertificateChain().get(0)));
                 } else {
                     // We could not find certificate for this request so get certificate for default responder
                     ocspSigningCacheEntry = OcspSigningCache.INSTANCE.getDefaultEntry();
