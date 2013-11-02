@@ -67,7 +67,7 @@ public abstract class ValueExtractor {
     
        /** 
      * 
-     * @param object to check if it is an array type and in that case extract the BigInteger or BigDecimal object
+     * @param object to check if it is an array type and in that case extract the BigInteger, BigDecimal or Integer object
      * @param clazz only used for logging
      * @return the object to get value from
      */
@@ -81,11 +81,14 @@ public abstract class ValueExtractor {
                     LOG.trace(o.getClass().getName() + " isPrimitive=" + o.getClass().isPrimitive() + " toString=" + o.toString());
                 }
             }
-            // DB2 native queries returns a pair of {BigInteger, Integer} where the first value is row and the second is the value.
-            // Oracle native queries returns a pair of {BigDecimal, BigDecimal} where the first value is the value and the second is the row
             if (objects[0].getClass().equals(BigInteger.class)) {
+                // DB2 native queries returns a pair of {BigInteger, Integer} where the first value is row and the second is the value.
                 ret = objects[objects.length-1];
             } else if (objects[objects.length-1].getClass().equals(BigDecimal.class)) {
+                // Oracle native queries returns a pair of {BigDecimal, BigDecimal} where the first value is the value and the second is the row
+                ret = objects[0];
+            } else if (objects[0].getClass().equals(Integer.class)) {
+                // Yet another variant (DB2 again) returns a pair of {Integer, BigInteger} where the first value is the value and the second is the row.
                 ret = objects[0];
             } else {
                 if (objects.length > 1) {
