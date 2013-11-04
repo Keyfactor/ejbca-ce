@@ -185,6 +185,7 @@ public class NestedMessageContentTest extends CmpTestCase {
     private String raCertsPath = "/tmp/racerts";
     private CmpConfiguration cmpConfiguration;
     private String cmpAlias = "NestedMessageContentTstConfAlias";
+    private final String CMPTESTPROFILE = "CMPTESTPROFILE";
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
     
@@ -212,12 +213,13 @@ public class NestedMessageContentTest extends CmpTestCase {
         CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         profile.setAllowValidityOverride(true);
         profile.saveData();
+        certProfileSession.removeCertificateProfile(admin, CMPTESTPROFILE);
         try {
-            certProfileSession.addCertificateProfile(admin, "CMPTESTPROFILE", profile);
+            certProfileSession.addCertificateProfile(admin, CMPTESTPROFILE, profile);
         } catch (CertificateProfileExistsException e) {
             log.error("Could not create certificate profile.", e);
         }
-        int cpId = certProfileSession.getCertificateProfileId("CMPTESTPROFILE");
+        int cpId = certProfileSession.getCertificateProfileId(CMPTESTPROFILE);
         EndEntityProfile eep = new EndEntityProfile(true);
         eep.setValue(EndEntityProfile.DEFAULTCERTPROFILE,0, "" + cpId);
         eep.setValue(EndEntityProfile.AVAILCERTPROFILES,0, "" + cpId);
@@ -228,8 +230,9 @@ public class NestedMessageContentTest extends CmpTestCase {
         eep.addField(DnComponents.UPN);
         eep.setModifyable(DnComponents.RFC822NAME, 0, true);
         eep.setUse(DnComponents.RFC822NAME, 0, false);  // Don't use field from "email" data
+        eeProfileSession.removeEndEntityProfile(admin, CMPTESTPROFILE);
         try {
-            eeProfileSession.addEndEntityProfile(admin, "CMPTESTPROFILE", eep);
+            eeProfileSession.addEndEntityProfile(admin, CMPTESTPROFILE, eep);
         } catch (EndEntityProfileExistsException e) {
             log.error("Could not create end entity profile.", e);
         }
@@ -238,8 +241,8 @@ public class NestedMessageContentTest extends CmpTestCase {
         cmpConfiguration.addAlias(cmpAlias);
         cmpConfiguration.setRAMode(cmpAlias, true);
         cmpConfiguration.setAllowRAVerifyPOPO(cmpAlias, true);
-        cmpConfiguration.setRAEEProfile(cmpAlias, "CMPTESTPROFILE");
-        cmpConfiguration.setRACertProfile(cmpAlias, "CMPTESTPROFILE");
+        cmpConfiguration.setRAEEProfile(cmpAlias, CMPTESTPROFILE);
+        cmpConfiguration.setRACertProfile(cmpAlias, CMPTESTPROFILE);
         cmpConfiguration.setRACAName(cmpAlias, "TestCA");
         cmpConfiguration.setRANameGenScheme(cmpAlias, "DN");
         cmpConfiguration.setRANameGenParams(cmpAlias, "CN");
@@ -258,6 +261,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         
         CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
         caSession.removeCA(admin, caid);
+        certProfileSession.removeCertificateProfile(admin, CMPTESTPROFILE);
         
         cmpConfiguration.removeAlias(cmpAlias);
         globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
@@ -1077,8 +1081,8 @@ public class NestedMessageContentTest extends CmpTestCase {
             // NOPMD
         }
         
-        certProfileSession.removeCertificateProfile(admin, "CMPTESTPROFILE");        
-        eeProfileSession.removeEndEntityProfile(admin, "CMPTESTPROFILE");
+        certProfileSession.removeCertificateProfile(admin, CMPTESTPROFILE);        
+        eeProfileSession.removeEndEntityProfile(admin, CMPTESTPROFILE);
         
         log.trace("<testZZZCleanUp");
     }
