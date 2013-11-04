@@ -170,7 +170,7 @@ public class CertificateValidity {
     	}
 		// Limit validity: We do not allow a certificate to be valid after the the validity of the certificate profile
     	if (lastDate.after(certProfileLastDate)) {
-    		log.warn(intres.getLocalizedMessage("createcert.errorbeyondmaxvalidity",lastDate,subject.getUsername(),certProfileLastDate));
+    		log.info(intres.getLocalizedMessage("createcert.errorbeyondmaxvalidity",lastDate,subject.getUsername(),certProfileLastDate));
     		lastDate = certProfileLastDate;
     	}
 		// Limit validity: We do not allow a certificate to be valid after the the validity of the CA (unless it's RootCA during renewal)
