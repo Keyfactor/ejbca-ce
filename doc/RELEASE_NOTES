@@ -1,25 +1,36 @@
 EJBCA 6.0.0
 -----------
+EJBCA 6.0.0 is the latest major release of EJBCA, and both introduces and redefines a number of core concepts. Foremost amongst these are:
 
-* Noteworthy changes:
-- There is a new concept of Crypto Tokens, separated from the CA configuration. For additional information,
-  see User Guide and http://blog.ejbca.org/2013/08/whats-new-in-ejbca-6-part-1-crypto.html.
-- CMP is now fully configurable in the Admin GUI, and you can simultaneously use multiple different CMP configurations, called CMP aliases.
-  For additional information see Admin Guide and http://blog.ejbca.org/2013/09/whats-new-in-ejbca-6-part-2-cmp-aliases.html.
-- There is a new concept of Internal Key Bindings to bind a Crypto Token to a certificate for different usages, OCSP signing and TLS authentication.
-  For additional information see User Guide and http://blog.ejbca.org/2013/10/whats-new-in-ejbca-6-part-3-internal.html.
-- The term 'Admin Group' has been mostly purged and replaced with 'Role'.
-- The installation work-flow and ant targets have changed to be more logical for deployment and installation.
-- 'Certificate Request History' is now disabled by default for new CAs.
-- PKCS11 crypto tokens can now be managed by slot label (in addition to slot number and index) 
-- Internal OCSP services are no longer configurable from the CA, but are instead automatically set up and always active. 
-- Many many minor features, improvements and bug fixes.
+-  Main Changes:
+	*	The concept of Crypto Tokens has been introduced in order to separate CAs from the keys tied to them. Crypto Tokens allow for 
+		reuse of keystores between CAs or for other services like OCSP, and make configuration of keystores, both hard and soft, far simpler. 
+		For additional information see Admin Guide and http://blog.ejbca.org/2013/08/whats-new-in-ejbca-6-part-1-crypto.html
+	*	CMP is now fully configurable in the Admin GUI, and you can simultaneously use multiple different CMP configurations, called CMP aliases.
+  		For additional information see Admin Guide and http://blog.ejbca.org/2013/09/whats-new-in-ejbca-6-part-2-cmp-aliases.html
+	*	There is a new concept of Internal Key Bindings to bind a Crypto Token to a certificate for different usages, OCSP signing and TLS 
+		authentication.
+  		For additional information see User Guide and http://blog.ejbca.org/2013/10/whats-new-in-ejbca-6-part-3-internal.html
+	* 	The merging of EJBCA and VA deployments. VA deployments are no longer anemic versions of EJBCA, instead all VA functionality has been
+		merged into EJBCA proper. This for a single installation procedure, and for a machine to function as a CA and a VA simultaneously. 
 
-Note: Changes to certificate profiles
-- The PKIX QCSyntax-v1 identifier from RFC3739 has been removed and will never be generated.
-  if "PKIX QCSyntax-v2" in the Certificate Profile is unchecked, no QCStatement with QCSyntax will be generated (new behavior).
-  if "PKIX QCSyntax-v2" in the Certificate Profile is checked, a QCStatement with PKIX QCSyntax-v2 will be generated (same as before).
-We do not think this will affect anyone, since the QCSyntax-v1 has probably never been used in the wild.  
+
+-  Other Noteworthy Changes:
+	*	Internal OCSP services are no longer configurable from the CA, but are instead automatically set up and always active. 
+	*	OCSP code has been brought up to CESeCore standard 
+	*	The installation work-flow and ant targets have changed to be more logical for deployment and installation.
+	*	'Certificate Request History' is now disabled by default for new CAs.
+	*	PKCS11 crypto tokens can now be managed by slot label (in addition to slot number and index) 
+	*	JBoss 7.1 and EAP 6 are now supported
+	
+-  Minor Changes:
+	* 	The term 'Admin Group' has been mostly purged and replaced with 'Role', as has the term 'User' been replaced by 'End Entity'
+	*	Changes to certificate profiles:
+		- The PKIX QCSyntax-v1 identifier from RFC3739 has been removed and will never be generated.
+		- If "PKIX QCSyntax-v2" in the Certificate Profile is unchecked, no QCStatement with QCSyntax will be generated (new behavior).
+  		- If "PKIX QCSyntax-v2" in the Certificate Profile is checked, a QCStatement with PKIX QCSyntax-v2 will be generated (same as before).
+  	*	The default management CA has been renamed from AdminCA to ManagementCA.
+	*	Many many minor features, improvements and bug fixes.  
   
 Read the full Changelog for details.
 For upgrade instructions, please see UPGRADE.
