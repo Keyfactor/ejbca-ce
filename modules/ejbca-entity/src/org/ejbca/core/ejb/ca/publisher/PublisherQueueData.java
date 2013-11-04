@@ -86,7 +86,7 @@ public class PublisherQueueData extends ProtectedData implements Serializable {
     public PublisherQueueData(int publisherId, int publishType, String fingerprint, PublisherQueueVolatileInformation queueData, int publishStatus) {
         String pk = GUIDGenerator.generateGUID(this);
         setPk(pk);
-        setTimeCreated(new Date().getTime());
+        setTimeCreated(System.currentTimeMillis());
         setLastUpdate(0);
         setPublishStatus(publishStatus);
         setTryCounter(0);
@@ -305,8 +305,8 @@ public class PublisherQueueData extends ProtectedData implements Serializable {
 	 */
 	@SuppressWarnings("unchecked")
     public static List<Integer> findCountOfPendingEntriesForPublisher(EntityManager entityManager, int publisherId, int[] lowerBounds, int[] upperBounds) {
-    	StringBuilder sql = new StringBuilder();
-    	long now = new Date().getTime();
+    	final StringBuilder sql = new StringBuilder();
+    	long now = System.currentTimeMillis();
     	for(int i = 0; i < lowerBounds.length; i++) {
     		sql.append("SELECT COUNT(*) FROM PublisherQueueData where publisherId=");
     		sql.append(publisherId);
