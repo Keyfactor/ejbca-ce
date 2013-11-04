@@ -79,6 +79,7 @@ import org.cesecore.certificates.ocsp.logging.GuidHolder;
 import org.cesecore.certificates.ocsp.logging.TransactionCounter;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.keybind.InternalKeyBinding;
@@ -115,7 +116,7 @@ import org.junit.rules.TestRule;
 public class StandaloneOcspResponseGeneratorSessionTest {
 
     //private static final String PASSWORD = "foo123";
-    private static final String CA_DN = "CN=OcspDefaultTestCA";
+    private static final String CA_DN = "C=SE,O=Foo,CN=OcspDefaultTestCA";
     
     private static final String TESTCLASSNAME = StandaloneOcspResponseGeneratorSessionTest.class.getSimpleName();
     private static final Logger log = Logger.getLogger(StandaloneOcspResponseGeneratorSessionTest.class);
@@ -682,6 +683,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
     private OCSPResp sendRequest(final OCSPReq ocspRequest) throws MalformedRequestException, IOException, OCSPException {
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
         // Create the transaction and audit logger for this transaction.
+        ConfigurationHolder.updateConfiguration("ocsp.trx-log", "true");
         final TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
         final AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
         final OcspResponseInformation responseInformation = ocspResponseGeneratorSession.getOcspResponse(ocspRequest.getEncoded(), null, "", "", null,
