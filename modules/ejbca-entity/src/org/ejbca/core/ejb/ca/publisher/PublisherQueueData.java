@@ -16,7 +16,6 @@ package org.ejbca.core.ejb.ca.publisher;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -56,7 +55,6 @@ import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
  * that a revocation is overwritten with a good status if the publish events
  * would happen out of order.
  * 
- * @author Tomas Gustavsson
  * @version $Id$
  */
 @Entity
@@ -94,7 +92,9 @@ public class PublisherQueueData extends ProtectedData implements Serializable {
         setFingerprint(fingerprint);
         setPublisherId(publisherId);
         setPublisherQueueVolatileData(queueData);
-        log.debug("Created Publisher queue data " + pk);
+        if (log.isDebugEnabled()) {
+            log.debug("Created Publisher queue data " + pk);
+        }
     }
 
     public PublisherQueueData() { }
@@ -329,6 +329,9 @@ public class PublisherQueueData extends ProtectedData implements Serializable {
 		}
     	final Query query = entityManager.createNativeQuery(sql.toString());
     	List<?> resultList = query.getResultList();
+        if (log.isDebugEnabled()) {
+            log.debug("findCountOfPendingEntriesForPublisher result: "+resultList.toString());              
+        }
     	List<Integer> returnList;
     	// Derby returns Integers, MySQL returns BigIntegers, Oracle returns BigDecimal
     	if (resultList.size()==0) {
