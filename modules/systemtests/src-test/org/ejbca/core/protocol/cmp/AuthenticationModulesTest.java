@@ -1446,7 +1446,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         String sigalg = AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA;
         final PrivateKey privateKey = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
         int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
-        X509Certificate ecdsaCaCert = CertTools.genSelfCertForPurpose(ecdsaCADN, 10L, "1.1.1.1", privateKey, publicKey, sigalg, true, keyusage);
+        X509Certificate ecdsaCaCert = CertTools.genSelfCertForPurpose(ecdsaCADN, 10L, "1.1.1.1", privateKey, publicKey, sigalg, true, keyusage, true);
         assertNotNull(ecdsaCaCert);
         cachain.add(ecdsaCaCert);
         ecdsaCA.setCertificateChain(cachain);

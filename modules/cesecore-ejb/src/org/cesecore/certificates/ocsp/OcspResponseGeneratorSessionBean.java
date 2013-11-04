@@ -73,6 +73,7 @@ import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.ocsp.RevokedInfo;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.CRLReason;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
@@ -895,8 +896,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                  * each certId in the request though, as we will check for revocation on the ca-cert as well when checking for revocation on the certId.
                  */
                 if (ocspSigningCacheEntry != null) {
-                    transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN,
-                            CertTools.getSubjectDN(ocspSigningCacheEntry.getCaCertificateChain().get(0)));
+                    String issuerNameDn = X500Name.getInstance(ocspSigningCacheEntry.getOcspSigningCertificate().getIssuerX500Principal().getEncoded()).toString();
+                    transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN, issuerNameDn);
                 } else {
                     // We could not find certificate for this request so get certificate for default responder
                     ocspSigningCacheEntry = OcspSigningCache.INSTANCE.getDefaultEntry();

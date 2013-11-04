@@ -2132,7 +2132,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 // certificateChainSignature[0].getSigAlgName(),
                 // generate dummy certificate for encryption key.
                 certificateChainEncryption[0] = CertTools.genSelfCertForPurpose("CN=dummy2", 36500, null, p12PrivateEncryptionKey,
-                        p12PublicEncryptionKey, thisCAToken.getEncryptionAlgorithm(), true, X509KeyUsage.keyEncipherment);
+                        p12PublicEncryptionKey, thisCAToken.getEncryptionAlgorithm(), true, X509KeyUsage.keyEncipherment, true);
                 log.debug("Exporting with sigAlgorithm " + AlgorithmTools.getSignatureAlgorithm(certificateChainSignature[0]) + "encAlgorithm="
                         + thisCAToken.getEncryptionAlgorithm());
                 if (keystore.isKeyEntry(privateSignatureKeyAlias)) {

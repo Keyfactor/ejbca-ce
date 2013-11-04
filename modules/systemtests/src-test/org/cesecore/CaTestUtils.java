@@ -215,6 +215,7 @@ public abstract class CaTestUtils {
         final List<ExtendedCAServiceInfo> extendedCaServices = new ArrayList<ExtendedCAServiceInfo>(2);
         extendedCaServices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         String caname = CertTools.getPartFromDN(cadn, "CN");
+        boolean ldapOrder = !CertTools.isDNReversed(cadn);
         X509CAInfo cainfo = new X509CAInfo(cadn, caname, CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA,
                 3650, null, // Expiretime
                 CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catoken, "JUnit RSA CA", -1, null, null, // PolicyId
@@ -236,7 +237,7 @@ public abstract class CaTestUtils {
                 new ArrayList<Integer>(), // Approvals Settings
                 1, // Number of Req approvals
                 false, // Use UTF8 subject DN by default
-                true, // Use LDAP DN order by default
+                ldapOrder, // Use LDAP DN order by default
                 false, // Use CRL Distribution Point on CRL
                 false, // CRL Distribution Point on CRL critical
                 true, true, // isDoEnforceUniquePublicKeys
@@ -264,10 +265,11 @@ public abstract class CaTestUtils {
             }
             final PrivateKey privateKey = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
             X509Certificate cacert = null;
-            if(keyusage == -1) {
-                cacert = CertTools.genSelfCert(cadn, 10L, "1.1.1.1", privateKey, publicKey, sigalg, true, cryptoToken.getSignProviderName());
+            if (keyusage == -1) {
+                cacert = CertTools.genSelfCert(cadn, 10L, "1.1.1.1", privateKey, publicKey, sigalg, true, cryptoToken.getSignProviderName(),
+                        ldapOrder);
             } else {
-                cacert = CertTools.genSelfCertForPurpose(cadn, 10L, "1.1.1.1", privateKey, publicKey, sigalg, true, keyusage);
+                cacert = CertTools.genSelfCertForPurpose(cadn, 10L, "1.1.1.1", privateKey, publicKey, sigalg, true, keyusage, ldapOrder);
             }
             assertNotNull(cacert);
             cachain.add(cacert);
