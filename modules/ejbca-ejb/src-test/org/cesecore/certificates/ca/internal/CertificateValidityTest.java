@@ -63,7 +63,7 @@ public class CertificateValidityTest {
 		KeyPair keys = KeyTools.genKeys("1024", "RSA");
 		
     	X509Certificate cacert = CertTools.genSelfCertForPurpose("CN=dummy2", 100, null, keys.getPrivate(), keys.getPublic(),
-    			AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, X509KeyUsage.cRLSign|X509KeyUsage.keyCertSign);
+    			AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, X509KeyUsage.cRLSign|X509KeyUsage.keyCertSign, true);
 
     	EndEntityInformation subject = new EndEntityInformation();
 

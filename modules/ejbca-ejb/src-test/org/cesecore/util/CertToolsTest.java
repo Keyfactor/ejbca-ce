@@ -1337,7 +1337,7 @@ public class CertToolsTest {
     public void test21GenSelfCert() throws Exception {
         KeyPair kp = KeyTools.genKeys("1024", "RSA");
         Certificate cert = CertTools.genSelfCertForPurpose("CN=foo1", 10, null, kp.getPrivate(), kp.getPublic(),
-                AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1, true, X509KeyUsage.keyCertSign);
+                AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1, true, X509KeyUsage.keyCertSign, true);
         assertNotNull(cert);
         PublicKey pk = cert.getPublicKey();
         assertNotNull(pk);
@@ -1406,7 +1406,7 @@ public class CertToolsTest {
     public void test23GenSelfCertDSA() throws Exception {
         KeyPair kp = KeyTools.genKeys("1024", "DSA");
         Certificate cert = CertTools.genSelfCertForPurpose("CN=foo1", 10, null, kp.getPrivate(), kp.getPublic(),
-                AlgorithmConstants.SIGALG_SHA1_WITH_DSA, true, X509KeyUsage.keyCertSign);
+                AlgorithmConstants.SIGALG_SHA1_WITH_DSA, true, X509KeyUsage.keyCertSign, true);
         assertNotNull(cert);
         PublicKey pk = cert.getPublicKey();
         assertNotNull(pk);

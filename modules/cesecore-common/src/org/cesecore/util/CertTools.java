@@ -249,6 +249,21 @@ public abstract class CertTools {
         final X509NameEntryConverter converter = new X509DefaultEntryConverter();
         return stringToBcX500Name(dn, converter, true);
     }
+    
+    /**
+     * See stringToBcX500Name(String, X509NameEntryConverter, boolean), this method uses the default BC converter (X509DefaultEntryConverter) and ldap
+     * order
+     * 
+     * @see #stringToBcX500Name(String, X509NameEntryConverter, boolean)
+     * @param dn String containing DN that will be transformed into X500Name, The DN string has the format "CN=zz,OU=yy,O=foo,C=SE". Unknown OIDs in
+     *            the string will be added to the end positions of OID array.
+     * @param ldapOrder true if X500Name should be in Ldap Order
+     * @return X500Name or null if input is null
+     */
+    public static X500Name stringToBcX500Name(final String dn, boolean ldapOrder) {
+        final X509NameEntryConverter converter = new X509DefaultEntryConverter();
+        return stringToBcX500Name(dn, converter, ldapOrder);
+    }
 
     /**
      * Creates a (Bouncycastle) X500Name object from a string with a DN. Known OID (with order) are:
@@ -558,7 +573,7 @@ public abstract class CertTools {
      * 
      * @return true if the DN is believed to be in reversed order, false otherwise
      */
-    protected static boolean isDNReversed(String dn) {
+     public static boolean isDNReversed(String dn) {
         /*
          * if (log.isTraceEnabled()) { log.trace(">isDNReversed: dn: " + dn); }
          */
@@ -1478,9 +1493,18 @@ public abstract class CertTools {
      * 
      */
     public static X509Certificate genSelfCert(String dn, long validity, String policyId, PrivateKey privKey, PublicKey pubKey, String sigAlg,
-            boolean isCA, String provider) throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, IllegalStateException, NoSuchProviderException, OperatorCreationException, CertificateException, IOException {
+            boolean isCA, String provider, boolean ldapOrder) throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, IllegalStateException, NoSuchProviderException, OperatorCreationException, CertificateException, IOException {
         int keyusage = X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
-        return genSelfCertForPurpose(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, keyusage, null, null, provider);
+        return genSelfCertForPurpose(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, keyusage, null, null, provider, ldapOrder);
+    } // genselfCert
+    
+    /** Generates a self signed certificate with keyUsage X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, i.e. a CA certificate
+     * 
+     */
+    public static X509Certificate genSelfCert(String dn, long validity, String policyId, PrivateKey privKey, PublicKey pubKey, String sigAlg,
+            boolean isCA, String provider) throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, IllegalStateException,
+            NoSuchProviderException, OperatorCreationException, CertificateException, IOException {
+        return genSelfCert(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, provider, true);
     } // genselfCert
 
     /**
@@ -1507,14 +1531,22 @@ public abstract class CertTools {
      * @throws OperatorCreationException 
      */
     public static X509Certificate genSelfCertForPurpose(String dn, long validity, String policyId, PrivateKey privKey, PublicKey pubKey,
-            String sigAlg, boolean isCA, int keyusage) throws NoSuchAlgorithmException, SignatureException, InvalidKeyException,
+            String sigAlg, boolean isCA, int keyusage, boolean ldapOrder) throws NoSuchAlgorithmException, SignatureException, InvalidKeyException,
             IllegalStateException, NoSuchProviderException, OperatorCreationException, CertificateException, IOException {
-        return genSelfCertForPurpose(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, keyusage, null, null, "BC");
+        return genSelfCertForPurpose(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, keyusage, null, null, "BC", ldapOrder);
+    }
+    
+    public static X509Certificate genSelfCertForPurpose(String dn, long validity, String policyId, PrivateKey privKey, PublicKey pubKey,
+            String sigAlg, boolean isCA, int keyusage, Date privateKeyNotBefore, Date privateKeyNotAfter, String provider)
+            throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, IllegalStateException, NoSuchProviderException, IOException,
+            OperatorCreationException, CertificateException {   
+        return genSelfCertForPurpose(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, keyusage, privateKeyNotBefore, privateKeyNotAfter, provider, true);
     }
 
     public static X509Certificate genSelfCertForPurpose(String dn, long validity, String policyId, PrivateKey privKey, PublicKey pubKey,
-            String sigAlg, boolean isCA, int keyusage, Date privateKeyNotBefore, Date privateKeyNotAfter, String provider) throws NoSuchAlgorithmException, SignatureException, InvalidKeyException,
-            IllegalStateException, NoSuchProviderException, IOException, OperatorCreationException, CertificateException {
+            String sigAlg, boolean isCA, int keyusage, Date privateKeyNotBefore, Date privateKeyNotAfter, String provider, boolean ldapOrder)
+            throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, IllegalStateException, NoSuchProviderException, IOException,
+            OperatorCreationException, CertificateException {
         // Create self signed certificate
         Date firstDate = new Date();
 
@@ -1569,9 +1601,9 @@ public abstract class CertTools {
         random.setSeed(new Date().getTime());
         random.nextBytes(serno);
 
-        final SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo((ASN1Sequence)ASN1Primitive.fromByteArray(publicKey.getEncoded()));
-        X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(CertTools.stringToBcX500Name(dn), new java.math.BigInteger(serno).abs(), firstDate, lastDate, CertTools.stringToBcX500Name(dn), pkinfo);
-        
+        final SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo((ASN1Sequence) ASN1Primitive.fromByteArray(publicKey.getEncoded()));
+        X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(CertTools.stringToBcX500Name(dn, ldapOrder), new BigInteger(serno).abs(),
+                firstDate, lastDate, CertTools.stringToBcX500Name(dn, ldapOrder), pkinfo);    
         
         // Basic constranits is always critical and MUST be present at-least in CA-certificates.
         BasicConstraints bc = new BasicConstraints(isCA);
