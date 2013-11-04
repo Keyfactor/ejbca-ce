@@ -896,7 +896,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                  * each certId in the request though, as we will check for revocation on the ca-cert as well when checking for revocation on the certId.
                  */
                 if (ocspSigningCacheEntry != null) {
-                    String issuerNameDn = X500Name.getInstance(ocspSigningCacheEntry.getOcspSigningCertificate().getIssuerX500Principal().getEncoded()).toString();
+                    String issuerNameDn = X500Name.getInstance(ocspSigningCacheEntry.getFullCertificateChain().get(0).getIssuerX500Principal().getEncoded()).toString();
                     transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN, issuerNameDn);
                 } else {
                     // We could not find certificate for this request so get certificate for default responder
