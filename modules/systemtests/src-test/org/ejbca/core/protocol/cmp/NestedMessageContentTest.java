@@ -261,10 +261,12 @@ public class NestedMessageContentTest extends CmpTestCase {
         
         CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
         caSession.removeCA(admin, caid);
-        certProfileSession.removeCertificateProfile(admin, CMPTESTPROFILE);
         
         cmpConfiguration.removeAlias(cmpAlias);
         globalConfigurationSession.saveConfiguration(admin, cmpConfiguration, Configuration.CMPConfigID);
+        
+        certProfileSession.removeCertificateProfile(admin, CMPTESTPROFILE);
+        eeProfileSession.removeEndEntityProfile(admin, CMPTESTPROFILE);
     }
 
     @Test
@@ -1081,9 +1083,6 @@ public class NestedMessageContentTest extends CmpTestCase {
             // NOPMD
         }
         
-        certProfileSession.removeCertificateProfile(admin, CMPTESTPROFILE);        
-        eeProfileSession.removeEndEntityProfile(admin, CMPTESTPROFILE);
-        
         log.trace("<testZZZCleanUp");
     }
     
@@ -1094,7 +1093,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         assertEquals("RACertPath is suppose to be '" + raCertsPath + "', instead it is '" + cmpConfiguration.getRACertPath(cmpAlias) + "'.", cmpConfiguration.getRACertPath(cmpAlias), raCertsPath);
         
         createUser(username, "CN="+username, password);
-        Certificate racert = signSession.createCertificate(admin, username, password, keys.getPublic(), X509KeyUsage.digitalSignature|X509KeyUsage.keyCertSign, notBefore, notAfter, certProfileSession.getCertificateProfileId("CMPTESTPROFILE"), caid);
+        Certificate racert = signSession.createCertificate(admin, username, password, keys.getPublic(), X509KeyUsage.digitalSignature|X509KeyUsage.keyCertSign, notBefore, notAfter, certProfileSession.getCertificateProfileId(CMPTESTPROFILE), caid);
 
         
         Vector<Certificate> certCollection = new Vector<Certificate>();
