@@ -752,6 +752,7 @@
 		    	<exclude name="**/jndi.properties" />
 		    	<exclude name="**/hs_err*" />
 		    	<exclude name="doc/xdocs/site/**" />
+		    	<exclude name="modules/statedump/**" />
 		    </zipfileset>
 		    <zipfileset dir="." prefix="ejbca_${ejbca.zipversion}" filemode="700" dirmode="700"> 
 		    	<include name="**/*.sh" />
