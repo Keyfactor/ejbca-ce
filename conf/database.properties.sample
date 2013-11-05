@@ -59,11 +59,13 @@
 #database.driver=com.ingres.jdbc.IngresDriver
 
 # Database username.
-# Default: sa (works with hsqldb)
+# Default: sa (works with H2 on JBoss 7)
+# Set to empty for hsql on JBoss 5
 #database.username=ejbca
 
 # Database password.
-# Default: sa (works with hsqldb on JBoss 7, use blank on JBoss 5)
+# Default: sa (works with H2 on JBoss 7)
+# Set to empty for hsql on JBoss 5)
 #database.password=ejbca
 
 # The encoded certificate may be stored in the table Base64CertData instead of
