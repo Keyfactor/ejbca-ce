@@ -467,7 +467,7 @@ public class CrmfRequestTest extends CmpTestCase {
         byte[] transid = CmpMessageHelper.createSenderNonce();
         
         // --------------- Send a CRMF request with the whole DN as username with escapable characters --------------- //
-        final String requestName = "CN=another\0nullguy%00";
+        final String requestName = "CN=another\0nullguy%00<do>";
         // Create a new good user
         createCmpUser(requestName, requestName);
 
@@ -500,7 +500,7 @@ public class CrmfRequestTest extends CmpTestCase {
             int revStatus = checkRevokeStatus(issuerDN, CertTools.getSerialNumber(cert));
             assertNotSame("Revocation request failed to revoke the certificate", RevokedCertInfo.NOT_REVOKED, revStatus);
         } finally {
-            String escapedName = StringTools.strip(requestName);
+            String escapedName = StringTools.stripUsername(requestName);
             try {
                 endEntityManagementSession.deleteUser(admin, escapedName);
             } catch (NotFoundException e) {

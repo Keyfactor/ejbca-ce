@@ -142,7 +142,7 @@ public class UserData extends ProtectedData implements Serializable {
     }
 
     public void setUsername(String username) {
-        this.username = StringTools.stripIncludingXss(username);
+        this.username = StringTools.stripUsername(username);
     }
 
     // @Column

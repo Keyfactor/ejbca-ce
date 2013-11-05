@@ -63,7 +63,7 @@ public class UserView implements Serializable, Comparable<UserView> {
     }
 
     public void setUsername(String user) {
-        userdata.setUsername(StringTools.strip(user));
+        userdata.setUsername(StringTools.stripUsername(user));
     }
 
     public String getUsername() {
