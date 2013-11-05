@@ -211,7 +211,7 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 						"INSERT INTO UnidFnrMapping (unid,fnr) VALUES (?,?)",
 						new MyPreparer(unid,fnr), this.dataSource );
 			} catch (Exception e) {
-				final HandlerException e1 = new HandlerException("Failed to store unid fnr data.");
+				final HandlerException e1 = new HandlerException("Failed to store unid fnr data: "+unid+", "+fnr+". Datasource='"+this.dataSource+"'.");
 				e1.initCause(e);
 				throw e1;
 			}
