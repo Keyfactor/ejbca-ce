@@ -309,7 +309,7 @@ public class StringToolsTest {
 		final String str = "foo<tag>tag</tag>!";
 		String ret = StringTools.strip(str);
 		assertEquals("<> should not have been stripped, but ! should have: ", "foo<tag>tag</tag>/", ret);
-		ret = StringTools.stripIncludingXss(str);
+		ret = StringTools.stripUsername(str);
 		assertEquals("<> should have been stripped and so should !", "foo/tag/tag//tag//", ret);
 	}
 }

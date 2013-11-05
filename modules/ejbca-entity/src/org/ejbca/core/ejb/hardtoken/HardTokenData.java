@@ -80,7 +80,7 @@ public class HardTokenData extends ProtectedData implements Serializable {
 
 	//@Column
 	public String getUsername() { return username; }
-	public void setUsername(String username) { this.username = StringTools.stripIncludingXss(username); }
+	public void setUsername(String username) { this.username = StringTools.stripUsername(username); }
 
 	//@Column
 	public long getCtime() { return cTime; }

@@ -78,7 +78,7 @@ public class KeyRecoveryData extends ProtectedData implements Serializable {
 
 	//@Column
 	public String getUsername() { return username; }
-	public void setUsername(String username) { this.username = StringTools.stripIncludingXss(username); }
+	public void setUsername(String username) { this.username = StringTools.stripUsername(username); }
 
 	@Transient
 	public boolean getMarkedAsRecoverable() {
