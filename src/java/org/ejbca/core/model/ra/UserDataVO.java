@@ -152,7 +152,7 @@ public class UserDataVO implements Serializable {
     }
     
     
-    public void setUsername(String user) { this.username=StringTools.putBase64String(StringTools.stripUsername(user));}
+    public void setUsername(String user) { this.username=StringTools.putBase64String(StringTools.strip(user));}
     public String getUsername() {return StringTools.getBase64String(username);}
     public void setDN(String dn) {
     	final StringBuilder removedAllEmpties = new StringBuilder(dn.length());

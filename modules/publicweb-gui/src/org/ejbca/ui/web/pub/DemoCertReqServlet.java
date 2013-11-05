@@ -172,7 +172,7 @@ public class DemoCertReqServlet extends HttpServlet {
         }
         username = username + "(" + (new Date()).toString() + ")";
         // Strip dangerous chars
-        username = StringTools.stripUsername(username);
+        username = StringTools.strip(username);
         // need null check here?
         // Before doing anything else, check if the user name is unique and ok.
         boolean check = checkUsername(admin, username, endEntityAccessSession);
