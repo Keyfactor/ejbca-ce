@@ -13,7 +13,9 @@
  
 package org.ejbca.ui.web.pub.retrieve;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.net.URLEncoder;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,6 +36,7 @@ import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.util.CertTools;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.CertificateView;
@@ -263,12 +266,29 @@ public class CertificateFinderBean {
     public String getSubjectDN() {
         return subjectDN;
     }
-    
+
+    /**
+     * @return the Subject DN string of the current certificate URL-encoded using the current 
+     * @see lookupCertificateInfo(String, String)
+     */
+    public String getSubjectDNEncoded() {
+        return getHttpParamAsUrlEncoded(subjectDN);
+    }
+
     /**
      * @return the serial number hex string of the current certificate.
      * @see lookupCertificateInfo(String, String)
      */
     public String getSerialNumber() {
         return serialNumber;
+    }
+
+    /** @return the param as it's URL encoded counterpart, taking the configured encoding into account. */
+    private String getHttpParamAsUrlEncoded(final String param) {
+        try {
+            return URLEncoder.encode(param, WebConfiguration.getWebContentEncoding());
+        } catch (UnsupportedEncodingException e) {
+            throw new Error(e);
+        }
     }
 }
