@@ -394,7 +394,7 @@ public class CertificateData extends ProtectedData implements Serializable {
      * @param username username
      */
     public void setUsername(String username) {
-        this.username = StringTools.stripIncludingXss(username);
+        this.username = StringTools.stripUsername(username);
     }
 
     /**

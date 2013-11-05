@@ -689,7 +689,7 @@ public class CrmfRARequestTest extends CmpTestCase {
     @Test
     public void test07EscapedCharsInDN() throws Exception {
 
-        final String username = "another\0nullguy%00";
+        final String username = "another\0nullguy%00<do>";
         final String userDN = "CN=" + username + ", C=SE";
         
         final byte[] nonce = CmpMessageHelper.createSenderNonce();
@@ -714,7 +714,7 @@ public class CrmfRARequestTest extends CmpTestCase {
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         checkCmpCertRepMessage(StringTools.strip(userDN), cacert, resp, reqId);
         } finally {
-            String escapedName = StringTools.strip(username);
+            String escapedName = StringTools.stripUsername(username);
             try {
                 endEntityManagementSession.revokeAndDeleteUser(admin, escapedName, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
             } catch (NotFoundException e) {

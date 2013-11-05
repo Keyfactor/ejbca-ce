@@ -194,7 +194,7 @@ public class CertReqHistoryData extends ProtectedData implements Serializable {
 	 * Shouldn't be set after creation.
 	 * @param username username
 	 */
-	public void setUsername(String username) { this.username = StringTools.stripIncludingXss(username); }
+	public void setUsername(String username) { this.username = StringTools.stripUsername(username); }
 
 	//@Version @Column
 	public int getRowVersion() { return rowVersion; }
