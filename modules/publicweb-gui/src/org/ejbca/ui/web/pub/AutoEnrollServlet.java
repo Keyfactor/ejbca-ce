@@ -159,7 +159,7 @@ public class AutoEnrollServlet extends HttpServlet {
 	        log.info("Got request: "+requestData);
 	        // The next line expects apache to forward the kerberos-authenticated user as X-Remote-User"
 	        String remoteUser = request.getHeader("X-Remote-User") ;
-	        String usernameShort = StringTools.stripUsername(remoteUser.substring(0, remoteUser.indexOf("@"))).replaceAll("/", "");
+	        String usernameShort = StringTools.strip(remoteUser.substring(0, remoteUser.indexOf("@"))).replaceAll("/", "");
 	        if (remoteUser == null || "".equals(remoteUser) || "(null)".equals(remoteUser)) {
 	            response.getOutputStream().println("X-Remote-User was not supplied..");
 	            return;

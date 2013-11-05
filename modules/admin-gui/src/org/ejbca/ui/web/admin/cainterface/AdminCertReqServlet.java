@@ -213,7 +213,7 @@ public class AdminCertReqServlet extends HttpServlet {
             username = dn;
         }
         // Strip dangerous chars
-        username = StringTools.stripUsername(username);
+        username = StringTools.strip(username);
         // need null check here?
         // Before doing anything else, check if the user name is unique and ok.
         username = checkUsername(rabean, username);
