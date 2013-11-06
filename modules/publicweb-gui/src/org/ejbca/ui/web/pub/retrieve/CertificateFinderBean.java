@@ -285,10 +285,11 @@ public class CertificateFinderBean {
 
     /** @return the param as it's URL encoded counterpart, taking the configured encoding into account. */
     private String getHttpParamAsUrlEncoded(final String param) {
+        final String encoding = WebConfiguration.getWebContentEncoding();
         try {
-            return URLEncoder.encode(param, WebConfiguration.getWebContentEncoding());
+            return URLEncoder.encode(param, encoding);
         } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException(e);
+            throw new IllegalStateException("The property 'web.contentencoding' is set to " + encoding + ", but this encoding is not available on this system.", e);
         }
     }
 }
