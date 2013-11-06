@@ -266,7 +266,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 		}
 
 		// Strip the username of dangerous characters before using it.
-		username = StringTools.strip(username);
+		username = StringTools.stripUsername(username);
 
 		final Date now = new Date();
 		// Certificate has expired, but we are obviously keeping it for archival purposes
