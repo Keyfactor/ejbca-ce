@@ -288,7 +288,7 @@ public class CertificateFinderBean {
         try {
             return URLEncoder.encode(param, WebConfiguration.getWebContentEncoding());
         } catch (UnsupportedEncodingException e) {
-            throw new Error(e);
+            throw new IllegalStateException(e);
         }
     }
 }
