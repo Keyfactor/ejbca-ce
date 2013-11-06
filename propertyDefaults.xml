@@ -203,9 +203,9 @@
 	<fail unless="hibernate.dialect" message="Unsupported database type '${database.name}'."/>
 
 	<!-- We use a valid connection sql to make JBoss auto-recreate destroyed database connections. This SQL is different on DB2 and Oracle -->
-	<condition property="database.valid.connection.sql" value="select 1 from sysibm.sysdummy1"><equals arg1="${database.name}" arg2="db2"/></condition>
-	<condition property="database.valid.connection.sql" value="select 1 from dual"><equals arg1="${database.name}" arg2="oracle"/></condition>
-	<property name="database.valid.connection.sql" value="select 1" /> <!-- all other databases -->
+	<condition property="database.valid.connection.sql" value="select 1 from sysibm.sysdummy1;"><equals arg1="${database.name}" arg2="db2"/></condition>
+	<condition property="database.valid.connection.sql" value="select 1 from dual;"><equals arg1="${database.name}" arg2="oracle"/></condition>
+	<property name="database.valid.connection.sql" value="select 1;" /> <!-- all other databases -->
 
     <target name="display-properties" description="Show current configuration">
         <echo>
