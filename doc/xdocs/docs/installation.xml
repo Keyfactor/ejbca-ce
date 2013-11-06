@@ -614,12 +614,13 @@ Or for MariaDB, mariadb-java-client-1.1.2.jar:
 The examples are for installing a MariaDB datasource using the jboss-cli with the driver installed as described above. </p>
 <p>A normal datasource:</p>
 <source>
-data-source add --name=ejbcads --driver-name="org.mariadb.jdbc.Driver" --connection-url="jdbc:mysql://127.0.0.1:3306/ejbca" --jndi-name="java:/EjbcaDS" --use-ccm=true --driver-class="org.mariadb.jdbc.Driver" --user-name="ejbca" --password="ejbca" --validate-on-match=true --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=5 --max-pool-size=150 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --check-valid-connection-sql="select 1;"
+data-source add --name=ejbcads --driver-name="org.mariadb.jdbc.Driver" --connection-url="jdbc:mysql://127.0.0.1:3306/ejbca" --jndi-name="java:/EjbcaDS" --use-ccm=true --driver-class="org.mariadb.jdbc.Driver" --user-name="ejbca" --password="ejbca" --validate-on-match=true --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=5 --max-pool-size=150 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --check-valid-connection-sql="select 1"
 </source>
 <p>A no-tx / jta="false" datasource (OCSP publisher and Unid):</p>
 <source>
-data-source add --name=unidds --jta=false --driver-name="org.mariadb.jdbc.Driver" --connection-url="jdbc:mysql://127.0.0.1:3306/unid" --jndi-name="java:/UnidDS" --use-ccm=true --driver-class="org.mariadb.jdbc.Driver" --user-name="uniduser" --password="unidpass" --validate-on-match=true --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=5 --max-pool-size=150 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --check-valid-connection-sql="select 1;"
+data-source add --name=unidds --jta=false --driver-name="org.mariadb.jdbc.Driver" --connection-url="jdbc:mysql://127.0.0.1:3306/unid" --jndi-name="java:/UnidDS" --use-ccm=true --driver-class="org.mariadb.jdbc.Driver" --user-name="uniduser" --password="unidpass" --validate-on-match=true --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=5 --max-pool-size=150 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --check-valid-connection-sql="select 1"
 </source>
+<p>(note that 'select 1' must be different for DB2 and Oracle)</p>
 </subsubsection>
 
 <subsubsection name="JBoss 7/EAP 6 PKCS11">
