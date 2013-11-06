@@ -407,8 +407,8 @@ EJBCA will not send back proper SCEP error messages in all cases of failure. The
 <subsection name="Tested devices">
 <subsubsection name="iPhone/iOS">
 <p>
-You can enroll certificates for the iOS directly with EJBCA using SCEP. There is an SCEP profile in the iPhone that you can use for this.
-<a href="http://www.primekey.se/">PrimeKey</a> has created a detailed howto that you can purchase.
+You can enroll certificates for the iOS directly with EJBCA using SCEP. There is a SCEP profile in the iPhone that you can use for this.
+<a href="http://www.primekey.se/">PrimeKey</a> has created a detailed howto that is available together with a support subscription.
 </p>
 </subsubsection>
 <subsubsection name="OpenScep">
@@ -704,8 +704,8 @@ In RA mode, EJBCA supports several CAs and profiles based on the use of configur
 
 <subsection name="CMP and 3GPP/4G/LTE configuration guide">
 <p>
-<a href="http://www.primekey.se/">PrimeKey</a> has created a detailed CMP configuration guide, that you can order from them, with details how to 
-configure EJBCA for 3GPP/4G/LTE networks using CMP.
+<a href="http://www.primekey.se/">PrimeKey</a> has created a detailed CMP configuration guide, with details how to 
+configure EJBCA for 3GPP/4G/LTE networks using CMP. The guide is available together with a support subscription from PrimeKey. 
 </p>
 </subsection>
 
