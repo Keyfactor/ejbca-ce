@@ -58,9 +58,9 @@ To use External RA Service Workers in EJBCA:
 </ol>
 </p><p>To create a non-jta data source for JBoss 7 a command in jboss-cli.sh can be used, for example:</p>
 <source>
-data-source add --name=ramessage1ds --jta=false --driver-name="org.mariadb.jdbc.Driver" --connection-url="jdbc:mysql://127.0.0.1:3306/messages" --jndi-name="java:/RAMessage1DS" --use-ccm=true --driver-class="org.mariadb.jdbc.Driver" --user-name="ejbca" --password="ejbca" --validate-on-match=true --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=5 --max-pool-size=150 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --check-valid-connection-sql="select 1;"
+data-source add --name=ramessage1ds --jta=false --driver-name="org.mariadb.jdbc.Driver" --connection-url="jdbc:mysql://127.0.0.1:3306/messages" --jndi-name="java:/RAMessage1DS" --use-ccm=true --driver-class="org.mariadb.jdbc.Driver" --user-name="ejbca" --password="ejbca" --validate-on-match=true --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=5 --max-pool-size=150 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --check-valid-connection-sql="select 1"
 </source>
-
+<p>(note that 'select 1' must be different for DB2 and Oracle)</p>
 <p>
 It is recommended to use the following indexes on the external message database:
 </p>
