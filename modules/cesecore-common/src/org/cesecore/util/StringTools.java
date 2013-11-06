@@ -108,12 +108,9 @@ public final class StringTools {
      * @return the stripped version of the input string.
      */
     public static String stripUsername(final String str) {
-        char[] forbiddenCharsNormal = CesecoreConfiguration.getForbiddenCharacters();
-        char[] forbiddenCharsXSS = new char[forbiddenCharsNormal.length+2];
-        forbiddenCharsXSS[0] = '<';
-        forbiddenCharsXSS[1] = '>';
-        System.arraycopy(forbiddenCharsNormal, 0, forbiddenCharsXSS, 2, forbiddenCharsNormal.length);
-        return strip(str, forbiddenCharsXSS);
+        char[] forbiddenXSS = {'<', '>'};
+        String xssStripped = strip(str, forbiddenXSS);
+        return strip(xssStripped);
     }
     
     /**
