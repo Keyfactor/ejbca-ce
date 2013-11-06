@@ -1180,19 +1180,18 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         try {
             returnval = task.get(HsmResponseThread.HSM_TIMEOUT_SECONDS, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
-            service.shutdownNow();
+            task.cancel(true);
             throw new Error("OCSP response retrieval was interrupted while running. This should not happen", e);
         } catch (ExecutionException e) {
-            service.shutdownNow();
+            task.cancel(true);
             throw new OcspFailureException("Failure encountered while retrieving OCSP response.", e);
         } catch (TimeoutException e) {
-            service.shutdownNow();
+            task.cancel(true);
             throw new CryptoTokenOfflineException("HSM timed out while trying to get OCSP response", e);
         }
         if (log.isDebugEnabled()) {
             log.debug("Signing OCSP response with OCSP signer cert: " + signerCert.getSubjectDN().getName());
         }
-        service.shutdown();
         RespID respId = null;
         if (respIdType == OcspConfiguration.RESPONDERIDTYPE_NAME) {
             respId = new JcaRespID(signerCert.getSubjectX500Principal());
