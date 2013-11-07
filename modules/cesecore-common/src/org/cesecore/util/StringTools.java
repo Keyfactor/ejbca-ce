@@ -75,6 +75,8 @@ public final class StringTools {
     private StringTools() {
     } // Not for instantiation
 
+    // Characters that are not allowed in XSS compatible strings
+    private static final char[] stripXSS = {'<', '>'};
     // Characters that are not allowed in strings that may be used in db queries
     private static final char[] stripSqlChars = { '\'', '\"', '\n', '\r', '\\', ';', '&', '|', '!', '\0', '%', '`', '<', '>', '?', '$', '~' };
     // Characters that are not allowed in filenames
@@ -93,7 +95,7 @@ public final class StringTools {
 
     /**
      * Strips all special characters from a string by replacing them with a forward slash, '/'. This method is used for various Strings, like
-     * SubjectDNs and usernames.
+     * SubjectDNs.
      * 
      * @param str the string whose contents will be stripped.
      * @return the stripped version of the input string.
@@ -103,13 +105,12 @@ public final class StringTools {
     }
 
     /**
-     * Strips < and > from strings
+     * Strips '<' and '>' as well as all special characters from a string by replacing them with a forward slash, '/'. 
      * @param str the string whose contents will be stripped.
      * @return the stripped version of the input string.
      */
     public static String stripUsername(final String str) {
-        char[] forbiddenXSS = {'<', '>'};
-        String xssStripped = strip(str, forbiddenXSS);
+        String xssStripped = strip(str, stripXSS);
         return strip(xssStripped);
     }
     
