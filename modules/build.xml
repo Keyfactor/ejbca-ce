@@ -81,14 +81,21 @@
 		<ant antfile="${mod.webdist-war.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.appserver-ext.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.oldlogexport.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-                <ant antfile="${mod.cesecore-common.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-                <ant antfile="${mod.cesecore-entity.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-                <ant antfile="${mod.cesecore-ejb-interface.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-                <ant antfile="${mod.cesecore-ejb.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-		<ant antfile="${mod.statedump.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+        <ant antfile="${mod.cesecore-common.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+        <ant antfile="${mod.cesecore-entity.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+        <ant antfile="${mod.cesecore-ejb-interface.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+        <ant antfile="${mod.cesecore-ejb.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+		<antcall target="statedumpclean"/>
 		<delete>
 			<fileset dir="${modules.basedir}/dist" includes="*"/>
 		</delete>
+	</target>
+    <condition property="statedump.exists">
+    	<available file="${mod.statedump.path}/build.xml" />
+    </condition>
+	<target name="statedumpclean" if="${statedump.exists}">
+		<echo message="Cleaning statedump"/>
+		<ant antfile="${mod.statedump.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
 	
 	<target name="ejbca-entity" depends="ejbca-util" description="Build EJBCA JPA entity library">
