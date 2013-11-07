@@ -12,8 +12,6 @@
  *                                                                       *
  *************************************************************************/
  
- // Original version by Philip Vendil.
- 
 %>
 <%@ taglib uri="http://java.sun.com/jsf/html" prefix="h" %>
 <%@ taglib uri="http://java.sun.com/jsf/core" prefix="f" %>
@@ -48,13 +46,7 @@ function roleupdated(){
   var selectrole = document.getElementById('basicRules:selectrole');
   var selectendentityrules = document.getElementById('basicRules:selectendentityrules');
   var selectendentityprofiles = document.getElementById('basicRules:selectendentityprofiles');  
-  var selectother = document.getElementById('basicRules:selectother');
-  
-  numofother = selectother.length;
-  for( i=numofother-1; i >= 0; i-- ){
-     selectother.options[i]=null;
-  }
-	
+  var selectother = document.getElementById('basicRules:selectother');	
   var currentrole = selectrole.options[selectrole.options.selectedIndex].value;  
  
   if(currentrole == '<%=DefaultRoles.CUSTOM.getName() %>'){
@@ -101,11 +93,6 @@ function roleupdated(){
          selectendentityprofiles.options[i].selected=false;
     }
  
-    numofother = selectother.length;
-    for( i=numofother-1; i >= 0; i-- ){
-       selectother.options[i]=null;
-    }
- 
   }
   if(currentrole == '<%= DefaultRoles.CAADMINISTRATOR.getName()%>'){
     selectcas.disabled = false;
@@ -122,13 +109,7 @@ function roleupdated(){
     for( i=numofprofiles-1; i >= 0; i-- ){          
          selectendentityprofiles.options[i].selected=false;
     }
-     
-    if (selectother.length == 0) {
-	    selectother.options[0]=new Option("<%= ejbcawebbean.getText(BasicAccessRuleSet.OTHERTEXTS[BasicAccessRuleSet.OTHER_VIEWLOG]) %>",<%= BasicAccessRuleSet.OTHER_VIEWLOG %>);
-	    <% if(globalconfiguration.getIssueHardwareTokens()){ %>
-	      selectother.options[1]=new Option("<%= ejbcawebbean.getText(BasicAccessRuleSet.OTHERTEXTS[BasicAccessRuleSet.OTHER_ISSUEHARDTOKENS]) %>",<%= BasicAccessRuleSet.OTHER_ISSUEHARDTOKENS %>);
-	    <% } %>
-    }
+
   }
   if(currentrole == '<%= DefaultRoles.RAADMINISTRATOR.getName()%>'){
     selectcas.disabled = false;
@@ -136,14 +117,6 @@ function roleupdated(){
     selectendentityprofiles.disabled = false;
     selectother.disabled = false;
 
-    // Earlier there was a loop here that set some end entity rules to "selected", this made it impossible to edit the rules. ECA-1189.
-
-    if (selectother.length == 0) {
-	    selectother.options[0]=new Option("<%= ejbcawebbean.getText(BasicAccessRuleSet.OTHERTEXTS[BasicAccessRuleSet.OTHER_VIEWLOG]) %>",<%= BasicAccessRuleSet.OTHER_VIEWLOG %>);
-	    <% if(globalconfiguration.getIssueHardwareTokens()){ %>
-	      selectother.options[1]=new Option("<%= ejbcawebbean.getText(BasicAccessRuleSet.OTHERTEXTS[BasicAccessRuleSet.OTHER_ISSUEHARDTOKENS]) %>",<%= BasicAccessRuleSet.OTHER_ISSUEHARDTOKENS %>);
-	    <% } %>
-    }
   }  
   if(currentrole == '<%= DefaultRoles.SUPERVISOR.getName()%>'){
     selectcas.disabled = false;
