@@ -43,7 +43,7 @@
         String next = (String) iter.next(); %>
       profilenames[<%=index %>] = new Array(2);
       profilenames[<%=index %>][ID] = <%= ((Integer) endentityprofileids.get(next)).intValue() %>; 
-      profilenames[<%=index %>][NAME] = "<%= next %>";
+      profilenames[<%=index %>][NAME] = "<c:out value="<%= next %>"/>";
     <% index++; 
       } %>
 
@@ -54,7 +54,7 @@
         String next = (String) iter.next(); %>
       certificateprofilenames[<%=index %>] = new Array(2);
       certificateprofilenames[<%=index %>][ID] = <%= ((Integer) certificateprofileids.get(next)).intValue() %>; 
-      certificateprofilenames[<%=index %>][NAME] = "<%= next %>";
+      certificateprofilenames[<%=index %>][NAME] = "<c:out value="<%= next %>"/>";
     <% index++; 
       } %>
 
@@ -65,7 +65,7 @@
         String next = (String) iter.next(); %>
       cas[<%=index %>] = new Array(2);
       cas[<%=index %>][ID] = <%= ((Integer) caids.get(next)).intValue() %>; 
-      cas[<%=index %>][NAME] = "<%= next %>";
+      cas[<%=index %>][NAME] = "<c:out value="<%= next %>"/>";
     <% index++; 
       } %>
    var matchtypefields = new Array(2)
