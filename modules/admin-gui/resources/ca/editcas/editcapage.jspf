@@ -511,11 +511,11 @@ function checkallfields(){
     <input type="hidden" name='<%= HIDDEN_CATYPE %>' value='<c:out value="<%= catype %>"/>'>
   <%   if (editca && !isUninitialized) { %>  
     <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_CA %>'>
-    <input type="hidden" name='<%= HIDDEN_CAID %>' value='<%=caid %>'>
+    <input type="hidden" name='<%= HIDDEN_CAID %>' value='<c:out value="<%= caid %>"/>'>
     <input type="hidden" name='<%= HIDDEN_CANAME %>' value='<c:out value="<%= cainfo.getName() %>"/>'>
   <%   } else if (editca && isUninitialized) { %>
     <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_CA %>'>
-    <input type="hidden" name='<%= HIDDEN_CAID %>' value='<%=caid %>'>
+    <input type="hidden" name='<%= HIDDEN_CAID %>' value='<c:out value="<%= caid %>"/>'>
     <input type="hidden" name='<%= HIDDEN_CANAME %>' value='<c:out value="<%= cainfo.getName() %>"/>'>
   <%   } else { %>
     <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_CREATE_CA %>'>
