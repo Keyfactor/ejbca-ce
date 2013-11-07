@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 
 import org.cesecore.authorization.control.AuditLogRules;
@@ -334,10 +333,7 @@ public class BasicAccessRuleSetEncoder implements Serializable {
         }
 
         int endentityruleval = endentityrules.get(general).intValue();
-
-        Iterator<Integer> eriter = endentityrules.keySet().iterator();
-        while (eriter.hasNext()) {
-            Integer next = eriter.next();
+        for(Integer next : endentityrules.keySet()) {
             if (!next.equals(general)) {
                 if (endentityrules.get(next).intValue() == endentityruleval) {
                     this.currentendentityprofiles.add(next);

@@ -476,7 +476,7 @@ public class RolesManagedBean extends BaseManagedBean {
     public Collection<SelectItem> getAvailableOtherRules() {
         Collection<SelectItem> list = new ArrayList<SelectItem>();
         for (Integer currentRule : (Collection<Integer>) getBasicRuleSet().getAvailableOtherRules()) {
-            list.add(new SelectItem(currentRule, getEjbcaWebBean().getText(BasicAccessRuleSet.OTHERTEXTS[currentRule])));
+            list.add(new SelectItem(currentRule.toString(), getEjbcaWebBean().getText(BasicAccessRuleSet.OTHERTEXTS[currentRule])));
         }
         return list;
     }
