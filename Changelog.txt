@@ -1,10 +1,11 @@
-EJBCA 5.0.11, 2013-10-30
+EJBCA 5.0.11, 2013-11-07
 ---
 Bug
     [ECA-2984] - ejbcaClientToolBox.sh CMPKeyUpdateStressTest works only with one thread
     [ECA-3083] - SaferLog4j jar does not build correctly
     [ECA-3211] - End entity username should be stripped when doing end entity look-up in CMP
     [ECA-3217] - Nodes in cluster not database protection stable
+    [ECA-3268] - Inconsistent use of strip() and stripIncludingXss() methods
 
 Improvement
     [ECA-2951] - Clean up CSS for new pages in 5.0 and 6.0 branches
