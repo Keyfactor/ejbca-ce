@@ -22,6 +22,7 @@ EJBCA 6.0.0 is the latest major release of EJBCA, and both introduces and redefi
 	*	'Certificate Request History' is now disabled by default for new CAs.
 	*	PKCS11 crypto tokens can now be managed by slot label (in addition to slot number and index) 
 	*	JBoss 7.1 and EAP 6 are now supported
+	*   Java 7 is now the default recommended Java version.
 	
 -  Minor Changes:
 	* 	The term 'Admin Group' has been mostly purged and replaced with 'Role', as has the term 'User' been replaced by 'End Entity'
@@ -30,10 +31,16 @@ EJBCA 6.0.0 is the latest major release of EJBCA, and both introduces and redefi
 		- If "PKIX QCSyntax-v2" in the Certificate Profile is unchecked, no QCStatement with QCSyntax will be generated (new behavior).
   		- If "PKIX QCSyntax-v2" in the Certificate Profile is checked, a QCStatement with PKIX QCSyntax-v2 will be generated (same as before).
   	*	The default management CA has been renamed from AdminCA to ManagementCA.
-	*	Many many minor features, improvements and bug fixes.  
+	*	Many many minor features, improvements and bug fixes (over 300 issues are resolved for this release)  
   
 Read the full Changelog for details.
 For upgrade instructions, please see UPGRADE.
+
+-  Known issues:
+	*	Other Rules for Supervisor role is not cleared is previously selected for another role type: https://jira.primekey.se/browse/ECA-3297
+	*	One test failure on DB2: https://jira.primekey.se/browse/ECA-3298
+	*	OCSP request signer verification does an additional database lookup: https://jira.primekey.se/browse/ECA-3299
+	  
 
 EJBCA 5.0.11
 -----------
