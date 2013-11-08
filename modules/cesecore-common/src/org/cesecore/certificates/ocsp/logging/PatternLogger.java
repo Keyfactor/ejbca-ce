@@ -232,7 +232,7 @@ public abstract class PatternLogger implements Serializable {
      */
     public void writeln() {
         if (doLogging) {
-            getPrintWriter().println(interpolate());
+            getPrintWriter().print(interpolate());
         }
     }
 
