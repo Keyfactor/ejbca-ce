@@ -1,3 +1,341 @@
+EJBCA 6.0.0, 2013-11-08
+---
+
+** Bug
+    * [ECA-1015] - A ' is valid in an email address - but gets stripped by EJBCA.
+    * [ECA-1640] - Sample code for advanced custom extension missing some arguments
+    * [ECA-1947] - LDAPPublisher have problems with comma in DN
+    * [ECA-2144] - ExtRA PKCS10Request does not set user status to FAILED after failed requests
+    * [ECA-2150] - SignSessionTest.test37privateKeyUsagePeriod_both fails randomly
+    * [ECA-2159] - Password not cleared issuing keystores
+    * [ECA-2200] - CA defined certificate policy ignored when renewing CA
+    * [ECA-2330] - Build failure for External RA with OpenJDK if JavaScript is not available
+    * [ECA-2365] - OCSPCAService upgrade on every startup
+    * [ECA-2393] - Create Certificate Authority Page only gives blank page on wrong validity input
+    * [ECA-2442] - Multiple selectable email addresses in rfc822 altName gives wrong display in edit end entity
+    * [ECA-2477] - Import CA does not generate initial CRL
+    * [ECA-2527] - Wrong exception thrown in HardTokenSessionBean for some errors.
+    * [ECA-2534] - Regression: Not checking that the administrator has the role defined in the hard token issuer any more.
+    * [ECA-2547] - clientToolBox StressTestCommand always logs an error when a certificate is returned
+    * [ECA-2669] - Still possible to create DECLINE RECURSIVE rules in CLI
+    * [ECA-2689] - Misleading error message in JBoss log while trying create a sub CA from the CLI when the root CA is offline.
+    * [ECA-2719] - Download of certificates from Admin GUI fails in Chrome when using "strange" usernames
+    * [ECA-2734] - OCSP rekeying not implemented in trunk yet.
+    * [ECA-2794] - EJB and WS CLI have bad type outputs
+    * [ECA-2815] - OcspExtensionsCache should be made thread safe
+    * [ECA-2834] - Unhelpful error message when changing permission rules for non-existing end entity profile in CLI
+    * [ECA-2860] - Default CRL overlap time is set to 10 hours instead of 10 minutes for imported CA
+    * [ECA-2863] - CMP FailInfo codes are sent as incorrect codes
+    * [ECA-2865] - rfc822Name field can be edited when adding new end entity even if not marked as modifiable 
+    * [ECA-2877] - ant test:run breaks installation. Figure out why and fix
+    * [ECA-2894] - Messing up the Validity field in Certificate Profiles gives no warning
+    * [ECA-2905] - PrivateKeyUsagePeriod not matching notBefore of certificate when using validityOverride
+    * [ECA-2914] - Filename of downloaded keystore file is truncated
+    * [ECA-2918] - Clear all caches gives bad error message when host can not be reached
+    * [ECA-2921] - Deprecate InitializeHardTokenIssuing
+    * [ECA-2923] - JUnit class junit.framework.Assert has moved to org.junit.Assert
+    * [ECA-2934] - Revoking a CA revokes all issued certificates, but with fixed reason
+    * [ECA-2940] - Ant target test:runsys broken
+    * [ECA-2952] - Update to new logo in renewal pages
+    * [ECA-2958] - Wrong comments about PrimeCard
+    * [ECA-2961] - Button for viewing CA certificate chain has incorrect text
+    * [ECA-2964] - Native query mapping using MariaDB
+    * [ECA-2977] - ProviderException not handled in BaseCryptoToken
+    * [ECA-2989] - AccessTreeCacheTest can fail if reading the configuration takes too long time
+    * [ECA-2994] - Broken property "xkms.response.causedforsigning" in defaultvalues.properties
+    * [ECA-2996] - Update/set CryptoToken auto-activation PIN from EJB CLI
+    * [ECA-3024] - Error during startup with integrity protected audit disabled
+    * [ECA-3031] - Support EC key generation with ClientToolBox
+    * [ECA-3035] - CA and CryptoToken creation not handled in a transaction.
+    * [ECA-3036] - Cryptotoken prevents a CA to be created with the same name as a previous one. 
+    * [ECA-3046] - Help reference for Windows Autoenroll broken
+    * [ECA-3052] - Minor authorization issue
+    * [ECA-3054] - OcspResponseGeneratorSessionBean merely logs a failed signature attempt
+    * [ECA-3056] - Issue PEM with full certificate chain from Public Web certificate request
+    * [ECA-3057] - CryptoTokenManagement logs success deletion even if no crypto token is deleted
+    * [ECA-3058] - CryptoTokenManagement logs success before action is tried
+    * [ECA-3061] - Clean-up CAInterface bean and dependencies
+    * [ECA-3065] - NPE: Inactive (including unsigned) CAs should be ignored by the OCSP Signing Cache 
+    * [ECA-3072] - Cmp default CA setting is DN in one place and CA name in another
+    * [ECA-3074] - CMP TCP sets log level to FINEST for JBoss 7/EAP6 
+    * [ECA-3079] - Close all existent resource leaks
+    * [ECA-3087] - 'bin/ejbca.sh ca info <unknownca>' tosses stacktrace instead of helpful error message
+    * [ECA-3088] - Test missing for creating a subca from CLI
+    * [ECA-3096] - 'ra finduser' command outputs password as 'null' if hidden. 
+    * [ECA-3098] - Regression: Home screen in Admin GUI shows online CAs to be offline for some roles. 
+    * [ECA-3101] - Regression: RequestMessage.getRequestX500Name returns SERIALNUMBER instead of SN
+    * [ECA-3103] - Test failures because of left over stuff in database
+    * [ECA-3107] - Investigate strange output from OCSP
+    * [ECA-3111] - JBoss 7 / EAP 6 always binds to 127.0.0.1
+    * [ECA-3113] - JBoss 7: Can't run ant install on HS with blank password
+    * [ECA-3115] - JBoss EAP 6 freezes with WS stress test with 30 threads
+    * [ECA-3117] - client toolbox p11 multi thread test fails when slot is given with TOKEN_LABEL.
+    * [ECA-3121] - Regression: OCSP signing cache may fail to load on startup
+    * [ECA-3129] - Keystore is used instead of truststore for validating client certificates
+    * [ECA-3131] - Encode EC private keys in generated PKCS#12 keystores with NamedCurves
+    * [ECA-3134] - JBOSS 7 / EAP 6 fails in deployment
+    * [ECA-3138] - External RA IE cert enroll ignoring (override) of encryption provider selection
+    * [ECA-3141] - Regression: ECA-3056 introduced a dependency on EJBCA in CESeCore code
+    * [ECA-3142] - Regression: ECA-2973 introduced a dependency on EJBCA in CESeCore code
+    * [ECA-3143] - Regression: ECA-3056 introduced an other dependency on EJBCA in CESeCore code
+    * [ECA-3176] - Regression: Keys possible for CA renewal are only RSA
+    * [ECA-3177] - Data is not validated before being passed to org.bouncycastle.util.encoders.Base64.decode in findActiveCertificatesByType
+    * [ECA-3183] - Healthcheck failure when there are not active OcspKeyBindings
+    * [ECA-3184] - JBOSS7 /EAP 6 fails in installation
+    * [ECA-3186] - Regression: Custom certificate extensions added to certextensions.properties
+    * [ECA-3188] - Document Internal Key Bindings
+    * [ECA-3197] - ClientToolBox requires that CA certificate be included CSP response in order to verify
+    * [ECA-3200] - Healthcheck status is enabled when editing a CA
+    * [ECA-3203] - Disable of CryptoToken auto-activation takes token offline
+    * [ECA-3207] - Regression: add-hoc upgrade of PKCS#11 keystore on VA responder not working
+    * [ECA-3209] - Regression: OCSP default responder configuration uses subject instead of issuerDN
+    * [ECA-3212] - Internal Key Binding certificate link has caid=0
+    * [ECA-3213] - Regression: CA healthcheck does not check token status
+    * [ECA-3215] - Roles renamed with RoleManagementSessionBean.renameRole get wrong primary keys
+    * [ECA-3219] - OcspKeyBinding contains values that become cast to BigDecimals instead of Integers
+    * [ECA-3220] - Regression: Reload OCSP signing cache uses wrong timer property, and a value of 0 makes timers go crazy
+    * [ECA-3221] - Can't edit an OCSPKeyBinding without filling Serial Number (for Trusted Certificates) field. 
+    * [ECA-3223] - When new CA is generated with soft keys, unwanted warnings appear in jboss log
+    * [ECA-3224] - Trying to create Internal Key Binding without crypto tokens gives NPE
+    * [ECA-3227] - DirectoryCache should catch errors in initialization
+    * [ECA-3234] - Hard Token Functionality header printed twice
+    * [ECA-3235] - Unwanted warning in jboss-log when we create keys through AdminGUI
+    * [ECA-3237] - cmpTcpProxy fails to start, missing defaultvalues.properties
+    * [ECA-3239] - InternalKeyBindings with a deleted CryptoToken throw NPE when trying to view/edit
+    * [ECA-3242] - Errors in jboss log when 'ca createcrl' and some CAs are not active
+    * [ECA-3246] - Unwanted warning in jboss-log when running AuthenticationModulesTest
+    * [ECA-3251] - Activating/deactivating CA logs as Crypto Token activated/de-activated
+    * [ECA-3266] - EndEntityManagementSession.addUser throws a strange exception
+    * [ECA-3269] - Unwanted warning in jboss-log when running XKMSKRSSTest
+    * [ECA-3270] - Test 'testPublisherOperations' fails when running EjbcaWsCommonCriteriaTest
+    * [ECA-3271] - External CESeCore configuration override is read from the wrong location
+    * [ECA-3274] - Unwanted warnings in jboss-log when running RAApiTest
+    * [ECA-3276] - Unwanted error in jboss-log when running CrmfRARequestTest
+    * [ECA-3277] - Unwanted warning in jboss-log when running NestedMessageContentTest
+    * [ECA-3279] - Fix issues in OCSP TransactionLogger
+    * [ECA-3280] - Upgrade instructions need to be updated for JBoss 7 / EAP 6.1
+    * [ECA-3281] - Fix upgrade message from 4.x to 6.0
+    * [ECA-3284] - ValueExtractor fails for ApprovalId Integer in DB2
+    * [ECA-3286] - Browser enroll Firefox does not take configured encoding into account
+    * [ECA-3287] - OCSP signing exhausts threadpool after some time
+    * [ECA-3288] - Saving "Other rules" when edit access rules does not work
+    * [ECA-3294] - Security issue
+
+** Improvement
+    * [ECA-519] - Move configuration file from bin/ to conf/
+    * [ECA-786] - Email notification cannot be edited correctly
+    * [ECA-1010] - Simplify installation procedure
+    * [ECA-1398] - Enforce PrivateKeyUsage period when CAs issue certificates
+    * [ECA-1594] - HashCode of Subject/Issuer DN in a certificate is not always the same as CA Id
+    * [ECA-1814] - Make non consecutive ID possible for Extended Key Usage
+    * [ECA-2023] - Trim the values in catoken.properties when importing a CA from CLI
+    * [ECA-2049] - Constants in CertificateHelper should be final
+    * [ECA-2164] - test01PinServiceToNodesIncludingThis is failing randomly
+    * [ECA-2208] - Move authorization for hard tokens into hard token session bean and remove authorization caching. 
+    * [ECA-2225] - server TLS for mail requires manual configuration
+    * [ECA-2367] - Refactor CrlCreateSession for CRL publishing
+    * [ECA-2492] - Improve mysql-privileges script to allow users at different hosts etc
+    * [ECA-2500] - Upgrade to BC v1.47
+    * [ECA-2510] - Move methods in PublisherQueueSessionBean to local only.
+    * [ECA-2528] - Clean SecConst
+    * [ECA-2540] - Improve support for ipv6 in subjectAltNames
+    * [ECA-2545] - SCEP GetCaCert operation doesn't support empty message
+    * [ECA-2554] - CMP: Need better error message when a request is not signed by the sender
+    * [ECA-2558] - Improve the run times of some system tests
+    * [ECA-2561] - CMP: Remove repeated code to return the value cmp.authenticationparameter
+    * [ECA-2565] - Move CliAuthenticationToken to authentication component
+    * [ECA-2566] - Disallow server generated tokens when user submits a CSR in public web
+    * [ECA-2568] - CMP: improve ConfirmationMessageHandler
+    * [ECA-2582] - Make an enum for end entity types
+    * [ECA-2623] - Use new BC API for CRL creation.
+    * [ECA-2628] - Use BC CMP classes instead of Novosec
+    * [ECA-2641] - Use BC 1.47 OCSP classes
+    * [ECA-2680] - Clean HardTokenSessionBean of unnecessary AuthenticationToken parameters. 
+    * [ECA-2683] - Clean authorization handling in AdminPreferenceSessionBean
+    * [ECA-2684] - Clean authorization in CertReqHistorySession
+    * [ECA-2685] - Clean authorization in KeyRecoverySessionBean
+    * [ECA-2686] - Clean Authorization in ServiceSessonBean
+    * [ECA-2692] - Handle HSM timeouts - handle timeouts elegantly.
+    * [ECA-2725] - CAInfo.setValidity should have long parameter
+    * [ECA-2752] - Deprecate and stop using UserDataConstants. Use EndEntityConstants instead
+    * [ECA-2757] - Add more getters and setters and null checks, use Lists instead of Collections where needed.
+    * [ECA-2793] - Improve javadoc for RoleManagementSession
+    * [ECA-2800] - Move OCSPUnid* classes from org.ejbca.core.protocol.ocsp to org.ejbca.core.protocol.ocsp.extension.unid
+    * [ECA-2807] - Remove PrimeCardHSM references from documentation
+    * [ECA-2821] - Increase concurrency in stand alone tests
+    * [ECA-2826] - RoleManagementSessionBean requires additional authorization checks
+    * [ECA-2840] - ant javatruststore -Dtrust.keystore parameter is treated relative to the ejbca/bin/ directory
+    * [ECA-2857] - EndEntityAccessSession.findUserBySubjectAndIssuerDN should return a List
+    * [ECA-2864] - Change the wording for the E-mail Domain option in end entity profiles
+    * [ECA-2879] - Add custom serialno test test that fails when there is no unique index
+    * [ECA-2895] - Provide ability to provide the administrator password through file for new admins roles GUI with CLI user
+    * [ECA-2903] - Simplify AuthenticationToken framework
+    * [ECA-2908] - Support ECC for CMP signature protection
+    * [ECA-2917] - Rename AdminCA1 to ManagementCA
+    * [ECA-2941] - Unclear description of CRL publishing conditions in Validation Authority Publisher
+    * [ECA-2943] - Modularize the CESeCore source tree
+    * [ECA-2948] - Improve handling of default profiles when using CMP RA mode
+    * [ECA-2957] - Add known PKCS#11 libraries as default available
+    * [ECA-2965] - Allow password to be supplied via command line for clientToolBox PKCS11HSMKeyTool generate
+    * [ECA-2970] - Log remote IP for ADMINISTRATOR_LOGGED_IN events and web service access
+    * [ECA-2978] - Database connection problems can give stacktrace with no msg
+    * [ECA-2986] - Property for hiding manual classpath entry from custom publishers and services
+    * [ECA-2987] - Add debug logging in AccessTreeCacheTest
+    * [ECA-3016] - Ugly errors creating CA with CLI when CryptoToken or CA already exists
+    * [ECA-3018] - Exception classes should end with "Exception" not "Error"
+    * [ECA-3020] - Fix tests using incorrect values for CRL settings
+    * [ECA-3022] - Turn of autocompletion of password on public web
+    * [ECA-3026] - Have parameters outputted from localized messages even if not found
+    * [ECA-3027] - Improve CMP configurations possibilities
+    * [ECA-3028] - Make possible using custom CMP configurations through alias in the URL
+    * [ECA-3030] - Make possible to edit CMP configurations in the AdminGUI
+    * [ECA-3033] - Upgrade BC from 1.49b01 to 1.49b15
+    * [ECA-3062] - Simplify certificate enrollment page
+    * [ECA-3064] - Disable CertReqHistory by default for new CAs
+    * [ECA-3069] - Replace deprecated class org.bouncycastle.jce.PKCS10CertificationRequest with org.bouncycastle.pkcs.PKCS10CertificationRequest
+    * [ECA-3091] - Detect browser directly instead of using of via the log-in page
+    * [ECA-3093] - Re-sort menu options in Admin GUI alphabetically
+    * [ECA-3094] - Update nomenclature in CLI 
+    * [ECA-3099] - Add a "result page" after certificate enrollment has been performed
+    * [ECA-3102] - Public Web: rename password to enrollment code
+    * [ECA-3104] - Default key length for batch generation should be 2048, not 1024
+    * [ECA-3105] - Introduce ability of not having any QC statements in the QC extension in certificate profile configuration
+    * [ECA-3106] - Keylength defaults should be 2048 not 1024
+    * [ECA-3108] - Encoding of MS Certificate Template Name extension should be BMPString
+    * [ECA-3112] - Limited admins in admin GUI spams with INFO logs
+    * [ECA-3136] - Support listing of PKCS#11 slots in the AdminGUI by token label
+    * [ECA-3145] - Clean up left overs of EJBCA OCSP code
+    * [ECA-3166] - Use better wording for Certificate Request Data in Admin GUI
+    * [ECA-3175] - Clear All Caches button should also clear GUI session cache
+    * [ECA-3189] - CMP: Read the CA from the relevant End Entity instead of from the request or cmp.defaultca
+    * [ECA-3190] - CMP: Enforce configuration of EndEntityCert authentication module for KeyUpdate request
+    * [ECA-3191] - CMP: Improve the conditions and readability of CMP authentication modules
+    * [ECA-3206] - CMP: Remove PBE authenticating of ConfirmMessage
+    * [ECA-3218] - OCSP cache update logs access control
+    * [ECA-3243] - Editing Internal Key Bindings is slow
+    * [ECA-3244] - Error message about OCSP key renewal although renewal is disabled
+    * [ECA-3245] - Clean up and format the UPGRADE document
+    * [ECA-3247] - Unwanted warning in jboss-log when running CrmfRAPbeRequestTest
+    * [ECA-3254] - Unwanted warning in jboss-log when running CmpRaThrowAwayTest
+    * [ECA-3257] - Exception cancelling already cancelled OCSP renewal timers
+    * [ECA-3259] - unwanted warning in jboss-log when running ProtocolOcspSignedHttpTest
+    * [ECA-3262] - Make saving global and cmp configuration safe
+    * [ECA-3263] - Allow AnyCA to be the only selected available CA in EEPs
+    * [ECA-3285] - Datasources should have validate-on-match=true in order to reconnect from failures
+
+** Master Ticket
+    * [ECA-3049] - Optimize trunk
+    * [ECA-3116] - Possibility to Export/Import all CA configurations (a.k.a "The Great Dump")
+    * [ECA-3252] - CMP log fixes for CC test plan
+    * [ECA-3261] - Master ticket for OCSP log tickets 
+
+** New Feature
+    * [ECA-862] - Command for ascii/XML dump of CA installation
+    * [ECA-1866] - WS-API to get last CRL for a CA
+    * [ECA-1998] - Support for GOST R digital signature and hash algorithms
+    * [ECA-2066] - Support for JBoss 7.1 and EAP 6
+    * [ECA-2621] - cert-cvc: upgrade to work with BouncyCastle (BC) v1.47
+    * [ECA-2691] - Handle HSM timeouts - allow creation of pure keepalive services from GUI/CLI
+    * [ECA-2722] - Validation/conformance tool for certificates and OCSP responses
+    * [ECA-2780] - Integration of DSTU4145-2002 in EJBCA
+    * [ECA-2801] - Manage HSM keys from web GUI
+    * [ECA-2881] - Ukrainian translation of admin GUI
+    * [ECA-2926] - External RA GUI and SCEP deploy on JBoss 7
+    * [ECA-2930] - SCEP RA mode for blind certificate issuance 
+    * [ECA-2936] - Support ECC for database integrity protection
+    * [ECA-2972] - EJBCA support for South Slavic languages - Bosnian  QA process
+    * [ECA-2973] - Unified OCSP
+    * [ECA-2974] - Use ServiceLoader for Publishers and Services
+    * [ECA-2988] - Unified OCSP: In main build, merge Standalone and Integrated OCSP into a single SSB
+    * [ECA-2992] - White listing of available CryptoToken PKCS#11 slots
+    * [ECA-3092] - Make it possible to hide the menu in publicweb
+    * [ECA-3095] - HSM slot label. Resolve existent issues from ECA-3071, add support for GUI/CLI/Upgrade
+    * [ECA-3128] - Add support for slot labels to ca init command, database protection and ocsp
+
+** Task
+    * [ECA-2296] - Master Issue: Look over authorization in all session beans.
+    * [ECA-2298] - Master issue: Unify all names in EJBCA
+    * [ECA-2317] - Migrate OCSP functionality from CESeCore to EJBCA
+    * [ECA-2350] - Add support to other match values than X500Principal based
+    * [ECA-2445] - Rename all references to "Admin Groups" to "Roles"
+    * [ECA-2462] - Rename RSASignSessionBean to SignSessionBean
+    * [ECA-2464] - Change references from 'User' to EndEntity where appropriate. UserAdminSessionBean should be renamed EndEntityManagementSessionBean 
+    * [ECA-2488] - Remove all internal references to UserAdminSession.changeUser
+    * [ECA-2498] - Go through build-dependencies.xml and search for  and remove nonexisting files in classpaths and include tags
+    * [ECA-2499] - Improve some @BeforeClass and @AfterClass in tests
+    * [ECA-2521] - Merge changes from ECA-1978
+    * [ECA-2522] - Merge changes from ECA-2094
+    * [ECA-2523] - Merge changes from ECA-2157
+    * [ECA-2524] - Merge changes from ECA-2468
+    * [ECA-2525] - Merge changes from ECA-2504
+    * [ECA-2526] - Merge changes from ECA-2518
+    * [ECA-2531] - Remove org.ejbca.config.ExtendedKeyUsageConfiguration
+    * [ECA-2541] - Replace the contents of EjbRemoteHelper with a clever datastructure
+    * [ECA-2550] - Remove transient from PrePersist, PreUpdate and PostLoad annotation
+    * [ECA-2555] - Merge changes from ECA-2454
+    * [ECA-2556] - Make sure that EjbRemoteHelper is used instead of JndiHelper for retrieving remote interfaces 
+    * [ECA-2562] - CMP: More tests for the KeyUpdate request
+    * [ECA-2581] - Eliminate the duplicate constants in SecConst and EndEntityConstants
+    * [ECA-2596] - Merge changes from ECA-2580
+    * [ECA-2597] - Merge changes from ECA-2585
+    * [ECA-2605] - Merge changes from ECA-2575
+    * [ECA-2611] - Merge changes from ECA-1979
+    * [ECA-2619] - CliAuthenticationProviderSessionBean does not follow our naming standard
+    * [ECA-2620] - Upgrade hibernate to latest version
+    * [ECA-2622] - Merge changes from ECA-2583
+    * [ECA-2630] - Reimplement OCSP HealthCheckServlet
+    * [ECA-2631] - Merge changes from ECA-2579
+    * [ECA-2635] - Merge changes from ECA-2627
+    * [ECA-2637] - Merge changes from ECA-2634
+    * [ECA-2640] - Merge changes from ECA-2633
+    * [ECA-2646] - Merge changes from ECA-2584
+    * [ECA-2651] - Merge changes from ECA-2577
+    * [ECA-2688] - AccessRulesConstants.ROLE_SUPERADMINISTRATOR should be declared deprecated and removed internally
+    * [ECA-2702] - EjbcaWebBean code cleanup
+    * [ECA-2707] - Merge changes from ECA-2625
+    * [ECA-2735] - Verify that the functionality of ECA-2069 is ok in trunk
+    * [ECA-2744] - Merge changes from ECA-2624
+    * [ECA-2748] - Merge changes from ECA-2745
+    * [ECA-2751] - Merge changes from ECA-2750
+    * [ECA-2754] - Merge changes from ECA-2753
+    * [ECA-2756] - Merge changes from ECA-2755
+    * [ECA-2767] - Merge changes from ECA-2759
+    * [ECA-2772] - Merge changes from ECA-2769
+    * [ECA-2803] - Merge changes from ECA-2746
+    * [ECA-2831] - Merge changes from ECA-2829
+    * [ECA-2850] - Merge changes from ECA-2802
+    * [ECA-2898] - Merge changes from ECA-2897
+    * [ECA-2900] - Merge changes from ECA-2890
+    * [ECA-2902] - Merge changes from ECA-2899
+    * [ECA-2925] - Upgrade to BouncyCastle 1.49b01
+    * [ECA-2959] - UniqueSernoWSTest fails due to JBoss 7 classloader
+    * [ECA-2979] - Unified OCSP: Move StandAlone OCSP files into main build
+    * [ECA-3023] - Document JBoss 7 hardening
+    * [ECA-3041] - Make sure EJBCA builds and deploy on JBoss 7.2 and EAP 6.1
+    * [ECA-3044] - Use fast Random, instead of slow SecureRandom for GUID generation 
+    * [ECA-3048] - Upgrade BouncyCastle to 1.49 final
+    * [ECA-3075] - XKMS KRSS tests not working on JBoss 7 / EAP6
+    * [ECA-3084] - OCSP transaction logging and safer log4j not working
+    * [ECA-3127] - External RA not working on JBoss 7
+    * [ECA-3130] - Update Admin GUI HSM chapter with new Crypto Token GUI
+    * [ECA-3148] - Rename the files under ejbca/doc/sql-scripts/ with the appropriate name (ejbca version)
+    * [ECA-3193] - Sample custom publisher with UID=certificate serialNo in decimal
+    * [ECA-3228] - Make sure that system tests clean up after themselves
+    * [ECA-3229] - Remove unnecessary warnings during build and startup
+    * [ECA-3241] - Eliminate deprecated values from ocsp.properties as far as possible and remove them from all but upgrade code.
+    * [ECA-3291] - Access rules unclear
+
+** Technical task
+    * [ECA-3152] - Possibility to Export/Import all CryptoTokens
+    * [ECA-3153] - Possibility to Export/Import all CAs
+    * [ECA-3154] - Possibility to Export/Import all Certificate Profiles
+    * [ECA-3155] - Possibility to Export/Import all End Entity Profiles
+    * [ECA-3156] - Possibility to Export/Import all Publishers
+    * [ECA-3157] - Possibility to Export/Import all Services
+    * [ECA-3158] - Possibility to Export/Import all Roles
+    * [ECA-3159] - Possibility to Export/Import all CMP configuration
+    * [ECA-3192] - Possibility to change Subject DN in dump files from CLI
+
 EJBCA 5.0.11, 2013-11-07
 ---
 Bug
