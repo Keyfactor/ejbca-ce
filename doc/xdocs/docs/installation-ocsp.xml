@@ -120,6 +120,12 @@ bin/ejbca.sh keybind
 To avoid that passwords are kept in memory, use manual activation of your referenced Crypto Tokens.
 </p>
 </subsection>
+<subsection name="Database index">
+<p>
+As your OCSP database grows with revoked, and active, certificates you will need database indexes to maintain good performance.
+See the file doc/sql-scripts/create-index-ejbca.sql (section for certificatedata) for indexes needed for CA and OCSP operations.
+</p>
+</subsection>
 </section>
 
 <section name="Automated renewal of an OCSP signer via CA's WebService (a.k.a. Re-keying)">

@@ -15,7 +15,7 @@ CREATE UNIQUE INDEX crldata_idx3 ON CRLData (cRLNumber, issuerDN);
 CREATE UNIQUE INDEX cadata_idx1 ON CAData (name);
 
 -- With a large database at least idx12 and idx5 are needed during startup of EJBCA.
--- For an OCSP responder idx12 and idx5 should be enough.
+-- For an OCSP responder idx4 (loading signer certificate chain and request signer CA certificates), idx5 (loading CA certificates) and idx12 (status lookups) should be enough.
 CREATE INDEX certificatedata_idx2 ON CertificateData (username);
 CREATE INDEX certificatedata_idx4 ON CertificateData (subjectDN);
 CREATE INDEX certificatedata_idx5 ON CertificateData (type);
