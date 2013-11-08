@@ -1482,41 +1482,49 @@ bin/ejbca.sh batch
 </subsection>
 </section>
 
-<section name="Administrator roles">
+<section name="Administrator Roles">
 <p>This section is a tutorial that will guide you through creating a new administrative user and new role with limited privileges.</p>
 
-<subsection name="Pre-defined roles">
+<subsection name="Pre-defined Roles">
 <p>
-The current predefined administrator roles that exists in EJBCA are:
-<ul>
-<li>The CA administrator:</li>
-<ul>
-<li>manages certificate profiles</li>
-<li>manages end entity profiles</li>
-<li>manages log configuration</li>
-<li>can create RA administrators</li>
-<li>can renew a CA with new certificate and new keys</li>
-</ul>
-<li>The RA administrator:</li>
-<ul>
-<li>can create end entities</li>
-<li>can modify end entities</li>
-<li>can revoke end entities</li>
-<li>can delete end entities</li>
-<li>can view existing end entities and their history</li>
-</ul>
-<li>The supervisor:</li>
-<ul>
-<li>can view created end entities</li>
-<li>can search the log and see who have done what</li>
-</ul>
-<li>The super administrator:</li>
+EJBCA comes preconfigured with a pre-defined role, by default called the <i>Super Administrator Role</i>. By default this role:
 <ul>
 <li>has overall access to EJBCA</li>
 <li>can edit system configuration</li>
 <li>can manage CAs</li>
 <li>can manage publishers (LDAP, AD, custom)</li>
 <li>can create CA administrators</li>
+</ul>
+</p>
+</subsection>
+<subsection name="Pre-defined Role Templates">
+<p>
+EJBCA also comes with three default role templates designed to cover most use cases, or to be easily extendable. If none of these are 
+suitable a role can be created with the <i>Custom</i> template and be manually configured in Advanced Mode.
+
+<ul>
+<li>The CA Administrator:</li>
+<ul>
+<li>manages certificate profiles</li>
+<li>manages end entity profiles</li>
+<li>manages log configuration</li>
+<li>can create RA administrators</li>
+<li>can renew a CA with new certificate and new keys</li>
+<li>can have full read access to the audit log</li>
+</ul>
+<li>The RA Administrator:</li>
+<ul>
+<li>can create end entities</li>
+<li>can modify end entities</li>
+<li>can revoke end entities</li>
+<li>can delete end entities</li>
+<li>can view existing end entities and their history</li>
+<li>can have full read access to the audit log</li>
+</ul>
+<li>The Supervisor:</li>
+<ul>
+<li>can view created end entities</li>
+<li>has full read access to the audit log</li>
 </ul>
 </ul>
 </p>
