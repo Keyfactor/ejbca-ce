@@ -120,6 +120,7 @@ EJBCA 6.0.0, 2013-11-08
     * [ECA-3287] - OCSP signing exhausts threadpool after some time
     * [ECA-3288] - Saving "Other rules" when edit access rules does not work
     * [ECA-3294] - Security issue
+    * [ECA-3300] - OCSP Transaction Logger outputs a newline between each log entry
 
 ** Improvement
     * [ECA-519] - Move configuration file from bin/ to conf/
