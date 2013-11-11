@@ -932,7 +932,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                  * state for all certificates issued by that CA.
                  */
                 final org.bouncycastle.cert.ocsp.CertificateStatus certStatus;
-                transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_GOOD); // it seems to be correct
                 // Check if the cacert (or the default responderid) is revoked
                 X509Certificate caCertificate = ocspSigningCacheEntry.getCaCertificateChain().get(0);
                 final CertificateStatus signerIssuerCertStatus = certificateStoreSession.getStatus(CertTools.getIssuerDN(caCertificate),
@@ -978,30 +977,35 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                 OcspSigningCache.INSTANCE.getEntry(certId) == null) {
                             sStatus = "unknown";
                             certStatus = new UnknownStatus();
+                            transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_UNKNOWN); 
                         } else {
                             sStatus = "good";
                             certStatus = null; // null means "good" in OCSP
-
+                            transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_GOOD); 
                         }
                     } else if (status.equals(CertificateStatus.REVOKED)) {
                         // Revocation info available for this cert, handle it
                         sStatus = "revoked";
                         certStatus = new RevokedStatus(new RevokedInfo(new ASN1GeneralizedTime(status.revocationDate),
                                 CRLReason.lookup(status.revocationReason)));
+                        transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_REVOKED);
                     } else {
                         sStatus = "good";
                         certStatus = null;
-
+                        transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_GOOD); 
                     }
                     infoMsg = intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", sStatus, certId.getSerialNumber().toString(16), caCertificateSubjectDn);
                     log.info(infoMsg);
                     responseList.add(new OCSPResponseItem(certId, certStatus, nextUpdate));
+                    transactionLogger.writeln();
                 } else {
                     certStatus = new RevokedStatus(new RevokedInfo(new ASN1GeneralizedTime(signerIssuerCertStatus.revocationDate),
                             CRLReason.lookup(signerIssuerCertStatus.revocationReason)));
                     infoMsg = intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", "revoked", certId.getSerialNumber().toString(16), caCertificateSubjectDn);
                     log.info(infoMsg);
                     responseList.add(new OCSPResponseItem(certId, certStatus, nextUpdate));
+                    transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_REVOKED); 
+                    transactionLogger.writeln();
                 }
                 for (String oidstr : extensionOids) {
                     boolean useAlways = false;
@@ -1102,7 +1106,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             respBytes = ocspResponse.getEncoded();
             auditLogger.paramPut(AuditLogger.OCSPRESPONSE, new String(Hex.encode(respBytes)));
             auditLogger.writeln();
-            transactionLogger.writeln();
             auditLogger.flush();
             transactionLogger.flush();
             if (OcspConfiguration.getLogSafer()) {
