@@ -666,7 +666,7 @@ function confirmrepublish(){
           if (returnToLink == null) { %>
             <input type="button" name="<%= BUTTON_CLOSE %>" value="<%= ejbcawebbean.getText("CLOSE") %>" tabindex="3" onClick='self.close()' />  
 <%        } else { %>
-            <input type="hidden" name='<%= RETURNTO_PARAMETER %>' value='<%= returnToParameter %>'>
+            <input type="hidden" name='<%= RETURNTO_PARAMETER %>' value='<c:out value="<%= returnToParameter %>"/>'>
             <a href="<%=returnToLink%>" class="commandLink"><%= ejbcawebbean.getText("BACK")%></a><br/>
 <%        } %>
           </td>
