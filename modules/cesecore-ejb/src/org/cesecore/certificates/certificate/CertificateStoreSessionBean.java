@@ -307,7 +307,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         final String transformedSubjectDN = CertTools.stringToBCDNString(StringTools.strip(subjectDN));
         if (log.isDebugEnabled()) {
             log.debug("Looking for user with a certificate with issuer DN(transformed) '" + transformedIssuerDN + "' and SubjectKeyId '"
-                    + sSubjectKeyId + "' OR subject DN(transformed) '."+ transformedSubjectDN + "'.");
+                    + sSubjectKeyId + "' OR subject DN(transformed) '"+ transformedSubjectDN + "'.");
         }
         try {
             final Set<String> usernames = CertificateData.findUsernamesBySubjectKeyIdOrDnAndIssuer(entityManager, transformedIssuerDN, sSubjectKeyId, transformedSubjectDN);
