@@ -334,18 +334,18 @@ function confirmrepublish(){
 
   <form name="viewcertificate" action="<%= THIS_FILENAME %>" method="post">
     <% if(username != null){ %>
-     <input type="hidden" name='<%= USER_PARAMETER %>' value='<%=username %>'> 
+     <input type="hidden" name='<%= USER_PARAMETER %>' value='<c:out value="<%= username %>"/>'> 
      <% } 
      if(tokensn != null){ %>
-     <input type="hidden" name='<%= HARDTOKENSN_PARAMETER%>' value='<%=tokensn %>'> 
+     <input type="hidden" name='<%= HARDTOKENSN_PARAMETER%>' value='<c:out value="<%= tokensn %>"/>'> 
      <% }       
     if(certificateserno != null){ %>
-     <input type="hidden" name='<%= CERTSERNO_PARAMETER %>' value='<%=certificateserno %>'> 
+     <input type="hidden" name='<%= CERTSERNO_PARAMETER %>' value='<c:out value="<%= certificateserno %>"/>'> 
      <% } 
     if(cacerts){ %>
-     <input type="hidden" name='<%= CACERT_PARAMETER %>' value='<%=caid %>'> 
+     <input type="hidden" name='<%= CACERT_PARAMETER %>' value='<c:out value="<%= caid %>"/>'> 
      <% } %>
-     <input type="hidden" name='<%= HIDDEN_INDEX %>' value='<%=currentindex %>'>
+     <input type="hidden" name='<%= HIDDEN_INDEX %>' value='<c:out value="<%= currentindex %>"/>'>
 
 
      <table class="view" border="0" cellpadding="0" cellspacing="2" width="100%">
