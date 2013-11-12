@@ -80,7 +80,7 @@ public final class StringTools {
     // Characters that are not allowed in strings that may be used in db queries
     private static final char[] stripSqlChars = { '\'', '\"', '\n', '\r', '\\', ';', '&', '|', '!', '\0', '%', '`', '<', '>', '?', '$', '~' };
     // Characters that are not allowed in filenames
-    private static final char[] stripFilenameChars = { '\0', '\n', '\r', '/', '\\', '?', '%', '*', ':', '|', '\"', '<', '>' };
+    private static final char[] stripFilenameChars = { '\0', '\n', '\r', '/', '\\', '?', '%', '*', ':', ';', '|', '\"', '<', '>' };
     // Characters that are allowed to escape in strings.
     // RFC 2253, section 2.4 lists ',' '"' '\' '+' '<' '>' ';' as valid escaped chars.
     // Also allow '=' to be escaped.
