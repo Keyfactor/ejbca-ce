@@ -337,6 +337,11 @@ EJBCA 6.0.0, 2013-11-08
     * [ECA-3159] - Possibility to Export/Import all CMP configuration
     * [ECA-3192] - Possibility to change Subject DN in dump files from CLI
 
+EJBCA 5.0.12, 2013-11-12
+---
+Bug
+	Security fixes
+
 EJBCA 5.0.11, 2013-11-07
 ---
 Bug
