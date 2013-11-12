@@ -51,7 +51,7 @@
 	        <c:when test="${tokentype == 0}">
 				<%	
 					// The user doesn't exist. Redirect to error page.
-		            request.setAttribute("ErrorMessage","User does not exist: " + username);
+		            request.setAttribute("ErrorMessage","Entity does not exist: " + username);
 		            request.getRequestDispatcher("error.jsp").forward(request, response);
 		        %>
 	        </c:when> 

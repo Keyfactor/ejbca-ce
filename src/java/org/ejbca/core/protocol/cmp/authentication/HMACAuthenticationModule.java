@@ -331,7 +331,7 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
                     return false;
                 }
             } else {
-                this.errorMessage = "End Entity with subjectDN '" + subjectDN +"' or username '" + username + "' was not found";
+                this.errorMessage = INTRES.getLocalizedMessage("ra.errorentitynotexist", StringUtils.isNotEmpty(username) ? username : subjectDN);
                 return false;
             }
         }
