@@ -63,6 +63,7 @@ import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.junit.After;
@@ -572,7 +573,7 @@ public class CertRequestHttpTest extends CaTestCase {
     private String findPassword(String user) throws Exception {
         EndEntityInformation ei = endEntityAccessSession.findUser(admin, user);
         if (ei == null) {
-            throw new NotFoundException("coundn't find user \""+user+"\"");
+            throw new NotFoundException(InternalEjbcaResources.getInstance().getLocalizedMessage("ra.errorentitynotexist", user));
         }
         return ei.getPassword(); // This is the clear text password. See UserData.toEndEntityInformation
     }
