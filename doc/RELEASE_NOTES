@@ -41,6 +41,23 @@ For upgrade instructions, please see UPGRADE.
 	*	One test failure on DB2: https://jira.primekey.se/browse/ECA-3298
 	*	OCSP request signer verification does an additional database lookup: https://jira.primekey.se/browse/ECA-3299
 	  
+EJBCA 5.0.12
+-----------
+This is a maintenance release with only security fixes.
+Two cross site scripting vulnerabilities were discovered in EJBCA and fixed accordingly. 
+
+The vulnerabilities are rated as low, with a CVSS score between 1 and 3 (depending on subjective assessments).
+
+The complexity to exploit the vulnerabilities is considered high and requires knowledge of the internal CA network as well
+as social engineering, or malicious internal super administrators.
+
+The consequences of an exploit is considered low, as no administrator credentials can be stolen, and full audit logs of all 
+actions are preserved.  
+
+We recommend that you assess the need to upgrade based on your particular deployment of EJBCA. Most CA deployments are largely 
+immune due to environmental isolation.
+ 
+For upgrade instructions, please see UPGRADE.
 
 EJBCA 5.0.11
 -----------
