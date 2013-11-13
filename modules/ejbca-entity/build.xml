@@ -241,6 +241,13 @@
 
 	<!-- Monolitic build of the EJBCA DB CLI -->
     <target name="build-cli" depends="with.clover, handlepersistence, handleorm">
+		<fail message="DatabaseCLI tool is not distributed with this version of EJBCA">
+		    <condition>
+		    	<not>
+		    		<available file="${src-cli.dir}/org" type="dir"/>
+		    	</not>
+		    </condition>
+		</fail>	
     	<mkdir dir="${build-cli.dir}/META-INF"/>
     	<!--
     	<fail unless="jdbc.driver.dir" message="Use -Djdbc.driver.dir=/path-to-jdbc-jars/ to specify the directory with the JDBC driver JARs."/>
