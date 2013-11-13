@@ -482,7 +482,7 @@ function checkallfields(){
 	            <input type="hidden" name='<%= HIDDEN_CATYPE %>' value='<c:out value="<%= catype %>"/>'/>
 	            <input type="hidden" name='<%= HIDDEN_CASIGNALGO %>' value='<c:out value="<%= signatureAlgorithmParam %>"/>'/>
             <%  
-                final List<Entry<String, String>> availableCryptoTokens = cabean.getAvailableCryptoTokens(signatureAlgorithmParam);
+                final List<Entry<String, String>> availableCryptoTokens = cabean.getAvailableCryptoTokens(signatureAlgorithmParam, editca);
                 if (availableCryptoTokens.size()==0) { %>
                     <%= ejbcawebbean.getText("CRYPTOTOKEN_NOSUITABLE") %>
             <%  } else { %>
