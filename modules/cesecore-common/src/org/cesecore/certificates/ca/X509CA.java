@@ -400,6 +400,17 @@ public class X509CA extends CA implements Serializable {
         setUseCrlDistributionPointOnCrl(info.getUseCrlDistributionPointOnCrl());
         setCrlDistributionPointOnCrlCritical(info.getCrlDistributionPointOnCrlCritical());
         setCmpRaAuthSecret(info.getCmpRaAuthSecret());
+        if (cainfo.getStatus() == CAConstants.CA_UNINITIALIZED) {
+            updateUninitializedCA(cainfo);
+        }
+    }
+    
+    /**
+     * Allows updating of fields that are otherwise not changable in existing CAs.
+     */
+    public void updateUninitializedCA(CAInfo cainfo) {
+        X509CAInfo info = (X509CAInfo) cainfo;
+        data.put(SUBJECTALTNAME, info.getSubjectAltName());
     }
 
     @Override

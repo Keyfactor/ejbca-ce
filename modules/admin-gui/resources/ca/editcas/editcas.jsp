@@ -530,10 +530,57 @@ java.security.InvalidAlgorithmParameterException
                         throw new ParameterException(ejbcawebbean.getText("INVALIDVALIDITYORCERTEND"));
                     }
                     
+                    signatureAlgorithmParam = requestMap.get(HIDDEN_CASIGNALGO);
+                    final String cryptoTokenIdString = requestMap.get(HIDDEN_CACRYPTOTOKEN);
+                    final int cryptoTokenId = Integer.parseInt(cryptoTokenIdString);
+                    final String keyAliasCertSignKey = requestMap.get(SELECT_CRYPTOTOKEN_CERTSIGNKEY);
+                    final String keyAliasCrlSignKey = keyAliasCertSignKey; // see comment about crlSignKey in editcapage.jspf
+                    final String keyAliasDefaultKey = requestMap.get(SELECT_CRYPTOTOKEN_DEFAULTKEY);
+                    final String keyAliasHardTokenEncryptKey = requestMap.get(SELECT_CRYPTOTOKEN_HARDTOKENENCRYPTKEY);
+                    final String keyAliasKeyEncryptKey = requestMap.get(SELECT_CRYPTOTOKEN_KEYENCRYPTKEY);
+                    final String keyAliasKeyTestKey = requestMap.get(SELECT_CRYPTOTOKEN_KEYTESTKEY);
+                    final String signkeyspec = requestMap.get(SELECT_KEYSIZE);
+                    
                     // Subject DN changing is disabled for now
                     //cainfo.setName(caname);
                     //cainfo.setSubjectDN(subjectdn);
+                    final Properties caTokenProperties = new Properties();
+                    caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, keyAliasDefaultKey);
+                    if (keyAliasCertSignKey.length()>0) {
+                        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, keyAliasCertSignKey);
+                    }
+                    if (keyAliasCrlSignKey.length()>0) {
+                        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, keyAliasCrlSignKey);
+                    }
+                    if (keyAliasHardTokenEncryptKey.length()>0) {
+                        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT_STRING, keyAliasHardTokenEncryptKey);
+                    }
+                    if (keyAliasKeyEncryptKey.length()>0) {
+                        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING, keyAliasKeyEncryptKey);
+                    }
+                    if (keyAliasKeyTestKey.length()>0) {
+                        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING, keyAliasKeyTestKey);
+                    }
+                    
+                    final String subjectaltname = requestMap.get(TEXTFIELD_SUBJECTALTNAME);
+                    if (!cabean.checkSubjectAltName(subjectaltname)) {
+                        throw new ParameterException(ejbcawebbean.getText("INVALIDSUBJECTDN"));
+                    }
+                    
+                    List<CertificatePolicy> policies = null;
+                    if (cainfo instanceof X509CAInfo) {
+                        policies = cabean.parsePolicies(requestMap.get(TEXTFIELD_POLICYID));
+                    }
+                    
+                    final CAToken newCAToken = new CAToken(cryptoTokenId, caTokenProperties);
+                    newCAToken.setSignatureAlgorithm(signatureAlgorithmParam);
+                    cainfo.setCAToken(newCAToken);
                     cainfo.setValidity(validity);
+                    if (cainfo instanceof X509CAInfo) {
+                        X509CAInfo x509cainfo = (X509CAInfo)cainfo;
+                        x509cainfo.setSubjectAltName(subjectaltname);
+                        x509cainfo.setPolicies(policies);
+                    }
                 }
                 
                 if (requestMap.get(BUTTON_SAVE) != null) {
@@ -591,7 +638,6 @@ java.security.InvalidAlgorithmParameterException
             if (requestMap.get(SELECT_KEY_SEQUENCE_FORMAT) != null) {
           	    keySequenceFormat = Integer.parseInt(requestMap.get(SELECT_KEY_SEQUENCE_FORMAT));
             }
-            editca = false;
             includefile="editcapage.jspf";
         }
         if (ACTION_CHOOSE_CATOKENTYPE.equals(action)) {
@@ -603,7 +649,6 @@ java.security.InvalidAlgorithmParameterException
             if (request.getParameter(SELECT_KEY_SEQUENCE_FORMAT) != null) {
             	keySequenceFormat = Integer.parseInt(request.getParameter(SELECT_KEY_SEQUENCE_FORMAT)); 
             }
-            editca = false;
             includefile="editcapage.jspf";
         }
         if (ACTION_CHOOSE_CASIGNALGO.equals(action)) {
@@ -615,7 +660,6 @@ java.security.InvalidAlgorithmParameterException
             if (requestMap.get(SELECT_KEY_SEQUENCE_FORMAT) != null) {
           	    keySequenceFormat = Integer.parseInt(requestMap.get(SELECT_KEY_SEQUENCE_FORMAT)); 
             }
-            editca = false;
             includefile="editcapage.jspf";              
         }
         if (ACTION_IMPORTCA.equals(action)) {

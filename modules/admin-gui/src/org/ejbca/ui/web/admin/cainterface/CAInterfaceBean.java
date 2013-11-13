@@ -892,24 +892,12 @@ public class CAInterfaceBean implements Serializable {
 	            // Create a X509 CA
 	            if (subjectaltname == null) {
                     subjectaltname = ""; 
-	            } else {
-	                if (!subjectaltname.trim().equals("")) {
-	                    final DNFieldExtractor subtest = new DNFieldExtractor(subjectaltname,DNFieldExtractor.TYPE_SUBJECTALTNAME);                   
-	                    if (subtest.isIllegal() || subtest.existsOther()) {
-	                        illegaldnoraltname = true;
-	                    }
-	                }
+	            }
+	            if (!checkSubjectAltName(subjectaltname)) {
+	               illegaldnoraltname = true;
 	            }
 	            /* Process certificate policies. */
-	            final ArrayList<CertificatePolicy> policies = new ArrayList<CertificatePolicy>();
-	            if (!(policyid == null || policyid.trim().equals(""))) {
-	                final String[] str = policyid.split("\\s+");
-	                if (str.length > 1) {
-	                    policies.add(new CertificatePolicy(str[0], CertificatePolicy.id_qt_cps, str[1]));
-	                } else {
-	                    policies.add(new CertificatePolicy((policyid.trim()),null,null));
-	                }
-	            }
+	            final List<CertificatePolicy> policies = parsePolicies(policyid);
 	            // Certificate policies from the CA and the CertificateProfile will be merged for cert creation in the CAAdminSession.createCA call
 
 	            final ArrayList<Integer> crlpublishers = new ArrayList<Integer>(); 
@@ -1081,7 +1069,30 @@ public class CAInterfaceBean implements Serializable {
 	    return illegaldnoraltname;
 	}
 
-	public CAInfo createCaInfo(int caid, String caname, String subjectDn, int catype,
+	public boolean checkSubjectAltName(String subjectaltname) {
+        if (subjectaltname != null && !subjectaltname.trim().equals("")) {
+            final DNFieldExtractor subtest = new DNFieldExtractor(subjectaltname,DNFieldExtractor.TYPE_SUBJECTALTNAME);                   
+            if (subtest.isIllegal() || subtest.existsOther()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public List<CertificatePolicy> parsePolicies(String policyid) {
+        final ArrayList<CertificatePolicy> policies = new ArrayList<CertificatePolicy>();
+        if (!(policyid == null || policyid.trim().equals(""))) {
+            final String[] str = policyid.split("\\s+");
+            if (str.length > 1) {
+                policies.add(new CertificatePolicy(str[0], CertificatePolicy.id_qt_cps, str[1]));
+            } else {
+                policies.add(new CertificatePolicy((policyid.trim()),null,null));
+            }
+        }
+        return policies;
+    }
+
+    public CAInfo createCaInfo(int caid, String caname, String subjectDn, int catype,
 	        String keySequenceFormat, String keySequence, String description, String validityString,
 	        long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, boolean finishUser,
 	        boolean isDoEnforceUniquePublicKeys, boolean isDoEnforceUniqueDistinguishedName, boolean isDoEnforceUniqueSubjectDNSerialnumber,
