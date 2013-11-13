@@ -87,7 +87,7 @@ public class ValidityDate {
 	public static long encode(final String sValidity) {
 		long returnValue = -1;
 		// Try '*y *mo *d'-format
-		final YearMonthDayTime yearMonthDayTime = YearMonthDayTime.getInstance(sValidity, "0"+YearMonthDayTime.TYPE_DAYS);
+		final YearMonthDayTime yearMonthDayTime = YearMonthDayTime.getInstance(sValidity);
 		if (yearMonthDayTime!=null) {
 			long days = yearMonthDayTime.daysFrom(new Date());
 			if (isDeltaTime(days)) {
