@@ -43,9 +43,12 @@
   CmsCAServiceInfo cmscainfo = null; 
   java.security.cert.X509Certificate cmscert = null; 
   if (editca) {
+    // Defaults in the edit and initialize pages
     cainfo = cabean.getCAInfo(caid).getCAInfo();
     catoken = cainfo.getCAToken();
-    signatureAlgorithmParam = catoken.getSignatureAlgorithm();
+    if (signatureAlgorithmParam == null || signatureAlgorithmParam.isEmpty()) {
+        signatureAlgorithmParam = catoken.getSignatureAlgorithm();
+    }
     signbyexternal = cainfo.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA;
     isexternal = cainfo.getStatus() == CAConstants.CA_EXTERNAL;
     revokable = cainfo.getStatus() != CAConstants.CA_REVOKED  && cainfo.getStatus() != CAConstants.CA_WAITING_CERTIFICATE_RESPONSE && !cadatahandler.isCARevoked(cainfo);
@@ -68,6 +71,21 @@
 	        }
 	    }  
 	}
+  } else {
+    // Defaults in the create CA page
+    if (signatureAlgorithmParam == null || signatureAlgorithmParam.length()==0) {
+        signatureAlgorithmParam = AlgorithmConstants.AVAILABLE_SIGALGS[0];
+    }
+  }
+  
+  String hidden_ca_key;
+  String hidden_ca_value;
+  if (isUninitialized) {
+    hidden_ca_key = HIDDEN_CAID;
+    hidden_ca_value = String.valueOf(cainfo.getCAId());
+  } else {
+    hidden_ca_key = HIDDEN_CANAME;
+    hidden_ca_value = caname;
   }
 %>
 <script type="text/javascript">
@@ -355,7 +373,7 @@ function checkallfields(){
             <% if (!editca) { %> 
             <form name="changecatype" action="<%= THIS_FILENAME %>" method="post">
                 <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_CHOOSE_CATYPE %>'>
-                <input type="hidden" name='<%= HIDDEN_CANAME %>' value='<c:out value="<%= caname %>"/>'>
+                <input type="hidden" name='<%= hidden_ca_key %>' value='<c:out value="<%= hidden_ca_value %>"/>'/>
                 <select name="<%=SELECT_CATYPE %>" size="1" onchange="document.changecatype.submit()">                
                     <option value="<%=CAInfo.CATYPE_X509%>" <%if(catype == CAInfo.CATYPE_X509) out.write("selected");%>>X509</option>
                     <option value="<%=CAInfo.CATYPE_CVC%>" <%if(catype == CAInfo.CATYPE_CVC) out.write("selected");%>>CVC</option>  
@@ -370,7 +388,7 @@ function checkallfields(){
 	           } %>
             </td>
         </tr>
-        <% if (editca) { %>
+        <% if (editca && !isUninitialized) { %>
         <tr id="Row<%=row++%2%>">
             <td width="50%" align="right">
             <strong><%= ejbcawebbean.getText("SIGNINGALGORITHM") %></strong></td>
@@ -434,12 +452,11 @@ function checkallfields(){
 	        <td>
 	        <form name="changecasignalgo" action="<%= THIS_FILENAME %>" method="post">
 	            <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_CHOOSE_CASIGNALGO %>'/>
-	            <input type="hidden" name='<%= HIDDEN_CANAME %>' value='<c:out value="<%= caname %>"/>'/>
+                <input type="hidden" name='<%= hidden_ca_key %>' value='<c:out value="<%= hidden_ca_value %>"/>'/>
 	            <input type="hidden" name='<%= HIDDEN_CATYPE %>' value='<c:out value="<%= catype %>"/>'/>
+                
 	            <select name="<%= SELECT_SIGNATUREALGORITHM %>" size="1" onchange="document.changecasignalgo.submit()">
-                <%  if (signatureAlgorithmParam == null || signatureAlgorithmParam.length()==0) {
-                	    signatureAlgorithmParam = AlgorithmConstants.AVAILABLE_SIGALGS[0];
-            	    }
+	            <%
                     for (final String current : AlgorithmConstants.AVAILABLE_SIGALGS) {
                         if (!AlgorithmTools.isSigAlgEnabled(current)) {
                             continue; // e.g. GOST3410 if not configured
@@ -447,7 +464,7 @@ function checkallfields(){
                     	final boolean selectCurrent = current.equals(signatureAlgorithmParam);
                         final String entrySelected = selectCurrent ? "selected" : "";
                         %>
-                    <option value='<c:out value="<%= current %>"/>' <%= entrySelected %> ><c:out value="<%= current %>"/></option>  
+                        <option value='<c:out value="<%= current %>"/>' <%= entrySelected %> ><c:out value="<%= current %>"/></option>  
                 <%  } %> 
 	            </select>
 	            <%/* When JavaScript is not available, we show a "Reload" image. */%>
@@ -461,7 +478,7 @@ function checkallfields(){
 	        <td>
 	        <form name="changecatokentype" action="<%= THIS_FILENAME %>" method="post">
 	            <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_CHOOSE_CATOKENTYPE %>'/>
-	            <input type="hidden" name='<%= HIDDEN_CANAME %>' value='<c:out value="<%= caname %>"/>'/>
+	            <input type="hidden" name='<%= hidden_ca_key %>' value='<c:out value="<%= hidden_ca_value %>"/>'/>
 	            <input type="hidden" name='<%= HIDDEN_CATYPE %>' value='<c:out value="<%= catype %>"/>'/>
 	            <input type="hidden" name='<%= HIDDEN_CASIGNALGO %>' value='<c:out value="<%= signatureAlgorithmParam %>"/>'/>
             <%  
@@ -470,7 +487,11 @@ function checkallfields(){
                     <%= ejbcawebbean.getText("CRYPTOTOKEN_NOSUITABLE") %>
             <%  } else { %>
 	            <select name="<%= SELECT_CRYPTOTOKEN %>" size="1" onchange="document.changecatokentype.submit()">
-            <%  for (final Entry<String, String> entry : availableCryptoTokens) {
+            <%  
+                if (editca && isUninitialized && (cryptoTokenIdParam == null || cryptoTokenIdParam.length()==0)) {
+                    cryptoTokenIdParam = String.valueOf(catoken.getCryptoTokenId());
+                }
+                for (final Entry<String, String> entry : availableCryptoTokens) {
                 	// Ensure that we have a default for the next section
                 	if (cryptoTokenIdParam == null || cryptoTokenIdParam.length()==0) {
                 		cryptoTokenIdParam = entry.getKey();
@@ -520,8 +541,11 @@ function checkallfields(){
   <%   } else { %>
     <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_CREATE_CA %>'>
     <input type="hidden" name='<%= HIDDEN_CANAME %>' value='<c:out value="<%= caname %>"/>'>
+    <% }
 
-    <%  /* If there is no available CryptoToken, there is little point in continuing here.. */
+    
+    if (!editca || isUninitialized) {
+        /* If there is no available CryptoToken, there is little point in continuing here.. */
         if (cryptoTokenIdParam != null && cryptoTokenIdParam.length()>0 && Integer.parseInt(cryptoTokenIdParam)!=0) {
             currentCryptoTokenId = Integer.parseInt(cryptoTokenIdParam);
     %>
@@ -530,11 +554,16 @@ function checkallfields(){
             <td>
 	            <select name="<%= SELECT_CRYPTOTOKEN_DEFAULTKEY %>" size="1">
                 <%  for (final String alias : cabean.getAvailableCryptoTokenMixedAliases(currentCryptoTokenId, signatureAlgorithmParam)) {
-                	    if (CAToken.SOFTPRIVATEDECKEYALIAS.equals(alias) || alias.contains("default") || alias.contains("Default")) { %>
-                            <option selected="selected" value='<c:out value="<%=alias %>"/>'><c:out value="<%= alias %>"/></option>
-                <%      } else { %>
-                            <option value='<c:out value="<%=alias %>"/>'><c:out value="<%= alias %>"/></option>
-                <%      }
+                        final boolean isDefault;
+                        if (!editca) {
+                            isDefault = CAToken.SOFTPRIVATEDECKEYALIAS.equals(alias) || alias.contains("default") || alias.contains("Default");
+                        } else {
+                            isDefault = alias.equals(catoken.getAliasFromPurpose(0));
+                        }
+                        String selected = isDefault ? "selected=\"selected\" " : "";
+                        %>
+                        <option <%= selected %>value='<c:out value="<%=alias %>"/>'><c:out value="<%= alias %>"/></option>
+                        <%
                     } %>
 	            </select>
             </td>	
@@ -545,12 +574,17 @@ function checkallfields(){
 	            <select name="<%= SELECT_CRYPTOTOKEN_CERTSIGNKEY %>" size="1">
                     <option value="">- Use default key</option>
                 <%  for (final String alias : cabean.getAvailableCryptoTokenAliases(currentCryptoTokenId, signatureAlgorithmParam)) {
-            	        // If we come accross the (legacy) default signing key alias we use it as selected 
-                	    if (CAToken.SOFTPRIVATESIGNKEYALIAS.equals(alias) || alias.contains("sign") || alias.contains("Sign")) { %>
-                            <option selected="selected" value='<c:out value="<%=alias %>"/>'><c:out value="<%= alias %>"/></option>
-                <%      } else { %>
-                            <option value='<c:out value="<%=alias %>"/>'><c:out value="<%= alias %>"/></option>
-                <%      }
+            	        // If we come accross the (legacy) default signing key alias we use it as selected
+            	        final boolean isDefault;
+                        if (!editca) {
+                            isDefault = CAToken.SOFTPRIVATESIGNKEYALIAS.equals(alias) || alias.contains("sign") || alias.contains("Sign");
+                        } else {
+                            isDefault = alias.equals(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+                        }
+                        String selected = isDefault ? "selected=\"selected\" " : "";
+                        %>
+                        <option <%= selected %>value='<c:out value="<%=alias %>"/>'><c:out value="<%= alias %>"/></option>
+                        <% 
                     } %>
 	            </select>
             </td>	
@@ -575,7 +609,8 @@ function checkallfields(){
 	            <select name="<%= SELECT_CRYPTOTOKEN_KEYENCRYPTKEY %>" size="1">
                     <option value="">- Use default key</option>
                 <%  for (final String alias : cabean.getAvailableCryptoTokenEncryptionAliases(currentCryptoTokenId, signatureAlgorithmParam)) { %>
-                    <option value='<c:out value="<%=alias %>"/>'><c:out value="<%= alias %>"/></option>
+                        <option <%= editca && alias.equals(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT)) ? "selected=\"selected\" " : "" %>
+                          value='<c:out value="<%=alias %>"/>'><c:out value="<%= alias %>"/></option>
                 <%  } %>
 	            </select>
             </td>	
@@ -586,7 +621,8 @@ function checkallfields(){
 	            <select name="<%= SELECT_CRYPTOTOKEN_HARDTOKENENCRYPTKEY %>" size="1">
                     <option value="">- Use default key</option>
                 <%  for (final String alias : cabean.getAvailableCryptoTokenEncryptionAliases(currentCryptoTokenId, signatureAlgorithmParam)) { %>
-                    <option value='<c:out value="<%=alias %>"/>'><c:out value="<%= alias %>"/></option>
+                    <option <%= editca && alias.equals(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT)) ? "selected=\"selected\" " : "" %>
+                          value='<c:out value="<%=alias %>"/>'><c:out value="<%= alias %>"/></option>
                 <%  } %>
 	            </select>
             </td>
@@ -597,15 +633,21 @@ function checkallfields(){
 	            <select name="<%= SELECT_CRYPTOTOKEN_KEYTESTKEY %>" size="1">
                     <option value="">- Use default key</option>
                 <%  for (final String alias : cabean.getAvailableCryptoTokenAliases(currentCryptoTokenId, signatureAlgorithmParam)) {
-                	    if (alias.contains("test") || alias.contains("Test")) { %>
-                            <option selected="selected" value='<c:out value="<%=alias %>"/>'><c:out value="<%= alias %>"/></option>
-                <%      } else { %>
-                    <option value='<c:out value="<%=alias %>"/>'><c:out value="<%= alias %>"/></option>
-                <%      }
+                        final boolean isDefault;
+                        if (!editca) {
+                            isDefault = alias.contains("test") || alias.contains("Test");
+                        } else {
+                            isDefault = alias.equals(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYTEST));
+                        }
+                        String selected = isDefault ? "selected=\"selected\" " : "";
+                        %>
+                        <option <%= selected %>value='<c:out value="<%=alias %>"/>'><c:out value="<%= alias %>"/></option>
+                        <% 
                     } %>
 	            </select>
             </td>
         </tr>
+        <%  if (!editca) {  %>
         <tr id="Row<%=row++%2%>"> 
             <td width="50%"  align="right">
                 <%= ejbcawebbean.getText("EXTSERVICESKEYSPEC") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Extended%20Services%20Key%20Specification") %>
@@ -619,6 +661,7 @@ function checkallfields(){
                 </select>
             </td>
         </tr>
+        <%  }  %>
     <%  } %>
     
   <%   } %>
@@ -912,14 +955,15 @@ function checkallfields(){
         <%= ejbcawebbean.getText("EXT_PKIX_SUBJECTALTNAME") %>
       </td>
       <td width="50%">
-         <% if(editca) {
+         <% if (editca && !isUninitialized) {
               if(x509cainfo.getSubjectAltName() == null || x509cainfo.getSubjectAltName().trim().equals("")) {
                 out.write(ejbcawebbean.getText("NONE")); 
               } else { %>
                 <c:out value="<%= x509cainfo.getSubjectAltName() %>"/>
               <% }
-            } else{  %>  
-         <input type="text" name="<%=TEXTFIELD_SUBJECTALTNAME%>" size="45" maxlength="255">
+            } else{%>  
+         <input type="text" name="<%=TEXTFIELD_SUBJECTALTNAME%>" size="45" maxlength="255"
+             value="<c:out value="<%= isUninitialized ? x509cainfo.getSubjectAltName() : \"\" %>"/>">
          <% } %>   
       </td>
     </tr> 
@@ -929,7 +973,7 @@ function checkallfields(){
         <strong><%= ejbcawebbean.getText("EXT_PKIX_CP_POLICYID") %></strong>
       </td>
       <td width="50%">
-         <% if(editca) {
+         <% if (editca && !isUninitialized) {
               if(x509cainfo.getPolicies() == null || (x509cainfo.getPolicies().size() == 0)) {
                  out.write(ejbcawebbean.getText("NONE")); 
               } else {
@@ -947,10 +991,22 @@ function checkallfields(){
                   out.write(policyId);
                 }
               }
-            } else {  %>  
-         <input type="text" name="<%=TEXTFIELD_POLICYID%>" size="20" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_OID") %>"/>
+            } else {
+                String policies = "";
+                if (isUninitialized) {
+                    List<CertificatePolicy> list = x509cainfo.getPolicies();
+                    CertificatePolicy cp = (list != null && list.size() >= 1) ? list.get(0) : null;
+                    if (cp != null) {
+                        policies += cp.getPolicyID();
+                        if (cp.getQualifier() != null) {
+                            policies += " "+cp.getQualifier();
+                        }
+                    }
+                }
+                %>
+             <input type="text" name="<%=TEXTFIELD_POLICYID%>" size="20" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_OID") %>" value="<c:out value="<%= policies  %>"/>"/>
          <% } %>
-         <% if(!editca) out.write("<p class=\"help\">" + ejbcawebbean.getText("EXT_PKIX_CP_POLICYID_HELP") + "</p>"); %>
+         <% if(!editca || isUninitialized) out.write("<p class=\"help\">" + ejbcawebbean.getText("EXT_PKIX_CP_POLICYID_HELP") + "</p>"); %>
       </td>
     </tr> 
 
