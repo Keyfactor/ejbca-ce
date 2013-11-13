@@ -1211,9 +1211,9 @@ public class CAInterfaceBean implements Serializable {
         return null;
 	}
 
-	public List<Entry<String, String>> getAvailableCryptoTokens(final String caSigingAlgorithm) throws AuthorizationDeniedException, KeyStoreException, CryptoTokenOfflineException {
+	public List<Entry<String, String>> getAvailableCryptoTokens(final String caSigingAlgorithm, boolean isEditingCA) throws AuthorizationDeniedException, KeyStoreException, CryptoTokenOfflineException {
 	    final List<Entry<String, String>> availableCryptoTokens = new ArrayList<Entry<String, String>>();
-        if (accessControlSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource())) {
+        if (!isEditingCA && accessControlSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource())) {
             // Add a quick setup option for key generation
             availableCryptoTokens.add(new AbstractMap.SimpleEntry<String,String>(Integer.toString(0), ejbcawebbean.getText("CRYPTOTOKEN_NEWFROMCA")));
         }
