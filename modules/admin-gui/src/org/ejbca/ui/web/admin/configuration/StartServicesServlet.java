@@ -14,6 +14,8 @@
 package org.ejbca.ui.web.admin.configuration;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
@@ -47,7 +49,7 @@ import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
-import org.cesecore.dbprotection.ProtectedDataConfiguration;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.util.CryptoProviderTools;
@@ -229,19 +231,51 @@ public class StartServicesServlet extends HttpServlet {
             if (integrityProtectedName.equals(id)) {
                 // Make a log row that integrity protected device is configured
                 final Map<String, Object> logdetails = new LinkedHashMap<String, Object>();
-                final Integer keyid = ProtectedDataConfiguration.instance().getKeyId(auditTableName);
-                if ((keyid != null) && (keyid > 0)) {
-                    if (ProtectedDataConfiguration.useDatabaseIntegrityProtection(auditTableName)) {
-                        logdetails.put("keyid", keyid);
-                        logdetails.put("protectVersion", ProtectedDataConfiguration.instance().getProtectVersion(keyid));
-                        logdetails.put("keyLabel", ProtectedDataConfiguration.instance().getKeyLabel(keyid));
-                        logSession.log(EventTypes.LOG_MANAGEMENT_CHANGE, EventStatus.SUCCESS, ModuleTypes.SECURITY_AUDIT, ServiceTypes.CORE, admin.toString(), null, null, null, logdetails);
-                        haveSecurityAudit = true;                                            
+                try {
+                    // Use reflection to get the ProtectedDataConfiguration and make some calls to it.
+                    // This is needed since ProtectedDataConfiguration may not be available during compile time, or runtime
+                    Class<?> c = Class.forName("org.cesecore.dbprotection.ProtectedDataConfiguration");
+                    // create instance ProtectedDataConfiguration.instance()
+                    Method instance = c.getMethod("instance", (Class[])null);
+                    //Object[] args = new Object[0];
+                    Object config = instance.invoke(null);
+                    // create method ProtectedDataConfiguration.getKeyId(String)
+                    Method getKeyId = c.getMethod("getKeyId", String.class);
+                    // create method ProtectedDataConfiguration.getProtectVersion(int)
+                    Method getProtectVersion = c.getMethod("getProtectVersion", Integer.TYPE);
+                    // create method ProtectedDataConfiguration.getKeyLabel(int)
+                    Method getKeyLabel = c.getMethod("getKeyLabel", Integer.TYPE);
+                    // Call ProtectedDataConfiguration.instance().getKeyId
+                    final Integer keyid = (Integer)getKeyId.invoke(config, auditTableName);
+                    if ((keyid != null) && (keyid > 0)) {
+                        if (CesecoreConfiguration.useDatabaseIntegrityProtection(auditTableName)) {
+                            // Call ProtectedDataConfiguration.instance().getProtectVersion
+                            final Integer protectVersion = (Integer)getProtectVersion.invoke(config, keyid);
+                            // Call ProtectedDataConfiguration.instance().getKeyLabel
+                            final String keyLabel = (String)getKeyLabel.invoke(config, keyid);
+                            logdetails.put("keyid", keyid);
+                            logdetails.put("protectVersion", protectVersion);
+                            logdetails.put("keyLabel", keyLabel);
+                            logSession.log(EventTypes.LOG_MANAGEMENT_CHANGE, EventStatus.SUCCESS, ModuleTypes.SECURITY_AUDIT, ServiceTypes.CORE, admin.toString(), null, null, null, logdetails);
+                            haveSecurityAudit = true;                                            
+                        } else {
+                            log.debug("No database integrity protection enabled for AuditRecordData.");
+                        }
                     } else {
-                        log.debug("No database integrity protection enabled for AuditRecordData.");
+                        log.debug("No keyid configured for AuditRecordData.");
                     }
-                } else {
-                    log.debug("No keyid configured for AuditRecordData.");
+                } catch (ClassNotFoundException e) {
+                    log.info("No database integrity protection available in this version of EJBCA.");
+                } catch (IllegalAccessException e) {
+                    log.info("No database integrity protection available due to initialization error: ", e);
+                } catch (SecurityException e) {
+                    log.info("No database integrity protection available due to initialization error: ", e);
+                } catch (NoSuchMethodException e) {
+                    log.info("No database integrity protection available due to initialization error: ", e);
+                } catch (IllegalArgumentException e) {
+                    log.info("No database integrity protection available due to initialization error: ", e);
+                } catch (InvocationTargetException e) {
+                    log.info("No database integrity protection available due to initialization error: ", e);
                 }
             }
         }
