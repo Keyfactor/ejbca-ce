@@ -28,11 +28,12 @@ import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventType;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleType;
+import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceType;
+import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.impl.integrityprotected.AuditRecordData;
 import org.cesecore.audit.impl.integrityprotected.IntegrityProtectedLoggerSessionLocal;
 import org.cesecore.audit.impl.queued.QueuedLoggerSessionLocal;
-import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectedDataConfiguration;
 import org.cesecore.time.TrustedTime;
 
@@ -100,9 +101,13 @@ public class InternalSecurityEventsLoggerSessionBean implements InternalSecurity
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Performing audit log integrity protection test.");
             }
-            final int keyid = ProtectedDataConfiguration.instance().getKeyId(AuditRecordData.class.getSimpleName()).intValue();
-            final int protectVersion = ProtectedDataConfiguration.instance().getProtectVersion(keyid).intValue();
-            ProtectedData.calculateProtection(protectVersion, keyid, this.getClass().getSimpleName());
+            // Make a dummy auditRecordData object, to use the "real" code to calculate database integrity protection
+            final AuditRecordData auditRecordData = new AuditRecordData("auditLogCryptoTest", 1L, System.currentTimeMillis(), EventTypes.LOG_VERIFY, EventStatus.VOID, null,
+                    ServiceTypes.CORE, ModuleTypes.SECURITY_AUDIT, "auditLogCryptoTest", null, null, null);
+            auditRecordData.calculateProtection();
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Audit log integrity protection test completed succesfully.");
+            }
             return true;
         }
         return false;

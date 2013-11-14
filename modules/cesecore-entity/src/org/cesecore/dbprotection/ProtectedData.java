@@ -12,17 +12,8 @@
  *************************************************************************/
 package org.cesecore.dbprotection;
 
-import java.security.Key;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.Signature;
-
-import javax.crypto.Mac;
-
 import org.apache.log4j.Logger;
-import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.internal.InternalResources;
-import org.cesecore.keys.token.CryptoToken;
+
 
 /**
  * Used as base class for JPA data beans that has a rowProtection column. The JPA class should extend this class and implement the simple methods:
@@ -77,13 +68,46 @@ import org.cesecore.keys.token.CryptoToken;
  */
 public abstract class ProtectedData {
 
-	private static final Logger log = Logger.getLogger(ProtectedData.class);
+    private static final Logger log = Logger.getLogger(ProtectedData.class);
 
-	/** Internal localization of logs and errors */
-	private static final InternalResources INTRES = InternalResources.getInstance();
-
-	/** Needed by JPA */
+    /** Implementation for the database protection method used */
+	private ProtectedDataImpl impl;
+	
+	/** Definition of the optional database integrity protection implementation */
+	private static final String implClassName = "org.cesecore.dbprotection.ProtectedDataIntegrityImpl";
+	/** Cache class so we don't have to do Class.forName for every entity object created */
+	private static volatile Class<?> implClass = null;
+	
+	/** Optimization variable so we don't have to check for existence of implClass for every construction of an entity object */
+	private static volatile boolean integrityExists = true;
+	
+	/** A default constructor is needed by JPA.
+	 * This constructor initializes the available database integrity protection module, if any is available 
+	 */
 	public ProtectedData() {
+	    if (integrityExists) {
+	        try {
+	            if (implClass == null) {
+	                // We only end up here once, if the class does not exist, we will never end up here again (ClassNotFoundException) 
+	                // and if the class exists we will never end up here again (it will not be null)
+	                implClass = Class.forName(implClassName);
+	                log.info("ProtectedDataIntegrityImpl is available, and used, in this version of EJBCA.");
+	            }
+	            impl = (ProtectedDataImpl)implClass.newInstance();
+	            impl.setTableName(getTableName());
+	        } catch (ClassNotFoundException e) {
+	            // We only end up here once, if the class does not exist, we will never end up here again
+	            integrityExists = false;
+	            log.info("No database integrity protection available in this version of EJBCA.");
+	            impl = new ProtectedDataNoopImpl();         
+	        } catch (InstantiationException e) {
+                log.error("Error intitilizing database integrity protection: ", e);
+            } catch (IllegalAccessException e) {
+                log.error("Error intitilizing database integrity protection: ", e);
+            }	        
+	    } else {
+            impl = new ProtectedDataNoopImpl();	        
+	    }
 	}
 
 	/**
@@ -124,154 +148,31 @@ public abstract class ProtectedData {
 		return this.getClass().getSimpleName();
 	}
 
+    /** Overridden by extending class to be able to use @PrePersist, overriding class calls super.protectData(). 
+     * This method creates integrity protection for the specific entity in the database.
+     * 
+     * @throws DatabaseProtectionException (RuntimeException) on error creating integrity protection.
+     */
 	protected void protectData() {
-		if ( !ProtectedDataConfiguration.useDatabaseIntegrityProtection(getTableName()) ) {
-			return;
-		}
-		final int rowversion = getProtectVersion();
-		final String str = getProtectString(rowversion);
-		// Always protect new and updated rows with default keyid
-		final int keyid = ProtectedDataConfiguration.instance().getKeyId(getTableName()).intValue();
-		// HMAC or digital signature
-		final int protectVersion = ProtectedDataConfiguration.instance().getProtectVersion(keyid).intValue();
-		final String protection = calculateProtection(protectVersion, keyid, str);
-		final String pstring = rowversion + ":" + protectVersion + ":" + keyid + ":" + protection;
-		if (log.isTraceEnabled()) {
-			log.trace("Protected string (" + this.getClass().getName() + "): " + str);
-			log.trace("Protecting row string with protection '" + protection + "': " + pstring);
-		}
-		setRowProtection(pstring);
+		impl.protectData(this);
 	}
 
+    /** Overridden by extending class to be able to use @PostLoad, overriding class calls super.verifyData(). 
+     * This method verifies integrity protection for the specific entity in the database.
+     * 
+     * @throws DatabaseProtectionException (RuntimeException) on verify error.
+     */
 	protected void verifyData() {
-		if ( !ProtectedDataConfiguration.useDatabaseIntegrityVerification(getTableName()) ) {
-			return;
-		}
-		final String prot = getRowProtection();
-		if ( prot==null ) {
-			throwException("non null", "null", null);
-			return;
-		}
-		final int verindex = prot.indexOf(":");
-		final int rowversion = Integer.parseInt(prot.substring(0, verindex));
-		final String str = getProtectString(rowversion);
-		// calculate expected protection on this, here we need the keyid
-		final int index1 = prot.indexOf(':', verindex + 1);
-		// HMAC or digital signature
-		final int protectVersion = Integer.parseInt(prot.substring(verindex + 1, index1));
-		final int index2 = prot.indexOf(':', index1 + 1);
-		final int keyid = Integer.parseInt(prot.substring(index1 + 1, index2));
-		if (log.isTraceEnabled()) {
-			log.trace("Verifying row string (" + this.getClass().getName() + "): " + str);
-			log.trace("RowProtection: " + prot);
-			log.trace("ProtectVersion: " + protectVersion);
-			log.trace("KeyId: " + keyid);
-		}
-		verifyProtection(prot, str, protectVersion, keyid);
+		impl.verifyData(this);
 	}
-	void throwException( String data, String realprot, Exception cause) throws DatabaseProtectionException {
-		final String msg = INTRES.getLocalizedMessage("databaseprotection.errorverify", data, realprot, this.getClass().getName(),getRowId());
-		log.error(msg);
-		if ( !ProtectedDataConfiguration.errorOnVerifyFail() ) {
-			return;
-		}
-		final DatabaseProtectionException dpe = new DatabaseProtectionException(msg, this);
-		if ( cause!=null ) {
-			dpe.initCause(cause);
-		}
-		throw dpe;
-	}
-	private void verifyProtection(final String prot, final String data, final int protectVersion, final int keyid) {
-		// Strip away the first stuff
-		final int index = prot.lastIndexOf(':');
-		final String realprot = prot.substring(index + 1);
-		final boolean result;
-		try {
-			switch( protectVersion ) {
-			case 1:
-				result = verifyHmac(realprot, data, keyid, protectVersion);
-				break;
-			case 2:
-				result = verifySignature(realprot, data, keyid);
-				break;
-			default:
-				result = false;
-				break;
-			}
-		} catch (Exception e) { // DatabaseProtectionException will not be caught since it is a RuntimeException
-			throwException( data, realprot, e );
-			return;
-		}
-		if ( !result ) {
-			throwException( data, realprot, null );
-			return;
-		}
-		if ( log.isTraceEnabled() ) {
-			log.trace("Verifying row string ok");
-		}
-	}
+	
+	/** Method that calculates integrity protection of an entity, but does not store it anywhere. Used primarily to make test protection
+	 * in order to exercise the CryptoToken.
+	 * @return the calculated protection string
+	 */
+    public String calculateProtection() {
+        return impl.calculateProtection(this);
+    }
 
-	private static boolean verifyHmac(final String macInHex, final String data, final int keyid, final int protectVersion) {
-		// For HMAC (and possibly others) we need to calculate the protection and compare
-		final String mustbeprot = calculateProtection(protectVersion, keyid, data);
-		return mustbeprot.equals(macInHex);
-	}
-
-	private static boolean verifySignature(final String signatureInHex, final String data, final int keyid) throws Exception {
-		// For signature protection we don't need to calculate the protection again, we only have to verify 
-		// the signature, and for that we do not need the private key, only the public
-		// Decrypt the signature (realprot) and extract the desired hash
-		final CryptoToken token = ProtectedDataConfiguration.instance().getCryptoToken(keyid);
-        if ( token==null ) {
-            final String msg = INTRES.getLocalizedMessage("databaseprotection.notokenwithid", Integer.valueOf(keyid));
-            log.error(msg);
-        }
-		final String sigalg = ProtectedDataConfiguration.instance().getSigAlg(keyid);
-		final Signature signature = Signature.getInstance(sigalg);
-		final PublicKey pubKey = token.getPublicKey(ProtectedDataConfiguration.instance().getKeyLabel(keyid));
-		signature.initVerify(pubKey);
-		signature.update(data.getBytes("UTF-8"));
-		return signature.verify(Hex.decode(signatureInHex));
-	}
-
-	public static String calculateProtection(final int protectVersion, final int keyid, final String toBesigned) {
-		if (log.isTraceEnabled()) {
-			log.trace("Using keyid " + keyid + " to calculate protection.");
-		}
-		try {
-			final CryptoToken token = ProtectedDataConfiguration.instance().getCryptoToken(keyid);
-			if ( token==null ) {
-				final String msg = INTRES.getLocalizedMessage("databaseprotection.notokenwithid", Integer.valueOf(keyid));
-				log.error(msg);
-				if (ProtectedDataConfiguration.errorOnVerifyFail()) {
-					throw new DatabaseProtectionException(msg);
-				}
-				return msg;
-			}
-			switch( protectVersion ) {
-			case 1: {
-				final Key key = token.getKey(ProtectedDataConfiguration.instance().getKeyLabel(keyid));
-				final Mac mac = Mac.getInstance("HmacSHA256");
-				mac.init(key);
-				final byte[] bytes = mac.doFinal(toBesigned.getBytes("UTF-8"));
-				return new String(Hex.encode(bytes));
-			}
-			case 2: {
-				final PrivateKey key = token.getPrivateKey(ProtectedDataConfiguration.instance().getKeyLabel(keyid));
-				final String sigalg = ProtectedDataConfiguration.instance().getSigAlg(keyid);
-				final Signature signature = Signature.getInstance(sigalg, token.getSignProviderName());
-				signature.initSign(key);
-				signature.update(toBesigned.getBytes("UTF-8"));
-				final byte[] bytes = signature.sign();
-				return new String(Hex.encode(bytes));
-			}
-			default: {
-				throw new DatabaseProtectionException("Unknown protectVersion: " + protectVersion);
-			}
-			}
-		} catch (Exception e) { // DatabaseProtectionException will not be caught since it is a RuntimeException
-			log.error(e);
-			throw new DatabaseProtectionException(e);
-		}
-	}
+	
 }
