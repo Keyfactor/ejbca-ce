@@ -210,8 +210,12 @@ public final class KeyTools {
                 throw new InvalidAlgorithmParameterException("No key or algorithm specifications");
             }
             keygen.initialize(ecSpec, new SecureRandom());
+        } else if (keySpec.startsWith("DSA")) {
+            // DSA key with "DSA" in keyspec
+            final int keysize = Integer.parseInt(keySpec.substring(3));
+            keygen.initialize(keysize);
         } else {
-            // RSA or DSA keys
+            // RSA or DSA key where keyspec is simply the key length
             final int keysize = Integer.parseInt(keySpec);
             keygen.initialize(keysize);
         }
