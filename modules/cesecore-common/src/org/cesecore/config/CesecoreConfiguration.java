@@ -305,6 +305,27 @@ public final class CesecoreConfiguration {
         return value!=null && Boolean.parseBoolean(value.trim());
     }
     
+    /** If database integrity protection should be used or not. */
+    public static boolean useDatabaseIntegrityProtection(final String tableName) {
+        // First check if we have explicit configuration for this entity
+        final String enableProtect = ConfigurationHolder.getString("databaseprotection.enablesign." + tableName);
+        if (enableProtect != null) {
+            return Boolean.TRUE.toString().equalsIgnoreCase(enableProtect);
+        }
+        // Otherwise use the global or default
+        return Boolean.TRUE.toString().equalsIgnoreCase(ConfigurationHolder.getString("databaseprotection.enablesign"));
+    }
+
+    /** If database integrity verification should be used or not. */
+    public static boolean useDatabaseIntegrityVerification(final String tableName) {
+        // First check if we have explicit configuration for this entity
+        final String enableVerify = ConfigurationHolder.getString("databaseprotection.enableverify." + tableName);
+        if (enableVerify != null) {
+            return Boolean.TRUE.toString().equalsIgnoreCase(enableVerify);
+        }
+        // Otherwise use the global or default
+        return Boolean.TRUE.toString().equalsIgnoreCase(ConfigurationHolder.getString("databaseprotection.enableverify"));
+    }
     
     public static boolean getCaKeepOcspExtendedService() {
         return Boolean.valueOf(ConfigurationHolder.getString("ca.keepocspextendedservice").toLowerCase());
