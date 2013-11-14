@@ -35,7 +35,6 @@ import org.cesecore.audit.impl.integrityprotected.AuditRecordData;
 import org.cesecore.audit.impl.integrityprotected.IntegrityProtectedLoggerSessionLocal;
 import org.cesecore.audit.impl.queued.QueuedLoggerSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.dbprotection.ProtectedDataConfiguration;
 import org.cesecore.time.TrustedTime;
 
 /**
