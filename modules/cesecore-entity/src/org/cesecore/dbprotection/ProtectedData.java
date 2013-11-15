@@ -91,7 +91,7 @@ public abstract class ProtectedData {
 	                // We only end up here once, if the class does not exist, we will never end up here again (ClassNotFoundException) 
 	                // and if the class exists we will never end up here again (it will not be null)
 	                implClass = Class.forName(implClassName);
-	                log.info("ProtectedDataIntegrityImpl is available, and used, in this version of EJBCA.");
+	                log.debug("ProtectedDataIntegrityImpl is available, and used, in this version of EJBCA.");
 	            }
 	            impl = (ProtectedDataImpl)implClass.newInstance();
 	            impl.setTableName(getTableName());
