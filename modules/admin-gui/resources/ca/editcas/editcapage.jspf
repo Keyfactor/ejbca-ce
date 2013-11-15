@@ -495,6 +495,7 @@ function checkallfields(){
                 if (editca && isUninitialized && (cryptoTokenIdParam == null || cryptoTokenIdParam.length()==0)) {
                     cryptoTokenIdParam = String.valueOf(catoken.getCryptoTokenId());
                 }
+                int numSelected = 0; // should be 1 after the loop
                 for (final Entry<String, String> entry : availableCryptoTokens) {
                 	// Ensure that we have a default for the next section
                 	if (cryptoTokenIdParam == null || cryptoTokenIdParam.length()==0) {
@@ -502,13 +503,24 @@ function checkallfields(){
                 	}
                 	final boolean selectCurrent = entry.getKey().equals(cryptoTokenIdParam);
                     final String entrySelected = selectCurrent ? "selected" : "";
+                    numSelected += selectCurrent ? 1 : 0;
                     if (currentCryptoTokenId == 0 || selectCurrent) {
                     	currentCryptoTokenId = Integer.parseInt(entry.getKey());
                     }
             %>
                     <option value="<%=entry.getKey() %>" <%= entrySelected %> ><c:out value="<%= entry.getValue() %>"/></option>
-            <%  } %>
+            <%  }
+                if (numSelected == 0) { %>
+                    <option value="" selected="selected">- Missing CryptoToken id <c:out value="<%= cryptoTokenIdParam %>"/> -</option>
+                    <%
+                    cryptoTokenIdParam = null;
+                    currentCryptoTokenId = 0;
+                }
+            %>
 	            </select>
+	            <% if (cryptoTokenIdParam == null) { %>
+                    <p><strong>You need to select a cryptotoken that exists before you can save!</strong></p> 
+                <% } %>
             <%  } %>
 	            <%/* When JavaScript is not available, we show a "Reload" image. */%>
 	            <input id="changecatokentypeUpdateButton" type="image" src="reload.png" alt="Reload"/>
@@ -1469,9 +1481,13 @@ function checkallfields(){
         <% if (!isexternal) {
             if (editca && !isUninitialized) { %>
                 <input style="font-weight:bold;" type="submit" name="<%= BUTTON_SAVE %>"  onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE") %>">
-        <%  } else if (editca && isUninitialized) { %>
-                <input style="font-weight:bold;" type="submit" name="<%= BUTTON_SAVE %>"  onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE") %>">
-                <input style="font-weight:bold;" type="submit" name="<%= BUTTON_INITIALIZE %>"  onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE_AND_INITIALIZE") %>">
+        <%  } else if (editca && isUninitialized) {
+                if (cryptoTokenIdParam != null) { %>
+                    <input style="font-weight:bold;" type="submit" name="<%= BUTTON_SAVE %>"  onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE") %>">
+                    <input style="font-weight:bold;" type="submit" name="<%= BUTTON_INITIALIZE %>"  onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE_AND_INITIALIZE") %>">
+                <% } else { %>
+                    <p><strong>You need to select a cryptotoken that exists before you can save!</strong></p> 
+                <% } %>
         <%  } else { %>
                 <input style="font-weight:bold;" type="submit" name="<%= BUTTON_CREATE %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("CREATE") %>">
         <%  } %>
