@@ -645,6 +645,7 @@ java.security.InvalidAlgorithmParameterException
             if (requestMap.get(SELECT_KEY_SEQUENCE_FORMAT) != null) {
           	    keySequenceFormat = Integer.parseInt(requestMap.get(SELECT_KEY_SEQUENCE_FORMAT));
             }
+            editca = (caid != 0);
             includefile="editcapage.jspf";
         }
         if (ACTION_CHOOSE_CATOKENTYPE.equals(action)) {
@@ -656,6 +657,7 @@ java.security.InvalidAlgorithmParameterException
             if (request.getParameter(SELECT_KEY_SEQUENCE_FORMAT) != null) {
             	keySequenceFormat = Integer.parseInt(request.getParameter(SELECT_KEY_SEQUENCE_FORMAT)); 
             }
+            editca = (caid != 0);
             includefile="editcapage.jspf";
         }
         if (ACTION_CHOOSE_CASIGNALGO.equals(action)) {
@@ -667,6 +669,7 @@ java.security.InvalidAlgorithmParameterException
             if (requestMap.get(SELECT_KEY_SEQUENCE_FORMAT) != null) {
           	    keySequenceFormat = Integer.parseInt(requestMap.get(SELECT_KEY_SEQUENCE_FORMAT)); 
             }
+            editca = (caid != 0);
             includefile="editcapage.jspf";              
         }
         if (ACTION_IMPORTCA.equals(action)) {
