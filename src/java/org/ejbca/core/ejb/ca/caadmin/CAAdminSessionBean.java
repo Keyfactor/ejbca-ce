@@ -248,10 +248,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             cryptoToken.testKeyPair(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYTEST));
             caSession.editCA(authenticationToken, caInfo);
             CA ca = caSession.getCA(authenticationToken, caInfo.getCAId());
-            if (ca instanceof X509CA) {
-                // Update subject alt name
-                ((X509CA)ca).updateUninitializedCA(caInfo);
-            }
+            ca.updateUninitializedCA(caInfo);
             ca.setCAToken(caToken);
             CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(caInfo.getCertificateProfileId());
             Collection<Certificate> certificatechain = createCertificateChain(authenticationToken, ca, cryptoToken, certprofile);

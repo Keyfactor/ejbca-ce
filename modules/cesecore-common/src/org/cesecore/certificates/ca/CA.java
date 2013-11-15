@@ -665,7 +665,20 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
             }
             data.put(EXTENDEDCASERVICES, extendedservicetypes);            
         }
+        
+        if (cainfo.getStatus() == CAConstants.CA_UNINITIALIZED) {
+            updateUninitializedCA(cainfo);
+        }
+        
         this.cainfo = cainfo;
+    }
+    
+    /**
+     * Called when an uninitialized CA is updated, either from updateCA
+     * or from other places in the code.
+     */
+    public void updateUninitializedCA(CAInfo cainfo) {
+        // Does nothing in the base class. Overridden by X509CA
     }
 
     /**
