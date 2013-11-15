@@ -171,7 +171,8 @@ public class CADataHandler implements Serializable {
   }
 
     /**
-     * Update any values in the CA with the ones in caInfo, and  set status to active and generate certificates. t
+     * Initializes a CA. The CA is updated with the values in caInfo,
+     * its status is set to active and certificates are generated.
      * 
      * @param  caInfo CAInfo class containing updated information for the CA to initialize
      * @throws AuthorizationDeniedException if user was denied authorization to edit CAs 
@@ -181,12 +182,36 @@ public class CADataHandler implements Serializable {
      * @throws InvalidAlgorithmException 
      * @throws CryptoTokenAuthenticationFailedException 
      * @throws CAExistsException 
+     * @throws CAOfflineException 
+     * @throws CertificateRevokeException 
+     * @throws UnsupportedEncodingException 
      */
     public void initializeCA(CAInfo caInfo) throws AuthorizationDeniedException, InvalidKeyException, CryptoTokenOfflineException,
-            CADoesntExistsException, IllegalCryptoTokenException, CAExistsException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
+            CADoesntExistsException, IllegalCryptoTokenException, CAExistsException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException, UnsupportedEncodingException, CertificateRevokeException, CAOfflineException {
         CAInfo oldinfo = caSession.getCAInfo(administrator, caInfo.getCAId());
         caInfo.setName(oldinfo.getName());
+        
+        boolean serviceXkmsActive = false;
+        boolean serviceCmsActive = false;
+        for (ExtendedCAServiceInfo extcaserviceinfo : caInfo.getExtendedCAServiceInfos()) {
+            boolean active = extcaserviceinfo.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE;
+            if (active && extcaserviceinfo instanceof XKMSCAServiceInfo) {
+                serviceXkmsActive = true;
+            }
+            if (active && extcaserviceinfo instanceof CmsCAServiceInfo) {
+                serviceCmsActive = true;
+            }
+        }
+        
         caadminsession.initializeCa(administrator, caInfo);
+        
+        if (serviceXkmsActive) {
+            renewAndRevokeXKMSCertificate(caInfo.getCAId());
+        }
+        if (serviceCmsActive) {
+            renewAndRevokeCmsCertificate(caInfo.getCAId());
+        }
+        
         info.cAsEdited();
     }
   
