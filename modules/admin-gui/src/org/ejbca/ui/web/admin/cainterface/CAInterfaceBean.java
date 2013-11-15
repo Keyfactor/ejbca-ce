@@ -858,10 +858,15 @@ public class CAInterfaceBean implements Serializable {
             description = "";
 	    }
 
-	    final long validity = ValidityDate.encode(validityString);
-	    if (validity<0) {
-	        throw new ParameterException(ejbcawebbean.getText("INVALIDVALIDITYORCERTEND"));
-	    }
+        final long validity;
+        if (buttonMakeRequest) {
+            validity = 0; // not applicable
+        } else {
+            validity = ValidityDate.encode(validityString);
+    	    if (validity<0) {
+    	        throw new ParameterException(ejbcawebbean.getText("INVALIDVALIDITYORCERTEND"));
+    	    }
+        }
 
 	    if (catoken != null && catype != 0 && subjectdn != null && caName != null && signedby != 0) {
 	        // Approvals is generic for all types of CAs
