@@ -191,26 +191,11 @@ public class CADataHandler implements Serializable {
         CAInfo oldinfo = caSession.getCAInfo(administrator, caInfo.getCAId());
         caInfo.setName(oldinfo.getName());
         
-        boolean serviceXkmsActive = false;
-        boolean serviceCmsActive = false;
-        for (ExtendedCAServiceInfo extcaserviceinfo : caInfo.getExtendedCAServiceInfos()) {
-            boolean active = extcaserviceinfo.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE;
-            if (active && extcaserviceinfo instanceof XKMSCAServiceInfo) {
-                serviceXkmsActive = true;
-            }
-            if (active && extcaserviceinfo instanceof CmsCAServiceInfo) {
-                serviceCmsActive = true;
-            }
-        }
-        
         caadminsession.initializeCa(administrator, caInfo);
         
-        if (serviceXkmsActive) {
-            renewAndRevokeXKMSCertificate(caInfo.getCAId());
-        }
-        if (serviceCmsActive) {
-            renewAndRevokeCmsCertificate(caInfo.getCAId());
-        }
+        // Always generate certificates for extended services, so they can be enabled in one step
+        renewAndRevokeXKMSCertificate(caInfo.getCAId());
+        renewAndRevokeCmsCertificate(caInfo.getCAId());
         
         info.cAsEdited();
     }
