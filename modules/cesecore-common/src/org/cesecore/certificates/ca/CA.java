@@ -678,7 +678,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * or from other places in the code.
      */
     public void updateUninitializedCA(CAInfo cainfo) {
-        // Does nothing in the base class. Overridden by X509CA
+        // Currently does nothing in the base class. Overridden by X509CA
     }
 
     /**
