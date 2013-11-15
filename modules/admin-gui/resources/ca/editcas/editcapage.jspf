@@ -95,7 +95,7 @@
 %>
 <script type="text/javascript">
 <!--  
-<% if(!editca){ %>
+<% if (!editca || isUninitialized) { %>
   var rootcaprofiles = new Array(<%= rootcaprofiles.keySet().size()%>);
   var subcaprofiles = new Array(<%= subcaprofiles.keySet().size()%>);
   var NAME       = 0;
@@ -123,9 +123,11 @@
 %>
       
 function fillCertProfileField(){
-   var certprofselect   =  document.ca.<%=SELECT_CERTIFICATEPROFILE%>; 
+   var certprofselect   =  document.ca.<%=SELECT_CERTIFICATEPROFILE%>;
 
    var num = certprofselect.length;
+   var selectedProfile = certprofselect.selectedIndex != -1 && num > 0 ? 
+           certprofselect.options[certprofselect.selectedIndex].value : null; 
    for( i=num-1; i >= 0; i-- ){
        certprofselect.options[i]=null;
     }   
@@ -134,25 +136,30 @@ function fillCertProfileField(){
    if(document.ca.<%= SELECT_SIGNEDBY %>.options[document.ca.<%= SELECT_SIGNEDBY %>.options.selectedIndex].value == <%= CAInfo.SELFSIGNED %>)
       profiles = rootcaprofiles;
 
+   var indexToSelect = -1;
    for( i=0; i < profiles.length; i ++){
+     var isSelected = profiles[i][ID] == selectedProfile;
      certprofselect.options[i]=new Option(profiles[i][NAME],
-                                     profiles[i][ID]);    
-     
+                                     profiles[i][ID],
+                                     isSelected, isSelected);    
+     /*if (profiles[i][NAME] == selectedProfile) {
+        indexToSelect = i;
+     }*/
    }
+   /*if (indexToSelect != -1) {
+      certprofselect.selectedIndex = indexToSelect;
+   }*/
 }
 
 function isExternalX509(){
    var subjectaltname  =  document.ca.<%=TEXTFIELD_SUBJECTALTNAME%>;
    var policyidfield   =  document.ca.<%=TEXTFIELD_POLICYID%>;
-   var activateocsp    =  document.ca.<%=CHECKBOX_ACTIVATEOCSPSERVICE%>;
    var activatexkms    =  document.ca.<%=CHECKBOX_ACTIVATEXKMSSERVICE%>;
    var activatecms     =  document.ca.<%=CHECKBOX_ACTIVATECMSSERVICE%>;
    
    if (subjectaltname != null) {	
 	   subjectaltname.disabled = false; 
-	   policyidfield.disabled = false; 
-	   activateocsp.disabled = false;
-	   activateocsp.checked = true;   
+	   policyidfield.disabled = false;    
 	   activatecms.disabled = false;
 	   activatecms.checked = false;   
        if (typeof activatexkms != "undefined") {
@@ -163,8 +170,6 @@ function isExternalX509(){
 	   if(document.ca.<%= SELECT_SIGNEDBY %>.options[document.ca.<%= SELECT_SIGNEDBY %>.options.selectedIndex].value == <%= CAInfo.SIGNEDBYEXTERNALCA %>){
 	      subjectaltname.disabled = true; 
 	      policyidfield.disabled = true;   
-	      activateocsp.disabled = true;
-	      activateocsp.checked = false;
 	      activatecms.disabled = true;
 	      activatecms.checked = false;
 	      if (typeof activatexkms != "undefined") {
@@ -183,13 +188,13 @@ function isExternalGeneric(){
    var certproffield   =  document.ca.<%=SELECT_CERTIFICATEPROFILE %>;
 
    makebutton.disabled = true;
-   createbutton.disabled = false; 
+   <% if (!isUninitialized) { %>createbutton.disabled = false;<% } %>
    validityfield.disabled = false; 
    certproffield.disabled = false; 
 
    if(document.ca.<%= SELECT_SIGNEDBY %>.options[document.ca.<%= SELECT_SIGNEDBY %>.options.selectedIndex].value == <%= CAInfo.SIGNEDBYEXTERNALCA %>){
-      makebutton.disabled = false;   
-      createbutton.disabled = true;
+      makebutton.disabled = false;
+      <% if (!isUninitialized) { %>createbutton.disabled = true;<% } %>   
       validityfield.disabled = true; 
       certproffield.disabled = true; 
    } 
@@ -343,7 +348,7 @@ function checkallfields(){
 -->
 
 </script>
-<body <% if(!editca) out.write(" onload='fillCertProfileField()' "); %>> 
+<body <% if(!editca || isUninitialized) out.write(" onload='fillCertProfileField()' "); %>> 
 <div align="center"> 
   <% if (editca) { %>
   <h2><%= ejbcawebbean.getText("EDITCA") %></h2>
@@ -1458,7 +1463,7 @@ function checkallfields(){
     <%-- ---------- Form buttons -------------------- --%>
 
     <tr id="Row<%=row++%2%>"><td width="50%" align="right">&nbsp;</td><td width="50%">&nbsp;</td></tr>
-    <% if (editca && !waitingresponse) { %>
+    <% if (editca && !waitingresponse && !isUninitialized) { %>
     <tr id="Row<%=row++%2%>">
         <td width="50%" align="right">&nbsp;</td>
         <td width="50%"><a style="cursor:pointer;" onClick="viewcacert()"><u><%= ejbcawebbean.getText("VIEWCACERTIFICATE")%></u></a></td>
