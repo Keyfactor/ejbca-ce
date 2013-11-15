@@ -83,6 +83,7 @@ public class ValidityDate {
 	 * Encoding of the validity for a CA or certificate profile. Either delta time or end date.
 	 * @param sValidity *y *mo *d or absolute date in the form "yyyy-MM-dd HH:mm:ssZZ"
 	 * @return delta time in days if h*m*d*; milliseconds since epoch if valid absolute date; -1 if neither
+	 * @throws IllegalArgumentException if the argument is null
 	 */
 	public static long encode(final String sValidity) {
 		long returnValue = -1;
