@@ -142,13 +142,7 @@ function fillCertProfileField(){
      certprofselect.options[i]=new Option(profiles[i][NAME],
                                      profiles[i][ID],
                                      isSelected, isSelected);    
-     /*if (profiles[i][NAME] == selectedProfile) {
-        indexToSelect = i;
-     }*/
    }
-   /*if (indexToSelect != -1) {
-      certprofselect.selectedIndex = indexToSelect;
-   }*/
 }
 
 function isExternalX509(){
@@ -940,7 +934,7 @@ function checkallfields(){
                     }
                  } else if (editca && isUninitialized)  {
                     String currentCertProfileId = String.valueOf(cainfo.getCertificateProfileId()); %>
-                    <select name="<%= SELECT_CERTIFICATEPROFILE %>" size="1"><!-- test -->
+                    <select name="<%= SELECT_CERTIFICATEPROFILE %>" size="1">
                     <%  for (final Entry<String,String> entry : cabean.getAvailableCaCertificateProfiles()) { %>
                             <option value="<%=entry.getKey() %>" <% if(entry.getKey().equals(currentCertProfileId)) { %> selected <%}%>>
                                 <%= entry.getValue() %>
