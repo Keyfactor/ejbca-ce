@@ -206,6 +206,7 @@ java.security.InvalidAlgorithmParameterException
   int keySequenceFormat = StringTools.KEY_SEQUENCE_FORMAT_NUMERIC;
   String cryptoTokenIdParam = "";
   String signatureAlgorithmParam = "";
+  String extendedServicesKeySpecParam = null;
 
   boolean  caexists             = false;
   boolean  cadeletefailed       = false;
@@ -572,6 +573,11 @@ java.security.InvalidAlgorithmParameterException
                         policies = cabean.parsePolicies(requestMap.get(TEXTFIELD_POLICYID));
                     }
                     
+                    List<ExtendedCAServiceInfo> extendedcaservices = null;
+                    if (cainfo instanceof X509CAInfo) {
+                        extendedcaservices = cabean.makeExtendedServicesInfos(signkeyspec, cainfo.getSubjectDN(), serviceXkmsActive, serviceCmsActive);
+                    }
+                    
                     final CAToken newCAToken = new CAToken(cryptoTokenId, caTokenProperties);
                     newCAToken.setSignatureAlgorithm(signatureAlgorithmParam);
                     cainfo.setCAToken(newCAToken);
@@ -580,6 +586,7 @@ java.security.InvalidAlgorithmParameterException
                         X509CAInfo x509cainfo = (X509CAInfo)cainfo;
                         x509cainfo.setSubjectAltName(subjectaltname);
                         x509cainfo.setPolicies(policies);
+                        x509cainfo.setExtendedCAServiceInfos(extendedcaservices);
                     }
                 }
                 

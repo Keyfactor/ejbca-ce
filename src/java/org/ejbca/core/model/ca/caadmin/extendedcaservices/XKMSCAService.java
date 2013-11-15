@@ -199,8 +199,10 @@ public class XKMSCAService extends ExtendedCAService implements Serializable {
 				m_log.error("Error updating the XKMS service: ", e);
 			}
     	}
-    	// Only status is updated
-    	this.info = new XKMSCAServiceInfo(serviceinfo.getStatus(), getSubjectDN(), getSubjectAltName(), (String) data.get(KEYSPEC), (String) data.get(KEYALGORITHM), xKMScertificatechain);										         									    	 									  
+    	data.put(KEYSPEC, info.getKeySpec());
+        data.put(KEYALGORITHM, info.getKeyAlgorithm());
+    	// We only updated the status, and keyspec/keyalg which can be edited in uninitialized CAs 
+    	this.info = new XKMSCAServiceInfo(serviceinfo.getStatus(), getSubjectDN(), getSubjectAltName(), info.getKeySpec(), info.getKeyAlgorithm(), xKMScertificatechain);
     	m_log.trace("<update: " + serviceinfo.getStatus());
     }
 
