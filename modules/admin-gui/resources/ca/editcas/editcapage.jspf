@@ -1,4 +1,5 @@
 <%@page import="org.cesecore.keys.token.CryptoTokenFactory"%>
+<%@page import="org.ejbca.core.model.ca.caadmin.extendedcaservices.BaseSigningCAServiceInfo"%>
 
 <%               
   TreeMap<String,Integer> rootcaprofiles = info.getAuthorizedRootCACertificateProfileNames();
@@ -69,6 +70,10 @@
 		            cmscert = (java.security.cert.X509Certificate) cmscainfo.getCertificatePath().get(0);
 	            }
 	        }
+	        
+	        if (extendedServicesKeySpecParam == null && extendedCAServiceInfo instanceof BaseSigningCAServiceInfo) {
+                extendedServicesKeySpecParam = ((BaseSigningCAServiceInfo)extendedCAServiceInfo).getKeySpec();
+            }
 	    }  
 	}
   } else {
@@ -647,21 +652,22 @@ function checkallfields(){
 	            </select>
             </td>
         </tr>
-        <%  if (!editca) {  %>
         <tr id="Row<%=row++%2%>"> 
             <td width="50%"  align="right">
                 <%= ejbcawebbean.getText("EXTSERVICESKEYSPEC") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Extended%20Services%20Key%20Specification") %>
             </td>
             <td width="50%"> 
                 <select name="<%= SELECT_KEYSIZE %>" size="1">
-                <%  for (final Entry<String,String> entry : cabean.getAvailbleKeySpecs()) {
-                        final String selectedEntry = "2048".equals(entry.getKey()) ? " selected " : ""; %>
+                <%  if (extendedServicesKeySpecParam == null) {
+                        extendedServicesKeySpecParam = "2048";
+                    }
+                    for (final Entry<String,String> entry : cabean.getAvailbleKeySpecs()) {
+                        final String selectedEntry = entry.getKey().equals(extendedServicesKeySpecParam) ? " selected " : ""; %>
                         <option value="<%= entry.getKey() %>"<%= selectedEntry %>><%= entry.getValue() %></option>  
                 <%  } %>
                 </select>
             </td>
         </tr>
-        <%  }  %>
     <%  } %>
     
   <%   } %>
@@ -1338,11 +1344,11 @@ function checkallfields(){
       </td>
       <td width="50%">
         <input type="checkbox" name="<%=CHECKBOX_ACTIVATEXKMSSERVICE %>" value="<%=CHECKBOX_VALUE %>" 
-           <% if(waitingresponse || (editca && xkmscert == null)) out.write(" disabled ");%>
+           <% if(waitingresponse || (editca && !isUninitialized && xkmscert == null)) out.write(" disabled ");%>
             <% if((editca && (xkmscainfo.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE)))
                  out.write("CHECKED");%> id="<%=CHECKBOX_ACTIVATEXKMSSERVICE%>">
                  <label for="<%=CHECKBOX_ACTIVATEXKMSSERVICE%>"><c:out value="<%= ejbcawebbean.getText(\"ACTIVATE\") %>" /></label>
-         <% if(editca){ %> &nbsp;&nbsp;         
+         <% if(editca && !isUninitialized){ %> &nbsp;&nbsp;         
          <input type="submit" name="<%= BUTTON_REVOKERENEWXKMSCERTIFICATE %>" <% if(waitingresponse) out.write(" disabled ");%> value="<%= ejbcawebbean.getText("REVOKERENEWXKMSCERT") %>" >
          <%   if(xkmscert != null){ %> &nbsp;&nbsp;         
          <br />
@@ -1361,11 +1367,11 @@ function checkallfields(){
       </td>
       <td width="50%">
         <input type="checkbox" name="<%=CHECKBOX_ACTIVATECMSSERVICE %>" value="<%=CHECKBOX_VALUE %>" 
-           <% if(waitingresponse || (editca && cmscert == null)) out.write(" disabled ");%>
+           <% if(waitingresponse || (editca && !isUninitialized && cmscert == null)) out.write(" disabled ");%>
             <% if((editca && (cmscainfo.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE)))
                  out.write("CHECKED");%> id="<%=CHECKBOX_ACTIVATECMSSERVICE%>">
                  <label for="<%=CHECKBOX_ACTIVATECMSSERVICE%>"><c:out value="<%= ejbcawebbean.getText(\"ACTIVATE\") %>" /></label>
-         <% if(editca){ %> &nbsp;&nbsp;         
+         <% if(editca && !isUninitialized){ %> &nbsp;&nbsp;         
          <input type="submit" name="<%= BUTTON_REVOKERENEWCMSCERTIFICATE %>" <% if(waitingresponse) out.write(" disabled ");%> value="<%= ejbcawebbean.getText("REVOKERENEWCMSCERT") %>" >
          <%   if(cmscert != null){ %> &nbsp;&nbsp;         
          <br />

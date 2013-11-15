@@ -836,21 +836,6 @@ public class CAInterfaceBean implements Serializable {
         if (extendedServiceSignatureKeySpec == null || extendedServiceSignatureKeySpec.length()==0) {
             throw new Exception("No key specification supplied.");
         }
-        String extendedServiceSignatureKeyType = AlgorithmConstants.KEYALGORITHM_RSA;
-        try {
-            Integer.parseInt(extendedServiceSignatureKeySpec);
-        } catch (NumberFormatException e) {
-            if (extendedServiceSignatureKeySpec.startsWith("DSA")) {
-                extendedServiceSignatureKeyType = AlgorithmConstants.KEYALGORITHM_DSA;
-            } else if (extendedServiceSignatureKeySpec.startsWith(AlgorithmConstants.KEYSPECPREFIX_ECGOST3410)) {
-                extendedServiceSignatureKeyType = AlgorithmConstants.KEYALGORITHM_ECGOST3410;
-            } else if (AlgorithmTools.isDstu4145Enabled() && extendedServiceSignatureKeySpec.startsWith(CesecoreConfiguration.getOidDstu4145())) {
-                extendedServiceSignatureKeyType = AlgorithmConstants.KEYALGORITHM_DSTU4145;
-            } else {
-                extendedServiceSignatureKeyType = AlgorithmConstants.KEYALGORITHM_ECDSA;
-            }
-            
-        }
         if (keySequenceFormat==null) {
             catoken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
         } else {
@@ -912,28 +897,10 @@ public class CAInterfaceBean implements Serializable {
 	            if (caDefinedFreshestCrlString != null) {
 	                cadefinedfreshestcrl = caDefinedFreshestCrlString;
 	            }
-	            final int ocspactive = serviceOcspActive ? ExtendedCAServiceInfo.STATUS_ACTIVE : ExtendedCAServiceInfo.STATUS_INACTIVE;
-	            final int xkmsactive = serviceXkmsActive ? ExtendedCAServiceInfo.STATUS_ACTIVE : ExtendedCAServiceInfo.STATUS_INACTIVE;
-	            final int cmsactive = serviceCmsActive ? ExtendedCAServiceInfo.STATUS_ACTIVE : ExtendedCAServiceInfo.STATUS_INACTIVE;
 
 	            if (crlperiod != 0 && !illegaldnoraltname) {
-	                if (buttonCreateCa) {           
-	                    List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
-                        // Create and active OSCP CA Service.
-	                    extendedcaservices.add(
-	                            new XKMSCAServiceInfo(xkmsactive,
-	                                    "CN=XKMSCertificate, " + subjectdn,
-	                                    "",
-	                                    extendedServiceSignatureKeySpec,
-	                                    extendedServiceSignatureKeyType));
-	                    extendedcaservices.add(
-	                            new CmsCAServiceInfo(cmsactive,
-	                                    "CN=CMSCertificate, " + subjectdn,
-	                                    "",
-	                                    extendedServiceSignatureKeySpec,
-	                                    extendedServiceSignatureKeyType));
-	                    extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-	                    extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+	                if (buttonCreateCa) {
+	                    List<ExtendedCAServiceInfo> extendedcaservices = makeExtendedServicesInfos(extendedServiceSignatureKeySpec, subjectdn, serviceXkmsActive, serviceCmsActive);
 	                    X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caName, CAConstants.CA_ACTIVE, new Date(), subjectaltname,
 	                            certprofileid, validity, 
 	                            null, catype, signedby,
@@ -968,21 +935,7 @@ public class CAInterfaceBean implements Serializable {
 	                }
 
 	                if (buttonMakeRequest) {
-	                    List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
-	                    extendedcaservices.add(
-	                            new XKMSCAServiceInfo(xkmsactive,
-	                                    "CN=XKMSCertificate, " + subjectdn,
-	                                    "",
-	                                    extendedServiceSignatureKeySpec,
-	                                    extendedServiceSignatureKeyType));
-	                    extendedcaservices.add(
-	                            new CmsCAServiceInfo(cmsactive,
-	                                    "CN=CMSCertificate, " + subjectdn,
-	                                    "",
-	                                    extendedServiceSignatureKeySpec,
-	                                    extendedServiceSignatureKeyType));
-	                    extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-	                    extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+	                    List<ExtendedCAServiceInfo> extendedcaservices = makeExtendedServicesInfos(extendedServiceSignatureKeySpec, subjectdn, serviceXkmsActive, serviceCmsActive);
 	                    X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caName, CAConstants.CA_ACTIVE, new Date(), subjectaltname,
 	                            certprofileid, validity,
 	                            null, catype, CAInfo.SIGNEDBYEXTERNALCA,
@@ -1069,7 +1022,41 @@ public class CAInterfaceBean implements Serializable {
 	    return illegaldnoraltname;
 	}
 
-	public boolean checkSubjectAltName(String subjectaltname) {
+	public List<ExtendedCAServiceInfo> makeExtendedServicesInfos(String keySpec, String subjectdn, boolean serviceXkmsActive, boolean serviceCmsActive) {
+	    String keyType = AlgorithmConstants.KEYALGORITHM_RSA;
+        try {
+            Integer.parseInt(keySpec);
+        } catch (NumberFormatException e) {
+            if (keySpec.startsWith("DSA")) {
+                keyType = AlgorithmConstants.KEYALGORITHM_DSA;
+            } else if (keySpec.startsWith(AlgorithmConstants.KEYSPECPREFIX_ECGOST3410)) {
+                keyType = AlgorithmConstants.KEYALGORITHM_ECGOST3410;
+            } else if (AlgorithmTools.isDstu4145Enabled() && keySpec.startsWith(CesecoreConfiguration.getOidDstu4145())) {
+                keyType = AlgorithmConstants.KEYALGORITHM_DSTU4145;
+            } else {
+                keyType = AlgorithmConstants.KEYALGORITHM_ECDSA;
+            }
+        }
+        
+        final int xkmsactive = serviceXkmsActive ? ExtendedCAServiceInfo.STATUS_ACTIVE : ExtendedCAServiceInfo.STATUS_INACTIVE;
+        final int cmsactive = serviceCmsActive ? ExtendedCAServiceInfo.STATUS_ACTIVE : ExtendedCAServiceInfo.STATUS_INACTIVE;
+	    
+        List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
+        // Create and active OSCP CA Service.
+        extendedcaservices.add(
+                new XKMSCAServiceInfo(xkmsactive,
+                        "CN=XKMSCertificate, " + subjectdn, "",
+                        keySpec, keyType));
+        extendedcaservices.add(
+                new CmsCAServiceInfo(cmsactive,
+                        "CN=CMSCertificate, " + subjectdn, "",
+                        keySpec, keyType));
+        extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+        extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+        return extendedcaservices;
+    }
+
+    public boolean checkSubjectAltName(String subjectaltname) {
         if (subjectaltname != null && !subjectaltname.trim().equals("")) {
             final DNFieldExtractor subtest = new DNFieldExtractor(subjectaltname,DNFieldExtractor.TYPE_SUBJECTALTNAME);                   
             if (subtest.isIllegal() || subtest.existsOther()) {
