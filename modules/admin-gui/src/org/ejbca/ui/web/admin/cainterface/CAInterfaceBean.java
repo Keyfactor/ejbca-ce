@@ -1267,23 +1267,31 @@ public class CAInterfaceBean implements Serializable {
 
     /** @return a list of key pair aliases that can be used for signing using the supplied CA signing algorithm */
 	public List<String> getAvailableCryptoTokenAliases(int cryptoTokenId, final String caSigingAlgorithm) throws KeyStoreException, CryptoTokenOfflineException, AuthorizationDeniedException {
-        final List<KeyPairInfo> cryptoTokenKeyPairInfos = cryptoTokenManagementSession.getKeyPairInfos(authenticationToken, cryptoTokenId);
-        final List<String> aliases = new ArrayList<String>();
-        for (final KeyPairInfo cryptoTokenKeyPairInfo : cryptoTokenKeyPairInfos) {
-            if (AlgorithmTools.getKeyAlgorithmFromSigAlg(caSigingAlgorithm).equals(cryptoTokenKeyPairInfo.getKeyAlgorithm())) {
-                aliases.add(cryptoTokenKeyPairInfo.getAlias());
+	    final List<String> aliases = new ArrayList<String>();
+	    if (cryptoTokenManagementSession.getCryptoTokenInfo(cryptoTokenId) == null) {
+	       log.debug("CryptoToken didn't exist when trying to get aliases");
+	    } else {
+            final List<KeyPairInfo> cryptoTokenKeyPairInfos = cryptoTokenManagementSession.getKeyPairInfos(authenticationToken, cryptoTokenId);
+            for (final KeyPairInfo cryptoTokenKeyPairInfo : cryptoTokenKeyPairInfos) {
+                if (AlgorithmTools.getKeyAlgorithmFromSigAlg(caSigingAlgorithm).equals(cryptoTokenKeyPairInfo.getKeyAlgorithm())) {
+                    aliases.add(cryptoTokenKeyPairInfo.getAlias());
+                }
             }
-        }
+	    }
         return aliases;
 	}
 
     /** @return a list of key pair aliases that can be used for encryption using the supplied CA signing algorithm to derive encryption algo. */
     public List<String> getAvailableCryptoTokenEncryptionAliases(int cryptoTokenId, final String caSigingAlgorithm) throws KeyStoreException, CryptoTokenOfflineException, AuthorizationDeniedException {
-        final List<KeyPairInfo> cryptoTokenKeyPairInfos = cryptoTokenManagementSession.getKeyPairInfos(authenticationToken, cryptoTokenId);
         final List<String> aliases = new ArrayList<String>();
-        for (final KeyPairInfo cryptoTokenKeyPairInfo : cryptoTokenKeyPairInfos) {
-            if (AlgorithmTools.getKeyAlgorithmFromSigAlg(AlgorithmTools.getEncSigAlgFromSigAlg(caSigingAlgorithm)).equals(cryptoTokenKeyPairInfo.getKeyAlgorithm())) {
-                aliases.add(cryptoTokenKeyPairInfo.getAlias());
+        if (cryptoTokenManagementSession.getCryptoTokenInfo(cryptoTokenId) == null) {
+            log.debug("CryptoToken didn't exist when trying to get aliases");
+        } else {
+            final List<KeyPairInfo> cryptoTokenKeyPairInfos = cryptoTokenManagementSession.getKeyPairInfos(authenticationToken, cryptoTokenId);
+            for (final KeyPairInfo cryptoTokenKeyPairInfo : cryptoTokenKeyPairInfos) {
+                if (AlgorithmTools.getKeyAlgorithmFromSigAlg(AlgorithmTools.getEncSigAlgFromSigAlg(caSigingAlgorithm)).equals(cryptoTokenKeyPairInfo.getKeyAlgorithm())) {
+                    aliases.add(cryptoTokenKeyPairInfo.getAlias());
+                }
             }
         }
         return aliases;
