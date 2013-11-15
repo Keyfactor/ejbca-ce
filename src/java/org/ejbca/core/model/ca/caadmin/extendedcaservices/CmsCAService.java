@@ -213,8 +213,10 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 				m_log.error("Error initilizing Extended CA service during upgrade: ", e);
 			}
 		}
-		// Only status is updated
-		this.info = new CmsCAServiceInfo(serviceinfo.getStatus(), getSubjectDN(), getSubjectAltName(), (String) data.get(KEYSPEC), (String) data.get(KEYALGORITHM), certificatechain);							         									    	 									  
+		data.put(KEYSPEC, info.getKeySpec());
+        data.put(KEYALGORITHM, info.getKeyAlgorithm());
+        // We only updated the status, and keyspec/keyalg which can be edited in uninitialized CAs
+		this.info = new CmsCAServiceInfo(serviceinfo.getStatus(), getSubjectDN(), getSubjectAltName(), info.getKeySpec(), info.getKeyAlgorithm(), certificatechain);
 	}
 
 	@Override
