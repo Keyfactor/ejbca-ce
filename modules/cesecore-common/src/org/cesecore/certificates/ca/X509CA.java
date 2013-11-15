@@ -407,6 +407,7 @@ public class X509CA extends CA implements Serializable {
      */
     @Override
     public void updateUninitializedCA(CAInfo cainfo) {
+        super.updateUninitializedCA(cainfo);
         X509CAInfo info = (X509CAInfo) cainfo;
         data.put(SUBJECTALTNAME, info.getSubjectAltName());
     }
