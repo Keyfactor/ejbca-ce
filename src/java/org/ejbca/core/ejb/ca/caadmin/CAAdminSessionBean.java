@@ -243,15 +243,17 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             createCA(authenticationToken, caInfo);
         } else {
             CAToken caToken = caInfo.getCAToken();
+            CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(caInfo.getCertificateProfileId());
             CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(caToken.getCryptoTokenId());
             // See if CA token is OK before generating keys
             cryptoToken.testKeyPair(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYTEST));
+            
+            mergeCertificatePoliciesFromCAAndProfile(caInfo, certprofile);
             caSession.editCA(authenticationToken, caInfo);
             CA ca = caSession.getCA(authenticationToken, caInfo.getCAId());
             ca.updateUninitializedCA(caInfo);
             ca.setCAToken(caToken);
             ca.setCAInfo(caInfo);
-            CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(caInfo.getCertificateProfileId());
             Collection<Certificate> certificatechain = createCertificateChain(authenticationToken, ca, cryptoToken, certprofile);
             ca.setCertificateChain(certificatechain);
             //Store the chain and new status.
