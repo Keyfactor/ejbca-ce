@@ -233,7 +233,8 @@ public class EjbcaWSHelper {
 			}
 			EndEntityInformation userdata = endEntityAccessSession.findUser(admin, username);
 			if(userdata == null){
-				String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);            	
+			    log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
+				String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");            	
 				throw new EjbcaException(ErrorCode.USER_NOT_FOUND, msg);
 			}
 			if(!authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.VIEW_RIGHTS)) {
@@ -260,7 +261,8 @@ public class EjbcaWSHelper {
 			}
 			EndEntityInformation userdata = endEntityAccessSession.findUser(admin, username);
 			if(userdata == null){
-				String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);            	
+			    log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
+				String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");            	
 				throw new EjbcaException(ErrorCode.USER_NOT_FOUND, msg);
 			}
 
