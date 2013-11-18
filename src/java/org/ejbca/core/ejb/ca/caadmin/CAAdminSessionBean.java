@@ -250,6 +250,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             CA ca = caSession.getCA(authenticationToken, caInfo.getCAId());
             ca.updateUninitializedCA(caInfo);
             ca.setCAToken(caToken);
+            ca.setCAInfo(caInfo);
             CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(caInfo.getCertificateProfileId());
             Collection<Certificate> certificatechain = createCertificateChain(authenticationToken, ca, cryptoToken, certprofile);
             ca.setCertificateChain(certificatechain);
