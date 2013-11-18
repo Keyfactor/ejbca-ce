@@ -108,6 +108,14 @@
 #authorization.cachetime=157680000000
 #authorization.cachetime=-1
 
-# TODO
-# Default: 10000 (10 seconds)
-#internalkeybinding.cachetime=10000
+# InternalKeyBinding object caching gets updates from database when a InternalKeyBinding object is stale.
+# During this fetch, the currently cached InternalKeyBinding object will continue to be used.
+# This cache can never be completely disabled to ensure that an activated InternalKeyBinding object
+# is kept in the active state until removed or changed in the database.
+# Setting this value will improve performance for very large volume installations (>50 cert/s). 
+# For normal installations, where extreme speeds and response times are not required, leave as default.
+# Default: 10000
+# Possible values 0 (no caching, but keeps activated) to 9223372036854775807 (2^63-1 = Long.MAX_VALUE).
+#  If you want caching for an infinite time then set something high for example 157680000000 (5years). 
+#internalkeybinding.cachetime=157680000000
+#internalkeybinding.cachetime=0
