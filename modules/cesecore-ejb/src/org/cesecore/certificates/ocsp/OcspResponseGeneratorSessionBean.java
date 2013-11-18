@@ -1588,7 +1588,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         for (InternalKeyBindingInfo internalKeyBindingInfo : internalKeyBindingMgmtSession
                 .getAllInternalKeyBindingInfos(OcspKeyBinding.IMPLEMENTATION_ALIAS)) {
             if (internalKeyBindingInfo.getStatus().equals(InternalKeyBindingStatus.ACTIVE)) {
-                if (OcspSigningCache.INSTANCE.getEntry(internalKeyBindingInfo.getId()) == null) {
+                Certificate ocspCertificate = certificateStoreSession.findCertificateByFingerprint(internalKeyBindingInfo.getCertificateId());
+                X509Certificate issuingCertificate = certificateStoreSession.findLatestX509CertificateBySubject(CertTools
+                        .getIssuerDN(ocspCertificate));
+                if (OcspSigningCache.INSTANCE.getEntry(OcspSigningCache.getCertificateIDFromCertificate(issuingCertificate)) == null) {
                     final String errMsg = intres.getLocalizedMessage("ocsp.signingkeynotincache", internalKeyBindingInfo.getName());
                     sb.append('\n').append(errMsg);
                     log.error(errMsg);
