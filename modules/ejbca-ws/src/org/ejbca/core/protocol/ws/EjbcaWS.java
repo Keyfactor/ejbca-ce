@@ -937,7 +937,9 @@ public class EjbcaWS implements IEjbcaWS {
 			// check authorization to CAID
 			final EndEntityInformation userdata = endEntityAccessSession.findUser(admin, username);
 			if (userdata == null) {
-				throw new NotFoundException(intres.getLocalizedMessage("ra.errorentitynotexist", username));
+			    log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
+			    String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");
+				throw new NotFoundException(msg);
 			}
 			final int caid = userdata.getCAId();
 			caSession.verifyExistenceOfCA(caid);
@@ -1025,8 +1027,8 @@ public class EjbcaWS implements IEjbcaWS {
 			  // check CAID
 			  EndEntityInformation userdata = endEntityAccessSession.findUser(admin,username);
 			  if(userdata == null){
-				  String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);            	
-				  throw new NotFoundException(msg);
+			      log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
+				  throw new NotFoundException(intres.getLocalizedMessage("ra.wrongusernameorpassword"));
 			  }
 			  int caid = userdata.getCAId();
 			  caSession.verifyExistenceOfCA(caid);
@@ -1165,7 +1167,8 @@ public class EjbcaWS implements IEjbcaWS {
 			// check username
 			EndEntityInformation userdata = endEntityAccessSession.findUser(admin,username);
 			if(userdata == null){
-				String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);            	
+			    log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
+				String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");            	
 				throw new NotFoundException(msg);
 			}
 			// Check caid
@@ -1208,7 +1211,8 @@ public class EjbcaWS implements IEjbcaWS {
             }   
 			EndEntityInformation userdata = endEntityAccessSession.findUser(admin, username);
 			if(userdata == null){
-				String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);            	
+			    log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
+				String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");            	
 				throw new NotFoundException(msg);
 			}
 			if(keyRecoverySession.isUserMarked(username)){
@@ -1252,7 +1256,8 @@ public class EjbcaWS implements IEjbcaWS {
             }   
             final EndEntityInformation userdata = endEntityAccessSession.findUser(admin, username);
             if(userdata == null){
-                final String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);                
+                log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
+                final String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");                
                 throw new NotFoundException(msg);
             }
             if(keyRecoverySession.isUserMarked(username)){
@@ -1874,7 +1879,8 @@ public class EjbcaWS implements IEjbcaWS {
                     AuthenticationToken intAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EJBCAWS.getHardTokenData"));
                     EndEntityInformation userData = endEntityAccessSession.findUser(intAdmin, hardTokenData.getUsername());
                     if (userData == null) {
-                        String msg = intres.getLocalizedMessage("ra.errorentitynotexist", hardTokenData.getUsername());            	
+                        log.info(intres.getLocalizedMessage("ra.errorentitynotexist", hardTokenData.getUsername()));
+                        String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");            	
                         throw new NotFoundException(msg);
                     }
                     int caid = userData.getCAId();

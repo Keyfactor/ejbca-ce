@@ -687,7 +687,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 assertAuthorizedToEndEntityProfile(admin, data1.getEndEntityProfileId(), AccessRulesConstants.DELETE_RIGHTS, caid);
             }
         } else {
-            final String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);
+            log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
+            final String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");
             log.info(msg);
             throw new NotFoundException(msg);
         }
@@ -741,7 +742,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 data1.setExtendedInformation(ei);
             }
         } else {
-            String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);
+            log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
+            String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");
             log.info(msg);
             throw new FinderException(msg);
         }
@@ -808,7 +810,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 }
             }
         } else {
-            String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);
+            log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
+            String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");
             throw new FinderException(msg);
         }
         if (log.isTraceEnabled()) {
@@ -878,7 +881,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 }
             }
         } else {
-            String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);
+            log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
+            String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");
             log.info(msg);
             throw new FinderException(msg);
         }
@@ -941,7 +945,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     data1.setExtendedInformation(ei);
                 }
             } else {
-                String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);
+                log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
+                String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");
                 log.info(msg);
                 throw new FinderException(msg);
             }
@@ -966,7 +971,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         // Check if administrator is authorized to edit user.
         final UserData data = UserData.findByUsername(entityManager, username);
         if (data == null) {
-            final String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);
+            log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
+            final String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");
             log.info(msg);
             throw new FinderException(msg);
         }

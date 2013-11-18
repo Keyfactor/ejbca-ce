@@ -1670,7 +1670,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         } catch (NotFoundException_Exception e) {
             trows = true;
             // e.printStackTrace();
-            assertEquals(e.getMessage(), "Entity does not exist: sdfjhdiuwerw43768754###");
+            assertEquals(e.getMessage(), "Wrong username or password");
         }
         assertTrue(trows);
 

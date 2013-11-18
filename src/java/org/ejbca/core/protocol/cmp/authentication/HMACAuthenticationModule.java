@@ -331,7 +331,8 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
                     return false;
                 }
             } else {
-                this.errorMessage = INTRES.getLocalizedMessage("ra.errorentitynotexist", StringUtils.isNotEmpty(username) ? username : subjectDN);
+                LOG.info(INTRES.getLocalizedMessage("ra.errorentitynotexist", StringUtils.isNotEmpty(username) ? username : subjectDN));
+                this.errorMessage = INTRES.getLocalizedMessage("ra.wrongusernameorpassword");
                 return false;
             }
         }

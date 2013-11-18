@@ -498,7 +498,8 @@ public class RequestInstance {
 		} catch (AuthStatusException ase) {
 			iErrorMessage = intres.getLocalizedMessage("certreq.wrongstatus");
 		} catch (AuthLoginException ale) {
-			iErrorMessage = intres.getLocalizedMessage("certreq.wrongpassword");
+			iErrorMessage = intres.getLocalizedMessage("ra.wrongusernameorpassword");
+			log.info(iErrorMessage + " - username: " + username);
         } catch (IncomatibleTokenTypeException re) {
             iErrorMessage = intres.getLocalizedMessage("certreq.csrreceivedforservergentoken");
 		} catch (SignRequestException re) {

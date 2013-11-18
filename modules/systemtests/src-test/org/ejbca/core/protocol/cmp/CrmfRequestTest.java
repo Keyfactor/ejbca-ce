@@ -185,7 +185,7 @@ public class CrmfRequestTest extends CmpTestCase {
 
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        checkCmpFailMessage(resp, "Entity does not exist: " + user, 1, reqId, 7, PKIFailureInfo.incorrectData); // Expects a CertificateResponse (reject) message with error
+        checkCmpFailMessage(resp, "Wrong username or password", 1, reqId, 7, PKIFailureInfo.incorrectData); // Expects a CertificateResponse (reject) message with error
                                                                                 // FailInfo.INCORRECT_DATA
         log.trace("<test01CrmfHttpUnknowUser");
     }
@@ -211,7 +211,7 @@ public class CrmfRequestTest extends CmpTestCase {
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-        checkCmpFailMessage(resp, "Entity does not exist: " + user, 1, reqId, 7, PKIFailureInfo.incorrectData); // Expects a CertificateResponse (reject) message with error
+        checkCmpFailMessage(resp, "Wrong username or password", 1, reqId, 7, PKIFailureInfo.incorrectData); // Expects a CertificateResponse (reject) message with error
                                                                                 // FailInfo.INCORRECT_DATA
     }
 

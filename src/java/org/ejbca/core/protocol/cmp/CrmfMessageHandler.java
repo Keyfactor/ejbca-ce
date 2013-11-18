@@ -229,7 +229,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 						LOG.info(errMsg);
 						
 		                // If we didn't find the entity return error message
-		                final String failText = INTRES.getLocalizedMessage("ra.errorentitynotexist", StringUtils.isNotEmpty(username) ? username : dn);
+		                final String failText = INTRES.getLocalizedMessage("ra.wrongusernameorpassword");
 		                LOG.info(failText);
 		                resp = signSession.createRequestFailedResponse(admin, crmfreq, org.ejbca.core.protocol.cmp.CmpResponseMessage.class, FailInfo.INCORRECT_DATA, failText);
 					}
