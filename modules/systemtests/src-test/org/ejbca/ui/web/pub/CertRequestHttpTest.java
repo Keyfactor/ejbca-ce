@@ -295,7 +295,7 @@ public class CertRequestHttpTest extends CaTestCase {
         int index = error.indexOf("<pre>");
         int index2 = error.indexOf("</pre>");
         String errormsg = error.substring(index + 5, index2);
-        String expectedErrormsg = "Username: "+TEST_USERNAME+"\nWrong username or password! To generate a certificate a valid username and password must be supplied.\n";
+        String expectedErrormsg = "Username: "+TEST_USERNAME+"\nWrong username or password";
         assertEquals(expectedErrormsg.replaceAll("\\s", ""), errormsg.replaceAll("\\s", ""));
         log.info(errormsg);
         log.trace("<test03RequestWrongPwd()");
@@ -573,7 +573,8 @@ public class CertRequestHttpTest extends CaTestCase {
     private String findPassword(String user) throws Exception {
         EndEntityInformation ei = endEntityAccessSession.findUser(admin, user);
         if (ei == null) {
-            throw new NotFoundException(InternalEjbcaResources.getInstance().getLocalizedMessage("ra.errorentitynotexist", user));
+            log.info(InternalEjbcaResources.getInstance().getLocalizedMessage("ra.errorentitynotexist", user));
+            throw new NotFoundException(InternalEjbcaResources.getInstance().getLocalizedMessage("ra.wrongusernameorpassword"));
         }
         return ei.getPassword(); // This is the clear text password. See UserData.toEndEntityInformation
     }
