@@ -3,9 +3,6 @@
 # (i.e. health check servlet that is running on the VA).
 # for more detailed configuration edit the file modules/healthcheck-war/resources/WEB-INF/web-ocsp.xml
 #
-# The url for the external OCSP healthcheck is:
-# http://127.0.0.1:8080/ejbca/publicweb/vahealthcheck/vahealth
-#
 # Configure these options if you are configuring a VA now.
 
 # Most of the old ocsphealthcheck.* properties have been moved
