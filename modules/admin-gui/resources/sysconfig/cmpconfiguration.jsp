@@ -473,6 +473,9 @@
     				        includefile="cmpaliaspage.jspf";
     			        
     				        if(request.getParameter(BUTTON_SAVE) != null) {
+    				                if (authmodule.size() == 0) {
+                                        throw new ParameterException(ejbcawebbean.getText("CMPNOAUTHMODULE"));
+                                    }
     				        		ejbcawebbean.updateCmpConfigFromClone(alias);
     				           		ejbcawebbean.saveCMPConfiguration();
     			        	   		includefile="cmpaliasespage.jspf";
