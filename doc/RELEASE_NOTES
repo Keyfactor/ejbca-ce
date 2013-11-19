@@ -1,3 +1,15 @@
+EJBCA 6.0.1
+-----------
+This is a maintenance release with bug fixes and improvements. In all 13 issues have been fixed.
+
+* Noteworthy changes:
+- Improve statedump command (Enterprise).
+- Fix bug causing OCSP healthcheck to always reyturn error.
+- Minor security fix and improvement.
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE.
+
 EJBCA 6.0.0
 -----------
 EJBCA 6.0.0 is the latest major release of EJBCA, and both introduces and redefines a number of core concepts. Foremost amongst these are:
