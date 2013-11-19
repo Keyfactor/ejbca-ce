@@ -1,7 +1,8 @@
 #------------------- Validation Authority (VA) Healthcheck settings -------------
 # Specifies the basic settings of the VA healthcheck
-# (i.e. health check servlet that is running on the VA).
-# for more detailed configuration edit the file modules/healthcheck-war/resources/WEB-INF/web-ocsp.xml
+# (i.e. VA specific health checks that runs as part of EJBCA healthcheck).
+#
+# For more information see healthcheck settings in ejbca.properties.
 #
 # Configure these options if you are configuring a VA now.
 
