@@ -3,6 +3,8 @@
    java.util.TreeMap canames = ejbcawebbean.getInformationMemory().getAllCANames();
    java.util.TreeMap externalcas = ejbcawebbean.getInformationMemory().getExternalCAs();
    int row = 0;
+   
+   ramode = cmpConfigClone.getRAMode(alias);
 %>
 
 <script type="text/javascript">
@@ -10,6 +12,68 @@
 
 function reload() {
 	document.cmpconfiguration.<%= BUTTON_RELOAD %>.click();
+}
+
+function enableFormItems() {
+<% if (!ramode) { %>
+    // ----- Client Mode -----
+    var dnpartpwd = document.cmpconfiguration.<%= CHECKBOX_DNPART %>.checked;
+    document.cmpconfiguration.<%= LIST_DNPARTS %>.disabled = !dnpartpwd;
+    
+    var use_vendormode = document.cmpconfiguration.<%= CHECKBOX_CMP_VENDORMODE %>.checked;
+    document.cmpconfiguration.<%= LIST_VENDORCA %>.disabled = !use_vendormode;
+    document.cmpconfiguration.<%= BUTTON_ADDVENDORCA %>.disabled = !use_vendormode;
+    document.cmpconfiguration.<%= BUTTON_REMOVEVENDORCA %>.disabled = !use_vendormode;
+<% } else { %>
+    // ----- RA Mode -----
+    // CMP Authentication Module
+    var hmac = document.cmpconfiguration.<%= CHECKBOX_HMAC %>.checked;
+    document.cmpconfiguration.<%= TEXTFIELD_HMACPASSWORD %>.disabled = !hmac;
+    
+    var specifysecret = document.cmpconfiguration.<%= RADIO_HMACPASSWORD %>[1].checked;
+    document.cmpconfiguration.<%=TEXTFIELD_HMACPASSWORD %>.readOnly = !specifysecret;
+    
+    if (document.cmpconfiguration.<%= CHECKBOX_EEC %>) {
+        var eec = document.cmpconfiguration.<%= CHECKBOX_EEC %>.checked;
+        document.cmpconfiguration.<%= LIST_ECCCAS %>.disabled = !eec;
+    }
+    
+    var options = document.cmpconfiguration.<%= RADIO_HMACPASSWORD %>;
+    for (var i = 0; i < options.length; i++) {
+        options[i].disabled = !hmac;
+    }
+    
+    // RA Name Generation Scheme
+    var is_dnparts = document.cmpconfiguration.<%= RADIO_NAMEGENSCHEME %>[0].checked;
+    document.cmpconfiguration.<%= LIST_NAMEGENPARAM_DN %>.disabled = !is_dnparts;
+    document.cmpconfiguration.<%= BUTTON_ADD_NAMEGENPARAM_DN %>.disabled = !is_dnparts;
+    document.cmpconfiguration.<%= BUTTON_REMOVE_NAMEGENPARAM_DN %>.disabled = !is_dnparts;
+    var is_fixed = document.cmpconfiguration.<%= RADIO_NAMEGENSCHEME %>[2].checked;
+    document.cmpconfiguration.<%= TEXTFIELD_CMP_RANAMEGENPARAM %>.disabled = !is_fixed;
+<% } %>
+}
+
+if (window.addEventListener) {
+    window.addEventListener("load", enableFormItems, false);
+} else if (document.attachEvent) {
+    window.attachEvent("onload", enableFormItems);
+}
+
+function checkallfields() {
+    var ok = true;
+    // Check that at least one CMP Authentication Module is selected
+    var oneselected = (
+        document.cmpconfiguration.<%= CHECKBOX_HMAC %>.checked ||
+        (document.cmpconfiguration.<%= CHECKBOX_EEC %> && document.cmpconfiguration.<%= CHECKBOX_EEC %>.checked) ||
+        (document.cmpconfiguration.<%= CHECKBOX_REGTOKEN %> && document.cmpconfiguration.<%= CHECKBOX_REGTOKEN %>.checked) ||
+        (document.cmpconfiguration.<%= CHECKBOX_DNPART %> && document.cmpconfiguration.<%= CHECKBOX_DNPART %>.checked)
+        );
+    if (!oneselected) {
+        alert('<%= ejbcawebbean.getText("CMPNOAUTHMODULE") %>');
+        ok = false;
+    }
+    
+    return ok;
 }
 
 -->
@@ -54,23 +118,13 @@ function reload() {
         </h3>
         <p class="help"><c:out value="If the CMP service should work in 'client' or 'ra' mode."/></p>
       </td>
-      <td width="50%"> 
-        <input type="radio" name="<%=RADIO_CMPMODE%>" value="client" onchange="reload()" 
-			<% 
-				if(!cmpConfigClone.getRAMode(alias) ) { 
-					out.write(" CHECKED ");
-					ramode = false;
-				}
-			%> />
+      <td width="50%">
+        <input type="radio" name="<%=RADIO_CMPMODE%>" value="client" onchange="reload()" onclick="reload()" <%-- IE needs onclick as well, since onchange is delayed until another element is selected --%>
+			<% if(!ramode) { out.write(" CHECKED "); } %> />
 		<label><c:out value="<%= ejbcawebbean.getText(\"CMPCLIENTMODE\") %>" /></label>
 		&nbsp;&nbsp;&nbsp;&nbsp;
-		<input type="radio" name="<%=RADIO_CMPMODE%>" value="ra" onchange="reload()"  
-			<% 
-				if(cmpConfigClone.getRAMode(alias)) {
-					out.write(" CHECKED ");
-					ramode = true;
-				}
-			%> />
+		<input type="radio" name="<%=RADIO_CMPMODE%>" value="ra" onchange="reload()" onclick="reload()"
+			<% if(ramode) { out.write(" CHECKED "); } %> />
 		<label><c:out value="<%= ejbcawebbean.getText(\"CMPRAMODE\") %>" /></label>
 		<input type="submit" name="<%= BUTTON_RELOAD %>" id="<%= BUTTON_RELOAD %>" value="<%= ejbcawebbean.getText("RELOAD") %>" style="display:none">
 		<noscript>
@@ -90,7 +144,7 @@ function reload() {
         <p class="help"><c:out value="Which sort of protection the response messages will have."/></p>
       </td>
       <td width="50%"> 
-        <select name="<%= LIST_CMPRESPONSEPROTECTION %>" onchange="reload()">
+        <select name="<%= LIST_CMPRESPONSEPROTECTION %>" onchange="reload()" onclick="reload()">
           <% String currentProtection = cmpConfigClone.getResponseProtection(alias); %>
           <% if(currentProtection.equals("pbe"))	pbe = true; %>
           <% java.util.Iterator iterp = cmpConfigClone.getCmpResponseProtectionList(ramode).iterator();
@@ -125,13 +179,13 @@ function reload() {
 				<% if(cmpConfigClone.isInAuthModule(alias, CmpConfiguration.AUTHMODULE_HMAC)) {
 					out.write(" CHECKED ");
 				}%>
-				id="<%=CHECKBOX_HMAC%>" />
+				id="<%=CHECKBOX_HMAC%>" onchange="enableFormItems()" onclick="enableFormItems()" />
 				<label for="<%=CHECKBOX_HMAC%>"><c:out value="<%= CmpConfiguration.AUTHMODULE_HMAC %>" /></label>
 				<% if(ramode) {%>
 					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 					
 					<% String secretvalue = cmpConfigClone.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_HMAC, alias);	%>
-					<input type="radio" name="<%=RADIO_HMACPASSWORD%>" value="casecret"  
+					<input type="radio" name="<%=RADIO_HMACPASSWORD%>" value="casecret" onchange="enableFormItems()" onclick="enableFormItems()"
 						<% 
 							if(secretvalue.equals("-") || secretvalue.length()==0) { 
 								out.write(" CHECKED ");
@@ -140,7 +194,7 @@ function reload() {
 						%> />
 					<label><c:out value="<%= ejbcawebbean.getText(\"CMPHMACCASECRET\") %>" /></label>
 					&nbsp;&nbsp;&nbsp;
-					<input type="radio" name="<%=RADIO_HMACPASSWORD%>" value="hmacsecret"  
+					<input type="radio" name="<%=RADIO_HMACPASSWORD%>" value="hmacsecret" onchange="enableFormItems()" onclick="enableFormItems()"
 						<% 
 							if(! ( secretvalue.equals("-") || (secretvalue.length() == 0) ) ) { 
 								out.write(" CHECKED ");
@@ -148,7 +202,8 @@ function reload() {
 						%> />
 					<label><c:out value="<%= ejbcawebbean.getText(\"CMPHMACSPECIFYSECRET\") %>" /></label>
 					<input type="text" name="<%=TEXTFIELD_HMACPASSWORD %>" value='<c:out value="<%= secretvalue %>"/>' 
-        				maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>">
+        				maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>"
+        				onmousedown="document.cmpconfiguration.<%= RADIO_HMACPASSWORD %>[1].checked = true; this.readOnly = false; this.focus()">
         		<% } %>
         		<br/>
 		<% if(!pbe) { %>
@@ -156,7 +211,7 @@ function reload() {
 				<% if(cmpConfigClone.isInAuthModule(alias, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE)) {
 						out.write(" CHECKED ");
 					}%>
-				id="<%=CHECKBOX_EEC%>" />
+				id="<%=CHECKBOX_EEC%>" onchange="enableFormItems()" onclick="enableFormItems()" />
 				<label for="<%=CHECKBOX_EEC%>"><c:out value="<%= CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE %>" /></label>
 				<% if(ramode) {%>
 				&nbsp;&nbsp;&nbsp;
@@ -183,7 +238,7 @@ function reload() {
 				<% if(cmpConfigClone.isInAuthModule(alias, CmpConfiguration.AUTHMODULE_DN_PART_PWD)) {
 						out.write(" CHECKED ");
 					}%>
-				id="<%=CHECKBOX_DNPART%>" />
+				id="<%=CHECKBOX_DNPART%>" onchange="enableFormItems()" onclick="enableFormItems()" />
 				<label for="<%=CHECKBOX_DNPART%>"><c:out value="<%= CmpConfiguration.AUTHMODULE_DN_PART_PWD %>" /></label>
 				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 				<label for="<%=LIST_DNPARTS%>"><c:out value="<%= ejbcawebbean.getText(\"CMPAUTHSUBJECTDNPART\") %>" /></label>
@@ -192,7 +247,7 @@ function reload() {
            				   Iterator authdnitr = dnfields.iterator();
            				   while(authdnitr.hasNext()) {
            				   		String dnpart = (String) authdnitr.next(); %>
-           	           	   		<option  value='<c:out value="<%= dnpart %>"/>'  <% if(currentDnPart.equals(dnpart)) { %> selected <% } %> >
+           	           	   		<option  value='<c:out value="<%= dnpart %>"/>'  <% if (currentDnPart != null && currentDnPart.equals(dnpart)) { %> selected <% } %> >
            	           	   			<c:out value="<%= dnpart %>"/> 
            	           	   		</option>
            	            <% } %>
@@ -238,7 +293,7 @@ function reload() {
       <td width="50%"> 
       
       	<% boolean checked = false; %>
-		<input type="radio" name="<%=RADIO_NAMEGENSCHEME%>" value=<%= UsernameGeneratorParams.DN %>  
+		<input type="radio" name="<%=RADIO_NAMEGENSCHEME%>" value=<%= UsernameGeneratorParams.DN %> onchange="enableFormItems()" onclick="enableFormItems()"
 			<% if(UsernameGeneratorParams.DN.equals(cmpConfigClone.getRANameGenScheme(alias))) {
 					out.write(" CHECKED ");
 					checked = true;
@@ -262,13 +317,13 @@ function reload() {
 		<input type="submit" name="<%= BUTTON_REMOVE_NAMEGENPARAM_DN%>" value="<%= ejbcawebbean.getText("REMOVE") %>">
 		<br/>
 		
-		<input type="radio" name="<%=RADIO_NAMEGENSCHEME%>" value=<%= UsernameGeneratorParams.RANDOM %>  
+		<input type="radio" name="<%=RADIO_NAMEGENSCHEME%>" value=<%= UsernameGeneratorParams.RANDOM %> onchange="enableFormItems()" onclick="enableFormItems()"
 			<% if(UsernameGeneratorParams.RANDOM.equals(cmpConfigClone.getRANameGenScheme(alias))) { out.write(" CHECKED "); } %> />
 		<label><c:out value="<%= UsernameGeneratorParams.RANDOM %>" /></label>
 		<br/>
 		
 		<% checked = false; %>
-		<input type="radio" name="<%=RADIO_NAMEGENSCHEME%>" value=<%= UsernameGeneratorParams.FIXED %>  
+		<input type="radio" name="<%=RADIO_NAMEGENSCHEME%>" value=<%= UsernameGeneratorParams.FIXED %> onchange="enableFormItems()" onclick="enableFormItems()"
 			<% if(UsernameGeneratorParams.FIXED.equals(cmpConfigClone.getRANameGenScheme(alias))) {
 					out.write(" CHECKED ");
 					checked = true;
@@ -281,7 +336,7 @@ function reload() {
 			      	maxlength="150" size="25" title="<%= ejbcawebbean.getText("FORMAT_STRING") %>" id="<%=TEXTFIELD_CMP_RANAMEGENPARAM %>" >
 		<br/>
 		
-		<input type="radio" name="<%=RADIO_NAMEGENSCHEME%>" value=<%= UsernameGeneratorParams.USERNAME %>  
+		<input type="radio" name="<%=RADIO_NAMEGENSCHEME%>" value=<%= UsernameGeneratorParams.USERNAME %> onchange="enableFormItems()" onclick="enableFormItems()"
 			<% if(UsernameGeneratorParams.USERNAME.equals(cmpConfigClone.getRANameGenScheme(alias))) { out.write(" CHECKED "); } %>
 			/>
 		<label><c:out value="<%= ejbcawebbean.getText(\"CMPUSEENTIREDNASUSERNAME\") %>" /></label>
@@ -443,11 +498,11 @@ function reload() {
       <td width="50%"> 
       	<select name="<%=LIST_EXTRACTUSERNAMECOMP%>" >
           <% String currentDnPart = cmpConfigClone.getExtractUsernameComponent(alias); %>
-          <option  value='<c:out value="DN"/>'  <% if(currentDnPart.equals("DN")) { %> selected <% } %> ><c:out value="DN"/></option>
+          <option  value='<c:out value="DN"/>'  <% if (currentDnPart != null && currentDnPart.equals("DN")) { %> selected <% } %> ><c:out value="DN"/></option>
           <% Iterator compdnitr = dnfields.iterator();
              while(compdnitr.hasNext()){ 
              	String dnpart = (String) compdnitr.next();%>
-           	 <option  value='<c:out value="<%= dnpart %>"/>'  <% if(currentDnPart.equals(dnpart)) { %> selected <% } %> >
+           	 <option  value='<c:out value="<%= dnpart %>"/>'  <% if (currentDnPart != null && currentDnPart.equals(dnpart)) { %> selected <% } %> >
            	 	<c:out value="<%= dnpart %>"/> 
            	 </option>
           <% } %>
@@ -466,7 +521,7 @@ function reload() {
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_CMP_VENDORMODE%>" value="<%=CHECKBOX_VALUE %>" 
 			<% if(cmpConfigClone.getVendorMode(alias)) out.write(" CHECKED "); %>
-			id="<%=CHECKBOX_CMP_VENDORMODE%>" />
+			id="<%=CHECKBOX_CMP_VENDORMODE%>" onchange="enableFormItems()" onclick="enableFormItems()" />
 		<label for="<%=CHECKBOX_CMP_VENDORMODE%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
 		<br/>
 		<p class="help"><c:out value="<%= cmpConfigClone.getVendorCA(alias) %>"/></p>
