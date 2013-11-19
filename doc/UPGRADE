@@ -114,6 +114,7 @@ The external Validation Authority build has been removed and external VA deploym
 	the HSM.
 - 	Usage of the Admin GUI. You can now use the EJBCA Admin GUI to manage Crypto Tokens and Key Bindings, making configuration and administration of 
 	the OCSP responder so much easier.
+- 	The OCSP healthcheck has been integrated into the standard EJBCA healtcheck, so no separate call is required.
 
 All this means that the upgrade from an earlier version of EJBCA OCSP is a process. Naturally EJBCA 6 handles all the upgrade for you and will try to
 automatically import your old configuration seamlessly. To benefit from all the new features you should read the VA Installation, OCSP Installation 
