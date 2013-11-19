@@ -1,3 +1,30 @@
+EJBCA 6.0.1, 2013-11-19
+---
+Bug
+    [ECA-3302] - Escaping of user-provided data when no characters are forbidden
+    [ECA-3303] - SECURITY: XSS issue
+    [ECA-3306] - Leaving out "Validity" with Javascript disabled gives an exception
+    [ECA-3307] - Renamed CAs not be overwritten by statedump
+    [ECA-3308] - OCSP HealthCheck does not work with InternalKeyBindings
+    [ECA-3310] - Wrong items are selected in uninitialized CAs
+
+Improvement
+    [ECA-3295] - Allow editing most fields in uninitialized CAs
+    [ECA-3301] - Unify error messages for invalid username and pwd
+    [ECA-3312] - Can't create CAs with DSA extended services key
+    [ECA-3313] - Problems with extended services and uninitialized (statedumped) CAs
+    [ECA-3317] - Allow import even if not all files exist
+
+Master Ticket
+    [ECA-3296] - Improve Statedump usability and fix bugs
+
+New Feature
+    [ECA-3311] - Ability to choose names to not overwrite during statedump import
+
+Task
+    [ECA-3305] - Modularize database integrity protection and database cli
+
+
 EJBCA 6.0.0, 2013-11-08
 ---
 
