@@ -21,7 +21,6 @@ import java.security.SignatureException;
 import java.security.cert.CRL;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
-import java.security.cert.X509Certificate;
 import java.util.Collection;
 
 import org.apache.commons.lang.StringUtils;
