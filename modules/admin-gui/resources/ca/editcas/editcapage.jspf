@@ -287,8 +287,7 @@ function checkallfields(){
     if((document.ca.<%= TEXTFIELD_SUBJECTDN %>.value == "")){
       alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("CERT_SUBJECTDN", true)%>");
       illegalfields++;
-    }
-    if((document.ca.<%= TEXTFIELD_SUBJECTDN %>.value.indexOf("=")==-1)){
+    } else if((document.ca.<%= TEXTFIELD_SUBJECTDN %>.value.indexOf("=")==-1)){
 		alert("<%= ejbcawebbean.getText("SUBJECTDNINVALID")%>");
 		illegalfields++;
     } else {
