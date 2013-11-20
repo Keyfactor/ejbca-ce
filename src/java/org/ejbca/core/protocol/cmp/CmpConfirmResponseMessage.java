@@ -22,6 +22,7 @@ import java.security.cert.CRL;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
+import java.util.Collection;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -62,7 +63,7 @@ public class CmpConfirmResponseMessage extends BaseCmpMessage implements Respons
 	/** The default provider is BC, if nothing else is specified when setting SignKeyInfo */
 	private String provider = "BC";
 	/** Certificate for the signer of the response message (CA) */
-	private transient Certificate signCert = null;
+	private transient Collection<Certificate> signCertChain = null;
 	/** Private key used to sign the response message */
 	private transient PrivateKey signKey = null;
 
@@ -128,11 +129,11 @@ public class CmpConfirmResponseMessage extends BaseCmpMessage implements Respons
 		    myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
 			responseMessage = CmpMessageHelper.protectPKIMessageWithPBE(myPKIMessage, getPbeKeyId(), getPbeKey(), getPbeDigestAlg(), getPbeMacAlg(), getPbeIterationCount());
 		} else {
-			if ((signCert != null) && (signKey != null)) {
+			if ((signCertChain.size() > 0) && (signKey != null)) {
 				try {
 				    myPKIHeader.setProtectionAlg(new AlgorithmIdentifier(digestAlg));
 				    myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
-					responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, (X509Certificate)signCert, signKey, digestAlg, provider);
+					responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, signCertChain, signKey, digestAlg, provider);
 				} catch (CertificateEncodingException e) {
 					log.error("Error creating CmpConfirmMessage: ", e);
 				} catch (SecurityException e) {
@@ -159,8 +160,8 @@ public class CmpConfirmResponseMessage extends BaseCmpMessage implements Respons
 	}
 	
 	@Override
-	public void setSignKeyInfo(Certificate cert, PrivateKey key, String provider) {
-		this.signCert = cert;
+	public void setSignKeyInfo(Collection<Certificate> certs, PrivateKey key, String provider) {
+		this.signCertChain = certs;
 		this.signKey = key;
 		if (provider != null) {
 			this.provider = provider;

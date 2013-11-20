@@ -21,6 +21,7 @@ import java.security.cert.CRL;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
+import java.util.Collection;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.SignRequestException;
@@ -207,7 +208,7 @@ public class X509ResponseMessage implements CertificateResponseMessage {
      *
      * @see #requireSignKeyInfo()
      */
-    public void setSignKeyInfo(Certificate cert, PrivateKey key, String provider) {
+    public void setSignKeyInfo(Collection<Certificate> certs, PrivateKey key, String provider) {
     }
 
     /**

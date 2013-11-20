@@ -289,7 +289,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         KeyPair admkeys = KeyTools.genKeys("1024", "RSA");
         AuthenticationToken adminToken = createAdminToken(admkeys, adminName, "CN=" + adminName + ",C=SE");
         Certificate admCert = getCertFromCredentials(adminToken);
-        CMPCertificate cmpcert = getCMPCert(admCert);
+        CMPCertificate[] cmpcert = getCMPCert(admCert);
         crmfMsg = CmpMessageHelper.buildCertBasedPKIProtection(crmfMsg, cmpcert, admkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
         assertNotNull(crmfMsg);
         CertReqMessages ir = (CertReqMessages) crmfMsg.getBody().getContent();
@@ -421,7 +421,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         KeyPair admkeys = KeyTools.genKeys("1024", "RSA");
         AuthenticationToken adminToken = createAdminToken(admkeys, adminName, "CN=" + adminName + ",C=SE");
         Certificate admCert = getCertFromCredentials(adminToken);
-        CMPCertificate cmpcert = getCMPCert(admCert);
+        CMPCertificate[] cmpcert = getCMPCert(admCert);
         revMsg = CmpMessageHelper.buildCertBasedPKIProtection(revMsg, cmpcert, admkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
         assertNotNull(revMsg);
         
@@ -878,7 +878,7 @@ public class NestedMessageContentTest extends CmpTestCase {
 
         KeyPair nonAdminKeys = KeyTools.genKeys("1024", "RSA");
         Certificate nonAdminCert = CertTools.genSelfCert("CN=cmpTestAdmin,C=SE", 365, null, nonAdminKeys.getPrivate(), nonAdminKeys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
-        CMPCertificate cmpcert = getCMPCert(nonAdminCert);
+        CMPCertificate[] cmpcert = getCMPCert(nonAdminCert);
         crmfMsg = CmpMessageHelper.buildCertBasedPKIProtection(crmfMsg, cmpcert, nonAdminKeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
         assertNotNull(crmfMsg);
         CertReqMessages ir = (CertReqMessages) crmfMsg.getBody().getContent();
@@ -1013,7 +1013,7 @@ public class NestedMessageContentTest extends CmpTestCase {
             AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
             PKIMessage msg = genCertReq(issuerDN, testUserDN, keys, gppcacert, nonce, transid, false, null, null, null, null, pAlg, null);
             assertNotNull("Generating CrmfRequest failed.", msg);
-            CMPCertificate extraCert = getCMPCert(gppusercert);
+            CMPCertificate[] extraCert = getCMPCert(gppusercert);
             msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, privkey, pAlg.getAlgorithm().getId(), "BC");
             assertNotNull(msg);
 
@@ -1260,12 +1260,13 @@ public class NestedMessageContentTest extends CmpTestCase {
         endEntityManagementSession.revokeAndDeleteUser(admin, adminName, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);        
     }
     
-    private CMPCertificate getCMPCert(Certificate cert) throws CertificateEncodingException, IOException {
+    private CMPCertificate[] getCMPCert(Certificate cert) throws CertificateEncodingException, IOException {
         ASN1InputStream ins = new ASN1InputStream(cert.getEncoded());
         try {
             ASN1Primitive pcert = ins.readObject();
             org.bouncycastle.asn1.x509.Certificate c = org.bouncycastle.asn1.x509.Certificate.getInstance(pcert.toASN1Primitive());
-            return new CMPCertificate(c);
+            CMPCertificate[] res = {new CMPCertificate(c)};
+            return res;
         } finally {
             ins.close();
         }

@@ -25,6 +25,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Collection;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -108,7 +109,7 @@ public class CmpResponseMessage implements CertificateResponseMessage {
     /** Certificate to be in certificate response message, not serialized */
     private transient Certificate cert = null;
     /** Certificate for the signer of the response message (CA) */
-    private transient Certificate signCert = null;
+    private transient Collection<Certificate> signCertChain = null;
     /** Private key used to sign the response message */
     private transient PrivateKey signKey = null;
     /** used to choose response body type */
@@ -195,8 +196,8 @@ public class CmpResponseMessage implements CertificateResponseMessage {
             X509Certificate x509cert = (X509Certificate) cert;
             issuer = x509cert.getIssuerDN().getName();
             subject = x509cert.getSubjectDN().getName();
-        } else if (signCert != null) {
-            issuer = ((X509Certificate) signCert).getSubjectDN().getName();
+        } else if (signCertChain.size() > 0) {
+            issuer = ((X509Certificate) signCertChain.iterator().next()).getSubjectDN().getName();
             subject = "CN=fooSubject";
         } else {
             issuer = "CN=fooIssuer";
@@ -279,7 +280,7 @@ public class CmpResponseMessage implements CertificateResponseMessage {
                 myPKIHeader.setProtectionAlg(new AlgorithmIdentifier(digestAlg));
                 PKIHeader header = myPKIHeader.build();
                 myPKIMessage = new PKIMessage(header, myPKIBody);                        
-                responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, (X509Certificate) signCert, signKey, digestAlg, provider);
+                responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, signCertChain, signKey, digestAlg, provider);
             }
             
             ret = true;
@@ -307,8 +308,8 @@ public class CmpResponseMessage implements CertificateResponseMessage {
     }
 
     @Override
-    public void setSignKeyInfo(Certificate cert, PrivateKey key, String provider) {
-        this.signCert = cert;
+    public void setSignKeyInfo(Collection<Certificate> certs, PrivateKey key, String provider) {
+        this.signCertChain = certs;
         this.signKey = key;
         if (provider != null) {
             this.provider = provider;

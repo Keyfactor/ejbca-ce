@@ -23,6 +23,7 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
+import java.util.Collection;
 import java.util.Date;
 
 import org.bouncycastle.asn1.x509.Extensions;
@@ -168,9 +169,9 @@ class RequestMessageSubjectDnAdapter implements ICrmfRequestMessage {
 	}
 	@Override
 	public CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass,
-			RequestMessage req, Certificate cert, PrivateKey signPriv,
+			RequestMessage req, Collection<Certificate> certs, PrivateKey signPriv,
 			String provider) {
-		return this.original.createResponseMessage(responseClass, req, cert, signPriv, provider);
+		return this.original.createResponseMessage(responseClass, req, certs, signPriv, provider);
 	}
 	
     @Override
@@ -179,8 +180,8 @@ class RequestMessageSubjectDnAdapter implements ICrmfRequestMessage {
     }
 
     @Override
-    public CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass, RequestMessage req, Certificate cert) {
-        return this.original.createResponseMessage(responseClass, req, cert);
+    public CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass, RequestMessage req, Collection<Certificate> certs) {
+        return this.original.createResponseMessage(responseClass, req, certs);
     }
 
 	@Override

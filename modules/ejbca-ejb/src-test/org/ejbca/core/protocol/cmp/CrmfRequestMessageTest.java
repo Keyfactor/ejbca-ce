@@ -31,9 +31,12 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.SignatureException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 
 import org.bouncycastle.asn1.ASN1Encodable;
@@ -275,7 +278,9 @@ public class CrmfRequestMessageTest {
     		KeyPair keys = KeyTools.genKeys("512", "RSA");
     		X509Certificate signCert = CertTools.genSelfCert("CN=CMP Sign Test", 3650, null, keys.getPrivate(), keys.getPublic(), "SHA1WithRSA", false);
     		// Re-sign the message
-    		byte[] newmsg = CmpMessageHelper.signPKIMessage(myPKIMessage, signCert, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1, "BC");
+    		Collection<Certificate> signCertChain = new ArrayList<Certificate>();
+    		signCertChain.add(signCert);
+    		byte[] newmsg = CmpMessageHelper.signPKIMessage(myPKIMessage, signCertChain, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1, "BC");
     		in.close();
     		in = new ASN1InputStream(newmsg);		
     		derObject = in.readObject();
@@ -283,7 +288,7 @@ public class CrmfRequestMessageTest {
     		// We have to do this twice, because Novosec caches ProtectedBytes in the PKIMessage object, so we need to 
     		// encode it and re-decode it again to get the changes from ECA-2104 encoded correctly.
     		// Not needed when simply signing a new message that you create, only when re-signing 
-    		newmsg = CmpMessageHelper.signPKIMessage(pkimsg, signCert, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1, "BC");
+    		newmsg = CmpMessageHelper.signPKIMessage(pkimsg, signCertChain, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1, "BC");
     		in.close();
     		in = new ASN1InputStream(newmsg);
     		derObject = in.readObject();

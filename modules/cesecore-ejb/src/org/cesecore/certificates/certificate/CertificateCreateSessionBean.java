@@ -179,8 +179,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             
             Certificate cert = createCertificate(admin, userData, ca, req, reqpk, keyusage, notBefore, notAfter, exts, sequence);
             // Create the response message with all nonces and checks etc
-            ret = req.createResponseMessage(responseClass, req, ca.getCACertificate());
-
+            ret = req.createResponseMessage(responseClass, req, ca.getCertificateChain());
             ResponseStatus status = ResponseStatus.SUCCESS;
             FailInfo failInfo = null;
             String failText = null;

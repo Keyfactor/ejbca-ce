@@ -25,6 +25,7 @@ import java.security.cert.Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Collection;
 import java.util.Random;
 
 import org.apache.log4j.Logger;
@@ -83,7 +84,7 @@ public class RequestMessageUtils {
 		return ret;
 	}
 
-	public static CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass, RequestMessage req, Certificate cert, PrivateKey signPriv, String provider){
+	public static CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass, RequestMessage req, Collection<Certificate> certs, PrivateKey signPriv, String provider){
 	    CertificateResponseMessage ret = null;
 		// Create the response message and set all required fields
 		try {
@@ -97,7 +98,7 @@ public class RequestMessageUtils {
 			return null;
 		}
 		if (ret.requireSignKeyInfo()) {
-			ret.setSignKeyInfo(cert, signPriv, provider);
+			ret.setSignKeyInfo(certs, signPriv, provider);
 		}
 		if (req.getSenderNonce() != null) {
 			ret.setRecipientNonce(req.getSenderNonce());

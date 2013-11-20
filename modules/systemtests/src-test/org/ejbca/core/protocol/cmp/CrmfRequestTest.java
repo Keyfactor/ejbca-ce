@@ -21,9 +21,11 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.security.KeyPair;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Random;
 
 import javax.ejb.FinderException;
@@ -200,7 +202,9 @@ public class CrmfRequestTest extends CmpTestCase {
         PKIMessage req = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, false, null, null, null, null, null, null);
         assertNotNull(req);
         X509Certificate signCert = CertTools.genSelfCert("CN=CMP Sign Test", 3650, null, keys.getPrivate(), keys.getPublic(), "SHA1WithRSA", false);
-        CmpMessageHelper.signPKIMessage(req, signCert, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1, "BC");
+        ArrayList<Certificate> signCertColl = new ArrayList<Certificate>();
+        signCertColl.add(signCert);
+        CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1, "BC");
         // PKIMessage req = protectPKIMessage(req1, false, "foo123", "mykeyid", 567);
         CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
         int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
@@ -344,7 +348,7 @@ public class CrmfRequestTest extends CmpTestCase {
     public void test07SignedConfirmationMessage() throws Exception {
         log.trace(">test07SignedConfirmationMessage()");
         CmpConfirmResponseMessage cmpConfRes = new CmpConfirmResponseMessage();
-        cmpConfRes.setSignKeyInfo(cacert, keys.getPrivate(), null);
+        cmpConfRes.setSignKeyInfo(testx509ca.getCertificateChain(), keys.getPrivate(), null);
         cmpConfRes.setSender(new GeneralName(new X500Name(userDN)));
         cmpConfRes.setRecipient(new GeneralName(new X500Name("CN=cmpRecipient, O=TEST")));
         cmpConfRes.setSenderNonce("DAxFSkJDQSBTYW");

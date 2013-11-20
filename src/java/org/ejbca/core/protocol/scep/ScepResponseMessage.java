@@ -28,6 +28,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.CollectionCertStoreParameters;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Hashtable;
 
 import org.apache.log4j.Logger;
@@ -104,7 +105,7 @@ public class ScepResponseMessage implements CertificateResponseMessage {
     private transient Certificate cert = null;
     private transient CRL crl = null;
     /** Certificate for the signer of the response message (CA or RA) */
-    private transient Certificate signCert = null;
+    private transient Collection<Certificate> signCertChain = null;
     /** Certificate for the CA of the response certificate in successful responses, is the same as signCert if not using RA mode */
     private transient Certificate caCert = null;
     /** Private key used to sign the response message */
@@ -230,7 +231,7 @@ public class ScepResponseMessage implements CertificateResponseMessage {
                     		// If we don't have an explicit caCert, we think that the signCert is the CA cert
                     		// If we have an explicit caCert, the signCert is probably the RA certificate, and we don't include that one
                     		log.debug("Including message signer certificate in SCEP response.");
-                    		certList.add(signCert);
+                    		certList.add(signCertChain.iterator().next());
                     	}
                     }
                 }
@@ -346,8 +347,9 @@ public class ScepResponseMessage implements CertificateResponseMessage {
             }
 
             // Add our signer info and sign the message
-            log.debug("Signing SCEP message with cert: "+CertTools.getSubjectDN(signCert));
-            gen1.addSigner(signKey, (X509Certificate)signCert, digestAlg, new AttributeTable(attributes), null);
+            Certificate cacert = signCertChain.iterator().next();
+            log.debug("Signing SCEP message with cert: "+CertTools.getSubjectDN(cacert));
+            gen1.addSigner(signKey, (X509Certificate)cacert, digestAlg, new AttributeTable(attributes), null);
             // The un-encoded response message itself
             final CMSSignedData signedData = gen1.generate(msg, true, provider);
             responseMessage = signedData.getEncoded();
@@ -371,8 +373,8 @@ public class ScepResponseMessage implements CertificateResponseMessage {
     }
 
     @Override
-    public void setSignKeyInfo(Certificate cert, PrivateKey key, String prov) {
-        this.signCert = cert;
+    public void setSignKeyInfo(Collection<Certificate> certs, PrivateKey key, String prov) {
+        this.signCertChain = certs;
         this.signKey = key;
         if (prov != null) {
         	this.provider = prov;

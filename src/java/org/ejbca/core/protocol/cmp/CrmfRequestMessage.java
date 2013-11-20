@@ -27,6 +27,7 @@ import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Collection;
 import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
@@ -587,8 +588,8 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
 
     @Override
     public CertificateResponseMessage createResponseMessage(final Class<? extends ResponseMessage> responseClass, final RequestMessage req,
-            final Certificate cert, final PrivateKey signPriv, final String provider) {
-        return RequestMessageUtils.createResponseMessage(responseClass, req, cert, signPriv, provider);
+            final Collection<Certificate> certs, final PrivateKey signPriv, final String provider) {
+        return RequestMessageUtils.createResponseMessage(responseClass, req, certs, signPriv, provider);
     }
     
     @Override
@@ -600,8 +601,8 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
     }
 
     @Override
-    public CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass, RequestMessage req, Certificate cert) {
-        return createResponseMessage(responseClass, req, cert, responsePrivateKey, responseProvider);
+    public CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass, RequestMessage req, Collection<Certificate> certs) {
+        return createResponseMessage(responseClass, req, certs, responsePrivateKey, responseProvider);
     }
 
 }

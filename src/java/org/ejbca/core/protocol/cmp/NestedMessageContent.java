@@ -28,6 +28,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -369,7 +370,7 @@ public class NestedMessageContent extends BaseCmpMessage implements RequestMessa
     public void setKeyInfo(final Certificate cert, final PrivateKey key, final String provider) {}
 
     @Override
-    public CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass, RequestMessage req, Certificate cert, PrivateKey signPriv,
+    public CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass, RequestMessage req, Collection<Certificate> certs, PrivateKey signPriv,
             String provider) {
         return null;
     }
@@ -379,7 +380,7 @@ public class NestedMessageContent extends BaseCmpMessage implements RequestMessa
     }
 
     @Override
-    public CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass, RequestMessage req, Certificate cert) {
+    public CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass, RequestMessage req, Collection<Certificate> certs) {
         return null;
     }
 

@@ -173,7 +173,7 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
             try {
                 CAToken catoken = cainfo.getCAToken();
                 final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(catoken.getCryptoTokenId());
-                cresp.setSignKeyInfo(cacert, cryptoToken.getPrivateKey(
+                cresp.setSignKeyInfo(cainfo.getCertificateChain(), cryptoToken.getPrivateKey(
                                                     catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)), 
                                                     cryptoToken.getSignProviderName());
                 if(msg.getHeader().getProtectionAlg() != null) {
