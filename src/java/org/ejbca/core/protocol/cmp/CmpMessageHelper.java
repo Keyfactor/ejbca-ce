@@ -25,10 +25,13 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
+import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.Random;
 
 import javax.crypto.Mac;
@@ -139,25 +142,38 @@ public class CmpMessageHelper {
 		return myPKIHeader;
 	}
 
-    public static byte[] signPKIMessage(PKIMessage myPKIMessage, X509Certificate signCert, PrivateKey signKey, String digestAlg, String provider) throws InvalidKeyException, NoSuchProviderException, NoSuchAlgorithmException, SecurityException, SignatureException, IOException, CertificateEncodingException {
+    public static byte[] signPKIMessage(PKIMessage myPKIMessage, Collection<Certificate> signCertChain, PrivateKey signKey, String digestAlg, String provider) throws InvalidKeyException, NoSuchProviderException, NoSuchAlgorithmException, SecurityException, SignatureException, IOException, CertificateEncodingException {
     	if (LOG.isTraceEnabled()) {
     		LOG.trace(">signPKIMessage()");
     	}
-    	ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(signCert.getEncoded()));
-        try {
-            CMPCertificate signStruct = CMPCertificate.getInstance(asn1InputStream.readObject());
-            myPKIMessage = CmpMessageHelper.buildCertBasedPKIProtection(myPKIMessage, signStruct, signKey, digestAlg, provider);
-            if (LOG.isTraceEnabled()) {
-                LOG.trace("<signPKIMessage()");
+    	
+    	CMPCertificate[] extraCerts = new CMPCertificate[signCertChain.size()];
+    	Iterator<Certificate> itr = signCertChain.iterator();
+    	int i = 0;
+    	while(itr.hasNext()) {
+    	    X509Certificate tmp = (X509Certificate) itr.next();
+    	    ASN1InputStream asn1InputStream = null;
+    	    try {
+    	        asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(tmp.getEncoded()));
+    	        CMPCertificate signStruct = CMPCertificate.getInstance(asn1InputStream.readObject());
+    	        extraCerts[i] = signStruct;
+            } finally {
+                asn1InputStream.close();
             }
-            // Return response as byte array 
-            return CmpMessageHelper.pkiMessageToByteArray(myPKIMessage);
-        } finally {
-            asn1InputStream.close();
-        }
+    	    i++;
+    	}
+    	
+    	
+    	myPKIMessage = CmpMessageHelper.buildCertBasedPKIProtection(myPKIMessage, extraCerts, signKey, digestAlg, provider);
+    	if (LOG.isTraceEnabled()) {
+    	    LOG.trace("<signPKIMessage()");
+    	}
+    	// Return response as byte array 
+    	return CmpMessageHelper.pkiMessageToByteArray(myPKIMessage);
+
     }
     
-	public static PKIMessage buildCertBasedPKIProtection( PKIMessage pKIMessage, CMPCertificate cert, PrivateKey key, String digestAlg, String provider )
+	public static PKIMessage buildCertBasedPKIProtection( PKIMessage pKIMessage, CMPCertificate[] extraCerts, PrivateKey key, String digestAlg, String provider )
 	throws NoSuchProviderException, NoSuchAlgorithmException, SecurityException, SignatureException, InvalidKeyException, IOException
 	{
 		// Select which signature algorithm we should use for the response, based on the digest algorithm and key type.
@@ -187,8 +203,7 @@ public class CmpMessageHelper {
 		sig.initSign(key);
 		sig.update( CmpMessageHelper.getProtectedBytes(head, pKIMessage.getBody()) );
 		
-		if(cert != null) {
-		    CMPCertificate[] extraCerts = {cert};
+		if((extraCerts != null) && (extraCerts.length > 0)) {
 		    pKIMessage = new PKIMessage(head, pKIMessage.getBody(), new DERBitString(sig.sign()), extraCerts);
 		} else {
 		    pKIMessage = new PKIMessage(head, pKIMessage.getBody(), new DERBitString(sig.sign()));

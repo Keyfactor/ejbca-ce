@@ -20,6 +20,7 @@ import java.security.PrivateKey;
 import java.security.cert.CRL;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
+import java.util.Collection;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERUTF8String;
@@ -156,7 +157,7 @@ public class CmpErrorResponseMessage extends BaseCmpMessage implements ResponseM
 	}
 
 	@Override
-	public void setSignKeyInfo(Certificate cert, PrivateKey key,
+	public void setSignKeyInfo(Collection<Certificate> certs, PrivateKey key,
 			String provider) {
 	}
 

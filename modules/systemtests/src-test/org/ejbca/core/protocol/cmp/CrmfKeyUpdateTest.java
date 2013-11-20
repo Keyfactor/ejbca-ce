@@ -257,7 +257,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertNotNull("Failed to generate a CMP renewal request", req);
         CertReqMessages kur = (CertReqMessages) req.getBody().getContent();
         int reqId = kur.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
-        CMPCertificate extraCert = getCMPCert(certificate);
+        CMPCertificate[] extraCert = getCMPCert(certificate);
         req = CmpMessageHelper.buildCertBasedPKIProtection(req, extraCert, keys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
         assertNotNull(req);
         
@@ -336,7 +336,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         PKIMessage req = genRenewalReq(userDN, cacert, nonce, transid, keys, false, null, null, pAlg, new DEROctetString(nonce));
         assertNotNull("Failed to generate a CMP renewal request", req);
 
-        CMPCertificate extraCert = getCMPCert(certificate);
+        CMPCertificate[] extraCert = getCMPCert(certificate);
         req = CmpMessageHelper.buildCertBasedPKIProtection(req, extraCert, keys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
         assertNotNull(req);
         
@@ -430,7 +430,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         PKIMessage req = genRenewalReq(userDN, cacert, nonce, transid, keys, false, null, null, pAlg, new DEROctetString(nonce));
         assertNotNull("Failed to generate a CMP renewal request", req);
 
-        CMPCertificate extraCert = getCMPCert(certificate);
+        CMPCertificate[] extraCert = getCMPCert(certificate);
         req = CmpMessageHelper.buildCertBasedPKIProtection(req, extraCert, keys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
         assertNotNull(req);
         
@@ -513,7 +513,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         PKIMessage req = genRenewalReq(userDN, cacert, nonce, transid, keys, false, null, null, pAlg, new DEROctetString(nonce));
         assertNotNull("Failed to generate a CMP renewal request", req);
 
-        CMPCertificate extraCert = getCMPCert(fakeCert);
+        CMPCertificate[] extraCert = getCMPCert(fakeCert);
         req = CmpMessageHelper.buildCertBasedPKIProtection(req, extraCert, keys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
         assertNotNull(req);
         
@@ -642,7 +642,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         PKIMessage req = genRenewalReq(userDN, cacert, nonce, transid, keys, false, null, null, pAlg, new DEROctetString(nonce));
         assertNotNull("Failed to generate a CMP renewal request", req);
 
-        CMPCertificate extraCert = getCMPCert(certificate);
+        CMPCertificate[] extraCert = getCMPCert(certificate);
         req = CmpMessageHelper.buildCertBasedPKIProtection(req, extraCert, keys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
         assertNotNull(req);
         
@@ -724,7 +724,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         CertReqMessages kur = (CertReqMessages) req.getBody().getContent();
         int reqId = kur.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
 
-        CMPCertificate extraCert = getCMPCert(certificate);
+        CMPCertificate[] extraCert = getCMPCert(certificate);
         req = CmpMessageHelper.buildCertBasedPKIProtection(req, extraCert, keys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
         assertNotNull(req);
         //******************************************''''''
@@ -807,7 +807,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         KeyPair admkeys = KeyTools.genKeys("1024", "RSA");
         AuthenticationToken admToken = createAdminToken(admkeys, "cmpTestAdmin", "CN=cmpTestAdmin,C=SE");
         Certificate admCert = getCertFromCredentials(admToken);
-        CMPCertificate extraCert = getCMPCert(admCert);
+        CMPCertificate[] extraCert = getCMPCert(admCert);
         req = CmpMessageHelper.buildCertBasedPKIProtection(req, extraCert, admkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
 
         assertNotNull(req);
@@ -877,7 +877,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         PKIMessage req = genRenewalReq(userDN, cacert, nonce, transid, keys, false, userDN, issuerDN, pAlg, new DEROctetString("CMPTESTPROFILE".getBytes()));
         assertNotNull("Failed to generate a CMP renewal request", req);
         
-        CMPCertificate extraCert = getCMPCert(certificate);
+        CMPCertificate[] extraCert = getCMPCert(certificate);
         req = CmpMessageHelper.buildCertBasedPKIProtection(req, extraCert, keys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
         assertNotNull(req);
 
@@ -965,7 +965,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         KeyPair admkeys = KeyTools.genKeys("1024", "RSA");
         AuthenticationToken admToken = createAdminToken(admkeys, "cmpTestAdmin", "CN=cmpTestAdmin,C=SE");
         Certificate admCert = getCertFromCredentials(admToken);
-        CMPCertificate extraCert = getCMPCert(admCert);
+        CMPCertificate[] extraCert = getCMPCert(admCert);
         req = CmpMessageHelper.buildCertBasedPKIProtection(req, extraCert, admkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
         assertNotNull(req);
 
@@ -1039,7 +1039,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         KeyPair admkeys = KeyTools.genKeys("1024", "RSA");
         AuthenticationToken admToken = createAdminToken(admkeys, "cmpTestAdmin", "CN=cmpTestAdmin,C=SE");
         Certificate admCert = getCertFromCredentials(admToken);
-        CMPCertificate extraCert = getCMPCert(admCert);
+        CMPCertificate[] extraCert = getCMPCert(admCert);
         req = CmpMessageHelper.buildCertBasedPKIProtection(req, extraCert, admkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
         assertNotNull(req);
 
@@ -1130,7 +1130,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         KeyPair admkeys = KeyTools.genKeys("1024", "RSA");
         AuthenticationToken admToken = createAdminToken(admkeys, "cmpTestAdmin", "CN=cmpTestAdmin,C=SE");
         Certificate admCert = getCertFromCredentials(admToken);
-        CMPCertificate extraCert = getCMPCert(admCert);
+        CMPCertificate[] extraCert = getCMPCert(admCert);
         req = CmpMessageHelper.buildCertBasedPKIProtection(req, extraCert, admkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
         assertNotNull(req);
 
@@ -1205,7 +1205,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         KeyPair admkeys = KeyTools.genKeys("1024", "RSA");
         AuthenticationToken admToken = createAdminToken(admkeys, "cmpTestAdmin", "CN=cmpTestAdmin,C=SE");
         Certificate admCert = getCertFromCredentials(admToken);
-        CMPCertificate extraCert = getCMPCert(admCert);
+        CMPCertificate[] extraCert = getCMPCert(admCert);
         req = CmpMessageHelper.buildCertBasedPKIProtection(req, extraCert, admkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
         assertNotNull(req);
 
@@ -1297,7 +1297,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         KeyPair admkeys = KeyTools.genKeys("1024", "RSA");
         AuthenticationToken admToken = createAdminToken(admkeys, "cmpTestAdmin", "CN=cmpTestAdmin,C=SE");
         Certificate admCert = getCertFromCredentials(admToken);
-        CMPCertificate extraCert = getCMPCert(admCert);
+        CMPCertificate[] extraCert = getCMPCert(admCert);
         req = CmpMessageHelper.buildCertBasedPKIProtection(req, extraCert, admkeys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
         assertNotNull(req);
         
@@ -1389,7 +1389,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertNotNull("Failed to generate a CMP renewal request", req);
         //int reqId = req.getBody().getKur().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
 
-        CMPCertificate extraCert = getCMPCert(certificate);
+        CMPCertificate[] extraCert = getCMPCert(certificate);
         req = CmpMessageHelper.buildCertBasedPKIProtection(req, extraCert, keys.getPrivate(), pAlg.getAlgorithm().getId(), "BC");
         assertNotNull(req);
         
@@ -1466,7 +1466,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertNotNull("Failed to generate a CMP renewal request", req);
         CertReqMessages kur = (CertReqMessages) req.getBody().getContent();
         int reqId = kur.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
-        CMPCertificate extraCert = getCMPCert(certificate);
+        CMPCertificate[] extraCert = getCMPCert(certificate);
         req = CmpMessageHelper.buildCertBasedPKIProtection(req, extraCert, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA256, "BC");
         assertNotNull(req);
         
@@ -1491,12 +1491,13 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
 
     
     
-    private CMPCertificate getCMPCert(Certificate cert) throws CertificateEncodingException, IOException {
+    private CMPCertificate[] getCMPCert(Certificate cert) throws CertificateEncodingException, IOException {
         ASN1InputStream ins = new ASN1InputStream(cert.getEncoded());
         ASN1Primitive pcert = ins.readObject();
         ins.close();
         org.bouncycastle.asn1.x509.Certificate c = org.bouncycastle.asn1.x509.Certificate.getInstance(pcert.toASN1Primitive());
-        return new CMPCertificate(c);
+        CMPCertificate[] res = {new CMPCertificate(c)};
+        return res;
     }
 
     private EndEntityInformation createUser(String username, String subjectDN, String password) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, 

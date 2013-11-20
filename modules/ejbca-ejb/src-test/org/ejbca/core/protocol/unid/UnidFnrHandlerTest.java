@@ -22,6 +22,7 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
+import java.util.Collection;
 import java.util.Date;
 
 import org.bouncycastle.asn1.x500.X500Name;
@@ -216,7 +217,7 @@ public class UnidFnrHandlerTest {
 		}
 		@Override
 		public CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass,
-				RequestMessage req, Certificate cert, PrivateKey signPriv,
+				RequestMessage req, Collection<Certificate> certs, PrivateKey signPriv,
 				String provider) {
 			return null;
 		}
@@ -224,7 +225,7 @@ public class UnidFnrHandlerTest {
 	    public void setResponseKeyInfo(PrivateKey key, String provider) {
 	    }
 	    @Override
-	    public CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass, RequestMessage req, Certificate cert) {
+	    public CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass, RequestMessage req, Collection<Certificate> certs) {
 	        return null;
 	    }
 		@Override
