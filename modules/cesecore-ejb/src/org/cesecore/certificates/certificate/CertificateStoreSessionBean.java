@@ -866,9 +866,11 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     }
 
     /**
-     * Algorithm: if status is CERT_REVOKED the certificate is revoked and reason and date is picked up if status is CERT_ARCHIVED and reason is _NOT_
-     * REMOVEFROMCRL or NOT_REVOKED the certificate is revoked and reason and date is picked up if status is CERT_ARCHIVED and reason is REMOVEFROMCRL
-     * or NOT_REVOKED the certificate is NOT revoked if status is neither CERT_REVOKED or CERT_ARCHIVED the certificate is NOT revoked
+     * Algorithm: 
+     * If status is CERT_REVOKED the certificate is revoked and reason and date is picked up.
+     * If status is CERT_ARCHIVED and reason is _NOT_ REMOVEFROMCRL or NOT_REVOKED the certificate is revoked and reason and date is picked up.
+     * If status is CERT_ARCHIVED and reason is REMOVEFROMCRL or NOT_REVOKED the certificate is NOT revoked.
+     * If status is neither CERT_REVOKED or CERT_ARCHIVED the certificate is NOT revoked
      * 
      * @param data
      * @return CertificateStatus, can be compared (==) with CertificateStatus.OK, CertificateStatus.REVOKED and CertificateStatus.NOT_AVAILABLE
