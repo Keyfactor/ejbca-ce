@@ -124,6 +124,7 @@ public class CVCCA extends CA implements Serializable {
 	}    
 
 	/** @see CA#createRequest(Collection, String, Certificate, int) */
+	@Override
 	public byte[] createRequest(CryptoToken cryptoToken, Collection<ASN1Encodable> attributes, String signAlg, Certificate cacert, int signatureKeyPurpose) throws CryptoTokenOfflineException {
 		if (log.isTraceEnabled()) {
 			log.trace(">createRequest: "+signAlg+", "+CertTools.getSubjectDN(cacert)+", "+signatureKeyPurpose);
@@ -299,6 +300,7 @@ public class CVCCA extends CA implements Serializable {
      * @param sequence an optional requested sequence number (serial number) for the certificate. If null a random sequence will be generated.
      * requestX500Name is never used.
 	 */
+	@Override
 	public Certificate generateCertificate(CryptoToken cryptoToken, EndEntityInformation subject, 
     		RequestMessage request,
             PublicKey publicKey, 
@@ -445,12 +447,14 @@ public class CVCCA extends CA implements Serializable {
     }
 
 	/** Implementation of UpgradableDataHashMap function getLatestVersion */
+    @Override
 	public float getLatestVersion(){
 		return LATEST_VERSION;
 	}
 
 	/** Implementation of UpgradableDataHashMap function upgrade. 
 	 */
+    @Override
 	public void upgrade(){
 		if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
 			// New version of the class, upgrade
@@ -459,7 +463,7 @@ public class CVCCA extends CA implements Serializable {
 			// Put upgrade code here...
             
             // v1->v2 is only an upgrade in order to upgrade CA token
-            // v2->v3 is a upgrade of X509CA that has to be adjusted here two, due to the common heritage
+            // v2->v3 is a upgrade of X509CA that has to be adjusted here too, due to the common heritage
             if (data.get(CRLPERIOD) instanceof Integer) {
             	setCRLPeriod(0L);
             }
@@ -482,6 +486,7 @@ public class CVCCA extends CA implements Serializable {
 	 * This method needs to be called outside the regular upgrade
 	 * since the CA isn't instantiated in the regular upgrade.
 	 */
+    @Override
 	@SuppressWarnings("deprecation")
     public boolean upgradeExtendedCAServices() {
 	    boolean retval = false;
