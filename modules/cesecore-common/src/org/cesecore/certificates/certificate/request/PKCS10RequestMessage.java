@@ -19,6 +19,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
+import java.util.Collection;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
@@ -503,8 +504,8 @@ public class PKCS10RequestMessage implements RequestMessage {
     }
     
     @Override
-    public CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass, RequestMessage req, Certificate cert, PrivateKey signPriv, String provider) {
-    	return RequestMessageUtils.createResponseMessage(responseClass, req, cert, signPriv, provider);
+    public CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass, RequestMessage req, Collection<Certificate> certs, PrivateKey signPriv, String provider) {
+    	return RequestMessageUtils.createResponseMessage(responseClass, req, certs, signPriv, provider);
     }
     
     @Override
@@ -516,8 +517,8 @@ public class PKCS10RequestMessage implements RequestMessage {
     }
 
     @Override
-    public CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass, RequestMessage req, Certificate cert) {
-        return createResponseMessage(responseClass, req, cert, responsePrivateKey, responseProvider);
+    public CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass, RequestMessage req, Collection<Certificate> certs) {
+        return createResponseMessage(responseClass, req, certs, responsePrivateKey, responseProvider);
     }
 
 } 

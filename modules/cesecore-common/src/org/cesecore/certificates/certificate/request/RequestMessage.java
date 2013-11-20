@@ -20,6 +20,7 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
+import java.util.Collection;
 import java.util.Date;
 
 import org.bouncycastle.asn1.x509.Extensions;
@@ -246,7 +247,7 @@ public interface RequestMessage extends Serializable {
      * @param provider
      * @return IResponseMessage
      */
-    public CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass, RequestMessage req, Certificate cert, PrivateKey signPriv, String provider);
+    public CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass, RequestMessage req, Collection<Certificate> certs, PrivateKey signPriv, String provider);
 
     /**
      * Sets the private key needed to create a response message.
@@ -265,6 +266,6 @@ public interface RequestMessage extends Serializable {
      * @param cert
      * @return IResponseMessage
      */
-    public CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass, RequestMessage req, Certificate cert);
+    public CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass, RequestMessage req, Collection<Certificate> certs);
     
 }

@@ -377,7 +377,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(catoken.getCryptoTokenId());
             decryptAndVerify(cryptoToken, req, ca);
             //Create the response message with all nonces and checks etc
-            ret = req.createResponseMessage(responseClass, req, ca.getCACertificate(), cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),
+            ret = req.createResponseMessage(responseClass, req, ca.getCertificateChain(), cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),
                     cryptoToken.getSignProviderName());
             ret.setStatus(ResponseStatus.FAILURE);
             ret.setFailInfo(failInfo);
@@ -470,7 +470,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                 req.setKeyInfo(ca.getCACertificate(), cryptoToken.getPrivateKey(aliasCertSign), cryptoToken.getSignProviderName());
             }
             //Create the response message with all nonces and checks etc
-            ret = req.createResponseMessage(responseClass, req, ca.getCACertificate(), cryptoToken.getPrivateKey(aliasCertSign),
+            ret = req.createResponseMessage(responseClass, req, ca.getCertificateChain(), cryptoToken.getPrivateKey(aliasCertSign),
                     cryptoToken.getSignProviderName());
 
             // Get the Full CRL, don't even bother digging into the encrypted CRLIssuerDN...since we already

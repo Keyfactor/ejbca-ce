@@ -277,7 +277,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		    try {
 		        final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
 		        final String aliasCertSign = ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
-		        rresp.setSignKeyInfo(ca.getCACertificate(), cryptoToken.getPrivateKey(aliasCertSign), cryptoToken.getSignProviderName());
+		        rresp.setSignKeyInfo(ca.getCertificateChain(), cryptoToken.getPrivateKey(aliasCertSign), cryptoToken.getSignProviderName());
                 if(msg.getHeader().getProtectionAlg() != null) {
                     rresp.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(msg.getHeader().getProtectionAlg().getAlgorithm().getId()));
                 }

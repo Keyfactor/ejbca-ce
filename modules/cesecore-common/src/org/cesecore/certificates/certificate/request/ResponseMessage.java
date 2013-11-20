@@ -21,6 +21,7 @@ import java.security.PrivateKey;
 import java.security.cert.CRL;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
+import java.util.Collection;
 
 import org.cesecore.certificates.ca.SignRequestException;
 
@@ -150,7 +151,7 @@ public interface ResponseMessage extends Serializable {
      *
      * @see #requireSignKeyInfo()
      */
-    void setSignKeyInfo(Certificate cert, PrivateKey key, String provider);
+    void setSignKeyInfo(Collection<Certificate> certs, PrivateKey key, String provider);
 
     /**
      * Sets a senderNonce if it should be present in the response
