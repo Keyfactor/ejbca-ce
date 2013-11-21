@@ -64,8 +64,7 @@ public class IntegrityProtectedLoggerSessionBean implements IntegrityProtectedLo
         }
         try {
             final String nodeId = CesecoreConfiguration.getNodeIdentifier();
-            final NodeSequenceHolder nodeSequenceHolder = (NodeSequenceHolder) properties.get(NodeSequenceHolder.class);
-            final Long sequenceNumber = nodeSequenceHolder.getNext(entityManager, nodeId);
+            final Long sequenceNumber = NodeSequenceHolder.INSTANCE.getNext(entityManager, nodeId);
             final Long timeStamp = Long.valueOf(trustedTime.getTime().getTime());
             final AuditRecordData auditRecordData = new AuditRecordData(nodeId, sequenceNumber, timeStamp, eventType, eventStatus, authToken,
                     service, module, customId, searchDetail1, searchDetail2, additionalDetails);
