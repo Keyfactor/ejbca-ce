@@ -73,7 +73,6 @@ import org.cesecore.util.query.QueryCriteria;
 public class IntegrityProtectedDevice implements AuditLogDevice {
 
 	private Map<Class<?>, ?> ejbs;
-	private final NodeSequenceHolder nodeSequenceHolder = new NodeSequenceHolder();
 
 	@Override
 	public void setEjbs(Map<Class<?>, ?> ejbs) {
@@ -103,7 +102,6 @@ public class IntegrityProtectedDevice implements AuditLogDevice {
 	@Override
 	public void log(TrustedTime trustedTime, EventType eventType, EventStatus eventStatus, ModuleType module, ServiceType service, String authToken, String customId,
 			String searchDetail1, String searchDetail2, Map<String, Object> additionalDetails, Properties properties) throws AuditRecordStorageException {
-		properties.put(NodeSequenceHolder.class, nodeSequenceHolder);
 		getEjb(IntegrityProtectedLoggerSessionLocal.class).log(trustedTime, eventType, eventStatus, module, service, authToken, customId, searchDetail1, searchDetail2, additionalDetails, properties);
 	}
 
@@ -125,6 +123,6 @@ public class IntegrityProtectedDevice implements AuditLogDevice {
 		 * db for each log write would kill performance and make it easier to remove the last log
 		 * entries without it being noticed.)
 		 */
-		nodeSequenceHolder.reset();
+		NodeSequenceHolder.INSTANCE.reset();
 	}
 }

@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.audit.impl.integrityprotected;
 
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 
 import javax.persistence.EntityManager;
@@ -24,36 +25,36 @@ import org.cesecore.util.QueryResultWrapper;
  * 
  * @version $Id$
  */
-public class NodeSequenceHolder {
+public enum NodeSequenceHolder {
+    INSTANCE;
 
-	// We only want to use this from IntegrityProtectedDevice
-	protected NodeSequenceHolder() {}
-	
-	private volatile long lastSequenceNumber = -1;
-	private final ReentrantLock lockSequenceNumber = new ReentrantLock();
-	
-	public long getNext(final EntityManager entityManager, final String nodeId) {
-		try {
-			lockSequenceNumber.lock();
-			if (lastSequenceNumber == -1) {
-				// First time this method is called we check the database for the latest sequenceNumber from last run..
-				final Query query = entityManager.createQuery("SELECT MAX(a.sequenceNumber) FROM AuditRecordData a WHERE a.nodeId=:nodeId");
-				query.setParameter("nodeId", nodeId);
-				lastSequenceNumber = QueryResultWrapper.getSingleResult(query, Long.valueOf(-1)).longValue();
-			}
-			lastSequenceNumber++;
-			return lastSequenceNumber;
-		} finally {
-			lockSequenceNumber.unlock();
-		}
-	}
-	
-	protected void reset() {
-		try {
-			lockSequenceNumber.lock();
-			lastSequenceNumber = -1;
-		} finally {
-			lockSequenceNumber.unlock();
-		}
-	}
+    // We only want to use this from IntegrityProtectedDevice
+    private NodeSequenceHolder() {}
+
+    private final AtomicLong lastSequenceNumberAtomic = new AtomicLong(-1);
+    private final ReentrantLock lockDataBaseUpdate = new ReentrantLock();
+
+    /** @return the node's next log row sequence number. */
+    public long getNext(final EntityManager entityManager, final String nodeId) {
+        if (lastSequenceNumberAtomic.get()==-1L) {
+            try {
+                // Lock threads during initializations of value from the database (only one thread needs to do the lookup)
+                lockDataBaseUpdate.lock();
+                if (lastSequenceNumberAtomic.get()==-1L) {
+                    // Get the latest sequenceNumber from last run from the database..
+                    final Query query = entityManager.createQuery("SELECT MAX(a.sequenceNumber) FROM AuditRecordData a WHERE a.nodeId=:nodeId");
+                    query.setParameter("nodeId", nodeId);
+                    final long value = QueryResultWrapper.getSingleResult(query, Long.valueOf(-1)).longValue();
+                    lastSequenceNumberAtomic.set(value);
+                }
+            } finally {
+                lockDataBaseUpdate.unlock();
+            }
+        }
+        return lastSequenceNumberAtomic.incrementAndGet();
+    }
+
+    public void reset() {
+        lastSequenceNumberAtomic.set(-1L);
+    }
 }
