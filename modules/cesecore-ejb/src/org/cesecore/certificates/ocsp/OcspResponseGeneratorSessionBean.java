@@ -968,20 +968,26 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                     + "'" + " from issuer '" + caCertificateSubjectDn + "'");
                         }
                         /* 
-                         * If we do not treat non existing certificates as good
+                         * If we do not treat non existing certificates as good or revoked
                          * OR
                          * we don't actually handle requests for the CA issuing the certificate asked about
                          * then we return unknown 
                          * */
-                        if (!OcspConfigurationCache.INSTANCE.isNonExistingGood(requestUrl, ocspSigningCacheEntry.getOcspKeyBinding()) ||
-                                OcspSigningCache.INSTANCE.getEntry(certId) == null) {
+                        if (OcspConfigurationCache.INSTANCE.isNonExistingGood(requestUrl, ocspSigningCacheEntry.getOcspKeyBinding()) &&
+                                OcspSigningCache.INSTANCE.getEntry(certId) != null) {
+                            sStatus = "good";
+                            certStatus = null; // null means "good" in OCSP
+                            transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_GOOD);
+                        } else if (OcspConfigurationCache.INSTANCE.isNonExistingRevoked(requestUrl, ocspSigningCacheEntry.getOcspKeyBinding()) &&
+                                OcspSigningCache.INSTANCE.getEntry(certId) != null) {
+                            sStatus = "revoked";
+                            certStatus = new RevokedStatus(new RevokedInfo(new ASN1GeneralizedTime(new Date()),
+                                    CRLReason.lookup(CRLReason.unspecified)));
+                            transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_REVOKED); 
+                        } else {
                             sStatus = "unknown";
                             certStatus = new UnknownStatus();
                             transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_UNKNOWN); 
-                        } else {
-                            sStatus = "good";
-                            certStatus = null; // null means "good" in OCSP
-                            transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_GOOD); 
                         }
                     } else if (status.equals(CertificateStatus.REVOKED)) {
                         // Revocation info available for this cert, handle it

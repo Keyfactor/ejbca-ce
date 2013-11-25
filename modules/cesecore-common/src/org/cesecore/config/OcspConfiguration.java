@@ -44,6 +44,8 @@ public class OcspConfiguration {
     public static final String NONE_EXISTING_IS_GOOD = "ocsp.nonexistingisgood";
     public static final String NONE_EXISTING_IS_GOOD_URI = NONE_EXISTING_IS_GOOD+".uri.";
     public static final String NONE_EXISTING_IS_BAD_URI = "ocsp.nonexistingisbad.uri.";
+    public static final String NONE_EXISTING_IS_REVOKED = "ocsp.nonexistingisrevoked";
+    public static final String NONE_EXISTING_IS_REVOKED_URI = NONE_EXISTING_IS_REVOKED+".uri.";
     public static final String REKEYING_TRIGGERING_HOSTS =  "ocsp.rekeying.trigging.hosts";
     public static final String REKEYING_TRIGGERING_PASSWORD = "ocsp.rekeying.trigging.password";
     public static final String REKEYING_UPDATE_TIME_IN_SECONDS = "ocsp.rekeying.update.time.in.seconds";
@@ -164,6 +166,14 @@ public class OcspConfiguration {
         String value = ConfigurationHolder.getString(NONE_EXISTING_IS_GOOD);
         return "true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value);
     }
+    
+    /**
+     * If true a certificate that does not exist in the database, but is issued by a CA the responder handles will be treated as revoked.
+     */
+    public static boolean getNonExistingIsRevoked() {
+        String value = ConfigurationHolder.getString(NONE_EXISTING_IS_REVOKED);
+        return "true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value);
+    }
 
     private static String getRegex(String prefix) {
     	int i=1;
@@ -204,6 +214,15 @@ public class OcspConfiguration {
      */
     public static String getNonExistingIsBadOverideRegex() {
     	return getRegex(NONE_EXISTING_IS_BAD_URI);
+    }
+    
+    /**
+     * Calls from client fulfilling this regex returns "revoked" for non existing certificates
+     * even if {@link #getNonExistingIsGood()} return true.
+     * @return the regex
+     */
+    public static String getNonExistingIsRevokedOverideRegex() {
+        return getRegex(NONE_EXISTING_IS_REVOKED_URI);
     }
 
     /**
