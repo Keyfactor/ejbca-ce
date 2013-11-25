@@ -17,7 +17,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import org.apache.log4j.FileAppender;
+import org.apache.log4j.DailyRollingFileAppender;
 import org.apache.log4j.helpers.LogLog;
 import org.apache.log4j.spi.LoggingEvent;
 
@@ -26,7 +26,7 @@ import org.apache.log4j.spi.LoggingEvent;
  * 
  * @version $Id$
  */
-public class SaferDailyRollingFileAppender extends FileAppender {
+public class SaferDailyRollingFileAppender extends DailyRollingFileAppender {
     private static SaferAppenderListener subscriber;
 
     @Override
