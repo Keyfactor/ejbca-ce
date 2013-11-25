@@ -43,6 +43,7 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
 
     public static final String IMPLEMENTATION_ALIAS = "OcspKeyBinding"; // This should not change, even if we rename the class in EJBCA 5.3+..
     public static final String PROPERTY_NON_EXISTING_GOOD = "nonexistingisgood";
+    public static final String PROPERTY_NON_EXISTING_REVOKED = "nonexistingisrevoked";
     public static final String PROPERTY_INCLUDE_CERT_CHAIN = "includecertchain";
     public static final String PROPERTY_RESPONDER_ID_TYPE = "responderidtype";  // keyhash, name
     public static final String PROPERTY_REQUIRE_TRUSTED_SIGNATURE = "requireTrustedSignature";
@@ -53,6 +54,7 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     public OcspKeyBinding() {
         super(new ArrayList<InternalKeyBindingProperty<? extends Serializable>>() {{
             add(new InternalKeyBindingProperty<Boolean>(PROPERTY_NON_EXISTING_GOOD, Boolean.FALSE));
+            add(new InternalKeyBindingProperty<Boolean>(PROPERTY_NON_EXISTING_REVOKED, Boolean.FALSE));
             add(new InternalKeyBindingProperty<Boolean>(PROPERTY_INCLUDE_CERT_CHAIN, Boolean.TRUE));
             add(new InternalKeyBindingProperty<String>(PROPERTY_RESPONDER_ID_TYPE, ResponderIdType.KEYHASH.name(), ResponderIdType.KEYHASH.name(), ResponderIdType.NAME.name()));
             add(new InternalKeyBindingProperty<Boolean>(PROPERTY_REQUIRE_TRUSTED_SIGNATURE, Boolean.FALSE));
@@ -88,6 +90,12 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     }
     public void setNonExistingGood(boolean nonExistingGood) {
         setProperty(PROPERTY_NON_EXISTING_GOOD, Boolean.valueOf(nonExistingGood));
+    }
+    public boolean getNonExistingRevoked() {
+        return (Boolean) getProperty(PROPERTY_NON_EXISTING_REVOKED).getValue();
+    }
+    public void setNonExistingRevoked(boolean nonExistingRevoked) {
+        setProperty(PROPERTY_NON_EXISTING_REVOKED, Boolean.valueOf(nonExistingRevoked));
     }
     public boolean getIncludeCertChain() {
         return (Boolean) getProperty(PROPERTY_INCLUDE_CERT_CHAIN).getValue();

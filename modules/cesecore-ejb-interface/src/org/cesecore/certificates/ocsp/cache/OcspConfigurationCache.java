@@ -32,21 +32,30 @@ public enum OcspConfigurationCache {
      * will be treated as not revoked. Default (when value is true) is to treat is as "unknown".
      */
     private boolean nonExistingIsGood;
+    /* If true a certificate that does not exist in the database, but is issued by a CA the responder handles
+     * will be treated as revoked. Default (when value is true) is to treat is as "unknown".
+     */
+    private boolean nonExistingIsRevoked;
     /*
      * If this regex is fulfilled the "good" will be return even if {@link #nonExistingIsGood} is false;
      */
     private Pattern nonExistingIsGoodOverideRegex;
     /*
-     * If this regex is fulfilled the "unknown" will be return even if {@link #nonExistingIsGood} is true;
+     * If this regex is fulfilled the "unknown" will be return even if {@link #nonExistingIsGood} or {@link #nonExistingIsRevoked} are true;
      */
     private Pattern nonExistingIsBadOverideRegex;
-
+    /*
+     * If this regex is fulfilled the "revoked" will be return even if {@link #nonExistingIsRevoked} is false;
+     */
+    private Pattern nonExistingIsRevokedOverideRegex;
+    
     private OcspConfigurationCache() {
         reloadConfiguration();
     }
 
     public void reloadConfiguration() {
         nonExistingIsGood = OcspConfiguration.getNonExistingIsGood();
+        nonExistingIsRevoked = OcspConfiguration.getNonExistingIsRevoked();
         {
             final String value = OcspConfiguration.getNonExistingIsGoodOverideRegex();
             nonExistingIsGoodOverideRegex = value != null ? Pattern.compile(value) : null;
@@ -54,6 +63,10 @@ public enum OcspConfigurationCache {
         {
             final String value = OcspConfiguration.getNonExistingIsBadOverideRegex();
             nonExistingIsBadOverideRegex = value != null ? Pattern.compile(value) : null;
+        }
+        {
+            final String value = OcspConfiguration.getNonExistingIsRevokedOverideRegex();
+            nonExistingIsRevokedOverideRegex = value != null ? Pattern.compile(value) : null;
         }
     }
 
@@ -69,6 +82,20 @@ public enum OcspConfigurationCache {
             return !isRegexFulFilled(url, nonExistingIsBadOverideRegex);
         }
         return isRegexFulFilled(url, nonExistingIsGoodOverideRegex);
+    }
+    
+    public boolean isNonExistingRevoked(StringBuffer url, OcspKeyBinding ocspKeyBinding) {
+        // First we read the global default
+        boolean nonExistingIsRevoked = this.nonExistingIsRevoked;
+        // If we have an OcspKeyBinding for this request we use it to override the default
+        if (ocspKeyBinding != null) {
+            nonExistingIsRevoked = ocspKeyBinding.getNonExistingRevoked();
+        }
+        // Finally, if we have explicit configuration of the URL, this will potentially override the value once again
+        if (nonExistingIsRevoked) {
+            return !isRegexFulFilled(url, nonExistingIsBadOverideRegex);
+        }
+        return isRegexFulFilled(url, nonExistingIsRevokedOverideRegex);
     }
 
     private boolean isRegexFulFilled(StringBuffer target, Pattern pattern) {
