@@ -37,6 +37,25 @@
     </p>
   </section>
 
+  <section name="Contributor policy">
+  <p>We want to make EJBCA community friendly, yet secure and respectable. We therefore have a simple contributor policy. If you submit patches to EJBCA 
+  you should comply with this simple policy.</p>
+  <p>
+  Copyright and license:
+  </p>
+<ul>
+<li>As the author of the contribution, you retain your copyright as is;</li>
+<li>You license the code under the OSI approved open source license used by EJBCA, i.e. LGPL v2.1 or later;</li>
+</ul>
+  <p>
+  With respect to your contribution, you represent that:
+  </p>
+<ul>
+    <li>it is an original work and that you can legally grant the rights to the open source license;</li>
+    <li>it does not to the best of your knowledge violate any third party's copyrights, trademarks, patents, or other intellectual property rights;</li>
+</ul>
+  </section>
+
   <section name="Commit privileges policy">
 	<p>The purpose of the commit privileges policy is to maintain assurance that unauthorized modifications are not being done.</p>
 	<p>The policy for determining who have commit rights to the repositories are:</p>
@@ -50,7 +69,7 @@
   
   <section name="Contributor security policy">
   <p>
-  EJBCA is a security project, under Common Criteria evaluation. As such a few security policies are needed.
+  EJBCA is a security project, Common Criteria certified. As such a few security policies are needed.
   In order for any contributor to get source code repository commit access the contributor must agree on some security policies.
   Contributors with no commit access are not bothered by this policy.
   </p>
