@@ -13,7 +13,8 @@
 package org.cesecore.dbprotection;
 
 
-/**
+/** Interface that is inherited by actual implementations used to provide database integrity protection.
+ * 
  * @version $Id$
  */
 public interface ProtectedDataImpl {
