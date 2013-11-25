@@ -203,9 +203,9 @@ the JCE.
 <p>
 Needed to build and run are:</p>
 <ul>
-<li>JDK 7 OpenJDK or (<a href="http://www.oracle.com/technetwork/java/javase/downloads/">Oracle JDK download</a>), if available OpenJDK is recommended</li>
-<li><i>Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files</i> for your JDK (<a href="http://www.oracle.com/technetwork/java/javase/downloads/">download for Oracle's JDK</a>, not required for OpenJDK)</li>
-<li>JBoss Application Server 7.1.x or later or JBoss EAP 6 or later (<a href="http://www.jboss.org/jbossas/downloads">download</a>, note that the absolute latest may not always be tested)</li>
+<li>JDK 7 OpenJDK or Oracle JDK (<a href="http://www.oracle.com/technetwork/java/javase/downloads/">download</a>), if available OpenJDK is recommended.</li>
+<li><i>Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files</i> for your JDK (<a href="http://www.oracle.com/technetwork/java/javase/downloads/">download for Oracle's JDK</a>, not required for OpenJDK).</li>
+<li>JBoss Application Server 7.1.x or later or JBoss EAP 6 or later (<a href="http://www.jboss.org/jbossas/downloads">download</a>, note that the absolute latest may not always be tested).</li>
 <li>Apache Ant 1.7.1 or later to build (<a href="http://ant.apache.org/">download</a>). Note that javascript support may be needed in ant for some components.</li>
 </ul>
  <p>
