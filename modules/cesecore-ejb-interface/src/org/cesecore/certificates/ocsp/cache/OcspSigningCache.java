@@ -36,23 +36,13 @@ import org.cesecore.util.CertTools;
  */
 public enum OcspSigningCache {
     INSTANCE;
-
+    
     private Map<Integer,OcspSigningCacheEntry> cache = new HashMap<Integer, OcspSigningCacheEntry>();
     private Map<Integer,OcspSigningCacheEntry> staging = new HashMap<Integer, OcspSigningCacheEntry>();
     private OcspSigningCacheEntry defaultResponderCacheEntry = null;
     private final ReentrantLock lock = new ReentrantLock(false);
     private final static Logger log = Logger.getLogger(OcspSigningCache.class);
-    
-    /**
-     * 
-     * 
-     * @param id the ID of the sought entry
-     * @return the sought entry, null otherwise.
-     */
-    public OcspSigningCacheEntry getEntry(final int id) {
-        return cache.get(id);
-    }
-    
+
     public OcspSigningCacheEntry getEntry(final CertificateID certID) {
         return cache.get(getCacheIdFromCertificateID(certID));
     }
@@ -61,6 +51,8 @@ public enum OcspSigningCache {
         return defaultResponderCacheEntry;
     }
 
+    
+    
     /** WARNING: This method potentially exports references to CAs private keys! */
     public Collection<OcspSigningCacheEntry> getEntries() {
         return cache.values();
@@ -118,6 +110,24 @@ public enum OcspSigningCache {
 
     public void stagingRelease() {
         lock.unlock();
+    }
+
+    /**
+     * This method will add a single cache entry to the cache. It should only be used to solve temporary cache inconsistencies.
+     * 
+     * @param ocspSigningCacheEntry the entry to add
+     */
+    public void addSingleEntry(OcspSigningCacheEntry ocspSigningCacheEntry) {
+        int cacheId = getCacheIdFromCertificateID(ocspSigningCacheEntry.getCertificateID());
+        lock.lock();
+        try {
+            //Make sure that another thread didn't add the same entry while this one was waiting.
+            if (!cache.containsKey(cacheId)) {
+                cache.put(cacheId, ocspSigningCacheEntry);
+            }
+        } finally {
+            lock.unlock();
+        }
     }
 
     /** @return a cache identifier based on the provided CertificateID. */
