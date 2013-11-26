@@ -63,6 +63,7 @@ import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.BERTags;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
+import org.bouncycastle.asn1.x509.CRLReason;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.cert.X509CertificateHolder;
@@ -255,6 +256,8 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         
         Map<String, String> config = new HashMap<String, String>();
         config.put("ocsp.defaultresponder", CertTools.getSubjectDN(CaTestCase.getTestCACert()));
+        config.put("ocsp.nonexistingisgood", "false");
+        config.put("ocsp.nonexistingisrevoked", "false");
         helper.alterConfig(config);
         helper.reloadKeys();
     }
@@ -872,7 +875,63 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
             cesecoreConfigurationProxySession.setConfigurationValue(EXTENSION_CLASS, oldClass);
         }
     }
+    
+    /**
+     * Tests ocsp message
+     *
+     * @throws Exception
+     *           error
+     */
+    @Test
+    public void test60OcspUnknownIsRevoked() throws Exception {
+        log.trace(">test60OcspUnknownIsRevoked()");
+        
+        loadUserCert(this.caid);
+        // An OCSP request for an unknown certificate (not exist in db)
+        this.helper.verifyStatusUnknown( this.caid, this.cacert, new BigInteger("1") );
+        final String bad1 = "Bad";
+        final String bad2 = "Ugly";
+        final String good1 = "Good";
+        final String good2 = "Beautiful";
+        final String revoked1 = "Revoked";
+        final String revoked2 = "Denied";
+        {
+            final Map<String,String> map = new HashMap<String, String>();
+            map.put(OcspConfiguration.NONE_EXISTING_IS_REVOKED, "true");
+            map.put(OcspConfiguration.NONE_EXISTING_IS_BAD_URI+'1', ".*"+bad1+"$");
+            map.put(OcspConfiguration.NONE_EXISTING_IS_BAD_URI+'2', ".*"+bad2+"$");
+            map.put(OcspConfiguration.NONE_EXISTING_IS_GOOD_URI+'1', ".*"+good1+"$");
+            map.put(OcspConfiguration.NONE_EXISTING_IS_GOOD_URI+'2', ".*"+good2+"$");
+            map.put(OcspConfiguration.NONE_EXISTING_IS_REVOKED_URI+'1', ".*"+revoked1+"$");
+            map.put(OcspConfiguration.NONE_EXISTING_IS_REVOKED_URI+'2', ".*"+revoked2+"$");
+            this.helper.alterConfig(map);
+        }
+        this.helper.reloadKeys();
+        this.helper.verifyStatusRevoked( this.caid, this.cacert, new BigInteger("1"), CRLReason.unspecified );
+        this.helper.setURLEnding(bad1);
+        this.helper.verifyStatusUnknown( this.caid, this.cacert, new BigInteger("1") );
+        this.helper.setURLEnding(bad2);
+        this.helper.verifyStatusUnknown( this.caid, this.cacert, new BigInteger("1") );
+        this.helper.setURLEnding(good1);
+        this.helper.verifyStatusGood( this.caid, this.cacert, new BigInteger("1") );
+        this.helper.setURLEnding(good2);
+        this.helper.verifyStatusGood( this.caid, this.cacert, new BigInteger("1") );
+        {
+            final Map<String,String> map = new HashMap<String, String>();
+            map.put(OcspConfiguration.NONE_EXISTING_IS_REVOKED, "false");
+            this.helper.alterConfig(map);
+        }
+        this.helper.setURLEnding("");
+        this.helper.verifyStatusUnknown( this.caid, this.cacert, new BigInteger("1") );
+        this.helper.setURLEnding(revoked1);
+        this.helper.verifyStatusRevoked( this.caid, this.cacert, new BigInteger("1"), CRLReason.unspecified );
+        this.helper.setURLEnding(revoked2);
+        this.helper.verifyStatusRevoked( this.caid, this.cacert, new BigInteger("1"), CRLReason.unspecified );
 
+        log.trace("<test60OcspUnknownIsRevoked()");
+    }
+
+    
     /**
      * removes DSA CA
      *
