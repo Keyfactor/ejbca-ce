@@ -1582,6 +1582,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         }
         dataMap.put(OcspKeyBinding.PROPERTY_MAX_AGE, (int)(OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE)/1000L));
         dataMap.put(OcspKeyBinding.PROPERTY_NON_EXISTING_GOOD, Boolean.valueOf(OcspConfiguration.getNonExistingIsGood()));
+        dataMap.put(OcspKeyBinding.PROPERTY_NON_EXISTING_REVOKED, Boolean.valueOf(OcspConfiguration.getNonExistingIsRevoked()));
         dataMap.put(OcspKeyBinding.PROPERTY_UNTIL_NEXT_UPDATE, (int)(OcspConfiguration.getUntilNextUpdate(CertificateProfileConstants.CERTPROFILE_NO_PROFILE)/1000L));
         dataMap.put(OcspKeyBinding.PROPERTY_REQUIRE_TRUSTED_SIGNATURE, Boolean.valueOf(OcspConfiguration.getEnforceRequestSigning()));
         return dataMap;
