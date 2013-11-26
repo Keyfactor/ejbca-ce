@@ -209,6 +209,21 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         validateSuccessfulResponse((BasicOCSPResp) response.getResponseObject(), ocspSigningCertificate.getPublicKey());
     }
     
+    /**
+     * This tests the use case where a key binding has been added but the cache hasn't been updated yet, due to long update times.
+     * OcspResponseGeneratorSession should handle this without problems. 
+     */
+    @Test
+    public void testCacheMissHandling() throws Exception {
+        OcspTestUtils.deleteCa(authenticationToken, x509ca);
+        ocspResponseGeneratorSession.reloadOcspSigningCache();
+        activateKeyBinding(internalKeyBindingId);
+        final OCSPReq ocspRequest = buildOcspRequest(null, null, caCertificate, ocspSigningCertificate.getSerialNumber());
+        final OCSPResp response = sendRequest(ocspRequest);
+        assertEquals("Response status not zero.", OCSPResp.SUCCESSFUL, response.getStatus());
+        validateSuccessfulResponse((BasicOCSPResp) response.getResponseObject(), ocspSigningCertificate.getPublicKey());
+    }
+    
     /** Tests asking about an unknown CA, and making sure that the response is correctly signed */
     @Test
     public void testStandAloneOcspResponseDefaultResponder() throws Exception {
