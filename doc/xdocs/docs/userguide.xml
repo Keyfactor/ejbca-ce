@@ -1724,10 +1724,19 @@ Implementation specific properties:
 <ul>
 <li>Non existing is good:
 If true a certificate that does not exist in the database, but is issued by a CA the responder handles
-will be treated as not revoked. Default (when value is false) is to treat is as "unknown". Since the OCSP responders database normally contains all issued certificate
+will be treated as not revoked. Default (when both this value and value of "Non existing is revoked" are false) is 
+to treat it as "unknown". Since the OCSP responders database normally contains all issued certificate
 this gives sensible values (in line with RFC6960) to "ok", "revoked" and "unknown" certificates.
 Setting this value to true is useful if you want an External OCSP responder database to only contain revoked certificates, and not
-all certificates. In this case the responder will answer "ok" to requests for certificates that do not exist in the database. 
+all certificates. In this case the responder will answer "ok" to requests for certificates that do not exist in the database.
+If both "Non existing is good" and "Non existing is revoked", the responder will answer "ok" 
+</li>
+<li>Non existing is revoked:
+If true a certificate that does not exist in the database, but is issued by a CA the responder handles
+will be treated as revoked; the revocation reason will be "unspecified" and the revocation time is the time 
+when the request has been handled. Default (when this value and value of "Non exsiting is good" are false) is 
+to treat it as "unknown".
+If both "Non existing is good" and "Non existing is revoked", the responder will answer "ok".
 </li>
 <li>Max-Age HTTP header (seconds): A hint to caching proxies when using HTTP GET for how long to retain a response.</li>
 <li>Request must be signed with a trusted certificate: When true, request signatures will be checked against the list of trusted certificates or trust anchors.</li>
