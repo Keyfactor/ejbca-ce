@@ -144,7 +144,7 @@ function checkallfields() {
         <p class="help"><c:out value="Which sort of protection the response messages will have."/></p>
       </td>
       <td width="50%"> 
-        <select name="<%= LIST_CMPRESPONSEPROTECTION %>" onchange="reload()" onclick="reload()">
+        <select name="<%= LIST_CMPRESPONSEPROTECTION %>" onchange="reload()">
           <% String currentProtection = cmpConfigClone.getResponseProtection(alias); %>
           <% if(currentProtection.equals("pbe"))	pbe = true; %>
           <% java.util.Iterator iterp = cmpConfigClone.getCmpResponseProtectionList(ramode).iterator();
