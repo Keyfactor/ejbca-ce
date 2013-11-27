@@ -479,9 +479,14 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             subjectKeyId = KeyTools.createSubjectKeyId(publicKey).getKeyIdentifier();
         }
         boolean multipleCheckOk = false;
-        if (enforceUniqueDistinguishedName && enforceUniquePublicKeys) {
-            multipleCheckOk = certificateStoreSession.isOnlyUsernameForSubjectKeyIdOrDnAndIssuerDN(issuerDN, subjectKeyId, subjectDN, username);
-        }
+        
+        // The below combined query is commented out because there is a bug in MySQL 5.5 that causes it to 
+        // select bad indexes making the query slow. In MariaDB 5.5 and MySQL 5.6 it works well, so it is MySQL 5.5 specific.
+        // See ECA-3309
+//        if (enforceUniqueDistinguishedName && enforceUniquePublicKeys) {
+//            multipleCheckOk = certificateStoreSession.isOnlyUsernameForSubjectKeyIdOrDnAndIssuerDN(issuerDN, subjectKeyId, subjectDN, username);
+//        }
+        
         // If one of the checks failed, we need to investigate further what went wrong
         if (!multipleCheckOk && enforceUniqueDistinguishedName) {
             final Set<String> users = certificateStoreSession.findUsernamesByIssuerDNAndSubjectDN(issuerDN, subjectDN);
