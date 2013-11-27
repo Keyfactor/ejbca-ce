@@ -196,7 +196,7 @@ public class CmpResponseMessage implements CertificateResponseMessage {
             X509Certificate x509cert = (X509Certificate) cert;
             issuer = x509cert.getIssuerDN().getName();
             subject = x509cert.getSubjectDN().getName();
-        } else if (signCertChain.size() > 0) {
+        } else if ( (signCertChain != null) && (signCertChain.size() > 0) ) {
             issuer = ((X509Certificate) signCertChain.iterator().next()).getSubjectDN().getName();
             subject = "CN=fooSubject";
         } else {
