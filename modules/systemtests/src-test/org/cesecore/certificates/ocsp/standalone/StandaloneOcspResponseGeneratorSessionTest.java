@@ -215,6 +215,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
      */
     @Test
     public void testCacheMissHandling() throws Exception {
+        //Now delete the original CA, making this test completely standalone.
         OcspTestUtils.deleteCa(authenticationToken, x509ca);
         ocspResponseGeneratorSession.reloadOcspSigningCache();
         activateKeyBinding(internalKeyBindingId);
