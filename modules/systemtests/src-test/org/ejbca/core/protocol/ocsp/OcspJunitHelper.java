@@ -30,6 +30,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Date;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
@@ -206,7 +207,7 @@ public class OcspJunitHelper {
 	 * @throws OperatorCreationException 
 	 */
 	public void verifyStatusUnknown(int caid, X509Certificate cacert, BigInteger certSerial) throws NoSuchProviderException, IOException, OCSPException, OperatorCreationException, CertificateException {
-		verifyStatus(caid, cacert, certSerial, Status.Unknown, Integer.MIN_VALUE);
+		verifyStatus(caid, cacert, certSerial, Status.Unknown, Integer.MIN_VALUE, null);
 	}
 	/**
 	 * Verify that the status is "Good"
@@ -220,7 +221,7 @@ public class OcspJunitHelper {
 	 * @throws OperatorCreationException 
 	 */
 	public void verifyStatusGood(int caid, X509Certificate cacert, BigInteger certSerial) throws NoSuchProviderException, IOException, OCSPException, OperatorCreationException, CertificateException {
-		verifyStatus(caid, cacert, certSerial, Status.Good, Integer.MIN_VALUE);
+		verifyStatus(caid, cacert, certSerial, Status.Good, Integer.MIN_VALUE, null);
 	}
 
 	/**
@@ -235,12 +236,12 @@ public class OcspJunitHelper {
 	 * @throws CertificateException 
 	 * @throws OperatorCreationException 
 	 */
-	public void verifyStatusRevoked(int caid, X509Certificate cacert, BigInteger certSerial, int expectedReason) throws NoSuchProviderException, IOException, OCSPException, OperatorCreationException, CertificateException {
-		verifyStatus(caid, cacert, certSerial, Status.Revoked, expectedReason);
+	public void verifyStatusRevoked(int caid, X509Certificate cacert, BigInteger certSerial, int expectedReason, Date expectedRevTime) throws NoSuchProviderException, IOException, OCSPException, OperatorCreationException, CertificateException {
+		verifyStatus(caid, cacert, certSerial, Status.Revoked, expectedReason, expectedRevTime);
 	}
 
 	private void verifyStatus(int caid, X509Certificate cacert, BigInteger certSerial, Status expectedStatus, 
-			int expectedReason) throws NoSuchProviderException, IOException, OCSPException, OperatorCreationException, CertificateException {
+			int expectedReason, Date expectedRevTime) throws NoSuchProviderException, IOException, OCSPException, OperatorCreationException, CertificateException {
 		// And an OCSP request
 		final OCSPReqBuilder gen = new OCSPReqBuilder();
 		gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, certSerial));
@@ -275,6 +276,10 @@ public class OcspJunitHelper {
 			assertTrue("Status is not Revoked: "+statusClassName, status instanceof RevokedStatus);
 			final int reason = ((RevokedStatus)status).getRevocationReason();
 			assertEquals("Wrong revocation reason", expectedReason, reason);
+			if(expectedRevTime != null) {
+			    final Date revTime = ((RevokedStatus) status).getRevocationTime();
+			    assertEquals("Wrong revocation time", expectedRevTime, revTime);
+			}
 			break;
 		}
 	}

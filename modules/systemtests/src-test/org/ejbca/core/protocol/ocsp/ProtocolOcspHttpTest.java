@@ -318,7 +318,8 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         // Now revoke the certificate and try again
         this.revocationSession.revokeCertificate(admin, this.ocspTestCert, null, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, null);
         this.helper.reloadKeys();
-        this.helper.verifyStatusRevoked( this.caid, this.cacert, this.ocspTestCert.getSerialNumber(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+        this.helper.verifyStatusRevoked( this.caid, this.cacert, this.ocspTestCert.getSerialNumber(), 
+                            RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, null);
         log.trace("<test03OcspRevoked()");
     }
 
@@ -907,7 +908,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
             this.helper.alterConfig(map);
         }
         this.helper.reloadKeys();
-        this.helper.verifyStatusRevoked( this.caid, this.cacert, new BigInteger("1"), CRLReason.unspecified );
+        this.helper.verifyStatusRevoked( this.caid, this.cacert, new BigInteger("1"), CRLReason.certificateHold, new Date(0) );
         this.helper.setURLEnding(bad1);
         this.helper.verifyStatusUnknown( this.caid, this.cacert, new BigInteger("1") );
         this.helper.setURLEnding(bad2);
@@ -924,9 +925,9 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         this.helper.setURLEnding("");
         this.helper.verifyStatusUnknown( this.caid, this.cacert, new BigInteger("1") );
         this.helper.setURLEnding(revoked1);
-        this.helper.verifyStatusRevoked( this.caid, this.cacert, new BigInteger("1"), CRLReason.unspecified );
+        this.helper.verifyStatusRevoked( this.caid, this.cacert, new BigInteger("1"), CRLReason.certificateHold, new Date(0) );
         this.helper.setURLEnding(revoked2);
-        this.helper.verifyStatusRevoked( this.caid, this.cacert, new BigInteger("1"), CRLReason.unspecified );
+        this.helper.verifyStatusRevoked( this.caid, this.cacert, new BigInteger("1"), CRLReason.certificateHold, new Date(0) );
 
         log.trace("<test60OcspUnknownIsRevoked()");
     }
