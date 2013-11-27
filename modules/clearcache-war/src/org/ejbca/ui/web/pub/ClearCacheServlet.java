@@ -30,6 +30,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.ejbca.config.Configuration;
@@ -65,6 +66,8 @@ public class ClearCacheServlet extends HttpServlet {
     private PublisherSessionLocal publisherSession;
     @EJB
     private InternalKeyBindingDataSessionLocal internalKeyBindingDataSession;
+    @EJB
+    private OcspResponseGeneratorSessionLocal ocspResponseGeneratorSession;
 	
     public void doPost(HttpServletRequest req, HttpServletResponse res)	throws IOException, ServletException {
     	doGet(req,res);
@@ -123,6 +126,10 @@ public class ClearCacheServlet extends HttpServlet {
                     log.debug("InternalKeyBinding cache cleared");
                 }
                 internalKeyBindingDataSession.flushCache();
+                if(log.isDebugEnabled()) {
+                    log.debug("OCSP signing cache cleared.");
+                }
+                ocspResponseGeneratorSession.reloadOcspSigningCache();
         	}
         } else {
     		if (log.isDebugEnabled()) {
