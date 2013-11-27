@@ -370,7 +370,7 @@ public class CryptoTokenManagementSessionTest extends RoleUsingTestCase {
         return ret;
     }
 
-    /** Remove the cryptoToken */
+    /** Remove the cryptoToken, if the crypto token with the given ID does not exist, nothing happens */
     public static void removeCryptoToken(AuthenticationToken authenticationToken, final int cryptoTokenId) {
         if (authenticationToken == null) {
             authenticationToken = alwaysAllowToken;
