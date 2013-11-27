@@ -27,6 +27,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -61,6 +62,7 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
+import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -122,6 +124,7 @@ public class CrmfRequestTest extends CmpTestCase {
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+    private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     @BeforeClass
     public static void beforeClass() throws CertificateEncodingException, CertificateException, CADoesntExistsException, AuthorizationDeniedException {
@@ -583,85 +586,85 @@ public class CrmfRequestTest extends CmpTestCase {
     @Test
     public void  test11IncludingCertChainInSignedCMPResponse() throws Exception {
         
-        //---------- Create SubCA ------------- //
+        //---------- Create SubCA signed by testx509ca (rootCA) ------------- //
         String subcaDN = "CN=SubTestCA";
         int subcaID = subcaDN.hashCode();
-                
         int cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(admin, null, true, false, subcaDN, "1024");
-        final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
-        final List<ExtendedCAServiceInfo> extendedCaServices = new ArrayList<ExtendedCAServiceInfo>(2);
-        extendedCaServices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-        String caname = CertTools.getPartFromDN(subcaDN, "CN");
-        boolean ldapOrder = !CertTools.isDNReversed(subcaDN);
-        X509CAInfo cainfo = new X509CAInfo(subcaDN, caname, CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA,
-                3650, null, // Expiretime
-                CAInfo.CATYPE_X509, caid, testx509ca.getCertificateChain(), catoken, "JUnit RSA SubCA", -1, null, null, // PolicyId
-                24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
-                0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
-                10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
-                10 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
-                new ArrayList<Integer>(), true, // Authority Key Identifier
-                false, // Authority Key Identifier Critical
-                true, // CRL Number
-                false, // CRL Number Critical
-                null, // defaultcrldistpoint
-                null, // defaultcrlissuer
-                null, // defaultocsplocator
-                null, // Authority Information Access
-                null, // defaultfreshestcrl
-                true, // Finish User
-                extendedCaServices, false, // use default utf8 settings
-                new ArrayList<Integer>(), // Approvals Settings
-                1, // Number of Req approvals
-                false, // Use UTF8 subject DN by default
-                ldapOrder, // Use LDAP DN order by default
-                false, // Use CRL Distribution Point on CRL
-                false, // CRL Distribution Point on CRL critical
-                true, true, // isDoEnforceUniquePublicKeys
-                true, // isDoEnforceUniqueDistinguishedName
-                false, // isDoEnforceUniqueSubjectDNSerialnumber
-                false, // useCertReqHistory
-                true, // useUserStorage
-                true, // useCertificateStorage
-                "foo123" // cmpRaAuthSecret
-        );
-        
-        CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
-        caAdminSession.createCA(admin, cainfo);
-        assertTrue(caSession.existsCa(subcaID));
-        cainfo = (X509CAInfo) caSession.getCAInfo(admin, subcaID);
-        X509Certificate subcaCert = (X509Certificate) cainfo.getCertificateChain().iterator().next();
-        
-        // --------- Create a user ----------------- //
-        boolean userExists = false;
-        userDN = "C=SE,O=PrimeKey,CN=cmptest";
-        EndEntityInformation user = new EndEntityInformation("cmptest", userDN, subcaID, null, "cmptest@primekey.se", 
-                new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, 
-                SecConst.TOKEN_SOFT_PEM, 0, null);
-        user.setPassword("foo123");
+        final String username = "cmptest";
         try {
-            endEntityManagementSession.addUser(admin, user, true); 
-            log.debug("created user: cmptest, foo123, " + userDN);
-        } catch (Exception e) {
-            userExists = true;
-        }
+            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
+            final List<ExtendedCAServiceInfo> extendedCaServices = new ArrayList<ExtendedCAServiceInfo>(2);
+            extendedCaServices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+            String caname = CertTools.getPartFromDN(subcaDN, "CN");
+            boolean ldapOrder = !CertTools.isDNReversed(subcaDN);
+            X509CAInfo cainfo = new X509CAInfo(subcaDN, caname, CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA,
+                    3650, null, // Expiretime
+                    CAInfo.CATYPE_X509, caid, testx509ca.getCertificateChain(), catoken, "JUnit RSA SubCA", -1, null, null, // PolicyId
+                    24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
+                    0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
+                    10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
+                    10 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
+                    new ArrayList<Integer>(), true, // Authority Key Identifier
+                    false, // Authority Key Identifier Critical
+                    true, // CRL Number
+                    false, // CRL Number Critical
+                    null, // defaultcrldistpoint
+                    null, // defaultcrlissuer
+                    null, // defaultocsplocator
+                    null, // Authority Information Access
+                    null, // defaultfreshestcrl
+                    true, // Finish User
+                    extendedCaServices, false, // use default utf8 settings
+                    new ArrayList<Integer>(), // Approvals Settings
+                    1, // Number of Req approvals
+                    false, // Use UTF8 subject DN by default
+                    ldapOrder, // Use LDAP DN order by default
+                    false, // Use CRL Distribution Point on CRL
+                    false, // CRL Distribution Point on CRL critical
+                    true, true, // isDoEnforceUniquePublicKeys
+                    true, // isDoEnforceUniqueDistinguishedName
+                    false, // isDoEnforceUniqueSubjectDNSerialnumber
+                    false, // useCertReqHistory
+                    true, // useUserStorage
+                    true, // useCertificateStorage
+                    "foo123" // cmpRaAuthSecret
+                    );
 
-        if (userExists) {
-            log.debug("User cmptest already exists.");
-            endEntityManagementSession.changeUser(admin, user, true);
-            endEntityManagementSession.setUserStatus(admin, "cmptest", EndEntityConstants.STATUS_NEW);
-            log.debug("Reset status to NEW");
-        }
-        
-        
-        assertTrue(endEntityManagementSession.existsUser("cmptest"));
-        EndEntityAccessSessionRemote eeAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
-        EndEntityInformation ee = eeAccessSession.findUser(admin, "cmptest");
-        assertEquals(subcaID, ee.getCAId());
-        
-        
-        // -------- generate and send a CMP request -------------- //
-        try {
+            CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+            caAdminSession.createCA(admin, cainfo);
+            assertTrue(caSession.existsCa(subcaID));
+            cainfo = (X509CAInfo) caSession.getCAInfo(admin, subcaID);
+            X509Certificate subcaCert = (X509Certificate) cainfo.getCertificateChain().iterator().next();
+
+            // --------- Create a user ----------------- //
+            boolean userExists = false;
+            userDN = "C=SE,O=PrimeKey,CN=cmptest";
+            EndEntityInformation user = new EndEntityInformation("cmptest", userDN, subcaID, null, "cmptest@primekey.se", 
+                    new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, 
+                    SecConst.TOKEN_SOFT_PEM, 0, null);
+            user.setPassword("foo123");
+            try {
+                endEntityManagementSession.addUser(admin, user, true); 
+                log.debug("created user: cmptest, foo123, " + userDN);
+            } catch (Exception e) {
+                userExists = true;
+            }
+
+            if (userExists) {
+                log.debug("User cmptest already exists.");
+                endEntityManagementSession.changeUser(admin, user, true);
+                endEntityManagementSession.setUserStatus(admin, "cmptest", EndEntityConstants.STATUS_NEW);
+                log.debug("Reset status to NEW");
+            }
+
+
+            assertTrue(endEntityManagementSession.existsUser("cmptest"));
+            EndEntityAccessSessionRemote eeAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
+            EndEntityInformation ee = eeAccessSession.findUser(admin, "cmptest");
+            assertEquals(subcaID, ee.getCAId());
+
+
+            // -------- generate and send a CMP request -------------- //
             byte[] nonce = CmpMessageHelper.createSenderNonce();
             byte[] transid = CmpMessageHelper.createSenderNonce();
 
@@ -678,7 +681,7 @@ public class CrmfRequestTest extends CmpTestCase {
             checkCmpResponseGeneral(resp, subcaDN, userDN, subcaCert, nonce, transid, true, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
             X509Certificate cert = checkCmpCertRepMessage(userDN, subcaCert, resp, reqId);
             assertNotNull(cert);
-        
+
             // ------- Check that the entire certificate chain is in the extraCerts field in the response
             PKIMessage respMsg = null;
             ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(resp));
@@ -694,10 +697,19 @@ public class CrmfRequestTest extends CmpTestCase {
             assertEquals(subcaDN, certChain[0].getX509v3PKCert().getSubject().toString());
             assertEquals(issuerDN, certChain[1].getX509v3PKCert().getSubject().toString());
         } finally {
-            CryptoTokenManagementSessionTest.removeCryptoToken(null, cainfo.getCAToken().getCryptoTokenId());
+            try {
+                endEntityManagementSession.deleteUser(admin, username);
+            } catch (NotFoundException e) {
+                // A test probably failed before creating the entity
+                log.debug("Failed to delete user: " + username);
+            }
+            CryptoTokenManagementSessionTest.removeCryptoToken(null, cryptoTokenId);
+            // Remove CA certificate of CA that we will remove
+            Collection<Certificate> certs = caSession.getCAInfo(admin, subcaID).getCertificateChain();
+            internalCertStoreSession.removeCertificate(certs.iterator().next());
+            // Remove the CA itself
             caSession.removeCA(admin, subcaID);
         }
-
     }
 
     
