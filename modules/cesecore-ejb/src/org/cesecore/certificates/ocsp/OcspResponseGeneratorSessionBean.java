@@ -1004,8 +1004,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         } else if (OcspConfigurationCache.INSTANCE.isNonExistingRevoked(requestUrl, ocspSigningCacheEntry.getOcspKeyBinding()) &&
                                 OcspSigningCache.INSTANCE.getEntry(certId) != null) {
                             sStatus = "revoked";
-                            certStatus = new RevokedStatus(new RevokedInfo(new ASN1GeneralizedTime(new Date()),
-                                    CRLReason.lookup(CRLReason.unspecified)));
+                            certStatus = new RevokedStatus(new RevokedInfo(new ASN1GeneralizedTime(new Date(0)),
+                                    CRLReason.lookup(CRLReason.certificateHold)));
                             transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_REVOKED); 
                         } else {
                             sStatus = "unknown";
