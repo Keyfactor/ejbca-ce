@@ -128,7 +128,7 @@ public class CmpConfirmResponseMessage extends BaseCmpMessage implements Respons
 		    myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
 			responseMessage = CmpMessageHelper.protectPKIMessageWithPBE(myPKIMessage, getPbeKeyId(), getPbeKey(), getPbeDigestAlg(), getPbeMacAlg(), getPbeIterationCount());
 		} else {
-			if ((signCertChain.size() > 0) && (signKey != null)) {
+			if ((signCertChain != null) && (signCertChain.size() > 0) && (signKey != null)) {
 				try {
 				    myPKIHeader.setProtectionAlg(new AlgorithmIdentifier(digestAlg));
 				    myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
