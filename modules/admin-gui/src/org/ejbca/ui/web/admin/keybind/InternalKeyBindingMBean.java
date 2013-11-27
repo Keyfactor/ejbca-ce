@@ -136,8 +136,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     }
     
     private static final long serialVersionUID = 1L;
-    //private static final Logger log = Logger.getLogger(InternalKeyBindingMBean.class);
-
+    
     private final CryptoTokenManagementSessionLocal cryptoTokenManagementSession = getEjbcaWebBean().getEjb().getCryptoTokenManagementSession();
     private final InternalKeyBindingMgmtSessionLocal internalKeyBindingSession = getEjbcaWebBean().getEjb().getInternalKeyBindingMgmtSession();
     private final AccessControlSessionLocal accessControlSession = getEjbcaWebBean().getEjb().getAccessControlSession();
@@ -146,14 +145,37 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     private final CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
     private final EndEntityAccessSessionLocal endEntityAccessSessionSession = getEjbcaWebBean().getEjb().getEndEntityAccessSession();
 
+    private Integer uploadTarget = null;
+    private UploadedFile uploadToTargetFile;
+    
+    public Integer getUploadTarget() { return uploadTarget; }
+    public void setUploadTarget(Integer uploadTarget) { this.uploadTarget = uploadTarget; }
+    public UploadedFile getUploadToTargetFile() { return uploadToTargetFile; }
+    public void setUploadToTargetFile(UploadedFile uploadToTargetFile){ this.uploadToTargetFile = uploadToTargetFile; }
+    
+    private String selectedInternalKeyBindingType = null;
+    private ListDataModel<GuiInfo> internalKeyBindingGuiList = null;
 
+    private String currentInternalKeyBindingId = null;
+    private String currentName = null;
+    private Integer currentCryptoToken = null;
+    private String currentKeyPairAlias = null;
+    private String currentSignatureAlgorithm = null;
+    private String currentNextKeyPairAlias = null;
+    private ListDataModel<InternalKeyBindingProperty<? extends Serializable>> internalKeyBindingPropertyList = null;
+    private boolean inEditMode = false;
+    private Integer currentCertificateAuthority = null;
+    private String currentCertificateSerialNumber = null;
+    private ListDataModel<InternalKeyBindingTrustEntry> trustedCertificates = null;
+    public Integer getCurrentCertificateAuthority() { return currentCertificateAuthority; }
+    public void setCurrentCertificateAuthority(Integer currentCertificateAuthority) { this.currentCertificateAuthority = currentCertificateAuthority; }
+
+    
     ////
     //// Below is code related to viewing and/or interacting with the list of InternalKeyBindings
     ////    
 
-    private String selectedInternalKeyBindingType = null;
-    private ListDataModel internalKeyBindingGuiList = null;
-
+   
     public String getSelectedInternalKeyBindingType() {
         final String typeHttpParam = ((HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest()).getParameter("type");
         // First, check if the user has requested a valid type
@@ -186,14 +208,6 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     private void flushListCaches() {
         internalKeyBindingGuiList = null;
     }
-
-    private Integer uploadTarget = null;
-    private UploadedFile uploadToTargetFile;
-    
-    public Integer getUploadTarget() { return uploadTarget; }
-    public void setUploadTarget(Integer uploadTarget) { this.uploadTarget = uploadTarget; }
-    public UploadedFile getUploadToTargetFile() { return uploadToTargetFile; }
-    public void setUploadToTargetFile(UploadedFile uploadToTargetFile){ this.uploadToTargetFile = uploadToTargetFile; }
 
     @SuppressWarnings("unchecked")
     public List<SelectItem/*<Integer,String>*/> getUploadTargets() {
@@ -228,6 +242,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     }
 
     /** @return list of gui representations for all the InternalKeyBindings of the current type*/
+    @SuppressWarnings("rawtypes")
     public ListDataModel getInternalKeyBindingGuiList() {
         if (internalKeyBindingGuiList==null) {
             // Get the current type of tokens we operate on
@@ -285,7 +300,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                     }
                 });
             }
-            internalKeyBindingGuiList = new ListDataModel(internalKeyBindingList);
+            internalKeyBindingGuiList = new ListDataModel<GuiInfo>(internalKeyBindingList);
         }
         // View the list will purge the view cache
         flushSingleViewCache();
@@ -295,7 +310,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     /** Invoked when the user wants to renew a the InternalKeyBinding certificates issued by a instance local CA */
     public void commandRenewCertificate() {
         try {
-            final GuiInfo guiInfo = (GuiInfo) internalKeyBindingGuiList.getRowData();
+            final GuiInfo guiInfo = internalKeyBindingGuiList.getRowData();
             final int internalKeyBindingId = guiInfo.getInternalKeyBindingId();
             // Find username and current data for this user
             final InternalKeyBindingInfo internalKeyBindingInfo = internalKeyBindingSession.getInternalKeyBindingInfo(authenticationToken, internalKeyBindingId);
@@ -328,7 +343,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     /** Invoked when the user wants to search the database for new certificates matching an InternalKeyBinding key pair */
     public void commandReloadCertificate() {
         try {
-            final GuiInfo guiInfo = (GuiInfo) internalKeyBindingGuiList.getRowData();
+            final GuiInfo guiInfo = internalKeyBindingGuiList.getRowData();
             final int internalKeyBindingId = guiInfo.getInternalKeyBindingId();
             final String certificateId = internalKeyBindingSession.updateCertificateForInternalKeyBinding(authenticationToken, internalKeyBindingId);
             if (certificateId == null) {
@@ -347,7 +362,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     /** Invoked when the user wants to generate a nextKeyPair for an InternalKeyBinding */
     public void commandGenerateNewKey() {
         try {
-            final GuiInfo guiInfo = (GuiInfo) internalKeyBindingGuiList.getRowData();
+            final GuiInfo guiInfo = internalKeyBindingGuiList.getRowData();
             final int internalKeyBindingId = guiInfo.getInternalKeyBindingId();
             final String nextKeyPairAlias = internalKeyBindingSession.generateNextKeyPair(authenticationToken, internalKeyBindingId);
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Generated next key with alias " + nextKeyPairAlias + "."));
@@ -366,7 +381,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     /** Invoked when the user wants to get a CSR for the current or next KeyPair for an InternalKeyBinding */
     public void commandGenerateRequest() {
         try {
-            final GuiInfo guiInfo = (GuiInfo) internalKeyBindingGuiList.getRowData();
+            final GuiInfo guiInfo = internalKeyBindingGuiList.getRowData();
             final int internalKeyBindingId = guiInfo.getInternalKeyBindingId();
             final byte[] pkcs10 = internalKeyBindingSession.generateCsrForNextKey(authenticationToken, internalKeyBindingId);
             final byte[] pemEncodedPkcs10 = CertTools.getPEMFromCertificateRequest(pkcs10);
@@ -389,13 +404,13 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
 
     /** Invoked when the user wants to disable an InternalKeyBinding */
     public void commandDisable() {
-        changeStatus(((GuiInfo) internalKeyBindingGuiList.getRowData()).getInternalKeyBindingId(), InternalKeyBindingStatus.DISABLED);
+        changeStatus(( internalKeyBindingGuiList.getRowData()).getInternalKeyBindingId(), InternalKeyBindingStatus.DISABLED);
         flushListCaches();
     }
 
     /** Invoked when the user wants to enable an InternalKeyBinding */
     public void commandEnable() {
-        changeStatus(((GuiInfo) internalKeyBindingGuiList.getRowData()).getInternalKeyBindingId(), InternalKeyBindingStatus.ACTIVE);
+        changeStatus(( internalKeyBindingGuiList.getRowData()).getInternalKeyBindingId(), InternalKeyBindingStatus.ACTIVE);
         flushListCaches();
     }
     
@@ -437,20 +452,6 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     // Below is code related to editing/viewing a specific InternalKeyBinding
     //    
     
-    private String currentInternalKeyBindingId = null;
-    private String currentName = null;
-    private Integer currentCryptoToken = null;
-    private String currentKeyPairAlias = null;
-    private String currentSignatureAlgorithm = null;
-    private String currentNextKeyPairAlias = null;
-    private ListDataModel internalKeyBindingPropertyList = null;
-    private boolean inEditMode = false;
-    private Integer currentCertificateAuthority = null;
-    private String currentCertificateSerialNumber = null;
-    private ListDataModel/*<SimpleEntry<Integer, BigInteger>>*/ trustedCertificates = null;
-    public Integer getCurrentCertificateAuthority() { return currentCertificateAuthority; }
-    public void setCurrentCertificateAuthority(Integer currentCertificateAuthority) { this.currentCertificateAuthority = currentCertificateAuthority; }
-
     private void flushSingleViewCache() {
         currentInternalKeyBindingId = null;
         currentName = null;
@@ -506,7 +507,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             getAvailableCryptoTokens();
             getAvailableKeyPairAliases();
             getAvailableSignatureAlgorithms();
-            internalKeyBindingPropertyList = new ListDataModel(internalKeyBindingSession.getAvailableTypesAndProperties().get(getSelectedInternalKeyBindingType()));
+            internalKeyBindingPropertyList = new ListDataModel<InternalKeyBindingProperty<? extends Serializable>>(internalKeyBindingSession.getAvailableTypesAndProperties().get(getSelectedInternalKeyBindingType()));
         } else {
             // Load existing
             final int internalKeyBindingId = Integer.parseInt(currentInternalKeyBindingId);
@@ -523,7 +524,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             currentKeyPairAlias = internalKeyBinding.getKeyPairAlias();
             currentSignatureAlgorithm = internalKeyBinding.getSignatureAlgorithm();
             currentNextKeyPairAlias = internalKeyBinding.getNextKeyPairAlias();
-            internalKeyBindingPropertyList = new ListDataModel(internalKeyBinding.getCopyOfProperties());
+            internalKeyBindingPropertyList = new ListDataModel<InternalKeyBindingProperty<? extends Serializable>>(internalKeyBinding.getCopyOfProperties());
             trustedCertificates = null;
         }
     }
@@ -784,15 +785,16 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     }
     
     /** @return a list of all currently trusted certificates references as pairs of [CAId,CertificateSerialNumber] */
-    public ListDataModel/*<List<InternalKeyBindingTrustEntry>>*/ getTrustedCertificates() {
+    @SuppressWarnings("rawtypes")
+    public ListDataModel getTrustedCertificates() {
         if (trustedCertificates == null) {
             final int internalKeyBindingId = Integer.parseInt(currentInternalKeyBindingId);
             if (internalKeyBindingId == 0) {
-                trustedCertificates = new ListDataModel(new ArrayList<InternalKeyBindingTrustEntry>());
+                trustedCertificates = new ListDataModel<InternalKeyBindingTrustEntry>(new ArrayList<InternalKeyBindingTrustEntry>());
             } else {
                 try {
                     final InternalKeyBinding internalKeyBinding = internalKeyBindingSession.getInternalKeyBinding(authenticationToken, internalKeyBindingId);
-                    trustedCertificates = new ListDataModel(internalKeyBinding.getTrustedCertificateReferences());
+                    trustedCertificates = new ListDataModel<InternalKeyBindingTrustEntry>(internalKeyBinding.getTrustedCertificateReferences());
                 } catch (AuthorizationDeniedException e) {
                     FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(e.getMessage()));
                 }
@@ -824,17 +826,12 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     }
     
     /** @return a list of the current InteralKeyBinding's properties */
-    public ListDataModel/*<InternalKeyBindingProperty>*/ getInternalKeyBindingPropertyList() {
-        /*
-        if (internalKeyBindingPropertyList == null) {
-            internalKeyBindingPropertyList = new ListDataModel(internalKeyBindingSession.getAvailableTypesAndProperties(authenticationToken).get(getSelectedInternalKeyBindingType()));
-        }
-        */
+    @SuppressWarnings("rawtypes")
+    public ListDataModel getInternalKeyBindingPropertyList() {
         return internalKeyBindingPropertyList;
     }
     
     /** @return the lookup result of message key "INTERNALKEYBINDING_<type>_<property-name>" or property-name if no key exists. */
-    @SuppressWarnings("unchecked")
     public String getPropertyNameTranslated() {
         final String name = ((InternalKeyBindingProperty<? extends Serializable>)internalKeyBindingPropertyList.getRowData()).getName();
         final String msgKey = "INTERNALKEYBINDING_" + getSelectedInternalKeyBindingType().toUpperCase() + "_" + name.toUpperCase();
@@ -843,8 +840,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     }
 
     /** @return the current multi-valued property's possible values as JSF friendly SelectItems. */
-    @SuppressWarnings("unchecked")
-    public List<SelectItem/*<String,String>*/> getPropertyPossibleValues() {
+    public List<SelectItem> getPropertyPossibleValues() {
         final List<SelectItem> propertyPossibleValues = new ArrayList<SelectItem>();
         if (internalKeyBindingPropertyList != null) {
             final InternalKeyBindingProperty<? extends Serializable> property = (InternalKeyBindingProperty<? extends Serializable>) internalKeyBindingPropertyList.getRowData();
