@@ -58,8 +58,8 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
             add(new InternalKeyBindingProperty<Boolean>(PROPERTY_INCLUDE_CERT_CHAIN, Boolean.TRUE));
             add(new InternalKeyBindingProperty<String>(PROPERTY_RESPONDER_ID_TYPE, ResponderIdType.KEYHASH.name(), ResponderIdType.KEYHASH.name(), ResponderIdType.NAME.name()));
             add(new InternalKeyBindingProperty<Boolean>(PROPERTY_REQUIRE_TRUSTED_SIGNATURE, Boolean.FALSE));
-            add(new InternalKeyBindingProperty<Integer>(PROPERTY_UNTIL_NEXT_UPDATE, Integer.valueOf(0)));
-            add(new InternalKeyBindingProperty<Integer>(PROPERTY_MAX_AGE, Integer.valueOf(0)));
+            add(new InternalKeyBindingProperty<Long>(PROPERTY_UNTIL_NEXT_UPDATE, Long.valueOf(0L)));
+            add(new InternalKeyBindingProperty<Long>(PROPERTY_MAX_AGE, Long.valueOf(0L)));
         }});
     }
     
@@ -116,20 +116,20 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
         setProperty(PROPERTY_REQUIRE_TRUSTED_SIGNATURE, Boolean.valueOf(requireTrustedSignature));
     }
     /** @return the value in seconds (granularity defined in RFC 5019) */
-    public int getUntilNextUpdate() {
-        return (Integer) getProperty(PROPERTY_UNTIL_NEXT_UPDATE).getValue();
+    public long getUntilNextUpdate() {
+        return (Long) getProperty(PROPERTY_UNTIL_NEXT_UPDATE).getValue();
     }
     /** Set the value in seconds (granularity defined in RFC 5019) */
-    public void setUntilNextUpdate(int untilNextUpdate) {
-        setProperty(PROPERTY_UNTIL_NEXT_UPDATE, Integer.valueOf(untilNextUpdate));
+    public void setUntilNextUpdate(long untilNextUpdate) {
+        setProperty(PROPERTY_UNTIL_NEXT_UPDATE, Long.valueOf(untilNextUpdate));
     }
     /** @return the value in seconds (granularity defined in RFC 5019) */
-    public int getMaxAge() {
-        return (Integer) getProperty(PROPERTY_MAX_AGE).getValue();
+    public long getMaxAge() {
+        return (Long) getProperty(PROPERTY_MAX_AGE).getValue();
     }
     /** Set the value in seconds (granularity defined in RFC 5019) */
-    public void setMaxAge(int maxAge) {
-        setProperty(PROPERTY_MAX_AGE, Integer.valueOf(maxAge));
+    public void setMaxAge(long maxAge) {
+        setProperty(PROPERTY_MAX_AGE, Long.valueOf(maxAge));
     }
 
     public static boolean isOcspSigningCertificate(Certificate certificate) {

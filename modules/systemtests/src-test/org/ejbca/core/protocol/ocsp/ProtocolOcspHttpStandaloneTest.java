@@ -323,8 +323,8 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
 
     @Test
     public void test17VerifyHttpGetHeadersOcspKeyBinding() throws Exception {
-        final int oldValue1 = OcspTestUtils.setOcspKeyBindingUntilNextUpdate(authenticationToken, internalKeyBindingId, 5);
-        final int oldValue2 = OcspTestUtils.setOcspKeyBindingMaxAge(authenticationToken, internalKeyBindingId, 30);
+        final long oldValue1 = OcspTestUtils.setOcspKeyBindingUntilNextUpdate(authenticationToken, internalKeyBindingId, 5L);
+        final long oldValue2 = OcspTestUtils.setOcspKeyBindingMaxAge(authenticationToken, internalKeyBindingId, 30L);
         try {
             ocspResponseGeneratorTestSession.reloadOcspSigningCache();
             testVerifyHttpGetHeaders(caCertificate, ocspSigningCertificate.getSerialNumber());
@@ -427,7 +427,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
 
     @Test
     public void test18NextUpdateThisUpdateOcspKeyBinding() throws Exception {
-        final int oldValue = OcspTestUtils.setOcspKeyBindingUntilNextUpdate(authenticationToken, internalKeyBindingId, 5);
+        final long oldValue = OcspTestUtils.setOcspKeyBindingUntilNextUpdate(authenticationToken, internalKeyBindingId, 5L);
         try {
             ocspResponseGeneratorTestSession.reloadOcspSigningCache();
             testNextUpdateThisUpdate(caCertificate, ocspSigningCertificate.getSerialNumber());

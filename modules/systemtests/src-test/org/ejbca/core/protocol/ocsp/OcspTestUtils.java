@@ -136,23 +136,23 @@ public class OcspTestUtils {
     }
 
     /** Set the untilNextUpate for an OcspKeyBinding */
-    public static int setOcspKeyBindingUntilNextUpdate(AuthenticationToken authenticationToken, final int ocspKeyBindingId, final int untilNextUpdate)
+    public static long setOcspKeyBindingUntilNextUpdate(AuthenticationToken authenticationToken, final int ocspKeyBindingId, final long untilNextUpdate)
             throws AuthorizationDeniedException, InternalKeyBindingNameInUseException {
         final InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
         // Configure the OcspKeyBinding's untilNextUpdate
         final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingMgmtSession.getInternalKeyBinding(authenticationToken, ocspKeyBindingId);
-        final int oldValue = ocspKeyBinding.getUntilNextUpdate();
+        final long oldValue = ocspKeyBinding.getUntilNextUpdate();
         ocspKeyBinding.setUntilNextUpdate(untilNextUpdate);
         internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, ocspKeyBinding);
         return oldValue;
     }
 
-    public static int setOcspKeyBindingMaxAge(AuthenticationToken authenticationToken, int ocspKeyBindingId, int maxAge)
+    public static long setOcspKeyBindingMaxAge(AuthenticationToken authenticationToken, int ocspKeyBindingId, long maxAge)
             throws AuthorizationDeniedException, InternalKeyBindingNameInUseException {
         final InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
         // Configure the OcspKeyBinding's untilNextUpdate
         final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBindingMgmtSession.getInternalKeyBinding(authenticationToken, ocspKeyBindingId);
-        final int oldValue = ocspKeyBinding.getMaxAge();
+        final long oldValue = ocspKeyBinding.getMaxAge();
         ocspKeyBinding.setMaxAge(maxAge);
         internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, ocspKeyBinding);
         return oldValue;
