@@ -73,11 +73,10 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 #ocsp.nonexistingisbad.uri.1=.*/thisEndingIsBad$
 #ocsp.nonexistingisbad.uri.2=^http://bad.myhost.nu:8080/.*
 
-#If true a certificate that does not exist in the database, but is issued by a CA the responder handles
-#will be treated as revoked; the revocation reason will be "Certificate Hold" and the revocation time is January 1st, 1970. 
-#Default (when this value and value of "Non exsiting is good" are false) is 
-#to treat it as "unknown".
-#If both "Non existing is good" and "Non existing is revoked", the responder will answer "ok".
+# If true a certificate that does not exist in the database, but is issued by a CA the responder handles,
+# will be treated as revoked; the revocation reason will be "Certificate Hold" and the revocation time is January 1st, 1970 (compliant with RFC6960). 
+# Default (when this value and value of "Non existing is good" are false) is to treat it as "unknown".
+# If both "Non existing is good" and "Non existing is revoked", the responder will answer "ok".
 #
 # Default: false
 #ocsp.nonexistingisrevoked=false
