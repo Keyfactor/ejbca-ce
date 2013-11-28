@@ -1698,13 +1698,13 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         log.error("No key available. " + errMsg);
                         continue;
                     }
-                    final String providerName = ocspSigningCacheEntry.getSignatureProviderName();
                     if (OcspConfiguration.getHealthCheckCertificateValidity() && !CertTools.isCertificateValid(ocspSigningCertificate) ) {
                         sb.append('\n').append(errMsg);
                         continue;
                     }
                     if (OcspConfiguration.getHealthCheckSignTest()) {
                         try {
+                            final String providerName = ocspSigningCacheEntry.getSignatureProviderName();
                             KeyTools.testKey(privateKey, ocspSigningCertificate.getPublicKey(), providerName);
                         } catch (InvalidKeyException e) {
                             // thrown by testKey
@@ -1714,7 +1714,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         }
                     }
                     if (log.isDebugEnabled()) {
-                        log.debug("Test of \""+errMsg+"\" OK!");                          
+                        final String name = ocspSigningCacheEntry.getOcspKeyBinding().getName();
+                        log.debug("Test of \""+name+"\" OK!");                          
                     }
                 }
             }
