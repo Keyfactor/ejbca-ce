@@ -1,3 +1,21 @@
+EJBCA 6.0.2, 2013-11-29
+---
+Bug
+    [ECA-2449] - Creating a CA without a valid SubjectDN causes double JS popups.
+    [ECA-3321] - Improve CMP configuration user interface
+    [ECA-3324] - Quote arguments of ca init during install
+    [ECA-3327] - SaferDailyRollingFileAppender extends wrong base class
+    [ECA-3328] - OCSP Signing cache should handle cache discrepancies gracefully
+    [ECA-3331] - EJBCA does not deploy without ejbca-db-cli sources available
+    [ECA-3334] - Change untilNextUpdate and maxAge properties in OcspKeyBinding from Integer to Long
+
+Improvement
+    [ECA-3132] - Support returning "revoked" for unknown certificates in line with RFC6960
+    [ECA-3309] - Some versions of MySQL picks bad index mixing OR and AND
+    [ECA-3318] - CMP: Include certificate chain in certificate responses
+    [ECA-3323] - Reload OCSP cache manually
+    [ECA-3325] - Minimize locking in audit log's sequence counter
+
 EJBCA 6.0.1, 2013-11-19
 ---
 Bug
