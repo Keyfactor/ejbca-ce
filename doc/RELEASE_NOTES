@@ -1,3 +1,16 @@
+EJBCA 6.0.2
+-----------
+This is a maintenance release with bug fixes and improvements. In all 12 issues have been fixed.
+
+* Noteworthy changes:
+- Fix some issues with, and improve, OCSP signing cache reloading.
+- Fix rotation of safer log4j logs.
+- Support returning revoked for non issued certificates, instead of unknown (RFC6960).
+- Minor CMP improvements, including full chain in responses and improve GUI.
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE.
+
 EJBCA 6.0.1
 -----------
 This is a maintenance release with bug fixes and improvements. In all 13 issues have been fixed.
