@@ -69,10 +69,12 @@ public class CVCCA extends CA implements Serializable {
         data.put(CA.CATYPE, Integer.valueOf(CAInfo.CATYPE_CVC));
         data.put(VERSION, new Float(LATEST_VERSION));   
         // Create the implementation
-        createCAImpl();
+        createCAImpl(cainfo);
 	}
 
-    private void createCAImpl() {
+    private void createCAImpl(final CVCCAInfo cainfo) {
+        // cainfo can be used to differentiate between different types of CVC CA implementations as there
+        // can be several different types of CVC, EAC, Tachograph etc.
         if (implExists) {
             try {
                 if (implClass == null) {
@@ -81,20 +83,23 @@ public class CVCCA extends CA implements Serializable {
                     implClass = Class.forName(implClassName);
                     log.debug("CVCCAEACImpl is available, and used, in this version of EJBCA.");
                 }
-                impl = (CVCCAEACImpl)implClass.newInstance();
+                impl = (CVCCAImpl)implClass.newInstance();
                 impl.setCA(this);
             } catch (ClassNotFoundException e) {
                 // We only end up here once, if the class does not exist, we will never end up here again
                 implExists = false;
-                log.info("No CVCCA available in this version of EJBCA.");
-                impl = new CVCCANoopImpl();         
+                log.info("CVC CA is not available in the version of EJBCA.");
+                // No implementation found
+                throw new RuntimeException("CVC CA is not available in the version of EJBCA.");
             } catch (InstantiationException e) {
                 log.error("Error intitilizing CVCCA: ", e);
             } catch (IllegalAccessException e) {
                 log.error("Error intitilizing CVCCA protection: ", e);
             }           
         } else {
-            impl = new CVCCANoopImpl();         
+            // No implementation found
+            log.info("CVC CA is not available in the version of EJBCA.");
+            throw new RuntimeException("CVC CA is not available in the version of EJBCA.");
         }
     }
 
@@ -112,7 +117,7 @@ public class CVCCA extends CA implements Serializable {
                 }
             }
 		}
-		final CAInfo info = new CVCCAInfo(subjectDN, name, status, updateTime, getCertificateProfileId(),  
+		final CVCCAInfo info = new CVCCAInfo(subjectDN, name, status, updateTime, getCertificateProfileId(),  
 				getValidity(), getExpireTime(), getCAType(), getSignedBy(), getCertificateChain(),
 				getCAToken(), getDescription(), getRevocationReason(), getRevocationDate(), getCRLPeriod(), getCRLIssueInterval(), getCRLOverlapTime(), getDeltaCRLPeriod(), 
 				getCRLPublishers(), getFinishUser(), externalcaserviceinfos, 
@@ -122,7 +127,7 @@ public class CVCCA extends CA implements Serializable {
 		super.setCAInfo(info);
         setCAId(caId);        
         // Create the implementation
-        createCAImpl();
+        createCAImpl(info);
 	}
 
 	@Override
