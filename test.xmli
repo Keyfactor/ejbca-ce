@@ -15,6 +15,7 @@
     	<ant antfile="build.xml" dir="modules/ejbca-ejb" target="test" />
     	<ant antfile="build.xml" dir="modules/ejbca-entity" target="test" />
     	<ant antfile="build.xml" dir="modules/healthcheck-war" target="test" />
+    	<ant antfile="build.xml" dir="modules/buildtools" target="test" />
     </target>
 
     <target name="test:rungfver" description="run Glassfish JEE validation tool on the EJBCA EAR" depends="ejbca.ear">
