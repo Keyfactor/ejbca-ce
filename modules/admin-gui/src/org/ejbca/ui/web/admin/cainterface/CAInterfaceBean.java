@@ -54,6 +54,7 @@ import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
+import org.cesecore.certificates.ca.CVCCA;
 import org.cesecore.certificates.ca.CVCCAInfo;
 import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.certificates.ca.X509CAInfo;
@@ -1139,7 +1140,6 @@ public class CAInterfaceBean implements Serializable {
                authorityInformationAccess.add(authorityInformationAccessParam);
                final String cadefinedfreshestcrl = (caDefinedFreshestCrl==null ? "" : caDefinedFreshestCrl);
                // Create extended CA Service updatedata.
-               final int active = serviceOcspActive ? ExtendedCAServiceInfo.STATUS_ACTIVE : ExtendedCAServiceInfo.STATUS_INACTIVE;
                final int xkmsactive = serviceXkmsActive ? ExtendedCAServiceInfo.STATUS_ACTIVE : ExtendedCAServiceInfo.STATUS_INACTIVE;
                final int cmsactive = serviceCmsActive ? ExtendedCAServiceInfo.STATUS_ACTIVE : ExtendedCAServiceInfo.STATUS_INACTIVE;
                final ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
@@ -1419,5 +1419,37 @@ public class CAInterfaceBean implements Serializable {
             throw new IOException(e);
         }
         return fileBuffer;
+    }
+    
+    /** Returns true if any CVC CA implementation is available, false otherwise.
+     * Used to hide/give warning when no CVC CA implementaiton is available.
+     */
+    public boolean isCVCAvailable() {
+        boolean ret = true;
+        // Fake a creation of a CVCCA see if we get an exception
+        CVCCAInfo cainfo = new CVCCAInfo("CN=TESTCVC", "TESTCVC", CAConstants.CA_ACTIVE, new Date(), CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA,
+                3650, null, // Expiretime
+                CAInfo.CATYPE_CVC, CAInfo.SELFSIGNED, (Collection<Certificate>) null, null, "JUnit RSA CVC CA", -1, null, 24, // CRLPeriod
+                0, // CRLIssueInterval
+                10, // CRLOverlapTime
+                10, // Delta CRL period
+                new ArrayList<Integer>(), true, // Finish User
+                new ArrayList<ExtendedCAServiceInfo>(0), 
+                new ArrayList<Integer>(), // Approvals Settings
+                1, // Number of Req approvals
+                true, // includeInHelathCheck
+                true, // isDoEnforceUniquePublicKeys
+                true, // isDoEnforceUniqueDistinguishedName
+                false, // isDoEnforceUniqueSubjectDNSerialnumber
+                false, // useCertReqHistory
+                true, // useUserStorage
+                true // useCertificateStorage
+        );
+        try {
+            new CVCCA(cainfo);
+        } catch (RuntimeException e) {
+            ret = false;
+        }
+        return ret;
     }
 }

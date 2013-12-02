@@ -391,6 +391,15 @@ function checkallfields(){
 	           } %>
             </td>
         </tr>
+        <% if ( (catype == CAInfo.CATYPE_CVC) && !cabean.isCVCAvailable() ) { %>
+        <tr id="Row<%=row++%2%>">
+            <td width="50%" align="right"></td>
+            <td class="alert">CVC CA type is not available in this version of EJBCA.</td>
+        </tr>
+        <% } else { 
+        // begin "IF CVC AVAILABLE", search for "IF CVC AVAILABLE" to find the end } in the end of this file 
+        %>
+        
         <% if (editca && !isUninitialized) { %>
         <tr id="Row<%=row++%2%>">
             <td width="50%" align="right">
@@ -1695,6 +1704,10 @@ function checkallfields(){
     </tr>
     <tr id="Row<%=row++%2%>"><td width="50%" align="right">&nbsp;</td><td width="50%">&nbsp;</td></tr>
 	<% } %>
+
+    <% } 
+    // end "IF CVC AVAILABLE", search for "IS CVC AVAILABLE" to find the beginning { in the beginning of this file 
+    %>
 
   </table>
 
