@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="buildtools">
+    <description>
+		Various build tools for ant
+    </description>
+
+	<dirname property="this.dir" file="${ant.file.statedump}"/>
+	<import file="${this.dir}/../build.xml"/>
+	
+	<property name="build.dir" location="${this.dir}/build"/>
+	<property name="build-test.dir" location="${this.dir}/build-test"/>
+	<property name="src.dir" location="${this.dir}/src"/>
+	<property name="src-test.dir" location="${this.dir}/src-test"/>
+    <property name="intresources.dir" location="${this.dir}/intresources"/>
+	<property name="reports.base.dir" location="${this.dir}/build-test/reports/"/>
+
+
+    <target name="build-servicemanifestbuilder" depends="compile-servicemanifestbuilder">
+        <jar jarfile="${mod.servicemanifestbuilder.lib}">
+    		<manifest >
+    			<attribute name="Class-path" value="$./" />
+    			<attribute name="Main-Class" value="org.primekey.anttools.ServiceManifestBuilder"/>
+    		</manifest>
+            <fileset dir="${build.dir}" includes="**/*ServiceManifestBuilder.class"/>
+        </jar>
+    </target>
+
+    <target name="clean" description="Clean up this module">
+		<delete dir="${build.dir}" />
+		<delete dir="${mod.buildtools.dist}" />
+    </target>
+	
+    <target name="compile-servicemanifestbuilder">
+    	<mkdir dir="${build.dir}" />
+        <javac destdir="${build.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}">
+            <classpath>
+            	<path refid="lib.jee.classpath"/>
+            </classpath>
+        	<src path="${src.dir}"/>
+        </javac>
+    </target>
+      
+    
+    <!-- Tests -->
+    <target name="compile-tests" depends="build-servicemanifestbuilder">
+    	<mkdir dir="${build-test.dir}" />
+        <javac srcdir="${src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}">
+        	<classpath>
+        		<path refid="lib.junit.classpath"/>
+                <path location="${build.dir}" />
+        		<path location="${build-test.dir}" />
+        	</classpath>
+    	</javac>
+    </target>
+
+	<target name="test" depends="compile-tests" description="Run tests for this module">
+    	<antcall target="showtime"/>
+    	<property name="reports.dir" location="${reports.base.dir}/test"/>
+		<delete dir="${reports.dir}" />
+		<mkdir dir="${reports.dir}/html"/>
+		<junit printsummary="yes" haltonfailure="no" dir="${this.dir}">
+			<classpath>
+                <path refid="lib.junit.classpath"/>
+                <path location="${build.dir}" />
+				<path location="${build-test.dir}" />
+				<pathelement path="${clover.jar}"/>
+			</classpath>
+			<formatter type="xml" />
+			<batchtest fork="yes" todir="${reports.dir}">
+				<fileset dir="${build-test.dir}" includes="**/*Test.class">
+				</fileset>
+			</batchtest>
+		</junit>
+		<antcall target="createreport"/>
+    	<antcall target="showtime"/>
+    </target>
+
+</project>
