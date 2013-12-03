@@ -888,6 +888,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             final Collection<String> extensionOids = OcspConfiguration.getExtensionOids();
             // Look over the status requests
             List<OCSPResponseItem> responseList = new ArrayList<OCSPResponseItem>();
+            boolean addExtendedRevokedExtension = false;
             for (Req ocspRequest : ocspRequests) {
                 CertificateID certId = ocspRequest.getCertID();
                 transactionLogger.paramPut(TransactionLogger.SERIAL_NOHEX, certId.getSerialNumber().toByteArray());
@@ -1007,6 +1008,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             certStatus = new RevokedStatus(new RevokedInfo(new ASN1GeneralizedTime(new Date(0)),
                                     CRLReason.lookup(CRLReason.certificateHold)));
                             transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_REVOKED); 
+                            
+                            addExtendedRevokedExtension = true;
+                            
                         } else {
                             sStatus = "unknown";
                             certStatus = new UnknownStatus();
@@ -1075,6 +1079,13 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     }
                 }
             }
+            
+            if(addExtendedRevokedExtension) { 
+                // id-pkix-ocsp-extended-revoke OBJECT IDENTIFIER ::= {id-pkix-ocsp 9}
+                final ASN1ObjectIdentifier extendedRevokedOID = new ASN1ObjectIdentifier(OCSPObjectIdentifiers.pkix_ocsp + ".9");
+                responseExtensions.put(extendedRevokedOID, new Extension(extendedRevokedOID, false, new byte[0]) );
+            }
+            
             if (ocspSigningCacheEntry != null) {
                 // Add responseExtensions
                 Extensions exts = new Extensions(responseExtensions.values().toArray(new Extension[0]));
