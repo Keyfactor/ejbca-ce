@@ -7,9 +7,9 @@
 
 <body>
   
-  <section name="Using CVC CAs for EU EAC ePassports">
+  <section name="Using CVC CAs for EU EAC ePassports (EJBCA Enterprise only)">
   <p>
-  Usage of EJBCA for a complete PKI for CVC CAs are explained in this <a href="cvccas.html">document</a>.
+  Usage of EJBCA for a complete PKI for CVC CAs are explained in this <a href="docs/cvccas.html">document</a>.
   </p>
   </section>
 

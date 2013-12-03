@@ -5220,7 +5220,7 @@ back to EJBCA for display in the Admin GUI.
 You can find information about configuring log4j on JBoss in the EJBCA <a href="http://wiki.ejbca.org/ejbca-install#toc5">wiki</a>.
 </p>
 </subsubsection>
-<subsubsection name="IntegrityProtectedDevice">
+<subsubsection name="IntegrityProtectedDevice (EJBCA Enterprise only)">
 <p>
 The integrity protected log device stores audit record in the AuditRecordData table in the database. 
 The record can be protected using either HMAC or digital signatures. See conf/cesecore.properties for configuration options.
@@ -5373,7 +5373,7 @@ bin/ejbca.sh clearcache -all
 
 </subsection>
 
-<subsection name="Local Database CLI">
+<subsection name="Local Database CLI (EJBCA Enterprise only)">
 <p>You can build and run the local database CLI with the commands:
 </p>
 <source>
@@ -5384,7 +5384,7 @@ cd dist/ejbca-db-cli
  Run the command to get a description about all available commands.</p>
 </subsection>
 
-<subsection name="Validation/Conformance Check Tool">
+<subsection name="Validation/Conformance Check Tool (EJBCA Enterprise only)">
 <p>
 The <a href="userguide.html#EJBCA%20Validation/Conformance%20Tool">Validation/Conformance Tool</a> is a tool for running tests on issued certificates or OCSP responses to see that they match the configured criteria.
 </p>x
