@@ -54,7 +54,7 @@ public class CVCCA extends CA implements Serializable {
 	/** Version of this class, if this is increased the upgrade() method will be called automatically */
 	public static final float LATEST_VERSION = 3;
 
-	   /** Definition of the optional database integrity protection implementation */
+	   /** Definition of the optional CVCA implementation */
     private static final String implClassName = "org.cesecore.certificates.ca.CVCCAEACImpl";
     /** Cache class so we don't have to do Class.forName for every entity object created */
     private static volatile Class<?> implClass = null;
