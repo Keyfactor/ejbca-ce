@@ -75,6 +75,8 @@ import org.bouncycastle.cert.ocsp.OCSPReq;
 import org.bouncycastle.cert.ocsp.OCSPReqBuilder;
 import org.bouncycastle.cert.ocsp.OCSPResp;
 import org.bouncycastle.cert.ocsp.OCSPRespBuilder;
+import org.bouncycastle.cert.ocsp.RevokedStatus;
+import org.bouncycastle.cert.ocsp.UnknownStatus;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
@@ -932,6 +934,42 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         log.trace("<test60OcspUnknownIsRevoked()");
     }
 
+    
+    /**
+     * This test tests that the OCSP response contains the extension "id-pkix-ocsp-extended-revoke" in case the 
+     * status of an unknown cert is returned as revoked.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testExtendedRevokedExtension() throws Exception {
+        
+        OCSPReqBuilder gen = new OCSPReqBuilder();
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, new BigInteger("1") ));
+        OCSPReq req = gen.build();
+        BasicOCSPResp response = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
+        if (response == null) {
+            throw new Exception("Could not retrieve response, test could not continue.");
+        }
+        assertTrue(response.getResponses()[0].getCertStatus() instanceof UnknownStatus); 
+        Extension responseExtension = response.getExtension(new ASN1ObjectIdentifier(OCSPObjectIdentifiers.pkix_ocsp + ".9"));
+        assertNull("Wrong extension sent with reply", responseExtension);
+        
+        final Map<String,String> map = new HashMap<String, String>();
+        map.put(OcspConfiguration.NONE_EXISTING_IS_REVOKED, "true");
+        this.helper.alterConfig(map);
+        
+        gen = new OCSPReqBuilder();
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, new BigInteger("1") ));
+        req = gen.build();
+        response = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
+        if (response == null) {
+            throw new Exception("Could not retrieve response, test could not continue.");
+        }
+        assertTrue(response.getResponses()[0].getCertStatus() instanceof RevokedStatus); 
+        responseExtension = response.getExtension(new ASN1ObjectIdentifier(OCSPObjectIdentifiers.pkix_ocsp + ".9"));
+        assertNotNull("No extension sent with reply", responseExtension);
+    }
     
     /**
      * removes DSA CA
