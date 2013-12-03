@@ -94,7 +94,7 @@ public class CVCCA extends CA implements Serializable {
             } catch (InstantiationException e) {
                 log.error("Error intitilizing CVCCA: ", e);
             } catch (IllegalAccessException e) {
-                log.error("Error intitilizing CVCCA protection: ", e);
+                log.error("Error intitilizing CVCCA: ", e);
             }           
         } else {
             // No implementation found
