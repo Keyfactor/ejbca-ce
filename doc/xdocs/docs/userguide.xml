@@ -1795,7 +1795,7 @@ ejbcaClientToolBox.sh ocsp
 </source>
 </section>
 
-<section name="EJBCA Validation/Conformance Tool">
+<section name="EJBCA Validation/Conformance Tool (EJBCA Enterprise only)">
 <p>
 The ValidationTool is a standalone client-side application for certificates and OCSP response validation and conformance checks. 
 </p>
