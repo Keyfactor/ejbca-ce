@@ -64,7 +64,6 @@
 		<ant antfile="${mod.externalra-scep.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.externalra-gui.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.clientToolBox.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-        <ant antfile="${mod.validationtool.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.ejbca-cmp-tcp.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.cmpProxy.path}/build-tcp.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.cmpProxy.path}/build-http.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
@@ -85,6 +84,7 @@
         <ant antfile="${mod.cesecore-entity.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
         <ant antfile="${mod.cesecore-ejb-interface.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
         <ant antfile="${mod.cesecore-ejb.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+		<antcall target="validationtoolclean"/>
 		<antcall target="statedumpclean"/>
 		<delete>
 			<fileset dir="${modules.basedir}/dist" includes="*"/>
@@ -96,6 +96,13 @@
 	<target name="statedumpclean" if="${statedump.exists}">
 		<echo message="Cleaning statedump"/>
 		<ant antfile="${mod.statedump.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+	</target>
+    <condition property="validationtool.exists">
+    	<available file="${mod.validationtool.path}/build.xml" />
+    </condition>
+	<target name="validationtoolclean" if="${validationtool.exists}">
+		<echo message="Cleaning validationtool"/>
+		<ant antfile="${mod.validationtool.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
 	
 	<target name="ejbca-entity" depends="ejbca-util" description="Build EJBCA JPA entity library">
@@ -167,6 +174,15 @@
         </target>
     
     <target name="validationtool" description="Build ValidationTool">
+		<echo  message="${mod.validationtool.path}/build.xml" />
+		<fail message="Validation tool is not distributed with this version of EJBCA">
+		    <condition>
+		    	<not>
+		    		<available file="${mod.validationtool.path}/build.xml" />
+		    	</not>
+		    </condition>
+		</fail>	
+
 		<ant antfile="${mod.validationtool.path}/build.xml" target="jar" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="basedir" value="${mod.validationtool.path}"/></ant>
         <mkdir dir="${mod.validationtool.dist}"/>
         <copy todir="${mod.validationtool.dist}" flatten="true">
