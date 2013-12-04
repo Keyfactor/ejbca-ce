@@ -124,14 +124,15 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         }
         return clone;
     }
-    
+
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<Integer> getInternalKeyBindingIds(AuthenticationToken authenticationToken, String internalKeyBindingType) {
         final List<Integer> allIds = internalKeyBindingDataSession.getIds(internalKeyBindingType);
         final List<Integer> authorizedIds = new ArrayList<Integer>();
         for (final Integer current : allIds) {
-            if (accessControlSessionSession.isAuthorizedNoLogging(authenticationToken, InternalKeyBindingRules.VIEW.resource()+"/"+current.toString())) {
+            if (accessControlSessionSession.isAuthorizedNoLogging(authenticationToken,
+                    InternalKeyBindingRules.VIEW.resource() + "/" + current.toString())) {
                 authorizedIds.add(current);
             }
         }
@@ -149,7 +150,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         }
         return authorizedInternalKeyBindingInfos;
     }
-    
+
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public List<InternalKeyBindingInfo> getAllInternalKeyBindingInfos(String internalKeyBindingType) {
@@ -165,8 +166,9 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public InternalKeyBinding getInternalKeyBinding(AuthenticationToken authenticationToken, int id) throws AuthorizationDeniedException {
-        if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.VIEW.resource()+"/"+id)) {
-            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.VIEW.resource(), authenticationToken.toString());
+        if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.VIEW.resource() + "/" + id)) {
+            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.VIEW.resource(),
+                    authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
         }
         return internalKeyBindingDataSession.getInternalKeyBinding(id);
@@ -175,18 +177,20 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public InternalKeyBindingInfo getInternalKeyBindingInfo(AuthenticationToken authenticationToken, int id) throws AuthorizationDeniedException {
-        if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.VIEW.resource()+"/"+id)) {
-            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.VIEW.resource(), authenticationToken.toString());
+        if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.VIEW.resource() + "/" + id)) {
+            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.VIEW.resource(),
+                    authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
         }
         return new InternalKeyBindingInfo(internalKeyBindingDataSession.getInternalKeyBinding(id));
     }
-    
+
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public InternalKeyBindingInfo getInternalKeyBindingInfoNoLog(AuthenticationToken authenticationToken, int id) throws AuthorizationDeniedException {
-        if (!accessControlSessionSession.isAuthorizedNoLogging(authenticationToken, InternalKeyBindingRules.VIEW.resource()+"/"+id)) {
-            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.VIEW.resource(), authenticationToken.toString());
+        if (!accessControlSessionSession.isAuthorizedNoLogging(authenticationToken, InternalKeyBindingRules.VIEW.resource() + "/" + id)) {
+            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.VIEW.resource(),
+                    authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
         }
         return new InternalKeyBindingInfo(internalKeyBindingDataSession.getInternalKeyBinding(id));
@@ -195,7 +199,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public Integer getIdFromName(String internalKeyBindingName) {
-        if (internalKeyBindingName==null) {
+        if (internalKeyBindingName == null) {
             return null;
         }
         final Map<String, Integer> cachedNameToIdMap = internalKeyBindingDataSession.getCachedNameToIdMap();
@@ -218,21 +222,22 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     }
 
     @Override
-    public int createInternalKeyBinding(AuthenticationToken authenticationToken, String type, int id, String name, InternalKeyBindingStatus status, String certificateId,
-            int cryptoTokenId, String keyPairAlias, String signatureAlgorithm, Map<Object, Object> dataMap) throws AuthorizationDeniedException, CryptoTokenOfflineException,
-            InternalKeyBindingNameInUseException, InvalidAlgorithmException {
-        if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.MODIFY.resource(),
-                CryptoTokenRules.USE.resource() + "/" + cryptoTokenId)) {
-            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.MODIFY.resource(), authenticationToken.toString());
+    public int createInternalKeyBinding(AuthenticationToken authenticationToken, String type, int id, String name, InternalKeyBindingStatus status,
+            String certificateId, int cryptoTokenId, String keyPairAlias, String signatureAlgorithm, Map<Object, Object> dataMap)
+            throws AuthorizationDeniedException, CryptoTokenOfflineException, InternalKeyBindingNameInUseException, InvalidAlgorithmException {
+        if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.MODIFY.resource(), CryptoTokenRules.USE.resource()
+                + "/" + cryptoTokenId)) {
+            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.MODIFY.resource(),
+                    authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
         }
         if (!AlgorithmTools.isSigAlgEnabled(signatureAlgorithm)) {
             throw new InvalidAlgorithmException("Signature algorithm " + signatureAlgorithm + " is not available.");
         }
         // Convert supplied properties using a prefix to ensure that the caller can't mess with internal ones
-        final LinkedHashMap<Object,Object> initDataMap = new LinkedHashMap<Object,Object>();
+        final LinkedHashMap<Object, Object> initDataMap = new LinkedHashMap<Object, Object>();
         if (dataMap != null) {
-            for (final Entry<Object,Object> entry: dataMap.entrySet()) {
+            for (final Entry<Object, Object> entry : dataMap.entrySet()) {
                 String key = String.valueOf(entry.getKey());
                 if (key.startsWith(InternalKeyBindingBase.SUBCLASS_PREFIX)) {
                     initDataMap.put(key, entry.getValue());
@@ -251,26 +256,28 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             status = InternalKeyBindingStatus.DISABLED;
         }
         // Finally, try to create an instance of this type and persist it
-        final InternalKeyBinding internalKeyBinding = InternalKeyBindingFactory.INSTANCE.create(type, id, name, status, certificateId,
-                cryptoTokenId, keyPairAlias, initDataMap);
+        final InternalKeyBinding internalKeyBinding = InternalKeyBindingFactory.INSTANCE.create(type, id, name, status, certificateId, cryptoTokenId,
+                keyPairAlias, initDataMap);
         internalKeyBinding.setSignatureAlgorithm(signatureAlgorithm);
         return internalKeyBindingDataSession.mergeInternalKeyBinding(internalKeyBinding);
     }
-    
+
     @Override
-    public int createInternalKeyBinding(AuthenticationToken authenticationToken, String type, String name, InternalKeyBindingStatus status, String certificateId,
-            int cryptoTokenId, String keyPairAlias, String signatureAlgorithm, Map<Object, Object> dataMap) throws AuthorizationDeniedException, CryptoTokenOfflineException,
-            InternalKeyBindingNameInUseException, InvalidAlgorithmException {
-        return createInternalKeyBinding(authenticationToken, type, 0, name, status, certificateId,
-            cryptoTokenId, keyPairAlias, signatureAlgorithm, dataMap);
+    public int createInternalKeyBinding(AuthenticationToken authenticationToken, String type, String name, InternalKeyBindingStatus status,
+            String certificateId, int cryptoTokenId, String keyPairAlias, String signatureAlgorithm, Map<Object, Object> dataMap)
+            throws AuthorizationDeniedException, CryptoTokenOfflineException, InternalKeyBindingNameInUseException, InvalidAlgorithmException {
+        return createInternalKeyBinding(authenticationToken, type, 0, name, status, certificateId, cryptoTokenId, keyPairAlias, signatureAlgorithm,
+                dataMap);
     }
 
     @Override
     public int persistInternalKeyBinding(AuthenticationToken authenticationToken, InternalKeyBinding internalKeyBinding)
             throws AuthorizationDeniedException, InternalKeyBindingNameInUseException {
-        if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.MODIFY.resource()+"/"+internalKeyBinding.getId(),
-                CryptoTokenRules.USE.resource()+"/"+internalKeyBinding.getCryptoTokenId())) {
-            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.MODIFY.resource(), authenticationToken.toString());
+        if (!accessControlSessionSession.isAuthorized(authenticationToken,
+                InternalKeyBindingRules.MODIFY.resource() + "/" + internalKeyBinding.getId(), CryptoTokenRules.USE.resource() + "/"
+                        + internalKeyBinding.getCryptoTokenId())) {
+            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.MODIFY.resource(),
+                    authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
         }
         return internalKeyBindingDataSession.mergeInternalKeyBinding(internalKeyBinding);
@@ -279,7 +286,8 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     @Override
     public boolean deleteInternalKeyBinding(AuthenticationToken authenticationToken, int internalKeyBindingId) throws AuthorizationDeniedException {
         if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.DELETE.resource() + "/" + internalKeyBindingId)) {
-            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.DELETE.resource(), authenticationToken.toString());
+            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.DELETE.resource(),
+                    authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
         }
         return internalKeyBindingDataSession.removeInternalKeyBinding(internalKeyBindingId);
@@ -289,7 +297,8 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     public String generateNextKeyPair(AuthenticationToken authenticationToken, int internalKeyBindingId) throws AuthorizationDeniedException,
             CryptoTokenOfflineException, InvalidKeyException, InvalidAlgorithmParameterException {
         if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.MODIFY.resource() + "/" + internalKeyBindingId)) {
-            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.MODIFY.resource(), authenticationToken.toString());
+            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.MODIFY.resource(),
+                    authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
         }
         final InternalKeyBinding internalKeyBinding = internalKeyBindingDataSession.getInternalKeyBinding(internalKeyBindingId);
@@ -309,15 +318,17 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public byte[] getNextPublicKeyForInternalKeyBinding(AuthenticationToken authenticationToken, int internalKeyBindingId) throws AuthorizationDeniedException, CryptoTokenOfflineException {
+    public byte[] getNextPublicKeyForInternalKeyBinding(AuthenticationToken authenticationToken, int internalKeyBindingId)
+            throws AuthorizationDeniedException, CryptoTokenOfflineException {
         if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.VIEW.resource() + "/" + internalKeyBindingId)) {
-            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.VIEW.resource(), authenticationToken.toString());
+            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.VIEW.resource(),
+                    authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
         }
         final InternalKeyBinding internalKeyBinding = internalKeyBindingDataSession.getInternalKeyBinding(internalKeyBindingId);
         return getNextPublicKeyForInternalKeyBinding(authenticationToken, internalKeyBinding).getEncoded();
     }
-    
+
     private PublicKey getNextPublicKeyForInternalKeyBinding(AuthenticationToken authenticationToken, InternalKeyBinding internalKeyBinding)
             throws CryptoTokenOfflineException, AuthorizationDeniedException {
         final int cryptoTokenId = internalKeyBinding.getCryptoTokenId();
@@ -334,9 +345,11 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public byte[] generateCsrForNextKey(AuthenticationToken authenticationToken, int internalKeyBindingId) throws AuthorizationDeniedException, CryptoTokenOfflineException {
+    public byte[] generateCsrForNextKey(AuthenticationToken authenticationToken, int internalKeyBindingId) throws AuthorizationDeniedException,
+            CryptoTokenOfflineException {
         if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.VIEW.resource() + "/" + internalKeyBindingId)) {
-            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.VIEW.resource(), authenticationToken.toString());
+            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.VIEW.resource(),
+                    authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
         }
         final InternalKeyBinding internalKeyBinding = internalKeyBindingDataSession.getInternalKeyBinding(internalKeyBindingId);
@@ -357,11 +370,14 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         final X500Name x500Name = CertTools.stringToBcX500Name("CN=Should be ignore by CA");
         final String providerName = cryptoToken.getSignProviderName();
         try {
-            return CertTools.genPKCS10CertificationRequest(signatureAlgorithm, x500Name, publicKey, new DERSet(), privateKey, providerName).getEncoded();
+            return CertTools.genPKCS10CertificationRequest(signatureAlgorithm, x500Name, publicKey, new DERSet(), privateKey, providerName)
+                    .getEncoded();
         } catch (OperatorCreationException e) {
-            log.info("CSR generation failed. internalKeyBindingId=" + internalKeyBindingId + ", cryptoTokenId=" + cryptoTokenId + ", keyPairAlias=" + keyPairAlias + ". " + e.getMessage());
+            log.info("CSR generation failed. internalKeyBindingId=" + internalKeyBindingId + ", cryptoTokenId=" + cryptoTokenId + ", keyPairAlias="
+                    + keyPairAlias + ". " + e.getMessage());
         } catch (IOException e) {
-            log.info("CSR generation failed. internalKeyBindingId=" + internalKeyBindingId + ", cryptoTokenId=" + cryptoTokenId + ", keyPairAlias=" + keyPairAlias + ". " + e.getMessage());
+            log.info("CSR generation failed. internalKeyBindingId=" + internalKeyBindingId + ", cryptoTokenId=" + cryptoTokenId + ", keyPairAlias="
+                    + keyPairAlias + ". " + e.getMessage());
         }
         return null;
     }
@@ -370,7 +386,8 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     public String updateCertificateForInternalKeyBinding(AuthenticationToken authenticationToken, int internalKeyBindingId)
             throws AuthorizationDeniedException, CertificateImportException {
         if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.MODIFY.resource() + "/" + internalKeyBindingId)) {
-            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.MODIFY.resource(), authenticationToken.toString());
+            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.MODIFY.resource(),
+                    authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
         }
         final InternalKeyBinding internalKeyBinding = internalKeyBindingDataSession.getInternalKeyBinding(internalKeyBindingId);
@@ -478,9 +495,9 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         return null;
     }
 
-
     @Override
-    public boolean setStatus(AuthenticationToken authenticationToken, int internalKeyBindingId, InternalKeyBindingStatus status) throws AuthorizationDeniedException {
+    public boolean setStatus(AuthenticationToken authenticationToken, int internalKeyBindingId, InternalKeyBindingStatus status)
+            throws AuthorizationDeniedException {
         final InternalKeyBinding internalKeyBinding = getInternalKeyBinding(authenticationToken, internalKeyBindingId);
         if (status == internalKeyBinding.getStatus()) {
             return false;
@@ -499,7 +516,8 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     public void importCertificateForInternalKeyBinding(AuthenticationToken authenticationToken, int internalKeyBindingId, byte[] derEncodedCertificate)
             throws AuthorizationDeniedException, CertificateImportException {
         if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.MODIFY.resource() + "/" + internalKeyBindingId)) {
-            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.MODIFY.resource(), authenticationToken.toString());
+            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.MODIFY.resource(),
+                    authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
         }
         final InternalKeyBinding internalKeyBinding = internalKeyBindingDataSession.getInternalKeyBinding(internalKeyBindingId);
@@ -515,7 +533,8 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         final int cryptoTokenId = internalKeyBinding.getCryptoTokenId();
         final String currentKeyPairAlias = internalKeyBinding.getKeyPairAlias();
         if (log.isDebugEnabled()) {
-            log.debug("certificate.getPublicKey(): " + new String(Hex.encode(KeyTools.createSubjectKeyId(certificate.getPublicKey()).getKeyIdentifier())));
+            log.debug("certificate.getPublicKey(): "
+                    + new String(Hex.encode(KeyTools.createSubjectKeyId(certificate.getPublicKey()).getKeyIdentifier())));
             log.debug("currentKeyPairAlias: " + currentKeyPairAlias);
         }
         boolean updated = false;
@@ -523,13 +542,16 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             String certificateId = CertTools.getFingerprintAsString(certificate);
             final PublicKey currentPublicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, currentKeyPairAlias);
             if (log.isDebugEnabled()) {
-                log.debug("currentPublicKey: " + (currentPublicKey != null ?
-                    new String(Hex.encode(KeyTools.createSubjectKeyId(currentPublicKey).getKeyIdentifier())) : "null"));
+                log.debug("currentPublicKey: "
+                        + (currentPublicKey != null ? new String(Hex.encode(KeyTools.createSubjectKeyId(currentPublicKey).getKeyIdentifier()))
+                                : "null"));
             }
-            if (currentPublicKey != null && KeyTools.createSubjectKeyId(currentPublicKey).equals(KeyTools.createSubjectKeyId(certificate.getPublicKey()))) {
+            if (currentPublicKey != null
+                    && KeyTools.createSubjectKeyId(currentPublicKey).equals(KeyTools.createSubjectKeyId(certificate.getPublicKey()))) {
                 // If current key matches current public key -> import + update certificateId
                 if (isCertificateAlreadyInDatabase(certificateId)) {
-                    log.info("Certificate with fingerprint " + certificateId + " was already present in the database. Only InternalKeyBinding reference will be updated.");
+                    log.info("Certificate with fingerprint " + certificateId
+                            + " was already present in the database. Only InternalKeyBinding reference will be updated.");
                 } else {
                     storeCertificate(authenticationToken, internalKeyBinding, certificate);
                 }
@@ -543,13 +565,16 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                 if (nextKeyPairAlias != null) {
                     final PublicKey nextPublicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, nextKeyPairAlias);
                     if (log.isDebugEnabled()) {
-                        log.debug("nextPublicKey: " + (nextPublicKey != null ?
-                            new String(Hex.encode(KeyTools.createSubjectKeyId(nextPublicKey).getKeyIdentifier())) : "null"));
+                        log.debug("nextPublicKey: "
+                                + (nextPublicKey != null ? new String(Hex.encode(KeyTools.createSubjectKeyId(nextPublicKey).getKeyIdentifier()))
+                                        : "null"));
                     }
-                    if (nextPublicKey != null && KeyTools.createSubjectKeyId(nextPublicKey).equals(KeyTools.createSubjectKeyId(certificate.getPublicKey()))) {
+                    if (nextPublicKey != null
+                            && KeyTools.createSubjectKeyId(nextPublicKey).equals(KeyTools.createSubjectKeyId(certificate.getPublicKey()))) {
                         // If current key matches next public key -> import and update nextKey + certificateId
                         if (isCertificateAlreadyInDatabase(certificateId)) {
-                            log.info("Certificate with fingerprint " + certificateId + " was already present in the database. Only InternalKeyBinding reference will be updated.");
+                            log.info("Certificate with fingerprint " + certificateId
+                                    + " was already present in the database. Only InternalKeyBinding reference will be updated.");
                         } else {
                             storeCertificate(authenticationToken, internalKeyBinding, certificate);
                         }
@@ -576,8 +601,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public String renewInternallyIssuedCertificate(AuthenticationToken authenticationToken, int internalKeyBindingId,
-            EndEntityInformation endEntityInformation)
-            throws AuthorizationDeniedException, CryptoTokenOfflineException, CertificateImportException {
+            EndEntityInformation endEntityInformation) throws AuthorizationDeniedException, CryptoTokenOfflineException, CertificateImportException {
         // Assert authorization
         assertAuthorization(authenticationToken, InternalKeyBindingRules.MODIFY.resource() + "/" + internalKeyBindingId);
         if (endEntityInformation == null) {
@@ -612,18 +636,20 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         // Sanity check that the certificate we issued is the one that is in use
         final X509Certificate keyBindingCertificate = (X509Certificate) response.getCertificate();
         if (!newCertificateId.equals(CertTools.getFingerprintAsString(keyBindingCertificate))) {
-            throw new CertificateImportException("Issued certificate was not found in database. Throw-away setting for issuing CA is not allowed for InternalKeyBindings.");
+            throw new CertificateImportException(
+                    "Issued certificate was not found in database. Throw-away setting for issuing CA is not allowed for InternalKeyBindings.");
         }
         return newCertificateId;
     }
-    
-    private void assertAuthorization(AuthenticationToken authenticationToken, final String...rules) throws AuthorizationDeniedException {
+
+    private void assertAuthorization(AuthenticationToken authenticationToken, final String... rules) throws AuthorizationDeniedException {
         if (!accessControlSessionSession.isAuthorized(authenticationToken, rules)) {
             if (rules.length == 1) {
                 final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", rules[0], authenticationToken.toString());
                 throw new AuthorizationDeniedException(msg);
             } else {
-                final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", Arrays.toString(rules), authenticationToken.toString());
+                final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", Arrays.toString(rules),
+                        authenticationToken.toString());
                 throw new AuthorizationDeniedException(msg);
             }
         }
@@ -638,12 +664,12 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         // Check that this is an accepted type of certificate from the one who knows (the implementation)
         internalKeyBinding.assertCertificateCompatability(certificate);
     }
-    
+
     /** @return true if a certificate with the specified certificateId (fingerprint) already exists in the database */
     private boolean isCertificateAlreadyInDatabase(String certificateId) {
         return certificateStoreSession.findCertificateByFingerprint(certificateId) != null;
     }
-    
+
     /** Imports the certificate to the database */
     private void storeCertificate(AuthenticationToken authenticationToken, InternalKeyBinding internalKeyBinding, Certificate certificate)
             throws AuthorizationDeniedException, CertificateImportException {
@@ -672,8 +698,8 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             throw new CertificateImportException("No CA certificate for " + issuerDn + " was found on the system.");
         }
         try {
-            certificateStoreSession.storeCertificate(authenticationToken, certificate, username, caFingerprint,
-                    CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY, certificateProfileId, null, System.currentTimeMillis());
+            certificateStoreSession.storeCertificate(authenticationToken, certificate, username, caFingerprint, CertificateConstants.CERT_ACTIVE,
+                    CertificateConstants.CERTTYPE_ENDENTITY, certificateProfileId, null, System.currentTimeMillis());
         } catch (CreateException e) {
             // Just pass on the message, in case this is a remote invocation where the underlying class is not available.
             if (log.isDebugEnabled()) {
@@ -683,4 +709,3 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         }
     }
 }
-
