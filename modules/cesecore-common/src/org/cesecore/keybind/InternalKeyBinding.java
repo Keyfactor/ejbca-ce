@@ -24,14 +24,15 @@ import java.util.List;
 public interface InternalKeyBinding extends Serializable {
 
     /** Called directly after implementation instantiation status */
-    void init(int id, String name, InternalKeyBindingStatus status, String certificateId, int cryptoTokenId, String keyPairAlias, LinkedHashMap<Object, Object> dataMapToLoad);
+    void init(int id, String name, InternalKeyBindingStatus status, String certificateId, int cryptoTokenId, String keyPairAlias,
+            LinkedHashMap<Object, Object> dataMapToLoad);
 
     /** Called directly before object is persisted */
     LinkedHashMap<Object, Object> getDataMapToPersist();
-    
+
     /** Return the non-changeable alias for this implementation. E.g. "DummyKeyBinding". */
     String getImplementationAlias();
-    
+
     /** @return the next key pair's alias to be used or null of there currently is no mapped next key */
     String getNextKeyPairAlias();
 
@@ -56,26 +57,31 @@ public interface InternalKeyBinding extends Serializable {
 
     /** @return the current human friendly name of this instance */
     String getName();
+
     /** Sets the current human friendly name of this instance */
     void setName(String name);
 
     /** @return the current status of this instance */
     InternalKeyBindingStatus getStatus();
+
     /** Sets the current status of this instance */
     void setStatus(InternalKeyBindingStatus status);
 
     /** @return the fingerprint of the certificate currently in use or null if none is referenced */
     String getCertificateId();
+
     /** Sets the fingerprint of the certificate currently in use */
     void setCertificateId(String certificateId);
 
     /** @return the id of the CryptoToken currently in use */
     int getCryptoTokenId();
+
     /** Sets the id of the CryptoToken currently in use */
     void setCryptoTokenId(int cryptoTokenId);
 
     /** @return the key pair alias currently in use */
     String getKeyPairAlias();
+
     /** Sets the key pair alias currently in use */
     void setKeyPairAlias(String keyPairAlias);
 
