@@ -61,6 +61,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.BERTags;
+import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.CRLReason;
@@ -969,6 +970,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         assertTrue(response.getResponses()[0].getCertStatus() instanceof RevokedStatus); 
         responseExtension = response.getExtension(new ASN1ObjectIdentifier(OCSPObjectIdentifiers.pkix_ocsp + ".9"));
         assertNotNull("No extension sent with reply", responseExtension);
+        assertEquals(DERNull.INSTANCE, responseExtension.getParsedValue());
     }
     
     /**
