@@ -88,6 +88,15 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     private WebAuthenticationProviderSessionLocal authenticationProviderSession;
     private EndEntityManagementSession eeManagementSession;
 
+    /** Definition of the optional Vendor mode implementation */
+    private static final String implClassName = "org.ejbca.core.protocol.cmp.authentication.CmpVendorModeImpl";
+    /** Cache class so we don't have to do Class.forName for every entity object created */
+    private static volatile Class<?> implClass = null;
+    /** Optimization variable so we don't have to check for existence of implClass for every construction of an object */
+    private static volatile boolean implExists = true;
+
+    private CmpVendorMode impl;
+    
     public EndEntityCertificateAuthenticationModule( final AuthenticationToken admin, String authparam, String confAlias, 
             CmpConfiguration cmpConfig, boolean authenticated, 
             final CaSession caSession, final CertificateStoreSession certSession, final AccessControlSession authSession, 
@@ -109,7 +118,40 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         eeAccessSession = eeaccessSession;
         authenticationProviderSession = authProvSession;
         eeManagementSession = endEntityManagementSession;
+        
+        createVendorModeImpl();
     }
+    
+    private void createVendorModeImpl() {
+        if (implExists) {
+            try {
+                if (implClass == null) {
+                    // We only end up here once, if the class does not exist, we will never end up here again (ClassNotFoundException) 
+                    // and if the class exists we will never end up here again (it will not be null)
+                    implClass = Class.forName(implClassName);
+                    log.debug("CmpVendorModeImpl is available, and used, in this version of EJBCA.");
+                }
+                impl = (CmpVendorMode)implClass.newInstance();
+                impl.setCaSession(caSession);
+                impl.setCmpConfiguration(cmpConfiguration);
+            } catch (ClassNotFoundException e) {
+                // We only end up here once, if the class does not exist, we will never end up here again
+                implExists = false;
+                log.info("CMP Vendor mode is not available in the version of EJBCA.");
+                // No implementation found
+                throw new RuntimeException("CMP Vendor mode is not available in the version of EJBCA.");
+            } catch (InstantiationException e) {
+                log.error("Error intitilizing CmpVendorMode: ", e);
+            } catch (IllegalAccessException e) {
+                log.error("Error intitilizing CmpVendorMode: ", e);
+            }           
+        } else {
+            // No implementation found
+            log.info("Vendor mode is not available in the version of EJBCA.");
+            throw new RuntimeException("Vendor mode is not available in the version of EJBCA.");
+        }
+    }
+
     
     @Override
     public String getName() {
@@ -190,7 +232,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             return false;
         }
         
-        boolean vendormode = isVendorCertificateMode(msg.getBody().getType());
+        boolean vendormode = impl.isVendorCertificateMode(msg.getBody().getType(), this.confAlias);
         boolean omitVerifications = cmpConfiguration.getOmitVerificationsInEEC(confAlias);
         boolean ramode = cmpConfiguration.getRAMode(confAlias);
         if(log.isDebugEnabled()) {
@@ -251,7 +293,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             if(vendormode) {
 
                 // Check that extraCert is issued  by a configured VendorCA
-                if(!isExtraCertIssuedByVendorCA()) {
+                if(!impl.isExtraCertIssuedByVendorCA(admin, this.confAlias, extraCert)) {
                     this.errorMessage = "The certificate in extraCert field is not issued by any of the configured Vendor CAs: " + cmpConfiguration.getVendorCA(confAlias);
                     return false;
                 }
@@ -563,34 +605,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         }
         return true;
     }
-    
-    private boolean isExtraCertIssuedByVendorCA() {
-        String vendorCAsStr = this.cmpConfiguration.getVendorCA(this.confAlias);
-        String[] vendorcas = vendorCAsStr.split(";");
-        CAInfo cainfo = null;
-        for(String vendorca : vendorcas) {
-            if(log.isDebugEnabled()) {
-                log.debug("Checking if extraCert is issued by the VendorCA: " + vendorca);
-            }
-            
-            try {
-                cainfo = caSession.getCAInfo(admin, vendorca.trim());
-                if(isExtraCertIssuedByCA(cainfo)) {
-                    return true;
-                }
-            } catch (CADoesntExistsException e) {
-                if(log.isDebugEnabled()) {
-                    log.debug("Cannot find CA: " + vendorca);
-                }
-            } catch (AuthorizationDeniedException e) {
-                if(log.isDebugEnabled()) {
-                    log.debug(e.getLocalizedMessage());
-                }
-            }
-        }
-        return false;
-    }
-    
+        
     private CAInfo getCAInfoByName(String caname) {
         try {
             return caSession.getCAInfo(admin, caname);
@@ -625,14 +640,4 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         return null;
     }
     
-    /**
-     * Checks whether authentication by vendor-issued-certificate should be used. It can be used only in client mode and with initialization/certification requests.
-     *  
-     * @param reqType
-     * @return 'True' if authentication by vendor-issued-certificate is used. 'False' otherwise
-     */
-    private boolean isVendorCertificateMode(int reqType) {
-        return !this.cmpConfiguration.getRAMode(this.confAlias) && this.cmpConfiguration.getVendorMode(this.confAlias) && (reqType == 0 || reqType == 2);
-    }
- 
 }
