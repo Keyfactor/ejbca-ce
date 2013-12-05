@@ -30,7 +30,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.cert.ocsp.BasicOCSPResp;
+import org.bouncycastle.cert.ocsp.OCSPResp;
 import org.bouncycastle.cert.ocsp.OCSPRespBuilder;
+import org.bouncycastle.cert.ocsp.SingleResp;
+import org.bouncycastle.cert.ocsp.UnknownStatus;
 import org.bouncycastle.ocsp.OCSPException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
@@ -284,9 +288,10 @@ public class OCSPServlet extends HttpServlet {
      * add the headers if the requirements of RFC 5019 is fulfilled: A GET-request, a single embedded reponse,
      * the response contains a nextUpdate and no nonce is present.
      * @param maxAge is the margin to Expire when using max-age in milliseconds 
+     * @throws org.bouncycastle.cert.ocsp.OCSPException 
      */
     private void addRfc5019CacheHeaders(HttpServletRequest request, HttpServletResponse response, OcspResponseInformation ocspResponseInformation) throws IOException,
-            OCSPException {
+            OCSPException, org.bouncycastle.cert.ocsp.OCSPException {
         if (ocspResponseInformation.getMaxAge() <= 0) {
             log.debug("Will not add RFC 5019 cache headers: RFC 5019 6.2: max-age should be 'later than thisUpdate but earlier than nextUpdate'.");
             return;
@@ -297,6 +302,13 @@ public class OCSPServlet extends HttpServlet {
         }
       
         if(!ocspResponseInformation.shouldAddCacheHeaders()) {
+            return;
+        } 
+        
+        OCSPResp resp = new OCSPResp(ocspResponseInformation.getOcspResponse());
+        SingleResp[] singleRespones = ((BasicOCSPResp) resp.getResponseObject()).getResponses();
+        if(singleRespones[0].getCertStatus() instanceof UnknownStatus) {
+            log.debug("Will not add RFC 5019 cache headers: response is for an unknown certificate.");
             return;
         } else {
             long now = new Date().getTime();
