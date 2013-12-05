@@ -23,6 +23,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -43,6 +45,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Vector;
 
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
@@ -106,17 +109,36 @@ import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.X509Principal;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.WebConfiguration;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.hibernate.ObjectNotFoundException;
 
 /**
  * Helper class for CMP Junit tests
@@ -135,6 +157,11 @@ public abstract class CmpTestCase extends CaTestCase {
 
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    protected EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    protected SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
+    protected CertificateProfileSession certProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+
+    final private AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(this.getClass().getSimpleName()));
 
     protected void setUp() throws Exception { // NOPMD: this is a test base class
         super.setUp();
@@ -1003,6 +1030,50 @@ public abstract class CmpTestCase extends CaTestCase {
         assertTrue("Failed to set property \"" + property + "\" to \"" + value + "\"",
                 EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST).updateProperty(property, value));
     }
+
+    protected EndEntityInformation createUser(String username, String subjectDN, String password, int caid) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException,
+    EjbcaException, Exception {
+
+        EndEntityInformation user = new EndEntityInformation(username, subjectDN, caid, null, username+"@primekey.se", new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
+        user.setPassword(password);
+        try {
+            endEntityManagementSession.addUser(admin, user, false);
+            // usersession.addUser(admin,"cmptest","foo123",userDN,null,"cmptest@primekey.se",false,SecConst.EMPTY_ENDENTITYPROFILE,CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,EndEntityTypes.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
+            log.debug("created user: " + username);
+        } catch (Exception e) {
+            log.debug("User " + username + " already exists. Setting the user status to NEW");
+            endEntityManagementSession.changeUser(admin, user, false);
+            endEntityManagementSession.setUserStatus(admin, username, EndEntityConstants.STATUS_NEW);
+            log.debug("Reset status to NEW");
+        }
+        return user;
+    }
+
+    protected Certificate createRACertificate(String username, String password, String raCertsPath, String cmpAlias, KeyPair keys, Date notBefore, 
+            Date notAfter, String certProfile, int caid) throws AuthorizationDeniedException, EjbcaException, CertificateException, FileNotFoundException,
+            IOException, UserDoesntFullfillEndEntityProfile, ObjectNotFoundException, Exception {
+                
+        createUser(username, "CN="+username, password, caid);
+        Certificate racert = signSession.createCertificate(admin, username, password, keys.getPublic(), X509KeyUsage.digitalSignature|X509KeyUsage.keyCertSign, notBefore, notAfter, certProfileSession.getCertificateProfileId(certProfile), caid);
+
+        
+        Vector<Certificate> certCollection = new Vector<Certificate>();
+        certCollection.add(racert);
+        byte[] pemRaCert = CertTools.getPemFromCertificateChain(certCollection);
+        
+        String filename = raCertsPath + "/" + username + ".pem";
+        FileOutputStream fout = new FileOutputStream(filename);
+        fout.write(pemRaCert);
+        fout.flush();
+        fout.close();        
+        
+        endEntityManagementSession.deleteUser(admin, username);
+        
+        return racert;
+    }
+
+
 
     //
     // Private methods
