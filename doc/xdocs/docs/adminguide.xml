@@ -1139,7 +1139,7 @@ bin/ejbca.sh ra setendentitystatus user1 10
 ./openssl cmp -cmd cr -server localhost:8080 -path ejbca/publicweb/cmp/openssleec -srvcert ManagementCA.cacert.pem -cert clcert.pem -key key.pem -certout clcert1.pem -newkey key1.pem -keyfmt PEM -certfmt PEM -subject "/CN=user1/O=My Organization/C=SE"
 </source>
 
-<p><strong>Client mode, Vendor certificate authentication</strong></p>
+<p><strong>Client mode, Vendor certificate authentication (EJBCA Enterprise only)</strong></p>
 <p>
 If the end entity has a Vendor certificate with which it should identify itself for initial enrollment, as specified in 3GPP for example, it can also do that. 
 In this case the CA issuing the end entity certificate is not the same as the Vendor CA. The vendor CA must be imported in EJBCA as an External CA ('Import CA certificate' in the admin GUI).
