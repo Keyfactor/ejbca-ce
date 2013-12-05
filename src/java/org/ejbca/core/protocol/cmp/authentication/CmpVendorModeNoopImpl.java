@@ -20,25 +20,29 @@ import org.cesecore.certificates.ca.CaSession;
 import org.ejbca.config.CmpConfiguration;
 
 /**
- * Check the authentication of the PKIMessage by verifying the signature from a Vendor CA (3GPP mode)
+ * NoOperation implementation of CMP Vendor mode
  * 
  * @version $Id$
  *
  */
-public interface CmpVendorMode {
+public class CmpVendorModeNoopImpl implements CmpVendorMode {
 
+    @Override
+    public void setCaSession(final CaSession caSession) {
+    }
 
-    public void setCaSession(final CaSession caSession);
+    @Override
+    public void setCmpConfiguration(final CmpConfiguration cmpConfiguration) {
+    }
 
-    public void setCmpConfiguration(final CmpConfiguration cmpConfiguration);
+    @Override
+    public boolean isExtraCertIssuedByVendorCA(final AuthenticationToken admin, final String confAlias, final Certificate extraCert) {
+        return false;
+    }
     
-    public boolean isExtraCertIssuedByVendorCA(final AuthenticationToken admin, final String confAlias, final Certificate extraCert);
-    
-    /**
-     * Checks whether authentication by vendor-issued-certificate should be used. It can be used only in client mode and with initialization/certification requests.
-     *  
-     * @param reqType
-     * @return 'True' if authentication by vendor-issued-certificate is used. 'False' otherwise
-     */
-    public boolean isVendorCertificateMode(final int reqType, final String confAlias);
+    @Override
+    public boolean isVendorCertificateMode(final int reqType, final String confAlias) {
+        return false;
+    }
+
 }
