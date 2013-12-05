@@ -35,7 +35,6 @@ public class CmpVendorModeImpl implements CmpVendorMode {
     
     private CaSession caSession;
     private CmpConfiguration cmpConfiguration;
-    private String errorMessage = null;
 
     @Override
     public void setCaSession(final CaSession caSession) {
@@ -86,7 +85,6 @@ public class CmpVendorModeImpl implements CmpVendorMode {
                 String errmsg = "The End Entity certificate attached to the PKIMessage is not issued by the CA '" + cainfo.getName() + "'";
                 log.debug(errmsg + " - " + e.getLocalizedMessage());
             }
-            this.errorMessage = "The End Entity certificate attached to the PKIMessage is issued by the wrong CA";
             return false;
         }
         return true;
@@ -103,9 +101,4 @@ public class CmpVendorModeImpl implements CmpVendorMode {
         return !this.cmpConfiguration.getRAMode(confAlias) && this.cmpConfiguration.getVendorMode(confAlias) && (reqType == 0 || reqType == 2);
     }
 
-    @Override
-    public String getErrorMessage() {
-        return errorMessage;
-    }
- 
 }

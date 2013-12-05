@@ -122,6 +122,9 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         createVendorModeImpl();
     }
     
+    /** Creates the implementation for CMP vendor mode, if it exists. If it does not exist, uses a CmpVendorModeNoop implementation that 
+     * return false on the question of CMP Vendor mode is used.
+     */
     private void createVendorModeImpl() {
         if (implExists) {
             try {
@@ -138,17 +141,14 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 // We only end up here once, if the class does not exist, we will never end up here again
                 implExists = false;
                 log.info("CMP Vendor mode is not available in the version of EJBCA.");
-                // No implementation found
-                throw new RuntimeException("CMP Vendor mode is not available in the version of EJBCA.");
+                impl = new CmpVendorModeNoopImpl();
             } catch (InstantiationException e) {
                 log.error("Error intitilizing CmpVendorMode: ", e);
             } catch (IllegalAccessException e) {
                 log.error("Error intitilizing CmpVendorMode: ", e);
             }           
         } else {
-            // No implementation found
-            log.info("Vendor mode is not available in the version of EJBCA.");
-            throw new RuntimeException("Vendor mode is not available in the version of EJBCA.");
+            impl = new CmpVendorModeNoopImpl();
         }
     }
 
