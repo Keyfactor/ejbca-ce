@@ -27,7 +27,7 @@ import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
 
 /**
- * @version $Id: PublisherProxySessionBean.java 16268 2013-02-05 08:27:31Z anatom $
+ * @version $Id$
  *
  */
 

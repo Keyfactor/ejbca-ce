@@ -42,7 +42,7 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
 /**
  * Shows the current server configuration
  * 
- * @version $Id: ConfigDumpCommand.java 13965 2012-02-05 14:59:12Z mikekushner $
+ * @version $Id$
  */
 public class CmpConfigCommand extends ConfigBaseCommand {
 

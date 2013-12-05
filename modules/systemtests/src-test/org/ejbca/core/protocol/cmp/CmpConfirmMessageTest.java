@@ -49,7 +49,7 @@ import org.junit.runners.MethodSorters;
 /**
  * This test runs in 'normal' CMP mode
  * 
- * @version $Id: CrmfRequestTest.java 17527 2013-08-27 12:07:19Z aveen4711 $
+ * @version $Id$
  * 
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
