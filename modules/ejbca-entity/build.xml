@@ -224,8 +224,8 @@
         	encoding="iso8859-1" target="${java.target.version}" classpathref="compile-test.classpath"
         	>
         	<include name="org/ejbca/database/**/*Test.java"/>
+	    	<include name="${src-cli.dir}/**/*.java"/>
 	    	<src path="${src-test.dir}"/>
-	    	<src path="${src-cli.dir}"/>
 	    	<src path="${src.dir}"/>
         	<src path="${ejbca.home}/src/java"/>
         	<src path="${ejbca.home}/modules/ejbca-ejb-cli/src"/>
