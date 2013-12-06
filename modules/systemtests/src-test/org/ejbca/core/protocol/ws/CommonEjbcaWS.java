@@ -28,14 +28,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.KeyPair;
 import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.security.SecureRandom;
-import java.security.SignatureException;
 import java.security.cert.CertStore;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
@@ -67,7 +64,6 @@ import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -78,18 +74,13 @@ import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
-import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.ca.CVCCAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
-import org.cesecore.certificates.ca.catoken.CAToken;
-import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.request.CVCRequestMessage;
-import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -105,7 +96,6 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
-import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -166,15 +156,11 @@ import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Excepti
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.core.protocol.ws.common.IEjbcaWS;
 import org.ejbca.core.protocol.ws.common.KeyStoreHelper;
-import org.ejbca.cvc.AuthorizationRoleEnum;
-import org.ejbca.cvc.CAReferenceField;
 import org.ejbca.cvc.CVCAuthenticatedRequest;
 import org.ejbca.cvc.CVCObject;
 import org.ejbca.cvc.CVCertificate;
 import org.ejbca.cvc.CardVerifiableCertificate;
-import org.ejbca.cvc.CertificateGenerator;
 import org.ejbca.cvc.CertificateParser;
-import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 
 
@@ -275,11 +261,11 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     }
 
     protected void adminSetUpAdmin() throws Exception {
-    	if ( !new File(TEST_ADMIN_FILE).exists() ) {
-    		log.error("Keystore file + '"+TEST_ADMIN_FILE+"' does not exist.");
-    		return;
-    	}
-    	
+        if ( !new File(TEST_ADMIN_FILE).exists() ) {
+            log.error("Keystore file + '"+TEST_ADMIN_FILE+"' does not exist.");
+            return;
+        }
+        
         System.setProperty("javax.net.ssl.trustStore", TEST_ADMIN_FILE);
         System.setProperty("javax.net.ssl.trustStorePassword", PASSWORD);
         System.setProperty("javax.net.ssl.keyStore", TEST_ADMIN_FILE);
@@ -318,33 +304,33 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         user1.setType(new EndEntityType(EndEntityTypes.ENDUSER, EndEntityTypes.ADMINISTRATOR));
 
         if (!endEntityManagementSession.existsUser(TEST_ADMIN_USERNAME)) {
-        	log.info("Adding new user: "+user1.getUsername());
-        	endEntityManagementSession.addUser(intAdmin, user1, true);
+            log.info("Adding new user: "+user1.getUsername());
+            endEntityManagementSession.addUser(intAdmin, user1, true);
         } else {
-        	log.info("Changing user: "+user1.getUsername());
-        	endEntityManagementSession.changeUser(intAdmin, user1, true);
+            log.info("Changing user: "+user1.getUsername());
+            endEntityManagementSession.changeUser(intAdmin, user1, true);
         }
         boolean adminExists = false;
         RoleData role = roleAccessSession.findRole(wsadminRoleName);
         if (role == null) {
-        	log.info("Creating new role: "+wsadminRoleName);
+            log.info("Creating new role: "+wsadminRoleName);
             role = roleManagementSession.create(intAdmin, wsadminRoleName);
             final List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
             accessRules.add(new AccessRuleData(wsadminRoleName, StandardRules.ROLE_ROOT.resource(), AccessRuleState.RULE_ACCEPT, true));
             role = roleManagementSession.addAccessRulesToRole(intAdmin, role, accessRules);
         }
         for (AccessUserAspectData accessUser : role.getAccessUsers().values()) {
-        	if (accessUser.getMatchValue().equals(TEST_ADMIN_USERNAME)) {
-        		adminExists = true;
-        	}
+            if (accessUser.getMatchValue().equals(TEST_ADMIN_USERNAME)) {
+                adminExists = true;
+            }
         }
         if (!adminExists) {
-        	log.info("Adding admin to role: "+wsadminRoleName);
-        	List<AccessUserAspectData> list = new ArrayList<AccessUserAspectData>();
-        	list.add(new AccessUserAspectData(wsadminRoleName, cainfo.getCAId(), X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE,
-        			TEST_ADMIN_USERNAME));
-        	roleManagementSession.addSubjectsToRole(intAdmin, role, list);
-        	accessControlSession.forceCacheExpire();
+            log.info("Adding admin to role: "+wsadminRoleName);
+            List<AccessUserAspectData> list = new ArrayList<AccessUserAspectData>();
+            list.add(new AccessUserAspectData(wsadminRoleName, cainfo.getCAId(), X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE,
+                    TEST_ADMIN_USERNAME));
+            roleManagementSession.addSubjectsToRole(intAdmin, role, list);
+            accessControlSession.forceCacheExpire();
         } 
         EndEntityInformation user2 = new EndEntityInformation();
         user2.setUsername(TEST_NONADMIN_USERNAME);
@@ -360,11 +346,11 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         user2.setType(EndEntityTypes.ENDUSER.toEndEntityType());
 
         if (!endEntityManagementSession.existsUser(TEST_NONADMIN_USERNAME)) {
-        	log.debug("Adding new user: "+user2.getUsername());
-        	endEntityManagementSession.addUser(intAdmin, user2, true);
+            log.debug("Adding new user: "+user2.getUsername());
+            endEntityManagementSession.addUser(intAdmin, user2, true);
         } else {
-        	log.debug("Changing user: "+user2.getUsername());
-        	endEntityManagementSession.changeUser(intAdmin, user2, true);
+            log.debug("Changing user: "+user2.getUsername());
+            endEntityManagementSession.changeUser(intAdmin, user2, true);
         }
 
         BatchMakeP12 batch = new BatchMakeP12();
@@ -511,8 +497,8 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             profile.setUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, true);
             profile.setValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, "" + RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
             if ( this.certificateProfileSession.getCertificateProfileId(WS_CERTPROF_EI)==0 ) {
-            	final CertificateProfile certProfile = new CertificateProfile(CertificateConstants.CERTTYPE_ENDENTITY);
-            	this.certificateProfileSession.addCertificateProfile(intAdmin, WS_CERTPROF_EI, certProfile);
+                final CertificateProfile certProfile = new CertificateProfile(CertificateConstants.CERTTYPE_ENDENTITY);
+                this.certificateProfileSession.addCertificateProfile(intAdmin, WS_CERTPROF_EI, certProfile);
             }
             final int cpid = CommonEjbcaWS.this.certificateProfileSession.getCertificateProfileId(WS_CERTPROF_EI);
             profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cpid));
@@ -520,7 +506,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
                 this.endEntityProfileSession.addEndEntityProfile(intAdmin, WS_EEPROF_EI, profile);
             }
         } catch (EndEntityProfileExistsException pee) {
-        	log.error("Error creating end entity profile: ", pee);
+            log.error("Error creating end entity profile: ", pee);
             fail("Can not create end entity profile");
         }
         editUser(CA1_WSTESTUSER1, CA1);
@@ -530,77 +516,77 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
     protected void findUser() throws Exception {
 
-    	{// Nonexisting users should return null
-    		final UserMatch usermatch = new UserMatch();
-    		usermatch.setMatchwith(UserMatch.MATCH_WITH_USERNAME);
-    		usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
-    		usermatch.setMatchvalue("noneExsisting");
-    		final List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
-    		assertTrue(userdatas != null);
-    		assertTrue(userdatas.size() == 0);
-    	}
-    	{// Find an exising user
-    		final UserMatch usermatch = new UserMatch();
-    		usermatch.setMatchwith(UserMatch.MATCH_WITH_USERNAME);
-    		usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
-    		usermatch.setMatchvalue(CA1_WSTESTUSER1);
+        {// Nonexisting users should return null
+            final UserMatch usermatch = new UserMatch();
+            usermatch.setMatchwith(UserMatch.MATCH_WITH_USERNAME);
+            usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
+            usermatch.setMatchvalue("noneExsisting");
+            final List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
+            assertTrue(userdatas != null);
+            assertTrue(userdatas.size() == 0);
+        }
+        {// Find an exising user
+            final UserMatch usermatch = new UserMatch();
+            usermatch.setMatchwith(UserMatch.MATCH_WITH_USERNAME);
+            usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
+            usermatch.setMatchvalue(CA1_WSTESTUSER1);
 
-    		final List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
-    		assertTrue(userdatas != null);
-    		assertTrue(userdatas.size() == 1);
-    	}
-    	{// Find by O
-    		final UserMatch usermatch = new UserMatch();
-    		usermatch.setMatchwith(UserMatch.MATCH_WITH_ORGANIZATION);
-    		usermatch.setMatchtype(UserMatch.MATCH_TYPE_BEGINSWITH);
-    		usermatch.setMatchvalue("2Te");
-    		final List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
-    		assertTrue(userdatas != null);
-    		assertTrue(userdatas.size() == 1);
-    		assertTrue(userdatas.get(0).getSubjectDN().equals(getDN(CA1_WSTESTUSER2)));
-    	}
-    	{// Find by subjectDN pattern
-    		final UserMatch usermatch = new UserMatch();
-    		usermatch.setMatchwith(UserMatch.MATCH_WITH_DN);
-    		usermatch.setMatchtype(UserMatch.MATCH_TYPE_CONTAINS);
-    		usermatch.setMatchvalue(CA1_WSTESTUSER1);
-    		final List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
-    		assertNotNull(userdatas);
-    		assertEquals(1, userdatas.size());
-    		assertEquals(getDN(CA1_WSTESTUSER1), userdatas.get(0).getSubjectDN());
-    	}{
-    		final UserMatch usermatch = new UserMatch();
-    		usermatch.setMatchwith(UserMatch.MATCH_WITH_ENDENTITYPROFILE);
-    		usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
-    		usermatch.setMatchvalue(WS_EEPROF_EI);
-    		final List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
-    		assertNotNull(userdatas);
-    		assertEquals("not right number of users from end entity profile match.", 3, userdatas.size());
-    	}{
-    		final UserMatch usermatch = new UserMatch();
-    		usermatch.setMatchwith(UserMatch.MATCH_WITH_CERTIFICATEPROFILE);
-    		usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
-    		usermatch.setMatchvalue(WS_CERTPROF_EI);
-    		final List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
-    		assertNotNull(userdatas);
-    		assertEquals("not right number of users from certificate profile match.", 3, userdatas.size());
-    	}{
-    		final UserMatch usermatch = new UserMatch();
-    		usermatch.setMatchwith(UserMatch.MATCH_WITH_CA);
-    		usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
-    		usermatch.setMatchvalue(CA1);
-    		final List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
-    		assertTrue(userdatas != null);
-    		assertEquals("not right number of users from CA match.", 2, userdatas.size());
-    	}{
-    		final UserMatch usermatch = new UserMatch();
-    		usermatch.setMatchwith(UserMatch.MATCH_WITH_TOKEN);
-    		usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
-    		usermatch.setMatchvalue(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
-    		final List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
-    		assertTrue(userdatas != null);
-    		assertTrue(userdatas.size() > 0);
-    	}
+            final List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
+            assertTrue(userdatas != null);
+            assertTrue(userdatas.size() == 1);
+        }
+        {// Find by O
+            final UserMatch usermatch = new UserMatch();
+            usermatch.setMatchwith(UserMatch.MATCH_WITH_ORGANIZATION);
+            usermatch.setMatchtype(UserMatch.MATCH_TYPE_BEGINSWITH);
+            usermatch.setMatchvalue("2Te");
+            final List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
+            assertTrue(userdatas != null);
+            assertTrue(userdatas.size() == 1);
+            assertTrue(userdatas.get(0).getSubjectDN().equals(getDN(CA1_WSTESTUSER2)));
+        }
+        {// Find by subjectDN pattern
+            final UserMatch usermatch = new UserMatch();
+            usermatch.setMatchwith(UserMatch.MATCH_WITH_DN);
+            usermatch.setMatchtype(UserMatch.MATCH_TYPE_CONTAINS);
+            usermatch.setMatchvalue(CA1_WSTESTUSER1);
+            final List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
+            assertNotNull(userdatas);
+            assertEquals(1, userdatas.size());
+            assertEquals(getDN(CA1_WSTESTUSER1), userdatas.get(0).getSubjectDN());
+        }{
+            final UserMatch usermatch = new UserMatch();
+            usermatch.setMatchwith(UserMatch.MATCH_WITH_ENDENTITYPROFILE);
+            usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
+            usermatch.setMatchvalue(WS_EEPROF_EI);
+            final List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
+            assertNotNull(userdatas);
+            assertEquals("not right number of users from end entity profile match.", 3, userdatas.size());
+        }{
+            final UserMatch usermatch = new UserMatch();
+            usermatch.setMatchwith(UserMatch.MATCH_WITH_CERTIFICATEPROFILE);
+            usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
+            usermatch.setMatchvalue(WS_CERTPROF_EI);
+            final List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
+            assertNotNull(userdatas);
+            assertEquals("not right number of users from certificate profile match.", 3, userdatas.size());
+        }{
+            final UserMatch usermatch = new UserMatch();
+            usermatch.setMatchwith(UserMatch.MATCH_WITH_CA);
+            usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
+            usermatch.setMatchvalue(CA1);
+            final List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
+            assertTrue(userdatas != null);
+            assertEquals("not right number of users from CA match.", 2, userdatas.size());
+        }{
+            final UserMatch usermatch = new UserMatch();
+            usermatch.setMatchwith(UserMatch.MATCH_WITH_TOKEN);
+            usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
+            usermatch.setMatchvalue(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
+            final List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
+            assertTrue(userdatas != null);
+            assertTrue(userdatas.size() > 0);
+        }
     }
 
     protected void generatePkcs10() throws Exception {
@@ -1187,32 +1173,32 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         this.ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
 
         {
-        	final RevokeStatus revokestatus = this.ejbcaraws.checkRevokationStatus(issuerdn, serno);
-        	assertNotNull(revokestatus);
-        	assertTrue(revokestatus.getReason() == RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+            final RevokeStatus revokestatus = this.ejbcaraws.checkRevokationStatus(issuerdn, serno);
+            assertNotNull(revokestatus);
+            assertTrue(revokestatus.getReason() == RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
 
-        	assertTrue(revokestatus.getCertificateSN().equals(serno));
-        	assertTrue(revokestatus.getIssuerDN().equals(issuerdn));
-        	assertNotNull(revokestatus.getRevocationDate());
+            assertTrue(revokestatus.getCertificateSN().equals(serno));
+            assertTrue(revokestatus.getIssuerDN().equals(issuerdn));
+            assertNotNull(revokestatus.getRevocationDate());
         }
         this.ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.NOT_REVOKED);
         {
-        	final RevokeStatus revokestatus = this.ejbcaraws.checkRevokationStatus(issuerdn, serno);
-        	assertNotNull(revokestatus);
-        	assertTrue(revokestatus.getReason() == RevokedCertInfo.NOT_REVOKED);
+            final RevokeStatus revokestatus = this.ejbcaraws.checkRevokationStatus(issuerdn, serno);
+            assertNotNull(revokestatus);
+            assertTrue(revokestatus.getReason() == RevokedCertInfo.NOT_REVOKED);
         }
         {
-        	//final long beforeTimeMilliseconds = new Date().getTime();
-        	final Date beforeRevoke = new Date();
-        	this.ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
-        	final Date afterRevoke = new Date();
-        	//final Date beforeRevoke = new Date(beforeTimeMilliseconds-beforeTimeMilliseconds%1000);
-        	final RevokeStatus revokestatus = this.ejbcaraws.checkRevokationStatus(issuerdn, serno);
-        	assertNotNull(revokestatus);
-        	assertTrue(revokestatus.getReason() == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
-        	final Date revokeDate  = revokestatus.getRevocationDate().toGregorianCalendar().getTime();
-        	assertTrue("Too early revocation date. Before time '"+beforeRevoke+"'. Revoke time '"+revokeDate+"'.", !revokeDate.before(beforeRevoke));
-        	assertTrue("Too late revocation date. After time '"+afterRevoke+"'. Revoke time '"+revokeDate+"'.", !revokeDate.after(afterRevoke));
+            //final long beforeTimeMilliseconds = new Date().getTime();
+            final Date beforeRevoke = new Date();
+            this.ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+            final Date afterRevoke = new Date();
+            //final Date beforeRevoke = new Date(beforeTimeMilliseconds-beforeTimeMilliseconds%1000);
+            final RevokeStatus revokestatus = this.ejbcaraws.checkRevokationStatus(issuerdn, serno);
+            assertNotNull(revokestatus);
+            assertTrue(revokestatus.getReason() == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+            final Date revokeDate  = revokestatus.getRevocationDate().toGregorianCalendar().getTime();
+            assertTrue("Too early revocation date. Before time '"+beforeRevoke+"'. Revoke time '"+revokeDate+"'.", !revokeDate.before(beforeRevoke));
+            assertTrue("Too late revocation date. After time '"+afterRevoke+"'. Revoke time '"+revokeDate+"'.", !revokeDate.after(afterRevoke));
         }
         try {
             this.ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.NOT_REVOKED);
@@ -1221,39 +1207,39 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
     }
 
-	protected void revokeCertBackdated() throws Exception {
+    protected void revokeCertBackdated() throws Exception {
 
-		final P12TestUser p12TestUser = new P12TestUser();
-		final X509Certificate cert = p12TestUser.getCertificate(null);
+        final P12TestUser p12TestUser = new P12TestUser();
+        final X509Certificate cert = p12TestUser.getCertificate(null);
 
-		final String issuerdn = cert.getIssuerDN().toString();
-		final String serno = cert.getSerialNumber().toString(16);
-		final String sDate = "2012-06-07T23:55:59+02:00";
+        final String issuerdn = cert.getIssuerDN().toString();
+        final String serno = cert.getSerialNumber().toString(16);
+        final String sDate = "2012-06-07T23:55:59+02:00";
 
-		final CertificateProfile certProfile = this.certificateProfileSession.getCertificateProfile(WS_CERTPROF_EI);
-		certProfile.setAllowBackdatedRevocation(false);
-		this.certificateProfileSession.changeCertificateProfile(intAdmin, WS_CERTPROF_EI, certProfile);
-		try {
-			this.ejbcaraws.revokeCertBackdated(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, sDate);
-			assertTrue(false);
-		} catch (RevokeBackDateNotAllowedForProfileException_Exception e) {
-			// do nothing
-		}
-		certProfile.setAllowBackdatedRevocation(true);
-		this.certificateProfileSession.changeCertificateProfile(intAdmin, WS_CERTPROF_EI, certProfile);
-		this.ejbcaraws.revokeCertBackdated(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, sDate);
-		final RevokeStatus revokestatus = this.ejbcaraws.checkRevokationStatus(issuerdn, serno);
-		assertNotNull(revokestatus);
-		final Date realRevokeDate  = revokestatus.getRevocationDate().toGregorianCalendar().getTime();
-		final Date expectedRevokeDate;
-		try {
-			expectedRevokeDate = DatatypeConverter.parseDateTime(sDate).getTime();
-		} catch (IllegalArgumentException e) {
-			assertTrue("Not a valid ISO8601 date revocation date", false);
-			return;
-		}
-		assertEquals("Revocation date not the expected.", expectedRevokeDate, realRevokeDate);
-	}
+        final CertificateProfile certProfile = this.certificateProfileSession.getCertificateProfile(WS_CERTPROF_EI);
+        certProfile.setAllowBackdatedRevocation(false);
+        this.certificateProfileSession.changeCertificateProfile(intAdmin, WS_CERTPROF_EI, certProfile);
+        try {
+            this.ejbcaraws.revokeCertBackdated(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, sDate);
+            assertTrue(false);
+        } catch (RevokeBackDateNotAllowedForProfileException_Exception e) {
+            // do nothing
+        }
+        certProfile.setAllowBackdatedRevocation(true);
+        this.certificateProfileSession.changeCertificateProfile(intAdmin, WS_CERTPROF_EI, certProfile);
+        this.ejbcaraws.revokeCertBackdated(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, sDate);
+        final RevokeStatus revokestatus = this.ejbcaraws.checkRevokationStatus(issuerdn, serno);
+        assertNotNull(revokestatus);
+        final Date realRevokeDate  = revokestatus.getRevocationDate().toGregorianCalendar().getTime();
+        final Date expectedRevokeDate;
+        try {
+            expectedRevokeDate = DatatypeConverter.parseDateTime(sDate).getTime();
+        } catch (IllegalArgumentException e) {
+            assertTrue("Not a valid ISO8601 date revocation date", false);
+            return;
+        }
+        assertEquals("Revocation date not the expected.", expectedRevokeDate, realRevokeDate);
+    }
 
     protected void revokeToken() throws Exception {
 
@@ -1280,8 +1266,8 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     }
 
     private class P12TestUser {
-    	final private List<UserDataVOWS> userdatas;
-    	public P12TestUser() throws Exception {
+        final private List<UserDataVOWS> userdatas;
+        public P12TestUser() throws Exception {
             UserMatch usermatch = new UserMatch();
             usermatch.setMatchwith(UserMatch.MATCH_WITH_USERNAME);
             usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
@@ -1292,8 +1278,8 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             this.userdatas.get(0).setTokenType(UserDataVOWS.TOKEN_TYPE_P12);
             this.userdatas.get(0).setEndEntityProfileName(WS_EEPROF_EI);
             this.userdatas.get(0).setCertificateProfileName(WS_CERTPROF_EI);
-    	}
-    	public X509Certificate getCertificate(String hardTokenSN) throws Exception {
+        }
+        public X509Certificate getCertificate(String hardTokenSN) throws Exception {
             this.userdatas.get(0).setStatus(UserDataVOWS.STATUS_NEW);
             this.userdatas.get(0).setPassword(PASSWORD);
             this.userdatas.get(0).setClearPwd(true);
@@ -1313,7 +1299,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             final X509Certificate cert = (X509Certificate)ks.getCertificate(alias);
             assertEquals("Returned certificates SubjectDN '" + CertTools.getSubjectDN(cert) + "' is not requested '" + getDN(CA1_WSTESTUSER1) + "'", CertTools.getSubjectDN(cert), getDN(CA1_WSTESTUSER1));
             return cert;
-    	}
+        }
     }
 
     protected void checkRevokeStatus() throws Exception {
@@ -1395,9 +1381,9 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             certificateProfileSession.removeCertificateProfile(intAdmin, WSTESTPROFILE);
         }
         {
-        	final CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-        	profile.setAllowValidityOverride(true);
-        	certificateProfileSession.addCertificateProfile(intAdmin, WSTESTPROFILE, profile);
+            final CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+            profile.setAllowValidityOverride(true);
+            certificateProfileSession.addCertificateProfile(intAdmin, WSTESTPROFILE, profile);
         }
         // first a simple test
         UserDataVOWS tokenUser1 = new UserDataVOWS();
@@ -1948,161 +1934,6 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         assertEquals("CRL number of newly generated CRL should be exactly one more than for the previous CRL.", crlnumber1.intValue()+1, crlnumber2.intValue());
     } // createAndGetCRL
 
-    protected void cvcRequest(String rootcadn, String rootcaname, String subcadn, String subcaname, String username, String keyspec, String keyalg,
-            String signalg) throws Exception {
-
-        try {
-            ejbcaraws.getLastCAChain("sorry-no-such-ca-here");
-            fail("Should not happen");
-        } catch (CADoesntExistsException_Exception e) {
-        }
-        createCVCCA(rootcadn, rootcaname, subcadn, subcaname, keyspec, signalg);
-        List<Certificate> ca_path = ejbcaraws.getLastCAChain(subcaname);
-        assertEquals("Must be two", 2, ca_path.size());
-
-        //
-        // create a set of requests for WS test
-        //
-        // Create new keypairs
-        KeyPair keyPair = KeyTools.genKeys(keyspec, keyalg);
-        KeyPair keyPair1 = KeyTools.genKeys(keyspec, keyalg);
-        KeyPair keyPair2 = KeyTools.genKeys(keyspec, keyalg);
-
-        CAReferenceField caRef = new CAReferenceField("SE", "WSTEST", "00111");
-        HolderReferenceField holderRef = new HolderReferenceField(caRef.getCountry(), caRef.getMnemonic(), caRef.getSequence());
-
-        // Simple self signed request
-        CVCertificate request = CertificateGenerator.createRequest(keyPair, signalg, caRef, holderRef);
-
-        // A renew request with an outer signature created with the same keys as
-        // the old one
-        CVCAuthenticatedRequest authRequestSameKeys = CertificateGenerator.createAuthenticatedRequest(request, keyPair, signalg, caRef);
-
-        // An renew request with an inner request with new keys and an outer
-        // request with the same keys as in the last request
-        CVCertificate request1 = CertificateGenerator.createRequest(keyPair1, signalg, caRef, holderRef);
-        CVCAuthenticatedRequest authRequestRenew = CertificateGenerator.createAuthenticatedRequest(request1, keyPair, signalg, caRef);
-
-        // A false renew request with new keys all over, both for inner ant
-        // outer signatures
-        CVCertificate request2 = CertificateGenerator.createRequest(keyPair2, signalg, caRef, holderRef);
-        CVCAuthenticatedRequest authRequestRenewFalse = CertificateGenerator.createAuthenticatedRequest(request2, keyPair2, signalg, caRef);
-
-        //
-        // First test that we register a new user (like in admin GUI) and gets a
-        // certificate for that. This should work fine.
-        //
-
-        // Edit our favorite test user
-        UserDataVOWS user1 = new UserDataVOWS();
-        user1.setUsername(username);
-        user1.setPassword(PASSWORD);
-        user1.setClearPwd(true);
-        user1.setSubjectDN("CN=" + username + ",C=SE");
-        user1.setCaName(subcaname);
-        user1.setStatus(UserDataVOWS.STATUS_NEW);
-        user1.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
-        user1.setEndEntityProfileName("EMPTY");
-        user1.setCertificateProfileName("ENDUSER");
-        // editUser and set status to new
-        ejbcaraws.editUser(user1);
-
-        List<Certificate> certenv = ejbcaraws
-                .cvcRequest(user1.getUsername(), user1.getPassword(), new String(Base64.encode(request.getDEREncoded())));
-
-        assertNotNull(certenv);
-
-        Certificate wscert = certenv.get(0);
-        byte[] b64cert = wscert.getCertificateData();
-        CVCObject parsedObject = CertificateParser.parseCertificate(Base64.decode(b64cert));
-        CVCertificate cert = (CVCertificate) parsedObject;
-        CardVerifiableCertificate cvcert = new CardVerifiableCertificate(cert);
-
-        assertNotNull(cert);
-        assertEquals("CN=" + username + ",C=SE", CertTools.getSubjectDN(cvcert));
-        assertEquals("00111", CertTools.getSerialNumberAsString(cvcert));
-        PublicKey pk = cvcert.getPublicKey();
-        assertEquals("CVC", pk.getFormat());
-        // Verify that we have the complete chain
-        assertEquals(3, certenv.size());
-        Certificate wsdvcert = certenv.get(1);
-        Certificate wscvcacert = certenv.get(2);
-        b64cert = wsdvcert.getCertificateData();
-        parsedObject = CertificateParser.parseCertificate(Base64.decode(b64cert));
-        CVCertificate dvcert = (CVCertificate) parsedObject;
-        b64cert = wscvcacert.getCertificateData();
-        assertTrue("CVCA", Arrays.equals(wscvcacert.getRawCertificateData(), ca_path.get(1).getRawCertificateData()));
-        assertTrue("DVCA", Arrays.equals(wsdvcert.getRawCertificateData(), ca_path.get(0).getRawCertificateData()));
-        parsedObject = CertificateParser.parseCertificate(Base64.decode(b64cert));
-        CVCertificate cvcacert = (CVCertificate) parsedObject;
-        assertEquals(AuthorizationRoleEnum.DV_D, dvcert.getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole());
-        assertEquals(AuthorizationRoleEnum.CVCA, cvcacert.getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole());
-        PublicKey cvcapubk = cvcacert.getCertificateBody().getPublicKey();
-        PublicKey dvpubk = dvcert.getCertificateBody().getPublicKey();
-        dvpubk = KeyTools.getECPublicKeyWithParams(dvpubk, cvcapubk);
-        cvcert.verify(dvpubk);
-        CardVerifiableCertificate dvjavacert = new CardVerifiableCertificate(dvcert);
-        dvjavacert.verify(cvcapubk);
-
-        //
-        // Second test that we try to get a new certificate for this user
-        // without outer (renewal) signature. This should fail.
-        //
-        boolean thrown = false;
-        try {
-            certenv = ejbcaraws.cvcRequest(user1.getUsername(), user1.getPassword(), new String(Base64.encode(request.getDEREncoded())));
-        } catch (EjbcaException_Exception e) {
-            thrown = true;
-            String msg = e.getMessage();
-            assertTrue(msg.contains("NEW, FAILED or INPROCESS required"));
-        }
-        assertTrue(thrown);
-
-        //
-        // Third test that we can not renew a certificate with the same keys as
-        // the old request. This should fail.
-        //
-        thrown = false;
-        try {
-            certenv = ejbcaraws.cvcRequest(user1.getUsername(), user1.getPassword(), new String(Base64.encode(authRequestSameKeys.getDEREncoded())));
-        } catch (AuthorizationDeniedException_Exception e) {
-            thrown = true;
-            String msg = e.getMessage();
-            assertTrue(msg.contains("Trying to renew a certificate using the same key"));
-        }
-        assertTrue(thrown);
-
-        //
-        // Fourth test that we can renew a certificate using an outer signature
-        // made with the old keys. This should succeed.
-        //
-        certenv = ejbcaraws.cvcRequest(user1.getUsername(), user1.getPassword(), new String(Base64.encode(authRequestRenew.getDEREncoded())));
-        assertNotNull(certenv);
-        wscert = certenv.get(0);
-        b64cert = wscert.getCertificateData();
-        parsedObject = CertificateParser.parseCertificate(Base64.decode(b64cert));
-        cert = (CVCertificate) parsedObject;
-        cvcert = new CardVerifiableCertificate(cert);
-        assertNotNull(cert);
-        assertEquals("CN=" + username + ",C=SE", CertTools.getSubjectDN(cvcert));
-        assertEquals("00111", CertTools.getSerialNumberAsString(cvcert));
-
-        //
-        // Fifth test try to renew with an outer signature which is not by the
-        // last issued cert (false renew request). This should fail.
-        //
-        thrown = false;
-        try {
-            certenv = ejbcaraws
-                    .cvcRequest(user1.getUsername(), user1.getPassword(), new String(Base64.encode(authRequestRenewFalse.getDEREncoded())));
-        } catch (AuthorizationDeniedException_Exception e) {
-            thrown = true;
-            String msg = e.getMessage();
-            assertTrue(msg.contains("No certificate found that could authenticate request"));
-        }
-        assertTrue(thrown);
-    } // cvcRequest
-
     protected void ejbcaVersion() throws Exception {
 
         String version = ejbcaraws.getEjbcaVersion();
@@ -2441,290 +2272,6 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         }
     }
 
-    /**
-     * This method tests the WS API calls caRenewCertRequest and caCertResponse
-     */
-    protected CardVerifiableCertificate caRenewCertRequest(final String cvcaMnemonic, final String dvcaName, final String dvcaMnemonic,
-            final String keyspec, final String keyalg, final String signalg) throws Exception {
-        List<byte[]> cachain = new ArrayList<byte[]>();
-        String pwd = PASSWORD; // use default hard coded soft CA token password
-        // first we just try to create a simple request from an active X.509 CA.
-        // A request like this can be used to request a cross certificate
-        byte[] request = ejbcaraws.caRenewCertRequest(getAdminCAName(), cachain, false, false, false, pwd);
-        assertNotNull(request);
-        PKCS10RequestMessage msg = RequestMessageUtils.genPKCS10RequestMessage(request);
-        assertNotNull(msg);
-        CAInfo info = caSession.getCAInfo(intAdmin, getAdminCAName());
-        assertEquals(info.getSubjectDN(), msg.getRequestDN());
-        assertTrue(msg.verify());
-        // System.out.println(ASN1Dump.dumpAsString(msg.getCertificationRequest()));
-
-        /*
-         * First test is to renew a CA signed by an external CA *without
-         * renewing the keys*. This just creates a new certificate request,
-         * without setting status to "waiting for certificate response" or
-         * anything.
-         */
-        // Now we want to renew a DVCA signed by an external CVCA
-
-        // Create the self signed CVCA, we do it here locally
-        final KeyPair cvcakeypair = KeyTools.genKeys(keyspec, keyalg);
-        CAReferenceField caRef = new CAReferenceField("SE", cvcaMnemonic, "00001");
-        HolderReferenceField holderRef = new HolderReferenceField("SE", cvcaMnemonic, "00001");
-        CVCertificate cvcert = CertificateGenerator.createTestCertificate(cvcakeypair.getPublic(), cvcakeypair.getPrivate(), caRef, holderRef,
-                signalg, AuthorizationRoleEnum.CVCA);
-        CardVerifiableCertificate cvcacert = new CardVerifiableCertificate(cvcert);
-
-        // Create the DVCA signed by our external CVCA
-        String caname = createDVCCASignedByExternal(dvcaName, dvcaMnemonic, keyspec, signalg);
-        assertNotNull("Failed to create DVC CA " + dvcaName + "Signed By External.", caname);
-        assertEquals(caname, dvcaName);
-        // Now test our WS API to generate a request, setting status to
-        // "WAITING_FOR_CERTIFICATE_RESPONSE"
-        CAInfo dvinfo = caSession.getCAInfo(intAdmin, caname);
-        assertEquals(CAConstants.CA_WAITING_CERTIFICATE_RESPONSE, dvinfo.getStatus());
-        cachain.add(cvcacert.getEncoded());
-        // Create the request with WS API
-        request = ejbcaraws.caRenewCertRequest(caname, cachain, false, false, false, pwd);
-        // make the mandatory junit checks...
-        assertNotNull("ejbcaraws.caRenewCertRequest returned null", request);
-        CVCRequestMessage cvcreq = RequestMessageUtils.genCVCRequestMessage(request);
-        assertNotNull(cvcreq);
-        assertEquals(dvinfo.getSubjectDN(), cvcreq.getRequestDN());
-        CVCObject obj = CertificateParser.parseCVCObject(request);
-        // System.out.println(obj.getAsText());
-        CVCertificate cert = (CVCertificate) obj;
-        assertEquals(cvcacert.getCVCertificate().getCertificateBody().getAuthorityReference().getConcatenated(), cert.getCertificateBody()
-                .getAuthorityReference().getConcatenated());
-
-        // Receive the response so the DV CA is activated
-        HolderReferenceField dvholderref = cert.getCertificateBody().getHolderReference();
-        CVCertificate dvretcert = CertificateGenerator.createTestCertificate(cert.getCertificateBody().getPublicKey(), cvcakeypair.getPrivate(),
-                caRef, dvholderref, signalg, AuthorizationRoleEnum.DV_D);
-        ejbcaraws.caCertResponse(caname, dvretcert.getDEREncoded(), cachain, pwd);
-        // Check that the cert was received and the CA activated
-        dvinfo = caSession.getCAInfo(intAdmin, caname);
-        assertEquals(CAConstants.CA_ACTIVE, dvinfo.getStatus());
-        Collection<java.security.cert.Certificate> dvcerts = dvinfo.getCertificateChain();
-        assertEquals(2, dvcerts.size());
-        CardVerifiableCertificate dvcertactive = (CardVerifiableCertificate) dvcerts.iterator().next();
-        obj = CertificateParser.parseCVCObject(dvcertactive.getEncoded());
-        // System.out.println(obj.getAsText());
-        dvcertactive.verify(cvcakeypair.getPublic());
-        // Check to see that is really the same keypair
-        String pubk1 = new String(Base64.encode(dvcertactive.getPublicKey().getEncoded(), false));
-        String pubk2 = new String(Base64.encode(cert.getCertificateBody().getPublicKey().getEncoded(), false));
-        assertTrue(pubk1.compareTo(pubk2) == 0);
-        String sequence1 = dvcertactive.getCVCertificate().getCertificateBody().getHolderReference().getSequence();
-
-        /*
-         * Second test is to renew a CA signed by an external CA *with renewing
-         * the keys*, and activating them. This creates a new key pair and a
-         * certificate request.
-         * 
-         * Old behavior (where activate meant "start using"): Status is set to
-         * "waiting for certificate response" because the new keys can not be
-         * used until we have receive a certificate.
-         */
-        // Now we want to renew a DVCA signed by an external CVCA, generating
-        // new keys
-        // Create the request with WS API, cachain is our CVCA cert from
-        // previously created CVCA, we use the previously created DV as well.
-        pwd = PASSWORD;
-        request = ejbcaraws.caRenewCertRequest(caname, cachain, true, false, true, pwd);
-        // make the mandatory junit checks...
-        assertNotNull(request);
-        cvcreq = RequestMessageUtils.genCVCRequestMessage(request);
-        assertNotNull(cvcreq);
-        assertEquals(dvinfo.getSubjectDN(), cvcreq.getRequestDN());
-        obj = CertificateParser.parseCVCObject(request);
-        // System.out.println(obj.getAsText());
-        // We should have created an authenticated request signed by the old
-        // certificate
-        CVCAuthenticatedRequest authreq = (CVCAuthenticatedRequest) obj;
-        assertEquals(dvcertactive.getCVCertificate().getCertificateBody().getHolderReference().getConcatenated(), authreq.getAuthorityReference()
-                .getConcatenated());
-        cert = authreq.getRequest();
-        // The request should be targeted for the CVCA, i.e. ca_ref in request should be the same as the CVCAs ref
-        assertEquals(cvcacert.getCVCertificate().getCertificateBody().getAuthorityReference().getConcatenated(), cert.getCertificateBody()
-                .getAuthorityReference().getConcatenated());
-        // The CA should still be ACTIVE, since it has a valid CA certificate and signing keys
-        dvinfo = caSession.getCAInfo(intAdmin, caname);
-        assertEquals(CAConstants.CA_ACTIVE, dvinfo.getStatus());
-        final List<Certificate> lastCaChain = ejbcaraws.getLastCAChain(caname);
-        assertEquals("DV should still be available after creating a CSR", 2, lastCaChain.size());
-        // Check to see that is really is a new keypair
-        pubk1 = new String(Base64.encode(dvcertactive.getPublicKey().getEncoded(), false));
-        pubk2 = new String(Base64.encode(cert.getCertificateBody().getPublicKey().getEncoded(), false));
-        assertTrue(pubk1.compareTo(pubk2) != 0);
-
-        // Receive the response so the DV CA is activated
-        dvholderref = cert.getCertificateBody().getHolderReference();
-        dvretcert = CertificateGenerator.createTestCertificate(cert.getCertificateBody().getPublicKey(), cvcakeypair.getPrivate(), caRef,
-                dvholderref, signalg, AuthorizationRoleEnum.DV_D);
-        ejbcaraws.caCertResponse(caname, dvretcert.getDEREncoded(), cachain, pwd);
-        // Check that the cert was received and the CA activated
-        final List<Certificate> lastCaChain2 = ejbcaraws.getLastCAChain(caname);
-        assertEquals("DV should still be available after recieving response.", 2, lastCaChain2.size());
-        assertFalse("DV chain should have changed after recieving response.", lastCaChain2.get(0).getCertificateData().equals(lastCaChain.get(0).getCertificateData()));
-        dvinfo = caSession.getCAInfo(intAdmin, caname);
-        assertEquals(CAConstants.CA_ACTIVE, dvinfo.getStatus());
-        dvcerts = dvinfo.getCertificateChain();
-        assertEquals(2, dvcerts.size());
-        dvcertactive = (CardVerifiableCertificate) dvcerts.iterator().next();
-        obj = CertificateParser.parseCVCObject(dvcertactive.getEncoded());
-        // System.out.println(obj.getAsText());
-        dvcertactive.verify(cvcakeypair.getPublic());
-        String sequence2 = dvcertactive.getCVCertificate().getCertificateBody().getHolderReference().getSequence();
-        int s1 = Integer.parseInt(sequence1);
-        int s2 = Integer.parseInt(sequence2);
-        assertEquals(s1 + 1, s2); // sequence in new certificate should be old
-        // sequence + 1
-
-        /*
-         * Third test is to renew a CA signed by an external CA *with renewing
-         * the keys* saying to *not* activate the key now. This creates a new
-         * key pair and a certificate request, but the new key pair is not used
-         * by the CA for issuing certificates. Status is not set to
-         * "waiting for certificate response" because the old keys can still be
-         * used until we have received a certificate and activated the new keys.
-         */
-        request = ejbcaraws.caRenewCertRequest(caname, cachain, true, false, false, pwd);
-        // make the mandatory junit checks...
-        assertNotNull(request);
-        cvcreq = RequestMessageUtils.genCVCRequestMessage(request);
-        assertNotNull(request);
-        assertEquals(dvinfo.getSubjectDN(), cvcreq.getRequestDN());
-        obj = CertificateParser.parseCVCObject(request);
-        // System.out.println(obj.getAsText());
-        // We should have created an authenticated request signed by the old
-        // certificate
-        authreq = (CVCAuthenticatedRequest) obj;
-        assertEquals(dvcertactive.getCVCertificate().getCertificateBody().getHolderReference().getConcatenated(), authreq.getAuthorityReference()
-                .getConcatenated());
-        cert = authreq.getRequest();
-        assertEquals(cvcacert.getCVCertificate().getCertificateBody().getAuthorityReference().getConcatenated(), cert.getCertificateBody()
-                .getAuthorityReference().getConcatenated());
-        String sequence3 = cert.getCertificateBody().getHolderReference().getSequence();
-        int s3 = Integer.parseInt(sequence3);
-        assertEquals(s2 + 1, s3); // sequence in new certificate request should
-        // be old certificate sequence + 1
-        // status should not be "WAITING_FOR_CERTIFICATE_RESPONSE"
-        dvinfo = caSession.getCAInfo(intAdmin, caname);
-        assertEquals(CAConstants.CA_ACTIVE, dvinfo.getStatus());
-        // Check to see that is really is a new keypair
-        dvcerts = dvinfo.getCertificateChain();
-        assertEquals(2, dvcerts.size());
-        dvcertactive = (CardVerifiableCertificate) dvcerts.iterator().next();
-        String sequence4 = dvcertactive.getCVCertificate().getCertificateBody().getHolderReference().getSequence();
-        assertEquals(sequence2, sequence4);
-        PublicKey oldPublicKey = dvcertactive.getPublicKey();
-        PublicKey newPublicKey = cert.getCertificateBody().getPublicKey();
-        pubk1 = new String(Base64.encode(oldPublicKey.getEncoded(), false));
-        pubk2 = new String(Base64.encode(newPublicKey.getEncoded(), false));
-        assertTrue(pubk1.compareTo(pubk2) != 0);
-
-        // Try to issue an IS certificate, it should be issued using the OLD
-        // private key
-        // Simple self signed request
-        KeyPair keyPair = KeyTools.genKeys(keyspec, keyalg);
-        CVCertificate isrequest = CertificateGenerator.createRequest(keyPair, signalg, caRef, holderRef);
-        // Edit our favorite test user
-        UserDataVOWS user1 = new UserDataVOWS();
-        user1.setUsername("WSTESTUSER1");
-        user1.setPassword(PASSWORD);
-        user1.setClearPwd(true);
-        user1.setSubjectDN("CN=Test,C=SE");
-        user1.setCaName(caname);
-        user1.setStatus(EndEntityConstants.STATUS_NEW);
-        user1.setTokenType("USERGENERATED");
-        user1.setEndEntityProfileName("EMPTY");
-        user1.setCertificateProfileName("ENDUSER");
-        // editUser and set status to new
-        ejbcaraws.editUser(user1);
-        List<Certificate> certenv = ejbcaraws.cvcRequest(user1.getUsername(), user1.getPassword(),
-                new String(Base64.encode(isrequest.getDEREncoded())));
-        assertNotNull(certenv);
-        Certificate wscert = certenv.get(0);
-        byte[] b64cert = wscert.getCertificateData();
-        java.security.cert.Certificate iscert = CertTools.getCertfromByteArray(Base64.decode(b64cert));
-        obj = CertificateParser.parseCVCObject(Base64.decode(b64cert));
-        CVCertificate iscvc = (CVCertificate) obj;
-        assertEquals("Test", iscvc.getCertificateBody().getHolderReference().getMnemonic());
-        // It must verify using the DVCAs old public key
-        PublicKey pk = KeyTools.getECPublicKeyWithParams(oldPublicKey, cvcacert.getPublicKey());
-        iscert.verify(pk);
-        boolean thrown = false;
-        try {
-            // it must not be possible to verify this with the new public key
-            pk = KeyTools.getECPublicKeyWithParams(newPublicKey, cvcacert.getPublicKey());
-            iscert.verify(pk);
-        } catch (SignatureException e) {
-            thrown = true;
-        }
-        assertTrue(thrown);
-
-        // Receive the CA certificate response so the DV CA's new key is
-        // activated
-        dvholderref = cert.getCertificateBody().getHolderReference();
-        dvretcert = CertificateGenerator.createTestCertificate(cert.getCertificateBody().getPublicKey(), cvcakeypair.getPrivate(), caRef,
-                dvholderref, signalg, AuthorizationRoleEnum.DV_D);
-        // Here we want to activate the new key pair
-        // System.out.println(dvretcert.getAsText());
-        ejbcaraws.caCertResponse(caname, dvretcert.getDEREncoded(), cachain, pwd);
-        // Check that the cert was received and the CA activated
-        dvinfo = caSession.getCAInfo(intAdmin, caname);
-        assertEquals(CAConstants.CA_ACTIVE, dvinfo.getStatus());
-        dvcerts = dvinfo.getCertificateChain();
-        assertEquals(2, dvcerts.size());
-        dvcertactive = (CardVerifiableCertificate) dvcerts.iterator().next();
-        obj = CertificateParser.parseCVCObject(dvcertactive.getEncoded());
-        // System.out.println(obj.getAsText());
-        dvcertactive.verify(cvcakeypair.getPublic());
-        String sequence5 = dvcertactive.getCVCertificate().getCertificateBody().getHolderReference().getSequence();
-        assertEquals(sequence3, sequence5); // sequence in new certificate
-        // should be same as sequence in
-        // request, which was old sequence +
-        // 1
-        // Check to see that is really is the new keypair
-        pubk1 = new String(Base64.encode(dvcertactive.getPublicKey().getEncoded(), false));
-        pubk2 = new String(Base64.encode(newPublicKey.getEncoded(), false));
-        assertEquals(pubk1, pubk2);
-        // Finally verify that we can issue an IS certificate and verify with
-        // the new public key, i.e. it is signed by the new private key
-        // Simple self signed request
-        isrequest = CertificateGenerator.createRequest(keyPair, signalg, caRef, holderRef);
-        // Edit our favorite test user
-        user1 = new UserDataVOWS();
-        user1.setUsername("WSTESTUSER1");
-        user1.setPassword(PASSWORD);
-        user1.setClearPwd(true);
-        user1.setSubjectDN("CN=Test1,C=SE");
-        user1.setCaName(caname);
-        user1.setStatus(EndEntityConstants.STATUS_NEW);
-        user1.setTokenType("USERGENERATED");
-        user1.setEndEntityProfileName("EMPTY");
-        user1.setCertificateProfileName("ENDUSER");
-        // editUser and set status to new
-        ejbcaraws.editUser(user1);
-        certenv = ejbcaraws.cvcRequest(user1.getUsername(), user1.getPassword(), new String(Base64.encode(isrequest.getDEREncoded())));
-        assertNotNull(certenv);
-        wscert = certenv.get(0);
-        b64cert = wscert.getCertificateData();
-        iscert = CertTools.getCertfromByteArray(Base64.decode(b64cert));
-        obj = CertificateParser.parseCVCObject(Base64.decode(b64cert));
-        iscvc = (CVCertificate) obj;
-        assertEquals("Test1", iscvc.getCertificateBody().getHolderReference().getMnemonic());
-        // It must verify using the DVCAs new public key, which is the same as
-        // the one we imported
-        pk = KeyTools.getECPublicKeyWithParams(dvcertactive.getPublicKey(), cvcacert.getPublicKey());
-        iscert.verify(pk);
-        pk = KeyTools.getECPublicKeyWithParams(dvretcert.getCertificateBody().getPublicKey(), cvcacert.getPublicKey());
-        iscert.verify(pk);
-
-        return cvcacert;
-    } // caRenewCertRequest
-
     protected void caMakeRequestAndFindCA(String caname, CardVerifiableCertificate cvcacert) throws Exception {
         /*
          * Test making a certificate request from a DVCA without giving the certificate chain to the CVCA. If the CVCA is imported in the database as an external CA the CVCA
@@ -2762,11 +2309,6 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         assertEquals(cvcaref, caref);
     } // caMakeRequestAndFindCA
 
-    protected void cleanUpCACertRequest() throws Exception {
-        // Remove CAs created by previous test caRenewCertRequest
-        deleteDVCAExt();
-    }
-
     protected static void cleanUpAdmins(final String wsadminRoleName) throws Exception {
         AccessControlSessionRemote accessControlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessControlSessionRemote.class);
         EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
@@ -2775,20 +2317,20 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
         
             // Remove from role
-    	RoleData role = roleAccessSession.findRole(wsadminRoleName);
-    	if (role != null) {
-    		roleManagementSession.remove(intAdmin, role);
-			accessControlSession.forceCacheExpire();
-    	}
-    	if (endEntityManagementSession.existsUser(TEST_ADMIN_USERNAME)) {
-    		// Remove user
-    		endEntityManagementSession.revokeAndDeleteUser(intAdmin, TEST_ADMIN_USERNAME, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
-    	}
-    	// Remove role
-    	if (endEntityManagementSession.existsUser(TEST_ADMIN_USERNAME)) {
-    		// Remove user
-    		endEntityManagementSession.revokeAndDeleteUser(intAdmin, TEST_ADMIN_USERNAME, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
-    	}
+        RoleData role = roleAccessSession.findRole(wsadminRoleName);
+        if (role != null) {
+            roleManagementSession.remove(intAdmin, role);
+            accessControlSession.forceCacheExpire();
+        }
+        if (endEntityManagementSession.existsUser(TEST_ADMIN_USERNAME)) {
+            // Remove user
+            endEntityManagementSession.revokeAndDeleteUser(intAdmin, TEST_ADMIN_USERNAME, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+        }
+        // Remove role
+        if (endEntityManagementSession.existsUser(TEST_ADMIN_USERNAME)) {
+            // Remove user
+            endEntityManagementSession.revokeAndDeleteUser(intAdmin, TEST_ADMIN_USERNAME, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+        }
         if (endEntityManagementSession.existsUser(TEST_NONADMIN_USERNAME)) {
             endEntityManagementSession.revokeAndDeleteUser(intAdmin, TEST_NONADMIN_USERNAME, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         }
@@ -2804,208 +2346,66 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         try {
             endEntityManagementSession.revokeAndDeleteUser(intAdmin, CA1_WSTESTUSER1, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
-        	// NOPMD: ignore
+            // NOPMD: ignore
         }
         try {
             endEntityManagementSession.revokeAndDeleteUser(intAdmin, CA1_WSTESTUSER2, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
-        	// NOPMD: ignore
+            // NOPMD: ignore
         }
         try {
             endEntityManagementSession.revokeAndDeleteUser(intAdmin, CA2_WSTESTUSER1, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
-        	// NOPMD: ignore
+            // NOPMD: ignore
         }
         try {
             endEntityManagementSession.revokeAndDeleteUser(intAdmin, CA1_WSTESTUSER1CVCRSA, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
-        	// NOPMD: ignore
+            // NOPMD: ignore
         }
         try {
             endEntityManagementSession.revokeAndDeleteUser(intAdmin, CA2_WSTESTUSER1CVCEC, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
-        	// NOPMD: ignore
+            // NOPMD: ignore
         }
         try {
             endEntityManagementSession.revokeAndDeleteUser(intAdmin, "WSTESTUSERKEYREC1", RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
-        	// NOPMD: ignore
+            // NOPMD: ignore
         }
         try {
             endEntityManagementSession.revokeAndDeleteUser(intAdmin, "WSTESTUSER30", RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
-        	// NOPMD: ignore
+            // NOPMD: ignore
         }
         try {
             endEntityManagementSession.revokeAndDeleteUser(intAdmin, "WSTESTUSER31", RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
-        	// NOPMD: ignore
+            // NOPMD: ignore
         }
         // Remove Key recovery end entity profile
         try {
             endEntityProfileSession.removeEndEntityProfile(intAdmin, "KEYRECOVERY");
         } catch (Exception e) {
-        	// NOPMD: ignore
+            // NOPMD: ignore
         }
         try {
             removeTestCA(CA1);
         } catch (Exception e) {
-        	// NOPMD: ignore
+            // NOPMD: ignore
         }
         try {
             removeTestCA(CA2);
         } catch (Exception e) {
-        	// NOPMD: ignore
+            // NOPMD: ignore
         }
         try {
             endEntityProfileSession.removeEndEntityProfile(intAdmin, WS_EEPROF_EI);
         } catch (Exception e) {
-        	// NOPMD: ignore
+            // NOPMD: ignore
         }
         CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
         certificateProfileSession.removeCertificateProfile(intAdmin, WS_CERTPROF_EI);
     } // cleanUpAdmins
 
-    /** Create a CVCA, and a DV CA signed by the CVCA */
-    private void createCVCCA(String rootcadn, String rootcaname, String subcadn, String subcaname, String keyspec, String signalg)
-            throws Exception {
-        final int cryptoTokenId1 = CryptoTokenManagementSessionTest.createCryptoTokenForCA(intAdmin, rootcaname, keyspec);
-        final CAToken catoken1 = CaTestUtils.createCaToken(cryptoTokenId1, signalg, AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
-        final int cryptoTokenId2 = CryptoTokenManagementSessionTest.createCryptoTokenForCA(intAdmin, subcaname, keyspec);
-        final CAToken catoken2 = CaTestUtils.createCaToken(cryptoTokenId2, signalg, AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
-        // No CA Services.
-        List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>(0);
-        java.security.cert.Certificate cvcacert = null;
-        int cvcaid = rootcadn.hashCode();
-        try {
-            CVCCAInfo cvccainfo = new CVCCAInfo(rootcadn, rootcaname, CAConstants.CA_ACTIVE, new Date(), CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 3650, null, // Expiretime
-                    CAInfo.CATYPE_CVC, CAInfo.SELFSIGNED, null, catoken1, "JUnit WS CVC CA", -1, null, 24, // CRLPeriod
-                    0, // CRLIssueInterval
-                    10, // CRLOverlapTime
-                    10, // Delta CRL period
-                    new ArrayList<Integer>(), // CRL publishers
-                    true, // Finish User
-                    extendedcaservices, new ArrayList<Integer>(), // Approvals Settings
-                    1, // Number of Req approvals
-                    true, // Include in health check
-                    true, // isDoEnforceUniquePublicKeys
-                    true, // isDoEnforceUniqueDistinguishedName
-                    false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    false, // useCertReqHistory
-                    true, // useUserStorage
-                    true // useCertificateStorage
-            );
-            caAdminSessionRemote.createCA(intAdmin, cvccainfo);
-            CAInfo info = caSession.getCAInfo(intAdmin, rootcaname);
-            cvcaid = info.getCAId();
-            assertEquals(CAInfo.CATYPE_CVC, info.getCAType());
-            Collection<java.security.cert.Certificate> col = info.getCertificateChain();
-            assertEquals(1, col.size());
-            Iterator<java.security.cert.Certificate> iter = col.iterator();
-            cvcacert = iter.next();
-        } catch (CAExistsException pee) {
-            pee.printStackTrace();
-        }
-        try {
-            CVCCAInfo cvcdvinfo = new CVCCAInfo(subcadn, subcaname, CAConstants.CA_ACTIVE, new Date(), CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 3650, null, // Expiretime
-                    CAInfo.CATYPE_CVC, cvcaid, null, catoken2, "JUnit WS CVC DV CA", -1, null, 24, // CRLPeriod
-                    0, // CRLIssueInterval
-                    10, // CRLOverlapTime
-                    10, // Delta CRL period
-                    new ArrayList<Integer>(), // CRL publishers
-                    true, // Finish User
-                    extendedcaservices, new ArrayList<Integer>(), // Approvals Settings
-                    1, // Number of Req approvals
-                    true, // Include in health check
-                    true, // isDoEnforceUniquePublicKeys
-                    true, // isDoEnforceUniqueDistinguishedName
-                    false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    false, // useCertReqHistory
-                    true, // useUserStorage
-                    true // useCertificateStorage
-            );
-            caAdminSessionRemote.createCA(intAdmin, cvcdvinfo);
-            CAInfo info = caSession.getCAInfo(intAdmin, subcaname);
-            assertEquals(CAInfo.CATYPE_CVC, info.getCAType());
-            Collection<java.security.cert.Certificate> col = info.getCertificateChain();
-            assertEquals(2, col.size());
-            Iterator<java.security.cert.Certificate> iter = col.iterator();
-            java.security.cert.Certificate dvcacert = iter.next();
-            dvcacert.verify(cvcacert.getPublicKey());
-        } catch (CAExistsException pee) {
-            pee.printStackTrace();
-        }
-    }
-
-    /** Create a DVCA, signed by an external CVCA */
-    private String createDVCCASignedByExternal(final String dvcaname, final String dvcaMnemonic, final String keyspec, final String signalg) throws Exception {
-        final int cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(intAdmin, PASSWORD.toCharArray(), true, false, dvcaname, keyspec);
-        final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, signalg, signalg);
-        final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>(0);
-        try {
-            String dvcadn = "CN=" + dvcaMnemonic + ",C=SE";
-            CVCCAInfo cvcdvinfo = new CVCCAInfo(dvcadn, dvcaname, CAConstants.CA_ACTIVE, new Date(), CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 3650, null, // Expiretime
-                    CAInfo.CATYPE_CVC, CAInfo.SIGNEDBYEXTERNALCA, null, catoken, "JUnit WS CVC DV signed by external", -1, null, 24, // CRLPeriod
-                    0, // CRLIssueInterval
-                    10, // CRLOverlapTime
-                    10, // Delta CRL period
-                    new ArrayList<Integer>(), // CRL publishers
-                    true, // Finish User
-                    extendedcaservices, new ArrayList<Integer>(), // Approvals Settings
-                    1, // Number of Req approvals
-                    true, // Include in health check
-                    true, // isDoEnforceUniquePublicKeys
-                    true, // isDoEnforceUniqueDistinguishedName
-                    false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    false, // useCertReqHistory
-                    true, // useUserStorage
-                    true // useCertificateStorage
-            );
-            caAdminSessionRemote.createCA(intAdmin, cvcdvinfo);
-            CAInfo info = caSession.getCAInfo(intAdmin, dvcaname);
-            assertEquals(CAInfo.CATYPE_CVC, info.getCAType());
-            // It is signed by external so no certificates exists yet
-            Collection<java.security.cert.Certificate> col = info.getCertificateChain();
-            assertEquals(0, col.size());
-            return info.getName();
-        } catch (CAExistsException pee) {
-            pee.printStackTrace();
-        }
-        return null;
-    }
-
-    /**
-     * Delete the CVCA and DVCA
-     * 
-     */
-    protected void deleteCVCCA(String rootcadn, String subcadn) throws Exception {
-        // Clean up by removing the CVC CA
-        removeCAIfItExists(CertTools.stringToBCDNString(rootcadn));
-        removeCAIfItExists(CertTools.stringToBCDNString(subcadn));
-    }
-
-    private void deleteDVCAExt() throws Exception {
-        // Clean up by removing the DVCA signed by external
-        removeCAIfItExists(CertTools.stringToBCDNString("CN=WSDVEXT,C=SE"));
-        removeCAIfItExists(CertTools.stringToBCDNString("CN=WSDVEXECR,C=SE"));
-        removeCAIfItExists(CertTools.stringToBCDNString("CN=WSDVEXECE,C=SE"));
-        removeCAIfItExists(CertTools.stringToBCDNString("CN=CVCAEXEC,C=SE"));
-    }
-
-    private void removeCAIfItExists(String dn) {
-        try {
-            final int caid = dn.hashCode();
-            try {
-                int cryptoTokenId = caSession.getCAInfo(intAdmin, caid).getCAToken().getCryptoTokenId();
-                CryptoTokenManagementSessionTest.removeCryptoToken(intAdmin, cryptoTokenId);
-                // Remove CA if it exists
-                caSession.removeCA(intAdmin, caid);
-            } catch (CADoesntExistsException e) {
-                // Ok.. keep calm and carry on!
-            }
-        } catch (Exception e) {
-            log.error("Error removing CA: ", e);
-            assertTrue("Failed to remove CA with SubjectDN '" + dn + "'", false);
-        }
-    }
 }

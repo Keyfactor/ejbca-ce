@@ -94,7 +94,6 @@ import org.ejbca.core.protocol.ws.client.gen.UserMatch;
 import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.core.protocol.ws.common.KeyStoreHelper;
-import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -146,14 +145,14 @@ public class EjbcaWSTest extends CommonEjbcaWS {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-    	adminBeforeClass();
-    	setupAccessRights(WS_ADMIN_ROLENAME);
+        adminBeforeClass();
+        setupAccessRights(WS_ADMIN_ROLENAME);
         originalForbiddenChars = cesecoreConfigurationProxySession.getConfigurationValue(forbiddenCharsKey);
     }
 
     @Before
     public void setUpAdmin() throws Exception {
-    	adminSetUpAdmin();
+        adminSetUpAdmin();
     }
     
     @AfterClass
@@ -166,7 +165,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     }
 
     @Override
-	public String getRoleName() {
+    public String getRoleName() {
         return WS_TEST_ROLENAME;
     }
 
@@ -303,7 +302,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
 
     @Test
     public void test19RevocationApprovals() throws Exception {
-    	log.trace(">test19RevocationApprovals");
+        log.trace(">test19RevocationApprovals");
         final String APPROVINGADMINNAME = "superadmin";
         final String TOKENSERIALNUMBER = "42424242";
         final String TOKENUSERNAME = "WSTESTTOKENUSER3";
@@ -416,7 +415,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                 CryptoTokenManagementSessionTest.removeCryptoToken(intAdmin, cryptoTokenId);
             }
         }
-    	log.trace("<test19RevocationApprovals");
+        log.trace("<test19RevocationApprovals");
     }
 
     @Test
@@ -455,30 +454,6 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     }
     
     @Test
-    public void test26_1CvcRequestRSA() throws Exception {
-        cvcRequest("CN=WSCVCA,C=SE", "WSTESTCVCA", "CN=WSDVCA,C=SE", "WSTESTDVCA", CA1_WSTESTUSER1CVCRSA, "1024", AlgorithmConstants.KEYALGORITHM_RSA,
-                AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
-    }
-    
-    @Test
-    public void test26_2CleanCvcRequestRSA() throws Exception {
-        // Remove the CAs
-        deleteCVCCA("CN=WSCVCA,C=SE", "CN=WSDVCA,C=SE");
-    }
-
-    @Test
-    public void test26_3CvcRequestECDSA() throws Exception {
-        cvcRequest("CN=WSCVCAEC,C=SE", "WSTESTCVCAEC", "CN=WSDVCAEC,C=SE", "WSTESTDVCAEC", CA2_WSTESTUSER1CVCEC, "secp256r1",
-                AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
-    }
-
-    @Test
-    public void test26_4CleanCvcRequestECDSA() throws Exception {
-        // Remove the CAs
-        deleteCVCCA("CN=WSCVCAEC,C=SE", "CN=WSDVCAEC,C=SE");
-    }
-
-    @Test
     public void test27EjbcaVersion() throws Exception {
         ejbcaVersion();
     }
@@ -508,100 +483,66 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         checkQueueLength();
     }
 
-    @Test
-    public void test34_1CaRenewCertRequestRSA() throws Exception {
-    	log.trace(">test34_1CaRenewCertRequestRSA()");
-        final String cvcaMnemonic = "CVCAEXEC";
-        final String dvcaName = "WSTESTDVCARSASIGNEDBYEXTERNAL";
-        final String dvcaMnemonic = "WSDVEXECR";
-        final String keyspec = "1024";
-        final String keyalg = AlgorithmConstants.KEYALGORITHM_RSA;
-        final String signalg = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
-        super.caRenewCertRequest(cvcaMnemonic, dvcaName, dvcaMnemonic, keyspec, keyalg, signalg);
-        log.trace("<test34_1CaRenewCertRequestRSA()");
-    }
-
-    @Test
-    public void test34_2CaRenewCertRequestECC() throws Exception {
-    	log.trace(">test34_2CaRenewCertRequestECC()");
-        final String cvcaMnemonic = "CVCAEXEC";
-        final String dvcaName = "WSTESTDVCAECCSIGNEDBYEXTERNAL";
-        final String dvcaMnemonic = "WSDVEXECE";
-        final String keyspec = "secp256r1";
-        final String keyalg = AlgorithmConstants.KEYALGORITHM_ECDSA;
-        final String signalg = AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA;
-		CardVerifiableCertificate cvcacert = super.caRenewCertRequest(cvcaMnemonic, dvcaName, dvcaMnemonic, keyspec, keyalg, signalg);
-		super.caMakeRequestAndFindCA(dvcaName, cvcacert);
-		log.trace("<test34_2CaRenewCertRequestECC()");
-    }
-
-    @Test
-    public void test35CleanUpCACertRequest() throws Exception {
-    	log.trace(">test35CleanUpCACertRequest()");
-        super.cleanUpCACertRequest();
-        log.trace("<test35CleanUpCACertRequest()");
-    }
-
     /** In EJBCA 4.0.0 we changed the date format to ISO 8601. This verifies the that we still accept old requests, but returns UserDataVOWS objects using the new DateFormat 
      * @throws AuthorizationDeniedException */
     @Test
     public void test36EjbcaWsHelperTimeFormatConversion() throws CADoesntExistsException, ClassCastException, EjbcaException, AuthorizationDeniedException {
-    	log.trace(">test36EjbcaWsHelperTimeFormatConversion()");
-		final Date nowWithOutSeconds = new Date((new Date().getTime()/60000)*60000);	// To avoid false negatives.. we will loose precision when we convert back and forth..
-    	final String oldTimeFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(nowWithOutSeconds);
-    	final String newTimeFormatStorage = FastDateFormat.getInstance("yyyy-MM-dd HH:mm", TimeZone.getTimeZone("UTC")).format(nowWithOutSeconds);
-    	final String newTimeFormatRequest = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ssZZ", TimeZone.getTimeZone("CEST")).format(nowWithOutSeconds);
-    	final String newTimeFormatResponse = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ssZZ", TimeZone.getTimeZone("UTC")).format(nowWithOutSeconds);
-    	final String relativeTimeFormat = "0123:12:31";
-    	log.debug("oldTimeFormat=" + oldTimeFormat);
-    	log.debug("newTimeFormatStorage=" + newTimeFormatStorage);
-    	log.debug("newTimeFormatRequest=" + newTimeFormatRequest);
-    	// Convert from UserDataVOWS with US Locale DateFormat to endEntityInformation
-    	final org.ejbca.core.protocol.ws.objects.UserDataVOWS userDataVoWs = new org.ejbca.core.protocol.ws.objects.UserDataVOWS("username", "password", false, "CN=User U", "CA1", null, null, 10, "P12", "EMPTY", "ENDUSER", null);
-    	userDataVoWs.setStartTime(oldTimeFormat);
-    	userDataVoWs.setEndTime(oldTimeFormat);
-    	final EndEntityInformation endEntityInformation1 = EjbcaWSHelper.convertUserDataVOWS(userDataVoWs, 1, 2, 3, 4, 5);
-    	assertEquals("CUSTOM_STARTTIME in old format was not correctly handled (VOWS to VO).", newTimeFormatStorage, endEntityInformation1.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_STARTTIME));
-    	assertEquals("CUSTOM_ENDTIME in old format was not correctly handled (VOWS to VO).", newTimeFormatStorage, endEntityInformation1.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_ENDTIME));
-    	// Convert from UserDataVOWS with standard DateFormat to endEntityInformation
-    	userDataVoWs.setStartTime(newTimeFormatRequest);
-    	userDataVoWs.setEndTime(newTimeFormatRequest);
-    	final EndEntityInformation endEntityInformation2 = EjbcaWSHelper.convertUserDataVOWS(userDataVoWs, 1, 2, 3, 4, 5);
-    	assertEquals("ExtendedInformation.CUSTOM_STARTTIME in new format was not correctly handled.", newTimeFormatStorage, endEntityInformation2.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_STARTTIME));
-    	assertEquals("ExtendedInformation.CUSTOM_ENDTIME in new format was not correctly handled.", newTimeFormatStorage, endEntityInformation2.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_ENDTIME));
-    	// Convert from UserDataVOWS with relative date format to endEntityInformation
-    	userDataVoWs.setStartTime(relativeTimeFormat);
-    	userDataVoWs.setEndTime(relativeTimeFormat);
+        log.trace(">test36EjbcaWsHelperTimeFormatConversion()");
+        final Date nowWithOutSeconds = new Date((new Date().getTime()/60000)*60000);    // To avoid false negatives.. we will loose precision when we convert back and forth..
+        final String oldTimeFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(nowWithOutSeconds);
+        final String newTimeFormatStorage = FastDateFormat.getInstance("yyyy-MM-dd HH:mm", TimeZone.getTimeZone("UTC")).format(nowWithOutSeconds);
+        final String newTimeFormatRequest = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ssZZ", TimeZone.getTimeZone("CEST")).format(nowWithOutSeconds);
+        final String newTimeFormatResponse = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ssZZ", TimeZone.getTimeZone("UTC")).format(nowWithOutSeconds);
+        final String relativeTimeFormat = "0123:12:31";
+        log.debug("oldTimeFormat=" + oldTimeFormat);
+        log.debug("newTimeFormatStorage=" + newTimeFormatStorage);
+        log.debug("newTimeFormatRequest=" + newTimeFormatRequest);
+        // Convert from UserDataVOWS with US Locale DateFormat to endEntityInformation
+        final org.ejbca.core.protocol.ws.objects.UserDataVOWS userDataVoWs = new org.ejbca.core.protocol.ws.objects.UserDataVOWS("username", "password", false, "CN=User U", "CA1", null, null, 10, "P12", "EMPTY", "ENDUSER", null);
+        userDataVoWs.setStartTime(oldTimeFormat);
+        userDataVoWs.setEndTime(oldTimeFormat);
+        final EndEntityInformation endEntityInformation1 = EjbcaWSHelper.convertUserDataVOWS(userDataVoWs, 1, 2, 3, 4, 5);
+        assertEquals("CUSTOM_STARTTIME in old format was not correctly handled (VOWS to VO).", newTimeFormatStorage, endEntityInformation1.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_STARTTIME));
+        assertEquals("CUSTOM_ENDTIME in old format was not correctly handled (VOWS to VO).", newTimeFormatStorage, endEntityInformation1.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_ENDTIME));
+        // Convert from UserDataVOWS with standard DateFormat to endEntityInformation
+        userDataVoWs.setStartTime(newTimeFormatRequest);
+        userDataVoWs.setEndTime(newTimeFormatRequest);
+        final EndEntityInformation endEntityInformation2 = EjbcaWSHelper.convertUserDataVOWS(userDataVoWs, 1, 2, 3, 4, 5);
+        assertEquals("ExtendedInformation.CUSTOM_STARTTIME in new format was not correctly handled.", newTimeFormatStorage, endEntityInformation2.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_STARTTIME));
+        assertEquals("ExtendedInformation.CUSTOM_ENDTIME in new format was not correctly handled.", newTimeFormatStorage, endEntityInformation2.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_ENDTIME));
+        // Convert from UserDataVOWS with relative date format to endEntityInformation
+        userDataVoWs.setStartTime(relativeTimeFormat);
+        userDataVoWs.setEndTime(relativeTimeFormat);
         final EndEntityInformation endEntityInformation3 = EjbcaWSHelper.convertUserDataVOWS(userDataVoWs, 1, 2, 3, 4, 5);
-    	assertEquals("ExtendedInformation.CUSTOM_STARTTIME in relative format was not correctly handled.", relativeTimeFormat, endEntityInformation3.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_STARTTIME));
-    	assertEquals("ExtendedInformation.CUSTOM_ENDTIME in relative format was not correctly handled.", relativeTimeFormat, endEntityInformation3.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_ENDTIME));
-    	// Convert from endEntityInformation with standard DateFormat to UserDataVOWS
-    	final org.ejbca.core.protocol.ws.objects.UserDataVOWS userDataVoWs1 = EjbcaWSHelper.convertEndEntityInformation(endEntityInformation1, "CA1", "EEPROFILE", "CERTPROFILE", "HARDTOKENISSUER", "P12");
-    	// We expect that the server will respond using UTC
-    	assertEquals("CUSTOM_STARTTIME in new format was not correctly handled (VO to VOWS).", newTimeFormatResponse, userDataVoWs1.getStartTime());
-    	assertEquals("CUSTOM_ENDTIME in new format was not correctly handled (VO to VOWS).", newTimeFormatResponse, userDataVoWs1.getEndTime());
-    	// Convert from EndEntityInformation with relative date format to UserDataVOWS
-    	final org.ejbca.core.protocol.ws.objects.UserDataVOWS userDataVoWs3 = EjbcaWSHelper.convertEndEntityInformation(endEntityInformation3, "CA1", "EEPROFILE", "CERTPROFILE", "HARDTOKENISSUER", "P12");
-    	assertEquals("CUSTOM_STARTTIME in relative format was not correctly handled (VO to VOWS).", relativeTimeFormat, userDataVoWs3.getStartTime());
-    	assertEquals("CUSTOM_ENDTIME in relative format was not correctly handled (VO to VOWS).", relativeTimeFormat, userDataVoWs3.getEndTime());
-    	// Try some invalid start time date format
-    	userDataVoWs.setStartTime("12:32 2011-02-28");	// Invalid
-    	userDataVoWs.setEndTime("2011-02-28 12:32:00+00:00");	// Valid
-    	try {
+        assertEquals("ExtendedInformation.CUSTOM_STARTTIME in relative format was not correctly handled.", relativeTimeFormat, endEntityInformation3.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_STARTTIME));
+        assertEquals("ExtendedInformation.CUSTOM_ENDTIME in relative format was not correctly handled.", relativeTimeFormat, endEntityInformation3.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_ENDTIME));
+        // Convert from endEntityInformation with standard DateFormat to UserDataVOWS
+        final org.ejbca.core.protocol.ws.objects.UserDataVOWS userDataVoWs1 = EjbcaWSHelper.convertEndEntityInformation(endEntityInformation1, "CA1", "EEPROFILE", "CERTPROFILE", "HARDTOKENISSUER", "P12");
+        // We expect that the server will respond using UTC
+        assertEquals("CUSTOM_STARTTIME in new format was not correctly handled (VO to VOWS).", newTimeFormatResponse, userDataVoWs1.getStartTime());
+        assertEquals("CUSTOM_ENDTIME in new format was not correctly handled (VO to VOWS).", newTimeFormatResponse, userDataVoWs1.getEndTime());
+        // Convert from EndEntityInformation with relative date format to UserDataVOWS
+        final org.ejbca.core.protocol.ws.objects.UserDataVOWS userDataVoWs3 = EjbcaWSHelper.convertEndEntityInformation(endEntityInformation3, "CA1", "EEPROFILE", "CERTPROFILE", "HARDTOKENISSUER", "P12");
+        assertEquals("CUSTOM_STARTTIME in relative format was not correctly handled (VO to VOWS).", relativeTimeFormat, userDataVoWs3.getStartTime());
+        assertEquals("CUSTOM_ENDTIME in relative format was not correctly handled (VO to VOWS).", relativeTimeFormat, userDataVoWs3.getEndTime());
+        // Try some invalid start time date format
+        userDataVoWs.setStartTime("12:32 2011-02-28");  // Invalid
+        userDataVoWs.setEndTime("2011-02-28 12:32:00+00:00");   // Valid
+        try {
             EjbcaWSHelper.convertUserDataVOWS(userDataVoWs, 1, 2, 3, 4, 5);
-        	fail("Conversion of illegal time format did not generate exception.");
-    	} catch (EjbcaException e) {
-    		assertEquals("Unexpected error code in exception.", ErrorCode.FIELD_VALUE_NOT_VALID, e.getErrorCode());
-    	}
-    	// Try some invalid end time date format
-    	userDataVoWs.setStartTime("2011-02-28 12:32:00+00:00");	// Valid
-    	userDataVoWs.setEndTime("12:32 2011-02-28");	// Invalid
-    	try {
+            fail("Conversion of illegal time format did not generate exception.");
+        } catch (EjbcaException e) {
+            assertEquals("Unexpected error code in exception.", ErrorCode.FIELD_VALUE_NOT_VALID, e.getErrorCode());
+        }
+        // Try some invalid end time date format
+        userDataVoWs.setStartTime("2011-02-28 12:32:00+00:00"); // Valid
+        userDataVoWs.setEndTime("12:32 2011-02-28");    // Invalid
+        try {
             EjbcaWSHelper.convertUserDataVOWS(userDataVoWs, 1, 2, 3, 4, 5);
-        	fail("Conversion of illegal time format did not generate exception.");
-    	} catch (EjbcaException e) {
-    		assertEquals("Unexpected error code in exception.", ErrorCode.FIELD_VALUE_NOT_VALID, e.getErrorCode());
-    	}
+            fail("Conversion of illegal time format did not generate exception.");
+        } catch (EjbcaException e) {
+            assertEquals("Unexpected error code in exception.", ErrorCode.FIELD_VALUE_NOT_VALID, e.getErrorCode());
+        }
         log.trace("<test36EjbcaWsHelperTimeFormatConversion()");
     }
     
@@ -777,10 +718,10 @@ public class EjbcaWSTest extends CommonEjbcaWS {
      */
     @Test
     public void test48CertificateRequestWithCardNumber() throws Exception {
-    	String userName = "wsRequestCardNumber" + new SecureRandom().nextLong();
-    	
-    	// Generate a CSR
-    	KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+        String userName = "wsRequestCardNumber" + new SecureRandom().nextLong();
+        
+        // Generate a CSR
+        KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         PKCS10CertificationRequest pkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX500Name("CN=NOUSED"),
                 keys.getPublic(), new DERSet(), keys.getPrivate(), null);
         final String csr = new String(Base64.encode(pkcs10.toASN1Structure().getEncoded()));
