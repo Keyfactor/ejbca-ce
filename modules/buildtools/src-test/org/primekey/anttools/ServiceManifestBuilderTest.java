@@ -98,7 +98,7 @@ public class ServiceManifestBuilderTest {
     public void testBuildServiceManifestToClassPath() throws IOException, ClassNotFoundException {
         Class<?> dummyInterfaceClass = Class.forName(DUMMY_PACKAGE + "." + FIRST_DUMMY_INTERFACE_NAME);
         //Phew, it won't get uglier than this at least. 
-        ServiceManifestBuilder.buildManifestToLocation(temporarySourceDirectory, dummyInterfaceClass);
+        ServiceManifestBuilder.buildServiceManifestToLocation(temporarySourceDirectory, dummyInterfaceClass);
         //Loverly. We should now have a manifest file on the classpath
         ServiceLoader<?> serviceLoader = ServiceLoader.load(dummyInterfaceClass);
         Iterator<?> serviceIterator = serviceLoader.iterator();
@@ -116,7 +116,7 @@ public class ServiceManifestBuilderTest {
         Class<?> secondDummyInterfaceClass = Class.forName(DUMMY_PACKAGE + "." + SECOND_DUMMY_INTERFACE_NAME);
 
         //Phew, it won't get uglier than this at least. 
-        ServiceManifestBuilder.buildManifestToLocation(temporarySourceDirectory, firstDummyInterfaceClass, secondDummyInterfaceClass);
+        ServiceManifestBuilder.buildServiceManifestToLocation(temporarySourceDirectory, firstDummyInterfaceClass, secondDummyInterfaceClass);
         //Loverly. We should now have a manifest file on the classpath
         {
             ServiceLoader<?> serviceLoader = ServiceLoader.load(firstDummyInterfaceClass);
@@ -150,10 +150,10 @@ public class ServiceManifestBuilderTest {
         File jarFile = File.createTempFile("tmp", ".jar", temporaryFileDirectory);
         try {
             //Now, let's make a jar out of our dummy classes. 
-            ServiceManifestBuilder.writeFileStructuretoJar(temporarySourceDirectory, jarFile);
+            ServiceManifestBuilder.writeFileStructuretoJar(temporarySourceDirectory, jarFile, null);
             //Next add the manifest folder to the jar 
             Class<?> dummyInterfaceClass = Class.forName(DUMMY_PACKAGE + "." + FIRST_DUMMY_INTERFACE_NAME);
-            ServiceManifestBuilder.buildManifestInJar(jarFile, dummyInterfaceClass);
+            ServiceManifestBuilder.buildServiceManifestInJar(jarFile, dummyInterfaceClass);
             //Testing time. Check the jar file in question and see if the manifest is there. 
             JarFile result = new JarFile(jarFile);
             try {
@@ -174,7 +174,7 @@ public class ServiceManifestBuilderTest {
         File jarFile = File.createTempFile("tmp", ".jar", temporaryFileDirectory);
         try {
             //Now, let's make a jar out of our dummy classes. 
-            ServiceManifestBuilder.writeFileStructuretoJar(temporarySourceDirectory, jarFile);
+            ServiceManifestBuilder.writeFileStructuretoJar(temporarySourceDirectory, jarFile, null);
             String[] args = {jarFile.getAbsolutePath(), DUMMY_PACKAGE + "." + FIRST_DUMMY_INTERFACE_NAME};
             ServiceManifestBuilder.main(args);
             JarFile result = new JarFile(jarFile);
