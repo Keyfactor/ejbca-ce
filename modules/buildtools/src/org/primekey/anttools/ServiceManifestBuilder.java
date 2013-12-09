@@ -19,13 +19,17 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
 
 /**
  * This class is a tool for adding a manifest file for a given interface to the META-INF/services directory of a JAR. It
@@ -55,15 +59,18 @@ public class ServiceManifestBuilder {
             final String TAB = "     ";
             StringBuffer out = new StringBuffer();
             out.append("DESCRIPTION:\n");
-            out.append(TAB + "This command line tool inserts manifest files into a given JAR archive.\n");
+            out.append(TAB + "This command line tool inserts service manifest files into a given JAR archive or directory.\n");
             out.append(TAB + "It uses the following two arguments (without flags):\n");
-            out.append(TAB + "(1) Path to an archive\n");
+            out.append(TAB + "(1) Path to an archive/directory\n");
             out.append(TAB + "(2) A semicolon separated list of interfaces\n");
-            out.append(TAB + "(3) (OPTIONAL) Temporary working directory. Will use system default if left blank.\n");
+            out.append(TAB + "(3) (OPTIONAL) Temporary working directory, only applicable (but not required) when writing to jar. "
+                    + "Will use system default if left blank.\n");
             out.append("\n");
             out.append("EXAMPLES:\n");
             out.append(TAB + "/usr/ejbca/foo.jar com.foo.bar.InterfaceAlpha\n");
-            out.append(TAB + "/usr/ejbca/foo.jar com.foo.bar.InterfaceAlpha;com.bar.foo.InterfaceBeta /var/tmp/ \n");
+            out.append(TAB + "/usr/ejbca/modules/ejbca-ejb-cli/build/ com.foo.bar.InterfaceAlpha;com.bar.foo.InterfaceBeta /var/tmp/ \n");
+            out.append("\n");
+            out.append("WARNING: Adding a service manifest to a JAR with a file manifest is unstable at the moment.");
             System.err.println(out.toString());
             System.exit(1);
         }
@@ -71,13 +78,20 @@ public class ServiceManifestBuilder {
         if (!archive.exists()) {
             System.err.println(archive + " does not exist on the system.");
             System.exit(1);
-        } else if (archive.isDirectory()) {
-            System.err.println(archive + " is a directory, not a .jar file.");
-            System.exit(1);
-        } else if (!archive.getName().endsWith(".jar")) {
+        } else if (archive.isFile() && !archive.getName().endsWith(".jar")) {
             System.err.println(archive + " does not appear to be a .jar file.");
             System.exit(1);
         }
+        //Make sure that the directory to be modified is on the classpath
+        URLClassLoader sysloader = (URLClassLoader) ClassLoader.getSystemClassLoader();
+        try {
+            Method method = URLClassLoader.class.getDeclaredMethod("addURL", new Class[] { URL.class });
+            method.setAccessible(true);
+            method.invoke(sysloader, new Object[] { archive.toURI().toURL() });
+        } catch (Throwable t) {
+            throw new RuntimeException("Exception caught while trying to modify classpath", t);
+        }
+
         String[] classNames = args[1].split(";");
         Class<?>[] classes = new Class<?>[classNames.length];
         for (int i = 0; i < classNames.length; ++i) {
@@ -90,7 +104,12 @@ public class ServiceManifestBuilder {
         }
         try {
             if (args.length == 2) {
-                buildManifestInJar(archive, classes);
+                if (archive.isDirectory()) {
+                    buildServiceManifestToLocation(archive, classes);
+                } else {
+                    buildServiceManifestInJar(archive, classes);
+                }
+
             } else {
                 File workingDirectory = new File(args[2]);
                 if (!workingDirectory.isDirectory()) {
@@ -99,7 +118,7 @@ public class ServiceManifestBuilder {
                 } else if (!workingDirectory.canRead() || !workingDirectory.canWrite()) {
                     System.err.println("Could not read/write to " + workingDirectory);
                 } else {
-                    buildManifestInJar(archive, workingDirectory, classes);
+                    buildServiceManifestInJar(archive, workingDirectory, classes);
                 }
             }
         } catch (IOException e) {
@@ -115,10 +134,16 @@ public class ServiceManifestBuilder {
      * 
      * @param source file or directory to write to the jar file. 
      * @param jarFile file to be written to
+     * @param manifest JAR manifest of the old file. null if none existed.
      * @throws IOException 
      */
-    public static void writeFileStructuretoJar(final File source, final File jarFile) throws IOException {
-        JarOutputStream jarOutputStream = new JarOutputStream(new FileOutputStream(jarFile));
+    public static void writeFileStructuretoJar(final File source, final File jarFile, Manifest manifest) throws IOException {
+        JarOutputStream jarOutputStream;
+        if (manifest != null) {
+            jarOutputStream = new JarOutputStream(new FileOutputStream(jarFile), manifest);
+        } else {
+            jarOutputStream = new JarOutputStream(new FileOutputStream(jarFile));
+        }
         try {
             addToJar(source, source, jarOutputStream);
         } finally {
@@ -200,11 +225,14 @@ public class ServiceManifestBuilder {
      * This method inserts a manifest file into the given jar file for the specified interface class. Will use the system default
      * tmp directory
      * 
+     * FIXME: Does not work properly with JAR files with manifests
+     * 
      * @param jar the jar while in which to create the manifest
      * @param interfaceClass the interface for which to create the manifest
      * @throws IOException if any error occurred while writing to disk
      */
-    public static void buildManifestInJar(final File jarFile, final Class<?>... interfaceClass) throws IOException {
+    public static void buildServiceManifestInJar(final File jarFile, final Class<?>... interfaceClass) throws IOException {
+        System.err.println("WARNING: Seems to corrupt manifest files. Do not use on jar files containing manifests.");
         //First attempt to unzip jar file completely. 
         File temporaryFileDirectory = null;
         try {
@@ -213,7 +241,7 @@ public class ServiceManifestBuilder {
             throw new IllegalStateException("Can't write to default temp file directory.", e);
         }
         try {
-            buildManifestInJar(jarFile, temporaryFileDirectory, interfaceClass);
+            buildServiceManifestInJar(jarFile, temporaryFileDirectory, interfaceClass);
         } finally {
             delete(temporaryFileDirectory);
         }
@@ -227,15 +255,19 @@ public class ServiceManifestBuilder {
      * @param interfaceClass the interface for which to create the manifest
      * @throws IOException if any error occurred while writing to disk
      */
-    public static void buildManifestInJar(final File target, File workingDirectory, final Class<?>... interfaceClass) throws IOException {
+    public static void buildServiceManifestInJar(final File target, File workingDirectory, final Class<?>... interfaceClass) throws IOException {
         /* Unpack all files to a directory. They need to physically exist in order to be instantiated, since the jar to med 
          * modified can't exist on the classpath (where it would be write protected). 
          */
         File unpackingDirectory = createTempDirectory(workingDirectory);
         final JarFile jarFile = new JarFile(target);
+        Manifest manifest = jarFile.getManifest();
         try {
             for (Enumeration<JarEntry> jarEntries = jarFile.entries(); jarEntries.hasMoreElements();) {
                 JarEntry entry = jarEntries.nextElement();
+                if (entry.getName().endsWith(".MF")) {
+                    continue;
+                }
                 File unpackedfile = new File(unpackingDirectory, entry.getName());
                 if (entry.isDirectory()) {
                     unpackedfile.mkdir();
@@ -256,10 +288,10 @@ public class ServiceManifestBuilder {
             jarFile.close();
         }
         //Next, let's add the manifest
-        buildManifestToLocation(unpackingDirectory, interfaceClass);
+        buildServiceManifestToLocation(unpackingDirectory, interfaceClass);
         //Now, lets pack all this into a new jar file 
         File temporaryJarFile = File.createTempFile("temporaryJar", ".jar", workingDirectory);
-        writeFileStructuretoJar(unpackingDirectory, temporaryJarFile);
+        writeFileStructuretoJar(unpackingDirectory, temporaryJarFile, manifest);
         //Everything good and dandy? Great! Kill the old file and replace it with the new one.
         String targetPath = target.getAbsolutePath();
         if (!target.delete()) {
@@ -277,7 +309,7 @@ public class ServiceManifestBuilder {
      * @param interfaceClass the interface to base the manifest on
      * @throws IOException for any file related errors
      */
-    public static void buildManifestToLocation(File location, Class<?>... interfaceClasses) throws IOException {
+    public static void buildServiceManifestToLocation(File location, Class<?>... interfaceClasses) throws IOException {
         if (!location.isDirectory()) {
             throw new IOException("File " + location + " was not a directory.");
         }
@@ -332,7 +364,6 @@ public class ServiceManifestBuilder {
         List<Class<?>> result = new ArrayList<Class<?>>();
         if (location.isDirectory()) {
             //Recurse to find all files in all subdirectories
-            System.out.println(location.getAbsolutePath());
             for (File file : location.listFiles()) {
                 if (file.isDirectory()) {
                     result.addAll(getImplementingClasses(baseLocation, file, interfaceClass));
@@ -346,11 +377,12 @@ public class ServiceManifestBuilder {
                             Class<?> candidate = Class.forName(className);
                             if (interfaceClass.isAssignableFrom(candidate) && !Modifier.isAbstract(candidate.getModifiers())
                                     && !candidate.isInterface()) {
+                                System.out.println("Found: " + candidate.getName());
                                 result.add(candidate);
                             }
                         } catch (ClassNotFoundException e) {
                             throw new IllegalArgumentException("Class of name " + className + " was not found, even though a class file"
-                                    + " of that name was found in " + baseLocation.getAbsolutePath());
+                                    + " of that name was found in " + baseLocation.getAbsolutePath(), e);
                         }
                     }
                 }
