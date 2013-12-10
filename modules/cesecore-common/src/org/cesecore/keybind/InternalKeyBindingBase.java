@@ -51,22 +51,20 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     private List<InternalKeyBindingTrustEntry> trustedCertificateReferences;
     private String signatureAlgorithm;
     
-    private final Map<String,InternalKeyBindingProperty<? extends Serializable>> propertyTemplates = new HashMap<String,InternalKeyBindingProperty<? extends Serializable>>();
+    private static final Map<String,InternalKeyBindingProperty<? extends Serializable>> propertyTemplates = new HashMap<String,InternalKeyBindingProperty<? extends Serializable>>();
     
-    protected InternalKeyBindingBase(List<InternalKeyBindingProperty<? extends Serializable>> implementationProperties) {
-        super();
-        for (final InternalKeyBindingProperty<? extends Serializable> property : implementationProperties) {
-            propertyTemplates.put(property.getName(), property);
-        }
+    protected static void addProperty(InternalKeyBindingProperty<? extends Serializable> property) {
+        propertyTemplates.put(property.getName(), property);
     }
-
+    
     @Override
-    public List<InternalKeyBindingProperty<? extends Serializable>> getCopyOfProperties() {
-        final List<InternalKeyBindingProperty<? extends Serializable>> ret = new ArrayList<InternalKeyBindingProperty<? extends Serializable>>();
-        for (InternalKeyBindingProperty<? extends Serializable> current : propertyTemplates.values()) {
+    public Map<String, InternalKeyBindingProperty<? extends Serializable>> getCopyOfProperties() {
+        final Map<String, InternalKeyBindingProperty<? extends Serializable>> ret = new HashMap<String, InternalKeyBindingProperty<? extends Serializable>>();
+        for (String key : propertyTemplates.keySet()) {
+            InternalKeyBindingProperty<? extends Serializable> current = propertyTemplates.get(key);
             final InternalKeyBindingProperty<? extends Serializable> clone = current.clone();
             clone.setValueGeneric(getProperty(clone.getName()).getValue());
-            ret.add(clone);
+            ret.put(key, clone);
         }
         return ret;
     }

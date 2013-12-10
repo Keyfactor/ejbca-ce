@@ -16,6 +16,7 @@ import java.io.Serializable;
 import java.security.cert.Certificate;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Interface for the InternalKeyBindings.
@@ -92,7 +93,7 @@ public interface InternalKeyBinding extends Serializable {
     InternalKeyBindingProperty<? extends Serializable> getProperty(String name);
 
     /** @return a Map of all properties/data specific to this implementation */
-    List<InternalKeyBindingProperty<? extends Serializable>> getCopyOfProperties();
+    Map<String, InternalKeyBindingProperty<? extends Serializable>> getCopyOfProperties();
 
     /** @return a list of trusted certificates references. An undefined (null) serialnumber means ANY serialnumber. */
     List<InternalKeyBindingTrustEntry> getTrustedCertificateReferences();

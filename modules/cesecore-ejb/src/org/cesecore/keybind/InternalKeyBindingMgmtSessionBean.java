@@ -106,16 +106,16 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     @SuppressWarnings("unchecked")
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public Map<String, List<InternalKeyBindingProperty<? extends Serializable>>> getAvailableTypesAndProperties() {
+    public Map<String, Map<String, InternalKeyBindingProperty<? extends Serializable>>> getAvailableTypesAndProperties() {
         // Perform deep cloning (this will work since we know that the property types extend Serializable)
-        final Map<String, List<InternalKeyBindingProperty<? extends Serializable>>> clone;
+        final Map<String, Map<String, InternalKeyBindingProperty<? extends Serializable>>> clone;
         try {
             final ByteArrayOutputStream baos = new ByteArrayOutputStream();
             final ObjectOutputStream oos = new ObjectOutputStream(baos);
             oos.writeObject(InternalKeyBindingFactory.INSTANCE.getAvailableTypesAndProperties());
             oos.close();
             final ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(baos.toByteArray()));
-            clone = (Map<String, List<InternalKeyBindingProperty<? extends Serializable>>>) ois.readObject();
+            clone = (Map<String, Map<String, InternalKeyBindingProperty<? extends Serializable>>>) ois.readObject();
             ois.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -223,7 +223,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
 
     @Override
     public int createInternalKeyBinding(AuthenticationToken authenticationToken, String type, int id, String name, InternalKeyBindingStatus status,
-            String certificateId, int cryptoTokenId, String keyPairAlias, String signatureAlgorithm, Map<Object, Object> dataMap)
+            String certificateId, int cryptoTokenId, String keyPairAlias, String signatureAlgorithm, Map<String, Serializable> dataMap)
             throws AuthorizationDeniedException, CryptoTokenOfflineException, InternalKeyBindingNameInUseException, InvalidAlgorithmException {
         if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.MODIFY.resource(), CryptoTokenRules.USE.resource()
                 + "/" + cryptoTokenId)) {
@@ -237,8 +237,8 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         // Convert supplied properties using a prefix to ensure that the caller can't mess with internal ones
         final LinkedHashMap<Object, Object> initDataMap = new LinkedHashMap<Object, Object>();
         if (dataMap != null) {
-            for (final Entry<Object, Object> entry : dataMap.entrySet()) {
-                String key = String.valueOf(entry.getKey());
+            for (final Entry<String, Serializable> entry : dataMap.entrySet()) {
+                String key = entry.getKey();
                 if (key.startsWith(InternalKeyBindingBase.SUBCLASS_PREFIX)) {
                     initDataMap.put(key, entry.getValue());
                 } else {
@@ -264,7 +264,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
 
     @Override
     public int createInternalKeyBinding(AuthenticationToken authenticationToken, String type, String name, InternalKeyBindingStatus status,
-            String certificateId, int cryptoTokenId, String keyPairAlias, String signatureAlgorithm, Map<Object, Object> dataMap)
+            String certificateId, int cryptoTokenId, String keyPairAlias, String signatureAlgorithm, Map<String, Serializable> dataMap)
             throws AuthorizationDeniedException, CryptoTokenOfflineException, InternalKeyBindingNameInUseException, InvalidAlgorithmException {
         return createInternalKeyBinding(authenticationToken, type, 0, name, status, certificateId, cryptoTokenId, keyPairAlias, signatureAlgorithm,
                 dataMap);

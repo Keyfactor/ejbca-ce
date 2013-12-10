@@ -15,10 +15,10 @@ package org.ejbca.ui.cli.keybind;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -61,6 +61,7 @@ public class InternalKeyBindingModifyCommand extends BaseInternalKeyBindingComma
             getLogger().info("OcspKeyBinding example: " + getCommand() + " OcspKeyBinding1 --nextkeypair nextSigningKey --property maxAge=30 --property untilNextUpdate=30");
             getLogger().info("");
             showTypesProperties();
+            return;
         }
         final List<String> argsList = CliTools.getAsModifyableList(args);
         // Extract properties
@@ -203,48 +204,17 @@ public class InternalKeyBindingModifyCommand extends BaseInternalKeyBindingComma
         }
         internalKeyBinding.setTrustedCertificateReferences(internalKeyBindingTrustEntries);
         // Perform property changes
-        final List<InternalKeyBindingProperty<? extends Serializable>> properties = internalKeyBinding.getCopyOfProperties();
-        for (final InternalKeyBindingProperty<? extends Serializable> property : properties) {
-            final String name = property.getName();
-            if (propertyMap.containsKey(name)) {
-                final Class<? extends Serializable> clazz = property.getType();
-                final String valueString = propertyMap.get(name);
-                propertyMap.remove(name);
-                final Serializable value;
-                try {
-                    if (clazz.equals(String.class)) {
-                        value = valueString;
-                    } else if (clazz.equals(Integer.class)) {
-                        value = Integer.parseInt(valueString);
-                    } else if (clazz.equals(Boolean.class)) {
-                        // We cannot use Boolean.valueOf(String) if we want to detect bad input
-                        if (Boolean.TRUE.toString().equalsIgnoreCase(valueString)) {
-                            value = Boolean.TRUE;
-                        } else if (Boolean.FALSE.toString().equalsIgnoreCase(valueString)) {
-                            value = Boolean.FALSE;
-                        } else {
-                            value = null;
-                        }
-                    } else {
-                        value = null;
-                    }
-                    if (value==null) {
-                        getLogger().info(" Failed to set " + name + " since " + valueString + " is not of type " + clazz.getSimpleName());
-                    } else if (property.isMultiValued() && !Arrays.asList(property.getPossibleValues()).contains(value)) {
-                        getLogger().info(" Ignoring " + name + " since " + String.valueOf(value) + " is not one of " + Arrays.asList(property.getPossibleValues()).toString());
-                    } else {
-                        getLogger().info(" Setting " + name + " to " + String.valueOf(value) + "");
-                        internalKeyBinding.setProperty(name, value);
-                        modified = true;
-                    }
-                } catch (Exception e) {
-                    getLogger().info(" Failed to set " + name + " since " + valueString + " is not of type " + clazz.getSimpleName());
-                }
-            }
+        Map<String, Serializable> validatedProperties = validateProperties(internalKeyBinding.getImplementationAlias(), propertyMap);
+        if(validatedProperties == null) {
+            return;
         }
-        if (!propertyMap.keySet().isEmpty()) {
-            getLogger().info(" InternalKeyBinding of type " + internalKeyBinding.getImplementationAlias() + " does not support any of the following properties: "
-                    + propertyMap.keySet().toString());
+        for(Entry<String, Serializable> entry : validatedProperties.entrySet()) {
+            InternalKeyBindingProperty<? extends Serializable> oldProperty = internalKeyBinding.getProperty(entry.getKey());
+            if (!oldProperty.getValue().equals(entry.getValue())) {
+                internalKeyBinding.setProperty(entry.getKey(), entry.getValue());
+                getLogger().info(" Setting " + entry.getKey() + " to " + String.valueOf(entry.getValue()) + "");
+                modified = true;
+            }
             
         }
         // Persist modifications

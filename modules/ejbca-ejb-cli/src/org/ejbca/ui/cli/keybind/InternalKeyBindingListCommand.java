@@ -13,6 +13,7 @@
 package org.ejbca.ui.cli.keybind;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -88,7 +89,7 @@ public class InternalKeyBindingListCommand extends BaseInternalKeyBindingCommand
             sb.append(", ").append(internalKeyBinding.getKeyPairAlias());
             sb.append(", ").append(internalKeyBinding.getNextKeyPairAlias());
             sb.append(", properties={");
-            final List<InternalKeyBindingProperty<? extends Serializable>> properties = internalKeyBinding.getCopyOfProperties();
+            final Collection<InternalKeyBindingProperty<? extends Serializable>> properties = internalKeyBinding.getCopyOfProperties().values();
             for (final InternalKeyBindingProperty<? extends Serializable> property : properties) {
                 sb.append("\n\t").append(property.getName()).append('=').append(property.getValue());
                 sb.append(" [").append(property.getType().getSimpleName()).append(", ").append(property.getDefaultValue()).append("],");

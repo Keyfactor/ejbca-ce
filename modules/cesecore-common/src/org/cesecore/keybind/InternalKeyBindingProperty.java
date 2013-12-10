@@ -29,7 +29,6 @@ import org.cesecore.util.Base64;
 public class InternalKeyBindingProperty<T extends Serializable> implements Serializable, Cloneable {
 
     private static final long serialVersionUID = 1L;
-    //private static final Logger log = Logger.getLogger(InternalKeyBindingProperty.class);
 
     private String name;
     private T defaultValue;
@@ -37,10 +36,11 @@ public class InternalKeyBindingProperty<T extends Serializable> implements Seria
     private T[] possibleValues;
 
     /** Constructor required by Serializable */
-    public InternalKeyBindingProperty() { }
-    
+    public InternalKeyBindingProperty() {
+    }
+
     /** Constructor. Note the T must implement toString() . */
-    public InternalKeyBindingProperty(final String name, final T defaultValue, final T...possibleValues) {
+    public InternalKeyBindingProperty(final String name, final T defaultValue, final T... possibleValues) {
         this.name = name;
         this.defaultValue = defaultValue;
         this.value = defaultValue;
@@ -51,21 +51,62 @@ public class InternalKeyBindingProperty<T extends Serializable> implements Seria
         }
     }
 
+    /**
+     * Returns a value of type T from a string. Limited to the basic java types {@link Integer}, {@link String}, {@link Boolean}, {@link Float},
+     * {@link Long}
+     * 
+     * @param value the value to translate
+     * @return and Object instantiated as T, or null if value was not of a usable class or was invalid for T
+     */
+    public Serializable valueOf(String value) {
+        if (defaultValue instanceof String) {
+            return value;
+        } else if (defaultValue instanceof Integer) {
+            try {
+                return Integer.valueOf(value);
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        } else if (defaultValue instanceof Long) {
+            try {
+                return Long.valueOf(value);
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        } else if (defaultValue instanceof Boolean) {
+            if (value.equals(Boolean.TRUE.toString()) || value.equals(Boolean.FALSE.toString())) {
+                return Boolean.valueOf(value);
+            }
+        } else if (defaultValue instanceof Float) {
+            try {
+                return Float.valueOf(value);
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+        return null;
+    }
+
     public String getName() {
         return name;
     }
+
     public Class<? extends Serializable> getType() {
         return defaultValue.getClass();
     }
+
     public T getDefaultValue() {
         return defaultValue;
     }
+
     public T getValue() {
         return value;
     }
+
     public T[] getPossibleValues() {
         return possibleValues;
     }
+
     public boolean isMultiValued() {
         return possibleValues != null;
     }
@@ -94,14 +135,14 @@ public class InternalKeyBindingProperty<T extends Serializable> implements Seria
 
     @SuppressWarnings("unchecked")
     public String getAsEncodedValue(Serializable possibleValue) {
-        return new String(Base64.encode(getAsByteArray((T)possibleValue), false));
+        return new String(Base64.encode(getAsByteArray((T) possibleValue), false));
     }
 
     @SuppressWarnings("unchecked")
     public void setEncodedValue(String encodedValue) {
         setValue((T) getAsObject(Base64.decode(encodedValue.getBytes())));
     }
-    
+
     @SuppressWarnings("unchecked")
     public void setValueGeneric(Serializable object) {
         if (object == null) {
@@ -117,7 +158,7 @@ public class InternalKeyBindingProperty<T extends Serializable> implements Seria
     public InternalKeyBindingProperty<T> clone() {
         return (InternalKeyBindingProperty<T>) getAsObject(getAsByteArray(this));
     }
-    
+
     private byte[] getAsByteArray(Serializable o) {
         try {
             final ByteArrayOutputStream baos = new ByteArrayOutputStream();

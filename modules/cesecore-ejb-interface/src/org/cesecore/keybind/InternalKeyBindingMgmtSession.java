@@ -36,7 +36,7 @@ public interface InternalKeyBindingMgmtSession {
      * 
      * @return a map where each entry is a registered implementation type and the value is a list of implementation specific properties for the type
      */
-    Map<String, List<InternalKeyBindingProperty<? extends Serializable>>> getAvailableTypesAndProperties();
+    Map<String, Map<String, InternalKeyBindingProperty<? extends Serializable>>> getAvailableTypesAndProperties();
 
     /**
      * Get a list of all InternalKeyBindings the caller is authorized to view of the requested type.
@@ -85,7 +85,7 @@ public interface InternalKeyBindingMgmtSession {
      * @throws InvalidAlgorithmException if the requested signature algorithm is not available
      */
     int createInternalKeyBinding(AuthenticationToken authenticationToken, String type, int id, String name, InternalKeyBindingStatus status, String certificateId,
-            int cryptoTokenId, String keyPairAlias, String signatureAlgorithm, Map<Object, Object> dataMap) throws AuthorizationDeniedException, CryptoTokenOfflineException,
+            int cryptoTokenId, String keyPairAlias, String signatureAlgorithm, Map<String, Serializable> dataMap) throws AuthorizationDeniedException, CryptoTokenOfflineException,
             InternalKeyBindingNameInUseException, InvalidAlgorithmException;
 
     /**
@@ -93,7 +93,7 @@ public interface InternalKeyBindingMgmtSession {
      * @see createInternalKeyBinding
      */
     int createInternalKeyBinding(AuthenticationToken authenticationToken, String type, String name, InternalKeyBindingStatus status, String certificateId,
-            int cryptoTokenId, String keyPairAlias, String signatureAlgorithm, Map<Object, Object> dataMap) throws AuthorizationDeniedException, CryptoTokenOfflineException,
+            int cryptoTokenId, String keyPairAlias, String signatureAlgorithm, Map<String, Serializable> dataMap) throws AuthorizationDeniedException, CryptoTokenOfflineException,
             InternalKeyBindingNameInUseException, InvalidAlgorithmException;
 
     /**

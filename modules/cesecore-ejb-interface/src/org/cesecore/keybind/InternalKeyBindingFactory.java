@@ -31,12 +31,11 @@ import org.cesecore.keybind.impl.OcspKeyBinding;
  */
 public enum InternalKeyBindingFactory {
     INSTANCE;
-    
+
     private final Logger log = Logger.getLogger(InternalKeyBindingFactory.class);
-    private final Map<String,String> aliasToImplementationMap = new HashMap<String,String>();
-    private final Map<String,String> implementationToAliasMap = new HashMap<String,String>();
-    private final Map<String, List<InternalKeyBindingProperty<? extends Serializable>>> implementationPropertiesMap =
-            new HashMap<String,List<InternalKeyBindingProperty<? extends Serializable>>>();
+    private final Map<String, String> aliasToImplementationMap = new HashMap<String, String>();
+    private final Map<String, String> implementationToAliasMap = new HashMap<String, String>();
+    private final Map<String, Map<String, InternalKeyBindingProperty<? extends Serializable>>> implementationPropertiesMap = new HashMap<String, Map<String, InternalKeyBindingProperty<? extends Serializable>>>();
 
     private InternalKeyBindingFactory() {
         addImplementation(OcspKeyBinding.class);
@@ -44,6 +43,10 @@ public enum InternalKeyBindingFactory {
         // Use ServiceLoader framework to find additional available implementations
         // We add these after the built in ones, so the built in implementations can be overridden
         // TODO the above when we need to
+    }
+
+    public boolean existsTypeAlias(String alias) {
+        return aliasToImplementationMap.containsKey(alias);
     }
 
     /**
@@ -59,8 +62,8 @@ public enum InternalKeyBindingFactory {
      * @param dataMap is a Map of implementation specific properties for this type of IntenalKeyBinding
      * @return a new InternalKeyBinding instance
      */
-    public InternalKeyBinding create(final String type, final int id, final String name, final InternalKeyBindingStatus status, final String certificateId,
-            final int cryptoTokenId, final String keyPairAlias, final LinkedHashMap<Object, Object> dataMap) {
+    public InternalKeyBinding create(final String type, final int id, final String name, final InternalKeyBindingStatus status,
+            final String certificateId, final int cryptoTokenId, final String keyPairAlias, final LinkedHashMap<Object, Object> dataMap) {
         final String implementationClassName = aliasToImplementationMap.get(type);
         InternalKeyBinding internalKeyBinding = null;
         if (implementationClassName == null) {
@@ -84,18 +87,18 @@ public enum InternalKeyBindingFactory {
     public String getTypeFromImplementation(final InternalKeyBinding internalKeyBinding) {
         return String.valueOf(implementationToAliasMap.get(internalKeyBinding.getClass().getName()));
     }
-    
+
     private void addImplementation(final Class<? extends InternalKeyBinding> c) {
         String alias = null;
         List<String> implementationPropertyKeys = null;
-        List<InternalKeyBindingProperty<? extends Serializable>> implementationProperties= null;
+        Map<String, InternalKeyBindingProperty<? extends Serializable>> implementationProperties = null;
         try {
             final InternalKeyBinding temporaryInstance = c.newInstance();
             alias = temporaryInstance.getImplementationAlias();
             implementationProperties = temporaryInstance.getCopyOfProperties();
             implementationPropertyKeys = new ArrayList<String>();
-            for (InternalKeyBindingProperty<? extends Serializable> property : implementationProperties) {
-                implementationPropertyKeys.add(property.getName());    
+            for (String name : implementationProperties.keySet()) {
+                implementationPropertyKeys.add(name);
             }
         } catch (InstantiationException e) {
             log.error("Unable to create InternalKeyBinding. Could not be instantiate implementation '" + c.getName() + "'.", e);
@@ -105,11 +108,41 @@ public enum InternalKeyBindingFactory {
         if (alias != null) {
             aliasToImplementationMap.put(alias, c.getName());
             implementationToAliasMap.put(c.getName(), alias);
-            implementationPropertiesMap.put(alias, Collections.unmodifiableList(implementationProperties));
+            implementationPropertiesMap.put(alias, Collections.unmodifiableMap((implementationProperties)));
         }
     }
 
-    public Map<String, List<InternalKeyBindingProperty<? extends Serializable>>> getAvailableTypesAndProperties() {
+    public Map<String, Map<String, InternalKeyBindingProperty<? extends Serializable>>> getAvailableTypesAndProperties() {
         return Collections.unmodifiableMap(implementationPropertiesMap);
+    }
+
+    /**
+     * Method to be used from an external environment (such as the CLI) where contextual information about a key binding 
+     * implementation is not available. Will presume that all key binding properties were entered as strings, will return a
+     * data wrapper that contains a map of properly casted values, and information about any values which were either unknown
+     * or of an incorrect format.  
+     * 
+     * @param alias the alias of the key binding type to check for
+     * @param propertiesMap the inputed properties, as strings
+     * @return a wrapper class that contains the correctly casted values, and information about any values that were invalid.
+     */
+    public InternalKeyBindingPropertyValidationWrapper validateProperties(String alias, Map<String, String> propertiesMap) {
+        InternalKeyBindingPropertyValidationWrapper result = new InternalKeyBindingPropertyValidationWrapper();
+        Map<String, InternalKeyBindingProperty<? extends Serializable>> implementationProperties =  implementationPropertiesMap.get(alias);
+        for (String key : propertiesMap.keySet()) {
+            if(!implementationProperties.containsKey(key)) {
+                result.addUnknownProperty(key);
+                continue;
+            }
+            InternalKeyBindingProperty<? extends Serializable> property = implementationProperties.get(key);
+            String value = propertiesMap.get(key);
+            Serializable recastValue = property.valueOf(value);
+            if(recastValue == null) {
+                result.addInvalidValue(key, property.getType());
+                continue;
+            }
+            result.addProperty(key, recastValue);
+        }
+        return result;
     }
 }

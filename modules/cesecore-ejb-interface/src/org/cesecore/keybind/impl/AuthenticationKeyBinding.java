@@ -12,11 +12,9 @@
  *************************************************************************/
 package org.cesecore.keybind.impl;
 
-import java.io.Serializable;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.apache.log4j.Logger;
@@ -24,7 +22,6 @@ import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.cesecore.config.ExtendedKeyUsageConfiguration;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBindingBase;
-import org.cesecore.keybind.InternalKeyBindingProperty;
 import org.cesecore.util.CertTools;
 
 /**
@@ -39,11 +36,6 @@ public class AuthenticationKeyBinding extends InternalKeyBindingBase {
 
     public static final String IMPLEMENTATION_ALIAS = "AuthenticationKeyBinding"; // This should not change, even if we rename the class in EJBCA 5.3+..
 
-    @SuppressWarnings("serial")
-    public AuthenticationKeyBinding() {
-        super(new ArrayList<InternalKeyBindingProperty<? extends Serializable>>() {{
-        }});
-    }
 
     @Override
     public String getImplementationAlias() {
