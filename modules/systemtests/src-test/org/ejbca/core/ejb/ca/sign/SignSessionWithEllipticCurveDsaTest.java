@@ -22,7 +22,6 @@ import java.security.KeyPair;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.security.interfaces.ECPublicKey;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
@@ -40,9 +39,6 @@ import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
-import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.certificates.endentity.EndEntityType;
-import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -51,7 +47,6 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.cvc.CardVerifiableCertificate;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -324,66 +319,6 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
             endEntityManagementSession.deleteUser(internalAdmin, ecDsaImplicitCaUserName);
         }
         log.trace("<test17TestBCPKCS10ECDSAWithECDSAImplicitlyCACA()");
-    }
-
-    @Test
-    public void testCVCertificateEccKeys() throws Exception {
-        createDefaultCvcEccCaDomestic();
-        final String eccUsername = "cvcec";
-
-        CAInfo infocvccaec = caSession.getCAInfo(internalAdmin, "TESTDVECC-D");
-        int cvccaecid = infocvccaec.getCAId();
-        // Same thing but with ECC keys
-        EndEntityInformation userec = new EndEntityInformation(eccUsername, "C=SE,CN=TCVCEC", cvccaecid, null, null, new EndEntityType(EndEntityTypes.ENDUSER),
-                SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
-        userec.setPassword("cvc");
-        try {
-            endEntityManagementSession.addUser(internalAdmin, userec, false);
-            endEntityManagementSession.setUserStatus(internalAdmin, eccUsername, EndEntityConstants.STATUS_NEW);
-            endEntityManagementSession.setPassword(internalAdmin, eccUsername, "foo123");
-            log.debug("Reset status of 'cvcec' to NEW");
-            // user that we know exists...
-            KeyPair ecdsasecpkeys = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_ECDSA);
-            Certificate certec = (Certificate) signSession.createCertificate(internalAdmin, eccUsername, "foo123", ecdsasecpkeys.getPublic());
-            assertNotNull("Failed to create cert", certec);
-            log.debug("Cert=" + certec.toString());
-            // Normal DN order
-            assertEquals(CertTools.getSubjectDN(certec), "CN=TCVCEC,C=SE");
-            assertEquals("CVC", certec.getType());
-            Certificate cvcdveccert = (Certificate) infocvccaec.getCertificateChain().toArray()[0];
-            Certificate cvcaeccert = (Certificate) infocvccaec.getCertificateChain().toArray()[1];
-            assertEquals(CertTools.getIssuerDN(certec), CertTools.getSubjectDN(cvcdveccert));
-            try {
-                // Here we need the CVCA certificate as well to enrich the DV public
-                // key with
-                PublicKey pkec = cvcdveccert.getPublicKey();
-                pkec = KeyTools.getECPublicKeyWithParams(pkec, cvcaeccert.getPublicKey());
-                certec.verify(pkec);
-            } catch (Exception e) {
-                assertTrue("Verify failed: " + e.getMessage(), false);
-            }
-            CardVerifiableCertificate cvcert = (CardVerifiableCertificate) certec;
-            String role = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole().name();
-            assertEquals("IS", role);
-            PublicKey pk = cvcert.getPublicKey();
-            // Special EC check here for the DV (EAC sPassport Document Verifier)
-            if (pk instanceof ECPublicKey) {
-                ECPublicKey epk = (ECPublicKey) pk;
-                assertEquals(epk.getAlgorithm(), "ECDSA");
-                int len = KeyTools.getKeyLength(epk);
-                assertEquals(0, len); // the DVCA does not include all EC parameters
-                // in the public key, so we don't know the key
-                // length
-            } else {
-                assertTrue("Public key is not ECC", false);
-            }
-        } finally {
-            removeTestCA(TEST_CVC_ECC_DOCUMENT_VERIFIER_NAME);
-            removeTestCA(TEST_CVC_ECC_CA_NAME);
-            endEntityManagementSession.deleteUser(internalAdmin, eccUsername);
-        }
-
-        log.trace("<test21CVCertificate()");
     }
 
     @Override

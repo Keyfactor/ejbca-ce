@@ -25,7 +25,6 @@ import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.DSAPublicKey;
-import java.security.interfaces.RSAPublicKey;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
@@ -88,7 +87,6 @@ import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.util.cert.SeisCardNumberExtension;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -1211,54 +1209,6 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
     }
 
 
-   @Test
-    public void testCVCertificateRsaKeys() throws Exception {
-        createDefaultCvcRsaCA();
-        final String cvcEndEntityName = "cvc";
-        try {
-            log.trace(">test21CVCertificate()");
-            KeyPair rsakeys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-            CAInfo infocvcca = caSession.getCAInfo(internalAdmin, TEST_CVC_RSA_CA_NAME); //"TESTDV-D"
-            int cvccaid = infocvcca.getCAId();
-            EndEntityInformation user = new EndEntityInformation(cvcEndEntityName, "C=SE,CN=TESTCVC", cvccaid, null, null, new EndEntityType(EndEntityTypes.ENDUSER),
-                    SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
-            user.setPassword("cvc");
-            endEntityManagementSession.addUser(internalAdmin, user, false);
-            endEntityManagementSession.setUserStatus(internalAdmin, cvcEndEntityName, EndEntityConstants.STATUS_NEW);
-            endEntityManagementSession.setPassword(internalAdmin, cvcEndEntityName, "foo123");
-            log.debug("Reset status of 'cvc' to NEW");
-            // user that we know exists...
-            Certificate cert = (Certificate) signSession.createCertificate(internalAdmin, "cvc", "foo123", rsakeys.getPublic());
-            assertNotNull("Failed to create cert", cert);
-            log.debug("Cert=" + cert.toString());
-            // Normal DN order
-            assertEquals(CertTools.getSubjectDN(cert), "CN=TESTCVC,C=SE");
-            assertEquals("CVC", cert.getType());
-            Certificate cvccacert = (Certificate) infocvcca.getCertificateChain().toArray()[0];
-            assertEquals(CertTools.getIssuerDN(cert), CertTools.getSubjectDN(cvccacert));
-            try {
-                cert.verify(cvccacert.getPublicKey());
-            } catch (Exception e) {
-                assertTrue("Verify failed: " + e.getMessage(), false);
-            }
-            CardVerifiableCertificate cvcert = (CardVerifiableCertificate) cert;
-            String role = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole().name();
-            assertEquals("IS", role);
-            PublicKey pk = cvcert.getPublicKey();
-            if (pk instanceof RSAPublicKey) {
-                RSAPublicKey epk = (RSAPublicKey) pk;
-                assertEquals(epk.getAlgorithm(), "RSA");
-                int len = KeyTools.getKeyLength(epk);
-                assertEquals(1024, len);
-            } else {
-                assertTrue("Public key is not RSA", false);
-            }
-        } finally {
-            removeTestCA(TEST_CVC_RSA_CA_NAME);
-            endEntityManagementSession.deleteUser(internalAdmin, cvcEndEntityName);
-        }
-    }
-    
     @Test
     public void testsignSessionDSAWithRSACA() throws Exception {
         log.trace(">test23SignSessionDSAWithRSACA()");
