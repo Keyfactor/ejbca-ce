@@ -113,18 +113,14 @@ public class InternalKeyBindingMgmtTest {
     @Test
     public void assertTestPreRequisites() throws Exception {
         // Request all available implementations from server and verify that the implementation we intend to use exists
-        final Map<String, List<InternalKeyBindingProperty<? extends Serializable>>> availableTypesAndProperties = internalKeyBindingMgmtSession.getAvailableTypesAndProperties();
-        final List<InternalKeyBindingProperty<? extends Serializable>> availableProperties = availableTypesAndProperties.get(KEYBINDING_TYPE_ALIAS);
+        final Map<String, Map<String, InternalKeyBindingProperty<? extends Serializable>>> availableTypesAndProperties = internalKeyBindingMgmtSession
+                .getAvailableTypesAndProperties();
+        final Map<String, InternalKeyBindingProperty<? extends Serializable>> availableProperties = availableTypesAndProperties
+                .get(KEYBINDING_TYPE_ALIAS);
         assertNotNull("Expected " + KEYBINDING_TYPE_ALIAS + " to exist on the server for this test.", availableProperties);
         // Verify that a property we intend to modify exists for our key binding implementation
-        boolean exists = false;
-        for (final InternalKeyBindingProperty<? extends Serializable> property : availableProperties) {
-            if (property.getName().equals(PROPERTY_ALIAS)) {
-                exists = true;
-                break;
-            }
-        }
-        assertTrue("Expected property " + PROPERTY_ALIAS + " in " + KEYBINDING_TYPE_ALIAS + " to exist on the server for this test.", exists);
+        assertTrue("Expected property " + PROPERTY_ALIAS + " in " + KEYBINDING_TYPE_ALIAS + " to exist on the server for this test.",
+                availableProperties.containsKey(PROPERTY_ALIAS));
     }
     
     @Test
@@ -139,7 +135,7 @@ public class InternalKeyBindingMgmtTest {
             // First create a new CryptoToken
             cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, KEY_PAIR_ALIAS, "RSA2048");
             // Create a new InternalKeyBinding with a implementation specific property and bind it to the previously generated key
-            final Map<Object,Object> dataMap = new LinkedHashMap<Object,Object>();
+            final Map<String, Serializable> dataMap = new LinkedHashMap<String, Serializable>();
             dataMap.put(PROPERTY_ALIAS, Boolean.FALSE);
             internalKeyBindingId = internalKeyBindingMgmtSession.createInternalKeyBinding(alwaysAllowToken, KEYBINDING_TYPE_ALIAS,
                     KEY_BINDING_NAME, InternalKeyBindingStatus.ACTIVE, null, cryptoTokenId, KEY_PAIR_ALIAS, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, dataMap);
@@ -176,7 +172,7 @@ public class InternalKeyBindingMgmtTest {
             // First create a new CryptoToken
             cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, KEY_PAIR_ALIAS, "RSA2048");
             // Create a new InternalKeyBinding with a implementation specific property and bind it to the previously generated key
-            final Map<Object,Object> dataMap = new LinkedHashMap<Object,Object>();
+            final Map<String, Serializable> dataMap = new LinkedHashMap<String, Serializable>();
             dataMap.put(PROPERTY_ALIAS, Boolean.FALSE);
             internalKeyBindingId = internalKeyBindingMgmtSession.createInternalKeyBinding(alwaysAllowToken, KEYBINDING_TYPE_ALIAS,
                     KEY_BINDING_NAME, InternalKeyBindingStatus.ACTIVE, null, cryptoTokenId, KEY_PAIR_ALIAS, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, dataMap);

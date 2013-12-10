@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
@@ -1678,9 +1679,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     }
     
     /** @return OcspKeyBinding properties set to the current file-based configuration (per cert profile config is ignored here) */
-    private Map<Object, Object> getOcspKeyBindingDefaultProperties() {
+    private Map<String, Serializable> getOcspKeyBindingDefaultProperties() {
         // Use global config as defaults for each new OcspKeyBinding
-        final Map<Object, Object> dataMap = new HashMap<Object,Object>();
+        final Map<String, Serializable> dataMap = new HashMap<String, Serializable>();
         dataMap.put(OcspKeyBinding.PROPERTY_INCLUDE_CERT_CHAIN, Boolean.valueOf(OcspConfiguration.getIncludeCertChain()));
         if (OcspConfiguration.getResponderIdType()==OcspConfiguration.RESPONDERIDTYPE_NAME) {
             dataMap.put(OcspKeyBinding.PROPERTY_RESPONDER_ID_TYPE, ResponderIdType.NAME.name());

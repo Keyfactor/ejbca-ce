@@ -13,7 +13,6 @@
 package org.ejbca.ui.cli.keybind;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -21,8 +20,10 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.keybind.InternalKeyBindingFactory;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingProperty;
+import org.cesecore.keybind.InternalKeyBindingPropertyValidationWrapper;
 import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.ejbca.ui.cli.BaseCommand;
 import org.ejbca.ui.cli.CliUsernameException;
@@ -85,12 +86,12 @@ public abstract class BaseInternalKeyBindingCommand extends BaseCommand {
     /** Lists available types and their properties */
     protected void showTypesProperties() {
         final InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = ejb.getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
-        Map<String, List<InternalKeyBindingProperty<? extends Serializable>>> typesAndProperties = internalKeyBindingMgmtSession.getAvailableTypesAndProperties();
+        Map<String, Map<String, InternalKeyBindingProperty<? extends Serializable>>> typesAndProperties = internalKeyBindingMgmtSession.getAvailableTypesAndProperties();
         getLogger().info("Registered implementation types and implemention specific properties:");
-        for (Entry<String, List<InternalKeyBindingProperty<? extends Serializable>>> entry : typesAndProperties.entrySet()) {
+        for (Entry<String, Map<String, InternalKeyBindingProperty<? extends Serializable>>> entry : typesAndProperties.entrySet()) {
             final StringBuilder sb = new StringBuilder();
             sb.append("  ").append(entry.getKey()).append(" {");
-            for (InternalKeyBindingProperty<? extends Serializable> property : entry.getValue()) {
+            for (InternalKeyBindingProperty<? extends Serializable> property : entry.getValue().values()) {
                 sb.append(property.getName()).append(",");
             }
             if (sb.charAt(sb.length()-1) == ',') {
@@ -128,5 +129,33 @@ public abstract class BaseInternalKeyBindingCommand extends BaseCommand {
     /** @return the EJB CLI admin */
     protected AuthenticationToken getAdmin() {
         return getAuthenticationToken(cliUserName, cliPassword);
+    }
+    
+    protected Map<String, Serializable> validateProperties(String  type, Map<String, String> dataMap) {
+        InternalKeyBindingPropertyValidationWrapper validatedProperties = InternalKeyBindingFactory.INSTANCE.validateProperties(type, dataMap);
+        if (!validatedProperties.arePropertiesValid()) {
+            StringBuffer stringBuffer = new StringBuffer();
+            stringBuffer.append("\n");
+            stringBuffer.append("ERROR: Could not parse properties\n");
+            stringBuffer.append("\n");
+            if (validatedProperties.getUnknownProperties().size() > 0) {
+                stringBuffer.append("The following properties were unknown for the type: " + type + "\n");
+                for (String propertyName : validatedProperties.getUnknownProperties()) {
+                    stringBuffer.append("    * '" + propertyName + "'\n");
+                }
+                stringBuffer.append("\n");
+            }
+            if (validatedProperties.getInvalidValues().size() > 0) {
+                stringBuffer.append("The following values were invalid:\n");
+                for (Entry<String, Class<?>> entry : validatedProperties.getInvalidValues().entrySet()) {
+                    stringBuffer.append("Value '" + dataMap.get(entry.getKey()) + "' for property '" + entry.getKey() + "' was not of type "
+                            + entry.getValue().getSimpleName()+ "\n");
+                }
+                stringBuffer.append("\n");
+            }
+            getLogger().error(stringBuffer);
+            return null;         
+        }
+        return validatedProperties.getPropertiesCopy();
     }
 }
