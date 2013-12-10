@@ -87,6 +87,18 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 #ocsp.nonexistingisrevoked.uri.1=.*/thisEndingIsRevoked$
 #ocsp.nonexistingisrevoked.uri.2=^http://revoked.myhost.nu:8080/.*
 
+# An OCSP responder MAY choose to retain revocation information beyond a certificate's expiration.  The date obtained by subtracting this
+# retention interval value from the producedAt time in a response is defined as the certificate's "archive cutoff" date.
+# To illustrate, if a server is operated with a 7-year retention interval policy and status was produced at time t1, then the value
+# for ArchiveCutoff in the response would be (t1 - 7 years).
+#
+# OCSP-enabled applications would use an OCSP archive cutoff date to contribute to a proof that a digital signature was (or was not)
+# reliable on the date it was produced even if the certificate needed to validate the signature has long since expired
+# The value of this configuration should be set to the number of seconds of this retention interval
+#
+# Default: 31536000 (1 year)
+#ocsp.expiredcert.retentionperiod = 31536000
+
 # For HTTP get requests according to RFC5019 we can set HTTP headers in the response to allow caching proxies to cache responses.
 # untilNextUpdate is the number of seconds a response will be valid. 0 = disable.
 # Default: 0

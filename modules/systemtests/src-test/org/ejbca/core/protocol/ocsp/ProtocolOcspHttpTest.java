@@ -59,6 +59,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.BERTags;
 import org.bouncycastle.asn1.DERNull;
@@ -77,6 +78,7 @@ import org.bouncycastle.cert.ocsp.OCSPReqBuilder;
 import org.bouncycastle.cert.ocsp.OCSPResp;
 import org.bouncycastle.cert.ocsp.OCSPRespBuilder;
 import org.bouncycastle.cert.ocsp.RevokedStatus;
+import org.bouncycastle.cert.ocsp.SingleResp;
 import org.bouncycastle.cert.ocsp.UnknownStatus;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
@@ -101,7 +103,10 @@ import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -123,6 +128,7 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -131,6 +137,8 @@ import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.certificatestore.CertificateCacheTstFactory;
 import org.ejbca.core.protocol.certificatestore.HashID;
@@ -972,6 +980,121 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         assertNotNull("No extension sent with reply", responseExtension);
         assertEquals(DERNull.INSTANCE, responseExtension.getParsedValue());
     }
+    
+    
+    /**
+     * This test tests that the OCSP response contains the extension "id_pkix_ocsp_archive_cutoff" if "ocsp.expiredcert.retentionperiod" 
+     * is set in the condfiguration file
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testExpiredCertArchiveCutoffExtension() throws Exception {
+        
+        final String username = "expiredCertUsername";
+        String cpname = "ValidityCertProfile";
+        String eepname = "ValidityEEProfile";
+        X509Certificate xcert = null;
+        
+        CertificateProfileSessionRemote certProfSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+        EndEntityProfileSessionRemote eeProfSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
+        
+        try {
+            if (certProfSession.getCertificateProfile(cpname) == null) {
+                final CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+                cp.setAllowValidityOverride(true);
+                try {
+                    certProfSession.addCertificateProfile(admin, cpname, cp);
+                } catch (CertificateProfileExistsException e) {
+                    log.error("Certificate profile exists: ", e);
+                }
+            }
+            final int cpId = certProfSession.getCertificateProfileId(cpname);
+            if (eeProfSession.getEndEntityProfile(eepname) == null) {
+                final EndEntityProfile eep = new EndEntityProfile(true);
+                eep.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, "" + cpId);
+                try {
+                    eeProfSession.addEndEntityProfile(admin, eepname, eep);
+                } catch (EndEntityProfileExistsException e) {
+                    log.error("Could not create end entity profile.", e);
+                }
+            }
+            final int eepId = eeProfSession.getEndEntityProfileId(eepname);
+        
+            if (!endEntityManagementSession.existsUser(username)) {
+                endEntityManagementSession.addUser(admin, username, "foo123", "CN=expiredCertUsername", null, "ocsptest@anatom.se", false,
+                        eepId, cpId, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0, caid);
+                log.debug("created user: expiredCertUsername, foo123, CN=expiredCertUsername");
+            } else {
+                log.debug("User expiredCertUsername already exists.");
+                EndEntityInformation userData = new EndEntityInformation(username, "CN=expiredCertUsername",
+                        caid, null, "ocsptest@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
+                        eepId, cpId, null, null, SecConst.TOKEN_SOFT_PEM, 0, null);
+                userData.setPassword("foo123");
+                endEntityManagementSession.changeUser(admin, userData, false);
+                log.debug("Reset status to NEW");
+            }
+            
+            // Generate certificate for the new user
+            KeyPair keys = KeyTools.genKeys("512", "RSA");
+            long now = (new Date()).getTime();
+            long notAfter = now + 1000;
+            xcert = (X509Certificate) signSession.createCertificate(admin, username, "foo123", 
+                            keys.getPublic(), -1, new Date(), new Date(notAfter));
+            assertNotNull("Failed to create new certificate", xcert);
+        
+            
+            // -------- Send a request where id_pkix_ocsp_archive_cutoff SHOULD NOT be used
+            // set ocsp configuration
+            Map<String,String> map = new HashMap<String, String>();
+            map.put(OcspConfiguration.EXPIREDCERT_RETENTIONPERIOD, "-1");
+            this.helper.alterConfig(map);
+        
+            Thread.sleep(2000L);
+        
+            OCSPReqBuilder gen = new OCSPReqBuilder();
+            gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, xcert.getSerialNumber() ));
+            OCSPReq req = gen.build();
+            BasicOCSPResp response = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
+            if (response == null) {
+                throw new Exception("Could not retrieve response, test could not continue.");
+            }
+            SingleResp resp = response.getResponses()[0];
+            Extension singleExtension = resp.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff);
+            assertNull("The wrong extension was sent with reply", singleExtension);
+        
+            
+            // ------------ Send a request where id_pkix_ocsp_archive_cutoff SHOULD be used
+            // set ocsp configuration
+            map = new HashMap<String, String>();
+            map.put(OcspConfiguration.EXPIREDCERT_RETENTIONPERIOD, "31536000");
+            this.helper.alterConfig(map);
+        
+            gen = new OCSPReqBuilder();
+            gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, xcert.getSerialNumber() ));
+            req = gen.build();
+            response = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
+            if (response == null) {
+                throw new Exception("Could not retrieve response, test could not continue.");
+            }
+            resp = response.getResponses()[0];
+            singleExtension = resp.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff);
+            assertNotNull("No extension sent with reply", singleExtension);
+        
+            ASN1GeneralizedTime extvalue = ASN1GeneralizedTime.getInstance(singleExtension.getParsedValue());
+            long expectedValue = (new Date()).getTime() - (31536000L * 1000);
+            long actualValue = extvalue.getDate().getTime();
+            long diff = expectedValue - actualValue;
+            assertTrue("Wrong archive cutoff value.", diff < 60000);
+        
+        } finally {
+            //certificateStoreSession.removeCertificate(xcert);
+            endEntityManagementSession.revokeAndDeleteUser(admin, username, CRLReason.unspecified);
+            eeProfSession.removeEndEntityProfile(admin, eepname);
+            certProfSession.removeCertificateProfile(admin, cpname);
+        }
+    }
+    
     
     /**
      * removes DSA CA
