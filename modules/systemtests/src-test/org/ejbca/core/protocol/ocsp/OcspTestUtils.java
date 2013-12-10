@@ -14,6 +14,7 @@ package org.ejbca.core.protocol.ocsp;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.Serializable;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.PublicKey;
@@ -111,7 +112,7 @@ public class OcspTestUtils {
         // First create a new CryptoToken
         cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, testName, keyspec);
         // Create a new InternalKeyBinding with a implementation specific property and bind it to the previously generated key
-        final Map<Object, Object> dataMap = new LinkedHashMap<Object, Object>();
+        final Map<String, Serializable> dataMap = new LinkedHashMap<String, Serializable>();
         dataMap.put(PROPERTY_ALIAS, Boolean.FALSE);
         int internalKeyBindingId = internalKeyBindingMgmtSession.createInternalKeyBinding(authenticationToken, type,
                 testName, InternalKeyBindingStatus.ACTIVE, null, cryptoTokenId, testName, sigAlg, dataMap);

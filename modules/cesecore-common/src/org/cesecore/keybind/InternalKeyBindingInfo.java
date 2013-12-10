@@ -16,6 +16,7 @@ import java.io.Serializable;
 import java.security.cert.Certificate;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.naming.OperationNotSupportedException;
 
@@ -36,7 +37,7 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
     final private int cryptoTokenId;
     final private String keyPairAlias;
     final private String nextKeyPairAlias;
-    final private List<InternalKeyBindingProperty<? extends Serializable>> properties;
+    final private Map<String, InternalKeyBindingProperty<? extends Serializable>> properties;
     final private List<InternalKeyBindingTrustEntry> trustedCertificateReferences;
     final private String signatureAlgorithm;
     
@@ -152,12 +153,7 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
 
     @Override
     public InternalKeyBindingProperty<? extends Serializable> getProperty(String name) {
-        for (InternalKeyBindingProperty<? extends Object> current : properties) {
-            if (current.getName().equals(name)) {
-                return current;
-            }
-        }
-        return null;
+        return properties.get(name);
     }
 
     @Override
@@ -166,7 +162,7 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
     }
 
     @Override
-    public List<InternalKeyBindingProperty<? extends Serializable>> getCopyOfProperties() {
+    public Map<String, InternalKeyBindingProperty<? extends Serializable>> getCopyOfProperties() {
         return properties;
     }
 
