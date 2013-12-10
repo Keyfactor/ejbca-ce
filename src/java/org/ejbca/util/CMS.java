@@ -37,6 +37,7 @@ import org.bouncycastle.cms.CMSTypedStream;
 import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.SignerId;
 import org.bouncycastle.cms.SignerInformation;
+import org.bouncycastle.operator.bc.BcDigestCalculatorProvider;
 
 /**
  * CMS utils.
@@ -137,7 +138,7 @@ public class CMS {
     public static VerifyResult verify(final InputStream is, OutputStream os, X509Certificate cert) throws Exception  {
         final InputStream bis = new BufferedInputStream(is, bufferSize);
         final OutputStream bos = new BufferedOutputStream(os, bufferSize);
-        final CMSSignedDataParser sp = new CMSSignedDataParser(bis);
+        final CMSSignedDataParser sp = new CMSSignedDataParser(new BcDigestCalculatorProvider(), bis);
         final CMSTypedStream sc = sp.getSignedContent();
         final InputStream ris = sc.getContentStream();
         fromInToOut(ris, bos);
