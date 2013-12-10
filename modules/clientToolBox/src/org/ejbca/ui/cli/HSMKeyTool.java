@@ -179,6 +179,8 @@ public class HSMKeyTool extends ClientToolBox {
             if(args.length > 6) {
                 storeId = trimStoreId(args[6]);
                 slotType = divineSlotLabelType(args[6]);
+            } else {
+                slotType = Pkcs11SlotLabelType.SUN_FILE;
             }
             final KeyStoreContainer store = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter, "batch-"+new Date().getTime());
             generateBatch(args[5], store);
