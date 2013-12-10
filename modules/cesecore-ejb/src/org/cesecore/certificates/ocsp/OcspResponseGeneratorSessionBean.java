@@ -78,6 +78,7 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.CRLReason;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
@@ -400,8 +401,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         return responseGenerator.build(OCSPRespBuilder.INTERNAL_ERROR, null); // RFC 2560: responseBytes are not set on error.
     }
 
-    private BasicOCSPResp signOcspResponse(OCSPReq req, List<OCSPResponseItem> responseList, Extensions exts, final OcspSigningCacheEntry ocspSigningCacheEntry)
-            throws CryptoTokenOfflineException {
+    private BasicOCSPResp signOcspResponse(OCSPReq req, List<OCSPResponseItem> responseList, Extensions exts, 
+            final OcspSigningCacheEntry ocspSigningCacheEntry, Date producedAt) throws CryptoTokenOfflineException {
         final X509Certificate[] certChain = ocspSigningCacheEntry.getFullCertificateChain().toArray(new X509Certificate[0]);
         final X509Certificate signerCert = certChain[0];
         if(!CertTools.isOCSPCert(signerCert) && ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
@@ -447,8 +448,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             
             // Now we can use the returned OCSPServiceResponse to get private key and certificate chain to sign the ocsp response
             final BasicOCSPResp ocspresp = generateBasicOcspResp(req, exts, responseList, sigAlg, signerCert, ocspSigningCacheEntry.getPrivateKey(),
-                    ocspSigningCacheEntry.getSignatureProviderName(), chain,
-                    respIdType);
+                    ocspSigningCacheEntry.getSignatureProviderName(), chain, respIdType, producedAt);
 
             if (log.isDebugEnabled()) {
                 Collection<X509Certificate> coll = Arrays.asList(chain);
@@ -890,6 +890,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             // Look over the status requests
             List<OCSPResponseItem> responseList = new ArrayList<OCSPResponseItem>();
             boolean addExtendedRevokedExtension = false;
+            Date producedAt = null;
             for (Req ocspRequest : ocspRequests) {
                 CertificateID certId = ocspRequest.getCertID();
                 transactionLogger.paramPut(TransactionLogger.SERIAL_NOHEX, certId.getSerialNumber().toByteArray());
@@ -986,6 +987,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                 + status.certificateProfileId);
                     }
                     final String sStatus;
+                    boolean addArchiveCutoff = false;
                     if (status.equals(CertificateStatus.NOT_AVAILABLE)) {
                         // No revocation info available for this cert, handle it
                         if (log.isDebugEnabled()) {
@@ -1026,11 +1028,17 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     } else {
                         sStatus = "good";
                         certStatus = null;
-                        transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_GOOD); 
+                        transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_GOOD);
+                        addArchiveCutoff = checkAddArchiveCuttoff(caCertificateSubjectDn, certId);
                     }
                     infoMsg = intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", sStatus, certId.getSerialNumber().toString(16), caCertificateSubjectDn);
                     log.info(infoMsg);
-                    responseList.add(new OCSPResponseItem(certId, certStatus, nextUpdate));
+                    OCSPResponseItem respItem = new OCSPResponseItem(certId, certStatus, nextUpdate);
+                    if(addArchiveCutoff) {
+                        addArchiveCutoff(respItem);
+                        producedAt = new Date();
+                    }
+                    responseList.add(respItem);
                     transactionLogger.writeln();
                 } else {
                     certStatus = new RevokedStatus(new RevokedInfo(new ASN1GeneralizedTime(signerIssuerCertStatus.revocationDate),
@@ -1092,7 +1100,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 Extensions exts = new Extensions(responseExtensions.values().toArray(new Extension[0]));
                 //X509Extensions exts = new X509Extensions(responseExtensions);
                 // generate the signed response object
-                BasicOCSPResp basicresp = signOcspResponse(req, responseList, exts, ocspSigningCacheEntry);
+                BasicOCSPResp basicresp = signOcspResponse(req, responseList, exts, ocspSigningCacheEntry, producedAt);
                 ocspResponse = responseGenerator.build(OCSPRespBuilder.SUCCESSFUL, basicresp);
                 auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.SUCCESSFUL);
                 transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespBuilder.SUCCESSFUL);
@@ -1171,6 +1179,37 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         }
         return new OcspResponseInformation(ocspResponse, maxAge);
     }
+    
+    private boolean checkAddArchiveCuttoff(String caCertificateSubjectDn, CertificateID certId) throws CertificateNotYetValidException {
+    
+        if(OcspConfiguration.getExpiredArchiveCutoff() == -1) {
+            return false;
+        }
+        
+        X509Certificate cert = (X509Certificate) certificateStoreSession.findCertificateByIssuerAndSerno(
+                                caCertificateSubjectDn, certId.getSerialNumber());
+        try {
+            cert.checkValidity();
+        } catch(CertificateExpiredException e) {
+            log.info("Certificate with serial number '" + certId.getSerialNumber() + "' is not valid. " +
+                    "Adding singleExtension id-pkix-ocsp-archive-cutoff");
+            return true;
+        }
+        return false;
+    }
+    
+    private void addArchiveCutoff(OCSPResponseItem respItem) throws IOException {
+        long archPeriod = OcspConfiguration.getExpiredArchiveCutoff();
+        if(archPeriod == -1) {
+            return;
+        }
+        
+        long res = (new Date()).getTime() - archPeriod;
+        ExtensionsGenerator gen = new ExtensionsGenerator();
+        gen.addExtension(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff, false, new ASN1GeneralizedTime(new Date(res))); 
+        Extensions exts = gen.generate();
+        respItem.setExtentions(exts);
+    }
 
     /**
      * returns a Map of responseExtensions to be added to the BacisOCSPResponseGenerator with <code>
@@ -1227,14 +1266,14 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     }
     
     private BasicOCSPResp generateBasicOcspResp(OCSPReq ocspRequest, Extensions exts, List<OCSPResponseItem> responses, String sigAlg,
-            X509Certificate signerCert, PrivateKey signerKey, String provider, X509Certificate[] chain, int respIdType) throws NotSupportedException,
-            OCSPException, NoSuchProviderException, CryptoTokenOfflineException {
+                        X509Certificate signerCert, PrivateKey signerKey, String provider, X509Certificate[] chain, int respIdType, 
+                        Date producedAt) throws NotSupportedException, OCSPException, NoSuchProviderException, CryptoTokenOfflineException {
         BasicOCSPResp returnval = null;
         BasicOCSPRespBuilder basicRes = null;
         basicRes = createOcspResponseGenerator(ocspRequest, signerCert, respIdType);
         if (responses != null) {
             for (OCSPResponseItem item : responses) {
-                basicRes.addResponse(item.getCertID(), item.getCertStatus(), item.getThisUpdate(), item.getNextUpdate(), null);
+                basicRes.addResponse(item.getCertID(), item.getCertStatus(), item.getThisUpdate(), item.getNextUpdate(), item.getExtensions());
             }
         }
         if (exts != null) {
@@ -1252,7 +1291,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
          * Note that this does in no way break the spirit of the EJB standard, which is to not interrupt EJB's transaction handling by 
          * competing with its own thread pool, since these operations have no database impact.
          */
-        final Future<BasicOCSPResp> task = service.submit(new HsmResponseThread(basicRes, sigAlg, signerKey, chain, provider));
+        final Future<BasicOCSPResp> task = service.submit(new HsmResponseThread(basicRes, sigAlg, signerKey, chain, provider, producedAt));
         try {
             returnval = task.get(HsmResponseThread.HSM_TIMEOUT_SECONDS, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
