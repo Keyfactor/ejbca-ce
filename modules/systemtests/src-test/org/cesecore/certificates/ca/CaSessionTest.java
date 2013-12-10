@@ -34,9 +34,7 @@ import org.junit.Test;
 public class CaSessionTest extends RoleUsingTestCase {
 
     private static final String X509CADN = "CN=TEST";
-    private static final String CVCCADN = "CN=TEST001,C=SE";
     private static CA testx509ca;
-    private static CA testcvcca;
 
     private static CaSessionTestBase testBase;
 
@@ -46,15 +44,13 @@ public class CaSessionTest extends RoleUsingTestCase {
         // Initialize role system
         setUpAuthTokenAndRole("CaSessionTestRoleInitialization");
         testx509ca = CaTestUtils.createTestX509CA(X509CADN, null, false);
-        testcvcca = CaTestUtils.createTestCVCCA(CVCCADN, null, false);
-        testBase = new CaSessionTestBase(testx509ca, testcvcca);            
+        testBase = new CaSessionTestBase(testx509ca, null);            
     }
     
     @AfterClass
     public static void tearDownFinal() throws RoleNotFoundException, AuthorizationDeniedException {
         try {
             CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
-            CryptoTokenManagementSessionTest.removeCryptoToken(null, testcvcca.getCAToken().getCryptoTokenId());
         } finally {
             // Be sure to to this, even if the above fails
             tearDownRemoveRole();
@@ -79,11 +75,6 @@ public class CaSessionTest extends RoleUsingTestCase {
     @Test
     public void testAddAndGetCAWithDifferentCaid() throws Exception {
         testBase.addAndGetCAWithDifferentCaid();
-    }
-
-    @Test
-    public void testAddRenameAndRemoveCVCCA() throws Exception {
-        testBase.addRenameAndRemoveCVCCA();
     }
 
     @Test

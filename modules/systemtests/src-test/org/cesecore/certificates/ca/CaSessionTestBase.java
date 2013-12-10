@@ -78,14 +78,14 @@ public class CaSessionTestBase extends RoleUsingTestCase {
     private CA testx509ca;
     private CA testcvcca;
     
-    private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    private CaTestSessionRemote caTestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    protected CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    protected CaTestSessionRemote caTestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
     private RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
     private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
-    private CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    protected CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     
     private final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaSessionTestBase"));
     
@@ -293,82 +293,6 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         assertNotNull(ca4);
         assertEquals(ca4.getCAId(), testx509ca.getCAId());
     } // testAddAndGetCAWithDifferentCaid
-
-    public void addRenameAndRemoveCVCCA() throws Exception {
-        cleanUpAnyExistingCa(testcvcca.getCAId(), testcvcca.getName());
-        caSession.addCA(roleMgmgToken, testcvcca);
-        // Try to add the same CA again
-        try {
-            caSession.addCA(roleMgmgToken, testcvcca);
-            assertTrue("Should throw", false);
-        } catch (CAExistsException e) {
-            // NOPMD
-        }
-        CA ca1 = caTestSession.getCA(roleMgmgToken, testcvcca.getCAId());
-        CA ca2 = caTestSession.getCA(roleMgmgToken, testcvcca.getName());
-        assertEquals(ca1.getCAId(), ca2.getCAId());
-        assertEquals(ca1.getName(), ca2.getName());
-        assertEquals(ca1.getSubjectDN(), ca2.getSubjectDN());
-        /* This is pretty messed up.. we only test that the CA is working in the client VM.. */
-        EndEntityInformation user = new EndEntityInformation("username", "CN=User001,C=SE", 666, null, null, new EndEntityType(EndEntityTypes.ENDUSER), 0,
-                0, EndEntityConstants.TOKEN_USERGEN, 0, null);
-        KeyPair keypair = KeyTools.genKeys("512", "RSA");
-        CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-        CryptoToken cryptoToken1 = cryptoTokenManagementProxySession.getCryptoToken(ca1.getCAToken().getCryptoTokenId());
-        Certificate usercert1 = ca1.generateCertificate(cryptoToken1, user, keypair.getPublic(), 0, null, 10L, cp, "00000");
-        assertEquals("CN=User001,C=SE", CertTools.getSubjectDN(usercert1));
-        CryptoToken cryptoToken2 = cryptoTokenManagementProxySession.getCryptoToken(ca1.getCAToken().getCryptoTokenId());
-        Certificate usercert2 = ca2.generateCertificate(cryptoToken2, user, keypair.getPublic(), 0, null, 10L, cp, "00000");
-        assertEquals("CN=User001,C=SE", CertTools.getSubjectDN(usercert2));
-
-        caSession.renameCA(roleMgmgToken, testcvcca.getName(), "TESTCVC1");
-        try {
-        	caTestSession.getCA(roleMgmgToken, testcvcca.getName());
-            assertTrue("Should throw", false);
-        } catch (CADoesntExistsException e) {
-            // NOPMD
-        }
-        ca1 = caTestSession.getCA(roleMgmgToken, "TESTCVC1");
-        assertEquals(testcvcca.getCAId(), ca1.getCAId());
-        try {
-            caSession.renameCA(roleMgmgToken, "TESTCVC1", "TESTCVC1");
-            assertTrue("Should throw", false);
-        } catch (CAExistsException e) {
-            // NOPMD
-        }
-        // Something non existing, should throw CADoesntExistException
-        boolean caught = false;
-        try {
-            caSession.renameCA(roleMgmgToken, "TESTCVC86868658334nn", "TESTCVC74736363dd");
-        } catch (CADoesntExistsException e) {
-            caught = true;
-        }
-        assertTrue(caught);
-        // Rename back again
-        caSession.renameCA(roleMgmgToken, "TESTCVC1", testcvcca.getName());
-        try {
-        	caTestSession.getCA(roleMgmgToken, "TESTCVC1");
-            assertTrue("Should throw", false);
-        } catch (CADoesntExistsException e) {
-            // NOPMD
-        }
-        ca2 = caTestSession.getCA(roleMgmgToken, testcvcca.getName());
-        assertEquals(testcvcca.getCAId(), ca2.getCAId());
-
-        caSession.removeCA(roleMgmgToken, testcvcca.getCAId());
-        try {
-        	caTestSession.getCA(roleMgmgToken, testcvcca.getName());
-            assertTrue("Should throw", false);
-        } catch (CADoesntExistsException e) {
-            // NOPMD
-        }
-        try {
-        	caTestSession.getCA(roleMgmgToken, "TESTCVC1");
-            assertTrue("Should throw", false);
-        } catch (CADoesntExistsException e) {
-            // NOPMD
-        }
-    }
 
     /**
      * Add CA object first with just key references and let these references sign the initial CA certificate.
@@ -586,7 +510,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
     }
 
     /** Remove any existing CA. Null value parameter can be used to ignore one of the alternatives. */
-    private void cleanUpAnyExistingCa(Integer caId, String caname) throws AuthorizationDeniedException {
+    protected void cleanUpAnyExistingCa(Integer caId, String caname) throws AuthorizationDeniedException {
         if (caId != null) {
             caSession.removeCA(roleMgmgToken, caId.intValue());
         }
