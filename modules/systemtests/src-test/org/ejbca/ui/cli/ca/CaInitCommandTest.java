@@ -79,8 +79,6 @@ public class CaInitCommandTest {
             "x509" };
     private static final String[] X509_ARGS_NON_DEFULTPWD = { "init", CA_NAME, CA_DN, "soft", "bar123", "2048", "RSA", "365", "1.1.1.1",
             "SHA1WithRSA" };
-    private static final String[] CVC_TYPE_ARGS = { "init", CA_NAME, "CN=CVCCATEST,O=EJBCA,C=AZ ", "soft", "foo123", "2048", "RSA", "365", "null",
-            "SHA1WithRSA", "-type", "cvc" };
     private static final String[] ROOT_CA_ARGS = { "init", CA_NAME, CA_DN, "soft", "foo123", "2048", "RSA", "365", "null", "SHA1WithRSA",
             "-certprofile", "ROOTCA" };
     private static final String[] CUSTOM_PROFILE_ARGS = { "init", CA_NAME, CA_DN, "soft", "foo123", "2048", "RSA", "365", "null", "SHA1WithRSA",
@@ -136,14 +134,6 @@ public class CaInitCommandTest {
     public void testWithX509TypeNonDefaultPwd() throws Exception {
         caInitCommand.execute(X509_ARGS_NON_DEFULTPWD);
         assertNotNull("X509 typed CA with non default CA token pwd was not created.", caSession.getCAInfo(admin, CA_NAME));
-    }
-
-    @Test
-    public void testWithCVCType() throws Exception {
-        caInitCommand.execute(CVC_TYPE_ARGS);
-        CAInfo caInfo = caSession.getCAInfo(admin, CA_NAME);
-        assertNotNull("CVC typed CA was not created.", caInfo);
-        assertEquals("CAInfo was not of type CVC", caInfo.getCAType(), CAInfo.CATYPE_CVC);
     }
 
     @Test
