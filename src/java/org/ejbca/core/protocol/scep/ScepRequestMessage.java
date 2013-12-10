@@ -54,6 +54,8 @@ import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
+import org.bouncycastle.cms.jcajce.JceKeyTransAuthenticatedRecipient;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
@@ -201,13 +203,13 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
         // Parse and verify the integrity of the PKIOperation message PKCS#7
         /* If this would have been done using the newer CMS it would have made me so much happier... */
         ASN1InputStream seqAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(scepmsg));
-        ASN1Sequence seq = null;
+        ASN1Primitive seq = null;
         try {
-            seq = (ASN1Sequence) seqAsn1InputStream.readObject();
+            seq = seqAsn1InputStream.readObject();
         } finally {
             seqAsn1InputStream.close();
         }
-        ContentInfo ci = new ContentInfo(seq);
+        ContentInfo ci = ContentInfo.getInstance(seq);
         String ctoid = ci.getContentType().getId();
 
         if (ctoid.equals(CMSObjectIdentifiers.signedData.getId())) {
@@ -248,7 +250,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
             Enumeration<?> sis = sd.getSignerInfos().getObjects();
 
             if (sis.hasMoreElements()) {
-                SignerInfo si = new SignerInfo((ASN1Sequence) sis.nextElement());
+                SignerInfo si = SignerInfo.getInstance((ASN1Sequence) sis.nextElement());
                 Enumeration<?> attr = si.getAuthenticatedAttributes().getObjects();
 
                 while (attr.hasMoreElements()) {
@@ -297,17 +299,17 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
                     	log.debug("envelopedData is " + content.getOctets().length + " bytes.");
                     }
                     ASN1InputStream seq1Asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(content.getOctets()));
-                    ASN1Sequence seq1 = null;
+                    ASN1Primitive seq1 = null;
                     try {
-                        seq1 = (ASN1Sequence) seq1Asn1InputStream.readObject();
+                        seq1 = seq1Asn1InputStream.readObject();
                     } finally {
                         seq1Asn1InputStream.close();
                     }
-                    envEncData = new ContentInfo(seq1);
+                    envEncData = ContentInfo.getInstance(seq1);
                     ctoid = envEncData.getContentType().getId();
 
                     if (ctoid.equals(CMSObjectIdentifiers.envelopedData.getId())) {
-                        envData = new EnvelopedData((ASN1Sequence) envEncData.getContent());
+                        envData = EnvelopedData.getInstance((ASN1Sequence) envEncData.getContent());
                         ASN1Set recipientInfos = envData.getRecipientInfos();
                         Enumeration<?> e = recipientInfos.getObjects();
                         while (e.hasMoreElements()) {
@@ -378,7 +380,11 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
             if (log.isDebugEnabled()) {
             	log.debug("Privatekey : " + privateKey.getAlgorithm());
             }
-            decBytes = recipient.getContent(privateKey, jceProvider);
+            JceKeyTransAuthenticatedRecipient rec = new JceKeyTransAuthenticatedRecipient(privateKey);
+            rec.setProvider(jceProvider); // Use the passed provider to do the asymmetric operations, i.e. get the symmetric key encrypted with my public key
+            rec.setContentProvider(new BouncyCastleProvider()); // Use BC provider to do the actual symmetric encryption
+            decBytes = recipient.getContent(rec);
+            //decBytes = recipient.getContent(privateKey, jceProvider);
             break;
         }
 
@@ -390,7 +396,6 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
             derAsn1InputStream.close();
         }
         if (messageType == ScepRequestMessage.SCEP_TYPE_PKCSREQ) {
-            ASN1Sequence seq = (ASN1Sequence) derobj;
             pkcs10 = new JcaPKCS10CertificationRequest(decBytes);
             if (log.isDebugEnabled()) {
             	log.debug("Successfully extracted PKCS10:"+new String(Base64.encode(pkcs10.getEncoded())));
