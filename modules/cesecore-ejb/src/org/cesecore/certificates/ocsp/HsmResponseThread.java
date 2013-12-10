@@ -53,14 +53,14 @@ public class HsmResponseThread implements Callable<BasicOCSPResp> {
         this.signerKey = signerKey;
         this.chain = chain;
         this.provider = provider;
-        this.producedAt = producedAt != null ? producedAt : new Date();
+        this.producedAt = producedAt;
     }
 
     @Override
     public BasicOCSPResp call() throws OCSPException {
         try {
             final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(signingAlgorithm).setProvider(provider).build(signerKey), 20480);
-            return basicRes.build(signer, convertCertificateChainToCertificateHolderChain(chain), producedAt);
+            return basicRes.build(signer, convertCertificateChainToCertificateHolderChain(chain), producedAt!=null? producedAt : new Date());
         } catch (CertificateEncodingException e) {
             throw new OcspFailureException(e);
         } catch (OperatorCreationException e) {

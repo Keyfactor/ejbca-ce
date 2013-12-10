@@ -47,6 +47,9 @@ Read RELEASE_NOTES carefully in order to see if any particular changes might eff
 If you get a "java.lang.NoSuchMethodError" in the admin GUI it is because JBoss does not clean temporary files very good.
 Delete the directories JBOSS_HOME/server/default/tmp and JBOSS_HOME/server/default/work and restart JBoss to get it working.
 
+For OCSP users: to comply with RFC6960, it is now configurable to add the id_pkix_ocsp_archive_cutoff extension to an OCSP response. See 
+the documentation of "ocsp.expiredcert.retentionperiod" in conf/ocsp.properties.sample and RFC6960 4.4.4 Archive Cutoff for more details.
+
 From EJBCA 5.0.x to EJBCA 6.0.x
 -----------------------------------------------------------------------------------------------------------------------------------------------------
 See release notes for more details on changes.
