@@ -16,6 +16,7 @@ package org.cesecore.certificates.ocsp;
 import java.io.Serializable;
 import java.util.Date;
 
+import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.cert.ocsp.CertificateID;
 import org.bouncycastle.cert.ocsp.CertificateStatus;
 
@@ -46,6 +47,8 @@ public class OCSPResponseItem implements Serializable {
      * the responder is indicating that newer revocation information is available all the time.
      */
     private Date nextUpdate = null;
+    
+    private Extensions singleExtensions = null;
 
     public OCSPResponseItem(CertificateID certID, CertificateStatus certStatus, long untilNextUpdate) {
         this.certID = certID;
@@ -70,5 +73,13 @@ public class OCSPResponseItem implements Serializable {
 
     public Date getNextUpdate() {
         return nextUpdate;
+    }
+    
+    public Extensions getExtensions() {
+        return singleExtensions;
+    }
+    
+    public void setExtentions(Extensions extensions) {
+        singleExtensions = extensions;
     }
 }
