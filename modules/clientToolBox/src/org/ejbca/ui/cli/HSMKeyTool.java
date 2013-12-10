@@ -199,8 +199,10 @@ public class HSMKeyTool extends ClientToolBox {
                 if(args.length > 7) {
                     storeId = trimStoreId(args[7]);
                     slotType = divineSlotLabelType(args[7]);
-                    System.err.println("Using Slot Reference Type: "+slotType+'.');
+                } else {
+                    slotType = Pkcs11SlotLabelType.SUN_FILE;
                 }
+                System.err.println("Using Slot Reference Type: "+slotType+'.');
                 final KeyStoreContainer store = KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], storeId, slotType, null, protectionParameter, "priv-"+keyEntryName);
                 store.generate(args[5], keyEntryName);
                 System.err.println("Created certificate with entry "+keyEntryName+'.');
