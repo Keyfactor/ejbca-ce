@@ -66,7 +66,7 @@ public class Pkcs11SlotLabel {
             throw new IllegalArgumentException("Type can not be null");
         }
         this.type = type;
-        this.value = value.trim();
+        this.value = value == null ? null : value.trim();
     }
 
     /**
@@ -439,7 +439,7 @@ public class Pkcs11SlotLabel {
      * @param sSlot
      *            The value of the slot, which may be a number ([0...9]*), an index i[0...9] or a label, but may also be labels matching the former.
      *            To solve this ambiguity, slots will be presumed to be numbers or indexes if the names match, and if no slot is found by that number
-     *            or index will then be presumed to be labels (for legacy reasons). 
+     *            or index will then be presumed to be labels (for legacy reasons). Can be null if slotLabelType is SUN_FILE, then the slot must be specified in the attributesFile.
      * @param fileName
      *            the manufacturers provided pkcs11 library (.dll or .so) or config file name if slot is null
 
@@ -460,7 +460,7 @@ public class Pkcs11SlotLabel {
      */
     public static Provider getP11Provider(final String sSlot, final Pkcs11SlotLabelType slotLabelType, final String fileName,
             final String attributesFile, final String privateKeyLabel) throws NoSuchSlotException {
-        if (sSlot == null || sSlot.length() < 1) {
+        if ((sSlot == null || sSlot.length() < 1) && !slotLabelType.isEqual(Pkcs11SlotLabelType.SUN_FILE)) {
             return null;
         }
         final Pkcs11SlotLabel slotSpec = new Pkcs11SlotLabel(slotLabelType, sSlot);
