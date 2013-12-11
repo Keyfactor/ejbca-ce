@@ -638,7 +638,7 @@ These classes can be made available by editing the file
 This will allow an application to use these internal Sun/Oracle/OpenJDK classes.
 </p>
 <p>This is not needed in JBoss EAP 6.1/JBoss 7.2, because the two first packages are exported by default since <a href="https://issues.jboss.org/browse/JBPAPP6-1748">JBPAPP6-1748</a>.
-One package is however needed if you want to be able to use 'Slot Label' to configure PKCS#11 Crypto Tokens. In JBoss EAP 6.1 the file is located in <i>modules/system/layers/base/sun/jdk/main/module.xml</i>.
+One package is however needed still. In JBoss EAP 6.1 the file is located in <i>modules/system/layers/base/sun/jdk/main/module.xml</i>.
 </p>
 <source>
 &lt;path name="sun/security/pkcs11/wrapper"/&gt;
