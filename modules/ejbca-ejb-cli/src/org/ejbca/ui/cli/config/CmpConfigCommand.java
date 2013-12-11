@@ -34,7 +34,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRem
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.Configuration;
-import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -46,8 +45,7 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class CmpConfigCommand extends ConfigBaseCommand {
 
-    private GlobalConfigurationSessionRemote globalConfigSession = ejb.getRemoteSession(GlobalConfigurationSessionRemote.class);
-    private CmpConfiguration cmpConfiguration = (CmpConfiguration) globalConfigSession.getCachedConfiguration(Configuration.CMPConfigID);
+    private CmpConfiguration cmpConfiguration = null;
     
     private String DUMPALLCONFIG = "dumpall";
     private String DUMPALIASCONFIG = "dumpalias";
@@ -66,6 +64,13 @@ public class CmpConfigCommand extends ConfigBaseCommand {
     @Override
     public String getDescription() {
         return "Edit CMP configuration";
+    }
+    
+    private CmpConfiguration getCmpConfiguration() {
+        if (cmpConfiguration==null) {
+            cmpConfiguration = (CmpConfiguration) getGlobalConfigurationSession().getCachedConfiguration(Configuration.CMPConfigID);
+        }
+        return cmpConfiguration;
     }
 
     /**
@@ -91,7 +96,7 @@ public class CmpConfigCommand extends ConfigBaseCommand {
         String subsubcommand = args[1];
         if(StringUtils.equalsIgnoreCase(subsubcommand, DUMPALLCONFIG)) {
             try {
-                Properties properties = globalConfigSession.getAllProperties(getAuthenticationToken(cliUserName, cliPassword), Configuration.CMPConfigID);
+                Properties properties = getGlobalConfigurationSession().getAllProperties(getAuthenticationToken(cliUserName, cliPassword), Configuration.CMPConfigID);
                 Enumeration<Object> enumeration = properties.keys();
                 while (enumeration.hasMoreElements()) {
                     String key = (String) enumeration.nextElement();
@@ -111,7 +116,7 @@ public class CmpConfigCommand extends ConfigBaseCommand {
 
             String alias = args[2];
             try {
-                Properties properties = cmpConfiguration.getAsProperties(alias);
+                Properties properties = getCmpConfiguration().getAsProperties(alias);
                 if(properties != null) {
                     Enumeration<Object> enumeration = properties.keys();
                     while (enumeration.hasMoreElements()) {
@@ -127,7 +132,7 @@ public class CmpConfigCommand extends ConfigBaseCommand {
             
             
         } else if(StringUtils.equals(subsubcommand, LISTALIAS)) {
-            Set<String> aliaslist = cmpConfiguration.getAliasList();
+            Set<String> aliaslist = getCmpConfiguration().getAliasList();
             Iterator<String> itr = aliaslist.iterator();
             while(itr.hasNext()) {
                 getLogger().info(itr.next());
@@ -143,16 +148,16 @@ public class CmpConfigCommand extends ConfigBaseCommand {
             
             String alias = args[2];
             // We check first because it is unnecessary to call saveConfiguration when it is not needed
-            if(cmpConfiguration.aliasExists(alias)) {
+            if(getCmpConfiguration().aliasExists(alias)) {
                 getLogger().info("Alias '" + alias + "' already exists.");
                 return;
             }
             
-            cmpConfiguration.addAlias(alias);
+            getCmpConfiguration().addAlias(alias);
             try {
-                globalConfigSession.saveConfiguration(getAuthenticationToken(cliUserName, cliPassword), cmpConfiguration, Configuration.CMPConfigID);
+                getGlobalConfigurationSession().saveConfiguration(getAuthenticationToken(cliUserName, cliPassword), getCmpConfiguration(), Configuration.CMPConfigID);
                 getLogger().info("Added CMP alias: " + alias);
-                globalConfigSession.flushConfigurationCache(Configuration.CMPConfigID);
+                getGlobalConfigurationSession().flushConfigurationCache(Configuration.CMPConfigID);
             } catch (AuthorizationDeniedException e) {
                 getLogger().info("Failed to add alias '" + alias + "': " + e.getLocalizedMessage());
                 return;
@@ -168,16 +173,16 @@ public class CmpConfigCommand extends ConfigBaseCommand {
             
             String alias = args[2];
             // We check first because it is unnecessary to call saveConfiguration when it is not needed
-            if(!cmpConfiguration.aliasExists(alias)) {
+            if(!getCmpConfiguration().aliasExists(alias)) {
                 getLogger().info("Alias '" + alias + "' does not exist");
                 return;
             }
             
-            cmpConfiguration.removeAlias(alias);
+            getCmpConfiguration().removeAlias(alias);
             try {
-                globalConfigSession.saveConfiguration(getAuthenticationToken(cliUserName, cliPassword), cmpConfiguration, Configuration.CMPConfigID);
+                getGlobalConfigurationSession().saveConfiguration(getAuthenticationToken(cliUserName, cliPassword), getCmpConfiguration(), Configuration.CMPConfigID);
                 getLogger().info("Removed CMP alias: " + alias);
-                globalConfigSession.flushConfigurationCache(Configuration.CMPConfigID);
+                getGlobalConfigurationSession().flushConfigurationCache(Configuration.CMPConfigID);
             } catch (AuthorizationDeniedException e) {
                 getLogger().info("Failed to remove alias '" + alias + "': " + e.getLocalizedMessage());
                 return;
@@ -194,16 +199,16 @@ public class CmpConfigCommand extends ConfigBaseCommand {
             String oldalias = args[2];
             String newalias = args[3];
             // We check first because it is unnecessary to call saveConfiguration when it is not needed
-            if(!cmpConfiguration.aliasExists(oldalias)) {
+            if(!getCmpConfiguration().aliasExists(oldalias)) {
                 getLogger().info("Alias '" + oldalias + "' does not exist");
                 return;
             }
             
-            cmpConfiguration.renameAlias(oldalias, newalias);
+            getCmpConfiguration().renameAlias(oldalias, newalias);
             try {
-                globalConfigSession.saveConfiguration(getAuthenticationToken(cliUserName, cliPassword), cmpConfiguration, Configuration.CMPConfigID);
+                getGlobalConfigurationSession().saveConfiguration(getAuthenticationToken(cliUserName, cliPassword), getCmpConfiguration(), Configuration.CMPConfigID);
                 getLogger().info("Renamed CMP alias '" + oldalias + "' to '" + newalias + "'");
-                globalConfigSession.flushConfigurationCache(Configuration.CMPConfigID);
+                getGlobalConfigurationSession().flushConfigurationCache(Configuration.CMPConfigID);
             } catch (AuthorizationDeniedException e) {
                 getLogger().info("Failed to rename alias '" + oldalias + "' to '" + newalias + "': " + e.getLocalizedMessage());
                 return;
@@ -227,12 +232,12 @@ public class CmpConfigCommand extends ConfigBaseCommand {
             }
             
             key = alias + "." + key;
-            getLogger().info("Configuration was: " + key + "=" + cmpConfiguration.getValue(key, alias));            
-            cmpConfiguration.setValue(key, value, alias);
+            getLogger().info("Configuration was: " + key + "=" + getCmpConfiguration().getValue(key, alias));            
+            getCmpConfiguration().setValue(key, value, alias);
             try {
-                globalConfigSession.saveConfiguration(getAuthenticationToken(cliUserName, cliPassword), cmpConfiguration, Configuration.CMPConfigID);
-                getLogger().info("Configuration updated: " + key + "=" + cmpConfiguration.getValue(key, alias));
-                globalConfigSession.flushConfigurationCache(Configuration.CMPConfigID);
+                getGlobalConfigurationSession().saveConfiguration(getAuthenticationToken(cliUserName, cliPassword), getCmpConfiguration(), Configuration.CMPConfigID);
+                getLogger().info("Configuration updated: " + key + "=" + getCmpConfiguration().getValue(key, alias));
+                getGlobalConfigurationSession().flushConfigurationCache(Configuration.CMPConfigID);
             } catch (AuthorizationDeniedException e) {
                 getLogger().info("Failed to update configuration: " + e.getLocalizedMessage());
                 return;
@@ -276,7 +281,7 @@ public class CmpConfigCommand extends ConfigBaseCommand {
     private void readConfigurations(CompositeConfiguration config, String alias) {
         
         // if the alias does not already exist, create it.
-        cmpConfiguration.addAlias(alias);
+        getCmpConfiguration().addAlias(alias);
             
         // Reading all relevant configurations from file.
         boolean populated = false;
@@ -287,7 +292,7 @@ public class CmpConfigCommand extends ConfigBaseCommand {
             if(config.containsKey(key)) {
                 populated = true;
                 String value = config.getString(key);
-                cmpConfiguration.setValue(key, value, alias);
+                getCmpConfiguration().setValue(key, value, alias);
                 getLogger().info("Setting value: " + key + "=" + value);
             }
         }
@@ -296,15 +301,15 @@ public class CmpConfigCommand extends ConfigBaseCommand {
         // Save the new configurations.
         if(populated) {
             try {
-                globalConfigSession.saveConfiguration(getAuthenticationToken(cliUserName, cliPassword), cmpConfiguration, Configuration.CMPConfigID);
+                getGlobalConfigurationSession().saveConfiguration(getAuthenticationToken(cliUserName, cliPassword), getCmpConfiguration(), Configuration.CMPConfigID);
                 getLogger().info("\nNew configurations saved successfully.");
                 getLogger().info("If there are any issues with the configurations, check them in the AdminGUI and click 'Save'");
-                globalConfigSession.flushConfigurationCache(Configuration.CMPConfigID);
+                getGlobalConfigurationSession().flushConfigurationCache(Configuration.CMPConfigID);
             } catch (AuthorizationDeniedException e) {
                 getLogger().error("Failed to save configuration from file: " + e.getLocalizedMessage());
             }
         } else {
-            cmpConfiguration.removeAlias(alias);
+            getCmpConfiguration().removeAlias(alias);
             getLogger().info("No relevent CMP configurations found with alias '" + alias + "' in the file.");
         }
     }

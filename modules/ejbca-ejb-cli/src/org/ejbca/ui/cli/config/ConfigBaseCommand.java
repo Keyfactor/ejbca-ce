@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.cli.config;
 
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.ui.cli.BaseCommand;
 
 /**
@@ -21,6 +22,8 @@ import org.ejbca.ui.cli.BaseCommand;
  *
  */
 public abstract class ConfigBaseCommand extends BaseCommand {
+
+    private GlobalConfigurationSessionRemote globalConfigSession = null;
 
     @Override
     public String getMainCommand() {
@@ -37,4 +40,11 @@ public abstract class ConfigBaseCommand extends BaseCommand {
         return new String[]{};
     }
 
+    /** @return the remote EJB reference to GlobalConfigurationSession */
+    protected GlobalConfigurationSessionRemote getGlobalConfigurationSession() {
+        if (globalConfigSession==null) {
+            globalConfigSession = ejb.getRemoteSession(GlobalConfigurationSessionRemote.class);
+        }
+        return globalConfigSession;
+    }
 }
