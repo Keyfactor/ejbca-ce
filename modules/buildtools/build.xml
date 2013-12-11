@@ -4,7 +4,7 @@
 		Various build tools for ant
     </description>
 
-	<dirname property="this.dir" file="${ant.file.statedump}"/>
+	<dirname property="this.dir" file="${ant.file.buildtools}"/>
 	<import file="${this.dir}/../build.xml"/>
 	
 	<property name="build.dir" location="${this.dir}/build"/>
