@@ -1706,7 +1706,7 @@ function checkallfields(){
 	<% } %>
 
     <% } 
-    // end "IF CVC AVAILABLE", search for "IS CVC AVAILABLE" to find the beginning { in the beginning of this file 
+    // end "IF CVC AVAILABLE", search for "IF CVC AVAILABLE" to find the beginning { in the beginning of this file 
     %>
 
   </table>
