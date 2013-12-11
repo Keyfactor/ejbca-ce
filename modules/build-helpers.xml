@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="build-helpers" >
-    <description>
+<project name="build-helpers">
+	<description>
             This file contains common helper targets and is included from build.xml
     </description>
 
-	<target name="showtime" >
+	<target name="showtime">
 		<tstamp>
-			<format property="currenttime" pattern="yyyy-MM-dd HH:mm:ss Z"/>
+			<format property="currenttime" pattern="yyyy-MM-dd HH:mm:ss Z" />
 		</tstamp>
-		<echo message="Current time is ${currenttime}."/>
+		<echo message="Current time is ${currenttime}." />
 	</target>
 
 	<target name="createreport">
@@ -19,7 +19,35 @@
 			</fileset>
 			<report format="frames" todir="${reports.dir}/html" />
 		</junitreport>
-    	<echo message=""/>
-    	<echo message="Results are available in file://${reports.dir}/html/index.html"/>
+		<echo message="" />
+		<echo message="Results are available in file://${reports.dir}/html/index.html" />
 	</target>
+
+	<condition property="servicemanifestbuilder.notexists">
+		<not>
+			<available file="${mod.buildtools.build}/org/primekey/anttools/ServiceManifestBuilder.class" />
+		</not>
+	</condition>
+	
+	<target name="buildservicemanifestbuilder" if="${servicemanifestbuilder.notexists}">
+		<ant antfile="${mod.buildtools.path}/build.xml" target="compile-servicemanifestbuilder" inheritall="false" inheritrefs="true" />
+	</target>
+
+	<macrodef name="buildservicemanifest">
+		<attribute name="classpath" />
+		<attribute name="file" />
+		<attribute name="interface" />
+		<element name="buildservicemanifest" implicit="yes" />
+		<sequential>
+			<antcall target="buildservicemanifestbuilder" /> 
+			<java classname="org.primekey.anttools.ServiceManifestBuilder" fork="true" failonerror="true" >
+				<classpath>
+					<path refid="@{classpath}" />
+					<pathelement location="${mod.buildtools.build}" />
+				</classpath>
+				<arg value="@{file}" />
+				<arg value="@{interface}" />
+			</java>
+		</sequential>
+	</macrodef>
 </project>
