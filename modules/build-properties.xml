@@ -118,7 +118,7 @@
 	<property name="mod.statedump.lib" location="${mod.statedump.dist}/statedump.jar" />
 	<property name="mod.statedump.path" location="${mod.path}/statedump" />
 	<property name="mod.buildtools.dist" location="${ejbca.dist.path}/buildtools" />
-	<property name="mod.servicemanifestbuilder.lib" location="${mod.buildtools.dist}/statedump.jar" />
+	<property name="mod.servicemanifestbuilder.lib" location="${mod.buildtools.dist}/servicemanifestbuilder.jar" />
 	
     <!-- Variables of global interest -->
     <property name="java.target.version" value="${java.specification.version}"/>
