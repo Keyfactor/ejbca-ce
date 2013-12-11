@@ -11,7 +11,6 @@
 	<property name="build-test.dir" location="${this.dir}/build-test"/>
 	<property name="src.dir" location="${this.dir}/src"/>
 	<property name="src-test.dir" location="${this.dir}/src-test"/>
-    <property name="intresources.dir" location="${this.dir}/intresources"/>
 	<property name="reports.base.dir" location="${this.dir}/build-test/reports/"/>
 
 
