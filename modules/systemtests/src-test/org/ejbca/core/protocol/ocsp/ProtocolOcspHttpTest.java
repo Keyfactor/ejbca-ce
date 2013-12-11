@@ -1044,14 +1044,10 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
             assertNotNull("Failed to create new certificate", xcert);
         
             
-            // -------- Send a request where id_pkix_ocsp_archive_cutoff SHOULD NOT be used
-            // set ocsp configuration
-            Map<String,String> map = new HashMap<String, String>();
-            map.put(OcspConfiguration.EXPIREDCERT_RETENTIONPERIOD, "-1");
-            this.helper.alterConfig(map);
-        
-            Thread.sleep(2000L);
-        
+            Thread.sleep(2000L); // wait for the certificate to expire
+            
+            // -------- Testing with default config value
+            
             OCSPReqBuilder gen = new OCSPReqBuilder();
             gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, xcert.getSerialNumber() ));
             OCSPReq req = gen.build();
@@ -1061,13 +1057,36 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
             }
             SingleResp resp = response.getResponses()[0];
             Extension singleExtension = resp.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff);
+            assertNotNull("No extension sent with reply", singleExtension);
+        
+            ASN1GeneralizedTime extvalue = ASN1GeneralizedTime.getInstance(singleExtension.getParsedValue());
+            long expectedValue = (new Date()).getTime() - (31536000L * 1000);
+            long actualValue = extvalue.getDate().getTime();
+            long diff = expectedValue - actualValue;
+            assertTrue("Wrong archive cutoff value.", diff < 60000);
+            
+            // -------- Send a request where id_pkix_ocsp_archive_cutoff SHOULD NOT be used
+            // set ocsp configuration
+            Map<String,String> map = new HashMap<String, String>();
+            map.put(OcspConfiguration.EXPIREDCERT_RETENTIONPERIOD, "-1");
+            this.helper.alterConfig(map);
+        
+            gen = new OCSPReqBuilder();
+            gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, xcert.getSerialNumber() ));
+            req = gen.build();
+            response = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
+            if (response == null) {
+                throw new Exception("Could not retrieve response, test could not continue.");
+            }
+            resp = response.getResponses()[0];
+            singleExtension = resp.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff);
             assertNull("The wrong extension was sent with reply", singleExtension);
         
             
             // ------------ Send a request where id_pkix_ocsp_archive_cutoff SHOULD be used
             // set ocsp configuration
             map = new HashMap<String, String>();
-            map.put(OcspConfiguration.EXPIREDCERT_RETENTIONPERIOD, "31536000");
+            map.put(OcspConfiguration.EXPIREDCERT_RETENTIONPERIOD, "63072000"); // 2 years
             this.helper.alterConfig(map);
         
             gen = new OCSPReqBuilder();
@@ -1081,10 +1100,10 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
             singleExtension = resp.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff);
             assertNotNull("No extension sent with reply", singleExtension);
         
-            ASN1GeneralizedTime extvalue = ASN1GeneralizedTime.getInstance(singleExtension.getParsedValue());
-            long expectedValue = (new Date()).getTime() - (31536000L * 1000);
-            long actualValue = extvalue.getDate().getTime();
-            long diff = expectedValue - actualValue;
+            extvalue = ASN1GeneralizedTime.getInstance(singleExtension.getParsedValue());
+            expectedValue = (new Date()).getTime() - (63072000L * 1000);
+            actualValue = extvalue.getDate().getTime();
+            diff = expectedValue - actualValue;
             assertTrue("Wrong archive cutoff value.", diff < 60000);
         
         } finally {
