@@ -49,6 +49,7 @@
 	<path id="compile-test.classpath">
 		<path refid="compile.classpath"/>
 		<path location="${build.dir}"/>
+		<path location="${build-cli.dir}"/>
 		<path refid="lib.easymock.classpath"/>
 		<path refid="lib.junit.classpath"/>
 		<path refid="lib.xstream.classpath"/>
@@ -218,13 +219,12 @@
     	<antcall target="showtime"/>
     </target>
 
-    <target name="compile-test" depends="with.clover, ejbca-util, build">
+    <target name="compile-test" depends="with.clover, ejbca-util, build, build-cli-conditional">
     	<mkdir dir="${build-test.dir}" />
         <javac destdir="${build-test.dir}" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}" classpathref="compile-test.classpath"
         	>
         	<include name="org/ejbca/database/**/*Test.java"/>
-	    	<include name="${src-cli.dir}/**/*.java"/>
 	    	<src path="${src-test.dir}"/>
 	    	<src path="${src.dir}"/>
         	<src path="${ejbca.home}/src/java"/>
@@ -237,6 +237,15 @@
 			<fileset dir="${ejbca.home}/src" includes="intresources/**"/>
 			<fileset dir="${ejbca.home}/src/java/" includes="defaultvalues.properties"/>
 		</copy>
+    </target>
+
+    <condition property="cli-exists">
+   		<available file="${src-cli.dir}/org" type="dir"/>
+    </condition>
+	<!-- Only try to run the build-cli target if the directory exists.
+	     This is all needed because we can not specify a non existing (optional) path on the compile-tests above -->
+    <target name="build-cli-conditional" if="${cli-exists}">
+    	<antcall target="build-cli"/>
     </target>
 
 	<!-- Monolitic build of the EJBCA DB CLI -->
