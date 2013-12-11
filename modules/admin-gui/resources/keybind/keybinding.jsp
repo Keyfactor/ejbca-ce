@@ -191,7 +191,7 @@ org.cesecore.keybind.InternalKeyBindingRules
 		<h:column>
    			<h:panelGroup rendered="#{!property.multiValued}">
 	   			<h:inputText disabled="#{!internalKeyBindingMBean.inEditMode}" rendered="#{property.type.simpleName eq 'String'}" value="#{property.value}"/>
-	   			<h:inputText disabled="#{!internalKeyBindingMBean.inEditMode}" rendered="#{property.type.simpleName eq 'Integer'}" value="#{property.value}">
+	   			<h:inputText disabled="#{!internalKeyBindingMBean.inEditMode}" rendered="#{property.type.simpleName eq 'Long'}" value="#{property.value}">
 					<f:convertNumber integerOnly="true"/>
 	   			</h:inputText>
    				<h:selectBooleanCheckbox disabled="#{!internalKeyBindingMBean.inEditMode}" rendered="#{property.type.simpleName eq 'Boolean'}" value="#{property.value}"/>
