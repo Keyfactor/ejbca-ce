@@ -37,7 +37,7 @@
   <section name="Features">
     <p>
     <ul>
-    <li>Implements <a href="http://www.ietf.org/rfc/rfc2560.txt">RFC 2560</a> and <a href="http://www.ietf.org/rfc/rfc5019.txt">RFC 5019</a>.</li>
+    <li>Implements <a href="http://www.ietf.org/rfc/rfc2560.txt">RFC 2560</a>, <a href="http://www.ietf.org/rfc/rfc6960.txt">RFC 6960</a> and <a href="http://www.ietf.org/rfc/rfc5019.txt">RFC 5019</a>.</li>
     <li>Independent of CA software used (various degrees of integration is possible and may be required).</li>
     <li>One responder can respond for any number of CAs.</li>
     <li>Status information stored in SQL database.</li>
