@@ -300,32 +300,31 @@ public class OCSPServlet extends HttpServlet {
         if(!ocspResponseInformation.shouldAddCacheHeaders()) {
             return;
         } 
+
+        long now = new Date().getTime();
+        long thisUpdate = ocspResponseInformation.getThisUpdate();
+        long nextUpdate = ocspResponseInformation.getNextUpdate();
+        long maxAge = ocspResponseInformation.getMaxAge();
+        if (maxAge >= (nextUpdate - thisUpdate)) {
+            maxAge = nextUpdate - thisUpdate - 1;
+            log.warn(intres.getLocalizedMessage("ocsp.shrinkmaxage", maxAge));
+        }   
+        // RFC 5019 6.2: Date: The date and time at which the OCSP server generated the HTTP response.
+        // On JBoss AS the "Date"-header is cached for 1 second, so this value will be overwritten and off by up to a second 
+        response.setDateHeader("Date", now);
+        // RFC 5019 6.2: Last-Modified: date and time at which the OCSP responder last modified the response. == thisUpdate
+        response.setDateHeader("Last-Modified", thisUpdate);
+        // RFC 5019 6.2: Expires: This date and time will be the same as the nextUpdate timestamp in the OCSP response itself.
+        response.setDateHeader("Expires", nextUpdate); // This is overridden by max-age on HTTP/1.1 compatible components
+        // RFC 5019 6.2: This profile RECOMMENDS that the ETag value be the ASCII HEX representation of the SHA1 hash of the OCSPResponse structure.
+        response.setHeader("ETag", "\"" + ocspResponseInformation.getResponseHeader() + "\"");
         
         OCSPResp resp = new OCSPResp(ocspResponseInformation.getOcspResponse());
         SingleResp[] singleRespones = ((BasicOCSPResp) resp.getResponseObject()).getResponses();
         if(singleRespones[0].getCertStatus() instanceof UnknownStatus) {
-            if(log.isDebugEnabled()) {
-                log.debug("Will not add RFC 5019 cache headers: response is for an unknown certificate.");
-            }
-            return;
+            response.setHeader("Cache-Control", "no-cache, must-revalidate"); //HTTP 1.1
+            response.setHeader("Pragma", "no-cache"); //HTTP 1.0 
         } else {
-            long now = new Date().getTime();
-            long thisUpdate = ocspResponseInformation.getThisUpdate();
-            long nextUpdate = ocspResponseInformation.getNextUpdate();
-            long maxAge = ocspResponseInformation.getMaxAge();
-            if (maxAge >= (nextUpdate - thisUpdate)) {
-                maxAge = nextUpdate - thisUpdate - 1;
-                log.warn(intres.getLocalizedMessage("ocsp.shrinkmaxage", maxAge));
-            }
-            // RFC 5019 6.2: Date: The date and time at which the OCSP server generated the HTTP response.
-            // On JBoss AS the "Date"-header is cached for 1 second, so this value will be overwritten and off by up to a second 
-            response.setDateHeader("Date", now);
-            // RFC 5019 6.2: Last-Modified: date and time at which the OCSP responder last modified the response. == thisUpdate
-            response.setDateHeader("Last-Modified", thisUpdate);
-            // RFC 5019 6.2: Expires: This date and time will be the same as the nextUpdate timestamp in the OCSP response itself.
-            response.setDateHeader("Expires", nextUpdate); // This is overridden by max-age on HTTP/1.1 compatible components
-            // RFC 5019 6.2: This profile RECOMMENDS that the ETag value be the ASCII HEX representation of the SHA1 hash of the OCSPResponse structure.
-            response.setHeader("ETag", "\"" + ocspResponseInformation.getResponseHeader() + "\"");
             response.setHeader("Cache-Control", "max-age=" + (maxAge / 1000) + ",public,no-transform,must-revalidate");
         }
     }
