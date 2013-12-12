@@ -14,10 +14,11 @@ package org.ejbca.ui.cli;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ServiceLoader;
 
 import org.apache.log4j.Logger;
-import org.ejbca.util.PluginTool;
 
 /**
  * Helper that searches the specified package and sub-packages for classes
@@ -30,20 +31,16 @@ public class CliCommandHelper {
     
     private static final Logger log = Logger.getLogger(CliCommandHelper.class);
 
-    @SuppressWarnings("unchecked")
     public static void searchAndRun(String[] args, String basePackage) {
         List<CliCommand> commandList = new ArrayList<CliCommand>();
         List<String> mainCommands = new ArrayList<String>();
-        List<Class<?>> list = PluginTool.getSome(basePackage, CliCommandPlugin.class, true);
+        ServiceLoader<? extends CliCommandPlugin> serviceLoader = ServiceLoader.load(CliCommandPlugin.class);
+        
+       
         // Extract all the commands from the plugins
-        for (final Class<?> command : list) {
+        for (Iterator<? extends CliCommandPlugin> iterator = serviceLoader.iterator(); iterator.hasNext();) {
+            CliCommandPlugin cliCommandPlugin = iterator.next();
             try {
-                final Object object = command.newInstance();
-                if (!(object instanceof CliCommandPlugin)) {
-                    log.warn("Will not register plugin class " + command.getName() + ": Not an instance of CliCommandPlugin.");
-                    continue;
-                }
-                final CliCommandPlugin cliCommandPlugin = (CliCommandPlugin) object;
                 final String mainCommand = cliCommandPlugin.getMainCommand();
                 final String subCommand = cliCommandPlugin.getSubCommand();
                 final String description = cliCommandPlugin.getDescription();
@@ -51,17 +48,17 @@ public class CliCommandHelper {
                 final String[] subcommandAliases = cliCommandPlugin.getSubCommandAliases();
                 if (subCommand == null || subCommand.trim().length() == 0
                         || description == null || description.trim().length() == 0) {
-                    log.warn("Will not register plugin class " + command.getName() + ": Required getter returned an empty String.");
+                    log.warn("Will not register plugin class " + mainCommand + ": Required getter returned an empty String.");
                     continue;
                 }
                 // log.debug(" main: " + mainCommand + " sub: " + subCommand + " description: " + description);
-                commandList.add(new CliCommand(mainCommand, commmandAliases, subCommand, subcommandAliases, description, (Class<CliCommandPlugin>) command));
+                commandList.add(new CliCommand(mainCommand, commmandAliases, subCommand, subcommandAliases, description, cliCommandPlugin));
                 if (!mainCommands.contains(mainCommand)) {
                     mainCommands.add(mainCommand);
                 }
             } catch (Exception e) {
-                log.warn("Will not register plugin class " + command.getName() + ": " + e.getMessage());
-                log.debug("Will not register plugin class " + command.getName() + ": ", e);
+                log.warn("Will not register plugin class " + cliCommandPlugin.getMainCommand() + ": " + e.getMessage());
+                log.debug("Will not register plugin class " + cliCommandPlugin.getMainCommand() + ": ", e);
                 continue;
             }
         }
@@ -70,7 +67,7 @@ public class CliCommandHelper {
         for (CliCommand cliCommand : commandList) {
             if (cliCommand.getMainCommand() == null) {
                 if (args.length > 0 && cliCommand.getSubCommand().equalsIgnoreCase(args[0])) {
-                    executeCommand(cliCommand.getCommandClass(), args, false);
+                    executeCommand(cliCommand.getCommand(), args, false);
                     return;
                 }
                 subTargetsOnly.add(cliCommand);
@@ -108,7 +105,7 @@ public class CliCommandHelper {
                                 log.error("WARNING: The subcommand <" + args[1] + "> is deprecated and will soon be removed."
                                         + " Please change to using" + " the command <" + cliCommand.getSubCommand() + "> instead.");
                             }
-                            executeCommand(cliCommand.getCommandClass(), args, true);
+                            executeCommand(cliCommand.getCommand(), args, true);
                             return;
                         }
                     }
@@ -147,14 +144,13 @@ public class CliCommandHelper {
     /**
      * 
      */
-    private static void executeCommand(Class<CliCommandPlugin> commandClass, String[] args, boolean shiftArgs) {
-        log.debug("Executing " + commandClass.getName());
+    private static void executeCommand(CliCommandPlugin command, String[] args, boolean shiftArgs) {
+        log.debug("Executing " + command.getMainCommand());
         try {
-            final CliCommandPlugin instance = commandClass.newInstance();
-            instance.execute(shiftArgs ? shiftStringArray(args) : args);
+            command.execute(shiftArgs ? shiftStringArray(args) : args);
             return;
         } catch (Exception e) {
-            log.error("Could not run execute method for class " + commandClass.getName(), e);
+            log.error("Could not run execute method for class " + command.getMainCommand(), e);
             System.exit(1);
         }
     }

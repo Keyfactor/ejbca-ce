@@ -154,4 +154,36 @@ public abstract class FileTools {
     		return c.compare(f1.getName(), f2.getName());
     	}
     }
+    
+    public static File createTempDirectory() throws IOException {
+        return createTempDirectory(null);
+    }
+
+    public static File createTempDirectory(File location) throws IOException {
+        final File temp = File.createTempFile("tmp", Long.toString(System.nanoTime()), location);
+        if (!(temp.delete())) {
+            throw new IOException("Could not delete temp file: " + temp.getAbsolutePath());
+        }
+        //Known race condition exists here, not sure what an attacker would accomplish with it though
+        if (!temp.mkdir()) {
+            throw new IOException("Could not create temp directory: " + temp.getAbsolutePath());
+        }
+        return temp;
+    }
+    
+    /**
+     * Recursively deletes a file. If file is a directory, then it will delete all files and subdirectories contained.
+     * 
+     * @param file the file to delete
+     */
+    public static void delete(File file) {
+        if (file.isDirectory()) {
+            for (File subFile : file.listFiles()) {
+                delete(subFile);
+            }
+        }
+        if (!file.delete()) {
+            log.error("Could not delete directory " + file.getAbsolutePath());
+        }
+    }
 } 
