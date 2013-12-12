@@ -364,6 +364,7 @@ public class ServiceManifestBuilder {
         List<Class<?>> result = new ArrayList<Class<?>>();
         if (location.isDirectory()) {
             //Recurse to find all files in all subdirectories
+            int foundFiles = 0;
             for (File file : location.listFiles()) {
                 if (file.isDirectory()) {
                     result.addAll(getImplementingClasses(baseLocation, file, interfaceClass));
@@ -377,7 +378,7 @@ public class ServiceManifestBuilder {
                             Class<?> candidate = Class.forName(className);
                             if (interfaceClass.isAssignableFrom(candidate) && !Modifier.isAbstract(candidate.getModifiers())
                                     && !candidate.isInterface()) {
-                                System.out.println("Found: " + candidate.getName());
+                                foundFiles++;
                                 result.add(candidate);
                             }
                         } catch (ClassNotFoundException e) {
@@ -387,6 +388,7 @@ public class ServiceManifestBuilder {
                     }
                 }
             }
+            System.out.println("Added " + foundFiles + " implementations of " + interfaceClass.getName());
         }
         return result;
     }
