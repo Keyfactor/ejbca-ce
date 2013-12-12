@@ -84,6 +84,7 @@
         <ant antfile="${mod.cesecore-entity.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
         <ant antfile="${mod.cesecore-ejb-interface.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
         <ant antfile="${mod.cesecore-ejb.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+		<ant antfile="${mod.buildtools.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<antcall target="validationtoolclean"/>
 		<antcall target="statedumpclean"/>
 		<delete>
