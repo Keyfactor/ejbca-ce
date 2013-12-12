@@ -272,10 +272,6 @@ public class OCSPServlet extends HttpServlet {
             addRfc5019CacheHeaders(request, response, ocspResponseInformation);
             response.getOutputStream().write(ocspResponseBytes);
             response.getOutputStream().flush();
-        } catch (OCSPException e) {
-            String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
-            log.error(errMsg, e);
-            throw new ServletException(e);
         } catch (Exception e) {
             log.error("", e);
             transactionLogger.flush();
@@ -290,8 +286,8 @@ public class OCSPServlet extends HttpServlet {
      * @param maxAge is the margin to Expire when using max-age in milliseconds 
      * @throws org.bouncycastle.cert.ocsp.OCSPException 
      */
-    private void addRfc5019CacheHeaders(HttpServletRequest request, HttpServletResponse response, OcspResponseInformation ocspResponseInformation) throws IOException,
-            OCSPException, org.bouncycastle.cert.ocsp.OCSPException {
+    private void addRfc5019CacheHeaders(HttpServletRequest request, HttpServletResponse response, OcspResponseInformation ocspResponseInformation) 
+                throws IOException, org.bouncycastle.cert.ocsp.OCSPException {
         if (ocspResponseInformation.getMaxAge() <= 0) {
             log.debug("Will not add RFC 5019 cache headers: RFC 5019 6.2: max-age should be 'later than thisUpdate but earlier than nextUpdate'.");
             return;
@@ -308,7 +304,9 @@ public class OCSPServlet extends HttpServlet {
         OCSPResp resp = new OCSPResp(ocspResponseInformation.getOcspResponse());
         SingleResp[] singleRespones = ((BasicOCSPResp) resp.getResponseObject()).getResponses();
         if(singleRespones[0].getCertStatus() instanceof UnknownStatus) {
-            log.debug("Will not add RFC 5019 cache headers: response is for an unknown certificate.");
+            if(log.isDebugEnabled()) {
+                log.debug("Will not add RFC 5019 cache headers: response is for an unknown certificate.");
+            }
             return;
         } else {
             long now = new Date().getTime();
