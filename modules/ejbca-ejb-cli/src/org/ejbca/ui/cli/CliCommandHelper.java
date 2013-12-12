@@ -14,7 +14,6 @@ package org.ejbca.ui.cli;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ServiceLoader;
 
@@ -35,11 +34,9 @@ public class CliCommandHelper {
         List<CliCommand> commandList = new ArrayList<CliCommand>();
         List<String> mainCommands = new ArrayList<String>();
         ServiceLoader<? extends CliCommandPlugin> serviceLoader = ServiceLoader.load(CliCommandPlugin.class);
-        
-       
+            
         // Extract all the commands from the plugins
-        for (Iterator<? extends CliCommandPlugin> iterator = serviceLoader.iterator(); iterator.hasNext();) {
-            CliCommandPlugin cliCommandPlugin = iterator.next();
+        for (CliCommandPlugin cliCommandPlugin : serviceLoader) {
             try {
                 final String mainCommand = cliCommandPlugin.getMainCommand();
                 final String subCommand = cliCommandPlugin.getSubCommand();
