@@ -1113,6 +1113,42 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
             certProfSession.removeCertificateProfile(admin, cpname);
         }
     }
+
+    
+    /**
+     * This test tests that the OCSP response for a status unknown contains the header "cache-control" with the value "no-cache, must-revalidate"
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testUnknownStatusCacheControlHeader() throws Exception {
+        
+        // set ocsp configuration
+        Map<String,String> map = new HashMap<String, String>();
+        map.put(OcspConfiguration.UNTIL_NEXT_UPDATE, "1");
+        this.helper.alterConfig(map);
+        
+        OCSPReqBuilder gen = new OCSPReqBuilder();
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, new BigInteger("1") ));
+        OCSPReq req = gen.build();
+        
+        String sBaseURL = httpReqPath + '/' + resourceOcsp;
+        String urlEnding = "";
+        String b64 = new String(Base64.encode(req.getEncoded(), false));
+        //String urls = URLEncoder.encode(b64, "UTF-8");    // JBoss/Tomcat will not accept escaped '/'-characters by default
+        URL url = new URL(sBaseURL + '/' + b64 + urlEnding);
+        HttpURLConnection con = (HttpURLConnection)url.openConnection();
+        if (con.getResponseCode() != 200) {
+            log.info("URL when request gave unexpected result: " + url.toString() + " Message was: " + con.getResponseMessage());
+        }
+        assertEquals("Response code did not match. ", 200, con.getResponseCode());
+        assertNotNull(con.getContentType());
+        assertTrue(con.getContentType().startsWith("application/ocsp-response"));
+        
+        assertNotNull("No Cache-Control in reply.", con.getHeaderField("Cache-Control"));
+        assertEquals("no-cache, must-revalidate", con.getHeaderField("Cache-Control"));
+        
+    }
     
     
     /**
