@@ -50,8 +50,16 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class CaRenewCACommand extends BaseCaAdminCommand {
 
-	private static final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZZ");
 	private static final String NEWLINE = System.getProperty("line.separator");
+	
+	private SimpleDateFormat simpleDateFormat = null;
+
+	private SimpleDateFormat getSimpleDateFormat() {
+	    if (simpleDateFormat==null) {
+	        simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZZ");
+	    }
+	    return simpleDateFormat;
+	}
 	
     @Override
 	public String getSubCommand() { return "renewca"; }
@@ -122,7 +130,7 @@ public class CaRenewCACommand extends BaseCaAdminCommand {
     		}
     		if (customNotBefore != null) {
     			buff.append(" and with custom notBefore date: ");
-    			buff.append(format.format(customNotBefore));
+    			buff.append(getSimpleDateFormat().format(customNotBefore));
     		}
     		getLogger().info(buff.toString());
     		
@@ -175,8 +183,8 @@ public class CaRenewCACommand extends BaseCaAdminCommand {
         		.append("  Serial number:  ").append(x509.getSerialNumber().toString(16)).append(NEWLINE)
         		.append("  Issuer DN:      ").append(x509.getIssuerDN().getName()).append(NEWLINE)
         		.append("  Subject DN:     ").append(x509.getSubjectDN().getName()).append(NEWLINE)
-        		.append("  Not Before:     ").append(format.format(x509.getNotBefore())).append(NEWLINE)
-        		.append("  Not After:      ").append(format.format(x509.getNotAfter())).append(NEWLINE)
+        		.append("  Not Before:     ").append(getSimpleDateFormat().format(x509.getNotBefore())).append(NEWLINE)
+        		.append("  Not After:      ").append(getSimpleDateFormat().format(x509.getNotAfter())).append(NEWLINE)
         		.append("  Subject key id: ").append(computeSubjectKeyIdentifier(x509)).append(NEWLINE)
         		.toString());
         } else if (certificate instanceof CardVerifiableCertificate) {
@@ -185,8 +193,8 @@ public class CaRenewCACommand extends BaseCaAdminCommand {
 	        	getLogger().info(new StringBuilder()
 	        		.append("  ").append(cvc.getCVCertificate().getCertificateBody().getHolderReference().getAsText(false)).append(NEWLINE)
 	        		.append("  ").append(cvc.getCVCertificate().getCertificateBody().getAuthorityReference().getAsText(false)).append(NEWLINE)
-	        		.append("  Not Before:      ").append(format.format(cvc.getCVCertificate().getCertificateBody().getValidFrom())).append(NEWLINE)
-	        		.append("  Not After:       ").append(format.format(cvc.getCVCertificate().getCertificateBody().getValidTo())).append(NEWLINE)
+	        		.append("  Not Before:      ").append(getSimpleDateFormat().format(cvc.getCVCertificate().getCertificateBody().getValidFrom())).append(NEWLINE)
+	        		.append("  Not After:       ").append(getSimpleDateFormat().format(cvc.getCVCertificate().getCertificateBody().getValidTo())).append(NEWLINE)
 	        		.append("  Public key hash: ").append(computePublicKeyHash(cvc.getPublicKey())).append(NEWLINE)
 	        		.toString());
         	} catch (NoSuchFieldException ex) {

@@ -63,11 +63,8 @@ import org.ejbca.util.keystore.P12toPEM;
  */
 public class BatchMakeP12 extends BaseCommand {
 
-    /** Internal localization of logs and errors */
-    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
-
     BatchToolProperties props = new BatchToolProperties();
-
+    
     /**
      * Where created P12-files are stored, default p12
      */
@@ -122,7 +119,7 @@ public class BatchMakeP12 extends BaseCommand {
             File dir = new File(directory).getCanonicalFile();
             dir.mkdir();
             setMainStoreDir(directory);
-            String iMsg = intres.getLocalizedMessage("batch.generateindir", dir);
+            String iMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.generateindir", dir);
             getLogger().info(iMsg);
 
             if (username != null) {
@@ -307,11 +304,11 @@ public class BatchMakeP12 extends BaseCommand {
                 // cachain[cachain.length - 1].verify(cachain[cachain.length -
                 // 1].getPublicKey());
             } catch (GeneralSecurityException se) {
-                String errMsg = intres.getLocalizedMessage("batch.errorrootnotverify");
+                String errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorrootnotverify");
                 throw new Exception(errMsg);
             }
         } else {
-            String errMsg = intres.getLocalizedMessage("batch.errorrootnotselfsigned");
+            String errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorrootnotselfsigned");
             throw new Exception(errMsg);
         }
 
@@ -323,7 +320,7 @@ public class BatchMakeP12 extends BaseCommand {
             Certificate usercert = CertTools.getCertfromByteArray(cert.getEncoded());
             usercert.verify(cacert.getPublicKey());
         } catch (GeneralSecurityException se) {
-            String errMsg = intres.getLocalizedMessage("batch.errorgennotverify");
+            String errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorgennotverify");
             throw new Exception(errMsg);
         }
 
@@ -348,7 +345,7 @@ public class BatchMakeP12 extends BaseCommand {
         }
 
         storeKeyStore(ks, username, password, createJKS, createPEM);
-        String iMsg = intres.getLocalizedMessage("batch.createkeystore", username);
+        String iMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.createkeystore", username);
         getLogger().info(iMsg);
         if (getLogger().isTraceEnabled()) {
             getLogger().trace("<createUser: username=" + username);
@@ -386,7 +383,7 @@ public class BatchMakeP12 extends BaseCommand {
                     orgCert = (X509Certificate) recoveryData.getCertificate();
                 }
             } else {
-                String errMsg = intres.getLocalizedMessage("batch.errornokeyrecoverydata", data.getUsername());
+                String errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errornokeyrecoverydata", data.getUsername());
                 throw new Exception(errMsg);
             }
         } else {
@@ -409,10 +406,10 @@ public class BatchMakeP12 extends BaseCommand {
         // Only generate supported tokens
         if (createP12 || createPEM || createJKS) {
             if (status == EndEntityConstants.STATUS_KEYRECOVERY) {
-                String iMsg = intres.getLocalizedMessage("batch.retrieveingkeys", data.getUsername());
+                String iMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.retrieveingkeys", data.getUsername());
                 getLogger().info(iMsg);
             } else {
-                String iMsg = intres.getLocalizedMessage("batch.generatingkeys", data.getUsername());
+                String iMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.generatingkeys", data.getUsername());
                 getLogger().info(iMsg);
             }
             processUser(cliUserName, cliPassword, data, createJKS, createPEM, (status == EndEntityConstants.STATUS_KEYRECOVERY));
@@ -433,7 +430,7 @@ public class BatchMakeP12 extends BaseCommand {
                 ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setClearTextPassword(getAuthenticationToken(cliUserName, cliPassword), data.getUsername(), null);
             }
             ret = true;
-            String iMsg = intres.getLocalizedMessage("batch.generateduser", data.getUsername());
+            String iMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.generateduser", data.getUsername());
             getLogger().info(iMsg);
         } else {
             getLogger().debug("Cannot batchmake browser generated token for user (wrong tokentype)- " + data.getUsername());
@@ -450,7 +447,7 @@ public class BatchMakeP12 extends BaseCommand {
      */
     public void createAllNew(String cliUserName, String cliPassword) throws Exception {
         getLogger().trace(">createAllNew");
-        String iMsg = intres.getLocalizedMessage("batch.generatingallstatus", "NEW");
+        String iMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.generatingallstatus", "NEW");
         getLogger().info(iMsg);
         createAllWithStatus(cliUserName, cliPassword, EndEntityConstants.STATUS_NEW);
         getLogger().trace("<createAllNew");
@@ -464,7 +461,7 @@ public class BatchMakeP12 extends BaseCommand {
      */
     public void createAllFailed(String cliUserName, String cliPassword) throws Exception {
         getLogger().trace(">createAllFailed");
-        String iMsg = intres.getLocalizedMessage("batch.generatingallstatus", "FAILED");
+        String iMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.generatingallstatus", "FAILED");
         getLogger().info(iMsg);
         createAllWithStatus(cliUserName, cliPassword, EndEntityConstants.STATUS_FAILED);
         getLogger().trace("<createAllFailed");
@@ -480,7 +477,7 @@ public class BatchMakeP12 extends BaseCommand {
     public void createAllKeyRecover(String cliUserName, String cliPassword) throws Exception {
         if (getUseKeyRecovery(cliUserName, cliPassword)) {
             getLogger().trace(">createAllKeyRecover");
-            String iMsg = intres.getLocalizedMessage("batch.generatingallstatus", "KEYRECOVER");
+            String iMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.generatingallstatus", "KEYRECOVER");
             getLogger().info(iMsg);
             createAllWithStatus(cliUserName, cliPassword, EndEntityConstants.STATUS_KEYRECOVERY);
             getLogger().trace("<createAllKeyRecover");
@@ -510,7 +507,7 @@ public class BatchMakeP12 extends BaseCommand {
                 }
             }
 
-            String iMsg = intres.getLocalizedMessage("batch.generatingnoofusers", Integer.valueOf(result.size()));
+            String iMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.generatingnoofusers", Integer.valueOf(result.size()));
             getLogger().info(iMsg);
 
             int failcount = 0;
@@ -531,7 +528,7 @@ public class BatchMakeP12 extends BaseCommand {
                             }
                         } catch (Exception e) {
                             // If things went wrong set status to FAILED
-                            String errMsg = intres.getLocalizedMessage("batch.errorsetstatus", "FAILED");
+                            String errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorsetstatus", "FAILED");
                             getLogger().error(errMsg, e);
                             getLogger().debug("batch.errorsetstatus", e);
                             failedusers += (":" + data.getUsername());
@@ -543,17 +540,17 @@ public class BatchMakeP12 extends BaseCommand {
                             }
                         }
                     } else {
-                        iMsg = intres.getLocalizedMessage("batch.infonoclearpwd", data.getUsername());
+                        iMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.infonoclearpwd", data.getUsername());
                         getLogger().info(iMsg);
                     }
                 }
 
                 if (failedusers.length() > 0) {
-                    String errMsg = intres.getLocalizedMessage("batch.errorbatchfailed", Integer.valueOf(failcount), Integer.valueOf(successcount), failedusers);
+                    String errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorbatchfailed", Integer.valueOf(failcount), Integer.valueOf(successcount), failedusers);
                     throw new Exception(errMsg);
                 }
 
-                iMsg = intres.getLocalizedMessage("batch.success", Integer.valueOf(successcount), successusers);
+                iMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.success", Integer.valueOf(successcount), successusers);
                 getLogger().info(iMsg);
             }
         } while ((result.size() > 0) && !stopnow);
@@ -577,7 +574,7 @@ public class BatchMakeP12 extends BaseCommand {
         }
         EndEntityInformation data = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAuthenticationToken(cliUserName, cliPassword), username);
         if (data == null) {
-            getLogger().error(intres.getLocalizedMessage("batch.errorunknown", username));
+            getLogger().error(InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorunknown", username));
             return;
         }
         int status = data.getStatus();
@@ -588,18 +585,18 @@ public class BatchMakeP12 extends BaseCommand {
                     doCreate(cliUserName, cliPassword, data, status);
                 } catch (Exception e) {
                     // If things went wrong set status to FAILED
-                    String errMsg = intres.getLocalizedMessage("batch.errorsetstatus", "FAILED");
+                    String errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorsetstatus", "FAILED");
                     getLogger().error(errMsg, e);
                     if (status == EndEntityConstants.STATUS_KEYRECOVERY) {
                         ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAuthenticationToken(cliUserName, cliPassword), data.getUsername(), EndEntityConstants.STATUS_KEYRECOVERY);
                     } else {
                         ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAuthenticationToken(cliUserName, cliPassword), data.getUsername(), EndEntityConstants.STATUS_FAILED);
                     }
-                    errMsg = intres.getLocalizedMessage("batch.errorbatchfaileduser", username);
+                    errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorbatchfaileduser", username);
                     throw new Exception(errMsg);
                 }
             } else {
-                String errMsg = intres.getLocalizedMessage("batch.errorbatchfaileduser", username);
+                String errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorbatchfaileduser", username);
                 getLogger().error(errMsg);
                 throw new Exception(errMsg);
             }
