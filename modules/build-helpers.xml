@@ -44,6 +44,7 @@
 				<classpath>
 					<path refid="@{classpath}" />
 					<pathelement location="${mod.buildtools.build}" />
+					<path refid="lib.jee.classpath"/>
 				</classpath>
 				<arg value="@{file}" />
 				<arg value="@{interface}" />

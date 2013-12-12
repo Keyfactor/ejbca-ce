@@ -11,15 +11,15 @@ public class CliCommand implements Comparable<CliCommand> {
 	private final String mainCommand;
 	private final String subCommand;
 	private final String description;
-	private final Class<CliCommandPlugin> commandClass;
+	private final CliCommandPlugin command;
 	private final String[] commandAliases;
 	private final String[] subcommandAliases;
 	
-    public CliCommand(String mainCommand, String[] commandAliases, String subCommand, final String[] subcommandAliases, String description, Class<CliCommandPlugin> commandClass) {
+    public CliCommand(String mainCommand, String[] commandAliases, String subCommand, final String[] subcommandAliases, String description, CliCommandPlugin command) {
         this.mainCommand = mainCommand;
         this.subCommand = subCommand;
         this.description = description;
-        this.commandClass = commandClass;
+        this.command = command;
         this.commandAliases = commandAliases;
         this.subcommandAliases = subcommandAliases;
     }
@@ -29,7 +29,7 @@ public class CliCommand implements Comparable<CliCommand> {
 	public String getSubCommand() { return this.subCommand; }
 	public String[] getSubCommandAliases() { return this.subcommandAliases; }
 	public String getDescription() { return this.description; }
-	public Class<CliCommandPlugin> getCommandClass() { return this.commandClass; }
+	public CliCommandPlugin getCommand() { return this.command; }
 
 	public int compareTo(CliCommand cliCommand) {
 		if (getMainCommand()==null) {
