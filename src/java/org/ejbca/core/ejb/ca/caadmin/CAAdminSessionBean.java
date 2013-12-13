@@ -82,9 +82,9 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
-import org.cesecore.certificates.ca.CVCCA;
 import org.cesecore.certificates.ca.CVCCAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.CvcCA;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.X509CAInfo;
@@ -279,7 +279,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             log.info("Creating a CVC CA: "+cainfo.getName());
             CVCCAInfo cvccainfo = (CVCCAInfo) cainfo;
             // Create CVCCA
-            ca = new CVCCA(cvccainfo);
+            ca = CvcCA.getInstance(cvccainfo);
             ca.setCAToken(catoken);
         }
         return ca;
@@ -1094,7 +1094,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                             log.info("Creating a CVC CA (process request)");
                             CVCCAInfo cvccainfo = (CVCCAInfo) cainfo;
                             // Create CVCCA
-                            ca = new CVCCA(cvccainfo);
+                            ca = CvcCA.getInstance(cvccainfo);
                         } else {
                             ca = null;
                         }
@@ -1240,7 +1240,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             // CVC CA is a special type of CA for EAC electronic passports
             log.info("Creating a CVC CA (process request)");
             CVCCAInfo cvccainfo = (CVCCAInfo) cainfo;
-            ca = new CVCCA(cvccainfo);
+            ca = CvcCA.getInstance(cvccainfo);
         }
         ca.setCertificateChain(certificates);
         CAToken token = new CAToken(ca.getCAId(), new NullCryptoToken().getProperties());
@@ -2058,7 +2058,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     true, // useUserStorage
                     true // useCertificateStorage
             );
-            ca = new CVCCA((CVCCAInfo) cainfo);
+            ca = CvcCA.getInstance((CVCCAInfo) cainfo);
         }
         // We must activate the token, in case it does not have the default password
         final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(catoken.getCryptoTokenId());

@@ -5,22 +5,37 @@
     
     <import file="${cesecore-common.dir}/../build.xml"/>
     
+	<path id="compile.classpath">
+        <path refid="lib.commons-lang.classpath"/>
+        <path refid="lib.jee.classpath" />
+        <path refid="lib.jpa.classpath"/>
+        <path refid="lib.cert-cvc.classpath"/>
+        <path refid="lib.bouncycastle.classpath"/>
+        <path refid="lib.log4j.classpath"/>
+        <path refid="lib.commons-logging.classpath"/>
+        <path refid="lib.commons-config.classpath"/>
+        <path refid="lib.commons-collections.classpath"/>
+        <path refid="lib.ldap.classpath"/>
+	</path>
+
+	<!-- The buildservicemanifest needs additional classes in order to run. 
+	     These are not included in the javac classpath for cesecore-common to ensure that cesecore-common does not depends on that -->
+	<path id="manifest.classpath">
+        <path refid="compile.classpath"/>
+		<path location="${ejbca.home}/src/java"/>
+		<path location="${cesecore-common.dir}/build/classes"/>
+	</path>
+
     <target name="jar" depends="">
         <mkdir dir="${cesecore-common.dir}/build/classes"/>
         <javac srcdir="${cesecore-common.dir}/src" destdir="${cesecore-common.dir}/build/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}">
-            <classpath refid="lib.commons-lang.classpath"/>
-            <classpath refid="lib.jee.classpath" />
-            <classpath refid="lib.jpa.classpath"/>
-            <classpath refid="lib.cert-cvc.classpath"/>
-            <classpath refid="lib.bouncycastle.classpath"/>
-            <classpath refid="lib.log4j.classpath"/>
-            <classpath refid="lib.commons-logging.classpath"/>
-            <classpath refid="lib.commons-config.classpath"/>
-            <classpath refid="lib.commons-collections.classpath"/>
-            <classpath refid="lib.ldap.classpath"/>
+            <classpath refid="compile.classpath"/>
         </javac>
+    	<!-- generates dynamically META-INF/services for the ServiceLocator to find implementations of CvcPlugin -->
+    	<buildservicemanifest interface="org.cesecore.certificates.ca.CvcPlugin" file="${cesecore-common.dir}/build/classes" classpath="manifest.classpath"/>
         <mkdir dir="${cesecore-common.dir}/dist"/>
         <jar destfile="${cesecore-common.dir}/dist/cesecore-common.jar">
+   			<fileset dir="${cesecore-common.dir}/build" includes="META-INF/**/*"/>
             <fileset dir="${cesecore-common.dir}/build/classes/" excludes="**/*.java"/>
             <fileset dir="${cesecore-common.dir}/src/" excludes="**/*.java"/>
         </jar>

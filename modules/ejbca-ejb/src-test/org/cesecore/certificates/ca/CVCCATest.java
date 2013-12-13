@@ -60,7 +60,7 @@ import org.ejbca.cvc.CertificateGenerator;
 import org.ejbca.cvc.HolderReferenceField;
 import org.junit.Test;
 
-/** JUnit test for X.509 CA
+/** JUnit test for CVC EAC CA
  * 
  * @version $Id$
  */
@@ -75,7 +75,7 @@ public class CVCCATest {
 	@Test
 	public void testCABasicOperations() throws Exception {
 	    final CryptoToken cryptoToken = getNewCryptoToken();
-        CVCCA cvcca = createTestCA(cryptoToken, CADN);
+	    CvcCA cvcca = createTestCA(cryptoToken, CADN);
         Certificate cacert = cvcca.getCACertificate();
         
         // Start by creating a PKCS7, should return null for CVC CA
@@ -121,7 +121,7 @@ public class CVCCATest {
 	@Test
 	public void testStoreAndLoad() throws Exception {
         final CryptoToken cryptoToken = getNewCryptoToken();
-		CVCCA ca = createTestCA(cryptoToken, CADN);
+        CvcCA ca = createTestCA(cryptoToken, CADN);
 		
         EndEntityInformation user = new EndEntityInformation("username", "CN=User001,C=SE", 666, "rfc822Name=user@user.com", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
         KeyPair keypair = KeyTools.genKeys("512", "RSA");
@@ -136,7 +136,7 @@ public class CVCCATest {
 		
 		// Restore CA from data (and other things)
 		@SuppressWarnings("unchecked")
-        CVCCA ca1 = new CVCCA((HashMap<Object, Object>)o, 777, CADN, "test", CAConstants.CA_ACTIVE, new Date());
+		CvcCA ca1 = CvcCA.getInstance((HashMap<Object, Object>)o, 777, CADN, "test", CAConstants.CA_ACTIVE, new Date());
 
 		Certificate usercert1 = ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, 10L, cp, "00000");
         PublicKey publicKey1 = cryptoToken.getPublicKey(ca1.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
@@ -173,7 +173,7 @@ public class CVCCATest {
         assertEquals(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC, caToken2.getKeySequenceFormat());
 	}
 
-	private static CVCCA createTestCA(CryptoToken cryptoToken, String cadn) throws Exception {
+	private static CvcCA createTestCA(CryptoToken cryptoToken, String cadn) throws Exception {
 		// Create catoken
 		Properties caTokenProperties = new Properties();
     	caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
@@ -210,7 +210,7 @@ public class CVCCATest {
                 true, // useUserStorage
                 true // useCertificateStorage
         );
-        CVCCA cvcca = new CVCCA(cainfo);
+        CvcCA cvcca = CvcCA.getInstance(cainfo);
         cvcca.setCAToken(catoken);
         // A CA certificate
         CAReferenceField caRef = new CAReferenceField("SE", "CAREF001", "00000");
