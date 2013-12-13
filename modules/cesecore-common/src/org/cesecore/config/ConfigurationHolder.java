@@ -205,7 +205,6 @@ public final class ConfigurationHolder {
 
     /**
      * @param property the property to look for
-     * @param defaultValue default value to use if property is not found
      * @return String configured for property, or the default value defined in defaultvalues.properties, or null if no such value exists
      */
     public static String getString(final String property) {
@@ -243,7 +242,8 @@ public final class ConfigurationHolder {
     /**
      * Return a the expanded version of a property. E.g. property1=foo property2=${property1}bar would return "foobar" for property2
      * 
-     * @param defaultValue to use if no property of such a name is found
+     * @param property the property to look for
+     * @return String configured for property, or the default value defined in defaultvalues.properties, or null if no such value exists
      */
     public static String getExpandedString(final String property) {
         String ret = getString(property);
