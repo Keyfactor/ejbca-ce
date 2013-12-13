@@ -14,7 +14,6 @@ package org.cesecore.certificates.ca;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.Serializable;
 import java.security.InvalidKeyException;
 import java.security.InvalidParameterException;
 import java.security.KeyPair;
@@ -26,6 +25,7 @@ import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Properties;
 
 import org.apache.commons.lang.RandomStringUtils;
@@ -61,28 +61,28 @@ import org.ejbca.cvc.exception.ParseException;
 
 
 /**
- * CVCCAEACImpl is a implementation of a CVC CA for EAC 1.11 and holds data specific for Certificate generation
+ * CvcEacCA is an implementation of a CVC CA for EAC 1.11 and holds data specific for Certificate generation
  * according to the CVC (Card Verifiable Certificate) standard used in EU EAC electronic passports.  
  *
  * @version $Id$
  */
-public class CVCCAEACImpl implements CVCCAImpl, Serializable {
+public class CvcEacCA extends CvcCA implements CvcPlugin {
 
 	private static final long serialVersionUID = 3L;
-	private static final Logger log = Logger.getLogger(CVCCAEACImpl.class);
+	private static final Logger log = Logger.getLogger(CvcEacCA.class);
 
 	/** Internal localization of logs and errors */
 	private static final InternalResources intres = InternalResources.getInstance();
 
-	private CA ca;
-
-	public CVCCAEACImpl() {
+	
+	
+	public void init(CVCCAInfo cainfo) {
+	    super.init(cainfo);
 	}
 
-	@Override
-    public void setCA(CA ca) {
-        this.ca = ca;
-    }
+	public void init(HashMap<Object, Object> data, int caId, String subjectDN, String name, int status, Date updateTime) {
+	    super.init(data, caId, subjectDN, name, status, updateTime);
+	}
 
     @Override
 	public byte[] createRequest(CryptoToken cryptoToken, Collection<ASN1Encodable> attributes, String signAlg, Certificate cacert, int signatureKeyPurpose) throws CryptoTokenOfflineException {
@@ -94,13 +94,13 @@ public class CVCCAEACImpl implements CVCCAImpl, Serializable {
 		// No outer signature on this self signed request
 		KeyPair keyPair;
 		try {
-			CAToken catoken = ca.getCAToken();
+			CAToken catoken = getCAToken();
 			final String alias = catoken.getAliasFromPurpose(signatureKeyPurpose);
 			keyPair = new KeyPair(cryptoToken.getPublicKey(alias), cryptoToken.getPrivateKey(alias));
-			String subject = ca.getCAInfo().getSubjectDN();
+			String subject = getCAInfo().getSubjectDN();
 			String country = CertTools.getPartFromDN(subject, "C");
 			String mnemonic = CertTools.getPartFromDN(subject, "CN");
-			String seq = ca.getCAToken().getKeySequence(); 
+			String seq = getCAToken().getKeySequence(); 
 			if (signatureKeyPurpose == CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT) {
 				// See if we have a next sequence to put in the holder reference instead of the current one, 
 				// since we are using the next key we should use the next sequence
@@ -174,15 +174,15 @@ public class CVCCAEACImpl implements CVCCAImpl, Serializable {
     public byte[] createAuthCertSignRequest(CryptoToken cryptoToken, byte[] request) throws CryptoTokenOfflineException {
 	    byte[] ret = null;
 	    try {
-	        CardVerifiableCertificate cacert = (CardVerifiableCertificate)ca.getCACertificate();
+	        CardVerifiableCertificate cacert = (CardVerifiableCertificate)getCACertificate();
 	        if (cacert == null) {
 	            // if we don't have a CA certificate, we can't sign any request
 	            return null;
 	        }
-	        CAToken catoken = ca.getCAToken();
+	        CAToken catoken = getCAToken();
 	        final String alias = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
 	        KeyPair keyPair = new KeyPair(cryptoToken.getPublicKey(alias), cryptoToken.getPrivateKey(alias));
-	        String signAlg = ca.getCAToken().getSignatureAlgorithm();
+	        String signAlg = getCAToken().getSignatureAlgorithm();
 	        // Create the CA reference, should be from signing certificates holder field
 	        HolderReferenceField caHolder = cacert.getCVCertificate().getCertificateBody().getHolderReference();
 	        // Set the CA reference field for the authentication signature
@@ -224,12 +224,12 @@ public class CVCCAEACImpl implements CVCCAImpl, Serializable {
     }
 
     @Override
-	public byte[] createOrRemoveLinkCertificate(final CryptoToken cryptoToken, final boolean createLinkCertificate, final CertificateProfile certProfile) throws CryptoTokenOfflineException {
+	public void createOrRemoveLinkCertificate(final CryptoToken cryptoToken, final boolean createLinkCertificate, final CertificateProfile certProfile) throws CryptoTokenOfflineException {
 	    byte[] ret = null;
 	    if (createLinkCertificate) {
 	        try {
-	            final CardVerifiableCertificate caCertificate = (CardVerifiableCertificate)ca.getCACertificate();
-	            final CAToken caToken = ca.getCAToken();
+	            final CardVerifiableCertificate caCertificate = (CardVerifiableCertificate)getCACertificate();
+	            final CAToken caToken = getCAToken();
 	            final String previousSignKeyAlias = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS);
 	            final KeyPair previousSignKeyPair = new KeyPair(cryptoToken.getPublicKey(previousSignKeyAlias), cryptoToken.getPrivateKey(previousSignKeyAlias));
 	            final String caSigningAlgorithm = caToken.getSignatureAlgorithm();
@@ -253,7 +253,7 @@ public class CVCCAEACImpl implements CVCCAImpl, Serializable {
 	            throw new RuntimeException("Bad CV CA certificate.", e);
 	        }
 	    }
-	    return ret;
+	    updateLatestLinkCertificate(ret);
 	}
 	
     @Override
@@ -308,7 +308,7 @@ public class CVCCAEACImpl implements CVCCAImpl, Serializable {
         }
         
         // Get CA reference
-        CardVerifiableCertificate cacert = (CardVerifiableCertificate)ca.getCACertificate();
+        CardVerifiableCertificate cacert = (CardVerifiableCertificate)getCACertificate();
         // Get certificate validity time notBefore and notAfter
         CertificateValidity val = new CertificateValidity(subject, certProfile, notBefore, notAfter, cacert, isRootCA);
 
@@ -358,10 +358,10 @@ public class CVCCAEACImpl implements CVCCAImpl, Serializable {
 	        case CertificateProfile.CVC_ACCESS_NONE: accessRights = AccessRightEnum.READ_ACCESS_NONE; break;
         }
         // Generate the CVC certificate using Keijos library
-        CAToken catoken = ca.getCAToken();
+        CAToken catoken = getCAToken();
         String sigAlg = catoken.getSignatureAlgorithm();
         final String provider = cryptoToken.getSignProviderName();
-        final String alias = ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+        final String alias = getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
         final PrivateKey caPrivateKey = cryptoToken.getPrivateKey(alias);
         if (log.isDebugEnabled()) {
             log.debug("Creating CV certificate with algorithm "+sigAlg+", using provider "+provider+", public key algorithm from CVC request must match this algorithm.");
@@ -387,5 +387,10 @@ public class CVCCAEACImpl implements CVCCAImpl, Serializable {
         }
 		return retCert;                                                                                        
 	}
+
+    @Override
+    public String getCvcType() {
+        return "EAC";
+    }
 
 }
