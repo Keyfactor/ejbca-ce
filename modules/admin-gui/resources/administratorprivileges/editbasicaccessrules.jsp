@@ -132,6 +132,12 @@ function roleupdated(){
        else
          selectendentityrules.options[i].selected=false;
     }
+    numofotherrules = selectother.length;
+    for( i=numofotherrules-1; i >= 0; i--) {
+    	if(selectother.options[i].value == <%=BasicAccessRuleSet.OTHER_ISSUEHARDTOKENS %>) {
+    		selectother.options[i].selected=false;
+    	}
+    }
   }
 }
  
