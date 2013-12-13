@@ -64,7 +64,7 @@ import org.apache.log4j.Logger;
  * third field is the keyid used, so different rows can be protected with different keys (key rollover etc) The fourth field is the protection itself,
  * hmac, digital signature etc.
  * 
- * @version $Id: ProtectedData.java 18160 2013-11-15 14:47:50Z anatom $
+ * @version $Id$
  */
 public abstract class ProtectedData {
 
