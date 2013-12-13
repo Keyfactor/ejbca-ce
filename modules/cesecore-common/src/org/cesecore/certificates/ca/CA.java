@@ -121,8 +121,14 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     private CAInfo cainfo = null;
     private CAToken caToken = null;
 
+    /** No args constructor required for ServiceLocator */
+    protected CA() {}
+    
     /** Creates a new instance of CA, this constructor should be used when a new CA is created */
     public CA(CAInfo cainfo) {
+        init(cainfo);
+    }
+    public void init(CAInfo cainfo) {
         data = new LinkedHashMap<Object, Object>();
 
         this.cainfo = cainfo;
@@ -185,8 +191,12 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         }
     }
 
-    /** Constructor used when retrieving existing CA from database. */
     public CA(HashMap<Object, Object> data) {
+        init(data);
+    }
+
+    /** Constructor used when retrieving existing CA from database. */
+    public void init(HashMap<Object, Object> data) {
         loadData(data);
         extendedcaservicemap = new HashMap<Integer, ExtendedCAService>();
     }

@@ -13,40 +13,36 @@
 package org.cesecore.certificates.ca;
 
 import java.io.Serializable;
-import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ServiceLoader;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.ASN1Encodable;
-import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.cert.X509CRLHolder;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceTypes;
-import org.cesecore.certificates.certificate.request.RequestMessage;
-import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 
 
 /**
- * CVCCA is a implementation of a CA and holds data specific for Certificate and CRL generation 
- * according to the CVC (Card Verifiable Certificate) standard used in EU EAC electronic passports.  
+ * Base class for CVC CAs. Holds data specific for Certificate and CRL generation 
+ * according to the CVC (Card Verifiable Certificate) standards, which are not real standards.
+ * There can be many different implementations of CVC CA which are quite different, for example EU EAC electronic passports,
+ * Tachographs and eIDs.  
  *
  * @version $Id$
  */
-public class CVCCA extends CA implements Serializable {
+public abstract class CvcCA extends CA implements Serializable {
 
-	private static final long serialVersionUID = 3L;
-	private static final Logger log = Logger.getLogger(CVCCA.class);
+    private static final long serialVersionUID = 3L;
+	private static final Logger log = Logger.getLogger(CvcCA.class);
 
 	/** Internal localization of logs and errors */
 	private static final InternalResources intres = InternalResources.getInstance();
@@ -54,58 +50,50 @@ public class CVCCA extends CA implements Serializable {
 	/** Version of this class, if this is increased the upgrade() method will be called automatically */
 	public static final float LATEST_VERSION = 3;
 
-	   /** Definition of the optional CVCA implementation */
-    private static final String implClassName = "org.cesecore.certificates.ca.CVCCAEACImpl";
-    /** Cache class so we don't have to do Class.forName for every entity object created */
-    private static volatile Class<?> implClass = null;
-    /** Optimization variable so we don't have to check for existence of implClass for every construction of an object */
-    private static volatile boolean implExists = true;
-
-	private CVCCAImpl impl;
-	
 	/** Creates a new instance of CA, this constructor should be used when a new CA is created */
-	public CVCCA(CVCCAInfo cainfo) {
-	    super(cainfo);
+	public void init(CVCCAInfo cainfo) {
+	    super.init(cainfo);
         data.put(CA.CATYPE, Integer.valueOf(CAInfo.CATYPE_CVC));
         data.put(VERSION, new Float(LATEST_VERSION));   
-        // Create the implementation
-        createCAImpl(cainfo);
 	}
 
-    private void createCAImpl(final CVCCAInfo cainfo) {
-        // cainfo can be used to differentiate between different types of CVC CA implementations as there
-        // can be several different types of CVC, EAC, Tachograph etc.
-        if (implExists) {
-            try {
-                if (implClass == null) {
-                    // We only end up here once, if the class does not exist, we will never end up here again (ClassNotFoundException) 
-                    // and if the class exists we will never end up here again (it will not be null)
-                    implClass = Class.forName(implClassName);
-                    log.debug("CVCCAEACImpl is available, and used, in this version of EJBCA.");
-                }
-                impl = (CVCCAImpl)implClass.newInstance();
-                impl.setCA(this);
-            } catch (ClassNotFoundException e) {
-                // We only end up here once, if the class does not exist, we will never end up here again
-                implExists = false;
-                log.info("CVC CA is not available in the version of EJBCA.");
-                // No implementation found
-                throw new RuntimeException("CVC CA is not available in the version of EJBCA.");
-            } catch (InstantiationException e) {
-                log.error("Error intitilizing CVCCA: ", e);
-            } catch (IllegalAccessException e) {
-                log.error("Error intitilizing CVCCA: ", e);
-            }           
-        } else {
-            // No implementation found
-            log.info("CVC CA is not available in the version of EJBCA.");
-            throw new RuntimeException("CVC CA is not available in the version of EJBCA.");
+	public static CvcCA getInstance(CVCCAInfo cainfo) {
+	    // For future: Type here should be extracted from cainfo to select between different implementations 
+	    CvcCA ret = (CvcCA)createCAImpl("EAC");
+	    ret.init(cainfo);
+	    return ret;
+	}
+	public static CvcCA getInstance(HashMap<Object, Object> data, int caId, String subjectDN, String name, int status, Date updateTime) {
+        // For future: Type here should be extracted from data to select between different implementations 
+        CvcCA ret = (CvcCA)createCAImpl("EAC");
+        ret.init(data, caId, subjectDN, name, status, updateTime);
+        return ret;
+	}
+
+	public static ServiceLoader<? extends CvcPlugin> getImplementationClasses() {
+        ServiceLoader<? extends CvcPlugin> serviceLoader = ServiceLoader.load(CvcPlugin.class);
+        return serviceLoader;
+	}
+    private static CvcPlugin createCAImpl(final String type) {
+        // type can be used to differentiate between different types of CVC CA implementations as there
+        // can be several different types of CVC: EAC, Tachograph, eID etc.
+        ServiceLoader<? extends CvcPlugin> serviceLoader = getImplementationClasses();
+        for (CvcPlugin cvcPlugin : serviceLoader) {
+        	if (log.isDebugEnabled()) {
+        	    log.debug("ServiceLoader found CvcPlugin implementation: "+cvcPlugin.getCvcType());
+        	}
+            if (type.equals(cvcPlugin.getCvcType())) {
+                return cvcPlugin;
+            }            
         }
+        // No implementation found
+        log.info("CVC CA is not available in the version of EJBCA.");
+        throw new RuntimeException("CVC CA is not available in the version of EJBCA.");            
     }
 
 	/** Constructor used when retrieving existing CVCCA from database. */
-	public CVCCA(HashMap<Object, Object> data, int caId, String subjectDN, String name, int status, Date updateTime) {
-		super(data);
+	public void init(HashMap<Object, Object> data, int caId, String subjectDN, String name, int status, Date updateTime) {
+		super.init(data);
 		final List<ExtendedCAServiceInfo> externalcaserviceinfos = new ArrayList<ExtendedCAServiceInfo>();
         for (final Integer externalCAServiceType : getExternalCAServiceTypes()) {
             //Type was removed in 6.0.0. It is removed from the database in the upgrade method in this class, but it needs to be ignored 
@@ -126,44 +114,15 @@ public class CVCCA extends CA implements Serializable {
 				isUseCertReqHistory(), isUseUserStorage(), isUseCertificateStorage());
 		super.setCAInfo(info);
         setCAId(caId);        
-        // Create the implementation
-        createCAImpl(info);
 	}
 
+	public abstract String getCvcType();
+	
 	@Override
 	public byte[] createPKCS7(CryptoToken cryptoToken, Certificate cert, boolean includeChain) throws SignRequestSignatureException {
         log.info(intres.getLocalizedMessage("cvc.info.nocvcpkcs7"));
         return null;
 	}    
-
-	@Override
-	public byte[] createRequest(CryptoToken cryptoToken, Collection<ASN1Encodable> attributes, String signAlg, Certificate cacert, int signatureKeyPurpose) throws CryptoTokenOfflineException {
-	    return impl.createRequest(cryptoToken, attributes, signAlg, cacert, signatureKeyPurpose);
-	}
-
-	@Override
-    public byte[] createAuthCertSignRequest(CryptoToken cryptoToken, byte[] request) throws CryptoTokenOfflineException {
-	    return impl.createAuthCertSignRequest(cryptoToken, request);
-    }
-
-	@Override
-	public void createOrRemoveLinkCertificate(final CryptoToken cryptoToken, final boolean createLinkCertificate, final CertificateProfile certProfile) throws CryptoTokenOfflineException {
-	    final byte[] ret = impl.createOrRemoveLinkCertificate(cryptoToken, createLinkCertificate, certProfile);
-	    updateLatestLinkCertificate(ret);
-	}
-	
-	@Override
-	public Certificate generateCertificate(CryptoToken cryptoToken, EndEntityInformation subject, 
-    		RequestMessage request,
-            PublicKey publicKey, 
-			int keyusage, 
-			Date notBefore,
-			Date notAfter,
-			CertificateProfile certProfile,
-			Extensions extensions,
-			String sequence) throws Exception{
-	    return impl.generateCertificate(cryptoToken, subject, request, publicKey, keyusage, notBefore, notAfter, certProfile, extensions, sequence);
-	}
 
     @Override
     public X509CRLHolder generateCRL(CryptoToken cryptoToken, Collection<RevokedCertInfo> certs, int crlnumber) {

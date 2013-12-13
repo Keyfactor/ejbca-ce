@@ -27,42 +27,40 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 
 
 /**
- * CVCCAImpl is an interface for CVCCAs. There can be different types of CVCCAs.  
+ * CvcPlugin is an interface for CVC CA implementation. There can be different types of CVCCAs.  
  *
  * @version $Id$
  */
-public interface CVCCAImpl {
+public interface CvcPlugin {
 
-    /**
-     * Sets the CA that this implementation class will use.
-     */
-    public void setCA(CA ca);
+    /** @return A string representing the type of CVC CA this is */ 
+    public String getCvcType();
     
     /** 
      * @see org.cesecore.certificates.ca.CA#createRequest(CryptoToken, Collection, String, Certificate, int) 
      */
-	public byte[] createRequest(CryptoToken cryptoToken, Collection<ASN1Encodable> attributes, String signAlg, Certificate cacert, int signatureKeyPurpose) throws CryptoTokenOfflineException;
+    public byte[] createRequest(CryptoToken cryptoToken, Collection<ASN1Encodable> attributes, String signAlg, Certificate cacert, int signatureKeyPurpose) throws CryptoTokenOfflineException;
 
     /** 
      * @see org.cesecore.certificates.ca.CA#createAuthCertSignRequest(CryptoToken, byte[]) 
      */
-	public byte[] createAuthCertSignRequest(CryptoToken cryptoToken, byte[] request) throws CryptoTokenOfflineException;
-	
+    public byte[] createAuthCertSignRequest(CryptoToken cryptoToken, byte[] request) throws CryptoTokenOfflineException;
+    
     /** 
      * @see org.cesecore.certificates.ca.CA#createOrRemoveLinkCertificate(CryptoToken, boolean, CertificateProfile) 
      */
-	public byte[] createOrRemoveLinkCertificate(final CryptoToken cryptoToken, final boolean createLinkCertificate, final CertificateProfile certProfile) throws CryptoTokenOfflineException;	
+    public void createOrRemoveLinkCertificate(final CryptoToken cryptoToken, final boolean createLinkCertificate, final CertificateProfile certProfile) throws CryptoTokenOfflineException;   
 
     /** 
      * @see org.cesecore.certificates.ca.CA#generateCertificate(CryptoToken, EndEntityInformation, RequestMessage, PublicKey, int, Date, Date, CertificateProfile, Extensions, String) 
      */
-	public Certificate generateCertificate(CryptoToken cryptoToken, EndEntityInformation subject, 
-    		RequestMessage request,
+    public Certificate generateCertificate(CryptoToken cryptoToken, EndEntityInformation subject, 
+            RequestMessage request,
             PublicKey publicKey, 
-			int keyusage, 
-			Date notBefore,
-			Date notAfter,
-			CertificateProfile certProfile,
-			Extensions extensions,
-			String sequence) throws Exception;
+            int keyusage, 
+            Date notBefore,
+            Date notAfter,
+            CertificateProfile certProfile,
+            Extensions extensions,
+            String sequence) throws Exception;
 }

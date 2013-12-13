@@ -41,9 +41,9 @@ import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.ca.CVCCA;
 import org.cesecore.certificates.ca.CVCCAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.CvcCA;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.X509CAInfo;
@@ -296,7 +296,7 @@ public abstract class CaTestUtils {
     }
 
 
-    public static CVCCA createTestCVCCA(String cadn, char[] tokenpin, boolean pkcs11) throws Exception {
+    public static CvcCA createTestCVCCA(String cadn, char[] tokenpin, boolean pkcs11) throws Exception {
         // Create catoken
         final int cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(null, tokenpin, true, pkcs11, cadn, "1024");
         final CAToken catoken = createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
@@ -319,7 +319,7 @@ public abstract class CaTestUtils {
                 true, // useUserStorage
                 true // useCertificateStorage
         );
-        CVCCA cvcca = new CVCCA(cainfo);
+        CvcCA cvcca = CvcCA.getInstance(cainfo);
         cvcca.setCAToken(catoken);
         // A CA certificate
         CAReferenceField caRef = new CAReferenceField("SE", "CAREF001", "00000");
