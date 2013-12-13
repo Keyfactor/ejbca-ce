@@ -321,6 +321,7 @@ public class ServiceManifestBuilder {
                 throw new IllegalArgumentException("Class " + interfaceClass.getName() + " was not an interface.");
             }
             List<Class<?>> implementingClasses = getImplementingClasses(location, location, interfaceClass);
+            System.out.println("Added " + implementingClasses.size() + " implementations of " + interfaceClass.getName());
             File metaInf = new File(location, META_INF);
             if (!metaInf.exists()) {
                 if (!metaInf.mkdir()) {
@@ -364,7 +365,6 @@ public class ServiceManifestBuilder {
         List<Class<?>> result = new ArrayList<Class<?>>();
         if (location.isDirectory()) {
             //Recurse to find all files in all subdirectories
-            int foundFiles = 0;
             for (File file : location.listFiles()) {
                 if (file.isDirectory()) {
                     result.addAll(getImplementingClasses(baseLocation, file, interfaceClass));
@@ -377,8 +377,7 @@ public class ServiceManifestBuilder {
                         try {
                             Class<?> candidate = Class.forName(className);
                             if (interfaceClass.isAssignableFrom(candidate) && !Modifier.isAbstract(candidate.getModifiers())
-                                    && !candidate.isInterface()) {
-                                foundFiles++;
+                                    && !candidate.isInterface()) {                              
                                 result.add(candidate);
                             }
                         } catch (ClassNotFoundException e) {
@@ -388,7 +387,7 @@ public class ServiceManifestBuilder {
                     }
                 }
             }
-            System.out.println("Added " + foundFiles + " implementations of " + interfaceClass.getName());
+           
         }
         return result;
     }
