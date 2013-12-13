@@ -34,27 +34,27 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 public interface CvcPlugin {
 
     /** @return A string representing the type of CVC CA this is */ 
-    public String getCvcType();
+    String getCvcType();
     
     /** 
      * @see org.cesecore.certificates.ca.CA#createRequest(CryptoToken, Collection, String, Certificate, int) 
      */
-    public byte[] createRequest(CryptoToken cryptoToken, Collection<ASN1Encodable> attributes, String signAlg, Certificate cacert, int signatureKeyPurpose) throws CryptoTokenOfflineException;
+    byte[] createRequest(CryptoToken cryptoToken, Collection<ASN1Encodable> attributes, String signAlg, Certificate cacert, int signatureKeyPurpose) throws CryptoTokenOfflineException;
 
     /** 
      * @see org.cesecore.certificates.ca.CA#createAuthCertSignRequest(CryptoToken, byte[]) 
      */
-    public byte[] createAuthCertSignRequest(CryptoToken cryptoToken, byte[] request) throws CryptoTokenOfflineException;
+    byte[] createAuthCertSignRequest(CryptoToken cryptoToken, byte[] request) throws CryptoTokenOfflineException;
     
     /** 
      * @see org.cesecore.certificates.ca.CA#createOrRemoveLinkCertificate(CryptoToken, boolean, CertificateProfile) 
      */
-    public void createOrRemoveLinkCertificate(final CryptoToken cryptoToken, final boolean createLinkCertificate, final CertificateProfile certProfile) throws CryptoTokenOfflineException;   
+    void createOrRemoveLinkCertificate(final CryptoToken cryptoToken, final boolean createLinkCertificate, final CertificateProfile certProfile) throws CryptoTokenOfflineException;   
 
     /** 
      * @see org.cesecore.certificates.ca.CA#generateCertificate(CryptoToken, EndEntityInformation, RequestMessage, PublicKey, int, Date, Date, CertificateProfile, Extensions, String) 
      */
-    public Certificate generateCertificate(CryptoToken cryptoToken, EndEntityInformation subject, 
+    Certificate generateCertificate(CryptoToken cryptoToken, EndEntityInformation subject, 
             RequestMessage request,
             PublicKey publicKey, 
             int keyusage, 
