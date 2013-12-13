@@ -59,11 +59,6 @@ import org.apache.log4j.Logger;
  * }
  * </pre>
  * 
- * The protection has the form: 1:1:123:fba85c2439055448ffbf22b57aa565a7b6279df2 Where the first field is the version of protected string, can be
- * updated with new fields etc, defined by the extending class The second field is the version of protection, can be different algorithms etc The
- * third field is the keyid used, so different rows can be protected with different keys (key rollover etc) The fourth field is the protection itself,
- * hmac, digital signature etc.
- * 
  * @version $Id$
  */
 public abstract class ProtectedData {
