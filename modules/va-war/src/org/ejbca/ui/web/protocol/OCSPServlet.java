@@ -35,7 +35,6 @@ import org.bouncycastle.cert.ocsp.OCSPResp;
 import org.bouncycastle.cert.ocsp.OCSPRespBuilder;
 import org.bouncycastle.cert.ocsp.SingleResp;
 import org.bouncycastle.cert.ocsp.UnknownStatus;
-import org.bouncycastle.ocsp.OCSPException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
 import org.cesecore.certificates.ocsp.OcspResponseInformation;
@@ -304,12 +303,7 @@ public class OCSPServlet extends HttpServlet {
         long now = new Date().getTime();
         long thisUpdate = ocspResponseInformation.getThisUpdate();
         long nextUpdate = ocspResponseInformation.getNextUpdate();
-        // maxAge is retrieved in milliseconds, although it is configured in seconds in ocsp.properties, or OCSP Key Binding.
-        long maxAge = ocspResponseInformation.getMaxAge();
-        if (maxAge >= (nextUpdate - thisUpdate)) {
-            maxAge = nextUpdate - thisUpdate - 1;
-            log.warn(intres.getLocalizedMessage("ocsp.shrinkmaxage", maxAge));
-        }   
+  
         // RFC 5019 6.2: Date: The date and time at which the OCSP server generated the HTTP response.
         // On JBoss AS the "Date"-header is cached for 1 second, so this value will be overwritten and off by up to a second 
         response.setDateHeader("Date", now);
@@ -326,7 +320,12 @@ public class OCSPServlet extends HttpServlet {
             response.setHeader("Cache-Control", "no-cache, must-revalidate"); //HTTP 1.1
             response.setHeader("Pragma", "no-cache"); //HTTP 1.0 
         } else {
-            // Max age is in millisecons, but it must be in seconds in the cache-control header
+            // Max age is retrieved in millisecons, but it must be in seconds in the cache-control header
+            long maxAge = ocspResponseInformation.getMaxAge();
+            if (maxAge >= (nextUpdate - thisUpdate)) {
+                maxAge = nextUpdate - thisUpdate - 1;
+                log.warn(intres.getLocalizedMessage("ocsp.shrinkmaxage", maxAge));
+            } 
             response.setHeader("Cache-Control", "max-age=" + (maxAge / 1000) + ",public,no-transform,must-revalidate");
         }
     }
