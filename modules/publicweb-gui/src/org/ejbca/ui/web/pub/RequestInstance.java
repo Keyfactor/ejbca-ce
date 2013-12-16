@@ -519,7 +519,8 @@ public class RequestInstance {
 		} catch (CryptoTokenOfflineException ctoe) {
 		    String ctoeMsg = ctoe.getMessage();
 		    for (Throwable e = ctoe; e != null; e = e.getCause()) {
-		        if (e instanceof sun.security.pkcs11.wrapper.PKCS11Exception) {
+		        //We can not do "if (e instanceof sun.security.pkcs11.wrapper.PKCS11Exception)" here because these classes are not guaranteed to exist on all platforms
+                if (e.getClass().getName().contains("PKCS11")) {
 		            ctoeMsg = "PKCS11 error "+e.getMessage();
 		            break;
 		        }
