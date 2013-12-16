@@ -92,7 +92,11 @@ public interface InternalKeyBinding extends Serializable {
     /** @return an implementation specific property or the default */
     InternalKeyBindingProperty<? extends Serializable> getProperty(String name);
 
-    /** @return a Map of all properties/data specific to this implementation */
+    /** 
+     * Get a defensive copy of all properties
+     * 
+     * @return a Map of all properties/data specific to this implementation, keyed to each property's name. 
+     */
     Map<String, InternalKeyBindingProperty<? extends Serializable>> getCopyOfProperties();
 
     /** @return a list of trusted certificates references. An undefined (null) serialnumber means ANY serialnumber. */

@@ -12,11 +12,9 @@
  *************************************************************************/
 package org.cesecore.keybind.impl;
 
-import java.io.Serializable;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.apache.log4j.Logger;
