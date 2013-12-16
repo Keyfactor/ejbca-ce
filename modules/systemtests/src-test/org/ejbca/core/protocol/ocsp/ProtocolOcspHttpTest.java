@@ -1048,9 +1048,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
             gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, xcert.getSerialNumber() ));
             OCSPReq req = gen.build();
             BasicOCSPResp response = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
-            if (response == null) {
-                throw new Exception("Could not retrieve response, test could not continue.");
-            }
+            assertNotNull("Could not retrieve response, test could not continue.", response);
             SingleResp resp = response.getResponses()[0];
             Extension singleExtension = resp.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff);
             assertNotNull("No extension sent with reply", singleExtension);
@@ -1071,9 +1069,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
             gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, xcert.getSerialNumber() ));
             req = gen.build();
             response = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
-            if (response == null) {
-                throw new Exception("Could not retrieve response, test could not continue.");
-            }
+            assertNotNull("Could not retrieve response, test could not continue.", response);
             resp = response.getResponses()[0];
             singleExtension = resp.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff);
             assertNull("The wrong extension was sent with reply", singleExtension);
@@ -1089,9 +1085,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
             gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, xcert.getSerialNumber() ));
             req = gen.build();
             response = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
-            if (response == null) {
-                throw new Exception("Could not retrieve response, test could not continue.");
-            }
+            assertNotNull("Could not retrieve response, test could not continue.", response);
             resp = response.getResponses()[0];
             singleExtension = resp.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_archive_cutoff);
             assertNotNull("No extension sent with reply", singleExtension);
@@ -1103,7 +1097,6 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
             assertTrue("Wrong archive cutoff value.", diff < 60000);
         
         } finally {
-            //certificateStoreSession.removeCertificate(xcert);
             endEntityManagementSession.revokeAndDeleteUser(admin, username, CRLReason.unspecified);
             eeProfSession.removeEndEntityProfile(admin, eepname);
             certProfSession.removeCertificateProfile(admin, cpname);
