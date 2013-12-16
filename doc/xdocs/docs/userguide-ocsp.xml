@@ -41,7 +41,7 @@ The algorithm is:
 <li>If status is CERT_ARCHIVED and reason is REMOVEFROMCRL or NOT_REVOKED the certificate is NOT revoked.</li>
 <li>If status is neither CERT_REVOKED or CERT_ARCHIVED the certificate is NOT revoked.</li>
 </ul>
-<p>The archive cutoff extension as defined in <a href="http://www.ietf.org/rfc/rfc2560.txt">RFC 2560</a> is not used.</p>
+<p>The archive cutoff extension is used as defined in <a href="http://www.ietf.org/rfc/rfc6960.txt">RFC 6960</a>.</p>
 </section>
 
 <section name="Multiple responder and CA certificates">
