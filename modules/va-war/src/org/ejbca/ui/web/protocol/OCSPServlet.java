@@ -317,6 +317,8 @@ public class OCSPServlet extends HttpServlet {
         OCSPResp resp = new OCSPResp(ocspResponseInformation.getOcspResponse());
         SingleResp[] singleRespones = ((BasicOCSPResp) resp.getResponseObject()).getResponses();
         if(singleRespones[0].getCertStatus() instanceof UnknownStatus) {
+            // Note that using no-cache here is not conforming to RFC5019, but with more recent CABForum discussions it seems RFC5019 will not
+            // be followed, or will be changed. (See ECA-3289)
             response.setHeader("Cache-Control", "no-cache, must-revalidate"); //HTTP 1.1
             response.setHeader("Pragma", "no-cache"); //HTTP 1.0 
         } else {
