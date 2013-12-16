@@ -957,9 +957,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, new BigInteger("1") ));
         OCSPReq req = gen.build();
         BasicOCSPResp response = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
-        if (response == null) {
-            throw new Exception("Could not retrieve response, test could not continue.");
-        }
+        assertNotNull("Could not retrieve response, test could not continue.", response);
         assertTrue(response.getResponses()[0].getCertStatus() instanceof UnknownStatus); 
         Extension responseExtension = response.getExtension(new ASN1ObjectIdentifier(OCSPObjectIdentifiers.pkix_ocsp + ".9"));
         assertNull("Wrong extension sent with reply", responseExtension);
@@ -972,9 +970,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, new BigInteger("1") ));
         req = gen.build();
         response = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
-        if (response == null) {
-            throw new Exception("Could not retrieve response, test could not continue.");
-        }
+        assertNotNull("Could not retrieve response, test could not continue.", response);
         assertTrue(response.getResponses()[0].getCertStatus() instanceof RevokedStatus); 
         responseExtension = response.getExtension(new ASN1ObjectIdentifier(OCSPObjectIdentifiers.pkix_ocsp + ".9"));
         assertNotNull("No extension sent with reply", responseExtension);
