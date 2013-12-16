@@ -113,6 +113,8 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 # For HTTP get requests according to RFC5019 we can set HTTP headers in the response to allow caching proxies to cache responses.
 # maxAge is how long a response will be cached, in seconds. Should be less than untilNextUpdate.
 # Ignored if untilNextUpdate is disabled. 0 = disable.
+# Note that for responses of certificates with unknown status, the HTTP response header "Cache-control" will not contain the max age, but 
+# "no-cache, must-revalidate" instead. That is to prevent caching of unknown status.
 # Default: 30
 #ocsp.maxAge = 30
 

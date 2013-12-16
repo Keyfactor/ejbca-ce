@@ -134,6 +134,8 @@ certificate profile. Should be less than untilNextUpdate.</li>
 If no specific certificateProfileId is specified the default values from ocsp.maxAge and ocsp.untilNextUpdate are used.
 Properties from an OcspKeyBinding will override the defaults, but never certificateProfileId specific settings.
 </p>
+<p>However, in case of certificate status unknown, EJBCA attempts to avoid the caching of an OSCP GET response by setting 
+the HTTP header "Cache-Control" to "no-cache, must-revalidate" (non-configurable)</p>
 </section>
 
   <section name="OCSP stress testing">
