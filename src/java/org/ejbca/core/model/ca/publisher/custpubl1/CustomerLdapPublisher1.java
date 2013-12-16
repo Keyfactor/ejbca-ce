@@ -124,12 +124,12 @@ import javax.security.auth.x500.X500Principal;
  * objectCreator: EJBCA
  * </pre>
  * 
- * If an log entry with the same name already exists it is retried one time with time +1 ms.
+ * If an log entry with the same name already exists it is retried one time with time +1 ms in DN.
  * 
  * Note the escaping of commas in the DN, this is needed since the "CN" of the LDAP DN contains commas (CN=C=SE\,O=foo\,CN=cscav1).
  * OpenLDAP implement very old escaping rules and will replace = with \3D and things like that. Better to use OpenDJ, easy to install and run, and works correctly.
  * 
- * Version: 0.9.1
+ * Version: 0.9.2
  *
  * @version $Id$
  */
@@ -501,14 +501,14 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
         // Construct LogInfo lines
         final Date now = getCurrentTime();
         try {
-            doStoreLog(level, success, message, exception, now);
+            doStoreLog(level, success, message, exception, now, now);
         } catch (PublisherException ex) {
             if (ex.getCause() instanceof LDAPException) {
                 final LDAPException le = (LDAPException) ex.getCause();
                 // If entry already exists, retry one time with time +1 ms
                 if (le.getResultCode() == LDAPException.ENTRY_ALREADY_EXISTS) {
                     log.info("Log entry already exists, retrying with time +1 ms");
-                    doStoreLog(level, success, message, exception, new Date(now.getTime() + 1));
+                    doStoreLog(level, success, message, exception, new Date(now.getTime() + 1), now);
                 }
             } else {
                 throw ex;
@@ -520,15 +520,16 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
         }
     }
     
-    protected void doStoreLog(final String level, final boolean success, final String message, Exception exception, final Date time) throws PublisherException {
-        final String generalizedTime = LogInfo.toGeneralizedTime(time);
+    protected void doStoreLog(final String level, final boolean success, final String message, Exception exception, final Date dnTime, final Date logTime) throws PublisherException {
+        final String generalizedTimeDN = LogInfo.toGeneralizedTime(dnTime);
+        final String generalizedTimeLog = LogInfo.toGeneralizedTime(logTime);
         final LinkedList<String> logEntries = new LinkedList<String>();
         final StringBuilder buff = new StringBuilder();
         buff.append(message);
         if (!success) {
             buff.append(": ").append(exception.getLocalizedMessage());
         }
-        logEntries.add(new LogInfo(time, 1, "objectupload", level, null, buff.toString(), null, null).getEncoded());
+        logEntries.add(new LogInfo(logTime, 1, "objectupload", level, null, buff.toString(), null, null).getEncoded());
 
         // Connect
         final LDAPConnection lc = createLdapConnection();
@@ -537,9 +538,9 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
         final LDAPAttributeSet attributeSet = new LDAPAttributeSet();
         attributeSet.add(new LDAPAttribute("objectclass", LOG_OBJECTCLASSES));
         attributeSet.add(new LDAPAttribute("objectCreator", "EJBCA"));
-        attributeSet.add(new LDAPAttribute("logTime", generalizedTime));
+        attributeSet.add(new LDAPAttribute("logTime", generalizedTimeLog));
         attributeSet.add(new LDAPAttribute("logInfo", logEntries.toArray(new String[logEntries.size()])));
-        final String dn = "logTime=" + generalizedTime + "," + LOG_GROUP + "," + baseDN;
+        final String dn = "logTime=" + generalizedTimeDN + "," + LOG_GROUP + "," + baseDN;
 
         // Finally write the object
         final LDAPEntry newEntry = new LDAPEntry(dn, attributeSet);
