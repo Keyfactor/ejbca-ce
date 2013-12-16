@@ -527,7 +527,10 @@ public class CustomerLdapPublisher1UnitTest {
         
         // Then with logTime +1ms
         assertEquals("two calls", 2, instance.getWriteCertEntryToLDAPParameters().size());
-        assertEquals("log DN", "logTime=20130906071130.000Z,cn=log,dc=test.example.com,dc=com", instance.getWriteCertEntryToLDAPParameters().get(1).getNewEntry().getDN());
+        LDAPEntry newEntry = instance.getWriteCertEntryToLDAPParameters().get(1).getNewEntry();
+        String logInfo = newEntry.getAttribute("logInfo").getStringValue();
+        assertEquals("log DN", "logTime=20130906071130.000Z,cn=log,dc=test.example.com,dc=com", newEntry.getDN());
+        assertTrue("logInfo is " + logInfo, logInfo.contains("time:20130906071129.999Z"));
         
         
         // This time it will now work as there are already entry 0 and 0+1 available
