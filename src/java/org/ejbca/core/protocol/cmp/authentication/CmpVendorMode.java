@@ -28,11 +28,17 @@ import org.ejbca.config.CmpConfiguration;
 public interface CmpVendorMode {
 
 
-    public void setCaSession(final CaSession caSession);
+    void setCaSession(final CaSession caSession);
 
-    public void setCmpConfiguration(final CmpConfiguration cmpConfiguration);
+    void setCmpConfiguration(final CmpConfiguration cmpConfiguration);
     
-    public boolean isExtraCertIssuedByVendorCA(final AuthenticationToken admin, final String confAlias, final Certificate extraCert);
+    /** Checks if the certificate is issued by a configured Vendor CA, and that it can be verified using that Vendor CA certificate
+     * @param admin administrator making the call, must have access to get CAInfo for the Vendor CA
+     * @param confAlias the CMP alias in use
+     * @param extraCert certificate from extraCert field of CMP request 
+     * @return true if issued, and verified by a Vendor CA in the specified CMP alias, false otherwise.
+     */
+    boolean isExtraCertIssuedByVendorCA(final AuthenticationToken admin, final String confAlias, final Certificate extraCert);
     
     /**
      * Checks whether authentication by vendor-issued-certificate should be used. It can be used only in client mode and with initialization/certification requests.
@@ -40,5 +46,5 @@ public interface CmpVendorMode {
      * @param reqType
      * @return 'True' if authentication by vendor-issued-certificate is used. 'False' otherwise
      */
-    public boolean isVendorCertificateMode(final int reqType, final String confAlias);
+    boolean isVendorCertificateMode(final int reqType, final String confAlias);
 }
