@@ -487,23 +487,29 @@
 		</sequential>
 	</macrodef>
 
+	
+        <!-- Diffeent jboss-cli.sh on Windows and Linux -->
+        <condition property="jbosscliexe" value="jboss-cli.bat" else="jboss-cli.sh">
+            <os family="windows"/>
+        </condition>	
+
         <macrodef name="adm" uri="jboss" description="JBoss 7 CLI administration utility convenience wrapper">
           <attribute name="arg" />
           <attribute name="failonerror" default="true" description="Fail the build if command exits with error."/>
           <sequential>
             <echo message="@{arg}"/>
-            <exec executable="${appserver.home}/bin/jboss-cli.sh" failonerror="@{failonerror}" spawn="@{nooutput}">
+            <exec executable="${appserver.home}/bin/${jbosscliexe}" failonerror="@{failonerror}" spawn="@{nooutput}">
               <arg line="-c --command='@{arg}'" />
             </exec>
           </sequential>
         </macrodef>
-
+	
         <macrodef name="admsilent" uri="jboss" description="JBoss 7 CLI administration utility convenience wrapper, produces no output">
             <attribute name="arg" />
             <attribute name="failonerror" default="true" description="Fail the build if command exits with error."/>
             <attribute name="resultproperty" default="admsilent.throwaway.result" description="Name of the property where the exit code should be stored at." />
             <sequential>
-                <exec executable="${appserver.home}/bin/jboss-cli.sh" failonerror="@{failonerror}" spawn="@{nooutput}" outputproperty="admsilent.throwaway.output" resultproperty="@{resultproperty}">
+                <exec executable="${appserver.home}/bin/${jbosscliexe}" failonerror="@{failonerror}" spawn="@{nooutput}" outputproperty="admsilent.throwaway.output" resultproperty="@{resultproperty}">
                     <arg line="-c --command='@{arg}'" />
                 </exec>
             </sequential>
@@ -515,7 +521,7 @@
             <attribute name="outputproperty" />
             <sequential>
                 <echo message="@{arg}"/>
-                <exec executable="${appserver.home}/bin/jboss-cli.sh" outputproperty="@{outputproperty}" failonerror="@{failonerror}">
+                <exec executable="${appserver.home}/bin/${jbosscliexe}" outputproperty="@{outputproperty}" failonerror="@{failonerror}">
                     <arg line="-c --command='@{arg}'" />
                 </exec>
             </sequential>
