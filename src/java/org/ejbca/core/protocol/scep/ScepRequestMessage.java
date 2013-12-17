@@ -154,7 +154,11 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
     /** IssuerAndSerialNUmber for CRL request */
     private transient IssuerAndSerialNumber issuerAndSerno = null;
 
-    /** preferred digest algorithm to use in replies, if applicable */
+    /** preferred digest algorithm to use in replies, if applicable.
+     *  Defaults to CMSSignedGenerator.DIGEST_MD5 for SCEP messages. If SCEP request is 
+     * digested with SHA1 it is set to SHA1 though. This is only for backwards compatibility issues, as specified in a SCEP draft.
+     * Modern request/responses will use SHA-1.
+     */
     private transient String preferredDigestAlg = CMSSignedGenerator.DIGEST_MD5;
 
 	private transient Certificate signercert;

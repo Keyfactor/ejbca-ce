@@ -604,7 +604,7 @@ You can also include O, C etc in the certificate. A normal DN for a PIX is "CN=p
 <li>KeyUsage should include <i>Digital Signature</i> and <i>Key Encipherment</i>, the EJBCA defaults work fine.</li>
 <li>When the Cisco VPN-client (above) connects to the PIX, the 'ou' part of the clients DN must match a Vpngroup you have specified, 
 otherwise the connection will fail.</li>
-<li>Cisco PIX needs the SCEP response messages to use MD5 as hash algorithm, not SHA1, this is handled by EJBCA automatically.</li>
+<li>Cisco PIX (older) needs the SCEP response messages to use MD5 as hash algorithm, not SHA1, this is handled by EJBCA automatically.</li>
 </ul>
 </p><p>
 Please notice this Cisco note:
