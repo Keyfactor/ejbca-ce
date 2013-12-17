@@ -14,6 +14,7 @@ package org.ejbca.ui.cli.keybind;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 
@@ -22,7 +23,9 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CA;
+import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
+import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -48,7 +51,7 @@ public class InternalKeyBindingCreateCommandTest {
             "SHA1WithRSA", "--property", "nonexistingisgood=false", "--property", "maxAge=0", "--property", "nonexistingisrevoked=true",
             "--property", "requireTrustedSignature=true", "--property", "untilNextUpdate=0", "--property", "responderidtype=NAME", "--property",
             "includecertchain=false" };
-  
+
     private static final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(TESTCLASSNAME));
 
     private static final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
@@ -84,7 +87,14 @@ public class InternalKeyBindingCreateCommandTest {
     public void testAddVanillaKeyBinding() throws ErrorAdminCommandException, AuthorizationDeniedException {
         try {
             command.execute(STANDARD_ARGS);
-            assertNotNull("No internal keybinding was created", internalKeyBindingMgmtSession.getIdFromName(KEYBINDING_NAME));
+            Integer keyBindingId = internalKeyBindingMgmtSession.getIdFromName(KEYBINDING_NAME);
+            assertNotNull("No internal keybinding was created", keyBindingId);
+            //Verify that some non String values were correctly typed 
+            InternalKeyBinding internalKeyBinding = internalKeyBindingMgmtSession.getInternalKeyBinding(alwaysAllowToken, keyBindingId);
+            assertTrue("Purported Long value was not saved as Long.",
+                    internalKeyBinding.getProperty(OcspKeyBinding.PROPERTY_MAX_AGE).getValue() instanceof Long);
+            assertTrue("Purported Boolean value was not saved as Boolean.",
+                    internalKeyBinding.getProperty(OcspKeyBinding.PROPERTY_NON_EXISTING_GOOD).getValue() instanceof Boolean);
         } finally {
             Integer keyBindingId = internalKeyBindingMgmtSession.getIdFromName(KEYBINDING_NAME);
             if (keyBindingId != null) {
@@ -102,7 +112,7 @@ public class InternalKeyBindingCreateCommandTest {
     public void testAddUnknownProperties() throws ErrorAdminCommandException, AuthorizationDeniedException {
         try {
             String[] args = Arrays.copyOf(STANDARD_ARGS, STANDARD_ARGS.length);
-            args[args.length-1] = "fakeproperty=3";
+            args[args.length - 1] = "fakeproperty=3";
             command.execute(args);
             assertNull("No internal keybinding was created", internalKeyBindingMgmtSession.getIdFromName(KEYBINDING_NAME));
         } finally {
