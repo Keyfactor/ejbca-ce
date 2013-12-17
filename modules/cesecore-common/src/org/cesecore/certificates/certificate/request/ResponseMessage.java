@@ -185,7 +185,7 @@ public interface ResponseMessage extends Serializable {
      * Sets preferred digest algorithm for the response message, if applicable. 
      * If this is not called, a default is used.
      * 
-     * @param String oid of digest algorithm ex CMSSignedDataGenerator.MD5, SHA1, SHA256 etc
+     * @param String oid of digest algorithm ex CMSSignedDataGenerator.SHA1, SHA256 etc
      */
     void setPreferredDigestAlg(String digest);
     

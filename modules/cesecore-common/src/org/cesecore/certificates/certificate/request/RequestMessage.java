@@ -207,8 +207,7 @@ public interface RequestMessage extends Serializable {
     
     /**
      * Returns the name of the preferred Digest algorithm to be used in the response if applicable.
-     * Defaults to CMSSignedGenerator.DIGEST_SHA1 for normal messages, but to MD5 for SCEP messages. If SCEP request is 
-     * digested with SHA1 it is set to SHA1 though.
+     * Defaults to CMSSignedGenerator.DIGEST_SHA1 for normal messages.
      *  
      * @return oid of digest algorithm ex CMSSignedGenerator.DIGEST_SHA1, SHA256 etc
      */

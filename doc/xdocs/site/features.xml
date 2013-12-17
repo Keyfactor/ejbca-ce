@@ -17,7 +17,7 @@
 <li>Supports RSA key algorithm up to 8192 bits.</li>
 <li>Supports DSA key algorithm with 1024 bits.</li>
 <li>Supports ECDSA key algorithm with named curves or implicitlyCA.</li>
-<li>Support multiple hash algorithms for signatures, MD5, SHA-1, SHA-2.</li>
+<li>Support multiple hash algorithms for signatures, SHA-1, SHA-2.</li>
 <li>Compliant with NSA SUITE B algorithms and certificates.</li>
 <li>Support for X.509 certificates and Card Verifiable certificates (CVC BSI TR-03110 used by <a href="guides.html#Using%20CVC%20CAs%20for%20EU%20EAC%20ePassports">EU EAC ePassports</a>).</li> 
 <li>Support for Hardware Security Modules (HSMs). Built in support for Thales/nCipher, SafeNet Luna, SafeNet ProtectServer, Utimaco CryptoServer, AEP Keyper, ARX CoSign and other HSMs with a good PKCS#11 library.</li>

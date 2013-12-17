@@ -309,7 +309,7 @@ SIGN_SUBJECT_NAME, Subject Name of the certificate used to sign the request.<br/
 SIGN_SERIAL_NO, Certificate serial number of the certificate used to sign the request.<br/>
 NUM_CERT_ID, The number of certificates to check revocation status for.<br/>
 ISSUER_NAME_DN, The subject DN of the issuer of a requested certificate.<br/>
-ISSUER_NAME_HASH, MD5 hash of the issuer DN.<br/>
+ISSUER_NAME_HASH, SHA1 hash of the issuer DN.<br/>
 ISSUER_KEY, The public key of the issuer of a requested certificate.<br/>
 DIGEST_ALGOR, Algorithm used by requested certificate to hash issuer key and issuer name.<br/>
 SERIAL_NO, Serial number of the a requested certificate.<br/>
