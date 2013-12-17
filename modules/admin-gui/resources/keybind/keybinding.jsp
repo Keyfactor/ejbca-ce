@@ -192,7 +192,7 @@ org.cesecore.keybind.InternalKeyBindingRules
    			<h:panelGroup rendered="#{!property.multiValued}">
 	   			<h:inputText disabled="#{!internalKeyBindingMBean.inEditMode}" rendered="#{property.type.simpleName eq 'String'}" value="#{property.value}"/>
 	   			<h:inputText disabled="#{!internalKeyBindingMBean.inEditMode}" rendered="#{property.type.simpleName eq 'Long'}" value="#{property.value}">
-					<f:convertNumber integerOnly="true"/>
+					<f:convertNumber integerOnly="true" groupingUsed="false"/>
 	   			</h:inputText>
    				<h:selectBooleanCheckbox disabled="#{!internalKeyBindingMBean.inEditMode}" rendered="#{property.type.simpleName eq 'Boolean'}" value="#{property.value}"/>
    			</h:panelGroup>
