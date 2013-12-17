@@ -1,3 +1,17 @@
+EJBCA 6.0.3
+-----------
+This is a maintenance release with bug fixes, new features and improvements. In all 19 issues have been fixed.
+
+* Noteworthy changes:
+- Support for OCSP extended revoked status according to RFC6960.
+- Ensure OCSP RFC5019 responses for unknown responses are not cached.
+- Speedups starting the Command Line Interface.
+- Bug fixes for Internal Key Bindings.
+- Builds and deploys on Windows.
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE.
+
 EJBCA 6.0.2
 -----------
 This is a maintenance release with bug fixes and improvements. In all 12 issues have been fixed.

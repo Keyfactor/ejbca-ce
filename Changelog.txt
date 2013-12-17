@@ -1,3 +1,32 @@
+EJBCA 6.0.3, 2013-12-20
+---
+Bug
+    [ECA-3293] - Customer specific LDAP Publisher should use correct time in loginfo attribute
+    [ECA-3297] - Other Rules for Supervisor role is not cleared if previously selected for another role type
+    [ECA-3339] - Statedump doesn't delete certain .jar files on "ant clean"
+    [ECA-3341] - Creating internal key binding with CLI does not consider types for property values
+    [ECA-3344] - Regression: PKCS11 sun config does not work
+    [ECA-3345] - Regression: Max-Age and Response validity no longer visible/editable for ocsp key bindings
+    [ECA-3346] - CMP Config CLI command should use lazy instatiation of remote EJB
+    [ECA-3349] - EJBCA deployment not working in WINx64 due to PKCS11
+    [ECA-3360] - Ejbca deployment tries to use jboss-cli.sh instead of jboss-cli.bat on windows
+
+Improvement
+    [ECA-3289] - Do not cache "Unknown" OCSP GET responses
+    [ECA-3347] - Modify EJB CLI to use ServiceLocator
+    [ECA-3352] - Faster CLI start, use lazy instantiation in EJB CLI
+    [ECA-3359] - Move authentication tokens from cesecore-interface to cesecore-common
+
+New Feature
+    [ECA-3332] - Add Extended Revoked Definition OCSP extension when returning revoked for non existing certificate
+    [ECA-3335] - Create a standalone manifest builder tool
+
+Task
+    [ECA-3316] - Modularize EAC
+    [ECA-3338] - Modularize CMP vendor CA mode
+    [ECA-3340] - Modularize ValidationTool
+    [ECA-3342] - Make JUnit tests run for EJBCA Community
+
 EJBCA 6.0.2, 2013-11-29
 ---
 Bug
