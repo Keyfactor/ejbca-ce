@@ -712,6 +712,8 @@
     <!-- Make a ZIP release file of EJBCA, and a SHA1 checksum of the release    -->
 	<!-- The ZIP file contains all the files used, but not temporary or compile files etc -->
     <!-- ======================================================================= -->
+	<property name="edition" value="ce"/> <!-- ce if edition not set on command line with -Dedition=xyz" -->
+	
 	<target name="ziprelease" depends="deprecated:check" description="Make a zip file for EJBCA release">
 		<antcall target="clean" />
 
@@ -726,12 +728,12 @@
           str = project.getProperty("ejbca.zipversion");
 	    ]]>
     </scriptdef>
-		
 		<antcall target="update-svnrev" /> <!-- update svn revision version property -->
 		<convertdot/> <!-- convert dots to underscores in version string -->
         <!-- <input message="Version tag for zipfile (ex 3_2_1):" addproperty="ejbca.zipversion" /> -->
-		<zip destfile="../ejbca_${ejbca.zipversion}.zip">
-		    <zipfileset dir="." prefix="ejbca_${ejbca.zipversion}" filemode="600" dirmode="700"> 
+		<property name="basezipfile" value="ejbca_${edition}_${ejbca.zipversion}"/>
+		<zip destfile="../${basezipfile}.zip">
+		    <zipfileset dir="." prefix="${basezipfile}" filemode="600" dirmode="700"> 
 		    	<include name="**/**" />
 		    	<exclude name="**/CVS/**" />
 		    	<exclude name="tmp/**" />
@@ -754,18 +756,18 @@
 		    	<exclude name="doc/xdocs/site/**" />
 		    	<exclude name="modules/statedump/**" />
 		    </zipfileset>
-		    <zipfileset dir="." prefix="ejbca_${ejbca.zipversion}" filemode="700" dirmode="700"> 
+		    <zipfileset dir="." prefix="${basezipfile}" filemode="700" dirmode="700"> 
 		    	<include name="**/*.sh" />
 		    </zipfileset>
-		    <zipfileset dir="." prefix="ejbca_${ejbca.zipversion}" filemode="600" dirmode="700">
+		    <zipfileset dir="." prefix="${basezipfile}" filemode="600" dirmode="700">
 		    	<include name="conf/extendedkeyusage.properties" />		    	
 		    </zipfileset>
 		</zip>
         <antcall target="signjar">
-            <param name="signjar.file" value="../ejbca_${ejbca.zipversion}.zip"/>
+            <param name="signjar.file" value="../${basezipfile}.zip"/>
         </antcall>
-        <checksum file="../ejbca_${ejbca.zipversion}.zip" algorithm="SHA1" forceOverwrite="yes"/>      
-        <checksum file="../ejbca_${ejbca.zipversion}.zip" algorithm="SHA1" property="ejbcaSHA1"/>      
+        <checksum file="../${basezipfile}.zip" algorithm="SHA1" forceOverwrite="yes"/>      
+        <checksum file="../${basezipfile}.zip" algorithm="SHA1" property="ejbcaSHA1"/>      
         <echo message="SHA1 checksum: ${ejbcaSHA1}" />
 	</target>
 
