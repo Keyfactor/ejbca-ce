@@ -23,6 +23,7 @@
 	<path id="manifest.classpath">
         <path refid="compile.classpath"/>
 		<path location="${ejbca.home}/src/java"/>
+		<path location="${ejbca.home}/src"/>
 		<path location="${cesecore-common.dir}/build/classes"/>
 	</path>
 
