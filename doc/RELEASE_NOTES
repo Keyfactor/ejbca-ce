@@ -1,16 +1,21 @@
 EJBCA 6.0.3
 -----------
-This is a maintenance release with bug fixes, new features and improvements. In all 19 issues have been fixed.
+This is a maintenance release with bug fixes, new features and improvements. In all 20 issues have been fixed.
 
 * Noteworthy changes:
-- Support for OCSP extended revoked status according to RFC6960.
-- Ensure OCSP RFC5019 responses for unknown responses are not cached.
+- Support for OCSP extended revoked status compliant with RFC6960.
+- Ensure OCSP RFC5019 responses with unknown response code are not cached, compliant with CABForum discussions.
 - Speedups starting the Command Line Interface.
 - Bug fixes for Internal Key Bindings.
-- Builds and deploys on Windows.
 
 Read the full Changelog for details.
 For upgrade instructions, please see UPGRADE.
+
+-  Known issues:
+    *   Cannot deploy with web-services disabled: https://jira.primekey.se/browse/ECA-3361
+	*	Deployment on Windows does not work due to jboss-cli.bat arguments differing from jboss-cli.sh
+	*	One test failure on DB2: https://jira.primekey.se/browse/ECA-3298
+	*	OCSP request signer verification does an additional database lookup: https://jira.primekey.se/browse/ECA-3299
 
 EJBCA 6.0.2
 -----------
