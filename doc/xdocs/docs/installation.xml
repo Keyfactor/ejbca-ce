@@ -71,7 +71,7 @@ To get more information a about configuration options etc (there are plenty), yo
 </p><p>
 This quick start guide assumes EJBCA 6.0, JBoss 7.1.1.Final and Java 7, but other version should also be possible to use by just replacing the versions.
 We also assume installation is made in a user account with username "user". In your environment simply replace user with the username you are using.
-<br/>Note that the quick install will create a H2 database as ~/ejbcadb.
+<br/><b>Note</b> that the quick install will create a H2 database as ~/ejbcadb. If you run this multiple times, delete this file in order to remove the old database.
 </p>
 <ol>
 <li>Install Ubuntu 12.04 server x64, default config, only OpenSSH server selected (or other Ubuntu of your choice, for example Ubuntu Desktop).
@@ -107,6 +107,7 @@ We also assume installation is made in a user account with username "user". In y
 <ul>
 <li>cd ejbca_6_0_0</li>
 <li>ant deploy (just press enter if questions show up)</li>
+<li>(now wait a little for JBoss to reload)</li>
 </ul>
 </li>
 <li>Run install (in terminal "ejbca") to create initial Management CA and TLS keystores.<br/>
