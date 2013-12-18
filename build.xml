@@ -779,7 +779,7 @@
     <!-- ======================================================================= -->
     <!-- Target updating svn revision string in propertiesAndPaths.xml           -->
     <!-- ======================================================================= -->
-	<target name="update-svnrev" depends="deprecated:check" description="Updates propertiesAndPaths.xmli file with current trunk SVN revision">
+	<target name="update-svnrev" depends="deprecated:check">
 		<echo>Trying to update src/internal.properties with SVN revision of COMMITTED.</echo>
         <property name="revision" value="COMMITTED"/>	
 		
