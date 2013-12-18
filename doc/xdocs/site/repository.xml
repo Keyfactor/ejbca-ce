@@ -16,7 +16,7 @@ You can find all the sources of EJBCA releases in our Subversion source code <a 
 You can check out the code using a simple svn command. For example, to check out the current code for the EJBCA 4.0.x development tree.
 </p>
 <source>
-svn co https://svn.cesecore.eu/svn/ejbca/branches/Branch_4_0/ejbca ejbca
+svn co https://svn.cesecore.eu/svn/ejbca/trunk/ejbca/
 </source>
 </section>
 
