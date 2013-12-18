@@ -1,4 +1,4 @@
-EJBCA 6.0.3, 2013-12-20
+EJBCA 6.0.3, 2013-12-30
 ---
 Bug
     [ECA-3293] - Customer specific LDAP Publisher should use correct time in loginfo attribute
@@ -10,6 +10,7 @@ Bug
     [ECA-3346] - CMP Config CLI command should use lazy instatiation of remote EJB
     [ECA-3349] - EJBCA deployment not working in WINx64 due to PKCS11
     [ECA-3360] - Ejbca deployment tries to use jboss-cli.sh instead of jboss-cli.bat on windows
+    [ECA-3367] - Editing Key binding integer/long value sin GUI removes the value (becomes default 0)
 
 Improvement
     [ECA-3289] - Do not cache "Unknown" OCSP GET responses
