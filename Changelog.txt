@@ -19,6 +19,7 @@ Improvement
     [ECA-3359] - Move authentication tokens from cesecore-interface to cesecore-common
 
 New Feature
+    [ECA-3314] - OCSP Archive Cutoff
     [ECA-3332] - Add Extended Revoked Definition OCSP extension when returning revoked for non existing certificate
     [ECA-3335] - Create a standalone manifest builder tool
 
