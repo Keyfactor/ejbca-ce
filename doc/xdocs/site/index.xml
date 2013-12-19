@@ -24,17 +24,17 @@
 <div class="frame">
 <div class="label"><a style="color:white; padding:1em;" href="http://www.primekey.se/Services/Training/" target="pk">EJBCA PKI Training</a>
 <a style="color:white; padding:1em;" href="http://www.primekey.se/Services/Support/" target="pk">Enterprise Support</a>
-<a style="color:white; padding:1em;" href="http://www.primekey.se/Company/Register+to+Receive/Gov+eID+%26+ePassports/" target="pk">Free eID &amp; ePassport booklet</a>
+<a style="color:white; padding:1em;" href="http://www.primekey.se/Products/EJBCA+PKI/" target="pk">EJBCA Enterprise</a>
 </div>
 <div class="content">
 <!-- 
 <a href="https://ae.rsaconference.com/US13/portal/newreg.ww" target="rsa"><img src="./images/RSAC-2013_623px.png" alt="Visit PrimeKey at RSA 2013. Free Expo Pass Code." class="banner"/></a>
     <hr/>
  -->    
-  <p><strong>EJBCA 6.0.2 is now out!</strong>
+  <p><strong>EJBCA Community 6.0.3 is now out!</strong>. The next generation open source PKI is here, supporting Java 7, JBoss 7 and new advanced features.
   <br />Visit the <a href="download.html">download</a> section.
   <br />
-  <span class="date"> Date: 2013-11-29</span>  
+  <span class="date"> Date: 2013-12-30</span>  
   </p>  
   <p><strong>Turn-Key PKI with EJBCA Enterprise</strong><br />
   Deploying EJBCA Enterprise obtained as a full package together with services, you can comfortably sit back and enjoy the safe and quiet ride.
@@ -121,9 +121,11 @@ This PKI software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source Initiative.
 </p>
 <p>
-The source code of EJBCA is hosted on a (mostly) public <a href="https://svn.cesecore.eu/svn/ejbca/branches/">svn</a> and all downloads include the complete source code can be downloaded from <a href="http://www.sf.net/">Sourceforge.net</a>.
+The source code of EJBCA is hosted on a (mostly) public <a href="https://svn.cesecore.eu/svn/ejbca/">svn</a> and all downloads include the complete source code can be downloaded from <a href="http://www.sf.net/">Sourceforge.net</a>.
 <br></br>
-If you want to contribute to EJBCA, please see <i><a href="donations.html">Contribute to EJBCA</a></i>
+If you want to contribute to EJBCA, please see <i><a href="contributions.html">Contribute to EJBCA</a></i>
+<br></br>
+You can also donate to EJBCA, please see <i><a href="donations.html">Donate to EJBCA</a></i>
 </p>
 </section>
 
