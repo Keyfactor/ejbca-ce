@@ -21,11 +21,11 @@
 <input type="image" src="https://www.paypal.com/en_US/i/btn/btn_donateCC_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!"/>
 <img alt="" border="0" src="https://www.paypal.com/en_US/i/scr/pixel.gif" width="1" height="1"/>
 </form>    
+  </section>
+  <section name="Hire PrimeKey">
     <p>
-    You can also donate using PayPal through Sourceforge, and through that also support sourceforge with a small amount.
-    <br/>
-    <a href="http://sourceforge.net/donate/index.php?group_id=39716">Donate through sourceforge</a>
-    </p>
+    If you are an organization and like to get invoiced, hire <a href="http://www.primekey.se">PrimeKey</a>, a company incorporated in Sweden.    
+    </p>  
   </section>
 
 </body>
