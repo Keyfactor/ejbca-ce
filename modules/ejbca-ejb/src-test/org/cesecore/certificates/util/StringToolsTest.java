@@ -21,7 +21,6 @@ import static org.junit.Assert.assertTrue;
 import java.util.Arrays;
 import java.util.Collections;
 
-import org.apache.commons.configuration.Configuration;
 import org.apache.log4j.Logger;
 import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.util.CryptoProviderTools;
