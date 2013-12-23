@@ -85,8 +85,9 @@
         <ant antfile="${mod.cesecore-ejb-interface.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
         <ant antfile="${mod.cesecore-ejb.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.buildtools.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+		<ant antfile="${mod.cli-util.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<antcall target="validationtoolclean"/>
-		<antcall target="statedumpclean"/>
+		<antcall target="statedumpclean"/>		
 		<delete>
 			<fileset dir="${modules.basedir}/dist" includes="*"/>
 		</delete>
@@ -122,7 +123,7 @@
 		<ant antfile="${mod.ejbca-ejb-interface.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
-	<target name="ejbca-ejb-cli" depends="ejbca-ejb-interface" description="Build EJBCA EJB CLI">
+	<target name="ejbca-ejb-cli" depends="cli-util, ejbca-ejb-interface" description="Build EJBCA EJB CLI">
 		<ant antfile="${mod.ejbca-ejb-cli.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
@@ -262,6 +263,10 @@
 		<ant antfile="${mod.ejbca-ejb.path}/build.xml" target="build-util" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
 
+	<target name="cli-util">
+		<ant antfile="${mod.cli-util.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+	</target>
+	
 	<target name="ejbca-common-web" depends="ejbca-ejb-interface" description="Build EJBCA common web library">
 		<ant antfile="${mod.ejbca-ejb.path}/build.xml" target="build-common-web" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
@@ -386,8 +391,11 @@
 	<target name="ejbca.clients" depends="ejbca-ejb-cli, ejbca-ws-cli, ejbca-xkms-cli, ejbca-db-cli"/>
 	<target name="ejbca.ear.module-dependencies" depends="cesecore-ejb, publicweb-gui, renew-war, scep-war, webdist-war, va-ejbca-war, cmp-war, healthcheck-ejbca-war, clearcache-ejbca-war, admin-gui, ejbca-ejb, ejbca-properties, ejbca-ws, ejbca-xkms, externalra-service, ejbca-cmp-tcp, ejbca.clients, systemtests.build.libs"/>
 
+	<target name="buildservicemanifestbuilder">
+		<ant antfile="${mod.buildtools.path}/build.xml" target="compile-servicemanifestbuilder" />
+	</target>
 	
-	<target name="statedump" >	
+	<target name="statedump" depends="cli-util, buildservicemanifestbuilder" >	
 		<echo  message="${mod.statedump.path}/build.xml" />
 		<fail message="StateDump tool is not distributed with this version of EJBCA">
 		    <condition>
@@ -399,8 +407,6 @@
 		<ant antfile="${mod.statedump.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
 	
-
-    
     
 	
 	<!-- Helper to execute the EJBCA EJB CLI -->

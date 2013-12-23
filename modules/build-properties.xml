@@ -119,7 +119,11 @@
 	<property name="mod.statedump.path" location="${mod.path}/statedump" />
 	<property name="mod.buildtools.path" location="${mod.path}/buildtools" />
 	<property name="mod.buildtools.build" location="${mod.buildtools.path}/build" />
-	<property name="mod.buildtools.dist" location="${ejbca.dist.path}/buildtools" />	
+	<property name="mod.buildtools.dist" location="${ejbca.dist.path}/buildtools" />
+	<property name="mod.cli-util.dist" location="${mod.dist.path}/" />
+	<property name="mod.cli-util.lib" location="${mod.cli-util.dist}/cli-util.jar" />
+	<property name="mod.cli-util.path" location="${mod.path}/cli-util" />
+	
 	
     <!-- Variables of global interest -->
     <property name="java.target.version" value="${java.specification.version}"/>
