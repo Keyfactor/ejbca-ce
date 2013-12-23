@@ -33,6 +33,7 @@ import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterHandler;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * Base class for all commands
@@ -159,7 +160,7 @@ public abstract class CommandBase implements CliCommandPlugin {
     }
     
     @Override
-    public void execute(String... arguments) throws IOException {
+    public  final void execute(String... arguments) throws IOException {
         Map<String, String> parameters = parameterHandler.parseParameters(this, arguments);
         if(parameters == null) {
             //Parameters couldn't be parsed, but this should already be handled. 
@@ -189,9 +190,9 @@ public abstract class CommandBase implements CliCommandPlugin {
     private void registerDefaultParameters() {
         final String usernameInstruction = "A user name, if required.";
         final String passwordInstruction = "A password, if required.";
-        this.registerParameter(new Parameter(CommandBase.USERNAME_KEY, "Username", MandatoryMode.OPTIONAL, false, ParameterMode.ARGUMENT,
+        this.registerParameter(new Parameter(CommandBase.USERNAME_KEY, "Username", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 usernameInstruction));
-        this.registerParameter(new Parameter(CommandBase.PASSWORD_KEY, "Password", MandatoryMode.OPTIONAL, false, ParameterMode.PASSWORD,
+        this.registerParameter(new Parameter(CommandBase.PASSWORD_KEY, "Password", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.PASSWORD,
                 passwordInstruction));
     }
 

@@ -54,7 +54,6 @@
 
     <target name="clean" description="Clean up this module">
 		<delete dir="${build.dir}" />
-		<delete dir="${mod.cli-util.dist}" />
     </target>
 	
     <target name="compile" depends="setup">
