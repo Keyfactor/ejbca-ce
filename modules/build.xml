@@ -88,8 +88,8 @@
 		<ant antfile="${mod.cli-util.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<antcall target="validationtoolclean"/>
 		<antcall target="statedumpclean"/>		
-		<delete>
-			<fileset dir="${modules.basedir}/dist" includes="*"/>
+		<delete failonerror="false">
+			<fileset dir="${modules.basedir}/dist" includes="*" />
 		</delete>
 	</target>
     <condition property="statedump.exists">
