@@ -15,6 +15,7 @@ package org.ejbca.ui.cli.infrastructure.parameter;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.Map;
@@ -53,7 +54,7 @@ public class ParameterHandlerTest {
         Map<String, String> result = parameterHandler.parseParameters(new CommandBaseStub());
         assertNull("Parameterhandler did not return null for missing parameter", result);
     }
-    
+
     @Test
     public void testHandleStandardParameter() {
         parameterHandler.registerParameter(new Parameter("-b", "bar", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT, ""));
@@ -61,7 +62,7 @@ public class ParameterHandlerTest {
         assertNotNull("Parameterhandler did not return result", result);
         assertEquals("ParameterHandel did not return correct result", "boo", result.get("-b"));
     }
-    
+
     @Test
     public void testHandleStandaloneParameter() {
         parameterHandler.registerParameter(new Parameter("-b", "bar", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT, ""));
@@ -70,8 +71,22 @@ public class ParameterHandlerTest {
         assertEquals("ParameterHandel did not return correct result", "boo", result.get("-b"));
     }
 
-    private class CommandBaseStub extends CommandBase {
+    @Test
+    public void testHandleIncompleteArgument() {
+        parameterHandler.registerParameter(new Parameter("-b", "bar", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT, ""));
+        parameterHandler.registerParameter(new Parameter("-f", "foo", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG, ""));
+        try {
+            Map<String, String> result = parameterHandler.parseParameters(new CommandBaseStub(), "-b");
+            assertNull("Parameterhandler did not return null for missing parameter value", result);
+            result = parameterHandler.parseParameters(new CommandBaseStub(), "-b", "-f");
+            assertNull("Parameterhandler did not return null for missing parameter", result);
+        } catch (Exception e) {
+            fail("Parameterhandler did not fail nicely to incomplete argument");
+        }
 
+    }
+
+    private class CommandBaseStub extends CommandBase {
 
         @Override
         public String getMainCommand() {
@@ -85,7 +100,7 @@ public class ParameterHandlerTest {
         }
 
         @Override
-        protected void execute(Map<String, String> parameters) throws IOException {
+        protected void execute(Map<String, String> parameters) {
 
         }
 

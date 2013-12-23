@@ -16,9 +16,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.ejbca.ui.cli.infrastructure.command.CommandBase;
@@ -90,6 +92,33 @@ public class ParameterHandler {
         sb.append(CR);
         sb.append(bold("NAME") + CR);
         sb.append(TAB + commandName + " - " + command.getCommandDescription() + CR);
+        sb.append(CR);
+        sb.append(bold("SYNOPSIS") + CR);
+        if (standaloneParameters.size() > 0) {
+            //Only make this synopsis if there are standalone parameters
+            sb.append(TAB + commandName + " [PARAMETERS]");
+            Set<String> usedMandatories = new HashSet<String>();
+            for (String parameterString : standaloneParameters) {
+                Parameter parameter = parameterMap.get(parameterString);
+                sb.append(" " + parameter.getName().toUpperCase());
+                if (parameter.isMandatory()) {
+                    usedMandatories.add(parameterString);
+                }
+            }
+            for (String parameterString : mandatoryParameters) {
+                if (!usedMandatories.contains(parameterString)) {
+                    Parameter parameter = parameterMap.get(parameterString);
+                    sb.append(" " + parameter.getKeyWord() + " " + parameter.getName().toUpperCase());
+                }
+            }
+            sb.append(CR);
+        }
+        sb.append(TAB + commandName + " [PARAMETERS]");
+        for (String parameterString : mandatoryParameters) {
+            Parameter parameter = parameterMap.get(parameterString);
+            sb.append(" " + parameter.getKeyWord() + " " + parameter.getName().toUpperCase());
+        }
+        sb.append(CR);
         sb.append(CR);
         sb.append(bold("DESCRIPTION") + CR);
         for (String formattedString : splitStringIntoLines(command.getFullHelpText(), 80)) {
@@ -188,8 +217,14 @@ public class ParameterHandler {
                 }
             } else {
                 if (parameter.getParameterMode() == ParameterMode.ARGUMENT) {
-                    value = argumentList.get(i + 1);
-                    i++;
+                    if ((i + 1) >= argumentList.size() || argumentList.get(i + 1).startsWith("-")) {
+                        log.info("ERROR" + TAB + "Missing argument.");
+                        log.info(TAB + parameterString + " is an argument and requires a parameter following it.");
+                        continue;
+                    } else {
+                        value = argumentList.get(i + 1);
+                        i++;
+                    }
                 } else if (parameter.getParameterMode() == ParameterMode.FLAG) {
                     value = "";
                 } else if (parameter.getParameterMode() == ParameterMode.INPUT) {
@@ -204,7 +239,6 @@ public class ParameterHandler {
             }
             result.put(parameterString, value);
         }
-        callback.handleUserPasswordParams(result);
         //Check for mandatory parameters
         for (final String mandatoryParameter : mandatoryParameters) {
             if (!result.containsKey(mandatoryParameter)) {
@@ -225,7 +259,7 @@ public class ParameterHandler {
             }
             if (missingArguments.size() > 0) {
                 sb.append("\n");
-                sb.append(tab(1) + "The following mandatory arguments are missing:\n");
+                sb.append(tab(1) + "The following mandatory arguments are missing or poorly formed:\n");
                 for (Parameter missingParameter : missingArguments) {
                     sb.append(tab(2) + missingParameter.getName() + " (" + missingParameter.getKeyWord() + ")\n");
                 }

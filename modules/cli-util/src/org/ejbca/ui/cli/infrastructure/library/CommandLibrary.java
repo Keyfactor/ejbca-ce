@@ -148,6 +148,7 @@ public enum CommandLibrary {
                     stringBuffer.append(TAB + command + " - " + commands.get(command).getCommandDescription() + "\n");
                 }
             }
+            stringBuffer.append("\nType a command and \"--help\" for more information.\n");
             log.info(stringBuffer.toString());
         }
 
