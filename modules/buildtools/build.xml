@@ -6,27 +6,26 @@
 
 	<dirname property="this.dir" file="${ant.file.buildtools}"/>
 	<import file="${this.dir}/../build.xml"/>
-	
-	<property name="build.dir" location="${this.dir}/build"/>
+	<property name="build.dir" location="${mod.buildtools.build}"/>
 	<property name="build-test.dir" location="${this.dir}/build-test"/>
 	<property name="src.dir" location="${this.dir}/src"/>
 	<property name="src-test.dir" location="${this.dir}/src-test"/>
 	<property name="reports.base.dir" location="${this.dir}/build-test/reports/"/>
 
-
+<!--
     <target name="build-servicemanifestbuilder" depends="compile-servicemanifestbuilder">
         <jar jarfile="${mod.servicemanifestbuilder.lib}">
     		<manifest >
-    			<attribute name="Class-path" value="$./" />
+    			<attribute name="Class-path" value="${mod.cli-util.lib} ./" />
     			<attribute name="Main-Class" value="org.primekey.anttools.ServiceManifestBuilder"/>
     		</manifest>
             <fileset dir="${build.dir}" includes="**/*ServiceManifestBuilder.class"/>
         </jar>
     </target>
-
+-->
     <target name="clean" description="Clean up this module">
 		<delete dir="${build.dir}" />
-		<delete dir="${mod.buildtools.dist}" />
+		<!--<delete dir="${mod.buildtools.dist}" />-->
     </target>
 	
     <target name="compile-servicemanifestbuilder">
@@ -41,7 +40,7 @@
       
     
     <!-- Tests -->
-    <target name="compile-tests" depends="build-servicemanifestbuilder">
+    <target name="compile-tests" depends="compile-servicemanifestbuilder">
     	<mkdir dir="${build-test.dir}" />
         <javac srcdir="${src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}">
