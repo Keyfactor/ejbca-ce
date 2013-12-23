@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -37,13 +38,14 @@ public class ParameterHandler {
     private static final String CR = "\n";
 
     private static final String HELP_KEY = "--help";
-    
+
     private final String commandName;
 
     private final Map<String, Parameter> parameterMap = new HashMap<String, Parameter>();
     private final List<String> mandatoryParameters = new ArrayList<String>();
     private final List<String> optionalParameters = new ArrayList<String>();
-    
+    private final LinkedList<String> standaloneParameters = new LinkedList<String>();
+
     public ParameterHandler(String commandName) {
         this.commandName = commandName;
     }
@@ -53,11 +55,15 @@ public class ParameterHandler {
     }
 
     public void registerParameter(Parameter parameter) {
-        parameterMap.put(parameter.getKeyWord(), parameter);
+        final String keyWord = parameter.getKeyWord();
+        parameterMap.put(keyWord, parameter);
         if (parameter.isMandatory()) {
-            mandatoryParameters.add(parameter.getKeyWord());
+            mandatoryParameters.add(keyWord);
         } else {
-            optionalParameters.add(parameter.getKeyWord());
+            optionalParameters.add(keyWord);
+        }
+        if (parameter.isStandAlone()) {
+            standaloneParameters.add(keyWord);
         }
     }
 
@@ -79,10 +85,11 @@ public class ParameterHandler {
     private void printManPage(CommandBase command) {
         StringBuffer sb = new StringBuffer();
         sb.append(CR);
-        sb.append(bold(commandName.toUpperCase()) + tab(3) + command.getImplementationName() + " Commands Manual" + tab(3) + bold(commandName.toUpperCase()) + CR);
+        sb.append(bold(commandName.toUpperCase()) + tab(3) + command.getImplementationName() + " Commands Manual" + tab(3)
+                + bold(commandName.toUpperCase()) + CR);
         sb.append(CR);
         sb.append(bold("NAME") + CR);
-        sb.append(TAB + commandName + " - " + command.getCommandDescription()  + CR);
+        sb.append(TAB + commandName + " - " + command.getCommandDescription() + CR);
         sb.append(CR);
         sb.append(bold("DESCRIPTION") + CR);
         for (String formattedString : splitStringIntoLines(command.getFullHelpText(), 80)) {
@@ -128,7 +135,7 @@ public class ParameterHandler {
         }
         return sb.toString();
     }
-    
+
     /**
      * Private utility method that takes a string and splits it by line length
      * 
@@ -141,7 +148,7 @@ public class ParameterHandler {
         while (input.length() > lineLength) {
             int lastSpace = input.substring(0, lineLength).lastIndexOf(" ");
             result.add(input.substring(0, lastSpace));
-            input = input.substring(lastSpace+1);
+            input = input.substring(lastSpace + 1);
         }
         if (!input.equals("")) {
             result.add(input);
@@ -163,29 +170,37 @@ public class ParameterHandler {
         //Get a list of all parameters
         for (int i = 0; i < argumentList.size(); i++) {
             String parameterString = argumentList.get(i);
-            if(parameterString.toLowerCase().equals(HELP_KEY)) {
+            if (parameterString.toLowerCase().equals(HELP_KEY)) {
                 printManPage(callback);
                 return null;
             }
             Parameter parameter = parameterMap.get(parameterString);
             String value;
             if (parameter == null) {
-                unknownArguments.add(parameterString);
-                continue;
-            }
-            if (parameter.getParameterMode() == ParameterMode.ARGUMENT) {
-                value = argumentList.get(i + 1);
-                i++;
-            } else if (parameter.getParameterMode() == ParameterMode.FLAG) {
-                value = "";
-            } else if (parameter.getParameterMode() == ParameterMode.INPUT) {
-                log.info("Enter value for " + parameterString + ": ");
-                value = System.console().readLine();
-            } else if (parameter.getParameterMode() == ParameterMode.PASSWORD) {
-                log.info("Password (" + parameterString + "): ");
-                value = new String(System.console().readPassword());
+                //Presume that it might be a standalone argument
+                if (standaloneParameters.size() > 0 && !parameterString.startsWith("-")) {
+                    value = parameterString;
+                    parameterString = standaloneParameters.removeFirst();
+
+                } else {
+                    unknownArguments.add(parameterString);
+                    continue;
+                }
             } else {
-                throw new IllegalStateException(parameter.getParameterMode().name() + " was an unknown parameter type.");
+                if (parameter.getParameterMode() == ParameterMode.ARGUMENT) {
+                    value = argumentList.get(i + 1);
+                    i++;
+                } else if (parameter.getParameterMode() == ParameterMode.FLAG) {
+                    value = "";
+                } else if (parameter.getParameterMode() == ParameterMode.INPUT) {
+                    log.info("Enter value for " + parameterString + ": ");
+                    value = System.console().readLine();
+                } else if (parameter.getParameterMode() == ParameterMode.PASSWORD) {
+                    log.info("Password (" + parameterString + "): ");
+                    value = new String(System.console().readPassword());
+                } else {
+                    throw new IllegalStateException(parameter.getParameterMode().name() + " was an unknown parameter type.");
+                }
             }
             result.put(parameterString, value);
         }
@@ -217,7 +232,7 @@ public class ParameterHandler {
             }
             sb.append(CR + "Run command with \"" + HELP_KEY + "\" to see full manual page.");
             log.info(sb);
-            
+
             return null;
         }
     }

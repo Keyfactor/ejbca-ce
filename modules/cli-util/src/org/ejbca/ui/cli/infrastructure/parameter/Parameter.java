@@ -14,7 +14,7 @@ package org.ejbca.ui.cli.infrastructure.parameter;
 
 import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
-
+import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * Wrapper class for a command parameter
@@ -23,14 +23,14 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
  *
  */
 public class Parameter {
-    
+
     private final String keyWord;
-    private final boolean allowStandAlone;
+    private final StandaloneMode allowStandAlone;
     private final ParameterMode parameterMode;
     private final MandatoryMode mandatoryMode;
     private final String instruction;
     private final String name;
-    
+
     /**
      * Constructor for defining a parameter
      * 
@@ -40,7 +40,12 @@ public class Parameter {
      * @param allowStandAlone true if this parameter can be inputed without its keyword. 
      * @param parameterMode 
      */
-    public Parameter(String keyWord, String name, MandatoryMode mandatoryMode, boolean allowStandAlone, ParameterMode parameterMode, String instruction) {
+    public Parameter(String keyWord, String name, MandatoryMode mandatoryMode, StandaloneMode allowStandAlone, ParameterMode parameterMode,
+            String instruction) {
+        //Perform validation
+        if (allowStandAlone.equals(StandaloneMode.ALLOW) && !parameterMode.equals(ParameterMode.ARGUMENT)) {
+            throw new IllegalStateException("A non argument parameter can not be set to standalone.");
+        }
         this.keyWord = keyWord;
         this.allowStandAlone = allowStandAlone;
         this.parameterMode = parameterMode;
@@ -52,9 +57,13 @@ public class Parameter {
     public String getName() {
         return name;
     }
-    
+
     public boolean isMandatory() {
         return mandatoryMode.isMandatory();
+    }
+    
+    public boolean isStandAlone() {
+        return allowStandAlone.isStandAlone();
     }
 
     @Override
@@ -86,7 +95,7 @@ public class Parameter {
         return parameterMode;
     }
 
-    public boolean allowStandAlone() {
+    public StandaloneMode allowStandAlone() {
         return allowStandAlone;
     }
 
@@ -100,6 +109,5 @@ public class Parameter {
     public String getInstruction() {
         return instruction;
     }
-    
-    
+
 }
