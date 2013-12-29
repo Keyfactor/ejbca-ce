@@ -121,7 +121,7 @@ This PKI software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source Initiative.
 </p>
 <p>
-The source code of EJBCA is hosted on a (mostly) public <a href="https://svn.cesecore.eu/svn/ejbca/">svn</a> and all downloads include the complete source code can be downloaded from <a href="http://www.sf.net/">Sourceforge.net</a>.
+The source code of EJBCA is hosted on a (mostly) public <a href="https://svn.cesecore.eu/svn/ejbca/">svn</a> and all downloads include the complete source code and can be downloaded from <a href="http://www.sf.net/projects/ejbca">Sourceforge.net</a>.
 <br></br>
 If you want to contribute to EJBCA, please see <i><a href="contributions.html">Contribute to EJBCA</a></i>
 <br></br>
