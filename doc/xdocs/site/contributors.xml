@@ -7,67 +7,15 @@
   <body>
     <section name="Get Involved">
 <p>
-To contact the EJBCA team or to contribute, use the mailing lists, irc or contact the project
+To contact the EJBCA team or to <a href="contributions.html">contribute</a>, use the mailing lists, irc or contact the project
 administrators, who can be reached through the <a href="contact.html">Contact</a> page.
 </p>
     </section>
 
-<section name="Getting started with EJBCA development">
-<subsection name="Development tools">
-<ul>
-<li>An operating system that can run Java (Linux, OSX, Windows..). Most developers use Ubuntu/Debian.</li>
-<li>Eclipse JEE edition with an additional Subversion (SVN) plugin installed.</li>
-<li>OpenJDK 7, or OracleJDK 7 (the EJBCA 6.x-branch only supports JDK 6 and 7)</li>
-<li>Apache Ant 1.7.x (with all the extras that comes with the zip from apache.org or 'ant-optional' Ubuntu package)</li>
-<li>A supported application server (JBoss AS 7.1.1.GA etc)</li>
-<li>A favorite database supported by EJBCA that is easy to work with (H2, MySQL, PostgreSQL.).</li>
-<li>A virtualization solution for testing additional combinations of application servers and databases and external OCSP responders etc.</li>
-</ul>
-<p>
-Changes that affect the database requires more databases to test with, changes that affect the EJBs or setup requires additional application servers etc..
-What you need to know to develop EJBCA
-</p>
-<ul>
-<li>The tools described in the previous section</li>
-<li>Public Key Infrastructure and related technologies</li>
-<ul>
-    <li>J2EE and JEE5</li>
-    <ul>
-        <li>Enterprise JavaBeans (excluding message passing)</li>
-        <li>Java Persistence API</li>
-        <li>Java ServerPages and Java ServerFaces</li>
-        <li>Web Services</li>
-     </ul>
-    <li>Databases</li>
-</ul>
-</ul>
-</subsection>
-<subsection name="Sending patches">
-<p>
-If you are not a comitter in SVN we are glad to accept patches. You can send us patches either
-in diff format (svn diff) or created with Eclipse.
-You can also send us you complete files that you changed, we can see the diffs in Eclipse.
-</p>
-<p>
-Please follow these simple guidelines when submitting patches:
-</p>
-<p>
-    Keep the patch limited, only change the parts related to your patch.
-    Do not change other lines, such as whitespace, adding line breaks to java doc etc. It will make it very very hard for us to review the patch.
-</p>
-</subsection>
-<subsection name="Using SVN">
-<p>
-How to connect to the EJBCA svn repository is explained over at <a href="http://ejbca.org/repository.html">repository</a>.
-If you are using Eclipse we recommend the Subversive plug-in, now part of eclipse plug-in repositories.
-</p>
-</subsection>
-</section>
-
 <section name="Contributors">
 <p>
  We encourage and appreciate all contributions.
- Here is the list of all people who have donated their valuable time to produce code included in EJBCA.
+ Here is the list of people who have donated their valuable time to produce code included in EJBCA.
  Many others have contributed with bug reports, feature suggestions etc etc.
 </p>
 
