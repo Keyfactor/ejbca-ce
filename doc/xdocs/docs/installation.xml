@@ -177,7 +177,8 @@ gpgcheck=0
 <li>umount /media/</li>
 </ul>
 This will install OpenJDK and apache ant.
-Unfortunately the ant in RHEL 6 is too old so you need to:
+<br/>Unfortunately the ant in RHEL 6 is too old (v1.7.1) so you need download a fresh version of ant. 
+<br/>RHEL 7 contains a fresh version of ant, so the following is not needed for RHEL 7.
 <li><a href="http://ant.apache.org/bindownload.cgi">Download apache ant</a> and set it up to be first in the path. run 'ant -version' to verify that you have a recent ant version.</li>
 <li>Log out from root account and log in as 'user' in a new terminal 'ejbca'.</li>
 <li>After this follow the same steps, 4-11 as in the 'Ubuntu quick start' above.</li>
