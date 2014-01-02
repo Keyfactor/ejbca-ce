@@ -315,6 +315,7 @@
 
         <!-- Purges the old web configuration. -->
         <target name="jee:web-configureJBoss7Cleanup" if="jboss7">
+            <echo message="Cleaning-up web configuration for JBoss 7 (ejbca must be deployed)." />
             <jboss:admsilent arg="/socket-binding-group=standard-sockets/socket-binding=httpspub:remove" failonerror="false"/>
             <jboss:admsilent arg="/subsystem=web/connector=httpspub:remove" failonerror="false" />
             <jboss:admsilent arg="/socket-binding-group=standard-sockets/socket-binding=httpspriv:remove" failonerror="false" />
@@ -332,7 +333,7 @@
         </target>
 
         <target name="jee:web-configureJBoss7" depends="jee:check,jee:assert-runJBoss7" if="jboss7" unless="web.noconfigure">
-            <echo message="Setting-up web configuration for JBoss 7." />
+            <echo message="Setting-up web configuration for JBoss 7 (ejbca must be deployed)." />
             <antcall target="jee:web-configureJBoss7Cleanup" />
             <jboss:adm arg='/interfaces=/interface=http:add(inet-address="${httpsserver.bindaddress.pubhttp}")' />
             <jboss:adm arg='/interfaces=/interface=httpspub:add(inet-address="${httpsserver.bindaddress.pubhttps}")' />
