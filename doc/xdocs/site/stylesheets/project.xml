@@ -44,7 +44,7 @@
             <menu name="Contributing">
                 <item name="Contribute to EJBCA"     href="/contributions.html"/>
                 <item name="Contributors"          href="/contributors.html"/>
-                <item name="Bug Database"          href="http://jira.primekey.se/"/>
+                <item name="Issue Tracker"          href="http://jira.primekey.se/"/>
                 <item name="SVN Repository"      href="/repository.html"/>
                 <item name="FishEye SVN" href="http://fisheye.primekey.se/changelog/EJBCA/"/>
             </menu>
