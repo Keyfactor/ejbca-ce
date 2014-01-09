@@ -1494,8 +1494,13 @@ public abstract class CertTools {
      */
     public static X509Certificate genSelfCert(String dn, long validity, String policyId, PrivateKey privKey, PublicKey pubKey, String sigAlg,
             boolean isCA, String provider, boolean ldapOrder) throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, IllegalStateException, NoSuchProviderException, OperatorCreationException, CertificateException, IOException {
-        int keyusage = X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
-        return genSelfCertForPurpose(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, keyusage, null, null, provider, ldapOrder);
+        final int keyUsage;
+        if (isCA) {
+            keyUsage = X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
+        } else {
+            keyUsage = 0;
+        }
+        return genSelfCertForPurpose(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, keyUsage, null, null, provider, ldapOrder);
     } // genselfCert
     
     /** Generates a self signed certificate with keyUsage X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, i.e. a CA certificate
@@ -1545,6 +1550,13 @@ public abstract class CertTools {
 
     public static X509Certificate genSelfCertForPurpose(String dn, long validity, String policyId, PrivateKey privKey, PublicKey pubKey,
             String sigAlg, boolean isCA, int keyusage, Date privateKeyNotBefore, Date privateKeyNotAfter, String provider, boolean ldapOrder)
+            throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, IllegalStateException, NoSuchProviderException, IOException,
+            OperatorCreationException, CertificateException {
+        return genSelfCertForPurpose(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, keyusage, privateKeyNotBefore, privateKeyNotAfter, provider, ldapOrder, null);
+    }
+    
+    public static X509Certificate genSelfCertForPurpose(String dn, long validity, String policyId, PrivateKey privKey, PublicKey pubKey,
+            String sigAlg, boolean isCA, int keyusage, Date privateKeyNotBefore, Date privateKeyNotAfter, String provider, boolean ldapOrder, List<Extension> additionalExtensions)
             throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, IllegalStateException, NoSuchProviderException, IOException,
             OperatorCreationException, CertificateException {
         // Create self signed certificate
@@ -1610,7 +1622,7 @@ public abstract class CertTools {
         certbuilder.addExtension(Extension.basicConstraints, true, bc);
 
         // Put critical KeyUsage in CA-certificates
-        if (isCA) {
+        if (isCA || keyusage!=0) {
             X509KeyUsage ku = new X509KeyUsage(keyusage);
             certbuilder.addExtension(Extension.keyUsage, true, ku);
         }
@@ -1657,7 +1669,12 @@ public abstract class CertTools {
             DERSequence seq = new DERSequence(pi);
             certbuilder.addExtension(Extension.certificatePolicies, false, seq);
         }
-
+        // Add any additional
+        if (additionalExtensions!=null) {
+            for (final Extension extension : additionalExtensions) {
+                certbuilder.addExtension(extension.getExtnId(), extension.isCritical(), extension.getParsedValue());
+            }
+        }
         final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).build(privKey), 20480);
         final X509CertificateHolder certHolder = certbuilder.build(signer);
         final X509Certificate selfcert = (X509Certificate)CertTools.getCertfromByteArray(certHolder.getEncoded());
