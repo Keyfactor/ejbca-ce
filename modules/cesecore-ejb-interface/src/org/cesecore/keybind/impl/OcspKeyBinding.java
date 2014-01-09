@@ -145,7 +145,8 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
                 log.debug("Key usages: " + Arrays.toString(ku));
                 if (ku != null) {
                     log.debug("Key usage (digitalSignature): " + x509Certificate.getKeyUsage()[0]);
-                    log.debug("Key usage (keyEncipherment): " + x509Certificate.getKeyUsage()[2]);
+                    log.debug("Key usage (nonRepudiation):   " + x509Certificate.getKeyUsage()[1]);
+                    log.debug("Key usage (keyEncipherment):  " + x509Certificate.getKeyUsage()[2]);
                 }
             }
             if (x509Certificate.getExtendedKeyUsage() == null) {
@@ -160,8 +161,8 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
                 log.debug("Extended Key Usage 1.3.6.1.5.5.7.3.9 (EKU_PKIX_OCSPSIGNING) is required.");
                 return false;
             }
-            if (!x509Certificate.getKeyUsage()[0]) {
-                log.debug("Key Usage digitalSignature is required.");
+            if (!x509Certificate.getKeyUsage()[0] && !x509Certificate.getKeyUsage()[1] ) {
+                log.debug("Key Usage digitalSignature is required (nonRepudiation would also be accepted).");
                 return false;
             }
         } catch (CertificateParsingException e) {
