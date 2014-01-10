@@ -59,6 +59,7 @@ public class LimitLengthASN1Reader extends ASN1InputStream {
 	 * @see java.io.FilterInputStream#read()
 	 * This method is used in #readLeangth()
 	 */
+	@Override
 	public int read() throws IOException {
 		final int result = super.read();
 		this.baos.write(result);
