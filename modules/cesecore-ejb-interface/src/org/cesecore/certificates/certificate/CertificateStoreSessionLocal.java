@@ -33,7 +33,12 @@ import org.cesecore.certificates.certificate.request.RequestMessage;
 @Local
 public interface CertificateStoreSessionLocal extends CertificateStoreSession {
 
-    //FIXME: Documentation
+    /** return CertificateInfo for the certificate with issuerDN and serno. If there are multiple certificates
+     * with the same issuerDN, serno (should only be possible for CVC certificates) the first one (returned from database) is returned.
+     * @param issuerDN issuer DN of the desired certificate.
+     * @param serno serial number of the desired certificate!
+     * @return CertificateInfo if found or null
+     */
     CertificateInfo findFirstCertificateInfo(String issuerDN, BigInteger serno);
     
     /**
