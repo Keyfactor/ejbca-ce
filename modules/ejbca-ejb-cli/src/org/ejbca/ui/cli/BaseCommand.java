@@ -75,6 +75,9 @@ public abstract class BaseCommand implements CliCommandPlugin {
     protected String cliUserName = null;
     protected String cliPassword = null;
 
+    public BaseCommand() {
+        CryptoProviderTools.installBCProviderIfNotAvailable();
+    }
     private static Logger log = null;
 
     {
@@ -258,7 +261,7 @@ public abstract class BaseCommand implements CliCommandPlugin {
 
     /**
      * Method checking if strong crypto is installed (extra package from
-     * java.sun.com)
+     * java.sun.com), used only by OracleJDK (not OpenJDK)
      * 
      * @return true if strong crypto is installed.
      */

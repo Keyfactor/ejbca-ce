@@ -16,11 +16,13 @@ package org.ejbca.ui.cli.ca;
 import java.io.FileInputStream;
 import java.security.KeyStore;
 import java.util.Enumeration;
+import java.util.List;
 
 import org.cesecore.util.FileTools;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.ejbca.util.CliTools;
 
 /**
  * Restore a CA token keystore from a PKCS12 file.
@@ -43,14 +45,24 @@ public class CaRestoreKeyStoreCommand extends BaseCaAdminCommand {
         }
         
         
-		if (args.length < 3 || args.length > 5) {
+		if (args.length < 3 || args.length > 7) {
     		getLogger().info("Description: " + getDescription());
     		getLogger().info("Usage: " + getCommand() + " <CA name> <pkcs12 file> [<signature alias>] [<encryption alias>]");
     		getLogger().info(" Leave out both <.. alias> to use the only available alias or get a list of available aliases ");
     		getLogger().info(" if there are more than one.");
+            getLogger().info(" You will be prompted for keystore password, but can optionally specify it on command line using the optional argument '-kspassword yourpwd'.");
 			return;
 		}
 		try {
+            List<String> argsList = CliTools.getAsModifyableList(args);
+            int pwdInd = argsList.indexOf("-kspassword");
+            String kspwd = null;
+            if (pwdInd > -1) {
+                kspwd = argsList.get(pwdInd + 1);
+                argsList.remove(pwdInd + 1);
+                argsList.remove("-kspassword");
+            }
+            args = argsList.toArray(new String[argsList.size()]); // new args array without the optional switches
 			String caName = args[1];
 			// Import soft keystore
 			String p12file = args[2];
@@ -62,9 +74,13 @@ public class CaRestoreKeyStoreCommand extends BaseCaAdminCommand {
 			if (args.length > 4) {
 				encryptionAlias = args[4];
 			}
-			getLogger().info("Enter keystore password: ");
-			// Read the password, but mask it so we don't display it on the console
-			String kspwd = String.valueOf(System.console().readPassword());
+			if (kspwd == null) {
+	            getLogger().info("Enter keystore password: ");
+	            // Read the password, but mask it so we don't display it on the console
+	            kspwd = String.valueOf(System.console().readPassword());			    
+			} else {
+                getLogger().info("Keystore password was supplied on the command line.");			    
+			}
 			// Read old keystore file in the beginning so we know it's good
 			byte[] keystorebytes = null;
 			keystorebytes = FileTools.readFiletoBuffer(p12file);
