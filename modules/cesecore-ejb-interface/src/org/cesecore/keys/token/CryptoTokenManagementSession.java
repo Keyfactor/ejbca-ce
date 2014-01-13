@@ -112,10 +112,10 @@ public interface CryptoTokenManagementSession {
             char[] authenticationCode) throws AuthorizationDeniedException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
             CryptoTokenNameInUseException, NoSuchSlotException;
 
-    /** @return value object with non-sensitive information about the CryptoToken for UI use or similar. */
+    /** @return value object with non-sensitive information about the CryptoToken for UI use or similar, or null if token does not exist. */
     CryptoTokenInfo getCryptoTokenInfo(AuthenticationToken authenticationToken, int cryptoTokenId) throws AuthorizationDeniedException;
 
-    /** @return List value objects with non-sensitive information about authorized CryptoToken for UI use or similar. */
+    /** @return List value objects with non-sensitive information about authorized CryptoToken for UI use or similar. Returns empty list if no tokens exist. */
     List<CryptoTokenInfo> getCryptoTokenInfos(AuthenticationToken authenticationToken);
 
     /** @return the cryptoTokenId from the more user friendly name. Return null of there is no such CryptoToken. */
