@@ -14,13 +14,15 @@
 package org.ejbca.ui.cli.ca;
 
 import java.io.FileOutputStream;
+import java.util.List;
 
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.ejbca.util.CliTools;
 
 /**
- * Exports CA as a PCKS#12 or PKCS#8 file
+ * Exports CA as a PKCS#12 or PKCS#8 file
  *
  * @version $Id$
  */
@@ -29,7 +31,7 @@ public class CaExportCACommand extends BaseCaAdminCommand {
     @Override
 	public String getSubCommand() { return "exportca"; }
     @Override
-    public String getDescription() { return "Exports CA as a PCKS#12 or PKCS#8 file"; }
+    public String getDescription() { return "Exports CA as a PKCS#12 or PKCS#8 file"; }
 
     @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
@@ -44,11 +46,21 @@ public class CaExportCACommand extends BaseCaAdminCommand {
         if (args.length < 3) {
 			getLogger().info("Description: " + getDescription());
         	getLogger().info("Usage: " + getCommand() + " <CA name> <pkcs12/pkcs8 file> [<signature_key_alias>] [<encryption_key_alias>]");
-        	getLogger().info("Default values for signature_key_alias is \"" + signatureKeyAlias + "\" and encryption_key_alias" + " is \"" + encryptionKeyAlias + "\".");
-        	getLogger().info("X.509 CAs are exported as PKCS#12 files while for CVC CAs only the private certificate signing key is exported as a PKCS#8 key.");
+        	getLogger().info(" Default values for signature_key_alias is \"" + signatureKeyAlias + "\" and encryption_key_alias" + " is \"" + encryptionKeyAlias + "\".");
+        	getLogger().info(" X.509 CAs are exported as PKCS#12 files while for CVC CAs only the private certificate signing key is exported as a PKCS#8 key.");
+            getLogger().info(" You will be prompted for keystore password to protect stored keystore, but can optionally specify it on command line using the optional argument '-kspassword yourpwd'.");
         	return;
         }
         try {
+            List<String> argsList = CliTools.getAsModifyableList(args);
+            int pwdInd = argsList.indexOf("-kspassword");
+            String kspwd = null;
+            if (pwdInd > -1) {
+                kspwd = argsList.get(pwdInd + 1);
+                argsList.remove(pwdInd + 1);
+                argsList.remove("-kspassword");
+            }
+            args = argsList.toArray(new String[argsList.size()]); // new args array without the optional switches
         	String caName	= args[1];
             String p12file	= args[2];
             if ( args.length > 3 ) {
@@ -58,8 +70,13 @@ public class CaExportCACommand extends BaseCaAdminCommand {
             	encryptionKeyAlias = args[4];
             }
            
-            getLogger().info("Enter keystore password: ");
-            String kspwd = new String(System.console().readPassword());
+            if (kspwd == null) {
+                getLogger().info("Enter keystore password: ");
+                // Read the password, but mask it so we don't display it on the console
+                kspwd = String.valueOf(System.console().readPassword());                
+            } else {
+                getLogger().info("Keystore password was supplied on the command line.");                
+            }
             
             byte[] keyStoreBytes = ejb.getRemoteSession(CAAdminSessionRemote.class).exportCAKeyStore(getAuthenticationToken(cliUserName, cliPassword), caName, kspwd, kspwd, signatureKeyAlias, encryptionKeyAlias);
             FileOutputStream fos = new FileOutputStream(p12file);
