@@ -28,6 +28,7 @@ import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERSequence;
@@ -40,11 +41,12 @@ import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
-import org.ejbca.util.TraceLogMethodsRule;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 
 /**
  * Test of OcspKeyBinding implementation.
@@ -55,8 +57,26 @@ public class OcspKeyBindingTest {
 
     private static List<Extension> ekuExtensionOnly;
 
+    // Define a traceLogMethodsRule similar to the system tests TraceLogMethodsRule() implementation.
     @Rule
-    public TestRule traceLogMethodsRule = new TraceLogMethodsRule();
+    public TestRule traceLogMethodsRule = new TestWatcher() {
+        @Override
+        protected void starting(Description description) {
+            final Logger log = Logger.getLogger(description.getClassName());
+            if (log.isTraceEnabled()) {
+                log.trace(">" + description.getMethodName());
+            }
+            super.starting(description);
+        };
+        @Override
+        protected void finished(Description description) {
+            final Logger log = Logger.getLogger(description.getClassName());
+            if (log.isTraceEnabled()) {
+                log.trace("<" + description.getMethodName());
+            }
+            super.finished(description);
+        }
+    };
 
     @BeforeClass
     public static void beforeClass() throws Exception {
