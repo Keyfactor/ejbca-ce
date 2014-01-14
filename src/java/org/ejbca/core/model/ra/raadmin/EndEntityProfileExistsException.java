@@ -14,8 +14,8 @@
 package org.ejbca.core.model.ra.raadmin;
 
 /**
- * An exception thrown when someone tries to add a profile that already exits
- *§
+ * An exception thrown when someone tries to add a profile that already exists
+ *
  * @version $Id$
  */
 public class EndEntityProfileExistsException extends Exception {

@@ -1331,7 +1331,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         user1.setUsername(CA1_WSTESTUSER1);
         user1.setPassword(PASSWORD);
         user1.setClearPwd(true);
-        user1.setSubjectDN("CN=WS������������������");
+        user1.setSubjectDN("CN=WSÅÄÖÜåäöüè");
         user1.setCaName(getAdminCAName());
         user1.setEmail(null);
         user1.setSubjectAltName(null);
@@ -1352,7 +1352,9 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         assertTrue(userdatas.size() == 1);
         UserDataVOWS userdata = userdatas.get(0);
         assertTrue(userdata.getUsername().equals(CA1_WSTESTUSER1));
-        assertTrue(userdata.getSubjectDN().equals("CN=WS������������������"));
+        assertTrue(userdata.getSubjectDN().equals("CN=WSÅÄÖÜåäöüè"));
+        // Compare with unicode encoded chars as well to ensure file encoding was not messed up
+        assertTrue(userdata.getSubjectDN().equals("CN=WS\u00C5\u00C4\u00D6\u00DC\u00E5\u00E4\u00F6\u00FC\u00E8"));
 
     }
 
