@@ -27,7 +27,7 @@ import org.ejbca.util.PrinterManager;
  * Class used as a help tool when creating hard token visual layout templates
  * @version $Id$
  */
-public class SVGTemplatePrinter extends BaseCommand {
+public class SVGTemplatePrinterCommand extends BaseCommand {
 
 	private static final String USERDATAFILENAME = "src/cli/svgtemplateprinttester.properties";
 

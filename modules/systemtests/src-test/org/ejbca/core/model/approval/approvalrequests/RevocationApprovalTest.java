@@ -73,7 +73,7 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.NotFoundException;
-import org.ejbca.ui.cli.batch.BatchMakeP12;
+import org.ejbca.ui.cli.batch.BatchMakeP12Command;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -131,7 +131,7 @@ public class RevocationApprovalTest extends CaTestCase {
                     CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
             userdata2.setPassword("foo123");
         	endEntityManagementSession.addUser(internalAdmin, userdata2, true);
-        	BatchMakeP12 makep12 = new BatchMakeP12();
+        	BatchMakeP12Command makep12 = new BatchMakeP12Command();
         	File tmpfile = File.createTempFile("ejbca", "p12");
         	makep12.setMainStoreDir(tmpfile.getParent());
         	makep12.createAllNew(cliUserName, cliPassword);
@@ -204,7 +204,7 @@ public class RevocationApprovalTest extends CaTestCase {
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
         userdata.setPassword("foo123");
         endEntityManagementSession.addUser(admin, userdata, true);
-        BatchMakeP12 makep12 = new BatchMakeP12();
+        BatchMakeP12Command makep12 = new BatchMakeP12Command();
         File tmpfile = File.createTempFile("ejbca", "p12");
         makep12.setMainStoreDir(tmpfile.getParent());
         makep12.createAllNew(cliUserName, cliPassword);

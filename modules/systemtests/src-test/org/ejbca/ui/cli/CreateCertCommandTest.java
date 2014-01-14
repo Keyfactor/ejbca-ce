@@ -15,10 +15,8 @@ package org.ejbca.ui.cli;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 
@@ -28,8 +26,6 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
-import org.cesecore.certificates.endentity.EndEntityConstants;
-import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
@@ -78,7 +74,6 @@ public class CreateCertCommandTest {
         requestFile = File.createTempFile("test", null);
         resultFile = File.createTempFile("test", ".pem");
         ca = CaTestUtils.createTestX509CA(CA_DN, null, false);
-
         caSession.addCA(authenticationToken, ca);
         endEntityManagementSession.addUser(authenticationToken, USERNAME, PASSWORD, "CN=" + USERNAME, null, null, false,
                 SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(),

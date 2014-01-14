@@ -55,7 +55,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.protocol.xkms.client.XKMSInvoker;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.core.protocol.xkms.common.XKMSUtil;
-import org.ejbca.ui.cli.batch.BatchMakeP12;
+import org.ejbca.ui.cli.batch.BatchMakeP12Command;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -152,7 +152,7 @@ public class XKMSSigTest {
             assertTrue("Failed to create user " + username, false);
         }
 
-        BatchMakeP12 makep12 = new BatchMakeP12();
+        BatchMakeP12Command makep12 = new BatchMakeP12Command();
         tmpfile = new File("p12");
 
         // log.debug("tempdir="+tmpfile.getParent());

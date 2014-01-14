@@ -81,7 +81,7 @@ import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalTest;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
-import org.ejbca.ui.cli.batch.BatchMakeP12;
+import org.ejbca.ui.cli.batch.BatchMakeP12Command;
 import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.Query;
@@ -473,7 +473,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
                     SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
             userdata.setPassword("foo123");
             endEntityManagementSession.addUser(admin, userdata, true);
-            BatchMakeP12 makep12 = new BatchMakeP12();
+            BatchMakeP12Command makep12 = new BatchMakeP12Command();
             File tmpfile = File.createTempFile("ejbca", "p12");
             makep12.setMainStoreDir(tmpfile.getParent());
             makep12.createAllNew(cliUserName, cliPassword);
