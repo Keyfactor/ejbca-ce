@@ -61,7 +61,7 @@ import org.ejbca.util.keystore.P12toPEM;
  *
  * @version $Id$
  */
-public class BatchMakeP12 extends BaseCommand {
+public class BatchMakeP12Command extends BaseCommand {
 
     BatchToolProperties props = new BatchToolProperties();
     
@@ -69,9 +69,6 @@ public class BatchMakeP12 extends BaseCommand {
      * Where created P12-files are stored, default p12
      */
     private String mainStoreDir = "";
-   // private final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("BatchMakeP12"));
-    //private final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
-   // private final AuthenticationSubject subject = getAuthenticationSubject("BatchMakeP12", "BatchMakeP12");
     private Boolean usekeyrecovery = null;
     @Override
     public String getMainCommand() {

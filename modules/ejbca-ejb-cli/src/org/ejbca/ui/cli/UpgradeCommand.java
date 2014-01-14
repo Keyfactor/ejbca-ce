@@ -22,7 +22,7 @@ import org.ejbca.core.ejb.upgrade.UpgradeSessionRemote;
  * 
  * @version $Id$
  */
-public class Upgrade extends BaseCommand {
+public class UpgradeCommand extends BaseCommand {
 
     public String getMainCommand() {
         return null;

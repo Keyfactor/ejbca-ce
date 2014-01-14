@@ -77,7 +77,7 @@ import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Except
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
 import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
-import org.ejbca.ui.cli.batch.BatchMakeP12;
+import org.ejbca.ui.cli.batch.BatchMakeP12Command;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -475,7 +475,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         userData.setPassword(PASSWORD);
         endEntityManagementSession.addUser(intadmin, userData, true);
 
-        BatchMakeP12 makep12 = new BatchMakeP12();
+        BatchMakeP12Command makep12 = new BatchMakeP12Command();
         File tmpfile = File.createTempFile("ejbca", "p12");
 
         makep12.setMainStoreDir(tmpfile.getParent());

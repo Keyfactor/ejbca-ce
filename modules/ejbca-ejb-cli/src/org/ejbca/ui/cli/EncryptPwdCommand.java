@@ -21,7 +21,7 @@ import org.cesecore.util.StringTools;
  *
  * @version $Id$
  */
-public class EncryptPwd extends BaseCommand {
+public class EncryptPwdCommand extends BaseCommand {
 	
 	public String getMainCommand() { return null; }
 	public String getSubCommand() { return "encryptpwd"; }

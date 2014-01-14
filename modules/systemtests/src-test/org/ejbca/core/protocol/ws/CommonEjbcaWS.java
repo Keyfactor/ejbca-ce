@@ -161,7 +161,7 @@ import org.ejbca.cvc.CVCObject;
 import org.ejbca.cvc.CVCertificate;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.cvc.CertificateParser;
-import org.ejbca.ui.cli.batch.BatchMakeP12;
+import org.ejbca.ui.cli.batch.BatchMakeP12Command;
 
 
 /**
@@ -353,7 +353,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             endEntityManagementSession.changeUser(intAdmin, user2, true);
         }
 
-        BatchMakeP12 batch = new BatchMakeP12();
+        BatchMakeP12Command batch = new BatchMakeP12Command();
         batch.setMainStoreDir("p12");
         batch.createUser(CLI_USERNAME, CLI_PASSWORD, user1.getUsername());
         batch.createUser(CLI_USERNAME, CLI_PASSWORD, user2.getUsername());

@@ -74,7 +74,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
-import org.ejbca.ui.cli.batch.BatchMakeP12;
+import org.ejbca.ui.cli.batch.BatchMakeP12Command;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -479,7 +479,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
     private void createUser(String cliUserName, String cliPassword, EndEntityInformation userdata) throws EndEntityExistsException, AuthorizationDeniedException,
             UserDoesntFullfillEndEntityProfile, ApprovalException, WaitingForApprovalException, Exception {
         endEntityManagementSession.addUser(admin1, userdata, true);
-        BatchMakeP12 makep12 = new BatchMakeP12();
+        BatchMakeP12Command makep12 = new BatchMakeP12Command();
         File tmpfile = File.createTempFile("ejbca", "p12");
         makep12.setMainStoreDir(tmpfile.getParent());
         makep12.createAllNew(cliUserName, cliPassword);

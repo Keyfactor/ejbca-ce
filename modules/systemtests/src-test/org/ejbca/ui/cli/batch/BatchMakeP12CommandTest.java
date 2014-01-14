@@ -46,8 +46,8 @@ import org.junit.runners.MethodSorters;
  * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class BatchMakeP12Test extends CaTestCase {
-    private static final Logger log = Logger.getLogger(BatchMakeP12Test.class);
+public class BatchMakeP12CommandTest extends CaTestCase {
+    private static final Logger log = Logger.getLogger(BatchMakeP12CommandTest.class);
     private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("BatchMakeP12Test"));
     private int caid = getTestCAId();
 
@@ -121,7 +121,7 @@ public class BatchMakeP12Test extends CaTestCase {
     public void test02MakeP12() throws Exception {
         log.trace(">test02MakeP12()");
 
-        BatchMakeP12 makep12 = new BatchMakeP12();
+        BatchMakeP12Command makep12 = new BatchMakeP12Command();
         File tmpfile = File.createTempFile("ejbca", "p12");
 
         //log.debug("tempdir="+tmpfile.getParent());

@@ -85,7 +85,7 @@ import org.ejbca.core.model.approval.approvalrequests.DummyApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.ViewHardTokenDataApprovalRequest;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.NotFoundException;
-import org.ejbca.ui.cli.batch.BatchMakeP12;
+import org.ejbca.ui.cli.batch.BatchMakeP12Command;
 import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.Query;
@@ -184,7 +184,7 @@ public class ApprovalSessionTest extends CaTestCase {
             externaladmin = simpleAuthenticationProvider.authenticate(makeAuthenticationSubject(externalcert));
 
             File tmpfile = File.createTempFile("ejbca", "p12");
-            BatchMakeP12 makep12 = new BatchMakeP12();
+            BatchMakeP12Command makep12 = new BatchMakeP12Command();
             makep12.setMainStoreDir(tmpfile.getParent());
             makep12.createAllNew(cliUserName, cliPassword);
             tmpfile.delete();
