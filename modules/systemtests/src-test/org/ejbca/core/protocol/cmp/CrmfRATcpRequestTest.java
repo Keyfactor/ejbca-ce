@@ -293,7 +293,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
     @Test
     public void test06DnEmail() throws Exception {
        try {
-        String subjectDN = "C=SE,CN=G��ran Str��mf��rare,E=adam@eva.se";
+        String subjectDN = "C=SE,CN=Göran Strömförare,E=adam@eva.se";
         // createCmpUser("cmptest2", subjectDN);
 
         byte[] nonce = CmpMessageHelper.createSenderNonce();
@@ -327,7 +327,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         checkCmpResponseGeneral(resp, issuerDN, subjectDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
         checkCmpPKIConfirmMessage(subjectDN, cacert, resp);
        } finally {
-           endEntityManagementSession.deleteUser(admin, "G��ran Str��mf��rare");
+           endEntityManagementSession.deleteUser(admin, "Göran Strömförare");
        }
     }
 
