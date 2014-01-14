@@ -96,7 +96,13 @@ public class InternalKeyBindingDataSessionBean implements InternalKeyBindingData
             // 4. If database is different from cache, replace it in the cache (while trying to keep activation)
         }
         // 5. Get InternalKeyBinding from cache (or null) and be merry
-        return InternalKeyBindingCache.INSTANCE.getEntry(id);
+        final InternalKeyBinding internalKeyBinding = InternalKeyBindingCache.INSTANCE.getEntry(id);
+        // 6. Create and return a clone (so clients don't mess with the cached object)
+        final InternalKeyBinding internalKeyBindingClone = InternalKeyBindingFactory.INSTANCE.create(
+                internalKeyBinding.getImplementationAlias(), id, internalKeyBinding.getName(), internalKeyBinding.getStatus(),
+                internalKeyBinding.getCertificateId(), internalKeyBinding.getCryptoTokenId(), internalKeyBinding.getKeyPairAlias(),
+                internalKeyBinding.getDataMapToPersist());
+        return internalKeyBindingClone;
     }
 
     @Override

@@ -85,15 +85,17 @@ public interface InternalKeyBindingMgmtSession {
      * @throws InvalidAlgorithmException if the requested signature algorithm is not available
      */
     int createInternalKeyBinding(AuthenticationToken authenticationToken, String type, int id, String name, InternalKeyBindingStatus status, String certificateId,
-            int cryptoTokenId, String keyPairAlias, String signatureAlgorithm, Map<String, Serializable> dataMap) throws AuthorizationDeniedException, CryptoTokenOfflineException,
-            InternalKeyBindingNameInUseException, InvalidAlgorithmException;
+            int cryptoTokenId, String keyPairAlias, String signatureAlgorithm, Map<String, Serializable> dataMap,
+            List<InternalKeyBindingTrustEntry> trustedCertificateReferences)
+                    throws AuthorizationDeniedException, CryptoTokenOfflineException, InternalKeyBindingNameInUseException, InvalidAlgorithmException;
 
     /**
      * A createInternalKeyBinding() that chooses the id of the new object automatically.
      * @see createInternalKeyBinding
      */
     int createInternalKeyBinding(AuthenticationToken authenticationToken, String type, String name, InternalKeyBindingStatus status, String certificateId,
-            int cryptoTokenId, String keyPairAlias, String signatureAlgorithm, Map<String, Serializable> dataMap) throws AuthorizationDeniedException, CryptoTokenOfflineException,
+            int cryptoTokenId, String keyPairAlias, String signatureAlgorithm, Map<String, Serializable> dataMap,
+            List<InternalKeyBindingTrustEntry> trustedCertificateReferences) throws AuthorizationDeniedException, CryptoTokenOfflineException,
             InternalKeyBindingNameInUseException, InvalidAlgorithmException;
 
     /**

@@ -72,7 +72,11 @@ public enum EventTypes implements EventType {
     BACKUP,
     RESTORE,
     TIME_SYNC_ACQUIRE,
-    TIME_SYNC_LOST;
+    TIME_SYNC_LOST,
+    INTERNALKEYBINDING_CREATE,
+    INTERNALKEYBINDING_EDIT,
+    INTERNALKEYBINDING_DELETE,
+    ;
 
     @Override
     public boolean equals(EventType value) {

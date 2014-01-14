@@ -115,7 +115,7 @@ public class OcspTestUtils {
         final Map<String, Serializable> dataMap = new LinkedHashMap<String, Serializable>();
         dataMap.put(PROPERTY_ALIAS, Boolean.FALSE);
         int internalKeyBindingId = internalKeyBindingMgmtSession.createInternalKeyBinding(authenticationToken, type,
-                testName, InternalKeyBindingStatus.ACTIVE, null, cryptoTokenId, testName, sigAlg, dataMap);
+                testName, InternalKeyBindingStatus.ACTIVE, null, cryptoTokenId, testName, sigAlg, dataMap, null);
         return internalKeyBindingId;
     }
     

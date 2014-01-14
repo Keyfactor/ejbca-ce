@@ -33,7 +33,9 @@ public enum ModuleTypes implements ModuleType {
 	RECOVERY,
 	ROLES,
 	SECURITY_AUDIT,
-	TRUSTED_TIME;
+	TRUSTED_TIME,
+	INTERNALKEYBINDING,
+	;
 
     @Override
     public boolean equals(ModuleType value) {

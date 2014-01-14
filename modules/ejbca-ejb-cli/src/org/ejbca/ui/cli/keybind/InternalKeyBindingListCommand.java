@@ -105,10 +105,10 @@ public class InternalKeyBindingListCommand extends BaseInternalKeyBindingCommand
                 for (final InternalKeyBindingTrustEntry internalKeyBindingTrustEntry : internalKeyBindingTrustEntries) {
                     final String caSubject = caSession.getCAInfo(getAdmin(), internalKeyBindingTrustEntry.getCaId()).getSubjectDN();
                     sb.append("\n\t\"").append(caSubject).append("\", ");
-                    if (internalKeyBindingTrustEntry.getCertificateSerialNumber() == null) {
+                    if (internalKeyBindingTrustEntry.gtCertificateSerialNumber() == null) {
                         sb.append("ANY certificate");
                     } else {
-                        sb.append(internalKeyBindingTrustEntry.getCertificateSerialNumber().toString(16));
+                        sb.append(internalKeyBindingTrustEntry.gtCertificateSerialNumber().toString(16));
                     }
                 }
             }
