@@ -32,7 +32,7 @@ import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
  *
  * @version $Id$
  */
-public class CreateCert extends BaseCommand {
+public class CreateCertCommand extends BaseCommand {
 	
 	public String getMainCommand() { return null; }
 	public String getSubCommand() { return "createcert"; }

@@ -29,7 +29,7 @@ import org.cesecore.util.CryptoProviderTools;
  * 
  * @version $Id$
  */
-public class Asn1Dump extends BaseCommand {
+public class Asn1DumpCommand extends BaseCommand {
 	
 	public String getMainCommand() { return null; }
 	public String getSubCommand() { return "asn1dump"; }
