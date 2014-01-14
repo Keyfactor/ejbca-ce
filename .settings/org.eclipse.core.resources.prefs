@@ -1,4 +1,3 @@
-#Tue Dec 17 01:16:29 CET 2013
 eclipse.preferences.version=1
 encoding//modules/admin-gui/resources/languages/languagefile.bs.properties=UTF-8
 encoding//modules/admin-gui/resources/languages/languagefile.de.properties=UTF-8
@@ -12,3 +11,4 @@ encoding//modules/admin-gui/resources/languages/languagefile.se.properties=UTF-8
 encoding//modules/admin-gui/resources/languages/languagefile.ua.properties=UTF-8
 encoding//modules/admin-gui/resources/languages/languagefile.zh.properties=UTF-8
 encoding//modules/admin-gui/resources/languages/languagefile.zz.properties=UTF-8
+encoding/<project>=UTF-8
