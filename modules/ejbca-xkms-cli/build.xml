@@ -51,7 +51,7 @@
     <target name="compile-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-xkms-common"/></target>
     <target name="compile" depends="compile-external-deps">
     	<mkdir dir="${build.dir}" />
-        <javac destdir="${build.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}" classpathref="compile.classpath">
+        <javac destdir="${build.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}" classpathref="compile.classpath">
         	<src path="${src.dir}"/>
     	</javac>
     </target>

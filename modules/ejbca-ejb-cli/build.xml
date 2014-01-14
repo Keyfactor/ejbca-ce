@@ -69,7 +69,7 @@
     <target name="compile" depends="setup">
     	<mkdir dir="${build.dir}" />
         <javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}">
+        	encoding="UTF-8" target="${java.target.version}">
         	<classpath>
         		<path refid="compile.classpath"/>
         		<path refid="lib.jee.classpath"/>

@@ -80,7 +80,7 @@
 	<target name="ejbca-common-compile-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-common-web"/></target>
 	<target name="ejbca-status-compile" depends="ejbca-common-compile-external-deps" if="ocsp.enabled.if.defined">
     	<mkdir dir="${build-status.dir}/WEB-INF/classes" />
-        <javac destdir="${build-status.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
+        <javac destdir="${build-status.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
 			classpathref="compile-ejbca.classpath">
         	<include name="org/ejbca/ui/web/protocol/OCSPServlet.java"/>
         	<include name="org/ejbca/core/protocol/ocsp/*.java"/>
@@ -91,7 +91,7 @@
 	</target>
 	<target name="ejbca-certstore-compile" depends="ejbca-common-compile-external-deps" if="certstore.enabled.if.defined">
     	<mkdir dir="${build-certstore.dir}/WEB-INF/classes" />
-		<javac destdir="${build-certstore.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
+		<javac destdir="${build-certstore.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
 			classpathref="compile-ejbca.classpath">
         	<include name="org/ejbca/ui/web/protocol/CertStoreServlet.java" />
 			<src path="${src.dir}"/>
@@ -99,7 +99,7 @@
 	</target>
 	<target name="ejbca-crlstore-compile" depends="ejbca-common-compile-external-deps" if="crlstore.enabled.if.defined">
     	<mkdir dir="${build-crlstore.dir}/WEB-INF/classes" />
-		<javac destdir="${build-crlstore.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
+		<javac destdir="${build-crlstore.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
 			classpathref="compile-ejbca.classpath">
         	<include name="org/ejbca/ui/web/protocol/CRLStoreServlet.java" />
 			<src path="${src.dir}"/>

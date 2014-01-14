@@ -9,7 +9,7 @@
     
     <target name="jar" depends="cesecore-common.jar, cesecore-entity.jar">
         <mkdir dir="${cesecore-ejb-interface.dir}/build/classes"/>
-        <javac srcdir="${cesecore-ejb-interface.dir}/src" destdir="${cesecore-ejb-interface.dir}/build/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}">
+        <javac srcdir="${cesecore-ejb-interface.dir}/src" destdir="${cesecore-ejb-interface.dir}/build/classes" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
             <classpath refid="lib.jee.classpath" />
             <classpath refid="lib.jpa.classpath"/>
             <classpath refid="lib.cert-cvc.classpath"/>

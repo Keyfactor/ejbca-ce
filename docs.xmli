@@ -55,7 +55,7 @@
 	
     <target name="doc-build-tool">
     	<mkdir dir="${docs.tools.dest}"/>
-    	<javac srcdir="${ejbca.home}/src/java" destdir="${docs.tools.dest}" debug="on" includeantruntime="no" encoding="iso8859-1"
+    	<javac srcdir="${ejbca.home}/src/java" destdir="${docs.tools.dest}" debug="on" includeantruntime="no" encoding="UTF-8"
 			includes="org/ejbca/util/JAXWSDocAndConvTools.java"/>
     </target>
 
@@ -196,7 +196,7 @@
     		<fileset dir="${appserver.home}" includes="client/jboss-javaee.jar client/ejb3-persistence.jar"/>
     		<fileset dir="${appserver.home}" includes="modules/javax/ejb/api/main/jboss-ejb-api_* modules/javax/persistence/api/main/hibernate-jpa-*"/>
     	</path>
-    	<javac srcdir="${ejbca.home}/src/java" destdir="${gen-depgraph.dir}" classpathref="gen-dep.classpath" debug="on" includeantruntime="false"
+    	<javac srcdir="${ejbca.home}/src/java" destdir="${gen-depgraph.dir}" classpathref="gen-dep.classpath" encoding="UTF-8" debug="on" includeantruntime="false"
     		includes="org/ejbca/util/EjbDependencyGraphTool.java"/>
        	<path id="gen-dep.classpath.run">
        		<path refid="gen-dep.classpath"/>

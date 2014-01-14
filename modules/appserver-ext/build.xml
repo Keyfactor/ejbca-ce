@@ -45,7 +45,7 @@
 	
     <target name="compile-jbosslogsigning" depends="cesecore-common">
     	<mkdir dir="${build-jbosslogsigning.dir}" />
-        <javac srcdir="${src.dir}" destdir="${build-jbosslogsigning.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}" classpathref="compile-jbosslogsigning.classpath">
+        <javac srcdir="${src.dir}" destdir="${build-jbosslogsigning.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}" classpathref="compile-jbosslogsigning.classpath">
         	<sourcepath location="${ejbca.home}/src/java"/>
             <include name="org/ejbca/appserver/jboss/SigningDailyRollingFileAppender.java"/>
             <include name="org/ejbca/appserver/jboss/ScriptrunningDailyRollingFileAppender.java"/>

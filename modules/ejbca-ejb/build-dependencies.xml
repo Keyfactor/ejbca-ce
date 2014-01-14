@@ -132,7 +132,7 @@
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/common" destdir="${build-temp.dir}/common" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}">
+        	encoding="UTF-8" target="${java.target.version}">
 				<classpath>
 					<pathelement location="${build-temp.dir}/config"/>
 					<path refid="compile-util.classpath"/>
@@ -171,7 +171,7 @@
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/admins" destdir="${build-temp.dir}/admins" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}">
+        	encoding="UTF-8" target="${java.target.version}">
 				<classpath>
 					<path refid="compile-util.classpath"/>
 					<pathelement location="${build-temp.dir}/common"/>
@@ -213,7 +213,7 @@
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/logging" destdir="${build-temp.dir}/logging" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}">
+        	encoding="UTF-8" target="${java.target.version}">
 				<classpath>
 					<path refid="compile-util.classpath"/>
 					<pathelement location="${build-temp.dir}/common"/>
@@ -289,7 +289,7 @@
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/authorization" destdir="${build-temp.dir}/authorization" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}">
+        	encoding="UTF-8" target="${java.target.version}">
 				<classpath>
 					<path refid="compile-util.classpath"/>
 					<pathelement location="${build-temp.dir}/common"/>
@@ -312,7 +312,7 @@
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/notification" destdir="${build-temp.dir}/notification" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}">
+        	encoding="UTF-8" target="${java.target.version}">
 				<classpath>
 					<path refid="compile-util.classpath"/>
 					<pathelement location="${build-temp.dir}/common"/>
@@ -357,7 +357,7 @@
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/approval" destdir="${build-temp.dir}/approval" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}">
+        	encoding="UTF-8" target="${java.target.version}">
 				<classpath>
 					<path refid="compile-util.classpath"/>
 					<pathelement location="${build-temp.dir}/common"/>
@@ -422,7 +422,7 @@
 						</fileset>
 					</copy>
 					<javac srcdir="${src-temp.dir}/ca" destdir="${build-temp.dir}/ca" debug="on" includeantruntime="no"
-		        	encoding="iso8859-1" target="${java.target.version}">
+		        	encoding="UTF-8" target="${java.target.version}">
 						<classpath>
 							<path refid="compile-util.classpath"/>
 							<pathelement location="${build-temp.dir}/common"/>
@@ -465,7 +465,7 @@
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/publish" destdir="${build-temp.dir}/publish" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}">
+        	encoding="UTF-8" target="${java.target.version}">
 				<classpath>
 					<path refid="compile-util.classpath"/>
 					<pathelement location="${build-temp.dir}/common"/>
@@ -499,7 +499,7 @@
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/certhist" destdir="${build-temp.dir}/certhist" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}">
+        	encoding="UTF-8" target="${java.target.version}">
 				<classpath>
 					<path refid="compile-util.classpath"/>
 					<pathelement location="${build-temp.dir}/common"/>
@@ -526,7 +526,7 @@
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/certprof" destdir="${build-temp.dir}/certprof" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}">
+        	encoding="UTF-8" target="${java.target.version}">
 				<classpath>
 					<path refid="compile-util.classpath"/>
 					<pathelement location="${build-temp.dir}/common"/>
@@ -563,7 +563,7 @@
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/certstore" destdir="${build-temp.dir}/certstore" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}">
+        	encoding="UTF-8" target="${java.target.version}">
 				<classpath>
 					<path refid="compile-util.classpath"/>
 					<pathelement location="${build-temp.dir}/common"/>
@@ -603,7 +603,7 @@
 					<exclude name="org/ejbca/core/protocol/ocsp/CertificateCacheInternal.java" />
 				</fileset>
 			</copy>
-			<javac srcdir="${src-temp.dir}/caadmin" destdir="${build-temp.dir}/caadmin" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}">
+			<javac srcdir="${src-temp.dir}/caadmin" destdir="${build-temp.dir}/caadmin" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
 				<classpath>
 					<path refid="compile-util.classpath" />
 					<pathelement location="${build-temp.dir}/common" />
@@ -640,7 +640,7 @@
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/crl" destdir="${build-temp.dir}/crl" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}">
+        	encoding="UTF-8" target="${java.target.version}">
 				<classpath>
 					<path refid="compile-util.classpath"/>
 					<pathelement location="${build-temp.dir}/common"/>
@@ -695,7 +695,7 @@
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/signing" destdir="${build-temp.dir}/signing" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}">
+        	encoding="UTF-8" target="${java.target.version}">
 				<classpath>
 					<path refid="compile-util.classpath"/>
 					<pathelement location="${build-temp.dir}/common"/>
@@ -727,7 +727,7 @@
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/ocsp" destdir="${build-temp.dir}/ocsp" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}">
+        	encoding="UTF-8" target="${java.target.version}">
 				<classpath>
 					<path refid="compile-util.classpath"/>
 					<pathelement location="${build-temp.dir}/common"/>
@@ -754,7 +754,7 @@
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/userdatasource" destdir="${build-temp.dir}/userdatasource" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}">
+        	encoding="UTF-8" target="${java.target.version}">
 				<classpath>
 					<path refid="compile-util.classpath"/>
 					<pathelement location="${build-temp.dir}/common"/>
@@ -787,7 +787,7 @@
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/keyrecovery" destdir="${build-temp.dir}/keyrecovery" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}">
+        	encoding="UTF-8" target="${java.target.version}">
 				<classpath>
 					<path refid="compile-util.classpath"/>
 					<pathelement location="${build-temp.dir}/common"/>
@@ -825,7 +825,7 @@
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/raadmin" destdir="${build-temp.dir}/raadmin" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}">
+        	encoding="UTF-8" target="${java.target.version}">
 				<classpath>
 					<path refid="compile-util.classpath"/>
 					<pathelement location="${build-temp.dir}/common"/>
@@ -859,7 +859,7 @@
 					<include name="org/ejbca/core/model/ra/EndEntityManagementConstants.java"/>
 				</fileset>
 			</copy>
-			<javac srcdir="${src-temp.dir}/hardtoken" destdir="${build-temp.dir}/hardtoken" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}">
+			<javac srcdir="${src-temp.dir}/hardtoken" destdir="${build-temp.dir}/hardtoken" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
 				<classpath>
 					<path refid="compile-util.classpath"/>
 					<pathelement location="${build-temp.dir}/certprof"/>
@@ -887,7 +887,7 @@
     		</fileset>
     	</copy>
         <javac srcdir="${src-temp.dir}/csvlogexp" destdir="${build-temp.dir}/csvlogexp" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}">
+        	encoding="UTF-8" target="${java.target.version}">
         	<classpath>
         		<path refid="compile-util.classpath"/>
         		<pathelement location="${build-temp.dir}/common"/>
@@ -933,7 +933,7 @@
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/endentityadmin" destdir="${build-temp.dir}/endentityadmin" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}">
+        	encoding="UTF-8" target="${java.target.version}">
 				<classpath>
 					<path refid="compile-util.classpath"/>
 					<pathelement location="${build-temp.dir}/common"/>
@@ -984,7 +984,7 @@
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/services" destdir="${build-temp.dir}/services" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}">
+        	encoding="UTF-8" target="${java.target.version}">
 				<classpath>
 					<path refid="compile-util.classpath"/>
 					<pathelement location="${build-temp.dir}/common"/>
@@ -1040,7 +1040,7 @@
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/upgrade" destdir="${build-temp.dir}/upgrade" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}">
+        	encoding="UTF-8" target="${java.target.version}">
 				<classpath>
 					<path refid="compile-util.classpath"/>
 					<pathelement location="${build-temp.dir}/common"/>
@@ -1077,7 +1077,7 @@
     		</fileset>
     	</copy>
         <javac srcdir="${src-temp.dir}/cmp" destdir="${build-temp.dir}/cmp" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}">
+        	encoding="UTF-8" target="${java.target.version}">
         	<classpath>
         		<path refid="compile-util.classpath"/>
         		<pathelement location="${build-temp.dir}/common"/>
@@ -1112,7 +1112,7 @@
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/scep" destdir="${build-temp.dir}/scep" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}">
+        	encoding="UTF-8" target="${java.target.version}">
 				<classpath>
 					<path refid="compile-util.classpath"/>
 					<pathelement location="${build-temp.dir}/common"/>

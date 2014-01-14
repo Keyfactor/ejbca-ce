@@ -146,7 +146,7 @@
     <target name="compile" depends="with.clover, compile-external-deps">
     	<mkdir dir="${build.dir}" />
         <javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}" classpathref="compile.classpath"/>
+        	encoding="UTF-8" target="${java.target.version}" classpathref="compile.classpath"/>
     </target>
 
     <target name="test-dbschema" description="Perform database schema validation." depends="compile-test, handlepersistence, handleorm">
@@ -223,7 +223,7 @@
     <target name="compile-test" depends="with.clover, ejbca-util, build, build-cli-conditional">
     	<mkdir dir="${build-test.dir}" />
         <javac destdir="${build-test.dir}" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}" classpathref="compile-test.classpath"
+        	encoding="UTF-8" target="${java.target.version}" classpathref="compile-test.classpath"
         	>
         	<include name="org/ejbca/database/**/*Test.java"/>
 	    	<src path="${src-test.dir}"/>
@@ -267,7 +267,7 @@
         <copy file="${defaultvalues.properties.file}" tofile="${build-cli.dir}/defaultvalues.properties"/>
 		<copy todir="${build-cli.dir}" failonerror="true"><fileset dir="${ejbca.home}/src" includes="intresources/**"/></copy>
         <javac destdir="${build-cli.dir}" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}" classpathref="compile-cli.classpath">
+        	encoding="UTF-8" target="${java.target.version}" classpathref="compile-cli.classpath">
         	<include name="org/ejbca/database/**/*.java"/>
         	<!-- Include classes that are instantiated through reflection -->
         	<include name="org/cesecore/keys/token/SoftCryptoToken.java"/>
