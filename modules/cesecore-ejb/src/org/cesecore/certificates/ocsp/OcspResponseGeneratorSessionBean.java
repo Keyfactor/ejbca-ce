@@ -113,6 +113,7 @@ import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
+import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -1181,17 +1182,15 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         return new OcspResponseInformation(ocspResponse, maxAge);
     }
     
-    private boolean checkAddArchiveCuttoff(String caCertificateSubjectDn, CertificateID certId) throws CertificateNotYetValidException {
+    private boolean checkAddArchiveCuttoff(String caCertificateSubjectDn, CertificateID certId) {
     
         if(OcspConfiguration.getExpiredArchiveCutoff() == -1) {
             return false;
         }
-        
-        X509Certificate cert = (X509Certificate) certificateStoreSession.findCertificateByIssuerAndSerno(
-                                caCertificateSubjectDn, certId.getSerialNumber());
-        try {
-            cert.checkValidity();
-        } catch(CertificateExpiredException e) {
+
+        CertificateInfo info = certificateStoreSession.findFirstCertificateInfo(caCertificateSubjectDn, certId.getSerialNumber());
+        Date expDate = info.getExpireDate();
+        if(expDate.before(new Date())) {
             log.info("Certificate with serial number '" + certId.getSerialNumber() + "' is not valid. " +
                     "Adding singleExtension id-pkix-ocsp-archive-cutoff");
             return true;
