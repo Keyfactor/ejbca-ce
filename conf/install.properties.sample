@@ -30,6 +30,8 @@ ca.dn=CN=ManagementCA,O=EJBCA Sample,C=SE
 # soft
 # org.cesecore.keys.token.PKCS11CryptoToken
 # se.primeKey.caToken.card.PrimeCAToken
+# Note: If you use JBoss 7/EAP 6 and want to use PKCS#11 you have to configure JBoss to permit this. 
+#       See instructions in the Install Guide.
 #
 # Default: soft
 ca.tokentype=soft
