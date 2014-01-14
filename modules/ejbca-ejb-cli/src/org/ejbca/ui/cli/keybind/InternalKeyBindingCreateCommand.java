@@ -101,7 +101,7 @@ public class InternalKeyBindingCreateCommand extends BaseInternalKeyBindingComma
         final String keyPairAlias = args[6];
         final String signatureAlgorithm = args[7];
         int internalKeyBindingIdNew = internalKeyBindingMgmtSession.createInternalKeyBinding(getAdmin(), type, name, status, certificateId,
-                cryptoTokenId, keyPairAlias, signatureAlgorithm, validatedProperties);
+                cryptoTokenId, keyPairAlias, signatureAlgorithm, validatedProperties, null);
         getLogger().info("InternalKeyBinding with id " + internalKeyBindingIdNew + " created successfully.");
     }
 

@@ -907,7 +907,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     }
 
     public String getTrustedCertificatesSerialNumberHex() {
-        return ((InternalKeyBindingTrustEntry) trustedCertificates.getRowData()).getCertificateSerialNumber().toString(16);
+        return ((InternalKeyBindingTrustEntry) trustedCertificates.getRowData()).gtCertificateSerialNumber().toString(16);
     }
 
     /** @return a list of all currently trusted certificates references as pairs of [CAId,CertificateSerialNumber] */
@@ -939,7 +939,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             trustedCertificateReferences.add(new InternalKeyBindingTrustEntry(getCurrentCertificateAuthority(), null));
         } else {
             trustedCertificateReferences.add(new InternalKeyBindingTrustEntry(getCurrentCertificateAuthority(), new BigInteger(
-                    getCurrentCertificateSerialNumber(), 16)));
+                    currentCertificateSerialNumber.trim(), 16)));
         }
         trustedCertificates.setWrappedData(trustedCertificateReferences);
     }
@@ -1007,7 +1007,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                 }
                 currentInternalKeyBindingId = String.valueOf(internalKeyBindingSession.createInternalKeyBinding(authenticationToken,
                         selectedInternalKeyBindingType, getCurrentName(), InternalKeyBindingStatus.DISABLED, null, currentCryptoToken.intValue(),
-                        currentKeyPairAlias, currentSignatureAlgorithm, dataMap));
+                        currentKeyPairAlias, currentSignatureAlgorithm, dataMap, (List<InternalKeyBindingTrustEntry>) trustedCertificates.getWrappedData()));
                 FacesContext.getCurrentInstance().addMessage(null,
                         new FacesMessage(getCurrentName() + " created with id " + currentInternalKeyBindingId));
                 inEditMode = false;

@@ -33,7 +33,7 @@ public class InternalKeyBindingTrustEntry implements Serializable {
     
     public InternalKeyBindingTrustEntry(int caId, BigInteger certificateSerialNumber) {
         setCaId(caId);
-        setCertificateSerialNumber(certificateSerialNumber);
+        stCertificateSerialNumber(certificateSerialNumber);
     }
 
     public int getCaId() { return caId; }
@@ -41,7 +41,8 @@ public class InternalKeyBindingTrustEntry implements Serializable {
     public String getCertificateSerialNumberDecimal() { return certificateSerialNumberDecimal; }
     public void setCertificateSerialNumberDecimal(String certificateSerialNumberDecimal) { this.certificateSerialNumberDecimal = certificateSerialNumberDecimal; }
 
-    public BigInteger getCertificateSerialNumber() {
+    /* NOTE: The getter and setter for a BigInteger must not comply with the JavaBean spec for this to work with java.beans.XMLEncoder */
+    public BigInteger gtCertificateSerialNumber() {
         if (certificateSerialNumberDecimal == null) {
             return null;
         } else {
@@ -49,7 +50,8 @@ public class InternalKeyBindingTrustEntry implements Serializable {
         }
     }
 
-    public void setCertificateSerialNumber(BigInteger certificateSerialNumber) {
+    /* NOTE: The getter and setter for a BigInteger must not comply with the JavaBean spec for this to work with java.beans.XMLEncoder */
+    public void stCertificateSerialNumber(BigInteger certificateSerialNumber) {
         if (certificateSerialNumber == null) {
             this.certificateSerialNumberDecimal = null;
         } else {
@@ -59,7 +61,7 @@ public class InternalKeyBindingTrustEntry implements Serializable {
     
     @Override
     public String toString() {
-        final BigInteger certificateSerialNumber = getCertificateSerialNumber();
+        final BigInteger certificateSerialNumber = gtCertificateSerialNumber();
         if (certificateSerialNumber==null) {
             return Integer.valueOf(caId).toString();
         } else {

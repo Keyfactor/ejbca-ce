@@ -28,6 +28,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +47,11 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.CesecoreException;
+import org.cesecore.audit.enums.EventStatus;
+import org.cesecore.audit.enums.EventTypes;
+import org.cesecore.audit.enums.ModuleTypes;
+import org.cesecore.audit.enums.ServiceTypes;
+import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
@@ -67,10 +73,6 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
-import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
-import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
-import org.cesecore.keybind.InternalKeyBindingNameInUseException;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -92,6 +94,8 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
 
     @EJB
     private AccessControlSessionLocal accessControlSessionSession;
+    @EJB
+    private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
     @EJB
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     @EJB
@@ -223,7 +227,8 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
 
     @Override
     public int createInternalKeyBinding(AuthenticationToken authenticationToken, String type, int id, String name, InternalKeyBindingStatus status,
-            String certificateId, int cryptoTokenId, String keyPairAlias, String signatureAlgorithm, Map<String, Serializable> dataMap)
+            String certificateId, int cryptoTokenId, String keyPairAlias, String signatureAlgorithm, Map<String, Serializable> dataMap,
+            List<InternalKeyBindingTrustEntry> trustedCertificateReferences)
             throws AuthorizationDeniedException, CryptoTokenOfflineException, InternalKeyBindingNameInUseException, InvalidAlgorithmException {
         if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.MODIFY.resource(), CryptoTokenRules.USE.resource()
                 + "/" + cryptoTokenId)) {
@@ -259,15 +264,38 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         final InternalKeyBinding internalKeyBinding = InternalKeyBindingFactory.INSTANCE.create(type, id, name, status, certificateId, cryptoTokenId,
                 keyPairAlias, initDataMap);
         internalKeyBinding.setSignatureAlgorithm(signatureAlgorithm);
-        return internalKeyBindingDataSession.mergeInternalKeyBinding(internalKeyBinding);
+        if (trustedCertificateReferences!=null) {
+            internalKeyBinding.setTrustedCertificateReferences(trustedCertificateReferences);
+        }
+        final int allocatedId = internalKeyBindingDataSession.mergeInternalKeyBinding(internalKeyBinding);
+        // Audit log the result after persistence (since the id generated during)
+        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        details.put("msg", "Created InternalKeyBinding with id " + allocatedId);
+        details.put("name", internalKeyBinding.getName());
+        if (internalKeyBinding.getCertificateId()!=null) {
+            details.put("certificateId", internalKeyBinding.getCertificateId());
+        }
+        details.put("keyPairAlias", internalKeyBinding.getKeyPairAlias());
+        if (internalKeyBinding.getNextKeyPairAlias()!=null) {
+            details.put("nextKeyPairAlias", internalKeyBinding.getNextKeyPairAlias());
+        }
+        details.put("signatureAlgorithm", internalKeyBinding.getSignatureAlgorithm());
+        details.put("cryptoTokenId", String.valueOf(internalKeyBinding.getCryptoTokenId()));
+        details.put("status", internalKeyBinding.getStatus().name());
+        details.put("trustedCertificateReferences", Arrays.toString(internalKeyBinding.getTrustedCertificateReferences().toArray()));
+        putDelta(new HashMap<String, InternalKeyBindingProperty<? extends Serializable>>(), internalKeyBinding.getCopyOfProperties(), details);
+        securityEventsLoggerSession.log(EventTypes.INTERNALKEYBINDING_CREATE, EventStatus.SUCCESS, ModuleTypes.INTERNALKEYBINDING, ServiceTypes.CORE,
+                authenticationToken.toString(), String.valueOf(allocatedId), null, null, details);
+        return allocatedId;
     }
 
     @Override
     public int createInternalKeyBinding(AuthenticationToken authenticationToken, String type, String name, InternalKeyBindingStatus status,
-            String certificateId, int cryptoTokenId, String keyPairAlias, String signatureAlgorithm, Map<String, Serializable> dataMap)
+            String certificateId, int cryptoTokenId, String keyPairAlias, String signatureAlgorithm, Map<String, Serializable> dataMap,
+            List<InternalKeyBindingTrustEntry> trustedCertificateReferences)
             throws AuthorizationDeniedException, CryptoTokenOfflineException, InternalKeyBindingNameInUseException, InvalidAlgorithmException {
         return createInternalKeyBinding(authenticationToken, type, 0, name, status, certificateId, cryptoTokenId, keyPairAlias, signatureAlgorithm,
-                dataMap);
+                dataMap,trustedCertificateReferences);
     }
 
     @Override
@@ -280,6 +308,25 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                     authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
         }
+        // Audit log the result before persistence
+        final InternalKeyBinding originalInternalKeyBinding = internalKeyBindingDataSession.getInternalKeyBinding(internalKeyBinding.getId());
+        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        details.put("msg", "Edited InternalKeyBinding with id " + internalKeyBinding.getId());
+        if (originalInternalKeyBinding.getName().equals(internalKeyBinding.getName())) {
+            details.put("name", internalKeyBinding.getName());
+        } else {
+            putDelta("name", originalInternalKeyBinding.getName(), internalKeyBinding.getName(), details);
+        }
+        putDelta("certificateId", originalInternalKeyBinding.getCertificateId(), internalKeyBinding.getCertificateId(), details);
+        putDelta("keyPairAlias", originalInternalKeyBinding.getKeyPairAlias(), internalKeyBinding.getKeyPairAlias(), details);
+        putDelta("nextKeyPairAlias", originalInternalKeyBinding.getNextKeyPairAlias(), internalKeyBinding.getNextKeyPairAlias(), details);
+        putDelta("signatureAlgorithm", originalInternalKeyBinding.getSignatureAlgorithm(), internalKeyBinding.getSignatureAlgorithm(), details);
+        putDelta("cryptoTokenId", String.valueOf(originalInternalKeyBinding.getCryptoTokenId()), String.valueOf(internalKeyBinding.getCryptoTokenId()), details);
+        putDelta("status", originalInternalKeyBinding.getStatus().name(), internalKeyBinding.getStatus().name(), details);
+        putDelta("trustedCertificateReferences", Arrays.toString(originalInternalKeyBinding.getTrustedCertificateReferences().toArray()), Arrays.toString(internalKeyBinding.getTrustedCertificateReferences().toArray()), details);
+        putDelta(originalInternalKeyBinding.getCopyOfProperties(), internalKeyBinding.getCopyOfProperties(), details);
+        securityEventsLoggerSession.log(EventTypes.INTERNALKEYBINDING_EDIT, EventStatus.SUCCESS, ModuleTypes.INTERNALKEYBINDING, ServiceTypes.CORE,
+                authenticationToken.toString(), String.valueOf(internalKeyBinding.getId()), null, null, details);
         return internalKeyBindingDataSession.mergeInternalKeyBinding(internalKeyBinding);
     }
 
@@ -290,6 +337,13 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                     authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
         }
+        // Audit log the result before persistence
+        final InternalKeyBinding internalKeyBinding = internalKeyBindingDataSession.getInternalKeyBinding(internalKeyBindingId);
+        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        details.put("msg", "Deleted InternalKeyBinding with id " + internalKeyBinding.getId());
+        details.put("name", internalKeyBinding.getName());
+        securityEventsLoggerSession.log(EventTypes.INTERNALKEYBINDING_DELETE, EventStatus.SUCCESS, ModuleTypes.INTERNALKEYBINDING, ServiceTypes.CORE,
+                authenticationToken.toString(), String.valueOf(internalKeyBinding.getId()), null, null, details);
         return internalKeyBindingDataSession.removeInternalKeyBinding(internalKeyBindingId);
     }
 
@@ -304,10 +358,19 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         final InternalKeyBinding internalKeyBinding = internalKeyBindingDataSession.getInternalKeyBinding(internalKeyBindingId);
         final int cryptoTokenId = internalKeyBinding.getCryptoTokenId();
         final String currentKeyPairAlias = internalKeyBinding.getKeyPairAlias();
+        final String originalNextKeyPairAlias = internalKeyBinding.getNextKeyPairAlias();
         internalKeyBinding.generateNextKeyPairAlias();
         final String nextKeyPairAlias = internalKeyBinding.getNextKeyPairAlias();
         cryptoTokenManagementSession.createKeyPairWithSameKeySpec(authenticationToken, cryptoTokenId, currentKeyPairAlias, nextKeyPairAlias);
         try {
+            // Audit log the result before persistence
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", "Modified next key pair for InternalKeyBinding with id " + internalKeyBinding.getId());
+            details.put("name", internalKeyBinding.getName());
+            details.put("cryptoTokenId", String.valueOf(internalKeyBinding.getCryptoTokenId()));
+            putDelta("nextKeyPairAlias", originalNextKeyPairAlias, nextKeyPairAlias, details);
+            securityEventsLoggerSession.log(EventTypes.INTERNALKEYBINDING_EDIT, EventStatus.SUCCESS, ModuleTypes.INTERNALKEYBINDING, ServiceTypes.CORE,
+                    authenticationToken.toString(), String.valueOf(internalKeyBinding.getId()), null, null, details);
             internalKeyBindingDataSession.mergeInternalKeyBinding(internalKeyBinding);
         } catch (InternalKeyBindingNameInUseException e) {
             // This would be very strange if it happened, since we use the same name and id as for the existing one
@@ -392,16 +455,18 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         }
         final InternalKeyBinding internalKeyBinding = internalKeyBindingDataSession.getInternalKeyBinding(internalKeyBindingId);
         final int cryptoTokenId = internalKeyBinding.getCryptoTokenId();
-        final String nextKeyPairAlias = internalKeyBinding.getNextKeyPairAlias();
+        final String originalNextKeyPairAlias = internalKeyBinding.getNextKeyPairAlias();
+        final String originalCertificateId = internalKeyBinding.getCertificateId();
+        final String originalKeyPairAlias = internalKeyBinding.getKeyPairAlias();
         if (log.isDebugEnabled()) {
-            log.debug("nextKeyPairAlias: " + nextKeyPairAlias);
+            log.debug("nextKeyPairAlias: " + originalNextKeyPairAlias);
         }
         boolean updated = false;
-        if (nextKeyPairAlias != null) {
+        if (originalNextKeyPairAlias != null) {
             // If a nextKeyPairAlias is present we assume that this is the one we want to find a certificate for
             PublicKey nextPublicKey;
             try {
-                nextPublicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, nextKeyPairAlias);
+                nextPublicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, originalNextKeyPairAlias);
             } catch (CryptoTokenOfflineException e) {
                 throw new CertificateImportException("Operation is not available when CryptoToken is offline.", e);
             }
@@ -410,21 +475,21 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                 final Certificate certificate = certificateStoreSession.findMostRecentlyUpdatedActiveCertificate(subjectKeyId);
                 if (certificate == null) {
                     if (log.isDebugEnabled()) {
-                        log.debug("No certificate found for " + nextKeyPairAlias);
+                        log.debug("No certificate found for " + originalNextKeyPairAlias);
                     }
                 } else {
                     if (log.isDebugEnabled()) {
-                        log.debug("Certificate found for " + nextKeyPairAlias);
+                        log.debug("Certificate found for " + originalNextKeyPairAlias);
                     }
                     // Verify that this is an accepted type of certificate to import for the current implementation
                     assertCertificateIsOkToImport(certificate, internalKeyBinding);
                     // If current key matches next public key -> import and update nextKey + certificateId
                     String fingerprint = CertTools.getFingerprintAsString(certificate);
-                    if (!fingerprint.equals(internalKeyBinding.getCertificateId())) {
+                    if (!fingerprint.equals(originalCertificateId)) {
                         internalKeyBinding.updateCertificateIdAndCurrentKeyAlias(fingerprint);
                         updated = true;
                         if (log.isDebugEnabled()) {
-                            log.debug("New certificate with fingerprint " + fingerprint + " matching " + nextKeyPairAlias + " will be used.");
+                            log.debug("New certificate with fingerprint " + fingerprint + " matching " + originalNextKeyPairAlias + " will be used.");
                         }
                     } else {
                         if (log.isDebugEnabled()) {
@@ -434,7 +499,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                 }
             } else {
                 if (log.isDebugEnabled()) {
-                    log.debug("There was no public key for the referenced alias " + nextKeyPairAlias);
+                    log.debug("There was no public key for the referenced alias " + originalNextKeyPairAlias);
                 }
             }
         }
@@ -481,6 +546,16 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             }
         }
         if (updated) {
+            // Audit log the result before persistence
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", "Updated certificate for InternalKeyBinding with id " + internalKeyBinding.getId());
+            details.put("name", internalKeyBinding.getName());
+            details.put("cryptoTokenId", String.valueOf(internalKeyBinding.getCryptoTokenId()));
+            putDelta("certificateId", originalCertificateId, internalKeyBinding.getCertificateId(), details);
+            putDelta("keyPairAlias", originalKeyPairAlias, internalKeyBinding.getKeyPairAlias(), details);
+            putDelta("nextKeyPairAlias", originalNextKeyPairAlias, internalKeyBinding.getNextKeyPairAlias(), details);
+            securityEventsLoggerSession.log(EventTypes.INTERNALKEYBINDING_EDIT, EventStatus.SUCCESS, ModuleTypes.INTERNALKEYBINDING, ServiceTypes.CORE,
+                    authenticationToken.toString(), String.valueOf(internalKeyBinding.getId()), null, null, details);
             try {
                 internalKeyBindingDataSession.mergeInternalKeyBinding(internalKeyBinding);
             } catch (InternalKeyBindingNameInUseException e) {
@@ -488,7 +563,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                 throw new CertificateImportException(e);
             }
             if (log.isDebugEnabled()) {
-                log.debug("No certificate found for " + nextKeyPairAlias);
+                log.debug("No certificate found for " + originalNextKeyPairAlias);
             }
             return internalKeyBinding.getCertificateId();
         }
@@ -520,7 +595,6 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                     authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
         }
-        final InternalKeyBinding internalKeyBinding = internalKeyBindingDataSession.getInternalKeyBinding(internalKeyBindingId);
         // UnDERify
         final Certificate certificate;
         try {
@@ -528,19 +602,22 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         } catch (CertificateException e) {
             throw new CertificateImportException(e);
         }
+        final InternalKeyBinding internalKeyBinding = internalKeyBindingDataSession.getInternalKeyBinding(internalKeyBindingId);
+        final String originalNextKeyPairAlias = internalKeyBinding.getNextKeyPairAlias();
+        final String originalCertificateId = internalKeyBinding.getCertificateId();
+        final String originalKeyPairAlias = internalKeyBinding.getKeyPairAlias();
         // Verify that this is an accepted type of certificate to import for the current implementation
         assertCertificateIsOkToImport(certificate, internalKeyBinding);
         final int cryptoTokenId = internalKeyBinding.getCryptoTokenId();
-        final String currentKeyPairAlias = internalKeyBinding.getKeyPairAlias();
         if (log.isDebugEnabled()) {
             log.debug("certificate.getPublicKey(): "
                     + new String(Hex.encode(KeyTools.createSubjectKeyId(certificate.getPublicKey()).getKeyIdentifier())));
-            log.debug("currentKeyPairAlias: " + currentKeyPairAlias);
+            log.debug("originalKeyPairAlias: " + originalKeyPairAlias);
         }
         boolean updated = false;
         try {
             String certificateId = CertTools.getFingerprintAsString(certificate);
-            final PublicKey currentPublicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, currentKeyPairAlias);
+            final PublicKey currentPublicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, originalKeyPairAlias);
             if (log.isDebugEnabled()) {
                 log.debug("currentPublicKey: "
                         + (currentPublicKey != null ? new String(Hex.encode(KeyTools.createSubjectKeyId(currentPublicKey).getKeyIdentifier()))
@@ -558,12 +635,11 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                 internalKeyBinding.setCertificateId(certificateId);
                 updated = true;
             } else {
-                final String nextKeyPairAlias = internalKeyBinding.getNextKeyPairAlias();
                 if (log.isDebugEnabled()) {
-                    log.debug("nextKeyPairAlias: " + nextKeyPairAlias);
+                    log.debug("originalNextKeyPairAlias: " + originalNextKeyPairAlias);
                 }
-                if (nextKeyPairAlias != null) {
-                    final PublicKey nextPublicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, nextKeyPairAlias);
+                if (originalNextKeyPairAlias != null) {
+                    final PublicKey nextPublicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, originalNextKeyPairAlias);
                     if (log.isDebugEnabled()) {
                         log.debug("nextPublicKey: "
                                 + (nextPublicKey != null ? new String(Hex.encode(KeyTools.createSubjectKeyId(nextPublicKey).getKeyIdentifier()))
@@ -587,6 +663,16 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             throw new CertificateImportException(e);
         }
         if (updated) {
+            // Audit log the result before persistence
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", "Edited InternalKeyBinding with id " + internalKeyBinding.getId());
+            details.put("name", internalKeyBinding.getName());
+            details.put("cryptoTokenId", String.valueOf(internalKeyBinding.getCryptoTokenId()));
+            putDelta("certificateId", originalCertificateId, internalKeyBinding.getCertificateId(), details);
+            putDelta("keyPairAlias", originalKeyPairAlias, internalKeyBinding.getKeyPairAlias(), details);
+            putDelta("nextKeyPairAlias", originalNextKeyPairAlias, internalKeyBinding.getNextKeyPairAlias(), details);
+            securityEventsLoggerSession.log(EventTypes.INTERNALKEYBINDING_EDIT, EventStatus.SUCCESS, ModuleTypes.INTERNALKEYBINDING, ServiceTypes.CORE,
+                    authenticationToken.toString(), String.valueOf(internalKeyBinding.getId()), null, null, details);
             try {
                 internalKeyBindingDataSession.mergeInternalKeyBinding(internalKeyBinding);
             } catch (InternalKeyBindingNameInUseException e) {
@@ -707,5 +793,44 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             }
             throw new CertificateImportException(e.getMessage());
         }
+    }
+
+    /** Helper method for audit logging changes */
+    private void putDelta(final Map<String, InternalKeyBindingProperty<? extends Serializable>> oldProperties, final Map<String, InternalKeyBindingProperty<? extends Serializable>> newProperties,
+            final Map<String, Object> details) {
+        // Find out what has happended to all the old properties
+        for (final String key : oldProperties.keySet()) {
+            final InternalKeyBindingProperty<? extends Serializable> oldValue = oldProperties.get(key);
+            final InternalKeyBindingProperty<? extends Serializable> newValue = newProperties.get(key);
+            putDelta(key, getAsStringValue(oldValue), getAsStringValue(newValue), details);
+        }
+        // Find out which new properties that did not exist in the old
+        for (final String key : newProperties.keySet()) {
+            final InternalKeyBindingProperty<? extends Serializable> oldValue = oldProperties.get(key);
+            if (oldValue==null) {
+                final InternalKeyBindingProperty<? extends Serializable> newValue = newProperties.get(key);
+                putDelta(key, getAsStringValue(oldValue), getAsStringValue(newValue), details);
+            }
+        }
+    }
+
+    /** Helper method for audit logging changes */
+    private void putDelta(final String key, final String oldValue, final String newValue, Map<String, Object> details) {
+        if (oldValue == null && newValue == null) {
+            // NOP
+        } else if (oldValue == null && newValue != null) {
+            details.put("added:"+key, newValue);
+        } else if (oldValue != null && newValue == null) {
+            details.put("removed:"+key, oldValue);
+        } else if (!oldValue.equals(newValue)) {
+            details.put("changed:"+key, newValue);
+        }
+    }
+    
+    private String getAsStringValue(final InternalKeyBindingProperty<? extends Serializable> valueObj) {
+        if (valueObj!=null && valueObj.getValue()!=null) {
+            return String.valueOf(valueObj.getValue());
+        }
+        return null;
     }
 }
