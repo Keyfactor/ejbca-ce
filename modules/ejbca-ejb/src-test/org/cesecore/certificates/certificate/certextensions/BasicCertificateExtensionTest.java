@@ -239,7 +239,7 @@ public class BasicCertificateExtensionTest {
 		
 		props = new Properties();
 		props.put("id1.property.encoding", "DERPRINTABLESTRING");
-		props.put("id1.property.value", "This is a non  printable string ���������");
+		props.put("id1.property.value", "This is a non  printable string åäöüè");
 		boolean exceptionThrown = false;
 		try{	
 		  baseExt = new BasicCertificateExtension();
@@ -247,7 +247,9 @@ public class BasicCertificateExtensionTest {
 		  value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));
 		}catch(CertificateExtentionConfigurationException e){
 			exceptionThrown = true;
-                        assertEquals(intres.getLocalizedMessage("certext.basic.illegalvalue", "This is a non  printable string ���������", 1, "1.2.3"), e.getMessage());
+			assertEquals(intres.getLocalizedMessage("certext.basic.illegalvalue", "This is a non  printable string åäöüè", 1, "1.2.3"), e.getMessage());
+			// Verify with unicode encoded as well to ensure file encodings were not just messed up
+            assertEquals(intres.getLocalizedMessage("certext.basic.illegalvalue", "This is a non  printable string \u00E5\u00E4\u00F6\u00FC\u00E8", 1, "1.2.3"), e.getMessage());
 		}
 		assertTrue(exceptionThrown);        
 	}
@@ -256,14 +258,14 @@ public class BasicCertificateExtensionTest {
 	public void test07UTF8StringExtension() throws Exception{
 		Properties props = new Properties();
 		props.put("id1.property.encoding", "DERUTF8STRING");
-		props.put("id1.property.value", "This is a utf8 ��������� ������string");
+		props.put("id1.property.value", "This is a utf8 åäöüè string");
 		
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", false, props);
 		
 		ASN1Encodable value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));
 		assertTrue(value.getClass().toString(),value instanceof DERUTF8String);
-		assertTrue(((DERUTF8String)value).getString(),((DERUTF8String)value).getString().equals("This is a utf8 ��������� ������string"));
+		assertTrue(((DERUTF8String)value).getString(),((DERUTF8String)value).getString().equals("This is a utf8 åäöüè string"));
         
 	}
 	
@@ -271,7 +273,7 @@ public class BasicCertificateExtensionTest {
 	public void test08WrongEncoding() throws Exception{
 		Properties props = new Properties();
 		props.put("id1.property.encoding", "DERUTF8sdfTRING");
-		props.put("id1.property.value", "This is a utf8 ��������� ������string");
+		props.put("id1.property.value", "This is a utf8 åäöüè string");
 
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", false, props);
@@ -366,7 +368,7 @@ public class BasicCertificateExtensionTest {
 		
 		props = new Properties();
 		props.put("id1.property.encoding", "DERIA5STRING");
-		props.put("id1.property.value", "This is a non printable string ���������");
+		props.put("id1.property.value", "This is a non printable string åäöüè");
 		boolean exceptionThrown = false;
 		try{	
 		  baseExt = new BasicCertificateExtension();

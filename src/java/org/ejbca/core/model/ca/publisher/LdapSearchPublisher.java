@@ -71,6 +71,7 @@ public class LdapSearchPublisher extends LdapPublisher {
      *  Apart from how they find existing users, the publishing works the same.
      *  
      *  @param certDN the DN from the certificate, can be used to extract search information or a LDAP DN
+     *  @return an existing LDAPEntry, or null if not found
      */
     protected LDAPEntry searchOldEntity(final String username, final int ldapVersion, final LDAPConnection lc, final String certDN, final String userDN, final String email) throws PublisherException {
         LDAPEntry oldEntry = null; // return value
@@ -82,8 +83,8 @@ public class LdapSearchPublisher extends LdapPublisher {
 			connectionFailed = false;
 			String currentServer = servers.next();
 	        // PARTE 1: Search for an existing entry in the LDAP directory
-			//  If it exists, s�lo se a�adir� al DN la parte del certificado (PARTE 2)
-			//  if not exist, se a�adir� toda una entrada LDAP nueva (PARTE 2)
+			//  If it exists, this will be returned to be populated
+			//  if not exist, nothing will be returned and a new LDAP entry created
 			try {
 				TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getConnectionTimeOut());	// Avoid waiting for halfdead-servers
 				// connect to the server
@@ -206,28 +207,28 @@ public class LdapSearchPublisher extends LdapPublisher {
     }
     
 	/**
-	 *  Retorna el base de la b�squeda
+	 *  @return search base DN
 	 */
 	public String getSearchBaseDN() {
 		return (String) data.get(SEARCHBASEDN);
 	}
 	
 	/**
-	 *  Establece la base de la b�squeda.
+	 *  Set search base DN.
 	 */
 	public void setSearchBaseDN(String searchbasedn) {
 		data.put(SEARCHBASEDN, searchbasedn);
 	}
 	
 	/**
-	 *  Retorna el filtro de b�squeda
+	 *  @return LDAP search filter string
 	 */
 	public String getSearchFilter() {
 		return (String) data.get(SEARCHFILTER);
 	}
 	
 	/**
-	 *  Establece el filtro de b�squeda
+	 *  Sets LDAP search filter string
 	 */
 	public void setSearchFilter(String searchfilter) {
 		data.put(SEARCHFILTER, searchfilter);

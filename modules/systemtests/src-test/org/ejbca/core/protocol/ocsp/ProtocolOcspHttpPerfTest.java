@@ -299,7 +299,7 @@ public class ProtocolOcspHttpPerfTest {
 				}
 				long after = System.currentTimeMillis();
 				long diff = after - before;
-				log.info("Tids��tg��ng ("+Thread.currentThread().getName()+"): "+diff);
+				log.info("Time spent ("+Thread.currentThread().getName()+"): "+diff);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}    		

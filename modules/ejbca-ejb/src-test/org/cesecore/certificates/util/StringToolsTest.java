@@ -132,7 +132,7 @@ public class StringToolsTest {
         String s2 = StringTools.getBase64String(b1);
         assertEquals(s2, s1);
 
-        s1 = "C=SE, O=���, CN=���";
+        s1 = "C=SE, O=åäö, CN=ÅÖ";
         b1 = StringTools.putBase64String(s1);
         s2 = StringTools.getBase64String(b1);
         assertEquals(s2, s1);
@@ -297,10 +297,15 @@ public class StringToolsTest {
 		assertEquals("test~!\"#%&/()", StringTools.putBase64String("test~!\"#%&/()", true));
 		assertEquals("test~!\"#%&/()", StringTools.getBase64String(StringTools.putBase64String("test~!\"#%&/()", true)));
 		assertEquals("test~!\"#%&/()", StringTools.getBase64String(StringTools.putBase64String("test~!\"#%&/()", false)));
-		assertEquals("B64:w4PCpcODwqTDg8K2w4PCvA==", StringTools.putBase64String("åäöü"));
-		assertEquals("B64:w4PCpcODwqTDg8K2w4PCvA==", StringTools.putBase64String("åäöü", true));
-		assertEquals("åäöü", StringTools.getBase64String(StringTools.putBase64String("åäöü", true)));
-		assertEquals("åäöü", StringTools.getBase64String(StringTools.putBase64String("åäöü", false)));
+		assertEquals("B64:w6XDpMO2w7zDqA==", StringTools.putBase64String("åäöüè"));
+		assertEquals("B64:w6XDpMO2w7zDqA==", StringTools.putBase64String("åäöüè", true));
+		assertEquals("åäöüè", StringTools.getBase64String(StringTools.putBase64String("åäöüè", true)));
+        assertEquals("åäöüè", StringTools.getBase64String(StringTools.putBase64String("åäöüè", false)));
+		// Check against unicodes as well, just to be sure encodiings are not messed up by eclipse of anything else
+        assertEquals("B64:w6XDpMO2w7zDqA==", StringTools.putBase64String("\u00E5\u00E4\u00F6\u00FC\u00E8"));
+        assertEquals("B64:w6XDpMO2w7zDqA==", StringTools.putBase64String("\u00E5\u00E4\u00F6\u00FC\u00E8", true));
+        assertEquals("\u00E5\u00E4\u00F6\u00FC\u00E8", StringTools.getBase64String(StringTools.putBase64String("åäöüè", true)));
+		assertEquals("\u00E5\u00E4\u00F6\u00FC\u00E8", StringTools.getBase64String(StringTools.putBase64String("åäöüè", false)));
 	}
 	
 	@Test
