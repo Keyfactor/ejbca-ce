@@ -94,10 +94,12 @@ ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 #
 # OCSP-enabled applications would use an OCSP archive cutoff date to contribute to a proof that a digital signature was (or was not)
 # reliable on the date it was produced even if the certificate needed to validate the signature has long since expired
-# The value of this configuration should be set to the number of seconds of this retention interval
+# The value of this configuration should be set to the number of seconds of this retention interval. To disable the archive cutoff extension, 
+# the value of this configuration should be set to '-1'
 #
 # Default: 31536000 (1 year)
 #ocsp.expiredcert.retentionperiod = 31536000
+#ocsp.expiredcert.retentionperiod = -1
 
 # For HTTP get requests according to RFC5019 we can set HTTP headers in the response to allow caching proxies to cache responses.
 # untilNextUpdate is the number of seconds a response will be valid. 0 = disable.
