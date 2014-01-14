@@ -492,7 +492,7 @@
 
 	<target name="build-util-signserver" description="Compile and create library used by SignServer">
 		<mkdir dir="${build-util-signserver.dir}"/>
-		<javac srcdir="${src.dir}" destdir="${build-util-signserver.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
+		<javac srcdir="${src.dir}" destdir="${build-util-signserver.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
         	includes="${source.fileset.signserver-util.files}" classpathref="compile-ejbca-ejb.classpath"/>
 		<dirname file="${mod.ejbca-util-signserver.lib}" property="mod.ejbca-util-signserver.lib.dir"/>
 		<mkdir dir="${mod.ejbca-util-signserver.lib.dir}"/>
@@ -514,13 +514,13 @@
 
 	<target name="compile-ejbca-ejb" depends="with.clover, compile-ejbca-ejb-external-deps">
 		<mkdir dir="${build.dir}"/>
-		<javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" includeantruntime="no" encoding="iso8859-1"
+		<javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" includeantruntime="no" encoding="UTF-8"
         	includes="${source.fileset.ejbca-ejb.files}" classpathref="compile-ejbca-ejb.classpath"/>
 	</target>
 
 	<target name="compile-util" depends="with.clover, cesecore-ejb-interface">
 		<mkdir dir="${build-util.dir}" />
-		<javac srcdir="${src.dir}" destdir="${build-util.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
+		<javac srcdir="${src.dir}" destdir="${build-util.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
         	includes="${source.fileset.ejbca-util.files}" classpathref="compile-util.classpath"/>
 	</target>
 
@@ -529,7 +529,7 @@
 	</target>
 	<target name="compile-common-web" depends="with.clover, compile-common-web-external-deps">
 		<mkdir dir="${build-common-web.dir}" />
-		<javac srcdir="${src.dir}" destdir="${build-common-web.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
+		<javac srcdir="${src.dir}" destdir="${build-common-web.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
         	includes="${source.fileset.ejbca-common-web.files}" classpathref="compile-common-web.classpath"/>
 	</target>
 
@@ -539,7 +539,7 @@
 	<target name="compile-tests" depends="with.clover, cesecore-ejb, dependecy-check, compile-tests-external-deps">
 		<mkdir dir="${build-test.dir}" />
 		<javac srcdir="${src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}" classpathref="compile-test.classpath"/>
+        	encoding="UTF-8" target="${java.target.version}" classpathref="compile-test.classpath"/>
 		<copy file="${log4j.test.file}" tofile="${build-test.dir}/log4j.xml" failonerror="true"/>
 		<copy todir="${build-test.dir}" failonerror="true">
 			<fileset dir="${ejbca.home}/src" includes="intresources/**"/>

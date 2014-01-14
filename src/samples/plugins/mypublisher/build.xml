@@ -20,6 +20,7 @@
     <!-- Compile the java code from ${src.dir} into ${bin.dir} -->
     <javac srcdir="${src.dir}"
     	   debug="${debug}"
+    	   encoding="UTF-8"
     	   destdir="${bin.dir}"
     	   classpathref="compile.classpath"
     	   includeantruntime="false">

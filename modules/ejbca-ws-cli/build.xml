@@ -63,7 +63,7 @@
     <target name="compile" depends="compile-external-deps">
     	<mkdir dir="${build.dir}" />
         <javac destdir="${build.dir}" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}" classpathref="compile-withws.classpath">
+        	encoding="UTF-8" target="${java.target.version}" classpathref="compile-withws.classpath">
         	<src path="${src-gen.dir}"/>
         	<src path="${src.dir}"/>
     	</javac>

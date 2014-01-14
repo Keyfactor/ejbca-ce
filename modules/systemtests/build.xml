@@ -115,14 +115,14 @@
 	<target name="systemtest-compile-interfaces" depends="ejbca-properties">
 		<mkdir dir="${build.interface.dir}" />
 		<javac srcdir="${src.interface.dir}" destdir="${build.interface.dir}" debug="on" includeantruntime="no"
-	        	encoding="iso8859-1" classpathref="interfaces.classpath" target="${java.target.version}">
+	        	encoding="UTF-8" classpathref="interfaces.classpath" target="${java.target.version}">
 		</javac>
 	</target>
 
 	<target name="systemtest-compile-src" depends="ejbca-properties, ejbca-ejb">
 		<mkdir dir="${build.src.dir}" />
 		<javac srcdir="${src.dir}" destdir="${build.src.dir}" debug="on" includeantruntime="no"
-			        	encoding="iso8859-1" classpathref="compile-ejb.classpath" target="${java.target.version}">	
+			        	encoding="UTF-8" classpathref="compile-ejb.classpath" target="${java.target.version}">	
 		</javac>
 	</target>
 
@@ -136,11 +136,11 @@
 	<target name="compile-tests" depends="assert-notinproduction, ejbca-properties, ejbca-ejb, ejbca-util, ejbca-ws-cli, ejbca-db-cli, ejbca-xkms-cli, ejbca-ejb-cli, clientToolBox, ejbca-ws">
 		<mkdir dir="${build.test.dir}" />
 		<javac srcdir="${src.test.dir}" destdir="${build.test.dir}" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" classpathref="systemtests.classpath" target="${java.target.version}">
+        	encoding="UTF-8" classpathref="systemtests.classpath" target="${java.target.version}">
 			<exclude name="org/ejbca/core/protocol/xkms/**"/>
 		</javac>
 		<javac srcdir="${src.test.dir}" destdir="${build.test.dir}" debug="on" includeantruntime="no" includejavaruntime="true"
-        	encoding="iso8859-1" classpathref="systemtests.classpath" target="${java.target.version}">
+        	encoding="UTF-8" classpathref="systemtests.classpath" target="${java.target.version}">
 			<include name="org/ejbca/core/protocol/xkms/**" if="xkms.enabled.true"/>
 			<classpath path="${build.test.dir}"/>
 		</javac>

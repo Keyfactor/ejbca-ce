@@ -35,6 +35,7 @@
 		<mkdir dir="${temp.class.dir}" />
 		<javac srcdir="${src.dir}"
 	    	   debug="${debug}"
+			   encoding="UTF-8"
 	    	   destdir="${temp.class.dir}"
 	    	   classpathref="compile.classpath"
 	    	   includeantruntime="false">

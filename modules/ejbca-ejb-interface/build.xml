@@ -35,7 +35,7 @@
 	
     <target name="compile-ejb3" depends="with.clover, ejbca-util, ejbca-entity">
         <mkdir dir="${build.dir}" />
-        <javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
+        <javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}"
         	classpathref="compile.classpath">	
         </javac>
     </target>
