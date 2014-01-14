@@ -68,6 +68,7 @@ import org.ejbca.util.HTMLTools;
  * - GetCert 
  * - GetCRL 
  * - v2PKCSReq or Proxy request 
+ * - GetCACaps
  * 5. envelop (PKCS#7) the reply data from the previous step 
  * 6. sign the reply data (PKCS#7) from the previous step 
  * 7. output the result as a der encoded block on stdout 
@@ -170,7 +171,7 @@ public class ScepServlet extends HttpServlet {
              */
             String operation = request.getParameter("operation");
             String message = request.getParameter("message");
-        	// Some clients don't url encode the + sign in the request for Base64 data
+            // Some clients don't url encode the + sign in the request. Message is only used to PKIOperations
             if (message != null && operation != null && operation.equals("PKIOperation")) {
             	message = message.replace(' ', '+');
             }
@@ -295,7 +296,7 @@ public class ScepServlet extends HttpServlet {
                                        authenticate an enrollment request for a new
                                        certificate.  
                  */
-                log.debug("Got SCEP CACaps request for CA '" + message + "'");
+                log.debug("Got SCEP GetCACaps request");
                 response.setContentType("text/plain");
                 response.getOutputStream().print("POSTPKIOperation\nSHA-1");
             } else {
