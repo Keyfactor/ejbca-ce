@@ -15,8 +15,6 @@ package org.ejbca.ui.cli.ca;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Set;
 
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
@@ -111,23 +109,20 @@ public class CaChangeCertProfileCommand extends BaseCaAdminCommand {
 			HashMap<String,Collection<Integer>> cps = new HashMap<String,Collection<Integer>>();
 			cps.put("Root CA profiles: ", cpsroot);
 			cps.put("Sub CA profiles: ", cpssub);
-			Set<String> entries = cps.keySet();
-			Iterator<String> keys = entries.iterator();
-			while (keys.hasNext()) {
-				String type = keys.next();
-				String profileInfo = type;
-				Collection<Integer> col = cps.get(type);
-				boolean first = true;
-				for (Integer profid: col) {
-					if (first) {
-						first = false;
-					} else {
-						profileInfo += ", ";
-					}
-					profileInfo += ejb.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfileName(profid);					
-				}
-				getLogger().info(profileInfo);
-			}
+            for (String type : cps.keySet()) {
+                String profileInfo = type;
+                Collection<Integer> col = cps.get(type);
+                boolean first = true;
+                for (Integer profid : col) {
+                    if (first) {
+                        first = false;
+                    } else {
+                        profileInfo += ", ";
+                    }
+                    profileInfo += ejb.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfileName(profid);
+                }
+                getLogger().info(profileInfo);
+            }
 		} catch (Exception e) {
 			getLogger().error("<unable to fetch available certificate profile>");
 		}
