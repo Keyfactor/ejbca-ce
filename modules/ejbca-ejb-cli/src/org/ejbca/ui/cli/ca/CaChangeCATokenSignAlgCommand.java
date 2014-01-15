@@ -29,7 +29,7 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  *
  * @version $Id$
  */
-public class CaChangeCATokenSignAlg extends BaseCaAdminCommand {
+public class CaChangeCATokenSignAlgCommand extends BaseCaAdminCommand {
 
    
     @Override

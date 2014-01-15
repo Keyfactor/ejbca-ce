@@ -33,7 +33,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * System test class for CaInitCommandTest
+ * System test class for CaExportCACommand, CaRemoveKeyStoreCommand and CaRestoreKeyStoreCommand
  * 
  * @version $Id: CaEditCommandTest.java 16866 2013-05-24 07:28:12Z anatom $
  */
