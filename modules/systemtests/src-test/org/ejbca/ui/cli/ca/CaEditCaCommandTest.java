@@ -28,11 +28,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * System test class for CaInitCommandTest
+ * System test class for CaEditCaCommand
  * 
  * @version $Id$
  */
-public class CaEditCommandTest {
+public class CaEditCaCommandTest {
 
     private static final String CA_NAME = "1327editca2";
     private static final String[] HAPPY_PATH_ARGS = { "editca", CA_NAME, "CRLPeriod", "2592000000"};
