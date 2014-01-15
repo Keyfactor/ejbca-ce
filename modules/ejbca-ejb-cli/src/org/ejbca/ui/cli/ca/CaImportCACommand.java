@@ -16,8 +16,11 @@ package org.ejbca.ui.cli.ca;
 import java.io.FileInputStream;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.List;
 
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -33,6 +36,8 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class CaImportCACommand extends BaseCaAdminCommand {
 
+    public static final String KEYSTORE_PASSWORD_KEY = "--keystorepw";
+    
     @Override
 	public String getSubCommand() { return "importca"; }
     @Override
@@ -48,10 +53,11 @@ public class CaImportCACommand extends BaseCaAdminCommand {
         
         if (args.length < 3) {
     		getLogger().info("Description: " + getDescription());
-    		getLogger().info("Usage 1: " + getCommand() + " <CA name> <pkcs12 file> [<signature alias>] [<encryption alias>]");
+    		getLogger().info("Usage 1: " + getCommand() + " <CA name> <pkcs12 file> [" + KEYSTORE_PASSWORD_KEY + " <password>] [<signature alias>] [<encryption alias>]");
     		getLogger().info(" Leave out both <alias> to use the only available alias or get a list of available aliases");
     		getLogger().info(" if there are more than one.");
     		getLogger().info(" If no encryption alias is given, the encryption keys will be generated.");
+    		getLogger().info(" If no keystore password is supplied, it will be prompted for.");
     		getLogger().info("Usage2: CA " + getCommand() + " <CA name> <catokenclasspath> <catokenpassword> <catokenproperties> <ca-certificate-file>");
     		getLogger().info(" catokenclasspath: example org.cesecore.keys.token.PKCS11CryptoToken for PKCS11 HSMs.");
     		getLogger().info(" catokenproperties: a file were you define key name, password and key alias for the HSM. Same as the Hard CA Token Properties in Admin gui.");
@@ -62,6 +68,16 @@ public class CaImportCACommand extends BaseCaAdminCommand {
     	CryptoProviderTools.installBCProvider();
         try {
         	String caName = args[1];
+        	 String kspwd = null;
+             //Extract password if provided.
+             List<String> argumentList = new ArrayList<String>(Arrays.asList(args));
+             if (argumentList.contains(KEYSTORE_PASSWORD_KEY)) {
+                 int location = argumentList.lastIndexOf(KEYSTORE_PASSWORD_KEY);
+                 kspwd = argumentList.get(location + 1).trim();
+                 argumentList.remove(KEYSTORE_PASSWORD_KEY);
+                 argumentList.remove(kspwd);
+                 args = argumentList.toArray(new String[args.length - 2]);
+             }  
         	if (args.length < 6) {
         		// Import soft keystore
                 String p12file = args[2];
@@ -73,9 +89,13 @@ public class CaImportCACommand extends BaseCaAdminCommand {
                 if (args.length > 4) {
                 	encryptionAlias = args[4];
                 }
-                getLogger().info("Enter keystore password: ");
-                // Read the password, but mask it so we don't display it on the console
-                String kspwd = String.valueOf(System.console().readPassword());
+                 
+                
+                if(kspwd == null) {
+                    getLogger().info("Enter keystore password: ");
+                    // Read the password, but mask it so we don't display it on the console
+                    kspwd = String.valueOf(System.console().readPassword());
+                }
                 // Read old keystore file in the beginning so we know it's good
                 byte[] keystorebytes = null;
                 keystorebytes = FileTools.readFiletoBuffer(p12file);
