@@ -69,7 +69,7 @@ public class WebConfiguration {
 	 * Port used by EJBCA public web to construct a correct url.
 	 */
 	public static int getExternalPrivateHttpsPort() {
-		int value = 8443;
+		int value = getPrivateHttpsPort();
 		try {
 			value = Integer.parseInt(EjbcaConfigurationHolder.getString(CONFIG_HTTPSSERVEREXTERNALPRIVHTTPS));
 		} catch( NumberFormatException e ) {
