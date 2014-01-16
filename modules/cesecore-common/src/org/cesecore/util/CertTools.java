@@ -1675,7 +1675,7 @@ public abstract class CertTools {
                 certbuilder.addExtension(extension.getExtnId(), extension.isCritical(), extension.getParsedValue());
             }
         }
-        final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).build(privKey), 20480);
+        final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(provider).build(privKey), 20480);
         final X509CertificateHolder certHolder = certbuilder.build(signer);
         final X509Certificate selfcert = (X509Certificate)CertTools.getCertfromByteArray(certHolder.getEncoded());
 
@@ -3477,7 +3477,7 @@ public abstract class CertTools {
             provider = BouncyCastleProvider.PROVIDER_NAME;
         }
 
-        ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(signatureAlgorithm).build(signingKey), 20480);
+        ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(signatureAlgorithm).setProvider(provider).build(signingKey), 20480);
         signer.getOutputStream().write(reqInfo.getEncoded(ASN1Encoding.DER));
         signer.getOutputStream().flush();
         byte[] sig = signer.getSignature();
