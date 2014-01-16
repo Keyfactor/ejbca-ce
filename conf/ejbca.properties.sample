@@ -148,7 +148,7 @@ ejbca.cli.defaultpassword=ejbca
 
 #------------------- Debug and special settings -------------
 #
-# Custom Available Access Rules. Use ';' to separate multiple accessrules
+# Custom Available Access Rules. Use ';' to separate multiple access rules
 # Available values are the Access Rules strings in Advanced mode of 'Access Rules' in 'Edit Administrator Privileges'
 # Default: ""
 #ejbca.customavailableaccessrules=
