@@ -133,7 +133,7 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
         
         final SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo((ASN1Sequence)ASN1Primitive.fromByteArray(publicKey.getEncoded()));
         X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(new X500Name(myname), BigInteger.valueOf(firstDate.getTime()), firstDate, lastDate, new X500Name(myname), pkinfo);
-        final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).build(keyPair.getPrivate()), 20480);
+        final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(this.providerName).build(keyPair.getPrivate()), 20480);
         final X509CertificateHolder certHolder = certbuilder.build(signer);
         return (X509Certificate) CertTools.getCertfromByteArray(certHolder.getEncoded());
     }
