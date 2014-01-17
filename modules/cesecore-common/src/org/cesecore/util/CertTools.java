@@ -2760,7 +2760,7 @@ public abstract class CertTools {
      * 
      * @param cert Certificate.
      * 
-     * @return String containing hex format of SHA1 fingerprint, or null if input is null.
+     * @return String containing hex format of SHA1 fingerprint (lower case), or null if input is null.
      */
     public static String getFingerprintAsString(Certificate cert) {
         if (cert == null) {
