@@ -36,7 +36,7 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class CaImportCACommand extends BaseCaAdminCommand {
 
-    public static final String KEYSTORE_PASSWORD_KEY = "--keystorepw";
+    public static final String KEYSTORE_PASSWORD_KEY = "-kspassword";
     
     @Override
 	public String getSubCommand() { return "importca"; }
