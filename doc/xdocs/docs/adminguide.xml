@@ -2588,7 +2588,7 @@ to the HSM and independent of EJBCA. You should make sure you are familiar with 
 </p>
 <subsection name="HSM modules available in the Admin GUI">
 <p>
-Since EJBCA 5.0 you can manage crypto tokens fully in the Admin GUI or CLI.
+Since EJBCA 6.0 you can manage crypto tokens fully in the Admin GUI or CLI.
 The admin GUI tries to be user friendly and automatically show you the HSMs available in your system.
 When creating a new Crypto Token (Crypto Tokens-&gt;Create New) you can select between Soft and PKCS#11 crypto tokens. 
 </p>
