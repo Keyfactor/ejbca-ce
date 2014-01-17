@@ -78,10 +78,11 @@ public interface InternalKeyBindingMgmtSession {
      * @param keyPairAlias is the alias of the mapped key pair in the specified CryptoToken (may not be null)
      * @param signatureAlgorithm is the signature algorithm that this InternalKeyBinding will use for signatures (if applicable)
      * @param dataMap is a Map of implementation specific properties for this type of IntenalKeyBinding
+     * @return the created InternalKeyBinding's unique identifier
+     * 
      * @throws CryptoTokenOfflineException if the requested key pair was not accessible
      * @throws AuthorizationDeniedException if the authentication token was not authorized to create the InternalKeyBinding
      * @throws InternalKeyBindingNameInUseException if the requested name was already in use by another InternalKeyBinding
-     * @return the created InternalKeyBinding's unique identifier
      * @throws InvalidAlgorithmException if the requested signature algorithm is not available
      */
     int createInternalKeyBinding(AuthenticationToken authenticationToken, String type, int id, String name, InternalKeyBindingStatus status, String certificateId,
