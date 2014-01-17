@@ -223,33 +223,26 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 		getLogger().info(" Status: ACTIVE, REVOKED");
 		getLogger().info(" Certificate: must be PEM encoded");
 		String endEntityProfiles = "";
-		try {
-			Collection<Integer> eps = ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getAuthorizedEndEntityProfileIds(getAuthenticationToken(cliUserName, cliPassword));
-			Iterator<Integer> iter = eps.iterator();
-			while (iter.hasNext()) {
-				int epid = ((Integer)iter.next()).intValue();
-				endEntityProfiles += (endEntityProfiles.length()==0?"":", ") + "\"" + ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfileName(epid) + "\"";
-			}
-		}
-		catch (Exception e) {
-			endEntityProfiles += "<unable to fetch available end entity profiles>";
-		}
+        try {
+            Collection<Integer> eps = ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getAuthorizedEndEntityProfileIds(
+                    getAuthenticationToken(cliUserName, cliPassword));
+            for (int epid : eps) {
+                endEntityProfiles += (endEntityProfiles.length() == 0 ? "" : ", ") + "\""
+                        + ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfileName(epid) + "\"";
+            }
+        } catch (Exception e) {
+            endEntityProfiles += "<unable to fetch available end entity profiles>";
+        }
 		getLogger().info(" End entity profiles: " + endEntityProfiles);
 		String certificateProfiles = "";
-		try {
-			Collection<Integer> cps = ejb.getRemoteSession(CertificateProfileSessionRemote.class).getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_ENDENTITY, cas);
-			boolean first = true;
-			Iterator<Integer> iter = cps.iterator();
-			while (iter.hasNext()) {
-				int cpid = ((Integer)iter.next()).intValue();
-				if (first) {
-					first = false;
-				} else {
-					certificateProfiles += ", ";
-				}
-				certificateProfiles += (certificateProfiles.length()==0?"":", ") + "\"" + ejb.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfileName(cpid) + "\"";
-			}
-		} catch (Exception e) {
+        try {
+            Collection<Integer> cps = ejb.getRemoteSession(CertificateProfileSessionRemote.class).getAuthorizedCertificateProfileIds(
+                    CertificateConstants.CERTTYPE_ENDENTITY, cas);
+            for (int cpid : cps) {
+                certificateProfiles += (certificateProfiles.length() == 0 ? "" : ", ") + "\""
+                        + ejb.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfileName(cpid) + "\"";
+            }
+        } catch (Exception e) {
 			certificateProfiles += "<unable to fetch available certificate profile>";
 		}
 		getLogger().info(" Certificate profiles: " + certificateProfiles);
