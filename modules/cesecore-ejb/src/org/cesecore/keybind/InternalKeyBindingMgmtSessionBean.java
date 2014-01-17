@@ -31,6 +31,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
@@ -255,6 +256,9 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         final KeyPairInfo keyPairInfo = cryptoTokenManagementSession.getKeyPairInfo(authenticationToken, cryptoTokenId, keyPairAlias);
         if (keyPairInfo == null) {
             throw new CryptoTokenOfflineException("Unable to access keyPair with alias " + keyPairAlias + " in CryptoToken with id " + cryptoTokenId);
+        }
+        if (certificateId != null) {
+            certificateId = certificateId.toLowerCase(Locale.ENGLISH);
         }
         // If we created a new InternalKeyBinding without a certificate reference (e.g. will be uploaded later) we will not allow the status to be anything but "DISABLED"
         if (certificateId == null || certificateStoreSession.findCertificateByFingerprint(certificateId) == null) {

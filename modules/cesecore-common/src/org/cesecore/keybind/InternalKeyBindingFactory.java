@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -56,7 +57,7 @@ public enum InternalKeyBindingFactory {
      * @param id is the unique identifier of this InternalKeyBinding
      * @param name is the unique name that this InternalKeyBinding will be given
      * @param status the initial status to give the InternalKeyBinding
-     * @param certificateId is the certificate fingerprint matching the mapped key pair or null
+     * @param certificateId is the certificate fingerprint (lower case) matching the mapped key pair or null
      * @param cryptoTokenId is the CryptoToken id of the container where the mapped key pair is stored
      * @param keyPairAlias is the alias of the mapped key pair in the specified CryptoToken (may not be null)
      * @param dataMap is a Map of implementation specific properties for this type of IntenalKeyBinding
@@ -71,7 +72,14 @@ public enum InternalKeyBindingFactory {
         } else {
             try {
                 internalKeyBinding = (InternalKeyBinding) Class.forName(implementationClassName).newInstance();
-                internalKeyBinding.init(id, name, status, certificateId, cryptoTokenId, keyPairAlias, dataMap);
+                // Ensure that fingerprint is lower case, to match items in the database
+                final String certFp;
+                if (certificateId != null) {
+                    certFp = certificateId.toLowerCase(Locale.ENGLISH);
+                } else {
+                    certFp = null;
+                }
+                internalKeyBinding.init(id, name, status, certFp, cryptoTokenId, keyPairAlias, dataMap);
             } catch (InstantiationException e) {
                 log.error("Unable to create InternalKeyBinding. Could not be instantiate implementation '" + implementationClassName + "'.", e);
             } catch (IllegalAccessException e) {
