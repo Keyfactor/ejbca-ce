@@ -21,6 +21,7 @@ import java.io.Serializable;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -126,10 +127,14 @@ public class InternalKeyBindingMgmtTest {
     public void workflowIssueCertFromPublicKeyAndUpdate() throws Exception {
         final String TEST_METHOD_NAME = Thread.currentThread().getStackTrace()[1].getMethodName();
         final String KEY_BINDING_NAME = TEST_METHOD_NAME;
+        final String KEY_BINDING_NAME1 = TEST_METHOD_NAME+"1";
+        final String KEY_BINDING_NAME2 = TEST_METHOD_NAME+"2";
         final String KEY_PAIR_ALIAS = TEST_METHOD_NAME;
         // Clean up old key binding
         removeInternalKeyBindingByName(alwaysAllowToken, TEST_METHOD_NAME);
         int internalKeyBindingId = 0;
+        int internalKeyBindingId1 = 0;
+        int internalKeyBindingId2 = 0;
         try {
             // First create a new CryptoToken
             cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, KEY_PAIR_ALIAS, "RSA2048");
@@ -153,8 +158,22 @@ public class InternalKeyBindingMgmtTest {
             // Verify that it was the right certificate it found
             assertEquals("Wrong certificate was found for InternalKeyBinding", CertTools.getFingerprintAsString(keyBindingCertificate), boundCertificateFingerprint);
             // ...so now we have a mapping between a certificate in the database and a key pair in a CryptoToken
-        } finally {
+            
+            // Try to make a new key binding giving the certificate fingerprint directly
+            internalKeyBindingId1 = internalKeyBindingMgmtSession.createInternalKeyBinding(alwaysAllowToken, KEYBINDING_TYPE_ALIAS,
+                    KEY_BINDING_NAME1, InternalKeyBindingStatus.ACTIVE, CertTools.getFingerprintAsString(keyBindingCertificate), cryptoTokenId, KEY_PAIR_ALIAS, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, dataMap, null);
+            InternalKeyBindingInfo info = internalKeyBindingMgmtSession.getInternalKeyBindingInfo(alwaysAllowToken, internalKeyBindingId1);
+            assertEquals("Wrong certificate was found for InternalKeyBinding", CertTools.getFingerprintAsString(keyBindingCertificate), info.getCertificateId());
+
+            // Try to make a new key binding giving the certificate fingerprint directly, but in upper case instead of the default lower case
+            internalKeyBindingId2 = internalKeyBindingMgmtSession.createInternalKeyBinding(alwaysAllowToken, KEYBINDING_TYPE_ALIAS,
+                    KEY_BINDING_NAME2, InternalKeyBindingStatus.ACTIVE, CertTools.getFingerprintAsString(keyBindingCertificate).toUpperCase(Locale.ENGLISH), cryptoTokenId, KEY_PAIR_ALIAS, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, dataMap, null);
+            info = internalKeyBindingMgmtSession.getInternalKeyBindingInfo(alwaysAllowToken, internalKeyBindingId2);
+            assertEquals("Wrong certificate was found for InternalKeyBinding", CertTools.getFingerprintAsString(keyBindingCertificate), info.getCertificateId());
+        } finally { 
             internalKeyBindingMgmtSession.deleteInternalKeyBinding(alwaysAllowToken, internalKeyBindingId);
+            internalKeyBindingMgmtSession.deleteInternalKeyBinding(alwaysAllowToken, internalKeyBindingId1);
+            internalKeyBindingMgmtSession.deleteInternalKeyBinding(alwaysAllowToken, internalKeyBindingId2);
         }
     }
 

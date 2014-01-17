@@ -16,6 +16,7 @@ package org.cesecore.keybind;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.persistence.Entity;
@@ -27,7 +28,6 @@ import javax.persistence.Transient;
 
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
-import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.Base64PutHashMap;
 
@@ -61,7 +61,11 @@ public class InternalKeyBindingData extends ProtectedData implements Serializabl
         setName(name);
         setStatusEnum(status);
         setKeyBindingType(keyBindingType);
-        setCertificateId(certificateId);
+        if (certificateId != null) {
+            setCertificateId(certificateId.toLowerCase(Locale.ENGLISH));            
+        } else {
+            setCertificateId(null);
+        }
         setCryptoTokenId(cryptoTokenId);
         setKeyPairAlias(keyPairAlias);
         setDataMap(dataMap);
@@ -90,8 +94,13 @@ public class InternalKeyBindingData extends ProtectedData implements Serializabl
 
     // @Column
     public String getCertificateId() { return certificateId; }
-    public void setCertificateId(String certificateId) { this.certificateId = certificateId; }
-
+    public void setCertificateId(String certificateId) { 
+        if (certificateId != null) {
+            this.certificateId = certificateId.toLowerCase(Locale.ENGLISH);
+        } else {
+            this.certificateId = null;
+        }
+    }
     // @Column
     public int getCryptoTokenId() { return cryptoTokenId; }
     public void setCryptoTokenId(int cryptoTokenId) { this.cryptoTokenId = cryptoTokenId; }
