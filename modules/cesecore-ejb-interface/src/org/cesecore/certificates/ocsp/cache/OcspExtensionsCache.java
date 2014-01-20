@@ -69,6 +69,7 @@ public enum OcspExtensionsCache {
             OCSPExtension ext = null;
             try {
                 ext = (OCSPExtension) Class.forName(clazz).newInstance();
+                ext.init();
             } catch (Exception e) {
                 log.error("Can not create extension with class " + clazz, e);
                 continue;
