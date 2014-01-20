@@ -41,7 +41,8 @@ public class InternalKeyBindingTrustEntry implements Serializable {
     public String getCertificateSerialNumberDecimal() { return certificateSerialNumberDecimal; }
     public void setCertificateSerialNumberDecimal(String certificateSerialNumberDecimal) { this.certificateSerialNumberDecimal = certificateSerialNumberDecimal; }
 
-    /* NOTE: The getter and setter for a BigInteger must not comply with the JavaBean spec for this to work with java.beans.XMLEncoder */
+    /* NOTE: The getter and setter for a BigInteger must not comply with the JavaBean spec for this to work with java.beans.XMLEncoder 
+     * NO_NOT_RENAME_TO get */
     public BigInteger gtCertificateSerialNumber() {
         if (certificateSerialNumberDecimal == null) {
             return null;
@@ -50,7 +51,8 @@ public class InternalKeyBindingTrustEntry implements Serializable {
         }
     }
 
-    /* NOTE: The getter and setter for a BigInteger must not comply with the JavaBean spec for this to work with java.beans.XMLEncoder */
+    /* NOTE: The getter and setter for a BigInteger must not comply with the JavaBean spec for this to work with java.beans.XMLEncoder 
+     * NO_NOT_RENAME_TO set */
     public void stCertificateSerialNumber(BigInteger certificateSerialNumber) {
         if (certificateSerialNumber == null) {
             this.certificateSerialNumberDecimal = null;
