@@ -33,7 +33,7 @@ public class InternalKeyBindingTrustEntry implements Serializable {
     
     public InternalKeyBindingTrustEntry(int caId, BigInteger certificateSerialNumber) {
         setCaId(caId);
-        stCertificateSerialNumber(certificateSerialNumber);
+        putCertificateSerialNumber(certificateSerialNumber);
     }
 
     public int getCaId() { return caId; }
@@ -43,7 +43,7 @@ public class InternalKeyBindingTrustEntry implements Serializable {
 
     /* NOTE: The getter and setter for a BigInteger must not comply with the JavaBean spec for this to work with java.beans.XMLEncoder 
      * NO_NOT_RENAME_TO get */
-    public BigInteger gtCertificateSerialNumber() {
+    public BigInteger fetchCertificateSerialNumber() {
         if (certificateSerialNumberDecimal == null) {
             return null;
         } else {
@@ -53,7 +53,7 @@ public class InternalKeyBindingTrustEntry implements Serializable {
 
     /* NOTE: The getter and setter for a BigInteger must not comply with the JavaBean spec for this to work with java.beans.XMLEncoder 
      * NO_NOT_RENAME_TO set */
-    public void stCertificateSerialNumber(BigInteger certificateSerialNumber) {
+    public void putCertificateSerialNumber(BigInteger certificateSerialNumber) {
         if (certificateSerialNumber == null) {
             this.certificateSerialNumberDecimal = null;
         } else {
@@ -63,7 +63,7 @@ public class InternalKeyBindingTrustEntry implements Serializable {
     
     @Override
     public String toString() {
-        final BigInteger certificateSerialNumber = gtCertificateSerialNumber();
+        final BigInteger certificateSerialNumber = fetchCertificateSerialNumber();
         if (certificateSerialNumber==null) {
             return Integer.valueOf(caId).toString();
         } else {

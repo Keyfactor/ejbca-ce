@@ -594,7 +594,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
             final int internalKeyBindingId = Integer.parseInt(currentInternalKeyBindingId);
             final InternalKeyBinding internalKeyBinding;
             try {
-                internalKeyBinding = internalKeyBindingSession.getInternalKeyBinding(authenticationToken, internalKeyBindingId);
+                internalKeyBinding = internalKeyBindingSession.getInternalKeyBindingReference(authenticationToken, internalKeyBindingId);
             } catch (AuthorizationDeniedException e) {
                 // No longer authorized to this token, or the user tried to pull a fast one
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(e.getMessage()));
@@ -907,7 +907,7 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
     }
 
     public String getTrustedCertificatesSerialNumberHex() {
-        return ((InternalKeyBindingTrustEntry) trustedCertificates.getRowData()).gtCertificateSerialNumber().toString(16);
+        return ((InternalKeyBindingTrustEntry) trustedCertificates.getRowData()).fetchCertificateSerialNumber().toString(16);
     }
 
     /** @return a list of all currently trusted certificates references as pairs of [CAId,CertificateSerialNumber] */

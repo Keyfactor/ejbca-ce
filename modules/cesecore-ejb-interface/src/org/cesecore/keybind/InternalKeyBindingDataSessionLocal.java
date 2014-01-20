@@ -27,8 +27,11 @@ import org.cesecore.keybind.InternalKeyBinding;
 @Local
 public interface InternalKeyBindingDataSessionLocal {
 
-    /** @return the specified InternalKeyBinding */
+    /** @return the a cached reference to the specified InternalKeyBinding that MAY NOT be edited. */
     InternalKeyBinding getInternalKeyBinding(int id);
+
+    /** @return a clone of the specified InternalKeyBinding that can be modified freely */
+    InternalKeyBinding getInternalKeyBindingForEdit(int id);
 
     /** Add the specified InternalKeyBinding to the database and return the id used to store it */
     int mergeInternalKeyBinding(InternalKeyBinding internalKeyBinding) throws InternalKeyBindingNameInUseException;
