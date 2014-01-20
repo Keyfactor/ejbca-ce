@@ -1116,9 +1116,15 @@ public class CAInterfaceBean implements Serializable {
         if (description == null) {
             description = "";
         }
-        final long validity = ValidityDate.encode(validityString);
-        if (validity<0) {
-            throw new ParameterException(ejbcawebbean.getText("INVALIDVALIDITYORCERTEND"));
+        final long validity;
+        if ((validityString == null) && (infoView.getCAInfo().getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA)) {
+            // A validityString of null is allowed, when using a validity is not applicable
+            validity = 0;
+        } else {
+            validity = ValidityDate.encode(validityString);
+            if (validity<0) {
+                throw new ParameterException(ejbcawebbean.getText("INVALIDVALIDITYORCERTEND"));
+            }
         }
         if (caid != 0  && catype !=0) {
             // First common info for both X509 CAs and CVC CAs
