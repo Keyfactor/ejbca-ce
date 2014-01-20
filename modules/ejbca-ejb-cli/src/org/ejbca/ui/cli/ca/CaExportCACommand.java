@@ -46,7 +46,7 @@ public class CaExportCACommand extends BaseCaAdminCommand {
         if (args.length < 3) {
 			getLogger().info("Description: " + getDescription());
         	getLogger().info("Usage: " + getCommand() + " <CA name> <pkcs12/pkcs8 file> [<signature_key_alias>] [<encryption_key_alias>]");
-        	getLogger().info(" Default values for signature_key_alias is \"" + signatureKeyAlias + "\" and encryption_key_alias" + " is \"" + encryptionKeyAlias + "\".");
+        	getLogger().info(" Default value for signature_key_alias is \"" + signatureKeyAlias + "\", and for encryption_key_alias" + " is \"" + encryptionKeyAlias + "\".");
         	getLogger().info(" X.509 CAs are exported as PKCS#12 files while for CVC CAs only the private certificate signing key is exported as a PKCS#8 key.");
             getLogger().info(" You will be prompted for keystore password to protect stored keystore, but can optionally specify it on command line using the optional argument '-kspassword yourpwd'.");
         	return;
