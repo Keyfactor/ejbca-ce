@@ -1632,7 +1632,7 @@ function checkallfields(){
                     </tr>
                     <%  } %>
                     <tr>
-                        <td>(Optional) Path to PEM certificate chain or a single DER certificate about to sign CA:</td>
+                        <td>Path to PEM certificate chain or a single DER certificate about to sign CA:</td>
                         <td>
                             <input type="file" name="<%= FILE_RECIEVEFILE_MAKEREQUEST %>">
                         </td>
