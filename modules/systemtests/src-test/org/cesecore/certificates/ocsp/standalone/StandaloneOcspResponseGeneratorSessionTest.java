@@ -290,8 +290,8 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         assertEquals("Not the same number of entries in list of trusted requestors", 3, trustEntries.size());
         boolean found = false;
         for (final InternalKeyBindingTrustEntry trustEntry : trustEntries) {
-            log.debug("Comparing " + trustEntry.getCaId() + " " + trustEntry.gtCertificateSerialNumber());
-            if (trustEntry.getCaId() == x509ca.getCAId() && trustEntry.gtCertificateSerialNumber() != null && trustEntry.gtCertificateSerialNumber().equals(new BigInteger("0"))) {
+            log.debug("Comparing " + trustEntry.getCaId() + " " + trustEntry.fetchCertificateSerialNumber());
+            if (trustEntry.getCaId() == x509ca.getCAId() && trustEntry.fetchCertificateSerialNumber() != null && trustEntry.fetchCertificateSerialNumber().equals(new BigInteger("0"))) {
                 found = true;
             }
         }

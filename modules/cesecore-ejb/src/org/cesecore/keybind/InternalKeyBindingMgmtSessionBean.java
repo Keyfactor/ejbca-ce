@@ -170,13 +170,24 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public InternalKeyBinding getInternalKeyBinding(AuthenticationToken authenticationToken, int id) throws AuthorizationDeniedException {
+    public InternalKeyBinding getInternalKeyBindingReference(AuthenticationToken authenticationToken, int id) throws AuthorizationDeniedException {
         if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.VIEW.resource() + "/" + id)) {
             final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.VIEW.resource(),
                     authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
         }
         return internalKeyBindingDataSession.getInternalKeyBinding(id);
+    }
+
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public InternalKeyBinding getInternalKeyBinding(AuthenticationToken authenticationToken, int id) throws AuthorizationDeniedException {
+        if (!accessControlSessionSession.isAuthorized(authenticationToken, InternalKeyBindingRules.VIEW.resource() + "/" + id)) {
+            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", InternalKeyBindingRules.VIEW.resource(),
+                    authenticationToken.toString());
+            throw new AuthorizationDeniedException(msg);
+        }
+        return internalKeyBindingDataSession.getInternalKeyBindingForEdit(id);
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -359,7 +370,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                     authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
         }
-        final InternalKeyBinding internalKeyBinding = internalKeyBindingDataSession.getInternalKeyBinding(internalKeyBindingId);
+        final InternalKeyBinding internalKeyBinding = internalKeyBindingDataSession.getInternalKeyBindingForEdit(internalKeyBindingId);
         final int cryptoTokenId = internalKeyBinding.getCryptoTokenId();
         final String currentKeyPairAlias = internalKeyBinding.getKeyPairAlias();
         final String originalNextKeyPairAlias = internalKeyBinding.getNextKeyPairAlias();
@@ -457,7 +468,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                     authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
         }
-        final InternalKeyBinding internalKeyBinding = internalKeyBindingDataSession.getInternalKeyBinding(internalKeyBindingId);
+        final InternalKeyBinding internalKeyBinding = internalKeyBindingDataSession.getInternalKeyBindingForEdit(internalKeyBindingId);
         final int cryptoTokenId = internalKeyBinding.getCryptoTokenId();
         final String originalNextKeyPairAlias = internalKeyBinding.getNextKeyPairAlias();
         final String originalCertificateId = internalKeyBinding.getCertificateId();
@@ -606,7 +617,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         } catch (CertificateException e) {
             throw new CertificateImportException(e);
         }
-        final InternalKeyBinding internalKeyBinding = internalKeyBindingDataSession.getInternalKeyBinding(internalKeyBindingId);
+        final InternalKeyBinding internalKeyBinding = internalKeyBindingDataSession.getInternalKeyBindingForEdit(internalKeyBindingId);
         final String originalNextKeyPairAlias = internalKeyBinding.getNextKeyPairAlias();
         final String originalCertificateId = internalKeyBinding.getCertificateId();
         final String originalKeyPairAlias = internalKeyBinding.getKeyPairAlias();
