@@ -568,7 +568,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         } else {
                             for (final InternalKeyBindingTrustEntry trustEntry : trustedCertificateReferences) {
                                 final int trustedCaId = trustEntry.getCaId();
-                                final BigInteger trustedSerialNumber = trustEntry.gtCertificateSerialNumber();
+                                final BigInteger trustedSerialNumber = trustEntry.fetchCertificateSerialNumber();
                                 if (log.isTraceEnabled()) {
                                     log.trace("Processing trustedCaId="+trustedCaId + " trustedSerialNumber="+trustedSerialNumber + " signercertIssuerName.hashCode()="+
                                             signercertIssuerName.hashCode()+" signercertSerNo="+signercertSerNo);

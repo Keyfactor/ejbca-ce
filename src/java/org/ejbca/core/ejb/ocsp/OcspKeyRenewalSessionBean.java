@@ -461,7 +461,7 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
         AuthenticationKeyBinding authenticationKeyBinding = null;
         for (Integer internalKeyBindingId : authenticationKeyBindingIds) {
             try {
-                final InternalKeyBinding internalKeyBinding = internalKeyBindingMgmtSession.getInternalKeyBinding(authenticationToken, internalKeyBindingId);
+                final InternalKeyBinding internalKeyBinding = internalKeyBindingMgmtSession.getInternalKeyBindingReference(authenticationToken, internalKeyBindingId);
                 if (internalKeyBinding.getStatus().equals(InternalKeyBindingStatus.ACTIVE)) {
                     // Use first active one
                     authenticationKeyBinding = (AuthenticationKeyBinding) internalKeyBinding;

@@ -41,4 +41,14 @@ public interface InternalKeyBindingMgmtSessionLocal extends InternalKeyBindingMg
      * @see getInternalKeyBindingInfo
      */
     InternalKeyBindingInfo getInternalKeyBindingInfoNoLog(AuthenticationToken authenticationToken, int internalKeyBindingId) throws AuthorizationDeniedException;
+
+    /**
+     * Get a reference to a cached InternalKeyBinding object that MAY NOT be modified.
+     * 
+     * @param authenticationToken is the authentication token
+     * @param internalKeyBindingId is the identifier of the InternalKeyBinding
+     * @return the InternalKeyBinding for the requested Id or null if none was found
+     * @throws AuthorizationDeniedException if the authentication token was not authorized to fetch the requested InternalKeyBinding
+     */
+    InternalKeyBinding getInternalKeyBindingReference(AuthenticationToken authenticationToken, int internalKeyBindingId) throws AuthorizationDeniedException;
 }

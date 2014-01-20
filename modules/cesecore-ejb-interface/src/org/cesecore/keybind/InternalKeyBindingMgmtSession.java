@@ -48,7 +48,7 @@ public interface InternalKeyBindingMgmtSession {
     List<Integer> getInternalKeyBindingIds(AuthenticationToken authenticationToken, String internalKeyBindingType);
 
     /**
-     * Get an InternalKeyBinding object.
+     * Get an cloned InternalKeyBinding object.
      * 
      * @param authenticationToken is the authentication token
      * @param internalKeyBindingId is the identifier of the InternalKeyBinding
