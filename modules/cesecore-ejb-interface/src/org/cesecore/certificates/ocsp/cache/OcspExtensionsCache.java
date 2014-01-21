@@ -55,6 +55,13 @@ public enum OcspExtensionsCache {
 
     }
 
+    /**
+     * Reloads the cache manually, reading configuration anew. 
+     */
+    public void reloadCache() {
+        reloadCache(buildExtensionsMap());
+    }
+    
     private static Map<String, OCSPExtension> buildExtensionsMap() {
         Map<String, OCSPExtension> result = new HashMap<String, OCSPExtension>();
         Iterator<String> extensionClasses = OcspConfiguration.getExtensionClasses().iterator();

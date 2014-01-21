@@ -226,7 +226,7 @@ public class OCSPUnidExtension implements OCSPExtension {
 		return errCode;
 	}
 	
-	boolean checkAuthorization(X509Certificate[] certificates, String remoteAddress, String remoteHost) {
+	private boolean checkAuthorization(X509Certificate[] certificates, String remoteAddress, String remoteHost) {
         
         if (certificates == null) {
     		String errMsg = intres.getLocalizedMessage("ocsp.errornoclientauth", remoteAddress, remoteHost);
