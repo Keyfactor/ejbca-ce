@@ -1,0 +1,123 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+package org.cesecore.certificates.ocsp.cache;
+
+import static org.junit.Assert.assertNotNull;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.security.KeyPair;
+import java.security.SecureRandom;
+import java.security.cert.Certificate;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Map;
+
+import org.bouncycastle.asn1.ASN1Primitive;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.X509v3CertificateBuilder;
+import org.bouncycastle.operator.BufferingContentSigner;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.cesecore.certificates.ocsp.extension.OCSPExtension;
+import org.cesecore.config.ConfigurationHolder;
+import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.CertTools;
+import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.FileTools;
+import org.ejbca.core.protocol.ocsp.extension.unid.OCSPUnidExtension;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+/**
+ * Unit test for the OCSP Extensions cache and 
+ * 
+ * @version $Id$
+ *
+ */
+public class OcspExtensionsTest {
+
+    private static final String OCSP_UNID_OID = "2.16.578.1.16.3.2";
+    private static final String OCSP_UNID_CLASSNAME = OCSPUnidExtension.class.getName();
+    private static File trustDir;
+    private static Certificate certificate;
+    private static File trustedCertificateFile;
+    private static File caCertificateFile;
+
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+        CryptoProviderTools.installBCProviderIfNotAvailable();
+        trustDir = FileTools.createTempDirectory();
+        caCertificateFile = File.createTempFile("tmp", ".pem");
+        trustedCertificateFile = File.createTempFile("tmp", ".pem", trustDir);
+        KeyPair caKeyPair = KeyTools.genKeys("1024", "RSA");
+        Certificate caCertificate = CertTools.genSelfCert("CN=TESTCA", 10L, null, caKeyPair.getPrivate(), caKeyPair.getPublic(), "SHA1WithRSA", true);
+        FileOutputStream fileOutputStream = new FileOutputStream(caCertificateFile);
+        try {
+            fileOutputStream.write(CertTools.getPemFromCertificateChain(Arrays.asList(caCertificate)));
+        } finally {
+            fileOutputStream.close();
+        }
+        Date firstDate = new Date();
+        firstDate.setTime(firstDate.getTime() - (10 * 60 * 1000));
+        Date lastDate = new Date();
+        lastDate.setTime(lastDate.getTime() + (24 * 60 * 60 * 1000));
+        byte[] serno = new byte[8];
+        SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
+        random.setSeed(new Date().getTime());
+        random.nextBytes(serno);
+        KeyPair certificateKeyPair = KeyTools.genKeys("1024", "RSA");
+        final SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo((ASN1Sequence) ASN1Primitive.fromByteArray(certificateKeyPair.getPublic()
+                .getEncoded()));
+        final String certDn = "CN=TEST,SN=4711";
+        X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(CertTools.stringToBcX500Name(certDn, false), new BigInteger(serno).abs(),
+                firstDate, lastDate, CertTools.stringToBcX500Name(certDn, false), pkinfo);
+        final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder("SHA1WithRSA").build(caKeyPair.getPrivate()), 20480);
+        final X509CertificateHolder certHolder = certbuilder.build(signer);
+        certificate = CertTools.getCertfromByteArray(certHolder.getEncoded());
+        fileOutputStream = new FileOutputStream(trustedCertificateFile);
+        try {
+            fileOutputStream.write(CertTools.getPemFromCertificateChain(Arrays.asList(certificate)));
+        } finally {
+            fileOutputStream.close();
+        }
+        ConfigurationHolder.updateConfiguration("ocsp.extensionoid", OCSP_UNID_OID);
+        ConfigurationHolder.updateConfiguration("ocsp.extensionclass", OCSP_UNID_CLASSNAME);
+        ConfigurationHolder.updateConfiguration("ocsp.uniddatsource", "foo");
+        ConfigurationHolder.updateConfiguration("ocsp.unidtrustdir", trustDir.getAbsolutePath());
+        ConfigurationHolder.updateConfiguration("ocsp.unidcacert", caCertificateFile.getAbsolutePath());
+        OcspExtensionsCache.INSTANCE.reloadCache();
+
+    }
+
+    @AfterClass
+    public static void afterClass() {
+        FileTools.delete(trustDir);
+        FileTools.delete(caCertificateFile);
+    }
+
+    /**
+     * Tests retrieving an ocsp unid extension. Actually processing the request falls under system testing. 
+     */
+    @Test
+    public void testRetrieveOcspUnidExtension() throws IOException {
+        Map<String, OCSPExtension> extensions = OcspExtensionsCache.INSTANCE.getExtensions();
+        OCSPExtension ocspUnidExtension = extensions.get(OCSP_UNID_OID);
+        assertNotNull("OCSP Unid extension was not loaded", ocspUnidExtension);
+    }
+}
