@@ -5720,7 +5720,7 @@ A collection of samples are available in the directory src/java/org/ejbca/sample
 <section name="Troubleshooting">
 <p>
 <ul>
-<li>To find cause and description of errors look in the JBoss server log. For JBoss 5 this is located in server/default/log/server.log.</li>
+<li>To find cause and description of errors look in the JBoss server log. For JBoss 5 this is located in server/default/log/server.log. For JBoss 7/EAP 6 it is located in standalone/log.</li>
 <li>If this does not display enough information, enable DEBUG logging according to the Log4J configuration described above and check the log file.</li>
 <li>Don't get intimidated by long stack-traces. Try to look for the message text and additional clues on lines starting with "Casued by:"</li>
 <li>Check the documentation. Double-check so everything really is configured the way it should and that you did not skip any step that didn't seem important.</li>
