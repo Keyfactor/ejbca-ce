@@ -918,8 +918,8 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                 trustedCertificates = new ListDataModel(new ArrayList<InternalKeyBindingTrustEntry>());
             } else {
                 try {
-                    final InternalKeyBinding internalKeyBinding = internalKeyBindingSession.getInternalKeyBinding(authenticationToken,
-                            internalKeyBindingId);
+                    final InternalKeyBinding internalKeyBinding = internalKeyBindingSession.getInternalKeyBindingReference(
+                            authenticationToken, internalKeyBindingId);
                     trustedCertificates = new ListDataModel(internalKeyBinding.getTrustedCertificateReferences());
                 } catch (AuthorizationDeniedException e) {
                     FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(e.getMessage()));
