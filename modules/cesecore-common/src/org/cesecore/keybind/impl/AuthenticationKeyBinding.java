@@ -36,7 +36,6 @@ public class AuthenticationKeyBinding extends InternalKeyBindingBase {
 
     public static final String IMPLEMENTATION_ALIAS = "AuthenticationKeyBinding"; // This should not change, even if we rename the class in EJBCA 5.3+..
 
-
     @Override
     public String getImplementationAlias() {
         return IMPLEMENTATION_ALIAS;

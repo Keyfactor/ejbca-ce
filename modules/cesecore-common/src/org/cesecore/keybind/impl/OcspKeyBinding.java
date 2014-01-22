@@ -48,11 +48,12 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     public static final String PROPERTY_UNTIL_NEXT_UPDATE = "untilNextUpdate";
     public static final String PROPERTY_MAX_AGE = "maxAge";
     
-    static {
+    {
         addProperty(new InternalKeyBindingProperty<Boolean>(PROPERTY_NON_EXISTING_GOOD, Boolean.FALSE));
         addProperty(new InternalKeyBindingProperty<Boolean>(PROPERTY_NON_EXISTING_REVOKED, Boolean.FALSE));
         addProperty(new InternalKeyBindingProperty<Boolean>(PROPERTY_INCLUDE_CERT_CHAIN, Boolean.TRUE));
-        addProperty(new InternalKeyBindingProperty<String>(PROPERTY_RESPONDER_ID_TYPE, ResponderIdType.KEYHASH.name(), ResponderIdType.KEYHASH.name(), ResponderIdType.NAME.name()));
+        addProperty(new InternalKeyBindingProperty<String>(PROPERTY_RESPONDER_ID_TYPE, ResponderIdType.KEYHASH.name(),
+                ResponderIdType.KEYHASH.name(), ResponderIdType.NAME.name()));
         addProperty(new InternalKeyBindingProperty<Boolean>(PROPERTY_REQUIRE_TRUSTED_SIGNATURE, Boolean.FALSE));
         addProperty(new InternalKeyBindingProperty<Long>(PROPERTY_UNTIL_NEXT_UPDATE, Long.valueOf(0L)));
         addProperty(new InternalKeyBindingProperty<Long>(PROPERTY_MAX_AGE, Long.valueOf(0L)));

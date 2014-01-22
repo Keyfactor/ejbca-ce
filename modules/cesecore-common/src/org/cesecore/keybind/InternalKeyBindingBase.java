@@ -51,9 +51,9 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     private List<InternalKeyBindingTrustEntry> trustedCertificateReferences;
     private String signatureAlgorithm;
     
-    private static final Map<String,InternalKeyBindingProperty<? extends Serializable>> propertyTemplates = new HashMap<String,InternalKeyBindingProperty<? extends Serializable>>();
+    private final Map<String,InternalKeyBindingProperty<? extends Serializable>> propertyTemplates = new HashMap<String,InternalKeyBindingProperty<? extends Serializable>>();
     
-    protected static void addProperty(InternalKeyBindingProperty<? extends Serializable> property) {
+    protected void addProperty(InternalKeyBindingProperty<? extends Serializable> property) {
         propertyTemplates.put(property.getName(), property);
     }
     
