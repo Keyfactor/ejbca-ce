@@ -48,7 +48,11 @@ public interface InternalKeyBindingMgmtSession {
     List<Integer> getInternalKeyBindingIds(AuthenticationToken authenticationToken, String internalKeyBindingType);
 
     /**
-     * Get an cloned InternalKeyBinding object.
+     * Get a (cloned) InternalKeyBinding object. Use this method if you might change the object,
+     * if the object is handled by an untrusted piece of code or if you are using Remote invocation.
+     * 
+     * (Otherwise, use {@link InternalKeyBindingMgmtSessionLocal#getInternalKeyBindingReference(AuthenticationToken, int)}
+     * to avoid the unnecessary object creation.)
      * 
      * @param authenticationToken is the authentication token
      * @param internalKeyBindingId is the identifier of the InternalKeyBinding
