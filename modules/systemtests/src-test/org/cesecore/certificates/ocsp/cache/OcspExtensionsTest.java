@@ -39,6 +39,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.FileTools;
+import org.ejbca.core.protocol.ocsp.extension.certhash.OcspCertHashExtension;
 import org.ejbca.core.protocol.ocsp.extension.unid.OCSPUnidExtension;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -54,6 +55,7 @@ public class OcspExtensionsTest {
 
     private static final String OCSP_UNID_OID = "2.16.578.1.16.3.2";
     private static final String OCSP_UNID_CLASSNAME = OCSPUnidExtension.class.getName();
+    private static final String OCSP_CERTHASH_CLASSNAME = OcspCertHashExtension.class.getName();
     private static File trustDir;
     private static Certificate certificate;
     private static File trustedCertificateFile;
@@ -96,8 +98,8 @@ public class OcspExtensionsTest {
         } finally {
             fileOutputStream.close();
         }
-        ConfigurationHolder.updateConfiguration("ocsp.extensionoid", OCSP_UNID_OID);
-        ConfigurationHolder.updateConfiguration("ocsp.extensionclass", OCSP_UNID_CLASSNAME);
+        ConfigurationHolder.updateConfiguration("ocsp.extensionoid", OCSP_UNID_OID+';'+OcspCertHashExtension.CERT_HASH_OID);
+        ConfigurationHolder.updateConfiguration("ocsp.extensionclass", OCSP_UNID_CLASSNAME+';'+OCSP_CERTHASH_CLASSNAME);
         ConfigurationHolder.updateConfiguration("ocsp.uniddatsource", "foo");
         ConfigurationHolder.updateConfiguration("ocsp.unidtrustdir", trustDir.getAbsolutePath());
         ConfigurationHolder.updateConfiguration("ocsp.unidcacert", caCertificateFile.getAbsolutePath());
@@ -120,4 +122,15 @@ public class OcspExtensionsTest {
         OCSPExtension ocspUnidExtension = extensions.get(OCSP_UNID_OID);
         assertNotNull("OCSP Unid extension was not loaded", ocspUnidExtension);
     }
+
+    /**
+     * Tests retrieving an ocsp cert hash extension. Actually processing the request falls under system testing. 
+     */
+    @Test
+    public void testRetrieveOcspCertHashExtension() throws IOException {
+        Map<String, OCSPExtension> extensions = OcspExtensionsCache.INSTANCE.getExtensions();
+        OCSPExtension ocspCertHashExtension = extensions.get(OcspCertHashExtension.CERT_HASH_OID);
+        assertNotNull("OCSP CertHash extension was not loaded", ocspCertHashExtension);
+    }
+
 }
