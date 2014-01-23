@@ -25,7 +25,6 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
-import org.ejbca.ui.cli.ca.CaActivateCACommandTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -39,7 +38,7 @@ public class CryptoTokenDeactivateCommandTest {
 
     private static final String TOKEN_NAME = CryptoTokenDeactivateCommandTest.class.getSimpleName();
 
-    private final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(CaActivateCACommandTest.class.getSimpleName());
+    private final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(CryptoTokenDeleteCommandTest.class.getSimpleName());
 
     private CryptoTokenDeactivateCommand command = new CryptoTokenDeactivateCommand();
     private CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE

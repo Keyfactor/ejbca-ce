@@ -18,8 +18,10 @@ import java.util.Properties;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
@@ -34,18 +36,20 @@ import org.junit.Test;
  * @version $Id$
  *
  */
-public class CryptoTokenActivateCommandTest {
+public class CryptoTokenUpdatePinCommandTest {
 
-    private static final String TOKEN_NAME = CryptoTokenActivateCommandTest.class.getSimpleName();
-    private static final String TOKEN_PASSWORD = "foo123";
+    private static final String TOKEN_NAME = CryptoTokenUpdatePinCommandTest.class.getSimpleName();
+    private static final String TOKEN_PIN = "foo123";
 
-    private final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(CryptoTokenDeleteCommandTest.class.getSimpleName());
+    private final CryptoTokenUpdatePinCommand command = new CryptoTokenUpdatePinCommand();
 
-    private CryptoTokenActivateCommand command = new CryptoTokenActivateCommand();
+    private final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(
+            CryptoTokenDeleteCommandTest.class.getSimpleName());
+
     private CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CryptoTokenManagementSessionRemote.class);
 
-    private Integer cryptoTokenId = null;
+    private Integer cryptoTokenId;
 
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -57,29 +61,31 @@ public class CryptoTokenActivateCommandTest {
         final Properties cryptoTokenProperties = new Properties();
         cryptoTokenProperties.setProperty(SoftCryptoToken.NODEFAULTPWD, "true");
         cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, TOKEN_NAME, SoftCryptoToken.class.getName(),
-                cryptoTokenProperties, null, TOKEN_PASSWORD.toCharArray());
+                cryptoTokenProperties, null, TOKEN_PIN.toCharArray());
         cryptoTokenManagementSession.deactivate(authenticationToken, cryptoTokenId);
         CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(authenticationToken, cryptoTokenId);
-        if(cryptoTokenInfo.isAutoActivation()) {
-            throw new RuntimeException("Auto activation is active on crypto token.");
-        }
         if (cryptoTokenInfo.isActive()) {
-            throw new RuntimeException("Crypto token is already active, test cannot continue");
+            throw new RuntimeException("Crypto token is active, test cannot continue");
         }
     }
 
     @After
     public void teardown() throws AuthorizationDeniedException {
+        Integer cryptoTokenId = cryptoTokenManagementSession.getIdFromName(TOKEN_NAME);
         if (cryptoTokenId != null) {
             cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, cryptoTokenId);
         }
     }
 
     @Test
-    public void testCommand() throws ErrorAdminCommandException, AuthorizationDeniedException {
-        String[] args = new String[] { "activate", TOKEN_NAME, TOKEN_PASSWORD };
+    public void testCommand() throws ErrorAdminCommandException, AuthorizationDeniedException, CryptoTokenOfflineException,
+            CryptoTokenAuthenticationFailedException {
+        final String newPin = "bar123";
+        String[] args = new String[] { "setpin", TOKEN_NAME, TOKEN_PIN, newPin };
         command.execute(args);
+        cryptoTokenManagementSession.activate(authenticationToken, cryptoTokenId, newPin.toCharArray());
         CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(authenticationToken, cryptoTokenId);
-        assertTrue("Crypto token was not activated.", cryptoTokenInfo.isActive());
+        assertTrue("Pin was apparently not replaced.", cryptoTokenInfo.isActive());
     }
+
 }
