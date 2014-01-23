@@ -12,13 +12,12 @@
  *************************************************************************/
 package org.ejbca.ui.cli.cryptotoken;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 import java.util.Properties;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -34,14 +33,15 @@ import org.junit.Test;
  * @version $Id$
  *
  */
-public class CryptoTokenActivateCommandTest {
+public class CryptoTokenRemoveCommandTest {
 
-    private static final String TOKEN_NAME = CryptoTokenActivateCommandTest.class.getSimpleName();
-    private static final String TOKEN_PASSWORD = "foo123";
+    private static final String TOKEN_NAME = CryptoTokenRemoveCommandTest.class.getSimpleName();
+    private static final String KEYPAIR_ALIAS = CryptoTokenRemoveCommandTest.class.getSimpleName();
 
-    private final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(CryptoTokenDeleteCommandTest.class.getSimpleName());
+    private final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(
+            CryptoTokenRemoveCommandTest.class.getSimpleName());
 
-    private CryptoTokenActivateCommand command = new CryptoTokenActivateCommand();
+    private CryptoTokenRemoveCommand command = new CryptoTokenRemoveCommand();
     private CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CryptoTokenManagementSessionRemote.class);
 
@@ -57,14 +57,10 @@ public class CryptoTokenActivateCommandTest {
         final Properties cryptoTokenProperties = new Properties();
         cryptoTokenProperties.setProperty(SoftCryptoToken.NODEFAULTPWD, "true");
         cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, TOKEN_NAME, SoftCryptoToken.class.getName(),
-                cryptoTokenProperties, null, TOKEN_PASSWORD.toCharArray());
-        cryptoTokenManagementSession.deactivate(authenticationToken, cryptoTokenId);
-        CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(authenticationToken, cryptoTokenId);
-        if(cryptoTokenInfo.isAutoActivation()) {
-            throw new RuntimeException("Auto activation is active on crypto token.");
-        }
-        if (cryptoTokenInfo.isActive()) {
-            throw new RuntimeException("Crypto token is already active, test cannot continue");
+                cryptoTokenProperties, null, "foo123".toCharArray());
+        cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, KEYPAIR_ALIAS, "1024");
+        if (!cryptoTokenManagementSession.isAliasUsedInCryptoToken(cryptoTokenId, KEYPAIR_ALIAS)) {
+            throw new RuntimeException("No alias was created, cannot continue.");
         }
     }
 
@@ -77,9 +73,8 @@ public class CryptoTokenActivateCommandTest {
 
     @Test
     public void testCommand() throws ErrorAdminCommandException, AuthorizationDeniedException {
-        String[] args = new String[] { "activate", TOKEN_NAME, TOKEN_PASSWORD };
+        String[] args = new String[] { "removekey", TOKEN_NAME, KEYPAIR_ALIAS};
         command.execute(args);
-        CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(authenticationToken, cryptoTokenId);
-        assertTrue("Crypto token was not activated.", cryptoTokenInfo.isActive());
+        assertFalse("Alias was not removed", cryptoTokenManagementSession.isAliasUsedInCryptoToken(cryptoTokenId, KEYPAIR_ALIAS));
     }
 }
