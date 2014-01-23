@@ -8,8 +8,8 @@
         </or>
     </condition>
 
-    
-    <!-- ============================================================================ -->
+ 
+	<!-- ============================================================================ -->
     <!-- Miscelaneous targets for detecting JBoss versions, setting-up file-paths etc -->
     <!-- ============================================================================ -->
 
@@ -263,51 +263,99 @@
 		<equals arg1="${appserver.subtype}" arg2="jbosseap6"/>		
 	</condition>
 
+	<!-- For Linux the syntax is diffrent than in Windows 			   -->
+	<!-- Here is where we distinguish the commands to run in jboss-cli -->
+	<!-- according to the operating system 							   -->
+
+    <!-- ============ -->
+    <!-- Detecting OS -->
+    <!-- ============ -->
+	<condition property="isWindows">
+		<os family="windows" />
+	</condition>
+	<condition property="isLinux">
+		<os family="unix" />
+	</condition>
+
 	<target name="jee:deployDSJBoss7" if="jboss7" depends="set-paths,jee:assert-runJBoss7">
-            <!-- We have to undeploy ejbca.ear before removing the datasource, or removal will fail. @TODO: Figure out how to detect if something is deployed or not. -->
-            <jboss:admsilent arg="undeploy ejbca.ear --keep-content" failonerror="false" />
-            <jboss:admsilent arg="data-source remove --name=ejbcads" failonerror="false" />
+        <!-- We have to undeploy ejbca.ear before removing the datasource, or removal will fail. @TODO: Figure out how to detect if something is deployed or not. -->
+        <jboss:admsilent arg="undeploy ejbca.ear --keep-content" failonerror="false" />
+        <jboss:admsilent arg="data-source remove --name=ejbcads" failonerror="false" />
+
+		<antcall target="deployDSWin"/>
+		<antcall target="deployDSLinux"/>
+		
+        <!-- If we don't reload now, JBoss AS 7 will get stuck. @TODO: Try this out with JBoss EAP 6, and see if we can report a bug. -->
+        <jboss:admsilent arg=":reload" />
+        <!-- We must wait a few seconds, or some race conditions could happen. The problem is that :reload is a non-blocking operation, and JBoss CLI is not very stable... -->
+        <sleep seconds="5"/>
+        <jboss:admsilent arg="deploy --name=ejbca.ear" failonerror="false" />
+	</target>
+	<target name="deployDSWin" if="isWindows">
+            <jboss:adm arg='data-source add --name=ejbcads --driver-name=\&quot;${database.driver}\&quot; --connection-url=\&quot;${database.url}\&quot; --jndi-name=\&quot;java:/${datasource.jndi-name}\&quot; ${jbosseap6enabledflag} --use-ccm=true --user-name=\&quot;${database.username}\&quot; --password=\&quot;${database.password}\&quot; --validate-on-match=true --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=5 --max-pool-size=150 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --check-valid-connection-sql=\&quot;${database.valid.connection.sql}\&quot;' />
+    </target>
+	<target name="deployDSLinux" if="isLinux"> 
             <jboss:adm arg='data-source add --name=ejbcads --driver-name="${database.driver}" --connection-url="${database.url}" --jndi-name="java:/${datasource.jndi-name}" ${jbosseap6enabledflag} --use-ccm=true --user-name="${database.username}" --password="${database.password}" --validate-on-match=true --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=5 --max-pool-size=150 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --check-valid-connection-sql="${database.valid.connection.sql}"' />
-            <!-- If we don't reload now, JBoss AS 7 will get stuck. @TODO: Try this out with JBoss EAP 6, and see if we can report a bug. -->
-            <jboss:admsilent arg=":reload" />
-            <!-- We must wait a few seconds, or some race conditions could happen. The problem is that :reload is a non-blocking operation, and JBoss CLI is not very stable... -->
-            <sleep seconds="5"/>
-            <jboss:admsilent arg="deploy --name=ejbca.ear" failonerror="false" />
-        </target>
+	</target>
 
 	<target name="jee:deployOCSPDSJBoss7" if="jboss7" depends="set-paths,jee:assert-runJBoss7" >
             <!-- We have to undeploy ejbca.ear before removing the datasource, or removal will fail. @TODO: Figure out how to detect if something is deployed or not. -->
             <jboss:admsilent arg="undeploy ejbca.ear --keep-content" failonerror="false" />
             <jboss:admsilent arg="data-source remove --name=ocspds" failonerror="false" />
-            <jboss:adm arg='data-source add --name=ocspds --driver-name="${ocsp-database.driver}" --connection-url="${ocsp-database.url}" --jndi-name="java:/${ocsp-datasource.jndi-name}" ${jbosseap6enabledflag} --use-ccm=true --user-name="${ocsp-database.username}" --password="${ocsp-database.password}" --validate-on-match=true --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=5 --max-pool-size=20 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --jta=false --check-valid-connection-sql="${database.valid.connection.sql}"' />
+
+		    <antcall target="deployOCSPDSWin"/>
+		    <antcall target="deployOCSPDSLinux"/>
+
             <!-- If we don't reload now, JBoss AS 7 will get stuck. @TODO: Try this out with JBoss EAP 6, and see if we can report a bug. -->
             <jboss:admsilent arg=":reload" />
             <!-- We must wait a few seconds, or some race conditions could happen. The problem is that :reload is a non-blocking operation, and JBoss CLI is not very stable... -->
             <sleep seconds="5"/>
             <jboss:admsilent arg="deploy --name=ejbca.ear" failonerror="false" />
-        </target>
+    </target>
+	<target name="deployOCSPDSWin" if="isWindows">
+            <jboss:adm arg='data-source add --name=ocspds --driver-name=\&quot;${database.driver}\&quot; --connection-url=\&quot;${ocsp-database.url}\&quot; --jndi-name=\&quot;java:/${ocsp-datasource.jndi-name}\&quot; ${jbosseap6enabledflag} --use-ccm=true --user-name=\&quot;${ocsp-database.username}\&quot; --password=\&quot;${ocsp-database.password}\&quot; --validate-on-match=true --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=5 --max-pool-size=150 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED  --jta=false --check-valid-connection-sql=\&quot;${database.valid.connection.sql}\&quot;' />
+    </target>
+	<target name="deployOCSPDSLinux" if="isLinux"> 
+  		    <jboss:adm arg='data-source add --name=ocspds --driver-name="${ocsp-database.driver}" --connection-url="${ocsp-database.url}" --jndi-name="java:/${ocsp-datasource.jndi-name}" ${jbosseap6enabledflag} --use-ccm=true --user-name="${ocsp-database.username}" --password="${ocsp-database.password}" --validate-on-match=true --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=5 --max-pool-size=20 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --jta=false --check-valid-connection-sql="${database.valid.connection.sql}"' />
+	</target>
 
 	<target name="jee:deployExtRAGUIDSJBoss7" if="jboss7" depends="set-paths,jee:assert-runJBoss7" >
             <!-- We have to undeploy the war file before removing the datasource, or removal will fail. @TODO: Figure out how to detect if something is deployed or not. -->
             <jboss:admsilent arg="undeploy externalra-gui.war --keep-content" failonerror="false" />
             <jboss:admsilent arg="data-source remove --name=extraguids" failonerror="false" />
-		
-            <jboss:adm arg='data-source add --name=extraguids --driver-name="${externalra-database.driver}" --connection-url="${externalra-gui.datasource.jdbc-url}" --jndi-name="java:/ExternalRAGUIMessageDS" ${jbosseap6enabledflag} --use-ccm=true --user-name="${externalra-gui.datasource.username}" --password="${externalra-gui.datasource.password}" --validate-on-match=true --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=10 --max-pool-size=10 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --jta=false --check-valid-connection-sql="${database.valid.connection.sql}"' />
+
+	        <antcall target="deployExtRAGUIDSWin"/>
+	        <antcall target="deployExtRAGUIDSLinux"/>
+
             <!-- If we don't reload now, JBoss AS 7 will get stuck. @TODO: Try this out with JBoss EAP 6, and see if we can report a bug. -->
             <jboss:admsilent arg=":reload" />
             <jboss:admsilent arg="deploy --name=externalra-gui.war" failonerror="false" />
     </target>
+	<target name="deployExtRAGUIDSWin" if="isWindows">
+            <jboss:adm arg='data-source add --name=extraguids --driver-name=\&quot;${externalra-database.driver}\&quot; --connection-url=\&quot;${externalra-gui.datasource.jdbc-url}\&quot; --jndi-name=\&quot;java:/ExternalRAGUIMessageDS\&quot; ${jbosseap6enabledflag} --use-ccm=true --user-name=\&quot;${externalra-gui.datasource.username}\&quot; --password=\&quot;${externalra-gui.datasource.password}\&quot; --validate-on-match=true --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=5 --max-pool-size=150 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --jta=false --check-valid-connection-sql=\&quot;${database.valid.connection.sql}\&quot;' />
+    </target>
+	<target name="deployExtRAGUIDSLinux" if="isLinux"> 
+            <jboss:adm arg='data-source add --name=extraguids --driver-name="${externalra-database.driver}" --connection-url="${externalra-gui.datasource.jdbc-url}" --jndi-name="java:/ExternalRAGUIMessageDS" ${jbosseap6enabledflag} --use-ccm=true --user-name="${externalra-gui.datasource.username}" --password="${externalra-gui.datasource.password}" --validate-on-match=true --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=10 --max-pool-size=10 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --jta=false --check-valid-connection-sql="${database.valid.connection.sql}"' />
+	</target>
 
 	<target name="jee:deployExtRASCEPDSJBoss7" if="jboss7" depends="set-paths,jee:assert-runJBoss7" >
             <!-- We have to undeploy the war file before removing the datasource, or removal will fail. @TODO: Figure out how to detect if something is deployed or not. -->
             <jboss:admsilent arg="undeploy scepraserver.war --keep-content" failonerror="false" />
             <jboss:admsilent arg="data-source remove --name=extrascepds" failonerror="false" />
 		
-            <jboss:adm arg='data-source add --name=extrascepds --driver-name="${externalra-database.driver}" --connection-url="${scep.ra.datasource.jdbc-url}" --jndi-name="java:/ScepRAMessageDS" ${jbosseap6enabledflag} --use-ccm=true --user-name="${scep.ra.datasource.username}" --password="${scep.ra.datasource.password}" --validate-on-match=true --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=10 --max-pool-size=10 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --jta=false --check-valid-connection-sql="${database.valid.connection.sql}"' />
+            <antcall target="deployExtRASCEPDSWin"/>
+            <antcall target="deployExtRASCEPDSLinux"/>
+
             <!-- If we don't reload now, JBoss AS 7 will get stuck. @TODO: Try this out with JBoss EAP 6, and see if we can report a bug. -->
             <jboss:admsilent arg=":reload" />
             <jboss:admsilent arg="deploy --name=scepraserver.war" failonerror="false" />
     </target>
+	<target name="deployExtRASCEPDSWin" if="isWindows">
+            <jboss:adm arg='data-source add --name=extrascepds --driver-name=\&quot;${externalra-database.driver}\&quot; --connection-url=\&quot;${scep.ra.datasource.jdbc-url}\&quot; --jndi-name=\&quot;java:/ScepRAMessageDS\&quot; ${jbosseap6enabledflag} --use-ccm=true --user-name=\&quot;${scep.ra.datasource.username}\&quot; --password=\&quot;${scep.ra.datasource.password}\&quot; --validate-on-match=true --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=5 --max-pool-size=150 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --jta=false --check-valid-connection-sql=\&quot;${database.valid.connection.sql}\&quot;' />
+    </target>
+	<target name="deployExtRASCEPDSLinux" if="isLinux"> 
+		    <jboss:adm arg='data-source add --name=extrascepds --driver-name="${externalra-database.driver}" --connection-url="${scep.ra.datasource.jdbc-url}" --jndi-name="java:/ScepRAMessageDS" ${jbosseap6enabledflag} --use-ccm=true --user-name="${scep.ra.datasource.username}" --password="${scep.ra.datasource.password}" --validate-on-match=true --background-validation=false --prepared-statements-cache-size=50 --share-prepared-statements=true --min-pool-size=10 --max-pool-size=10 --pool-prefill=true --transaction-isolation=TRANSACTION_READ_COMMITTED --jta=false --check-valid-connection-sql="${database.valid.connection.sql}"' />
+	</target>
 
 	<target name="notifyDeploymentScannerJBoss7" depends="set-paths" if="jboss7,jee:assert-runJBoss7">
 	    <touch file="${jboss.farm.dir}/ejbca.ear.dodeploy" />
@@ -505,7 +553,8 @@
           <sequential>
             <echo message="@{arg}"/>
             <exec executable="${appserver.home}/bin/${jbosscliexe}" failonerror="@{failonerror}" spawn="@{nooutput}">
-              <arg line="-c --command='@{arg}'" />
+                    <arg value="-c" />
+                    <arg value="--command=@{arg}" />
             </exec>
           </sequential>
         </macrodef>
@@ -516,7 +565,8 @@
             <attribute name="resultproperty" default="admsilent.throwaway.result" description="Name of the property where the exit code should be stored at." />
             <sequential>
                 <exec executable="${appserver.home}/bin/${jbosscliexe}" failonerror="@{failonerror}" spawn="@{nooutput}" outputproperty="admsilent.throwaway.output" resultproperty="@{resultproperty}">
-                    <arg line="-c --command='@{arg}'" />
+                    <arg value="-c" />
+                    <arg value="--command=@{arg}" />
                 </exec>
             </sequential>
         </macrodef>
@@ -528,7 +578,8 @@
             <sequential>
                 <echo message="@{arg}"/>
                 <exec executable="${appserver.home}/bin/${jbosscliexe}" outputproperty="@{outputproperty}" failonerror="@{failonerror}">
-                    <arg line="-c --command='@{arg}'" />
+                    <arg value="-c" />
+                    <arg value="--command=@{arg}" />
                 </exec>
             </sequential>
         </macrodef>
