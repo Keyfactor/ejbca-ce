@@ -103,12 +103,15 @@ public class InternalKeyBindingDataSessionBean implements InternalKeyBindingData
     @Override
     public InternalKeyBinding getInternalKeyBindingForEdit(final int id) {
         final InternalKeyBinding internalKeyBinding = getInternalKeyBinding(id);
-        // 6. Create and return a clone (so clients don't mess with the cached object)
-        final InternalKeyBinding internalKeyBindingClone = InternalKeyBindingFactory.INSTANCE.create(
-                internalKeyBinding.getImplementationAlias(), id, internalKeyBinding.getName(), internalKeyBinding.getStatus(),
-                internalKeyBinding.getCertificateId(), internalKeyBinding.getCryptoTokenId(), internalKeyBinding.getKeyPairAlias(),
-                internalKeyBinding.getDataMapToPersist());
-        return internalKeyBindingClone;
+        if (internalKeyBinding == null) {
+            return null;
+        } else {
+            // 6. Create and return a clone (so clients don't mess with the cached object)
+            final InternalKeyBinding internalKeyBindingClone = InternalKeyBindingFactory.INSTANCE.create(internalKeyBinding.getImplementationAlias(),
+                    id, internalKeyBinding.getName(), internalKeyBinding.getStatus(), internalKeyBinding.getCertificateId(),
+                    internalKeyBinding.getCryptoTokenId(), internalKeyBinding.getKeyPairAlias(), internalKeyBinding.getDataMapToPersist());
+            return internalKeyBindingClone;
+        }
     }
 
     @Override
