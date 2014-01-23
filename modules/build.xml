@@ -287,7 +287,8 @@
 		<ant antfile="${mod.ejbca-ws.path}/build.xml" target="build-jar" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
-	<target name="ejbca-ws-cli" depends="ejbca-ws-common" if="ejbcaws.enabled.true" description="Build EJBCA Web Services CLI">
+	<!-- EJBCA WS Client must be built even if EJBCA WS is disabled, because some things, like OCSP renewal requires WS client -->
+	<target name="ejbca-ws-cli" depends="ejbca-ws-common" description="Build EJBCA Web Services CLI">
 		<ant antfile="${mod.ejbca-ws-cli.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
