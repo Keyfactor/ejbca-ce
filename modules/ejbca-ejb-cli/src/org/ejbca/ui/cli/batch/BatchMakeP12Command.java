@@ -529,18 +529,21 @@ public class BatchMakeP12Command extends BaseCommand {
                             getLogger().debug(InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorsetstatus", "FAILED"), e);
                             failedusers += (":" + data.getUsername());
                             failcount++;
+                            final String newStatusString;
                             if (status == EndEntityConstants.STATUS_KEYRECOVERY) {
                                 ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAuthenticationToken(cliUserName, cliPassword), data.getUsername(), EndEntityConstants.STATUS_KEYRECOVERY);
+                                newStatusString = "KEYRECOVERY";
                             } else {
                                 ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAuthenticationToken(cliUserName, cliPassword), data.getUsername(), EndEntityConstants.STATUS_FAILED);
+                                newStatusString = "FAILED";
                             }
                             if (e instanceof IllegalKeyException) {
                                 final String errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorbatchfaileduser", data.getUsername());
                                 getLogger().error(errMsg+" "+e.getMessage());
-                                getLogger().error(InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorsetstatus", "FAILED"));
+                                getLogger().error(InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorsetstatus", newStatusString));
                                 getLogger().error(InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorcheckconfig"));                        
                             } else {
-                                getLogger().error(InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorsetstatus", "FAILED"), e);
+                                getLogger().error(InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorsetstatus", newStatusString), e);
                                 final String errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorbatchfaileduser", data.getUsername());
                                 throw new Exception(errMsg);
                             }
@@ -592,18 +595,21 @@ public class BatchMakeP12Command extends BaseCommand {
                     doCreate(cliUserName, cliPassword, data, status);
                 } catch (Exception e) {
                     // If things went wrong set status to FAILED
+                    final String newStatusString;
                     if (status == EndEntityConstants.STATUS_KEYRECOVERY) {
                         ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAuthenticationToken(cliUserName, cliPassword), data.getUsername(), EndEntityConstants.STATUS_KEYRECOVERY);
+                        newStatusString = "KEYRECOVERY";
                     } else {
                         ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAuthenticationToken(cliUserName, cliPassword), data.getUsername(), EndEntityConstants.STATUS_FAILED);
+                        newStatusString = "FAILED";
                     }
                     if (e instanceof IllegalKeyException) {
                         final String errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorbatchfaileduser", username);
                         getLogger().error(errMsg+" "+e.getMessage());
-                        getLogger().error(InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorsetstatus", "FAILED"));
+                        getLogger().error(InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorsetstatus", newStatusString));
                         getLogger().error(InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorcheckconfig"));                        
                     } else {
-                        getLogger().error(InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorsetstatus", "FAILED"), e);
+                        getLogger().error(InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorsetstatus", newStatusString), e);
                         final String errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorbatchfaileduser", username);
                         throw new Exception(errMsg);
                     }
