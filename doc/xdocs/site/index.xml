@@ -57,9 +57,9 @@
 
   </section>
 
-<section name="EJBCA Enterprise PKI CA">
+<section name="EJBCA PKI CA">
 <p>
-EJBCA&#174; is an enterprise class PKI Certificate Authority software, built using Java (JEE) technology. 
+EJBCA<sup>&#174;</sup> is an enterprise class PKI Certificate Authority software, built using Java (JEE) technology. 
 It is a robust, high performance, platform independent, flexible, and component based CA to be used 
 stand-alone or integrated in other JEE applications.
 </p>

@@ -80,7 +80,7 @@
 	</p>
 	<p>
 	Access to a site can also be
-	controlled by using "basic" authentication &#8212; user ids and passwords.
+	controlled by using "basic" authentication (user ids and passwords).
 	There are several problems with this
 	approach. The biggest problem is that this solution does not scale
 	well. If a new user is added and we used basic authentication, we would
