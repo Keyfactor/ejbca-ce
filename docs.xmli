@@ -49,7 +49,7 @@
     <!-- =================================================================== -->
     <target name="doc.war" if="doc.war.enabled">
     	<delete dir="${docs.dest}" />
-    	<antcall target="docnopiwik" />
+    	<antcall target="doc" />
     	
 		<war destfile="${dist.dir}/doc.war" webxml="${ejbca.home}/src/publicweb/empty_webxml.xml">
             <fileset dir="${docs.dest}" />
@@ -106,7 +106,7 @@
         	<fileset dir="${site.src}" includes="sensornet/**/*"/>
         </copy>
     </target>
-    <target name="docnopiwik" if="AnakiaTask.present" depends="prepare-error, doc-build-tool, doc-external-deps, site" description="Build EJBCA site and docs without including Piwik java script">
+    <target name="doc" if="AnakiaTask.present" depends="prepare-error, doc-build-tool, doc-external-deps, site" description="Build EJBCA inline ear file docs.">
         <taskdef name="anakia" classname="org.apache.velocity.anakia.AnakiaTask">
             <classpath refid="anakia.classpath"/>
         </taskdef>
@@ -165,7 +165,7 @@
         <echo message="Local documentation is now available in file://${docs.dest}/index.html"/>
     </target>
     
-    <target name="doc" depends="docnopiwik" description="Build EJBCA site and docs">
+    <target name="docpiwik" depends="doc" description="Build EJBCA site docs including piwik webstats">
     <!-- Replaced the token for Piwik tracking script in the built documentation. 
          This is excluded in the doc included in ejbca.ear, but included for the doc built for the website.
          Must use ISO-8859-1 encoding, otherwise items like &#174; will be replaced by UTF-8 mumbo jumbo -->
