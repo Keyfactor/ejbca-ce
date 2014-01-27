@@ -114,6 +114,8 @@ We also assume installation is made in a user account with username "user". In y
 <ul>
 <li>ant install (choose all default values)</li>
 </ul>
+<b>Note:</b> If ant install fails with errors this is typically due to deployment or start of JBoss that did not complete successfully. You will need to look in the server logs to find out
+why it will not start correctly in your environment, See the <a href="adminguide.html#Troubleshooting">Troubleshooting</a> section for more information.
 </li>
 <li>Go back to terminal "jboss" and restart JBoss.<br/>
 <ul>
