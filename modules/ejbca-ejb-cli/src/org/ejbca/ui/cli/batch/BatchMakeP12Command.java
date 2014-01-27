@@ -30,6 +30,7 @@ import java.util.ArrayList;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -582,15 +583,20 @@ public class BatchMakeP12Command extends BaseCommand {
                     doCreate(cliUserName, cliPassword, data, status);
                 } catch (Exception e) {
                     // If things went wrong set status to FAILED
-                    String errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorsetstatus", "FAILED");
-                    getLogger().error(errMsg, e);
                     if (status == EndEntityConstants.STATUS_KEYRECOVERY) {
                         ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAuthenticationToken(cliUserName, cliPassword), data.getUsername(), EndEntityConstants.STATUS_KEYRECOVERY);
                     } else {
                         ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAuthenticationToken(cliUserName, cliPassword), data.getUsername(), EndEntityConstants.STATUS_FAILED);
                     }
-                    errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorbatchfaileduser", username);
-                    throw new Exception(errMsg);
+                    if (e instanceof IllegalKeyException) {
+                        final String errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorbatchfaileduser", username);
+                        getLogger().error(errMsg+" "+e.getMessage());
+                        getLogger().error(InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorcheckconfig"));                        
+                    } else {
+                        getLogger().error(InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorsetstatus", "FAILED"), e);
+                        final String errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorbatchfaileduser", username);
+                        throw new Exception(errMsg);
+                    }
                 }
             } else {
                 String errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorbatchfaileduser", username);
