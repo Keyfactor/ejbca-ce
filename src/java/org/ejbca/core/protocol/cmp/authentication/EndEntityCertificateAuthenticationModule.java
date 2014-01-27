@@ -246,7 +246,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         // Perform the different checks depending on the configuration and previous authentication
         //----------------------------------------------------------------------------------------
 
-        // Unaccepted combinations. Throw an exception
+        // Not allowed combinations.
         if(ramode && vendormode) {
             this.errorMessage = "Vendor mode and RA mode cannot be combined";
             return false;
