@@ -167,8 +167,9 @@
     
     <target name="doc" depends="docnopiwik" description="Build EJBCA site and docs">
     <!-- Replaced the token for Piwik tracking script in the built documentation. 
-         This is excluded in the doc included in ejbca.ear, but included for the doc built for the website -->
-      <replace dir="${docs.dest}" token="!--Piwik--">
+         This is excluded in the doc included in ejbca.ear, but included for the doc built for the website.
+         Must use ISO-8859-1 encoding, otherwise items like &#174; will be replaced by UTF-8 mumbo jumbo -->
+      <replace dir="${docs.dest}" token="!--Piwik--" encoding="ISO-8859-1">
         <replacevalue><![CDATA[script type="text/javascript">
 var pkBaseURL = (("https:" == document.location.protocol) ? "https://stat.primekey.se/piwik/" : "http://stat.primekey.se/piwik/");
 document.write(unescape("%3Cscript src='" + pkBaseURL + "piwik.js' type='text/javascript'%3E%3C/script%3E"));
