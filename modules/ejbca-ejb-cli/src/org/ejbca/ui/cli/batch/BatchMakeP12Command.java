@@ -64,7 +64,7 @@ import org.ejbca.util.keystore.P12toPEM;
  */
 public class BatchMakeP12Command extends BaseCommand {
 
-    BatchToolProperties props = new BatchToolProperties();
+    BatchToolProperties props = new BatchToolProperties(getLogger());
     
     /**
      * Where created P12-files are stored, default p12
@@ -407,7 +407,7 @@ public class BatchMakeP12Command extends BaseCommand {
                 String iMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.retrieveingkeys", data.getUsername());
                 getLogger().info(iMsg);
             } else {
-                String iMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.generatingkeys", data.getUsername());
+                String iMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.generatingkeys", props.getKeyAlg(), props.getKeySpec(), data.getUsername());
                 getLogger().info(iMsg);
             }
             processUser(cliUserName, cliPassword, data, createJKS, createPEM, (status == EndEntityConstants.STATUS_KEYRECOVERY));
