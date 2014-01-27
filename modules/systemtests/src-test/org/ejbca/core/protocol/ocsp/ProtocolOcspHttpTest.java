@@ -60,7 +60,9 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
+import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.BERTags;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DEROctetString;
@@ -519,7 +521,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         assertTrue(con.getContentType().startsWith("application/ocsp-response"));
         OCSPResp response = new OCSPResp(IOUtils.toByteArray(con.getInputStream()));
         assertNotNull("Response should not be null.", response);
-        assertTrue("Should not be concidered malformed.", OCSPRespBuilder.MALFORMED_REQUEST != response.getStatus());
+        assertTrue("Should not be considered malformed.", OCSPRespBuilder.MALFORMED_REQUEST != response.getStatus());
         final String dubbleSlashNonEncReq = "http://127.0.0.1:"
                 + httpPort
                 + "/ejbca/publicweb/status/ocsp/MGwwajBFMEMwQTAJBgUrDgMCGgUABBRBRfilzPB%2BAevx0i1AoeKTkrHgLgQUFJw5gwk9BaEgsX3pzsRF9iso29ICCAvB//HJyKqpoiEwHzAdBgkrBgEFBQcwAQIEEOTzT2gv3JpVva22Vj8cuKo%3D";
@@ -1137,6 +1139,32 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         assertNotNull("No Cache-Control in reply.", con.getHeaderField("Cache-Control"));
         assertEquals("no-cache, must-revalidate", con.getHeaderField("Cache-Control"));
         
+        // Create a GET request using Nonce extension, in this case we should have no cache-control header
+        gen = new OCSPReqBuilder();
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, new BigInteger("1") ));
+        Extension[] extensions = new Extension[1];
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+        gen.setRequestExtensions(new Extensions(extensions));
+        req = gen.build();        
+        b64 = new String(Base64.encode(req.getEncoded(), false));
+        url = new URL(sBaseURL + '/' + b64 + urlEnding);
+        con = (HttpURLConnection)url.openConnection();
+        if (con.getResponseCode() != 200) {
+            log.info("URL when request gave unexpected result: " + url.toString() + " Message was: " + con.getResponseMessage());
+        }
+        assertEquals("Response code did not match. ", 200, con.getResponseCode());
+        assertNotNull(con.getContentType());
+        assertTrue(con.getContentType().startsWith("application/ocsp-response"));
+        OCSPResp response = new OCSPResp(IOUtils.toByteArray(con.getInputStream()));
+        BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
+        byte[] noncerep = brep.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce).getExtnValue().getEncoded();
+        // Make sure we have a nonce in the response, we should have since we sent one in the request
+        assertNotNull("Response should have nonce since we sent a nonce in the request", noncerep);
+        ASN1InputStream ain = new ASN1InputStream(noncerep);
+        ASN1OctetString oct = ASN1OctetString.getInstance(ain.readObject());
+        ain.close();
+        assertEquals("Response Nonce was not the same as the request Nonce, it must be", "123456789", new String(oct.getOctets()));
+        assertNull("Cache-Control in reply although we used Nonce in the request. Responses with Nonce should not have a Cache-control header.", con.getHeaderField("Cache-Control"));
     }
     
     
