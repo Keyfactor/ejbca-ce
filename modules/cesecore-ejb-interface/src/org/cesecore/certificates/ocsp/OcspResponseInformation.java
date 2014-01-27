@@ -56,19 +56,27 @@ public class OcspResponseInformation implements Serializable {
          *  -mikek
          */
         if (ocspResponse.getResponseObject() == null) {
-            log.debug("Will not add cache headers for response to bad request.");
+            if (log.isDebugEnabled()) {
+                log.debug("Will not add cache headers for response to bad request.");
+            }
             addCacheHeaders = false;
         } else {
-            SingleResp[] singleRespones = ((BasicOCSPResp) ocspResponse.getResponseObject()).getResponses();
+            SingleResp[] singleRespones = ((BasicOCSPResp)ocspResponse.getResponseObject()).getResponses();
             if (singleRespones.length != 1) {
-                log.debug("Will not add RFC 5019 cache headers: reponse contains multiple embedded responses.");
+                if (log.isDebugEnabled()) {
+                    log.debug("Will not add RFC 5019 cache headers: reponse contains multiple embedded responses.");
+                }
                 addCacheHeaders = false;
             } else if (singleRespones[0].getNextUpdate() == null) {
-                log.debug("Will not add RFC 5019 cache headers: nextUpdate isn't set.");
+                if (log.isDebugEnabled()) {
+                    log.debug("Will not add RFC 5019 cache headers: nextUpdate isn't set.");
+                }
                 addCacheHeaders = false;
-            } else if (singleRespones[0].hasExtensions()
-                    && singleRespones[0].getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce) == null) {
-                log.debug("Will not add RFC 5019 cache headers: response contains a nonce.");
+            } else if ( ((BasicOCSPResp)ocspResponse.getResponseObject()).hasExtensions() 
+                    && (((BasicOCSPResp)ocspResponse.getResponseObject()).getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce) != null) ) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Will not add RFC 5019 cache headers: response contains a nonce.");
+                }
                 addCacheHeaders = false;
             } else {
                 nextUpdate = singleRespones[0].getNextUpdate().getTime();
@@ -76,7 +84,7 @@ public class OcspResponseInformation implements Serializable {
                 try {
                     responseHeader = new String(Hex.encode(MessageDigest.getInstance("SHA-1", "BC").digest(ocspResponse.getEncoded())));
                 } catch (NoSuchProviderException e) {
-                    throw new OcspFailureException("Bouncycastle was nor available as a provider", e);
+                    throw new OcspFailureException("Bouncycastle was not available as a provider", e);
                 } catch (NoSuchAlgorithmException e) {
                     throw new OcspFailureException("SHA-1 was not an available algorithm for MessageDigester", e);
                 }
