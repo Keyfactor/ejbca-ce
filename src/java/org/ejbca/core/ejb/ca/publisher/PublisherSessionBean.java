@@ -517,9 +517,10 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public int getPublisherId(String name) {
-        getPublisher(name);
-        final Integer val = PublisherCache.INSTANCE.getNameToIdMap().get(name);
-        return (val != null) ? val : 0;
+        // Get publisher to ensure it is in the cache, or read
+        final BasePublisher pub = getPublisher(name);
+        final int ret = (pub != null) ? pub.getPublisherId() : 0;
+        return ret;
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -528,13 +529,13 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         if (log.isTraceEnabled()) {
             log.trace(">getPublisherName(id: " + id + ")");
         }
-        // Get publisher to ensure it is in the cache
-        getPublisher(id);
-        final String name = PublisherCache.INSTANCE.getName(id);
+        // Get publisher to ensure it is in the cache, or read
+        final BasePublisher pub = getPublisher(id);
+        final String ret = (pub != null) ? pub.getName() : null;
         if (log.isTraceEnabled()) {
-            log.trace("<getPublisherName(): "+name);
+            log.trace("<getPublisherName(): "+ret);
         }
-        return name;
+        return ret;
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
