@@ -8,7 +8,7 @@
 <body>
   <section name="EJBCA Documentation">
   <p>
-  Welcome to EJBCA&#174; documentation, this site contains documentation for EJBCA.
+  Welcome to EJBCA<sup>&#174;</sup> documentation, this site contains documentation for EJBCA.
   </p>
   <ul>
 <li><a href="installation.html">Certificate Authority</a>.</li>
