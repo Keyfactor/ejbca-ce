@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.model.InternalEjbcaResources;
 
 /**
  * Class used to manage the batch tool property file.
@@ -34,7 +35,10 @@ public class BatchToolProperties {
 	Properties batchToolProperties = new Properties();
 	private static final Logger log = Logger.getLogger(BatchToolProperties.class);
 
-	BatchToolProperties(){
+	private Logger logger;
+	
+	BatchToolProperties(Logger logger){
+	    this.logger = logger;
 		load();
 	}
 
@@ -60,6 +64,7 @@ public class BatchToolProperties {
 		if (file.exists()) {
 			FileInputStream fis = new FileInputStream(file);
 			batchToolProperties.load(fis);
+			logger.info(InternalEjbcaResources.getInstance().getLocalizedMessage("batch.loadingconfig", filename));
 			return true;
 		} else {
 			return false;
@@ -84,6 +89,7 @@ public class BatchToolProperties {
 			    	log.info("The batchtool.properties file exists in bin/. It should be moved to conf/");
 			    } else {
 			    	log.debug("Could not find any batchtool property file, default values will be used.");
+		            logger.info(InternalEjbcaResources.getInstance().getLocalizedMessage("batch.loadingconfig", "defaults"));
 			    }
 			}
 		} catch (IOException e) {
