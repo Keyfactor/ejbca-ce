@@ -231,6 +231,10 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     public boolean existsCa(final int caId) {
         return entityManager.find(CAData.class, caId) != null;
     }
+    @Override
+    public boolean existsCa(final String name) {
+        return CAData.findByName(entityManager, name) != null;
+    }
 
 	/** Ensure that the caller is authorized to the CA we are about to edit and that the CA name and subjectDN matches. */
 	private void assertAuthorizationAndTarget(AuthenticationToken admin, final String name, final String subjectDN, final int cryptoTokenId, final CA ca)

@@ -163,4 +163,12 @@ public interface CaSession {
      * @return true if a CA with the given ID exists
      */
     boolean existsCa(int caId);
+    /**
+     * Check if a CA with given name exists
+     * 
+     * @param name the CA name
+     * @return true if a CA with the given name exists
+     */
+    boolean existsCa(String name);
+
 }
