@@ -16,6 +16,7 @@
     <property name="docs.tools.dest"    location="tmp/docs-tools"/>
     <property name="docs.src"     location="doc/xdocs/docs"/>
     <property name="docs.dest"    location="tmp/htdocs/docs"/>
+    <property name="docs.nojs.dest"    location="tmp/htdocs/docsnojs"/>
     <property name="docs.dest.ws" location="tmp/htdocs/docs/ws"/>
     <property name="site.src"     location="doc/xdocs/site"/>
     <property name="site.dest"    location="tmp/htdocs"/>
@@ -47,7 +48,9 @@
     <!-- Build doc part                                                                                                                             -->
     <!-- =================================================================== -->
     <target name="doc.war" if="doc.war.enabled">
-    	<antcall target="doc" />
+    	<delete dir="${docs.dest}" />
+    	<antcall target="docnopiwik" />
+    	
 		<war destfile="${dist.dir}/doc.war" webxml="${ejbca.home}/src/publicweb/empty_webxml.xml">
             <fileset dir="${docs.dest}" />
         </war>
@@ -103,7 +106,7 @@
         	<fileset dir="${site.src}" includes="sensornet/**/*"/>
         </copy>
     </target>
-    <target name="doc" if="AnakiaTask.present" depends="prepare-error, doc-build-tool, doc-external-deps, site" description="Build EJBCA site and docs">
+    <target name="docnopiwik" if="AnakiaTask.present" depends="prepare-error, doc-build-tool, doc-external-deps, site" description="Build EJBCA site and docs without including Piwik java script">
         <taskdef name="anakia" classname="org.apache.velocity.anakia.AnakiaTask">
             <classpath refid="anakia.classpath"/>
         </taskdef>
@@ -156,10 +159,28 @@
 	        </fileset>
 	       <link offline="true" href="http://download.oracle.com/javase/6/docs/api/" packagelistLoc="${env.JAVA_HOME}/docs/api"/>
 	      <doctitle><![CDATA[<h1>EJBCA WS Support</h1>]]></doctitle>
-	      <bottom><![CDATA[<i>2011 PrimeKey Solutions AB.</i>]]></bottom>
+	      <bottom><![CDATA[<i>2014 PrimeKey Solutions AB.</i>]]></bottom>
 	    </javadoc>
         
         <echo message="Local documentation is now available in file://${docs.dest}/index.html"/>
+    </target>
+    
+    <target name="doc" depends="docnopiwik" description="Build EJBCA site and docs">
+    <!-- Replaced the token for Piwik tracking script in the built documentation. 
+         This is excluded in the doc included in ejbca.ear, but included for the doc built for the website -->
+      <replace dir="${docs.dest}" token="!--Piwik--">
+        <replacevalue><![CDATA[script type="text/javascript">
+var pkBaseURL = (("https:" == document.location.protocol) ? "https://stat.primekey.se/piwik/" : "http://stat.primekey.se/piwik/");
+document.write(unescape("%3Cscript src='" + pkBaseURL + "piwik.js' type='text/javascript'%3E%3C/script%3E"));
+</script><script type="text/javascript">
+try {
+var piwikTracker = Piwik.getTracker(pkBaseURL + "piwik.php", 5);
+piwikTracker.trackPageView();
+piwikTracker.enableLinkTracking();
+} catch( err ) {}
+</script><noscript><p><img src="//stat.primekey.se/piwik/piwik.php?idsite=5" style="border:0" alt="" /></p></noscript]]>
+        </replacevalue>
+      </replace>
     </target>
     
     <!-- This target depends on having the jsch classes installed in ant
