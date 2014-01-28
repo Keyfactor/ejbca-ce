@@ -15,6 +15,8 @@ package org.ejbca.core.ejb.ca.caadmin;
 
 import javax.ejb.Local;
 
+import org.cesecore.certificates.ca.CADoesntExistsException;
+
 @Local
 public interface CAAdminSessionLocal extends CAAdminSession {
 
@@ -25,6 +27,13 @@ public interface CAAdminSessionLocal extends CAAdminSession {
      * upgrading a CA, therefore the Required transaction setting.
      */
     public void initializeAndUpgradeCAs();
+
+    /** Method that loads a CA in order to possibly upgrade it, in a separate transaction. 
+     * This method is called from initializeAndUpgradeCAs in order to limit the transaction scope of CA upgrades.
+     * @param caid The CA to load/upgrade
+     * @throws CADoesntExistsException is the CA does not exist
+     */
+    void initializeAndUpgradeCA(Integer caid) throws CADoesntExistsException;
 
     /**
      * Help method that checks the CA data config and the certificate profile if

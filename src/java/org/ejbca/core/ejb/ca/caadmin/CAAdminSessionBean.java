@@ -200,6 +200,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     @Resource
     private SessionContext sessionContext;
+    // Myself needs to be looked up in postConstruct
+    private CAAdminSessionLocal caAdminSession;
 
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
@@ -207,6 +209,11 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @PostConstruct
     public void postConstruct() {
         CryptoProviderTools.installBCProviderIfNotAvailable();
+        // We lookup the reference to our-self in PostConstruct, since we cannot inject this.
+        // We can not inject ourself, JBoss will not start then therefore we use this to get a reference to this session bean
+        // to call isUniqueCertificateSerialNumberIndex we want to do it on the real bean in order to get
+        // the transaction setting (NOT_SUPPORTED) which suspends the active transaction and makes the check outside the transaction
+        caAdminSession = sessionContext.getBusinessObject(CAAdminSessionLocal.class);
     }
 
     @Override
@@ -214,12 +221,20 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         for (final CAData cadata : CAData.findAll(entityManager)) {
             final String caname = cadata.getName();
             try {
-                caSession.getCAInfoInternal(cadata.getCaId());
+                caAdminSession.initializeAndUpgradeCA(cadata.getCaId());
                 log.info("Initialized CA: " + caname + ", with expire time: " + new Date(cadata.getExpireTime()));
             } catch (CADoesntExistsException e) {
                 log.error("CADoesntExistsException trying to load CA with name: " + caname, e);
+            } catch (Throwable e) {
+                log.error("Exception trying to load CA, possible upgrade not performed: " + caname, e);
             }
         }
+    }
+
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public void initializeAndUpgradeCA(Integer caid) throws CADoesntExistsException {
+        caSession.getCAInfoInternal(caid);
     }
 
     @Override
