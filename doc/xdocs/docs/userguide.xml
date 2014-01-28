@@ -1609,6 +1609,114 @@ Note that the authorization privileges are cached and there will be a delay befo
 used.
 </p>
 </subsection>
+
+<subsection name="About Roles and Rules">
+<subsubsection name="Roles and Rules">
+<p>
+Permissions in EJBCA are never given out on an individual basis, but to a certain Role which contains a list of aspects and access rules.
+While Roles can be named at the user's discretion, Rules represent the resource they are named after. Access to this resource is also associated with an AccessRuleState, which may be one from the following table.
+<table style="border:1px solid gray;margin: 1em auto 1em auto;" cellpadding="8" rules="all">
+<caption style="font-style: italic;" align="bottom">Access Rule States
+</caption><tr>
+<th style="background:#cccccc;">Type
+</th><th style="background:#cccccc;">Description
+</th></tr>
+<tr>
+<td style="width:80px;" align="center"><code>RULE_NOTUSED</code>
+</td><td>This explicitly declares that a <i>Role</i> does not have a rule for this resource.
+</td></tr>
+<tr>
+<td style="width:80px;" align="center"><code>RULE_ACCEPT</code>
+</td><td>Access is granted for this resource. If set to be recursive, <code>RULE_ACCEPT</code> will also be default for any rules of type <code>RULE_NOTUSED</code> deriving this rule.
+</td></tr>
+<tr>
+<td style="width:80px;" align="center"><code>RULE_DECLINE</code>
+</td><td>Access is denied for this resource. Will trump any recursive <code>RULE_ACCEPT</code> rules previously encountered.
+</td></tr></table>
+</p> 
+</subsubsection>
+<subsubsection name="The Access Tree">
+<p>
+Resources are created according to a hierarchical structure, much like a file tree. A typical resource could be
+<code>/ca_functionality/create_certificate</code>
+which consists of three subresources: the root /, its child ca_functionality and the end node create_certificate. If desired, a Rule could be applied to any one of these. Access to the end resource (create_certificate) 
+can be granted by either giving it the value RULE_ACCEPT or setting RULE_ACCEPT for any of its parents nodes and setting them as recursive. 
+Access can be denied by setting access to it or any of its parents as RULE_DECLINE or using RULE_NOTUSED the whole way down. 
+This is further illustrated by the following figure: 
+</p>
+<p>
+<center><img src="images/access_tree.png" alt="EJBCA Access Tree" /></center>
+</p>
+<p>
+Requesting access to the above resources will result in the following:
+
+<table style="border:1px solid gray;margin: 1em auto 1em auto;" cellpadding="8" rules="all">
+<caption style="font-style: italic;" align="bottom">
+</caption><tr>
+<th style="background:#cccccc;">Resource
+</th><th style="background:#cccccc;">Result
+</th><th style="background:#cccccc;">Reason
+</th></tr>
+<tr>
+<td style="width:80px;font-family:courier;" align="center">/
+</td><td>Denied
+</td><td>Status is unknown, hence denied.
+</td></tr>
+<tr>
+<td style="width:80px;font-family:courier;" align="center">/a
+</td><td>Denied
+</td><td>Explicitly denied.
+</td></tr>
+<tr>
+<td style="width:80px;font-family:courier;" align="center">/a/a
+</td><td>Denied
+</td><td>Even though <code>/a/a</code> is granted, <code>/a</code> explicitly denies access to its children.
+</td></tr>
+<tr>
+<td style="width:80px;font-family:courier;" align="center">/b
+</td><td>Granted
+</td><td>Explicitly granted.
+</td></tr>
+<tr>
+<td style="width:80px;font-family:courier;" align="center">/b/a
+</td><td>Granted
+</td><td>Granted thanks to the recursive accept in <code>/b</code>.
+</td></tr>
+<tr>
+<td style="width:80px;font-family:courier;" align="center">/b/a/a
+</td><td>Denied
+</td><td>Explicitly denied, which trumps the recursive grant in <code>/b/a</code>.
+</td></tr>
+<tr>
+<td style="width:80px;font-family:courier;" align="center">/b/a/a/a
+</td><td>Denied
+</td><td>Denied as a result of <code>/b/a/a</code>.
+</td></tr>
+<tr>
+<td style="width:80px;font-family:courier;" align="center">/c
+</td><td>Granted
+</td><td>Explicitly granted.
+</td></tr>
+<tr>
+<td style="width:80px;font-family:courier;" align="center">/c/a
+</td><td>Denied
+</td><td>Unknown in spite of the fact that <code>/c</code> was granted, hence defaults to denied.
+</td></tr>
+<tr>
+<td style="width:80px;font-family:courier;" align="center">/d
+</td><td>Denied
+</td><td>Unknown, hence denied.
+</td></tr>
+<tr>
+<td style="width:80px;font-family:courier;" align="center">/d/a
+</td><td>Granted
+</td><td>Explicitly granted.
+</td></tr>
+</table>
+
+</p>
+</subsubsection>
+</subsection>
 </section>
 
 <section name="View Log options">
