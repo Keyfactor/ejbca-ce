@@ -59,6 +59,12 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
             String cafp, int status, int type, int certificateProfileId, String tag, long updateTime) throws CreateException, AuthorizationDeniedException;
 
     /**
+     * Update the base64cert column if the database row exists, but the column is empty.
+     * @return true if the column was empty and is now populated.
+     */
+    boolean updateCertificateOnly(AuthenticationToken authenticationToken, String fingerprint, Certificate certificate);
+
+    /**
      * Method to set the status of certificate to revoked or active, without checking for authorization. 
      * This is why it is important that this method is _local only_. 
      * 

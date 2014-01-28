@@ -17,6 +17,7 @@ import java.math.BigInteger;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -192,6 +193,37 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         if (log.isTraceEnabled()) {
             log.trace("<storeCertificateNoAuth()");
         }
+        return true;
+    }
+    
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public boolean updateCertificateOnly(AuthenticationToken authenticationToken, String fingerprint, Certificate certificate) {
+        final CertificateData certificateData = CertificateData.findByFingerprint(entityManager, fingerprint);
+        if (certificateData==null || certificateData.getCertificate(entityManager) != null) {
+            return false;
+        }
+        final boolean useBase64CertTable = CesecoreConfiguration.useBase64CertTable();
+        if (useBase64CertTable) {
+            // use special table for encoded data if told so.
+            entityManager.persist(new Base64CertData(certificate));
+        } else {
+            try {
+                certificateData.setBase64Cert(new String(Base64.encode(certificate.getEncoded())));
+            } catch (CertificateEncodingException e) {
+                log.error("Failed to encode certificate for fingerprint " + fingerprint, e);
+                return false;
+            }
+        }
+        final String username = certificateData.getUsername();
+        final String serialNo = CertTools.getSerialNumberAsString(certificate);
+        final String msg = INTRES.getLocalizedMessage("store.storecert", username, fingerprint, certificateData.getSubjectDN(),
+                certificateData.getIssuerDN(), serialNo);
+        Map<String, Object> details = new LinkedHashMap<String, Object>();
+        details.put("msg", msg);
+        final String caId = String.valueOf(CertTools.getIssuerDN(certificate).hashCode());
+        logSession.log(EventTypes.CERT_STORED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, authenticationToken.toString(),
+                caId, serialNo, username, details);
         return true;
     }
 
@@ -951,6 +983,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public Certificate findMostRecentlyUpdatedActiveCertificate(byte[] subjectKeyId) {
+        Certificate certificate = null;
         final String subjectKeyIdString = new String(Base64.encode(subjectKeyId, false));
         log.debug("Searching for subjectKeyIdString " + subjectKeyIdString);
         final Query query = this.entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.subjectKeyId=:subjectKeyId AND a.status=:status ORDER BY a.updateTime DESC");
@@ -960,9 +993,12 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         @SuppressWarnings("unchecked")
         final List<CertificateData> resultList = query.getResultList();
         if (resultList.size() == 1) {
-            return resultList.get(0).getCertificate(this.entityManager);
+            certificate = resultList.get(0).getCertificate(this.entityManager);
+            if (certificate==null && log.isDebugEnabled()) {
+                log.debug("Reference to an issued certificate with subjectKeyId "+subjectKeyId+" found, but the certificate is not stored in the database.");
+            }
         }
-        return null;
+        return certificate;
     }
     
 

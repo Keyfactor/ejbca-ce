@@ -645,7 +645,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                     log.info("Certificate with fingerprint " + certificateId
                             + " was already present in the database. Only InternalKeyBinding reference will be updated.");
                 } else {
-                    storeCertificate(authenticationToken, internalKeyBinding, certificate);
+                    storeCertificate(authenticationToken, internalKeyBinding, certificate, certificateId);
                 }
                 internalKeyBinding.setCertificateId(certificateId);
                 updated = true;
@@ -667,7 +667,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                             log.info("Certificate with fingerprint " + certificateId
                                     + " was already present in the database. Only InternalKeyBinding reference will be updated.");
                         } else {
-                            storeCertificate(authenticationToken, internalKeyBinding, certificate);
+                            storeCertificate(authenticationToken, internalKeyBinding, certificate, certificateId);
                         }
                         internalKeyBinding.updateCertificateIdAndCurrentKeyAlias(certificateId);
                         updated = true;
@@ -772,8 +772,13 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     }
 
     /** Imports the certificate to the database */
-    private void storeCertificate(AuthenticationToken authenticationToken, InternalKeyBinding internalKeyBinding, Certificate certificate)
+    private void storeCertificate(AuthenticationToken authenticationToken, InternalKeyBinding internalKeyBinding, Certificate certificate, final String fingerprint)
             throws AuthorizationDeniedException, CertificateImportException {
+        // First check if the certificate row has been published without the actual certificate
+        // if so, we only need to import the actual certificate
+        if (certificateStoreSession.updateCertificateOnly(authenticationToken, fingerprint, certificate)) {
+            return;
+        }
         // Set some values for things we cannot know
         final int certificateProfileId = 0;
         final String username = "IMPORTED_InternalKeyBinding_" + internalKeyBinding.getId();
