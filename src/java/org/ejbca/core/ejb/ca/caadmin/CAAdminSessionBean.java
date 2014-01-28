@@ -211,8 +211,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         CryptoProviderTools.installBCProviderIfNotAvailable();
         // We lookup the reference to our-self in PostConstruct, since we cannot inject this.
         // We can not inject ourself, JBoss will not start then therefore we use this to get a reference to this session bean
-        // to call isUniqueCertificateSerialNumberIndex we want to do it on the real bean in order to get
-        // the transaction setting (NOT_SUPPORTED) which suspends the active transaction and makes the check outside the transaction
+        // to call initializeCa we want to do it on the real bean in order to get the transaction setting (REQUIRES_NEW).
         caAdminSession = sessionContext.getBusinessObject(CAAdminSessionLocal.class);
     }
 
