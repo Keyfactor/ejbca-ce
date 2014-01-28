@@ -198,7 +198,8 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public boolean updateCertificateOnly(AuthenticationToken authenticationToken, String fingerprint, Certificate certificate) {
+    public boolean updateCertificateOnly(AuthenticationToken authenticationToken, Certificate certificate) {
+        final String fingerprint = CertTools.getFingerprintAsString(certificate);
         final CertificateData certificateData = CertificateData.findByFingerprint(entityManager, fingerprint);
         if (certificateData==null || certificateData.getCertificate(entityManager) != null) {
             return false;
