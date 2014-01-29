@@ -56,7 +56,6 @@
 
             <menu name="Continous integration">
                 <item name="Hudson" href="/hudson.html"/>
-                <item name="FishEye" href="/fisheye.html"/>
             </menu>
 
         </menusection>
