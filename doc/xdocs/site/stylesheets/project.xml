@@ -48,7 +48,6 @@
                 <item name="Contributors"          href="/contributors.html"/>
                 <item name="Issue Tracker"          href="http://jira.primekey.se/"/>
                 <item name="SVN Repository"      href="/repository.html"/>
-                <item name="FishEye SVN" href="http://fisheye.primekey.se/changelog/EJBCA/"/>
             </menu>
 
             <menu name="Donate">
