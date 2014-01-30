@@ -290,7 +290,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     }
 
     @Override
-    public Set<String> findUsernamesByIssuerDNAndSubjectKeyId(String issuerDN, byte subjectKeyId[]) {
+    public Set<String> findUsernamesByIssuerDNAndSubjectKeyId(String issuerDN, byte[] subjectKeyId) {
         if (log.isTraceEnabled()) {
             log.trace(">findUsernamesByIssuerDNAndSubjectKeyId(), issuer='" + issuerDN + "'");
         }

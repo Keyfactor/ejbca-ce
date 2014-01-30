@@ -29,6 +29,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -63,8 +64,8 @@ public class ValidationAuthorityPublisher extends BasePublisher implements ICust
 	public static final String DEFAULT_DATASOURCE 			= "java:/OcspDS";
 	public static final boolean DEFAULT_PROTECT 			= false;
 
-	private final static String insertCertificateSQL = "INSERT INTO CertificateData (base64Cert,subjectDN,issuerDN,cAFingerprint,serialNumber,status,type,username,expireDate,revocationDate,revocationReason,tag,certificateProfileId,updateTime,fingerprint,rowVersion) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,0)";
-	private final static String updateCertificateSQL = "UPDATE CertificateData SET base64Cert=?,subjectDN=?,issuerDN=?,cAFingerprint=?,serialNumber=?,status=?,type=?,username=?,expireDate=?,revocationDate=?,revocationReason=?,tag=?,certificateProfileId=?,updateTime=?,rowVersion=(rowVersion+1) WHERE fingerprint=?";
+	private final static String insertCertificateSQL = "INSERT INTO CertificateData (base64Cert,subjectDN,issuerDN,cAFingerprint,serialNumber,status,type,username,expireDate,revocationDate,revocationReason,tag,certificateProfileId,updateTime,subjectKeyId,fingerprint,rowVersion) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,0)";
+	private final static String updateCertificateSQL = "UPDATE CertificateData SET base64Cert=?,subjectDN=?,issuerDN=?,cAFingerprint=?,serialNumber=?,status=?,type=?,username=?,expireDate=?,revocationDate=?,revocationReason=?,tag=?,certificateProfileId=?,updateTime=?,subjectKeyId=?,rowVersion=(rowVersion+1) WHERE fingerprint=?";
 	private final static String deleteCertificateSQL = "DELETE FROM CertificateData WHERE fingerprint=?";
 	/**
 	 *
@@ -230,7 +231,15 @@ public class ValidationAuthorityPublisher extends BasePublisher implements ICust
 			ps.setString(12, this.tag);
 			ps.setInt(13, this.certificateProfileId);
 			ps.setLong(14, this.updateTime);
-			ps.setString(15,CertTools.getFingerprintAsString(this.incert));
+			final String fingerprint = CertTools.getFingerprintAsString(this.incert);
+            String subjectKeyId = null;
+            try {
+                subjectKeyId = new String(Base64.encode(KeyTools.createSubjectKeyId(this.incert.getPublicKey()).getKeyIdentifier(), false));
+            } catch (Exception e) {
+                log.warn("Error constructing subjectKeyId for certificate, using null: "+fingerprint);
+            }
+            ps.setString(15, subjectKeyId);
+			ps.setString(16, fingerprint); // This is the last ? in the statement
 		}
 		@Override
 		public String getInfoString() {
