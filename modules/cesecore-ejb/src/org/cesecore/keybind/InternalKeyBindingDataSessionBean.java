@@ -19,6 +19,8 @@ import java.util.Map;
 import java.util.Random;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -29,9 +31,6 @@ import javax.persistence.Query;
 import org.apache.log4j.Logger;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.keybind.InternalKeyBindingData;
-import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
-import org.cesecore.keybind.InternalKeyBindingNameInUseException;
 import org.cesecore.util.QueryResultWrapper;
 
 /**
@@ -49,9 +48,18 @@ public class InternalKeyBindingDataSessionBean implements InternalKeyBindingData
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
 
+    // Myself needs to be looked up in postConstruct
+    @Resource
+    private SessionContext sessionContext;
+    private InternalKeyBindingDataSessionLocal keyBindSession;
+
     @PostConstruct
     public void postConstruct() {
-        //CryptoProviderTools.installBCProviderIfNotAvailable();
+        // We lookup the reference to our-self in PostConstruct, since we cannot inject this.
+        // We can not inject ourself, JBoss will not start then therefore we use this to get a reference to this session bean
+        // to call readData we want to do it on the real bean in order to get
+        // the transaction setting (REQUIRED) which creates a new transaction if one was not running (required to read LOBs in PostgreSQL)
+        keyBindSession = sessionContext.getBusinessObject(InternalKeyBindingDataSessionLocal.class);
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -72,7 +80,7 @@ public class InternalKeyBindingDataSessionBean implements InternalKeyBindingData
                 log.debug("Object with ID " + id + " will be checked for updates.");
             }
             // 2. If cache is expired or missing, first thread to discover this reloads item from database and sends it to the cache
-            final InternalKeyBindingData internalKeyBindingData = readData(id);
+            final InternalKeyBindingData internalKeyBindingData = keyBindSession.readData(id);
             if (internalKeyBindingData==null) {
                 if (log.isDebugEnabled()) {
                     log.debug("Requested object did not exist in database and will be purged from cache if present: " + id);
@@ -229,7 +237,8 @@ public class InternalKeyBindingDataSessionBean implements InternalKeyBindingData
     // Create Read Update Delete (CRUD) methods
     //
 
-    private InternalKeyBindingData readData(final int id) {
+    @Override
+    public InternalKeyBindingData readData(final int id) {
         final Query query = entityManager.createQuery("SELECT a FROM InternalKeyBindingData a WHERE a.id=:id");
         query.setParameter("id", id);
         return QueryResultWrapper.getSingleResult(query);

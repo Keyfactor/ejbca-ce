@@ -17,8 +17,6 @@ import java.util.Map;
 
 import javax.ejb.Local;
 
-import org.cesecore.keybind.InternalKeyBinding;
-
 /**
  * Create Read Update Delete (CRUD) interface for InternalKeyBindingData.
  * 
@@ -53,5 +51,9 @@ public interface InternalKeyBindingDataSessionLocal {
 
     /** @return true if the specified name is used by exactly one InternalKeyBinding and that object has the same id (checks the database, not the cache) */
     boolean isNameUsedByIdOnly(String name, int id);
+
+    /** Should only be used internally by other methods. This is an Interface method so that we can specify @TransactionAttribute(TransactionAttributeType.REQUIRED). 
+     * @return the a cached reference to the specified InternalKeyBinding that MAY NOT be edited. Null if not found. */
+    InternalKeyBindingData readData(int id);
 
 }
