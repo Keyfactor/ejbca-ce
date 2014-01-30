@@ -47,6 +47,7 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.RoleData;
@@ -406,7 +407,13 @@ public class PublisherTest {
 			assertNull("The certificate should not exist in the DB.", info);
 			return;
 		}
-		assertNotNull("The certificate must be in DB.", info);
+        assertNotNull("The certificate must be in DB.", info);
+
+        byte[] subjectKeyId = KeyTools.createSubjectKeyId(cert.getPublicKey()).getKeyIdentifier();
+		Collection<Certificate> certsByKeyId = this.certificateStoreSession.findCertificatesBySubjectKeyId(subjectKeyId);
+		assertNotNull("Certificate should be found by KeyId as well", certsByKeyId);
+		assertTrue("Should be at least one certificate found by KeyId", certsByKeyId.size() > 0);
+		
 		assertEquals( CertificateConstants.CERT_ACTIVE, info.getStatus() );
 		assertEquals( revokationReason, info.getRevocationReason() );
 		assertEquals( certProfileID, info.getCertificateProfileId() );
