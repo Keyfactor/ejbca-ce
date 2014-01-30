@@ -449,7 +449,7 @@ for configuration instructions. Tracked by JBoss as <a href="https://issues.jbos
 This should be resolved in JBoss EAP 5.1.
 </p>
 </subsubsection>
-<subsubsection name="JBoss 5/6 Memory configuration">
+<subsubsection name="JBoss 5 Memory configuration">
 <p>
 The memory parameters for Java is by default configured very low, for JBoss it is set by default to allow
 a maximum memory usage of 512mb, which is sufficient for most configurations. We still recommend that you check your 
@@ -464,46 +464,17 @@ JAVA_OPTS="-server -Xms128m -Xmx512m -XX:MaxPermSize=256m"
 can be changed.
 </p>
 </subsubsection>
-<subsubsection name="JBoss 5/6 using Tomcat native SSL connector">
+<subsubsection name="JBoss 5 using Tomcat native SSL connector">
 <p>Instead of the regular Tomcat SSL connector you can configure to use the native connector, which is supposed to 
 improve performance.
 </p><p>
 See documentation in src/appserver/tomcat60jboss5, and the JBoss documentation for installing the native connector.
 </p> 
 </subsubsection>
-<subsubsection name="JBoss 6 logging">
-<p>
-On JBoss 6 logging is not included in the regular server.log file (because JBoss does not use log4j anymore).
-<br/>Configure <i>conf/log4j-jboss6-xml</i> for logging level and log file locations (default works as well). A sample file is provided.
-</p>
-</subsubsection>
-<subsubsection name="JBoss 6 WS warning during startup">
-<p>
-On JBoss 6 some warnings related to WebServices are logged during startup.
-</p>
-<source>
-...duplicate class definition bug occured? Please report this...
-</source>
-<p>This is harmless and due to a bug in OpenJDK/JAX-WS. See <a href="https://jira.primekey.se/browse/ECA-2163">ECA-2163</a>.
-</p>
-</subsubsection>
-<subsubsection name="JBoss 6 Schema validation">
-<p>By default JBoss (at least 6.0.0) tries to validate schemas when deploying for example web services (XKMS is notorious). 
-If you don't have an internet connection this will obviously not work if the appserver does not have all schema built in (it does not for XKMS).
-You can luckily turn of schema validation. Here is RedHat's <a href="http://docs.redhat.com/docs/en-US/JBoss_Enterprise_Web_Platform/5/html/Installation_Guide/migration.apps.html">description</a>.
-</p>
-<p>Edit file <i>server/default/deployers/ear-deployer-jboss-beans.xml</i> and look for the following sections:</p>
-<source>
-&lt;!-- uncomment to disable xml validation
-&lt;property name="useValidation"&gt;false&lt;/property --&gt;
-&lt;!-- in case xml validation is disabled, it's also better to turn off schema validation
-&lt;property name="useSchemaValidation"&gt;false&lt;/property --&gt;
-</source>
-</subsubsection>
 
 <subsubsection name="JBoss 7/EAP 6 General Notes">
 <p>
-Version JBoss AS 7.1.1.Final and EAP 6.0.0 has been tested with EJBCA, and it should work. There's a couple of caveats and notes you should be aware of:
+Version JBoss AS 7.1.1.Final, EAP 6.1 and EAP 6.2 (and possibly later ones) has been tested with EJBCA, and it should work. There's a couple of caveats and notes you should be aware of:
 <ul>
 <li>Start and connect with the JBoss 7/EAP6 cli like this:
 <pre>
@@ -532,7 +503,7 @@ On JBoss 7.1.1 or EAP 6.0:
 <pre>
 mkdir -p modules/com/mysql/main/
 </pre>
-On JBoss 7.2 or EAP 6.1:
+On JBoss 7.2 or EAP 6.1/6.2:
 <pre>
 mkdir -p modules/system/layers/base/com/mysql/main/
 </pre>
@@ -540,7 +511,7 @@ Or for MariaDB, mariadb-java-client-1.1.5.jar:
 <pre>
 mkdir -p modules/org/mariadb/main/
 </pre>
-On JBoss 7.2 or EAP 6.1:
+On JBoss 7.2 or EAP 6.1/6.2:
 <pre>
 mkdir -p modules/system/layers/base/org/mariadb/main/
 </pre>
@@ -601,6 +572,8 @@ Or for MariaDB, mariadb-java-client-1.1.5.jar:
 </p>
 <p>For PostgreSQL you would use the following values instead:
 <pre>
+mkdir -p modules/system/layers/base/org/postgresql/main/
+
 &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
 &lt;module xmlns=&quot;urn:jboss:module:1.0&quot; name=&quot;org.postgresql&quot;&gt;
   &lt;resources&gt;
@@ -662,17 +635,6 @@ The needed classes can be made available by editing the file
 <source>
 &lt;path name="sun/security/action"/&gt;
 </source>
-</subsubsection>
-
-<subsubsection name="JBoss 7 and Oracle JDK BC issues">
-<p>
-When using Oracle JDK and JBoss 7 (Windows platform) you need to install BC jars as a module in JBoss 7.
-See <a href="https://issues.jboss.org/browse/JBAS-7882">JBAS-7882</a>. 
-</p>
-<p>
-How to install modules are described in <a href="https://docs.jboss.org/author/display/MODULES/Defining+a+module">docs.jboss.org/author/display/MODULES/Defining+a+module</a>
-</p>
-<p>This will probably not be needed in JDK 8, but we'll see.</p>
 </subsubsection>
 
 <subsubsection name="JBoss 7 and EAP 6 logging">
@@ -799,6 +761,12 @@ In JBoss EAP 5.1 it seems neccessary to use the Java parameter "-Dorg.jboss.ws.e
 Add the parameter to bin/run.sh for example.
 </p>
 
+</subsubsection>
+
+<subsubsection name="JBoss 7 and Oracle JDK BC issues">
+<p>
+In EJBCA 6.0.4 <a href="https://jira.primekey.se/browse/ECA-3371">ECA-3371</a> solved the issue of deploying with OracleJDK.
+</p>
 </subsubsection>
 
 </subsection>
