@@ -239,7 +239,7 @@
             <jboss:admsilent arg='/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=ejbca-mail-smtp:remove' failonerror="false" />
             <jboss:admsilent arg=':reload' />
             <!-- We must wait until the ejbca.ear has been redeployed, or jboss cli will not be available if it takes too long time to reload. -->
-            <waitfor maxwait="10000">
+            <waitfor maxwait="20000">
                 <available file="${jboss.farm.dir}/ejbca.ear.deployed"/>
             </waitfor>
             <!-- Construct the parameters for adding the server based on whether we use authentication or not (not specifying the username/password means no authentication). -->
