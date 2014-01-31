@@ -20,7 +20,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.util.TraceLogMethodsRule;
+import org.cesecore.util.TraceLogMethodsRule;
 import org.junit.Rule;
 import org.junit.Test;
 

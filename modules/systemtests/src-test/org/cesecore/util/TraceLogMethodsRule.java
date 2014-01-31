@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.util;
+package org.cesecore.util;
 
 import org.apache.log4j.Logger;
 import org.junit.rules.TestWatcher;
