@@ -340,8 +340,10 @@ public class InternalKeyBindingMBean extends BaseManagedBean implements Serializ
                         CertificateInfo info = certificateStoreSession.getCertificateInfo(certificateId);
                         final Certificate cacertificate = info.getCAFingerprint() == null ? null : certificateStoreSession
                                 .findCertificateByFingerprint(info.getCAFingerprint());
-                        caCertificateIssuerDn = CertTools.getIssuerDN(cacertificate);
-                        caCertificateSerialNumber = CertTools.getSerialNumberAsString(cacertificate);
+                        if (cacertificate != null) {
+                            caCertificateIssuerDn = CertTools.getIssuerDN(cacertificate);
+                            caCertificateSerialNumber = CertTools.getSerialNumberAsString(cacertificate);
+                        }
                     }
                 }
                 internalKeyBindingList.add(new GuiInfo(current.getId(), current.getName(), cryptoTokenId, cryptoTokenName, cryptoTokenAvailable,

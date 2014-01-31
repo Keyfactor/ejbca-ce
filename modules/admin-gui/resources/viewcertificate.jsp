@@ -92,8 +92,13 @@
   }
 
   if( request.getParameter(CERTSERNO_PARAMETER ) != null){     
-	 String[] certdata = ejbcawebbean.getCertSernoAndIssuerdn(java.net.URLDecoder.decode(request.getParameter(CERTSERNO_PARAMETER ),"UTF-8"));
-     rabean.loadCertificates(new BigInteger(certdata[0],16), certdata[1]); 
+		String certSernoParam = java.net.URLDecoder.decode(request.getParameter(CERTSERNO_PARAMETER), "UTF-8");
+		if (certSernoParam != null) {
+			String[] certdata = ejbcawebbean.getCertSernoAndIssuerdn(certSernoParam);
+			if (certdata != null && certdata.length > 0) {
+			    rabean.loadCertificates(new BigInteger(certdata[0], 16),certdata[1]);
+			}
+		}
      notauthorized = false;
      noparameter = false;
   }
