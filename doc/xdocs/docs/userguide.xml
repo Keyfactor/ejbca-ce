@@ -1483,11 +1483,12 @@ bin/ejbca.sh batch
 </section>
 
 <section name="Administrator Roles">
-<p>This section is a tutorial that will guide you through creating a new administrative user and new role with limited privileges.</p>
+<p>This section is a tutorial that will guide you through creating a new administrative user and new role with limited privileges.
+A role is assigned certain access rules, and users are assigned a role. All users assigned to a role will have the access privileges defined by the access rules in this role.</p>
 
-<subsection name="Pre-defined Roles">
+<subsection name="Roles created during install">
 <p>
-EJBCA comes preconfigured with a pre-defined role, by default called the <i>Super Administrator Role</i>. By default this role:
+During installation EJBCA created a super administrator role, by default called the <i>Super Administrator Role</i>. By default this role:
 <ul>
 <li>has overall access to EJBCA</li>
 <li>can edit system configuration</li>
@@ -1530,7 +1531,19 @@ suitable a role can be created with the <i>Custom</i> template and be manually c
 </p>
 </subsection>
 
-<subsection name="Creating a Certificate Profile For the Administrator">
+<subsection name="Advanced access rules">
+<p>
+When editing access rules, you can click on 'Advanced mode' to get access to advanced access rule configuration. 
+In this mode you will see all available access rules, in detail, and can accept or reject specific rules for the role you are editing.
+The rules are numberous, and new rules may be included in new versions of EJBCA. They have somewhat human readable names and can often be figured out. 
+See ' About Roles and Rules' below for a detailed description how the principe of access rules work.  
+</p>
+<p>Using advanced access rules you can define you own roles in detail and construct a role set suitable for most auditing schemes.</p>
+</subsection>
+
+<subsection name="Creating a new administrator">
+<p>This example will walk you through creating a new administrator certificate, adding this administrator to a role and testing the access.</p>
+<subsubsection name="Creating a Certificate Profile For the Administrator">
 <p>This section will show you how to create a new Certificate Profile for administrators. 
 The administrators certificates will be issued by a CA called ManagementCA
 </p>
@@ -1552,8 +1565,8 @@ The administrators certificates will be issued by a CA called ManagementCA
 <li>Press "Save".</li>
 </ul> 
 </p>
-</subsection>
-<subsection name="Creating an End Entity Profile for the Administrator">
+</subsubsection>
+<subsubsection name="Creating an End Entity Profile for the Administrator">
 <p>This section will show you how to create a new End Entity Profile for administrators.
 The profile will be connected to the Certificate Profile created above.</p>
 <p>
@@ -1572,8 +1585,8 @@ The profile will be connected to the Certificate Profile created above.</p>
 Issue the following new end entity based on the new end entity profile.
 <br/>CN: SoftCard RA Admin1
 </p>
-</subsection>
-<subsection name="Creating a new RA Role">
+</subsubsection>
+<subsubsection name="Creating a new RA Role">
 <p>
 The RAadmin shall have access to add/list/edit end entites. To create a new role: 
 <ul>
@@ -1587,8 +1600,8 @@ The RAadmin shall have access to add/list/edit end entites. To create a new role
 <li>Press "Save".</li>
 </ul> 
 </p>
-</subsection>
-<subsection name="Adding new Administrators to the RA Role">
+</subsubsection>
+<subsubsection name="Adding new Administrators to the RA Role">
 <p>
 <ul>
 <li>Choose "Search/Edit End Entities" and select your newly created end entity, choose "View Certificates".</li>
@@ -1599,8 +1612,8 @@ The RAadmin shall have access to add/list/edit end entites. To create a new role
 <li>Press "Add"</li> 
 </ul>
 </p>
-</subsection>
-<subsection name="Test the new administrator">
+</subsubsection>
+<subsubsection name="Test the new administrator">
 <p>
 Try to log in with the new administrators to see the difference between that and the superadmin.
 You should also try the different roles and privileges to see the differences between them all.
@@ -1608,6 +1621,7 @@ You should also try the different roles and privileges to see the differences be
 Note that the authorization privileges are cached and there will be a delay before a rule change is
 used.
 </p>
+</subsubsection>
 </subsection>
 
 <subsection name="About Roles and Rules">
