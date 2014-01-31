@@ -1601,11 +1601,7 @@ function checkallfields(){
     <% if (!isexternal && cabean.isCryptoTokenPresent(cryptoTokenId) && cabean.isCryptoTokenActive(cryptoTokenId)) { %>
     <tr id="Row<%=row++%2%>" class="section">
         <td width="50%" align="right">
-        <%  if (editca) { %>
-        <strong><%= ejbcawebbean.getText("EXTERNALLYSIGNED_CA_RENEWAL") %></strong>
-        <%  } else { %>
-        <strong><%= ejbcawebbean.getText("EXTERNALLYSIGNED_CA_CREATION") %></strong>
-        <%  } %>
+        <strong><%= ejbcawebbean.getText("EXTERNALLYSIGNED_CA_CREATERENEW") %></strong>
         </td>
         <td width="50%">&nbsp;</td>
     </tr>
