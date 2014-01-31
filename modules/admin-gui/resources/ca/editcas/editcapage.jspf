@@ -519,7 +519,7 @@ function checkallfields(){
                     <option value="<%=entry.getKey() %>" <%= entrySelected %> ><c:out value="<%= entry.getValue() %>"/></option>
             <%  }
                 if (numSelected == 0) { %>
-                    <option value="" selected="selected">- Missing CryptoToken id <c:out value="<%= cryptoTokenIdParam %>"/> -</option>
+                    <option value="" selected="selected">- <%=ejbcawebbean.getText("CRYPTOTOKEN_MISSING_OR_EMPTY")%> <c:out value="<%= cryptoTokenIdParam %>"/> -</option>
                     <%
                     cryptoTokenIdParam = null;
                     currentCryptoTokenId = 0;
@@ -527,7 +527,7 @@ function checkallfields(){
             %>
 	            </select>
 	            <% if (cryptoTokenIdParam == null) { %>
-                    <p><strong>You need to select a cryptotoken that exists before you can save!</strong></p> 
+                    <p><strong><%=ejbcawebbean.getText("CRYPTOTOKEN_NEED_EXISTING_OR_GEN")%></strong></p> 
                 <% } %>
             <%  } %>
 	            <%/* When JavaScript is not available, we show a "Reload" image. */%>
