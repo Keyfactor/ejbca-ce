@@ -94,11 +94,11 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.TraceLogMethodsRule;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.protocol.ocsp.OcspTestUtils;
-import org.ejbca.util.TraceLogMethodsRule;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;

@@ -76,8 +76,8 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.TraceLogMethodsRule;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
-import org.ejbca.util.TraceLogMethodsRule;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
