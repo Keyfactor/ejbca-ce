@@ -441,12 +441,9 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
     	if (log.isTraceEnabled()) {
             log.trace(">isUserMarked(user: " + username + ")");
     	}
-        boolean returnval = false;
-        org.ejbca.core.ejb.keyrecovery.KeyRecoveryData krd = null;
-        Collection<org.ejbca.core.ejb.keyrecovery.KeyRecoveryData> result = org.ejbca.core.ejb.keyrecovery.KeyRecoveryData.findByUserMark(entityManager, username);
-        Iterator<org.ejbca.core.ejb.keyrecovery.KeyRecoveryData> i = result.iterator();
-        while (i.hasNext()) {
-        	krd = i.next();
+        boolean returnval = false;       
+        Collection<KeyRecoveryData> result = KeyRecoveryData.findByUserMark(entityManager, username);
+        for(KeyRecoveryData krd : result) {
         	if (krd.getMarkedAsRecoverable()) {
         		returnval = true;
         		break;
@@ -465,7 +462,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
         boolean returnval = false;
         final String hexSerial = CertTools.getSerialNumber(certificate).toString(16); // same method to make hex as in KeyRecoveryDataBean
         final String dn = CertTools.getIssuerDN(certificate);
-    	org.ejbca.core.ejb.keyrecovery.KeyRecoveryData krd = org.ejbca.core.ejb.keyrecovery.KeyRecoveryData.findByPK(entityManager, new KeyRecoveryDataPK(hexSerial, dn));
+    	KeyRecoveryData krd = KeyRecoveryData.findByPK(entityManager, new KeyRecoveryDataPK(hexSerial, dn));
     	if (krd != null) {
             log.debug("Found key for user: "+krd.getUsername());
             returnval = true;

@@ -73,7 +73,7 @@ public class KeyRecoveryCommand extends BaseRaCommand {
             }
             String username = ejb.getRemoteSession(CertificateStoreSessionRemote.class).findUsernameByCertSerno(certificatesn, issuerdn);
             if(!ejb.getRemoteSession(KeyRecoverySessionRemote.class).existsKeys(cert)){
-            	getLogger().error("Specified keys doesn't exist in database.");
+            	getLogger().error("Specified keys don't exist in database.");
             	return;                  
             }
             if(ejb.getRemoteSession(KeyRecoverySessionRemote.class).isUserMarked(username)){

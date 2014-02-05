@@ -76,7 +76,7 @@ import org.junit.Test;
  */
 public class RevokeEndEntityCommandTest extends CaTestCase {
 
-    private static final String USER_NAME = "RaRevokeUserCommandTest_user1";
+    private static final String USER_NAME = "RevokeEndEntityCommandTest_user1";
     private static final String[] HAPPY_PATH_REVOKE_ONHOLD_ARGS = { "revokeendentity", USER_NAME, String.valueOf(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) };
     private static final String[] HAPPY_PATH_REVOKE_PERMANENT_ARGS = { "unrevokeendentity", USER_NAME, String.valueOf(RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE) };
     private static final String[] HAPPY_PATH_UNREVOKE_ARGS = { "unrevokeendentity", USER_NAME, String.valueOf(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) };
@@ -85,7 +85,7 @@ public class RevokeEndEntityCommandTest extends CaTestCase {
 
     private RevokeEndEntityCommand command0;
     private UnRevokeEndEntityCommand command1;
-    private AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("RaRevokeUserCommandTest"));
+    private AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("RevokeEndEntityCommandTest"));
 
     private EndEntityManagementSessionRemote eeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);

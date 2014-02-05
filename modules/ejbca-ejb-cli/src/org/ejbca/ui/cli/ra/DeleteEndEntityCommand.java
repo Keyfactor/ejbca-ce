@@ -44,7 +44,7 @@ public class DeleteEndEntityCommand extends BaseRaCommand {
 
     @Override
     public String getDescription() {
-        return "Deletes an and entity";
+        return "Deletes an end entity";
     }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
