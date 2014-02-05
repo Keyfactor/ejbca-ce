@@ -98,5 +98,10 @@ public class NullCryptoToken extends BaseCryptoToken {
     	return null;
 	}
 
+    @Override
+    public boolean permitExtractablePrivateKeyForTest() {
+        return doPermitExtractablePrivateKey();
+    }
+
 }
 
