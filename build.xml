@@ -441,7 +441,7 @@
             </zipfileset>
             <zipfileset prefix="lib" dir="${lib}/ct">
                 <!-- Certificate Transparency -->
-                <include name="ctlog.jar" />
+                <include name="ctlog-jdk6-*.jar" />
                 <include name="protobuf-*.jar" />
                 <include name="httpclient-*.jar" />
                 <include name="httpcore-*.jar" />
