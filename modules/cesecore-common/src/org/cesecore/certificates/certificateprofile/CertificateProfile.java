@@ -19,9 +19,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.apache.commons.lang.StringUtils;
@@ -204,6 +206,12 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String USEPRIVKEYUSAGEPERIODNOTAFTER  = "useprivkeyusageperiodnotafter";
     protected static final String PRIVKEYUSAGEPERIODSTARTOFFSET  = "privkeyusageperiodstartoffset";
     protected static final String PRIVKEYUSAGEPERIODLENGTH           = "privkeyusageperiodlength";
+    protected static final String USECERTIFICATETRANSPARENCYINCERTS = "usecertificatetransparencyincerts";
+    protected static final String USECERTIFICATETRANSPARENCYINOCSP  = "usecertificatetransparencyinocsp";
+    protected static final String CTLOGS = "ctlogs";
+    protected static final String CTMINSCTS = "ctminscts";
+    protected static final String CTMAXSCTS = "ctmaxscts";
+    protected static final String CTMAXRETRIES = "ctmaxretries";
 
     /**
      * OID for creating Smartcard Number Certificate Extension SEIS Cardnumber Extension according to SS 614330/31
@@ -1720,6 +1728,92 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     public void setPrivateKeyUsagePeriodLength(final long validity) {
         data.put(PRIVKEYUSAGEPERIODLENGTH, validity);
+    }
+    
+    /**
+     * Whether Certificate Transparency (CT) should be used when generating new certificates. CT is specified in RFC 6962
+     */
+    public boolean isUseCertificateTransparencyInCerts() {
+        if (data.get(USECERTIFICATETRANSPARENCYINCERTS) == null) {
+            return false;
+        }
+        return ((Boolean)data.get(USECERTIFICATETRANSPARENCYINCERTS)).booleanValue();
+    }
+    
+    public void setUseCertificateTransparencyInCerts(boolean use) {
+        data.put(USECERTIFICATETRANSPARENCYINCERTS, use);
+    }
+    
+    /**
+     * Whether Certificate Transparency (CT) should be used in OCSP responses. CT is specified in RFC 6962
+     */
+    public boolean isUseCertificateTransparencyInOCSP() {
+        if (data.get(USECERTIFICATETRANSPARENCYINOCSP) == null) {
+            return false;
+        }
+        return ((Boolean)data.get(USECERTIFICATETRANSPARENCYINOCSP)).booleanValue();
+    }
+    
+    public void setUseCertificateTransparencyInOCSP(boolean use) {
+        data.put(USECERTIFICATETRANSPARENCYINOCSP, use);
+    }
+    
+    /**
+     * Gets the IDs of the CT logs that are activated in this profile.
+     */
+    @SuppressWarnings("unchecked")
+    public Set<Integer> getEnabledCTLogs() {
+        if (data.get(CTLOGS) == null) {
+            return new LinkedHashSet<Integer>();
+        }
+        
+        return (Set<Integer>)data.get(CTLOGS);
+    }
+    
+    public void setEnabledCTLogs(Set<Integer> logIds) {
+        data.put(CTLOGS, logIds);
+    }
+    
+    /**
+     * Number of CT logs to require an SCT from, or it will be considered an error.
+     * If zero, CT is completely optional and ignored if no log servers can be contacted. 
+     */
+    public int getCTMinSCTs() {
+        if (data.get(CTMINSCTS) == null) {
+            return 1;
+        }
+        return (Integer)data.get(CTMINSCTS);
+    }
+    
+    public void setCTMinSCTs(int minSCTs) {
+        data.put(CTMINSCTS, minSCTs);
+    }
+    
+    /**
+     * After the maximum number of SCTs have been received EJBCA
+     * will stop contacting log servers.
+     */
+    public int getCTMaxSCTs() {
+        if (data.get(CTMAXSCTS) == null) {
+            return 1;
+        }
+        return (Integer)data.get(CTMAXSCTS);
+    }
+    
+    public void setCTMaxSCTs(int maxSCTs) {
+        data.put(CTMAXSCTS, maxSCTs);
+    }
+    
+    /** Number of times to retry connecting to a Certificate Transparency log */
+    public int getCTMaxRetries() {
+        if (data.get(CTMAXRETRIES) == null) {
+            return 0;
+        }
+        return (Integer)data.get(CTMAXRETRIES);
+    }
+    
+    public void setCTMaxRetries(int numRetries) {
+        data.put(CTMAXRETRIES, numRetries);
     }
     
     public CertificateProfile clone() throws CloneNotSupportedException {

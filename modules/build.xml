@@ -87,7 +87,8 @@
 		<ant antfile="${mod.buildtools.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.cli-util.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<antcall target="validationtoolclean"/>
-		<antcall target="statedumpclean"/>		
+		<antcall target="statedumpclean"/>
+		<antcall target="ctclean"/>
 		<delete failonerror="false">
 			<fileset dir="${modules.basedir}/dist" includes="*" />
 		</delete>
@@ -106,6 +107,12 @@
 		<echo message="Cleaning validationtool"/>
 		<ant antfile="${mod.validationtool.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
+	<condition property="mod.ct.exists">
+		<available file="${mod.ct.path}/build.xml" />
+    </condition>
+    <target name="ctclean" if="${ct.exists}">
+        <ant antfile="${mod.ct.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+    </target>	
 	
 	<target name="ejbca-entity" depends="ejbca-util" description="Build EJBCA JPA entity library">
 		<ant antfile="${mod.ejbca-entity.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
@@ -390,10 +397,14 @@
 	</target>
 	
 	<target name="ejbca.clients" depends="ejbca-ejb-cli, ejbca-ws-cli, ejbca-xkms-cli, ejbca-db-cli"/>
-	<target name="ejbca.ear.module-dependencies" depends="cesecore-ejb, publicweb-gui, renew-war, scep-war, webdist-war, va-ejbca-war, cmp-war, healthcheck-ejbca-war, clearcache-ejbca-war, admin-gui, ejbca-ejb, ejbca-properties, ejbca-ws, ejbca-xkms, externalra-service, ejbca-cmp-tcp, ejbca.clients, systemtests.build.libs"/>
+	<target name="ejbca.ear.module-dependencies" depends="cesecore-ejb, publicweb-gui, renew-war, scep-war, webdist-war, va-ejbca-war, cmp-war, healthcheck-ejbca-war, clearcache-ejbca-war, admin-gui, ejbca-ejb, ejbca-properties, ejbca-ws, ejbca-xkms, externalra-service, ejbca-cmp-tcp, ejbca.clients, systemtests.build.libs, ct"/>
 
 	<target name="buildservicemanifestbuilder">
 		<ant antfile="${mod.buildtools.path}/build.xml" target="compile-servicemanifestbuilder" />
+	</target>
+	
+	<target name="ct" depends="ejbca-ejb-interface, cesecore-common, cesecore-ejb-interface" if="mod.ct.exists">
+		<ant antfile="${mod.ct.path}/build.xml" target="jar" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
 	
 	<target name="statedump" depends="cli-util, buildservicemanifestbuilder" >	

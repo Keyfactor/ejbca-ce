@@ -15,11 +15,17 @@
 package org.ejbca.config;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.certificatetransparency.CTLogInfo;
+import org.cesecore.util.Base64;
 import org.ejbca.core.model.InternalEjbcaResources;
 
 
@@ -88,6 +94,21 @@ public class GlobalConfiguration extends Configuration implements Serializable {
     private static final boolean DEFAULTENABLECOMMANDLINEINTERFACE = true;
     private static final boolean DEFAULTENABLECOMMANDLINEINTERFACEDEFAULTUSER = true;
     
+    // Default CT Logs
+    // The Base64 data is the public key.
+    private static final Map<Integer,CTLogInfo> CTLOGS_DEFAULT = new LinkedHashMap<Integer,CTLogInfo>();
+    static {
+        try {
+            // TODO This is a test server. Replace this with real logs when they become available.
+            final CTLogInfo log = new CTLogInfo(
+                "http://ct.googleapis.com/pilot/ct/v1/",
+                Base64.decode(
+                    ("MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEfahLEimAoz2t01p3uMziiLOl/fHT\n"+
+                     "DM0YDOhBRuiBARsV4UvxG2LdNgoIGLrtCzWE0J5APC2em4JlvR8EEEFMoA==\n").getBytes("ASCII")));
+            CTLOGS_DEFAULT.put(log.getLogId(), log);
+        } catch (UnsupportedEncodingException e) { } // NOPMD can't do anything here
+    }
+    
     // Language codes. Observe the order is important
     public static final  int      EN                 = 0;
     public static final  int      SE                 = 1;
@@ -97,7 +118,6 @@ public class GlobalConfiguration extends Configuration implements Serializable {
     public static final  String MENUFRAME           = "leftFrame"; // Name of menu browser frame
     public static final  String MAINFRAME           = "mainFrame"; // Name of main browser frame
     public static final  String DOCWINDOW           = "_ejbcaDocWindow"; // Name of browser window used to display help
-
 
     /** Creates a new instance of GlobalConfiguration */
     public GlobalConfiguration()  {
@@ -463,6 +483,28 @@ public class GlobalConfiguration extends Configuration implements Serializable {
            final Boolean ret = (Boolean) data.get(ENABLECOMMANDLINEINTERFACEDEFAULTUSER);
            return(ret == null ? DEFAULTENABLECOMMANDLINEINTERFACEDEFAULTUSER : ret);
        }
+       
+    @SuppressWarnings("unchecked")
+    public Map<Integer,CTLogInfo> getCTLogs() {
+        final Map<Integer,CTLogInfo> ret = (Map<Integer,CTLogInfo>)data.get(CTLOGS);
+        return (ret == null ? CTLOGS_DEFAULT : ret);
+    }
+    
+    public void setCTLogs(Map<Integer,CTLogInfo> ctlogs) {
+        data.put(CTLOGS, ctlogs);
+    }
+       
+    public void addCTLog(CTLogInfo ctlog) {
+        HashMap<Integer,CTLogInfo> logs = new LinkedHashMap<Integer,CTLogInfo>(getCTLogs());
+        logs.put(ctlog.getLogId(), ctlog);
+        setCTLogs(logs);
+    }
+    
+    public void removeCTLog(int ctlogId) {
+        HashMap<Integer,CTLogInfo> logs = new LinkedHashMap<Integer,CTLogInfo>(getCTLogs());
+        logs.remove(ctlogId);
+        setCTLogs(logs);
+    }
 
     /** Implementation of UpgradableDataHashMap function getLatestVersion */
     public float getLatestVersion(){
@@ -545,6 +587,8 @@ public class GlobalConfiguration extends Configuration implements Serializable {
     private static final   String RA_PATH             = "ra_path";
     private static final   String THEME_PATH          = "theme_path";
     private static final   String HARDTOKEN_PATH      = "hardtoken_path";
+    
+    private static final   String CTLOGS              = "ctlogs";
 
     private static final   String LANGUAGEFILENAME      =  "languagefilename";
     private static final   String MAINFILENAME          =  "mainfilename";

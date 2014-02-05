@@ -188,6 +188,29 @@ function checkuseqcstatementfield(){
   }
 }
 
+function checkusecertificatetransparencyfield(){
+  if(document.editcertificateprofile.<%=CHECKBOX_USECERTIFICATETRANSPARENCYINCERTS %>.checked ||
+     document.editcertificateprofile.<%=CHECKBOX_USECERTIFICATETRANSPARENCYINOCSP %>.checked){
+    document.editcertificateprofile.<%= SELECT_CTLOGS %>.disabled = false;
+    document.editcertificateprofile.<%= TEXTFIELD_CTMINSCTS %>.disabled = false;
+    document.editcertificateprofile.<%= TEXTFIELD_CTMINSCTS %>.value = <%=certificateprofiledata.getCTMinSCTs()%>;
+    document.editcertificateprofile.<%= TEXTFIELD_CTMAXSCTS %>.disabled = false;
+    document.editcertificateprofile.<%= TEXTFIELD_CTMAXSCTS %>.value = <%=certificateprofiledata.getCTMaxSCTs()%>;
+    document.editcertificateprofile.<%= TEXTFIELD_CTMAXRETRIES %>.disabled = false;
+    document.editcertificateprofile.<%= TEXTFIELD_CTMAXRETRIES %>.value = <%=certificateprofiledata.getCTMaxRetries()%>;
+
+  }
+  else{
+    document.editcertificateprofile.<%= SELECT_CTLOGS %>.disabled = true;
+    document.editcertificateprofile.<%= TEXTFIELD_CTMINSCTS %>.disabled = true;
+    document.editcertificateprofile.<%= TEXTFIELD_CTMINSCTS %>.value = "";
+    document.editcertificateprofile.<%= TEXTFIELD_CTMAXSCTS %>.disabled = true;
+    document.editcertificateprofile.<%= TEXTFIELD_CTMAXSCTS %>.value = "";
+    document.editcertificateprofile.<%= TEXTFIELD_CTMAXRETRIES %>.disabled = true;
+    document.editcertificateprofile.<%= TEXTFIELD_CTMAXRETRIES %>.value = "";
+  }
+}
+
 function checkuseetsivaluelimitfield(){
   if(document.editcertificateprofile.<%=CHECKBOX_USEQCETSIVALUELIMIT %>.checked){    
     document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMIT %>.disabled = false;
@@ -1416,6 +1439,80 @@ function checkallfields(){
                     <%}%> >
       </td>
     </tr>  
+
+    <%-- Certificate Transparency --%>
+    <%
+    if (CertificateTransparencyFactory.isCTAvailable()) {
+        Set<Integer> enabledCTLogs = certificateprofiledata.getEnabledCTLogs();
+        Map<Integer,CTLogInfo> availableCTLogs = globalconfiguration.getCTLogs();
+    %>
+    <tr  id="Row<%=row%2%>"> 
+      <td width="50%"  align="right" > 
+        <strong><c:out value="<%= ejbcawebbean.getText(\"EXT_CERTIFICATE_TRANSPARENCY\") %>" /> <%= ejbcawebbean.getHelpReference("/userguide.html#Certificate%20Transparency") %></strong>
+      </td>
+      <td width="50%">
+           <input type="checkbox" name="<%=CHECKBOX_USECERTIFICATETRANSPARENCYINCERTS %>" onClick="checkusecertificatetransparencyfield()" value="<%=CHECKBOX_VALUE %>" 
+           <% if (certificateprofiledata.isUseCertificateTransparencyInCerts())
+                 out.write("CHECKED");
+           %> id="<%=CHECKBOX_USECERTIFICATETRANSPARENCYINCERTS%>">
+           <label for="<%=CHECKBOX_USECERTIFICATETRANSPARENCYINCERTS%>"><c:out value="<%= ejbcawebbean.getText(\"EXT_CT_USE_IN_CERTS\") %>" /></label>
+           
+           <br />
+           
+           <input type="checkbox" name="<%=CHECKBOX_USECERTIFICATETRANSPARENCYINOCSP %>" onClick="checkusecertificatetransparencyfield()" value="<%=CHECKBOX_VALUE %>" 
+           <% if (certificateprofiledata.isUseCertificateTransparencyInOCSP())
+                 out.write("CHECKED");
+           %> id="<%=CHECKBOX_USECERTIFICATETRANSPARENCYINOCSP%>">
+           <label for="<%=CHECKBOX_USECERTIFICATETRANSPARENCYINOCSP%>"><c:out value="<%= ejbcawebbean.getText(\"EXT_CT_USE_IN_OCSP\") %>" /></label>
+           <%
+           boolean ctEnabled = certificateprofiledata.isUseCertificateTransparencyInCerts() || certificateprofiledata.isUseCertificateTransparencyInOCSP();
+           %>
+      </td>
+    </tr>
+    <%-- Enabled CT logs selection --%>
+    <tr  id="Row<%=row%2%>"> 
+      <td width="50%" align="right"> 
+        <c:out value="<%= ejbcawebbean.getText(\"EXT_CT_ENABLEDLOGS\") %>" />
+      </td>
+      <td width="50%">
+        <select name="<%=SELECT_CTLOGS%>" size="6" multiple="multiple"<%= ctEnabled ? "" : " disabled" %>>
+           <% for (CTLogInfo ctlog : availableCTLogs.values()) { %>
+              <option value="<c:out value="<%= ctlog.getLogId() %>" />" <% if (enabledCTLogs.contains(ctlog.getLogId())) { %>selected="selected"<% } %>><c:out value="<%= ctlog.getUrl() %>" /></option>
+           <% } %>
+        </select>
+      </td>
+    </tr>
+    <tr  id="Row<%=row%2%>"> 
+      <td width="50%" valign="top" align="right"><c:out value="<%= ejbcawebbean.getText(\"EXT_CT_MINSCTS\") %>" /> </td>
+      <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_CTMINSCTS %>" size="8" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_INTEGER") %>"
+           <%       if (!ctEnabled) {
+                      out.write(" disabled ");
+                    } else {%> 
+                      value="<c:out value="<%= certificateprofiledata.getCTMinSCTs() %>"/>"
+                    <%}%> >
+      </td>
+    </tr>
+    <tr  id="Row<%=row%2%>"> 
+      <td width="50%" valign="top" align="right"><c:out value="<%= ejbcawebbean.getText(\"EXT_CT_MAXSCTS\") %>" /> </td>
+      <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_CTMAXSCTS %>" size="8" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_INTEGER") %>"
+           <%       if (!ctEnabled) {
+                      out.write(" disabled ");
+                    } else {%> 
+                      value="<c:out value="<%= certificateprofiledata.getCTMaxSCTs() %>"/>"
+                    <%}%> >
+      </td>
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top" align="right"><c:out value="<%= ejbcawebbean.getText(\"EXT_CT_MAXRETRIES\") %>" /> </td>
+      <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_CTMAXRETRIES %>" size="8" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_INTEGER") %>"
+           <%       if (!ctEnabled) {
+                      out.write(" disabled ");
+                    } else {%> 
+                      value="<c:out value="<%= certificateprofiledata.getCTMaxRetries() %>"/>"
+                    <%}%> >
+      </td>
+    </tr>
+    <% } %>
 
     <%-- OCSP No Check extension --%>
     <tr  id="Row<%=row++%2%>"> 

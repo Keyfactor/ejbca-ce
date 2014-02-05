@@ -238,6 +238,14 @@ public interface CertificateStoreSession {
     Collection<Certificate> findCertificatesByType(int type, String issuerDN);
 
     /**
+     * Recursively finds the certificate chain for the given certificate.
+     * 
+     * @param certinfo Certificate to start from, usually a leaf certificate.
+     * @return List containing certificate chain, starting with the given certificate.
+     */
+    List<Certificate> getCertificateChain(CertificateInfo certinfo);
+
+    /**
      * Set the status of certificate with given serno to revoked, or unrevoked (re-activation).
      *
      * @param admin      AuthenticationToken performing the operation

@@ -17,7 +17,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.nio.charset.Charset;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -1170,5 +1172,40 @@ public final class KeyTools {
             }
         }
         return pubKey;
+    }
+    
+    /**
+     * Extracts the binary data from a PEM of a specified kind, e.g. public key.
+     *  
+     * @param pem PEM data to extract from. May contain other types of data as well.
+     * @param beginMarker E.g. CertTools.BEGIN_PUBLIC_KEY
+     * @param endMarker E.g. CertTools.END_PUBLIC_KEY
+     * @return The first entry of the matching type.
+     */
+    public static byte[] getBytesFromPEM(String pem, String beginMarker, String endMarker) {
+        int start = pem.indexOf(beginMarker);
+        int end = pem.indexOf(endMarker, start);
+        if (start == -1 || end == -1) {
+            log.debug("Could not find "+beginMarker+" and "+endMarker+" lines in PEM");
+            return null;
+        }
+        
+        String base64 = pem.substring(start + beginMarker.length(), end);
+        try {
+            return Base64.decode(base64.getBytes("ASCII"));
+        } catch (UnsupportedEncodingException e) {
+            log.debug("Invalid byte in PEM data");
+            return null;
+        }
+    }
+    
+    public static byte[] getBytesFromPublicKeyFile(byte[] file) {
+        String fileText = Charset.forName("ASCII").decode(java.nio.ByteBuffer.wrap(file)).toString();
+        byte[] asn1bytes = getBytesFromPEM(fileText, CertTools.BEGIN_PUBLIC_KEY, CertTools.END_PUBLIC_KEY);
+        if (asn1bytes != null) {
+            return asn1bytes;
+        } else {
+            return file; // Assume it's in ASN1 format already
+        }
     }
 }
