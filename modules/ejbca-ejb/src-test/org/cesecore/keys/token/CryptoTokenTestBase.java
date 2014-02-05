@@ -638,6 +638,7 @@ public abstract class CryptoTokenTestBase {
 
         //create the key pair
         token.generateKeyPair("1024", "extractkeytest001");
+        token.testKeyPair("extractkeytest001");
 
         //extract the private key
         try {
@@ -648,7 +649,6 @@ public abstract class CryptoTokenTestBase {
         } catch (InvalidKeyException e) {
             // NOPMD
         }
-
         token.deleteEntry("encryptkeytest001");
         token.deleteEntry("extractkeytest001");
 
@@ -672,6 +672,7 @@ public abstract class CryptoTokenTestBase {
             } catch (java.security.ProviderException e ) {
                 fail("Unable to generate extractable private key, this failure is normal on a SafeNet Luna, but should work on a Utimaco and SafeNet ProtectServer.");
             }
+            token.testKeyPair("extractkeytest001");
 
             //extract the private key
             byte[] cbcIv = { 0x01, 0x23, 0x45, 0x67, (byte)0x89, (byte)0xAB, (byte)0xCD, (byte)0xEF };
