@@ -556,6 +556,9 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         if (log.isTraceEnabled()) {
             log.trace(">getCertificateInfo(): " + fingerprint);
         }
+        if (fingerprint == null) {
+            return null;
+        }
         return CertificateData.getCertificateInfo(entityManager, fingerprint);
     }
 
