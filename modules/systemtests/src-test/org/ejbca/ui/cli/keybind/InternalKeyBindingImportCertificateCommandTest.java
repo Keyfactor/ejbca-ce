@@ -35,6 +35,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.FileTools;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.protocol.ocsp.OcspTestUtils;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.junit.After;
@@ -61,6 +62,8 @@ public class InternalKeyBindingImportCertificateCommandTest {
             .getRemoteSession(CryptoTokenManagementSessionRemote.class);
     private final InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
+    private final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(EndEntityManagementSessionRemote.class);
 
     private static X509CA x509ca = null;
     private static int cryptoTokenId;
@@ -113,6 +116,11 @@ public class InternalKeyBindingImportCertificateCommandTest {
             cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, cryptoTokenId);
         }
         FileTools.delete(certificateFile);
+        try {
+            endEntityManagementSession.deleteUser(authenticationToken, TESTCLASS_NAME);
+        } catch (Exception e) {
+            //NOPMD Ignore
+        }
     }
 
     @Test
