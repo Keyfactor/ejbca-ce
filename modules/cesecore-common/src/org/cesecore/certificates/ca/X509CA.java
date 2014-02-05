@@ -39,6 +39,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -51,6 +52,7 @@ import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.DERIA5String;
+import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -108,6 +110,9 @@ import org.cesecore.certificates.certificate.certextensions.CertificateExtension
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificatetransparency.CTLogInfo;
+import org.cesecore.certificates.certificatetransparency.CertificateTransparency;
+import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
@@ -163,6 +168,10 @@ public class X509CA extends CA implements Serializable {
     protected static final String USECRLDISTRIBUTIONPOINTONCRL = "usecrldistributionpointoncrl";
     protected static final String CRLDISTRIBUTIONPOINTONCRLCRITICAL = "crldistributionpointoncrlcritical";
     protected static final String CMPRAAUTHSECRET = "cmpraauthsecret";
+
+    private transient Map<Integer,CTLogInfo> configuredCTLogs;
+    
+    private static final CertificateTransparency ct = CertificateTransparencyFactory.getInstance();
 
     // Public Methods
     /** Creates a new instance of CA, this constructor should be used when a new CA is created */
@@ -381,6 +390,18 @@ public class X509CA extends CA implements Serializable {
         data.put(CMPRAAUTHSECRET, cmpRaAuthSecret);
     }
 
+    /**
+     * Sets the mapping of IDs to CT log definitions. Used in generateCertificate.
+     * It must be set explicitly after constructing/obtaining the CA object if
+     * you want to use Certificate Transparency.
+     * 
+     * A sample configuration can be found in the EJBCA source code,
+     * in the GlobalConfiguration class.
+     */
+    public void setConfiguredCTLogs(Map<Integer, CTLogInfo> configuredCTLogs) {
+        this.configuredCTLogs = configuredCTLogs;
+    }
+
     public void updateCA(CryptoToken cryptoToken, CAInfo cainfo) throws InvalidAlgorithmException {
         super.updateCA(cryptoToken, cainfo);
         X509CAInfo info = (X509CAInfo) cainfo;
@@ -576,7 +597,8 @@ public class X509CA extends CA implements Serializable {
     }
 
     /**
-     * sequence is ignored by X509CA
+     * sequence is ignored by X509CA.
+     * Certificate Transparency logs, if any, should be defined before with the setConfiguredCTLogs method.
      */
     private Certificate generateCertificate(final EndEntityInformation subject, final RequestMessage request, final PublicKey publicKey, final int keyusage, final Date notBefore,
             final Date notAfter, final CertificateProfile certProfile, final Extensions extensions, final String sequence, final PublicKey caPublicKey,
@@ -693,6 +715,11 @@ public class X509CA extends CA implements Serializable {
         SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo((ASN1Sequence)ASN1Primitive.fromByteArray(publicKey.getEncoded()));
         final X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(issuerDNName, serno, val.getNotBefore(), val.getNotAfter(), subjectDNName, pkinfo);
         
+        // Only created and used if Certificate Transparency is enabled
+        final X509v3CertificateBuilder precertbuilder = certProfile.isUseCertificateTransparencyInCerts() ?
+            new X509v3CertificateBuilder(issuerDNName, serno, val.getNotBefore(), val.getNotAfter(), subjectDNName, pkinfo) : null;
+        
+        
         //
         // X509 Certificate Extensions
         //
@@ -791,7 +818,43 @@ public class X509CA extends CA implements Serializable {
         ASN1ObjectIdentifier[] oids = exts.getExtensionOIDs();
         for(ASN1ObjectIdentifier oid : oids) {
             final Extension ext = exts.getExtension(oid);
-            certbuilder.addExtension(oid, ext.isCritical(), ext.getParsedValue());
+            final boolean isCritical = ext.isCritical();
+            final ASN1Encodable parsedValue = ext.getParsedValue();
+            
+            certbuilder.addExtension(oid, isCritical, parsedValue);
+            if (precertbuilder != null) {
+                precertbuilder.addExtension(oid, isCritical, parsedValue);
+            }
+        }
+        
+        // Add Certificate Transparency extension. It needs to access the certbuilder and
+        // the CA key so it has to be processed here inside X509CA.
+        if (ct != null && certProfile.isUseCertificateTransparencyInCerts() && configuredCTLogs != null) {
+            // Create pre-certificate
+            // A critical extension is added to prevent this cert from being used
+            ct.addPreCertPoison(precertbuilder);
+            
+            // Sign pre-certificate
+            /*
+             *  TODO: Should be able to use a special CT signing certificate.
+             *  It should have CA=true and ExtKeyUsage=PRECERTIFICATE_SIGNING_OID,
+             *  and should not have any other key usages.
+             */
+            final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(provider).build(caPrivateKey), 20480);
+            final X509CertificateHolder certHolder = precertbuilder.build(signer);
+            final X509Certificate cert = (X509Certificate)CertTools.getCertfromByteArray(certHolder.getEncoded());
+            
+            // Get certificate chain
+            final List<Certificate> chain = new ArrayList<Certificate>();
+            chain.add(cert);
+            chain.addAll(getCertificateChain());
+            
+            // Submit to logs and get signed timestamps
+            byte[] sctlist = ct.fetchSCTList(chain, certProfile, configuredCTLogs);
+            if (sctlist != null) { // can be null if the CTLog has been deleted from the configuration
+                ASN1ObjectIdentifier sctOid = new ASN1ObjectIdentifier(CertificateTransparency.SCTLIST_OID);
+                certbuilder.addExtension(sctOid, false, new DEROctetString(sctlist));
+            }
         }
 
         //

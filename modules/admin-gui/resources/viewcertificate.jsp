@@ -555,6 +555,15 @@ function confirmrepublish(){
 			 }
 			 %></td>
        </tr>
+       <tr id="Row<%=(row++)%2%>">
+         <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("EXT_CERTIFICATE_TRANSPARENCY_SCTS") %></td>
+         <td><% if (certificatedata.hasCertificateTransparencySCTs()) {
+                 out.write(ejbcawebbean.getText("YES"));
+             } else {
+                 out.write(ejbcawebbean.getText("NO"));
+             }
+             %></td>
+       </tr>
      <% } // if (!certificatedata.getType().equalsIgnoreCase("CVC")) %>
        
        <tr id="Row<%=(row++)%2%>">

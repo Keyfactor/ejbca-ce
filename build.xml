@@ -439,6 +439,15 @@
                 <include name="commons-*.jar" />
                 <include name="libidn.jar" />	<!-- XKMS -->
             </zipfileset>
+            <zipfileset prefix="lib" dir="${lib}/ct">
+                <!-- Certificate Transparency -->
+                <include name="ctlog.jar" />
+                <include name="protobuf-*.jar" />
+                <include name="httpclient-*.jar" />
+                <include name="httpcore-*.jar" />
+                <include name="guava-*.jar" />
+                <include name="json-simple-*.jar" />
+            </zipfileset>
             <zipfileset prefix="lib" dir="${lib}/batik" includes="*.jar" excludes="${bundle-xerces-exclude}"/>
             <zipfileset prefix="lib" dir="${lib}/xmlsign" includes="*.jar" excludes="${bundle-xalan-exclude},${bundle-serializer-exclude}"/>	<!-- XKMS -->
             <fileset dir="${dist.dir}" includes="doc.war"/>
@@ -474,6 +483,7 @@
                 <include name="log4jconfig.jar" unless="jbosseap6-specials"/>
                 <include name="jbosslog4jsafer.jar" if="jbosseap6-specials"/>
         		<include name="${in-test-mode-include}systemtests-interfaces.jar"/>
+        	    <include name="ct.jar" />
         	</zipfileset>
         	<zipfileset prefix="lib" dir="${mod.dist.path}">
         		<!-- ejbca-ws-client is needed for automatic OCSP Renewal via WS
