@@ -130,7 +130,14 @@ public abstract class BaseCryptoToken implements CryptoToken {
     public boolean doPermitExtractablePrivateKey() {
         return allowsExtractablePrivateKey;
     }
-
+    
+    /** Similar to the method above, but only applies for internal testing of keys. This method is called during testKeyPair to verify that a key
+     * that is extractable can never be used, unless we allow extractable private keys. Used for PKCS#11 (HSMs) to ensure that they are configured
+     * correctly. On a PKCS11 Crypto Token, this should return the same as doPermitExtractablePrivateKey(), on a Soft Crypto Token this should always return true.
+     * 
+     */
+    public abstract boolean permitExtractablePrivateKeyForTest();
+    
     @Override
     public void testKeyPair(final String alias) throws InvalidKeyException, CryptoTokenOfflineException { // NOPMD:this is not a junit test
         final PrivateKey privateKey = getPrivateKey(alias);
@@ -142,7 +149,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
             ps.flush();
             log.debug("Testing key of type " + baos.toString());
         }
-        if (!doPermitExtractablePrivateKey() && KeyTools.isPrivateKeyExtractable(privateKey)) {
+        if (!permitExtractablePrivateKeyForTest() && KeyTools.isPrivateKeyExtractable(privateKey)) {
             String msg = intres.getLocalizedMessage("token.extractablekey", CesecoreConfiguration.isPermitExtractablePrivateKeys());
             if (!CesecoreConfiguration.isPermitExtractablePrivateKeys()) {
                 throw new InvalidKeyException(msg);

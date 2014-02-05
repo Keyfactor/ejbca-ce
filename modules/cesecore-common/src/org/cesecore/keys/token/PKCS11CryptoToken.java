@@ -322,4 +322,9 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
         }
         return returnValue;
     }
+
+    @Override
+    public boolean permitExtractablePrivateKeyForTest() {
+        return doPermitExtractablePrivateKey();
+    }
 }

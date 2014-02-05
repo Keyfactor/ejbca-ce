@@ -122,5 +122,10 @@ public class DummyCryptoToken extends BaseCryptoToken {
       //Do nothing.
     }
 
+    @Override
+    public boolean permitExtractablePrivateKeyForTest() {
+        return doPermitExtractablePrivateKey();
+    }
+
 }
 

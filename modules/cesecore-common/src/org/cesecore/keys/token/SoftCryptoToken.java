@@ -316,4 +316,9 @@ public class SoftCryptoToken extends BaseCryptoToken {
         }
     }
 
+    @Override
+    public boolean permitExtractablePrivateKeyForTest() {
+        return true;
+    }
+
 }
