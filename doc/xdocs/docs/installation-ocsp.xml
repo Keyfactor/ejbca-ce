@@ -126,6 +126,138 @@ As your OCSP database grows with revoked, and active, certificates you will need
 See the file doc/sql-scripts/create-index-ejbca.sql (section for certificatedata) for indexes needed for CA and OCSP operations.
 </p>
 </subsection>
+
+<subsection name="A CLI example for setting up a responder">
+<p>In this sample scenario we have a CA (can be off line), and we will set up an OCSP responder using the CLI that answers for this CA.</p>
+<p>The order of events are as the workflow above, with an extra step of importing the CA certificate:
+<ul>
+<li>Import the CA certificate (of OCSP_CA) as an 'External CA' in the OCSP responder.</li>
+<li>Create a Crypto Token and generate the OCSP responders signing key.</li>
+<li>Create an OCSP Key Binding, which is the configuration of the OCSP responder answering queries.</li>
+<li>Generate a CSR for the OCSP Key Binding, sending the CSR to the External CA and getting a signed OCSP signer certificate back.</li>
+<li>Import the OCSP signer certificate and activate the OCSP Key Binding.</li>
+</ul>
+</p>
+<p>Lets start the commands...our External CA is this example we call OCSP_CA and it has DN 'CN=OCSP_CA'.</p>
+<source>
+bin/ejbca.sh ca importcacert OCSP_CA /home/tomas/tmp/OCSP_CA.pem
+bin/ejbca.sh cryptotoken create OCSPCryptoToken foo123 true SoftCryptoToken true
+bin/ejbca.sh cryptotoken generatekey OCSPCryptoToken ocspsignkey RSA2048
+bin/ejbca.sh keybind create OCSP_CA_KeyBinding OcspKeyBinding DISABLED null OCSPCryptoToken ocspsignkey SHA256WithRSA nonexistingisgood=false includecertchain=true
+bin/ejbca.sh keybind gencsr OCSP_CA_KeyBinding csr.pem
+
+(send the csr to OCSP_CA and get signed certificate back)
+
+bin/ejbca.sh keybind import OCSP_CA_KeyBinding ocsp.pem 
+bin/ejbca.sh keybind setstatus OCSP_CA_KeyBinding ACTIVE
+
+(now your OCSP key binding is active and can be used to sign OCSP queries)
+</source>
+<p>
+Now you can test the responder by querying for status of the OCSP signer certificate itself.
+</p>
+<source>
+openssl ocsp -issuer OCSP_CA.pem -CAfile OCSP_CA.pem -cert ocsp.pem -req_text -url http://localhost:8080/ejbca/publicweb/status/ocsp
+OCSP Request Data:
+    Version: 1 (0x0)
+    Requestor List:
+        Certificate ID:
+          Hash Algorithm: sha1
+          Issuer Name Hash: E4A38A2DB963CAA8EEDFE4FBD396EE1E9B82FC19
+          Issuer Key Hash: EF9C1460AEEF978FCFD30A3E7B1A2CE0BF36F9AB
+          Serial Number: 054C3D7EA9E92EA5
+    Request Extensions:
+        OCSP Nonce: 
+            0410ED1DFBA35756BBBF033FABB4055166E0
+Response verify OK
+ocsp.pem: good
+	This Update: Feb  5 12:58:43 2014 GMT
+</source>
+<p>
+Get a certificate, received on file (qwe.pem), issued by the OCSP_CA.
+We can feed certificates, as whitelist, to the responder in many different ways (it's a normal database). But before we import it to the OCSP responder, we can check status, 
+which should be unknown (with the current configuration) when it is not present in the OCSP database.
+</p>
+<source>
+openssl ocsp -issuer OCSP_CA.pem -CAfile OCSP_CA.pem -cert qwe.pem -req_text -url http://localhost:8080/ejbca/publicweb/status/ocsp
+OCSP Request Data:
+    Version: 1 (0x0)
+    Requestor List:
+        Certificate ID:
+          Hash Algorithm: sha1
+          Issuer Name Hash: E4A38A2DB963CAA8EEDFE4FBD396EE1E9B82FC19
+          Issuer Key Hash: EF9C1460AEEF978FCFD30A3E7B1A2CE0BF36F9AB
+          Serial Number: 5033A405556C4C26
+    Request Extensions:
+        OCSP Nonce: 
+            0410CF2AA349C1EAF562650CE38FC9AD75B7
+Response verify OK
+qwe.pem: unknown
+	This Update: Feb  5 13:00:51 2014 GMT
+</source>
+<p>
+There is a standalone tool (in EJBCA Enterprise only) that you can use to import certificates received on file. 
+The tool is called crlFetch.
+Place the (qwe.pem) certificate in cert dir and run the command:
+</p>
+<source>
+java -jar dist-crlFetch/crlFetch-0.9.jar
+</source>
+<p>
+Now check status again. It should now be good:
+</p>
+<source>
+openssl ocsp -issuer OCSP_CA.pem -CAfile OCSP_CA.pem -cert qwe.pem -req_text -url http://localhost:8080/ejbca/publicweb/status/ocsp
+OCSP Request Data:
+    Version: 1 (0x0)
+    Requestor List:
+        Certificate ID:
+          Hash Algorithm: sha1
+          Issuer Name Hash: E4A38A2DB963CAA8EEDFE4FBD396EE1E9B82FC19
+          Issuer Key Hash: EF9C1460AEEF978FCFD30A3E7B1A2CE0BF36F9AB
+          Serial Number: 5033A405556C4C26
+    Request Extensions:
+        OCSP Nonce: 
+            0410F767B9AE83322DBC8DE85783348C118F
+Response verify OK
+qwe.pem: good
+	This Update: Feb  5 12:59:59 2014 GMT
+</source>
+<p>
+There is a standalone tool (in EJBCA Enterprise only) that you can use to revoke/unrevoke certificates with, from issuerDN and serialNumber. 
+The tool is called revoke.
+Create the file revoke.txt serial and reason code:<br/>
+5779143089661430822 6
+<br/>
+Run the command:
+</p>
+<source>
+java -jar dist-revoke/revoke-0.9.jar "CN=OCSP_CA" &lt; revoke.txt
+</source>
+<p>
+Now check status again. It should now be revoked:
+</p>
+<source>
+openssl ocsp -issuer OCSP_CA.pem -CAfile OCSP_CA.pem -cert qwe.pem -req_text -url http://localhost:8080/ejbca/publicweb/status/ocsp
+OCSP Request Data:
+    Version: 1 (0x0)
+    Requestor List:
+        Certificate ID:
+          Hash Algorithm: sha1
+          Issuer Name Hash: E4A38A2DB963CAA8EEDFE4FBD396EE1E9B82FC19
+          Issuer Key Hash: EF9C1460AEEF978FCFD30A3E7B1A2CE0BF36F9AB
+          Serial Number: 5033A405556C4C26
+    Request Extensions:
+        OCSP Nonce: 
+            041096D62CECE66549C45D798E88B4D03593
+Response verify OK
+qwe.pem: revoked
+	This Update: Feb  5 13:10:10 2014 GMT
+	Reason: certificateHold
+	Revocation Time: Feb  5 13:09:48 2014 GMT
+</source>
+</subsection>
+
 </section>
 
 <section name="Automated renewal of an OCSP signer via CA's WebService (a.k.a. Re-keying)">
