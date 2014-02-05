@@ -431,7 +431,7 @@
 	<path id="lib.ctlog.classpath">
 	    <path refid="lib.commons-codec.classpath"/>
 	    <fileset dir="${ejbca.home}/lib/ct">
-	        <include name="ctlog.jar"/>
+	        <include name="ctlog-jdk6-*.jar"/>
 	        <include name="protobuf-*.jar"/>
             <include name="guava-*.jar" />
             <include name="json-simple-*.jar" />
