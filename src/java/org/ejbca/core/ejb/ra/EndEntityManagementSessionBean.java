@@ -1053,7 +1053,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     /**
      * Sets a password, hashed or clear text, for a user.
      * 
-     * @param admin the administrator pwrforming the action
+     * @param admin the administrator performing the action
      * @param username the unique username.
      * @param password the new password to be stored in clear text. Setting password to 'null' effectively deletes any previous clear text password.
      * @param cleartext true gives cleartext password, false hashed
