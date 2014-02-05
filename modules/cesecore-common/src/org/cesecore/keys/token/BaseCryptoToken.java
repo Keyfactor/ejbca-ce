@@ -134,7 +134,8 @@ public abstract class BaseCryptoToken implements CryptoToken {
     /** Similar to the method above, but only applies for internal testing of keys. This method is called during testKeyPair to verify that a key
      * that is extractable can never be used, unless we allow extractable private keys. Used for PKCS#11 (HSMs) to ensure that they are configured
      * correctly. On a PKCS11 Crypto Token, this should return the same as doPermitExtractablePrivateKey(), on a Soft Crypto Token this should always return true.
-     * 
+     *
+     * @return false if the key must not be extractable, this will throw an error if the key is extractable when crypto token tries to test it.
      */
     public abstract boolean permitExtractablePrivateKeyForTest();
     
