@@ -25,6 +25,7 @@ import java.security.spec.ECParameterSpec;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -625,6 +626,29 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             log.trace("<findCertificatesByType()");
         }
         return ret;
+    }
+    
+    @Override
+    public List<Certificate> getCertificateChain(final CertificateInfo certinfo) {
+        final List<Certificate> chain = new ArrayList<Certificate>();
+        final Set<String> seenFingerprints = new HashSet<String>();
+        
+        CertificateInfo certInChain = certinfo;
+        do {
+            final String fingerprint = certInChain.getFingerprint();
+            final Certificate thecert = findCertificateByFingerprint(fingerprint);
+            if (!seenFingerprints.add(fingerprint) || thecert == null) {
+                break; // detected loop or missing cert. should not happen
+            }
+            chain.add(thecert);
+            // roots are self-signed
+            if (certInChain.getCAFingerprint().equals(fingerprint)) {
+                break;
+            }
+            // proceed with issuer
+            certInChain = getCertificateInfo(certInChain.getCAFingerprint());
+        } while (certInChain != null); // should not happen
+        return chain;
     }
 
     @Override

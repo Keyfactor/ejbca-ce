@@ -17,7 +17,11 @@
     	<ant antfile="build.xml" dir="modules/healthcheck-war" target="test" />
     	<ant antfile="build.xml" dir="modules/cli-util" target="test" />
     	<ant antfile="build.xml" dir="modules/buildtools" target="test" />
+    	<!-- TODO add statedump here -->
+    	<antcall target="optionaltestct" inheritrefs="true"/>
     </target>
+    <condition property="ct.exists"><available file="modules/ct/build.xml" /></condition>
+    <target name="optionaltestct" if="${ct.exists}"><ant antfile="build.xml" dir="modules/ct" target="test" /></target>
 
     <target name="test:rungfver" description="run Glassfish JEE validation tool on the EJBCA EAR" depends="ejbca.ear">
     	<ant antfile="build.xml" dir="modules/systemtests" target="rungfver" />
@@ -34,6 +38,7 @@
 					<include name="modules/systemtests/src-test/**/${test.runone}.java" />
 					<include name="modules/externalra/src-test/**/${test.runone}.java" />
 					<include name="modules/statedump/src-test/**/${test.runone}.java" />
+					<include name="modules/ct/src-test/**/${test.runone}.java" />
 				</fileset>
     	    </path>
     		<map from="${ejbca.home}/" to=""/>
@@ -50,6 +55,9 @@
     	</condition>
     	<condition property="module" value="modules/statedump">
     		<matches string="${test-fullname}" pattern="^modules/statedump/.*$"/>
+    	</condition>
+    	<condition property="module" value="modules/ct">
+    		<matches string="${test-fullname}" pattern="^modules/ct/.*$"/>
     	</condition>
     	<condition property="module" value="modules/systemtests">
     		<matches string="${test-fullname}" pattern="^modules/systemtests/.*$"/>
@@ -110,5 +118,9 @@
     
     <target name="test:statedump" description="run JUnit Statedump test.">
     	<ant antfile="build.xml" dir="modules/statedump" target="test" />
+    </target>
+    
+    <target name="test:ct" description="run JUnit Certificate Transparency test.">
+    	<ant antfile="build.xml" dir="modules/ct" target="test" />
     </target>
 </project>

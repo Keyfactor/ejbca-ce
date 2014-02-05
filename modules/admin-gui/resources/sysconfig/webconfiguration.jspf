@@ -52,7 +52,7 @@ function checkuseautoenroll(){
 
 <h1><c:out value="<%= ejbcawebbean.getText(\"SYSTEMCONFIGURATION\") %>"/></h1> 
 
-<form name="webconfiguration" method="post" action="<%= gc.getConfigPath() + "/" + THIS_FILENAME %>">
+<form name="webconfiguration" method="post" enctype="multipart/form-data" action="<%= gc.getConfigPath() + "/" + THIS_FILENAME %>">
   <table class="action" id="config" width="100%" border="0" cellspacing="3" cellpadding="3">
 
     <tr id="Row1"> 
@@ -105,7 +105,7 @@ function checkuseautoenroll(){
         <label for="<%=CHECKBOX_ENABLEAUTHENTICATEDUSERSONLY%>"><c:out value="<%= ejbcawebbean.getText(\"ACTIVATE\") %>" /></label>
       </td>
     </tr>
---%>
+*/ --%>
     <tr id="Row1"> 
       <td width="49%" valign="top"> 
         <h3><c:out value="<%= ejbcawebbean.getText(\"ENABLEENDENTITYPROFILELIM\") %>"/></h3>
@@ -368,3 +368,40 @@ function checkuseautoenroll(){
 		<label for="<%=CHECKBOX_ENABLECLIDEFAULTUSER%>"><c:out value="<%= ejbcawebbean.getText(\"ACTIVATE\") %>" /></label>
   	  </td>
     </tr>
+    
+    <% if (CertificateTransparencyFactory.isCTAvailable()) { %>
+    <tr id="Row0">
+      <td width="49%" valign="top">
+        <h3>
+            <c:out value="<%= ejbcawebbean.getText(\"CTLOGCONFIGURATION\") %>" />
+            <%= ejbcawebbean.getHelpReference("/adminguide.html#Certificate%20Transparency") %>
+        </h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CTLOGCONFIGURATION_HELP\") %>" /></p>
+      </td>
+      <td width="51%" valign="top">
+        <%
+        /* List existing CT logs */
+        for (CTLogInfo ctlog : gc.getCTLogs().values()) {
+            %><div>
+            <b><c:out value="<%= ejbcawebbean.getText(\"CTLOGCONFIGURATION_URL\") %>" /> <code><c:out value="<%= ctlog.getUrl() %>" /></code></b><br />
+            <c:out value="<%= ejbcawebbean.getText(\"CTLOGCONFIGURATION_PUBLICKEY\") %>" /> <code><c:out value="<%= ctlog.getLogKeyIdString() %>" /></code><br />
+            <label><c:out value="<%= ejbcawebbean.getText(\"CTLOGCONFIGURATION_TIMEOUT\") %>" /> <input type="text" name="<%=TEXTFIELD_CTLOG_TIMEOUT%><c:out value="<%= ctlog.getLogId() %>" />" size="8" value="<c:out value="<%= ctlog.getTimeout() %>" />" title="<c:out value="<%= ejbcawebbean.getText(\"MILLISECONDS\") %>" />" /></label><br />
+            <label><input type="checkbox" name="<%=CHECKBOX_CTLOG_REMOVE%>" value="<c:out value="<%= ctlog.getLogId() %>" />" />&nbsp;<c:out value="<%= ejbcawebbean.getText(\"REMOVE\") %>" /></label><br />
+            <br />
+            </div><%
+        }
+        %>
+        
+        <%-- Add form --%>
+        <div>
+        <b><c:out value="<%= ejbcawebbean.getText(\"CTLOGCONFIGURATION_ADDTEXT\") %>" /></b><br />
+        <label><c:out value="<%= ejbcawebbean.getText(\"CTLOGCONFIGURATION_URL\") %>" /> <input type="text" name="<%=TEXTFIELD_CTLOG_URL%>" size="20" /></label><br />
+        <label><c:out value="<%= ejbcawebbean.getText(\"CTLOGCONFIGURATION_PUBLICKEYFILE\") %>" /> <input type="file" name="<%=FILE_CTLOG_PUBLICKEY%>" /></label><br />
+        <label><c:out value="<%= ejbcawebbean.getText(\"CTLOGCONFIGURATION_TIMEOUT\") %>" /> <input type="text" name="<%=TEXTFIELD_CTLOG_TIMEOUT%>" size="8" value="5000" <c:out value="<%= ejbcawebbean.getText(\"MILLISECONDS\") %>" /> /></label><br />
+        
+        <input type="submit" name="<%=BUTTON_CTLOG_UPDATE%>" value="<c:out value="<%= ejbcawebbean.getText(\"CTLOGCONFIGURATION_UPDATE\") %>" />" /><br />
+        </div>
+      </td>
+    </tr>
+    <% } /* CertificateTransparencyFactory.isCTAvailable() */ %>
+

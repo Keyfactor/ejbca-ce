@@ -47,6 +47,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
+import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -73,10 +74,13 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -613,7 +617,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     }
 
     /**
-     * Creates the certificate, uses the cesecore method with the same signature but in addition to that calls certreqsession and publishers
+     * Creates the certificate, uses the cesecore method with the same signature but in addition to that calls certreqsession and publishers, and fetches the CT configuration
      * @throws CesecoreException 
      * @throws AuthorizationDeniedException 
      * @throws CertificateCreateException 
@@ -625,6 +629,13 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             CertificateCreateException, AuthorizationDeniedException, CesecoreException {
         if (log.isTraceEnabled()) {
             log.trace(">createCertificate(pk, ku, notAfter)");
+        }
+        
+        // Get Certificate Transparency configuration
+        if (ca instanceof X509CA) {
+            GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+            GlobalConfiguration globalConfiguration = (GlobalConfiguration)globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GlobalConfigID);
+            ((X509CA)ca).setConfiguredCTLogs(globalConfiguration.getCTLogs());
         }
 
         // Create the certificate. Does access control checks (with audit log) on the CA and create_certificate.

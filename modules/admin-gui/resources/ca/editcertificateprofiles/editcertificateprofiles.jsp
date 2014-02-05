@@ -6,7 +6,7 @@
                org.cesecore.certificates.certificateprofile.CertificateProfileExistsException, org.cesecore.certificates.certificateprofile.CertificateProfileConstants, org.ejbca.ui.web.CertificateView, org.cesecore.certificates.util.DNFieldExtractor, org.cesecore.certificates.util.DnComponents, 
                org.cesecore.certificates.certificate.certextensions.CertificateExtensionFactory, org.cesecore.certificates.certificate.certextensions.AvailableCertificateExtension, org.cesecore.certificates.certificateprofile.CertificatePolicy,
                org.cesecore.certificates.ca.CAInfo, org.cesecore.util.ValidityDate, org.ejbca.ui.web.ParameterException, org.cesecore.certificates.util.AlgorithmConstants,
-               org.cesecore.certificates.certificate.CertificateConstants, org.ejbca.core.model.authorization.AccessRulesConstants"%>
+               org.cesecore.certificates.certificate.CertificateConstants, org.ejbca.core.model.authorization.AccessRulesConstants, org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory, org.cesecore.certificates.certificatetransparency.CTLogInfo"%>
 <%@page import="org.cesecore.util.YearMonthDayTime"%>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
@@ -64,6 +64,9 @@
   static final String TEXTFIELD_QCCUSTOMSTRINGTEXT     = "textfieldqccustomstringtext";
   static final String TEXTFIELD_PRIVKEYUSAGEPERIODSTARTOFFSET     = "textfieldprivkeyusageperiodstartoffset";
   static final String TEXTFIELD_PRIVKEYUSAGEPERIODLENGTH          = "textfieldprivkeyusageperiodlength";
+  static final String TEXTFIELD_CTMINSCTS              = "textfieldctminscts";
+  static final String TEXTFIELD_CTMAXSCTS              = "textfieldctmaxscts";
+  static final String TEXTFIELD_CTMAXRETRIES           = "textfieldctmaxretries";
   
   static final String CHECKBOX_BASICCONSTRAINTS                   = "checkboxbasicconstraints";
   static final String CHECKBOX_BASICCONSTRAINTSCRITICAL           = "checkboxbasicconstraintscritical";
@@ -111,6 +114,8 @@
   static final String CHECKBOX_USEQCCUSTOMSTRING                  = "checkqccustomstring";
   static final String CHECKBOX_USEPRIVKEYUSAGEPERIODNOTBEFORE	  = "checkboxuseprivkeyusageperiodnotbefore";
   static final String CHECKBOX_USEPRIVKEYUSAGEPERIODNOTAFTER	  = "checkboxuseprivkeyusageperiodnotafter";
+  static final String CHECKBOX_USECERTIFICATETRANSPARENCYINCERTS  = "checkboxusecertificatetransparencyincerts";
+  static final String CHECKBOX_USECERTIFICATETRANSPARENCYINOCSP   = "checkboxusecertificatetransparencyinocsp";
 
   static final String SELECT_AVAILABLEBITLENGTHS                  = "selectavailablebitlengths";
   static final String SELECT_KEYUSAGE                             = "selectkeyusage";
@@ -126,6 +131,7 @@
   static final String SELECT_USEDCERTIFICATEEXTENSIONS            = "selectusedcertificateextensions";
   static final String SELECT_APPROVALSETTINGS                     = "selectapprovalsettings";
   static final String SELECT_NUMOFREQUIREDAPPROVALS               = "selectnumofrequiredapprovals";
+  static final String SELECT_CTLOGS                               = "selectctlogs";
 
   // Declare Language file.
 %>
@@ -883,6 +889,37 @@
                      							certificateprofiledata.setQCStatementRAName(request.getParameter(TEXTFIELD_QCSTATEMENTRANAME));
                   						}
              					}
+             					
+             					/* Certificate Transparency extension */
+                                boolean useCTInCerts = false;
+                                value = request.getParameter(CHECKBOX_USECERTIFICATETRANSPARENCYINCERTS);
+                                if (value != null) { useCTInCerts = value.equals(CHECKBOX_VALUE); }
+                                
+                                boolean useCTInOCSP = false;
+                                value = request.getParameter(CHECKBOX_USECERTIFICATETRANSPARENCYINOCSP);
+                                if (value != null) { useCTInOCSP = value.equals(CHECKBOX_VALUE); }
+                                
+                                certificateprofiledata.setUseCertificateTransparencyInCerts(useCTInCerts);
+                                certificateprofiledata.setUseCertificateTransparencyInOCSP(useCTInOCSP);
+                                
+                                if (useCTInCerts || useCTInOCSP) {
+                                        values = request.getParameterValues(SELECT_CTLOGS);
+                                        Set<Integer> enabledLogs = new LinkedHashSet<Integer>();
+                                        if (values != null) {
+                                                for (String selected : values) {
+                                                        enabledLogs.add(Integer.valueOf(selected));
+                                                }
+                                        }
+                                        certificateprofiledata.setEnabledCTLogs(enabledLogs);
+                                        
+                                        int minSCTs = Integer.parseInt(request.getParameter(TEXTFIELD_CTMINSCTS));
+                                        if (minSCTs > enabledLogs.size()) {
+                                                throw new ParameterException(ejbcawebbean.getText("TOOMANYREQUIREDCTLOGS"));
+                                        }
+                                        certificateprofiledata.setCTMinSCTs(minSCTs);
+                                        certificateprofiledata.setCTMaxSCTs(Integer.parseInt(request.getParameter(TEXTFIELD_CTMAXSCTS)));
+                                        certificateprofiledata.setCTMaxRetries(Integer.parseInt(request.getParameter(TEXTFIELD_CTMAXRETRIES)));
+                                }
              
              					values = request.getParameterValues(SELECT_APPROVALSETTINGS);
              					ArrayList approvalsettings = new ArrayList(); 
@@ -980,8 +1017,7 @@
                    								}
                							}
              					} // if(certificateprofiledata.getCaIssuers() != null)
-
-           
+             					
            						if(request.getParameter(BUTTON_CANCEL) != null){
               							// Don't save changes.
               							cabean.setTempCertificateProfile(null);

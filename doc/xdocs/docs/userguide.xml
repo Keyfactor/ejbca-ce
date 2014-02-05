@@ -924,6 +924,20 @@ notBefore = cert.notBefore + startOffset
 notAfter = notBefore + periodLength
 </source>
 </subsubsection>
+<subsection name="Certificate Transparency">
+<p>This is an extra module for EJBCA that implements Certificate Transparency (CT) as specified in <a href="http://tools.ietf.org/html/rfc6962">RFC 6962</a>.
+The purpose of CT is to create public audit logs of all certificates issued by SSL CAs, and the presence of audit records is planned to be required in future versions of Google Chrome (and perhaps other web browsers later on as well). More information can be found on the <a href="http://www.certificate-transparency.org/">CT website</a>.</p>
+
+<p>The following options are visibile if the CT module is available:</p>
+
+<dl>
+<dt>Enabled CT Logs</dt><dd>Which logs to submit to and obtain SCTs from. New logs can be added in the System Configuration, see the <a href="adminguide.html#Certificate%20Transparency">admin guide</a>.</dd>
+<dt>Minimum number of SCTs</dt><dd>If less servers respond with an SCT than this number, the underlying operation will fail (certificate issuing or OCSP response).</dd>
+<dt>Maximum number of SCTs</dt><dd>After having received this number of SCTs, EJBCA will stop contacting log servers.</dd>
+<dt>Number of retries</dt><dd>If a log server times out it will be tried again after all other logs have been tried. This is the maximum number of tries per server.</dd>
+</dl>
+
+</subsection>
 <subsubsection name="Cardnumber">
 <p>
 Select this if you want to use the SEIS Cardnumber Extension. The card number is a unique identifier stored in the certificate and should also be printed on top of the card on which the certificate is stored.
