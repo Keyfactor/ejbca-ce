@@ -1117,10 +1117,12 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     } else {
                         log.trace("Dumping contents of OCSP signing cache:");
                         for (OcspSigningCacheEntry ocspSigningCacheEntry2 : entries) {
-                            log.trace("SubjectDN: "+ocspSigningCacheEntry2.getOcspSigningCertificate().getSubjectDN().toString());
-                            log.trace("- IssuerNameHash: "+new String(Hex.encode(ocspSigningCacheEntry2.getCertificateID().getIssuerNameHash())));
-                            log.trace("- IssuerKeyHash: "+new String(Hex.encode(ocspSigningCacheEntry2.getCertificateID().getIssuerKeyHash())));
-                        }    	
+                            final X509Certificate cert = ocspSigningCacheEntry2.getOcspSigningCertificate();
+                            log.trace("SubjectDN: "+(cert == null ? "null" : cert.getSubjectDN().toString()));
+                            final CertificateID id = ocspSigningCacheEntry2.getCertificateID();
+                            log.trace("- IssuerNameHash: "+id == null ? "null" : new String(Hex.encode(id.getIssuerNameHash())));
+                            log.trace("- IssuerKeyHash: "+id == null ? "null" : new String(Hex.encode(id.getIssuerKeyHash())));
+                        }
                     }
                 }
                 throw new OcspFailureException(errMsg);
