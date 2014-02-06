@@ -197,7 +197,8 @@ qwe.pem: unknown
 </source>
 <p>
 There is a standalone tool (in EJBCA Enterprise only) that you can use to import certificates received on file. 
-The tool is called crlFetch.
+The tool is called crlFetch. The most common way to feed the OCSP responder is to push certificates directly from the CA, in real time, using an EJBCA 'VA Publisher'. 
+In this example we will use the crlFetch tool though, as it works for completely off-line CAs.<br/>
 Place the (qwe.pem) certificate in cert dir and run the command:
 </p>
 <source>
