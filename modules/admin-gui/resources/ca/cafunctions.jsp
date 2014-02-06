@@ -38,8 +38,7 @@ org.ejbca.util.HTMLTools
 <%!
 
   final static String HIDDEN_NUMBEROFCAS    = "hiddennumberofcas";
-  final static String HIDDEN_CASUBJECTDN    = "hiddensubjectdn";
-
+  final static String HIDDEN_CAID           = "hiddencaid";
   final static String BUTTON_CREATECRL      = "buttoncreatecrl";
   final static String BUTTON_CREATEDELTACRL = "buttoncreatedeltacrl";
 %>
@@ -68,14 +67,20 @@ org.ejbca.util.HTMLTools
   if(request.getParameter(HIDDEN_NUMBEROFCAS) != null){
     int numberofcas = Integer.parseInt(request.getParameter(HIDDEN_NUMBEROFCAS));
     for(int i = 0; i < numberofcas; i++){       
-       String casubjectdn = request.getParameter(HIDDEN_CASUBJECTDN+i);
+       final String caidstr = request.getParameter(HIDDEN_CAID+i);
+       final int caid;
+       if (caidstr != null) {
+    	   caid = Integer.parseInt(caidstr);
+       } else {
+    	   caid = 0;
+       }
        if( request.getParameter(BUTTON_CREATECRL+i) != null ){      
          // Create new crl (with authorization checks)
-         cabean.createCRL(casubjectdn);
+         cabean.createCRL(caid);
       }         
       if( request.getParameter(BUTTON_CREATEDELTACRL+i) != null ){      
            // Create new delta crl (with authorization checks)
-           cabean.createDeltaCRL(casubjectdn);
+           cabean.createDeltaCRL(caid);
       }
     }
   }
@@ -165,8 +170,8 @@ function getPasswordAndSubmit(formname) {
             <td>               
               <form name="<%= "JKSFORM"+Integer.toHexString((subjectdn+j).hashCode()) %>" method="POST" action="<%=DOWNLOADCERTIFICATE_LINK%>">
 					<input type="hidden" name="cmd" value="jkscert"/>
-					<input type="hidden" name="level" value="<%= j %>"/>
-					<input type="hidden" name="issuer" value="<%= subjectdn %>"/>
+					<input type="hidden" name="level" value='<c:out value="<%= j %>" />'/>
+					<input type="hidden" name="issuer" value='<c:out value="<%= subjectdn %>" />'/>
 					<input type="hidden" name="password" value=""/>
               </form>
               <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=iecacert&level=<%= j%>&issuer=<%= java.net.URLEncoder.encode(subjectdn,"UTF-8") %>"><%= ejbcawebbean.getText("DOWNLOADIE")%></a>&nbsp;&nbsp;&nbsp;
@@ -189,8 +194,8 @@ function getPasswordAndSubmit(formname) {
             <td>               
               <form name="<%= "JKSFORM"+Integer.toHexString((subjectdn+j).hashCode()) %>" method="POST" action="<%=DOWNLOADCERTIFICATE_LINK%>">
 					<input type="hidden" name="cmd" value="jkscert"/>
-					<input type="hidden" name="level" value="<%= j %>"/>
-					<input type="hidden" name="issuer" value="<%= subjectdn %>"/>
+					<input type="hidden" name="level" value='<c:out value="<%= j %>" />'/>
+					<input type="hidden" name="issuer" value='<c:out value="<%= subjectdn %>" />'/>
 					<input type="hidden" name="password" value=""/>
               </form>
               <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=iecacert&level=<%= j%>&issuer=<%= java.net.URLEncoder.encode(subjectdn,"UTF-8") %>"><%= ejbcawebbean.getText("DOWNLOADIE")%></a>&nbsp;&nbsp;&nbsp;
@@ -249,10 +254,10 @@ function getPasswordAndSubmit(formname) {
 
 <% // Display createcrl if admin is authorized
       if(createcrlrights){ %>
-<br /> 
+<br />
 <form name='createcrl' method=GET action='<%=THIS_FILENAME %>'>
 <input type='hidden' name='<%=HIDDEN_NUMBEROFCAS %>' value='<%=canames.keySet().size()%>'> 
-<input type='hidden' name='<%=HIDDEN_CASUBJECTDN + number %>' value="<%=subjectdn%>"> 
+<input type='hidden' name='<%=HIDDEN_CAID + number %>' value='<c:out value="<%= caid %>" />'> 
 <%=ejbcawebbean.getText("CREATENEWCRL") + " : " %>
        <% 
        if ( cainfo.getCAInfo().getStatus() == CAConstants.CA_ACTIVE ) {
@@ -263,7 +268,7 @@ function getPasswordAndSubmit(formname) {
           } 
        if(cainfo.getCAInfo().getDeltaCRLPeriod() > 0) { %>
 <br />
-<input type='hidden' name='<%=HIDDEN_CASUBJECTDN + number %>' value="<%=subjectdn%>"> 
+<input type='hidden' name='<%=HIDDEN_CAID + number %>' value='<c:out value="<%= caid %>" />'> 
 <%=ejbcawebbean.getText("CREATENEWDELTACRL") + " : " %>
        <%
        if ( cainfo.getCAInfo().getStatus() == CAConstants.CA_ACTIVE) {

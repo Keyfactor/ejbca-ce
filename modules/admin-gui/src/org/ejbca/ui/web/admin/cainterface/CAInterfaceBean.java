@@ -474,9 +474,9 @@ public class CAInterfaceBean implements Serializable {
     	certificateprofiles.cloneCertificateProfile(originalname, newname);
     }    
       
-    public void createCRL(String issuerdn) throws CryptoTokenOfflineException, CAOfflineException  {      
+    public void createCRL(int caid) throws CryptoTokenOfflineException, CAOfflineException  {      
         try {
-            publishingCrlSession.forceCRL(authenticationToken, issuerdn.hashCode());
+            publishingCrlSession.forceCRL(authenticationToken, caid);
         } catch (CADoesntExistsException e) {
             throw new RuntimeException(e);
         } catch (AuthorizationDeniedException e) {
@@ -484,9 +484,9 @@ public class CAInterfaceBean implements Serializable {
 		}
     }
 
-    public void createDeltaCRL(String issuerdn) throws CryptoTokenOfflineException, CAOfflineException {      
+    public void createDeltaCRL(int caid) throws CryptoTokenOfflineException, CAOfflineException {      
         try {
-            publishingCrlSession.forceDeltaCRL(authenticationToken, issuerdn.hashCode());
+            publishingCrlSession.forceDeltaCRL(authenticationToken, caid);
         } catch (CADoesntExistsException e) {
             throw new RuntimeException(e);
         } catch (AuthorizationDeniedException e) {
