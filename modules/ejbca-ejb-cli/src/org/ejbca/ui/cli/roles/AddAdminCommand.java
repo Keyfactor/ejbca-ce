@@ -87,7 +87,7 @@ public class AddAdminCommand extends BaseRolesCommand {
             }
             String roleName = args[1];
             if (ejb.getRemoteSession(RoleAccessSessionRemote.class).findRole(roleName) == null) {
-                getLogger().error("No such group \"" + roleName + "\".");
+                getLogger().error("No such role \"" + roleName + "\".");
                 return;
             }
             String caName = args[2];
