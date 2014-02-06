@@ -33,6 +33,8 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificatetransparency.CertificateTransparency;
+import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.certificates.util.cert.QCStatementExtension;
@@ -342,5 +344,16 @@ public class CertificateView implements Serializable {
 			ret = false;
 		}
 		return ret;
+    }
+
+    public boolean hasCertificateTransparencySCTs() {
+        boolean ret = false; 
+        try {
+            CertificateTransparency ct = CertificateTransparencyFactory.getInstance();
+            ret = (ct != null && ct.hasSCTs(certificate));
+        } catch (IOException e) {
+            ret = false;
+        }
+        return ret;
     }
 }
