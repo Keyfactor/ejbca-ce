@@ -354,12 +354,17 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         }
         // Audit log the result before persistence
         final InternalKeyBinding internalKeyBinding = internalKeyBindingDataSession.getInternalKeyBinding(internalKeyBindingId);
-        final Map<String, Object> details = new LinkedHashMap<String, Object>();
-        details.put("msg", "Deleted InternalKeyBinding with id " + internalKeyBinding.getId());
-        details.put("name", internalKeyBinding.getName());
-        securityEventsLoggerSession.log(EventTypes.INTERNALKEYBINDING_DELETE, EventStatus.SUCCESS, ModuleTypes.INTERNALKEYBINDING, ServiceTypes.CORE,
-                authenticationToken.toString(), String.valueOf(internalKeyBinding.getId()), null, null, details);
-        return internalKeyBindingDataSession.removeInternalKeyBinding(internalKeyBindingId);
+        if (internalKeyBinding != null) {
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", "Deleted InternalKeyBinding with id " + internalKeyBinding.getId());
+            details.put("name", internalKeyBinding.getName());
+            securityEventsLoggerSession.log(EventTypes.INTERNALKEYBINDING_DELETE, EventStatus.SUCCESS, ModuleTypes.INTERNALKEYBINDING, ServiceTypes.CORE,
+                    authenticationToken.toString(), String.valueOf(internalKeyBinding.getId()), null, null, details);
+            return internalKeyBindingDataSession.removeInternalKeyBinding(internalKeyBindingId);
+        } else {
+            // Didn't exist
+            return false;
+        }
     }
 
     @Override
