@@ -17,11 +17,13 @@
     	<ant antfile="build.xml" dir="modules/healthcheck-war" target="test" />
     	<ant antfile="build.xml" dir="modules/cli-util" target="test" />
     	<ant antfile="build.xml" dir="modules/buildtools" target="test" />
-    	<!-- TODO add statedump here -->
+    	<antcall target="optionalteststatedump" inheritrefs="true"/>
     	<antcall target="optionaltestct" inheritrefs="true"/>
     </target>
     <condition property="ct.exists"><available file="modules/ct/build.xml" /></condition>
     <target name="optionaltestct" if="${ct.exists}"><ant antfile="build.xml" dir="modules/ct" target="test" /></target>
+    <condition property="statedump.exists"><available file="modules/statedump/build.xml" /></condition>
+    <target name="optionalteststatedump" if="${statedump.exists}" depends="statedump"><ant antfile="build.xml" dir="modules/statedump" target="test" /></target>
 
     <target name="test:rungfver" description="run Glassfish JEE validation tool on the EJBCA EAR" depends="ejbca.ear">
     	<ant antfile="build.xml" dir="modules/systemtests" target="rungfver" />
