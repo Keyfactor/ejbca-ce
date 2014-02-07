@@ -1683,16 +1683,16 @@ In jboss-log4j.xml 'org.ejbca.core.protocol.ws.logger.TransactionLogger' should 
 </subsection>
 </section>
 
-<section name="Certificate Transparency">
+<section name="Certificate Transparency (Enterprise only)">
 <subsection name="Introduction">
-<p>There is an extra module for EJBCA that implements Certificate Transparency (CT) as specified in <a href="http://tools.ietf.org/html/rfc6962">RFC 6962</a>.
-The purpose of CT is to create public audit logs of all certificates issued by SSL CAs, and the presence of audit records is planned to be required for EV certificates in Google Chrome from February 2015 (and other web browsers and non-EV certificates later on as well). More information can be found on the <a href="http://www.certificate-transparency.org/">CT website</a>.</p>
+<p>EJBCA Enterprise Edition implements Certificate Transparency (CT) as specified in <a href="http://tools.ietf.org/html/rfc6962">RFC 6962</a>.
+The purpose of CT is to create public audit logs of all certificates issued by SSL/TLS CAs, and the presence of audit records is planned to be required for EV certificates in Google Chrome from February 2015 (and other web browsers and non-EV certificates later on as well). Note that CT is only relevant for CAs issuing <em>public SSL/TLS</em> certificates. More information can be found on the <a href="http://www.certificate-transparency.org/">CT website</a>.</p>
 
 <p>The EJBCA module implements log submission and inclusion of signed log timestamps (SCTs) in both newly issued certificates and in OCSP responses.
 The OCSP CT option does not use caching however, and should only be used for pre-generating OCSP responses.</p>
 </subsection>
 <subsection name="Prerequisites">
-<p>Your EJBCA installation needs the <code><strong>ct</strong></code> module (contact PrimeKey for details). In order to use CT OCSP you must enable the
+<p>Your EJBCA installation needs the <code><strong>ct</strong></code> module, which is only present in the enterprise edition (contact PrimeKey for details). In order to use CT OCSP you must enable the
 corresponding extension class in <code>conf/ocsp.properties</code>:</p>
 
 <source>
@@ -1706,12 +1706,17 @@ ocsp.extensionclass=org.ejbca.core.protocol.ocsp.extension.certificatetransparen
 <p>CT log servers are configured under System Configuration. They do not become active until they are enabled per certificate profile.
 The following parameters have to be configured in a log:</p>
 
-<dl>
-<dt>Log URL</dt><dd>The log URL, e.g. <code>http://something/ctlog/v1/</code></dd>
-<dt>Public Key</dt><dd>The log's public key, in PEM or DER format. Usually this is an Elliptic Curve key.</dd>
-<dt>Timeout</dt><dd>Connection timeout in milliseconds. Five seconds is the default. Note that certificate
-issuing and/or OCSP response generation must wait for the log server to respond, so do not set it too high.</dd>
-</dl>
+<ul>
+<li>Log URL : The log URL, e.g. <code>http://something/ctlog/v1/</code></li>
+<li>Public Key : The log's public key, in PEM or DER format. Usually this is an Elliptic Curve key.</li>
+<li>Timeout : Connection timeout in milliseconds. Five seconds is the default. Note that certificate
+issuing and/or OCSP response generation must wait for the log server to respond, so do not set it too high.</li>
+</ul>
+
+<p>EJBCA is pre-configured with the Google pilot log server as an example. It is not generally possible to use this server
+directly, since it will only accept certificates from well-known CAs. For local testing you can install your own
+instance of the sample log server from the <a href="https://code.google.com/p/certificate-transparency/">CT open source project</a>.
+For a production system (or testing of one) you must contact the log operator to have your CA root added.</p>
 
 <p>For best performance and redundancy, please use multiple logs with short timeouts.
 You can have more logs than you require in the certificate profiles. In this case, EJBCA will
