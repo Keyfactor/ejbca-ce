@@ -9,6 +9,7 @@
 
     <target name="test:runsys" description="run system test, use -Dtest.includep11=true to include P11 tests">
     	<ant antfile="build.xml" dir="modules/systemtests" target="run" />    	
+    	<antcall target="optionalteststatedump" inheritrefs="true"/>
     </target>
 
     <target name="test:runsa" description="run stand-alone JUnit test cases, use -Dtest.includep11=true to include P11 tests">
@@ -17,7 +18,6 @@
     	<ant antfile="build.xml" dir="modules/healthcheck-war" target="test" />
     	<ant antfile="build.xml" dir="modules/cli-util" target="test" />
     	<ant antfile="build.xml" dir="modules/buildtools" target="test" />
-    	<antcall target="optionalteststatedump" inheritrefs="true"/>
     	<antcall target="optionaltestct" inheritrefs="true"/>
     </target>
     <condition property="ct.exists"><available file="modules/ct/build.xml" /></condition>
