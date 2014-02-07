@@ -99,7 +99,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
 
     private static final Logger log = Logger.getLogger(SignSessionBean.class);
 
-    @PersistenceContext(unitName="ejbca")
+    @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;
 
     @EJB
@@ -198,23 +198,24 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     }
 
     @Override
-    public Certificate createCertificate(final AuthenticationToken admin, final String username, final String password, final PublicKey pk) throws EjbcaException,
-            ObjectNotFoundException, AuthorizationDeniedException, CesecoreException {
+    public Certificate createCertificate(final AuthenticationToken admin, final String username, final String password, final PublicKey pk)
+            throws EjbcaException, ObjectNotFoundException, AuthorizationDeniedException, CesecoreException {
         // Default key usage is defined in certificate profiles
         return createCertificate(admin, username, password, pk, -1, null, null, CertificateProfileConstants.CERTPROFILE_NO_PROFILE,
                 SecConst.CAID_USEUSERDEFINED);
     }
 
     @Override
-    public Certificate createCertificate(final AuthenticationToken admin, final String username, final String password, final PublicKey pk, final int keyusage, final Date notBefore,
-            final Date notAfter) throws ObjectNotFoundException, AuthorizationDeniedException, EjbcaException, CesecoreException {
+    public Certificate createCertificate(final AuthenticationToken admin, final String username, final String password, final PublicKey pk,
+            final int keyusage, final Date notBefore, final Date notAfter) throws ObjectNotFoundException, AuthorizationDeniedException,
+            EjbcaException, CesecoreException {
         return createCertificate(admin, username, password, pk, keyusage, notBefore, notAfter, CertificateProfileConstants.CERTPROFILE_NO_PROFILE,
                 SecConst.CAID_USEUSERDEFINED);
     }
 
     @Override
-    public Certificate createCertificate(final AuthenticationToken admin, final String username, final String password, final Certificate incert) throws CesecoreException,
-            ObjectNotFoundException, AuthorizationDeniedException, EjbcaException {
+    public Certificate createCertificate(final AuthenticationToken admin, final String username, final String password, final Certificate incert)
+            throws CesecoreException, ObjectNotFoundException, AuthorizationDeniedException, EjbcaException {
         try {
             // Convert the certificate to a BC certificate. SUN does not handle verifying RSASha256WithMGF1 for example 
             final Certificate bccert = CertTools.getCertfromByteArray(incert.getEncoded());
@@ -224,12 +225,14 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             final String msg = intres.getLocalizedMessage("createcert.popverificationfailed");
             throw new SignRequestSignatureException(msg);
         }
-        return createCertificate(admin, username, password, incert.getPublicKey(), CertTools.sunKeyUsageToBC(((X509Certificate)incert).getKeyUsage()), null, null);
+        return createCertificate(admin, username, password, incert.getPublicKey(),
+                CertTools.sunKeyUsageToBC(((X509Certificate) incert).getKeyUsage()), null, null);
     }
-    
+
     @Override
-    public ResponseMessage createCertificate(final AuthenticationToken admin, final RequestMessage req, Class<? extends ResponseMessage> responseClass, final EndEntityInformation suppliedUserData)
-            throws EjbcaException, CesecoreException, AuthorizationDeniedException {
+    public ResponseMessage createCertificate(final AuthenticationToken admin, final RequestMessage req,
+            Class<? extends ResponseMessage> responseClass, final EndEntityInformation suppliedUserData) throws EjbcaException, CesecoreException,
+            AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">createCertificate(IRequestMessage)");
         }
@@ -317,9 +320,9 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     }
 
     @Override
-    public Certificate createCertificate(final AuthenticationToken admin, final String username, final String password, final PublicKey pk, final int keyusage, final Date notBefore,
-            final Date notAfter, final int certificateprofileid, final int caid) throws ObjectNotFoundException, CADoesntExistsException, AuthorizationDeniedException,
-            EjbcaException, CesecoreException {
+    public Certificate createCertificate(final AuthenticationToken admin, final String username, final String password, final PublicKey pk,
+            final int keyusage, final Date notBefore, final Date notAfter, final int certificateprofileid, final int caid)
+            throws ObjectNotFoundException, CADoesntExistsException, AuthorizationDeniedException, EjbcaException, CesecoreException {
         if (log.isTraceEnabled()) {
             log.trace(">createCertificate(pk, ku, date)");
         }
@@ -368,9 +371,10 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     }
 
     @Override
-    public CertificateResponseMessage createRequestFailedResponse(final AuthenticationToken admin, final RequestMessage req, final Class<? extends ResponseMessage> responseClass,
-            final FailInfo failInfo, final String failText) throws AuthLoginException, AuthStatusException, IllegalKeyException, CADoesntExistsException,
-            SignRequestSignatureException, SignRequestException, CryptoTokenOfflineException, AuthorizationDeniedException {
+    public CertificateResponseMessage createRequestFailedResponse(final AuthenticationToken admin, final RequestMessage req,
+            final Class<? extends ResponseMessage> responseClass, final FailInfo failInfo, final String failText) throws AuthLoginException,
+            AuthStatusException, IllegalKeyException, CADoesntExistsException, SignRequestSignatureException, SignRequestException,
+            CryptoTokenOfflineException, AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">createRequestFailedResponse(IRequestMessage)");
         }
@@ -381,8 +385,10 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(catoken.getCryptoTokenId());
             decryptAndVerify(cryptoToken, req, ca);
             //Create the response message with all nonces and checks etc
-            ret = req.createResponseMessage(responseClass, req, ca.getCertificateChain(), cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),
-                    cryptoToken.getSignProviderName());
+            ret = req
+                    .createResponseMessage(responseClass, req, ca.getCertificateChain(),
+                            cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),
+                            cryptoToken.getSignProviderName());
             ret.setStatus(ResponseStatus.FAILURE);
             ret.setFailInfo(failInfo);
             ret.setFailText(failText);
@@ -407,9 +413,9 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     }
 
     @Override
-    public RequestMessage decryptAndVerifyRequest(final AuthenticationToken admin, final RequestMessage req) throws AuthStatusException, AuthLoginException,
-            IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException, CryptoTokenOfflineException,
-            AuthorizationDeniedException {
+    public RequestMessage decryptAndVerifyRequest(final AuthenticationToken admin, final RequestMessage req) throws AuthStatusException,
+            AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException,
+            CryptoTokenOfflineException, AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">decryptAndVerifyRequest(IRequestMessage)");
         }
@@ -436,12 +442,13 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         return req;
     }
 
-    private void decryptAndVerify(final CryptoToken cryptoToken, final RequestMessage req, final CA ca) throws CryptoTokenOfflineException, InvalidKeyException, NoSuchAlgorithmException,
-            NoSuchProviderException, SignRequestSignatureException {
+    private void decryptAndVerify(final CryptoToken cryptoToken, final RequestMessage req, final CA ca) throws CryptoTokenOfflineException,
+            InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignRequestSignatureException {
         final CAToken catoken = ca.getCAToken();
         if (req.requireKeyInfo()) {
             // You go figure...scep encrypts message with the public CA-cert
-            req.setKeyInfo(ca.getCACertificate(), cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)), cryptoToken.getSignProviderName());
+            req.setKeyInfo(ca.getCACertificate(), cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),
+                    cryptoToken.getSignProviderName());
         }
         // Verify the request
         if (req.verify() == false) {
@@ -451,9 +458,9 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     }
 
     @Override
-    public ResponseMessage getCRL(final AuthenticationToken admin, final RequestMessage req, final Class<? extends ResponseMessage> responseClass) throws AuthStatusException, AuthLoginException,
-            IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException, UnsupportedEncodingException,
-            CryptoTokenOfflineException, AuthorizationDeniedException {
+    public ResponseMessage getCRL(final AuthenticationToken admin, final RequestMessage req, final Class<? extends ResponseMessage> responseClass)
+            throws AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException,
+            SignRequestSignatureException, UnsupportedEncodingException, CryptoTokenOfflineException, AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">getCRL(IRequestMessage)");
         }
@@ -511,7 +518,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         }
         return ret;
     }
-   
+
     @Override
     public CA getCAFromRequest(final AuthenticationToken admin, final RequestMessage req, final boolean doLog) throws CADoesntExistsException,
             AuthorizationDeniedException {
@@ -557,12 +564,13 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         return ca;
     }
 
-    private CA getCAFromUsername(final AuthenticationToken admin, final RequestMessage req, final boolean doLog) throws CADoesntExistsException, AuthorizationDeniedException {
+    private CA getCAFromUsername(final AuthenticationToken admin, final RequestMessage req, final boolean doLog) throws CADoesntExistsException,
+            AuthorizationDeniedException {
         // See if we can get username and password directly from request
         final String username = req.getUsername();
         final UserData data = UserData.findByUsername(entityManager, username);
         if (data == null) {
-            throw new CADoesntExistsException("Could not find username, and hence no CA for user '" + username+"'.");
+            throw new CADoesntExistsException("Could not find username, and hence no CA for user '" + username + "'.");
         }
         final CA ca;
         if (doLog) {
@@ -576,8 +584,8 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         return ca;
     }
 
-    private EndEntityInformation authUser(final AuthenticationToken admin, final String username, final String password) throws ObjectNotFoundException,
-            AuthStatusException, AuthLoginException {
+    private EndEntityInformation authUser(final AuthenticationToken admin, final String username, final String password)
+            throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
         // Authorize user and get DN
         return endEntityAuthenticationSession.authenticateUser(admin, username, password);
     }
@@ -625,21 +633,24 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @see org.cesecore.certificates.certificate.CertificateCreateSessionLocal#createCertificate(AuthenticationToken, EndEntityInformation, CA, X500Name, PublicKey, int, Date, Date, Extensions, String)
      */
     private Certificate createCertificate(final AuthenticationToken admin, final EndEntityInformation data, final CA ca, final PublicKey pk,
-            final int keyusage, final Date notBefore, final Date notAfter, final Extensions extensions, final String sequence) throws IllegalKeyException,
-            CertificateCreateException, AuthorizationDeniedException, CesecoreException {
+            final int keyusage, final Date notBefore, final Date notAfter, final Extensions extensions, final String sequence)
+            throws IllegalKeyException, CertificateCreateException, AuthorizationDeniedException, CesecoreException {
         if (log.isTraceEnabled()) {
             log.trace(">createCertificate(pk, ku, notAfter)");
         }
-        
+
         // Get Certificate Transparency configuration
         if (ca instanceof X509CA) {
-            GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
-            GlobalConfiguration globalConfiguration = (GlobalConfiguration)globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GlobalConfigID);
-            ((X509CA)ca).setConfiguredCTLogs(globalConfiguration.getCTLogs());
+            GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE
+                    .getRemoteSession(GlobalConfigurationSessionRemote.class);
+            GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession
+                    .getCachedConfiguration(GlobalConfiguration.GlobalConfigID);
+            ((X509CA) ca).setConfiguredCTLogs(globalConfiguration.getCTLogs());
         }
 
         // Create the certificate. Does access control checks (with audit log) on the CA and create_certificate.
-        final Certificate cert = certificateCreateSession.createCertificate(admin, data, ca, null, pk, keyusage, notBefore, notAfter, extensions, sequence);
+        final Certificate cert = certificateCreateSession.createCertificate(admin, data, ca, null, pk, keyusage, notBefore, notAfter, extensions,
+                sequence);
 
         postCreateCertificate(admin, data, ca, cert);
 
@@ -658,8 +669,8 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @param certificate the newly created Certificate
      * @throws AuthorizationDeniedException if access is denied to the CA issuing certificate
      */
-    private void postCreateCertificate(final AuthenticationToken authenticationToken, final EndEntityInformation endEntity, final CA ca, final Certificate certificate)
-            throws AuthorizationDeniedException {
+    private void postCreateCertificate(final AuthenticationToken authenticationToken, final EndEntityInformation endEntity, final CA ca,
+            final Certificate certificate) throws AuthorizationDeniedException {
         // Store the request data in history table.
         if (ca.isUseCertReqHistory()) {
             certreqHistorySession.addCertReqHistoryData(certificate, endEntity);
