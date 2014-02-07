@@ -393,6 +393,23 @@ You must stop and start JBoss after doing this.
 
 </section>
 
+<section name="Upgrade and reconfigure">
+<p>
+When upgrading EJBCA, read doc/UPGRADE for instructions related to different versions, and upgrading between them.
+Upgrading withing patch verson (i.e. 6.0.3->6.04) are usually plug-in upgrades (you have to transfer your configuration though).</p>
+<p>When you upgrade, or simply change a configuration setting in properties files, you do not need to fully re-install EJBCA, or re-configure the application server.
+You simply want to deploy a new EJBCA application (ejbca.ear) to the application server. This is done with a simple command:
+</p>
+<source>
+ant clean deployear
+</source>
+<p>
+No need to run a full 'ant deploy'. This command cleans previous build and builds a new ejbca.ear file that is deployed (to JBoss). No re-configuration of the application server (datasource, TLS etc) is done.
+</p>
+<p>
+For easy upgrades, keeping personal configuration between versions, you should consider using the <a href="adminguide.html#Customizing%20EJBCA">ejbca-custom feature</a>. 
+</p>
+</section>
 
 <section name="Application servers">
 <p>
