@@ -74,19 +74,19 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
-import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
-import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
+import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
+import org.ejbca.core.model.util.EjbLocalHelper;
 
 /**
  * Creates and signs certificates.
@@ -641,8 +641,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
 
         // Get Certificate Transparency configuration
         if (ca instanceof X509CA) {
-            GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE
-                    .getRemoteSession(GlobalConfigurationSessionRemote.class);
+            GlobalConfigurationSession globalConfigurationSession = new EjbLocalHelper().getGlobalConfigurationSession();
             GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession
                     .getCachedConfiguration(GlobalConfiguration.GlobalConfigID);
             ((X509CA) ca).setConfiguredCTLogs(globalConfiguration.getCTLogs());
