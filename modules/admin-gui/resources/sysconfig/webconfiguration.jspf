@@ -374,7 +374,7 @@ function checkuseautoenroll(){
       <td width="49%" valign="top">
         <h3>
             <c:out value="<%= ejbcawebbean.getText(\"CTLOGCONFIGURATION\") %>" />
-            <%= ejbcawebbean.getHelpReference("/adminguide.html#Certificate%20Transparency") %>
+            <%= ejbcawebbean.getHelpReference("/adminguide.html#Certificate%20Transparency%20(Enterprise%20only)") %>
         </h3>
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CTLOGCONFIGURATION_HELP\") %>" /></p>
       </td>
