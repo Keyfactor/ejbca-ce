@@ -63,7 +63,8 @@ public interface SignSession {
      * @throws SignRequestSignatureException if the certificate is not signed by the CA
      * @throws AuthorizationDeniedException 
      */
-    public byte[] createPKCS7(AuthenticationToken admin, Certificate cert, boolean includeChain) throws CADoesntExistsException, SignRequestSignatureException, AuthorizationDeniedException;
+    public byte[] createPKCS7(AuthenticationToken admin, Certificate cert, boolean includeChain) throws CADoesntExistsException,
+            SignRequestSignatureException, AuthorizationDeniedException;
 
     /**
      * Creates a signed PKCS7 message containing the whole certificate chain of the specified CA.
@@ -94,7 +95,8 @@ public interface SignSession {
      * @throws AuthLoginException      If the password is incorrect.
      * @throws IllegalKeyException     if the public key is of wrong type.
      */
-    public Certificate createCertificate(AuthenticationToken admin, String username, String password, PublicKey pk) throws EjbcaException, ObjectNotFoundException, CADoesntExistsException, AuthorizationDeniedException, CesecoreException;
+    public Certificate createCertificate(AuthenticationToken admin, String username, String password, PublicKey pk) throws EjbcaException,
+            ObjectNotFoundException, CADoesntExistsException, AuthorizationDeniedException, CesecoreException;
 
     /**
      * Requests for a certificate to be created for the passed public key with the passed key
@@ -122,7 +124,8 @@ public interface SignSession {
      * @throws AuthLoginException      If the password is incorrect.
      * @throws IllegalKeyException     if the public key is of wrong type.
      */
-    public Certificate createCertificate(AuthenticationToken admin, String username, String password, PublicKey pk, int keyusage, Date notBefore, Date notAfter) throws EjbcaException, ObjectNotFoundException, CADoesntExistsException, AuthorizationDeniedException, CesecoreException;
+    public Certificate createCertificate(AuthenticationToken admin, String username, String password, PublicKey pk, int keyusage, Date notBefore,
+            Date notAfter) throws EjbcaException, ObjectNotFoundException, CADoesntExistsException, AuthorizationDeniedException, CesecoreException;
 
     /**
      * Requests for a certificate to be created for the passed public key wrapped in a self-signed
@@ -146,7 +149,8 @@ public interface SignSession {
      * @throws IllegalKeyException           if the public key is of wrong type.
      * @throws SignRequestSignatureException if the provided client certificate was not signed by
      */
-    public Certificate createCertificate(AuthenticationToken admin, String username, String password, Certificate incert) throws ObjectNotFoundException, CesecoreException, AuthorizationDeniedException, EjbcaException;
+    public Certificate createCertificate(AuthenticationToken admin, String username, String password, Certificate incert)
+            throws ObjectNotFoundException, CesecoreException, AuthorizationDeniedException, EjbcaException;
 
     /**
      * Requests for a certificate to be created for the passed public key wrapped in a
@@ -180,50 +184,52 @@ public interface SignSession {
      * @see org.cesecore.certificates.certificate.request.ResponseMessage
      * @see org.cesecore.certificates.certificate.request.X509ResponseMessage
      */
-    public ResponseMessage createCertificate(AuthenticationToken admin, RequestMessage req, Class<? extends ResponseMessage> responseClass, EndEntityInformation suppliedUserData) throws EjbcaException, CesecoreException, AuthorizationDeniedException;
+    public ResponseMessage createCertificate(AuthenticationToken admin, RequestMessage req, Class<? extends ResponseMessage> responseClass,
+            EndEntityInformation suppliedUserData) throws EjbcaException, CesecoreException, AuthorizationDeniedException;
 
-	/**
-	 * Requests for a certificate to be created for the passed public key with the passed key
-	 * usage and using the given certificate profile. This method is primarily intended to be used when
-	 * issuing hardtokens having multiple certificates per user.
-	 * The method queries the user database for authorization of the user. CAs are only
-	 * allowed to have certificateSign and CRLSign set.
-	 *
-	 * @param admin                Information about the administrator or admin performing the event.
-	 * @param username             unique username within the instance.
-	 * @param password             password for the user.
-	 * @param pk                   the public key to be put in the created certificate.
-	 * @param keyusage             integer with bit mask describing desired keys usage, overrides keyUsage from
-	 *                             CertificateProfiles if allowed. Bit mask is packed in in integer using constants
-	 *                             from org.bouncycastle.jce.X509KeyUsage. -1 means use default keyUsage from CertificateProfile. ex. int
-	 *                             keyusage = X509KeyUsage.digitalSignature | X509KeyUsage.nonRepudiation; gives
-	 *                             digitalSignature and nonRepudiation. ex. int keyusage = X509KeyUsage.keyCertSign
-	 *                             | X509KeyUsage.cRLSign; gives keyCertSign and cRLSign
-	 * @param notBefore an optional validity to set in the created certificate, if the profile allows validity override, null if the profiles default validity should be used.
-	 * @param notAfter an optional validity to set in the created certificate, if the profile allows validity override, null if the profiles default validity should be used.
-	 * @param certificateprofileid used to override the one set in userdata.
-	 *                             Should be set to CertificateProfileConstants.CERTPROFILE_NO_PROFILE if the usedata certificateprofileid should be used
-	 * @param caid                 used to override the one set in userdata.
-	 *                             Should be set to SecConst.CAID_USEUSERDEFINED if the regular certificateprofileid should be used
-	 * 
-	 * 
-	 * @return The newly created certificate or null.
-	 * @throws EjbcaException          if EJBCA did not accept any of all input parameters
-	 * @throws ObjectNotFoundException if the user does not exist.
-	 * @throws AuthorizationDeniedException 
-	 * @throws CADoesntExistsException 
-	 * @throws EjbcaException 
-	 * @throws CesecoreException 
-	 * @throws AuthStatusException     If the users status is incorrect.
-	 * @throws AuthLoginException      If the password is incorrect.
-	 * @throws IllegalKeyException     if the public key is of wrong type.
-	 * 
+    /**
+     * Requests for a certificate to be created for the passed public key with the passed key
+     * usage and using the given certificate profile. This method is primarily intended to be used when
+     * issuing hardtokens having multiple certificates per user.
+     * The method queries the user database for authorization of the user. CAs are only
+     * allowed to have certificateSign and CRLSign set.
+     *
+     * @param admin                Information about the administrator or admin performing the event.
+     * @param username             unique username within the instance.
+     * @param password             password for the user.
+     * @param pk                   the public key to be put in the created certificate.
+     * @param keyusage             integer with bit mask describing desired keys usage, overrides keyUsage from
+     *                             CertificateProfiles if allowed. Bit mask is packed in in integer using constants
+     *                             from org.bouncycastle.jce.X509KeyUsage. -1 means use default keyUsage from CertificateProfile. ex. int
+     *                             keyusage = X509KeyUsage.digitalSignature | X509KeyUsage.nonRepudiation; gives
+     *                             digitalSignature and nonRepudiation. ex. int keyusage = X509KeyUsage.keyCertSign
+     *                             | X509KeyUsage.cRLSign; gives keyCertSign and cRLSign
+     * @param notBefore an optional validity to set in the created certificate, if the profile allows validity override, null if the profiles default validity should be used.
+     * @param notAfter an optional validity to set in the created certificate, if the profile allows validity override, null if the profiles default validity should be used.
+     * @param certificateprofileid used to override the one set in userdata.
+     *                             Should be set to CertificateProfileConstants.CERTPROFILE_NO_PROFILE if the usedata certificateprofileid should be used
+     * @param caid                 used to override the one set in userdata.
+     *                             Should be set to SecConst.CAID_USEUSERDEFINED if the regular certificateprofileid should be used
+     * 
+     * 
+     * @return The newly created certificate or null.
+     * @throws EjbcaException          if EJBCA did not accept any of all input parameters
+     * @throws ObjectNotFoundException if the user does not exist.
+     * @throws AuthorizationDeniedException 
+     * @throws CADoesntExistsException 
+     * @throws EjbcaException 
+     * @throws CesecoreException 
+     * @throws AuthStatusException     If the users status is incorrect.
+     * @throws AuthLoginException      If the password is incorrect.
+     * @throws IllegalKeyException     if the public key is of wrong type.
+     * 
      * @see org.bouncycastle.jce.X509KeyUsage
-	 */
-    public Certificate createCertificate(AuthenticationToken admin, String username, String password, PublicKey pk, int keyusage, Date notBefore, Date notAfter, int certificateprofileid, int caid) 
-    	throws ObjectNotFoundException, CADoesntExistsException, AuthorizationDeniedException, EjbcaException, CesecoreException;
+     */
+    public Certificate createCertificate(AuthenticationToken admin, String username, String password, PublicKey pk, int keyusage, Date notBefore,
+            Date notAfter, int certificateprofileid, int caid) throws ObjectNotFoundException, CADoesntExistsException, AuthorizationDeniedException,
+            EjbcaException, CesecoreException;
 
-	/**
+    /**
      * Method that generates a request failed response message. The request
      * should already have been decrypted and verified.
      *
@@ -241,13 +247,14 @@ public interface SignSession {
      * @throws SignRequestException          if the provided request is invalid.
      * @throws SignRequestSignatureException if the the request couldn't be verified.
      * @throws IllegalKeyException 
-	 * @throws AuthorizationDeniedException 
+     * @throws AuthorizationDeniedException 
      * @see org.cesecore.certificates.certificate.request.RequestMessage
      * @see org.cesecore.certificates.certificate.request.ResponseMessage
      * @see org.cesecore.certificates.certificate.request.X509ResponseMessage
      */
-    public ResponseMessage createRequestFailedResponse(AuthenticationToken admin, RequestMessage req, Class<? extends ResponseMessage> responseClass, FailInfo failInfo, String failText) throws AuthLoginException,
-            AuthStatusException, IllegalKeyException, CADoesntExistsException, SignRequestSignatureException, SignRequestException, CryptoTokenOfflineException, AuthorizationDeniedException;
+    public ResponseMessage createRequestFailedResponse(AuthenticationToken admin, RequestMessage req, Class<? extends ResponseMessage> responseClass,
+            FailInfo failInfo, String failText) throws AuthLoginException, AuthStatusException, IllegalKeyException, CADoesntExistsException,
+            SignRequestSignatureException, SignRequestException, CryptoTokenOfflineException, AuthorizationDeniedException;
 
     /**
      * Method that just decrypts and verifies a request and should be used in those cases
@@ -271,7 +278,8 @@ public interface SignSession {
      * @see org.cesecore.certificates.certificate.request.X509ResponseMessage
      */
     public RequestMessage decryptAndVerifyRequest(AuthenticationToken admin, RequestMessage req) throws ObjectNotFoundException, AuthStatusException,
-    		AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException, CryptoTokenOfflineException, AuthorizationDeniedException;
+            AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException,
+            CryptoTokenOfflineException, AuthorizationDeniedException;
 
     /**
      * 
@@ -287,6 +295,7 @@ public interface SignSession {
      * @throws CryptoTokenOfflineException 
      * @throws AuthorizationDeniedException 
      */
-    public ResponseMessage getCRL(AuthenticationToken admin, RequestMessage req, Class<? extends ResponseMessage> responseClass) throws AuthStatusException, AuthLoginException,
-            IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException, UnsupportedEncodingException, CryptoTokenOfflineException, AuthorizationDeniedException;
+    public ResponseMessage getCRL(AuthenticationToken admin, RequestMessage req, Class<? extends ResponseMessage> responseClass)
+            throws AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException,
+            SignRequestSignatureException, UnsupportedEncodingException, CryptoTokenOfflineException, AuthorizationDeniedException;
 }
