@@ -69,6 +69,13 @@ public enum CommandLibrary {
         return root.doesCommandExist(args);
     }
 
+    /**
+     * A private subclass which describes a branch in the command tree. A branch can contain both a number of subbranches as well as a number of 
+     * direct commands. 
+     * 
+     * @version $Id$
+     *
+     */
     private static class Branch {
         private final String name;
         private Map<String, Branch> subBranches = new HashMap<String, Branch>();
