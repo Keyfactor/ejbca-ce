@@ -661,12 +661,7 @@
 			<mkdir dir="${build-temp.dir}/signing"/>
 			<copy todir="${src-temp.dir}/signing">
 				<fileset dir="${src-ejbca-ejb-interface.dir}">
-					<!-- SignSessionBean depends on EJbLocalHelper
-						<include name="org/ejbca/core/ejb/ca/sign/*.java"/>
-					-->
-					<include name="org/ejbca/core/ejb/ca/sign/*Session.java"/>
-					<include name="org/ejbca/core/ejb/ca/sign/*SessionLocal.java"/>
-					<include name="org/ejbca/core/ejb/ca/sign/*SessionRemote.java"/>
+					<include name="org/ejbca/core/ejb/ca/sign/*.java"/>
 					<!-- Authentication dependency (unwanted.. depends on RA..) -->
 					<include name="org/cesecore/certificates/certificate/CertificateCreateSession*.java"/>
 					<include name="org/ejbca/core/ejb/ca/auth/EndEntityAuthenticationSessionLocal.java"/>
@@ -678,11 +673,9 @@
 					<include name="org/cesecore/certificates/certificate/UniqueSernoHelper.java"/>
 					<include name="org/cesecore/certificates/certificate/IllegalKeyException.java"/>
 					<include name="org/cesecore/certificates/certificate/CustomCertSerialNumberException.java"/>
+					<include name="org/ejbca/core/ejb/ca/sign/*SessionBean.java"/>
 					<include name="org/ejbca/core/ejb/ca/sign/*Helper.java"/>
-					<!-- SignSessionBean depends on EJbLocalHelper
-						<include name="org/ejbca/core/ejb/ca/sign/*SessionBean.java"/>
-						<include name="org/ejbca/core/model/ca/sign/SignSessionBean.java"/>
-					-->
+					<include name="org/ejbca/core/model/ca/sign/SignSessionBean.java"/>				
 					<!-- Authentication dependency (unwanted.. depends on RA..) -->
 					<include name="org/cesecore/certificates/certificate/CertificateCreateException.java"/>
 					<include name="org/cesecore/certificates/certificate/CertificateCreateSessionBean.java"/>

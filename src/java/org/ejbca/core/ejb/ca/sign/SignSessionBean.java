@@ -79,14 +79,13 @@ import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
-import org.ejbca.core.ejb.config.GlobalConfigurationSession;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
-import org.ejbca.core.model.util.EjbLocalHelper;
 
 /**
  * Creates and signs certificates.
@@ -122,6 +121,8 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     private CrlStoreSessionLocal crlStoreSession;
     @EJB
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
 
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
@@ -641,7 +642,6 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
 
         // Get Certificate Transparency configuration
         if (ca instanceof X509CA) {
-            GlobalConfigurationSession globalConfigurationSession = new EjbLocalHelper().getGlobalConfigurationSession();
             GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession
                     .getCachedConfiguration(GlobalConfiguration.GlobalConfigID);
             ((X509CA) ca).setConfiguredCTLogs(globalConfiguration.getCTLogs());
