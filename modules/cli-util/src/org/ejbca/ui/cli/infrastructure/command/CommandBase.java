@@ -19,7 +19,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.ejbca.ui.cli.infrastructure.io.ValueFoundResponse;
+import org.ejbca.ui.cli.infrastructure.io.OverwriteResponse;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterHandler;
 
@@ -33,17 +33,17 @@ public abstract class CommandBase implements CliCommandPlugin {
     
     protected final ParameterHandler parameterHandler = new ParameterHandler(getMainCommand());
 
-    protected static ValueFoundResponse getValueFoundResponse(ValueFoundResponse defaultResponse) {
+    protected static OverwriteResponse getValueFoundResponse(OverwriteResponse defaultResponse) {
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
         try {
-            System.out.print(ValueFoundResponse.getQueryText() + " [default=" + defaultResponse.getResponse().toUpperCase() + "] ");
+            System.out.print(OverwriteResponse.getQueryText() + " [default=" + defaultResponse.getResponse().toUpperCase() + "] ");
             System.out.flush();
 
             String input = bufferedReader.readLine();
             if (input.isEmpty()) {
                 return defaultResponse;
             } else {
-                ValueFoundResponse result = ValueFoundResponse.getResponseFromInput(input);
+                OverwriteResponse result = OverwriteResponse.getResponseFromInput(input);
                 if (result == null) {
                     System.out.println("Input not recognized: '" + input + "'");
                     return getValueFoundResponse(defaultResponse);
