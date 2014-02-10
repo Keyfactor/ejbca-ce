@@ -53,7 +53,7 @@ public final class CTLogInfo implements Serializable {
         if (publicKey == null) {
             publicKey = KeyTools.getPublicKeyFromBytes(publicKeyBytes);
             if (publicKey == null) {
-                throw new RuntimeException("Failed to parse key");
+                throw new IllegalStateException("Failed to parse key");
             }
         }
     }

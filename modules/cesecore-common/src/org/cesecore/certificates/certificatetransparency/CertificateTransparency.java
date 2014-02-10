@@ -49,7 +49,8 @@ public interface CertificateTransparency {
      * @param certProfile Certificate profile with CT configuration
      * @param configuredCTLogs Contains definitions (URL, public key, etc.) of the logs that can be used. 
      * @param allLogs If true the certificate will be submitted to all enabled logs, otherwise the limit in the certificate profile is taken into account.
-     * @return A "SCT List" structure, for inclusion in e.g. the CT certificate extension, or null if no logs have been configured. 
+     * @return A "SCT List" structure, for inclusion in e.g. the CT certificate extension, or null if no logs have been configured.
+     * @throws CTLogException If too many servers are down to satisfy the certificate profile.
      */
     byte[] fetchSCTList(List<Certificate> chain, CertificateProfile certProfile, Map<Integer,CTLogInfo> configuredCTLogs, boolean allLogs) throws CTLogException;
     
@@ -62,6 +63,7 @@ public interface CertificateTransparency {
      * @param minSCTs The number of SCTs to require
      * @param maxRetries Maximum number of retries
      * @return A "SCT List" structure, for inclusion in e.g. the CT certificate extension
+     * @throws CTLogException If too many servers are down to satisfy the certificate profile.
      */
     byte[] fetchSCTList(List<Certificate> chain, Collection<CTLogInfo> ctlogs, int minSCTs, int maxSCTs, int maxRetries) throws CTLogException;
     
@@ -71,9 +73,8 @@ public interface CertificateTransparency {
     void addPreCertPoison(X509v3CertificateBuilder precertbuilder);
     
     /**
-     * Returns true if the given certificate has an SCT extension with at least one entry.
-     * @throws IOException if the certificate can't be parsed (currently not thrown) 
+     * Returns true if the given certificate has an SCT extension with at least one entry. 
      */
-    boolean hasSCTs(Certificate cert) throws IOException;
+    boolean hasSCTs(Certificate cert);
     
 }
