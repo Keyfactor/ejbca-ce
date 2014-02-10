@@ -26,6 +26,8 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CA;
+import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -50,6 +52,7 @@ public class CaImportCertCommandTest {
     private static final String CA_NAME = "CaImportCertCommandTest";
     private static final String CA_DN = "CN=" + CA_NAME;
     private static final String USERNAME = "CaImportCertCommandTest";
+    private static final String CERTIFICATE_DN = "C=SE,O=foo,CN=" + USERNAME;
 
     private final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(CaImportCertCommandTest.class.getSimpleName());
 
@@ -57,6 +60,8 @@ public class CaImportCertCommandTest {
     private final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(EndEntityManagementSessionRemote.class);
     private final EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
+    private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(InternalCertificateStoreSessionRemote.class);
 
     private CaImportCertCommand command = new CaImportCertCommand();
     private X509CA ca;
@@ -74,7 +79,7 @@ public class CaImportCertCommandTest {
         caSession.addCA(authenticationToken, ca);
         certificateFile = File.createTempFile("test", null);
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        Certificate certificate = CertTools.genSelfCert("C=SE,O=foo,CN=" + USERNAME, 365, null, keys.getPrivate(), keys.getPublic(),
+        Certificate certificate = CertTools.genSelfCert(CERTIFICATE_DN, 365, null, keys.getPrivate(), keys.getPublic(),
                 AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
         FileOutputStream fileOutputStream = new FileOutputStream(certificateFile);
         try {
@@ -82,6 +87,12 @@ public class CaImportCertCommandTest {
         } finally {
             fileOutputStream.close();
         }
+        //Delete any previous users
+        EndEntityInformation previousUser = endEntityAccessSession.findUser(authenticationToken, USERNAME);
+        if(previousUser != null) {
+            endEntityManagementSession.deleteUser(authenticationToken, USERNAME);
+        }
+        
     }
 
     @After
@@ -93,6 +104,7 @@ public class CaImportCertCommandTest {
             FileTools.delete(certificateFile);
         }
         endEntityManagementSession.deleteUser(authenticationToken, USERNAME);
+        internalCertificateStoreSession.removeCertificatesBySubject(CERTIFICATE_DN);
     }
 
     @Test
