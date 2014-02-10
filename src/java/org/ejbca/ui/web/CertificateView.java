@@ -347,13 +347,7 @@ public class CertificateView implements Serializable {
     }
 
     public boolean hasCertificateTransparencySCTs() {
-        boolean ret = false; 
-        try {
-            CertificateTransparency ct = CertificateTransparencyFactory.getInstance();
-            ret = (ct != null && ct.hasSCTs(certificate));
-        } catch (IOException e) {
-            ret = false;
-        }
-        return ret;
+        CertificateTransparency ct = CertificateTransparencyFactory.getInstance();
+        return (ct != null && ct.hasSCTs(certificate));
     }
 }
