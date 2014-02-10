@@ -1686,13 +1686,13 @@ In jboss-log4j.xml 'org.ejbca.core.protocol.ws.logger.TransactionLogger' should 
 <section name="Certificate Transparency (Enterprise only)">
 <subsection name="Introduction">
 <p>EJBCA Enterprise Edition implements Certificate Transparency (CT) as specified in <a href="http://tools.ietf.org/html/rfc6962">RFC 6962</a>.
-The purpose of CT is to create public audit logs of all certificates issued by SSL/TLS CAs, and the presence of audit records is planned to be required for EV certificates in Google Chrome from February 2015 (and other web browsers and non-EV certificates later on as well). Note that CT is only relevant for CAs issuing <em>public SSL/TLS</em> certificates. More information can be found on the <a href="http://www.certificate-transparency.org/">CT website</a>.</p>
+The purpose of CT is to create public audit logs of all certificates issued by the public SSL/TLS CAs. The presence of audit records is planned to be required for EV certificates in Google Chrome from February 2015 (and other web browsers and non-EV certificates later on as well). Note that CT is only relevant for CAs issuing <em>public SSL/TLS</em> certificates; other types of CAs should not use CT. More information can be found on the <a href="http://www.certificate-transparency.org/">CT website</a>.</p>
 
-<p>The EJBCA module implements log submission and inclusion of signed log timestamps (SCTs) in both newly issued certificates and in OCSP responses.
+<p>The EJBCA module implements log submission and inclusion of Signed Certificate Timestamp (SCTs) in both newly issued certificates and in OCSP responses.
 The OCSP CT option does not use caching however, and should only be used for pre-generating OCSP responses.</p>
 </subsection>
 <subsection name="Prerequisites">
-<p>Your EJBCA installation needs the <code><strong>ct</strong></code> module, which is only present in the enterprise edition (contact PrimeKey for details). In order to use CT OCSP you must enable the
+<p>Your EJBCA installation needs the <code><strong>ct</strong></code> module, which is only present in the enterprise edition (contact <a href="mailto:sales@primekey.se">PrimeKey</a> for details). In order to use CT OCSP you must enable the
 corresponding extension class in <code>conf/ocsp.properties</code>:</p>
 
 <source>
@@ -1725,7 +1725,7 @@ Logs are connected to in the order they appear in the list, so fast logs (e.g. g
 </p>
 </subsection>
 <subsection name="Activating CT">
-<p>CT logs must be activated in your certificate profiles. See the <a href="userguide.html#Certificate%20Transparency">user guide</a>.</p>
+<p>CT logs must be activated in your certificate profiles. See the <a href="userguide.html#Certificate%20Transparency%20(Enterprise%20only)">user guide</a>.</p>
 </subsection>
 </section>
 

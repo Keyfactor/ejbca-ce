@@ -926,13 +926,13 @@ notAfter = notBefore + periodLength
 </subsubsection>
 <subsubsection name="Certificate Transparency (Enterprise only)">
 <p>This is a module in EJBCA Enterprise Edition that implements Certificate Transparency (CT) as specified in <a href="http://tools.ietf.org/html/rfc6962">RFC 6962</a>.
-The purpose of CT is to create public audit logs of all certificates issued by SSL/TLS CAs, and the presence of audit records is planned to be required for EV certificates in Google Chrome from February 2015 (and other web browsers and non-EV certificates later on as well). Note that CT is only relevant for CAs issuing <em>public SSL/TLS</em> certificates. More information can be found on the <a href="http://www.certificate-transparency.org/">CT website</a>.</p>
+The purpose of CT is to create public audit logs of all certificates issued by the public SSL/TLS CAs. The presence of audit records is planned to be required for EV certificates in Google Chrome from February 2015 (and other web browsers and non-EV certificates later on as well). Note that CT is only relevant for CAs issuing <em>public SSL/TLS</em> certificates; other types of CAs should not use CT. More information can be found on the <a href="http://www.certificate-transparency.org/">CT website</a>.</p>
 
 <p>The following options are visibile if the CT module is available (i.e. in the enterprise edition of EJBCA):</p>
 
 <ul>
-<li>Enabled CT Logs: Which logs to submit to and obtain SCTs from. New logs can be added in the System Configuration, see the <a href="adminguide.html#Certificate%20Transparency">admin guide</a>.</li>
-<li>Minimum number of SCTs: If less servers respond with an SCT than this number, the underlying operation will fail (certificate issuing or OCSP response).</li>
+<li>Enabled CT Logs: Which logs to submit to and obtain Signed Certificate Timestamp (SCTs) from. New logs can be added in the System Configuration, see the <a href="adminguide.html#Certificate%20Transparency%20(Enterprise%20only)">admin guide</a>.</li>
+<li>Minimum number of SCTs: If fewer servers respond with an SCT than this number, the underlying operation will fail (certificate issuing or OCSP response).</li>
 <li>Maximum number of SCTs: After having received this number of SCTs, EJBCA will stop contacting log servers.</li>
 <li>Number of retries: If a log server times out it will be tried again after all other logs have been tried. This is the maximum number of tries per server.</li>
 </ul>

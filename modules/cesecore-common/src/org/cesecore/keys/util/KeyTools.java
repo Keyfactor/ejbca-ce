@@ -1180,7 +1180,7 @@ public final class KeyTools {
      * @param pem PEM data to extract from. May contain other types of data as well.
      * @param beginMarker E.g. CertTools.BEGIN_PUBLIC_KEY
      * @param endMarker E.g. CertTools.END_PUBLIC_KEY
-     * @return The first entry of the matching type.
+     * @return The first entry of the matching type, or null if it couldn't be parsed.
      */
     public static byte[] getBytesFromPEM(String pem, String beginMarker, String endMarker) {
         int start = pem.indexOf(beginMarker);

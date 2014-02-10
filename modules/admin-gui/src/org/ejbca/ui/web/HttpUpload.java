@@ -31,7 +31,10 @@ import org.apache.commons.lang.ArrayUtils;
 
 /**
  * Handles file uploads and parameters in forms with a file field
- * (since request.getParameter doesn't work in that case)
+ * (since request.getParameter doesn't work in that case).
+ * It also supports returning parameters in the case when there's
+ * no file upload control, and parameters can be queried multiple times
+ * (unlike in the underlying Apache commons file uploads API).
  * 
  * @version $Id$
  */
@@ -49,10 +52,10 @@ public class HttpUpload {
      * @param request The servlet request object. 
      * @param fileFields The names of the file fields to receive uploaded data from.
      * @param maxbytes Maximum file size.
-     * @throws IOException
-     * @throws FileUploadException
+     * @throws IOException if there are network problems, etc.
+     * @throws FileUploadException if the request is invalid.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") // Needed in some environments, and detected as unnecessary in others. Do not remove!
     public HttpUpload(HttpServletRequest request, String[] fileFields, int maxbytes) throws IOException, FileUploadException {
         if (ServletFileUpload.isMultipartContent(request)) {
             final Map<String,ArrayList<String>> paramTemp = new HashMap<String,ArrayList<String>>();
@@ -91,17 +94,21 @@ public class HttpUpload {
         }
     }
     
-    private static byte[] getFileBytes(FileItemStream item, int maxbytes) throws IOException {
-        InputStream is = item.openStream();
-        int length = 0;
-        byte[] file = new byte[maxbytes];
-        
-        while (length < maxbytes) {
-            int bytesread = is.read(file, length, maxbytes-length);
-            if (bytesread <= 0) break;
-            length += bytesread;
+    private static byte[] getFileBytes(FileItemStream item, int maxbytes) {
+        try {
+            InputStream is = item.openStream();
+            int length = 0;
+            byte[] file = new byte[maxbytes];
+            
+            while (length < maxbytes) {
+                int bytesread = is.read(file, length, maxbytes-length);
+                if (bytesread <= 0) { break; }
+                length += bytesread;
+            }
+            return Arrays.copyOf(file, length);
+        } catch (IOException e) {
+            return null;
         }
-        return Arrays.copyOf(file, length);
     }
     
     public ParameterMap getParameterMap() {
