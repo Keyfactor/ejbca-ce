@@ -15,8 +15,6 @@ package org.ejbca.ui.cli.roles;
 import static org.junit.Assert.assertNull;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
@@ -84,9 +82,7 @@ public class RemoveRoleCommandTest {
 
     @Test
     public void testRemoveRole() throws ErrorAdminCommandException {
-        final String matchValue = TESTCLASS_NAME;
-        String[] args = new String[] { "removerole", TESTCLASS_NAME, x509ca.getName(), X500PrincipalAccessMatchValue.WITH_COMMONNAME.toString(),
-                AccessMatchType.TYPE_EQUALCASEINS.toString(), matchValue };
+        String[] args = new String[] { "removerole", TESTCLASS_NAME };
         command.execute(args);
         RoleData role = roleAccessSession.findRole(TESTCLASS_NAME);
         assertNull("Role was not removed,", role);
