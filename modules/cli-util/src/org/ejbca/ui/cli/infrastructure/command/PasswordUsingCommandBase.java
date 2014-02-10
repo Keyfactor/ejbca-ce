@@ -55,11 +55,11 @@ public abstract class PasswordUsingCommandBase extends CommandBase {
      * @param parameterHandler the parameter handler to register the arguments with
      */
     private void registerDefaultParameters() {
-        final String usernameInstruction = "A user name, if required.";
-        final String passwordInstruction = "A password, if required.";
-        this.registerParameter(new Parameter(USERNAME_KEY, "Username", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+        final String usernameInstruction = "A username for a CLI user, if required.";
+        final String passwordInstruction = "A password for a CLI user, if required.";
+        this.registerParameter(new Parameter(USERNAME_KEY, "CLI Username", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 usernameInstruction));
-        this.registerParameter(new Parameter(PASSWORD_KEY, "Password", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.PASSWORD,
+        this.registerParameter(new Parameter(PASSWORD_KEY, "CLI Password", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.PASSWORD,
                 passwordInstruction));
     }
 
