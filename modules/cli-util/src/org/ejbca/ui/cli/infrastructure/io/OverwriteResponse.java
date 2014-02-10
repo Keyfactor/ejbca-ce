@@ -19,29 +19,29 @@ import java.util.Map;
  * @version $Id: ValueFoundResponse.java 17685 2013-09-26 15:21:50Z samuellb $
  *
  */
-public enum ValueFoundResponse {
+public enum OverwriteResponse {
     OVERWRITE("(O)verwrite", "o"), 
     SKIP("(S)kip", "s"), 
     OVERWRITE_ALL("Overwrite (A)ll", "a"), 
     SKIP_ALL(" Overwrite (N)one", "n");
     
-    private static final Map<String, ValueFoundResponse> responseMap = new HashMap<String, ValueFoundResponse>();
+    private static final Map<String, OverwriteResponse> responseMap = new HashMap<String, OverwriteResponse>();
     
     private final String text;
     private final String response;
     
     static {
-        for(ValueFoundResponse valueFoundResponse : ValueFoundResponse.values()) {
+        for(OverwriteResponse valueFoundResponse : OverwriteResponse.values()) {
            responseMap.put(valueFoundResponse.getResponse(), valueFoundResponse);
         }
     }
     
-    private ValueFoundResponse(String text, String response) {
+    private OverwriteResponse(String text, String response) {
         this.text = text;
         this.response = response;
     }
     
-    public static ValueFoundResponse getResponseFromInput(String input) {
+    public static OverwriteResponse getResponseFromInput(String input) {
         return responseMap.get(input.toLowerCase());
     }
 
