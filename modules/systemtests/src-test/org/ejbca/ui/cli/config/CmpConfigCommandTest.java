@@ -52,7 +52,8 @@ public class CmpConfigCommandTest {
         String[] renameAliasArgs = new String[] { "cmp", RENAMEALIAS, aliasName, newAliasName };
         command.execute(renameAliasArgs);
         cmpConfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.CMPConfigID);
-        assertTrue("No alias was not renamed", cmpConfiguration.aliasExists(newAliasName));
+        assertFalse("Old alias is still there", cmpConfiguration.aliasExists(aliasName));
+        assertTrue("No alias was renamed", cmpConfiguration.aliasExists(newAliasName));
         String[] removeAliasArgs = new String[] { "cmp", REMOVEALIAS, newAliasName };
         command.execute(removeAliasArgs);
         assertFalse("Alias was not removed", cmpConfiguration.aliasExists(aliasName));
