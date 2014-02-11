@@ -95,11 +95,11 @@ public class GlobalConfiguration extends Configuration implements Serializable {
     private static final boolean DEFAULTENABLECOMMANDLINEINTERFACEDEFAULTUSER = true;
     
     // Default CT Logs
-    // The Base64 data is the public key.
     private static final Map<Integer,CTLogInfo> CTLOGS_DEFAULT = new LinkedHashMap<Integer,CTLogInfo>();
+    /* By default the list is empty but it is possible to add logs here. 
     static {
         try {
-            // TODO This is a test server. Replace this with real logs when they become available.
+            // The Base64 data is the public key.
             final CTLogInfo log = new CTLogInfo(
                 "http://ct.googleapis.com/pilot/ct/v1/",
                 Base64.decode(
@@ -107,7 +107,7 @@ public class GlobalConfiguration extends Configuration implements Serializable {
                      "DM0YDOhBRuiBARsV4UvxG2LdNgoIGLrtCzWE0J5APC2em4JlvR8EEEFMoA==\n").getBytes("ASCII")));
             CTLOGS_DEFAULT.put(log.getLogId(), log);
         } catch (UnsupportedEncodingException e) { } // NOPMD can't do anything here
-    }
+    }*/
     
     // Language codes. Observe the order is important
     public static final  int      EN                 = 0;
