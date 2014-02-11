@@ -1749,10 +1749,7 @@ The following parameters have to be configured in a log:</p>
 issuing and/or OCSP response generation must wait for the log server to respond, so do not set it too high.</li>
 </ul>
 
-<p>EJBCA is pre-configured with the Google pilot log server as an example. It is not generally possible to use this server
-directly, since it will only accept certificates from well-known CAs. For local testing you can install your own
-instance of the sample log server from the <a href="https://code.google.com/p/certificate-transparency/">CT open source project</a>.
-For a production system (or testing of one) you must contact the log operator to have your CA root added.</p>
+<p>The log server needs to accept certificates issued by your CAs. For local testing you can install your own instance of the sample log server from the <a href="https://code.google.com/p/certificate-transparency/">CT open source project</a>, and add your root CA to the list of trusted CAs. For a production system (or testing of one) you must contact the log operator to have your root CA added.</p>
 
 <p>For best performance and redundancy, please use multiple logs with short timeouts.
 You can have more logs than you require in the certificate profiles. In this case, EJBCA will
