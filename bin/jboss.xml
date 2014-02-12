@@ -234,14 +234,14 @@
         <!-- ========================================================== -->
 
         <target name="jee:deployServicesJBoss7" depends="set-paths,jee:assert-runJBoss7" if="jboss7">
+        	<!-- Remove ejbca deployment first, so reload is fast enough. Needed to make scripting slightly more stable in JBoss -->
+            <jboss:admsilent arg="undeploy ejbca.ear --keep-content" failonerror="false" />
             <!-- Remove the current definitions. -->
             <jboss:admsilent arg='/subsystem=mail/mail-session="${mail.jndi-name}":remove' failonerror="false" />
             <jboss:admsilent arg='/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=ejbca-mail-smtp:remove' failonerror="false" />
-            <jboss:admsilent arg=':reload' />
-            <!-- We must wait until the ejbca.ear has been redeployed, or jboss cli will not be available if it takes too long time to reload. -->
-            <waitfor maxwait="20000">
-                <available file="${jboss.farm.dir}/ejbca.ear.deployed"/>
-            </waitfor>
+            <jboss:admsilent arg=":reload" />
+            <!-- We must wait a few seconds, or some race conditions could happen. The problem is that :reload is a non-blocking operation, and JBoss CLI is not very stable... -->
+    	    <jboss:jbosswaitready/>
             <!-- Construct the parameters for adding the server based on whether we use authentication or not (not specifying the username/password means no authentication). -->
             <condition property="jboss7.ejbca-mail-smtp.params" value='outbound-socket-binding-ref=ejbca-mail-smtp, ssl="${mail.smtp.starttls.enable}", username="${mail.user}", password="${mail.password}"' else='outbound-socket-binding-ref=ejbca-mail-smtp, ssl="${mail.smtp.starttls.enable}"'>
                 <equals arg1="${mail.smtp.auth}" arg2="true" />
@@ -252,10 +252,9 @@
             <jboss:adm arg='/subsystem=mail/mail-session="${mail.jndi-name}":add(jndi-name="${mail.jndi-name}"' />
             <jboss:adm arg='/subsystem=mail/mail-session="${mail.jndi-name}"/server=smtp:add(${jboss7.ejbca-mail-smtp.params})' />
             <jboss:admsilent arg=":reload" />
-            <!-- We must wait until the ejbca.ear has been redeployed, or some race conditions could happen. The problem is that :reload is a non-blocking operation. -->
-            <waitfor maxwait="20000">
-                <available file="${jboss.farm.dir}/ejbca.ear.deployed"/>
-            </waitfor>
+            <!-- We must wait a few seconds, or some race conditions could happen. The problem is that :reload is a non-blocking operation, and JBoss CLI is not very stable... -->
+    	    <jboss:jbosswaitready/>
+            <jboss:admsilent arg="deploy --name=ejbca.ear" failonerror="false" />
         </target>
 
 	<!-- JBoss EAP 6.2 requires that you create datasource with enabled=true, but JBoss 7.1.1 does not support this argument at all -->
@@ -288,7 +287,7 @@
         <!-- If we don't reload now, JBoss AS 7 will get stuck. @TODO: Try this out with JBoss EAP 6, and see if we can report a bug. -->
         <jboss:admsilent arg=":reload" />
         <!-- We must wait a few seconds, or some race conditions could happen. The problem is that :reload is a non-blocking operation, and JBoss CLI is not very stable... -->
-        <sleep seconds="5"/>
+	    <jboss:jbosswaitready/>
         <jboss:admsilent arg="deploy --name=ejbca.ear" failonerror="false" />
 	</target>
 	<target name="deployDSWin" if="isWindows">
@@ -309,7 +308,7 @@
             <!-- If we don't reload now, JBoss AS 7 will get stuck. @TODO: Try this out with JBoss EAP 6, and see if we can report a bug. -->
             <jboss:admsilent arg=":reload" />
             <!-- We must wait a few seconds, or some race conditions could happen. The problem is that :reload is a non-blocking operation, and JBoss CLI is not very stable... -->
-            <sleep seconds="5"/>
+		    <jboss:jbosswaitready/>
             <jboss:admsilent arg="deploy --name=ejbca.ear" failonerror="false" />
     </target>
 	<target name="deployOCSPDSWin" if="isWindows">
@@ -427,7 +426,7 @@
 
         <target name="jee:assert-runJBoss7" if="jboss7">
             <echo message="Checking if JBoss 7 is up and running..."/>
-            <jboss:admsilent arg=":read-attribute(name=server-state)" resultproperty="jboss7.server.status" failonerror="false" />
+            <jboss:jbosswaitready/>
         	<condition property="jboss7.server.isrunning" value="true">
                 <equals arg1="${jboss7.server.status}" arg2="0" />
             </condition>
@@ -464,7 +463,13 @@
         <!-- Top-level targets -->
         <!-- ================= -->
 
-	<target name="jee:deploy" depends="jee:deployServices, jee:deployDS, jee:deployOCSPDS, jee:deployear">
+	<target name="jee:undeploy">
+        <jboss:admsilent arg="undeploy ejbca.ear --keep-content" failonerror="false" />
+	</target>
+    <!-- Start deploy by undeploying EJBCA completely. This makes a new ant deploy on an already deployed system work faster and more stable. 
+         Ends with deployear that deploys a new version.
+         To only upgrade ejbca.ear, "ant deployear" should normally be used instead of "ant deploy" -->
+	<target name="jee:deploy" depends="jee:undeploy, jee:deployServices, jee:deployDS, jee:deployOCSPDS, jee:deployear">
 	</target>
 
 	<target name="jee:deployear" depends="jee:check">
@@ -587,12 +592,26 @@
         <macrodef name="admwaitreload" uri="jboss" description="JBoss 7 CLI reload wait macro">
             <attribute name="failonerror" default="true" description="Fail the build if command exits with error."/>
             <sequential>
-            	<!-- Wait up to 60 seconds for EJBCA to be properly deployed after a JBoss7 :reload. -->
+                <!-- Wait up to 60 seconds for EJBCA to be properly deployed after a JBoss7 :reload. -->
                 <retry retrycount="15">
                     <sequential>
                     	<echo message="Waiting (up to 60 seconds in total) for the application server to become ready for the next step..."/>
-                        <sleep seconds="4"/>
+                        <sleep seconds="4"/> 
                         <jboss:admsilent arg="/deployment=ejbca.ear:read-attribute(name=status)" failonerror="true" />
+                    </sequential>
+                </retry>
+            </sequential>
+        </macrodef>
+        
+        <macrodef name="jbosswaitready" uri="jboss" description="JBoss 7 CLI wait until ready macro">
+            <attribute name="failonerror" default="true" description="Fail the build if command exits with error."/>
+            <sequential>
+                <!-- Wait up to 30 seconds for JBoss to be ready after a JBoss7 :reload. (assumed without EJBCA deployed) -->
+                <retry retrycount="15">
+                    <sequential>
+                        <echo message="Waiting (up to 30 seconds in total) for the application server to become ready for the next step..."/>
+                        <sleep seconds="2"/> 
+                        <jboss:admsilent arg=":read-attribute(name=server-state)" resultproperty="jboss7.server.status" failonerror="false" />
                     </sequential>
                 </retry>
             </sequential>
