@@ -1688,8 +1688,8 @@ In jboss-log4j.xml 'org.ejbca.core.protocol.ws.logger.TransactionLogger' should 
 <p>EJBCA Enterprise Edition implements Certificate Transparency (CT) as specified in <a href="http://tools.ietf.org/html/rfc6962">RFC 6962</a>.
 The purpose of CT is to create public audit logs of all certificates issued by the public SSL/TLS CAs. The presence of audit records is planned to be required for EV certificates in Google Chrome from February 2015 (and other web browsers and non-EV certificates later on as well). Note that CT is only relevant for CAs issuing <em>public SSL/TLS</em> certificates; other types of CAs should not use CT. More information can be found on the <a href="http://www.certificate-transparency.org/">CT website</a>.</p>
 
-<p>Signed Certificate Timestamp (SCTs) can be sent to end-users in three ways: in an extension in certificates, in an OCSP response extension and in a TLS extension. 
-EJBCA supports all of them, including combinations. The following sections describe how to configure EJBCA in one or more of these modes.</p>
+<p>From a CA's point of view, CT works by publishing certificates from the CA to the log servers and retrieving Signed Certificate Timestamps (SCTs) in response (this is a single operation, so requesting an SCT for a certificate publishes it also). The resulting SCTs can then be sent to end-users in a TLS handshake three ways: in a certificate extension, in a stapled OCSP response extension and/or in a TLS extension. 
+EJBCA supports all of those, including combinations. The following sections describe how to configure EJBCA in one or more of these modes.</p>
 </subsection>
 
 <subsection name="Prerequisites">
