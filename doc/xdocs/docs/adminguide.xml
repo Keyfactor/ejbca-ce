@@ -1696,25 +1696,25 @@ EJBCA supports all of them, including combinations. The following sections descr
 <p>Your EJBCA installation needs the <code><strong>ct</strong></code> module, which is only present in the enterprise edition (contact <a href="mailto:sales@primekey.se">PrimeKey</a> for details). Depending on the CT modes you need, there are some extra preparations.</p>
 
 <subsubsection name="CT in certificates">
-<p>No extra preparations are needed. Just configure the logs and enable CT in the certificate profiles.</p>
+<p>No extra preparations are needed. Just configure the logs and enable CT in the certificate profiles as described in the following sections "Adding CT logs" and "Activating CT".</p>
 </subsubsection>
 <subsubsection name="CT in OCSP responses">
-<p>CT in OCSP is only recommended for pre-generating OCSP responses, since EJBCA sends queries to the CT logs for each OCSP request (which is very slow, since no caching is implemented). In order to use CT OCSP you must enable the corresponding extension class in <code>conf/ocsp.properties</code>:</p>
+<p>CT in OCSP is only recommended for pre-generating OCSP responses, since EJBCA sends queries to the CT logs for each OCSP request (which is very slow, since no caching is implemented). If you use OCSP without pre-generation you must enable CT publishing, see below. In order to use CT OCSP you must enable the corresponding extension class in <code>conf/ocsp.properties</code>:</p>
 
 <source>
 ocsp.extensionoid=*1.3.6.1.4.1.11129.2.4.5
 ocsp.extensionclass=org.ejbca.core.protocol.ocsp.extension.certificatetransparency.OcspCtSctListExtension
 </source>
 
-<p>After enabling the extension, please redeploy EJBCA. Then proceed with configuring CT logs and certificate profiles.</p>
+<p>After enabling the extension, please redeploy EJBCA. Then proceed with configuring CT logs and certificate profiles. See the following sections "Adding CT logs" and "Activating CT".</p>
 </subsubsection>
-<subsubsection name="CT in TLS handshakes">
-<p>In this mode, the certificate holder requests SCTs himself from the logs and includes them in the TLS handshake.
+<subsubsection name="CT in a TLS extension">
+<p>In this mode, the certificate holder requests SCTs himself from the logs and includes them in a TLS extension.
 The CA is not required to do anything, but it is possible to reduce the time it takes until full (merged) audit log
 records are available by publishing certificates to the logs as soon as they are issued. See the following section for configuration details.</p>
 </subsubsection>
 <subsubsection name="Publishing to logs without using the SCTs">
-<p>EJBCA can asynchronously publish certificates to one or more CT logs, using a Custom Publisher. This feature is intended to be used mainly when using CT in TLS mode.
+<p>EJBCA can asynchronously publish certificates to one or more CT logs, using a Custom Publisher. This feature is intended to be used mainly when using CT in TLS mode or OCSP mode.
 To enable this feature, go to CA Functions, Publishers and add a new publisher with the following configuration:</p>
 
 <ul>
