@@ -64,7 +64,7 @@ import org.cesecore.util.CryptoProviderTools;
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CryptoTokenManagementSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSessionLocal, CryptoTokenManagementSessionRemote {
-    
+
     private static final Logger log = Logger.getLogger(CryptoTokenManagementSessionBean.class);
     /** Internal localization of logs and errors */
     private static final InternalResources INTRES = InternalResources.getInstance();
@@ -83,7 +83,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         final List<Integer> allCryptoTokenIds = cryptoTokenSession.getCryptoTokenIds();
         final List<Integer> auhtorizedCryptoTokenIds = new ArrayList<Integer>();
         for (final Integer current : allCryptoTokenIds) {
-            if (accessControlSessionSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.VIEW.resource()+"/"+current.toString())) {
+            if (accessControlSessionSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.VIEW.resource() + "/" + current.toString())) {
                 auhtorizedCryptoTokenIds.add(current);
             }
         }
@@ -98,9 +98,11 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public CryptoTokenInfo getCryptoTokenInfo(final AuthenticationToken authenticationToken, final int cryptoTokenId) throws AuthorizationDeniedException {
-        if (!accessControlSessionSession.isAuthorized(authenticationToken, CryptoTokenRules.VIEW.resource()+"/"+cryptoTokenId)) {
-            final String msg = INTRES.getLocalizedMessage("authorization.notuathorizedtoresource", CryptoTokenRules.VIEW.resource(), authenticationToken.toString());
+    public CryptoTokenInfo getCryptoTokenInfo(final AuthenticationToken authenticationToken, final int cryptoTokenId)
+            throws AuthorizationDeniedException {
+        if (!accessControlSessionSession.isAuthorized(authenticationToken, CryptoTokenRules.VIEW.resource() + "/" + cryptoTokenId)) {
+            final String msg = INTRES.getLocalizedMessage("authorization.notuathorizedtoresource", CryptoTokenRules.VIEW.resource(),
+                    authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
         }
         return getCryptoTokenInfo(cryptoTokenId);
@@ -120,7 +122,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     @Override
     public CryptoTokenInfo getCryptoTokenInfo(final int cryptoTokenId) {
         final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
-        if (cryptoToken==null) {
+        if (cryptoToken == null) {
             return null;
         }
         final boolean isActive = cryptoToken.getTokenStatus() == CryptoToken.STATUS_ACTIVE;
@@ -160,7 +162,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
             log.trace("<createCryptoToken: " + tokenName + ", " + className);
         }
     }
-    
+
     @Override
     public int createCryptoToken(final AuthenticationToken authenticationToken, final String tokenName, final String className,
             final Properties properties, final byte[] data, final char[] authenticationCode) throws AuthorizationDeniedException,
@@ -181,30 +183,32 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         createCryptoToken(authenticationToken, tokenName, cryptoTokenId, className, properties, data, authenticationCode);
         return cryptoTokenId.intValue();
     }
-    
+
     /**
      * Asserts if an authentication token is authorized to modify crypto tokens
      * 
      * @param authenticationToken the authentication token to check
      * @throws AuthorizationDeniedException thrown if authorization was denied.
      */
-    private void assertAuthorizedToModifyCryptoTokens(AuthenticationToken authenticationToken) throws AuthorizationDeniedException  {
+    private void assertAuthorizedToModifyCryptoTokens(AuthenticationToken authenticationToken) throws AuthorizationDeniedException {
         if (!accessControlSessionSession.isAuthorized(authenticationToken, CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource())) {
-            final String msg = INTRES.getLocalizedMessage("authorization.notuathorizedtoresource", CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource(), authenticationToken.toString());
+            final String msg = INTRES.getLocalizedMessage("authorization.notuathorizedtoresource", CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource(),
+                    authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
         }
     }
-    
+
     @Override
     public void saveCryptoToken(AuthenticationToken authenticationToken, int cryptoTokenId, String tokenName, Properties properties,
             char[] authenticationCode) throws AuthorizationDeniedException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
             CryptoTokenNameInUseException, NoSuchSlotException {
         if (log.isTraceEnabled()) {
-            log.trace(">saveCryptoToken: "+tokenName+", "+cryptoTokenId);
+            log.trace(">saveCryptoToken: " + tokenName + ", " + cryptoTokenId);
         }
         // Note that an admin that is authorized to modify a token could gain access to another HSM slot etc..
         if (!accessControlSessionSession.isAuthorized(authenticationToken, CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource())) {
-            final String msg = INTRES.getLocalizedMessage("authorization.notuathorizedtoresource", CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource(), authenticationToken.toString());
+            final String msg = INTRES.getLocalizedMessage("authorization.notuathorizedtoresource", CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource(),
+                    authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
         }
         final CryptoToken currentCryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
@@ -219,14 +223,14 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
             authenticationCode = newPin.toCharArray();
         } else if (keepAutoActivateIfPresent) {
             final String currentPin = BaseCryptoToken.getAutoActivatePin(currentCryptoToken.getProperties());
-            if (currentPin!=null) {
+            if (currentPin != null) {
                 BaseCryptoToken.setAutoActivatePin(properties, currentPin, true);
-                authenticationCode = null;  // We have an auto-activation pin and it didn't change;
+                authenticationCode = null; // We have an auto-activation pin and it didn't change;
             }
-        } else if (authenticationCode==null || authenticationCode.length==0) {
+        } else if (authenticationCode == null || authenticationCode.length == 0) {
             // Check if the token was auto-activated before. it is now manually activated, so use the auto-activation code one last time
             final String currentPin = BaseCryptoToken.getAutoActivatePin(currentCryptoToken.getProperties());
-            if (currentPin!=null) {
+            if (currentPin != null) {
                 authenticationCode = currentPin.toCharArray();
             }
         }
@@ -234,7 +238,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         // For SoftCryptoTokens, a new secret means that we should change it and it can only be done if the token is active
         final CryptoToken newCryptoToken = CryptoTokenFactory.createCryptoToken(className, properties, tokendata, cryptoTokenId, tokenName);
         // If a new authenticationCode is provided we should verify it before we go ahead and merge
-        if (authenticationCode != null && authenticationCode.length>0) {
+        if (authenticationCode != null && authenticationCode.length > 0) {
             newCryptoToken.deactivate();
             newCryptoToken.activate(authenticationCode);
         }
@@ -245,77 +249,79 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         putDelta("signProviderName", currentCryptoToken.getSignProviderName(), newCryptoToken.getSignProviderName(), details);
         putDelta(currentCryptoToken.getProperties(), newCryptoToken.getProperties(), details);
         cryptoTokenSession.mergeCryptoToken(newCryptoToken);
-        securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_EDIT, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE, authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, details);
+        securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_EDIT, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
+                authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, details);
         if (log.isTraceEnabled()) {
-            log.trace("<saveCryptoToken: "+tokenName+", "+cryptoTokenId);
+            log.trace("<saveCryptoToken: " + tokenName + ", " + cryptoTokenId);
         }
     }
 
     // Only removes reference
     @Override
     public void deleteCryptoToken(final AuthenticationToken authenticationToken, final int cryptoTokenId) throws AuthorizationDeniedException {
-        if (!accessControlSessionSession.isAuthorized(authenticationToken, CryptoTokenRules.DELETE_CRYPTOTOKEN.resource()+"/"+cryptoTokenId)) {
+        if (!accessControlSessionSession.isAuthorized(authenticationToken, CryptoTokenRules.DELETE_CRYPTOTOKEN.resource() + "/" + cryptoTokenId)) {
             throw new AuthorizationDeniedException();
         }
         if (cryptoTokenSession.removeCryptoToken(cryptoTokenId)) {
-            securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_DELETE, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE, authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null,
-                    "Deleted CryptoToken with id " + cryptoTokenId);
+            securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_DELETE, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
+                    authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, "Deleted CryptoToken with id " + cryptoTokenId);
         } else if (log.isDebugEnabled()) {
-            log.debug("Crypto token with id "+cryptoTokenId+" does not exist and can not be deleted.");
+            log.debug("Crypto token with id " + cryptoTokenId + " does not exist and can not be deleted.");
         }
     }
-    
-    
+
     @Override
     public boolean isCryptoTokenStatusActive(AuthenticationToken authenticationToken, int cryptoTokenId) throws AuthorizationDeniedException {
         assertAuthorization(authenticationToken, cryptoTokenId, CryptoTokenRules.VIEW.resource() + "/" + cryptoTokenId);
         return isCryptoTokenStatusActive(cryptoTokenId);
     }
-    
+
     @Override
-    public boolean isCryptoTokenStatusActive(int cryptoTokenId)  {
+    public boolean isCryptoTokenStatusActive(int cryptoTokenId) {
         final CryptoToken cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
         return cryptoToken.getTokenStatus() == CryptoToken.STATUS_ACTIVE;
     }
-    
+
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public void activate(final AuthenticationToken authenticationToken, final int cryptoTokenId, final char[] authenticationCode) throws AuthorizationDeniedException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException {
-        assertAuthorization(authenticationToken, cryptoTokenId, CryptoTokenRules.ACTIVATE.resource()+"/"+cryptoTokenId);
+    public void activate(final AuthenticationToken authenticationToken, final int cryptoTokenId, final char[] authenticationCode)
+            throws AuthorizationDeniedException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException {
+        assertAuthorization(authenticationToken, cryptoTokenId, CryptoTokenRules.ACTIVATE.resource() + "/" + cryptoTokenId);
         final CryptoToken cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
         cryptoToken.activate(authenticationCode);
-        securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_ACTIVATE, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE, authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null,
-                "Activated CryptoToken '" + cryptoToken.getTokenName() + "' with id " + cryptoTokenId);
+        securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_ACTIVATE, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
+                authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, "Activated CryptoToken '" + cryptoToken.getTokenName()
+                        + "' with id " + cryptoTokenId);
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public void deactivate(final AuthenticationToken authenticationToken, final int cryptoTokenId) throws AuthorizationDeniedException {
-        assertAuthorization(authenticationToken, cryptoTokenId, CryptoTokenRules.DEACTIVATE.resource()+"/"+cryptoTokenId);
+        assertAuthorization(authenticationToken, cryptoTokenId, CryptoTokenRules.DEACTIVATE.resource() + "/" + cryptoTokenId);
         final CryptoToken cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
         cryptoToken.deactivate();
-        securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_DEACTIVATE, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE, authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null,
-                "Deactivated CryptoToken '" + cryptoToken.getTokenName() + "' with id " + cryptoTokenId);
+        securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_DEACTIVATE, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
+                authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, "Deactivated CryptoToken '" + cryptoToken.getTokenName()
+                        + "' with id " + cryptoTokenId);
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
     public boolean updatePin(AuthenticationToken authenticationToken, Integer cryptoTokenId, char[] currentAuthenticationCode,
-            char[] newAuthenticationCode, boolean updateOnly) throws AuthorizationDeniedException, CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException {
-        final String[] requiredAuthorization = new String[] {
-                CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource()+"/"+cryptoTokenId,
-                CryptoTokenRules.ACTIVATE.resource()+"/"+cryptoTokenId,
-                CryptoTokenRules.DEACTIVATE.resource()+"/"+cryptoTokenId
-        };
-        if (!accessControlSessionSession.isAuthorized(authenticationToken,requiredAuthorization)) {
-            final String msg = INTRES.getLocalizedMessage("authorization.notuathorizedtoresource", Arrays.toString(requiredAuthorization), authenticationToken.toString());
+            char[] newAuthenticationCode, boolean updateOnly) throws AuthorizationDeniedException, CryptoTokenAuthenticationFailedException,
+            CryptoTokenOfflineException {
+        final String[] requiredAuthorization = new String[] { CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource() + "/" + cryptoTokenId,
+                CryptoTokenRules.ACTIVATE.resource() + "/" + cryptoTokenId, CryptoTokenRules.DEACTIVATE.resource() + "/" + cryptoTokenId };
+        if (!accessControlSessionSession.isAuthorized(authenticationToken, requiredAuthorization)) {
+            final String msg = INTRES.getLocalizedMessage("authorization.notuathorizedtoresource", Arrays.toString(requiredAuthorization),
+                    authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
         }
         CryptoToken cryptoToken = getCryptoToken(cryptoTokenId);
         final Properties cryptoTokenProperties = cryptoToken.getProperties();
         // Get current auto-activation pin (if any)
         final String oldAutoActivationPin = BaseCryptoToken.getAutoActivatePin(cryptoTokenProperties);
-        if (oldAutoActivationPin==null && (updateOnly || newAuthenticationCode==null)) {
+        if (oldAutoActivationPin == null && (updateOnly || newAuthenticationCode == null)) {
             // This is a NOOP call that will not lead to any change
             return false;
         }
@@ -339,44 +345,45 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
                     final ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     keystore.store(baos, newAuthenticationCode);
                     baos.close();
-                    if (oldAutoActivationPin!=null || !updateOnly) {
+                    if (oldAutoActivationPin != null || !updateOnly) {
                         BaseCryptoToken.setAutoActivatePin(cryptoTokenProperties, new String(newAuthenticationCode), true);
                     } else {
                         log.debug("Auto-activation will not be used. Only changing pin for soft CryptoToken keystore.");
                     }
-                    cryptoToken = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), cryptoTokenProperties, baos.toByteArray(), cryptoTokenId, cryptoToken.getTokenName());
+                    cryptoToken = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), cryptoTokenProperties, baos.toByteArray(),
+                            cryptoTokenId, cryptoToken.getTokenName());
                 } catch (Exception e) {
                     log.info("Unable to store soft keystore with new PIN: " + e);
                     throw new CryptoTokenAuthenticationFailedException("Unable to store soft keystore with new PIN");
                 }
             }
         } else {
-                if (oldAutoActivationPin!=null) {
-                    // If we have an old auto-activation pin we will compare the "current" with this value to avoid deactivating the token
-                    if (!oldAutoActivationPin.equals(new String(currentAuthenticationCode))) {
-                        final String msg = "Supplied PIN did not match auto-activation PIN.";
-                        log.info(msg);
-                        throw new CryptoTokenAuthenticationFailedException(msg);
-                    } else {
-                        log.debug("Successfully verified the PIN for non-soft CryptoToken by comparing supplied PIN to auto-activation PIN.");
-                    }
+            if (oldAutoActivationPin != null) {
+                // If we have an old auto-activation pin we will compare the "current" with this value to avoid deactivating the token
+                if (!oldAutoActivationPin.equals(new String(currentAuthenticationCode))) {
+                    final String msg = "Supplied PIN did not match auto-activation PIN.";
+                    log.info(msg);
+                    throw new CryptoTokenAuthenticationFailedException(msg);
                 } else {
-                    // If we don't have an auto-activation pin to compare the supplied PIN to, we need to verify the supplied
-                    // PIN can be used in a de-activation/activation cycle.
-                    final boolean wasInactive = !isCryptoTokenStatusActive(authenticationToken, cryptoTokenId);
+                    log.debug("Successfully verified the PIN for non-soft CryptoToken by comparing supplied PIN to auto-activation PIN.");
+                }
+            } else {
+                // If we don't have an auto-activation pin to compare the supplied PIN to, we need to verify the supplied
+                // PIN can be used in a de-activation/activation cycle.
+                final boolean wasInactive = !isCryptoTokenStatusActive(authenticationToken, cryptoTokenId);
+                cryptoToken.deactivate();
+                cryptoToken.activate(currentAuthenticationCode);
+                if (wasInactive) {
+                    // Note that there is a small glitch here where the token was active, but we have no other options to verify the pin
                     cryptoToken.deactivate();
-                    cryptoToken.activate(currentAuthenticationCode);
-                    if (wasInactive) {
-                        // Note that there is a small glitch here where the token was active, but we have no other options to verify the pin
-                        cryptoToken.deactivate();
-                    }
                 }
-                if (newAuthenticationCode == null) {
-                    cryptoTokenProperties.remove(CryptoToken.AUTOACTIVATE_PIN_PROPERTY);
-                } else {
-                    BaseCryptoToken.setAutoActivatePin(cryptoTokenProperties, new String(newAuthenticationCode), true);
-                }
-                cryptoToken.setProperties(cryptoTokenProperties);
+            }
+            if (newAuthenticationCode == null) {
+                cryptoTokenProperties.remove(CryptoToken.AUTOACTIVATE_PIN_PROPERTY);
+            } else {
+                BaseCryptoToken.setAutoActivatePin(cryptoTokenProperties, new String(newAuthenticationCode), true);
+            }
+            cryptoToken.setProperties(cryptoTokenProperties);
         }
         // Save the modified CryptoToken
         try {
@@ -385,15 +392,17 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
             // This should not happen here since we use the same name and id
             throw new RuntimeException(e);
         }
-        securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_UPDATEPIN, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE, authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null,
+        securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_UPDATEPIN, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
+                authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null,
                 "Updated PIN of CryptoToken '" + cryptoToken.getTokenName() + "' with id " + cryptoTokenId);
         // Return the current auto-activation state
         return BaseCryptoToken.getAutoActivatePin(cryptoTokenProperties) != null;
     }
 
     @Override
-    public List<KeyPairInfo> getKeyPairInfos(final AuthenticationToken authenticationToken, final int cryptoTokenId) throws CryptoTokenOfflineException, AuthorizationDeniedException {
-        assertAuthorization(authenticationToken, cryptoTokenId, CryptoTokenRules.VIEW.resource()+"/"+cryptoTokenId);
+    public List<KeyPairInfo> getKeyPairInfos(final AuthenticationToken authenticationToken, final int cryptoTokenId)
+            throws CryptoTokenOfflineException, AuthorizationDeniedException {
+        assertAuthorization(authenticationToken, cryptoTokenId, CryptoTokenRules.VIEW.resource() + "/" + cryptoTokenId);
         final CryptoToken cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
         final List<KeyPairInfo> ret = new ArrayList<KeyPairInfo>();
         for (final String alias : getKeyPairAliasesInternal(cryptoToken)) {
@@ -407,8 +416,9 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     }
 
     @Override
-    public KeyPairInfo getKeyPairInfo(AuthenticationToken authenticationToken, int cryptoTokenId, String alias) throws CryptoTokenOfflineException, AuthorizationDeniedException {
-        assertAuthorization(authenticationToken, cryptoTokenId, CryptoTokenRules.VIEW.resource()+"/"+cryptoTokenId);
+    public KeyPairInfo getKeyPairInfo(AuthenticationToken authenticationToken, int cryptoTokenId, String alias) throws CryptoTokenOfflineException,
+            AuthorizationDeniedException {
+        assertAuthorization(authenticationToken, cryptoTokenId, CryptoTokenRules.VIEW.resource() + "/" + cryptoTokenId);
         final CryptoToken cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
         if (!getKeyPairAliasesInternal(cryptoToken).contains(alias)) {
             return null;
@@ -421,14 +431,15 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     }
 
     @Override
-    public PublicKey getPublicKey(AuthenticationToken authenticationToken, int cryptoTokenId, String alias) throws AuthorizationDeniedException, CryptoTokenOfflineException {
-        assertAuthorization(authenticationToken, cryptoTokenId, CryptoTokenRules.VIEW.resource()+"/"+cryptoTokenId);
-        return  getCryptoTokenAndAssertExistence(cryptoTokenId).getPublicKey(alias);
+    public PublicKey getPublicKey(AuthenticationToken authenticationToken, int cryptoTokenId, String alias) throws AuthorizationDeniedException,
+            CryptoTokenOfflineException {
+        assertAuthorization(authenticationToken, cryptoTokenId, CryptoTokenRules.VIEW.resource() + "/" + cryptoTokenId);
+        return getCryptoTokenAndAssertExistence(cryptoTokenId).getPublicKey(alias);
     }
 
     @Override
     public Integer getIdFromName(final String cryptoTokenName) {
-        if (cryptoTokenName==null) {
+        if (cryptoTokenName == null) {
             return null;
         }
         final Map<String, Integer> cachedNameToIdMap = cryptoTokenSession.getCachedNameToIdMap();
@@ -451,8 +462,9 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     }
 
     @Override
-    public List<String> getKeyPairAliases(final AuthenticationToken authenticationToken, final int cryptoTokenId) throws AuthorizationDeniedException, CryptoTokenOfflineException {
-        assertAuthorization(authenticationToken, cryptoTokenId, CryptoTokenRules.VIEW.resource()+"/"+cryptoTokenId);
+    public List<String> getKeyPairAliases(final AuthenticationToken authenticationToken, final int cryptoTokenId)
+            throws AuthorizationDeniedException, CryptoTokenOfflineException {
+        assertAuthorization(authenticationToken, cryptoTokenId, CryptoTokenRules.VIEW.resource() + "/" + cryptoTokenId);
         final CryptoToken cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
         return getKeyPairAliasesInternal(cryptoToken);
     }
@@ -475,9 +487,10 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     }
 
     @Override
-    public void createKeyPair(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String alias, final String keySpecificationParam)
-            throws AuthorizationDeniedException, CryptoTokenOfflineException, InvalidKeyException, InvalidAlgorithmParameterException {
-        assertAuthorization(authenticationToken, cryptoTokenId, CryptoTokenRules.GENERATE_KEYS.resource()+"/"+cryptoTokenId);
+    public void createKeyPair(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String alias,
+            final String keySpecificationParam) throws AuthorizationDeniedException, CryptoTokenOfflineException, InvalidKeyException,
+            InvalidAlgorithmParameterException {
+        assertAuthorization(authenticationToken, cryptoTokenId, CryptoTokenRules.GENERATE_KEYS.resource() + "/" + cryptoTokenId);
         final CryptoToken cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
         // Check if alias is already in use
         assertAliasNotInUse(cryptoToken, alias);
@@ -502,17 +515,17 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         try {
             cryptoTokenSession.mergeCryptoToken(cryptoToken);
         } catch (CryptoTokenNameInUseException e) {
-            throw new RuntimeException(e);  // We have not changed the name of the CrytpoToken here, so this should never happen
+            throw new RuntimeException(e); // We have not changed the name of the CrytpoToken here, so this should never happen
         }
         securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_GEN_KEYPAIR, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
                 authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, details);
     }
 
     @Override
-    public void createKeyPairWithSameKeySpec(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String currentAlias, final String newAlias)
-            throws AuthorizationDeniedException, CryptoTokenOfflineException, InvalidKeyException, InvalidAlgorithmParameterException {
-        assertAuthorization(authenticationToken, cryptoTokenId,
-                CryptoTokenRules.GENERATE_KEYS.resource() + "/" + cryptoTokenId);
+    public void createKeyPairWithSameKeySpec(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String currentAlias,
+            final String newAlias) throws AuthorizationDeniedException, CryptoTokenOfflineException, InvalidKeyException,
+            InvalidAlgorithmParameterException {
+        assertAuthorization(authenticationToken, cryptoTokenId, CryptoTokenRules.GENERATE_KEYS.resource() + "/" + cryptoTokenId);
         final CryptoToken cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
         assertAliasNotInUse(cryptoToken, newAlias);
         final PublicKey publicKey = cryptoToken.getPublicKey(currentAlias);
@@ -533,7 +546,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         try {
             cryptoTokenSession.mergeCryptoToken(cryptoToken);
         } catch (CryptoTokenNameInUseException e) {
-            throw new RuntimeException(e);  // We have not changed the name of the CrytpoToken here, so this should never happen
+            throw new RuntimeException(e); // We have not changed the name of the CrytpoToken here, so this should never happen
         }
         securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_GEN_KEYPAIR, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
                 authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, details);
@@ -543,7 +556,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     public boolean isAliasUsedInCryptoToken(final int cryptoTokenId, final String alias) {
         return getCryptoToken(cryptoTokenId).isAliasUsed(alias);
     }
-    
+
     /** @throws InvalidKeyException if the alias is in use by a private, public or symmetric key */
     private void assertAliasNotInUse(final CryptoToken cryptoToken, final String alias) throws InvalidKeyException {
         if (cryptoToken.isAliasUsed(alias)) {
@@ -554,7 +567,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     @Override
     public void removeKeyPair(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String alias)
             throws AuthorizationDeniedException, CryptoTokenOfflineException, InvalidKeyException {
-        assertAuthorization(authenticationToken, cryptoTokenId, CryptoTokenRules.REMOVE_KEYS.resource()+"/"+cryptoTokenId);
+        assertAuthorization(authenticationToken, cryptoTokenId, CryptoTokenRules.REMOVE_KEYS.resource() + "/" + cryptoTokenId);
         final CryptoToken cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
         // Check if alias is in use
         if (!cryptoToken.isAliasUsed(alias)) {
@@ -580,29 +593,30 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         try {
             cryptoTokenSession.mergeCryptoToken(cryptoToken);
         } catch (CryptoTokenNameInUseException e) {
-            throw new RuntimeException(e);  // We have not changed the name of the CrytpoToken here, so this should never happen
+            throw new RuntimeException(e); // We have not changed the name of the CrytpoToken here, so this should never happen
         }
-        securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_DELETE_ENTRY, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE, authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, details);
+        securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_DELETE_ENTRY, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
+                authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, details);
     }
 
     @Override
     public void testKeyPair(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String alias)
             throws AuthorizationDeniedException, CryptoTokenOfflineException, InvalidKeyException {
-         assertAuthorization(authenticationToken, cryptoTokenId,
-                CryptoTokenRules.TEST_KEYS.resource() + "/" + cryptoTokenId);
-         final CryptoToken cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
+        assertAuthorization(authenticationToken, cryptoTokenId, CryptoTokenRules.TEST_KEYS.resource() + "/" + cryptoTokenId);
+        final CryptoToken cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
         cryptoToken.testKeyPair(alias);
     }
-    
+
     /** @return a CryptoToken for the requested Id of authorized and it exists. Never returns null. */
-    private void assertAuthorization(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String resource) throws AuthorizationDeniedException {
+    private void assertAuthorization(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String resource)
+            throws AuthorizationDeniedException {
         if (!accessControlSessionSession.isAuthorized(authenticationToken, resource)) {
             final String msg = INTRES.getLocalizedMessage("authorization.notuathorizedtoresource", resource, authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
         }
 
     }
-    
+
     private CryptoToken getCryptoTokenAndAssertExistence(int cryptoTokenId) {
         final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
         if (cryptoToken == null) {
@@ -622,7 +636,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         // Find out which new properties that did not exist in the old
         for (final Object key : newProperties.keySet()) {
             final String oldValue = oldProperties.getProperty(String.valueOf(key));
-            if (oldValue==null) {
+            if (oldValue == null) {
                 final String newValue = newProperties.getProperty(String.valueOf(key));
                 putDelta(String.valueOf(key), oldValue, newValue, details);
             }
@@ -646,11 +660,11 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
             if (oldValue == null && newValue == null) {
                 // NOP
             } else if (oldValue == null && newValue != null) {
-                details.put("added:"+key, newValue);
+                details.put("added:" + key, newValue);
             } else if (oldValue != null && newValue == null) {
-                details.put("removed:"+key, oldValue);
+                details.put("removed:" + key, oldValue);
             } else if (!oldValue.equals(newValue)) {
-                details.put("changed:"+key, newValue);
+                details.put("changed:" + key, newValue);
             } else {
                 details.put(key, newValue);
             }
