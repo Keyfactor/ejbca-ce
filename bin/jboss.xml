@@ -463,7 +463,8 @@
         <!-- Top-level targets -->
         <!-- ================= -->
 
-	<target name="jee:undeploy">
+    <target name="jee:undeploy" depends="jee:undeployJBoss7" />
+	<target name="jee:undeployJBoss7" if="jboss7">
         <jboss:admsilent arg="undeploy ejbca.ear --keep-content" failonerror="false" />
 	</target>
     <!-- Start deploy by undeploying EJBCA completely. This makes a new ant deploy on an already deployed system work faster and more stable. 
