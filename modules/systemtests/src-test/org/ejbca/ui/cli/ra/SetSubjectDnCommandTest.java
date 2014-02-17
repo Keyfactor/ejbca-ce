@@ -29,6 +29,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
@@ -102,6 +103,6 @@ public class SetSubjectDnCommandTest {
         final String newDn = "C=DE,O=Primekey Labs,CN=foo";
         final String args[] = new String[] { "setsubjectdn", TESTCLASS_NAME, newDn };
         command.execute(args);
-        assertEquals("DN was not changed.", newDn, endEntityAccessSession.findUser(authenticationToken, TESTCLASS_NAME).getDN());
+        assertEquals("DN was not changed.", CertTools.stringToBCDNString(newDn), endEntityAccessSession.findUser(authenticationToken, TESTCLASS_NAME).getDN());
     }
 }
