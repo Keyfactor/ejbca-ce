@@ -36,19 +36,20 @@ public abstract class CommandBase implements CliCommandPlugin {
     protected static OverwriteResponse getValueFoundResponse(OverwriteResponse defaultResponse) {
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
         try {
-            System.out.print(OverwriteResponse.getQueryText() + " [default=" + defaultResponse.getResponse().toUpperCase() + "] ");
-            System.out.flush();
-
-            String input = bufferedReader.readLine();
-            if (input.isEmpty()) {
-                return defaultResponse;
-            } else {
-                OverwriteResponse result = OverwriteResponse.getResponseFromInput(input);
-                if (result == null) {
-                    System.out.println("Input not recognized: '" + input + "'");
-                    return getValueFoundResponse(defaultResponse);
+            while (true) { // until a valid response has been provided
+                System.out.print(OverwriteResponse.getQueryText() + " [default=" + defaultResponse.getResponse().toUpperCase() + "] ");
+                System.out.flush();
+    
+                String input = bufferedReader.readLine();
+                if (input.isEmpty()) {
+                    return defaultResponse;
                 } else {
-                    return result;
+                    OverwriteResponse result = OverwriteResponse.getResponseFromInput(input);
+                    if (result == null) {
+                        System.out.println("Input not recognized: '" + input + "'");
+                    } else {
+                        return result;
+                    }
                 }
             }
         } catch (IOException e) {
