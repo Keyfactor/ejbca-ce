@@ -64,7 +64,17 @@ import org.ejbca.util.keystore.P12toPEM;
  */
 public class BatchMakeP12Command extends BaseCommand {
 
-    BatchToolProperties props = new BatchToolProperties(getLogger());
+    private BatchToolProperties props = null;
+    
+    /** Lazy loading of properties so we don't have to read it when CliCommandHelper goes through all commands.
+     * @return BatchToolProperties, never null
+     */
+    private BatchToolProperties getProps() {
+        if (props == null) {
+            props = new BatchToolProperties(getLogger());            
+        }
+        return props;
+    }
     
     /**
      * Where created P12-files are stored, default p12
@@ -274,13 +284,13 @@ public class BatchMakeP12Command extends BaseCommand {
             // Create self signed certificate, because ECDSA keys are not
             // serializable
             String sigAlg = AlgorithmConstants.SIGALG_SHA1_WITH_RSA;
-            if (props.getKeyAlg().equals("ECDSA")) {
+            if (getProps().getKeyAlg().equals("ECDSA")) {
                 sigAlg = AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA;
-            } else if (props.getKeyAlg().equals("DSA")) {
+            } else if (getProps().getKeyAlg().equals("DSA")) {
                 sigAlg = AlgorithmConstants.SIGALG_SHA1_WITH_DSA;
-            } else if (props.getKeyAlg().equals(AlgorithmConstants.KEYALGORITHM_ECGOST3410)) {                
+            } else if (getProps().getKeyAlg().equals(AlgorithmConstants.KEYALGORITHM_ECGOST3410)) {                
                 sigAlg = AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410;
-            } else if (props.getKeyAlg().equals(AlgorithmConstants.KEYALGORITHM_DSTU4145)) {                
+            } else if (getProps().getKeyAlg().equals(AlgorithmConstants.KEYALGORITHM_DSTU4145)) {                
                 sigAlg = AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145;
             }
 
@@ -385,7 +395,7 @@ public class BatchMakeP12Command extends BaseCommand {
                 throw new Exception(errMsg);
             }
         } else {
-            rsaKeys = KeyTools.genKeys(props.getKeySpec(), props.getKeyAlg());
+            rsaKeys = KeyTools.genKeys(getProps().getKeySpec(), getProps().getKeyAlg());
         }
         // Get certificate for user and create keystore
         if (rsaKeys != null) {
@@ -407,7 +417,7 @@ public class BatchMakeP12Command extends BaseCommand {
                 String iMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.retrieveingkeys", data.getUsername());
                 getLogger().info(iMsg);
             } else {
-                String iMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.generatingkeys", props.getKeyAlg(), props.getKeySpec(), data.getUsername());
+                String iMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.generatingkeys", getProps().getKeyAlg(), getProps().getKeySpec(), data.getUsername());
                 getLogger().info(iMsg);
             }
             processUser(cliUserName, cliPassword, data, createJKS, createPEM, (status == EndEntityConstants.STATUS_KEYRECOVERY));
