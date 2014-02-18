@@ -4,6 +4,8 @@ This is a maintenance release with new features, bug fixes and improvements. In 
 The biggest news in this release is support for Certificate Transparency in EJBCA Enterprise. 
 Apart from that all issues reported from installations of EJBCA 6.0.3 has been fixed.
 
+One of the fixes is a security fix. The security issue is rated as low, and can lead only to excessive CPU usage, if exposed to untrusted networks.
+
 * Noteworthy changes:
 - Support for Certificate Transparency, RFC6962 (EJBCA Enterprise only).
 - Support for JBoss EAP 6.2 that changed default behavior when creating datasources.
