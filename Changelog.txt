@@ -1,3 +1,67 @@
+EJBCA 6.0.4, 2014-02-20
+---
+Bug
+    [ECA-3055] - Not authorized to edit publisher when publisher cache disabled
+    [ECA-3198] - Regression: ECA-2973 introduced a dependency on EJBCA in CESeCore test code
+    [ECA-3210] - CA upgrade when ExtRACAServiceWorker fails to persist
+    [ECA-3337] - KeyBind EJB CLI fingerprint reference is case sensitive
+    [ECA-3361] - Cannot deploy with web-services disabled
+    [ECA-3364] - ExternalRA: Allow SCEP GetCACaps without message parameter
+    [ECA-3366] - Syntax in jboss-cli.bat for passing commands fails in Win
+    [ECA-3372] - OCSP Archive Cutoff can give NPE
+    [ECA-3373] - init() method is not called on OCSP extensions
+    [ECA-3375] - CLI ca restorekeystore gives exception for soft ca
+    [ECA-3382] - Test files have lost character encoding, change source file encoding to UTF-8
+    [ECA-3383] - CertTools.genPKCS10CertificationRequest does not use the specified provider
+    [ECA-3386] - httpserver.external.privhttps default to 8443 even though httpserver.privhttps is set to something else
+    [ECA-3387] - Can not edit Sub CA signed by external CA
+    [ECA-3388] - editcapage.jsp contains a slightly confusing help text
+    [ECA-3389] - OCSP key binding properties visible for authentication key binding
+    [ECA-3392] - InternalKeyBindingDataSessionBean.getInternalKeyBindingForEdit(int) throws NPE if no value was found.
+    [ECA-3395] - Proper handling of certificate import/update when base64cert is not populated
+    [ECA-3396] - InternalKeyBinding error using Postgres 9
+    [ECA-3397] - Subject key ID not published by VA publisher
+    [ECA-3398] - java.lang.IllegalArgumentException thrown when importing OCSP key binding certificate
+    [ECA-3399] - Incorrect error message when editing uninitialised CAs if private keys are missing
+    [ECA-3401] - Can not generate keys on soft crypto token with allowExport=false
+    [ECA-3403] - Admin GUI create CRL fails with UTF-8 encoded CA DN
+    [ECA-3405] - StateDump test fails because of refactorization
+    [ECA-3406] - Trying to delete a non-existing keybinding causes NPE
+    [ECA-3408] - StateDump import overwrites CAs with the same name without asking
+    [ECA-3410] - StateDumpTest needs Hibernate compatibility jar
+    [ECA-3421] - Upgrade jar file
+    [ECA-3423] - Fix statedump overwrite response handling and test
+
+Improvement
+    [ECA-2828] - Document authorization rules in EJBCA
+    [ECA-2982] - Add option to 'bin/ejbca.sh ca republish' command to republish only CA certificate and CRL
+    [ECA-3081] - Improved error message during batch generate when using invalid key size
+    [ECA-3082] - Improve message about configuration during batch generate
+    [ECA-3150] - Remove scripts used on ejbca.org from bundled documentation.
+    [ECA-3169] - Improve wording of some options of "Externally signed CA"
+    [ECA-3290] - Cache headers still present for OCSP responses containing nonce
+    [ECA-3365] - Audit log Internal Key Binding operations
+    [ECA-3370] - Allow import of OCSP certificates with non-repudiation key usage
+    [ECA-3371] - Make JBoss EAP 6 specific physical file deployment of BC provider
+    [ECA-3374] - Add JUnit test for OCSPUnidExtension
+    [ECA-3384] - Add a password argument to CaImportCACommand
+    [ECA-3385] - Movie audit implementation classes to cesecore-ejb-interface
+    [ECA-3404] - StateDump test should run from test:runsys when availabe
+    [ECA-3407] - Optimize JBoss reload during deploy
+    [ECA-3409] - Sort XML in statedump exports in a deterministic order
+    [ECA-3424] - Regression: All cli commands prints out loading batch properties from default
+
+Master Ticket
+    [ECA-3355] - Implement Certificate Transparency
+
+Task
+    [ECA-3368] - Deploy on JBoss EAP 6.2.0 has disabled datasource by default
+    [ECA-3380] - Move keybinding implementation classes from cesecore-ejb-interface to cesecore-common
+    [ECA-3400] - Shift OcspExtension* to cesecore-common from cesecore-ejb-interface
+
+Sub-task
+    [ECA-3377] - Create unit tests for all CLI Commands
+
 EJBCA 6.0.3, 2013-12-30
 ---
 Bug
