@@ -12,7 +12,7 @@ One of the fixes is a security fix. The security issue is rated as low, and can 
 - SCEP GetCACaps command now works from iOS.
 - Ensure OCSP RFC5019 responses with nonces are not cached.
 - Minor Command Line improvement.
-- Fixed all issues reported from installations of EJBCA 6.0.3.
+- Fixed most issues reported from installations of EJBCA 6.0.3.
 
 Read the full Changelog for details.
 For upgrade instructions, please see UPGRADE.
@@ -20,6 +20,7 @@ For upgrade instructions, please see UPGRADE.
 -  Known issues:
 	*	One test failure on DB2: https://jira.primekey.se/browse/ECA-3298
 	*	OCSP request signer verification does an additional database lookup: https://jira.primekey.se/browse/ECA-3299
+	*	Deployment on Windows does not work due to jboss-cli.bat arguments differing from jboss-cli.sh (half fixed some remaining)
 
 EJBCA 6.0.3
 -----------
@@ -108,6 +109,19 @@ For upgrade instructions, please see UPGRADE.
 	*	Other Rules for Supervisor role is not cleared is previously selected for another role type: https://jira.primekey.se/browse/ECA-3297
 	*	One test failure on DB2: https://jira.primekey.se/browse/ECA-3298
 	*	OCSP request signer verification does an additional database lookup: https://jira.primekey.se/browse/ECA-3299
+
+EJBCA 5.0.13
+-----------
+This is a maintenance release with only minor bug fixes, where one is a security fix. In all 4 issues have been fixed.
+
+The security issue is rated as low, and can lead only to excessive CPU usage, if exposed to untrusted networks.
+
+* Noteworthy changes:
+- Some versions of MySQL picks bad index mixing OR and AND, so we make two generically safe queries instead.
+- Fixed a regression where using a sun config file for PKCS11 (not the normal case) did not work.
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE.
 	  
 EJBCA 5.0.12
 -----------
