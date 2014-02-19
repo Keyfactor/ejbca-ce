@@ -159,7 +159,7 @@
     	<property name="reports.dir" location="${reports.base.dir}/dbschema"/>
 		<delete dir="${reports.dir}" />
 		<mkdir dir="${reports.dir}/html"/>
-		<junit printsummary="yes" haltonfailure="no" fork="false" failureproperty="databaseschemarest.failed">
+		<junit printsummary="yes" haltonfailure="no" fork="true" failureproperty="databaseschemarest.failed">
 			<classpath>
         		<path refid="test.classpath"/>
 				<pathelement path="${clover.jar}"/>
