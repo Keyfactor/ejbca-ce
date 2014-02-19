@@ -285,7 +285,7 @@ public class CmpRAUnidTest extends CmpTestCase {
                             PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
                     final X509Certificate cert = checkCmpCertRepMessage(SUBJECT_DN, this.cacert, resp, reqId);
                     unid = (String) new X509Principal(cert.getSubjectX500Principal().getEncoded()).getValues(BCStrictStyle.SN).get(0);
-                    log.debug("Unid: " + unid);
+                    log.debug("Unid received in certificate response: " + unid);
                 }
             } finally {
                 inputStream.close();
