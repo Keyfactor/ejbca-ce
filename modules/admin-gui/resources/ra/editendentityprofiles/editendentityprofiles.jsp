@@ -586,7 +586,7 @@
 				value = request.getParameter(CHECKBOX_USE_STARTTIME);
 				if( value != null && value.equalsIgnoreCase(CHECKBOX_VALUE) ) {
 					value = request.getParameter(TEXTFIELD_STARTTIME);
-					if( value != null ) {
+					if ((value != null) && (value.length() > 0)) {
 						profiledata.setValue(EndEntityProfile.STARTTIME, 0, ejbcawebbean.getImpliedUTCFromISO8601OrRelative(value));
 					} else {
 						profiledata.setValue(EndEntityProfile.STARTTIME, 0, "");
@@ -606,7 +606,7 @@
 				value = request.getParameter(CHECKBOX_USE_ENDTIME);
 				if( value != null && value.equalsIgnoreCase(CHECKBOX_VALUE) ) {
 					value = request.getParameter(TEXTFIELD_ENDTIME);
-					if( value != null ) {
+					if ((value != null) && (value.length() > 0)) {
 						profiledata.setValue(EndEntityProfile.ENDTIME, 0, ejbcawebbean.getImpliedUTCFromISO8601OrRelative(value));
 					} else {
 						profiledata.setValue(EndEntityProfile.ENDTIME, 0, "");
