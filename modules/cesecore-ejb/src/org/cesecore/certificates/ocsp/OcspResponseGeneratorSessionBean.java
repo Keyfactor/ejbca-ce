@@ -415,31 +415,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             log.debug("Signing algorithm: " + sigAlg);
         }
         
-        final X509Certificate[] chain;
-        if(OcspConfiguration.getIncludeSignCert()) {
-            if(log.isDebugEnabled()) {
-                log.debug("Including OCSP signing certificate in the response");
-            }
-            boolean includeChain = OcspConfiguration.getIncludeCertChain();
-            // If we have an OcspKeyBinding we use this configuration to override the default
-            if (ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
-                includeChain = ocspSigningCacheEntry.getOcspKeyBinding().getIncludeCertChain();
-            }
-            if (log.isDebugEnabled()) {
-                log.debug("Include chain: " + includeChain);
-            }
-            
-            if (includeChain) {
-                chain = certChain;
-            } else {
-                chain = new X509Certificate[1];
-                chain[0] = signerCert;
-            }
-        } else {
-            if(log.isDebugEnabled()) {
-                log.debug("OCSP signing certificate is not included in the response");
-            }
-            chain = new X509Certificate[0];
+        final X509Certificate[] chain = getResponseCertChain(certChain, ocspSigningCacheEntry);
+        if(log.isDebugEnabled()) {
+            log.debug("The response certificate chain contains " + chain.length + " certificates");
         }
         
         try {
@@ -549,6 +527,53 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         return sigAlg;
     }
 
+    /**
+     * This method construct the certificate chain that will be included in the OCSP response according to the following rules:
+     * - If includeSignCert && includeChain --> include entire chain except for the root CA certificate
+     * - If includeSignCert && !includeChain --> include only the signing certificate whatever it is (even if it was a root CA cert)
+     * - If !includingSignCert --> not including any certificate or chain no matter what value includeChain has. The value of the 
+     *   certificate chain  will then be an empty array.
+     *   
+     * @param certChain
+     * @param ocspSigningCacheEntry
+     * @return
+     */
+    private X509Certificate[] getResponseCertChain(X509Certificate[] certChain, final OcspSigningCacheEntry ocspSigningCacheEntry) {
+        X509Certificate[] chain;
+        if(OcspConfiguration.getIncludeSignCert()) {
+            if(log.isDebugEnabled()) {
+                log.debug("Including OCSP signing certificate in the response");
+            }
+            boolean includeChain = OcspConfiguration.getIncludeCertChain();
+            // If we have an OcspKeyBinding we use this configuration to override the default
+            if (ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
+                includeChain = ocspSigningCacheEntry.getOcspKeyBinding().getIncludeCertChain();
+            }
+            if (log.isDebugEnabled()) {
+                log.debug("Include chain: " + includeChain);
+            }
+            
+            if (includeChain) {
+                if(certChain.length > 1) {
+                    chain = new X509Certificate[certChain.length-1];
+                    for(int i=0; i<chain.length; i++) {
+                        chain[i] = certChain[i];
+                    }
+                } else {
+                    chain = certChain;
+                }
+            } else {
+                chain = new X509Certificate[1];
+                chain[0] = certChain[0];
+            }
+        } else {
+            if(log.isDebugEnabled()) {
+                log.debug("OCSP signing certificate is not included in the response");
+            }
+            chain = new X509Certificate[0];
+        }
+        return chain;
+    }
 
     /**
      * This method takes byte array and translates it onto a OCSPReq class.
