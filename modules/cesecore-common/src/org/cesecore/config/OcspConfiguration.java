@@ -52,7 +52,9 @@ public class OcspConfiguration {
     public static final String REKEYING_SAFETY_MARGIN_IN_SECONDS = "ocsp.rekeying.safety.margin.in.seconds";
     public static final String EXPIREDCERT_RETENTIONPERIOD = "ocsp.expiredcert.retentionperiod";
     public static final String UNTIL_NEXT_UPDATE = "ocsp.untilNextUpdate";
+    public static final String REVOKED_UNTIL_NEXT_UPDATE = "ocsp.revoked.untilNextUpdate";
     public static final String MAX_AGE = "ocsp.maxAge";
+    public static final String REVOKED_MAX_AGE = "ocsp.revoked.maxAge";
     public static final String INCLUDE_SIGNING_CERT = "ocsp.includesignercert";
     public static final String INCLUDE_CERT_CHAIN = "ocsp.includecertchain";
     public static final String RESPONDER_ID_TYPE = "ocsp.responderidtype";
@@ -425,6 +427,33 @@ public class OcspConfiguration {
             return ConfigurationHolder.instance().containsKey("ocsp." + certificateProfileId + ".untilNextUpdate");
         }
     }
+    
+    /**
+     * The default number of milliseconds a response of a revoked certificate is valid, or 0 to disable. See RFC5019.
+     */
+    public static long getRevokedUntilNextUpdate(int certProfileId) {
+        long value = 0;
+        Configuration config = ConfigurationHolder.instance();
+        String key = "ocsp." + certProfileId + ".revoked.untilNextUpdate";
+        if ((certProfileId == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) || (!config.containsKey(key))) {
+            key = REVOKED_UNTIL_NEXT_UPDATE;
+        }
+        try {
+            value = (config.getLong(key, value) * 1000);
+        } catch (ConversionException e) {
+            log.warn("\"ocsp.revoked.untilNextUpdate\" is not a decimal number. Using default value: " + value);
+        }
+        return value;
+    }
+    
+    /** @return true if Until Next Update is explicitly configured for the requested certificate profile in case of a revoked certificate */
+    public static boolean isRevokedUntilNextUpdateConfigured(final int certificateProfileId) {
+        if (certificateProfileId==CertificateProfileConstants.CERTPROFILE_NO_PROFILE){
+            return ConfigurationHolder.instance().containsKey(REVOKED_UNTIL_NEXT_UPDATE);
+        } else {
+            return ConfigurationHolder.instance().containsKey("ocsp." + certificateProfileId + ".revoked.untilNextUpdate");
+        }
+    }
 
     /**
      * The default number of milliseconds a HTTP-response should be cached. See RFC5019.
@@ -454,6 +483,36 @@ public class OcspConfiguration {
             return ConfigurationHolder.instance().containsKey("ocsp." + certificateProfileId + ".maxAge");
         }
     }
+    
+    /**
+     * The default number of milliseconds a HTTP-response for a revoked certificater should be cached. See RFC5019.
+     */
+    public static long getRevokedMaxAge(int certProfileId) {
+        long value = 30;
+        Configuration config = ConfigurationHolder.instance();
+        String key = "ocsp." + certProfileId + ".revoked.maxAge";
+        if ((certProfileId == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) || (!config.containsKey(key))) {
+            key = REVOKED_MAX_AGE;
+        }
+        try {
+            value = (config.getLong(key, value) * 1000);
+        } catch (ConversionException e) {
+            // Convert default value to milliseconds
+            value = value * 1000;
+            log.warn("\"ocsp.revoked.maxAge\" is not a decimal number. Using default value: " + value);
+        }
+        return value;
+    }
+
+    /** @return true if Until Next Update is explicitly configured for the requested certificate profile in case of a revoked certificate*/
+    public static boolean isRevokedMaxAgeConfigured(final int certificateProfileId) {
+        if (certificateProfileId==CertificateProfileConstants.CERTPROFILE_NO_PROFILE){
+            return ConfigurationHolder.instance().containsKey(REVOKED_MAX_AGE);
+        } else {
+            return ConfigurationHolder.instance().containsKey("ocsp." + certificateProfileId + ".revoked.maxAge");
+        }
+    }
+
 
     // Values for stand-alone OCSP
 
