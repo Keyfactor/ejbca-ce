@@ -415,21 +415,33 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             log.debug("Signing algorithm: " + sigAlg);
         }
         
-        boolean includeChain = OcspConfiguration.getIncludeCertChain();
-        // If we have an OcspKeyBinding we use this configuration to override the default
-        if (ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
-            includeChain = ocspSigningCacheEntry.getOcspKeyBinding().getIncludeCertChain();
-        }
-        if (log.isDebugEnabled()) {
-            log.debug("Include chain: " + includeChain);
-        }
         final X509Certificate[] chain;
-        if (includeChain) {
-            chain = certChain;
+        if(OcspConfiguration.getIncludeSignCert()) {
+            if(log.isDebugEnabled()) {
+                log.debug("Including OCSP signing certificate in the response");
+            }
+            boolean includeChain = OcspConfiguration.getIncludeCertChain();
+            // If we have an OcspKeyBinding we use this configuration to override the default
+            if (ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
+                includeChain = ocspSigningCacheEntry.getOcspKeyBinding().getIncludeCertChain();
+            }
+            if (log.isDebugEnabled()) {
+                log.debug("Include chain: " + includeChain);
+            }
+            
+            if (includeChain) {
+                chain = certChain;
+            } else {
+                chain = new X509Certificate[1];
+                chain[0] = signerCert;
+            }
         } else {
-            chain = new X509Certificate[1];
-            chain[0] = signerCert;
+            if(log.isDebugEnabled()) {
+                log.debug("OCSP signing certificate is not included in the response");
+            }
+            chain = new X509Certificate[0];
         }
+        
         try {
             int respIdType = OcspConfiguration.getResponderIdType();
             // If we have an OcspKeyBinding we use this configuration to override the default

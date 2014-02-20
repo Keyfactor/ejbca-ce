@@ -1241,7 +1241,29 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         assertEquals(PKCSObjectIdentifiers.sha1WithRSAEncryption, response.getSignatureAlgOID());
     }
 
+    /**
+     * This test tests that the OCSP response does not contain the signing cert if Ejbca is configured that way.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testSignCertNotIncludedInResponse() throws Exception {
     
+        loadUserCert(this.caid);
+        
+        // set OCSP configuration
+        Map<String,String> map = new HashMap<String, String>();
+        map.put(OcspConfiguration.INCLUDE_SIGNING_CERT, "false");
+        this.helper.alterConfig(map);
+        
+        OCSPReqBuilder gen = new OCSPReqBuilder();
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber() ), null);
+        OCSPReq req = gen.build();
+        
+        BasicOCSPResp response = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200, false, cacert);
+        assertNotNull("Could not retrieve response, test could not continue.", response);
+        assertTrue("Response does contain certificates", response.getCerts().length == 0);
+    }
     
     /**
      * removes DSA CA
