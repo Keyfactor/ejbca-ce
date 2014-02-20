@@ -217,7 +217,10 @@
 			<include name="lib/javaee.jar"/>
 			
 			<!-- Glassfish 3.1 -->
-			<include name="lib/glassfish/javaee.jar"/>			
+			<include name="lib/glassfish/javaee.jar"/>
+			
+			<!-- Glassfish 4.0 -->
+			<include name="glassfish/lib/javaee.jar"/>			
 		</fileset>
 	</path>
 	
@@ -271,7 +274,11 @@
 			<include name="lib/jndi-properties.jar"/>
 			<!-- FIXME These are supposed to be loaded automatically by gf-client. Why doens't that work? -->
 			<include name="modules/*.jar"/>
-			
+
+			<!-- Glassfish 4.0 -->
+			<include name="glassfish/lib/gf-client.jar"/>			
+			<include name="glassfish/lib/jndi.properties.jar"/>			
+
 			<!-- Weblogic 10.3.4 (generic) -->
 			<!-- This library built with "java -jar wljarbuilder.jar" cannot be used since it also contains webservices etc..
 			<include name="wlserver_10.3/server/lib/wlfullclient.jar"/>
@@ -295,6 +302,10 @@
 			<include name="modules/system/layers/base/javax/servlet/api/main/jboss-servlet-api_3.0_spec-1.0.*.jar"/>
 			<!-- Glassfish 2.1.1 -->
 			<include name="lib/javaee.jar"/>
+			<!-- Glassfish 3.1 -->
+			<include name="lib/glassfish/javaee.jar"/>			
+			<!-- Glassfish 4.0 -->
+			<include name="glassfish/lib/javaee.jar"/>			
 			<!-- WebLogic 10.3.3 -->
 			<include name="modules/javax.servlet_1.0.0.0_2-5.jar"/>
 			<!-- WebSphere 7.0.0.13 -->

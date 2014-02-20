@@ -85,15 +85,17 @@
 	<available file="${appserver.home}/modules/org/jboss/as/standalone/main/module.xml" property="appserver.subtype" value="jboss7"/>
 	<available file="${appserver.home}/modules/system/layers/base/org/jboss/as/standalone/main/module.xml" property="appserver.subtype" value="jbosseap6"/>
 	<available file="${appserver.home}/lib/javaee.jar" property="appserver.type" value="glassfish"/>
+	<available file="${appserver.home}/glassfish/lib/javaee.jar" property="appserver.type" value="glassfish"/>
 	<available file="${appserver.home}/lib/appserv-ext.jar.jar" property="appserver.subtype" value="glassfish2"/>
 	<available file="${appserver.home}/modules/bean-validator.jar" property="appserver.subtype" value="glassfish3"/>
+	<available file="${appserver.home}/glassfish/lib/appserv-rt.jar" property="appserver.subtype" value="glassfish4"/>
 	<available file="${appserver.home}/wlserver_10.3/server/lib/wlclient.jar" property="appserver.type" value="weblogic"/>
 	<available file="${appserver.home}/lib/commandlineutils.jar" property="appserver.type" value="websphere"/>
 	<!-- Not yet tested:
 		<available file="${appserver.home}/bin/server.jar" property="appserver.type" value="geronimo"/>
 	-->
 	<property name="appserver.type.detected.errormessage"
-		value="'appserver.type' could not be detected or is not configured. Glassfish 2.1.1, Glassfish 3.1, JBoss 5.1.0.GA, JBoss EAP 5.1, JBoss 6.0, JBoss 7.1.1, JBoss EAP 6.1, WebLogic 10.3.3, WebSphere 7.0.0.13 can be detected. (Is 'appserver.home' configured?)"/>
+		value="'appserver.type' could not be detected or is not configured. Glassfish 2.1.1, Glassfish 3.1, Glassfish 4.0, JBoss 5.1.0.GA, JBoss EAP 5.1, JBoss 6.0, JBoss 7.1.1, JBoss EAP 6.1, WebLogic 10.3.3, WebSphere 7.0.0.13 can be detected. (Is 'appserver.home' configured?)"/>
 	<ant antfile="${ejbca.home}/echo.xml" target="appserver.error.message"/>
 	
 	<condition property="bundle-hibernate-jpa">
@@ -108,6 +110,7 @@
 	<condition property="exclude-slf4j">
 		<or>
 			<matches pattern="glassfish3" string="${appserver.subtype}"/>
+			<matches pattern="glassfish4" string="${appserver.subtype}"/>
 			<!-- ... -->
 		</or>
 	</condition>
