@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.protocol.ocsp;
+package org.cesecore.certificates.ocsp;
 
 import static org.junit.Assert.assertEquals;
 
@@ -21,8 +21,6 @@ import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-import javax.ejb.RemoveException;
 
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -51,13 +49,6 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ejb.ra.EndEntityExistsException;
-import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
-import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.ra.NotFoundException;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 
 /**
  * @version $Id$
@@ -159,10 +150,9 @@ public class OcspTestUtils {
         return oldValue;
     }
 
-    public static X509Certificate createOcspSigningCertificate(AuthenticationToken authenticationToken, String username, String signerDN, int internalKeyBindingId, int caId)
-            throws AuthorizationDeniedException, CustomCertSerialNumberException, IllegalKeyException, CADoesntExistsException,
-            CertificateCreateException, CesecoreException, RemoveException, EndEntityExistsException, UserDoesntFullfillEndEntityProfile,
-            WaitingForApprovalException, EjbcaException {
+    public static X509Certificate createOcspSigningCertificate(AuthenticationToken authenticationToken, String username, String signerDN, int internalKeyBindingId, int caId) 
+            throws AuthorizationDeniedException, CustomCertSerialNumberException, IllegalKeyException, CADoesntExistsException, 
+            CertificateCreateException, CesecoreException {
         CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
         InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE
                 .getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
@@ -171,16 +161,9 @@ public class OcspTestUtils {
                 internalKeyBindingId));
         // Issue a certificate in EJBCA for the public key
         final EndEntityInformation user = new EndEntityInformation(username, signerDN, caId, null, null,
-                EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER,
+                EndEntityTypes.ENDUSER.toEndEntityType(), 1, CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER,
                 EndEntityConstants.TOKEN_USERGEN, 0, null);
         user.setPassword("foo123");
-        EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-        try {
-            endEntityManagementSession.deleteUser(authenticationToken, username);
-        } catch (NotFoundException e) {
-            //Ignore
-        }
-        endEntityManagementSession.addUser(authenticationToken, user, true);
         RequestMessage req = new SimpleRequestMessage(publicKey, user.getUsername(), user.getPassword());
         X509Certificate ocspSigningCertificate = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(
                 authenticationToken, user, req, X509ResponseMessage.class)).getCertificate());
@@ -197,7 +180,7 @@ public class OcspTestUtils {
                 internalKeyBindingId));
         // Issue a certificate in EJBCA for the public key
         final EndEntityInformation user = new EndEntityInformation(CLIENTSSL_END_USER_NAME, CLIENTSSL_END_USER_DN, caId, null, null,
-                EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                EndEntityTypes.ENDUSER.toEndEntityType(), 1, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                 EndEntityConstants.TOKEN_USERGEN, 0, null);
         user.setPassword("foo123");
         RequestMessage req = new SimpleRequestMessage(publicKey, user.getUsername(), user.getPassword());

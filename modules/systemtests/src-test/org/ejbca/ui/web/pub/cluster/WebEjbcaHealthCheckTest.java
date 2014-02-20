@@ -27,6 +27,7 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionRemote;
+import org.cesecore.certificates.ocsp.OcspTestUtils;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingStatus;
@@ -37,7 +38,6 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
-import org.ejbca.core.protocol.ocsp.OcspTestUtils;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;

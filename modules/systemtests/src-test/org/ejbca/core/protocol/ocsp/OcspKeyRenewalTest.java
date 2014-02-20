@@ -38,6 +38,7 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorTestSessionRemote;
+import org.cesecore.certificates.ocsp.OcspTestUtils;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.OcspConfiguration;
