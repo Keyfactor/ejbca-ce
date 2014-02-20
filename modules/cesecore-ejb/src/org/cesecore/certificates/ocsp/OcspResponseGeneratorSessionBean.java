@@ -409,18 +409,12 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         if(!CertTools.isOCSPCert(signerCert) && ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
             log.warn("Signing with non OCSP certificate (no 'OCSP Signing' Extended Key Usage) bound by OcspKeyBinding '" + ocspSigningCacheEntry.getOcspKeyBinding().getName() + "'.");
         }
-        final String sigAlg;
-        if (ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
-            // If we have an OcspKeyBinding we use this configuration to override the default
-            sigAlg = ocspSigningCacheEntry.getOcspKeyBinding().getSignatureAlgorithm();
-        } else {
-            final String sigAlgs = OcspConfiguration.getSignatureAlgorithm();
-            final PublicKey pk = signerCert.getPublicKey();
-            sigAlg = getSigningAlgFromAlgSelection(sigAlgs, pk);
-        }
+
+        final String sigAlg = getSigAlg(req, ocspSigningCacheEntry, signerCert);
         if (log.isDebugEnabled()) {
             log.debug("Signing algorithm: " + sigAlg);
         }
+        
         boolean includeChain = OcspConfiguration.getIncludeCertChain();
         // If we have an OcspKeyBinding we use this configuration to override the default
         if (ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
@@ -473,6 +467,76 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             throw new OcspFailureException(e);
         }
     }
+    
+    // Choosing the preferred OCSP response sigAlg according to RFC6960 Section 4.4.7
+    private String getSigAlg(OCSPReq req, final OcspSigningCacheEntry ocspSigningCacheEntry, final X509Certificate signerCert) {
+        
+        String sigAlg = null;
+        PublicKey pk = signerCert.getPublicKey();
+        
+        // Start with the preferred signature algorithm in the OCSP request
+        Extension sigAlgExt = req.getExtension(new ASN1ObjectIdentifier(OCSPObjectIdentifiers.pkix_ocsp + ".8"));
+        if(sigAlgExt != null) {
+            ASN1Sequence sigalgs = ASN1Sequence.getInstance(sigAlgExt.getParsedValue());
+            for(int i=0; i<sigalgs.size(); i++) { 
+                ASN1ObjectIdentifier sa = (ASN1ObjectIdentifier) sigalgs.getObjectAt(i);
+                if(sa != null) {
+                    sigAlg = AlgorithmTools.getAlgorithmNameFromOID(sa);
+                    if(AlgorithmTools.isCompatibleSigAlg(pk, sigAlg)) {
+                        log.info("Using OCSP response signature algorithm extracted from OCSP request extension. " + sa);
+                        return sigAlg;
+                    }
+                    
+                }
+            }
+        }
+        
+        
+        // the signature algorithm used to sign a certificate revocation list (CRL) issued by the certificate issuer
+        X509Certificate caCertificate = ocspSigningCacheEntry.getCaCertificateChain().get(0);
+        final String caCertificateSubjectDn = CertTools.getSubjectDN(caCertificate);
+        try {
+            CAInfo cainfo = caSession.getCAInfoInternal(caCertificateSubjectDn.hashCode());
+            sigAlg = cainfo.getCAToken().getSignatureAlgorithm(); {
+                if(AlgorithmTools.isCompatibleSigAlg(pk, sigAlg)) {
+                    log.info("OCSP response signature algorithm: the signature algorithm used to sign a CRL issued " +
+                            "by the certificate issuer. " + sigAlg);
+                    return sigAlg;
+                }   
+            }   
+        } catch (CADoesntExistsException e) { 
+            // Continue to check the  next preferred sigAlg in line
+        }
+            
+        
+        // the signature algorithm used to sign the OCSPRequest
+        if(req.getSignatureAlgOID() != null) {
+            sigAlg = AlgorithmTools.getAlgorithmNameFromOID(req.getSignatureAlgOID());
+            if(AlgorithmTools.isCompatibleSigAlg(pk, sigAlg)) {
+                log.info("OCSP response signature algorithm: the signature algorithm used to sign the OCSPRequest. " + sigAlg);
+                return sigAlg;
+            }
+        }
+        
+        
+        // The signature algorithm that has been advertised as being the default signature algorithm for the signing service using an
+        // out-of-band mechanism.
+        if (ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
+            // If we have an OcspKeyBinding we use this configuration to override the default
+            sigAlg = ocspSigningCacheEntry.getOcspKeyBinding().getSignatureAlgorithm();
+            log.info("OCSP response signature algorithm: the signature algorithm that has been advertised as being the default signature algorithm " +
+                    "for the signing service using an out-of-band mechanism. " + sigAlg);
+            return sigAlg;
+        }   
+             
+        
+        // The signature algorithm specified for the version of OCSP in use.
+        final String sigAlgs = OcspConfiguration.getSignatureAlgorithm();
+        sigAlg = getSigningAlgFromAlgSelection(sigAlgs, pk);
+        log.info("Using configuted signature algorithm to sign OCSP response. " + sigAlg);
+        return sigAlg;
+    }
+
 
     /**
      * This method takes byte array and translates it onto a OCSPReq class.
