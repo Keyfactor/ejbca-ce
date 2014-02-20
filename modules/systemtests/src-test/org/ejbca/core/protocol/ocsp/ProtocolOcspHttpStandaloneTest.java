@@ -61,7 +61,6 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
-import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorTestSessionRemote;
 import org.cesecore.certificates.ocsp.OcspTestUtils;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
@@ -78,7 +77,6 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.TraceLogMethodsRule;
-import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -153,9 +151,6 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         internalKeyBindingMgmtSession.deleteInternalKeyBinding(authenticationToken, internalKeyBindingId);
         cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, cryptoTokenId);
         OcspTestUtils.deleteCa(authenticationToken, x509ca);
-        final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE
-                .getRemoteSession(EndEntityManagementSessionRemote.class);
-        endEntityManagementSession.revokeAndDeleteUser(authenticationToken, OcspTestUtils.OCSP_END_USER_NAME, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
     }
    
     @Before
