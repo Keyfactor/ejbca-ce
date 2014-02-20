@@ -36,7 +36,11 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorTestSessionRemote;
 import org.cesecore.certificates.ocsp.OcspTestUtils;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -59,6 +63,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.TraceLogMethodsRule;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.protocol.ocsp.standalone.OcspKeyRenewalProxySessionRemote;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -104,6 +109,8 @@ public class OcspKeyRenewalTest {
             .getRemoteSession(CryptoTokenManagementSessionRemote.class);
     private static final RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(RoleManagementSessionRemote.class);
+    private static final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(EndEntityManagementSessionRemote.class);
 
     @Rule
     public TestRule traceLogMethodsRule = new TraceLogMethodsRule();
@@ -137,9 +144,29 @@ public class OcspKeyRenewalTest {
         ocspKeyBindingIdEcc = OcspTestUtils.createInternalKeyBinding(authenticationToken, cryptoTokenIdEcc, OcspKeyBinding.IMPLEMENTATION_ALIAS, TESTCLASSNAME + "-ocspecc", "secp256r1", AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA);
         assertNotEquals("key binding Ids should not be the same", ocspKeyBindingId, ocspKeyBindingIdEcc);
         String signerDN = "CN=ocspTestSigner";
+        // We need an actual user for this OCSP signing certificate, so we can "renew" the certificate of this user
+        EndEntityInformation user = new EndEntityInformation(OcspTestUtils.OCSP_END_USER_NAME, signerDN, x509ca.getCAId(), null, null,
+                EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER,
+                EndEntityConstants.TOKEN_USERGEN, 0, null);
+        user.setPassword("foo123");
+        if (endEntityManagementSession.existsUser(OcspTestUtils.OCSP_END_USER_NAME)) {
+            endEntityManagementSession.deleteUser(authenticationToken, OcspTestUtils.OCSP_END_USER_NAME);
+        }
+        endEntityManagementSession.addUser(authenticationToken, user, true);
+        // Now issue the cert for the user as well
         ocspSigningCertificate = OcspTestUtils.createOcspSigningCertificate(authenticationToken, OcspTestUtils.OCSP_END_USER_NAME, signerDN, ocspKeyBindingId, x509ca.getCAId());
         // RSA key right?
         assertEquals("Signing key algo should be RSA", AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmTools.getKeyAlgorithm(ocspSigningCertificate.getPublicKey()));
+        // We need an actual user for this OCSP signing certificate, so we can "renew" the certificate of this user
+        user = new EndEntityInformation(OCSP_ECC_END_USER_NAME, signerDN+"Ecc", x509eccca.getCAId(), null, null,
+                EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER,
+                EndEntityConstants.TOKEN_USERGEN, 0, null);
+        user.setPassword("foo123");
+        if (endEntityManagementSession.existsUser(OCSP_ECC_END_USER_NAME)) {
+            endEntityManagementSession.deleteUser(authenticationToken, OCSP_ECC_END_USER_NAME);
+        }
+        endEntityManagementSession.addUser(authenticationToken, user, true);
+        // Now issue the cert for the user as well
         ocspEccSigningCertificate = OcspTestUtils.createOcspSigningCertificate(authenticationToken, OCSP_ECC_END_USER_NAME, signerDN+"Ecc", ocspKeyBindingIdEcc, x509eccca.getCAId());
         // ECC key right?
         assertEquals("Signing key algo should be EC", AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmTools.getKeyAlgorithm(ocspEccSigningCertificate.getPublicKey()));
@@ -256,11 +283,11 @@ public class OcspKeyRenewalTest {
         // Ensure that the removed signing certificate is removed from the cache
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
         
-        final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE
-                .getRemoteSession(EndEntityManagementSessionRemote.class);
         if (endEntityAccessSession.findUser(authenticationToken, OCSP_ECC_END_USER_NAME) != null) {
-            endEntityManagementSession
-                    .revokeAndDeleteUser(authenticationToken, OCSP_ECC_END_USER_NAME, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+            endEntityManagementSession.revokeAndDeleteUser(authenticationToken, OCSP_ECC_END_USER_NAME, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+        }
+        if (endEntityAccessSession.findUser(authenticationToken, OcspTestUtils.OCSP_END_USER_NAME) != null) {
+            endEntityManagementSession.revokeAndDeleteUser(authenticationToken, OcspTestUtils.OCSP_END_USER_NAME, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         }
     }
     
