@@ -108,11 +108,21 @@ public class UserNameGeneratorTest {
 	@Test
 	public void testUsernameGeneratorDN() {
 		String dn = "C=SE, O=FooO, UID=foo, CN=bar";
+        String dnReverse = "CN=bar,UID=foo,O=FooO,C=SE";
 		UsernameGenerator gen = UsernameGenerator.getInstance(UsernameGeneratorParams.DN);
 		String u = gen.generateUsername(dn);
 		assertEquals(u, "bar");
-		
+        u = gen.generateUsername(dnReverse);
+        assertEquals(u, "bar");
+
 		UsernameGeneratorParams params = gen.getParams();
+        params.setDNGeneratorComponent("");
+        gen = UsernameGenerator.getInstance(params);
+        u = gen.generateUsername(dn);
+        assertEquals("Username was not constructed properly from DN", "C=SE, O=FooO, UID=foo, CN=bar", u);
+        u = gen.generateUsername(dnReverse);
+        assertEquals("Username was not constructed properly from DN", "CN=bar,UID=foo,O=FooO,C=SE", u);
+
 		params.setDNGeneratorComponent("UID");
 		gen.setParams(params);
 		u = gen.generateUsername(dn);

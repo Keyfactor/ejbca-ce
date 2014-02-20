@@ -41,8 +41,6 @@ import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
-import org.ejbca.core.model.ra.UsernameGenerator;
-import org.ejbca.core.model.ra.UsernameGeneratorParams;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -239,40 +237,6 @@ public class RequestMessageTest {
         return basicpkcs10;
     }
 	 
-    @Test
-    public void testRequestUsernameGeneratorFromDN() throws OperatorCreationException, IOException {
-        CryptoProviderTools.installBCProviderIfNotAvailable();
-        {
-            PKCS10CertificationRequest basicpkcs10 = createP10("CN=subject,SN=000106716,O=Org,C=SE");
-            PKCS10RequestMessage msg = new PKCS10RequestMessage(basicpkcs10.toASN1Structure().getEncoded());
-            final X500Name dnname = msg.getRequestX500Name();
-            final UsernameGeneratorParams params = new UsernameGeneratorParams();
-            params.setMode(UsernameGeneratorParams.DN);
-            UsernameGenerator gen = UsernameGenerator.getInstance(params);
-            String username = gen.generateUsername(dnname.toString());
-            assertEquals("Username was not constructed properly from DN (CN)", "subject", username);
-            params.setDNGeneratorComponent("");
-            gen = UsernameGenerator.getInstance(params);
-            username = gen.generateUsername(dnname.toString());
-            assertEquals("Username was not constructed properly from DN", "CN=subject,SN=000106716,O=Org,C=SE", username);
-        }
-        {
-            // DN order the other way around, should give username the other way around as well
-            PKCS10CertificationRequest basicpkcs10 = createP10("C=SE,O=Org,SERIALNUMBER=000106716,CN=subject");
-            PKCS10RequestMessage msg = new PKCS10RequestMessage(basicpkcs10.toASN1Structure().getEncoded());
-            final X500Name dnname = msg.getRequestX500Name();
-            final UsernameGeneratorParams params = new UsernameGeneratorParams();
-            params.setMode(UsernameGeneratorParams.DN);
-            UsernameGenerator gen = UsernameGenerator.getInstance(params);
-            String username = gen.generateUsername(dnname.toString());
-            assertEquals("Username was not constructed properly from DN (CN)", "subject", username);
-            params.setDNGeneratorComponent("");
-            gen = UsernameGenerator.getInstance(params);
-            username = gen.generateUsername(dnname.toString());
-            assertEquals("Username was not constructed properly from DN", "C=SE,O=Org,SN=000106716,CN=subject", username);
-        }
-    }
-    
     @Test
     public void testSNRepresentation () {
         SimpleRequestMessage req = new SimpleRequestMessage(keyPair.getPublic(), "dnorder", "foo123");
