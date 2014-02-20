@@ -104,6 +104,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.ca.X509CAInfo;
@@ -123,7 +124,9 @@ import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
+import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
@@ -1266,6 +1269,76 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
     }
     
     /**
+     * This test tests that the OCSP response does not contain the root CA cert in the included certificate chain.
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testRootCACertNotIncludedInResponse() throws Exception {
+        log.trace(">testRootCACertNotIncludedInResponse()");
+        
+        // Create a subCA and a subsubCA
+        String subcaDN = "CN=SubTestCA";
+        createSubCA(subcaDN, caid);
+        
+        String subSubCaDN = "CN=SubSubTestCA";
+        X509Certificate subSubCaCert = createSubCA(subSubCaDN, subcaDN.hashCode());
+        
+        // set OCSP configuration
+        Map<String,String> map = new HashMap<String, String>();
+        map.put(OcspConfiguration.INCLUDE_CERT_CHAIN, "true");
+        map.put("ocsp.defaultresponder", subSubCaDN);
+        this.helper.alterConfig(map);
+        helper.reloadKeys();
+        
+        // Expects an OCSP response including a certchain that contains only the 2 subCAs and not their rootCA.
+        try { 
+            loadUserCert(subSubCaDN.hashCode());
+            
+            OCSPReqBuilder gen = new OCSPReqBuilder();
+            gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), subSubCaCert, ocspTestCert.getSerialNumber() ), null);
+            OCSPReq req = gen.build();
+                
+            BasicOCSPResp response = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
+            assertNotNull("Could not retrieve response, test could not continue.", response);
+            assertTrue("Response contains more that 2 certificate", response.getCerts().length == 2);
+                
+            X509CertificateHolder[] includedCerts = response.getCerts();
+            assertEquals(subSubCaDN, includedCerts[0].getSubject().toString());
+            assertEquals(subcaDN, includedCerts[1].getSubject().toString());
+    
+        } finally {
+            try {
+                endEntityManagementSession.deleteUser(admin, "ocsptest");
+            } catch (Exception e) {
+                log.error("",e);
+            }
+            
+            try {
+                int cryptoTokenId = caSession.getCAInfo(admin, subSubCaDN.hashCode()).getCAToken().getCryptoTokenId();
+                CryptoTokenManagementSessionTest.removeCryptoToken(admin, cryptoTokenId);
+                
+                cryptoTokenId = caSession.getCAInfo(admin, subcaDN.hashCode()).getCAToken().getCryptoTokenId();
+                CryptoTokenManagementSessionTest.removeCryptoToken(admin, cryptoTokenId);
+            } catch (Exception e) {
+                log.error("",e);
+            }
+            
+            try {
+                caSession.removeCA(admin, subSubCaDN.hashCode());
+                caSession.removeCA(admin, subcaDN.hashCode());
+            } catch (Exception e) {
+                log.info("Could not remove CA with SubjectDN " + subSubCaDN);
+            }
+        }
+            
+        log.trace("<testRootCACertNotIncludedInResponse()");
+    }
+
+    
+    
+    
+    /**
      * removes DSA CA
      *
      * @throws Exception
@@ -1604,6 +1677,64 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         log.trace("<addDSACA()");
         return cacert;
     }
+    
+    private X509Certificate createSubCA(String subcaDN, int signbyID) throws CryptoTokenOfflineException, 
+                    CryptoTokenAuthenticationFailedException, InvalidAlgorithmException, AuthorizationDeniedException, 
+                    CADoesntExistsException, CAExistsException {
+        try {
+            int cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(admin, subcaDN, "1024");
+            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            // Create and active OSCP CA Service.
+            final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
+            extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+            extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+            final List<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
+            policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
+            
+            X509CAInfo cainfo = new X509CAInfo(subcaDN, subcaDN, CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 365, null, // Expiretime
+                        CAInfo.CATYPE_X509, signbyID, (Collection<Certificate>) null, catoken, "JUnit DSA CA", -1, null, policies, // PolicyId
+                        24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
+                        0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
+                        10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
+                        0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
+                        new ArrayList<Integer>(), true, // Authority Key Identifier
+                        false, // Authority Key Identifier Critical
+                        true, // CRL Number
+                        false, // CRL Number Critical
+                        null, // defaultcrldistpoint
+                        null, // defaultcrlissuer
+                        null, // defaultocsplocator
+                        null, // Authority Information Access
+                        null, // defaultfreshestcrl
+                        true, // Finish User
+                        extendedcaservices, false, // use default utf8 settings
+                        new ArrayList<Integer>(), // Approvals Settings
+                        1, // Number of Req approvals
+                        false, // Use UTF8 subject DN by default
+                        true, // Use LDAP DN order by default
+                        false, // Use CRL Distribution Point on CRL
+                        false, // CRL Distribution Point on CRL critical
+                        true, // Include in Health Check
+                        true, // isDoEnforceUniquePublicKeys
+                        true, // isDoEnforceUniqueDistinguishedName
+                        false, // isDoEnforceUniqueSubjectDNSerialnumber
+                        false, // useCertReqHistory
+                        true, // useUserStorage
+                       true, // useCertificateStorage
+                        null //cmpRaAuthSecret
+                    );
+    
+            caAdminSession.createCA(admin, cainfo);
+            
+            CAInfo info = caSession.getCAInfo(admin, subcaDN);
+                
+            return (X509Certificate) info.getCertificateChain().iterator().next();
+        } catch (CAExistsException e) {
+            log.info("CA exists.");
+            throw e;
+        }
+    }
+    
 
     protected void loadUserCert(int caid) throws Exception {
         createUserCert(caid);
