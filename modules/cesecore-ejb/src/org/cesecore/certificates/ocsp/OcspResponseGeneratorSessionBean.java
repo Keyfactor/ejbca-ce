@@ -1084,10 +1084,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     if (OcspConfiguration.isMaxAgeConfigured(status.certificateProfileId)) {
                         maxAge = OcspConfiguration.getMaxAge(status.certificateProfileId);
                     }
-                    if (log.isDebugEnabled()) {
-                        log.debug("Set nextUpdate=" + nextUpdate + ", and maxAge=" + maxAge + " for certificateProfileId="
-                                + status.certificateProfileId);
-                    }
+
                     final String sStatus;
                     boolean addArchiveCutoff = false;
                     if (status.equals(CertificateStatus.NOT_AVAILABLE)) {
@@ -1127,12 +1124,28 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         certStatus = new RevokedStatus(new RevokedInfo(new ASN1GeneralizedTime(status.revocationDate),
                                 CRLReason.lookup(status.revocationReason)));
                         transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_REVOKED);
+                        
+                        // If we have an explicit value configured for this certificate profile, we override the the current value with this value
+                        if (OcspConfiguration.isRevokedUntilNextUpdateConfigured(status.certificateProfileId)) {
+                            nextUpdate = OcspConfiguration.getRevokedUntilNextUpdate(status.certificateProfileId);
+                        }
+                        
+                     // If we have an explicit value configured for this certificate profile, we override the the current value with this value
+                        if (OcspConfiguration.isRevokedMaxAgeConfigured(status.certificateProfileId)) {
+                            maxAge = OcspConfiguration.getRevokedMaxAge(status.certificateProfileId);
+                        }
                     } else {
                         sStatus = "good";
                         certStatus = null;
                         transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_GOOD);
                         addArchiveCutoff = checkAddArchiveCuttoff(caCertificateSubjectDn, certId);
                     }
+                    
+                    if (log.isDebugEnabled()) {
+                        log.debug("Set nextUpdate=" + nextUpdate + ", and maxAge=" + maxAge + " for certificateProfileId="
+                                + status.certificateProfileId);
+                    }
+                    
                     infoMsg = intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", sStatus, certId.getSerialNumber().toString(16), caCertificateSubjectDn);
                     log.info(infoMsg);
                     OCSPResponseItem respItem = new OCSPResponseItem(certId, certStatus, nextUpdate);
