@@ -258,9 +258,10 @@
 			<include name="modules/javax/persistence/api/main/hibernate-jpa-2.0-api-1.0.1.*.jar"/>
 			<include name="modules/javax/transaction/api/main/jboss-transaction-api_1.1_spec-1.0.0.*.jar"/>
 			
-			<!-- JBoss 7.2.0 and EAP 6.1 for javax.peristence, transaction, remote EJB, ...-->
-			<include name="modules/system/layers/base/javax/persistence/api/main/hibernate-jpa-2.0-api-1.0.1.*.jar"/>
-			<include name="modules/system/layers/base/javax/transaction/api/main/jboss-transaction-api_1.1_spec-1.0.0.*.jar"/>
+			<!-- JBoss 7.2.0, EAP 6.1, 6.2 and WildFly 8 for javax.peristence, transaction, remote EJB, ...-->
+			<include name="modules/system/layers/base/javax/persistence/api/main/hibernate-jpa-2.?-api-*.jar"/>
+			<include name="modules/system/layers/base/javax/transaction/api/main/jboss-transaction-api_1.?_spec-*.jar"/>
+			<include name="modules/system/layers/base/javax/interceptor/api/main/jboss-interceptors-api_1.2_spec-*.jar"/> <!-- WildFly 8 -->
 
 			<!-- glassfish v2.1.1 -->
 			<include name="lib/javaee.jar"/>
@@ -298,8 +299,8 @@
 			<include name="common/lib/jboss-servlet-api_3.0_spec.jar"/>
 			<!-- JBoss 7.1.0 and EAP 6.0 -->
 			<include name="modules/javax/servlet/api/main/jboss-servlet-api_3.0_spec-1.0.*.jar"/>
-			<!-- JBoss 7.2.0 and EAP 6.1 -->
-			<include name="modules/system/layers/base/javax/servlet/api/main/jboss-servlet-api_3.0_spec-1.0.*.jar"/>
+			<!-- JBoss 7.2.0, EAP 6.1, 6.2 and WildFly 8 -->
+			<include name="modules/system/layers/base/javax/servlet/api/main/jboss-servlet-api_3.?_spec-1.0.*.jar"/>
 			<!-- Glassfish 2.1.1 -->
 			<include name="lib/javaee.jar"/>
 			<!-- Glassfish 3.1 -->
@@ -324,8 +325,8 @@
 		<include name="server/default/deployers/jsf.deployer/Mojarra-2.0/jsf-libs/*.jar"/>
 		<!-- JBoss 7.2.0, 7.1.1 and EAP 6.0 -->
 		<include name="modules/javax/faces/api/main/jboss-jsf-api_2.1_spec-2.0.*.jar"/>
-		<!-- JBoss 7.2.0 and EAP 6.1 -->							   
-		<include name="modules/system/layers/base/javax/faces/api/main/jboss-jsf-api_2.1_spec-2.1.*.jar"/>
+		<!-- JBoss 7.2.0 and EAP 6.1, 6.2 and WildFly 8  -->							   
+		<include name="modules/system/layers/base/javax/faces/api/main/jboss-jsf-api_2.?_spec-*.jar"/>
 		<!-- Glassfish 2.1.1 -->
 		<include name="lib/jsf-impl.jar" />
 		<!-- Glassfish 3.1 -->
@@ -345,7 +346,7 @@
 			<include name="server/default/deploy/jbossweb.sar/jstl.jar" /> <!-- 5.1.0 -->
 			<include name="common/lib/el-api.jar" /> <!-- 5.1.0 -->
 		    <include name="modules/javax/el/api/main/jboss-el-api_2.2_spec-1.0*.jar"/> <!-- 7.1.1 / EAP6.0 -->
-			<include name="modules/system/layers/base/javax/el/api/main/jboss-el-api_2.2_spec-1.0.*.jar"/><!-- 7.2.0 / EAP6.1 -->
+			<include name="modules/system/layers/base/javax/el/api/main/jboss-el-api_*_spec-*.jar"/><!-- 7.2.0 / EAP6.1, 6.2 and WildFly 8 -->
 			<!-- Glassfish -->
 			<include name="lib/appserv-jstl.jar" /> <!-- 2.1.1 -->
 			<include name="modules/javax.servlet.jsp.jstl.jar" /> <!-- 3.1 -->
