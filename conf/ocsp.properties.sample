@@ -22,9 +22,15 @@
 # Default: CN=ManagementCA,O=EJBCA Sample,C=SE
 ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 
-# If set to false the OCSP responses will only contain the signature certificate, and not the whole certificate chain of the OCSP responder. 
+# If set to false the OCSP responses will only contain the signature certificate (if ocsp.includesignercertinresponse is set to 'true'), 
+# and not the whole certificate chain of the OCSP responder.
 # Default true.
 #ocsp.includecertchain=true
+
+# If set to false, the  OCSP response will not contain the signing certificate.
+# Default true 
+#ocsp.includesignercert=true
+
 
 # Defines the ResponderID type as defined in RFC2560. Set to name for the Name type and keyhash for the KeyHash type.
 # Possible values: name, keyhash

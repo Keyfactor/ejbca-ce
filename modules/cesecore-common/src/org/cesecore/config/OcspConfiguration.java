@@ -53,6 +53,7 @@ public class OcspConfiguration {
     public static final String EXPIREDCERT_RETENTIONPERIOD = "ocsp.expiredcert.retentionperiod";
     public static final String UNTIL_NEXT_UPDATE = "ocsp.untilNextUpdate";
     public static final String MAX_AGE = "ocsp.maxAge";
+    public static final String INCLUDE_SIGNING_CERT = "ocsp.includesignercert";
     public static final String INCLUDE_CERT_CHAIN = "ocsp.includecertchain";
     public static final String RESPONDER_ID_TYPE = "ocsp.responderidtype";
     
@@ -145,6 +146,14 @@ public class OcspConfiguration {
      */
     public static boolean getIncludeCertChain() {
         String value = ConfigurationHolder.getString(INCLUDE_CERT_CHAIN);
+        return "true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value);
+    }
+    
+    /**
+     * If set to true the signature certificate will be included the OCSP response.
+     */
+    public static boolean getIncludeSignCert() {
+        String value = ConfigurationHolder.getString(INCLUDE_SIGNING_CERT);
         return "true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value);
     }
 

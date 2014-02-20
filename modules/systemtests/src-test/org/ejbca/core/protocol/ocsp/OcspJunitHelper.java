@@ -42,6 +42,7 @@ import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.cert.ocsp.BasicOCSPResp;
 import org.bouncycastle.cert.ocsp.CertificateID;
 import org.bouncycastle.cert.ocsp.OCSPException;
@@ -135,6 +136,12 @@ public class OcspJunitHelper {
 		SingleResp[] singleResps = brep.getResponses();
 		return singleResps;
 	}
+	
+	protected  BasicOCSPResp sendOCSPGet(byte[] ocspPackage, String nonce, int respCode, int httpCode) 
+	            throws IOException, OCSPException, NoSuchProviderException, NoSuchAlgorithmException, 
+	            OperatorCreationException, CertificateException {
+	    return sendOCSPGet(ocspPackage, nonce, respCode, httpCode, true, null);
+	}
 
 	/**
 	 *
@@ -150,7 +157,9 @@ public class OcspJunitHelper {
 	 * @throws CertificateException on parsing errors.
 	 * @throws OperatorCreationException 
 	 */
-	protected  BasicOCSPResp sendOCSPGet(byte[] ocspPackage, String nonce, int respCode, int httpCode) throws IOException, OCSPException, NoSuchProviderException, NoSuchAlgorithmException, OperatorCreationException, CertificateException {
+	protected  BasicOCSPResp sendOCSPGet(byte[] ocspPackage, String nonce, int respCode, int httpCode, boolean shouldIncludeSignCert,
+	            X509Certificate signCert) throws IOException, OCSPException, NoSuchProviderException, NoSuchAlgorithmException, 
+	            OperatorCreationException, CertificateException {
 		// GET the OCSP request
 		String b64 = new String(Base64.encode(ocspPackage, false));
 		//String urls = URLEncoder.encode(b64, "UTF-8");	// JBoss/Tomcat will not accept escaped '/'-characters by default
@@ -174,8 +183,17 @@ public class OcspJunitHelper {
 			return null; // it messes up testing of invalid signatures... but is needed for the unsuccessful responses
 		}
 		BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
-		X509CertificateHolder[] chain = brep.getCerts();
-		boolean verify = brep.isSignatureValid(new JcaContentVerifierProviderBuilder().build(chain[0]));
+		
+		final X509CertificateHolder signCertHolder;
+		if(!shouldIncludeSignCert) {
+		    assertEquals("The signing certificate should not be included in the OCSP response ", 0, brep.getCerts().length);
+		    signCertHolder = new JcaX509CertificateHolder(signCert);
+		} else {
+		    X509CertificateHolder[] chain = brep.getCerts();
+		    signCertHolder = chain[0];
+		}
+		boolean verify = brep.isSignatureValid(new JcaContentVerifierProviderBuilder().build(signCertHolder));
+		
 		assertTrue("Response failed to verify.", verify);
 		// Check nonce (if we sent one)
 		if (nonce != null) {
