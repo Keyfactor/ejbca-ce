@@ -63,6 +63,7 @@ import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemo
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorTestSessionRemote;
+import org.cesecore.certificates.ocsp.OcspTestUtils;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.OcspConfiguration;
@@ -85,6 +86,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 
+/**
+ * @version $Id$
+ */
 public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
 
     private static final Logger log = Logger.getLogger(ProtocolOcspHttpStandaloneTest.class);
