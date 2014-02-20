@@ -620,4 +620,48 @@ public abstract class AlgorithmTools {
             return true;
         }
     }
+    
+    public static String getAlgorithmNameFromOID(ASN1ObjectIdentifier sigAlgOid) {
+        if(sigAlgOid.equals(PKCSObjectIdentifiers.sha1WithRSAEncryption)) {
+            return AlgorithmConstants.SIGALG_SHA1_WITH_RSA;
+        }
+        
+        if(sigAlgOid.equals(PKCSObjectIdentifiers.sha256WithRSAEncryption)) {
+            return AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
+        }
+        
+        if(sigAlgOid.equals(PKCSObjectIdentifiers.sha384WithRSAEncryption)) {
+            return AlgorithmConstants.SIGALG_SHA384_WITH_RSA;
+        }
+        
+        if(sigAlgOid.equals(PKCSObjectIdentifiers.sha512WithRSAEncryption)) {
+            return AlgorithmConstants.SIGALG_SHA512_WITH_RSA; 
+        }
+        
+        if(sigAlgOid.equals(X9ObjectIdentifiers.ecdsa_with_SHA1)) {
+            return AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA;   
+        }
+        
+        if(sigAlgOid.equals(X9ObjectIdentifiers.ecdsa_with_SHA224)) {
+            return AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA;   
+        }
+        
+        if(sigAlgOid.equals(X9ObjectIdentifiers.ecdsa_with_SHA256)) {
+            return AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA;   
+        }
+        
+        if(sigAlgOid.equals(X9ObjectIdentifiers.ecdsa_with_SHA384)) {
+            return AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA;   
+        }
+        // GOST3410
+        if(isGost3410Enabled() && sigAlgOid.getId().equalsIgnoreCase(CesecoreConfiguration.getOidGost3410())) {
+            return AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410;
+        }
+        // DSTU4145
+        if(isDstu4145Enabled() && sigAlgOid.getId().startsWith(CesecoreConfiguration.getOidDstu4145()+".")) {
+            return AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145;
+        }
+        
+        return sigAlgOid.getId();
+    }
 }

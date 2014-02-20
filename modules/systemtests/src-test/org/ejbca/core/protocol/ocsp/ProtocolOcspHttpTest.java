@@ -59,17 +59,23 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.BERTags;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x509.CRLReason;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.ExtensionsGenerator;
+import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
@@ -1166,6 +1172,75 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         assertEquals("Response Nonce was not the same as the request Nonce, it must be", "123456789", new String(oct.getOctets()));
         assertNull("Cache-Control in reply although we used Nonce in the request. Responses with Nonce should not have a Cache-control header.", con.getHeaderField("Cache-Control"));
     }
+    
+    
+    
+    /**
+     * This test tests that the OCSP response contains is signed by the preferred signature algorithm specified in the request.
+     * 
+     * @throws Exception
+    */
+    @Test
+    public void testSigAlgExtension() throws Exception {
+        loadUserCert(this.caid);
+        
+        // Try sending a request where the preferred signature algorithm is compatible with the signing key, but 
+        // the configured algorithm is not. Expected a response signed using the preferred algorithm
+        
+        // set ocsp configuration
+        Map<String,String> map = new HashMap<String, String>();
+        map.put("ocsp.signaturealgorithm", AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA);
+        this.helper.alterConfig(map);
+        
+        
+        ASN1EncodableVector algVec = new ASN1EncodableVector();
+        algVec.add(X9ObjectIdentifiers.ecdsa_with_SHA256);
+        algVec.add(PKCSObjectIdentifiers.sha1WithRSAEncryption);
+        ASN1Sequence algSeq = new DERSequence(algVec);
+        ExtensionsGenerator extgen = new ExtensionsGenerator();
+        extgen.addExtension(new ASN1ObjectIdentifier(OCSPObjectIdentifiers.pkix_ocsp + ".8"), false, algSeq);
+        Extensions exts = extgen.generate();
+        assertNotNull(exts);
+        
+        OCSPReqBuilder gen = new OCSPReqBuilder();
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber() ), exts);
+        gen.setRequestExtensions(exts);
+        OCSPReq req = gen.build();
+        assertTrue(req.hasExtensions());
+        
+        BasicOCSPResp response = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
+        assertNotNull("Could not retrieve response, test could not continue.", response);
+        assertEquals(PKCSObjectIdentifiers.sha1WithRSAEncryption, response.getSignatureAlgOID());
+        
+        
+        // Try sending a request where the preferred signature algorithm is not compatible with the signing key, but 
+        // the configured algorithm is. Expected a response signed using the configured algorithm
+        
+        // set ocsp configuration
+        map = new HashMap<String, String>();
+        map.put("ocsp.signaturealgorithm", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        this.helper.alterConfig(map);
+        
+        algVec = new ASN1EncodableVector();
+        algVec.add(X9ObjectIdentifiers.ecdsa_with_SHA384);
+        algSeq = new DERSequence(algVec);
+        
+        extgen = new ExtensionsGenerator();
+        extgen.addExtension(new ASN1ObjectIdentifier(OCSPObjectIdentifiers.pkix_ocsp + ".8"), false, algSeq);
+        exts = extgen.generate();
+        assertNotNull(exts);
+        
+        gen = new OCSPReqBuilder();
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber() ), exts);
+        gen.setRequestExtensions(exts);
+        req = gen.build();
+        assertTrue(req.hasExtensions());
+        
+        response = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
+        assertNotNull("Could not retrieve response, test could not continue.", response);
+        assertEquals(PKCSObjectIdentifiers.sha1WithRSAEncryption, response.getSignatureAlgOID());
+    }
+
     
     
     /**
