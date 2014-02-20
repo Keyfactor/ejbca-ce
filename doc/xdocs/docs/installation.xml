@@ -716,7 +716,7 @@ Since mail configuration is done differently in different versions of JBoss we o
 <subsubsection name="JBoss Service Timer persistence">
 <p>EJBCA uses EJB timers to run services regularly (if you have services configured). By default JBoss persists timers in an internal, in memory, database. 
 If you run services very often this can under some circumstances fill up the memory causing the server to be non-operational due to out ofmemory errors.</p>
-<p>EJBCA does not need persistent timers since they are initialized during startup. Therefore it isrecommended to run JBoss with non-persistent timers, something that can be configured.
+<p>EJBCA does not need persistent timers since they are initialized during startup. Therefore it is recommended to run JBoss with non-persistent timers, something that can be configured.
 </p>
 <p>
 <u>JBoss 5 configuration</u>:
