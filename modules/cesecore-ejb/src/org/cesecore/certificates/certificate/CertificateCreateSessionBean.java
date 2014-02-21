@@ -349,7 +349,8 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                     break; // We have our cert and we don't need to store it.. Move on..
                 }
                 try {
-                    assertSerialNumberForIssuerOk(ca, caSubjectDN, new BigInteger(serialNo, 16));
+                    // Remember for CVC serialNo can be alphanumeric, so we can't just try to decode that using normal Java means (BigInteger.valueOf)...
+                    assertSerialNumberForIssuerOk(ca, caSubjectDN, CertTools.getSerialNumber(cert));
                     // Tag is reserved for future use, currently only null
                     final String tag = null;
                     // Authorization was already checked by since this is a private method, the CA parameter should
