@@ -32,7 +32,7 @@
         <input message="Please enter the CA dn (default: CN=ManagementCA,O=EJBCA Sample,C=SE) ?" addproperty="ca.dn" defaultvalue="CN=ManagementCA,O=EJBCA Sample,C=SE"/>
         <input message="Please enter the CA key type (default: RSA) ?" addproperty="ca.keytype" defaultvalue="RSA" />
         <input message="Please enter the CA key spec (default: 2048) ?" addproperty="ca.keyspec" defaultvalue="2048" />
-        <input message="Please enter the CA signature algorithm (default: SHA1WithRSA) ?" addproperty="ca.signaturealgorithm" defaultvalue="SHA1WithRSA" />
+        <input message="Please enter the CA signature algorithm (default: SHA256WithRSA) ?" addproperty="ca.signaturealgorithm" defaultvalue="SHA256WithRSA" />
         <input message="Please enter the CA validity in days (default: 3650) ?" addproperty="ca.validity" defaultvalue="3650"/>
         <input message="Please enter the CA policy id (default, no policy) ?" addproperty="ca.policy" defaultvalue="null"/>
         <echo message="To set httpsserver.hostname you need to configure conf/web.properties. See sample config file conf/web.properties.sample."/>

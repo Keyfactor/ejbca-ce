@@ -235,7 +235,15 @@ public class CrmfRequestMessageTest {
     }
 
 	@Test
-    public void testNovosecClientRequest() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, SignatureException, IllegalStateException, OperatorCreationException, CertificateException {
+	public void testNovosecClientRequestSHA1() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, SignatureException, IllegalStateException, OperatorCreationException, CertificateException {
+	    doNovosecClientRequest("SHA1WithRSA", CMSSignedGenerator.DIGEST_SHA1, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+	}
+    @Test
+    public void testNovosecClientRequestSHA256() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, SignatureException, IllegalStateException, OperatorCreationException, CertificateException {
+        doNovosecClientRequest("SHA256WithRSA", CMSSignedGenerator.DIGEST_SHA256, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+    }
+
+    private void doNovosecClientRequest(final String sigAlg, final String digestAlg, final String expectedAlgOid) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, SignatureException, IllegalStateException, OperatorCreationException, CertificateException {
     	// Check that we can parse a request from  Novosec (patched by EJBCA).
     	// Read an initialization request with a signature POP and signature protection to see that we can process it
     	{
@@ -276,11 +284,11 @@ public class CrmfRequestMessageTest {
     		ASN1Primitive derObject = in.readObject();
     		PKIMessage myPKIMessage = PKIMessage.getInstance(derObject);
     		KeyPair keys = KeyTools.genKeys("512", "RSA");
-    		X509Certificate signCert = CertTools.genSelfCert("CN=CMP Sign Test", 3650, null, keys.getPrivate(), keys.getPublic(), "SHA1WithRSA", false);
+    		X509Certificate signCert = CertTools.genSelfCert("CN=CMP Sign Test", 3650, null, keys.getPrivate(), keys.getPublic(), sigAlg, false);
     		// Re-sign the message
     		Collection<Certificate> signCertChain = new ArrayList<Certificate>();
     		signCertChain.add(signCert);
-    		byte[] newmsg = CmpMessageHelper.signPKIMessage(myPKIMessage, signCertChain, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1, "BC");
+    		byte[] newmsg = CmpMessageHelper.signPKIMessage(myPKIMessage, signCertChain, keys.getPrivate(), digestAlg, "BC");
     		in.close();
     		in = new ASN1InputStream(newmsg);		
     		derObject = in.readObject();
@@ -288,14 +296,14 @@ public class CrmfRequestMessageTest {
     		// We have to do this twice, because Novosec caches ProtectedBytes in the PKIMessage object, so we need to 
     		// encode it and re-decode it again to get the changes from ECA-2104 encoded correctly.
     		// Not needed when simply signing a new message that you create, only when re-signing 
-    		newmsg = CmpMessageHelper.signPKIMessage(pkimsg, signCertChain, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1, "BC");
+    		newmsg = CmpMessageHelper.signPKIMessage(pkimsg, signCertChain, keys.getPrivate(), digestAlg, "BC");
     		in.close();
     		in = new ASN1InputStream(newmsg);
     		derObject = in.readObject();
     		pkimsg = PKIMessage.getInstance(derObject);
     		AlgorithmIdentifier algId = pkimsg.getHeader().getProtectionAlg();
     		String oid = algId.getAlgorithm().getId();
-    		assertEquals(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), oid);
+    		assertEquals(expectedAlgOid, oid);
     		// Check that we have DERNull and not plain java null as algorithm parameters.
     		ASN1Encodable pp = algId.getParameters();
     		assertNotNull(pp);

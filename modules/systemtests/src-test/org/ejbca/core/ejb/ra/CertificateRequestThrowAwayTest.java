@@ -229,7 +229,7 @@ public class CertificateRequestThrowAwayTest extends CaTestCase {
             IOException, InvalidKeySpecException, ObjectNotFoundException, CreateException, CADoesntExistsException, CesecoreException, OperatorCreationException {
         Certificate ret;
         KeyPair rsakeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA); // Use short keys, since this will be done many times
-        byte[] rawPkcs10req = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX500Name("CN=ignored"), rsakeys.getPublic(),
+        byte[] rawPkcs10req = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", CertTools.stringToBcX500Name("CN=ignored"), rsakeys.getPublic(),
                 new DERSet(), rsakeys.getPrivate(), null).toASN1Structure().getEncoded();
         if (raw) {
             ret = CertTools.getCertfromByteArray(certificateRequestSession.processCertReq(admin, userData, new String(Base64.encode(rawPkcs10req)),
