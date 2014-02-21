@@ -68,7 +68,7 @@ public class OcspExtensionsTest {
         caCertificateFile = File.createTempFile("tmp", ".pem");
         trustedCertificateFile = File.createTempFile("tmp", ".pem", trustDir);
         KeyPair caKeyPair = KeyTools.genKeys("1024", "RSA");
-        Certificate caCertificate = CertTools.genSelfCert("CN=TESTCA", 10L, null, caKeyPair.getPrivate(), caKeyPair.getPublic(), "SHA1WithRSA", true);
+        Certificate caCertificate = CertTools.genSelfCert("CN=TESTCA", 10L, null, caKeyPair.getPrivate(), caKeyPair.getPublic(), "SHA256WithRSA", true);
         FileOutputStream fileOutputStream = new FileOutputStream(caCertificateFile);
         try {
             fileOutputStream.write(CertTools.getPemFromCertificateChain(Arrays.asList(caCertificate)));
@@ -89,7 +89,7 @@ public class OcspExtensionsTest {
         final String certDn = "CN=TEST,SN=4711";
         X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(CertTools.stringToBcX500Name(certDn, false), new BigInteger(serno).abs(),
                 firstDate, lastDate, CertTools.stringToBcX500Name(certDn, false), pkinfo);
-        final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder("SHA1WithRSA").build(caKeyPair.getPrivate()), 20480);
+        final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder("SHA256WithRSA").build(caKeyPair.getPrivate()), 20480);
         final X509CertificateHolder certHolder = certbuilder.build(signer);
         certificate = CertTools.getCertfromByteArray(certHolder.getEncoded());
         fileOutputStream = new FileOutputStream(trustedCertificateFile);

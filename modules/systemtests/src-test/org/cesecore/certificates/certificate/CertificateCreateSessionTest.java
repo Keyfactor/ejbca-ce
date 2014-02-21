@@ -656,7 +656,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
 
             final KeyPair keyPair = KeyTools.genKeys("512", "RSA"); 
             final X500Name x509dn = new X500Name(dn);
-            PKCS10CertificationRequest basicpkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", x509dn, 
+            PKCS10CertificationRequest basicpkcs10 = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", x509dn, 
                     keyPair.getPublic(), null, keyPair.getPrivate(), null);
             ContentVerifierProvider cvp = CertTools.genContentVerifierProvider(keyPair.getPublic());
             assertTrue("Request must verify (POP)", basicpkcs10.isSignatureValid(cvp) );
@@ -669,7 +669,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             
             // Create a request with invalid PoP
             final KeyPair keyPair2 = KeyTools.genKeys("512", "RSA"); 
-            PKCS10CertificationRequest invalidpoppkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", x509dn, 
+            PKCS10CertificationRequest invalidpoppkcs10 = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", x509dn, 
                     keyPair.getPublic(), null, keyPair2.getPrivate(), null);
             req = new PKCS10RequestMessage(invalidpoppkcs10.toASN1Structure().getEncoded());
             try {

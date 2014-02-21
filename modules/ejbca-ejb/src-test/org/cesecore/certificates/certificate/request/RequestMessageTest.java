@@ -105,6 +105,17 @@ public class RequestMessageTest {
 		 assertEquals(null, msg.getRequestAltNames());
 		 assertEquals(null, msg.getPassword());
 
+		 dn = new X500Name("C=SE, O=Foo, CN=Test Testsson");
+		 basicpkcs10 = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", dn, 
+		         keyPair.getPublic(), new DERSet(), keyPair.getPrivate(), null);
+
+		 msg = new PKCS10RequestMessage(basicpkcs10.toASN1Structure().getEncoded());
+		 username = msg.getUsername();
+		 assertEquals("Test", username);
+		 assertEquals("C=SE,O=Foo,CN=Test Testsson", msg.getRequestDN());
+		 assertEquals(null, msg.getRequestAltNames());
+		 assertEquals(null, msg.getPassword());
+
 		 // oid for unstructuredName, will be handles specially by EJBCA
 		 dn = new X500Name("CN=Test + 1.2.840.113549.1.9.2=AttrValue1");
 		 basicpkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", dn, 

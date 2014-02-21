@@ -74,19 +74,19 @@ public class CaInitCommandTest {
     private static final String CA_NAME = "1327ca2";
     private static final String CA_DN = "CN=CLI Test CA 1237ca2,O=EJBCA,C=SE";
     private static final String CERTIFICATE_PROFILE_NAME = "certificateProfile1327";
-    private static final String[] HAPPY_PATH_ARGS = { "init", CA_NAME, CA_DN, "soft", "foo123", "2048", "RSA", "365", "null", "SHA1WithRSA" };
+    private static final String[] HAPPY_PATH_ARGS = { "init", CA_NAME, CA_DN, "soft", "foo123", "2048", "RSA", "365", "null", "SHA256WithRSA" };
     private static final String[] X509_TYPE_ARGS = { "init", CA_NAME, CA_DN, "soft", "foo123", "2048", "RSA", "365", "null", "SHA1WithRSA", "-type",
             "x509" };
     private static final String[] X509_ARGS_NON_DEFULTPWD = { "init", CA_NAME, CA_DN, "soft", "bar123", "2048", "RSA", "365", "1.1.1.1",
             "SHA1WithRSA" };
-    private static final String[] ROOT_CA_ARGS = { "init", CA_NAME, CA_DN, "soft", "foo123", "2048", "RSA", "365", "null", "SHA1WithRSA",
+    private static final String[] ROOT_CA_ARGS = { "init", CA_NAME, CA_DN, "soft", "foo123", "2048", "RSA", "365", "null", "SHA256WithRSA",
             "-certprofile", "ROOTCA" };
-    private static final String[] CUSTOM_PROFILE_ARGS = { "init", CA_NAME, CA_DN, "soft", "foo123", "2048", "RSA", "365", "null", "SHA1WithRSA",
+    private static final String[] CUSTOM_PROFILE_ARGS = { "init", CA_NAME, CA_DN, "soft", "foo123", "2048", "RSA", "365", "null", "SHA256WithRSA",
             "-certprofile", CERTIFICATE_PROFILE_NAME };
     private static final String[] ECC_CA_ARGS = { "init", CA_NAME, CA_DN, "soft", "foo123", "secp256r1", "ECDSA", "365", "null", "SHA256withECDSA" };
     private static final String[] ECC_CA_EXPLICIT_ARGS = { "init", CA_NAME, CA_DN, "soft", "foo123", "secp256r1", "ECDSA", "365", "null",
             "SHA256withECDSA", "-explicitecc" };
-    private static final String[] SIGNED_BY_EXTERNAL_ARGS = { "init", CA_NAME, CA_DN, "soft", "foo123", "2048", "RSA", "365", "null", "SHA1WithRSA",
+    private static final String[] SIGNED_BY_EXTERNAL_ARGS = { "init", CA_NAME, CA_DN, "soft", "foo123", "2048", "RSA", "365", "null", "SHA256WithRSA",
             "null", "External", "-externalcachain", "chain.pem" };
     private static final String[] IMPORT_SIGNED_BY_EXTERNAL_ARGS = { "importcacert", CA_NAME, "cert.pem" };
 

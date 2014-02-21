@@ -48,7 +48,7 @@ public class InternalKeyBindingCreateCommandTest {
     private static final String KEYBINDING_NAME = "CliTest";
     private static final String KEY_PAIR_ALIAS = "CliTest";
     private static final String[] STANDARD_ARGS = { "create", KEYBINDING_NAME, "OcspKeyBinding", "DISABLED", "null", TESTCLASSNAME, KEY_PAIR_ALIAS,
-            "SHA1WithRSA", "--property", "nonexistingisgood=false", "--property", "maxAge=0", "--property", "nonexistingisrevoked=true",
+            "SHA256WithRSA", "--property", "nonexistingisgood=false", "--property", "maxAge=0", "--property", "nonexistingisrevoked=true",
             "--property", "requireTrustedSignature=true", "--property", "untilNextUpdate=0", "--property", "responderidtype=NAME", "--property",
             "includecertchain=false" };
 
