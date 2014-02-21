@@ -336,7 +336,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         endEntityManagementSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
-        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX500Name("C=SE, O=AnaTom, CN=foo"),
+        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", CertTools.stringToBcX500Name("C=SE, O=AnaTom, CN=foo"),
                 rsakeys.getPublic(), new DERSet(), rsakeys.getPrivate(), null);
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
         DEROutputStream dOut = new DEROutputStream(bOut);
@@ -933,7 +933,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         endEntityManagementSession.changeUser(internalAdmin, user, false);
         // Create a P10
         // Create PKCS#10 certificate request
-        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", new X500Name("C=SE,CN=testsigalg"), rsakeys.getPublic(), null, rsakeys
+        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", new X500Name("C=SE,CN=testsigalg"), rsakeys.getPublic(), null, rsakeys
                 .getPrivate(), null);
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
         DEROutputStream dOut = new DEROutputStream(bOut);
@@ -1011,7 +1011,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         v.add(new DERSequence(extensionattr));
         DERSet attributes = new DERSet(v);
         // Create PKCS#10 certificate request
-        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", new X500Name("C=SE,CN=extoverride"), rsakeys.getPublic(), attributes,
+        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", new X500Name("C=SE,CN=extoverride"), rsakeys.getPublic(), attributes,
                 rsakeys.getPrivate(), null);
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
         DEROutputStream dOut = new DEROutputStream(bOut);
@@ -1174,7 +1174,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             // Change a user that we know...
             endEntityManagementSession.changeUser(internalAdmin, user, false);
             // Create a P10 with strange order DN
-            PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", new X500Name("CN=foo,C=SE,NAME=AnaTom,O=My org"),
+            PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", new X500Name("CN=foo,C=SE,NAME=AnaTom,O=My org"),
                     rsakeys.getPublic(), new DERSet(), rsakeys.getPrivate(), null);
             ByteArrayOutputStream bOut = new ByteArrayOutputStream();
             DEROutputStream dOut = new DEROutputStream(bOut);

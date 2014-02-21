@@ -218,7 +218,7 @@ public class CrmfRequestTest extends CmpTestCase {
 
         PKIMessage req = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, false, null, null, null, null, null, null);
         assertNotNull(req);
-        X509Certificate signCert = CertTools.genSelfCert("CN=CMP Sign Test", 3650, null, keys.getPrivate(), keys.getPublic(), "SHA1WithRSA", false);
+        X509Certificate signCert = CertTools.genSelfCert("CN=CMP Sign Test", 3650, null, keys.getPrivate(), keys.getPublic(), "SHA256WithRSA", false);
         ArrayList<Certificate> signCertColl = new ArrayList<Certificate>();
         signCertColl.add(signCert);
         CmpMessageHelper.signPKIMessage(req, signCertColl, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1, "BC");

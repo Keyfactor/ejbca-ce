@@ -1402,7 +1402,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         tokenUser1.setCertificateProfileName("ENDUSER");
 
         KeyPair basickeys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        PKCS10CertificationRequest basicpkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX500Name("CN=NOUSED"),
+        PKCS10CertificationRequest basicpkcs10 = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", CertTools.stringToBcX500Name("CN=NOUSED"),
                 basickeys.getPublic(), new DERSet(), basickeys.getPrivate(), null);
 
         ArrayList<TokenCertificateRequestWS> requests = new ArrayList<TokenCertificateRequestWS>();
@@ -2085,7 +2085,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
         // ///// Check Error.LOGIN_ERROR ///////
         keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        pkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX500Name("CN=WSTESTUSER30"), keys.getPublic(), new DERSet(),
+        pkcs10 = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", CertTools.stringToBcX500Name("CN=WSTESTUSER30"), keys.getPublic(), new DERSet(),
                 keys.getPrivate(), null);
 
         try {
@@ -2105,7 +2105,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         ejbcaraws.editUser(user1);
 
         keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        pkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX500Name("CN=WSTESTUSER30"), keys.getPublic(), new DERSet(),
+        pkcs10 = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", CertTools.stringToBcX500Name("CN=WSTESTUSER30"), keys.getPublic(), new DERSet(),
                 keys.getPrivate(), null);
 
         try {

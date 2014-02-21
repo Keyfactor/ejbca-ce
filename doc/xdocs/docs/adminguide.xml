@@ -1459,7 +1459,7 @@ Example generating a certificate from a PKCS10 request:
   user1.setCertificateProfileName("ENDUSER");
 			
   KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-  PKCS10CertificationRequest  pkcs10 = new PKCS10CertificationRequest("SHA1WithRSA",
+  PKCS10CertificationRequest  pkcs10 = new PKCS10CertificationRequest("SHA256WithRSA",
   CertTools.stringToBcX500Name("CN=NOUSED"), keys.getPublic(), null, keys.getPrivate());
 
   CertificateResponse certenv =  ejbcaraws.certificateRequest(user1,
