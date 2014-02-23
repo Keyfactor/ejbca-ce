@@ -202,7 +202,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     private JcaX509CertificateConverter certificateConverter = new JcaX509CertificateConverter();
 
     @PostConstruct
-    public void init() throws AuthorizationDeniedException {
+    public void init() {
         if (OcspConfiguration.getLogSafer() == true) {
             SaferDailyRollingFileAppender.addSubscriber(this);
             log.info("Added us as subscriber: " + SaferDailyRollingFileAppender.class.getCanonicalName());
@@ -1504,7 +1504,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         }
     }
 
-    // TODO: Test this thoroughly! 
     @Override
     @Deprecated //Remove this method once upgrading from 5-6 is dropped
     public void adhocUpgradeFromPre60(char[] activationPassword) {
