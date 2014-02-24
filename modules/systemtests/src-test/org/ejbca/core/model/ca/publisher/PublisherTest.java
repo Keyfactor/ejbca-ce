@@ -408,11 +408,6 @@ public class PublisherTest {
 			return;
 		}
         assertNotNull("The certificate must be in DB.", info);
-
-        byte[] subjectKeyId = KeyTools.createSubjectKeyId(cert.getPublicKey()).getKeyIdentifier();
-		Collection<Certificate> certsByKeyId = this.certificateStoreSession.findCertificatesBySubjectKeyId(subjectKeyId);
-		assertNotNull("Certificate should be found by KeyId as well", certsByKeyId);
-		assertTrue("Should be at least one certificate found by KeyId", certsByKeyId.size() > 0);
 		
 		assertEquals( CertificateConstants.CERT_ACTIVE, info.getStatus() );
 		assertEquals( revokationReason, info.getRevocationReason() );
@@ -421,6 +416,9 @@ public class PublisherTest {
 		assertEquals( lastUpdate, info.getUpdateTime().getTime() );
 		assertEquals( userName, info.getUsername() );
 		assertEquals( cafp, info.getCAFingerprint() );
+        final byte[] subjectKeyId = KeyTools.createSubjectKeyId(cert.getPublicKey()).getKeyIdentifier();
+        final String keyIdStr = new String(Base64.encode(subjectKeyId));
+		assertEquals( keyIdStr, info.getSubjectKeyId());
 	}
 	private void revokeCert(ArrayList<Integer> publishers, Certificate cert, long lastUpdate) throws AuthorizationDeniedException {
 		final int certProfileID = 12345;
