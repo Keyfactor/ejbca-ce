@@ -1,6 +1,6 @@
 EJBCA 6.0.4
 -----------
-This is a maintenance release with new features, bug fixes and improvements. In all 52 issues have been fixed.
+This is a maintenance release with new features, bug fixes and improvements. In all 53 issues have been fixed.
 The biggest news in this release is support for Certificate Transparency in EJBCA Enterprise. 
 Apart from that all issues reported from installations of EJBCA 6.0.3 has been fixed.
 
@@ -8,9 +8,9 @@ One of the fixes is a security fix. The security issue is rated as low, and can 
 
 * Noteworthy changes:
 - Support for Certificate Transparency, RFC6962 (EJBCA Enterprise only).
-- Support for JBoss EAP 6.2 that changed default behavior when creating datasources.
+- Support for JBoss EAP 6.2 that changed default behaviour when creating datasources.
 - SCEP GetCACaps command now works from iOS.
-- Ensure OCSP RFC5019 responses with nonces are not cached.
+- Ensure that OCSP RFC5019 responses with nonces are not cached.
 - Minor Command Line improvement.
 - Fixed most issues reported from installations of EJBCA 6.0.3.
 
