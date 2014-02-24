@@ -380,7 +380,7 @@ public class OcspConfiguration {
 
     
     /**
-     * The default number of milliseconds a response is valid, or 0 to disable. See RFC5019.
+     * The default number of milliseconds a response is valid, or -1 to disable. See RFC5019.
      */
     public static long getExpiredArchiveCutoff() {
         Configuration config = ConfigurationHolder.instance();
