@@ -7,10 +7,12 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URL;
 import java.security.AuthProvider;
+import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
 import java.security.Security;
 import java.util.Properties;
 
+import javax.net.ssl.KeyManagerFactory;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.PasswordCallback;
@@ -30,7 +32,6 @@ import org.ejbca.core.protocol.ws.client.gen.RevokeStatus;
  * Base class inherited by all EJBCA RA WS cli commands.
  * Checks the property file and creates a webservice connection.
  *  
- * @author Philip Vendil
  * $Id$
  */
 
@@ -132,7 +133,14 @@ public abstract class EJBCAWSRABaseCommand implements P11SlotUser {
                 System.setProperty("javax.net.ssl.keyStorePassword", password);
             }
             tmpURL = new URL(props.getProperty("ejbcawsracli.url", "https://localhost:8443/ejbca/ejbcaws/ejbcaws") + "?wsdl");
-            Security.setProperty("ssl.KeyManagerFactory.algorithm", "NewSunX509");
+            try {
+                KeyManagerFactory.getInstance("NewSunX509");
+                //getPrintStream().println("Using NewSunX509 KeyManagerFactory.");
+                Security.setProperty("ssl.KeyManagerFactory.algorithm", "NewSunX509");
+            } catch (NoSuchAlgorithmException e) {
+                // Using IBM Java
+                getPrintStream().println("Using default KeyManagerFactory, NewSunX509 is not available.");                
+            }
         } catch( Exception e ) {
             tmpException = e;
         }
@@ -173,9 +181,7 @@ public abstract class EJBCAWSRABaseCommand implements P11SlotUser {
      * Method creating a connection to the webservice
      * using the information stored in the property files.
      * If a connection already is established this connection will be used
-     * @throws ServiceException 
-     * @throws IOException 
-     * @throws FileNotFoundException 
+     * @throws Exception 
      */
     protected EjbcaWS getEjbcaRAWS() throws Exception{
         return getEjbcaRAWS(false);
@@ -184,9 +190,7 @@ public abstract class EJBCAWSRABaseCommand implements P11SlotUser {
      * Method creating a connection to the webservice
      * using the information stored in the property files.
      * A new connection will be created for each call.
-     * @throws ServiceException 
-     * @throws IOException 
-     * @throws FileNotFoundException 
+     * @throws Exception 
      */
     protected EjbcaWS getEjbcaRAWSFNewReference() throws  Exception {
         return getEjbcaRAWS(true);
