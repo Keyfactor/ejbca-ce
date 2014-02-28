@@ -778,7 +778,10 @@
         </antcall>
         <checksum file="../${basezipfile}.zip" algorithm="SHA1" forceOverwrite="yes"/>      
         <checksum file="../${basezipfile}.zip" algorithm="SHA1" property="ejbcaSHA1"/>      
+        <checksum file="../${basezipfile}.zip" algorithm="SHA-256" forceOverwrite="yes"/>      
+        <checksum file="../${basezipfile}.zip" algorithm="SHA-256" property="ejbcaSHA256"/>      
         <echo message="SHA1 checksum: ${ejbcaSHA1}" />
+        <echo message="SHA256 checksum: ${ejbcaSHA256}" />
 	</target>
 
     <!-- ======================================================================= -->
