@@ -1733,7 +1733,11 @@ function checkallfields(){
 			</td>
 			<td> 
 				<input type="text" name="<%= TEXTFIELD_STARTTIME %>" size="25" maxlength="40" tabindex="<%=tabindex++%>" title="<%= ejbcawebbean.getText("FORMAT_ISO8601") %> <%= ejbcawebbean.getText("OR") %> (<%= ejbcawebbean.getText("DAYS").toLowerCase() %>:<%= ejbcawebbean.getText("HOURS").toLowerCase() %>:<%= ejbcawebbean.getText("MINUTES").toLowerCase() %>)"
-					<%	String startTime = ejbcawebbean.getISO8601FromImpliedUTCOrRelative(profile.getValue(EndEntityProfile.STARTTIME, 0)); %>
+					<% String str = profile.getValue(EndEntityProfile.STARTTIME, 0);	
+					String startTime = "";
+					if (str != null && str.trim().length() > 0) {
+						startTime = ejbcawebbean.getISO8601FromImpliedUTCOrRelative(str); 
+					} %>
 					value='<c:out value="<%= startTime %>"/>'
 					<%	if ( !profile.isModifyable(EndEntityProfile.STARTTIME, 0) ) { %>
 					readonly="true"
@@ -1760,7 +1764,12 @@ function checkallfields(){
 			</td>
 			<td> 
 				<input type="text" name="<%= TEXTFIELD_ENDTIME %>" size="25" maxlength="40" tabindex="<%=tabindex++%>" title="<%= ejbcawebbean.getText("FORMAT_ISO8601") %> <%= ejbcawebbean.getText("OR") %> (<%= ejbcawebbean.getText("DAYS").toLowerCase() %>:<%= ejbcawebbean.getText("HOURS").toLowerCase() %>:<%= ejbcawebbean.getText("MINUTES").toLowerCase() %>)"
-					value='<c:out value="<%= ejbcawebbean.getISO8601FromImpliedUTCOrRelative(profile.getValue(EndEntityProfile.ENDTIME, 0)) %>"/>'
+					<% String str = profile.getValue(EndEntityProfile.ENDTIME, 0);	
+					String endTime = "";
+					if (str != null && str.trim().length() > 0) {
+						endTime = ejbcawebbean.getISO8601FromImpliedUTCOrRelative(str); 
+					} %>
+					value='<c:out value="<%= endTime %>"/>'
 					<%	if ( !profile.isModifyable(EndEntityProfile.ENDTIME, 0) ) { %>
 					readonly="true"
 					<%	} %>
