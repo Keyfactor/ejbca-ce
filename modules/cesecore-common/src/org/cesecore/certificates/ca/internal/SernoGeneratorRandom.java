@@ -15,6 +15,7 @@ package org.cesecore.certificates.ca.internal;
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Random;
 
@@ -68,19 +69,23 @@ public class SernoGeneratorRandom implements SernoGenerator {
     private static SernoGeneratorRandom instance = null;
 
     /** lowest possible value we should deliver when getSerno is called */
-    private BigInteger lowest = new BigInteger("0080000000000000", 16);
+    private BigInteger lowest = new BigInteger("0080000000000000", 16); // Default value for 64 bit serials
     /** highest possible value we should deliver when getSerno is called */
-    private BigInteger highest = new BigInteger("7FFFFFFFFFFFFFFF", 16);
+    private BigInteger highest = new BigInteger("7FFFFFFFFFFFFFFF", 16); // Default value for 64 bit serials
 
     /**
      * Creates a serial number generator using SecureRandom
      */
     protected SernoGeneratorRandom() throws NoSuchAlgorithmException {
-        log.trace(">SernoGenerator()");
+        if (log.isTraceEnabled()) {
+            log.trace(">SernoGenerator()");
+        }
         this.algorithm = CesecoreConfiguration.getCaSerialNumberAlgorithm();
         setSernoOctetSize(CesecoreConfiguration.getCaSerialNumberOctetSize());
         init();
-        log.trace("<SernoGenerator()");
+        if (log.isTraceEnabled()) {
+            log.trace("<SernoGenerator()");
+        }
     }
 
     private void init() throws NoSuchAlgorithmException {
@@ -142,14 +147,14 @@ public class SernoGeneratorRandom implements SernoGenerator {
             return new java.math.BigInteger(Long.toString(rand.nextInt(4)));
         }
 
-        byte[] sernobytes = new byte[noOctets];
+        final byte[] sernobytes = new byte[noOctets];
         boolean ok = false;
         BigInteger serno = null;
         while (!ok) {
             random.nextBytes(sernobytes);
             serno = (new java.math.BigInteger(sernobytes)).abs();
             // Must be within the range 0080000000000000 - 7FFFFFFFFFFFFFFF
-            if ((serno.compareTo(lowest) >= 0) && (serno.compareTo(highest) <= 0)) {
+            if (checkSernoValidity(serno)) {
                 ok = true;
             } else {
                 String msg = intres.getLocalizedMessage("sernogenerator.discarding");
@@ -157,6 +162,13 @@ public class SernoGeneratorRandom implements SernoGenerator {
             }
         }
         return serno;
+    }
+
+    protected boolean checkSernoValidity(final BigInteger serno) {
+        if ((serno.compareTo(lowest) >= 0) && (serno.compareTo(highest) <= 0)) {
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -182,13 +194,19 @@ public class SernoGeneratorRandom implements SernoGenerator {
     @Override
     public void setSernoOctetSize(final int noOctets) {
         if (this.noOctets != noOctets) {
-            if (noOctets == 4) {
-                lowest = new BigInteger("00800000", 16);
-                highest = new BigInteger("7FFFFFFF", 16);
+        	// We allow 0 octets for testing
+            if ((noOctets > 20) && (noOctets != 0)) {
+                throw new IllegalArgumentException("SernoOctetSize must be between 4 and 20 bytes for this generator.");
             }
-            if ((noOctets != 4) && (noOctets != 8) && (noOctets != 0)) {
-                throw new IllegalArgumentException("SernoOctetSize must be 4 or 8 for this generator.");
-            }
+            char[] arr = new char[noOctets*2];
+            // 00800000 (filled with 0 to the no of octets)
+            Arrays.fill(arr, '0');
+            arr[2] = '8';
+            lowest = new BigInteger(String.valueOf(arr), 16);
+            // 7FFFFFFF (filled with F to the no of octets)
+            Arrays.fill(arr, 'F');
+            arr[0] = '7';
+            highest = new BigInteger(String.valueOf(arr), 16);
             this.noOctets = noOctets;
         }
     }
