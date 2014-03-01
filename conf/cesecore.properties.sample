@@ -25,7 +25,7 @@
 # The length in octets of certificate serial numbers generated. 8 octets is a 64 bit serial number.
 # It is really recommended to use at least 64 bits, so please leave as default unless you are really sure, 
 # and have a really good reason to change it.
-# Possible values: 8 or 4
+# Possible values: between 4 and 20
 # Default: 8
 #ca.serialnumberoctetsize=8
 
