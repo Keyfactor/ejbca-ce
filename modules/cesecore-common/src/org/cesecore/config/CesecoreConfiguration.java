@@ -18,6 +18,7 @@ import java.net.UnknownHostException;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -60,7 +61,10 @@ public final class CesecoreConfiguration {
      */
     public static int getCaSerialNumberOctetSize() {
         String value = ConfigurationHolder.getString("ca.serialnumberoctetsize");
-        if (!"8".equals(value) && !"4".equals(value)) {
+        if (StringUtils.isEmpty(value)) {
+            if (log.isDebugEnabled()) {
+                log.debug("Using default value of 8 for ca.serialnumberoctetsize");
+            }
             value = "8";
         }
         return Integer.parseInt(value);
