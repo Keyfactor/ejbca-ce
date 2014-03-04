@@ -1,4 +1,4 @@
-<%@ page import="org.cesecore.certificates.ca.catoken.CATokenConstants"%>
+<%@ page import="org.cesecore.certificates.ca.catoken.CATokenConstants, java.text.MessageFormat"%>
 <%
   CertificateProfile certprofiledata = cabean.getTempCertificateProfile();
   if(certprofiledata == null) {
@@ -414,6 +414,56 @@ function checkprivkeyusageperiodnotafterfield() {
     document.editcertificateprofile.<%= TEXTFIELD_PRIVKEYUSAGEPERIODLENGTH %>.disabled = true;
     document.editcertificateprofile.<%= TEXTFIELD_PRIVKEYUSAGEPERIODLENGTH %>.value = "";
   }
+}
+
+// stores hidden options
+var cvctermtype_is = [];
+var cvctermtype_at = [];
+var cvctermtype_st = [];
+function cvctermtypechanged() {
+  var termtype = document.editcertificateprofile.<%= SELECT_CVCTERMTYPE %>.value;
+  var selectbox = document.editcertificateprofile.<%=SELECT_CVCACCESSRIGHTS%>;
+  
+  document.editcertificateprofile.<%=SELECT_CVCSIGNTERMDVTYPE%>.disabled = (termtype != <%= CertificateProfile.CVC_TERMTYPE_ST %>);
+  
+  // Add options for the selected terminal type
+  var addopts;
+  if (termtype == <%= CertificateProfile.CVC_TERMTYPE_IS %>) addopts = cvctermtype_is;
+  if (termtype == <%= CertificateProfile.CVC_TERMTYPE_AT %>) addopts = cvctermtype_at;
+  if (termtype == <%= CertificateProfile.CVC_TERMTYPE_ST %>) addopts = cvctermtype_st;
+  for (var i = 0; i < addopts.length; i++) {
+    selectbox.appendChild(addopts[i]);
+  }
+  
+  if (termtype == <%= CertificateProfile.CVC_TERMTYPE_IS %>) cvctermtype_is = [];
+  if (termtype == <%= CertificateProfile.CVC_TERMTYPE_AT %>) cvctermtype_at = [];
+  if (termtype == <%= CertificateProfile.CVC_TERMTYPE_ST %>) cvctermtype_st = [];
+  
+  // Hide options for the other terminal types
+  var opts = selectbox.options;
+  var remove_objs = []; // avoid changing the list while iterating
+  for (var i = 0; i < opts.length; i++) {
+    var cl = opts[i].className;
+    if (cl == "cvcoption_header") {
+      // remove the IS/AT/ST headers when javascript is enabled
+      remove_objs.push(opts[i]);
+    } else if (cl == "cvcoption_is" && termtype != <%= CertificateProfile.CVC_TERMTYPE_IS %>) {
+      // move from document to plain array
+      cvctermtype_is.push(opts[i]);
+      remove_objs.push(opts[i]);
+    } else if (cl == "cvcoption_at" && termtype != <%= CertificateProfile.CVC_TERMTYPE_AT %>) {
+      cvctermtype_at.push(opts[i]);
+      remove_objs.push(opts[i]);
+    } else if (cl == "cvcoption_st" && termtype != <%= CertificateProfile.CVC_TERMTYPE_ST %>) {
+      cvctermtype_st.push(opts[i]);
+      remove_objs.push(opts[i]);
+    }
+  }
+  for (var i = 0; i < remove_objs.length; i++) {
+    selectbox.removeChild(remove_objs[i]);
+  }
+  
+  //selectbox.size = Math.min(selectbox.options.length+1, 8);
 }
 
 function checkallfields(){
@@ -1589,6 +1639,127 @@ function checkallfields(){
     </tr>    
 
 
+    <%-- CVC --%>
+
+    <tr  id="Row<%=row%2%>" class="section">
+          <td width="50%"  align="right">
+        <strong><c:out value="<%= ejbcawebbean.getText(\"CVCEPASSPORT\") %>" /></strong>
+      </td>
+      <td width="50%">
+        &nbsp;
+      </td>
+    </tr>
+    
+    <tr  id="Row<%=row%2%>">
+      <td width="50%" align="right">
+        <c:out value="<%= ejbcawebbean.getText(\"CVCTERMTYPE\") %>" />
+      </td>
+      <td width="50%">
+        <select name="<%=SELECT_CVCTERMTYPE%>" size="1" onclick="cvctermtypechanged();" onchange="cvctermtypechanged();" onkeyup="cvctermtypechanged();">
+           <%  int termtype = certificateprofiledata.getCVCTerminalType(); %>
+           <option  value="<%=CertificateProfile.CVC_TERMTYPE_IS%>"
+                 <% if (termtype == CertificateProfile.CVC_TERMTYPE_IS ) out.write(" selected "); %>>
+                <c:out value="<%= ejbcawebbean.getText(\"CVCINSPECTIONSYSTEM\") %>" />
+           </option>
+           <option  value="<%=CertificateProfile.CVC_TERMTYPE_AT%>"
+                 <% if (termtype == CertificateProfile.CVC_TERMTYPE_AT ) out.write(" selected "); %>>
+                <c:out value="<%= ejbcawebbean.getText(\"CVCAUTHENTICATIONTERMINAL\") %>" />
+           </option>
+           <option  value="<%=CertificateProfile.CVC_TERMTYPE_ST%>"
+                 <% if (termtype == CertificateProfile.CVC_TERMTYPE_ST ) out.write(" selected "); %>>
+                <c:out value="<%= ejbcawebbean.getText(\"CVCSIGNATURETERMINAL\") %>" />
+           </option>
+        </select>
+      </td>
+    </tr>
+    
+    <tr  id="Row<%=row++%2%>">
+      <td width="50%" align="right"> 
+        <c:out value="<%= ejbcawebbean.getText(\"CVCSIGNTERMDVTYPE\") %>" />
+      </td>
+      <td width="50%"> 
+        <select name="<%=SELECT_CVCSIGNTERMDVTYPE%>" size="1" >
+           <%  int signdvtype = certificateprofiledata.getCVCSignTermDVType(); %>
+           <option  value="<%=CertificateProfile.CVC_SIGNTERM_DV_AB%>"
+                 <% if (signdvtype == CertificateProfile.CVC_SIGNTERM_DV_AB ) out.write(" selected "); %>>
+                <c:out value="<%= ejbcawebbean.getText(\"CVCACCREDITATIONBODY\") %>" />
+           </option>
+           <option  value="<%=CertificateProfile.CVC_SIGNTERM_DV_CSP%>"
+                 <% if (signdvtype == CertificateProfile.CVC_SIGNTERM_DV_CSP ) out.write(" selected "); %>>
+                <c:out value="<%= ejbcawebbean.getText(\"CVCCERTIFICATIONSERVICEPROVIDER\") %>" />
+           </option>
+        </select>
+      </td>
+    </tr>
+
+    <tr  id="Row<%=row++%2%>">
+      <td width="50%" align="right"> 
+        <c:out value="<%= ejbcawebbean.getText(\"CVCACCESSRIGHTS\") %>" />
+      </td>
+      <td width="50%"> 
+        <select name="<%=SELECT_CVCACCESSRIGHTS%>" multiple="multiple" size="8">
+           <%
+           int ar = certificateprofiledata.getCVCAccessRights();
+           byte[] arl = certificateprofiledata.getCVCLongAccessRights();
+           if (arl == null) arl = CertificateProfile.DEFAULT_CVC_RIGHTS_AT;
+           AccessRightAuthTerm arlflags;
+           try {
+               arlflags = new AccessRightAuthTerm(arl);
+           } catch (IllegalArgumentException e) {
+               // zero-length array or other error
+               arlflags = new AccessRightAuthTerm();
+           }
+           %>
+           
+           <%-- Inspection Systems --%>
+           <option disabled="disabled" style="background: #bbb" class="cvcoption_header"> 
+                <c:out value="<%= ejbcawebbean.getText(\"CVCINSPECTIONSYSTEM\") %>" />
+           </option>
+           <option value="<%=CertificateProfile.CVC_ACCESS_DG3%>" <% if ((ar & CertificateProfile.CVC_ACCESS_DG3) != 0) out.write(" selected "); %> class="cvcoption_is"><c:out value="<%= ejbcawebbean.getText(\"CVCACCESSDG3\") %>" /></option>
+           <option value="<%=CertificateProfile.CVC_ACCESS_DG4%>" <% if ((ar & CertificateProfile.CVC_ACCESS_DG4) != 0) out.write(" selected "); %> class="cvcoption_is"><c:out value="<%= ejbcawebbean.getText(\"CVCACCESSDG4\") %>" /></option>
+           
+           <%-- Authentication Terminals --%>
+           <option disabled="disabled" style="background: #bbb" class="cvcoption_header"> 
+                <c:out value="<%= ejbcawebbean.getText(\"CVCAUTHENTICATIONTERMINAL\") %>" />
+           </option>
+           <option value="0" <% if (arlflags.getFlag(0)) out.write(" selected "); %> class="cvcoption_at"><c:out value="<%= ejbcawebbean.getText(\"CVCACCESSAGEVERIFICATION\") %>" /></option>
+           <option value="1" <% if (arlflags.getFlag(1)) out.write(" selected "); %> class="cvcoption_at"><c:out value="<%= ejbcawebbean.getText(\"CVCACCESSCOMMUNITYIDVERIFICATION\") %>" /></option>
+           <option value="2" <% if (arlflags.getFlag(2)) out.write(" selected "); %> class="cvcoption_at"><c:out value="<%= ejbcawebbean.getText(\"CVCACCESSRESTRICTEDIDENTIFICATION\") %>" /></option>
+           <option value="3" <% if (arlflags.getFlag(3)) out.write(" selected "); %> class="cvcoption_at"><c:out value="<%= ejbcawebbean.getText(\"CVCACCESSPRIVILEGEDTERMINAL\") %>" /></option>
+           <option value="4" <% if (arlflags.getFlag(4)) out.write(" selected "); %> class="cvcoption_at"><c:out value="<%= ejbcawebbean.getText(\"CVCACCESSCANALLOWED\") %>" /></option>
+           <option value="5" <% if (arlflags.getFlag(5)) out.write(" selected "); %> class="cvcoption_at"><c:out value="<%= ejbcawebbean.getText(\"CVCACCESSPINMANAGEMENT\") %>" /></option>
+           <option value="6" <% if (arlflags.getFlag(6)) out.write(" selected "); %> class="cvcoption_at"><c:out value="<%= ejbcawebbean.getText(\"CVCACCESSINSTALLCERT\") %>" /></option>
+           <option value="7" <% if (arlflags.getFlag(7)) out.write(" selected "); %> class="cvcoption_at"><c:out value="<%= ejbcawebbean.getText(\"CVCACCESSINSTALLQUALIFIEDCERT\") %>" /></option>
+           
+           <%
+           String writeDGFormat = ejbcawebbean.getText("CVCACCESSWRITEDG");
+           String readDGFormat = ejbcawebbean.getText("CVCACCESSREADDG");
+           %>
+           <% for (int i = 8; i <= 28; i++) { %>
+               <option value="<%= i %>" <% if (arlflags.getFlag(i)) out.write(" selected "); %> class="cvcoption_at"><c:out value="<%= MessageFormat.format(readDGFormat, i-8+1) %>" /></option>
+          <% } %> 
+           
+          <option value="37" <% if (arlflags.getFlag(37)) out.write(" selected "); %> class="cvcoption_at"><c:out value="<%= MessageFormat.format(writeDGFormat, 17) %>" /></option>
+          <option value="36" <% if (arlflags.getFlag(36)) out.write(" selected "); %> class="cvcoption_at"><c:out value="<%= MessageFormat.format(writeDGFormat, 18) %>" /></option>
+          <option value="35" <% if (arlflags.getFlag(35)) out.write(" selected "); %> class="cvcoption_at"><c:out value="<%= MessageFormat.format(writeDGFormat, 19) %>" /></option>
+          <option value="34" <% if (arlflags.getFlag(34)) out.write(" selected "); %> class="cvcoption_at"><c:out value="<%= MessageFormat.format(writeDGFormat, 20) %>" /></option>
+          <option value="33" <% if (arlflags.getFlag(33)) out.write(" selected "); %> class="cvcoption_at"><c:out value="<%= MessageFormat.format(writeDGFormat, 21) %>" /></option>
+          
+           
+           <%-- Signature Terminals --%>
+           <option disabled="disabled" style="background: #bbb" class="cvcoption_header"> 
+                <c:out value="<%= ejbcawebbean.getText(\"CVCSIGNATURETERMINAL\") %>" />
+           </option>
+           <option value="<%=CertificateProfile.CVC_ACCESS_SIGN%>" <% if ((ar & CertificateProfile.CVC_ACCESS_SIGN) != 0) out.write(" selected "); %> class="cvcoption_st"><c:out value="<%= ejbcawebbean.getText(\"CVCACCESSSIGN\") %>" /></option>
+           <option value="<%=CertificateProfile.CVC_ACCESS_QUALSIGN%>" <% if ((ar & CertificateProfile.CVC_ACCESS_QUALSIGN) != 0) out.write(" selected "); %> class="cvcoption_st"><c:out value="<%= ejbcawebbean.getText(\"CVCACCESSQUALSIGN\") %>" /></option>
+        </select>
+      </td>
+    </tr>
+    <script type="text/javascript">
+    cvctermtypechanged();
+    </script>
+
+
 
     <%-- Other data --%>
 
@@ -1598,33 +1769,6 @@ function checkallfields(){
       </td>
       <td width="50%"> 
         &nbsp;
-      </td>
-    </tr>
-
-    <tr  id="Row<%=row++%2%>"> 
-      <td width="50%" align="right"> 
-        <c:out value="<%= ejbcawebbean.getText(\"CVCACCESSRIGHTS\") %>" />
-      </td>
-      <td width="50%"> 
-        <select name="<%=SELECT_CVCACCESSRIGHTS%>" size="1" >
-           <%  int ar = certificateprofiledata.getCVCAccessRights(); %>
-           <option  value="<%=CertificateProfile.CVC_ACCESS_NONE%>" 
-                 <% if (ar == CertificateProfile.CVC_ACCESS_NONE ) out.write(" selected "); %>> 
-                <c:out value="<%= ejbcawebbean.getText(\"CVCACCESSNONE\") %>" />
-           </option>
-           <option  value="<%=CertificateProfile.CVC_ACCESS_DG3%>" 
-                 <% if (ar == CertificateProfile.CVC_ACCESS_DG3 ) out.write(" selected "); %>> 
-                <c:out value="<%= ejbcawebbean.getText(\"CVCACCESSDG3\") %>" />
-           </option>
-           <option  value="<%=CertificateProfile.CVC_ACCESS_DG4%>" 
-                 <% if (ar == CertificateProfile.CVC_ACCESS_DG4 ) out.write(" selected "); %>> 
-                <c:out value="<%= ejbcawebbean.getText(\"CVCACCESSDG4\") %>" />
-           </option>
-           <option  value="<%=CertificateProfile.CVC_ACCESS_DG3DG4%>" 
-                 <% if (ar == CertificateProfile.CVC_ACCESS_DG3DG4 ) out.write(" selected "); %>> 
-                <c:out value="<%= ejbcawebbean.getText(\"CVCACCESSDG3DG4\") %>" />
-           </option>
-        </select>
       </td>
     </tr>
 

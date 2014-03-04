@@ -6,7 +6,8 @@
                org.cesecore.certificates.certificateprofile.CertificateProfileExistsException, org.cesecore.certificates.certificateprofile.CertificateProfileConstants, org.ejbca.ui.web.CertificateView, org.cesecore.certificates.util.DNFieldExtractor, org.cesecore.certificates.util.DnComponents, 
                org.cesecore.certificates.certificate.certextensions.CertificateExtensionFactory, org.cesecore.certificates.certificate.certextensions.AvailableCertificateExtension, org.cesecore.certificates.certificateprofile.CertificatePolicy,
                org.cesecore.certificates.ca.CAInfo, org.cesecore.util.ValidityDate, org.ejbca.ui.web.ParameterException, org.cesecore.certificates.util.AlgorithmConstants,
-               org.cesecore.certificates.certificate.CertificateConstants, org.ejbca.core.model.authorization.AccessRulesConstants, org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory, org.cesecore.certificates.certificatetransparency.CTLogInfo"%>
+               org.cesecore.certificates.certificate.CertificateConstants, org.ejbca.core.model.authorization.AccessRulesConstants, org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory, org.cesecore.certificates.certificatetransparency.CTLogInfo,
+               org.ejbca.cvc.AccessRightAuthTerm"%>
 <%@page import="org.cesecore.util.YearMonthDayTime"%>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
@@ -120,6 +121,8 @@
   static final String SELECT_AVAILABLEBITLENGTHS                  = "selectavailablebitlengths";
   static final String SELECT_KEYUSAGE                             = "selectkeyusage";
   static final String SELECT_EXTENDEDKEYUSAGE                     = "selectextendedkeyusage";
+  static final String SELECT_CVCTERMTYPE                          = "selectcvctermtype";
+  static final String SELECT_CVCSIGNTERMDVTYPE                    = "selectcvcsigntermdvtype";
   static final String SELECT_CVCACCESSRIGHTS                      = "selectcvcaccessrights";
   static final String SELECT_TYPE                                 = "selecttype";
   static final String SELECT_AVAILABLECAS                         = "selectavailablecas";
@@ -572,13 +575,52 @@
                 						certificateprofiledata.setExtendedKeyUsageCritical(false); 
                 						certificateprofiledata.setExtendedKeyUsage(new ArrayList());        
              					}
+             					
+             					value = request.getParameter(SELECT_CVCTERMTYPE);
+                                int termtype  = CertificateProfile.CVC_TERMTYPE_IS;
+                                if(value != null){
+                                        termtype = Integer.parseInt(value);
+                                }
+                                certificateprofiledata.setCVCTerminalType(termtype);
+                                
+                                value = request.getParameter(SELECT_CVCSIGNTERMDVTYPE);
+                                int dvtype  = CertificateProfile.CVC_SIGNTERM_DV_AB;
+                                if(value != null){
+                                        dvtype = Integer.parseInt(value);
+                                }
+                                certificateprofiledata.setCVCSignTermDVType(dvtype);
 
-              					value = request.getParameter(SELECT_CVCACCESSRIGHTS);
-              					int ar  = CertificateProfile.CVC_ACCESS_DG3DG4;
-              					if(value != null){
-                						ar = Integer.parseInt(value);
-              					}
-              					certificateprofiledata.setCVCAccessRights(ar);    
+                                switch (termtype) {
+                                case CertificateProfile.CVC_TERMTYPE_IS:
+                                case CertificateProfile.CVC_TERMTYPE_ST:
+                  					values = request.getParameterValues(SELECT_CVCACCESSRIGHTS);
+                  					if (values == null) { values = new String[0]; }
+                  					
+                                    int ar = 0;
+                                    for (int i=0; i < values.length; i++) {
+                                        int bit = Integer.parseInt(values[i]);
+                                        // check allowed values
+                                        boolean isIS = (termtype == CertificateProfile.CVC_TERMTYPE_IS);
+                                        if ((isIS && (bit == CertificateProfile.CVC_ACCESS_DG3 || bit == CertificateProfile.CVC_ACCESS_DG4)) ||
+                                            (!isIS && (bit == CertificateProfile.CVC_ACCESS_SIGN || bit == CertificateProfile.CVC_ACCESS_QUALSIGN))) {
+                                            ar |= bit;
+                                        }
+                                    }
+                                    certificateprofiledata.setCVCAccessRights(ar);
+                                    certificateprofiledata.setCVCLongAccessRights(null);
+                  					break;
+              					case CertificateProfile.CVC_TERMTYPE_AT:
+              					    values = request.getParameterValues(SELECT_CVCACCESSRIGHTS);
+              					    if (values == null) { values = new String[0]; }
+              					    
+              					    AccessRightAuthTerm atrights = new AccessRightAuthTerm();
+                                    for (int i=0; i < values.length; i++) {
+                                        atrights.setFlag(Integer.parseInt(values[i]), true);
+                                    }
+                                    certificateprofiledata.setCVCAccessRights(0);
+                                    certificateprofiledata.setCVCLongAccessRights(atrights.getEncoded());
+            					    break;
+                                }
 
               					value = request.getParameter(SELECT_TYPE);
               					int type  = CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER;
