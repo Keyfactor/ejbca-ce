@@ -5408,7 +5408,7 @@ To access the usage information for some commands, that does not take parameters
 </p>
 
 <subsubsection name="Local CLI authentication">
-<p>By default, the CLI authenticates using a standard user defined in ejbca.properties. Disabling this user will lead 
+<p>By default, the CLI authenticates using a standard user defined in ejbca.properties. Disabling this user on the server will lead 
 to all CLI operations demanding authentication in the form of the following flags appended to the argument list:</p>
 <source>
 -u &lt;username&gt; -p
@@ -5428,12 +5428,17 @@ to all CLI operations demanding authentication in the form of the following flag
 bin/ejbca.sh ca listcas -u ejbca -password=file:/tmp/pwd.txt
 </source>
 <p>Command line users are authenticated from the existing list of End Entities, and are granted the same rights.
-You can find the default CLI user in the 'Super Administrator Role' under 'Edit Administrator Privileges' after a default install or upgrade.</p>
+You can find the default CLI user in the 'Super Administrator Role' under 'Administrator Roles' after a default install or upgrade.</p>
+<p>
+<b>Warning:</b> Deleting this user or revoking all it's privileges makes it impossible to use the CLI for any operation that requires administrator rights including 
+renewing the Super Administrator certificate! Please, make sure to renew the administrator certificates using the Admin Web 
+before they expire!
+</p>
 </subsubsection>
 
 <subsubsection name="Disable command line interface">
 <p>
-It is possible to disable the command line interface to prevent someone from running the operations that require authorization.
+It is possible to completely disable the command line interface to prevent someone from running the operations that require authorization.
 </p>
 <p>
 The setting is located in the admin web under System Functions &gt; System Configuration and the checkbox 
@@ -5441,11 +5446,15 @@ The setting is located in the admin web under System Functions &gt; System Confi
 line interface.
 </p>
 <p>
+Using this option, in contrast to disabling the CLI users privileges in 'Administrator Roles', makes it possible to easily switch having the CLI enabled or disabled as 
+long as you have access to the Admin GUI.
+</p>
 <p>
 <b>Warning:</b> Disabling this makes it impossible to use the CLI for any operation that requires administrator rights including 
 renewing the Super Administrator certificate! Please, make sure to renew the administrator certificates using the Admin Web 
 before they expire!
 </p>
+<p>
 <b>Note:</b> After changing this property you may need to click the Clear All Caches button or run the CLI command:</p>
 <source>
 bin/ejbca.sh clearcache -all
