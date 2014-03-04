@@ -131,7 +131,7 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.internal.InternalResources;
-import org.ejbca.cvc.AuthorizationRoleEnum;
+import org.ejbca.cvc.AuthorizationRole;
 import org.ejbca.cvc.CVCAuthorizationTemplate;
 import org.ejbca.cvc.CVCObject;
 import org.ejbca.cvc.CVCertificate;
@@ -1429,8 +1429,8 @@ public abstract class CertTools {
             CardVerifiableCertificate cvccert = (CardVerifiableCertificate) cert;
             try {
                 CVCAuthorizationTemplate templ = cvccert.getCVCertificate().getCertificateBody().getAuthorizationTemplate();
-                AuthorizationRoleEnum role = templ.getAuthorizationField().getRole();
-                if (role.equals(AuthorizationRoleEnum.CVCA) || role.equals(AuthorizationRoleEnum.DV_D) || role.equals(AuthorizationRoleEnum.DV_F)) {
+                AuthorizationRole role = templ.getAuthorizationField().getAuthRole();
+                if (role.isCVCA() || role.isDV()) {
                     ret = true;
                 }
             } catch (NoSuchFieldException e) {

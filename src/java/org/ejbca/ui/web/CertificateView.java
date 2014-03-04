@@ -251,7 +251,7 @@ public class CertificateView implements Serializable {
     	} else if (certificate.getType().equals("CVC")) {
     		CardVerifiableCertificate cvccert = (CardVerifiableCertificate)certificate;
     		try {
-    			retval = cvccert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole().name();
+    			retval = cvccert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getAuthRole().toString();
     		} catch (NoSuchFieldException e) {
     	    	retval = localizedNoneText;	//ejbcawebbean.getText("EXT_NONE");
     		}

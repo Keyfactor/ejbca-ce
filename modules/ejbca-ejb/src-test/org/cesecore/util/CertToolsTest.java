@@ -1268,7 +1268,7 @@ public class CertToolsTest {
     	assertEquals(MAY5_2359_2010_GMT, CertTools.getNotAfter(cert).getTime());
     	assertTrue(CertTools.isCA(cert));
         CardVerifiableCertificate cvcert = (CardVerifiableCertificate) cert;
-        assertEquals("CVCA", cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole().name());
+        assertEquals("CVCA", cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getAuthRole().name());
     	CertTools.checkValidity(cert, new Date(MAY5_0000_2008_GMT));
     	CertTools.checkValidity(cert, new Date(MAY5_2359_2010_GMT));
     	try {
