@@ -101,6 +101,24 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public static final int CVC_ACCESS_DG3 = 1;
     public static final int CVC_ACCESS_DG4 = 2;
     public static final int CVC_ACCESS_DG3DG4 = 3;
+    // For signature terminals
+    public static final int CVC_ACCESS_SIGN = 16;
+    public static final int CVC_ACCESS_QUALSIGN = 32;
+    public static final int CVC_ACCESS_SIGN_AND_QUALSIGN = 48;
+    
+    /**
+     * CVC terminal types. Controls which set of roles and access rights are available.
+     */
+    public static final int CVC_TERMTYPE_IS = 0;
+    /** Authentication terminal */
+    public static final int CVC_TERMTYPE_AT = 1;
+    /** Signature terminal */
+    public static final int CVC_TERMTYPE_ST = 2;
+    
+    /** Accreditation Body DV for signature terminals. ABs accredits CSPs */
+    public static final int CVC_SIGNTERM_DV_AB = 0;
+    /** Certification Service Provider DV for signature terminals */
+    public static final int CVC_SIGNTERM_DV_CSP = 1;
 
     /** Supported certificate versions. */
     public static final String VERSION_X509V3 = "X509v3";
@@ -111,6 +129,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
     /** Constant holding the default available bit lengths for certificate profiles */
     public static final int[] DEFAULTBITLENGTHS = { 0, 192, 239, 256, 384, 512, 1024, 1536, 2048, 4096, 8192 };
+    public static final byte[] DEFAULT_CVC_RIGHTS_AT = { 0, 0, 0, 0, 0 };
 
     // Profile fields
     protected static final String CERTVERSION = "certversion";
@@ -200,7 +219,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String QCCUSTOMSTRINGOID = "qccustomstringoid";
     protected static final String QCCUSTOMSTRINGTEXT = "qccustomstringtext";
     protected static final String USESUBJECTDIRATTRIBUTES = "usesubjectdirattributes";
+    protected static final String CVCTERMINALTYPE = "cvctermtype";
     protected static final String CVCACCESSRIGHTS = "cvcaccessrights";
+    protected static final String CVCLONGACCESSRIGHTS = "cvclongaccessrights";
+    protected static final String CVCSIGNTERMDVTYPE = "cvcsigntermdvtype";
     protected static final String USEPRIVKEYUSAGEPERIOD          = "useprivkeyusageperiod";
     protected static final String USEPRIVKEYUSAGEPERIODNOTBEFORE = "useprivkeyusageperiodnotbefore";
     protected static final String USEPRIVKEYUSAGEPERIODNOTAFTER  = "useprivkeyusageperiodnotafter";
@@ -1538,6 +1560,21 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public void setUseSubjectDirAttributes(boolean use) {
         data.put(USESUBJECTDIRATTRIBUTES, Boolean.valueOf(use));
     }
+    
+    /**
+     * Returns which type of terminals are used in this ca/certificate hierarchy.
+     * The values correspond to the id-roles-1/2/3 OIDs. 
+     */
+    public int getCVCTerminalType() {
+        if (data.get(CVCTERMINALTYPE) == null) {
+            return CertificateProfile.CVC_TERMTYPE_IS;
+        }
+        return ((Integer) data.get(CVCTERMINALTYPE)).intValue();
+    }
+
+    public void setCVCTerminalType(int termtype) {
+        data.put(CVCTERMINALTYPE, Integer.valueOf(termtype));
+    }
 
     public int getCVCAccessRights() {
         if (data.get(CVCACCESSRIGHTS) == null) {
@@ -1548,6 +1585,32 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
     public void setCVCAccessRights(int access) {
         data.put(CVCACCESSRIGHTS, Integer.valueOf(access));
+    }
+    
+    /**
+     * Used for bitmasks that don't fit in an int.
+     * E.g. the 5-byte bitmask for Authentication Terminals
+     */
+    public byte[] getCVCLongAccessRights() {
+        if (data.get(CVCLONGACCESSRIGHTS) == null) {
+            return null;
+        }
+        return (byte[])data.get(CVCLONGACCESSRIGHTS);
+    }
+
+    public void setCVCLongAccessRights(byte[] access) {
+        data.put(CVCLONGACCESSRIGHTS, access != null ? access.clone() : null);
+    }
+    
+    public int getCVCSignTermDVType() {
+        if (data.get(CVCSIGNTERMDVTYPE) == null) {
+            return CertificateProfile.CVC_SIGNTERM_DV_CSP;
+        }
+        return ((Integer) data.get(CVCSIGNTERMDVTYPE)).intValue();
+    }
+
+    public void setCVCSignTermDVType(int type) {
+        data.put(CVCSIGNTERMDVTYPE, Integer.valueOf(type));
     }
 
     /**

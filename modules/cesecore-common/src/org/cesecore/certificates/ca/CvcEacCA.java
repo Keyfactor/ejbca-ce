@@ -46,8 +46,14 @@ import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
+import org.ejbca.cvc.AccessRightAuthTerm;
 import org.ejbca.cvc.AccessRightEnum;
+import org.ejbca.cvc.AccessRightSignTermEnum;
+import org.ejbca.cvc.AccessRights;
+import org.ejbca.cvc.AuthorizationRole;
+import org.ejbca.cvc.AuthorizationRoleAuthTermEnum;
 import org.ejbca.cvc.AuthorizationRoleEnum;
+import org.ejbca.cvc.AuthorizationRoleSignTermEnum;
 import org.ejbca.cvc.CAReferenceField;
 import org.ejbca.cvc.CVCAuthenticatedRequest;
 import org.ejbca.cvc.CVCObject;
@@ -238,8 +244,8 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
 	            final String previousKeySequence = (String)caTokenProperties.get(CATokenConstants.PREVIOUS_SEQUENCE_PROPERTY);
 	            final CAReferenceField caRef = new CAReferenceField(caHolder.getCountry(), caHolder.getMnemonic(), previousKeySequence);
 	            final HolderReferenceField cvccertholder = caCertificate.getCVCertificate().getCertificateBody().getHolderReference();
-	            final AuthorizationRoleEnum authRole = caCertificate.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole();                    
-	            final AccessRightEnum rights = caCertificate.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getAccessRight();
+	            final AuthorizationRole authRole = caCertificate.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getAuthRole();                    
+	            final AccessRights rights = caCertificate.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getAccessRights();
 	            final PublicKey publicKey = caCertificate.getPublicKey();
 	            final Date validFrom = caCertificate.getCVCertificate().getCertificateBody().getValidFrom();
 	            final Date validTo = caCertificate.getCVCertificate().getCertificateBody().getValidTo();
@@ -299,64 +305,34 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
 		}
 		// The DN 'SERIALNUMBER=00111,CN=CVCA-RPS,C=SE' will make the following reference
         //HolderReferenceField holderRef = new HolderReferenceField("SE","CVCA-RPS","00111");		
-        HolderReferenceField holderRef = new HolderReferenceField(country, mnemonic, seq);
+        final HolderReferenceField holderRef = new HolderReferenceField(country, mnemonic, seq);
 
         // Check if this is a root CA we are creating
-        boolean isRootCA = false;
-        if (certProfile.getType() == CertificateConstants.CERTTYPE_ROOTCA) {
-        	isRootCA = true;
-        }
+        final boolean isRootCA = (certProfile.getType() == CertificateConstants.CERTTYPE_ROOTCA);
         
         // Get CA reference
         CardVerifiableCertificate cacert = (CardVerifiableCertificate)getCACertificate();
         // Get certificate validity time notBefore and notAfter
         CertificateValidity val = new CertificateValidity(subject, certProfile, notBefore, notAfter, cacert, isRootCA);
-
-        // We must take the issuer DN directly from the CA-certificate, if we are not creating a new Root CA
-        CAReferenceField caRef = null;
-        AuthorizationRoleEnum authRole = AuthorizationRoleEnum.IS;
+        final CAReferenceField caRef;
         if (isRootCA) {
-        	// This will be an initial root CA, since no CA-certificate exists
-        	if (log.isDebugEnabled()) {
-        		log.debug("Using Holder Ref also as CA Ref, because it is a root CA");
+           // This will be an initial root CA, since no CA-certificate exists
+            if (log.isDebugEnabled()) {
+                log.debug("Using Holder Ref also as CA Ref, because it is a root CA");
                 log.debug("Using AuthorizationRoleEnum.CVCA");
-        	}
+            }
             caRef = new CAReferenceField(holderRef.getCountry(), holderRef.getMnemonic(), holderRef.getSequence());
-            authRole = AuthorizationRoleEnum.CVCA;
         } else {
-        	if (log.isDebugEnabled()) {
-        		log.debug("Using CA Ref directly from the CA certificates Holder Ref");
-        	}
+            if (log.isDebugEnabled()) {
+                log.debug("Using CA Ref directly from the CA certificates Holder Ref");
+            }
             HolderReferenceField hr = cacert.getCVCertificate().getCertificateBody().getHolderReference();
             caRef = new CAReferenceField(hr.getCountry(), hr.getMnemonic(), hr.getSequence());
-            if (certProfile.getType() == CertificateConstants.CERTTYPE_SUBCA) {
-            	// If the holder DV's country and the CA's country is the same, this is a domestic DV
-            	// If the holder DV's country is something else, it is a foreign DV
-            	if (StringUtils.equals(caRef.getCountry(), holderRef.getCountry())) {
-                	authRole = AuthorizationRoleEnum.DV_D;            		
-                    if (log.isDebugEnabled()) {
-                        log.debug("Using AuthorizationRoleEnum.DV_D");
-                    }
-            	} else {
-                	authRole = AuthorizationRoleEnum.DV_F;	            		
-                    if (log.isDebugEnabled()) {
-                        log.debug("Using AuthorizationRoleEnum.DV_F");
-                    }
-            	}
-            }
         }
-
-        AccessRightEnum accessRights = AccessRightEnum.READ_ACCESS_NONE;
-        int rights = certProfile.getCVCAccessRights();
-        if (log.isDebugEnabled()) {
-            log.debug("Access rights in certificate profile: "+rights);
-        }
-        switch (rights) {
-	        case CertificateProfile.CVC_ACCESS_DG3: accessRights = AccessRightEnum.READ_ACCESS_DG3; break;
-	        case CertificateProfile.CVC_ACCESS_DG4: accessRights = AccessRightEnum.READ_ACCESS_DG4; break;
-	        case CertificateProfile.CVC_ACCESS_DG3DG4: accessRights = AccessRightEnum.READ_ACCESS_DG3_AND_DG4; break;
-	        case CertificateProfile.CVC_ACCESS_NONE: accessRights = AccessRightEnum.READ_ACCESS_NONE; break;
-        }
+        
+        final AuthorizationRole authRole = getAuthorizationRole(certProfile, caRef, holderRef);
+        final AccessRights accessRights = getAccessRights(certProfile);
+        
         // Generate the CVC certificate using Keijos library
         CAToken catoken = getCAToken();
         String sigAlg = catoken.getSignatureAlgorithm();
@@ -391,6 +367,99 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
     @Override
     public String getCvcType() {
         return "EAC";
+    }
+    
+    private AuthorizationRole getAuthorizationRole(final CertificateProfile certProfile,
+            CAReferenceField caRef, HolderReferenceField holderRef) throws NoSuchFieldException {
+        
+        // Determine which set of roles to use
+        final AuthorizationRole roleRootCA, roleDSubCA, roleFSubCA, roleEndEntity;
+        switch (certProfile.getCVCTerminalType()) {
+        case CertificateProfile.CVC_TERMTYPE_IS:
+            roleRootCA = AuthorizationRoleEnum.CVCA;
+            roleDSubCA = AuthorizationRoleEnum.DV_D;
+            roleFSubCA = AuthorizationRoleEnum.DV_F;
+            roleEndEntity = AuthorizationRoleEnum.IS;
+            break;
+        case CertificateProfile.CVC_TERMTYPE_AT:
+            roleRootCA = AuthorizationRoleAuthTermEnum.CVCA;
+            roleDSubCA = AuthorizationRoleAuthTermEnum.DV_D;
+            roleFSubCA = AuthorizationRoleAuthTermEnum.DV_F;
+            roleEndEntity = AuthorizationRoleAuthTermEnum.AUTHTERM;
+            break;
+        case CertificateProfile.CVC_TERMTYPE_ST:
+            roleRootCA = AuthorizationRoleSignTermEnum.CVCA;
+            if (certProfile.getCVCSignTermDVType() == CertificateProfile.CVC_SIGNTERM_DV_AB) {
+                roleDSubCA = AuthorizationRoleSignTermEnum.DV_AB;
+                roleFSubCA = AuthorizationRoleSignTermEnum.DV_AB;
+            } else {
+                roleDSubCA = AuthorizationRoleSignTermEnum.DV_CSP;
+                roleFSubCA = AuthorizationRoleSignTermEnum.DV_CSP;
+            }
+            roleEndEntity = AuthorizationRoleSignTermEnum.SIGNTERM;
+            break;
+        default:
+            throw new IllegalStateException();
+        }
+        
+        // We must take the issuer DN directly from the CA-certificate, if we are not creating a new Root CA
+        final AuthorizationRole authRole;
+        if (certProfile.getType() == CertificateConstants.CERTTYPE_ROOTCA) {
+            authRole = roleRootCA;
+        } else if (certProfile.getType() == CertificateConstants.CERTTYPE_SUBCA) {
+            // If the holder DV's country and the CA's country is the same, this is a domestic DV
+            // If the holder DV's country is something else, it is a foreign DV
+            if (StringUtils.equals(caRef.getCountry(), holderRef.getCountry())) {
+                authRole = roleDSubCA;
+            } else {
+                authRole = roleFSubCA;
+            }
+        } else {
+            authRole = roleEndEntity;
+        }
+        
+        if (log.isDebugEnabled()) {
+            log.debug("Using authorization role "+authRole);
+        }
+        return authRole;
+    }
+    
+    private AccessRights getAccessRights(final CertificateProfile certProfile) {
+        AccessRights accessRights = AccessRightEnum.READ_ACCESS_NONE;
+        
+        switch (certProfile.getCVCTerminalType()) {
+        case CertificateProfile.CVC_TERMTYPE_IS: {
+            int rightsValue = certProfile.getCVCAccessRights();
+            switch (rightsValue) {
+            case CertificateProfile.CVC_ACCESS_NONE: accessRights = AccessRightEnum.READ_ACCESS_NONE; break;
+            case CertificateProfile.CVC_ACCESS_DG3: accessRights = AccessRightEnum.READ_ACCESS_DG3; break;
+            case CertificateProfile.CVC_ACCESS_DG4: accessRights = AccessRightEnum.READ_ACCESS_DG4; break;
+            case CertificateProfile.CVC_ACCESS_DG3DG4: accessRights = AccessRightEnum.READ_ACCESS_DG3_AND_DG4; break;
+            default: throw new IllegalStateException();
+            }
+            break; }
+        case CertificateProfile.CVC_TERMTYPE_AT: {
+            byte[] rightsValue = certProfile.getCVCLongAccessRights();
+            accessRights = new AccessRightAuthTerm(rightsValue);
+            break; }
+        case CertificateProfile.CVC_TERMTYPE_ST: {
+            int rightsValue = certProfile.getCVCAccessRights();
+            switch (rightsValue) {
+            case CertificateProfile.CVC_ACCESS_NONE: accessRights = AccessRightSignTermEnum.ACCESS_NONE; break;
+            case CertificateProfile.CVC_ACCESS_SIGN: accessRights = AccessRightSignTermEnum.ACCESS_SIGN; break;
+            case CertificateProfile.CVC_ACCESS_QUALSIGN: accessRights = AccessRightSignTermEnum.ACCESS_QUALSIGN; break;
+            case CertificateProfile.CVC_ACCESS_SIGN_AND_QUALSIGN: accessRights = AccessRightSignTermEnum.ACCESS_SIGN_AND_QUALSIGN; break;
+            default: throw new IllegalStateException();
+            }
+            break; }
+        default:
+            throw new IllegalStateException();
+        }
+        
+        if (log.isDebugEnabled()) {
+            log.debug("Using access rights "+accessRights);
+        }
+        return accessRights;
     }
 
 }

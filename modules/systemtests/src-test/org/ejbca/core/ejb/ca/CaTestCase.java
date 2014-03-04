@@ -57,6 +57,7 @@ import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -118,6 +119,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     public static final String TEST_DSA_CA_NAME = "TESTDSA";
 
     private static final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
+    private static final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final static Logger log = Logger.getLogger(CaTestCase.class);
 
     private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaTestCase"));
@@ -592,7 +594,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     }
 
     protected static void createRSASha256WithMGF1CA() throws AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
-        removeOldCa(TEST_SHA256_WITH_MFG1_CA_NAME);    
+        removeOldCa(TEST_SHA256_WITH_MFG1_CA_NAME, TEST_SHA256_WITH_MFG1_CA_DN);    
         final int cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(null, TEST_SHA256_WITH_MFG1_CA_NAME, "1024");
         final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1, AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
         // Create and active OSCP CA Service.
@@ -848,7 +850,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         } catch(CADoesntExistsException e) {
             createDefaultCvcEccCa();
         }
-        removeOldCa(TEST_CVC_ECC_DOCUMENT_VERIFIER_DN);        
+        removeOldCa(TEST_CVC_ECC_DOCUMENT_VERIFIER_NAME, TEST_CVC_ECC_DOCUMENT_VERIFIER_DN);        
         final int cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(null, TEST_CVC_ECC_DOCUMENT_VERIFIER_DN, "secp256r1");
         // TODO: Using ECDSA for decryption seems fishy..!
         final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
@@ -875,7 +877,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     }
     
     protected static void createDefaultDsaCa() throws AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
-        removeOldCa(TEST_DSA_CA_NAME);        
+        removeOldCa(TEST_DSA_CA_NAME, "CN="+TEST_DSA_CA_NAME);        
         final int cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(null, TEST_DSA_CA_NAME, "DSA1024");
         final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_DSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         // Create and active OSCP CA Service.
@@ -919,7 +921,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     }
     
     protected static void createDefaultCvcEccCa() throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException, AuthorizationDeniedException {
-        removeOldCa(TEST_CVC_ECC_CA_NAME);
+        removeOldCa(TEST_CVC_ECC_CA_NAME, TEST_CVC_ECC_CA_DN);
         final int cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(null, TEST_CVC_ECC_CA_NAME, "secp256r1");
         final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
         final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>(0);
@@ -946,11 +948,16 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     
     protected static void createDefaultCvcRsaCA() throws AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException,
             CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
-        removeOldCa(TEST_CVC_RSA_CA_NAME);
+        createDefaultCvcRsaCA(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
+    }
+    
+    protected static void createDefaultCvcRsaCA(int certProfileId) throws AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException,
+            CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
+        removeOldCa(TEST_CVC_RSA_CA_NAME, TEST_CVC_RSA_CA_DN);
         final int cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(null, TEST_CVC_RSA_CA_NAME, "1024");
         final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1, AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
         final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>(0);
-        CVCCAInfo cvccainfo = new CVCCAInfo(TEST_CVC_RSA_CA_DN, TEST_CVC_RSA_CA_NAME, CAConstants.CA_ACTIVE, new Date(), CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 3650, null, // Expiretime
+        CVCCAInfo cvccainfo = new CVCCAInfo(TEST_CVC_RSA_CA_DN, TEST_CVC_RSA_CA_NAME, CAConstants.CA_ACTIVE, new Date(), certProfileId, 3650, null, // Expiretime
                 CAInfo.CATYPE_CVC, CAInfo.SELFSIGNED, null, catoken, "JUnit CVC CA", -1, null, 24, // CRLPeriod
                 0, // CRLIssueInterval
                 10, // CRLOverlapTime
@@ -972,15 +979,20 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     }
     
     /** Preemptively remove CA in case it was created by a previous run. */
-    private static void removeOldCa(String caName) throws AuthorizationDeniedException {
+    protected static void removeOldCa(String caName, String dn) throws AuthorizationDeniedException {
         final CaSessionRemote caSession = CaTestCase.getCaSession();
         try {
             CAInfo info = caSession.getCAInfo(internalAdmin, caName);
             final int cryptoTokenId = info.getCAToken().getCryptoTokenId();
             caSession.removeCA(internalAdmin, info.getCAId());
             cryptoTokenManagementSession.deleteCryptoToken(internalAdmin, cryptoTokenId);
+            internalCertificateStoreSession.removeCertificatesBySubject(dn);
         } catch (CADoesntExistsException e) {
             // NOPMD: we ignore this
         }
+    }
+    
+    protected static void removeOldCa(String caName) throws AuthorizationDeniedException {
+        removeOldCa(caName, "CN="+caName);
     }
 }

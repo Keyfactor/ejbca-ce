@@ -1377,26 +1377,6 @@ public class CAsTest extends CaTestCase {
        log.trace("<test23GetAuthorizedPublisherIdsAccessTest()");
    }
 
-    /**
-     * Preemtively remove CA in case it was created by a previous run:
-     * 
-     * @throws AuthorizationDeniedException
-     * @throws CADoesntExistsException 
-     */
-    private void removeOldCa(String caName) throws AuthorizationDeniedException {
-        try {
-            final CAInfo info = caSession.getCAInfo(admin, caName);
-            try {
-                cryptoTokenManagementSession.deleteCryptoToken(admin, info.getCAToken().getCryptoTokenId());
-            } catch (Exception e) {
-                // Ignore
-            }
-            caSession.removeCA(admin, info.getCAId());
-        } catch (CADoesntExistsException e) {
-            // NOPMD: we ignore this
-        }
-    }
-
     /** Used for direct manipulation of objects without setters. */
     private void setPrivateFieldInSuper(Object object, String fieldName, Object value) {
         log.trace(">setPrivateField");
