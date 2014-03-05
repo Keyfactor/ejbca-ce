@@ -14,6 +14,8 @@
       <li>Domestic DVs (document verifier)</li>
       <li>Foreign DVs</li>
       <li>Inspection systems (IS)</li>
+      <li>Authentication Terminals (AT)</li>
+      <li>Signature Terminals (ST)</li>
     </ul> 
     </p>
     You can also set up a Country Signing CA, which is a regular X.509 CA. 
@@ -57,9 +59,15 @@
   You can also set a specific value for the initial sequence, which will then be increased when renewing keys, or you can change the sequence at any time. 
   See section about Key sequence in User guide for more information. 
   </p>
-  <p>For entity (IS and DV) requests that are received, the sequence in the issued certificates are taken from the request. The entity knows best 
+  <p>For entity (IS, DV, AT and ST) requests that are received, the sequence in the issued certificates are taken from the request. The entity knows best 
   how to index it's keys.
   </p>
+  </section>
+  
+  <section name="Terminal Types">
+  <p>EJBCA supports certificate hierarchies for Authentication (AT) and Signature Terminal (ST) end-entities, in addition to those with Inspection Systems (IS). Those roles are new in EAC 2.10.
+  To use AT or ST certificates please create certificate profiles with the "<code>Terminal Type</code>" appropriately configured for your CAs and end-entities.
+  The default mode is IS, so if there are no ATs or STs then you do not need to configure the Terminal Type setting.</p>
   </section>
   
   <section name="EAC roles">
@@ -67,15 +75,17 @@
   <ul>
   <li>When issuing a CV certificate using a Root CA profile the EAC role will be CVCA.</li>
   <li>When issuing a CV certificate using a Sub CA profile the EAC role will be DV-D if the country is the same as the country of the CVCA and DV-F if the country is not the same as the CVCA.</li>
-  <li>When issuing a CV certificate using an End Entity profile the EAC role will be IS.</li>
+  <li>When issuing a CV certificate using an End Entity profile the EAC role will be IS (or AT or ST if one of those terminal types is being used).</li>
   </ul>
   </p>
+  <p>In a certificate hierarchy with the ST terminal type, the role of the DV is controlled by the "Signature Terminal DV role" setting in the profile. It can be either "Accreditation Body" or "Certification Service Provider".</p>
   </section>
   
   <section name="EAC access rights">
   <p>
-  You can configure in the certificate profile which EAC access rights will be used for issued certificates. None, read access DG3, read access DG4 or read access DG3 and DG4.
+  You can configure in the certificate profile which EAC access rights will be used for issued certificates. There are two configurable access rights, read access to DG3 and to DG4. Combinations can be selected by holding down <code>Ctrl</code> while clicking the items.
   </p>
+  <p>Since EAC 2.10 there are additional access rights which are used by Authentication Terminals and Signature Terminals. These are shown instead when selecting one of those terminal types.</p>
   </section>
   
   <section name="Document verifiers (DV)">
@@ -105,7 +115,7 @@
   <p>
   You can renew a DV by going into 'Edit Certificate Authorities' and click 'Renew CA'. By uploading the CA certificate supposed to sign the 
   certificate, you can get a new CSR created. You can import the received certificate by clicking 'Receive Certificate Response'. 
-  You only have to (or can) import one issued certificate to make your DV operational. If you get a DV signed by multiple CVCAs you can distribute the other, than the 'main', DV certificate to the IS's by other means. 
+  You only have to (or can) import one issued certificate to make your DV operational. If you get a DV signed by multiple CVCAs you can distribute the other, than the 'main', DV certificate to the IS's (or AT or ST) by other means. 
   <br/>
   By filling in the CA tokens password and checking the box 'Renew Keys' the DV will generate new keys.
   This works for both soft CA tokens and PKCS#11 CA tokens. The renewal CSR is not signed with the old keys, but that can be done manually. 
@@ -161,6 +171,10 @@
   <p>
   There is a simple command line client for testing which is under dist/ejbca-ws-cli/cvcwscli.sh. This can be used to make requests and to parse, print and verify requests and certificates.
   </p>
+  </section>
+  
+  <section name="Authentication and Signature Terminals">
+  <p>Please follow the same steps as in the previous section for Inspection Systems.</p>
   </section>
 
   <section name="Web Service API">
