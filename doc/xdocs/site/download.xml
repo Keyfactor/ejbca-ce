@@ -23,16 +23,15 @@
     </note>
   </section>
 
-<!-- 
-  <section name="Live CD">
+  <section name="Virtual Machine Demo">
     <p>
-    Get a feeling for EJBCA easily by downloading and running our 
-    <a href="http://download.primekey.se/public/ejbca-live.iso">LiveCD</a>. Requires 1500M of RAM to run.
-    Technical details can be found at <a href="http://wiki.ejbca.org/livecd">wiki.ejbca.org/livecd</a>. 
+    Get a feeling for, and start testing, EJBCA easily by downloading and running our 
+    <a href="http://download.primekey.se/public/ejbcav6ce-vm.zip">EJBCAv6 VM</a>.
+    The VM features a full EJBCA Community v6 install, running on JBoss 7.1.1.GA and Java 7, using a <a href="http://www.mariadb.org/" target="_mariadb">MariaDB</a> database backend. 
+    It also comes with a readme file with instructions and some usage hints. The VM runs on KVM, VirtualBox and VWware<sup>&#174;</sup>. 
+    <br/>Have fun! 
     </p>
-    <p>You can order an EJBCA demonstration package with an EJBCA LiveCD and Feitian smart cards <a href="http://www.gooze.eu/ejbca-demonstration-pack">Gooze.eu</a></p>
   </section>
- -->
  
   <section name="Help and support">
     <p>
