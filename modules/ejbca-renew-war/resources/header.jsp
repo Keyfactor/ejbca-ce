@@ -19,7 +19,7 @@
   <body>
     <div id="header">
 		<div id="banner">
-			<a href="../"><img src="images/ejbca_pki_by_primekey_logo.png" alt="EJBCA PKI by PrimeKey" /></a>
+			<a href="../"><img src="images/banner_ejbca-public.png" alt="EJBCA PKI by PrimeKey" /></a>
 		</div>
     </div>
     <c:if test="${hidemenu != 'true'}">
