@@ -487,13 +487,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         final String caCertificateSubjectDn = CertTools.getSubjectDN(caCertificate);
         try {
             CAInfo cainfo = caSession.getCAInfoInternal(caCertificateSubjectDn.hashCode());
-            sigAlg = cainfo.getCAToken().getSignatureAlgorithm(); {
-                if(AlgorithmTools.isCompatibleSigAlg(pk, sigAlg)) {
-                    log.info("OCSP response signature algorithm: the signature algorithm used to sign a CRL issued " +
-                            "by the certificate issuer. " + sigAlg);
-                    return sigAlg;
-                }   
-            }   
+            sigAlg = cainfo.getCAToken().getSignatureAlgorithm();
+            log.info("OCSP response signature algorithm: the signature algorithm used to sign a CRL issued " +
+                    "by the certificate issuer. " + sigAlg);
+            return sigAlg;
         } catch (CADoesntExistsException e) { 
             // Continue to check the  next preferred sigAlg in line
         }
@@ -523,7 +520,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         // The signature algorithm specified for the version of OCSP in use.
         final String sigAlgs = OcspConfiguration.getSignatureAlgorithm();
         sigAlg = getSigningAlgFromAlgSelection(sigAlgs, pk);
-        log.info("Using configuted signature algorithm to sign OCSP response. " + sigAlg);
+        log.info("Using configured signature algorithm to sign OCSP response. " + sigAlg);
         return sigAlg;
     }
 
