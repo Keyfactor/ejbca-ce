@@ -472,7 +472,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 ASN1ObjectIdentifier sa = (ASN1ObjectIdentifier) sigalgs.getObjectAt(i);
                 if(sa != null) {
                     sigAlg = AlgorithmTools.getAlgorithmNameFromOID(sa);
-                    if(AlgorithmTools.isCompatibleSigAlg(pk, sigAlg)) {
+                    if((sigAlg != null) && AlgorithmTools.isCompatibleSigAlg(pk, sigAlg)) {
                         log.info("Using OCSP response signature algorithm extracted from OCSP request extension. " + sa);
                         return sigAlg;
                     }

@@ -662,6 +662,6 @@ public abstract class AlgorithmTools {
             return AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145;
         }
         
-        return sigAlgOid.getId();
+        return null;
     }
 }
