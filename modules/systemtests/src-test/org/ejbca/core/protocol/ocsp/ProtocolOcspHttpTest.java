@@ -1187,12 +1187,11 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
     public void testSigAlgExtension() throws Exception {
         loadUserCert(this.caid);
         
-        // Try sending a request where the preferred signature algorithm is compatible with the signing key, but 
-        // the configured algorithm is not. Expected a response signed using the preferred algorithm
+        // Try sending a request where the preferred signature algorithm in the extension is expected to be used to sign the response.
         
         // set ocsp configuration
         Map<String,String> map = new HashMap<String, String>();
-        map.put("ocsp.signaturealgorithm", AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA);
+        map.put("ocsp.signaturealgorithm", AlgorithmConstants.SIGALG_SHA256_WITH_RSA + ";" + AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         this.helper.alterConfig(map);
         
         
@@ -1217,15 +1216,10 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         
         
         // Try sending a request where the preferred signature algorithm is not compatible with the signing key, but 
-        // the configured algorithm is. Expected a response signed using the configured algorithm
-        
-        // set ocsp configuration
-        map = new HashMap<String, String>();
-        map.put("ocsp.signaturealgorithm", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-        this.helper.alterConfig(map);
+        // the configured algorithm is. Expected a response signed using the first configured algorithm
         
         algVec = new ASN1EncodableVector();
-        algVec.add(X9ObjectIdentifiers.ecdsa_with_SHA384);
+        algVec.add(X9ObjectIdentifiers.ecdsa_with_SHA256);
         algSeq = new DERSequence(algVec);
         
         extgen = new ExtensionsGenerator();
@@ -1241,7 +1235,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         
         response = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
         assertNotNull("Could not retrieve response, test could not continue.", response);
-        assertEquals(PKCSObjectIdentifiers.sha1WithRSAEncryption, response.getSignatureAlgOID());
+        assertEquals(PKCSObjectIdentifiers.sha256WithRSAEncryption, response.getSignatureAlgOID());
     }
 
     /**
