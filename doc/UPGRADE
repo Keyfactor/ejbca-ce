@@ -47,6 +47,9 @@ Read RELEASE_NOTES carefully in order to see if any particular changes might eff
 If you get a "java.lang.NoSuchMethodError" in the admin GUI it is because JBoss does not clean temporary files very good.
 Delete the directories JBOSS_HOME/server/default/tmp and JBOSS_HOME/server/default/work and restart JBoss to get it working.
 
+If you have customized the Public Web interface logo -- in EJBCA 6.0.4 or earlier --, you need to rename the logo filename
+from 'ejbca_pki_by_primekey_logo.png' to 'banner_ejbca-public.png'.
+
 For OCSP users: to comply with RFC6960, it is now configurable to add the id_pkix_ocsp_archive_cutoff extension to an OCSP response. See 
 the documentation of "ocsp.expiredcert.retentionperiod" in conf/ocsp.properties.sample and RFC6960 4.4.4 Archive Cutoff for more details.
 
@@ -239,6 +242,8 @@ removed entirely in a future version.
 -	In EJBCA 6.0.0 the API for custom certificate extensions was changed. If you have created your own custom certificate extension java classes,
 	you need to update the API with one new argument (can be null). There is no effect if you used standard custom extensions in the 
 	certextensions.properties, only custom java classes.
+-	In EJBCA 6.0.5 the Public Web interface logo filename was changed. If you have customized your own logo, you need to rename the logo filename
+	from 'logotype.png' or 'ejbca_pki_by_primekey_logo.png' to 'banner_ejbca-public.png'.
 -	Starting with EJBCA 6.0.0 custom services and publishers are automatically detected using meta-data in the Jar files, and class names can no 
 	longer be specified manually. If you need to use old custom classes from before 6.0 (i.e. not autodetected classes) you can enable manual entry 
 	with the option web.manualclasspathsenabled=true in web.properties.
