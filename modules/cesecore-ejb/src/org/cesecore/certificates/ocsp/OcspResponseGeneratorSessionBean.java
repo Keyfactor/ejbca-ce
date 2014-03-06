@@ -458,9 +458,31 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         }
     }
     
-    // Choosing the preferred OCSP response sigAlg according to RFC6960 Section 4.4.7
+    /**
+     * Select the preferred OCSP response sigAlg according to RFC6960 Section 4.4.7 in the following order:
+     * 
+     *    1. Select an algorithm specified as a preferred signature algorithm in the client request if it is 
+     *       an acceptable algorithm by EJBCA.
+     *    2. Select the signature algorithm used to sign a certificate revocation list (CRL) issued by the 
+     *       certificate issuer providing status information for the certificate specified by CertID.
+     *       (NOT APPLIED)
+     *    3. Select the signature algorithm used to sign the OCSPRequest if it is an acceptable algorithm in EJBCA.
+     *    4. Select a signature algorithm that has been advertised as being the default signature algorithm for 
+     *       the signing service using an out-of-band mechanism.
+     *    5. Select a mandatory or recommended signature algorithm specified for the version of OCSP in use, aka. 
+     *       specified in the properties file.
+     * 
+     *    The acceptable algorithm by EJBCA are the algorithms specified in ocsp.properties file in 'ocsp.signaturealgorithm'
+     * 
+     * @param req
+     * @param ocspSigningCacheEntry
+     * @param signerCert
+     * @return
+     */
     private String getSigAlg(OCSPReq req, final OcspSigningCacheEntry ocspSigningCacheEntry, final X509Certificate signerCert) {
         
+        String sigAlgs = OcspConfiguration.getSignatureAlgorithm();
+        String acceptedSigAlgs[] = sigAlgs.split(";");
         String sigAlg = null;
         PublicKey pk = signerCert.getPublicKey();
         
@@ -472,7 +494,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 ASN1ObjectIdentifier sa = (ASN1ObjectIdentifier) sigalgs.getObjectAt(i);
                 if(sa != null) {
                     sigAlg = AlgorithmTools.getAlgorithmNameFromOID(sa);
-                    if((sigAlg != null) && AlgorithmTools.isCompatibleSigAlg(pk, sigAlg)) {
+                    if((sigAlg != null) && isAcceptedSigAlg(acceptedSigAlgs, sigAlg) && AlgorithmTools.isCompatibleSigAlg(pk, sigAlg)) {
                         log.info("Using OCSP response signature algorithm extracted from OCSP request extension. " + sa);
                         return sigAlg;
                     }
@@ -482,24 +504,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         }
         
         
-        // the signature algorithm used to sign a certificate revocation list (CRL) issued by the certificate issuer
-        X509Certificate caCertificate = ocspSigningCacheEntry.getCaCertificateChain().get(0);
-        final String caCertificateSubjectDn = CertTools.getSubjectDN(caCertificate);
-        try {
-            CAInfo cainfo = caSession.getCAInfoInternal(caCertificateSubjectDn.hashCode());
-            sigAlg = cainfo.getCAToken().getSignatureAlgorithm();
-            log.info("OCSP response signature algorithm: the signature algorithm used to sign a CRL issued " +
-                    "by the certificate issuer. " + sigAlg);
-            return sigAlg;
-        } catch (CADoesntExistsException e) { 
-            // Continue to check the  next preferred sigAlg in line
-        }
-            
-        
         // the signature algorithm used to sign the OCSPRequest
         if(req.getSignatureAlgOID() != null) {
             sigAlg = AlgorithmTools.getAlgorithmNameFromOID(req.getSignatureAlgOID());
-            if(AlgorithmTools.isCompatibleSigAlg(pk, sigAlg)) {
+            if(isAcceptedSigAlg(acceptedSigAlgs, sigAlg) && AlgorithmTools.isCompatibleSigAlg(pk, sigAlg)) {
                 log.info("OCSP response signature algorithm: the signature algorithm used to sign the OCSPRequest. " + sigAlg);
                 return sigAlg;
             }
@@ -518,10 +526,18 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
              
         
         // The signature algorithm specified for the version of OCSP in use.
-        final String sigAlgs = OcspConfiguration.getSignatureAlgorithm();
         sigAlg = getSigningAlgFromAlgSelection(sigAlgs, pk);
         log.info("Using configured signature algorithm to sign OCSP response. " + sigAlg);
         return sigAlg;
+    }
+    
+    private boolean isAcceptedSigAlg(String[] acceptedAlgs, String alg) {
+        for(String a : acceptedAlgs) {
+            if(StringUtils.equals(a, alg)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
