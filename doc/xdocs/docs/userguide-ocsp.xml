@@ -26,6 +26,22 @@ of this certificate is also validated.
 </p>
 </section>
 
+<section name="OCSP Response">
+<p>
+For efficiency reasons, it is possible to configure EJBCA to either omit including the signing certificate or its certificate chain in the OCSP response.
+Setting the relevant configurations in the $EJBCA_HOME/conf/ocsp.properties file will have the following effect:
+</p>
+<ul>
+<li>If 'ocsp.includesignercert=true' and 'ocsp.includecertchain=true', the signing certificate and its chain, except for the signing certificate 
+root CA certificate, will be included in the OCSP response. If the signing certificate IS the root CA certificate, then the root CA certificate 
+will be included in the response any way.</li>
+<li>If 'ocsp.includesignercert=true' and 'ocsp.includecertchain=false', only the signing certificate will be included in the OCSP response even 
+if it was a root CA certificate.</li>
+<li>If 'ocsp.includesignercert=false', neither the signing certificate nor the certificate chain will be included in the OCSP response regardless 
+of the value of 'ocsp.includecertchain'</li>
+</ul>
+</section>
+
 <section name="Expired certificates">
 <p>
 EJBCA keeps the status of expired certificates in the database, so the responder will answer queries also for expired
