@@ -1730,6 +1730,9 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
     }
     
 
+    /**
+     * This method creates the user "ocsptest" and generated a certificate for it
+     */
     protected void loadUserCert(int caid) throws Exception {
         createUserCert(caid);
     }

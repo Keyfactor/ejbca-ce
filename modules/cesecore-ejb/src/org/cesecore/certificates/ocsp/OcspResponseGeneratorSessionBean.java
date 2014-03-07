@@ -549,7 +549,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
      *   
      * @param certChain
      * @param ocspSigningCacheEntry
-     * @return
+     * @return the certificate chain that will be included in the OCSP response
      */
     private X509Certificate[] getResponseCertChain(X509Certificate[] certChain, final OcspSigningCacheEntry ocspSigningCacheEntry) {
         X509Certificate[] chain;
@@ -567,15 +567,16 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             }
             
             if (includeChain) {
-                if(certChain.length > 1) {
+                if(certChain.length > 1) { // certChain contained more than the root cert
+                    //create a new array containing all the certs in certChain except for the root cert
                     chain = new X509Certificate[certChain.length-1];
                     for(int i=0; i<chain.length; i++) {
                         chain[i] = certChain[i];
                     }
-                } else {
+                } else { // certChain contains only the root cert
                     chain = certChain;
                 }
-            } else {
+            } else { // only the signing cert should be included in the OCSP response and not the entire cert chain
                 chain = new X509Certificate[1];
                 chain[0] = certChain[0];
             }
