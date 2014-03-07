@@ -481,8 +481,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
      */
     private String getSigAlg(OCSPReq req, final OcspSigningCacheEntry ocspSigningCacheEntry, final X509Certificate signerCert) {
         
-        String sigAlgs = OcspConfiguration.getSignatureAlgorithm();
-        String acceptedSigAlgs[] = sigAlgs.split(";");
         String sigAlg = null;
         PublicKey pk = signerCert.getPublicKey();
         
@@ -494,7 +492,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 ASN1ObjectIdentifier sa = (ASN1ObjectIdentifier) sigalgs.getObjectAt(i);
                 if(sa != null) {
                     sigAlg = AlgorithmTools.getAlgorithmNameFromOID(sa);
-                    if((sigAlg != null) && isAcceptedSigAlg(acceptedSigAlgs, sigAlg) && AlgorithmTools.isCompatibleSigAlg(pk, sigAlg)) {
+                    if((sigAlg != null) && OcspConfiguration.isAcceptedSignatureAlgorithm(sigAlg) && AlgorithmTools.isCompatibleSigAlg(pk, sigAlg)) {
                         log.info("Using OCSP response signature algorithm extracted from OCSP request extension. " + sa);
                         return sigAlg;
                     }
@@ -507,7 +505,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         // the signature algorithm used to sign the OCSPRequest
         if(req.getSignatureAlgOID() != null) {
             sigAlg = AlgorithmTools.getAlgorithmNameFromOID(req.getSignatureAlgOID());
-            if(isAcceptedSigAlg(acceptedSigAlgs, sigAlg) && AlgorithmTools.isCompatibleSigAlg(pk, sigAlg)) {
+            if(OcspConfiguration.isAcceptedSignatureAlgorithm(sigAlg) && AlgorithmTools.isCompatibleSigAlg(pk, sigAlg)) {
                 log.info("OCSP response signature algorithm: the signature algorithm used to sign the OCSPRequest. " + sigAlg);
                 return sigAlg;
             }
@@ -526,18 +524,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
              
         
         // The signature algorithm specified for the version of OCSP in use.
+        String sigAlgs = OcspConfiguration.getSignatureAlgorithm();
         sigAlg = getSigningAlgFromAlgSelection(sigAlgs, pk);
         log.info("Using configured signature algorithm to sign OCSP response. " + sigAlg);
         return sigAlg;
-    }
-    
-    private boolean isAcceptedSigAlg(String[] acceptedAlgs, String alg) {
-        for(String a : acceptedAlgs) {
-            if(StringUtils.equals(a, alg)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
