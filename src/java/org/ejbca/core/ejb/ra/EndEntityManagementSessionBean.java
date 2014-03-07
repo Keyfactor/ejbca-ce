@@ -687,8 +687,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 assertAuthorizedToEndEntityProfile(admin, data1.getEndEntityProfileId(), AccessRulesConstants.DELETE_RIGHTS, caid);
             }
         } else {
-            log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
-            final String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");
+            final String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);
             log.info(msg);
             throw new NotFoundException(msg);
         }
