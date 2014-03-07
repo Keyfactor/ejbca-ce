@@ -754,7 +754,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
      */
     private X509Certificate checkRequestSignature(String clientRemoteAddr, OCSPReq req) throws SignRequestException, SignRequestSignatureException,
             CertificateException, NoSuchAlgorithmException {
-        X509Certificate signercert = null;
+        X509Certificate signercert = null; // To be returned
         if (!req.isSigned()) {
             String infoMsg = intres.getLocalizedMessage("ocsp.errorunsignedreq", clientRemoteAddr);
             log.info(infoMsg);
@@ -764,37 +764,38 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         try {
             X509CertificateHolder[] certs = req.getCerts();                
             // Set, as a try, the signer to be the first certificate, so we have a name to log...
-            String signer = null;
+            String signerSubjectDn = null;
             if (certs.length > 0) {
-                signer = CertTools.getSubjectDN(certificateConverter.getCertificate(certs[0]));
+                signerSubjectDn = CertTools.getSubjectDN(certificateConverter.getCertificate(certs[0]));
             }
             // We must find a certificate to verify the signature with...
             boolean verifyOK = false;
             for (int i = 0; i < certs.length; i++) {
-                X509Certificate certificate = certificateConverter.getCertificate(certs[i]);
+                final X509Certificate certificate = certificateConverter.getCertificate(certs[i]);
                 try {
                     if (req.isSignatureValid(new JcaContentVerifierProviderBuilder().build(certificate.getPublicKey()))) {
-                        signercert = certificate;
-                        signer = CertTools.getSubjectDN(signercert);
-                        Date now = new Date();
+                        signercert = certificate; // if the request signature verifies by this certificate, this is the signer cert 
+                        signerSubjectDn = CertTools.getSubjectDN(signercert);
                         String signerissuer = CertTools.getIssuerDN(signercert);
-                        String infoMsg = intres.getLocalizedMessage("ocsp.infosigner", signer);
+                        String infoMsg = intres.getLocalizedMessage("ocsp.infosigner", signerSubjectDn);
                         log.info(infoMsg);
                         verifyOK = true;
                         /*
                          * Also check that the signer certificate can be verified by one of the CA-certificates that we answer for
                          */
-                        X509Certificate signerca = certificateStoreSession.findLatestX509CertificateBySubject(CertTools.getIssuerDN(certificate));
-                        String subject = signer;
+                        final X509Certificate signerca = certificateStoreSession.findLatestX509CertificateBySubject(signerissuer);
+                        String subject = signerSubjectDn;
                         String issuer = signerissuer;
                         if (signerca != null) {
                             try {
                                 signercert.verify(signerca.getPublicKey());
+                                final Date now = new Date();
                                 if (log.isDebugEnabled()) {
                                     log.debug("Checking validity. Now: " + now + ", signerNotAfter: " + signercert.getNotAfter());
                                 }
+                                // First check validity of the signer cert
                                 CertTools.checkValidity(signercert, now);
-                                // Move the error message string to the CA cert
+                                // Move the error message string to the CA cert when checking validity of the CA
                                 subject = CertTools.getSubjectDN(signerca);
                                 issuer = CertTools.getIssuerDN(signerca);
                                 CertTools.checkValidity(signerca, now);
@@ -816,7 +817,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                 verifyOK = false;
                             }
                         } else {
-                            infoMsg = intres.getLocalizedMessage("ocsp.infosigner.nocacert", signer, signerissuer);
+                            infoMsg = intres.getLocalizedMessage("ocsp.infosigner.nocacert", signerSubjectDn, signerissuer);
                             log.info(infoMsg);
                             verifyOK = false;
                         }
@@ -828,7 +829,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 }
             }
             if (!verifyOK) {
-                String errMsg = intres.getLocalizedMessage("ocsp.errorinvalidsignature", signer);
+                String errMsg = intres.getLocalizedMessage("ocsp.errorinvalidsignature", signerSubjectDn);
                 log.info(errMsg);
                 throw new SignRequestSignatureException(errMsg);
             }
