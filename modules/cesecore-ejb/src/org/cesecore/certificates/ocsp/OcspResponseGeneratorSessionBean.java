@@ -1791,7 +1791,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             log.warn(e.getMessage());
                         } catch (FileNotFoundException e) {
                             log.warn(e.getMessage());
-                        } 
+                        } catch (IOException e) {
+                            log.warn(e.getMessage());
+                        }
                     }
                 }
             }
