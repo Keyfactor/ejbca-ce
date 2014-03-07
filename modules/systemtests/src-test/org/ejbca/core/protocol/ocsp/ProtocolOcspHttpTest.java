@@ -1176,8 +1176,6 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         assertNull("Cache-Control in reply although we used Nonce in the request. Responses with Nonce should not have a Cache-control header.", con.getHeaderField("Cache-Control"));
     }
     
-    
-    
     /**
      * This test tests that the OCSP response contains is signed by the preferred signature algorithm specified in the request.
      * 

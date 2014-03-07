@@ -67,11 +67,32 @@ public class OcspConfiguration {
     public static final int RESPONDERIDTYPE_NAME = 1;
     public static final int RESPONDERIDTYPE_KEYHASH = 2;
 
+    public static Set<String> acceptedSignatureAlgorithms = new HashSet<String>();
+    
     /**
      * Algorithm used by server to generate signature on OCSP responses
      */
     public static String getSignatureAlgorithm() {
         return ConfigurationHolder.getString("ocsp.signaturealgorithm");
+    }
+
+    /**
+     * Returns if the specified signature algorithm is among the signature algorithms accepted by EJBCA.
+     * 
+     * The signatures algorithms that are accepted by EJBCA are specified in 'ocsp.signaturealgorithm' in the 
+     * EJBCA_HOME/conf/ocsp.properties file.
+     * 
+     * @param sigAlg
+     * @return 'true' if sigAlg is accepted by EJBCA, and 'false' otherwise
+     */
+    public static boolean isAcceptedSignatureAlgorithm(String sigAlg) {
+        if(acceptedSignatureAlgorithms.size() == 0) {
+            String[] algs = getSignatureAlgorithm().split(";");
+            for(String alg : algs) {
+                acceptedSignatureAlgorithms.add(alg);
+            }
+        }
+        return acceptedSignatureAlgorithms.contains(sigAlg);
     }
 
     /**
