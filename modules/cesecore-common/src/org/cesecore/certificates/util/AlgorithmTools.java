@@ -621,6 +621,11 @@ public abstract class AlgorithmTools {
         }
     }
     
+    /**
+     * Returns the name of the algorithm corresponding to the specified OID
+     * @param sigAlgOid
+     * @return The name of the algorithm corresponding sigAlgOid or null if the algorithm is not recognized.
+     */
     public static String getAlgorithmNameFromOID(ASN1ObjectIdentifier sigAlgOid) {
         if(sigAlgOid.equals(PKCSObjectIdentifiers.sha1WithRSAEncryption)) {
             return AlgorithmConstants.SIGALG_SHA1_WITH_RSA;
