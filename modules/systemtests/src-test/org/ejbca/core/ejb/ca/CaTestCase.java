@@ -844,18 +844,23 @@ public abstract class CaTestCase extends RoleUsingTestCase {
 
     /** Creates a root CA if one doesn't already exist */
     protected static void createDefaultCvcEccCaDomestic() throws AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
+        createDefaultCvcEccCaDomestic(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA);
+    }
+
+    /** Creates a root CA if one doesn't already exist */
+    protected static void createDefaultCvcEccCaDomestic(int rootProfileId, int subcaProfileId) throws AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
         CaSessionRemote caSession = CaTestCase.getCaSession();
         try {
             caSession.getCAInfo(internalAdmin, TEST_CVC_ECC_CA_NAME);
         } catch(CADoesntExistsException e) {
-            createDefaultCvcEccCa();
+            createDefaultCvcEccCa(rootProfileId);
         }
         removeOldCa(TEST_CVC_ECC_DOCUMENT_VERIFIER_NAME, TEST_CVC_ECC_DOCUMENT_VERIFIER_DN);        
         final int cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(null, TEST_CVC_ECC_DOCUMENT_VERIFIER_DN, "secp256r1");
         // TODO: Using ECDSA for decryption seems fishy..!
         final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
         final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();      
-        CVCCAInfo cvccainfo = new CVCCAInfo(TEST_CVC_ECC_DOCUMENT_VERIFIER_DN, TEST_CVC_ECC_DOCUMENT_VERIFIER_NAME, CAConstants.CA_ACTIVE, new Date(), CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 3650, null, // Expiretime
+        CVCCAInfo cvccainfo = new CVCCAInfo(TEST_CVC_ECC_DOCUMENT_VERIFIER_DN, TEST_CVC_ECC_DOCUMENT_VERIFIER_NAME, CAConstants.CA_ACTIVE, new Date(), subcaProfileId, 3650, null, // Expiretime
                 CAInfo.CATYPE_CVC, TEST_CVC_ECC_CA_DN.hashCode(), null, catoken, "JUnit CVC CA", -1, null, 24, // CRLPeriod
                 0, // CRLIssueInterval
                 10, // CRLOverlapTime
@@ -921,11 +926,15 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     }
     
     protected static void createDefaultCvcEccCa() throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException, AuthorizationDeniedException {
+        createDefaultCvcEccCa(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
+    }
+    
+    protected static void createDefaultCvcEccCa(int certProfileId) throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException, AuthorizationDeniedException {
         removeOldCa(TEST_CVC_ECC_CA_NAME, TEST_CVC_ECC_CA_DN);
         final int cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(null, TEST_CVC_ECC_CA_NAME, "secp256r1");
         final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
         final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>(0);
-        CVCCAInfo cvccainfo = new CVCCAInfo(TEST_CVC_ECC_CA_DN, TEST_CVC_ECC_CA_NAME, CAConstants.CA_ACTIVE, new Date(), CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 3650, null, // Expiretime
+        CVCCAInfo cvccainfo = new CVCCAInfo(TEST_CVC_ECC_CA_DN, TEST_CVC_ECC_CA_NAME, CAConstants.CA_ACTIVE, new Date(), certProfileId, 3650, null, // Expiretime
                 CAInfo.CATYPE_CVC, CAInfo.SELFSIGNED, null, catoken, "JUnit CVC CA", -1, null, 24, // CRLPeriod
                 0, // CRLIssueInterval
                 10, // CRLOverlapTime
