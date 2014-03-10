@@ -10,6 +10,10 @@ Note 1: OCSP responses no longer includes the Root CA Certificate, unless the Ro
 include the signer certificate. Having OCSP responses as small as possible is an important performance feature, and since the 
 client must have the root certificate as trusted there is no need to include the root certificate in the chain. 
 
+Note 2: In EJBCA 6.0.5 the Public Web interface logo filename was changed. If you have customized your own logo, you need to rename 
+the logo filenamefrom 'logotype.png' or 'ejbca_pki_by_primekey_logo.png' to 'banner_ejbca-public.png'.
+
+
 Read the full Changelog for details.
 For upgrade instructions, please see UPGRADE.
 
