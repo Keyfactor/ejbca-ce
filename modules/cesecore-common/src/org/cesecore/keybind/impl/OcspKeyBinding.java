@@ -43,6 +43,7 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     public static final String PROPERTY_NON_EXISTING_GOOD = "nonexistingisgood";
     public static final String PROPERTY_NON_EXISTING_REVOKED = "nonexistingisrevoked";
     public static final String PROPERTY_INCLUDE_CERT_CHAIN = "includecertchain";
+    public static final String PROPERTY_INCLUDE_SIGN_CERT = "includesigncert";
     public static final String PROPERTY_RESPONDER_ID_TYPE = "responderidtype";  // keyhash, name
     public static final String PROPERTY_REQUIRE_TRUSTED_SIGNATURE = "requireTrustedSignature";
     public static final String PROPERTY_UNTIL_NEXT_UPDATE = "untilNextUpdate";
@@ -52,6 +53,7 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
         addProperty(new InternalKeyBindingProperty<Boolean>(PROPERTY_NON_EXISTING_GOOD, Boolean.FALSE));
         addProperty(new InternalKeyBindingProperty<Boolean>(PROPERTY_NON_EXISTING_REVOKED, Boolean.FALSE));
         addProperty(new InternalKeyBindingProperty<Boolean>(PROPERTY_INCLUDE_CERT_CHAIN, Boolean.TRUE));
+        addProperty(new InternalKeyBindingProperty<Boolean>(PROPERTY_INCLUDE_SIGN_CERT, Boolean.TRUE));
         addProperty(new InternalKeyBindingProperty<String>(PROPERTY_RESPONDER_ID_TYPE, ResponderIdType.KEYHASH.name(),
                 ResponderIdType.KEYHASH.name(), ResponderIdType.NAME.name()));
         addProperty(new InternalKeyBindingProperty<Boolean>(PROPERTY_REQUIRE_TRUSTED_SIGNATURE, Boolean.FALSE));
@@ -99,6 +101,12 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
     }
     public void setIncludeCertChain(boolean includeCertChain) {
         setProperty(PROPERTY_INCLUDE_CERT_CHAIN, Boolean.valueOf(includeCertChain));
+    }
+    public boolean getIncludeSignCert() {
+        return (Boolean) getProperty(PROPERTY_INCLUDE_SIGN_CERT).getValue();
+    }
+    public void setIncludeSignCert(boolean includeCertChain) {
+        setProperty(PROPERTY_INCLUDE_SIGN_CERT, Boolean.valueOf(includeCertChain));
     }
     public ResponderIdType getResponderIdType() {
         return ResponderIdType.valueOf((String) getProperty(PROPERTY_RESPONDER_ID_TYPE).getValue());
