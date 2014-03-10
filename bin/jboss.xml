@@ -31,10 +31,10 @@
     <target name="set-paths-jboss7" if="jboss7">
         <!-- Paths for JBoss 7 -->
         <property name="jboss7.mode" value="standalone"/>
-	    <property name="jboss.server.home.dir" location="${appserver.home}/${jboss7.mode}"/>
-        <property name="jboss.conf.dir" location="${jboss.server.home.dir}/configuration"/>
-	    <property name="jboss.deploy.dir" location="${jboss.server.home.dir}/deployments"/>
-	    <property name="jboss.farm.dir" location="${jboss.deploy.dir}"/> <!-- TODO -->
+	    <property name="jboss.server.home.dir" value="${appserver.home}/${jboss7.mode}"/>
+        <property name="jboss.conf.dir" value="${jboss.server.home.dir}/configuration"/>
+	    <property name="jboss.deploy.dir" value="${jboss.server.home.dir}/deployments"/>
+	    <property name="jboss.farm.dir" value="${jboss.deploy.dir}"/> <!-- TODO -->
 	    <property name="keystore.file" value="configuration/keystore/keystore.jks"/>
 	    <property name="truststore.file" value="configuration/keystore/truststore.jks"/>
     </target>
@@ -43,10 +43,10 @@
         <!-- Paths for JBoss 4, 5 and 6 -->
         <property name="jboss.config" value="default"/>
         <property name="jboss.farm.name" value="deploy"/>
-	    <property name="jboss.server.home.dir" location="${appserver.home}/server/${jboss.config}"/>
-        <property name="jboss.conf.dir" location="${jboss.server.home.dir}/conf"/>
-	    <property name="jboss.farm.dir" location="${jboss.server.home.dir}/${jboss.farm.name}"/>
-	    <property name="jboss.deploy.dir" location="${jboss.server.home.dir}/deploy"/>
+	    <property name="jboss.server.home.dir" value="${appserver.home}/server/${jboss.config}"/>
+        <property name="jboss.conf.dir" value="${jboss.server.home.dir}/conf"/>
+	    <property name="jboss.farm.dir" value="${jboss.server.home.dir}/${jboss.farm.name}"/>
+	    <property name="jboss.deploy.dir" value="${jboss.server.home.dir}/deploy"/>
 	    <property name="keystore.file" value="conf/keystore/keystore.jks"/>
 	    <property name="truststore.file" value="conf/keystore/truststore.jks"/>
     </target>
