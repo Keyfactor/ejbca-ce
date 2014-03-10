@@ -1,3 +1,22 @@
+EJBCA 6.0.5
+-----------
+This is a maintenance release with new features, bug fixes and improvements. In all xy issues have been fixed.
+The biggest news in this release is TODO. 
+
+* Noteworthy changes:
+- OCSP improvement and new features related to RFC 6960.
+
+Note 1: OCSP responses no longer includes the Root CA Certificate, unless the Root CA is the OCSP signer, and it is configured to 
+include the signer certificate. Having OCSP responses as small as possible is an important performance feature, and since the 
+client must have the root certificate as trusted there is no need to include the root certificate in the chain. 
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE.
+
+-  Known issues:
+	*	One test failure on DB2: https://jira.primekey.se/browse/ECA-3298
+	*	OCSP request signer verification does an additional database lookup: https://jira.primekey.se/browse/ECA-3299
+
 EJBCA 6.0.4
 -----------
 This is a maintenance release with new features, bug fixes and improvements. In all 53 issues have been fixed.
