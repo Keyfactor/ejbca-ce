@@ -68,7 +68,7 @@ public class PKCS11HSMKeyTool extends HSMKeyTool {
      */
     @Override
     String getKeyStoreDescription() {
-        return "slot number. start with \'i\' to indicate index in list";
+        return "slot number. Index with \'i\' to indicate index in slot list. To get the slot from the label of the token in the slot give the label indexed by \'SLOT_LABEL:\'.";
     }
 
     /* (non-Javadoc)
