@@ -543,19 +543,19 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
      */
     private X509Certificate[] getResponseCertChain(X509Certificate[] certChain, final OcspSigningCacheEntry ocspSigningCacheEntry) {
         X509Certificate[] chain;
-        if(OcspConfiguration.getIncludeSignCert()) {
-            if(log.isDebugEnabled()) {
-                log.debug("Including OCSP signing certificate in the response");
-            }
-            boolean includeChain = OcspConfiguration.getIncludeCertChain();
-            // If we have an OcspKeyBinding we use this configuration to override the default
-            if (ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
-                includeChain = ocspSigningCacheEntry.getOcspKeyBinding().getIncludeCertChain();
-            }
-            if (log.isDebugEnabled()) {
-                log.debug("Include chain: " + includeChain);
-            }
-            
+        boolean includeSignCert = OcspConfiguration.getIncludeSignCert();
+        boolean includeChain = OcspConfiguration.getIncludeCertChain();
+        // If we have an OcspKeyBinding we use this configuration to override the default
+        if (ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
+            includeSignCert = ocspSigningCacheEntry.getOcspKeyBinding().getIncludeSignCert();
+            includeChain = ocspSigningCacheEntry.getOcspKeyBinding().getIncludeCertChain();
+        }
+        if(log.isDebugEnabled()) {
+            log.debug("Include signing cert: " + includeSignCert);
+            log.debug("Include chain: " + includeChain);
+        }
+        
+        if(includeSignCert) {
             if (includeChain) {
                 if(certChain.length > 1) { // certChain contained more than the root cert
                     //create a new array containing all the certs in certChain except for the root cert
