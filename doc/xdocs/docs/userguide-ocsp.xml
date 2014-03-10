@@ -26,10 +26,10 @@ of this certificate is also validated.
 </p>
 </section>
 
-<section name="OCSP Response">
+<section name="OCSP Response Certificate Chain">
 <p>
 For efficiency reasons, it is possible to configure EJBCA to either omit including the signing certificate or its certificate chain in the OCSP response.
-Setting the relevant configurations in the $EJBCA_HOME/conf/ocsp.properties file will have the following effect:
+Setting the relevant configurations in the $EJBCA_HOME/conf/ocsp.properties file or in the Internal Key Binding in the GUI, will have the following effect:
 </p>
 <ul>
 <li>If 'ocsp.includesignercert=true' and 'ocsp.includecertchain=true', the signing certificate and its chain, except for the signing certificate 
