@@ -1880,7 +1880,9 @@ If both "Non existing is good" and "Non existing is revoked", the responder will
 <li>ResponderID: Defines the ResponderID type included in the response.
 The ResponderID is either a Name (SubjectDN of the signing certificate used for response) or
 Keyhash (SHA-1 digest of the public key of the signing certificate used for response).</li>
-<li>Include certificate chain in response: When true, the entire certificate chain will be included in the response.</li>
+<li>Include signing certificate in response: When true, the signing certificate will be included in the response.</li>
+<li>Include certificate chain in response: When true, the entire certificate chain, except for the root CA certificate, will be included in the response 
+(note that this is only applicable if 'Include signing certificate in response' is true).</li>
 </ul>
 <p>
 See the section <a href="installation-ocsp.html#OCSP Installation">OCSP installation</a>
