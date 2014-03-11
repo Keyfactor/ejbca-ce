@@ -143,6 +143,9 @@ public enum OcspSigningCache {
     /** @return the CertificateID based on the provided certificate */
     public static CertificateID getCertificateIDFromCertificate(final X509Certificate certificate) {
         try {
+            if (log.isTraceEnabled()) {
+                log.trace("Building CertificateId from certificate with subjectDN '"+CertTools.getSubjectDN(certificate)+"'.");
+            }
             return new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), certificate, certificate.getSerialNumber());
         } catch (OCSPException e) {
             throw new OcspFailureException(e);
