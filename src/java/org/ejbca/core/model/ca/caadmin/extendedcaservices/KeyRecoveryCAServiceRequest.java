@@ -34,14 +34,19 @@ public class KeyRecoveryCAServiceRequest extends ExtendedCAServiceRequest implem
     private int command;
     private byte[] keydata;
     private KeyPair keypair;
-    /** Constructor for KeyRecoveryCAServiceRequest
+    private int cryptoTokenId;
+    private String keyAlias;
+    
+    /** Constructor for KeyRecoveryCAServiceRequest used to decrypt data
      */                   
-    public KeyRecoveryCAServiceRequest(int command, byte[] keydata) {
+    public KeyRecoveryCAServiceRequest(int command, byte[] keydata, int cryptoTokenId, String keyAlias) {
         this.command = command;
         this.keydata = keydata;
+        this.cryptoTokenId = cryptoTokenId;
+        this.keyAlias = keyAlias;
     }
 
-    /** Constructor for KeyRecoveryCAServiceRequest
+    /** Constructor for KeyRecoveryCAServiceRequest used to encrypt data
      */                   
     public KeyRecoveryCAServiceRequest(int command, KeyPair keypair) {
     	this.command = command;
@@ -53,7 +58,7 @@ public class KeyRecoveryCAServiceRequest extends ExtendedCAServiceRequest implem
     }
     
     /**
-     *  Returns data beloning to the decrypt keys request, returns null oterwise.
+     *  Returns data belonging to the decrypt keys request, returns null otherwise.
      */
     
     public  byte[] getKeyData(){
@@ -65,9 +70,8 @@ public class KeyRecoveryCAServiceRequest extends ExtendedCAServiceRequest implem
     }
 
     /**
-     *  Returns data beloning to the encrypt keys request, returns null oterwise.
+     *  Returns data belonging to the encrypt keys request, returns null otherwise.
      */
-    
     public  KeyPair getKeyPair(){
     	KeyPair ret = null;
     	if(command == COMMAND_ENCRYPTKEYS) {
@@ -76,7 +80,16 @@ public class KeyRecoveryCAServiceRequest extends ExtendedCAServiceRequest implem
     	return ret;
     }
     
-	@Override
+    
+	public int getCryptoTokenId() {
+        return cryptoTokenId;
+    }
+
+    public String getKeyAlias() {
+        return keyAlias;
+    }
+
+    @Override
 	public int getServiceType() {
 		return ExtendedCAServiceTypes.TYPE_KEYRECOVERYEXTENDEDSERVICE;
 	}

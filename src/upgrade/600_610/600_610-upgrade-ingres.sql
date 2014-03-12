@@ -1,0 +1,4 @@
+-- These columns are added by the JPA provider if there are sufficient privileges
+-- ALTER TABLE KeyRecoveryData ADD cryptoTokenId INT4 NOT NULL;
+-- ALTER TABLE KeyRecoveryData ADD keyAlias VARCHAR(256) DEFAULT NULL;
+-- ALTER TABLE KeyRecoveryData ADD publicKeyId VARCHAR(256) DEFAULT NULL;

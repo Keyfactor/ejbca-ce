@@ -2486,14 +2486,16 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException,
             CADoesntExistsException, AuthorizationDeniedException, CertificateEncodingException, CertificateException, OperatorCreationException {
         // Get CA that will process request
-        CA ca = caSession.getCA(admin, caid);
+        final CA ca = caSession.getCA(admin, caid);
         if (log.isDebugEnabled()) {
             log.debug("Extended service with request class '" + request.getClass().getName() + "' called for CA '" + ca.getName() + "'");
         }
+        // We do not yet support using a separate crypto token for key recovery, although we have it stored in the key recovery entry
+        // so everything is prepared for this possibility.
         final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
-        ExtendedCAServiceResponse resp = ca.extendedService(cryptoToken, request);
-        String msg = intres.getLocalizedMessage("caadmin.extendedserviceexecuted", request.getClass().getName(), ca.getName());
-        Map<String, Object> details = new LinkedHashMap<String, Object>();
+        final ExtendedCAServiceResponse resp = ca.extendedService(cryptoToken, request);
+        final String msg = intres.getLocalizedMessage("caadmin.extendedserviceexecuted", request.getClass().getName(), ca.getName());
+        final Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", msg);
         auditSession.log(EjbcaEventTypes.CA_EXTENDEDSERVICE, EventStatus.SUCCESS, ModuleTypes.CA, EjbcaServiceTypes.EJBCA, admin.toString(),
                 String.valueOf(caid), null, null, details);
