@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <document>
   <properties>
-    <title>Source Repository</title>
+    <title>SVN Repository</title>
   </properties>
 
   <body>
-<section name="SVN repository">
+<section name="SVN Repository">
 <p>
 You can find all the sources of EJBCA releases in our Subversion source code <a href="https://svn.cesecore.eu/svn/ejbca/">repository</a>.
 </p>
