@@ -240,6 +240,7 @@ mail.debug               = ${mail.debug}
 httpserver.pubhttp	     = ${httpserver.pubhttp}
 httpserver.pubhttps	     = ${httpserver.pubhttps}
 httpserver.privhttps     = ${httpserver.privhttps}
+httpserver.external.privhttps = ${httpserver.external.privhttps}
 httpsserver.hostname     = ${httpsserver.hostname}
 httpsserver.password     = ***
 httpserver.external.fqdn = ${httpserver.external.fqdn}
