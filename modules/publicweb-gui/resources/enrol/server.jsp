@@ -17,6 +17,7 @@ or paste a PEM-formated request into the field below and click OK to fetch your 
     <legend>Enroll</legend>
     
     <input type="hidden" name="hidemenu" value="${hidemenu}" />
+    <input type="hidden" name="showResultPage" value="true" />
     
 	<label for="user">Username</label>
 	<input type="text" size="40" name="user" id="user" accesskey="u" />
@@ -36,9 +37,9 @@ or paste a PEM-formated request into the field below and click OK to fetch your 
 	<br />
 	<label for="resulttype">Result type</label>
 	<select name="resulttype" id="resulttype">
-		<option value="<%=org.ejbca.ui.web.RequestHelper.ENCODED_CERTIFICATE%>">PEM  - certificate only</option> 
-		<option value="<%=org.ejbca.ui.web.RequestHelper.ENCODED_CERTIFICATE_CHAIN%>">PEM  - full certificate chain</option> 
-		<option value="<%=org.ejbca.ui.web.RequestHelper.ENCODED_PKCS7%>">PKCS#7 certificate</option>
+		<option value="<%=org.ejbca.ui.web.CertificateResponseType.ENCODED_CERTIFICATE.getNumber()%>">PEM  - certificate only</option> 
+		<option value="<%=org.ejbca.ui.web.CertificateResponseType.ENCODED_CERTIFICATE_CHAIN.getNumber()%>">PEM  - full certificate chain</option> 
+		<option value="<%=org.ejbca.ui.web.CertificateResponseType.ENCODED_PKCS7.getNumber()%>">PKCS#7 certificate</option>
 	</select>
 	<br />
 	<label for="ok"></label>

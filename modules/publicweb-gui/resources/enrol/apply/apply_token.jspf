@@ -43,7 +43,7 @@
 </c:if>
 
 
-<form action="../certreq?hidemenu=${hidemenu}" enctype="x-www-form-encoded" method="post">
+<form action="../certreq" enctype="x-www-form-encoded" method="post">
 
   <c:if test="${hasOptions}">
   <fieldset>
@@ -54,6 +54,7 @@
 	
 	<input name="user" type="hidden" value="${username}">
 	<input name="password" type="hidden" value="${password}">
+	<input type="hidden" name="hidemenu" value="${hidemenu}" />
 	
 	<c:if test="${applybean.multipleKeyLengthsAvailable}">
     	<label for="keylength">Key length:</label>

@@ -50,6 +50,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
+import org.ejbca.ui.web.CertificateResponseType;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.util.HTMLTools;
 
@@ -261,7 +262,7 @@ public class DemoCertReqServlet extends HttpServlet {
                 RequestHelper.sendNewCertToNSClient(certs, response);
             }
             if (type == 2) {
-                byte[] b64cert = helper.pkcs10CertRequest(signSession, caSession, reqBytes, username, password, RequestHelper.ENCODED_PKCS7);
+                byte[] b64cert = helper.pkcs10CertRequest(signSession, caSession, reqBytes, username, password, CertificateResponseType.ENCODED_PKCS7).getEncoded();
                 debug.ieCertFix(b64cert);
                 RequestHelper.sendNewCertToIEClient(b64cert, response.getOutputStream(), getServletContext(), getInitParameter("responseTemplate"),
                         classid);
