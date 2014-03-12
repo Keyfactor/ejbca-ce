@@ -29,6 +29,7 @@ import java.security.cert.X509CRL;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.LinkedList;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -224,9 +225,15 @@ public class CertDistServlet extends HttpServlet {
                     if (latestcertno > -1) {
                     	Certificate certcert = (Certificate)certs[latestcertno];
                         byte[] cert = certcert.getEncoded();
-                    	String ending = ".cer";
+                    	String ending;
                     	if (certcert instanceof CardVerifiableCertificate) {
                     		ending = ".cvcert";
+                        } else if (StringUtils.equals(format, "PEM") || StringUtils.equals(format, "chain")) {
+                            ending = ".pem";
+                    	} else if (StringUtils.equals(format, "PKCS7")) {
+                    	    ending = ".p7b";
+                    	} else {
+                    	    ending = ".crt";
                     	}
                         String filename = RequestHelper.getFileNameFromCertNoEnding(certcert, "ca");
                         filename = filename+ending;                        
@@ -240,6 +247,15 @@ public class CertDistServlet extends HttpServlet {
                         }
                         if (StringUtils.equals(format, "PEM")) {
                             RequestHelper.sendNewB64File(Base64.encode(cert, true), res, filename, RequestHelper.BEGIN_CERTIFICATE_WITH_NL, RequestHelper.END_CERTIFICATE_WITH_NL);
+                        } else if (StringUtils.equals(format, "PKCS7")) {
+                            byte[] pkcs7 = signSession.createPKCS7(administrator, certcert, true);
+                            RequestHelper.sendNewB64File(Base64.encode(pkcs7, true), res, filename, RequestHelper.BEGIN_PKCS7_WITH_NL, RequestHelper.END_PKCS7_WITH_NL);
+                        } else if (StringUtils.equals(format, "chain")) {
+                            int issuerCAId = CertTools.getIssuerDN(certcert).hashCode();
+                            LinkedList<Certificate> chain = new LinkedList<Certificate>(signSession.getCertificateChain(administrator, issuerCAId));
+                            chain.addFirst(certcert);
+                            byte[] chainbytes = CertTools.getPemFromCertificateChain(chain);
+                            RequestHelper.sendNewB64File(chainbytes, res, filename, "", ""); // chain includes begin/end already
                         } else {
                             res.setContentLength(cert.length);
                             res.getOutputStream().write(cert);

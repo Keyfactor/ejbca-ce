@@ -140,7 +140,7 @@ public class RequestHelperTest {
         EasyMock.replay(caInfo, ca, responseMessage, signsession, caSession);
 
         //Perform test
-        byte[] result = requestHelper.pkcs10CertRequest(signsession, caSession, PRE_GENERATED_CSR, "foo", "foo123", RequestHelper.ENCODED_CERTIFICATE_CHAIN);
+        byte[] result = requestHelper.pkcs10CertRequest(signsession, caSession, PRE_GENERATED_CSR, "foo", "foo123", CertificateResponseType.ENCODED_CERTIFICATE_CHAIN).getEncoded();
         List<Certificate> certChain =  CertTools.getCertsFromPEM(new ByteArrayInputStream(result));
         assertEquals(signedCert, certChain.get(0));
         assertEquals(caCert, certChain.get(1));

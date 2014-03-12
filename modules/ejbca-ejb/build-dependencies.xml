@@ -1103,6 +1103,8 @@
 					<include name="org/ejbca/core/protocol/scep/*.java"/>
 					<include name="org/ejbca/ui/web/protocol/Scep*.java"/>
 					<!-- Servlet dependency -->
+					<include name="org/ejbca/ui/web/CertificateRequestResponse.java"/>
+					<include name="org/ejbca/ui/web/CertificateResponseType.java"/>
 					<include name="org/ejbca/ui/web/RequestHelper.java"/>
 					<include name="org/ejbca/ui/web/pub/ServletDebug.java"/>
 					<include name="org/ejbca/ui/web/pub/ServletUtils.java"/>
