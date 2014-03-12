@@ -296,6 +296,8 @@
 	-->
 	<fileset id="source.fileset.ejbca-common-web" dir="${src.dir}">
 		<!-- Dependencies from Public Web, Admin GUI, SCEP WAR, Web Dist WAR, CMP WAR, -->
+		<include name="org/ejbca/ui/web/CertificateRequestResponse.java"/>
+		<include name="org/ejbca/ui/web/CertificateResponseType.java"/>
 		<include name="org/ejbca/ui/web/RequestHelper.java"/>
 		<include name="org/ejbca/ui/web/RevokedInfoView.java"/>
 		<!-- Move to AdminGUI src -->

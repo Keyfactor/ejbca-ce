@@ -93,11 +93,6 @@ public class RequestHelper {
 	public static final  String BEGIN_PKCS7_WITH_NL = "-----BEGIN PKCS7-----\n";
 	public static final  String END_PKCS7_WITH_NL    = "\n-----END PKCS7-----\n";
 	
-	public static final int ENCODED_CERTIFICATE = 1;
-	public static final int ENCODED_PKCS7          = 2;
-	public static final int BINARY_CERTIFICATE = 3;
-	public static final int ENCODED_CERTIFICATE_CHAIN = 4;
-	
     /**
      * Creates a new RequestHelper object.
      *
@@ -212,10 +207,10 @@ public class RequestHelper {
      * @throws CertificateException 
      * @throws CertificateEncodingException 
      */
-    public byte[] pkcs10CertRequest(SignSessionLocal signsession, CaSessionLocal caSession, byte[] b64Encoded, String username, String password,
-            int resulttype, boolean doSplitLines) throws EjbcaException, CesecoreException, AuthorizationDeniedException,
+    public CertificateRequestResponse pkcs10CertRequest(SignSessionLocal signsession, CaSessionLocal caSession, byte[] b64Encoded, String username, String password,
+            CertificateResponseType resulttype, boolean doSplitLines) throws EjbcaException, CesecoreException, AuthorizationDeniedException,
             CertificateEncodingException, CertificateException, IOException {
-        byte[] result = null;
+        byte[] encoded = null;
         Certificate cert = null;
 		PKCS10RequestMessage req = RequestMessageUtils.genPKCS10RequestMessage(b64Encoded);
 		req.setUsername(username);
@@ -224,16 +219,16 @@ public class RequestHelper {
         cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         switch (resulttype) {
         case ENCODED_CERTIFICATE:            
-            result = Base64.encode(cert.getEncoded(), doSplitLines);
+            encoded = Base64.encode(cert.getEncoded(), doSplitLines);
             break;
         case ENCODED_CERTIFICATE_CHAIN:
             CAInfo caInfo = signsession.getCAFromRequest(administrator, req, false).getCAInfo();
             LinkedList<Certificate> chain = new LinkedList<Certificate>(caInfo.getCertificateChain());
             chain.addFirst(cert);
-            result = CertTools.getPemFromCertificateChain(chain);
+            encoded = CertTools.getPemFromCertificateChain(chain);
             break;
         case ENCODED_PKCS7:
-            result = Base64.encode(signsession.createPKCS7(administrator, cert, true), doSplitLines);
+            encoded = Base64.encode(signsession.createPKCS7(administrator, cert, true), doSplitLines);
             break;
         default:           
             break;
@@ -243,8 +238,28 @@ public class RequestHelper {
             debug.print("<h4>Generated certificate:</h4>");
             debug.printInsertLineBreaks(cert.toString().getBytes());
         }
-        return result;
+        return new CertificateRequestResponse(cert, encoded);
     } //pkcs10CertReq
+    
+    @Deprecated
+    public byte[] pkcs10CertRequest(SignSessionLocal signsession, CaSessionLocal caSession, byte[] b64Encoded, String username, String password,
+            int resulttype, boolean doSplitLines) throws EjbcaException, CesecoreException, AuthorizationDeniedException,
+            CertificateEncodingException, CertificateException, IOException {
+        return pkcs10CertRequest(signsession, caSession, b64Encoded, username, password, CertificateResponseType.fromNumber(resulttype), doSplitLines).getEncoded();
+    }
+    
+    public CertificateRequestResponse pkcs10CertRequest(SignSessionLocal signsession, CaSessionLocal caSession, byte[] b64Encoded, String username, String password,
+            CertificateResponseType resulttype) throws CertificateEncodingException, CertificateException, EjbcaException, CesecoreException,
+            AuthorizationDeniedException, IOException {
+        return pkcs10CertRequest(signsession, caSession, b64Encoded, username, password, resulttype, true);
+    }
+    
+    @Deprecated
+    public byte[] pkcs10CertRequest(SignSessionLocal signsession, CaSessionLocal caSession, byte[] b64Encoded, String username, String password,
+            int resulttype) throws CertificateEncodingException, CertificateException, EjbcaException, CesecoreException,
+            AuthorizationDeniedException, IOException {
+        return pkcs10CertRequest(signsession, caSession, b64Encoded, username, password, resulttype, true);
+    }
 
     /** Handles CVC certificate requests. These are the special certificates for EAC ePassport PKI.
      * 
@@ -270,27 +285,6 @@ public class RequestHelper {
             }
             return Base64.encode(result);
         } //cvcCertRequest
-
-    /**
-     * 
-     * @param signsession
-     * @param b64Encoded
-     * @param username
-     * @param password
-     * @param resulttype
-     * @return
-     * @throws IOException 
-     * @throws AuthorizationDeniedException 
-     * @throws CesecoreException 
-     * @throws EjbcaException 
-     * @throws CertificateException 
-     * @throws CertificateEncodingException 
-     */
-    public byte[] pkcs10CertRequest(SignSessionLocal signsession, CaSessionLocal caSession, byte[] b64Encoded, String username, String password,
-            int resulttype) throws CertificateEncodingException, CertificateException, EjbcaException, CesecoreException,
-            AuthorizationDeniedException, IOException {
-        return pkcs10CertRequest(signsession, caSession, b64Encoded, username, password, resulttype, true);
-    }
 
     /**
      * Formats certificate in form to be received by IE
@@ -582,14 +576,33 @@ public class RequestHelper {
      * @param certbytes DER encoded certificate
      * @param out output stream to send to
      * @param hidemenu whether the menu should be hidden (translates to the "hidemenu" URL parameter)
+     * @param resulttype type of desired result, e.g. cert, certchain, pkcs7...
      * @throws Exception
      */
-    public static void sendResultPage(byte[] certbytes, HttpServletResponse out, boolean hidemenu) throws Exception {
+    public static void sendResultPage(byte[] certbytes, HttpServletResponse out, boolean hidemenu, CertificateResponseType resulttype) throws Exception {
         Certificate cert = CertTools.getCertfromByteArray(certbytes);
         String issuerDN = CertTools.getIssuerDN(cert);
         String serialNumber = CertTools.getSerialNumberAsString(cert);
+        String resultTypeStr = String.valueOf(resulttype.getNumber()); 
         
-        out.sendRedirect("enrol/result_download.jsp?issuer="+URLEncoder.encode(issuerDN, "UTF-8")+"&serno="+serialNumber+"&hidemenu="+hidemenu);
+        out.sendRedirect("enrol/result_download.jsp?issuer="+URLEncoder.encode(issuerDN, "UTF-8")+"&serno="+serialNumber+"&resulttype="+resultTypeStr+"&hidemenu="+hidemenu);
+    }
+    
+    /**
+     * Sends a page with certificate information and an automatic redirect to the
+     * download page. The issuer must not be a "throw away" CA. The certificate
+     * is automatically installed in the browser.
+     * 
+     * @param installToBrowser Browser type. Only "netscape" is supported,
+     *                         which means "most browsers except IE".
+     */
+    public static void sendResultPage(byte[] certbytes, HttpServletResponse out, boolean hidemenu, String installToBrowser) throws Exception {
+        Certificate cert = CertTools.getCertfromByteArray(certbytes);
+        
+        String issuerDN = CertTools.getIssuerDN(cert);
+        String serialNumber = CertTools.getSerialNumberAsString(cert);
+        
+        out.sendRedirect("enrol/result_download.jsp?issuer="+URLEncoder.encode(issuerDN, "UTF-8")+"&serno="+serialNumber+"&installtobrowser="+installToBrowser+"&hidemenu="+hidemenu);
     }
     
     /** Sets the default character encoding for decoding post and get parameters. 
