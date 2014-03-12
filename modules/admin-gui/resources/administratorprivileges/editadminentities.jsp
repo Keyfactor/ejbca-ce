@@ -121,10 +121,10 @@
 					<br /><h:outputText value="&nbsp;" escape="false"/>
 				</h:panelGroup>
 			</f:facet>
-		    <h:outputText value="#{admin.matchValue}" rendered="#{rolesManagedBean.accessMatchValuesAsMap.WITH_SERIALNUMBER ne admin.matchWith}"/> 
+		    <h:outputText value="#{admin.matchValue}" rendered="#{rolesManagedBean.accessMatchValuesAsMap['CertificateAuthenticationToken:WITH_SERIALNUMBER'] ne admin.matchWith}"/> 
 			<h:outputLink
 				value="#{web.ejbcaWebBean.baseUrl}#{web.ejbcaWebBean.globalConfiguration.raPath}/listendentities.jsp?action=listusers&buttonisrevoked=value&textfieldserialnumber=#{admin.matchValue}"
-				rendered="#{rolesManagedBean.accessMatchValuesAsMap.WITH_SERIALNUMBER eq admin.matchWith}">
+				rendered="#{rolesManagedBean.accessMatchValuesAsMap['CertificateAuthenticationToken:WITH_SERIALNUMBER'] eq admin.matchWith}">
 				<h:outputText value="#{admin.matchValue}"/>
 			</h:outputLink>
 		</h:column>
