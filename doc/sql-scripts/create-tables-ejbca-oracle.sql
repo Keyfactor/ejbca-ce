@@ -265,6 +265,9 @@ CREATE TABLE KeyRecoveryData (
     rowProtection CLOB,
     rowVersion NUMBER(10) NOT NULL,
     username VARCHAR2(255 byte),
+    cryptoTokenId NUMBER(10) NOT NULL,
+    keyAlias VARCHAR(255 byte),
+    publicKeyId VARCHAR(255 byte),
     PRIMARY KEY (certSN,
     issuerDN)
 );

@@ -49,22 +49,31 @@ public class KeyRecoveryData extends ProtectedData implements Serializable {
 	private Boolean markedAsRecoverableBool;
 	private Integer markedAsRecoverableInt;
 	private String keyData;
+    private int cryptoTokenId = 0;
+    private String keyAlias;
+    private String publicKeyId;
 	private int rowVersion = 0;
 	private String rowProtection;
-
+	
 	/**
 	 * Entity holding key recovery data of users certificate.
 	 *
 	 * @param certificatesn of certificate the keys are belonging to.
 	 * @param issuerdn issuerdn of certificate the keys are belonging to.
 	 * @param username of the owner of the keys.
+	 * @param cryptoTokenId the id of the cryptoToken that holds the key protecting this key recovery entry
+     * @param keyAlias the alias of the key protecting this key recovery entry
+     * @param publicKeyId the keyId (same as subjectKeyId of a certificateData) of key protecting this key recovery entry
 	 * @param keydata the actual keydata.
 	 */
-	public KeyRecoveryData(BigInteger certificatesn, String issuerdn, String username, byte[] keydata) {
+	public KeyRecoveryData(final BigInteger certificatesn, final String issuerdn, final String username, final byte[] keydata, final int cryptoTokenId, final String keyAlias, final String publicKeyId) {
 		setKeyRecoveryDataPK(new KeyRecoveryDataPK(certificatesn.toString(16), issuerdn));
 		setUsername(username);
 		setMarkedAsRecoverable(false);
 		setKeyDataFromByteArray(keydata);
+		setCryptoTokenId(cryptoTokenId);
+		setKeyAlias(keyAlias);
+		setPublicKeyId(publicKeyId);
 		log.debug("Created Key Recoverydata for user " + username);
 	}
 
@@ -119,6 +128,18 @@ public class KeyRecoveryData extends ProtectedData implements Serializable {
 	public void setKeyData(String keyData) { this.keyData = keyData; }
 
 	//@Version @Column
+    public int getCryptoTokenId() { return cryptoTokenId; }
+    public void setCryptoTokenId(int cryptoTokenId) { this.cryptoTokenId = cryptoTokenId; }
+
+    //@Version @Column
+    public String getKeyAlias() {return keyAlias; }
+    public void setKeyAlias(String keyAlias) { this.keyAlias = keyAlias; }
+
+    //@Version @Column
+    public String getPublicKeyId() {return publicKeyId; }
+    public void setPublicKeyId(String publicKeyId) { this.publicKeyId = publicKeyId; }
+
+	//@Version @Column
 	public int getRowVersion() { return rowVersion; }
 	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
@@ -135,12 +156,13 @@ public class KeyRecoveryData extends ProtectedData implements Serializable {
 	/*public void setCertificateSN(BigInteger certificatesn) {
 		keyRecoveryDataPK.setCertSN(certificatesn.toString(16));
 	}*/
-
+	
 	@Transient
 	public byte[] getKeyDataAsByteArray() {
 		return Base64.decode(this.getKeyData().getBytes());
 	}
-	public void setKeyDataFromByteArray(byte[] keydata) {
+
+    public void setKeyDataFromByteArray(byte[] keydata) {
 		setKeyData(new String(Base64.encode(keydata)));
 	}
 
