@@ -55,7 +55,7 @@
             </menu>
 
             <menu name="Continous integration">
-                <item name="Hudson" href="/hudson.html"/>
+                <item name="Jenkins" href="/hudson.html"/>
             </menu>
 
         </menusection>
