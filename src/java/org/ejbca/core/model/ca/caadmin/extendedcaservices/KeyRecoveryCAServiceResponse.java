@@ -33,15 +33,26 @@ public class KeyRecoveryCAServiceResponse extends ExtendedCAServiceResponse impl
     private int type;
     private byte[] keydata;
     private KeyPair keypair;
+    private String keyAlias;
+    private int cryptoTokenId;
+    private String publicKeyId;
 	
-    public KeyRecoveryCAServiceResponse(int type, byte[] keydata) {
-       this.type=type;
-       this.keydata=keydata;
+    /** Used when decrypting key recovery data, keydata is read from the database */
+    public KeyRecoveryCAServiceResponse(int type, byte[] keydata, final int cryptoTokenId, final String keyAlias, final String publicKeyId) {
+       this.type = type;
+       this.keydata = keydata;
+       this.cryptoTokenId = cryptoTokenId;
+       this.keyAlias = keyAlias;
+       this.publicKeyId = publicKeyId;
     } 
     
-    public KeyRecoveryCAServiceResponse(int type, KeyPair keypair) {
-    	this.type=type;
-    	this.keypair=keypair;
+    /** Used when encrypting data, keypair is encrypted to be stored in the database */
+    public KeyRecoveryCAServiceResponse(int type, KeyPair keypair, final int cryptoTokenId, final String keyAlias, final String publicKeyId) {
+    	this.type = type;
+    	this.keypair = keypair;
+        this.cryptoTokenId = cryptoTokenId;
+        this.keyAlias = keyAlias;
+        this.publicKeyId = publicKeyId;
     }  
            
     /**
@@ -75,5 +86,17 @@ public class KeyRecoveryCAServiceResponse extends ExtendedCAServiceResponse impl
     	}
     	return ret;
     }
-        
+
+    public String getKeyAlias() {
+        return keyAlias;
+    }
+
+    public int getCryptoTokenId() {
+        return cryptoTokenId;
+    }
+
+    public String getPublicKeyId() {
+        return publicKeyId;
+    }
+ 
 }

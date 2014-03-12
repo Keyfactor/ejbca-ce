@@ -33,6 +33,7 @@ public class KeyRecoveryDataPK implements Serializable {
 	}
 
 	//@Column
+    /** Certificate serial number in hexa decimal format, of the certificate this entry was stored for. */
 	public String getCertSN() { return certSN; }
 	public void setCertSN(String certSN) { this.certSN = certSN; }
 

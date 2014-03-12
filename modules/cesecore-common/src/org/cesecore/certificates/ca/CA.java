@@ -12,10 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
@@ -40,7 +36,6 @@ import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.certificates.ca.catoken.CAToken;
-import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAService;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceNotActiveException;
@@ -762,18 +757,25 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 
     public abstract byte[] createAuthCertSignRequest(CryptoToken cryptoToken, byte[] request) throws CryptoTokenOfflineException;
 
-    public byte[] encryptKeys(CryptoToken cryptoToken, KeyPair keypair) throws Exception {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ObjectOutputStream os = new ObjectOutputStream(baos);
-        os.writeObject(keypair);
-        return encryptData(cryptoToken, baos.toByteArray(), CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
-    }
+    /**
+     * Encryption method used to encrypt a key pair using a CA
+     * 
+     * @param cryptoToken the crypto token where the encryption key is
+     * @param alias the alias of the key on the crypto token to use for encryption
+     * @param keypair the data to encrypt
+     * @return encrypted data
+     */
+    public abstract byte[] encryptKeys(CryptoToken cryptoToken, String alias, KeyPair keypair) throws Exception;
 
-    public KeyPair decryptKeys(CryptoToken cryptoToken, byte[] data) throws Exception {
-        byte[] recdata = decryptData(cryptoToken, data, CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
-        ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(recdata));
-        return (KeyPair) ois.readObject();
-    }
+    /**
+     * Dncryption method used to decrypt a key pair using a CA
+     * 
+     * @param cryptoToken the crypto token where the decryption key is
+     * @param alias the alias of the key on the crypto token to use for decryption
+     * @param data the data to decrypt
+     * @return a KeyPair
+     */
+    public abstract KeyPair decryptKeys(CryptoToken cryptoToken, String alias, byte[] data) throws Exception;
 
     /**
      * General encryption method used to encrypt using a CA

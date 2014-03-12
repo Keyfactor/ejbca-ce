@@ -1,18 +1,21 @@
-EJBCA 6.0.5
+EJBCA 6.1.0
 -----------
 This is a maintenance release with new features, bug fixes and improvements. In all xy issues have been fixed.
 The biggest news in this release is TODO. 
 
 * Noteworthy changes:
-- OCSP improvement and new features related to RFC 6960.
+- OCSP improvement and new features related to RFC 6960, minimizing size of OCSP responses (see note below).
+- Improvement to Key Recovery enabling encryption key rollover and providing more information about encryption keys.
+- Windows build/install is now working.
+- ManagementCA created during a default install now uses SHA256WithRSA.
+- EJBCA now compiles (deployment/running not supported however) on WildFly 8 and Glasshish 4.
 
 Note 1: OCSP responses no longer includes the Root CA Certificate, unless the Root CA is the OCSP signer, and it is configured to 
 include the signer certificate. Having OCSP responses as small as possible is an important performance feature, and since the 
 client must have the root certificate as trusted there is no need to include the root certificate in the chain. 
 
-Note 2: In EJBCA 6.0.5 the Public Web interface logo filename was changed. If you have customized your own logo, you need to rename 
+Note 2: In EJBCA 6.1.0 the Public Web interface logo filename was changed. If you have customized your own logo, you need to rename 
 the logo filenamefrom 'logotype.png' or 'ejbca_pki_by_primekey_logo.png' to 'banner_ejbca-public.png'.
-
 
 Read the full Changelog for details.
 For upgrade instructions, please see UPGRADE.
