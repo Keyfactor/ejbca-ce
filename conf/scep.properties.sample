@@ -115,6 +115,9 @@ scep.ra.defaultCA=ScepCA
 # received from the client to a CA name.
 # This is used to find a CA from the request. If no CA can be found with a mapping, the defaultCA is used.
 # You can create several mappings for different CAs like this.
+# This is only used by the External RA SCEP Server, i.e. because there is no database with CAs to look in. 
+# In the SCEP server in the CA the CAName is looked up in the CA database, but in the External RA server there is no other 
+# information about CAs.
 # Note that all =, : or whitespace must be escaped with a \. See example below. 
 CN\=Scep\ CA,O\=EJBCA\ Sample,C\=SE=ScepCA
 
