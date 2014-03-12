@@ -152,7 +152,7 @@ public abstract class CertTools {
     private static final Logger log = Logger.getLogger(CertTools.class);
 
     private static final InternalResources intres = InternalResources.getInstance();
-    
+
     // Initialize dnComponents
     static {
         DnComponents.getDnObjects(true);
@@ -179,7 +179,7 @@ public abstract class CertTools {
     public static final String PERMANENTIDENTIFIER = "permanentIdentifier";
     public static final String PERMANENTIDENTIFIER_OBJECTID = "1.3.6.1.5.5.7.8.3";
     public static final String PERMANENTIDENTIFIER_SEP = "/";
-    
+
     /** Microsoft altName for windows domain controller guid */
     public static final String GUID = "guid";
     /** ObjectID for upn altName for windows domain controller guid */
@@ -229,11 +229,10 @@ public abstract class CertTools {
     public static final String END_KEYTOOL_CERTIFICATE_REQUEST = "-----END NEW CERTIFICATE REQUEST-----";
     public static final String BEGIN_CERTIFICATE = "-----BEGIN CERTIFICATE-----";
     public static final String END_CERTIFICATE = "-----END CERTIFICATE-----";
-	public static final String BEGIN_PUBLIC_KEY                   = "-----BEGIN PUBLIC KEY-----";
-	public static final String END_PUBLIC_KEY                     = "-----END PUBLIC KEY-----";
+    public static final String BEGIN_PUBLIC_KEY = "-----BEGIN PUBLIC KEY-----";
+    public static final String END_PUBLIC_KEY = "-----END PUBLIC KEY-----";
     public static final String BEGIN_X509_CRL_KEY = "-----BEGIN X509 CRL-----";
     public static final String END_X509_CRL_KEY = "-----END X509 CRL-----";
-
 
     /**
      * See stringToBcX500Name(String, X509NameEntryConverter, boolean), this method uses the default BC converter (X509DefaultEntryConverter) and ldap
@@ -249,7 +248,7 @@ public abstract class CertTools {
         final X509NameEntryConverter converter = new X509DefaultEntryConverter();
         return stringToBcX500Name(dn, converter, true);
     }
-    
+
     /**
      * See stringToBcX500Name(String, X509NameEntryConverter, boolean), this method uses the default BC converter (X509DefaultEntryConverter) and ldap
      * order
@@ -286,46 +285,46 @@ public abstract class CertTools {
             return null;
         }
         // If the entire DN is quoted (which is strange but legacy), we just remove these quotes and carry on
-        if (dn.length()>2 && dn.charAt(0) == '"' && dn.charAt(dn.length()-1) == '"') {
-            dn = dn.substring(1, dn.length()-1);
+        if (dn.length() > 2 && dn.charAt(0) == '"' && dn.charAt(dn.length() - 1) == '"') {
+            dn = dn.substring(1, dn.length() - 1);
         }
         final X500NameBuilder nameBuilder = new X500NameBuilder(CeSecoreNameStyle.INSTANCE);
         boolean quoted = false;
         boolean escapeNext = false;
         int currentStartPosition = -1;
         String currentPartName = null;
-        for (int i=0; i<dn.length(); i++) {
+        for (int i = 0; i < dn.length(); i++) {
             final char current = dn.charAt(i);
             // Toggle quoting for every non-escaped "-char
-            if (!escapeNext && current=='"') {
+            if (!escapeNext && current == '"') {
                 quoted = !quoted;
             }
             // If there is an unescaped and unquoted =-char the preceeding chars is a part name
-            if (currentStartPosition==-1 && !quoted && !escapeNext && current=='=' && 1<=i) {
+            if (currentStartPosition == -1 && !quoted && !escapeNext && current == '=' && 1 <= i) {
                 // Trim spaces (e.g. "O =value")
                 int endIndexOfPartName = i;
-                while (endIndexOfPartName>0 && dn.charAt(endIndexOfPartName-1)==' ') {
+                while (endIndexOfPartName > 0 && dn.charAt(endIndexOfPartName - 1) == ' ') {
                     endIndexOfPartName--;
                 }
-                int startIndexOfPartName = endIndexOfPartName-1;
+                int startIndexOfPartName = endIndexOfPartName - 1;
                 final String endOfPartNameSearchChars = ", +";
-                while (startIndexOfPartName>0 && (endOfPartNameSearchChars.indexOf(dn.charAt(startIndexOfPartName-1))==-1)) {
+                while (startIndexOfPartName > 0 && (endOfPartNameSearchChars.indexOf(dn.charAt(startIndexOfPartName - 1)) == -1)) {
                     startIndexOfPartName--;
                 }
                 currentPartName = dn.substring(startIndexOfPartName, endIndexOfPartName);
                 //log.trace("startIndexOfPartName="+startIndexOfPartName+" currentPartName='"+currentPartName+"'");
-                currentStartPosition = i+1;
+                currentStartPosition = i + 1;
             }
             //log.trace("i=" + i + " startPosition="+currentStartPosition+" quoted="+quoted + " escapeNext="+escapeNext+ " current='"+current + "'");
             // When we have found a start marker, we need to be on the lookout for the ending marker
-            if (currentStartPosition!=-1 && ((!quoted && !escapeNext && (current==',' || current=='+')) || i==dn.length()-1)) {
-                int endPosition = (i==dn.length()-1) ? dn.length()-1 : i-1;
+            if (currentStartPosition != -1 && ((!quoted && !escapeNext && (current == ',' || current == '+')) || i == dn.length() - 1)) {
+                int endPosition = (i == dn.length() - 1) ? dn.length() - 1 : i - 1;
                 // Remove white spaces from the end of the value
-                while (endPosition>currentStartPosition && dn.charAt(endPosition)==' ') {
+                while (endPosition > currentStartPosition && dn.charAt(endPosition) == ' ') {
                     endPosition--;
                 }
                 // Remove white spaces from the beginning of the value
-                while (endPosition>currentStartPosition && dn.charAt(currentStartPosition)==' ') {
+                while (endPosition > currentStartPosition && dn.charAt(currentStartPosition) == ' ') {
                     currentStartPosition++;
                 }
                 // Only return the inner value if the part is quoted
@@ -333,7 +332,7 @@ public abstract class CertTools {
                     currentStartPosition++;
                     endPosition--;
                 }
-                String currentValue = dn.substring(currentStartPosition, endPosition+1);
+                String currentValue = dn.substring(currentStartPosition, endPosition + 1);
                 //log.trace("currentStartPosition="+currentStartPosition+" currentValue="+currentValue);
                 // Unescape value since the nameBuilder will double each escape
                 currentValue = unescapeValue(new StringBuilder(currentValue)).toString();
@@ -344,7 +343,7 @@ public abstract class CertTools {
                     if (oid == null) {
                         oid = new ASN1ObjectIdentifier(currentPartName);
                     }
-                    nameBuilder.addRDN(oid, currentValue); 
+                    nameBuilder.addRDN(oid, currentValue);
                 } catch (IllegalArgumentException e) {
                     // If it is not an OID we will ignore it
                     log.warn("Unknown DN component ignored and silently dropped: " + currentPartName);
@@ -357,7 +356,7 @@ public abstract class CertTools {
                 // This character was escaped, so don't escape the next one
                 escapeNext = false;
             } else {
-                if (!quoted && current=='\\') {
+                if (!quoted && current == '\\') {
                     // This escape character is not escaped itself, so the next one should be
                     escapeNext = true;
                 }
@@ -371,12 +370,12 @@ public abstract class CertTools {
         }
         return orderedX500Name;
     }
-    
+
     /** Removes any unescaped '\' character from the provided StringBuilder. Assumes that esacping quotes have been stripped. */
     private static StringBuilder unescapeValue(final StringBuilder sb) {
         boolean esq = false;
         int index = 0;
-        while (index<sb.length()) {
+        while (index < sb.length()) {
             if (!esq && sb.charAt(index) == '\\') {
                 esq = true;
                 sb.deleteCharAt(index);
@@ -573,7 +572,7 @@ public abstract class CertTools {
      * 
      * @return true if the DN is believed to be in reversed order, false otherwise
      */
-     public static boolean isDNReversed(String dn) {
+    public static boolean isDNReversed(String dn) {
         /*
          * if (log.isTraceEnabled()) { log.trace(">isDNReversed: dn: " + dn); }
          */
@@ -642,49 +641,49 @@ public abstract class CertTools {
     public static List<String> getPartsFromDN(String dn, String dnpart) {
         return getPartsFromDNInternal(dn, dnpart, false);
     }
-    
+
     public static List<String> getPartsFromDNInternal(final String dn, final String dnPart, final boolean onlyReturnFirstMatch) {
         if (log.isTraceEnabled()) {
-            log.trace(">getPartsFromDNInternal: dn:'" + dn + "', dnpart=" + dnPart + ", onlyReturnFirstMatch="+onlyReturnFirstMatch);
+            log.trace(">getPartsFromDNInternal: dn:'" + dn + "', dnpart=" + dnPart + ", onlyReturnFirstMatch=" + onlyReturnFirstMatch);
         }
         final List<String> parts = new ArrayList<String>();
-        if (dn!=null && dnPart!=null) {
+        if (dn != null && dnPart != null) {
             final String dnPartLowerCase = dnPart.toLowerCase();
             final int dnPartLenght = dnPart.length();
             boolean quoted = false;
             boolean escapeNext = false;
             int currentStartPosition = -1;
-            for (int i=0; i<dn.length(); i++) {
+            for (int i = 0; i < dn.length(); i++) {
                 final char current = dn.charAt(i);
                 // Toggle quoting for every non-escaped "-char
-                if (!escapeNext && current=='"') {
+                if (!escapeNext && current == '"') {
                     quoted = !quoted;
                 }
                 // If there is an unescaped and unquoted =-char we need to investigate if it is a match for the sought after part
-                if (!quoted && !escapeNext && current=='=' && dnPartLenght<=i) {
+                if (!quoted && !escapeNext && current == '=' && dnPartLenght <= i) {
                     // Check that the character before our expected partName isn't a letter (e.g. dnsName=.. should not match E=..)
-                    if (i-dnPartLenght-1<0 || !Character.isLetter(dn.charAt(i-dnPartLenght-1))) {
+                    if (i - dnPartLenght - 1 < 0 || !Character.isLetter(dn.charAt(i - dnPartLenght - 1))) {
                         boolean match = true;
-                        for (int j=0; j<dnPartLenght; j++) {
-                            if (Character.toLowerCase(dn.charAt(i-dnPartLenght+j)) != dnPartLowerCase.charAt(j)) {
+                        for (int j = 0; j < dnPartLenght; j++) {
+                            if (Character.toLowerCase(dn.charAt(i - dnPartLenght + j)) != dnPartLowerCase.charAt(j)) {
                                 match = false;
                                 break;
                             }
                         }
                         if (match) {
-                            currentStartPosition = i+1;
+                            currentStartPosition = i + 1;
                         }
                     }
                 }
                 // When we have found a start marker, we need to be on the lookout for the ending marker
-                if (currentStartPosition!=-1 && ((!quoted && !escapeNext && (current==',' || current=='+')) || i==dn.length()-1)) {
-                    int endPosition = (i==dn.length()-1) ? dn.length()-1 : i-1;
+                if (currentStartPosition != -1 && ((!quoted && !escapeNext && (current == ',' || current == '+')) || i == dn.length() - 1)) {
+                    int endPosition = (i == dn.length() - 1) ? dn.length() - 1 : i - 1;
                     // Remove white spaces from the end of the value
-                    while (endPosition>currentStartPosition && dn.charAt(endPosition)==' ') {
+                    while (endPosition > currentStartPosition && dn.charAt(endPosition) == ' ') {
                         endPosition--;
                     }
                     // Remove white spaces from the beginning of the value
-                    while (endPosition>currentStartPosition && dn.charAt(currentStartPosition)==' ') {
+                    while (endPosition > currentStartPosition && dn.charAt(currentStartPosition) == ' ') {
                         currentStartPosition++;
                     }
                     // Only return the inner value if the part is quoted
@@ -692,7 +691,7 @@ public abstract class CertTools {
                         currentStartPosition++;
                         endPosition--;
                     }
-                    parts.add(dn.substring(currentStartPosition, endPosition+1));
+                    parts.add(dn.substring(currentStartPosition, endPosition + 1));
                     if (onlyReturnFirstMatch) {
                         break;
                     }
@@ -702,7 +701,7 @@ public abstract class CertTools {
                     // This character was escaped, so don't escape the next one
                     escapeNext = false;
                 } else {
-                    if (!quoted && current=='\\') {
+                    if (!quoted && current == '\\') {
                         // This escape character is not escaped itself, so the next one should be
                         escapeNext = true;
                     }
@@ -1070,7 +1069,7 @@ public abstract class CertTools {
         if (provider == null) {
             prov = "BC";
         } else {
-             prov = provider;
+            prov = provider;
         }
         if ("BC".equals(prov)) {
             CryptoProviderTools.installBCProviderIfNotAvailable();
@@ -1088,7 +1087,7 @@ public abstract class CertTools {
     public static CertificateFactory getCertificateFactory() {
         return getCertificateFactory("BC");
     }
-    
+
     /**
      * Reads certificates in PEM-format from a file.
      * The stream may contain other things between the different certificates.
@@ -1230,6 +1229,7 @@ public abstract class CertTools {
     public static byte[] getPEMFromCerts(Collection<Certificate> certs) throws CertificateException {
         return getPemFromCertificateChain(certs);
     }
+
     /**
      * Returns a certificate in PEM-format.
      * 
@@ -1266,7 +1266,7 @@ public abstract class CertTools {
         printStream.close();
         return baos.toByteArray();
     }
-    
+
     /** @return a PublicKey in PEM-format as a byte array. */
     public static byte[] getPEMFromCertificateRequest(final byte[] certificateRequestBytes) {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -1275,7 +1275,7 @@ public abstract class CertTools {
         printStream.close();
         return baos.toByteArray();
     }
-    
+
     /** Write the supplied bytes to the printstream as Base64 using beginKey and endKey around it. */
     private static void writeAsPemEncoded(PrintStream printStream, byte[] unencodedData, String beginKey, String endKey) {
         printStream.println(beginKey);
@@ -1403,10 +1403,10 @@ public abstract class CertTools {
         if (log.isDebugEnabled()) {
             log.debug("Time for \"certificate will soon expire\" not yet reached. You will be warned after: "
                     + new Date(signerCert.getNotAfter().getTime() - warnBeforeExpirationTime));
-        }   
+        }
         return true;
     }
-    
+
     /**
      * Checks if a certificate is a CA certificate according to BasicConstraints (X.509), or role (CVC). If there is no basic constraints extension on
      * a X.509 certificate, false is returned.
@@ -1441,7 +1441,7 @@ public abstract class CertTools {
             log.trace("<isCA:" + ret);
         }
         return ret;
-    } 
+    }
 
     /**
      * Is OCSP extended key usage set for a certificate?
@@ -1458,8 +1458,7 @@ public abstract class CertTools {
         }
         return keyUsages != null && keyUsages.contains(KeyPurposeId.id_kp_OCSPSigning.getId());
     }
-    
-    
+
     /**
      * Generate a selfsigned certiicate.
      * 
@@ -1485,7 +1484,8 @@ public abstract class CertTools {
      * @throws OperatorCreationException 
      */
     public static X509Certificate genSelfCert(String dn, long validity, String policyId, PrivateKey privKey, PublicKey pubKey, String sigAlg,
-            boolean isCA) throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, IllegalStateException, NoSuchProviderException, OperatorCreationException, CertificateException, IOException {
+            boolean isCA) throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, IllegalStateException, NoSuchProviderException,
+            OperatorCreationException, CertificateException, IOException {
         return genSelfCert(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, "BC");
     }
 
@@ -1493,7 +1493,8 @@ public abstract class CertTools {
      * 
      */
     public static X509Certificate genSelfCert(String dn, long validity, String policyId, PrivateKey privKey, PublicKey pubKey, String sigAlg,
-            boolean isCA, String provider, boolean ldapOrder) throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, IllegalStateException, NoSuchProviderException, OperatorCreationException, CertificateException, IOException {
+            boolean isCA, String provider, boolean ldapOrder) throws NoSuchAlgorithmException, SignatureException, InvalidKeyException,
+            IllegalStateException, NoSuchProviderException, OperatorCreationException, CertificateException, IOException {
         final int keyUsage;
         if (isCA) {
             keyUsage = X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
@@ -1502,7 +1503,7 @@ public abstract class CertTools {
         }
         return genSelfCertForPurpose(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, keyUsage, null, null, provider, ldapOrder);
     } // genselfCert
-    
+
     /** Generates a self signed certificate with keyUsage X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, i.e. a CA certificate
      * 
      */
@@ -1540,25 +1541,27 @@ public abstract class CertTools {
             IllegalStateException, NoSuchProviderException, OperatorCreationException, CertificateException, IOException {
         return genSelfCertForPurpose(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, keyusage, null, null, "BC", ldapOrder);
     }
-    
+
     public static X509Certificate genSelfCertForPurpose(String dn, long validity, String policyId, PrivateKey privKey, PublicKey pubKey,
             String sigAlg, boolean isCA, int keyusage, Date privateKeyNotBefore, Date privateKeyNotAfter, String provider)
             throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, IllegalStateException, NoSuchProviderException, IOException,
-            OperatorCreationException, CertificateException {   
-        return genSelfCertForPurpose(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, keyusage, privateKeyNotBefore, privateKeyNotAfter, provider, true);
+            OperatorCreationException, CertificateException {
+        return genSelfCertForPurpose(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, keyusage, privateKeyNotBefore, privateKeyNotAfter,
+                provider, true);
     }
 
     public static X509Certificate genSelfCertForPurpose(String dn, long validity, String policyId, PrivateKey privKey, PublicKey pubKey,
             String sigAlg, boolean isCA, int keyusage, Date privateKeyNotBefore, Date privateKeyNotAfter, String provider, boolean ldapOrder)
             throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, IllegalStateException, NoSuchProviderException, IOException,
             OperatorCreationException, CertificateException {
-        return genSelfCertForPurpose(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, keyusage, privateKeyNotBefore, privateKeyNotAfter, provider, ldapOrder, null);
+        return genSelfCertForPurpose(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, keyusage, privateKeyNotBefore, privateKeyNotAfter,
+                provider, ldapOrder, null);
     }
-    
+
     public static X509Certificate genSelfCertForPurpose(String dn, long validity, String policyId, PrivateKey privKey, PublicKey pubKey,
-            String sigAlg, boolean isCA, int keyusage, Date privateKeyNotBefore, Date privateKeyNotAfter, String provider, boolean ldapOrder, List<Extension> additionalExtensions)
-            throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, IllegalStateException, NoSuchProviderException, IOException,
-            OperatorCreationException, CertificateException {
+            String sigAlg, boolean isCA, int keyusage, Date privateKeyNotBefore, Date privateKeyNotAfter, String provider, boolean ldapOrder,
+            List<Extension> additionalExtensions) throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, IllegalStateException,
+            NoSuchProviderException, IOException, OperatorCreationException, CertificateException {
         // Create self signed certificate
         Date firstDate = new Date();
 
@@ -1615,14 +1618,14 @@ public abstract class CertTools {
 
         final SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo((ASN1Sequence) ASN1Primitive.fromByteArray(publicKey.getEncoded()));
         X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(CertTools.stringToBcX500Name(dn, ldapOrder), new BigInteger(serno).abs(),
-                firstDate, lastDate, CertTools.stringToBcX500Name(dn, ldapOrder), pkinfo);    
-        
+                firstDate, lastDate, CertTools.stringToBcX500Name(dn, ldapOrder), pkinfo);
+
         // Basic constranits is always critical and MUST be present at-least in CA-certificates.
         BasicConstraints bc = new BasicConstraints(isCA);
         certbuilder.addExtension(Extension.basicConstraints, true, bc);
 
         // Put critical KeyUsage in CA-certificates
-        if (isCA || keyusage!=0) {
+        if (isCA || keyusage != 0) {
             X509KeyUsage ku = new X509KeyUsage(keyusage);
             certbuilder.addExtension(Extension.keyUsage, true, ku);
         }
@@ -1637,15 +1640,13 @@ public abstract class CertTools {
             }
             certbuilder.addExtension(Extension.privateKeyUsagePeriod, false, new DERSequence(v));
         }
-        
+
         // Subject and Authority key identifier is always non-critical and MUST be present for certificates to verify in Firefox.
         try {
             if (isCA) {
-            
-                ASN1InputStream sAsn1InputStream =  new ASN1InputStream(new ByteArrayInputStream(
-                        publicKey.getEncoded()));
-                ASN1InputStream aAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(
-                        publicKey.getEncoded()));
+
+                ASN1InputStream sAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(publicKey.getEncoded()));
+                ASN1InputStream aAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(publicKey.getEncoded()));
                 try {
                     SubjectPublicKeyInfo spki = new SubjectPublicKeyInfo((ASN1Sequence) sAsn1InputStream.readObject());
                     SubjectKeyIdentifier ski = new SubjectKeyIdentifier(spki);
@@ -1670,14 +1671,14 @@ public abstract class CertTools {
             certbuilder.addExtension(Extension.certificatePolicies, false, seq);
         }
         // Add any additional
-        if (additionalExtensions!=null) {
+        if (additionalExtensions != null) {
             for (final Extension extension : additionalExtensions) {
                 certbuilder.addExtension(extension.getExtnId(), extension.isCritical(), extension.getParsedValue());
             }
         }
         final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(provider).build(privKey), 20480);
         final X509CertificateHolder certHolder = certbuilder.build(signer);
-        final X509Certificate selfcert = (X509Certificate)CertTools.getCertfromByteArray(certHolder.getEncoded());
+        final X509Certificate selfcert = (X509Certificate) CertTools.getCertfromByteArray(certHolder.getEncoded());
 
         return selfcert;
     } // genselfCertForPurpose
@@ -1841,7 +1842,7 @@ public abstract class CertTools {
         }
         return null;
     }
-    
+
     /**
      * Gets the Permanent Identifier (altName, OtherName).
      * 
@@ -1885,7 +1886,7 @@ public abstract class CertTools {
         }
         return ret;
     } // getPermanentIdentifierAltName
-    
+
     /**
      * (This method intentionally has package level visibility to be able to be invoked from JUnit tests.)
      * @param seq
@@ -1898,8 +1899,7 @@ public abstract class CertTools {
             if (id.getId().equals(CertTools.PERMANENTIDENTIFIER_OBJECTID)) {
                 String identifierValue = null;
                 String assigner = null;
-                
-                
+
                 // Get the PermanentIdentifier sequence
                 ASN1TaggedObject oobj = (ASN1TaggedObject) seq.getObjectAt(1);
                 // Due to bug in java cert.getSubjectAltName regarding OtherName, it can be tagged an extra time...
@@ -1908,7 +1908,7 @@ public abstract class CertTools {
                     obj = ASN1TaggedObject.getInstance(obj).getObject();
                 }
                 ASN1Sequence piSeq = ASN1Sequence.getInstance(obj);
-                
+
                 Enumeration<?> e = piSeq.getObjects();
                 if (e.hasMoreElements()) {
                     Object element = e.nextElement();
@@ -1922,7 +1922,7 @@ public abstract class CertTools {
                         assigner = ((ASN1ObjectIdentifier) element).getId();
                     }
                 }
-                
+
                 StringBuilder buff = new StringBuilder();
                 if (identifierValue != null) {
                     buff.append(escapePermanentIdentifierValue(identifierValue));
@@ -1936,7 +1936,7 @@ public abstract class CertTools {
         }
         return null;
     }
-    
+
     private static String escapePermanentIdentifierValue(String realValue) {
         return realValue.replace(PERMANENTIDENTIFIER_SEP, "\\" + PERMANENTIDENTIFIER_SEP);
     }
@@ -1944,7 +1944,7 @@ public abstract class CertTools {
     private static String unescapePermanentIdentifierValue(String escapedValue) {
         return escapedValue.replace("\\" + PERMANENTIDENTIFIER, PERMANENTIDENTIFIER);
     }
-    
+
     /**
      * (This method intentionally has package level visibility to be able to be invoked from JUnit tests.)
      * @param permanentIdentifierString
@@ -2106,7 +2106,7 @@ public abstract class CertTools {
             throw new RuntimeException("Could not read ASN1InputStream", e);
         }
         if (oct instanceof ASN1TaggedObject) {
-            oct = ((ASN1TaggedObject)oct).getObject();
+            oct = ((ASN1TaggedObject) oct).getObject();
         }
         ASN1Sequence seq = ASN1Sequence.getInstance(oct);
         return seq;
@@ -2130,7 +2130,7 @@ public abstract class CertTools {
                     int tag = gn.getTagNo();
                     ASN1Encodable name = gn.getName();
                     String str = CertTools.getGeneralNameString(tag, name);
-                    if ( str==null ) {
+                    if (str == null) {
                         continue;
                     }
                     if (altName == null) {
@@ -2169,9 +2169,9 @@ public abstract class CertTools {
      *         in the resulting string.
      */
     public static String getSubjectAlternativeName(Certificate certificate) {
-    	if (log.isTraceEnabled()) {
-    		log.trace(">getSubjectAlternativeName");
-    	}
+        if (log.isTraceEnabled()) {
+            log.trace(">getSubjectAlternativeName");
+        }
         String result = "";
         if (certificate instanceof X509Certificate) {
             X509Certificate x509cert = (X509Certificate) certificate;
@@ -2268,7 +2268,7 @@ public abstract class CertTools {
         final ASN1EncodableVector vec = new ASN1EncodableVector();
 
         for (final String email : CertTools.getEmailFromDN(altName)) {
-            vec.add(new GeneralName(1, /*new DERIA5String(iter.next())*/ email));
+            vec.add(new GeneralName(1, /*new DERIA5String(iter.next())*/email));
         }
 
         for (final String dns : CertTools.getPartsFromDN(altName, CertTools.DNS)) {
@@ -2310,7 +2310,7 @@ public abstract class CertTools {
             v.add(new DERTaggedObject(true, 0, new DERUTF8String(upn)));
             vec.add(GeneralName.getInstance(new DERTaggedObject(false, 0, new DERSequence(v))));
         }
-        
+
         // PermanentIdentifier is an OtherName see method getPermananentIdentifier... for asn.1 definition
         for (final String permanentIdentifier : CertTools.getPartsFromDN(altName, CertTools.PERMANENTIDENTIFIER)) {
             final String[] values = getPermanentIdentifierValues(permanentIdentifier);
@@ -2603,7 +2603,7 @@ public abstract class CertTools {
             if (derObject != null) {
                 AuthorityInformationAccess authorityInformationAccess = AuthorityInformationAccess.getInstance(derObject);
                 AccessDescription[] accessDescriptions = authorityInformationAccess.getAccessDescriptions();
-                if ((accessDescriptions != null) && (accessDescriptions.length >0)) {
+                if ((accessDescriptions != null) && (accessDescriptions.length > 0)) {
                     for (AccessDescription accessDescription : accessDescriptions) {
                         if (accessDescription.getAccessMethod().equals(X509ObjectIdentifiers.id_ad_caIssuers)) {
                             GeneralName generalName = accessDescription.getAccessLocation();
@@ -2624,7 +2624,6 @@ public abstract class CertTools {
         return result;
     }
 
-    
     /**
      * Returns OCSP URL that is inside AuthorityInformationAccess extension, or null.
      * 
@@ -2666,12 +2665,11 @@ public abstract class CertTools {
         }
         return ret;
     }
-    
+
     /** Reads PrivateKeyUsagePeriod extension from a certificate
      * 
      */
-    public static PrivateKeyUsagePeriod getPrivateKeyUsagePeriod(
-            final X509Certificate cert) throws IOException {
+    public static PrivateKeyUsagePeriod getPrivateKeyUsagePeriod(final X509Certificate cert) throws IOException {
         PrivateKeyUsagePeriod res = null;
         final byte[] extvalue = cert.getExtensionValue(Extension.privateKeyUsagePeriod.getId());
         if ((extvalue != null) && (extvalue.length > 0)) {
@@ -2707,7 +2705,7 @@ public abstract class CertTools {
         byte[] bytes = cert.getExtensionValue(oid);
         return getDerObjectFromByteArray(bytes);
 
-    } 
+    }
 
     /**
      * 
@@ -2947,7 +2945,7 @@ public abstract class CertTools {
      */
     public static String insertCNPostfix(String dn, String cnpostfix) {
         if (log.isTraceEnabled()) {
-            log.trace(">insertCNPostfix: dn=" + dn + ", cnpostfix="+cnpostfix);
+            log.trace(">insertCNPostfix: dn=" + dn + ", cnpostfix=" + cnpostfix);
         }
         if (dn == null) {
             return null;
@@ -2961,7 +2959,7 @@ public abstract class CertTools {
                 if (atav.getType() != null) {
                     final String currentSymbol = CeSecoreNameStyle.DefaultSymbols.get(atav.getType());
                     if (!replaced && "CN".equals(currentSymbol)) {
-                        nameBuilder.addRDN(atav.getType(), IETFUtils.valueToString(atav.getValue())+cnpostfix);
+                        nameBuilder.addRDN(atav.getType(), IETFUtils.valueToString(atav.getValue()) + cnpostfix);
                         replaced = true;
                     } else {
                         nameBuilder.addRDN(atav);
@@ -2969,13 +2967,13 @@ public abstract class CertTools {
                 }
             }
         }
-        final String ret =  nameBuilder.build().toString();
+        final String ret = nameBuilder.build().toString();
         if (log.isTraceEnabled()) {
             log.trace("<reverseDN: " + ret);
         }
         return ret;
     }
-    
+
     /**
      * Splits a DN into components.
      * @see X509NameTokenizer
@@ -2988,7 +2986,7 @@ public abstract class CertTools {
         }
         return ret;
     }
-    
+
     /**
      * Returns the parent DN of a DN string, e.g. if the input is
      * "cn=User,dc=example,dc=com" then it would return "dc=example,dc=com".
@@ -2999,7 +2997,7 @@ public abstract class CertTools {
         tokenizer.nextToken();
         return tokenizer.getRemainingString();
     }
-    
+
     /**
      * class for breaking up an X500 Name into it's component tokens, ala java.util.StringTokenizer. 
      */
@@ -3072,12 +3070,12 @@ public abstract class CertTools {
             index = end;
             return buf.toString().trim();
         }
-        
+
         /**
          * Returns the remaining (not yet tokenized) part of the DN.
          */
         String getRemainingString() {
-            return index+1 < value.length() ? value.substring(index+1) : "";
+            return index + 1 < value.length() ? value.substring(index + 1) : "";
         }
     }
 
@@ -3094,7 +3092,7 @@ public abstract class CertTools {
         private StringBuilder buf = new StringBuilder();
 
         public BasicX509NameTokenizer(String oid) {
-            this.oid = oid;          
+            this.oid = oid;
         }
 
         public boolean hasMoreTokens() {
@@ -3217,9 +3215,9 @@ public abstract class CertTools {
             Collections.reverse(newOrdering);
             Collections.reverse(newValues);
         }
-        
+
         X500NameBuilder nameBuilder = new X500NameBuilder(new CeSecoreNameStyle());
-        for(int i=0; i<newOrdering.size(); i++) {
+        for (int i = 0; i < newOrdering.size(); i++) {
             nameBuilder.addRDN(newOrdering.get(i), (ASN1Encodable) newValues.get(i));
         }
         // -- Return X500Name with the ordered fields
@@ -3252,8 +3250,8 @@ public abstract class CertTools {
      * @throws NoSuchAlgorithmException
      * @throws CertificateException
      */
-    public static List<Certificate> createCertChain(Collection<?> certlistin) throws CertPathValidatorException,
-            InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException, CertificateException {
+    public static List<Certificate> createCertChain(Collection<?> certlistin) throws CertPathValidatorException, InvalidAlgorithmParameterException,
+            NoSuchAlgorithmException, NoSuchProviderException, CertificateException {
         final List<Certificate> returnval = new ArrayList<Certificate>();
 
         Collection<Certificate> certlist = orderCertificateChain(certlistin);
@@ -3422,7 +3420,7 @@ public abstract class CertTools {
         }
         return ret;
     }
-    
+
     /**
      * Generates a PKCS10CertificationRequest
      * 
@@ -3466,23 +3464,24 @@ public abstract class CertTools {
      * @throws IOException
      * @throws OperatorCreationException 
      */
-    public static PKCS10CertificationRequest genPKCS10CertificationRequest(String signatureAlgorithm, X500Name subject, PublicKey publickey, ASN1Set attributes, 
-            PrivateKey signingKey, String provider) throws IOException, OperatorCreationException {
-    
-        ASN1Sequence seq = (ASN1Sequence)ASN1Primitive.fromByteArray(publickey.getEncoded());
+    public static PKCS10CertificationRequest genPKCS10CertificationRequest(String signatureAlgorithm, X500Name subject, PublicKey publickey,
+            ASN1Set attributes, PrivateKey signingKey, String provider) throws IOException, OperatorCreationException {
+
+        ASN1Sequence seq = (ASN1Sequence) ASN1Primitive.fromByteArray(publickey.getEncoded());
         SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo(seq);
         CertificationRequestInfo reqInfo = new CertificationRequestInfo(subject, pkinfo, attributes);
-    
-        if(provider == null) {
+
+        if (provider == null) {
             provider = BouncyCastleProvider.PROVIDER_NAME;
         }
 
-        ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(signatureAlgorithm).setProvider(provider).build(signingKey), 20480);
+        ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(signatureAlgorithm).setProvider(provider).build(signingKey),
+                20480);
         signer.getOutputStream().write(reqInfo.getEncoded(ASN1Encoding.DER));
         signer.getOutputStream().flush();
         byte[] sig = signer.getSignature();
         DERBitString sigBits = new DERBitString(sig);
-       
+
         CertificationRequest req = new CertificationRequest(reqInfo, signer.getAlgorithmIdentifier(), sigBits);
         return new PKCS10CertificationRequest(req);
     }
@@ -3497,7 +3496,7 @@ public abstract class CertTools {
     public static ContentVerifierProvider genContentVerifierProvider(PublicKey pubkey) throws OperatorCreationException {
         return new JcaContentVerifierProviderBuilder().build(pubkey);
     }
-    
+
     /**
      * Converts a X509Certificate chain into a JcaX509CertificateHolder chain.
      * 
@@ -3505,12 +3504,13 @@ public abstract class CertTools {
      * @return the result
      * @throws CertificateEncodingException if there is a problem extracting the certificate information.
      */
-    public static final JcaX509CertificateHolder[] convertCertificateChainToCertificateHolderChain(X509Certificate[] certificateChain) throws CertificateEncodingException {
+    public static final JcaX509CertificateHolder[] convertCertificateChainToCertificateHolderChain(X509Certificate[] certificateChain)
+            throws CertificateEncodingException {
         final JcaX509CertificateHolder[] certificateHolderChain = new JcaX509CertificateHolder[certificateChain.length];
         for (int i = 0; i < certificateChain.length; ++i) {
             certificateHolderChain[i] = new JcaX509CertificateHolder(certificateChain[i]);
         }
         return certificateHolderChain;
     }
-    
+
 }
