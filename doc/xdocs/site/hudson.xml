@@ -2,16 +2,16 @@
 <document>
 
   <properties>
-    <title>Hudson</title>
+    <title>Jenkins</title>
   </properties>
 
 <body>
-  <section name="Hudson">
+  <section name="Jenkins">
     <p>
-    We have a <a href="http://hudson.primekey.se/">Hudson</a> server [1] for continuous integration of EJBCA (or <a href="https://hudson.primekey.se/">https</a> for admins).
+    We have a <a href="http://hudson.primekey.se/">Jenkins</a> server [1] for continuous integration of EJBCA (or <a href="https://hudson.primekey.se/">https</a> for admins).
     </p>
     <p>
-    [1]: <a href="http://hudson.dev.java.net">Hudson at dev.java.net</a>.
+    [1]: <a href="http://jenkins-ci.org/">Jenkins at jenkins-ci.org</a>.
     </p>
   </section>
 
