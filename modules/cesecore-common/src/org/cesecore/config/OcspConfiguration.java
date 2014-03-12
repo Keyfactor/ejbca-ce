@@ -121,7 +121,7 @@ public class OcspConfiguration {
             timeInSeconds = Integer.parseInt(ConfigurationHolder.getString(SIGNING_CERTD_VALID_TIME));
         } catch (NumberFormatException e) {
             timeInSeconds = defaultTimeInSeconds;
-            log.warn(SIGNING_CERTD_VALID_TIME + " is not a decimal number. Using default 5 minutes");
+            log.warn(SIGNING_CERTD_VALID_TIME + " is not a decimal integer. Using default 5 minutes");
         }
         return timeInSeconds*1000;
     }
@@ -414,7 +414,7 @@ public class OcspConfiguration {
         try {
             value = config.getLong(EXPIREDCERT_RETENTIONPERIOD, value) * 1000;
         } catch (ConversionException e) {
-            log.warn("\"ocsp.expiredcert.retentionperiod\" is not a decimal number. Using default value: " + value);
+            log.warn("\"ocsp.expiredcert.retentionperiod\" is not a decimal integer. Using default value: " + value);
         }
         
         
@@ -435,7 +435,7 @@ public class OcspConfiguration {
         try {
             value = (config.getLong(key, value) * 1000);
         } catch (ConversionException e) {
-            log.warn("\"ocsp.untilNextUpdate\" is not a decimal number. Using default value: " + value);
+            log.warn("\"ocsp.untilNextUpdate\" is not a decimal integer. Using default value: " + value);
         }
         return value;
     }
@@ -462,7 +462,7 @@ public class OcspConfiguration {
         try {
             value = (config.getLong(key, value) * 1000);
         } catch (ConversionException e) {
-            log.warn("\"ocsp.revoked.untilNextUpdate\" is not a decimal number. Using default value: " + value);
+            log.warn("\"ocsp.revoked.untilNextUpdate\" is not a decimal integer. Using default value: " + value);
         }
         return value;
     }
@@ -491,7 +491,7 @@ public class OcspConfiguration {
         } catch (ConversionException e) {
             // Convert default value to milliseconds
             value = value * 1000;
-            log.warn("\"ocsp.maxAge\" is not a decimal number. Using default value: " + value);
+            log.warn("\"ocsp.maxAge\" is not a decimal integer. Using default value: " + value);
         }
         return value;
     }
@@ -520,7 +520,7 @@ public class OcspConfiguration {
         } catch (ConversionException e) {
             // Convert default value to milliseconds
             value = value * 1000;
-            log.warn("\"ocsp.revoked.maxAge\" is not a decimal number. Using default value: " + value);
+            log.warn("\"ocsp.revoked.maxAge\" is not a decimal integer. Using default value: " + value);
         }
         return value;
     }
@@ -682,7 +682,7 @@ public class OcspConfiguration {
 
         } catch (NumberFormatException e) {
             timeInSeconds = defaultTimeInSeconds;
-            log.warn(WARNING_BEFORE_EXPERATION_TIME + " is not a decimal number. Using default 1 week.");
+            log.warn(WARNING_BEFORE_EXPERATION_TIME + " is not a decimal integer. Using default 1 week.");
         }
         return 1000 * (long) timeInSeconds;
     }
