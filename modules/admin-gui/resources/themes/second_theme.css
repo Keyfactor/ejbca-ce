@@ -623,6 +623,15 @@ div#code input[type="submit"] {
 	margin-left: 1em;
 }
 
+/* --- Page: CA > Certificate Profiles */
+select option.cvcoption_header {
+    background: #ffc;
+    font-weight: bold;
+    border-bottom: 1px solid #000;
+    padding: 3px;
+    color: #000;
+}
+
 /* --- Page: RA > End-Entity profile */
 table#endentityprofile.edit tr td:first-child {
 	vertical-align: middle;
