@@ -399,7 +399,7 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
             roleEndEntity = AuthorizationRoleSignTermEnum.SIGNTERM;
             break;
         default:
-            throw new IllegalStateException();
+            throw new IllegalStateException("Value of terminal type was not handled in switch");
         }
         
         // We must take the issuer DN directly from the CA-certificate, if we are not creating a new Root CA

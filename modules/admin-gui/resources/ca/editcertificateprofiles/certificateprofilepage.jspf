@@ -1712,14 +1712,14 @@ function checkallfields(){
            %>
            
            <%-- Inspection Systems --%>
-           <option disabled="disabled" style="background: #bbb" class="cvcoption_header"> 
+           <option disabled="disabled" class="cvcoption_header"> 
                 <c:out value="<%= ejbcawebbean.getText(\"CVCINSPECTIONSYSTEM\") %>" />
            </option>
            <option value="<%=CertificateProfile.CVC_ACCESS_DG3%>" <% if ((ar & CertificateProfile.CVC_ACCESS_DG3) != 0) out.write(" selected "); %> class="cvcoption_is"><c:out value="<%= ejbcawebbean.getText(\"CVCACCESSDG3\") %>" /></option>
            <option value="<%=CertificateProfile.CVC_ACCESS_DG4%>" <% if ((ar & CertificateProfile.CVC_ACCESS_DG4) != 0) out.write(" selected "); %> class="cvcoption_is"><c:out value="<%= ejbcawebbean.getText(\"CVCACCESSDG4\") %>" /></option>
            
            <%-- Authentication Terminals --%>
-           <option disabled="disabled" style="background: #bbb" class="cvcoption_header"> 
+           <option disabled="disabled" class="cvcoption_header"> 
                 <c:out value="<%= ejbcawebbean.getText(\"CVCAUTHENTICATIONTERMINAL\") %>" />
            </option>
            <option value="0" <% if (arlflags.getFlag(0)) out.write(" selected "); %> class="cvcoption_at"><c:out value="<%= ejbcawebbean.getText(\"CVCACCESSAGEVERIFICATION\") %>" /></option>
@@ -1747,7 +1747,7 @@ function checkallfields(){
           
            
            <%-- Signature Terminals --%>
-           <option disabled="disabled" style="background: #bbb" class="cvcoption_header"> 
+           <option disabled="disabled" class="cvcoption_header"> 
                 <c:out value="<%= ejbcawebbean.getText(\"CVCSIGNATURETERMINAL\") %>" />
            </option>
            <option value="<%=CertificateProfile.CVC_ACCESS_SIGN%>" <% if ((ar & CertificateProfile.CVC_ACCESS_SIGN) != 0) out.write(" selected "); %> class="cvcoption_st"><c:out value="<%= ejbcawebbean.getText(\"CVCACCESSSIGN\") %>" /></option>
