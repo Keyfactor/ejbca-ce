@@ -120,6 +120,7 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.dn.DNFieldsUtil;
 import org.cesecore.certificates.util.dn.PrintableStringEntryConverter;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
@@ -176,7 +177,9 @@ public class X509CA extends CA implements Serializable {
     /** Creates a new instance of CA, this constructor should be used when a new CA is created */
     public X509CA(final X509CAInfo cainfo) {
         super(cainfo);
-
+        if(StringUtils.isEmpty(DNFieldsUtil.removeAllEmpties(cainfo.getSubjectDN())) && StringUtils.isEmpty(cainfo.getSubjectAltName())) {
+            throw new IllegalArgumentException("Subject DN and Alt Name can't both be blank for an X509 CA.");
+        }
         data.put(POLICIES, cainfo.getPolicies());
         data.put(SUBJECTALTNAME, cainfo.getSubjectAltName());
         setUseAuthorityKeyIdentifier(cainfo.getUseAuthorityKeyIdentifier());

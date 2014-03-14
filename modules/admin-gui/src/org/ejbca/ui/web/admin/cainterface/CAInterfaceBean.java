@@ -39,6 +39,7 @@ import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.TreeMap;
 
+import javax.ejb.EJBException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.fileupload.DiskFileUpload;
@@ -94,6 +95,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.FileTools;
 import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
@@ -939,7 +941,16 @@ public class CAInterfaceBean implements Serializable {
 	                            useUserStorage,
 	                            useCertificateStorage,
 	                            sharedCmpRaSecret);
-	                    cadatahandler.createCA((CAInfo) x509cainfo);
+                        try {
+                            cadatahandler.createCA((CAInfo) x509cainfo);
+                        } catch (EJBException e) {
+                            if (e.getCausedByException() instanceof IllegalArgumentException) {
+                                //Couldn't create CA from the given parameters
+                                illegaldnoraltname = true;
+                            } else {
+                                throw e;
+                            }
+                        }
 	                }
 
 	                if (buttonMakeRequest) {
