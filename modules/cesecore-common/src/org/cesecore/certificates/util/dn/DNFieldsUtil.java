@@ -120,18 +120,22 @@ public abstract class DNFieldsUtil {
     }
 	
 	/** If we end up with a buffer ending with "," or ", " we need to remove these chars. */
-	private static void removeUnwatedLastChars(final StringBuilder sb) {
-    	if (sb.length()>0) {
-    		for (int i=sb.length()-1; i>=0; i--) {
-    			final char c = sb.charAt(i);
-    			if (c == ' ' || c == ',') {
-    				sb.deleteCharAt(i);
-    			} else {
-    				break;
-    			}
-    		}
-    	}
-	}
+    private static void removeUnwatedLastChars(final StringBuilder sb) {
+        if (sb.length() > 0) {
+            for (int i = sb.length() - 1; i >= 0; i--) {
+                final char c = sb.charAt(i);
+                if (c == ' ' || c == ',') {
+                    if (sb.charAt(i - 1) == '\\') {
+                        break;
+                    } else {
+                        sb.deleteCharAt(i);
+                    }
+                } else {
+                    break;
+                }
+            }
+        }
+    }
 
 	/** Populates the two lists with starting positions in the character buffer where the value=key pair begins and keys begin. */
     private static void populatePositionLists(final List<Integer> startOfPairs, final List<Integer> startOfValues, final char[] buf) {
