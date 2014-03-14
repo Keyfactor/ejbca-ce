@@ -276,6 +276,7 @@ public abstract class CertTools {
      * @param ldaporder true if LDAP ordering of DN should be used (default in EJBCA), false for X.500 order, ldap order is CN=A,OU=B,O=C,C=SE, x.500
      *            order is the reverse
      * @return X500Name or null if input is null
+     * @throws IllegalArgumentException if DN is not valid
      */
     public static X500Name stringToBcX500Name(String dn, final X509NameEntryConverter converter, final boolean ldaporder) {
         if (log.isTraceEnabled()) {
@@ -312,10 +313,8 @@ public abstract class CertTools {
                     startIndexOfPartName--;
                 }
                 currentPartName = dn.substring(startIndexOfPartName, endIndexOfPartName);
-                //log.trace("startIndexOfPartName="+startIndexOfPartName+" currentPartName='"+currentPartName+"'");
                 currentStartPosition = i + 1;
             }
-            //log.trace("i=" + i + " startPosition="+currentStartPosition+" quoted="+quoted + " escapeNext="+escapeNext+ " current='"+current + "'");
             // When we have found a start marker, we need to be on the lookout for the ending marker
             if (currentStartPosition != -1 && ((!quoted && !escapeNext && (current == ',' || current == '+')) || i == dn.length() - 1)) {
                 int endPosition = (i == dn.length() - 1) ? dn.length() - 1 : i - 1;
@@ -328,12 +327,11 @@ public abstract class CertTools {
                     currentStartPosition++;
                 }
                 // Only return the inner value if the part is quoted
-                if (dn.charAt(currentStartPosition) == '"' && dn.charAt(endPosition) == '"') {
+                if (currentStartPosition < dn.length() && dn.charAt(currentStartPosition) == '"' && dn.charAt(endPosition) == '"') {
                     currentStartPosition++;
                     endPosition--;
                 }
                 String currentValue = dn.substring(currentStartPosition, endPosition + 1);
-                //log.trace("currentStartPosition="+currentStartPosition+" currentValue="+currentValue);
                 // Unescape value since the nameBuilder will double each escape
                 currentValue = unescapeValue(new StringBuilder(currentValue)).toString();
                 try {
@@ -367,7 +365,7 @@ public abstract class CertTools {
         final X500Name orderedX500Name = getOrderedX500Name(x500Name, ldaporder, converter);
         if (log.isTraceEnabled()) {
             log.trace(">stringToBcX500Name: x500Name=" + x500Name.toString() + " orderedX500Name=" + orderedX500Name.toString());
-        }
+        }     
         return orderedX500Name;
     }
 

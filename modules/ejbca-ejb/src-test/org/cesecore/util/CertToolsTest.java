@@ -1690,5 +1690,37 @@ public class CertToolsTest {
         assertEquals("[permanentIdentifier=abcd 456/1.2.7, permanentIdentifier=def321/1.2.5, upn=upn@example.com]", Arrays.toString(result));
     }
     
-  
+    @Test
+    public void testStringToBcX500WithIncompleteLoneValue() {
+        //Legal as a name even if it won't be legal as a DN
+        assertNotNull(CertTools.stringToBcX500Name("O="));    
+    }
+    
+    @Test
+    public void testStringToBcX500WithTrailingComma() {
+        //Legal as a name even if it won't be legal as a DN
+        assertNotNull(CertTools.stringToBcX500Name("CN=,"));
+    }
+
+
+    @Test
+    public void testStringToBcX500WithIncompleteValue() {
+        assertNotNull(CertTools.stringToBcX500Name("O=,CN=foo"));
+    }
+    
+    @Test
+    public void testStringToBcX500WithValueAndTrailingComma() {
+        assertNotNull(CertTools.stringToBcX500Name("CN=f,"));
+    }
+
+ 
+    @Test
+    public void testStringToBcX500WithEscapedComma() {
+        try {
+            assertNotNull(CertTools.stringToBcX500Name("O=\\,"));
+            assertNotNull(CertTools.stringToBcX500Name("O=f\\,b"));          
+        } catch (IllegalArgumentException e) {
+            fail("Exception " + e.getClass() + " should not been thrown.");
+        }
+    }
 }

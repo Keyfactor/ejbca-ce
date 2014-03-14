@@ -118,6 +118,7 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.ocsp.exception.NotSupportedException;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.certificates.util.dn.DNFieldsUtil;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
@@ -281,7 +282,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         // X509 CA is the most normal type of CA
         if (cainfo instanceof X509CAInfo) {
             log.info("Creating an X509 CA: "+cainfo.getName());
-            X509CAInfo x509cainfo = (X509CAInfo) cainfo;
+            X509CAInfo x509cainfo = (X509CAInfo) cainfo;           
             // Create X509CA
             ca = new X509CA(x509cainfo);
             ca.setCAToken(catoken);
@@ -321,6 +322,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @Override
     public void createCA(AuthenticationToken admin, CAInfo cainfo) throws CAExistsException, AuthorizationDeniedException,
             CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
+        //Verify integrity if caInfo, either one SubjectDN or SubjectAltName needs to be filled in        
         if (log.isTraceEnabled()) {
             log.trace(">createCA: " + cainfo.getName());
         }
@@ -479,13 +481,17 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             try {
                 // create selfsigned certificate
                 Certificate cacertificate = null;
-                log.debug("CAAdminSessionBean : " + cainfo.getSubjectDN());
+                if (log.isDebugEnabled()) {
+                    log.debug("CAAdminSessionBean : " + cainfo.getSubjectDN());
+                }
                 // AltName is not implemented for all CA types              
                 EndEntityInformation cadata = new EndEntityInformation("nobody", cainfo.getSubjectDN(), cainfo.getSubjectDN().hashCode(), caAltName,
                         null, 0, new EndEntityType(EndEntityTypes.INVALID), 0, cainfo.getCertificateProfileId(), null, null, 0, 0, null);
                 cacertificate = ca.generateCertificate(cryptoToken, cadata, cryptoToken.getPublicKey(aliasCertSign), -1, null,
                         cainfo.getValidity(), certprofile, sequence);
-                log.debug("CAAdminSessionBean : " + CertTools.getSubjectDN(cacertificate));
+                if (log.isDebugEnabled()) {
+                    log.debug("CAAdminSessionBean : " + CertTools.getSubjectDN(cacertificate));
+                }
                 // Build Certificate Chain
                 certificatechain = new ArrayList<Certificate>();
                 certificatechain.add(cacertificate);
