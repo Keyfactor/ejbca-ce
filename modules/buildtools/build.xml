@@ -25,6 +25,7 @@
 -->
     <target name="clean" description="Clean up this module">
 		<delete dir="${build.dir}" />
+    	<delete dir="${build-test.dir}" />
 		<!--<delete dir="${mod.buildtools.dist}" />-->
     </target>
 	

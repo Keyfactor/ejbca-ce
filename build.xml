@@ -36,6 +36,7 @@
         <delete dir="${apidoc}" />
         <delete dir="${tmp}"/>
         <delete file="velocity.log" />
+        <delete file="validationtool.log" />
         <ant antfile="modules/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
     </target>
 	

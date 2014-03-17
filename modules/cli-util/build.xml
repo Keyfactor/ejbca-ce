@@ -54,6 +54,7 @@
 
     <target name="clean" description="Clean up this module">
 		<delete dir="${build.dir}" />
+		<delete dir="${build-test.dir}" />
     </target>
 	
     <target name="compile" depends="setup">
