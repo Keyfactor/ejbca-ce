@@ -13,6 +13,7 @@
 package org.cesecore.mock.authentication.tokens;
 
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
+import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 
 /**
  * @version $Id$
@@ -22,6 +23,10 @@ public enum UsernameAccessMatchValue implements AccessMatchValue {
     USERNAME(0);
 
     private int numericValue;
+
+    static {
+        AccessMatchValueReverseLookupRegistry.INSTANCE.register(values());
+    }
 
     private UsernameAccessMatchValue(int numericValue) {
         this.numericValue = numericValue;
@@ -46,4 +51,5 @@ public enum UsernameAccessMatchValue implements AccessMatchValue {
     public boolean isIssuedByCa() {
         return false;
     }
+
 }

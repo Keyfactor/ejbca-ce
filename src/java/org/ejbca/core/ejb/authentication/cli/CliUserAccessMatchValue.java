@@ -13,14 +13,18 @@
 package org.ejbca.core.ejb.authentication.cli;
 
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
-import org.cesecore.authorization.user.matchvalues.AccessMatchValuePlugin;
+import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 
 /**
  * @version $Id$
  *
  */
-public enum CliUserAccessMatchValue implements AccessMatchValuePlugin {
+public enum CliUserAccessMatchValue implements AccessMatchValue {
     USERNAME(0);
+
+    static {
+        AccessMatchValueReverseLookupRegistry.INSTANCE.register(CliUserAccessMatchValue.values());
+    }
     
     private final int numericValue;
 
@@ -46,10 +50,5 @@ public enum CliUserAccessMatchValue implements AccessMatchValuePlugin {
     @Override
     public boolean isIssuedByCa() {
         return false;
-    }
-    
-    @Override 
-    public AccessMatchValue[] getValues() {
-        return values();
     }
 }
