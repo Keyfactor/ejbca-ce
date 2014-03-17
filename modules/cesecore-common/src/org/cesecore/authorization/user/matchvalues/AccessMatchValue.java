@@ -50,5 +50,4 @@ public interface AccessMatchValue {
      * @return true of this AccessMatchValue is issued by a CA 
      */
     boolean isIssuedByCa();
-    
 }

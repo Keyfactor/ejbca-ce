@@ -45,6 +45,7 @@ import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
@@ -57,6 +58,7 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
+import org.ejbca.core.ejb.authentication.cli.CliUserAccessMatchValue;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
@@ -283,6 +285,20 @@ public class StartServicesServlet extends HttpServlet {
         // operation and avoid a performance hit for the first request where this is checked.
         certCreateSession.isUniqueCertificateSerialNumberIndex();       
         
+        /*
+         * FIXME: This is a hack, because we need some sort of annotation or service loader to make sure 
+         * that the AccessMatchValue-implementing enums get initialized at runtime. Sadly, enums aren't 
+         * initialized until they're called, which causes trouble with this registry. 
+         * 
+         * These lines are to be removed once a dynamic initialization heuristic has been developed.
+         * 
+         */      
+        try {
+            Class.forName(X500PrincipalAccessMatchValue.class.getName());
+            Class.forName(CliUserAccessMatchValue.class.getName());
+        } catch (ClassNotFoundException e) {
+            log.error("Failure during match value initialization", e);
+        }
         // Check and upgrade if this is the first time we start an instance that was previously an stand-alone VA
         ocspResponseGeneratorSession.adhocUpgradeFromPre60(null);
         // Start key reload timer
