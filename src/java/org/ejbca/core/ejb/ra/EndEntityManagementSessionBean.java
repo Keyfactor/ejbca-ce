@@ -687,7 +687,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 assertAuthorizedToEndEntityProfile(admin, data1.getEndEntityProfileId(), AccessRulesConstants.DELETE_RIGHTS, caid);
             }
         } else {
-            final String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);
+            log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
+            // This exception message is used to not leak information to the user 
+            final String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");
             log.info(msg);
             throw new NotFoundException(msg);
         }
@@ -742,6 +744,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             }
         } else {
             log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
+            // This exception message is used to not leak information to the user
             String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");
             log.info(msg);
             throw new FinderException(msg);
@@ -810,6 +813,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             }
         } else {
             log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
+            // This exception message is used to not leak information to the user
             String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");
             throw new FinderException(msg);
         }
@@ -881,6 +885,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             }
         } else {
             log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
+            // This exception message is used to not leak information to the user
             String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");
             log.info(msg);
             throw new FinderException(msg);
@@ -945,6 +950,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 }
             } else {
                 log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
+                // This exception message is used to not leak information to the user
                 String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");
                 log.info(msg);
                 throw new FinderException(msg);
@@ -971,6 +977,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         final UserData data = UserData.findByUsername(entityManager, username);
         if (data == null) {
             log.info(intres.getLocalizedMessage("ra.errorentitynotexist", username));
+            // This exception message is used to not leak information to the user
             final String msg = intres.getLocalizedMessage("ra.wrongusernameorpassword");
             log.info(msg);
             throw new FinderException(msg);
