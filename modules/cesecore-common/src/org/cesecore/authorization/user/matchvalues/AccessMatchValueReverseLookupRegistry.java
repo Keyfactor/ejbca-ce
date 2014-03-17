@@ -34,8 +34,8 @@ public enum AccessMatchValueReverseLookupRegistry {
     private final Map<String, AccessMatchValue> defaultValues = new ConcurrentHashMap<String, AccessMatchValue>();
 
     private AccessMatchValueReverseLookupRegistry() {
-        ServiceLoader<? extends AccessMatchValue> serviceLoader = ServiceLoader.load(AccessMatchValue.class);
-        for(AccessMatchValue plugin : serviceLoader) {
+        ServiceLoader<? extends AccessMatchValuePlugin> serviceLoader = ServiceLoader.load(AccessMatchValuePlugin.class);
+        for(AccessMatchValuePlugin plugin : serviceLoader) {
             AccessMatchValue[] values = plugin.getValues();
             final String tokenType = values[0].getTokenType();
             if (defaultValues.containsKey(tokenType)) {

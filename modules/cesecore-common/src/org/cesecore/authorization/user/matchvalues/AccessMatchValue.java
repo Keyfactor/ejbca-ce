@@ -51,8 +51,4 @@ public interface AccessMatchValue {
      */
     boolean isIssuedByCa();
     
-    /**
-     * @return all the types defined by this implementation. 
-     */
-    AccessMatchValue[] getValues();
 }

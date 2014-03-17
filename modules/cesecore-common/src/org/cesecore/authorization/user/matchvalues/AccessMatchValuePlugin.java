@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  CESeCore: CE Security Core                                           *
+ *  EJBCA: The OpenSource Certificate Authority                          *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,40 +10,18 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.mock.authentication.tokens;
-
-import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
+package org.cesecore.authorization.user.matchvalues;
 
 /**
+ * Marker interface for AccessMatchValue plugins
+ * 
  * @version $Id$
  *
  */
-public enum UsernameAccessMatchValue implements AccessMatchValue {
-    USERNAME(0);
+public interface AccessMatchValuePlugin extends AccessMatchValue {
 
-    private int numericValue;
-
-    private UsernameAccessMatchValue(int numericValue) {
-        this.numericValue = numericValue;
-    }
-
-    @Override
-    public int getNumericValue() {
-        return numericValue;
-    }
-
-    @Override
-    public boolean isDefaultValue() {
-        return true; // Single value
-    }
-
-    @Override
-    public String getTokenType() {
-        return UsernameBasedAuthenticationToken.TOKEN_TYPE;
-    }
-
-    @Override
-    public boolean isIssuedByCa() {
-        return false;
-    }
+    /**
+     * @return all the types defined by this implementation. 
+     */
+    AccessMatchValue[] getValues();
 }

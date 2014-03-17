@@ -13,12 +13,13 @@
 package org.ejbca.core.ejb.authentication.cli;
 
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
+import org.cesecore.authorization.user.matchvalues.AccessMatchValuePlugin;
 
 /**
  * @version $Id$
  *
  */
-public enum CliUserAccessMatchValue implements AccessMatchValue {
+public enum CliUserAccessMatchValue implements AccessMatchValuePlugin {
     USERNAME(0);
     
     private final int numericValue;
