@@ -177,6 +177,7 @@ public class X509CA extends CA implements Serializable {
     /** Creates a new instance of CA, this constructor should be used when a new CA is created */
     public X509CA(final X509CAInfo cainfo) {
         super(cainfo);
+        //Verify integrity if caInfo, either one SubjectDN or SubjectAltName needs to be filled in     
         if(StringUtils.isEmpty(DNFieldsUtil.removeAllEmpties(cainfo.getSubjectDN())) && StringUtils.isEmpty(cainfo.getSubjectAltName())) {
             throw new IllegalArgumentException("Subject DN and Alt Name can't both be blank for an X509 CA.");
         }

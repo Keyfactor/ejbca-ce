@@ -39,6 +39,7 @@ public class DNFieldsUtilTest {
     final private static String empty1 = key1+c;
     final private static String empty2 = key2+c;
     final private static String originalDN = key2+trickyValue4+c+empty1+empty2+empty1+empty1+key1+trickyValue1+c+empty1+key2+trickyValue5+c+empty1+empty2+key1+trickyValue2+cKey2+trickyValue6+c+empty1+key2+trickyValue7+cKey1+trickyValue3+c+empty1+empty2+empty1+key2+trickyValue8+c+empty1+empty2+empty2+empty1+empty1+empty2+empty1+key2;
+    //Note that originalDN ends with an escaped comma, so this line should end with a comma as a character
     final private static String trailingSpacesRemovedDN = key2+trickyValue4+c+empty1+empty2+empty1+empty1+key1+trickyValue1+c+empty1+key2+trickyValue5+c+empty1+empty2+key1+trickyValue2+cKey2+trickyValue6+c+empty1+key2+trickyValue7+cKey1+trickyValue3+c+empty2+key2+trickyValue8+c;
     final private static String allSpacesRemovedDN = key2+trickyValue4+cKey1+trickyValue1+cKey2+trickyValue5+cKey1+trickyValue2+cKey2+trickyValue6+cKey2+trickyValue7+cKey1+trickyValue3+cKey2+trickyValue8+c;
     final private static String defaultEmptyBefore = "UNSTRUCTUREDNAME=, DN=, POSTALADDRESS=, NAME=, UID=, OU=, 1.3.6.1.4.1.18838.1.1=, 1.3.6.1.4.1.4710.1.3.2=, ST=, UNSTRUCTUREDADDRESS=, BUSINESSCATEGORY=, STREET=, CN=test1, POSTALCODE=, O=, PSEUDONYM=, DC=, SURNAME=, C=, INITIALS=, SN=, L=, GIVENNAME=, TELEPHONENUMBER=, T=, DC=";
