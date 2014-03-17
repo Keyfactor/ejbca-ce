@@ -119,7 +119,11 @@ public abstract class DNFieldsUtil {
     	return removedTrailingEmpties;
     }
 	
-	/** If we end up with a buffer ending with "," or ", " we need to remove these chars. */
+	/** 
+	 * If we end up with a buffer ending with "," or ", " we need to remove these chars unless they've been escaped with a '\'
+	 * 
+	 * @param sb A StringBuilder to work in. 
+	 */
     private static void removeUnwatedLastChars(final StringBuilder sb) {
         if (sb.length() > 0) {
             for (int i = sb.length() - 1; i >= 0; i--) {

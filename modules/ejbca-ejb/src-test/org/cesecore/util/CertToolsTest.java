@@ -1693,24 +1693,31 @@ public class CertToolsTest {
     @Test
     public void testStringToBcX500WithIncompleteLoneValue() {
         //Legal as a name even if it won't be legal as a DN
-        assertNotNull(CertTools.stringToBcX500Name("O="));    
+        X500Name result = CertTools.stringToBcX500Name("O=");
+        assertNotNull(result);    
+        assertEquals("O=", result.toString());
     }
     
     @Test
     public void testStringToBcX500WithTrailingComma() {
-        //Legal as a name even if it won't be legal as a DN
-        assertNotNull(CertTools.stringToBcX500Name("CN=,"));
+        X500Name result = CertTools.stringToBcX500Name("CN=,");
+        assertNotNull(result);
+        assertEquals("CN=\\,", result.toString());
     }
 
 
     @Test
     public void testStringToBcX500WithIncompleteValue() {
-        assertNotNull(CertTools.stringToBcX500Name("O=,CN=foo"));
+        X500Name result = CertTools.stringToBcX500Name("CN=,O=foo");
+        assertNotNull(result);
+        assertEquals("CN=,O=foo", result.toString());
     }
     
     @Test
     public void testStringToBcX500WithValueAndTrailingComma() {
-        assertNotNull(CertTools.stringToBcX500Name("CN=f,"));
+        X500Name result = CertTools.stringToBcX500Name("CN=f,");
+        assertNotNull(result);
+        assertEquals("CN=f\\,", result.toString());
     }
 
  

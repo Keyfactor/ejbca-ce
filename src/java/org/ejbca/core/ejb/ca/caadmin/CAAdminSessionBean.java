@@ -321,8 +321,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     @Override
     public void createCA(AuthenticationToken admin, CAInfo cainfo) throws CAExistsException, AuthorizationDeniedException,
-            CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
-        //Verify integrity if caInfo, either one SubjectDN or SubjectAltName needs to be filled in        
+            CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {       
         if (log.isTraceEnabled()) {
             log.trace(">createCA: " + cainfo.getName());
         }
