@@ -486,7 +486,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
      *             error
      */
     @Test
-    public void testRevokedNextUpdat() throws Exception {
+    public void testRevokedNextUpdate() throws Exception {
        ocspResponseGeneratorTestSession.reloadOcspSigningCache();
         final X509Certificate ocspTestCert = getRevokedTestCert();
         
