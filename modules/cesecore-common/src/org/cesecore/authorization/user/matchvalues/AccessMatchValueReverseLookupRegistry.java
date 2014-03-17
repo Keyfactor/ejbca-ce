@@ -14,6 +14,7 @@ package org.cesecore.authorization.user.matchvalues;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -32,13 +33,10 @@ public enum AccessMatchValueReverseLookupRegistry {
     private final Map<String, Map<Integer, AccessMatchValue>> idLookupRegistry = new ConcurrentHashMap<String, Map<Integer, AccessMatchValue>>();
     private final Map<String, AccessMatchValue> defaultValues = new ConcurrentHashMap<String, AccessMatchValue>();
 
-    public Set<String> getAllTokenTypes() {
-        return defaultValues.keySet();
-    }
-    
-    /** Register a set of AccessMatchValues for reverse lookup. */
-    public void register(final AccessMatchValue[] values) {
-        if (values.length>0) {
+    private AccessMatchValueReverseLookupRegistry() {
+        ServiceLoader<? extends AccessMatchValue> serviceLoader = ServiceLoader.load(AccessMatchValue.class);
+        for(AccessMatchValue plugin : serviceLoader) {
+            AccessMatchValue[] values = plugin.getValues();
             final String tokenType = values[0].getTokenType();
             if (defaultValues.containsKey(tokenType)) {
                 throw new InvalidMatchValueException(tokenType + " has already been registered.");
@@ -58,7 +56,11 @@ public enum AccessMatchValueReverseLookupRegistry {
             idLookupRegistry.put(tokenType, idLookup);
         }
     }
-
+    
+    public Set<String> getAllTokenTypes() {
+        return defaultValues.keySet();
+    }
+    
     /**
      * This method performs a reverse lookup given a token type and an integer, by using already registered callback method
      * to translate those values into an AccessMatchValue. If no corresponding callback method has been registered, this method
