@@ -111,5 +111,10 @@ public class AlwaysAllowLocalAuthenticationToken extends LocalJvmOnlyAuthenticat
         public boolean isDefaultValue() {
             return numericValue == DEFAULT.numericValue;
         }
+
+        @Override 
+        public AccessMatchValue[] getValues() {
+            return values();
+        }
     }
 }
