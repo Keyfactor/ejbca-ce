@@ -110,7 +110,7 @@
 	<condition property="mod.ct.exists">
 		<available file="${mod.ct.path}/build.xml" />
     </condition>
-    <target name="ctclean" if="${ct.exists}">
+    <target name="ctclean" if="${mod.ct.exists}">
         <ant antfile="${mod.ct.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
     </target>	
 	
