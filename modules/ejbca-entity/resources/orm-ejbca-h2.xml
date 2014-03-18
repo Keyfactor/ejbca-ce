@@ -13,7 +13,7 @@
  *                                                                       *
  *************************************************************************/
 
- version: $Id: orm-ejbca-hsqldb.xml 17136 2013-06-13 12:44:52Z jeklund $
+ version: $Id$
  -->
 <entity-mappings version="1.0"
     xmlns="http://java.sun.com/xml/ns/persistence/orm"
