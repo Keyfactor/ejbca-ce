@@ -23,6 +23,7 @@ For upgrade instructions, please see UPGRADE.
 -  Known issues:
 	*	One test failure on DB2: https://jira.primekey.se/browse/ECA-3298
 	*	OCSP request signer verification does an additional database lookup: https://jira.primekey.se/browse/ECA-3299
+	* 	Poorly created primary keys for the AdminEntityData table: https://jira.primekey.se/browse/ECA-3469
 
 EJBCA 6.0.4
 -----------
