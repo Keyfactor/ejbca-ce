@@ -254,6 +254,9 @@ public class RequestHelper {
         return new CertificateRequestResponse(cert, encoded);
     } //pkcs10CertReq
     
+    /**
+     * @deprecated Use the other overloaded version taking a CertificateResponseType in the resulttype parameter.
+     */
     @Deprecated
     public byte[] pkcs10CertRequest(SignSessionLocal signsession, CaSessionLocal caSession, byte[] b64Encoded, String username, String password,
             int resulttype, boolean doSplitLines) throws EjbcaException, CesecoreException, AuthorizationDeniedException,
@@ -267,6 +270,9 @@ public class RequestHelper {
         return pkcs10CertRequest(signsession, caSession, b64Encoded, username, password, resulttype, true);
     }
     
+    /**
+     * @deprecated Use the other overloaded version taking a CertificateResponseType in the resulttype parameter.
+     */
     @Deprecated
     public byte[] pkcs10CertRequest(SignSessionLocal signsession, CaSessionLocal caSession, byte[] b64Encoded, String username, String password,
             int resulttype) throws CertificateEncodingException, CertificateException, EjbcaException, CesecoreException,
