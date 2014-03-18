@@ -54,6 +54,7 @@ import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
+import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
@@ -63,7 +64,6 @@ import org.cesecore.util.CertTools;
 
 /**
  * Class to handle SCEP request messages sent to the CA. 
- * TODO: don't forget extensions, e.g. KeyUsage requested by end entity 
  *
  * @version $Id$
  */
@@ -382,25 +382,27 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
             if (log.isDebugEnabled()) {
             	log.debug("Privatekey : " + privateKey.getAlgorithm());
             }
-            decBytes = recipient.getContent(privateKey, jceProvider);
+            JceKeyTransEnvelopedRecipient rec = new JceKeyTransEnvelopedRecipient(privateKey);
+            rec.setProvider(jceProvider); // Use the crypto token provides for asymmetric key operations
+            rec.setContentProvider("BC"); // Use BC for the symmetric key operations
+            decBytes = recipient.getContent(rec);
             break;
         }
 
-        ASN1InputStream derAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(decBytes));
-        ASN1Primitive derobj = null;
-        try {
-            derobj = derAsn1InputStream.readObject();
-        } finally {
-            derAsn1InputStream.close();
-        }
         if (messageType == ScepRequestMessage.SCEP_TYPE_PKCSREQ) {
-            ASN1Sequence seq = (ASN1Sequence) derobj;
             pkcs10 = new JcaPKCS10CertificationRequest(decBytes);
             if (log.isDebugEnabled()) {
             	log.debug("Successfully extracted PKCS10:"+new String(Base64.encode(pkcs10.getEncoded())));
             }
         }
         if (messageType == ScepRequestMessage.SCEP_TYPE_GETCRL) {
+            ASN1InputStream derAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(decBytes));
+            ASN1Primitive derobj = null;
+            try {
+                derobj = derAsn1InputStream.readObject();
+            } finally {
+                derAsn1InputStream.close();
+            }
             issuerAndSerno = IssuerAndSerialNumber.getInstance(derobj);
             log.debug("Successfully extracted IssuerAndSerialNumber.");
         }
@@ -725,30 +727,5 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
     public Certificate getSignerCert(){
     	return signercert;
     }
-    
-
-    //
-    // Private helper methods
-    //
-/*    private static boolean checkKeys(PublicKey pubK, PrivateKey privK) {
-        String in = "TheTopSecretTestString";
-        byte[] text = in.getBytes();
-
-        try {
-            Cipher cipher1 = Cipher.getInstance("RSA/ECB/PKCS1PADDING", "BC");
-            cipher1.init(Cipher.ENCRYPT_MODE, pubK);
-
-            byte[] textout = cipher1.doFinal(text);
-            Cipher cipher2 = Cipher.getInstance("RSA/ECB/PKCS1PADDING", "BC");
-            cipher2.init(Cipher.DECRYPT_MODE, privK);
-
-            byte[] out = cipher2.doFinal(textout);
-            log.debug("out=" + new String(out));
-
-            return in.equals(new String(out));
-        } catch (Exception e) {
-            return false;
-        }
-    } */
-    
+        
 } // ScepRequestMessage
