@@ -12,10 +12,13 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
@@ -33,6 +36,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.cert.X509CRLHolder;
+import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.certificates.ca.catoken.CAToken;
@@ -764,8 +768,13 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * @param alias the alias of the key on the crypto token to use for encryption
      * @param keypair the data to encrypt
      * @return encrypted data
+     * @throws IOException In case reading/writing data streams failed during encryption, or encoding data after encryption.
+     * @throws CryptoTokenOfflineException If crypto token is off-line so encryption key can not be used.
+     * @throws CMSException In case parsing/encryption of CMS data fails. 
+     * @throws NoSuchProviderException If encryption provider is not available.
+     * @throws NoSuchAlgorithmException If desired encryption algorithm is not available.
      */
-    public abstract byte[] encryptKeys(CryptoToken cryptoToken, String alias, KeyPair keypair) throws Exception;
+    public abstract byte[] encryptKeys(CryptoToken cryptoToken, String alias, KeyPair keypair) throws IOException, CryptoTokenOfflineException, NoSuchAlgorithmException, NoSuchProviderException, CMSException;
 
     /**
      * Dncryption method used to decrypt a key pair using a CA
@@ -774,8 +783,12 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * @param alias the alias of the key on the crypto token to use for decryption
      * @param data the data to decrypt
      * @return a KeyPair
+     * @throws CMSException In case parsing/decryption of CMS data fails. 
+     * @throws CryptoTokenOfflineException If crypto token is off-line so decryption key can not be used.
+     * @throws IOException In case reading/writing data streams failed during decryption, or parsing decrypted data into KeyPair.
+     * @throws ClassNotFoundException 
      */
-    public abstract KeyPair decryptKeys(CryptoToken cryptoToken, String alias, byte[] data) throws Exception;
+    public abstract KeyPair decryptKeys(CryptoToken cryptoToken, String alias, byte[] data) throws CMSException, CryptoTokenOfflineException, IOException, ClassNotFoundException;
 
     /**
      * General encryption method used to encrypt using a CA
@@ -783,8 +796,13 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * @param data the data to encrypt
      * @param keyPurpose should be one of the SecConst.CAKEYPURPOSE_ constants
      * @return encrypted data
+     * @throws CryptoTokenOfflineException If crypto token is off-line so encryption key can not be used.
+     * @throws CMSException In case parsing/encryption of CMS data fails. 
+     * @throws NoSuchProviderException If encryption provider is not available.
+     * @throws NoSuchAlgorithmException If desired encryption algorithm is not available.
+     * @throws IOException In case reading/writing data streams failed during encryption
      */
-    public abstract byte[] encryptData(CryptoToken cryptoToken, byte[] data, int keyPurpose) throws Exception;
+    public abstract byte[] encryptData(CryptoToken cryptoToken, byte[] data, int keyPurpose) throws CryptoTokenOfflineException, NoSuchAlgorithmException, NoSuchProviderException, CMSException, IOException;
 
     /**
      * General encryption method used to decrypt using a CA
@@ -792,8 +810,10 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * @param data the data to decrypt
      * @param keyPurpose should be one of the SecConst.CAKEYPURPOSE_ constants
      * @return decrypted data
+     * @throws CMSException In case parsing/decryption of CMS data fails. 
+     * @throws CryptoTokenOfflineException If crypto token is off-line so decryption key can not be used.
      */
-    public abstract byte[] decryptData(CryptoToken cryptoToken, byte[] data, int cAKeyPurpose) throws Exception;
+    public abstract byte[] decryptData(CryptoToken cryptoToken, byte[] data, int cAKeyPurpose) throws CMSException, CryptoTokenOfflineException;
 
     // Methods used with extended services
     /**
