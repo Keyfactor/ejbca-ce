@@ -194,22 +194,22 @@ public abstract class CvcCA extends CA implements Serializable {
 	}
 
     @Override
-    public byte[] encryptKeys(CryptoToken cryptoToken, String alias, KeyPair keypair) throws Exception {
+    public byte[] encryptKeys(CryptoToken cryptoToken, String alias, KeyPair keypair) {
         throw new IllegalArgumentException("encryptKeys not implemented for CVC CA");
     }
 
     @Override
-    public KeyPair decryptKeys(CryptoToken cryptoToken, String alias, byte[] data) throws Exception {
+    public KeyPair decryptKeys(CryptoToken cryptoToken, String alias, byte[] data) {
         throw new IllegalArgumentException("decryptKeys not implemented for CVC CA");
     }
 
 	@Override
-	public byte[] decryptData(CryptoToken cryptoToken, byte[] data, int cAKeyPurpose) throws Exception {
+	public byte[] decryptData(CryptoToken cryptoToken, byte[] data, int cAKeyPurpose) {
 		throw new IllegalArgumentException("decryptData not implemented for CVC CA");
 	}
 
     @Override
-	public byte[] encryptData(CryptoToken cryptoToken, byte[] data, int keyPurpose) throws Exception {
+	public byte[] encryptData(CryptoToken cryptoToken, byte[] data, int keyPurpose) {
 		throw new IllegalArgumentException("encryptData not implemented for CVC CA");
 	}
 }

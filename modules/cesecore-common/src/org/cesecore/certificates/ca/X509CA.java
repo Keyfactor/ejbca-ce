@@ -1271,28 +1271,23 @@ public class X509CA extends CA implements Serializable {
     }
 
     @Override
-    public byte[] encryptKeys(CryptoToken cryptoToken, String alias, KeyPair keypair) throws IOException, CryptoTokenOfflineException {
+    public byte[] encryptKeys(CryptoToken cryptoToken, String alias, KeyPair keypair) throws IOException, CMSException, CryptoTokenOfflineException, NoSuchAlgorithmException, NoSuchProviderException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ObjectOutputStream os = new ObjectOutputStream(baos);
         os.writeObject(keypair);
         CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
         CMSEnvelopedData ed;
-        try {
-            // Creating the KeyId may just throw an exception, we will log this but store the cert and ignore the error
-            final PublicKey pk = cryptoToken.getPublicKey(alias);
-            byte[] keyId = KeyTools.createSubjectKeyId(pk).getKeyIdentifier();
-            edGen.addKeyTransRecipient(pk, keyId);
-            ed = edGen.generate(new CMSProcessableByteArray(baos.toByteArray()), CMSEnvelopedDataGenerator.AES256_CBC, "BC");
-            log.info("Encrypted keys using key alias '"+alias+"' from Crypto Token "+cryptoToken.getId());
-        } catch (Exception e) {
-            log.error("-encryptKeys: ", e);
-            throw new IOException(e.getMessage());
-        }
+        // Creating the KeyId may just throw an exception, we will log this but store the cert and ignore the error
+        final PublicKey pk = cryptoToken.getPublicKey(alias);
+        byte[] keyId = KeyTools.createSubjectKeyId(pk).getKeyIdentifier();
+        edGen.addKeyTransRecipient(pk, keyId);
+        ed = edGen.generate(new CMSProcessableByteArray(baos.toByteArray()), CMSEnvelopedDataGenerator.AES256_CBC, "BC");
+        log.info("Encrypted keys using key alias '"+alias+"' from Crypto Token "+cryptoToken.getId());
         return ed.getEncoded();
     }
 
     @Override
-    public KeyPair decryptKeys(CryptoToken cryptoToken, String alias, byte[] data) throws CMSException, CryptoTokenOfflineException, IOException, ClassNotFoundException  {
+    public KeyPair decryptKeys(CryptoToken cryptoToken, String alias, byte[] data) throws IOException, CMSException, CryptoTokenOfflineException, ClassNotFoundException {
         CMSEnvelopedData ed = new CMSEnvelopedData(data);
         RecipientInformationStore recipients = ed.getRecipientInfos();
         RecipientInformation recipient = (RecipientInformation) recipients.getRecipients().iterator().next();
@@ -1307,7 +1302,7 @@ public class X509CA extends CA implements Serializable {
     }
 
     @Override
-    public byte[] decryptData(CryptoToken cryptoToken, byte[] data, int cAKeyPurpose) throws Exception {
+    public byte[] decryptData(CryptoToken cryptoToken, byte[] data, int cAKeyPurpose) throws CMSException, CryptoTokenOfflineException {
         CMSEnvelopedData ed = new CMSEnvelopedData(data);
         RecipientInformationStore recipients = ed.getRecipientInfos();
         RecipientInformation recipient = (RecipientInformation) recipients.getRecipients().iterator().next();
@@ -1321,20 +1316,15 @@ public class X509CA extends CA implements Serializable {
     }
 
     @Override
-    public byte[] encryptData(CryptoToken cryptoToken, byte[] data, int keyPurpose) throws Exception {
+    public byte[] encryptData(CryptoToken cryptoToken, byte[] data, int keyPurpose) throws IOException, CMSException, CryptoTokenOfflineException, NoSuchAlgorithmException, NoSuchProviderException {
         CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
         CMSEnvelopedData ed;
-        try {
-            final String keyAlias = getCAToken().getAliasFromPurpose(keyPurpose);
-            final PublicKey pk = cryptoToken.getPublicKey(keyAlias);
-            byte[] keyId = KeyTools.createSubjectKeyId(pk).getKeyIdentifier();
-            edGen.addKeyTransRecipient(pk, keyId);
-            ed = edGen.generate(new CMSProcessableByteArray(data), CMSEnvelopedDataGenerator.AES256_CBC, "BC");
-            log.info("Encrypted data using key alias '"+keyAlias+"' from Crypto Token "+cryptoToken.getId());
-        } catch (Exception e) {
-            log.error("-encryptData: ", e);
-            throw new IOException(e.getMessage());
-        }
+        final String keyAlias = getCAToken().getAliasFromPurpose(keyPurpose);
+        final PublicKey pk = cryptoToken.getPublicKey(keyAlias);
+        byte[] keyId = KeyTools.createSubjectKeyId(pk).getKeyIdentifier();
+        edGen.addKeyTransRecipient(pk, keyId);
+        ed = edGen.generate(new CMSProcessableByteArray(data), CMSEnvelopedDataGenerator.AES256_CBC, "BC");
+        log.info("Encrypted data using key alias '"+keyAlias+"' from Crypto Token "+cryptoToken.getId());
         return ed.getEncoded();
     }
 
