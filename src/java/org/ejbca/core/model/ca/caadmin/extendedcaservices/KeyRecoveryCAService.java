@@ -169,6 +169,8 @@ public class KeyRecoveryCAService extends ExtendedCAService implements Serializa
 				} catch(CMSException e) {
 					log.error("decrypt:", e.getUnderlyingException());
 					throw new IllegalExtendedCAServiceRequestException(e);
+                } catch(RuntimeException e) {
+                    throw e; // Rethrow RuntimeExceptions, they always cause rollback
 				} catch(Exception e) {
 					throw new IllegalExtendedCAServiceRequestException(e);
 				}
