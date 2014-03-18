@@ -93,16 +93,16 @@ public class RequestHelper {
 	public static final  String BEGIN_PKCS7_WITH_NL = "-----BEGIN PKCS7-----\n";
 	public static final  String END_PKCS7_WITH_NL    = "\n-----END PKCS7-----\n";
 	
-	/** @deprecated Use CertificateResponseType.ENCODED_CERTIFICATE instead */
+	/** @deprecated Since 6.1.0, remove in 7.0.0. Use CertificateResponseType.ENCODED_CERTIFICATE instead */
 	@Deprecated
 	public static final int ENCODED_CERTIFICATE = 1;
-	/** @deprecated Use CertificateResponseType.ENCODED_PKCS7 instead */
+	/** @deprecated Since 6.1.0, remove in 7.0.0. Use CertificateResponseType.ENCODED_PKCS7 instead */
 	@Deprecated
 	public static final int ENCODED_PKCS7          = 2;
-	/** @deprecated Use CertificateResponseType.BINARY_CERTIFICATE instead */
+	/** @deprecated Since 6.1.0, remove in 7.0.0. Use CertificateResponseType.BINARY_CERTIFICATE instead */
 	@Deprecated
 	public static final int BINARY_CERTIFICATE = 3;
-	/** @deprecated Use CertificateResponseType.ENCODED_CERTIFICATE_CHAIN instead */
+	/** @deprecated Since 6.1.0, remove in 7.0.0. Use CertificateResponseType.ENCODED_CERTIFICATE_CHAIN instead */
 	@Deprecated
 	public static final int ENCODED_CERTIFICATE_CHAIN = 4;
 	
@@ -255,7 +255,7 @@ public class RequestHelper {
     } //pkcs10CertReq
     
     /**
-     * @deprecated Use the other overloaded version taking a CertificateResponseType in the resulttype parameter.
+     * @deprecated Since 6.1.0, remove in 7.0.0. Use the other overloaded version taking a CertificateResponseType in the resulttype parameter.
      */
     @Deprecated
     public byte[] pkcs10CertRequest(SignSessionLocal signsession, CaSessionLocal caSession, byte[] b64Encoded, String username, String password,
@@ -271,7 +271,7 @@ public class RequestHelper {
     }
     
     /**
-     * @deprecated Use the other overloaded version taking a CertificateResponseType in the resulttype parameter.
+     * @deprecated Since 6.1.0, remove in 7.0.0. Use the other overloaded version taking a CertificateResponseType in the resulttype parameter.
      */
     @Deprecated
     public byte[] pkcs10CertRequest(SignSessionLocal signsession, CaSessionLocal caSession, byte[] b64Encoded, String username, String password,
