@@ -600,7 +600,7 @@
                 <echo message="@{arg}"/>
                 <exec executable="${appserver.home}/bin/${jbosscliexe}" outputproperty="@{outputproperty}" failonerror="@{failonerror}">
                     <arg value="-c" />
-                    <arg value="--command=@{arg_escaped}" />
+                    <arg value="--command=${arg_escaped}" />
                 </exec>
             </sequential>
         </macrodef>
