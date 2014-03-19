@@ -264,7 +264,7 @@
 
             <!-- Add new service definitions. -->
             <jboss:adm arg='/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=ejbca-mail-smtp:add(port="${mail.smtp.port}", host="${mail.smtp.host}")' />
-            <jboss:adm arg='/subsystem=mail/mail-session="${mail.jndi-name}":add(jndi-name="${mail.jndi-name}",from="${mail.from}"' />
+            <jboss:adm arg='/subsystem=mail/mail-session="${mail.jndi-name}":add(jndi-name="${mail.jndi-name}",from="${mail.from}")' />
             <jboss:adm arg='/subsystem=mail/mail-session="${mail.jndi-name}"/server=smtp:add(${jboss7.ejbca-mail-smtp.params})' />
             <jboss:admsilent arg=":reload" />
             <!-- We must wait a few seconds, or some race conditions could happen. The problem is that :reload is a non-blocking operation, and JBoss CLI is not very stable... -->
