@@ -13,9 +13,9 @@
 package org.cesecore.authorization.rules;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import org.junit.Assert;
 
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.util.EjbRemoteHelper;
@@ -42,8 +42,6 @@ public class AccessRuleManagementSessionBeanTest {
         final String accessruleName = StandardRules.ROLE_ROOT.resource();
         final String roleName = "Hamlet";
 
-        Assert.assertNotNull("AccessRuleManagementSession was not retrieved from JNDI context succesfully.", accessRuleManagementSession);
-
         int primaryKey = AccessRuleData.generatePrimaryKey(roleName, accessruleName);
         AccessRuleData accessRule = accessRuleManagementSession.createRule(accessruleName, roleName, AccessRuleState.RULE_ACCEPT, true);
         
@@ -51,6 +49,35 @@ public class AccessRuleManagementSessionBeanTest {
             AccessRuleData retrievedRule = accessRuleManagementSession.find(primaryKey);
             assertNotNull("Access rule with primary key " + primaryKey + " was not collected succesfully from database.", retrievedRule);
             assertEquals("Two rules with the same primary key were not equal.", accessRule, retrievedRule);
+        } finally {
+            AccessRuleData retrievedRule = accessRuleManagementSession.find(primaryKey);
+            if (retrievedRule != null) {
+                accessRuleManagementSession.remove(retrievedRule);
+            }
+            retrievedRule = accessRuleManagementSession.find(primaryKey);
+            assertNull("Access rule with primary key " + primaryKey + " was not removed succesfully from database.", retrievedRule);
+        }
+
+    }
+    
+    /**
+     * Tests creating a decline+recursive rule. Should come out as simply decline. 
+     * 
+     */
+    @Test
+    public void testCreateDeclineRecursive() throws AccessRuleExistsException {
+
+        final String accessruleName = StandardRules.ROLE_ROOT.resource();
+        final String roleName = "Hamlet";
+
+        int primaryKey = AccessRuleData.generatePrimaryKey(roleName, accessruleName);
+        accessRuleManagementSession.createRule(accessruleName, roleName, AccessRuleState.RULE_DECLINE, true);
+        
+        try {
+            AccessRuleData retrievedRule = accessRuleManagementSession.find(primaryKey);
+            assertNotNull("Access rule with primary key " + primaryKey + " was not collected succesfully from database.", retrievedRule);
+            assertEquals("Rule was not created with the correct state.", AccessRuleState.RULE_DECLINE, retrievedRule.getInternalState());
+            assertFalse("Rule was created decline+recursive", retrievedRule.getRecursive());
         } finally {
             AccessRuleData retrievedRule = accessRuleManagementSession.find(primaryKey);
             if (retrievedRule != null) {

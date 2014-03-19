@@ -559,7 +559,7 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
         Collection<AccessRuleData> changedRules = new ArrayList<AccessRuleData>();
         for (AccessRuleData rule : accessRules) {
             if (AccessRuleData.generatePrimaryKey(role.getRoleName(), rule.getAccessRuleName()) != rule.getPrimaryKey()) {
-                throw new Error("Role " + role.getRoleName() + " did not match up with the role that created this rule.");
+                throw new IllegalStateException("Role " + role.getRoleName() + " did not match up with the role that created this rule.");
             }
             Integer ruleKey = rule.getPrimaryKey();
             if (rulesFromResult.containsKey(ruleKey)) {

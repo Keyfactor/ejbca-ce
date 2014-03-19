@@ -71,14 +71,14 @@ public class AccessRuleData extends ProtectedData implements Serializable, Compa
      *            True if the rule is recursive.
      */
     public AccessRuleData(int primaryKey, final String accessRuleName, final AccessRuleState internalState, boolean isRecursive) {
-        if(accessRuleName == null) {
+        if (accessRuleName == null) {
             throw new InvalidParameterException("Illegal to create an access rule with accessruleName == null");
-        } else if(internalState == null) {
+        } else if (internalState == null) {
             throw new InvalidParameterException("Illegal to create an access rule with internalState == null");
-        } 
+        }
         this.primaryKey = primaryKey;
         this.accessRuleName = accessRuleName.trim();
-        this.internalState = internalState;
+        this.internalState = internalState;   
         setRecursive(isRecursive);
     }
     
@@ -111,6 +111,7 @@ public class AccessRuleData extends ProtectedData implements Serializable, Compa
             this.internalState = internalState;
         }
         setRecursive(isRecursive);
+ 
     }
 
     // @Column
@@ -166,8 +167,13 @@ public class AccessRuleData extends ProtectedData implements Serializable, Compa
     }
 
     public final void setRecursive(final boolean recursive) {
-        setRecursiveBool(Boolean.valueOf(recursive));
-        setRecursiveInt(recursive ? 1 : 0);
+        if (internalState == AccessRuleState.RULE_ACCEPT) {
+            setRecursiveBool(Boolean.valueOf(recursive));
+            setRecursiveInt(recursive ? 1 : 0);
+        } else {
+            setRecursiveBool(false);
+            setRecursiveInt(0);
+        }
     }
 
     /**
