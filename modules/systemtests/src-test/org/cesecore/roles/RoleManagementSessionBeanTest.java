@@ -256,8 +256,8 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
             // Check that both rules (and only those two) are there.
             Map<Integer, AccessRuleData> retrievedRules = roleAccessSession.findRole(role.getPrimaryKey()).getAccessRules();
             assertTrue(retrievedRules.size() == 2);
-            assertEquals(retrievedRules.get(futureRamaPrimaryKey), futureRama);
-            assertEquals(retrievedRules.get(futureWorldPrimaryKey), futureWorld);
+            assertEquals(futureRama, retrievedRules.get(futureRamaPrimaryKey));
+            assertEquals(futureWorld, retrievedRules.get(futureWorldPrimaryKey));
 
             // Remove one of rules
             Collection<AccessRuleData> deleteRules = new ArrayList<AccessRuleData>();
