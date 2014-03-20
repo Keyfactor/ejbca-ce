@@ -1,3 +1,45 @@
+EJBCA 6.1.0, 2014-03-24
+---
+Bug
+    [ECA-3179] - Regression: NoTicket (r17302) introduced a dependency on EJBCA in a CESeCore test class
+    [ECA-3182] - Regression: ECA-2988 introduced a dependency on EJBCA in a CESeCore test class
+    [ECA-3427] - Syntax for jboss-cli.bat through ant targets fails in Win
+    [ECA-3432] - CertificateCreateException: java.lang.NumberFormatException: For input string: "LU002" when trying to create a foreign DVCA
+    [ECA-3433] - OcspResponseGeneratorSessionBean.init should not throw AuthDeniedException
+    [ECA-3435] - JUnit failure in PublisherTest when DB protection enabled, add subjectKeyId to CertificateInfo
+    [ECA-3439] - Creating a CA with DN: <anyfield>=, creates a StringIndexOutOfBoundsException
+    [ECA-3447] - Regression: serial numbers in administrator list are not clickable
+    [ECA-3452] - Make sure that decline+recursive rules aren't saved from the GUI
+    [ECA-3455] - Files missing from cesecore-common.jar
+    [ECA-3457] - Unnecessary WARN message
+    [ECA-3458] - Ant paths don't work Windows via jboss-cli
+    [ECA-3460] - State dump tool does not import any data with "-overwrite no"
+    [ECA-3467] - Mail from address is not configured
+    [ECA-3470] - SCEP operations may fail when using an HSM
+
+Improvement
+    [ECA-3348] - Add individual OCSP get cache settings for revoked, unknown and good responses
+    [ECA-3351] - OCSP: don't include root certificate in response certificate chain
+    [ECA-3411] - Use SHA256WithRSA as default for ManagementCA
+    [ECA-3429] - Compile on Glassfish 4
+    [ECA-3430] - Compile on WildFly 8
+    [ECA-3434] - Upgrade Guava library in order to deploy in JEE7 container
+    [ECA-3440] - Support running clientToolBox EjbcWsRaCli with IBM java
+    [ECA-3443] - Allow empty values for start and end time without printing 'invalid' when adding end entity
+    [ECA-3445] - Document how to use slotLabels with clientToolBox
+    [ECA-3461] - Add encryption key information to key recovery data in database
+    [ECA-3472] - Improve usability of edit CA page by marking required fields
+
+New Feature
+    [ECA-3133] - Support RFC6960 extension for client requested algorithm selection
+    [ECA-3350] - OCSP: Add option to include signer certificate or not
+    [ECA-3415] - CVC access control template for additional DGs
+    [ECA-3444] - Allow longer certificate serial numbers than 64 bits
+    [ECA-3449] - Show issuer and seralNumber after public web enroll
+
+Task
+	[ECA-3450] - Update the Public Web logo filename for better integration
+
 EJBCA 6.0.4, 2014-02-20
 ---
 Bug
