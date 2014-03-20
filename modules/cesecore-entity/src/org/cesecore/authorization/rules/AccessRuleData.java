@@ -136,6 +136,9 @@ public class AccessRuleData extends ProtectedData implements Serializable, Compa
             throw new InvalidParameterException("Illegal to create an access rule with state == null");
         } 
         this.internalState = state;
+        if(!internalState.equals(AccessRuleState.RULE_ACCEPT) && getRecursive()) {
+            setRecursive(false);
+        }
     }
 
     /*
