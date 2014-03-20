@@ -211,6 +211,14 @@ textarea,
 select {
 	font-size: 11pt;
 }
+input[type=obligatory] {
+	font-size: 11pt;
+	box-shadow: 0 0 5px rgba(255, 157, 20, 1);
+    -webkit-box-shadow: 0 0 5px rgba(255, 157, 20, 1); 
+    -moz-box-shadow: 0 0 5px rgba(255, 157, 20, 1);
+	border:1px solid rgba(255, 157, 20, 0.8);
+}
+
 select option:hover,
 select option:focus,
 select option:active {
