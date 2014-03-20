@@ -33,18 +33,18 @@ From EJBCA 6.0.x to EJBCA 6.1.x
 -------------------------------
 See release notes for details between certain versions. 
 
-Upgrade from EJBCA 6.0 to 6.1 has a simple database change in the table KeyRecoveryData.
+Upgrade from EJBCA 6.0 to 6.1 consists of a simple database change in the table KeyRecoveryData.
 If the database user used for EJBCA has alter table privileges the upgrade will be done automatically when deploying the new 
-version of EJBCA (plug-in upgrade).
+version of EJBCA (plug-in upgrade) and starting JBoss.
 If you prefer to do the database upgrade manually, see src/upgrade for SQL scripts for your specific database.
- 
+
+Generic upgrade instructions:
 Simply copy conf/*.properties from the earlier installation (if not using an ejbca-custom directory).
 Merge changes (if there are any) from *.properties.sample into your *.properties.
 Copy the directory 'p12' from the earlier installation and do 'ant deployear' with the new version.
 (note the new command deployear that only deploys a new ejbca.ear application, and does no configuration of the application server)
 
-Note the possibility to use 'ejbca-custom' directory since EJBCA 3.5.x, this can simplify upgrades. 
-See Admin Guide
+Note the possibility to use 'ejbca-custom' directory since EJBCA 3.5.x, this can simplify upgrades. See Admin Guide for details.
 
 Read RELEASE_NOTES carefully in order to see if any particular changes might effect your upgrade particularly.
 
@@ -53,7 +53,8 @@ There should be no issues moving between EJBCA 6.0 and 6.1, older versions of EJ
 added to KeyRecoveryData. 
 
 Since EJBCA 6.1.0 OCSP responses no longer includes the Root CA Certificate, unless the Root CA is the OCSP signer, and it is configured to 
-include the signer certificate. Having OCSP responses as small as possible is an important performance feature, and since the 
+include the signer certificate.
+Having OCSP responses as small as possible is an important performance feature, and since the 
 client must have the root certificate as trusted there is no need to include the root certificate in the chain. 
 
 If you get a "java.lang.NoSuchMethodError" in the admin GUI it is because JBoss (5) does not clean temporary files very good.
