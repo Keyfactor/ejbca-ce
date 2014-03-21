@@ -37,16 +37,10 @@ can be used together with PKI to even further improve your PKI experience.
 	</p>
 </subsection>
 
-<subsection name="Hard Token Management Framework">
+<subsection name="CRL Publish Perl script">
     <p>
-    <a href="http://www.hardtokenmgmt.org/">Hard Token Management Framework</a>
+    <a href="https://metacpan.org/release/KCODY/EJBCA-CrlPublish-0.3">CRL Publish</a> perl script by Kevin Cody.
     </p>
-	<p>
-	The hard token management framework is a framework for creating applications to manage to complete life cycle of
-	issuing hard tokens (smart cards, USB PKI dongles, etc) to end users.
-	<br/>
-	The framework is an API that you build a GUI on top of.
-	</p>
 </subsection>
 
 <subsection name="CSRTool">
@@ -129,6 +123,13 @@ can be used together with PKI to even further improve your PKI experience.
 	</p>
 </subsection>
 
+<subsection name="SecureMetric">
+	<p>
+	<a href="http://www.securemetric.com">SecureMetric</a> is SecureMetric is South East Asia’s market leader in the digital security industry, with more than 13 years experience in serving clients across the world.
+	SecureMetric provides PKI tokens and token management systems.
+	</p>
+</subsection>
+
 <subsection name="Gooze">
 	<p>
 	<a href="http://www.gooze.eu/">GOOZE</a> is a community shop selling high quality cryptographic tools for GNU/Linux, Mac OS X and Windows, among them the Feitian PKI card.
@@ -140,13 +141,6 @@ can be used together with PKI to even further improve your PKI experience.
 <p>The Aventra MyEID card is a smart card that works on most platforms, including windows and linux. You can order MyEID cards from the <a href="https://services.aventra.fi/webshop/">Aventra Webshop</a>.</p>
 </subsection>
 
-<subsection name="Smartcard 2.0">
-	<p>
-	</p>
-	<p>
-    <a href="http://www.smartcard20.com/">Smartcard 2.0</a> is a package with the Hard Token Management Framework, smartcards and readers.
-	</p>
-</subsection>
 
 </section>
 
