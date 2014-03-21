@@ -1227,7 +1227,7 @@ function checkallfields(){
       </td>
     </tr>
 
-   <tr id="Row<%=row++%2%>"> 
+   <tr id="Row<%=row%2%>"> 
      <td width="50%"  align="right"> 
        <%= ejbcawebbean.getText("CRL_CA_CRLPERIOD") + " " + ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
      </td>
@@ -1275,7 +1275,7 @@ function checkallfields(){
      </td>
    </tr>
 
-   <tr id="Row<%=row%2%>"> 
+   <tr id="Row<%=row++%2%>"> 
      <td width="50%"  align="right"> 
        <%= ejbcawebbean.getText("CRL_CA_DELTACRLPERIOD") + " " + ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
      </td>
