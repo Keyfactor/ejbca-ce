@@ -39,7 +39,7 @@ can be used together with PKI to even further improve your PKI experience.
 
 <subsection name="CRL Publish Perl script">
     <p>
-    <a href="https://metacpan.org/release/KCODY/EJBCA-CrlPublish-0.3">CRL Publish</a> perl script by Kevin Cody.
+    <a href="http://search.cpan.org/~kcody/EJBCA-CrlPublish-0.50/">CRL Publish</a> perl script by Kevin Cody-Little.
     </p>
 </subsection>
 
