@@ -1,12 +1,13 @@
 EJBCA 6.1.0
 -----------
 This is a maintenance release with new features, bug fixes and improvements. In all 32 issues have been fixed.
-The biggest news in this release are support for EAC 2.10 access control templates, and more OCSP improvement. 
+The biggest news in this release are support for EAC 2.10 access control templates, more OCSP improvements as 
+well as improvements for Key Recovery. 
 
 * Noteworthy changes:
-- OCSP improvement and new features related to RFC 6960, minimizing size of OCSP responses (see note below).
+- OCSP improvements and new features related to RFC 6960, minimizing size of OCSP responses (see note below).
 - CVC certificate profiles (ePassport PKI) now supports EAC 2.10 access control templates.
-- Improvement to Key Recovery enabling encryption key rollover and providing more information about encryption keys.
+- Improvements to Key Recovery enabling encryption key rollover and providing more information about encryption keys.
 - Windows build/install is now working.
 - ManagementCA created during a default install now uses SHA256WithRSA.
 - EJBCA now compiles (deployment/running not supported however) on WildFly 8 and Glasshish 4, also using Java 8.
