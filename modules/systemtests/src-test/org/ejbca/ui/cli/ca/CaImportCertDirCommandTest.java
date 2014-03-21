@@ -87,10 +87,10 @@ public class CaImportCertDirCommandTest {
 
     @Before
     public void setup() throws Exception {
+        tempDirectory = FileTools.createTempDirectory();
         //Creates a CA with AlgorithmConstants.SIGALG_SHA256_WITH_RSA
         ca = CaTestUtils.createTestX509CA(CA_DN, null, false);
         caSession.addCA(authenticationToken, ca);
-        tempDirectory = FileTools.createTempDirectory();
         certificateFile = File.createTempFile("test", null, tempDirectory);
         EndEntityInformation endEntityInformation = new EndEntityInformation(USERNAME, CERTIFICATE_DN, ca.getCAId(), null, null,
                 EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
@@ -128,6 +128,14 @@ public class CaImportCertDirCommandTest {
         }
         if (certificateStoreSession.findCertificatesByUsername(USERNAME).size() > 0) {
             for (Certificate certificate : certificateStoreSession.findCertificatesByUsername(USERNAME)) {
+                internalCertificateStoreSession.removeCertificate(certificate);
+            }
+        }
+        if (endEntityAccessSession.findUser(authenticationToken, CERTIFICATE_DN) != null) {
+            endEntityManagementSession.deleteUser(authenticationToken, CERTIFICATE_DN);
+        }
+        if (certificateStoreSession.findCertificatesByUsername(CERTIFICATE_DN).size() > 0) {
+            for (Certificate certificate : certificateStoreSession.findCertificatesByUsername(CERTIFICATE_DN)) {
                 internalCertificateStoreSession.removeCertificate(certificate);
             }
         }
