@@ -1356,7 +1356,21 @@ or FAILED are
 generated. This is due to the possibility that a batch generation for some
 reason failed. If it fails status is set to FAILED and you can try again after fixing the
 error.
-</p></subsection>
+</p>
+<subsubsection name="Suite B/ECC Certificates in Browsers">
+<p>
+IE and Firefox do not yet (march 2014) support browser-based ECC certificate enrollment. They always default to RSA regardless of the CA ECC properties (is there some javascript to override?). 
+The way to install ECC certificates in a browser is as follows:
+<ol>
+<li>Edit batchtool.proprties file in folder conf: keys.alg=ECDSA, keys.spec=P-384 (or whatever named spec you need).</li>
+<li>Set all NEW entity passwords first: bin/ejbca.sh ra setclearpwrd entity-user entity-pw.</li>
+<li>Run bin/ejbca.sh batch - processes all NEW entities and places p12 files in folder p12 (or batch generate for a single user by appending username to batch command).</li>
+<li>Copy the *.p12 files from the p12 directory on the ejbca server.</li>
+<li>Install p12 keystore in browser.</li>
+</ol>
+</p>
+</subsubsection>
+</subsection>
 
 <subsection name="Certificate Renewal">
 <p>Certificate renewal is a often missunderstood term. Certificate renewal simply means issuance of a new certificate containing the same public key as an already issued certificate.
