@@ -32,6 +32,14 @@
     <br/>Have fun! 
     </p>
   </section>
+
+  <section name="SVN over HTTPS">
+    <p>
+    The official "secure" delivery of EJBCA source code is in the <a href="repository.html">repository</a> using svn over https. The certificate is issued to cesecore.eu, which was the consortium behind the Common Criteria certification of EJBCA.
+    <br/>
+    In the SVN repository you can also find the hashes of release zip files in the history of the file doc/xdocs/site/index.xml.
+    </p>
+  </section>
  
   <section name="Help and support">
     <p>
@@ -39,7 +47,7 @@
     </p>
   </section>
 
-  <section name="Source packages and older releases">
+  <section name="Older releases">
     <p>
     Download any of the source packages from <a href="http://sourceforge.net/projects/ejbca/files/">Sourceforge</a>.
     </p>
