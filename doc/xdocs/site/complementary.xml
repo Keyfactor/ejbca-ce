@@ -41,6 +41,8 @@ can be used together with PKI to even further improve your PKI experience.
     <p>
     <a href="http://search.cpan.org/~kcody/EJBCA-CrlPublish-0.50/">CRL Publish</a> perl script by Kevin Cody-Little.
     </p>
+    <p>CRL Publish pushes newly generated CRLs to your distribution web servers. It can be installed from CPAN as module EJBCA::CrlPublish.
+    </p>
 </subsection>
 
 <subsection name="CSRTool">
