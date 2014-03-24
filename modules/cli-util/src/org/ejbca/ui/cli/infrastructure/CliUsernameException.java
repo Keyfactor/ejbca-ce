@@ -10,26 +10,30 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.ui.cli.infrastructure.command;
-
-import java.io.IOException;
+package org.ejbca.ui.cli.infrastructure;
 
 /**
  * @version $Id$
  *
  */
-public interface CliCommand {
+public class CliUsernameException extends Exception {
 
-    /**
-     * Executes whatever this command specifies
-     * 
-     * @param arguments an array of arguments parsed into this command.
-     * @throws IOException for any IO related issues.
-     */
-    CommandResult execute(String... arguments);
+    private static final long serialVersionUID = -390353232257435050L;
 
-    /**
-     * @return a human friendly description of the implementing command.
-     */
-    String getCommandDescription();
+    public CliUsernameException() {
+        super();
+    }
+
+    public CliUsernameException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public CliUsernameException(String message) {
+        super(message);
+    }
+
+    public CliUsernameException(Throwable cause) {
+        super(cause);
+    }
+
 }

@@ -17,10 +17,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
-import java.io.IOException;
-import java.util.Map;
-
+import org.apache.log4j.Logger;
 import org.ejbca.ui.cli.infrastructure.command.CommandBase;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
@@ -44,39 +43,60 @@ public class ParameterHandlerTest {
 
     @Test
     public void testHandleUnknownParameters() {
-        Map<String, String> result = parameterHandler.parseParameters(new CommandBaseStub(), "foo");
+        ParameterContainer result = parameterHandler.parseParameters(new CommandBaseStub(), "foo");
         assertNull("Parameterhandler did not return null for unknown parameter", result);
     }
 
     @Test
     public void testHandleMissingParameters() {
         parameterHandler.registerParameter(new Parameter("-b", "bar", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT, ""));
-        Map<String, String> result = parameterHandler.parseParameters(new CommandBaseStub());
+        ParameterContainer result = parameterHandler.parseParameters(new CommandBaseStub());
         assertNull("Parameterhandler did not return null for missing parameter", result);
     }
 
     @Test
     public void testHandleStandardParameter() {
-        parameterHandler.registerParameter(new Parameter("-b", "bar", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT, ""));
-        Map<String, String> result = parameterHandler.parseParameters(new CommandBaseStub(), "-b", "boo");
+        parameterHandler.registerParameter(new Parameter("-b", "bar", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT, ""));
+        parameterHandler.registerParameter(new Parameter("f", "foo", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT, ""));
+        ParameterContainer result = parameterHandler.parseParameters(new CommandBaseStub(), "-b", "bar", "f", "foo");
         assertNotNull("Parameterhandler did not return result", result);
-        assertEquals("ParameterHandel did not return correct result", "boo", result.get("-b"));
+        assertEquals("Parameterhandler did not return correct result", "bar", result.get("-b"));
+        assertEquals("Parameterhandler did not return correct result", "foo", result.get("f"));
+    }
+
+    @Test
+    public void testHandleStandardParameterWithEquals() {
+        parameterHandler.registerParameter(new Parameter("-b", "bar", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT, ""));
+        ParameterContainer result = parameterHandler.parseParameters(new CommandBaseStub(), "-b=boo");
+        assertNotNull("Parameterhandler did not return result", result);
+        assertEquals("Parameterhandler did not return correct result", "boo", result.get("-b"));
     }
 
     @Test
     public void testHandleStandaloneParameter() {
         parameterHandler.registerParameter(new Parameter("-b", "bar", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT, ""));
-        Map<String, String> result = parameterHandler.parseParameters(new CommandBaseStub(), "boo");
+        ParameterContainer result = parameterHandler.parseParameters(new CommandBaseStub(), "boo");
         assertNotNull("Parameterhandler did not return result", result);
-        assertEquals("ParameterHandel did not return correct result", "boo", result.get("-b"));
+        assertEquals("Parameterhandler did not return correct result", "boo", result.get("-b"));
     }
 
+    /**
+     * Handle the case where a quoted parameter has been split up due to spaces. 
+     */
+    @Test
+    public void testHandleSplitParameter() {
+        parameterHandler.registerParameter(new Parameter("-b", "bar", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT, ""));
+        ParameterContainer result = parameterHandler.parseParameters(new CommandBaseStub(), "'fo=o", "bar", "xyz'");
+        assertNotNull("Parameterhandler did not return result", result);
+        assertEquals("Parameterhandler did not return correct result", "fo=o bar xyz", result.get("-b"));
+    }
+    
     @Test
     public void testHandleIncompleteArgument() {
         parameterHandler.registerParameter(new Parameter("-b", "bar", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT, ""));
         parameterHandler.registerParameter(new Parameter("-f", "foo", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG, ""));
         try {
-            Map<String, String> result = parameterHandler.parseParameters(new CommandBaseStub(), "-b");
+            ParameterContainer result = parameterHandler.parseParameters(new CommandBaseStub(), "-b");
             assertNull("Parameterhandler did not return null for missing parameter value", result);
             result = parameterHandler.parseParameters(new CommandBaseStub(), "-b", "-f");
             assertNull("Parameterhandler did not return null for missing parameter", result);
@@ -84,6 +104,13 @@ public class ParameterHandlerTest {
             fail("Parameterhandler did not fail nicely to incomplete argument");
         }
 
+    }
+
+    @Test
+    public void testHandleMultipleParameter() {
+        parameterHandler.registerParameter(new Parameter("-b", "bar", MandatoryMode.MANDATORY, StandaloneMode.FORBID, ParameterMode.ARGUMENT, ""));
+        ParameterContainer result = parameterHandler.parseParameters(new CommandBaseStub(), "-b", "foo", "-b", "bar");
+        assertNull("It should not be possible to use the same parameter multiple times.", result);
     }
 
     private class CommandBaseStub extends CommandBase {
@@ -100,8 +127,8 @@ public class ParameterHandlerTest {
         }
 
         @Override
-        protected void execute(Map<String, String> parameters) {
-
+        protected CommandResult execute(ParameterContainer parameters) {
+            return CommandResult.SUCCESS;
         }
 
         @Override
@@ -111,6 +138,11 @@ public class ParameterHandlerTest {
 
         @Override
         public String getImplementationName() {
+            return null;
+        }
+
+        @Override
+        protected Logger getLogger() {
             return null;
         }
 

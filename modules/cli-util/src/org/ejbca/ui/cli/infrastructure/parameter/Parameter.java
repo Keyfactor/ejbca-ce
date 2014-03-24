@@ -30,6 +30,8 @@ public class Parameter {
     private final MandatoryMode mandatoryMode;
     private final String instruction;
     private final String name;
+    //Uncommon value set as false if this Parameter shouldn't be listed as part of the man page.
+    private boolean allowList = true;
 
     /**
      * Constructor for defining a parameter
@@ -109,5 +111,20 @@ public class Parameter {
     public String getInstruction() {
         return instruction;
     }
+    
+    /**
+     * Quick factory method for creating flags.
+     * 
+     */
+    public static Parameter createFlag(String keyWord, String instruction) {
+        return new Parameter(keyWord, "", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG, instruction);
+    }
 
+    public boolean allowList() {
+        return allowList;
+    }
+
+    public void setAllowList(boolean allowList) {
+        this.allowList = allowList;
+    }
 }
