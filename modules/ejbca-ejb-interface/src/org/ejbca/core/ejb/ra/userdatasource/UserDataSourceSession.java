@@ -29,7 +29,7 @@ import org.ejbca.core.model.ra.userdatasource.UserDataSourceVO;
  */
 public interface UserDataSourceSession {
 
-	/**
+    /**
      * Main method used to fetch userdata from the given user data sources See
      * BaseUserDataSource class for further documentation about function Checks
      * that the administrator is authorized to fetch userdata.
@@ -39,7 +39,8 @@ public interface UserDataSourceSession {
      *         found.
      * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource
      */
-    public Collection<UserDataSourceVO> fetch(AuthenticationToken admin, Collection<Integer> userdatasourceids, String searchstring) throws AuthorizationDeniedException, UserDataSourceException;
+    Collection<UserDataSourceVO> fetch(AuthenticationToken admin, Collection<Integer> userdatasourceids, String searchstring)
+            throws AuthorizationDeniedException, UserDataSourceException;
 
     /**
      * method used to remove userdata from the given user data sources.
@@ -53,24 +54,25 @@ public interface UserDataSourceSession {
      * @return true if the user was remove successfully from at least one of the user data sources.
      * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource
      */
-    public boolean removeUserData(AuthenticationToken admin, Collection<Integer> userdatasourceids, String searchstring, boolean removeMultipleMatch) throws AuthorizationDeniedException,
-            MultipleMatchException, UserDataSourceException;
+    boolean removeUserData(AuthenticationToken admin, Collection<Integer> userdatasourceids, String searchstring, boolean removeMultipleMatch)
+            throws AuthorizationDeniedException, MultipleMatchException, UserDataSourceException;
 
-	/**
+    /**
      * Test the connection to a user data source.
      *
      * @param userdatasourceid the id of the userdatasource to test.
-	 * @throws AuthorizationDeniedException 
+     * @throws AuthorizationDeniedException 
      * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource
      */
-    public void testConnection(AuthenticationToken admin, int userdatasourceid) throws UserDataSourceConnectionException, AuthorizationDeniedException;
+    void testConnection(AuthenticationToken admin, int userdatasourceid) throws UserDataSourceConnectionException, AuthorizationDeniedException;
 
     /**
      * Adds a user data source to the database.
      * @throws UserDataSourceExistsException if user data source already exists
      * @throws AuthorizationDeniedException 
      */
-    public void addUserDataSource(AuthenticationToken admin, String name, BaseUserDataSource userdatasource) throws UserDataSourceExistsException, AuthorizationDeniedException;
+    void addUserDataSource(AuthenticationToken admin, String name, BaseUserDataSource userdatasource) throws UserDataSourceExistsException,
+            AuthorizationDeniedException;
 
     /**
      * Adds a user data source to the database. Used for importing and exporting
@@ -79,29 +81,32 @@ public interface UserDataSourceSession {
      * @throws UserDataSourceExistsException if user data source already exists.
      * @throws AuthorizationDeniedException 
      */
-    public void addUserDataSource(AuthenticationToken admin, int id, String name, BaseUserDataSource userdatasource) throws UserDataSourceExistsException, AuthorizationDeniedException;
+    void addUserDataSource(AuthenticationToken admin, int id, String name, BaseUserDataSource userdatasource) throws UserDataSourceExistsException,
+            AuthorizationDeniedException;
 
     /** Updates user data source data. 
      * @throws AuthorizationDeniedException */
-    public void changeUserDataSource(AuthenticationToken admin, String name, BaseUserDataSource userdatasource) throws AuthorizationDeniedException;
+    void changeUserDataSource(AuthenticationToken admin, String name, BaseUserDataSource userdatasource) throws AuthorizationDeniedException;
 
     /**
      * Adds a user data source with the same content as the original.
      * @throws UserDataSourceExistsException if user data source already exists
      * @throws AuthorizationDeniedException 
      */
-    public void cloneUserDataSource(AuthenticationToken admin, String oldname, String newname) throws UserDataSourceExistsException, AuthorizationDeniedException;
+    void cloneUserDataSource(AuthenticationToken admin, String oldname, String newname) throws UserDataSourceExistsException,
+            AuthorizationDeniedException;
 
     /** Removes a user data source. 
      * @throws AuthorizationDeniedException */
-    public boolean removeUserDataSource(AuthenticationToken admin, String name) throws AuthorizationDeniedException;
+    boolean removeUserDataSource(AuthenticationToken admin, String name) throws AuthorizationDeniedException;
 
     /**
      * Renames a user data source
      * @throws UserDataSourceExistsException if user data source already exists
      * @throws AuthorizationDeniedException 
      */
-    public void renameUserDataSource(AuthenticationToken admin, String oldname, String newname) throws UserDataSourceExistsException, AuthorizationDeniedException;
+    void renameUserDataSource(AuthenticationToken admin, String oldname, String newname) throws UserDataSourceExistsException,
+            AuthorizationDeniedException;
 
     /**
      * Retrieves a Collection of id:s (Integer) to authorized user data sources.
@@ -109,35 +114,35 @@ public interface UserDataSourceSession {
      * @param indicates if sources with anyca set should be included
      * @return Collection of id:s (Integer)
      */
-    public Collection<Integer> getAuthorizedUserDataSourceIds(AuthenticationToken admin, boolean includeAnyCA);
+    Collection<Integer> getAuthorizedUserDataSourceIds(AuthenticationToken admin, boolean includeAnyCA);
 
     /**
      * Method creating a hashmap mapping user data source id (Integer) to user
      * data source name (String).
      */
-    public HashMap<Integer,String> getUserDataSourceIdToNameMap(AuthenticationToken admin);
+    HashMap<Integer, String> getUserDataSourceIdToNameMap(AuthenticationToken admin);
 
     /** Retrieves a named user data source. */
-    public BaseUserDataSource getUserDataSource(AuthenticationToken admin, String name);
+    BaseUserDataSource getUserDataSource(AuthenticationToken admin, String name);
 
     /** Finds a user data source by id. */
-    public BaseUserDataSource getUserDataSource(AuthenticationToken admin, int id);
+    BaseUserDataSource getUserDataSource(AuthenticationToken admin, int id);
 
     /**
      * Help method used by user data source proxys to indicate if it is time to
      * update it's data.
      */
-    public int getUserDataSourceUpdateCount(AuthenticationToken admin, int userdatasourceid);
+    int getUserDataSourceUpdateCount(AuthenticationToken admin, int userdatasourceid);
 
     /**
      * Returns a user data source id, given it's user data source name
      * @return the id or 0 if the user data source cannot be found.
      */
-    public int getUserDataSourceId(AuthenticationToken admin, String name);
+    int getUserDataSourceId(AuthenticationToken admin, String name);
 
     /**
      * Returns a user data source name given its id.
      * @return the name or null if id doesnt exists
      */
-    public String getUserDataSourceName(AuthenticationToken admin, int id);
+    String getUserDataSourceName(AuthenticationToken admin, int id);
 }
