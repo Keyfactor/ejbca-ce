@@ -12,9 +12,13 @@
  *************************************************************************/
 package org.ejbca.ui.cli.infrastructure.command;
 
+import java.io.BufferedReader;
+import java.io.Console;
+import java.io.FileReader;
+import java.io.IOException;
 import java.security.Principal;
+import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -22,11 +26,18 @@ import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.config.Configuration;
 import org.ejbca.config.EjbcaConfiguration;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderSessionRemote;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationToken;
 import org.ejbca.core.ejb.authentication.cli.exception.CliAuthenticationFailedException;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.ui.cli.infrastructure.CliUsernameException;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterHandler;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
@@ -40,7 +51,11 @@ public abstract class PasswordUsingCommandBase extends CommandBase {
     private static final Logger log = Logger.getLogger(PasswordUsingCommandBase.class);
 
     public static final String USERNAME_KEY = "-u";
-    public static final String PASSWORD_KEY = "-p";
+    public static final String PASSWORD_PROMPT_KEY = "-p";
+    public static final String PASSWORD_KEY = "--clipassword";
+
+    private static final String PASSWORD_MAN_TEXT = "Use the syntax " + USERNAME_KEY + " <username> " + PASSWORD_KEY
+            + "=<password> to specify password explicitly or " + USERNAME_KEY + " <username> " + PASSWORD_PROMPT_KEY + " to prompt";
 
     private String password = null;
     private String username = null;
@@ -55,58 +70,142 @@ public abstract class PasswordUsingCommandBase extends CommandBase {
      * @param parameterHandler the parameter handler to register the arguments with
      */
     private void registerDefaultParameters() {
-        final String usernameInstruction = "A username for a CLI user, if required.";
-        final String passwordInstruction = "A password for a CLI user, if required.";
         this.registerParameter(new Parameter(USERNAME_KEY, "CLI Username", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
-                usernameInstruction));
-        this.registerParameter(new Parameter(PASSWORD_KEY, "CLI Password", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.PASSWORD,
-                passwordInstruction));
+                "Username for the CLI user, if required."));
+        this.registerParameter(new Parameter(PASSWORD_KEY, "CLI Password", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "Set the password explicitely in the command line with " + PASSWORD_KEY + "=<password>"));
+        this.registerParameter(new Parameter(PASSWORD_PROMPT_KEY, "", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.PASSWORD,
+                "Set this flag to be prompted for the username password"));
     }
 
+
     /**
-     * Extracts -u and -p parameters, similar to BaseCommand.parseUsernameAndPasswordFromArgs,
-     * but using a Map<String,String> instead of String[] for the arguments.
+     * Extracts the password and username arguments from the parameters map. 
+     * 
+     * @param parameters
+     *            the map of parameters
+     * @return A defensive copy, sans password parameters
+     *            
+     * @throws CliUsernameException If no username was supplied, and the default user is disabled.
+     * @throws CliAuthenticationFailedException for any password related issues
      */
-    protected void handleUserPasswordParams(Map<String, String> parameters) {
-        final String usernameFromArgs = parameters.get(USERNAME_KEY);
-        final String usernameFromConfig = EjbcaConfiguration.getCliDefaultUser();
+    private ParameterContainer stripUsernameAndPasswordFromParameters(ParameterContainer parameters) throws CliUsernameException,
+            CliAuthenticationFailedException {
+        GlobalConfigurationSessionRemote gcsession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+        if (gcsession == null) {
+            throw new CliAuthenticationFailedException("Can not get configuration from server. Is server started and communication working?");
+        }
+        GlobalConfiguration configuration = (GlobalConfiguration) gcsession.getCachedConfiguration(Configuration.GlobalConfigID);
 
-        if (usernameFromArgs != null) {
-            username = usernameFromArgs;
-        } else if (usernameFromConfig != null) {
-            username = usernameFromConfig;
-        } else {
-            username = "ejbca";
+        ParameterContainer defensiveCopy = new ParameterContainer(parameters);
+
+        username = parameters.get(USERNAME_KEY);
+        if (username != null) {
+            defensiveCopy.remove(USERNAME_KEY);
+        }
+        boolean passwordPrompt = parameters.containsKey(PASSWORD_PROMPT_KEY);
+        password = parameters.get(PASSWORD_KEY);
+        if (password != null && passwordPrompt) {
+            //Can't do both...
+            throw new CliAuthenticationFailedException("Can't define both " + PASSWORD_KEY + " and specify a prompt (" + PASSWORD_PROMPT_KEY + ")");
+        } else if (password != null) {
+            defensiveCopy.remove(PASSWORD_KEY);
+            if (password.startsWith("file:") && (password.length() > 5)) {
+                final String fileName = password.substring(5);
+                // Read the password file and just take the first line as being the password
+                try {
+                    BufferedReader br = new BufferedReader(new FileReader(fileName));
+                    password = br.readLine();
+                    br.close();
+                    if (password != null) {
+                        // Trim it, it's so easy for people to include spaces after a line, and a password should never end with a space
+                        password = password.trim();
+                    }
+                    if ((password == null) || (password.length() == 0)) {
+                        log.error("File '" + fileName + "' does not contain any lines.");
+                        throw new CliAuthenticationFailedException("File '" + fileName + "' does not contain any lines.");
+                    }
+                } catch (IOException e) {
+                    throw new CliAuthenticationFailedException("File '" + fileName + "' can not be read: " + e.getMessage());
+                }
+            }
+        } else if (passwordPrompt) {
+            defensiveCopy.remove(PASSWORD_PROMPT_KEY);
+            // Okay, let's prompt
+            Console console;
+            char[] readPassword;
+            if ((console = System.console()) != null && (readPassword = console.readPassword("[%s]", "Password:")) != null) {
+                password = new String(readPassword);
+                Arrays.fill(readPassword, ' ');
+            }
+        }
+        boolean defaultUserEnabled = configuration.getEnableCommandLineInterfaceDefaultUser();
+        if ((username == null || password == null)) {
+            if (defaultUserEnabled) {
+                if (username == null) {
+                    username = EjbcaConfiguration.getCliDefaultUser();
+                }
+                if (password == null) {
+                    password = EjbcaConfiguration.getCliDefaultPassword();
+                }
+            } else {
+                log.info("No CLI user was supplied, and use of the default CLI user is disabled.");
+                throw new CliUsernameException("No CLI user was supplied, and use of the default CLI user is disabled.");
+            }
+        } else if (username.equals(EjbcaConfiguration.getCliDefaultUser()) && !defaultUserEnabled) {
+            log.info("CLI authentication using default user is disabled.");
+            log.info(PASSWORD_MAN_TEXT);
+            throw new CliAuthenticationFailedException("CLI authentication using default user is disabled.");
         }
 
-        final String passwordFromArgs = parameters.get(PASSWORD_KEY);
-        final String passwordFromConfig = EjbcaConfiguration.getCliDefaultPassword();
-
-        if (passwordFromArgs != null) {
-            password = passwordFromArgs;
-        } else if (passwordFromConfig != null) {
-            password = passwordFromConfig;
-        } else {
-            password = "ejbca";
+        if (!EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).existsUser(username)) {
+            //We only check for username here, but it's needless to give too much info. 
+            log.info("CLI authentication failed. The user '" + username + "' with the given password does not exist.");
+            throw new CliAuthenticationFailedException("Authentication failed. User " + username + " not exist.");
         }
+        return defensiveCopy;
     }
 
     @Override
-    public void execute(String... arguments) {
+    public CommandResult execute(String... arguments) {
+        GlobalConfigurationSessionRemote gcsession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+        if (gcsession == null) {
+            log.error("ERROR: Can not get configuration from server. Is server started and communication working?");
+            return CommandResult.CLI_FAILURE;
+        }
+        GlobalConfiguration configuration = (GlobalConfiguration) gcsession.getCachedConfiguration(Configuration.GlobalConfigID);
+        //Check if ClI is enabled
+        if (!configuration.getEnableCommandLineInterface()) {
+            log.error("ERROR: Command Line Interface is disabled");
+            return CommandResult.CLI_FAILURE;
+        }
         try {
-            Map<String, String> parameters = parameterHandler.parseParameters(this, arguments);
-            if (parameters == null) {
+            ParameterContainer parameters = parameterHandler.parseParameters(this, arguments);
+            if(parameters == null) {
                 //Parameters couldn't be parsed, but this should already be handled. 
-                return;
+                return CommandResult.CLI_FAILURE;
             }
-            handleUserPasswordParams(parameters);
+            
+            ParameterContainer strippedParameters = stripUsernameAndPasswordFromParameters(parameters);
             if (getAuthenticationToken() == null) {
-                log.info("ERROR: username/password not found.");
-                return;
+                log.error("ERROR: username/password not found.");
+                log.error(PASSWORD_MAN_TEXT);
+                return CommandResult.AUTHORIZATION_FAILURE;
             }
-            execute(parameters);
+            if (strippedParameters.containsKey(ParameterHandler.HELP_KEY)) {
+                printManPage();
+                return CommandResult.SUCCESS;
+            } else {
+                return execute(strippedParameters);
+            }
+        } catch (CliUsernameException e) {
+            log.error("ERROR: " + e.getMessage());
+            log.error(PASSWORD_MAN_TEXT);
+            return CommandResult.AUTHORIZATION_FAILURE;
         } catch (CliAuthenticationFailedException e) {
-            log.info("ERROR: username/password not found.");
+            log.error("ERROR: " + e.getMessage());
+            log.error(PASSWORD_MAN_TEXT);
+            return CommandResult.AUTHORIZATION_FAILURE;
         }
     }
 
@@ -129,18 +228,18 @@ public abstract class PasswordUsingCommandBase extends CommandBase {
      * @return a single use CliAuthenticationToken.
      * @throws CliAuthenticationFailedException if authentication fails
      */
-    protected AuthenticationToken getAuthenticationToken() throws CliAuthenticationFailedException {
+    protected AuthenticationToken getAuthenticationToken() {
         Set<Principal> principals = new HashSet<Principal>();
         principals.add(new UsernamePrincipal(username));
 
         AuthenticationSubject subject = new AuthenticationSubject(principals, null);
 
         CliAuthenticationToken authenticationToken = (CliAuthenticationToken) EjbRemoteHelper.INSTANCE.getRemoteSession(
-                CliAuthenticationProviderSessionRemote.class).authenticate(subject);
-        // Set hashed value anew in order to send back
+                CliAuthenticationProviderSessionRemote.class).authenticate(subject);       
         if (authenticationToken == null) {
-            throw new CliAuthenticationFailedException("Authentication failed. Username or password were not correct.");
+            return null;
         } else {
+            // Set hashed value anew in order to send back
             authenticationToken.setSha1HashFromCleartextPassword(password);
             return authenticationToken;
         }

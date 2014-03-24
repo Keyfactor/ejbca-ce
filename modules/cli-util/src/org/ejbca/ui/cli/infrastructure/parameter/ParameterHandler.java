@@ -13,14 +13,10 @@
 package org.ejbca.ui.cli.infrastructure.parameter;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.ejbca.ui.cli.infrastructure.command.CommandBase;
@@ -34,12 +30,12 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
  */
 public class ParameterHandler {
 
+    public static final String HELP_KEY = "--help";
+
     private static final Logger log = Logger.getLogger(ParameterHandler.class);
 
     private static final String TAB = "    ";
     private static final String CR = "\n";
-
-    private static final String HELP_KEY = "--help";
 
     private final String commandName;
 
@@ -54,6 +50,14 @@ public class ParameterHandler {
 
     public String getCommandName() {
         return commandName;
+    }
+
+    public Parameter getRegisteredParameter(final String key) {
+        return parameterMap.get(key);
+    }
+
+    public boolean isParameterRegistered(final String keyword) {
+        return parameterMap.containsKey(keyword);
     }
 
     public void registerParameter(Parameter parameter) {
@@ -77,148 +81,77 @@ public class ParameterHandler {
         return sb.toString();
     }
 
-    private String bold(String text) {
-        return (char) 27 + "[1m" + text + (char) 27 + "[0m";
-    }
-
-    /**
-     * Prints an auto formatted man-esque page for this command.
-     */
-    private void printManPage(CommandBase command) {
-        StringBuffer sb = new StringBuffer();
-        sb.append(CR);
-        sb.append(bold(commandName.toUpperCase()) + tab(3) + command.getImplementationName() + " Commands Manual" + tab(3)
-                + bold(commandName.toUpperCase()) + CR);
-        sb.append(CR);
-        sb.append(bold("NAME") + CR);
-        sb.append(TAB + commandName + " - " + command.getCommandDescription() + CR);
-        sb.append(CR);
-        sb.append(bold("SYNOPSIS") + CR);
-        if (standaloneParameters.size() > 0) {
-            //Only make this synopsis if there are standalone parameters
-            sb.append(TAB + commandName + " [PARAMETERS]");
-            Set<String> usedMandatories = new HashSet<String>();
-            for (String parameterString : standaloneParameters) {
-                Parameter parameter = parameterMap.get(parameterString);
-                sb.append(" " + parameter.getName().toUpperCase());
-                if (parameter.isMandatory()) {
-                    usedMandatories.add(parameterString);
-                }
-            }
-            for (String parameterString : mandatoryParameters) {
-                if (!usedMandatories.contains(parameterString)) {
-                    Parameter parameter = parameterMap.get(parameterString);
-                    sb.append(" " + parameter.getKeyWord() + " " + parameter.getName().toUpperCase());
-                }
-            }
-            sb.append(CR);
-        }
-        sb.append(TAB + commandName + " [PARAMETERS]");
-        for (String parameterString : mandatoryParameters) {
-            Parameter parameter = parameterMap.get(parameterString);
-            sb.append(" " + parameter.getKeyWord() + " " + parameter.getName().toUpperCase());
-        }
-        sb.append(CR);
-        sb.append(CR);
-        sb.append(bold("DESCRIPTION") + CR);
-        for (String formattedString : splitStringIntoLines(command.getFullHelpText(), 80)) {
-            sb.append(TAB + formattedString + CR);
-        }
-        sb.append(CR);
-        sb.append(bold("PARAMETERS") + CR);
-        if (mandatoryParameters.size() > 0) {
-            Collections.sort(mandatoryParameters);
-            sb.append(TAB + "Mandatory parameters:" + CR);
-            sb.append(formatParameterList(mandatoryParameters));
-            sb.append(CR);
-        }
-        if (optionalParameters.size() > 0) {
-            Collections.sort(optionalParameters);
-            sb.append(TAB + "Optional parameters:" + CR);
-            sb.append(formatParameterList(optionalParameters));
-            sb.append(CR);
-        }
-        log.info(sb.toString());
-    }
-
-    private String formatParameterList(List<String> parameterNames) {
-        StringBuilder sb = new StringBuilder();
-        for (String parameterName : parameterNames) {
-            Parameter parameter = parameterMap.get(parameterName);
-            sb.append(tab(2) + parameter.getKeyWord());
-            switch (parameter.getParameterMode()) {
-            case ARGUMENT:
-                sb.append(" <" + parameter.getName().toUpperCase() + ">" + CR);
-                break;
-            case INPUT:
-                sb.append(" <user will be prompted>" + CR);
-                break;
-            case PASSWORD:
-                sb.append(" <user will be prompted, input will not be shown>" + CR);
-                break;
-            default:
-                sb.append(CR);
-                break;
-            }
-            sb.append(tab(3) + parameter.getInstruction() + CR);
-        }
-        return sb.toString();
-    }
-
-    /**
-     * Private utility method that takes a string and splits it by line length
-     * 
-     * @param input the string to format 
-     * @param lineLength the length of each line
-     * @return an list of strings, no longer than the given length
-     */
-    private static List<String> splitStringIntoLines(String input, int lineLength) {
-        List<String> result = new ArrayList<String>();
-        while (input.length() > lineLength) {
-            int lastSpace = input.substring(0, lineLength).lastIndexOf(" ");
-            result.add(input.substring(0, lastSpace));
-            input = input.substring(lastSpace + 1);
-        }
-        if (!input.equals("")) {
-            result.add(input);
-        }
-        return result;
-    }
-
     /**
      * This method takes the parameters given by the command line and returns them as a map keyed to the flags
      * 
      * @param arguments the parameters as given by the command line
-     * @return a map of parameters and their values
+     * @return a map of parameters and their values, null if command cannot run.
      */
-    public Map<String, String> parseParameters(CommandBase callback, String... arguments) {
-        Map<String, String> result = new HashMap<String, String>();
-        List<String> argumentList = new ArrayList<String>(Arrays.asList(arguments));
+    public ParameterContainer parseParameters(CommandBase callback, String... arguments) {
+        ParameterContainer result = new ParameterContainer();
+        List<String> argumentList = new ArrayList<String>();
+        for (int i = 0; i < arguments.length; i++) {
+            String argument = arguments[i];
+            //Glue together any quotes that may be mismatched due to spaces
+            if ((argument.startsWith("'") && !argument.endsWith("'")) || (argument.startsWith("\"") && !argument.endsWith("\""))) {
+                final String quoteType = argument.substring(0, 1);
+                for (int j = i + 1; j < arguments.length; j++) {
+                    if (arguments[j].startsWith(quoteType)) {
+                        log.error("ERROR: Unclosed quote: " + argument);
+                        return null;
+                    } else if (arguments[j].endsWith(quoteType)) {
+                        argument += " " + arguments[j];
+                        i = j;
+                        break;
+                    } else {
+                        argument += " " + arguments[j];
+                    }
+                }
+            }
+            argumentList.add(argument);
+            if (log.isDebugEnabled()) {
+                log.debug("ARGUMENT: " + argument);
+            }
+        }
+
         List<String> unknownArguments = new ArrayList<String>();
         List<Parameter> missingArguments = new ArrayList<Parameter>();
+        LinkedList<String> standaloneParametersDefensiveCopy = new LinkedList<String>(standaloneParameters);
         //Get a list of all parameters
         for (int i = 0; i < argumentList.size(); i++) {
+            boolean isStandalone = false;
             String parameterString = argumentList.get(i);
-            if (parameterString.toLowerCase().equals(HELP_KEY)) {
-                printManPage(callback);
+            //Handle the case where the command line may have split up an argument with a a space that's in quotes
+
+            //Handle the case of -argument=value, but ignore if in quotes
+            if (parameterString.matches("^-.*=.*")) {
+                //If so, split the switch and value up.
+                int valueIndex = parameterString.indexOf("=") + 1;
+                argumentList.add(i + 1,
+                        (valueIndex >= parameterString.length() ? "" : parameterString.substring(valueIndex, parameterString.length())));
+                parameterString = parameterString.substring(0, valueIndex - 1);
+            }
+            if (result.containsKey(parameterString)) {
+                log.info("ERROR: Multiple parameters of type " + parameterString + " encountered.");
                 return null;
             }
             Parameter parameter = parameterMap.get(parameterString);
             String value;
             if (parameter == null) {
                 //Presume that it might be a standalone argument
-                if (standaloneParameters.size() > 0 && !parameterString.startsWith("-")) {
+                if (standaloneParametersDefensiveCopy.size() > 0 && !parameterString.startsWith("-")) {
                     value = parameterString;
-                    parameterString = standaloneParameters.removeFirst();
-
+                    parameterString = standaloneParametersDefensiveCopy.removeFirst();
+                    isStandalone = true;
                 } else {
                     unknownArguments.add(parameterString);
                     continue;
                 }
             } else {
                 if (parameter.getParameterMode() == ParameterMode.ARGUMENT) {
-                    if ((i + 1) >= argumentList.size() || argumentList.get(i + 1).startsWith("-")) {
-                        log.info("ERROR" + TAB + "Missing argument.");
+                    //Check that the following argument exists and isn't a switch (ignoring negative numbers)
+                    if ((i + 1) >= argumentList.size() || argumentList.get(i + 1).matches("^-[A-z]+$")) {
+                        log.info("ERROR: Missing argument.");
                         log.info(TAB + parameterString + " is an argument and requires a parameter following it.");
                         continue;
                     } else {
@@ -237,8 +170,21 @@ public class ParameterHandler {
                     throw new IllegalStateException(parameter.getParameterMode().name() + " was an unknown parameter type.");
                 }
             }
-            result.put(parameterString, value);
+            //Lastly, strip any quotes 
+            if ((value.startsWith("'") && value.endsWith("'")) || (value.startsWith("\"") && value.endsWith("\""))) {
+                value = value.substring(1, value.length() - 1);
+            }
+            if (log.isDebugEnabled()) {
+                log.error("SETTING: " + parameterString + " as " + value);
+            }
+            result.put(parameterString, value, isStandalone);
         }
+
+        if (result.containsKey(HELP_KEY)) {
+            //Do not validate if help was requested
+            return result;
+        }
+
         //Check for mandatory parameters
         for (final String mandatoryParameter : mandatoryParameters) {
             if (!result.containsKey(mandatoryParameter)) {
@@ -249,7 +195,7 @@ public class ParameterHandler {
             return result;
         } else {
             StringBuilder sb = new StringBuilder();
-            sb.append("ERROR" + TAB + "Incorrect parameter usage.");
+            sb.append("ERROR: Incorrect parameter usage.");
             if (unknownArguments.size() > 0) {
                 sb.append("\n");
                 sb.append(tab(1) + "The following arguments are unknown:\n");
@@ -260,15 +206,49 @@ public class ParameterHandler {
             if (missingArguments.size() > 0) {
                 sb.append("\n");
                 sb.append(tab(1) + "The following mandatory arguments are missing or poorly formed:\n");
+                int longestKeyWord = 0;
                 for (Parameter missingParameter : missingArguments) {
-                    sb.append(tab(2) + missingParameter.getName() + " (" + missingParameter.getKeyWord() + ")\n");
+                    if (missingParameter.getKeyWord().length() > longestKeyWord) {
+                        longestKeyWord = missingParameter.getKeyWord().length();
+                    }
+                }
+                String indent = tab(longestKeyWord / TAB.length() + 2);
+                for (Parameter missingParameter : missingArguments) {
+                    sb.append(tab(2) + missingParameter.getKeyWord() + indent.substring(missingParameter.getKeyWord().length()));
+
+                    List<String> lines = CommandBase.splitStringIntoLines(missingParameter.getInstruction(), 120 - indent.length());
+                    sb.append(lines.get(0) + "\n");
+                    for (int i = 1; i < lines.size(); i++) {
+                        sb.append(tab(2) + indent + lines.get(i) + "\n");
+                    }
+
                 }
             }
             sb.append(CR + "Run command with \"" + HELP_KEY + "\" to see full manual page.");
             log.info(sb);
-
             return null;
         }
+    }
+
+    /**
+     * @return the mandatoryParameters
+     */
+    public List<String> getMandatoryParameters() {
+        return mandatoryParameters;
+    }
+
+    /**
+     * @return the optionalParameters
+     */
+    public List<String> getOptionalParameters() {
+        return optionalParameters;
+    }
+
+    /**
+     * @return the standaloneParameters
+     */
+    public LinkedList<String> getStandaloneParameters() {
+        return standaloneParameters;
     }
 
 }
