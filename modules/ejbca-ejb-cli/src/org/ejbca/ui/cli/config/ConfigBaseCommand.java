@@ -12,8 +12,9 @@
  *************************************************************************/
 package org.ejbca.ui.cli.config;
 
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
-import org.ejbca.ui.cli.BaseCommand;
+import org.ejbca.ui.cli.infrastructure.command.EjbcaCliUserCommandBase;
 
 /**
  * Basic class for the "config" subcommands.
@@ -21,29 +22,20 @@ import org.ejbca.ui.cli.BaseCommand;
  * @version $Id$
  *
  */
-public abstract class ConfigBaseCommand extends BaseCommand {
+public abstract class ConfigBaseCommand extends EjbcaCliUserCommandBase {
 
     private GlobalConfigurationSessionRemote globalConfigSession = null;
 
     @Override
-    public String getMainCommand() {
-        return "config";
-    }
-
-    @Override
-    public String[] getMainCommandAliases() {
-        return new String[] {};
+    public String[] getCommandPath() {
+        return new String[] { "config" };
     }
     
-    @Override
-    public String[] getSubCommandAliases() {
-        return new String[]{};
-    }
 
     /** @return the remote EJB reference to GlobalConfigurationSession */
     protected GlobalConfigurationSessionRemote getGlobalConfigurationSession() {
         if (globalConfigSession==null) {
-            globalConfigSession = ejb.getRemoteSession(GlobalConfigurationSessionRemote.class);
+            globalConfigSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
         }
         return globalConfigSession;
     }

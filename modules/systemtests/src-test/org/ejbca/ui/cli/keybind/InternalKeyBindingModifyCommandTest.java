@@ -29,6 +29,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -99,9 +100,8 @@ public class InternalKeyBindingModifyCommandTest {
 
     @Test
     public void testModifyBinding() throws ErrorAdminCommandException, AuthorizationDeniedException {
-        String[] args = new String[] { "modify", TESTCLASS_NAME, "--nextkeypair", NEXT_KEYPAIR_NAME, "--property",
-                OcspKeyBinding.PROPERTY_MAX_AGE + "=30" };
-        command.execute(args);
+        String[] args = new String[] { TESTCLASS_NAME, "--nextkeypair", NEXT_KEYPAIR_NAME, "-"+OcspKeyBinding.PROPERTY_MAX_AGE + "=30" };
+        assertEquals(CommandResult.SUCCESS, command.execute(args));
         InternalKeyBindingInfo internalKeyBindingInfo = internalKeyBindingMgmtSession.getInternalKeyBindingInfo(authenticationToken,
                 internalKeyBindingId);
         assertEquals("Next keypair alias was not set.", NEXT_KEYPAIR_NAME, internalKeyBindingInfo.getNextKeyPairAlias());

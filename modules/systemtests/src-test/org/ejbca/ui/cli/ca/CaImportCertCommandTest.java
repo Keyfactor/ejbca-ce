@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.cli.ca;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
@@ -38,6 +39,7 @@ import org.cesecore.util.FileTools;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -60,8 +62,8 @@ public class CaImportCertCommandTest {
     private final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(EndEntityManagementSessionRemote.class);
     private final EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
-    private InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
+            InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     private CaImportCertCommand command = new CaImportCertCommand();
     private X509CA ca;
@@ -89,10 +91,10 @@ public class CaImportCertCommandTest {
         }
         //Delete any previous users
         EndEntityInformation previousUser = endEntityAccessSession.findUser(authenticationToken, USERNAME);
-        if(previousUser != null) {
+        if (previousUser != null) {
             endEntityManagementSession.deleteUser(authenticationToken, USERNAME);
         }
-        
+
     }
 
     @After
@@ -103,15 +105,17 @@ public class CaImportCertCommandTest {
         if (certificateFile.exists()) {
             FileTools.delete(certificateFile);
         }
-        endEntityManagementSession.deleteUser(authenticationToken, USERNAME);
+        if (endEntityAccessSession.findUser(authenticationToken, USERNAME) != null) {
+            endEntityManagementSession.deleteUser(authenticationToken, USERNAME);
+        }
         internalCertificateStoreSession.removeCertificatesBySubject(CERTIFICATE_DN);
     }
 
     @Test
     public void testCommand() throws ErrorAdminCommandException, CADoesntExistsException, AuthorizationDeniedException {
-        String[] args = new String[] { "importcert", USERNAME, "foo123", CA_NAME, "ACTIVE", "foo@foo.com", certificateFile.getAbsolutePath(),
-                "EMPTY", "ENDUSER" };
-        command.execute(args);
+        String[] args = new String[] { USERNAME, "foo123", CA_NAME, "ACTIVE", "--email", "foo@foo.com", certificateFile.getAbsolutePath(),
+                "--eeprofile", "EMPTY", "--certprofile", "ENDUSER" };
+        assertEquals(CommandResult.SUCCESS, command.execute(args));
         assertNotNull("Certificate was not imported.", endEntityAccessSession.findUser(authenticationToken, USERNAME));
     }
 }

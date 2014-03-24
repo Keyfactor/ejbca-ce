@@ -90,7 +90,7 @@ public class AddAdminCommandTest {
     @Test
     public void testAddAdminCommand() throws ErrorAdminCommandException {
         final String matchValue = TESTCLASS_NAME;
-        String[] args = new String[] { "addadmin", TESTCLASS_NAME, x509ca.getName(), X500PrincipalAccessMatchValue.WITH_COMMONNAME.toString(),
+        String[] args = new String[] { TESTCLASS_NAME, x509ca.getName(), X500PrincipalAccessMatchValue.WITH_COMMONNAME.toString(),
                 AccessMatchType.TYPE_EQUALCASEINS.toString(), matchValue };
         command.execute(args);
         AccessUserAspect result = accessUserAspectManagerTestSession.find(AccessUserAspectData.generatePrimaryKey(TESTCLASS_NAME, x509ca.getCAId(),

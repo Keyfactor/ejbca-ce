@@ -16,10 +16,13 @@ package org.ejbca.ui.cli.config;
 import java.util.Enumeration;
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.Configuration;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
-import org.ejbca.ui.cli.CliUsernameException;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
 
 /**
  * Shows the current server configuration
@@ -28,36 +31,46 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class ConfigDumpCommand extends ConfigBaseCommand {
 
+    private static final Logger log = Logger.getLogger(ConfigDumpCommand.class);
+
     @Override
-    public String getSubCommand() {
+    public String getMainCommand() {
         return "dump";
     }
 
     @Override
-    public String getDescription() {
+    public CommandResult execute(ParameterContainer parameters) {
+        log.info("Trying to fetch currently used server properties...");
+
+        Properties properties;
+        try {
+            properties = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class).getAllProperties(getAuthenticationToken(),
+                    Configuration.GlobalConfigID);
+        } catch (AuthorizationDeniedException e) {
+            log.error("CLI user not authorized to retrieve global configuration.");
+            return CommandResult.AUTHORIZATION_FAILURE;
+        }
+        Enumeration<Object> enumeration = properties.keys();
+        while (enumeration.hasMoreElements()) {
+            String key = (String) enumeration.nextElement();
+            log.info(" " + key + " = " + properties.getProperty(key));
+        }
+        return CommandResult.SUCCESS;
+
+    }
+
+    @Override
+    public String getCommandDescription() {
         return "Shows the current server configuration";
     }
 
-    /**
-     * Tries to fetch the server properties and dumps them to standard out
-     */
     @Override
-    public void execute(String[] args) throws ErrorAdminCommandException {
-        try {
-            args = parseUsernameAndPasswordFromArgs(args);
-        } catch (CliUsernameException e) {
-            return;
-        }
-        getLogger().info("Trying to fetch currently used server properties...");
-        try {
-            Properties properties = ejb.getRemoteSession(GlobalConfigurationSessionRemote.class).getAllProperties(getAuthenticationToken(cliUserName, cliPassword), Configuration.GlobalConfigID);
-            Enumeration<Object> enumeration = properties.keys();
-            while (enumeration.hasMoreElements()) {
-                String key = (String) enumeration.nextElement();
-                getLogger().info(" " + key + " = " + properties.getProperty(key));
-            }
-        } catch (Exception e) {
-            throw new ErrorAdminCommandException(e);
-        }        
+    public String getFullHelpText() {
+        return getCommandDescription();
+    }
+    
+    @Override
+    protected Logger getLogger() {
+        return log;
     }
 }

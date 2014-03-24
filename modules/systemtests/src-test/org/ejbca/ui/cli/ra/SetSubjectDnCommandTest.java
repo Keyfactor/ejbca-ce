@@ -101,7 +101,7 @@ public class SetSubjectDnCommandTest {
     @Test
     public void testSubjectDn() throws ErrorAdminCommandException, AuthorizationDeniedException {
         final String newDn = "C=DE,O=Primekey Labs,CN=foo";
-        final String args[] = new String[] { "setsubjectdn", TESTCLASS_NAME, newDn };
+        final String args[] = new String[] { TESTCLASS_NAME, newDn };
         command.execute(args);
         assertEquals("DN was not changed.", CertTools.stringToBCDNString(newDn), endEntityAccessSession.findUser(authenticationToken, TESTCLASS_NAME).getDN());
     }

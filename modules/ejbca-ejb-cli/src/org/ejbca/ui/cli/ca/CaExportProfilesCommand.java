@@ -10,16 +10,18 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package org.ejbca.ui.cli.ca;
 
 import java.beans.XMLEncoder;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Collection;
-import java.util.Iterator;
 
+import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -28,8 +30,12 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.ui.cli.CliUsernameException;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * Export profiles from the database to XML-files.
@@ -38,79 +44,112 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class CaExportProfilesCommand extends BaseCaAdminCommand {
 
+    private static final Logger log = Logger.getLogger(CaExportProfilesCommand.class);
+
+    private static final String FILE_KEY = "-f";
+
+    {
+        registerParameter(new Parameter(FILE_KEY, "File name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "The destination file."));
+    }
+
     @Override
-    public String getSubCommand() { return "exportprofiles"; }
+    public String getMainCommand() {
+        return "exportprofiles";
+    }
+
     @Override
-    public String getDescription() { return "Export profiles from the database to XML-files."; }
-    @Override
-    public void execute(String[] args) throws ErrorAdminCommandException {
-        try {
-            args = parseUsernameAndPasswordFromArgs(args);
-        } catch (CliUsernameException e) {
-            return;
+    public CommandResult execute(ParameterContainer parameters) {
+        String outpath = parameters.get(FILE_KEY);
+        if (!new File(outpath).isDirectory()) {
+            log.error("Error: '" + outpath + "' is not a directory.");
+            return CommandResult.FUNCTIONAL_FAILURE;
         }
-        
+        Collection<Integer> certprofids = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class)
+                .getAuthorizedCertificateProfileIds(0,
+                        EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCAs(getAuthenticationToken()));
+        Collection<Integer> endentityprofids = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class)
+                .getAuthorizedEndEntityProfileIds(getAuthenticationToken());
+
+        log.info("Exporting non-fixed certificate profiles: ");
         try {
-            if (args.length < 2) {
-    			getLogger().info("Description: " + getDescription());
-                getLogger().info("Usage: " + getCommand() + " <outpath>");
-                return;
-            }
-            String outpath = args[1];
-            if (!new File(outpath).isDirectory()) {
-            	getLogger().error("Error: '"+outpath+"' is not a directory.");
-                return;
-            }
-            Collection<Integer> certprofids = ejb.getRemoteSession(CertificateProfileSessionRemote.class).getAuthorizedCertificateProfileIds(0, EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCAs(getAuthenticationToken(cliUserName, cliPassword)));                                               
-			Collection<Integer> endentityprofids = ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getAuthorizedEndEntityProfileIds(getAuthenticationToken(cliUserName, cliPassword));
-            
-			getLogger().info("Exporting non-fixed certificate profiles: ");
-            Iterator<Integer> iter = certprofids.iterator();
-            while (iter.hasNext()) {
-            	int profileid = iter.next().intValue();
+            for (int profileid : certprofids) {
                 if (profileid == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) { // Certificate profile not found i database.
-                	getLogger().error("Couldn't find certificate profile '"+profileid+"' in database.");
+                    log.error("Couldn't find certificate profile '" + profileid + "' in database.");
                 } else if (CertificateProfileConstants.isFixedCertificateProfile(profileid)) {
-                    //getLogger().debug("Skipping export fixed certificate profile with id '"+profileid+"'.");
+                    //log.debug("Skipping export fixed certificate profile with id '"+profileid+"'.");
                 } else {
-					String profilename = ejb.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfileName(profileid);									
-                    CertificateProfile profile = ejb.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfile(profileid);
+                    String profilename = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfileName(
+                            profileid);
+                    CertificateProfile profile = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class)
+                            .getCertificateProfile(profileid);
                     if (profile == null) {
-                    	getLogger().error("Couldn't find certificate profile '"+profilename+"'-"+profileid+" in database.");
+                        log.error("Couldn't find certificate profile '" + profilename + "'-" + profileid + " in database.");
                     } else {
-                    	final String profilenameEncoded = URLEncoder.encode(profilename, "UTF-8");
-                        final String outfile = outpath+"/certprofile_"+profilenameEncoded+"-"+profileid+".xml";
-                        getLogger().info(outfile+".");
-                        XMLEncoder encoder = new XMLEncoder(new  FileOutputStream(outfile));
+                        String profilenameEncoded;
+                        try {
+                            profilenameEncoded = URLEncoder.encode(profilename, "UTF-8");
+                        } catch (UnsupportedEncodingException e) {
+                            throw new IllegalStateException("UTF-8 was not a known encoding", e);
+                        }
+                        final String outfile = outpath + "/certprofile_" + profilenameEncoded + "-" + profileid + ".xml";
+                        log.info(outfile + ".");
+                        XMLEncoder encoder = new XMLEncoder(new FileOutputStream(outfile));
                         encoder.writeObject(profile.saveData());
                         encoder.close();
                     }
                 }
             }
-            getLogger().info("Exporting non-fixed end entity profiles: ");
-            
-            for(int profileid : endentityprofids){                
+            log.info("Exporting non-fixed end entity profiles: ");
+
+            for (int profileid : endentityprofids) {
                 if (profileid == SecConst.PROFILE_NO_PROFILE) { // Entity profile not found i database.
-                	getLogger().error("Error : Couldn't find entity profile '"+profileid+"' in database.");
+                    log.error("Error : Couldn't find entity profile '" + profileid + "' in database.");
                 } else if (profileid == SecConst.EMPTY_ENDENTITYPROFILE) {
-                    //getLogger().debug("Skipping export fixed end entity profile with id '"+profileid+"'.");
+                    //log.debug("Skipping export fixed end entity profile with id '"+profileid+"'.");
                 } else {
-                	String profilename = ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfileName(profileid);
-                    EndEntityProfile profile = ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfile(profileid);
+                    String profilename = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfileName(
+                            profileid);
+                    EndEntityProfile profile = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfile(
+                            profileid);
                     if (profile == null) {
-                    	getLogger().error("Error : Couldn't find entity profile '"+profilename+"'-"+profileid+" in database.");
+                        log.error("Error : Couldn't find entity profile '" + profilename + "'-" + profileid + " in database.");
                     } else {
-                    	final String profilenameEncoded = URLEncoder.encode(profilename, "UTF-8");
-                        final String outfile = outpath+"/entityprofile_"+profilenameEncoded+"-"+profileid+".xml";
-                        getLogger().info(outfile+".");
-                        XMLEncoder encoder = new XMLEncoder(new  FileOutputStream(outfile));
+                        String profilenameEncoded;
+                        try {
+                            profilenameEncoded = URLEncoder.encode(profilename, "UTF-8");
+                        } catch (UnsupportedEncodingException e) {
+                            throw new IllegalStateException("UTF-8 was not a known encoding", e);
+                        }
+                        final String outfile = outpath + "/entityprofile_" + profilenameEncoded + "-" + profileid + ".xml";
+                        log.info(outfile + ".");
+                        XMLEncoder encoder = new XMLEncoder(new FileOutputStream(outfile));
                         encoder.writeObject(profile.saveData());
                         encoder.close();
                     }
                 }
-            }         
-        } catch (Exception e) {
-            throw new ErrorAdminCommandException(e);
+            }
+        } catch (FileNotFoundException e) {
+            log.error("Could not create export files", e);
+            return CommandResult.FUNCTIONAL_FAILURE;
         }
+        return CommandResult.SUCCESS;
+
+    }
+
+    @Override
+    public String getCommandDescription() {
+        return "Export profiles from the database to XML-files.";
+
+    }
+
+    @Override
+    public String getFullHelpText() {
+        return getCommandDescription();
+    }
+    
+    @Override
+    protected Logger getLogger() {
+        return log;
     }
 }

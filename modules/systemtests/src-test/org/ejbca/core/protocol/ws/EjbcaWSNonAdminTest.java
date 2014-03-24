@@ -59,7 +59,6 @@ import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
@@ -77,7 +76,6 @@ import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Except
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
 import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
-import org.ejbca.ui.cli.batch.BatchMakeP12Command;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -96,9 +94,6 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     private static final Logger log = Logger.getLogger(EjbcaWSNonAdminTest.class);
 
     private static final String WS_ADMIN_ROLENAME = "WsNonAdminTestRole";
-    
-    private final String cliUserName = EjbcaConfiguration.getCliDefaultUser();
-    private final String cliPassword = EjbcaConfiguration.getCliDefaultPassword();
     
     private static String adminusername1 = null;
     private static X509Certificate admincert1 = null;
@@ -475,12 +470,8 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         userData.setPassword(PASSWORD);
         endEntityManagementSession.addUser(intadmin, userData, true);
 
-        BatchMakeP12Command makep12 = new BatchMakeP12Command();
         File tmpfile = File.createTempFile("ejbca", "p12");
-
-        makep12.setMainStoreDir(tmpfile.getParent());
-        makep12.createAllNew(cliUserName, cliPassword);
-
+        BatchCreateTool.createAllNew(admin1, tmpfile.getParent());
         adminEntities = new ArrayList<AccessUserAspectData>();
         adminEntities.add(new AccessUserAspectData(getRoleName(), caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASEINS, adminusername1));  
         roleManagementSession.addSubjectsToRole(intadmin, roleAccessSession.findRole(getRoleName()), adminEntities);

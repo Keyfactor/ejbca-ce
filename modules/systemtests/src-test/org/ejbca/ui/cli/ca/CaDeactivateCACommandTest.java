@@ -69,7 +69,7 @@ public class CaDeactivateCACommandTest {
 
     @Test
     public void testCommand() throws ErrorAdminCommandException, CADoesntExistsException, AuthorizationDeniedException {
-        String[] args = new String[] { "deactivateca", CA_NAME };
+        String[] args = new String[] { CA_NAME };
         command.execute(args);
         CAInfo result = caSession.getCAInfo(authenticationToken, ca.getCAId());
         assertEquals("CA was not deactivated.", CAConstants.CA_OFFLINE, result.getStatus());

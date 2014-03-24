@@ -130,7 +130,7 @@ public interface EndEntityManagementSession {
      * Validates the name and DN in an end entity and canonicalizes/strips
      * the attributes. This method is called by addUser.
      */
-    public void canonicalizeUser(final EndEntityInformation endEntity) throws EjbcaException, UserDoesntFullfillEndEntityProfile;
+     void canonicalizeUser(final EndEntityInformation endEntity) throws EjbcaException;
     
     /**
      * Changes data for a user in the database specified by username.
@@ -380,7 +380,7 @@ public interface EndEntityManagementSession {
      * @param status the status to look for, from 'UserData'.
      * @return Collection of EndEntityInformation
      */
-    Collection<EndEntityInformation> findAllUsersByStatus(AuthenticationToken admin, int status) throws FinderException;
+    Collection<EndEntityInformation> findAllUsersByStatus(AuthenticationToken admin, int status);
 
     /**
      * Finds all users registered to a specified CA.

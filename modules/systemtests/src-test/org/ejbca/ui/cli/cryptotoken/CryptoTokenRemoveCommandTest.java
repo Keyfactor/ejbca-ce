@@ -73,7 +73,7 @@ public class CryptoTokenRemoveCommandTest {
 
     @Test
     public void testCommand() throws ErrorAdminCommandException, AuthorizationDeniedException {
-        String[] args = new String[] { "removekey", TOKEN_NAME, KEYPAIR_ALIAS};
+        String[] args = new String[] { TOKEN_NAME, KEYPAIR_ALIAS};
         command.execute(args);
         assertFalse("Alias was not removed", cryptoTokenManagementSession.isAliasUsedInCryptoToken(cryptoTokenId, KEYPAIR_ALIAS));
     }

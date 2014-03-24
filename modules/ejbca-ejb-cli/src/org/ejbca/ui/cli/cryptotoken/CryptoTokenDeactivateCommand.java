@@ -12,9 +12,14 @@
  *************************************************************************/
 package org.ejbca.ui.cli.cryptotoken;
 
+import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
 
 /**
  * CryptoToken EJB CLI command. See {@link #getDescription()} implementation.
@@ -23,25 +28,18 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
  */
 public class CryptoTokenDeactivateCommand extends BaseCryptoTokenCommand {
 
+    private static final Logger log = Logger.getLogger(CryptoTokenDeactivateCommand.class);
+
     @Override
-    public String getSubCommand() {
+    public String getMainCommand() {
         return "deactivate";
     }
 
     @Override
-    public String getDescription() {
-        return "Deactivate CryptoToken";
-    }
-
-    @Override
-    public void executeCommand(Integer cryptoTokenId, String[] args) {
-        if (args.length < 2) {
-            getLogger().info("Description: " + getDescription());
-            getLogger().info("Usage: " + getCommand() + " <name of CryptoToken>");
-            return;
-        }
+    public CommandResult executeCommand(Integer cryptoTokenId, ParameterContainer parameters) throws AuthorizationDeniedException, CryptoTokenOfflineException {
         try {
-            final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = ejb.getRemoteSession(CryptoTokenManagementSessionRemote.class);
+            final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
+                    .getRemoteSession(CryptoTokenManagementSessionRemote.class);
             final CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(getAdmin(), cryptoTokenId.intValue());
             final boolean usingAutoActivation = cryptoTokenInfo.isAutoActivation();
             cryptoTokenManagementSession.deactivate(getAdmin(), cryptoTokenId.intValue());
@@ -49,21 +47,42 @@ public class CryptoTokenDeactivateCommand extends BaseCryptoTokenCommand {
                 final String msg = "CryptoToken is still active after deactivation request.";
                 if (usingAutoActivation) {
                     getLogger().info(msg);
-                    getLogger().info("This is the expected outcome since the CryptoTokens is instantly auto-activated after the deactivation request.");
+                    getLogger().info(
+                            "This is the expected outcome since the CryptoTokens is instantly auto-activated after the deactivation request.");
                 } else {
                     getLogger().error(msg);
                 }
+                return CommandResult.SUCCESS;
             } else {
                 if (usingAutoActivation) {
                     getLogger().error("CryptoTokens was deactivated despite auto-activation being used. This is an unexpected outcome.");
                 } else {
                     getLogger().info("CryptoToken deactivated successfully.");
                 }
+                return CommandResult.FUNCTIONAL_FAILURE;
             }
         } catch (AuthorizationDeniedException e) {
             getLogger().info(e.getMessage());
+            return CommandResult.AUTHORIZATION_FAILURE;
         } catch (Exception e) {
             getLogger().info("CryptoToken deactivation failed: " + e.getMessage());
+            return CommandResult.FUNCTIONAL_FAILURE;
         }
     }
+
+    @Override
+    public String getCommandDescription() {
+        return "Deactivate CryptoToken";
+    }
+
+    @Override
+    public String getFullHelpText() {
+        return getCommandDescription();
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return log;
+    }
+
 }

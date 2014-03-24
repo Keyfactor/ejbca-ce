@@ -22,7 +22,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.TraceLogMethodsRule;
 import org.ejbca.core.model.services.ServiceConfiguration;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,15 +41,13 @@ public class ServiceEditCommandTest extends ServiceTestCase {
     private ServiceEditCommand serviceEditCommand;
     private static final String SERVICE_NAME = "TestServiceCLIEdit";
     
-    private static final String[] EDIT_EMPTY_ARGS = { "edit", SERVICE_NAME };
-    private static final String[] EDIT_BOOL_ARGS = { "edit", SERVICE_NAME, "active=false" };
-    private static final String[] EDIT_LIST_ARGS = { "edit", SERVICE_NAME, "pinToNodes=10.0.0.1,10.0.0.2" };
-    private static final String[] EDIT_CLASSPATH_ARGS = { "edit", SERVICE_NAME, "intervalClassPath=org.ejbca.core.model.services.intervals.PeriodicalInterval" };
-    private static final String[] EDIT_PROPERTY_ARGS = { "edit", SERVICE_NAME, "worker.timebeforeexpiring=2000" };
-    private static final String[] LIST_FIELDS_ARGS = { "edit", SERVICE_NAME, "-listFields" };
-    private static final String[] LIST_PROPERTIES_ARGS = { "edit", SERVICE_NAME, "-listProperties" };
-    private static final String[] NONEXISTENT_ARGS = { "edit", "TestServiceShouldNotExist" };
-    private static final String[] MISSING_NAME_ARGS = { "edit" };
+    private static final String[] EDIT_EMPTY_ARGS = { SERVICE_NAME };
+    private static final String[] EDIT_BOOL_ARGS = { SERVICE_NAME, "active=false" };
+    private static final String[] EDIT_LIST_ARGS = { SERVICE_NAME, "pinToNodes=10.0.0.1,10.0.0.2" };
+    private static final String[] EDIT_CLASSPATH_ARGS = { SERVICE_NAME, "intervalClassPath=org.ejbca.core.model.services.intervals.PeriodicalInterval" };
+    private static final String[] EDIT_PROPERTY_ARGS = { SERVICE_NAME, "worker.timebeforeexpiring=2000" };
+    private static final String[] NONEXISTENT_ARGS = { "TestServiceShouldNotExist" };
+    private static final String[] MISSING_NAME_ARGS = { };
     
     @Before
     public void setUp() throws Exception {
@@ -74,16 +72,16 @@ public class ServiceEditCommandTest extends ServiceTestCase {
     }
     
     @Test
-    public void testExecuteHappyPathEmpty() throws ErrorAdminCommandException {
-        serviceEditCommand.execute(EDIT_EMPTY_ARGS);
+    public void testExecuteHappyPathEmpty() {
+        assertEquals(CommandResult.SUCCESS, serviceEditCommand.execute(EDIT_EMPTY_ARGS));
     }
     
     @Test
-    public void testExecuteHappyPathArgs() throws ErrorAdminCommandException {
-        serviceEditCommand.execute(EDIT_BOOL_ARGS);
-        serviceEditCommand.execute(EDIT_LIST_ARGS);
-        serviceEditCommand.execute(EDIT_CLASSPATH_ARGS);
-        serviceEditCommand.execute(EDIT_PROPERTY_ARGS);
+    public void testExecuteHappyPathArgs() {
+        assertEquals(CommandResult.SUCCESS, serviceEditCommand.execute(EDIT_BOOL_ARGS));
+        assertEquals(CommandResult.SUCCESS, serviceEditCommand.execute(EDIT_LIST_ARGS));
+        assertEquals(CommandResult.SUCCESS, serviceEditCommand.execute(EDIT_CLASSPATH_ARGS));
+        assertEquals(CommandResult.SUCCESS, serviceEditCommand.execute(EDIT_PROPERTY_ARGS));
         
         ServiceConfiguration sc = getServiceSession().getService(SERVICE_NAME);
         assertEquals("active", false, sc.isActive());
@@ -98,22 +96,16 @@ public class ServiceEditCommandTest extends ServiceTestCase {
     }
     
     @Test
-    public void testExecuteMissingName() throws ErrorAdminCommandException {
+    public void testExecuteMissingName() {
         // should log an error
-        serviceEditCommand.execute(MISSING_NAME_ARGS);
+        assertEquals(CommandResult.CLI_FAILURE, serviceEditCommand.execute(MISSING_NAME_ARGS));
     }
     
     @Test
-    public void testExecuteNonExistent() throws ErrorAdminCommandException {
+    public void testExecuteNonExistent() {
         // should log an error
-        serviceEditCommand.execute(NONEXISTENT_ARGS);
+        assertEquals(CommandResult.FUNCTIONAL_FAILURE, serviceEditCommand.execute(NONEXISTENT_ARGS));
     }
-    
-    @Test
-    public void testExecuteList() throws ErrorAdminCommandException {
-        // should not modify anything, just list the available fields/properties
-        serviceEditCommand.execute(LIST_FIELDS_ARGS);
-        serviceEditCommand.execute(LIST_PROPERTIES_ARGS);
-    }
+
     
 }

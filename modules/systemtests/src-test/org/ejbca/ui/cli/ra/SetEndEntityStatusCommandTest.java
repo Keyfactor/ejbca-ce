@@ -100,7 +100,7 @@ public class SetEndEntityStatusCommandTest {
     @Test
     public void testSetEndEntityStatus() throws ErrorAdminCommandException, AuthorizationDeniedException {
         final int newStatus = 11;
-        final String args[] = new String[] { "setendentitystatus", TESTCLASS_NAME, Integer.toString(newStatus) };
+        final String args[] = new String[] { TESTCLASS_NAME, Integer.toString(newStatus) };
         command.execute(args);
         assertEquals("Status was not changed.", newStatus, endEntityAccessSession.findUser(authenticationToken, TESTCLASS_NAME).getStatus());
     }

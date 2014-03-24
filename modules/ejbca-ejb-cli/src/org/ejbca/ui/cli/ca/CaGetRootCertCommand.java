@@ -10,19 +10,25 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package org.ejbca.ui.cli.ca;
 
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.util.ArrayList;
-import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
-import org.ejbca.ui.cli.CliUsernameException;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
-import org.ejbca.util.CliTools;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * Export root CA certificate.
@@ -31,50 +37,78 @@ import org.ejbca.util.CliTools;
  */
 public class CaGetRootCertCommand extends BaseCaAdminCommand {
 
-    @Override
-    public String getSubCommand() { return "getrootcert"; }
-    @Override
-    public String getDescription() { return "Save root CA certificate (PEM- or DER-format) to file"; }
+    private static final Logger log = Logger.getLogger(CaGetRootCertCommand.class);
 
-    public void execute(String[] args) throws ErrorAdminCommandException {
-        try {
-            args = parseUsernameAndPasswordFromArgs(args);
-        } catch (CliUsernameException e) {
-            return;
-        }
+    private static final String CA_NAME_KEY = "--caname";
+    private static final String FILE_KEY = "-f";
+    private static final String DER_KEY = "-der";
 
-		// Get and remove switches
-		List<String> argsList = CliTools.getAsModifyableList(args);
-		boolean pem = !argsList.remove("-der");
-		args = argsList.toArray(new String[argsList.size()]);
-		// Parse the rest of the arguments
-        if (args.length < 3) {
-        	getLogger().info("Description: " + getDescription());
-            getLogger().info("Usage: " + getCommand() + " <caname> <filename> <-der>");
-			getLogger().info(" -der    Use DER encoding. Default is PEM encoding.");
-        	return;
-        }		
-        String caname = args[1];
-        String filename = args[2];
+    {
+        registerParameter(new Parameter(CA_NAME_KEY, "CA Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "The CA to export the root certificate from"));
+        registerParameter(new Parameter(FILE_KEY, "File Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "The file to export to."));
+        registerParameter(new Parameter(DER_KEY, "", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG,
+                "Use DER encoding. Default is PEM encoding."));
+    }
+
+    @Override
+    public String getMainCommand() {
+        return "getrootcert";
+    }
+
+    @Override
+    public CommandResult execute(ParameterContainer parameters) {
+        boolean pem = parameters.get(DER_KEY) == null;
+
+        String caname = parameters.get(CA_NAME_KEY);
+        String filename = parameters.get(FILE_KEY);
+
+        CryptoProviderTools.installBCProvider();
+        ArrayList<Certificate> chain = new ArrayList<Certificate>(getCertChain(getAuthenticationToken(), caname));
         try {
-        	CryptoProviderTools.installBCProvider();
-            ArrayList<Certificate> chain = new ArrayList<Certificate>(getCertChain(getAuthenticationToken(cliUserName, cliPassword), caname));
             if (chain.size() > 0) {
-                Certificate rootcert = (Certificate)chain.get(chain.size()-1);
- 
-                FileOutputStream fos = new FileOutputStream(filename);
-                if (pem) {		
+                Certificate rootcert = (Certificate) chain.get(chain.size() - 1);
+
+                FileOutputStream fos;
+                try {
+                    fos = new FileOutputStream(filename);
+                } catch (FileNotFoundException e) {
+                    log.error("Could not create export file", e);
+                    return CommandResult.FUNCTIONAL_FAILURE;
+                }
+                if (pem) {
                     fos.write(CertTools.getPemFromCertificateChain(chain));
-                } else {					
+                } else {
                     fos.write(rootcert.getEncoded());
-                }				
+                }
                 fos.close();
-				getLogger().info("Wrote Root CA certificate to '" + filename + "' using " + (pem?"PEM":"DER") + " encoding.");
+                log.info("Wrote Root CA certificate to '" + filename + "' using " + (pem ? "PEM" : "DER") + " encoding.");
+                return CommandResult.SUCCESS;
             } else {
-            	getLogger().error("No CA certificate found.");
+                log.error("No CA certificate found.");
+                return CommandResult.FUNCTIONAL_FAILURE;
             }
-        } catch (Exception e) {			
-            throw new ErrorAdminCommandException(e);
-        }        
+        } catch (IOException e) {
+            throw new IllegalStateException("Could not write to file for unknown reason", e);
+        } catch (CertificateEncodingException e) {
+            throw new IllegalStateException("An encoding error was encountered", e);
+        }
+    }
+
+    @Override
+    public String getCommandDescription() {
+        return "Save root CA certificate (PEM- or DER-format) to file";
+
+    }
+
+    @Override
+    public String getFullHelpText() {
+        return getCommandDescription();
+    }
+    
+    @Override
+    protected Logger getLogger() {
+        return log;
     }
 }

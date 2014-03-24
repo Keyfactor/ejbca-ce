@@ -66,7 +66,6 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.Configuration;
-import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -81,7 +80,7 @@ import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalTest;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
-import org.ejbca.ui.cli.batch.BatchMakeP12Command;
+import org.ejbca.core.protocol.ws.BatchCreateTool;
 import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.Query;
@@ -118,8 +117,6 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
     private static int caid = 0;
     private static X509Certificate cacert = null;
     private static CA testx509ca;
-    private final String cliUserName = EjbcaConfiguration.getCliDefaultUser();
-    private final String cliPassword = EjbcaConfiguration.getCliDefaultPassword();
     private CmpConfiguration cmpConfiguration;
     private String cmpAlias = "CrmfRAPbeRequestTestConfigAlias";
     
@@ -473,10 +470,8 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
                     SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
             userdata.setPassword("foo123");
             endEntityManagementSession.addUser(admin, userdata, true);
-            BatchMakeP12Command makep12 = new BatchMakeP12Command();
             File tmpfile = File.createTempFile("ejbca", "p12");
-            makep12.setMainStoreDir(tmpfile.getParent());
-            makep12.createAllNew(cliUserName, cliPassword);
+            BatchCreateTool.createAllNew(admin, tmpfile.getParent());
             Collection<java.security.cert.Certificate> userCerts = certificateStoreSession.findCertificatesByUsername(username);
             assertTrue(userCerts.size() == 1);
             X509Certificate cert = (X509Certificate) userCerts.iterator().next();

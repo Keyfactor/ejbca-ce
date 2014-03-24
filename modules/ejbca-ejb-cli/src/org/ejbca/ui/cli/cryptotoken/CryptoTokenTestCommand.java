@@ -12,9 +12,17 @@
  *************************************************************************/
 package org.ejbca.ui.cli.cryptotoken;
 
+import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * CryptoToken EJB CLI command. See {@link #getDescription()} implementation.
@@ -23,33 +31,51 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
  */
 public class CryptoTokenTestCommand extends BaseCryptoTokenCommand {
 
+    private static final Logger log = Logger.getLogger(CryptoTokenTestCommand.class);
+
+    private static final String ALIAS_KEY = "--alias";
+
+    {
+        registerParameter(new Parameter(ALIAS_KEY, "Alias", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Alias of the keypair to remove."));
+    }
+
     @Override
-    public String getSubCommand() {
+    public String getMainCommand() {
         return "testkey";
     }
 
     @Override
-    public String getDescription() {
-        return "Test key pair";
-    }
-
-    @Override
-    public void executeCommand(Integer cryptoTokenId, String[] args) {
-        if (args.length < 3) {
-            getLogger().info("Description: " + getDescription());
-            getLogger().info("Usage: " + getCommand() + " <name of CryptoToken> <key pair alias>");
-            return;
-        }
-        final String keyPairAlias = args[2];
+    public CommandResult executeCommand(Integer cryptoTokenId, ParameterContainer parameters) throws AuthorizationDeniedException, CryptoTokenOfflineException {
+        final String keyPairAlias = parameters.get(ALIAS_KEY);
         try {
-            ejb.getRemoteSession(CryptoTokenManagementSessionRemote.class).testKeyPair(getAdmin(), cryptoTokenId, keyPairAlias);
+            EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class).testKeyPair(getAdmin(), cryptoTokenId, keyPairAlias);
             getLogger().info("Key pair tested successfully.");
+            return CommandResult.SUCCESS;
         } catch (AuthorizationDeniedException e) {
             getLogger().info(e.getMessage());
+            return CommandResult.AUTHORIZATION_FAILURE;
         } catch (CryptoTokenOfflineException e) {
             getLogger().info("CryptoToken is not active. You need to activate the CryptoToken before you can interact with its content.");
         } catch (Exception e) {
             getLogger().info("Key pair test failed: " + e.getMessage());
         }
+        return CommandResult.FUNCTIONAL_FAILURE;
     }
+
+    @Override
+    public String getCommandDescription() {
+        return "Test key pair";
+    }
+
+    @Override
+    public String getFullHelpText() {
+        return getCommandDescription();
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return log;
+    }
+
 }

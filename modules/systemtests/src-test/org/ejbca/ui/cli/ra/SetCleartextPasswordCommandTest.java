@@ -35,6 +35,7 @@ import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -100,8 +101,8 @@ public class SetCleartextPasswordCommandTest {
     @Test
     public void testSetCleartextPassword() throws ErrorAdminCommandException, AuthorizationDeniedException {
         final String newPassword = "bar123";
-        final String args[] = new String[] { "setclearpwd", TESTCLASS_NAME, newPassword };
-        command.execute(args);
+        final String args[] = new String[] { TESTCLASS_NAME, "--password", newPassword };
+        assertEquals(CommandResult.SUCCESS, command.execute(args));
         assertEquals("Password was not set.", newPassword, endEntityAccessSession.findUser(authenticationToken, TESTCLASS_NAME).getPassword());
     }
 }

@@ -204,13 +204,12 @@ public interface CAAdminSession {
      *            generates an additional certificate stored in the CA object
      *            with the new keys signed by the current keys.
      *            For CVC CAs this is ignored and the link certificate is always generated.
-     * @throws AuthorizationDeniedException 
+     * @throws AuthorizationDeniedException if admin was not authorized to this CA
+     * @throws CADoesntExistsException if CA with ID caid didn't exist.
      * @throws CryptoTokenOfflineException 
-     * @throws CryptoTokenAuthenticationFailedException 
      */
     public void renewCA(AuthenticationToken admin, int caid, boolean regenerateKeys, Date customNotBefore, boolean createLinkCertificate)
-            throws CADoesntExistsException, AuthorizationDeniedException, java.security.cert.CertPathValidatorException, CryptoTokenOfflineException,
-            CryptoTokenAuthenticationFailedException;
+            throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException;
 
     /**
      * Method that revokes the CA. After this is all certificates created by
@@ -257,7 +256,7 @@ public interface CAAdminSession {
     public void importCAFromKeys(AuthenticationToken admin, String caname, String keystorepass, java.security.cert.Certificate[] signatureCertChain,
             java.security.PublicKey p12PublicSignatureKey, java.security.PrivateKey p12PrivateSignatureKey,
             java.security.PrivateKey p12PrivateEncryptionKey, java.security.PublicKey p12PublicEncryptionKey)
-            throws CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException, IllegalCryptoTokenException, CADoesntExistsException,
+            throws CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException, IllegalCryptoTokenException,
             CAExistsException, AuthorizationDeniedException, CAOfflineException;
 
     /**
@@ -278,12 +277,18 @@ public interface CAAdminSession {
      * @param catokenproperties
      *            the catoken properties, same as usually entered in the
      *            adminGUI for hard token CAs.
+     * 
+     * @throws AuthorizationDeniedException if imported CA was signed by a CA user does not have authorization to.
+     * @throws CAExistsException if the CA already exists
      * @throws CAOfflineException if CRLs can not be generated because imported CA did not manage to get online
+     * @throws CryptoTokenAuthenticationFailedException if authentication to the crypto token failed.
+     * @throws CryptoTokenOfflineException if crypto token is unavailable.
      * @throws NoSuchSlotException if no slot as defined by the label in catokenproperties could be found
+     * @throws IllegalCryptoTokenException the certificate chain is incomplete
      */
     public void importCAFromHSM(AuthenticationToken admin, String caname, Certificate[] signatureCertChain, String catokenpassword,
             String catokenclasspath, String catokenproperties) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
-            IllegalCryptoTokenException, CADoesntExistsException, CAExistsException, AuthorizationDeniedException, CAOfflineException,
+            IllegalCryptoTokenException, CAExistsException, AuthorizationDeniedException, CAOfflineException,
             NoSuchSlotException;
 
     /**
@@ -460,6 +465,8 @@ public interface CAAdminSession {
      * SecConst.CA_WAITING_CERTIFICATE_RESPONSE) SignedBy (CAInfo.SELFSIGNED,
      * CAInfo.SIGNEDBYEXTERNALCA or CAId of internal CA)
      * 
+     * @throws CAExistsException if CA defined by cainfo already exists.
+     * @throws CryptoTokenOfflineException if crypto token was not available.
      * @throws InvalidAlgorithmException if the CA signature algorithm is invalid
      * 
      * For other optional values see:
@@ -467,7 +474,7 @@ public interface CAAdminSession {
      * @see org.ejbca.core.model.ca.caadmin.X509CAInfo
      */
     public void createCA(AuthenticationToken admin, CAInfo cainfo) throws CAExistsException, AuthorizationDeniedException,
-            CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException;
+            CryptoTokenOfflineException, InvalidAlgorithmException;
 
     /**
      * Method used to perform a extended CA Service, like OCSP CA Service.

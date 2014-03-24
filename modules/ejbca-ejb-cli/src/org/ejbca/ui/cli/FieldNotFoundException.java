@@ -10,50 +10,38 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.ejbca.ui.cli;
 
 /**
- * Classes that implement this interface automatically becomes available to the EJBCA EJB CLI if
- * they are available in the class path.
+ * Thrown if a database field was not found.
  * 
  * @version $Id$
- * 
+ *
  */
-public interface CliCommandPlugin {
+public class FieldNotFoundException extends Exception {
+
+    private static final long serialVersionUID = -8695872134807966881L;
 
     /**
-     * Return the main/first argument used to invoke this command.
+     * @param message
      */
-    String getMainCommand();
+    public FieldNotFoundException(String message) {
+        super(message);
+    }
 
     /**
-     * Return the sub/second argument used to invoke this command.
+     * @param cause
      */
-    String getSubCommand();
+    public FieldNotFoundException(Throwable cause) {
+        super(cause);
+    }
 
     /**
-     * Return a description for this command.
+     * @param message
+     * @param cause
      */
-    String getDescription();
-
-    /**
-     * 
-     * @return an array of deprecated/unused/aliased commands to the main command. 
-     */
-    String[] getMainCommandAliases();
-
-    /**
-     * 
-     * @return an array of aliases for the various subcommands
-     */
-    String[] getSubCommandAliases();
-    
-    /**
-     * Run the command.
-     * @param args
-     * @throws IllegalAdminCommandException
-     * @throws ErrorAdminCommandException
-     */
-    void execute(String[] args) throws ErrorAdminCommandException;
+    public FieldNotFoundException(String message, Throwable cause) {
+        super(message, cause);
+   
+    }
 }

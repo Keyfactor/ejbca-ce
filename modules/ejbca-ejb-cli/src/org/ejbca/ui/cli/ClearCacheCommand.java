@@ -13,8 +13,7 @@
 
 package org.ejbca.ui.cli;
 
-import java.util.List;
-
+import org.apache.log4j.Logger;
 import org.cesecore.authorization.control.AccessControlSessionRemote;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
@@ -22,8 +21,13 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.Configuration;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.util.CliTools;
-
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.command.EjbcaCommandBase;
+import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * Clears caches used internally by EJBCA. The caches are used to limit the number of database queries issued to the database.
@@ -31,71 +35,98 @@ import org.ejbca.util.CliTools;
  *
  * @version $Id$
  */
-public class ClearCacheCommand extends BaseCommand {
+public class ClearCacheCommand extends EjbcaCommandBase {
 
-	public String getMainCommand() { return null; }
-	public String getSubCommand() { return "clearcache"; }
-	public String getDescription() { return "Clears caches used internally by EJBCA."; }
+    private static final Logger log = Logger.getLogger(ClearCacheCommand.class);
+    private static final String ALL = "-all";
+    private static final String GLOBAL_CONFIGURATION = "-globalconf";
+    private static final String EE_PROFILES = "-eeprofile";
+    private static final String CERTIFICATE_PROFILE = "-certprofile";
+    private static final String AUTHORIZATION = "-authorization";
+    private static final String CA_CACHE = "-ca";
 
-	public void execute(final String[] args) throws ErrorAdminCommandException {
-        if (args.length < 2) {
-        	getLogger().info("Description: " + getDescription());
-        	getLogger().info("See conf/cache.properties.sample for config options. This command should only be needed if cache times are set yo very high values.");
-            getLogger().info("Usage: " + getCommand() + " -all -globalconf -eeprofile -certprofile -authorization -ca");
-            getLogger().info("Where arguments are optional, but you have to provide at least one");
-        	return;
-        }		
+    //Register parameters 
+    {
+        registerParameter(new Parameter(ALL, "All", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG, "Clear all caches."));
+        registerParameter(new Parameter(GLOBAL_CONFIGURATION, "Global Configuration", MandatoryMode.OPTIONAL, StandaloneMode.FORBID,
+                ParameterMode.FLAG, "Clear global configuration cache."));
+        registerParameter(new Parameter(EE_PROFILES, "End Entity Profiles", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG,
+                "Clear End Entity Profile Cache"));
+        registerParameter(new Parameter(CERTIFICATE_PROFILE, "Certificate Profiles", MandatoryMode.OPTIONAL, StandaloneMode.FORBID,
+                ParameterMode.FLAG, "Clear Certificate Profile cache."));
+        registerParameter(new Parameter(AUTHORIZATION, "Authorization", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG,
+                "Clear Authorization cache."));
+        registerParameter(new Parameter(CA_CACHE, "CA Cache", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG, "Clear CA cache."));
+    }
 
-		// Get and remove switches
-		final List<String> argsList = CliTools.getAsModifyableList(args);
-		final boolean all = argsList.remove("-all");
-		final boolean globalconf = argsList.remove("-globalconf") || all;
-		final boolean eeprofile = argsList.remove("-eeprofile") || all;
-		final boolean certprofile = argsList.remove("-certprofile") || all;
-		final boolean authorization = argsList.remove("-authorization") || all;
-		final boolean cacache = argsList.remove("-ca") || all;
-
-		try {
-			if (globalconf) {
-				getLogger().info("Flushing global configuration cache.");
-				// Flush GlobalConfiguration
-				ejb.getRemoteSession(GlobalConfigurationSessionRemote.class).flushConfigurationCache(Configuration.GlobalConfigID);
-				
-                getLogger().info("Flushing CMP configuration cache.");
-                // Flush CMPConfiguration
-                ejb.getRemoteSession(GlobalConfigurationSessionRemote.class).flushConfigurationCache(Configuration.CMPConfigID);
-			}
-			if (eeprofile) {
-				getLogger().info("Flushing end entity profile cache.");
-				// Flush End Entity profiles
-				ejb.getRemoteSession(EndEntityProfileSessionRemote.class).flushProfileCache();
-			}
-			if (certprofile) {
-				getLogger().info("Flushing certificate profile cache.");
-				// Flush Certificate profiles
-				ejb.getRemoteSession(CertificateProfileSessionRemote.class).flushProfileCache();
-			}
-			if (authorization) {
-				getLogger().info("Flushing authorization cache.");
-				// Flush access control
-				ejb.getRemoteSession(AccessControlSessionRemote.class).forceCacheExpire();
-			}
-			if (cacache) {
-				getLogger().info("Flushing CA cache.");
-				// Flush CAs
-				EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-			}
-		} catch (Exception e) {
-			throw new ErrorAdminCommandException(e);
-		}
-	}
     @Override
-    public String[] getMainCommandAliases() {
-        return new String[]{};
+    public String getMainCommand() {
+        return "clearcache";
+    }
+
+    @Override
+    public String getCommandDescription() {
+        return "Clears caches used internally by EJBCA.";
+    }
+
+    @Override
+    public String getFullHelpText() {
+        return "Clears caches used internally by EJBCA." + "See conf/cache.properties.sample for config options. "
+                + "This command should only be needed if cache times are set to very high values. "
+                + "All arguments are optional, but you have to provide at least one";
+    }
+
+    public CommandResult execute(ParameterContainer parameters) {
+        // Get and remove switches
+        final boolean all = parameters.get(ALL) != null;
+        final boolean globalconf = (parameters.get(GLOBAL_CONFIGURATION) != null) || all;
+        final boolean eeprofile = (parameters.get(EE_PROFILES) != null) || all;
+        final boolean certprofile = (parameters.get(CERTIFICATE_PROFILE) != null) || all;
+        final boolean authorization = (parameters.get(AUTHORIZATION) != null) || all;
+        final boolean cacache = (parameters.get(CA_CACHE) != null) || all;
+
+        if (!(all || globalconf || eeprofile || certprofile || authorization || cacache)) {
+            log.error("ERROR: No caches were flushed because no parameters were specified.");
+            return CommandResult.FUNCTIONAL_FAILURE;
+        }
+
+        if (globalconf) {
+            GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE
+                    .getRemoteSession(GlobalConfigurationSessionRemote.class);
+            log.info("Flushing Global Configuration cache.");
+            // Flush GlobalConfiguration
+            globalConfigurationSession.flushConfigurationCache(Configuration.GlobalConfigID);
+
+            log.info("Flushing CMP configuration cache.");
+            // Flush CMPConfiguration
+            globalConfigurationSession.flushConfigurationCache(Configuration.CMPConfigID);
+        }
+        if (eeprofile) {
+            log.info("Flushing End Entity Profile cache.");
+            // Flush End Entity profiles
+            EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).flushProfileCache();
+        }
+        if (certprofile) {
+            log.info("Flushing Certificate Profile cache.");
+            // Flush Certificate profiles
+            EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class).flushProfileCache();
+        }
+        if (authorization) {
+            log.info("Flushing Authorization cache.");
+            // Flush access control
+            EjbRemoteHelper.INSTANCE.getRemoteSession(AccessControlSessionRemote.class).forceCacheExpire();
+        }
+        if (cacache) {
+            log.info("Flushing CA cache.");
+            // Flush CAs
+            EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+        }
+        return CommandResult.SUCCESS;
+
     }
     
     @Override
-    public String[] getSubCommandAliases() {
-        return new String[]{};
+    protected Logger getLogger() {
+        return log;
     }
 }

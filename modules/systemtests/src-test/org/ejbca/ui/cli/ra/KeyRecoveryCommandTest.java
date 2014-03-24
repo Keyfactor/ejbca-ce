@@ -139,7 +139,7 @@ public class KeyRecoveryCommandTest {
     @Test
     public void testKeyRecovery() throws ErrorAdminCommandException, AuthorizationDeniedException {
         X509Certificate userCertificate = certificateStoreSession.findLatestX509CertificateBySubject(END_ENTITY_SUBJECT_DN);
-        String[] args = new String[] { "keyrecover", CertTools.getSerialNumberAsString(userCertificate), x509ca.getSubjectDN() };
+        String[] args = new String[] { CertTools.getSerialNumberAsString(userCertificate), x509ca.getSubjectDN() };
         command.execute(args);
         assertTrue("End Entity was not marked for recovery.", keyRecoverySession.isUserMarked(TESTCLASS_NAME));
     }

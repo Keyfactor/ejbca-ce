@@ -14,11 +14,21 @@
 package org.ejbca.ui.cli.ra;
 
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.util.CertTools;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * Output all certificates for an end entity.
@@ -27,36 +37,62 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class GetEndEntityCertificateCommand extends BaseRaCommand {
     
+    private static final Logger log = Logger.getLogger(GetEndEntityCertificateCommand.class);
+    
     private static final String COMMAND = "getendentitycert";
     private static final String OLD_COMMAND = "getusercert";
     
-    @Override
-	public String getSubCommand() { return COMMAND; }
-    @Override
-    public String getDescription() { return "Output all certificates for an end entity"; }
+    private static final Set<String> ALIASES = new HashSet<String>();
+    static {
+        ALIASES.add(OLD_COMMAND);
+    }
+    
+    private static final String USERNAME_KEY = "--username";
+
+    {
+        registerParameter(new Parameter(USERNAME_KEY, "Username", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Username for the end entity whose certificate to get."));
+    }
     
     @Override
-    public String[] getSubCommandAliases() {
-        return new String[]{OLD_COMMAND};
+    public Set<String> getMainCommandAliases() {
+        return ALIASES;
     }
 
     @Override
-    public void execute(String[] args) throws ErrorAdminCommandException {
-        try {
-            if (args.length < 2) {
-    			getLogger().info("Description: " + getDescription());
-                getLogger().info("Usage: " + getCommand() + " <username>");
-                return;
-            }
-            final String username = args[1];
-            final Collection<Certificate> data = ejb.getRemoteSession(CertificateStoreSessionRemote.class).findCertificatesByUsername(username);
+    public String getMainCommand() {
+        return COMMAND;
+    }
+
+    @Override
+    public CommandResult execute(ParameterContainer parameters) {
+            final String username = parameters.get(USERNAME_KEY);
+            final Collection<Certificate> data = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class).findCertificatesByUsername(username);
             if (data != null) {
-            	getLogger().info(new String(CertTools.getPemFromCertificateChain(data)));
+            	try {
+                    getLogger().info(new String(CertTools.getPemFromCertificateChain(data)));
+                    return CommandResult.SUCCESS;
+                } catch (CertificateEncodingException e) {
+                   throw new IllegalStateException("Newly retrieved certificate could not be parsed", e);
+                }
             } else {
             	getLogger().info("End Entity with username '" + username + "' does not exist.");
+            	 return CommandResult.FUNCTIONAL_FAILURE;
             }
-        } catch (Exception e) {
-            throw new ErrorAdminCommandException(e);
-        }
+
+    }
+    
+    @Override
+    public String getCommandDescription() {
+        return "Output all certificates for an end entity";
+    }
+
+    @Override
+    public String getFullHelpText() {
+        return getCommandDescription();
+    }
+
+    protected Logger getLogger() {
+        return log;
     }
 }

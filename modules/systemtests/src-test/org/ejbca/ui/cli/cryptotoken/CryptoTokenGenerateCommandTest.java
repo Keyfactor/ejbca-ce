@@ -72,7 +72,7 @@ public class CryptoTokenGenerateCommandTest {
 
     @Test
     public void testCommand() throws ErrorAdminCommandException, AuthorizationDeniedException {
-        String[] args = new String[] { "generate", TOKEN_NAME, KEYPAIR_ALIAS, "RSA1024" };
+        String[] args = new String[] { TOKEN_NAME, KEYPAIR_ALIAS, "RSA1024" };
         command.execute(args);
         assertTrue("Alias was not created", cryptoTokenManagementSession.isAliasUsedInCryptoToken(cryptoTokenId, KEYPAIR_ALIAS));
     }

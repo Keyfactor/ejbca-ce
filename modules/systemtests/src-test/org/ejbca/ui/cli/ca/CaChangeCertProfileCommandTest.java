@@ -77,7 +77,7 @@ public class CaChangeCertProfileCommandTest {
 
     @Test
     public void testCommand() throws ErrorAdminCommandException, CADoesntExistsException, AuthorizationDeniedException {
-        String[] args = new String[] { "changecertprofile", CA_NAME, CERTIFICATE_PROFILE};
+        String[] args = new String[] { CA_NAME, CERTIFICATE_PROFILE};
         command.execute(args);
         CAInfo result = caSession.getCAInfo(authenticationToken, ca.getCAId());
         assertEquals("Certificate profile was not changed in CA", certificateProfileId, result.getCertificateProfileId());

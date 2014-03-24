@@ -17,44 +17,52 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
-import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.CertTools;
-import org.ejbca.util.CliTools;
+import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * See getDescription().
  * 
  * @version $Id$
  */
-public class InternalKeyBindingGenerateCsrCommand extends BaseInternalKeyBindingCommand {
+public class InternalKeyBindingGenerateCsrCommand extends RudInternalKeyBindingCommand {
+
+    private static final Logger log = Logger.getLogger(InternalKeyBindingGenerateCsrCommand.class);
+
+    private static final String GENKEYPAIR_KEY = "--genkeypair";
+    private static final String CSR_FILE_KEY = "-f";
+
+    {
+        registerParameter(Parameter.createFlag(GENKEYPAIR_KEY, "Set to generate a \"next\" key pair"));
+        registerParameter(new Parameter(CSR_FILE_KEY, "Filename", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Destination file for the CSR."));
+    }
 
     @Override
-    public String getSubCommand() {
+    public String getMainCommand() {
         return "gencsr";
     }
 
     @Override
-    public String getDescription() {
-        return "Generate a PKCS#10 CSR for the next key pair to be used. Optionally generates a new \"next\" key pair and otherwise returns the current public key.";
-    }
+    public CommandResult executeCommand(Integer internalKeyBindingId, ParameterContainer parameters) throws AuthorizationDeniedException, IOException,
+            InvalidKeyException, CryptoTokenOfflineException, InvalidAlgorithmParameterException {
+        final InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE
+                .getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
 
-    @Override
-    public void executeCommand(Integer internalKeyBindingId, String[] args) throws AuthorizationDeniedException, IOException, InvalidKeyException,
-        CryptoTokenOfflineException, InvalidAlgorithmParameterException {
-        final InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = ejb.getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
-        if (args.length < 3) {
-            getLogger().info("Description: " + getDescription());
-            getLogger().info("Usage: " + getCommand() + " <name> [--genkeypair] <output filename>");
-            return;
-        }
-        final List<String> argsList = CliTools.getAsModifyableList(args);
-        final boolean switchGenKeyPair = CliTools.getAndRemoveSwitch("--genkeypair", argsList);
-        args = CliTools.getAsArgs(argsList);
+        final boolean switchGenKeyPair = parameters.containsKey(GENKEYPAIR_KEY);
+
         String nextKeyAlias;
         if (switchGenKeyPair) {
             nextKeyAlias = internalKeyBindingMgmtSession.generateNextKeyPair(getAdmin(), internalKeyBindingId);
@@ -69,13 +77,31 @@ public class InternalKeyBindingGenerateCsrCommand extends BaseInternalKeyBinding
         }
         final byte[] certificateRequestBytes = internalKeyBindingMgmtSession.generateCsrForNextKey(getAdmin(), internalKeyBindingId);
         if (certificateRequestBytes == null) {
-            getLogger().info("Unable to generate CSR for " + nextKeyAlias);
+            getLogger().error("Unable to generate CSR for " + nextKeyAlias);
+            return CommandResult.FUNCTIONAL_FAILURE;
         } else {
             final byte[] pemEncodedPublicKey = CertTools.getPEMFromCertificateRequest(certificateRequestBytes);
-            final OutputStream fos = new FileOutputStream(args[2]);
+            final OutputStream fos = new FileOutputStream(parameters.get(CSR_FILE_KEY));
             fos.write(pemEncodedPublicKey);
             fos.close();
-            getLogger().info("Stored PEM encoded PKCS#10 request for \"" + args[1] + "\" as " + args[2]);
+            getLogger().info(
+                    "Stored PEM encoded PKCS#10 request for \"" + parameters.get(KEYBINDING_NAME_KEY) + "\" as " + parameters.get(CSR_FILE_KEY));
+            return CommandResult.SUCCESS;
         }
     }
+
+    @Override
+    public String getCommandDescription() {
+        return "Generate a PKCS#10 CSR for the next key pair to be used.";
+    }
+
+    @Override
+    public String getFullHelpText() {
+        return getCommandDescription()+ " Optionally generates a new \"next\" key pair and otherwise returns the current public key.";
+    }
+
+    protected Logger getLogger() {
+        return log;
+    }
+
 }

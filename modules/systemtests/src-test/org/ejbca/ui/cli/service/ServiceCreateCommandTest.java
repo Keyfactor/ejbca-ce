@@ -43,11 +43,9 @@ public class ServiceCreateCommandTest extends ServiceTestCase {
     private ServiceCreateCommand serviceCreateCommand;
     private static final String SERVICE_NAME = "TestServiceCLICreate";
     
-    private static final String[] CREATE_ARGS = { "create", SERVICE_NAME };
-    private static final String[] CREATE_WITH_PROPERTIES_ARGS = { "create", SERVICE_NAME, "intervalClassPath=org.ejbca.core.model.services.intervals.PeriodicalInterval", "interval.periodical.unit=DAYS", "interval.periodical.value=1234" };
-    private static final String[] LIST_FIELDS_ARGS = { "create", SERVICE_NAME, "-listFields" };
-    private static final String[] LIST_PROPERTIES_ARGS = { "create", SERVICE_NAME, "-listProperties" };
-    private static final String[] MISSING_NAME_ARGS = { "create" };
+    private static final String[] CREATE_ARGS = { SERVICE_NAME };
+    private static final String[] CREATE_WITH_PROPERTIES_ARGS = { SERVICE_NAME, "intervalClassPath=org.ejbca.core.model.services.intervals.PeriodicalInterval interval.periodical.unit=DAYS interval.periodical.value=1234" };
+    private static final String[] MISSING_NAME_ARGS = { };
     
     @Before
     public void setUp() throws Exception {
@@ -94,14 +92,5 @@ public class ServiceCreateCommandTest extends ServiceTestCase {
         serviceCreateCommand.execute(CREATE_ARGS);
         serviceCreateCommand.execute(CREATE_ARGS);
     }
-    
-    @Test
-    public void testExecuteList() throws ErrorAdminCommandException {
-        // should not create anything, just list the available fields/properties
-        serviceCreateCommand.execute(LIST_FIELDS_ARGS);
-        assertNull("service should NOT have been created", getServiceSession().getService(SERVICE_NAME));
-        serviceCreateCommand.execute(LIST_PROPERTIES_ARGS);
-        assertNull("service should NOT have been created", getServiceSession().getService(SERVICE_NAME));
-    }
-    
+       
 }

@@ -16,9 +16,7 @@ import java.util.Collection;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.rules.AccessRuleNotFoundException;
 import org.cesecore.roles.RoleExistsException;
-import org.cesecore.roles.RoleNotFoundException;
 
 /**
  * @version $Id$
@@ -33,10 +31,8 @@ public interface ComplexAccessControlSession {
 	 * @param superAdminCN the CN of the superadmin to match in the rule
 	 * @throws AuthorizationDeniedException 
 	 * @throws RoleExistsException 
-	 * @throws RoleNotFoundException 
-	 * @throws AccessRuleNotFoundException 
 	 */
-    void initializeAuthorizationModule(AuthenticationToken admin, int caid, String superAdminCN) throws RoleExistsException, AuthorizationDeniedException, AccessRuleNotFoundException, RoleNotFoundException;
+    void initializeAuthorizationModule(AuthenticationToken admin, int caid, String superAdminCN) throws RoleExistsException, AuthorizationDeniedException;
 
     /**
      * Method used to return an Collection of Integers indicating which end entity profiles the administrator is authorized to view.

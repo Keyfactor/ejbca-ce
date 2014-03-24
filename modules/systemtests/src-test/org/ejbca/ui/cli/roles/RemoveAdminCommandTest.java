@@ -83,7 +83,7 @@ public class RemoveAdminCommandTest {
         subjects.add(new AccessUserAspectData(ROLENAME, caId, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE,
                 matchValue));
         roleManagementSession.addSubjectsToRole(internalAdmin, role, subjects);
-        String[] args = { "removeadmin", ROLENAME, "TestCA", "WITH_COMMONNAME", "TYPE_EQUALCASE", "foo" };
+        String[] args = { ROLENAME, "TestCA", "WITH_COMMONNAME", "TYPE_EQUALCASE", "foo" };
         command.execute(args);
         assertNull("User aspect was not removed via CLI command", accessUserAspectManagerTestSession.find(AccessUserAspectData.generatePrimaryKey(
                 ROLENAME, caId, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, matchValue)));

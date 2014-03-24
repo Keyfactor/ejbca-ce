@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.cli.ca;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
@@ -45,6 +46,7 @@ import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -143,8 +145,8 @@ public class CaImportCertDirCommandTest {
 
     @Test
     public void testCommand() throws ErrorAdminCommandException, CADoesntExistsException, AuthorizationDeniedException {
-        String[] args = new String[] { "importcertdir", "DN", CA_NAME, "ACTIVE", tempDirectory.getAbsolutePath(), "EMPTY", "ENDUSER" };
-        command.execute(args);
+        String[] args = new String[] { "DN", CA_NAME, "ACTIVE", tempDirectory.getAbsolutePath(), "--eeprofile", "EMPTY", "--certprofile", "ENDUSER" };
+        assertEquals(CommandResult.SUCCESS, command.execute(args));
         assertNotNull("Certificate was not imported.", endEntityAccessSession.findUser(authenticationToken, CERTIFICATE_DN));
     }
 }

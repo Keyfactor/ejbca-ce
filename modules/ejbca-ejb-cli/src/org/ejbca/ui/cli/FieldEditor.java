@@ -63,6 +63,18 @@ public class FieldEditor {
         }
     }
     
+    public List<String> getSetMethodNames(final Object obj) {
+        List<String> result = new ArrayList<String>();
+        DynaBean wrapper = new WrapDynaBean(obj);
+        DynaProperty[] props = wrapper.getDynaClass().getDynaProperties();
+        for (DynaProperty dynaProperty : props) {
+            if (!excluded.contains(dynaProperty.getName())) {
+                result.add(dynaProperty.getName());
+            }
+        }
+        return result;
+    }
+    
     /** gets a field value from a bean
      * 
      * @param field the field to get
@@ -85,9 +97,9 @@ public class FieldEditor {
      * @param value the value to set, of we should set a new value
      * @param obj the Bean to list, get or set fields
      * @return true if we only listed or got a value, i.e. if nothing was modified, false is we set a value.
-     * @throws ErrorAdminCommandException 
+     * @throws FieldNotFoundException if field was not found. 
      */
-    public boolean listGetOrSet(boolean listOnly, boolean getOnly, final String name, final String field, final String value, final Object obj) throws ErrorAdminCommandException {
+    public boolean listGetOrSet(boolean listOnly, boolean getOnly, final String name, final String field, final String value, final Object obj) throws FieldNotFoundException{
         if (listOnly) {
             listSetMethods(obj);
         } else if (getOnly) {
@@ -98,7 +110,7 @@ public class FieldEditor {
             final ConvertingWrapDynaBean db = new ConvertingWrapDynaBean(obj);
             DynaProperty prop = db.getDynaClass().getDynaProperty(field);
             if (prop == null) {
-                throw new ErrorAdminCommandException("Field '"+field+"' does not exist. Did you use correct case for every character of the field?");
+                throw new FieldNotFoundException("Field '"+field+"' does not exist. Did you use correct case for every character of the field?");
             }
             if (prop.getType().isInterface()) {
                 logger.info("Converting value '"+value+"' to type '"+ArrayList.class+"', ");

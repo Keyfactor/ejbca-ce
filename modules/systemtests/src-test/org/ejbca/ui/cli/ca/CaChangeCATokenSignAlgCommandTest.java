@@ -68,7 +68,7 @@ public class CaChangeCATokenSignAlgCommandTest {
     
     @Test
     public void testCommand() throws ErrorAdminCommandException, CADoesntExistsException, AuthorizationDeniedException {
-        String[] args = new String[] { "changecatokensignalg", CA_NAME, AlgorithmConstants.SIGALG_SHA1_WITH_RSA };
+        String[] args = new String[] { CA_NAME, AlgorithmConstants.SIGALG_SHA1_WITH_RSA };
         command.execute(args);
         CAInfo result = caSession.getCAInfo(authenticationToken, ca.getCAId());
         assertEquals("Signing algorithm was not changed", AlgorithmConstants.SIGALG_SHA1_WITH_RSA, result.getCAToken().getSignatureAlgorithm());

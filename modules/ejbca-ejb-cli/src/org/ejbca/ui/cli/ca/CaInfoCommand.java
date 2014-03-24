@@ -17,13 +17,18 @@ import java.security.cert.Certificate;
 import java.security.interfaces.ECPublicKey;
 import java.util.ArrayList;
 
+import org.apache.log4j.Logger;
 import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
-import org.ejbca.ui.cli.CliUsernameException;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * Shows info about a CA.
@@ -32,35 +37,27 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class CaInfoCommand extends BaseCaAdminCommand {
 
+    private static final Logger log = Logger.getLogger(CaInfoCommand.class);
+    
+    private static final String CA_NAME_KEY = "--caname";
+    
+    {
+        registerParameter(new Parameter(CA_NAME_KEY, "CA Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Name of the CA"));
+    }
+    
     @Override
-    public String getSubCommand() {
+    public String getMainCommand() {
         return "info";
     }
 
     @Override
-    public String getDescription() {
-        return "Shows info about a CA";
-    }
-
-    @Override
-    public void execute(String[] args) throws ErrorAdminCommandException {
-        try {
-            args = parseUsernameAndPasswordFromArgs(args);
-        } catch (CliUsernameException e) {
-            return;
-        }
-
-        if (args.length < 2) {
-            getLogger().info("Description: " + getDescription());
-            getLogger().info("Usage: " + getCommand() + " <caname>");
-            return;
-        }
-
+    public CommandResult execute(ParameterContainer parameters) {
         CryptoProviderTools.installBCProvider();
-        String caname = args[1];     
-        CAInfo cainfo = getCAInfo(getAuthenticationToken(cliUserName, cliPassword), caname);
+        String caname = parameters.get(CA_NAME_KEY);
+        CAInfo cainfo = getCAInfo(getAuthenticationToken(), caname);
         if (cainfo != null) {
-            ArrayList<Certificate> chain = new ArrayList<Certificate>(getCertChain(getAuthenticationToken(cliUserName, cliPassword), caname));
+            ArrayList<Certificate> chain = new ArrayList<Certificate>(getCertChain(getAuthenticationToken(), caname));
             getLogger().info("CA name: " + caname);
             getLogger().info("CA type: " + cainfo.getCAType());
             getLogger().info("CA ID: " + cainfo.getCAId());
@@ -106,7 +103,23 @@ public class CaInfoCommand extends BaseCaAdminCommand {
             }
         } else {
             getLogger().info("No CA named '" + caname + "' was found.");
+            return CommandResult.FUNCTIONAL_FAILURE;
         }
+        return CommandResult.SUCCESS;
+    }
+    
+    @Override
+    public String getCommandDescription() {
+        return "Shows info about a CA";
+    }
 
+    @Override
+    public String getFullHelpText() {
+        return getCommandDescription();
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return log;
     }
 }

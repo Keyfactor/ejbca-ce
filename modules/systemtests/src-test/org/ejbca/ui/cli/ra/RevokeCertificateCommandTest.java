@@ -124,7 +124,7 @@ public class RevokeCertificateCommandTest {
 
     @Test
     public void testRevokeCertificate() throws ErrorAdminCommandException {
-        final String args[] = new String[] { "revokecert", x509ca.getSubjectDN(), serialNumber, "0" };
+        final String args[] = new String[] { x509ca.getSubjectDN(), serialNumber, "0" };
         command.execute(args);
         assertTrue("Certificate was not revoked.",
                 certificateStoreSession.isRevoked(x509ca.getSubjectDN(), CertTools.getSerialNumberFromString(serialNumber)));

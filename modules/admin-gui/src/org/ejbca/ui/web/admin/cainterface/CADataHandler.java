@@ -147,7 +147,7 @@ public class CADataHandler implements Serializable {
 	  Collection<Certificate> certs = null;
 	  try {
 		  certs = CertTools.getCertsFromPEM(new ByteArrayInputStream(certbytes));
-	  } catch (IOException e) {
+	  } catch (CertificateException e) {
 		  log.debug("Input stream is not PEM certificate(s): "+e.getMessage());
 		  // See if it is a single binary certificate
 		  Certificate cert = CertTools.getCertfromByteArray(certbytes);
@@ -294,7 +294,7 @@ public class CADataHandler implements Serializable {
           final List<Certificate> certChain = new ArrayList<Certificate>();
 		  try {
 		      certChain.addAll(CertTools.getCertsFromPEM(new ByteArrayInputStream(certBytes)));
-          } catch (IOException e) {
+          } catch (CertificateException e) {
               log.debug("Input stream is not PEM certificate(s): "+e.getMessage());
               // See if it is a single binary certificate
               certChain.add(CertTools.getCertfromByteArray(certBytes));

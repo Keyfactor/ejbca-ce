@@ -70,7 +70,6 @@ import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderSessionRemote;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationToken;
-import org.ejbca.core.ejb.authentication.cli.exception.CliAuthenticationFailedException;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -85,7 +84,7 @@ import org.ejbca.core.model.approval.approvalrequests.DummyApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.ViewHardTokenDataApprovalRequest;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.NotFoundException;
-import org.ejbca.ui.cli.batch.BatchMakeP12Command;
+import org.ejbca.core.protocol.ws.BatchCreateTool;
 import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.Query;
@@ -127,22 +126,23 @@ public class ApprovalSessionTest extends CaTestCase {
     private int caid = getTestCAId();
 
     private int removeApprovalId = 0;
-    
-    private final String cliUserName = EjbcaConfiguration.getCliDefaultUser();
-    private final String cliPassword = EjbcaConfiguration.getCliDefaultPassword();
-    
+
     private AccessControlSessionRemote accessControlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessControlSessionRemote.class);
     private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
     private RoleAccessSessionRemote roleAccessSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private ApprovalSessionRemote approvalSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionRemote.class);
-    private ApprovalExecutionSessionRemote approvalExecutionSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalExecutionSessionRemote.class);
+    private ApprovalExecutionSessionRemote approvalExecutionSessionRemote = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(ApprovalExecutionSessionRemote.class);
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(EndEntityManagementSessionRemote.class);
 
-    private final SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    
-    private final AuthenticationToken internalToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(ApprovalSessionTest.class.getSimpleName()));
-    
+    private final SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(
+            SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+
+    private final AuthenticationToken internalToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
+            ApprovalSessionTest.class.getSimpleName()));
+
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProvider();
@@ -163,18 +163,21 @@ public class ApprovalSessionTest extends CaTestCase {
             adminusername2 = adminusername1 + "2";
             reqadminusername = "req" + adminusername1;
 
-            EndEntityInformation userdata = new EndEntityInformation(adminusername1, "CN=" + adminusername1, caid, null, null, new EndEntityType(EndEntityTypes.ENDUSER),
-                    SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
+            EndEntityInformation userdata = new EndEntityInformation(adminusername1, "CN=" + adminusername1, caid, null, null, new EndEntityType(
+                    EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                    SecConst.TOKEN_SOFT_P12, 0, null);
             userdata.setPassword("foo123");
             endEntityManagementSession.addUser(intadmin, userdata, true);
 
-            EndEntityInformation userdata2 = new EndEntityInformation(adminusername2, "CN=" + adminusername2, caid, null, null, new EndEntityType(EndEntityTypes.ENDUSER),
-                    SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
+            EndEntityInformation userdata2 = new EndEntityInformation(adminusername2, "CN=" + adminusername2, caid, null, null, new EndEntityType(
+                    EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                    SecConst.TOKEN_SOFT_P12, 0, null);
             userdata2.setPassword("foo123");
             endEntityManagementSession.addUser(intadmin, userdata2, true);
 
-            EndEntityInformation userdata3 = new EndEntityInformation(reqadminusername, "CN=" + reqadminusername, caid, null, null, new EndEntityType(EndEntityTypes.ENDUSER),
-                    SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
+            EndEntityInformation userdata3 = new EndEntityInformation(reqadminusername, "CN=" + reqadminusername, caid, null, null,
+                    new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE,
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
             userdata3.setPassword("foo123");
             endEntityManagementSession.addUser(intadmin, userdata3, true);
 
@@ -184,14 +187,12 @@ public class ApprovalSessionTest extends CaTestCase {
             externaladmin = simpleAuthenticationProvider.authenticate(makeAuthenticationSubject(externalcert));
 
             File tmpfile = File.createTempFile("ejbca", "p12");
-            BatchMakeP12Command makep12 = new BatchMakeP12Command();
-            makep12.setMainStoreDir(tmpfile.getParent());
-            makep12.createAllNew(cliUserName, cliPassword);
+            BatchCreateTool.createAllNew(intadmin, "p12");
             tmpfile.delete();
         }
         role = roleAccessSessionRemote.findRole(roleName);
         if (role == null) {
-        	role = roleManagementSession.create(intadmin, roleName);
+            role = roleManagementSession.create(intadmin, roleName);
         }
 
         List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
@@ -199,16 +200,16 @@ public class ApprovalSessionTest extends CaTestCase {
         accessRules.add(new AccessRuleData(roleName, AccessRulesConstants.ENDENTITYPROFILEBASE, AccessRuleState.RULE_ACCEPT, true));
         accessRules.add(new AccessRuleData(roleName, StandardRules.CAACCESSBASE.resource(), AccessRuleState.RULE_ACCEPT, true));
         roleManagementSession.addAccessRulesToRole(internalToken, role, accessRules);
-        
+
         adminentities = new ArrayList<AccessUserAspectData>();
-        adminentities.add(new AccessUserAspectData(role.getRoleName(), caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASEINS,
-        		adminusername1));
-        adminentities.add(new AccessUserAspectData(role.getRoleName(), caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASEINS,
-        		adminusername2));
-        adminentities.add(new AccessUserAspectData(role.getRoleName(), caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASEINS,
-        		reqadminusername));
-        adminentities.add(new AccessUserAspectData(role.getRoleName(), "CN=externalCert,C=SE".hashCode(), X500PrincipalAccessMatchValue.WITH_SERIALNUMBER,
-        		AccessMatchType.TYPE_EQUALCASEINS, CertTools.getSerialNumberAsString(externalcert)));
+        adminentities.add(new AccessUserAspectData(role.getRoleName(), caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME,
+                AccessMatchType.TYPE_EQUALCASEINS, adminusername1));
+        adminentities.add(new AccessUserAspectData(role.getRoleName(), caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME,
+                AccessMatchType.TYPE_EQUALCASEINS, adminusername2));
+        adminentities.add(new AccessUserAspectData(role.getRoleName(), caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME,
+                AccessMatchType.TYPE_EQUALCASEINS, reqadminusername));
+        adminentities.add(new AccessUserAspectData(role.getRoleName(), "CN=externalCert,C=SE".hashCode(),
+                X500PrincipalAccessMatchValue.WITH_SERIALNUMBER, AccessMatchType.TYPE_EQUALCASEINS, CertTools.getSerialNumberAsString(externalcert)));
         roleManagementSession.addSubjectsToRole(intadmin, roleAccessSessionRemote.findRole(roleName), adminentities);
         accessControlSession.forceCacheExpire();
 
@@ -235,29 +236,31 @@ public class ApprovalSessionTest extends CaTestCase {
 
     @After
     public void tearDown() throws Exception {
-    
+
         Collection<ApprovalDataVO> approvals = approvalSessionRemote.findApprovalDataVO(intadmin, removeApprovalId);
         if (approvals != null) {
-        	for (ApprovalDataVO approvalDataVO : approvals) {
-				approvalSessionRemote.removeApprovalRequest(intadmin, approvalDataVO.getId());
-			}
+            for (ApprovalDataVO approvalDataVO : approvals) {
+                approvalSessionRemote.removeApprovalRequest(intadmin, approvalDataVO.getId());
+            }
         }
         try {
-        	endEntityManagementSession.deleteUser(intadmin, adminusername1);
+            endEntityManagementSession.deleteUser(intadmin, adminusername1);
         } catch (Exception e) {
-        	// NOPMD: ignore
+            // NOPMD: ignore
         }
         try {
-        	endEntityManagementSession.deleteUser(intadmin, adminusername2);
+            endEntityManagementSession.deleteUser(intadmin, adminusername2);
         } catch (Exception e) {
-        	// NOPMD: ignore
+            // NOPMD: ignore
         }
         try {
-        	endEntityManagementSession.deleteUser(intadmin, reqadminusername);
+            endEntityManagementSession.deleteUser(intadmin, reqadminusername);
         } catch (Exception e) {
-        	// NOPMD: ignore
+            // NOPMD: ignore
         }
-        roleManagementSession.remove(intadmin, role);
+        if (role != null) {
+            roleManagementSession.remove(intadmin, role);
+        }
 
     }
 
@@ -268,9 +271,9 @@ public class ApprovalSessionTest extends CaTestCase {
         Certificate cert = nonExecutableRequest.getRequestAdminCert();
         assertEquals(CertTools.getIssuerDN(reqadmincert), CertTools.getIssuerDN(cert));
         removeApprovalId = nonExecutableRequest.generateApprovalId();
-        
+
         List<Integer> cleanUpList = new ArrayList<Integer>();
-        
+
         try {
             // Test that the approval request does not exist.
             Collection<ApprovalDataVO> result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
@@ -321,15 +324,16 @@ public class ApprovalSessionTest extends CaTestCase {
             approvalSessionRemote.removeApprovalRequest(admin1, expired.getId());
 
             result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
-            
+
             // Test approvalId generation with a "real" approval request with a requestAdmin
-            ViewHardTokenDataApprovalRequest ar = new ViewHardTokenDataApprovalRequest("APPROVALREQTESTTOKENUSER1", "CN=APPROVALREQTESTTOKENUSER1", "12345678", true, reqadmin, null, 1, 0, 0);
-            log.debug("Adding approval with approvalId: "+ar.generateApprovalId());
+            ViewHardTokenDataApprovalRequest ar = new ViewHardTokenDataApprovalRequest("APPROVALREQTESTTOKENUSER1", "CN=APPROVALREQTESTTOKENUSER1",
+                    "12345678", true, reqadmin, null, 1, 0, 0);
+            log.debug("Adding approval with approvalId: " + ar.generateApprovalId());
             approvalSessionRemote.addApprovalRequest(admin1, ar);
             result = approvalSessionRemote.findApprovalDataVO(admin1, ar.generateApprovalId());
             assertTrue(result.size() == 1);
             next = (ApprovalDataVO) result.iterator().next();
-            cleanUpList.add(next.getId());      
+            cleanUpList.add(next.getId());
         } finally {
             for (Integer next : cleanUpList) {
                 approvalSessionRemote.removeApprovalRequest(admin1, next);
@@ -426,10 +430,11 @@ public class ApprovalSessionTest extends CaTestCase {
         final String username = "ApprovalEndEntityUsername";
         final String clearpwd = "foo123";
         final EndEntityInformation userdata = new EndEntityInformation(username, "C=SE, O=AnaTom, CN=" + username, caid, null, null,
-                EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(),
-                SecConst.TOKEN_SOFT_P12, 0, null);
+                EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, 0, null);
         userdata.setPassword(clearpwd);
-        final AddEndEntityApprovalRequest eeApprovalRequest = new AddEndEntityApprovalRequest(userdata, false, cliReqAuthToken, null, 1, caid, SecConst.EMPTY_ENDENTITYPROFILE);
+        final AddEndEntityApprovalRequest eeApprovalRequest = new AddEndEntityApprovalRequest(userdata, false, cliReqAuthToken, null, 1, caid,
+                SecConst.EMPTY_ENDENTITYPROFILE);
         removeApprovalId = eeApprovalRequest.generateApprovalId();
         approvalSessionRemote.addApprovalRequest(cliReqAuthToken, eeApprovalRequest);
         // Use the authentication token
@@ -458,14 +463,12 @@ public class ApprovalSessionTest extends CaTestCase {
 
         final AuthenticationSubject subject = new AuthenticationSubject(principals, null);
 
-        final CliAuthenticationToken authenticationToken = (CliAuthenticationToken) EjbRemoteHelper.INSTANCE.getRemoteSession(CliAuthenticationProviderSessionRemote.class).authenticate(subject);
-        // Set hashed value anew in order to send back
-        if (authenticationToken == null) {
-            throw new CliAuthenticationFailedException("Authentication failed. Username or password were not correct.");
-        } else {
-            authenticationToken.setSha1HashFromCleartextPassword(password);
-            return authenticationToken;
-        }
+        final CliAuthenticationToken authenticationToken = (CliAuthenticationToken) EjbRemoteHelper.INSTANCE.getRemoteSession(
+                CliAuthenticationProviderSessionRemote.class).authenticate(subject);
+
+        authenticationToken.setSha1HashFromCleartextPassword(password);
+        return authenticationToken;
+
     }
 
     @Test
@@ -671,7 +674,8 @@ public class ApprovalSessionTest extends CaTestCase {
         Query q1 = new Query(Query.TYPE_APPROVALQUERY);
         q1.add(ApprovalMatch.MATCH_WITH_APPROVALTYPE, BasicMatch.MATCH_TYPE_EQUALS, "" + req1.getApprovalType());
 
-        List<ApprovalDataVO> result = approvalSessionRemote.query(admin1, q1, 0, 3, "cAId=" + caid, "(endEntityProfileId=" + SecConst.EMPTY_ENDENTITYPROFILE + ")");
+        List<ApprovalDataVO> result = approvalSessionRemote.query(admin1, q1, 0, 3, "cAId=" + caid, "(endEntityProfileId="
+                + SecConst.EMPTY_ENDENTITYPROFILE + ")");
         assertTrue("Result size " + result.size(), result.size() >= 2 && result.size() <= 3);
 
         result = approvalSessionRemote.query(admin1, q1, 1, 3, "cAId=" + caid, "(endEntityProfileId=" + SecConst.EMPTY_ENDENTITYPROFILE + ")");
@@ -723,9 +727,9 @@ public class ApprovalSessionTest extends CaTestCase {
 
         log.trace("<testApprovalsWithExternalAdmins()");
     }
-    
+
     public String getRoleName() {
-        return this.getClass().getSimpleName(); 
+        return this.getClass().getSimpleName();
     }
 
 }

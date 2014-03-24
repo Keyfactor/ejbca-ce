@@ -12,38 +12,55 @@
  *************************************************************************/
 package org.ejbca.ui.cli.keybind;
 
+import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
+import org.cesecore.keybind.InternalKeyBindingNameInUseException;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
 
 /**
  * See getDescription().
  * 
  * @version $Id$
  */
-public class InternalKeyBindingDeleteCommand extends BaseInternalKeyBindingCommand {
+public class InternalKeyBindingDeleteCommand extends RudInternalKeyBindingCommand {
+
+    private static final Logger log = Logger.getLogger(InternalKeyBindingDeleteCommand.class);
 
     @Override
-    public String getSubCommand() {
+    public String getMainCommand() {
         return "delete";
     }
 
     @Override
-    public String getDescription() {
+    public CommandResult executeCommand(Integer internalKeyBindingId, ParameterContainer parameters) throws AuthorizationDeniedException,
+            CryptoTokenOfflineException, InternalKeyBindingNameInUseException, InvalidAlgorithmException {
+        final InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE
+                .getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
+        if (internalKeyBindingMgmtSession.deleteInternalKeyBinding(getAdmin(), internalKeyBindingId)) {
+            getLogger().info("InternalKeyBinding with id " + internalKeyBindingId + " was successfully removed.");
+            return CommandResult.SUCCESS;
+        } else {
+            getLogger().error("InternalKeyBinding with id " + internalKeyBindingId + " could not be removed.");
+            return CommandResult.FUNCTIONAL_FAILURE;
+        }
+    }
+
+    @Override
+    public String getCommandDescription() {
         return "Deletes the specified InternalKeyBinding.";
     }
 
     @Override
-    public void executeCommand(Integer internalKeyBindinId, String[] args) throws AuthorizationDeniedException {
-        if (args.length < 2) {
-            getLogger().info("Description: " + getDescription());
-            getLogger().info("Usage: " + getCommand() + " <name>");
-            return;
-        }
-        final InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = ejb.getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
-        if (internalKeyBindingMgmtSession.deleteInternalKeyBinding(getAdmin(), internalKeyBindinId)) {
-            getLogger().info("InternalKeyBinding with id " + internalKeyBindinId + " was successfully removed.");
-        } else {
-            getLogger().info("InternalKeyBinding with id " + internalKeyBindinId + " could not be removed.");
-        }
+    public String getFullHelpText() {
+        return getCommandDescription();
+    }
+
+    protected Logger getLogger() {
+        return log;
     }
 }

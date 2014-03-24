@@ -161,7 +161,6 @@ import org.ejbca.cvc.CVCObject;
 import org.ejbca.cvc.CVCertificate;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.cvc.CertificateParser;
-import org.ejbca.ui.cli.batch.BatchMakeP12Command;
 
 
 /**
@@ -178,9 +177,6 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     protected static final String TEST_NONADMIN_FILE = "p12/" + TEST_NONADMIN_USERNAME + ".jks";
     protected static final String TEST_NONADMIN_CN = "CN="+TEST_NONADMIN_USERNAME;
     protected static final String PASSWORD = "foo123";
-
-    private static final String CLI_USERNAME = "ejbca";
-    private static final String CLI_PASSWORD = "ejbca";
     
     protected EjbcaWS ejbcaraws;
     protected static String ADMIN_CA_NAME;
@@ -352,11 +348,8 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             log.debug("Changing user: "+user2.getUsername());
             endEntityManagementSession.changeUser(intAdmin, user2, true);
         }
-
-        BatchMakeP12Command batch = new BatchMakeP12Command();
-        batch.setMainStoreDir("p12");
-        batch.createUser(CLI_USERNAME, CLI_PASSWORD, user1.getUsername());
-        batch.createUser(CLI_USERNAME, CLI_PASSWORD, user2.getUsername());
+        BatchCreateTool.createUser(intAdmin, "p12", user1.getUsername());
+        BatchCreateTool.createUser(intAdmin, "p12", user2.getUsername());
     }
 
     private String getDN(String userName) {

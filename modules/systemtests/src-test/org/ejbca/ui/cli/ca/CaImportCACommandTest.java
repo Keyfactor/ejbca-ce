@@ -88,7 +88,7 @@ public class CaImportCACommandTest {
 
     @Test
     public void testSoftKey() throws ErrorAdminCommandException, CertificateException, IOException, CADoesntExistsException, AuthorizationDeniedException {
-        String[] args = new String[] { "importca", ca.getName(), keyStoreFile.getAbsolutePath(), CaImportCACommand.KEYSTORE_PASSWORD_KEY, KEYSTORE_PASSWORD };
+        String[] args = new String[] { ca.getName(), keyStoreFile.getAbsolutePath(), CaImportCACommand.KEYSTORE_PASSWORD_KEY, KEYSTORE_PASSWORD };
         command.execute(args);
         //Verify that CA is imported
         assertTrue("No CA was imported", caSession.existsCa(caSession.getCAInfo(authenticationToken, CA_NAME).getCAId()));

@@ -16,7 +16,6 @@ import java.util.List;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.keys.token.IllegalCryptoTokenException;
 
 /*! \mainpage The CESeCore project
 *
@@ -71,7 +70,7 @@ public interface CaSession {
      * @throws CADoesntExistsException
      * @throws AuthorizationDeniedException
      */
-    public void editCA(final AuthenticationToken admin, final CAInfo cainfo) throws CADoesntExistsException, AuthorizationDeniedException, IllegalCryptoTokenException;
+    public void editCA(final AuthenticationToken admin, final CAInfo cainfo) throws CADoesntExistsException, AuthorizationDeniedException;
 
     /**
      * Method returning id's of all CA's available to the system.

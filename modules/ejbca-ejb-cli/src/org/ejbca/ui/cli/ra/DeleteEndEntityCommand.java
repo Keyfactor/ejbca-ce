@@ -13,14 +13,23 @@
 
 package org.ejbca.ui.cli.ra;
 
-import java.util.List;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
+import javax.ejb.RemoveException;
+
+import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.ra.NotFoundException;
-import org.ejbca.ui.cli.CliUsernameException;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
-import org.ejbca.util.CliTools;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * Deletes an end entity from the database.
@@ -29,68 +38,90 @@ import org.ejbca.util.CliTools;
  */
 public class DeleteEndEntityCommand extends BaseRaCommand {
 
+    private static final Logger log = Logger.getLogger(DeleteEndEntityCommand.class);
+
     private static final String OLD_COMMAND = "deluser";
     private static final String COMMAND = "delendentity";
-    
+
+    private static final Set<String> ALIASES = new HashSet<String>();
+    static {
+        ALIASES.add(OLD_COMMAND);
+    }
+
+    private static final String USERNAME_KEY = "--username";
+    private static final String FORCE_KEY = "-force";
+
+    {
+        registerParameter(new Parameter(USERNAME_KEY, "Username", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Username for the end entity to delete."));
+        registerParameter(Parameter.createFlag(FORCE_KEY, "Don't ask if the end entity has been revoked."));
+    }
+
     @Override
-    public String getSubCommand() {
+    public Set<String> getMainCommandAliases() {
+        return ALIASES;
+    }
+
+    @Override
+    public String getMainCommand() {
         return COMMAND;
     }
-    
-    @Override
-    public String[] getSubCommandAliases() {
-        return new String[]{OLD_COMMAND};
-    }
 
     @Override
-    public String getDescription() {
-        return "Deletes an end entity";
-    }
+    public CommandResult execute(ParameterContainer parameters) {
 
-    public void execute(String[] args) throws ErrorAdminCommandException {
+        boolean force = parameters.containsKey(FORCE_KEY);
+
         try {
-            args = parseUsernameAndPasswordFromArgs(args);
-        } catch (CliUsernameException e) {
-            return;
-        }
-        
-        // Get and remove switches
-        List<String> argsList = CliTools.getAsModifyableList(args);
-        boolean force = argsList.remove("-force");
-        args = argsList.toArray(new String[argsList.size()]);
-        // Parse the rest of the arguments
-        if (args.length < 2) {
-            getLogger().info("Description: " + getDescription());
-            getLogger().info("Usage: " + getCommand() + " [-force] <username>");
-            getLogger().info(" -force   Don't ask if the end entity has been revoked.");
-            return;
-        }
-        try {
-            String username = args[1];
+            String username = parameters.get(USERNAME_KEY);
             int inp = 121;
             if (!force) {
                 getLogger().info("Have you revoked the end entity [y/N]? ");
-                inp = System.in.read();
+                try {
+                    inp = System.in.read();
+                } catch (IOException e) {
+                    throw new IllegalStateException("Could not read console input.");
+                }
             }
             if ((inp == 121) || (inp == 89)) {
                 try {
-                    ejb.getRemoteSession(EndEntityManagementSessionRemote.class).deleteUser(getAuthenticationToken(cliUserName, cliPassword), username);
+                    EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).deleteUser(getAuthenticationToken(), username);
                     getLogger().info("Deleted end entity with username: " + username);
+                    return CommandResult.SUCCESS;
                 } catch (AuthorizationDeniedException e) {
-                    getLogger().error("Not authorized to remove end entity.");
+                    getLogger().error("ERROR: Not authorized to remove end entity.");
+                    return CommandResult.FUNCTIONAL_FAILURE;
+                } catch (RemoveException e) {
+                    getLogger().error("ERROR: User could not be removed. " + e.getMessage());
+                    return CommandResult.FUNCTIONAL_FAILURE;
                 }
             } else {
-                getLogger().info("Delete aborted!");
+                getLogger().info("Deletion aborted!");
                 getLogger().info(
-                        "Please run '" + new RevokeEndEntityCommand().getMainCommand() + " " + new RevokeEndEntityCommand().getSubCommand() + " "
+                        "Please run '" + new RevokeEndEntityCommand().getMainCommand() + " " + new RevokeEndEntityCommand().getMainCommand() + " "
                                 + username + "'.");
+                return CommandResult.FUNCTIONAL_FAILURE;
             }
         } catch (NotFoundException e) {
-            getLogger().error("No such end entity.");
-        } catch (Exception e) {
-            throw new ErrorAdminCommandException(e);
+            getLogger().error("ERROR: No such end entity.");
+            return CommandResult.FUNCTIONAL_FAILURE;
         }
     }
 
+    @Override
+    public String getCommandDescription() {
+        return "Deletes an end entity";
+    }
+
+    @Override
+    public String getFullHelpText() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getCommandDescription() + ".\n");
+        return sb.toString();
+    }
+
+    protected Logger getLogger() {
+        return log;
+    }
 
 }

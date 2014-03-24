@@ -12,8 +12,11 @@
  *************************************************************************/
 package org.ejbca.ui.cli.service;
 
+import org.apache.log4j.Logger;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.services.ServiceSessionRemote;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
 
 /**
  * CLI subcommand for deleting services.
@@ -22,30 +25,38 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class ServiceDeleteCommand extends BaseServiceCommand {
 
+    private static final Logger log = Logger.getLogger(ServiceDeleteCommand.class);
+
     @Override
-    public String getSubCommand() {
+    public String getMainCommand() {
         return "delete";
     }
 
     @Override
-    public String getDescription() {
+    public CommandResult execute(ParameterContainer parameters, int serviceId) {
+        final ServiceSessionRemote serviceSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ServiceSessionRemote.class);
+        final String serviceName = serviceSession.getServiceName(serviceId);
+        if (serviceSession.removeService(getAdmin(), serviceName)) {
+            getLogger().info("Service deleted.");
+            return CommandResult.SUCCESS;
+        } else {
+            getLogger().info("Failed to delete service: " + serviceName);
+            return CommandResult.FUNCTIONAL_FAILURE;
+        }
+    }
+
+    @Override
+    public String getCommandDescription() {
         return "Deletes a service.";
     }
 
     @Override
-    public void execute(String[] args, int serviceId) throws ErrorAdminCommandException {
-        if (args.length < 2) {
-            getLogger().info("Description: " + getDescription());
-            getLogger().info("Usage: " + getCommand() + " <service name>");
-            return;
-        }
-        
-        final ServiceSessionRemote serviceSession = ejb.getRemoteSession(ServiceSessionRemote.class);
-        final String serviceName = serviceSession.getServiceName(serviceId);
-        if (serviceSession.removeService(getAdmin(), serviceName)) {
-            getLogger().info("Service deleted.");
-        } else {
-            getLogger().info("Failed to delete service: "+serviceName);
-        }
+    public String getFullHelpText() {
+        return getCommandDescription();
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return log;
     }
 }

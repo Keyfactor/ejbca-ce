@@ -14,13 +14,22 @@
 package org.ejbca.ui.cli.ra;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
-import org.ejbca.ui.cli.CliUsernameException;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * Set the SubjectDN for an end entity.
@@ -28,62 +37,74 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  * @version $Id$
  */
 public class SetSubjectDNCommand extends BaseRaCommand {
-    
-	@Override
-	public String getSubCommand() {
-		return "setsubjectdn";
-	}
-	
-	@Override
-	public String getDescription() {
-		return "Set or update the SubjectDN for an end entity";
-	}
+
+    private static final Logger log = Logger.getLogger(SetSubjectDNCommand.class);
+
+    private static final String USERNAME_KEY = "--username";
+    private static final String DN_KEY = "--dn";
+
+    {
+        registerParameter(new Parameter(USERNAME_KEY, "Username", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Username of the end entity to modify."));
+        registerParameter(new Parameter(DN_KEY, "Subject DN", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "The new subject DN."));
+    }
 
     @Override
-    public String[] getSubCommandAliases() {
-        return new String[]{};
+    public String getMainCommand() {
+        return "setsubjectdn";
     }
-	
-	@Override
-	public void execute(String[] args) throws ErrorAdminCommandException {
-	    try {
-            args = parseUsernameAndPasswordFromArgs(args);
-        } catch (CliUsernameException e) {
-            return;
+
+    @Override
+    public CommandResult execute(ParameterContainer parameters) {
+
+        String username = parameters.get(USERNAME_KEY);
+        String subjectDN = parameters.get(DN_KEY);
+        if (StringUtils.isEmpty(subjectDN)) {
+            getLogger().error("SubjectDN must be supplied.");
+            return CommandResult.FUNCTIONAL_FAILURE;
         }
-	    
+        getLogger().info("Setting subjectDN '" + subjectDN + "' for end entity with username " + username);
         try {
-            if (args.length < 3) {
-    			getLogger().info("Description: " + getDescription());
-            	getLogger().info("Usage: " + getCommand() + " <username> <subjectDN>");
-            	getLogger().info(" The SubjectDN fields are: emailAddress=<string>, UID=< unique identifier>, CN=<common name>, serialNumber=<serialnumber>, " +
-            			"givenName=<string>, initials=<string>, surname=<string>, title=<string>, " +
-            			"OU=<the organizational unit>, O=<the organization>, L=<locality>, ST=<state of province>, " +
-            			"DC=<domain component>, C=<two letter ISO3166>, unstructuredAddress=<IP address>, " +
-            			"unstructuredName=<domain name>, postalCode=<string>, businessCategory=<organization type>, " +
-            			"dnQualifier=<string>, postalAddress=<the postal address>, telephoneNumber=<telephone number>, " +
-            			"pseudonym=<string>, streetAddress=<string>, name=<string>, CIF=<tax ID code for companies in Spain>, " +
-            			"NIF=<tax ID number for companied in Spain>");
-                return;
-            }
-            String username = args[1];
-            String subjectDN = args[2];
-            if (StringUtils.isEmpty(subjectDN)) {
-            	getLogger().error("SubjectDN must be supplied.");
-            	return;
-            }
-            getLogger().info("Setting subjectDN '" + subjectDN + "' for end entity with username " + username);
-            try {
-            	EndEntityInformation uservo = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAuthenticationToken(cliUserName, cliPassword), username);
-            	uservo.setDN(subjectDN);
-            	ejb.getRemoteSession(EndEntityManagementSessionRemote.class).changeUser(getAuthenticationToken(cliUserName, cliPassword), uservo, false);
-            } catch (AuthorizationDeniedException e) {
-            	getLogger().error("Not authorized to change end entity.");
-            } catch (UserDoesntFullfillEndEntityProfile e) {
-            	getLogger().error("Given end entity doesn't fullfill end entity profile. : " + e.getMessage());
-            }
-        } catch (Exception e) {
-            throw new ErrorAdminCommandException(e);
+            EndEntityInformation uservo = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(
+                    getAuthenticationToken(), username);
+            uservo.setDN(subjectDN);
+            EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).changeUser(getAuthenticationToken(), uservo, false);
+            return CommandResult.SUCCESS;
+        } catch (AuthorizationDeniedException e) {
+            getLogger().error("Not authorized to change end entity.");
+        } catch (UserDoesntFullfillEndEntityProfile e) {
+            getLogger().error("Given end entity doesn't fullfill end entity profile. : " + e.getMessage());
+        } catch (CADoesntExistsException e) {
+            getLogger().error("ERROR: " + e.getMessage());
+        } catch (WaitingForApprovalException e) {
+            getLogger().error("ERROR: " + e.getMessage());
+        } catch (EjbcaException e) {
+            getLogger().error("ERROR: " + e.getMessage());
         }
-	}
+        return CommandResult.FUNCTIONAL_FAILURE;
+    }
+
+    @Override
+    public String getCommandDescription() {
+        return "Set or update the SubjectDN for an end entity";
+    }
+
+    @Override
+    public String getFullHelpText() {
+        return getCommandDescription()
+                + "\n\nThe SubjectDN fields are: emailAddress=<string>, UID=< unique identifier>, CN=<common name>, serialNumber=<serialnumber>, "
+                + "givenName=<string>, initials=<string>, surname=<string>, title=<string>, "
+                + "OU=<the organizational unit>, O=<the organization>, L=<locality>, ST=<state of province>, "
+                + "DC=<domain component>, C=<two letter ISO3166>, unstructuredAddress=<IP address>, "
+                + "unstructuredName=<domain name>, postalCode=<string>, businessCategory=<organization type>, "
+                + "dnQualifier=<string>, postalAddress=<the postal address>, telephoneNumber=<telephone number>, "
+                + "pseudonym=<string>, streetAddress=<string>, name=<string>, CIF=<tax ID code for companies in Spain>, "
+                + "NIF=<tax ID number for companied in Spain>";
+    }
+
+    protected Logger getLogger() {
+        return log;
+    }
+
 }

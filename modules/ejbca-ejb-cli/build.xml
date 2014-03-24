@@ -49,7 +49,7 @@
     		<map from="${mod.ejbca-ejb-cli.dist}/" to=""/>
     	</pathconvert>
     	<dirname file="${mod.ejbca-ejb-cli.lib}" property="mod.ejbca-ejb-cli.lib.dir"/>
-    	<buildservicemanifest interface="org.ejbca.ui.cli.CliCommandPlugin" file="${build.dir}" classpath="compile.classpath"/>
+    	<buildservicemanifest interface="org.ejbca.ui.cli.infrastructure.command.CliCommandPlugin" file="${build.dir}" classpath="compile.classpath"/>
     	<mkdir dir="${mod.ejbca-ejb-cli.lib.dir}" />	<!-- Make sure the dir exists before we start the jar-task -->
     	<jar destfile="${mod.ejbca-ejb-cli.lib}">
     		<manifest>

@@ -10,88 +10,133 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package org.ejbca.ui.cli;
 
+import java.awt.print.PrinterException;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.command.EjbcaCommandBase;
+import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 import org.ejbca.util.PrinterManager;
-
 /**
+ *
  *
  * Class used as a help tool when creating hard token visual layout templates
  * @version $Id$
  */
-public class SVGTemplatePrinterCommand extends BaseCommand {
+public class SVGTemplatePrinterCommand extends EjbcaCommandBase {
 
-	private static final String USERDATAFILENAME = "src/cli/svgtemplateprinttester.properties";
+    private static final Logger log = Logger.getLogger(SVGTemplatePrinterCommand.class);
 
-	public String getMainCommand() { return null; }
-	public String getSubCommand() { return "template"; }
-	public String getDescription() { return "Tool for creating hard token visual layout templates"; }
+    private static final String USERDATAFILENAME = "src/cli/svgtemplateprinttester.properties";
+    private static final String TEMPLATEFILENAME_KEYWORD = "-t";
+    private static final String PRINTERNAME_KEYWORD = "-p";
 
-	public void execute(String[] args) throws ErrorAdminCommandException {
-		boolean noargmatch = true;
-		if(args.length == 2 && args[1].equalsIgnoreCase("listprinters")){
-			String[] printerNames = PrinterManager.listPrinters();
-			getLogger().info("Found " + printerNames.length + " printers:");
-			for(int i=0;i<printerNames.length;i++){
-				getLogger().info("  " + printerNames[i]);	
-			}						
-			noargmatch = false;
-		}
-		if(args.length == 4 && args[1].equalsIgnoreCase("print")){
-			try {
-				String templatefilename = args[2];
-				String printername = args[3];
-				Properties data = new Properties();
-				data.load(new FileInputStream(USERDATAFILENAME));
-				EndEntityInformation userdata = new EndEntityInformation("", data.getProperty("DN"),0,"", data.getProperty("EMAIL"), 
-						                                           0,new EndEntityType(EndEntityTypes.INVALID),0,0, (Date) null, (Date) null,0,0 ,null);
-				String[] pins = new String[2];
-				String[] puks = new String[2];
-				pins[0] = data.getProperty("PIN1");
-				pins[1] = data.getProperty("PIN2");
-				puks[0] = data.getProperty("PUK1");
-				puks[1] = data.getProperty("PUK2");
-				String copyofhardtokensn = data.getProperty("COPYOFHARDTOKENSN");
-				String hardtokensn = data.getProperty("HARDTOKENSN");
-				int validity = Integer.parseInt(data.getProperty("VALIDITY"));		
-				String hardtokensnprefix = data.getProperty("HARDTOKENSNPREFIX");
-				FileInputStream fis = new FileInputStream(templatefilename);
-                try {
-                    byte[] byteData = new byte[fis.available()];
-                    fis.read(byteData);
-                    String sVGData = new String(byteData,"UTF8");
-                    PrinterManager.print(printername, templatefilename, sVGData, 1, validity, userdata, pins, puks, hardtokensnprefix, hardtokensn, copyofhardtokensn); 
-                } finally {
-                    fis.close();
-                }	    
-			} catch(Exception e) {
-				getLogger().error(e.getMessage());
-				e.printStackTrace();
-			}
-			noargmatch = false;
-		}
-		if(noargmatch){
-			getLogger().info("Usage 1: " + getCommand() + " listprinters");
-			getLogger().info("Usage 2: " + getCommand() + " print <templatefilename> <printername>");
-			getLogger().info("User data is configured in  " + USERDATAFILENAME);
-			System.exit(-1); // NOPMD
-		}
-	}
+    //Register parameters
+    {
+        registerParameter(new Parameter(TEMPLATEFILENAME_KEYWORD, "Template filename", MandatoryMode.MANDATORY, StandaloneMode.ALLOW,
+                ParameterMode.ARGUMENT, "The template file name."));
+        registerParameter(new Parameter(PRINTERNAME_KEYWORD, "Printer name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "The name of the printer."));
+    }
+
     @Override
-    public String[] getMainCommandAliases() {
-        return new String[]{};
+    public String[] getCommandPath() {
+        return new String[] { "SVGTemplate" };
+    }
+
+    @Override
+    public Set<String[]> getCommandPathAliases() {
+        Set<String[]> aliases = new HashSet<String[]>();
+        aliases.add(new String[] { "template" });
+        return aliases;
+    }
+
+    @Override
+    public String getMainCommand() {
+        return "print";
+    }
+
+    @Override
+    public CommandResult execute(ParameterContainer parameters) {
+        String templatefilename = parameters.get(TEMPLATEFILENAME_KEYWORD);
+        String printername = parameters.get(PRINTERNAME_KEYWORD);
+        Properties data = new Properties();
+        try {
+            try {
+                data.load(new FileInputStream(USERDATAFILENAME));
+            } catch (FileNotFoundException e) {
+                log.error("File " + USERDATAFILENAME + " does not exist, command cannot run.");
+                return CommandResult.FUNCTIONAL_FAILURE;
+            }
+            EndEntityInformation userdata = new EndEntityInformation("", data.getProperty("DN"), 0, "", data.getProperty("EMAIL"), 0,
+                    new EndEntityType(EndEntityTypes.INVALID), 0, 0, (Date) null, (Date) null, 0, 0, null);
+            String[] pins = new String[2];
+            String[] puks = new String[2];
+            pins[0] = data.getProperty("PIN1");
+            pins[1] = data.getProperty("PIN2");
+            puks[0] = data.getProperty("PUK1");
+            puks[1] = data.getProperty("PUK2");
+            String copyofhardtokensn = data.getProperty("COPYOFHARDTOKENSN");
+            String hardtokensn = data.getProperty("HARDTOKENSN");
+            int validity = Integer.parseInt(data.getProperty("VALIDITY"));
+            String hardtokensnprefix = data.getProperty("HARDTOKENSNPREFIX");
+            FileInputStream fis;
+            try {
+                fis = new FileInputStream(templatefilename);
+            } catch (FileNotFoundException e) {
+                log.error("File " + templatefilename + " could not be found, command cannot run.");
+                return CommandResult.FUNCTIONAL_FAILURE;
+            }
+            try {
+                byte[] byteData = new byte[fis.available()];
+                fis.read(byteData);
+                String sVGData = new String(byteData, "UTF8");
+                try {
+                    PrinterManager.print(printername, templatefilename, sVGData, 1, validity, userdata, pins, puks, hardtokensnprefix, hardtokensn,
+                            copyofhardtokensn);
+                } catch (PrinterException e) {
+                    log.error("Printing failed, see associated stack trace.", e);
+                }
+            } finally {
+                fis.close();
+            }
+            return CommandResult.SUCCESS;
+        } catch (IOException e) {
+            throw new IllegalStateException("IOException was caught, see underlying error.", e);
+        }
+
+    }
+
+    @Override
+    public String getCommandDescription() {
+        return "Tool for creating hard token visual layout templates";
+    }
+
+    @Override
+    public String getFullHelpText() {
+        return "Tool for creating hard token visual layout templates. User data is configured in  " + USERDATAFILENAME;
     }
     
     @Override
-    public String[] getSubCommandAliases() {
-        return new String[]{};
+    protected Logger getLogger() {
+        return log;
     }
+
 }

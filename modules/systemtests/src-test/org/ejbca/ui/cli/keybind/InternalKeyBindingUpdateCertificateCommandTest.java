@@ -121,7 +121,7 @@ public class InternalKeyBindingUpdateCertificateCommandTest {
         RequestMessage req = new PKCS10RequestMessage(csr);
         certificateCreateSession.createCertificate(authenticationToken, endEntityInformation, req, X509ResponseMessage.class);
         String before = internalKeyBindingMgmtSession.getInternalKeyBindingInfo(authenticationToken, internalKeyBindingId).getCertificateId();
-        String[] args = new String[] { "update", TESTCLASS_NAME };
+        String[] args = new String[] { TESTCLASS_NAME };
         command.execute(args);
         Assert.assertNotEquals("Certificate was not updated.", before,
                 internalKeyBindingMgmtSession.getInternalKeyBindingInfo(authenticationToken, internalKeyBindingId).getCertificateId());

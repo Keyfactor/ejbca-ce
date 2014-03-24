@@ -14,7 +14,6 @@
 package org.ejbca.ui.cli.ca;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -28,6 +27,7 @@ import org.ejbca.core.model.ca.publisher.GeneralPurposeCustomPublisher;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -40,19 +40,20 @@ public class CaEditPublisherCommandTest {
 
     private static final String PUBLISHER_NAME = "1327publisher2";
     private static final String GCP_PUBLISHER_NAME = "1327GCPpublisher3";
-    private static final String[] HAPPY_PATH_ARGS = { "editpublisher", PUBLISHER_NAME, "hostnames", "myhost.com" };
-    private static final String[] HAPPY_PATH_GCP_ARGS = { "editpublisher", GCP_PUBLISHER_NAME, "propertyData", "primekey http://www.primekey.se" };
-    private static final String[] HAPPY_PATH_WITH_TYPE_ARGS = { "editpublisher", PUBLISHER_NAME, "addMultipleCertificates", "true" };
-    private static final String[] HAPPY_PATH_GETVALUE_ARGS = { "editpublisher", PUBLISHER_NAME, "-getValue", "addMultipleCertificates" };
-    private static final String[] HAPPY_PATH_LISTFIELDS_ARGS = { "editpublisher", PUBLISHER_NAME, "-listFields" };
-    private static final String[] MISSING_ARGS = { "editpublisher", PUBLISHER_NAME };
-    private static final String[] INVALID_FIELD_ARGS = { "editpublisher", PUBLISHER_NAME, "hostname", "myhost.com" };
+    private static final String[] HAPPY_PATH_ARGS = { PUBLISHER_NAME, "hostnames", "myhost.com" };
+    private static final String[] HAPPY_PATH_GCP_ARGS = { GCP_PUBLISHER_NAME, "propertyData", "primekey http://www.primekey.se" };
+    private static final String[] HAPPY_PATH_WITH_TYPE_ARGS = { PUBLISHER_NAME, "addMultipleCertificates", "true" };
+    private static final String[] HAPPY_PATH_GETVALUE_ARGS = { PUBLISHER_NAME, "-getValue", "addMultipleCertificates" };
+    private static final String[] HAPPY_PATH_LISTFIELDS_ARGS = { PUBLISHER_NAME, "-listFields" };
+    private static final String[] MISSING_ARGS = { PUBLISHER_NAME };
+    private static final String[] INVALID_FIELD_ARGS = { PUBLISHER_NAME, "hostname", "myhost.com" };
 
     private CaEditPublisherCommand command;
     private AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaEditPublisherCommandTest"));
 
     private PublisherSessionRemote publisherSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class);
-    private PublisherProxySessionRemote publisherProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private PublisherProxySessionRemote publisherProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherProxySessionRemote.class,
+            EjbRemoteHelper.MODULE_TEST);
 
     @Before
     public void setUp() throws Exception {
@@ -69,40 +70,45 @@ public class CaEditPublisherCommandTest {
         LdapPublisher publisher = new LdapPublisher();
         publisher.setHostnames("myhost1");
         publisherProxySession.addPublisher(admin, PUBLISHER_NAME, publisher);
-        try {           
-            LdapPublisher pub1 = (LdapPublisher)publisherSession.getPublisher(PUBLISHER_NAME);
+        try {
+            LdapPublisher pub1 = (LdapPublisher) publisherSession.getPublisher(PUBLISHER_NAME);
             assertEquals("Hostnames was not added as it should", "myhost1", pub1.getHostnames());
-            command.execute(HAPPY_PATH_ARGS);
+            CommandResult result = command.execute(HAPPY_PATH_ARGS);
+            assertEquals("Command was not sucessfully run.", CommandResult.SUCCESS, result);
             // Check that we edited
-            LdapPublisher pub2 = (LdapPublisher)publisherSession.getPublisher(PUBLISHER_NAME);
+            LdapPublisher pub2 = (LdapPublisher) publisherSession.getPublisher(PUBLISHER_NAME);
             assertEquals("Hostnames was not changed as it should", "myhost.com", pub2.getHostnames());
-            command.execute(HAPPY_PATH_WITH_TYPE_ARGS);
+            result = command.execute(HAPPY_PATH_WITH_TYPE_ARGS);
+            assertEquals("Command was not sucessfully run.", CommandResult.SUCCESS, result);
             // Check that we edited
-            pub2 = (LdapPublisher)publisherSession.getPublisher(PUBLISHER_NAME);
+            pub2 = (LdapPublisher) publisherSession.getPublisher(PUBLISHER_NAME);
             assertEquals("AddMultipleCertificates was not changed as it should", true, pub2.getAddMultipleCertificates());
 
             // Try to get value and list fields without exceptions...
-            command.execute(HAPPY_PATH_GETVALUE_ARGS);
-            command.execute(HAPPY_PATH_LISTFIELDS_ARGS);
+            result = command.execute(HAPPY_PATH_GETVALUE_ARGS);
+            assertEquals("Command was not sucessfully run.", CommandResult.SUCCESS, result);
+            result = command.execute(HAPPY_PATH_LISTFIELDS_ARGS);
+            assertEquals("Command was not sucessfully run.", CommandResult.SUCCESS, result);
         } finally {
             publisherProxySession.removePublisher(admin, PUBLISHER_NAME);
         }
         // Try a custom publisher as well
-        try {           
+        try {
             CustomPublisherContainer gcp = new CustomPublisherContainer();
             gcp.setClassPath(GeneralPurposeCustomPublisher.class.getName());
             gcp.setPropertyData("foo=bar");
             publisherProxySession.addPublisher(admin, GCP_PUBLISHER_NAME, gcp);
-            CustomPublisherContainer pub1 = (CustomPublisherContainer)publisherSession.getPublisher(GCP_PUBLISHER_NAME);
+            CustomPublisherContainer pub1 = (CustomPublisherContainer) publisherSession.getPublisher(GCP_PUBLISHER_NAME);
             assertEquals("Propertydata was not added as it should", "foo=bar", pub1.getPropertyData());
-            command.execute(HAPPY_PATH_GCP_ARGS);
+            CommandResult result = command.execute(HAPPY_PATH_GCP_ARGS);
+            assertEquals("Command was not sucessfully run.", CommandResult.SUCCESS, result);
             // Check that we edited
-            CustomPublisherContainer pub2 = (CustomPublisherContainer)publisherSession.getPublisher(GCP_PUBLISHER_NAME);
+            CustomPublisherContainer pub2 = (CustomPublisherContainer) publisherSession.getPublisher(GCP_PUBLISHER_NAME);
             assertEquals("Propertydata was not changed as it should", "primekey http://www.primekey.se", pub2.getPropertyData());
         } finally {
             publisherProxySession.removePublisher(admin, GCP_PUBLISHER_NAME);
         }
-        
+
     }
 
     @Test
@@ -110,12 +116,12 @@ public class CaEditPublisherCommandTest {
         LdapPublisher publisher = new LdapPublisher();
         publisher.setHostnames("myhost1");
         publisherProxySession.addPublisher(admin, PUBLISHER_NAME, publisher);
-        try {          
-            LdapPublisher pub1 = (LdapPublisher)publisherSession.getPublisher(PUBLISHER_NAME);
+        try {
+            LdapPublisher pub1 = (LdapPublisher) publisherSession.getPublisher(PUBLISHER_NAME);
             assertEquals("Hostnames was not added as it should", "myhost1", pub1.getHostnames());
             command.execute(MISSING_ARGS);
             // Check that nothing happened
-            LdapPublisher pub2 = (LdapPublisher)publisherSession.getPublisher(PUBLISHER_NAME);
+            LdapPublisher pub2 = (LdapPublisher) publisherSession.getPublisher(PUBLISHER_NAME);
             assertEquals("Hostnames was not changed as it should", "myhost1", pub2.getHostnames());
         } finally {
             publisherProxySession.removePublisher(admin, PUBLISHER_NAME);
@@ -123,21 +129,18 @@ public class CaEditPublisherCommandTest {
     }
 
     @Test
-    public void testExecuteWithInvalidField() throws PublisherExistsException, AuthorizationDeniedException  {
+    public void testExecuteWithInvalidField() throws PublisherExistsException, AuthorizationDeniedException {
         LdapPublisher publisher = new LdapPublisher();
         publisher.setHostnames("myhost1");
         publisherProxySession.addPublisher(admin, PUBLISHER_NAME, publisher);
-        try {        
-            LdapPublisher pub1 = (LdapPublisher)publisherSession.getPublisher(PUBLISHER_NAME);
+        try {
+            LdapPublisher pub1 = (LdapPublisher) publisherSession.getPublisher(PUBLISHER_NAME);
             assertEquals("Hostnames was not added as it should", "myhost1", pub1.getHostnames());
             command.execute(INVALID_FIELD_ARGS);
-            fail("This should have thrown an exception");
-        } catch (ErrorAdminCommandException e) {
-            assertEquals("org.ejbca.ui.cli.ErrorAdminCommandException: Field 'hostname' does not exist. Did you use correct case for every character of the field?", e.getMessage());
+            //TODO: Verify that publisher is unchanged
         } finally {
             publisherProxySession.removePublisher(admin, PUBLISHER_NAME);
         }
     }
 
-    
 }

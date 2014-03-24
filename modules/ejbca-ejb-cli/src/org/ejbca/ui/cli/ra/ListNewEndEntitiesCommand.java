@@ -10,17 +10,19 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package org.ejbca.ui.cli.ra;
 
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
-import org.ejbca.ui.cli.CliUsernameException;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
 
 /**
  * List end entities with status NEW in the database.
@@ -30,40 +32,45 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  * @see org.ejbca.core.ejb.ra.UserDataLocal
  */
 public class ListNewEndEntitiesCommand extends BaseRaCommand {
-    
+
+    private static final Logger log = Logger.getLogger(ListNewEndEntitiesCommand.class);
+
     private static final String COMMAND = "listnewendentities";
     private static final String OLD_COMMAND = "listnewusers";
-    
-    @Override
-	public String getSubCommand() { return COMMAND; }
-    
-    @Override
-    public String getDescription() { return "List end entities with status 'NEW'"; }
-    
-    @Override
-    public String[] getSubCommandAliases() {
-        return new String[]{OLD_COMMAND};
+
+    private static final Set<String> ALIASES = new HashSet<String>();
+    static {
+        ALIASES.add(OLD_COMMAND);
     }
-    
+
     @Override
-    public void execute(String[] args) throws ErrorAdminCommandException {
-        try {
-            args = parseUsernameAndPasswordFromArgs(args);
-        } catch (CliUsernameException e) {
-            return;
+    public String getMainCommand() {
+        return COMMAND;
+    }
+
+    @Override
+    public CommandResult execute(ParameterContainer parameters) {
+        for (EndEntityInformation data : EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).findAllUsersByStatus(
+                getAuthenticationToken(), EndEntityConstants.STATUS_NEW)) {
+            getLogger().info(
+                    "New end entity: " + data.getUsername() + ", \"" + data.getDN() + "\", \"" + data.getSubjectAltName() + "\", " + data.getEmail()
+                            + ", " + data.getStatus() + ", " + data.getType().getHexValue() + ", " + data.getTokenType());
         }
-        
-        try {
-            Collection<EndEntityInformation> coll = ejb.getRemoteSession(EndEntityManagementSessionRemote.class).findAllUsersByStatus(getAuthenticationToken(cliUserName, cliPassword), EndEntityConstants.STATUS_NEW);
-            Iterator<EndEntityInformation> iter = coll.iterator();
-            while (iter.hasNext()) {
-            	EndEntityInformation data = iter.next();
-                getLogger().info("New end entity: " + data.getUsername() + ", \"" + data.getDN() +
-                    "\", \"" + data.getSubjectAltName() + "\", " + data.getEmail() + ", " +
-                    data.getStatus() + ", " + data.getType().getHexValue() + ", " + data.getTokenType());
-            }
-        } catch (Exception e) {
-            throw new ErrorAdminCommandException(e);
-        }
+        return CommandResult.SUCCESS;
+
+    }
+
+    @Override
+    public String getCommandDescription() {
+        return "List end entities with status 'NEW'";
+    }
+
+    @Override
+    public String getFullHelpText() {
+        return getCommandDescription();
+    }
+
+    protected Logger getLogger() {
+        return log;
     }
 }

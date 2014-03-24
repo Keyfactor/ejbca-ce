@@ -39,7 +39,6 @@ import org.ejbca.config.Configuration;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
-import org.ejbca.core.ejb.authentication.cli.exception.CliAuthenticationFailedException;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -93,7 +92,7 @@ public class CliAuthenticationProviderSessionBean implements CliAuthenticationPr
          */
         if (!((GlobalConfiguration)globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID)).getEnableCommandLineInterface()) {
             log.info("CLI authentication attempted, but CLI is disabled.");
-            throw new CliAuthenticationFailedException("Could not authenticate from CLI, CLI is disabled.");
+            return null;
         } else {
             Set<Principal> subjectPrincipals = subject.getPrincipals();
             if (subjectPrincipals.size() == 0) {
@@ -111,7 +110,7 @@ public class CliAuthenticationProviderSessionBean implements CliAuthenticationPr
             if(!((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID)).getEnableCommandLineInterfaceDefaultUser() 
                 && usernamePrincipal.getName().equals(EjbcaConfiguration.getCliDefaultUser())) {
                 log.info("CLI authentication attempted, but the default user ("+EjbcaConfiguration.getCliDefaultUser()+") is disabled.");
-                throw new CliAuthenticationFailedException("Could not authenticate from CLI, use of default user is prohibited.");
+                return null;
             }
 
             try {               

@@ -12,6 +12,10 @@
  *************************************************************************/
 package org.ejbca.ui.cli;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -24,6 +28,7 @@ import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -37,6 +42,9 @@ import org.ejbca.core.ejb.authentication.cli.exception.CliAuthenticationFailedEx
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.command.EjbcaCliUserCommandBase;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -55,10 +63,14 @@ public class CliCommandAuthenticationTest {
 
     private MockCliCommand mockCliCommand;
     private EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
-    private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
-    private CliAuthenticationTestHelperSessionRemote cliAuthenticationTestHelperSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CliAuthenticationTestHelperSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-    private CliAuthenticationProviderSessionRemote cliAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(CliAuthenticationProviderSessionRemote.class);
+    private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(GlobalConfigurationSessionRemote.class);
+    private CliAuthenticationTestHelperSessionRemote cliAuthenticationTestHelperSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
+            CliAuthenticationTestHelperSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(EndEntityManagementSessionRemote.class);
+    private CliAuthenticationProviderSessionRemote cliAuthenticationProvider = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(CliAuthenticationProviderSessionRemote.class);
 
     private final TestAlwaysAllowLocalAuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
             "CliCommandAuthenticationTest"));
@@ -78,7 +90,7 @@ public class CliCommandAuthenticationTest {
     @Test
     public void testWithoutSuppliedDefaultUser() throws ErrorAdminCommandException, AuthorizationDeniedException {
         boolean oldValue = setCliUserEnabled(true);
-        log.debug("oldValue (user): "+oldValue);
+        log.debug("oldValue (user): " + oldValue);
         try {
             mockCliCommand.execute(new String[] { "foo", "bar" });
         } catch (CliTestRuntimeException e) {
@@ -91,7 +103,7 @@ public class CliCommandAuthenticationTest {
     @Test
     public void testWithSuppliedDefaultUser() throws Exception {
         boolean oldValue = setCliUserEnabled(true);
-        log.debug("oldValue (user): "+oldValue);
+        log.debug("oldValue (user): " + oldValue);
         try {
             mockCliCommand.execute(new String[] { "foo", "-u", EjbcaConfiguration.getCliDefaultUser() });
         } catch (CliTestRuntimeException e) {
@@ -104,8 +116,8 @@ public class CliCommandAuthenticationTest {
     @Test
     public void testWithUnknownUser() throws Exception {
         try {
-            mockCliCommand.execute(new String[] { "foo", "-u", "TomDickAnd", "-password=harry" });
-            fail("Exception was not thrown when authenticating with unknown user.");
+            CommandResult result = mockCliCommand.execute(new String[] { "foo", "-u", "TomDickAnd", "--clipassword=harry" });
+            assertFalse("Exception was not thrown when authenticating with unknown user.", result.equals(CommandResult.SUCCESS));
         } catch (CliTestRuntimeException e) {
             // All is well.
         }
@@ -113,10 +125,11 @@ public class CliCommandAuthenticationTest {
 
     @Test
     public void testWithKnownUser() throws Exception {
-        cliAuthenticationTestHelperSession.createUser(CliAuthenticationTestHelperSessionRemote.USERNAME, CliAuthenticationTestHelperSessionRemote.PASSWORD);
+        cliAuthenticationTestHelperSession.createUser(CliAuthenticationTestHelperSessionRemote.USERNAME,
+                CliAuthenticationTestHelperSessionRemote.PASSWORD);
         try {
             mockCliCommand.execute(new String[] { "foo", "-u", CliAuthenticationTestHelperSessionRemote.USERNAME,
-                    "-password=" + CliAuthenticationTestHelperSessionRemote.PASSWORD });
+                    "--clipassword=" + CliAuthenticationTestHelperSessionRemote.PASSWORD });
         } catch (CliTestRuntimeException e) {
             fail("Exception was thrown when authenticating with a known user.");
         } finally {
@@ -126,48 +139,43 @@ public class CliCommandAuthenticationTest {
 
     @Test
     public void testWithKnownUserPasswordInFile() throws Exception {
-        cliAuthenticationTestHelperSession.createUser(CliAuthenticationTestHelperSessionRemote.USERNAME, CliAuthenticationTestHelperSessionRemote.PASSWORD);
+        cliAuthenticationTestHelperSession.createUser(CliAuthenticationTestHelperSessionRemote.USERNAME,
+                CliAuthenticationTestHelperSessionRemote.PASSWORD);
         try {
-            try {
-                mockCliCommand.execute(new String[] { "foo", "-u", CliAuthenticationTestHelperSessionRemote.USERNAME,
-                "-password=file:/tmp/fileshouldnotexist.txt" });
-                fail("/tmp/fileshouldnotexist.txt should not have existed.");
-            } catch (ErrorAdminCommandException e) {
-                // NOPMD: The last command should have failed, so go on with next fail test
-            }
+
+            CommandResult result = mockCliCommand.execute(new String[] { "-u", CliAuthenticationTestHelperSessionRemote.USERNAME,
+                    "--clipassword=file:/tmp/fileshouldnotexist.txt" });
+            assertFalse("/tmp/fileshouldnotexist.txt should not have existed.", result.equals(CommandResult.SUCCESS));
             File f = File.createTempFile("ejbca", "txt");
             f.deleteOnExit();
             // Just insert a space, should count as not password existing in the file
             FileWriter fout = new FileWriter(f);
             fout.write(" ");
             fout.close();
-            try {
-                mockCliCommand.execute(new String[] { "foo", "-u", CliAuthenticationTestHelperSessionRemote.USERNAME,
-                "-password=file:"+f.getAbsolutePath() });
-                fail("/tmp/fileshouldnotexist.txt should not have contained any password.");
-            } catch (ErrorAdminCommandException e) {
-                // NOPMD: The last command should have failed, so go on with successful
-            }
+
+            result = mockCliCommand.execute(new String[] { "-u", CliAuthenticationTestHelperSessionRemote.USERNAME,
+                    "--clipassword=file:" + f.getAbsolutePath() });
+            assertFalse("/tmp/fileshouldnotexist.txt should not have contained any password.", result.equals(CommandResult.SUCCESS));
+
             // Insert a line with a password
             fout = new FileWriter(f);
             fout.write(CliAuthenticationTestHelperSessionRemote.PASSWORD);
             fout.close();
-            try {
-                mockCliCommand.execute(new String[] { "foo", "-u", CliAuthenticationTestHelperSessionRemote.USERNAME,
-                "-password=file:"+f.getAbsolutePath() });
-            } catch (ErrorAdminCommandException e) {
-                fail("/tmp/fileshouldnotexist.txt should have contained a password, and command sould have worked. "+e.getMessage());
-            }
+
+            result = mockCliCommand.execute(new String[] {"-u", CliAuthenticationTestHelperSessionRemote.USERNAME,
+                    "--clipassword=file:" + f.getAbsolutePath() });
+            assertTrue("/tmp/fileshouldnotexist.txt should have contained a password, and command sould have worked. ",
+                    CommandResult.SUCCESS.equals(result));
+
             // Insert a line with a password, some whitespace and newline should work as well
             fout = new FileWriter(f);
-            fout.write(CliAuthenticationTestHelperSessionRemote.PASSWORD+"  \n");
+            fout.write(CliAuthenticationTestHelperSessionRemote.PASSWORD + "  \n");
             fout.close();
-            try {
-                mockCliCommand.execute(new String[] { "foo", "-u", CliAuthenticationTestHelperSessionRemote.USERNAME,
-                "-password=file:"+f.getAbsolutePath() });
-            } catch (ErrorAdminCommandException e) {
-                fail("/tmp/fileshouldnotexist.txt should have contained a password, and command sould have worked. "+e.getMessage());
-            }            
+
+            result = mockCliCommand.execute(new String[] { "-u", CliAuthenticationTestHelperSessionRemote.USERNAME,
+                    "--clipassword=file:" + f.getAbsolutePath() });
+            assertTrue("/tmp/fileshouldnotexist.txt should have contained a password, and command sould have worked. ", CommandResult.SUCCESS.equals(result));
+
         } catch (CliTestRuntimeException e) {
             fail("Exception was thrown when authenticating with a known user.");
         } finally {
@@ -178,13 +186,11 @@ public class CliCommandAuthenticationTest {
     @Test
     public void testWithoutSuppliedDefaultUserAndForbidden() throws Exception {
         boolean oldValue = setCliUserEnabled(false);
-        log.debug("oldValue (user): "+oldValue);
+        log.debug("oldValue (user): " + oldValue);
         try {
-            mockCliCommand.execute(new String[] { "foo", "bar" });
-            fail("Use of default user should not have been allowed");
-        } catch (CliTestRuntimeException e) {
-            // Ignore
-        } finally {
+            CommandResult result = mockCliCommand.execute(new String[] { "foo", "bar" });
+            assertFalse("Use of default user should not have been allowed", result.equals(CommandResult.SUCCESS));
+        }  finally {
             setCliUserEnabled(oldValue);
         }
     }
@@ -192,12 +198,10 @@ public class CliCommandAuthenticationTest {
     @Test
     public void testDefaultUserWhenForbidden() throws Exception {
         boolean oldValue = setCliUserEnabled(false);
-        log.debug("oldValue (user): "+oldValue);
+        log.debug("oldValue (user): " + oldValue);
         try {
-            mockCliCommand.execute(new String[] { "foo", "-u", EjbcaConfiguration.getCliDefaultUser() });
-            fail("Use of default user should not have been allowed");
-        } catch (CliTestRuntimeException e) {
-            // Ignore
+            CommandResult result = mockCliCommand.execute(new String[] { "foo", "-u", EjbcaConfiguration.getCliDefaultUser() });
+            assertEquals("Use of default user should not have been allowed", CommandResult.CLI_FAILURE, result);
         } finally {
             setCliUserEnabled(oldValue);
         }
@@ -206,17 +210,15 @@ public class CliCommandAuthenticationTest {
     @Test
     public void testDisableCli() throws Exception {
         boolean oldValue = setCliEnabled(false);
-        log.debug("oldValue (cli): "+oldValue);
+        log.debug("oldValue (cli): " + oldValue);
         try {
-            mockCliCommand.execute(new String[] { "foo", "-u", EjbcaConfiguration.getCliDefaultUser() });
-            fail("CLI should not have been able to have been run when disabled.");
-        } catch (ErrorAdminCommandException e) {
-            // Ignore
+            CommandResult result = mockCliCommand.execute(new String[] { "foo", "-u", EjbcaConfiguration.getCliDefaultUser() });
+            assertFalse("CLI should not have been able to have been run when disabled.", CommandResult.SUCCESS.equals(result));
         } finally {
             setCliEnabled(oldValue);
         }
     }
-    
+
     /**
      * Test that this works server side as well. 
      * @throws AuthorizationDeniedException 
@@ -224,12 +226,10 @@ public class CliCommandAuthenticationTest {
     @Test
     public void testCliDisabledServerSide() throws AuthorizationDeniedException {
         boolean oldValue = setCliEnabled(false);
-        log.debug("oldValue (cli): "+oldValue);
+        log.debug("oldValue (cli): " + oldValue);
         try {
-            cliAuthenticationProvider.authenticate(null);
-            fail("Cli should not have been able to authenticate.");
-        } catch (CliAuthenticationFailedException e) {
-            //NOPMD
+            AuthenticationToken token = cliAuthenticationProvider.authenticate(null);
+            assertNull("Cli should not have been able to authenticate.", token);
         } catch (EJBException e) {
             //Glassfish wraps Exceptions in a EJBException wrapping a java.rmi.ServerException wrapping a java.rmi.RemoteException
             if ((e.getCausedByException().getCause().getCause() instanceof CliAuthenticationFailedException)) {
@@ -241,7 +241,7 @@ public class CliCommandAuthenticationTest {
             setCliEnabled(oldValue);
         }
     }
-    
+
     /**
      * Test that this works server side as well. 
      * @throws AuthorizationDeniedException 
@@ -249,14 +249,12 @@ public class CliCommandAuthenticationTest {
     @Test
     public void testDefaultCliUserDisabled() throws AuthorizationDeniedException {
         boolean oldValue = setCliUserEnabled(false);
-        log.debug("oldValue (user): "+oldValue);
+        log.debug("oldValue (user): " + oldValue);
         try {
             Set<Principal> principals = new HashSet<Principal>();
             principals.add(new UsernamePrincipal(EjbcaConfiguration.getCliDefaultUser()));
-            cliAuthenticationProvider.authenticate(new AuthenticationSubject(principals, null));
-            fail("Cli should not have been able to authenticate using default cli user.");
-        } catch (CliAuthenticationFailedException e) {
-            //NOPMD
+            AuthenticationToken authenticationToken = cliAuthenticationProvider.authenticate(new AuthenticationSubject(principals, null));
+            assertNull("Cli should not have been able to authenticate using default cli user.", authenticationToken);
         } catch (EJBException e) {
             //Glassfish wraps Exceptions in a EJBException wrapping a java.rmi.ServerException wrapping a java.rmi.RemoteException
             if ((e.getCausedByException().getCause().getCause() instanceof CliAuthenticationFailedException)) {
@@ -274,7 +272,7 @@ public class CliCommandAuthenticationTest {
         boolean oldValue = config.getEnableCommandLineInterface();
         config.setEnableCommandLineInterface(enabled);
         globalConfigurationSession.saveConfiguration(internalAdmin, config, Configuration.GlobalConfigID);
-        log.debug("Updated globalconfiguration with clienabled: "+config.getEnableCommandLineInterface());
+        log.debug("Updated globalconfiguration with clienabled: " + config.getEnableCommandLineInterface());
         return oldValue;
     }
 
@@ -283,47 +281,38 @@ public class CliCommandAuthenticationTest {
         boolean oldValue = config.getEnableCommandLineInterfaceDefaultUser();
         config.setEnableCommandLineInterfaceDefaultUser(enabled);
         globalConfigurationSession.saveConfiguration(internalAdmin, config, Configuration.GlobalConfigID);
-        log.debug("Updated globalconfiguration with cliuserenabled: "+config.getEnableCommandLineInterfaceDefaultUser());
+        log.debug("Updated globalconfiguration with cliuserenabled: " + config.getEnableCommandLineInterfaceDefaultUser());
         return oldValue;
     }
-}
 
-class MockCliCommand extends BaseCommand {
+    class MockCliCommand extends EjbcaCliUserCommandBase {
 
-    @Override
-    public String getMainCommand() {
-        return null;
-    }
-
-    @Override
-    public String getSubCommand() {
-        return null;
-    }
-
-    @Override
-    public String getDescription() {
-        return null;
-    }
-
-    @Override
-    public void execute(String[] args) throws ErrorAdminCommandException {
-        try {
-            args = parseUsernameAndPasswordFromArgs(args);
-        } catch (CliUsernameException e) {
-            throw new CliTestRuntimeException();
+        @Override
+        public String getMainCommand() {
+            return null;
         }
-    }
 
-    @Override
-    public String[] getMainCommandAliases() {
-        return new String[]{};
+        @Override
+        public String getCommandDescription() {
+            return null;
+        }
+
+        @Override
+        protected CommandResult execute(ParameterContainer parameters) {
+            return CommandResult.SUCCESS;
+        }
+
+        @Override
+        public String getFullHelpText() {
+            return null;
+        }
+
+        @Override
+        protected Logger getLogger() {
+            return null;
+        }
+
     }
-    
-    @Override
-    public String[] getSubCommandAliases() {
-        return new String[]{};
-    }
-    
 }
 
 /*

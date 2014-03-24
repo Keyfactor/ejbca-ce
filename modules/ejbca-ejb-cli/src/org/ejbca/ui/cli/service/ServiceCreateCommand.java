@@ -12,10 +12,17 @@
  *************************************************************************/
 package org.ejbca.ui.cli.service;
 
+import org.apache.log4j.Logger;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.services.ServiceSessionRemote;
 import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.core.model.services.ServiceExistsException;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * CLI subcommand for creating services.
@@ -24,53 +31,80 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class ServiceCreateCommand extends BaseServiceModificationCommand {
 
+    private static final Logger log = Logger.getLogger(ServiceCreateCommand.class);
+
+    private static final String ARGS_KEY = "--properties";
+
+    {
+        registerParameter(new Parameter(
+                ARGS_KEY,
+                "List of Properties",
+                MandatoryMode.OPTIONAL,
+                StandaloneMode.ALLOW,
+                ParameterMode.ARGUMENT,
+                "A list of properties, must be in the form of \"field1:property1 field2:property2\", e.g: \"interval.periodical.unit=DAYS interval.periodical.value=7\""));
+    }
+
     @Override
-    public String getSubCommand() {
+    public String getMainCommand() {
         return "create";
     }
 
     @Override
-    public String getDescription() {
-        return "Creates a new service.";
-    }
+    public CommandResult execute(ParameterContainer parameters, int serviceId) {
 
-    @Override
-    public void execute(String[] args, int serviceId) throws ErrorAdminCommandException {
-        if (args.length < 2) {
-            getLogger().info("Description: " + getDescription());
-            getLogger().info("Usage: " + getCommand() + " <service name> <field or property>=<value>...");
-            getLogger().info("   or: " + getCommand() + " <service name> -listFields|-listProperties");
-            getLogger().info("");
-            displayListFieldsHelp();
-            getLogger().info("Example usage:");
-            getLogger().info("        service create DailyCRLUpdate workerClassPath=org.ejbca.core.model.services.workers.CRLUpdateWorker worker.caidstocheck=1 intervalClassPath=org.ejbca.core.model.services.intervals.PeriodicalInterval interval.periodical.unit=DAYS interval.periodical.value=1 actionClassPath=org.ejbca.core.model.services.actions.NoAction active=true");
-            getLogger().info("");
-            getLogger().info("This example creates a service that updates the CRL on a daily basis.");
-            getLogger().info("The worker.caidstocheck value of 1 means check all CAs.");
-            getLogger().info("You can create services from the Admin Web and use the \"service info\" command");
-            getLogger().info("to learn how the CLI fields correspond to the fields in the Admin Web.");
-            return;
-        }
-        
-        final ServiceSessionRemote serviceSession = ejb.getRemoteSession(ServiceSessionRemote.class);
-        final String serviceName = args[1].trim();
-        
+        final ServiceSessionRemote serviceSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ServiceSessionRemote.class);
+        final String serviceName = parameters.get(SERVICE_NAME_KEY);
+
         ServiceConfiguration serviceConfig = new ServiceConfiguration();
         final boolean wasActive = false;
-        
-        if (handleListOptions(serviceConfig, args)) {
-            // do nothing
-        } else if (modifyFromArgs(serviceConfig, args)) {
+        final String[] args;
+        if (parameters.containsKey(ARGS_KEY)) {
+            args = parameters.get(ARGS_KEY).split(" ");
+        } else {
+            args = new String[] {};
+        }
+
+        if (modifyFromArgs(serviceConfig, args)) {
             try {
                 serviceSession.addService(getAdmin(), serviceName, serviceConfig);
                 handleServiceActivation(serviceName, wasActive);
                 getLogger().info("Service created.");
+                return CommandResult.SUCCESS;
             } catch (ServiceExistsException e) {
-                getLogger().info("Service exists already.");
+                getLogger().error("ERROR: Service exists already.");
+                return CommandResult.FUNCTIONAL_FAILURE;
             }
         }
+        return CommandResult.FUNCTIONAL_FAILURE;
     }
-    
+
     @Override
-    protected boolean failIfServiceMissing() { return false; }
+    protected boolean failIfServiceMissing() {
+        return false;
+    }
+
+    @Override
+    public String getCommandDescription() {
+        return "Creates a new service.";
+    }
+
+    @Override
+    public String getFullHelpText() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("This example creates a service that updates the CRL on a daily basis. "
+                + "The worker.caidstocheck value of 1 means check all CAs. "
+                + "You can create services from the Admin Web and use the \"service info\" command"
+                + "to learn how the CLI fields correspond to the fields in the Admin Web.\n\n");
+        sb.append("Example usage: service create DailyCRLUpdate workerClassPath=org.ejbca.core.model.services.workers.CRLUpdateWorker"
+                + " worker.caidstocheck=1 intervalClassPath=org.ejbca.core.model.services.intervals.PeriodicalInterval interval.periodical.unit=DAYS"
+                + " interval.periodical.value=1 actionClassPath=org.ejbca.core.model.services.actions.NoAction active=true");
+        sb.append("\n\n").append(FIELDS_HELP + "\n\n");
+        return sb.toString();
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return log;
+    }
 }

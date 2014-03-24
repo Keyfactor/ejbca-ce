@@ -12,14 +12,16 @@
  *************************************************************************/
 package org.ejbca.ui.cli.infrastructure.command;
 
-import org.ejbca.ui.cli.infrastructure.command.CommandBase;
 
 /**
+ * Base class for EJBCA commands that don't use the CLI user
+ * 
  * @version $Id$
  *
  */
 public abstract class EjbcaCommandBase extends CommandBase{
 
+    @Override
     public String getImplementationName() {
         return "EJBCA CLI";
     }

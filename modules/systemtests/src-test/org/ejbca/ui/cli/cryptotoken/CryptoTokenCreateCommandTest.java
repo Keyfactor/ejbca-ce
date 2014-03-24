@@ -56,7 +56,7 @@ public class CryptoTokenCreateCommandTest {
 
     @Test
     public void testCommand() throws ErrorAdminCommandException {
-        String[] args = new String[] { "create", CRYPTOTOKEN_NAME, "foo123", "true", SoftCryptoToken.class.getSimpleName(), "true" };
+        String[] args = new String[] { CRYPTOTOKEN_NAME, "foo123", "true", SoftCryptoToken.class.getSimpleName(), "true" };
         command.execute(args);
         assertNotNull("No crypto token was created.", cryptoTokenManagementSession.getIdFromName(CRYPTOTOKEN_NAME));
     }

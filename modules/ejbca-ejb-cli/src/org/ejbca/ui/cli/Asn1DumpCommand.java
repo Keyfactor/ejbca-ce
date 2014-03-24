@@ -10,75 +10,107 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package org.ejbca.ui.cli;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.util.Collection;
 import java.util.Iterator;
 
+import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.util.ASN1Dump;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.command.EjbcaCommandBase;
+import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * Dumps PEM or DER file as readable ASN1'
  * 
  * @version $Id$
  */
-public class Asn1DumpCommand extends BaseCommand {
-	
-	public String getMainCommand() { return null; }
-	public String getSubCommand() { return "asn1dump"; }
-	public String getDescription() { return "Dumps PEM or DER file as readable ASN1"; }
+public class Asn1DumpCommand extends EjbcaCommandBase {
 
-    public void execute(String[] args) throws ErrorAdminCommandException {
-        if (args.length < 2) {
-            getLogger().info("Usage: " + getCommand() + " <filename-of-pem-encoded-certs|filename-of-der-encoded-asn1>");
-            return;
-        }
-    	try {
-    		String filename = args[1];
-    		boolean iscert = true;
-    		Collection<Certificate> coll = null;
-    		CryptoProviderTools.installBCProvider();
-    		try {
-        		coll = CertTools.getCertsFromPEM(filename);
-        		if (coll.isEmpty()) {
-        			iscert = false;
-        		}
-    		} catch (Exception e) {
-    			iscert = false;
-    		}
-    		if (!iscert) {
-        		ASN1InputStream ais = new ASN1InputStream(new FileInputStream(filename));
-        		ASN1Primitive obj = ais.readObject();
-        		ais.close();
-        		String dump = ASN1Dump.dumpAsString(obj);
-        		getLogger().info(dump);    			
-    		} else {
-        		Iterator<Certificate> iter = coll.iterator();
-        		while (iter.hasNext()) {
-        			Certificate cert = iter.next();
-            		String dump = ASN1Dump.dumpAsString(cert);
-            		getLogger().info(dump);    			
-        		}
-    		}
-    	} catch (Exception e) {
-    		throw new ErrorAdminCommandException(e);
-    	}
-    	
-    }
-    @Override
-    public String[] getMainCommandAliases() {
-        return new String[]{};
+    private static final Logger log = Logger.getLogger(Asn1DumpCommand.class);
+    private static final String FILENAME_KEY = "-f";
+
+    //Register all parameters
+    {
+        final String filenameInstruction = "Filename of PEM encoded certificates, or of DER encoded ASN1";
+        registerParameter(new Parameter(FILENAME_KEY, "Filename", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                filenameInstruction));
     }
     
     @Override
-    public String[] getSubCommandAliases() {
-        return new String[]{};
+    public String getMainCommand() {
+        return "asn1dump";
+    }
+
+    @Override
+    public CommandResult execute(ParameterContainer parameters) {
+        String filename = parameters.get(FILENAME_KEY);
+        boolean iscert = true;
+        Collection<Certificate> coll = null;
+        CryptoProviderTools.installBCProvider();
+        try {
+            try {
+                coll = CertTools.getCertsFromPEM(filename);
+                if (coll.isEmpty()) {
+                    iscert = false;
+                }
+            } catch (CertificateException e) {
+                iscert = false;
+            }
+            if (!iscert) {
+                ASN1InputStream ais = new ASN1InputStream(new FileInputStream(filename));
+                try {
+                    ASN1Primitive obj = ais.readObject();
+                    ais.close();
+                    String dump = ASN1Dump.dumpAsString(obj);
+                    log.info(dump);
+                    
+                } catch (IOException e) {
+                    throw new IllegalStateException("Could not read ASN1Primitive", e);
+                }
+            } else {
+                Iterator<Certificate> iter = coll.iterator();
+                while (iter.hasNext()) {
+                    Certificate cert = iter.next();
+                    String dump = ASN1Dump.dumpAsString(cert);
+                    log.info(dump);
+                }
+            }
+        } catch (FileNotFoundException e) {
+            log.error("Error: No such file " + filename);
+            return CommandResult.FUNCTIONAL_FAILURE;
+        }
+        return CommandResult.SUCCESS;
+
+    }
+
+    @Override
+    public String getCommandDescription() {
+        return "Dumps PEM or DER file as readable ASN.1";
+    }
+
+    @Override
+    public String getFullHelpText() {
+        return "Dumps PEM or DER file as readable ASN.1";
+    }
+    
+    @Override
+    protected Logger getLogger() {
+        return log;
     }
 }

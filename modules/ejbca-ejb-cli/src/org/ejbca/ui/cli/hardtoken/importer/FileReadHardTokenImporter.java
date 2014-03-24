@@ -26,8 +26,6 @@ import org.ejbca.core.model.hardtoken.HardTokenInformation;
  * 
  * It have a protected field fileReader that can be used by
  * the implementation of readHardTokenData()
- * 
- * @author Philip Vendil 2007 apr 23
  *
  * @version $Id$
  */

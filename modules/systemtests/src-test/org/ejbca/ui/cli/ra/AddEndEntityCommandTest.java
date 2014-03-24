@@ -43,6 +43,7 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
@@ -61,11 +62,11 @@ public class AddEndEntityCommandTest {
     private static final String USER_NAME = "RaSetPwdCommandTest_user1";
     private static final String USER_NAME_INVALID = "RaSetPwdCommandTest_user12";
     private static final String CA_NAME = "TestCA";
-    private static final String[] HAPPY_PATH_ADD_ARGS = { "adduser", USER_NAME, "foo123", "CN="+USER_NAME, "null", CA_NAME, "null", "1", "PEM" };
-    private static final String[] HAPPY_PATH_SETPWD_ARGS = { "setpwd", USER_NAME, "bar123" };
-    private static final String[] HAPPY_PATH_SETCLEARPWD_ARGS = { "setclearpwd", USER_NAME, "foo123bar" };
-    private static final String[] INVALIDUSER_PATH_SETPWDPWD_ARGS = { "setpwd", USER_NAME_INVALID, "foo123bar" };
-    private static final String[] INVALIDUSER_PATH_SETCLEARPWD_ARGS = { "setclearpwd", USER_NAME_INVALID, "foo123bar" };
+    private static final String[] HAPPY_PATH_ADD_ARGS = { USER_NAME, "--password", "foo123", "CN="+USER_NAME+"", CA_NAME, "1", "PEM" };
+    private static final String[] HAPPY_PATH_SETPWD_ARGS = { USER_NAME, "--password", "bar123" };
+    private static final String[] HAPPY_PATH_SETCLEARPWD_ARGS = { USER_NAME, "--password", "foo123bar" };
+    private static final String[] INVALIDUSER_PATH_SETPWDPWD_ARGS = { USER_NAME_INVALID, "--password", "foo123bar" };
+    private static final String[] INVALIDUSER_PATH_SETCLEARPWD_ARGS = { USER_NAME_INVALID, "--password", "foo123bar" };
 
     private AddEndEntityCommand command0;
     private SetPasswordCommand command1;
@@ -95,10 +96,11 @@ public class AddEndEntityCommandTest {
     }
 
     @Test
-    public void testExecuteHappyPath() throws ErrorAdminCommandException, IllegalQueryException, AuthorizationDeniedException, RemoveException, UserDoesntFullfillEndEntityProfile, FinderException {
+    public void testExecuteHappyPath() throws IllegalQueryException, UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException,
+            FinderException, RemoveException  {
 
         try {
-            command0.execute(HAPPY_PATH_ADD_ARGS);
+            assertEquals(CommandResult.SUCCESS, command0.execute(HAPPY_PATH_ADD_ARGS));
             Query query = new Query(Query.TYPE_USERQUERY);
             query.add(UserMatch.MATCH_WITH_USERNAME, BasicMatch.MATCH_TYPE_EQUALS, USER_NAME);
             String caauthstring = null;

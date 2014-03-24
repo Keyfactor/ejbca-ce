@@ -10,18 +10,24 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package org.ejbca.ui.cli.ca;
 
-import java.util.List;
-
+import org.apache.log4j.Logger;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.util.CryptoProviderTools;
-import org.ejbca.ui.cli.CliUsernameException;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.ui.cli.FieldEditor;
-import org.ejbca.util.CliTools;
+import org.ejbca.ui.cli.FieldNotFoundException;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * Changes fields in a CA.
@@ -30,85 +36,91 @@ import org.ejbca.util.CliTools;
  */
 public class CaEditCaCommand extends BaseCaAdminCommand {
 
-    @Override
-    public String getSubCommand() { return "editca"; }
-    @Override
-    public String getDescription() { return "Edits CA fields of an existing CA."; }
+    private static final Logger log = Logger.getLogger(CaEditCaCommand.class);
+
+    private static final String CA_NAME_KEY = "--caname";
+    private static final String FIELD_KEY = "--field";
+    private static final String VALUE_KEY = "--value";
+    private static final String LISTFIELDS_KEY = "-listFields";
+    private static final String GETVALUE_KEY = "-getValue";
+
+    {
+        registerParameter(new Parameter(CA_NAME_KEY, "CA Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "The name of the CA to edit."));
+        registerParameter(new Parameter(LISTFIELDS_KEY, "", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG,
+                "Set to only list available fields in the CA"));
+        registerParameter(new Parameter(GETVALUE_KEY, "", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG,
+                "Use this to get the value of a single field"));
+        registerParameter(new Parameter(FIELD_KEY, "Field Name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "The sought field."));
+        registerParameter(new Parameter(VALUE_KEY, "Value", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "The value to set, if any."));
+    }
 
     @Override
-    public void execute(String[] args) throws ErrorAdminCommandException {       
-        if (args.length < 3) {
-            getLogger().info("Description: " + getDescription());
-            getLogger().info("Usage: " + getCommand() + " <CA name> <field name> <field value>\n"+
-                    "\n"+
-            "Fields that can be set are derived from setFieldName of the CA java code. If there is a 'setFieldName(type)' method, the values to use in this command should be 'fieldName value'\n"+
-            "Example: ca editca CAName CRLPeriod 2592000000\n"+
-            "Example: ca editca CAName CRLIssueInterval 100000\n"+
-            "Example: ca editca CAName includeInHealthCheck false\n"+
-            "\n"+
-            "Use the option -listFields to only list available fields in the CA. Note that there will always be some fields displayed which are not actually changeable.\n"+
-            "Example: ca editca CAName -listFields\n"+
-            "\n"+
-            "Use the option -getValue to only get the value of a field in the CA.\n"+
-            "Example: ca editca CAName -getValue CRLPeriod");
-            return;
-        }
-        try {
-            args = parseUsernameAndPasswordFromArgs(args);
-        } catch (CliUsernameException e) {
-            return;
-        }
-        
-        FieldEditor fieldEditor = new FieldEditor(getLogger());
-        try {
-            CryptoProviderTools.installBCProvider();
-            List<String> argsList = CliTools.getAsModifyableList(args);
-            int index;
-            boolean listOnly = false;
-            if ((index = argsList.indexOf("-listFields")) != -1) {
-                argsList.remove(index);
-                // Only list fields available
-                listOnly = true;
-            }
-            boolean getOnly = false;
-            if ((index = argsList.indexOf("-getValue")) != -1) {
-                argsList.remove(index);
-                // Only get value of a field
-                getOnly = true;
-            }
-            args = argsList.toArray(new String[argsList.size()]);
-            
-            final String name = args[1];
-            final String field;
-            if (args.length > 2) {
-                field = args[2];
-            } else {
-                field= null;
-            }
-            final String value;
-            if (args.length > 3) {
-                value = args[3];
-            } else {
-                value = null;
-            }
+    public String getMainCommand() {
+        return "editca";
+    }
 
-            final CAInfo cainfo = ejb.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(cliUserName, cliPassword), name);
-            if (cainfo == null) {
-                getLogger().info("CA '"+name+"' does not exist.");
-            } else {
-                // List fields, get values or set value
+    @Override
+    public CommandResult execute(ParameterContainer parameters) {
+        FieldEditor fieldEditor = new FieldEditor(log);
+        CryptoProviderTools.installBCProvider();
+        boolean listOnly = parameters.get(LISTFIELDS_KEY) != null;
+        boolean getOnly = parameters.get(GETVALUE_KEY) != null;
+        final String name = parameters.get(CA_NAME_KEY);
+        final String field = parameters.get(FIELD_KEY);
+        final String value = parameters.get(VALUE_KEY);
+        try {
+            final CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), name);
+            // List fields, get values or set value
+            try {
                 if (!fieldEditor.listGetOrSet(listOnly, getOnly, name, field, value, cainfo)) {
-                    getLogger().info("Storing modified CA info for CA '"+name+"'...");
-                    ejb.getRemoteSession(CaSessionRemote.class).editCA(getAuthenticationToken(cliUserName, cliPassword), cainfo);
+                    log.info("Storing modified CA info for CA '" + name + "'...");
+                    EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).editCA(getAuthenticationToken(), cainfo);
                     // Verify our new value
-                    getLogger().info("Reading modified value for verification...");
-                    final CAInfo cainfomod = ejb.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(cliUserName, cliPassword), name);
+                    log.info("Reading modified value for verification...");
+                    final CAInfo cainfomod = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(),
+                            name);
                     // Print return value
-                    fieldEditor.getBeanValue(field, cainfomod);                    
+                    fieldEditor.getBeanValue(field, cainfomod);
                 }
+                return CommandResult.SUCCESS;
+            } catch (FieldNotFoundException e) {
+                log.error(e.getMessage());
+                return CommandResult.FUNCTIONAL_FAILURE;
             }
-        } catch (Exception e) {
-            throw new ErrorAdminCommandException(e);
+        } catch (CADoesntExistsException e) {
+            log.info("CA '" + name + "' does not exist.");
+            return CommandResult.FUNCTIONAL_FAILURE;
+        } catch (AuthorizationDeniedException e) {
+            log.error("CLI User was not authorized to CA " + name);
+            return CommandResult.AUTHORIZATION_FAILURE;
         }
+
+    }
+
+    @Override
+    public String getCommandDescription() {
+        return "Edits CA fields of an existing CA.";
+               
+    }
+
+    @Override
+    public String getFullHelpText() {
+        return getCommandDescription()
+                + "Fields that can be set are derived from setFieldName of the CA java code. If there is a 'setFieldName(type)' method, the values to use in this command should be 'fieldName value'\n"
+                + "Example: ca editca CAName CRLPeriod 2592000000\n"
+                + "Example: ca editca CAName CRLIssueInterval 100000\n"
+                + "Example: ca editca CAName includeInHealthCheck false\n"
+                + "\n"
+                + "Use the option -listFields to only list available fields in the CA. Note that there will always be some fields displayed which are not actually changeable.\n"
+                + "Example: ca editca CAName -listFields\n" + "\n" + "Use the option -getValue to only get the value of a field in the CA.\n"
+                + "Example: ca editca CAName -getValue CRLPeriod";
+    }
+    
+    @Override
+    protected Logger getLogger() {
+        return log;
     }
 }

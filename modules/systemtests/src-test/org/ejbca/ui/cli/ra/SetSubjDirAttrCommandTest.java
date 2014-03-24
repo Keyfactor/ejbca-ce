@@ -100,7 +100,7 @@ public class SetSubjDirAttrCommandTest {
     @Test
     public void testSetSubjDirAttr() throws ErrorAdminCommandException, AuthorizationDeniedException {
         final String attributes = "placeOfBirth=FooTown";
-        final String args[] = new String[] { "setsubjectdirattr", TESTCLASS_NAME, attributes };
+        final String args[] = new String[] { TESTCLASS_NAME, attributes };
         command.execute(args);
         assertEquals("SubjDirAttributes were not set.", attributes, endEntityAccessSession.findUser(authenticationToken, TESTCLASS_NAME)
                 .getExtendedinformation().getSubjectDirectoryAttributes());

@@ -37,7 +37,7 @@ public class BatchToolProperties {
 
 	private Logger logger;
 	
-	BatchToolProperties(Logger logger){
+	public BatchToolProperties(Logger logger){
 	    this.logger = logger;
 		load();
 	}

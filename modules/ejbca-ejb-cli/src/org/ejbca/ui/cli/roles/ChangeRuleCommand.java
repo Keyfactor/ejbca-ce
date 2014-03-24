@@ -18,11 +18,16 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.roles.RoleData;
+import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.Configuration;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
@@ -31,116 +36,167 @@ import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionRemote;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
-import org.ejbca.ui.cli.CliUsernameException;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * Changes an access rule
  */
 public class ChangeRuleCommand extends BaseRolesCommand {
 
+    private static final Logger log = Logger.getLogger(ChangeRuleCommand.class);
+
+    private static final String NAME_KEY = "--name";
+    private static final String RULE_KEY = "--rule";
+    private static final String STATE_KEY = "--state";
+    private static final String RECURSIVE_KEY = "-R";
+
+    {
+        registerParameter(new Parameter(NAME_KEY, "Role Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Name of the new role."));
+        registerParameter(new Parameter(RULE_KEY, "Rule", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT, "The rule to change"));
+        registerParameter(new Parameter(STATE_KEY, "Rule State", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Name of the new role."));
+        registerParameter(Parameter.createFlag(RECURSIVE_KEY, "Set this switch if rule is to be recursive. Default is false."));
+    }
+
     @Override
-    public String getSubCommand() {
+    public String getMainCommand() {
         return "changerule";
     }
+
     @Override
-    public String getDescription() {
-        return "Changes an access rule";
-    }
-
-    public void execute(String[] args) throws ErrorAdminCommandException {
-        try {
-            args = parseUsernameAndPasswordFromArgs(args);
-        } catch (CliUsernameException e) {
-            return;
+    public CommandResult execute(ParameterContainer parameters) {
+        String roleName = parameters.get(NAME_KEY);
+        RoleData role = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class).findRole(roleName);
+        if (role == null) {
+            getLogger().error("No such role \"" + roleName + "\".");
+            return CommandResult.FUNCTIONAL_FAILURE;
         }
-        
+        String accessRule;
         try {
-            if (args.length < 4) {
-                getLogger().info("Description: " + getDescription());
-                getLogger().info("Usage: " + getCommand() + " <name of role> <access rule> <rule> [<recursive>]");
-                Collection<RoleData> roles = ejb.getRemoteSession(RoleManagementSessionRemote.class).getAllRolesAuthorizedToEdit(getAuthenticationToken(cliUserName, cliPassword));
-                Collections.sort((List<RoleData>) roles);
-                String availableRoles = "";
-                for (RoleData role : roles) {
-                    availableRoles += (availableRoles.length() == 0 ? "" : ", ") + "\"" + role.getRoleName() + "\"";
-                }
-                getLogger().info("Available roles: " + availableRoles);
-                getLogger().info("Available access rules:");
-                GlobalConfiguration globalConfiguration = (GlobalConfiguration) ejb.getRemoteSession(GlobalConfigurationSessionRemote.class).getCachedConfiguration(Configuration.GlobalConfigID);
-
-                Collection<String> authorizedAvailableAccessRules = ejb.getRemoteSession(ComplexAccessControlSessionRemote.class).getAuthorizedAvailableAccessRules(
-                        getAuthenticationToken(cliUserName, cliPassword), globalConfiguration.getEnableEndEntityProfileLimitations(), globalConfiguration.getIssueHardwareTokens(),
-                        globalConfiguration.getEnableKeyRecovery(), ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getAuthorizedEndEntityProfileIds(getAuthenticationToken(cliUserName, cliPassword)),
-                        ejb.getRemoteSession(UserDataSourceSessionRemote.class).getAuthorizedUserDataSourceIds(getAuthenticationToken(cliUserName, cliPassword), true),
-                        EjbcaConfiguration.getCustomAvailableAccessRules());
-
-                for (String current : authorizedAvailableAccessRules) {
-                    getLogger().info(" " + getParsedAccessRule(getAuthenticationToken(cliUserName, cliPassword), current));
-                }
-                String availableRules = "";
-                for (AccessRuleState current : AccessRuleState.values()) {
-                    availableRules += (availableRules.length() == 0 ? "" : ", ") + current.getName();
-                }
-                getLogger().info("Available rules: " + availableRules);
-                getLogger().info("Recursive is one of: TRUE, FALSE (Only " + AccessRuleState.RULE_ACCEPT + " may be set TRUE. Default is FALSE.)");
-                return;
-            }
-            String groupName = args[1];
-            RoleData role = ejb.getRemoteSession(RoleAccessSessionRemote.class).findRole(groupName);
-            if (role == null) {
-                getLogger().error("No such role \"" + groupName + "\".");
-                return;
-            }
-            String accessRule;
             try {
-                accessRule = getOriginalAccessRule(getAuthenticationToken(cliUserName, cliPassword), args[2]);
-            } catch(EndEntityProfileNotFoundException e) {
+                accessRule = getOriginalAccessRule(getAuthenticationToken(), parameters.get(RULE_KEY));
+            } catch (EndEntityProfileNotFoundException e) {
                 getLogger().error(e.getMessage());
-                return;
+                return CommandResult.FUNCTIONAL_FAILURE;
+            } catch (CADoesntExistsException e) {
+                getLogger().error(e.getMessage());
+                return CommandResult.FUNCTIONAL_FAILURE;
             }
-            GlobalConfiguration globalConfiguration = (GlobalConfiguration) ejb.getRemoteSession(GlobalConfigurationSessionRemote.class).getCachedConfiguration(Configuration.GlobalConfigID);
-            Collection<String> authorizedAvailableAccessRules = ejb.getRemoteSession(ComplexAccessControlSessionRemote.class).getAuthorizedAvailableAccessRules(getAuthenticationToken(cliUserName, cliPassword),
-                    globalConfiguration.getEnableEndEntityProfileLimitations(), globalConfiguration.getIssueHardwareTokens(),
-                    globalConfiguration.getEnableKeyRecovery(), ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getAuthorizedEndEntityProfileIds(getAuthenticationToken(cliUserName, cliPassword)),
-                    ejb.getRemoteSession(UserDataSourceSessionRemote.class).getAuthorizedUserDataSourceIds(getAuthenticationToken(cliUserName, cliPassword), true),
-                    EjbcaConfiguration.getCustomAvailableAccessRules());
+            GlobalConfiguration globalConfiguration = (GlobalConfiguration) EjbRemoteHelper.INSTANCE.getRemoteSession(
+                    GlobalConfigurationSessionRemote.class).getCachedConfiguration(Configuration.GlobalConfigID);
+            Collection<String> authorizedAvailableAccessRules = EjbRemoteHelper.INSTANCE.getRemoteSession(ComplexAccessControlSessionRemote.class)
+                    .getAuthorizedAvailableAccessRules(
+                            getAuthenticationToken(),
+                            globalConfiguration.getEnableEndEntityProfileLimitations(),
+                            globalConfiguration.getIssueHardwareTokens(),
+                            globalConfiguration.getEnableKeyRecovery(),
+                            EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).getAuthorizedEndEntityProfileIds(
+                                    getAuthenticationToken()),
+                            EjbRemoteHelper.INSTANCE.getRemoteSession(UserDataSourceSessionRemote.class).getAuthorizedUserDataSourceIds(
+                                    getAuthenticationToken(), true), EjbcaConfiguration.getCustomAvailableAccessRules());
 
             if (!authorizedAvailableAccessRules.contains(accessRule)) {
-                getLogger().error("Accessrule \"" + accessRule + "\" is not available.");
-                return;
+                getLogger().error("ERROR: Accessrule \"" + accessRule + "\" is not available.");
+                return CommandResult.FUNCTIONAL_FAILURE;
             }
-            AccessRuleState rule = AccessRuleState.matchName(args[3]);
+            AccessRuleState rule = AccessRuleState.matchName(parameters.get(STATE_KEY));
             if (rule == null) {
-                getLogger().error("No such rule \"" + args[3] + "\".");
-                return;
+                getLogger().error("ERROR: No such state \"" + parameters.get(STATE_KEY) + "\".");
+                return CommandResult.FUNCTIONAL_FAILURE;
             }
             boolean recursive = false;
-            if (args.length == 5) {
-                if ("TRUE".equalsIgnoreCase(args[4])) {
-                    if (rule == AccessRuleState.RULE_ACCEPT) {
-                        recursive = true;
-                    } else {
-                        getLogger().info("Recursive set TRUE for rule state " + rule.getName() + " is invalid. Ignoring recursive statement.");
-                    }
+            if (parameters.containsKey(RECURSIVE_KEY)) {
+                if (rule == AccessRuleState.RULE_ACCEPT) {
+                    recursive = true;
+                } else {
+                    getLogger().info("Setting " + RECURSIVE_KEY + " for DECLINE or UNUSED is redundant. DECLINE and UNUSED are always recursive.");
                 }
-
             }
 
             List<String> accessRuleStrings = new ArrayList<String>();
             accessRuleStrings.add(accessRule);
             if (rule == AccessRuleState.RULE_NOTUSED) {
-                ejb.getRemoteSession(RoleManagementSessionRemote.class).removeAccessRulesFromRole(getAuthenticationToken(cliUserName, cliPassword), role, accessRuleStrings);
+                EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class).removeAccessRulesFromRole(getAuthenticationToken(),
+                        role, accessRuleStrings);
             } else {
-                ejb.getRemoteSession(RoleManagementSessionRemote.class).removeAccessRulesFromRole(getAuthenticationToken(cliUserName, cliPassword), role, accessRuleStrings);
+                EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class).removeAccessRulesFromRole(getAuthenticationToken(),
+                        role, accessRuleStrings);
                 AccessRuleData accessRuleObject = new AccessRuleData(role.getRoleName(), accessRule, rule, recursive);
                 Collection<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
                 accessRules.add(accessRuleObject);
-                ejb.getRemoteSession(RoleManagementSessionRemote.class).addAccessRulesToRole(getAuthenticationToken(cliUserName, cliPassword), role, accessRules);
+                EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class).addAccessRulesToRole(getAuthenticationToken(), role,
+                        accessRules);
             }
-        } catch (Exception e) {
-            getLogger().error("", e);
-            throw new ErrorAdminCommandException(e);
+            return CommandResult.SUCCESS;
+        } catch (AuthorizationDeniedException e) {
+            log.error("CLI user not authorized to edit rule " + parameters.get(RULE_KEY));
+            return CommandResult.AUTHORIZATION_FAILURE;
+        } catch (RoleNotFoundException e) {
+            throw new IllegalStateException("Previously found role could suddenly not be found.", e);
         }
+
     }
+
+    @Override
+    public String getCommandDescription() {
+        return "Changes an access rule";
+    }
+
+    @Override
+    public String getFullHelpText() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getCommandDescription() + "\n");
+        Collection<RoleData> roles = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class).getAllRolesAuthorizedToEdit(
+                getAuthenticationToken());
+        Collections.sort((List<RoleData>) roles);
+        StringBuilder availableRoles = new StringBuilder();
+        for (RoleData role : roles) {
+            availableRoles.append((availableRoles.length() == 0 ? "" : ", ") + "\"" + role.getRoleName() + "\"");
+        }
+        sb.append("Available roles: " + availableRoles + "\n");
+
+        GlobalConfiguration globalConfiguration = (GlobalConfiguration) EjbRemoteHelper.INSTANCE.getRemoteSession(
+                GlobalConfigurationSessionRemote.class).getCachedConfiguration(Configuration.GlobalConfigID);
+
+        Collection<String> authorizedAvailableAccessRules = EjbRemoteHelper.INSTANCE.getRemoteSession(ComplexAccessControlSessionRemote.class)
+                .getAuthorizedAvailableAccessRules(
+                        getAuthenticationToken(),
+                        globalConfiguration.getEnableEndEntityProfileLimitations(),
+                        globalConfiguration.getIssueHardwareTokens(),
+                        globalConfiguration.getEnableKeyRecovery(),
+                        EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).getAuthorizedEndEntityProfileIds(
+                                getAuthenticationToken()),
+                        EjbRemoteHelper.INSTANCE.getRemoteSession(UserDataSourceSessionRemote.class).getAuthorizedUserDataSourceIds(
+                                getAuthenticationToken(), true), EjbcaConfiguration.getCustomAvailableAccessRules());
+
+        StringBuilder availableRules = new StringBuilder();
+        for (String current : authorizedAvailableAccessRules) {
+            try {
+                availableRules.append("   " + getParsedAccessRule(getAuthenticationToken(), current) + "\n");
+            } catch (AuthorizationDeniedException e) {
+                log.error("ERROR: Rules exist for CAs(" + current + ") that CLI user is not authorized to.");
+            } catch (CADoesntExistsException e) {
+                log.error("ERROR: Rules exist for CAs(" + current + ") that don't exist.");
+            }
+        }
+        sb.append("Available access rules: \n" + availableRules);
+        StringBuilder availableRuleStates = new StringBuilder();
+        for (AccessRuleState current : AccessRuleState.values()) {
+            availableRuleStates.append((availableRuleStates.length() == 0 ? "" : ", ") + current.getName());
+        }
+        sb.append("Available access rule states: " + availableRuleStates + "\n");
+        return sb.toString();
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return log;
+    }
+
 }

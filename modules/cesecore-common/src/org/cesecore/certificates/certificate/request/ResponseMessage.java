@@ -69,8 +69,10 @@ public interface ResponseMessage extends Serializable {
      * Gets the response message in the default encoding format.
      *
      * @return the response message in the default encoding format.
+     * 
+     * @throws CertificateEncodingException if encoding of certificate fails. 
      */
-    public byte[] getResponseMessage() throws IOException, CertificateEncodingException;
+    public byte[] getResponseMessage() throws CertificateEncodingException;
 
     /**
      * Sets the status of the response message.

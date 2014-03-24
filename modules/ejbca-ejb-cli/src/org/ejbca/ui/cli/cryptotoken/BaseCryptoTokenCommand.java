@@ -12,84 +12,76 @@
  *************************************************************************/
 package org.ejbca.ui.cli.cryptotoken;
 
+import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.StringTools;
-import org.ejbca.ui.cli.BaseCommand;
-import org.ejbca.ui.cli.CliUsernameException;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.command.EjbcaCliUserCommandBase;
+import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * Base class for the CryptoToken EJB CLI providing common functionality.
  * 
  * @version $Id$
  */
-public abstract class BaseCryptoTokenCommand extends BaseCommand {
+public abstract class BaseCryptoTokenCommand extends EjbcaCliUserCommandBase {
 
-    @Override
-    public String[] getSubCommandAliases() {
-        return new String[]{};
-    }
-    
-    @Override
-    public String getMainCommand() {
-        return "cryptotoken";
+    protected static final String CRYPTOTOKEN_NAME_KEY = "--token";
+
+    {
+        registerParameter(new Parameter(CRYPTOTOKEN_NAME_KEY, "Token Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "The name of the crypto token."));
     }
 
     @Override
-    public String[] getMainCommandAliases() {
-        return new String[]{};
+    public String[] getCommandPath() {
+        return new String[] { "cryptotoken" };
     }
-    
+
     /**
      * Overridable CryptoToken-specific execution methods that will parse and interpret the first parameter
      * (when present) as the name of a CryptoToken and lookup its cryptoTokenId.
      */
-    public abstract void executeCommand(Integer cryptoTokenId, String[] args) throws AuthorizationDeniedException, CryptoTokenOfflineException, Exception;
-    
+    public abstract CommandResult executeCommand(Integer cryptoTokenId, ParameterContainer parameters) throws AuthorizationDeniedException,
+            CryptoTokenOfflineException;
+
     @Override
-    public void execute(String[] args) throws ErrorAdminCommandException {
-        try {
-            args = parseUsernameAndPasswordFromArgs(args);
-        } catch (CliUsernameException e) {
-            return;
-        }
+    public CommandResult execute(ParameterContainer parameters) {
         Integer cryptoTokenId = null;
-        if (failIfCryptoTokenMissing() && args.length>=2) {
-            final String cryptoTokenName = args[1];
-            cryptoTokenId = ejb.getRemoteSession(CryptoTokenManagementSessionRemote.class).getIdFromName(cryptoTokenName);
-            if (cryptoTokenId==null) {
-                getLogger().info("Unknown CryptoToken: " + cryptoTokenName);
-                return;
-            }
+        final String cryptoTokenName = parameters.get(CRYPTOTOKEN_NAME_KEY);
+        cryptoTokenId = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class).getIdFromName(cryptoTokenName);
+        if (cryptoTokenId == null) {
+            getLogger().error("Unknown CryptoToken: " + cryptoTokenName);
+            return CommandResult.FUNCTIONAL_FAILURE;
         }
         try {
-            executeCommand(cryptoTokenId, args);
+            return executeCommand(cryptoTokenId, parameters);
         } catch (AuthorizationDeniedException e) {
             getLogger().info(e.getMessage());
+            return CommandResult.AUTHORIZATION_FAILURE;
         } catch (CryptoTokenOfflineException e) {
             getLogger().info("CryptoToken is not active. You need to activate the CryptoToken before you can interact with its content.");
-        } catch (Exception e) {
-            getLogger().info("Operation failed: " + e.getMessage());
-            getLogger().debug("", e);
+            return CommandResult.FUNCTIONAL_FAILURE;
         }
     }
-    
-    protected boolean failIfCryptoTokenMissing() {
-        return true;
-    }
-    
+
     /** @return the EJB CLI admin */
     protected AuthenticationToken getAdmin() {
-        return getAuthenticationToken(cliUserName, cliPassword);
+        return getAuthenticationToken();
     }
 
     /** @return a deobfuscated version of the parameter or use input if the parameter equals "null" */
-    public char[] getAuthenticationCode(final String commandLineArgument) {
+    protected char[] getAuthenticationCode(final String commandLineArgument) {
         final char[] authenticationCode;
-        if (!"null".equalsIgnoreCase(commandLineArgument)) {
+        if (commandLineArgument == null || !"null".equalsIgnoreCase(commandLineArgument)) {
             authenticationCode = StringTools.passwordDecryption(commandLineArgument, "CryptoToken pin").toCharArray();
         } else {
             getLogger().info("Enter CryptoToken password: ");
@@ -98,4 +90,6 @@ public abstract class BaseCryptoTokenCommand extends BaseCommand {
         }
         return authenticationCode;
     }
+
+    protected abstract Logger getLogger();
 }

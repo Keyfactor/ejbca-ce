@@ -19,7 +19,6 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.cert.CRL;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
 import java.util.Collection;
 
 import org.apache.log4j.Logger;
@@ -81,8 +80,7 @@ public class CmpErrorResponseMessage extends BaseCmpMessage implements ResponseM
 	}
 
 	@Override
-	public byte[] getResponseMessage() throws IOException,
-			CertificateEncodingException {
+	public byte[] getResponseMessage() {
         return responseMessage;
 	}
 

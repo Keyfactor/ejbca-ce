@@ -22,8 +22,6 @@ import org.cesecore.roles.RoleData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
-import org.ejbca.ui.cli.roles.ChangeRuleCommand;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -61,12 +59,11 @@ public class ChangeRulesTest {
     /**
      * Tests adding a legacy rule (such as /ca), just to make sure that rule changes
      * work at all.
-     * @throws ErrorAdminCommandException 
      */
     @Test
-    public void testAddLegacyRule() throws ErrorAdminCommandException {
+    public void testAddLegacyRule() {
         final String accessRuleName = "/ca";
-        command.execute(new String[]{"changerule", ROLENAME, accessRuleName, "ACCEPT", "TRUE"});
+        command.execute(new String[]{ ROLENAME, accessRuleName, "ACCEPT", "-R"});
         RoleData role = roleAccessSession.findRole(ROLENAME);
         AccessRuleData rule = role.getAccessRules().get((AccessRuleData.generatePrimaryKey(ROLENAME, accessRuleName)));
         assertNotNull("Rule " + accessRuleName + " was not added to role via CLI", rule);
@@ -76,12 +73,11 @@ public class ChangeRulesTest {
      * This is a regression test written for ECA-2427, when we discovered that access rules created in CESECORE
      * couldn't be added via the CLI. 
      * 
-     * @throws ErrorAdminCommandException
      */
     @Test
-    public void testAddCesecoreRule() throws ErrorAdminCommandException {      
+    public void testAddCesecoreRule() {      
             final String accessRuleName = "/secureaudit";
-            command.execute(new String[]{"changerule", ROLENAME, accessRuleName, "ACCEPT", "TRUE"});
+            command.execute(new String[]{ ROLENAME, accessRuleName, "ACCEPT", "-R"});
             RoleData role = roleAccessSession.findRole(ROLENAME);
             AccessRuleData rule = role.getAccessRules().get((AccessRuleData.generatePrimaryKey(ROLENAME, accessRuleName)));
             assertNotNull("Rule " + accessRuleName + " was not added to role via CLI", rule);

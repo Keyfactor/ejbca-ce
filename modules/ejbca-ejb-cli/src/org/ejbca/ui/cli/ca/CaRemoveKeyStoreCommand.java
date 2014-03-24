@@ -13,9 +13,15 @@
 
 package org.ejbca.ui.cli.ca;
 
+import org.apache.log4j.Logger;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.ui.cli.CliUsernameException;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * Remove the CA token keystore from a CA.
@@ -24,30 +30,40 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class CaRemoveKeyStoreCommand extends BaseCaAdminCommand {
 
-    @Override
-    public String getSubCommand() { return "removekeystore"; }
-    @Override
-    public String getDescription() { return "Remove the CA token keystore from a CA"; }
+    private static final Logger log = Logger.getLogger(CaRemoveKeyStoreCommand.class);
+    
+    private static final String CA_NAME_KEY = "--caname";
+
+    {
+        registerParameter(new Parameter(CA_NAME_KEY, "CA Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Name of the CA"));
+    }
 
     @Override
-    public void execute(String[] args) throws ErrorAdminCommandException {
-        try {
-            args = parseUsernameAndPasswordFromArgs(args);
-        } catch (CliUsernameException e) {
-            return;
-        }
-        
-        
-		if (args.length < 2) {
-    		getLogger().info("Description: " + getDescription());
-    		getLogger().info("Usage: " + getCommand() + " <CA name>");
-			return;
-		}
-		try {
-			String caName = args[1];
-			ejb.getRemoteSession(CAAdminSessionRemote.class).removeCAKeyStore(getAuthenticationToken(cliUserName, cliPassword), caName);
-		} catch (Exception e) {
-			throw new ErrorAdminCommandException(e);
-		}
-	}
+    public String getMainCommand() {
+        return "removekeystore";
+    }
+
+    @Override
+    public CommandResult execute(ParameterContainer parameters) {
+        String caName = parameters.get(CA_NAME_KEY);
+        EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class).removeCAKeyStore(getAuthenticationToken(), caName);
+        return CommandResult.SUCCESS;
+    }
+
+    @Override
+    public String getCommandDescription() {
+        return "Remove the CA token keystore from a CA";
+    }
+
+    @Override
+    public String getFullHelpText() {
+        return getCommandDescription();
+    }
+    
+    @Override
+    protected Logger getLogger() {
+        return log;
+    }
+
 }

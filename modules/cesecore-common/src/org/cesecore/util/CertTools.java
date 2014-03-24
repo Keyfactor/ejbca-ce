@@ -17,6 +17,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -1092,10 +1093,10 @@ public abstract class CertTools {
      * 
      * @param certFile the file containing the certificates in PEM-format
      * @return Ordered List of Certificates, first certificate first, or empty List
-     * @exception IOException if the file cannot be read.
-     * @exception CertificateException if the file contains an incorrect certificate.
+     * @throws CertificateException if the file contains an incorrect certificate.
+     * @throws FileNotFoundException if certFile was not found
      */
-    public static List<Certificate> getCertsFromPEM(String certFile) throws IOException, CertificateException {
+    public static List<Certificate> getCertsFromPEM(String certFile) throws CertificateException, FileNotFoundException {
         if (log.isTraceEnabled()) {
             log.trace(">getCertfromPEM: certFile=" + certFile);
         }
@@ -1106,7 +1107,11 @@ public abstract class CertTools {
             certs = getCertsFromPEM(inStrm);
         } finally {
             if (inStrm != null) {
-                inStrm.close();
+                try {
+                    inStrm.close();
+                } catch (IOException e) {
+                    throw new IllegalStateException("Could not clode input stream", e);
+                }
             }
         }
         if (log.isTraceEnabled()) {
@@ -1121,10 +1126,9 @@ public abstract class CertTools {
      * 
      * @param certstream the input stream containing the certificates in PEM-format
      * @return Ordered List of Certificates, first certificate first, or empty List
-     * @exception IOException if the stream cannot be read.
      * @exception CertificateException if the stream contains an incorrect certificate.
      */
-    public static List<Certificate> getCertsFromPEM(InputStream certstream) throws IOException, CertificateException {
+    public static List<Certificate> getCertsFromPEM(InputStream certstream) throws CertificateException {
         if (log.isTraceEnabled()) {
             log.trace(">getCertfromPEM");
         }
@@ -1135,48 +1139,55 @@ public abstract class CertTools {
         ByteArrayOutputStream ostr = null;
         PrintStream opstr = null;
         try {
-            bufRdr = new BufferedReader(new InputStreamReader(certstream));
-            while (bufRdr.ready()) {
-                ostr = new ByteArrayOutputStream();
-                opstr = new PrintStream(ostr);
-                String temp;
-                while ((temp = bufRdr.readLine()) != null && !(temp.equals(CertTools.BEGIN_CERTIFICATE) || temp.equals(beginKeyTrust))) {
-                    continue;
-                }
-                if (temp == null) {
-                    if (ret.isEmpty()) {
-                        // There was no certificate in the file
-                        throw new IOException("Error in " + certstream.toString() + ", missing " + CertTools.BEGIN_CERTIFICATE + " boundary");
-                    } else {
-                        // There were certificates, but some blank lines or something in the end
-                        // anyhow, the file has ended so we can break here.
-                        break;
+            try {
+                bufRdr = new BufferedReader(new InputStreamReader(certstream));
+                while (bufRdr.ready()) {
+                    ostr = new ByteArrayOutputStream();
+                    opstr = new PrintStream(ostr);
+                    String temp;
+                    while ((temp = bufRdr.readLine()) != null && !(temp.equals(CertTools.BEGIN_CERTIFICATE) || temp.equals(beginKeyTrust))) {
+                        continue;
                     }
-                }
-                while ((temp = bufRdr.readLine()) != null && !(temp.equals(CertTools.END_CERTIFICATE) || temp.equals(endKeyTrust))) {
-                    opstr.print(temp);
-                }
-                if (temp == null) {
-                    throw new IOException("Error in " + certstream.toString() + ", missing " + CertTools.END_CERTIFICATE + " boundary");
-                }
-                opstr.close();
+                    if (temp == null) {
+                        if (ret.isEmpty()) {
+                            // There was no certificate in the file
+                            throw new IllegalArgumentException("Error in " + certstream.toString() + ", missing " + CertTools.BEGIN_CERTIFICATE
+                                    + " boundary");
+                        } else {
+                            // There were certificates, but some blank lines or something in the end
+                            // anyhow, the file has ended so we can break here.
+                            break;
+                        }
+                    }
+                    while ((temp = bufRdr.readLine()) != null && !(temp.equals(CertTools.END_CERTIFICATE) || temp.equals(endKeyTrust))) {
+                        opstr.print(temp);
+                    }
+                    if (temp == null) {
+                        throw new IllegalArgumentException("Error in " + certstream.toString() + ", missing " + CertTools.END_CERTIFICATE
+                                + " boundary");
+                    }
+                    opstr.close();
 
-                byte[] certbuf = Base64.decode(ostr.toByteArray());
-                ostr.close();
-                // Phweeew, were done, now decode the cert from file back to Certificate object
-                Certificate cert = getCertfromByteArray(certbuf);
-                ret.add(cert);
+                    byte[] certbuf = Base64.decode(ostr.toByteArray());
+                    ostr.close();
+                    // Phweeew, were done, now decode the cert from file back to Certificate object
+                    Certificate cert = getCertfromByteArray(certbuf);
+                    ret.add(cert);
+                }
+
+            } finally {
+                if (bufRdr != null) {
+                    bufRdr.close();
+                }
+                if (opstr != null) {
+                    opstr.close();
+                }
+                if (ostr != null) {
+                    ostr.close();
+                }
             }
-        } finally {
-            if (bufRdr != null) {
-                bufRdr.close();
-            }
-            if (opstr != null) {
-                opstr.close();
-            }
-            if (ostr != null) {
-                ostr.close();
-            }
+        } catch (IOException e) {
+            throw new IllegalStateException("Exception caught when attempting to read stream, see underlying IOException", e);
         }
         if (log.isTraceEnabled()) {
             log.trace("<getcertfromPEM:" + ret.size());
@@ -1233,9 +1244,9 @@ public abstract class CertTools {
      * 
      * @param certs Collection of Certificate to convert to PEM
      * @return byte array containing PEM certificate
-     * @exception CertificateException if the stream does not contain a correct certificate.
+     * @throws CertificateEncodingException if an encoding error occurred
      */
-    public static byte[] getPemFromCertificateChain(Collection<Certificate> certs) throws CertificateException {
+    public static byte[] getPemFromCertificateChain(Collection<Certificate> certs) throws CertificateEncodingException  {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         final PrintStream printStream = new PrintStream(baos);
         for (final Certificate certificate : certs) {
@@ -1290,7 +1301,6 @@ public abstract class CertTools {
      * @return Certificate
      * 
      * @throws CertificateException if the byte array does not contain a proper certificate.
-     * @throws IOException if the byte array cannot be read.
      */
     public static Certificate getCertfromByteArray(byte[] cert, String provider) throws CertificateException {
         Certificate ret = null;
