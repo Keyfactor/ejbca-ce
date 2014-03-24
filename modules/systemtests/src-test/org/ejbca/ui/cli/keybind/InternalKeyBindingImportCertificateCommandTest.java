@@ -125,7 +125,7 @@ public class InternalKeyBindingImportCertificateCommandTest {
 
     @Test
     public void testImportCertificate() throws ErrorAdminCommandException, AuthorizationDeniedException {
-        String[] args = new String[] { "import", TESTCLASS_NAME, certificateFile.getAbsolutePath() };
+        String[] args = new String[] { TESTCLASS_NAME, certificateFile.getAbsolutePath() };
         command.execute(args);
         InternalKeyBinding keyBinding = internalKeyBindingMgmtSession.getInternalKeyBinding(authenticationToken, internalKeyBindingId);
         assertNotNull("Certificate was not imported", keyBinding.getCertificateId());

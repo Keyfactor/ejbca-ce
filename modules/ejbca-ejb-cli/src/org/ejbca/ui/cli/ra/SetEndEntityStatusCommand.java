@@ -10,13 +10,26 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package org.ejbca.ui.cli.ra;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.ejb.FinderException;
+
+import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
-import org.ejbca.ui.cli.CliUsernameException;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * Changes status for an end entity in the database, status is defined in
@@ -27,46 +40,79 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  * @see org.ejbca.core.ejb.ra.UserDataLocal
  */
 public class SetEndEntityStatusCommand extends BaseRaCommand {
-    
+
+    private static final Logger log = Logger.getLogger(SetEndEntityStatusCommand.class);
+
     private static final String COMMAND = "setendentitystatus";
     private static final String OLD_COMMAND = "setuserstatus";
-    
-    @Override
-	public String getSubCommand() { return COMMAND; }
+
+    private static final Set<String> ALIASES = new HashSet<String>();
+    static {
+        ALIASES.add(OLD_COMMAND);
+    }
+
+    private static final String USERNAME_KEY = "--username";
+    private static final String STATUS_KEY = "-S";
+
+    {
+        registerParameter(new Parameter(USERNAME_KEY, "Username", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Username for the end entity."));
+        registerParameter(new Parameter(STATUS_KEY, "Status", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Status: NEW=10; FAILED=11; INITIALIZED=20; INPROCESS=30; GENERATED=40; HISTORICAL=50"));
+    }
 
     @Override
-	public String getDescription() { return "Change status for an end entity"; }
+    public Set<String> getMainCommandAliases() {
+        return ALIASES;
+    }
 
     @Override
-    public String[] getSubCommandAliases() {
-        return new String[]{OLD_COMMAND};
+    public String getMainCommand() {
+        return COMMAND;
     }
-    
+
     @Override
-    public void execute(String[] args) throws ErrorAdminCommandException {
+    public CommandResult execute(ParameterContainer parameters) {
+        String username = parameters.get(USERNAME_KEY);
+        int status;
         try {
-            args = parseUsernameAndPasswordFromArgs(args);
-        } catch (CliUsernameException e) {
-            return;
+            status = Integer.parseInt(parameters.get(STATUS_KEY));
+        } catch (NumberFormatException e) {
+            log.error("ERROR: " + parameters.get(STATUS_KEY) + " was not a number.");
+            return CommandResult.FUNCTIONAL_FAILURE;
         }
-        
         try {
-            if (args.length < 3) {
-    			getLogger().info("Description: " + getDescription());
-            	getLogger().info("Usage: " + getCommand() + " <username> <status>");
-            	getLogger().info(" Status: NEW=10; FAILED=11; INITIALIZED=20; INPROCESS=30; GENERATED=40; HISTORICAL=50");
-                return;
-            }
-            String username = args[1];
-            int status = Integer.parseInt(args[2]);
-            try {
-                ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAuthenticationToken(cliUserName, cliPassword), username, status);
-                getLogger().info("New status for end entity " + username + " is " + status);
-            } catch (AuthorizationDeniedException e) {
-            	getLogger().error("Not authorized to change end entity.");
-            }
-        } catch (Exception e) {
-            throw new ErrorAdminCommandException(e);
-        }
+            EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAuthenticationToken(), username,
+                    status);
+            getLogger().info("New status for end entity " + username + " is " + status);
+            return CommandResult.SUCCESS;
+        } catch (AuthorizationDeniedException e) {
+            getLogger().error("Not authorized to change end entity.");
+        }  catch (WaitingForApprovalException e) {
+            getLogger().info("Status change request has been sent for approval.");
+        } catch (FinderException e) {
+            log.error("ERROR: " + e.getMessage());
+        } catch (ApprovalException e) {
+            getLogger().error("Status change already requested.");
+        } 
+        return CommandResult.FUNCTIONAL_FAILURE;
+
     }
+
+    @Override
+    public String getCommandDescription() {
+        return "Change status for an end entity";
+    }
+
+    @Override
+    public String getFullHelpText() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getCommandDescription() + ".\n");
+        return sb.toString();
+    }
+
+    protected Logger getLogger() {
+        return log;
+    }
+
 }

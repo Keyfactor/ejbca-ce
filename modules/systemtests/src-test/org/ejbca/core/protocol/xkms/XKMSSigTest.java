@@ -49,13 +49,12 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.protocol.ws.BatchCreateTool;
 import org.ejbca.core.protocol.xkms.client.XKMSInvoker;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.core.protocol.xkms.common.XKMSUtil;
-import org.ejbca.ui.cli.batch.BatchMakeP12Command;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -84,9 +83,6 @@ import org.w3c.dom.Element;
 public class XKMSSigTest {
 
     private static final Logger log = Logger.getLogger(XKMSSigTest.class);
-
-    private final String cliUserName = EjbcaConfiguration.getCliDefaultUser();
-    private final String cliPassword = EjbcaConfiguration.getCliDefaultPassword();
     
     private ObjectFactory xKMSObjectFactory = new ObjectFactory();
     private org.w3._2000._09.xmldsig_.ObjectFactory sigFactory = new org.w3._2000._09.xmldsig_.ObjectFactory();
@@ -152,12 +148,10 @@ public class XKMSSigTest {
             assertTrue("Failed to create user " + username, false);
         }
 
-        BatchMakeP12Command makep12 = new BatchMakeP12Command();
         tmpfile = new File("p12");
 
         // log.debug("tempdir="+tmpfile.getParent());
-        makep12.setMainStoreDir(tmpfile.getAbsolutePath());
-        makep12.createAllNew(cliUserName, cliPassword);
+        BatchCreateTool.createAllNew(administrator, tmpfile.getParent());
     	log.trace("<test00SetupAccessRights");
     }
 

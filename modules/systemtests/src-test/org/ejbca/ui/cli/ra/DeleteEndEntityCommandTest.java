@@ -98,7 +98,7 @@ public class DeleteEndEntityCommandTest {
     
     @Test
     public void testDeleteEndEntity() throws ErrorAdminCommandException, AuthorizationDeniedException {
-        String[] args = new String[] { "delendentity", "-force", TESTCLASS_NAME };
+        String[] args = new String[] { "-force", TESTCLASS_NAME };
         command.execute(args);
         assertNull("End Entity was not deleted.", endEntityAccessSession.findUser(authenticationToken, TESTCLASS_NAME));
     }

@@ -66,7 +66,6 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.Configuration;
-import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
@@ -94,7 +93,6 @@ import org.ejbca.core.protocol.ws.client.gen.UserMatch;
 import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.core.protocol.ws.common.KeyStoreHelper;
-import org.ejbca.ui.cli.batch.BatchMakeP12Command;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -116,9 +114,6 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     public final static String WS_ADMIN_ROLENAME = "WsTEstRole";
     public final static String WS_TEST_ROLENAME = "WsTestRoleMgmt";
     private final static String WS_TEST_CERTIFICATE_PROFILE_NAME = "WSTESTPROFILE"; 
-    
-    private final String cliUserName = EjbcaConfiguration.getCliDefaultUser();
-    private final String cliPassword = EjbcaConfiguration.getCliDefaultPassword();
     
     private final ApprovalExecutionSessionRemote approvalExecutionSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalExecutionSessionRemote.class);
     private final ApprovalSessionRemote approvalSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionRemote.class);
@@ -863,10 +858,8 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
         userdata.setPassword(PASSWORD);
         endEntityManagementSession.addUser(intAdmin, userdata, true);
-        BatchMakeP12Command makep12 = new BatchMakeP12Command();
         File tmpfile = File.createTempFile("ejbca", "p12");
-        makep12.setMainStoreDir(tmpfile.getParent());
-        makep12.createAllNew(cliUserName, cliPassword);
+        BatchCreateTool.createAllNew(intAdmin, tmpfile.getParent());
         Collection<Certificate> userCerts = certificateStoreSession.findCertificatesByUsername(username);
         assertTrue(userCerts.size() == 1);
         return (X509Certificate) userCerts.iterator().next();

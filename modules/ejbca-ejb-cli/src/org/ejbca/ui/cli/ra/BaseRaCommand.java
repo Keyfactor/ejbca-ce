@@ -13,23 +13,20 @@
  
 package org.ejbca.ui.cli.ra;
 
-import org.ejbca.ui.cli.BaseCommand;
+import org.ejbca.ui.cli.infrastructure.command.EjbcaCliUserCommandBase;
 
 /**
  * Base for RA commands, contains common functions for RA operations
  *
  * @version $Id$
  */
-public abstract class BaseRaCommand extends BaseCommand {
+public abstract class BaseRaCommand extends EjbcaCliUserCommandBase {
 
 	public static final String MAINCOMMAND = "ra";
 	
-    public String getMainCommand() {
-        return MAINCOMMAND;
-    }
-    
     @Override
-    public String[] getMainCommandAliases() {
-        return new String[]{};
+    public String[] getCommandPath() {
+        return new String[] { MAINCOMMAND };
     }
+
 }

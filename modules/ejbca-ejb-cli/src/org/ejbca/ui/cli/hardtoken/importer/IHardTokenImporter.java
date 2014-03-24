@@ -53,7 +53,7 @@ public interface IHardTokenImporter {
 	HardTokenInformation readHardTokenData() throws IOException;
 	
 	/**
-	 * Method reponsible for finalizing the importer.
+	 * Method responsible for finalizing the importer.
 	 * 
 	 */
 	void endImport() throws IOException;	

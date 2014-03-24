@@ -26,6 +26,7 @@ import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.ejbca.ui.cli.roles.RemoveRoleCommand;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -33,7 +34,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * @version $Id$
+ * @version $Id: RemoveRoleCommandTest.java 18481 2014-02-10 16:08:27Z mikekushner $
  *
  */
 public class RemoveRoleCommandTest {
@@ -82,7 +83,7 @@ public class RemoveRoleCommandTest {
 
     @Test
     public void testRemoveRole() throws ErrorAdminCommandException {
-        String[] args = new String[] { "removerole", TESTCLASS_NAME };
+        String[] args = new String[] { TESTCLASS_NAME };
         command.execute(args);
         RoleData role = roleAccessSession.findRole(TESTCLASS_NAME);
         assertNull("Role was not removed,", role);

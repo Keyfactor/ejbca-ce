@@ -20,7 +20,7 @@ import org.ejbca.core.ejb.services.ServiceSessionRemote;
  * 
  * @version $Id$
  */
-class ServiceTestCase {
+public class ServiceTestCase {
     
     private ServiceSessionRemote serviceSession;
     

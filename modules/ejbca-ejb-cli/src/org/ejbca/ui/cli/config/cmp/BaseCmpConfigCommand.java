@@ -10,30 +10,32 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.ui.cli;
+
+package org.ejbca.ui.cli.config.cmp;
+
+import org.ejbca.config.CmpConfiguration;
+import org.ejbca.config.Configuration;
+import org.ejbca.ui.cli.config.ConfigBaseCommand;
 
 /**
- * @version $Id$
- *
+ * Shows the current server configuration
+ * 
+ * @version $Id: CmpConfigCommand.java 18393 2014-01-22 09:38:58Z mikekushner $
  */
-public class CliUsernameException extends Exception {
+public abstract class BaseCmpConfigCommand extends ConfigBaseCommand {
+     
+    private CmpConfiguration cmpConfiguration = null;
 
-    private static final long serialVersionUID = -390353232257435050L;
-
-    public CliUsernameException() {
-        super();
+    @Override
+    public String[] getCommandPath() {
+        return new String[] { super.getCommandPath()[0] , "cmp" };
     }
-
-    public CliUsernameException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public CliUsernameException(String message) {
-        super(message);
-    }
-
-    public CliUsernameException(Throwable cause) {
-        super(cause);
+    
+    protected CmpConfiguration getCmpConfiguration() {
+        if (cmpConfiguration == null) {
+            cmpConfiguration = (CmpConfiguration) getGlobalConfigurationSession().getCachedConfiguration(Configuration.CMPConfigID);
+        }
+        return cmpConfiguration;
     }
 
 }

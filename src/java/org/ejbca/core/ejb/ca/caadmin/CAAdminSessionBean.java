@@ -118,7 +118,6 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.ocsp.exception.NotSupportedException;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.certificates.util.dn.DNFieldsUtil;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
@@ -320,9 +319,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     }
 
     @Override
-    public void createCA(AuthenticationToken admin, CAInfo cainfo) throws CAExistsException, AuthorizationDeniedException,
-            CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {       
-        if (log.isTraceEnabled()) {
+    public void createCA(AuthenticationToken admin, CAInfo cainfo) throws AuthorizationDeniedException, CAExistsException,
+            CryptoTokenOfflineException, InvalidAlgorithmException {
+      if (log.isTraceEnabled()) {
             log.trace(">createCA: " + cainfo.getName());
         }
         int castatus = CAConstants.CA_OFFLINE;
@@ -1729,7 +1728,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @Override
     public void importCAFromKeys(AuthenticationToken authenticationToken, String caname, String keystorepass, Certificate[] signatureCertChain,
             PublicKey p12PublicSignatureKey, PrivateKey p12PrivateSignatureKey, PrivateKey p12PrivateEncryptionKey, PublicKey p12PublicEncryptionKey)
-            throws CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException, IllegalCryptoTokenException, CADoesntExistsException,
+            throws CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException, IllegalCryptoTokenException,
             AuthorizationDeniedException, CAExistsException, CAOfflineException {
         // Transform into token
         int caId = StringTools.strip(CertTools.getSubjectDN(signatureCertChain[0])).hashCode(); // caid
@@ -1878,7 +1877,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @Override
     public void importCAFromHSM(AuthenticationToken authenticationToken, String caname, Certificate[] signatureCertChain, String catokenpassword,
             String catokenclasspath, String catokenproperties) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
-            IllegalCryptoTokenException, CADoesntExistsException, AuthorizationDeniedException, CAExistsException, CAOfflineException,
+            IllegalCryptoTokenException, AuthorizationDeniedException, CAExistsException, CAOfflineException,
             NoSuchSlotException {
         Certificate cacert = signatureCertChain[0];
         int caId = StringTools.strip(CertTools.getSubjectDN(cacert)).hashCode();
@@ -1950,14 +1949,18 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     /**
      * @param keyAlgorithm keyalgorithm for extended CA services, OCSP, XKMS, CMS. Example AlgorithmConstants.KEYALGORITHM_RSA
      * @param keySpecification keyspecification for extended CA services, OCSP, XKMS, CMS. Example 2048
-     * @throws AuthorizationDeniedException
+     * @throws AuthorizationDeniedException if imported CA was signed by a CA user does not have authorization to.
      * @throws CADoesntExistsException if superCA does not exist
      * @throws CAExistsException if the CA already exists
      * @throws CAOfflineException if CRLs can not be generated because imported CA did not manage to get online
+     * @throws CryptoTokenAuthenticationFailedException if authentication to crypto token failed
+     * @throws IllegalCryptoTokenException if CA certificate was not self signed, and chain length > 1 
+     * @throws CryptoTokenOfflineException if crypto token is unavailable. 
+     * 
      */
     private CA importCA(AuthenticationToken admin, String caname, String keystorepass, Certificate[] signatureCertChain, CAToken catoken,
             String keyAlgorithm, String keySpecification) throws CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException,
-            IllegalCryptoTokenException, AuthorizationDeniedException, CADoesntExistsException, CAExistsException, CAOfflineException {
+            IllegalCryptoTokenException, AuthorizationDeniedException, CAExistsException, CAOfflineException {
         // Create a new CA
         int signedby = CAInfo.SIGNEDBYEXTERNALCA;
         int certprof = CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA;
@@ -1982,15 +1985,17 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                         + ": certificate is not self-signed. Check " + "certificate chain in PKCS#12");
             }
         } else if (signatureCertChain.length > 1) {
-            Collection<Integer> cas = caSession.getAvailableCAs();
-            Iterator<Integer> iter = cas.iterator();
             // Assuming certificate chain in forward direction (from target
             // to most-trusted CA). Multiple CA chains can contains the
             // issuer certificate; so only the chain where target certificate
             // is the issuer will be selected.
-            while (iter.hasNext()) {
-                int caid = iter.next().intValue();
-                CAInfo superCaInfo = caSession.getCAInfo(admin, caid);
+            for(int caid : caSession.getAvailableCAs()) {  
+                CAInfo superCaInfo;
+                try {
+                    superCaInfo = caSession.getCAInfo(admin, caid);
+                } catch (CADoesntExistsException e) {
+                    throw new IllegalStateException("Newly retrieved CA " +  caid + " does not exist in the system.");
+                }
                 Iterator<Certificate> i = superCaInfo.getCertificateChain().iterator();
                 if (i.hasNext()) {
                     Certificate superCaCert = i.next();
@@ -2095,8 +2100,13 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         caSession.addCA(admin, ca);
 
         // Create initial CRLs
-        publishingCrlSession.forceCRL(admin, ca.getCAId());
-        publishingCrlSession.forceDeltaCRL(admin, ca.getCAId());
+        try {
+            publishingCrlSession.forceCRL(admin, ca.getCAId());
+            publishingCrlSession.forceDeltaCRL(admin, ca.getCAId());
+        } catch (CADoesntExistsException e) {
+            throw new IllegalStateException("Newly created CA with ID: " + ca.getCAId() + " was not found in database." );
+        }
+        
         return ca;
     }
 

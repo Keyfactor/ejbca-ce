@@ -10,86 +10,134 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package org.ejbca.ui.cli;
 
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.security.cert.Certificate;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.io.IOException;
+import java.security.cert.CertificateException;
+import java.util.Arrays;
 
+import org.apache.log4j.Logger;
+import org.cesecore.CesecoreException;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.FileTools;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.command.EjbcaCliUserCommandBase;
+import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * Issue a certificate for a user based on a CSR
  *
  * @version $Id$
  */
-public class CreateCertCommand extends BaseCommand {
-	
-	public String getMainCommand() { return null; }
-	public String getSubCommand() { return "createcert"; }
-	public String getDescription() { return "Issue a certificate for a user based on a CSR"; }
+public class CreateCertCommand extends EjbcaCliUserCommandBase {
 
-	public void execute(String[] args) throws ErrorAdminCommandException {
-	    try {
-            args = parseUsernameAndPasswordFromArgs(args);
-        } catch (CliUsernameException e) {
-            return;
-        }
+    private static final Logger log = Logger.getLogger(CreateCertCommand.class);
 
-        if ( args.length != 5 ) {
-            getLogger().info("Usage: " + getCommand() + " <username> <password> <csr.pem> <cert.pem>");
-            getLogger().info(" <csr.pem> must be a PKCS#10 request in PEM format.");
-            getLogger().info(" The issued certificate will be written to <cert.pem>.");
-            return;
-        }
-        String username = args[1];
-        String password = args[2];
-        String csr = args[3];
-        String certf = args[4];
-        try {
-			byte[] bytes = FileTools.readFiletoBuffer(csr);
-			RequestMessage req = RequestMessageUtils.parseRequestMessage(bytes);
-			if (req instanceof PKCS10RequestMessage) {
-				PKCS10RequestMessage p10req = (PKCS10RequestMessage) req;
-				p10req.setUsername(username);
-				p10req.setPassword(password);
-			} else {
-				getLogger().error("Input file '"+csr+"' is not a PKCS#10 request.");
-				return;
-			}
-			// Call signsession to create a certificate
-			ResponseMessage resp = ejb.getRemoteSession(SignSessionRemote.class).createCertificate(getAuthenticationToken(cliUserName, cliPassword), req, X509ResponseMessage.class, null);
-			byte[] respBytes = resp.getResponseMessage();
-			// Convert to PEM
-			Certificate cert = CertTools.getCertfromByteArray(respBytes);
-			Collection<Certificate> certs = new ArrayList<Certificate>();
-			certs.add(cert);
-			byte[] pembytes = CertTools.getPemFromCertificateChain(certs);
-			// Write the resulting cert to file
-			FileOutputStream fos = new FileOutputStream(certf);
-			fos.write(pembytes);
-			fos.close();
-			getLogger().info("PEM certificate written to file '"+certf+"'");
-		} catch (Exception e) {
-			throw new ErrorAdminCommandException(e);
-		}
-	}
+    private static final String ENTITY_NAME = "--entity-username";
+    private static final String ENTITY_PASSWORD = "--entity-password";
+    private static final String CSR = "-c";
+    private static final String DESTINATION_FILE = "-f";
+
+    //Register parameters 
+    {
+        registerParameter(new Parameter(ENTITY_NAME, "End entity username", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "The username of an end entity"));
+        registerParameter(new Parameter(ENTITY_PASSWORD, "End entity password", MandatoryMode.MANDATORY, StandaloneMode.ALLOW,
+                ParameterMode.ARGUMENT, "The password of the specified end entity."));
+        registerParameter(new Parameter(CSR, "Certificate Request", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Must be a PKCS#10 request in PEM format."));
+        registerParameter(new Parameter(DESTINATION_FILE, "Destination file", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "The issued certificate will be written to this file."));
+    }
+
     @Override
-    public String[] getMainCommandAliases() {
-        return new String[]{};
+    public String getMainCommand() {
+        return "createcert";
+    }
+
+    @Override
+    public String getCommandDescription() {
+        return "Issue a certificate for a user based on a CSR";
+    }
+
+    @Override
+    public String getFullHelpText() {
+        return "Issue a certificate for a user based on a CSR";
+    }
+
+    @Override
+    public CommandResult execute(ParameterContainer parameters) {
+        String username = parameters.get(ENTITY_NAME);
+        String password = parameters.get(ENTITY_PASSWORD);
+        String csr = parameters.get(CSR);
+        String certf = parameters.get(DESTINATION_FILE);
+
+        byte[] bytes;
+        try {
+            bytes = FileTools.readFiletoBuffer(csr);
+        } catch (FileNotFoundException e) {
+            log.error("File " + csr + " not found.");
+            return CommandResult.FUNCTIONAL_FAILURE;
+        }
+        RequestMessage req = RequestMessageUtils.parseRequestMessage(bytes);
+        if (req instanceof PKCS10RequestMessage) {
+            PKCS10RequestMessage p10req = (PKCS10RequestMessage) req;
+            p10req.setUsername(username);
+            p10req.setPassword(password);
+        } else {
+            log.error("Input file '" + csr + "' is not a PKCS#10 request.");
+            return CommandResult.FUNCTIONAL_FAILURE;
+        }
+        final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
+        // Call signsession to create a certificate
+        ResponseMessage resp;
+        try {
+            resp = signSession.createCertificate(getAuthenticationToken(), req, X509ResponseMessage.class, null);
+        } catch (EjbcaException e) {
+            throw new IllegalStateException("Exception was thrown during certificate creation", e);
+        } catch (CesecoreException e) {
+            throw new IllegalStateException("Exception was thrown during certificate creation", e);
+        } catch (AuthorizationDeniedException ee) {
+            log.error("CLI user with username " + parameters.get(USERNAME_KEY) + " was not authorized to create a certificate.");
+            return CommandResult.AUTHORIZATION_FAILURE;
+        }
+        byte[] pembytes;
+        try {
+            pembytes = CertTools.getPemFromCertificateChain(Arrays.asList(((X509ResponseMessage) resp).getCertificate()));
+        } catch (CertificateException e) {
+            throw new IllegalStateException("Newly created certificate could not be parsed. This should not happen.", e);
+        }
+        // Write the resulting cert to file
+        try {
+            FileOutputStream fos = new FileOutputStream(certf);
+            fos.write(pembytes);
+            fos.close();
+        } catch (IOException e) {
+            throw new IllegalStateException("Could not write to certificate file " + certf, e);
+        }
+        log.info("PEM certificate written to file '" + certf + "'");
+        return CommandResult.SUCCESS;
     }
     
     @Override
-    public String[] getSubCommandAliases() {
-        return new String[]{};
+    protected Logger getLogger() {
+        return log;
     }
+
 }

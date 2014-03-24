@@ -13,62 +13,74 @@
 
 package org.ejbca.ui.cli;
 
+import org.apache.log4j.Logger;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.upgrade.UpgradeSessionRemote;
-
-
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.command.EjbcaCommandBase;
+import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * Implements call to the upgrade function
  * 
  * @version $Id$
  */
-public class UpgradeCommand extends BaseCommand {
+public class UpgradeCommand extends EjbcaCommandBase {
 
-    public String getMainCommand() {
-        return null;
+    private static final Logger log = Logger.getLogger(UpgradeCommand.class);
+
+    private static final String DATABASE_KEY = "-d";
+    private static final String FROM_VERSION_KEY = "-v";
+    private static final String IS_POST_UPGRADE = "*";
+
+    {
+        registerParameter(new Parameter(DATABASE_KEY, "Database type", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "The databse type."));
+        registerParameter(new Parameter(FROM_VERSION_KEY, "From version", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "From which version of EJBCA"));
+        registerParameter(new Parameter(IS_POST_UPGRADE, "Add this flag if running post upgrade", MandatoryMode.OPTIONAL, StandaloneMode.FORBID,
+                ParameterMode.FLAG, "Set this flag when performing post upgrade."));
     }
 
-    public String getSubCommand() {
+    @Override
+    public String getMainCommand() {
         return "upgrade";
     }
 
-    public String getDescription() {
-        return "(Use 'ant upgrade' instead of running this directly)";
-    }
-
-    public void execute(String[] args) throws ErrorAdminCommandException {
-             
-        if (args.length < 3) {
-            getLogger().error("Insufficient information to perform upgrade.");
-            return;
-        }
-        final String database = args[1];
-        final String upgradeFromVersion = args[2];
-        final boolean isPost = args.length > 3;
-        getLogger().debug(args[0] + " ejbcaDB='" + database + "' ejbcaUpgradeFromVersion='" + upgradeFromVersion + "' isPost='" + isPost + "'");
-        // Check pre-requisites
-        /*if (!appServerRunning()) {
-            getLogger().error("The application server must be running.");
-            return;
-        }*/
+    @Override
+    public CommandResult execute(ParameterContainer parameters) {
+        final String database = parameters.get(DATABASE_KEY);
+        final String upgradeFromVersion = parameters.get(FROM_VERSION_KEY);
+        final boolean isPost = parameters.get(IS_POST_UPGRADE) != null;
+        log.debug(getMainCommand() + " ejbcaDB='" + database + "' ejbcaUpgradeFromVersion='" + upgradeFromVersion + "' isPost='" + isPost + "'");
         // Upgrade the database
-
-        final boolean ret = ejb.getRemoteSession(UpgradeSessionRemote.class).upgrade(database, upgradeFromVersion, isPost);
+        final boolean ret = EjbRemoteHelper.INSTANCE.getRemoteSession(UpgradeSessionRemote.class).upgrade(database, upgradeFromVersion, isPost);
         if (ret) {
-            getLogger().info("Upgrade completed.");
+            log.info("Upgrade completed.");
         } else {
-            getLogger().error("Upgrade not performed, see server log for details.");
+            log.error("Upgrade not performed, see server log for details.");
+            return CommandResult.FUNCTIONAL_FAILURE;
         }
+        return CommandResult.SUCCESS;
 
     }
 
     @Override
-    public String[] getMainCommandAliases() {
-        return new String[]{};
+    public String getCommandDescription() {
+        return "Upgrade command. Use 'ant upgrade' instead of running this directly";
+    }
+
+    @Override
+    public String getFullHelpText() {
+        return "Upgrade command. Use 'ant upgrade' instead of running this directly";
     }
     
     @Override
-    public String[] getSubCommandAliases() {
-        return new String[]{};
+    protected Logger getLogger() {
+        return log;
     }
 }

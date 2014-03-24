@@ -28,7 +28,7 @@ public class ClearCacheCommandTest {
 
     @Test
     public void testWithAllOptions() {
-        String[] args = new String[] { "clearcache", "-all", "-globalconf", "-eeprofile", "-certprofile", "-authorization", "-ca" };
+        String[] args = new String[] { "-all", "-globalconf", "-eeprofile", "-certprofile", "-authorization", "-ca" };
         try {
             command.execute(args);
         } catch (Exception e) {

@@ -61,6 +61,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
@@ -77,9 +78,9 @@ import org.junit.Test;
 public class RevokeEndEntityCommandTest extends CaTestCase {
 
     private static final String USER_NAME = "RevokeEndEntityCommandTest_user1";
-    private static final String[] HAPPY_PATH_REVOKE_ONHOLD_ARGS = { "revokeendentity", USER_NAME, String.valueOf(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) };
-    private static final String[] HAPPY_PATH_REVOKE_PERMANENT_ARGS = { "unrevokeendentity", USER_NAME, String.valueOf(RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE) };
-    private static final String[] HAPPY_PATH_UNREVOKE_ARGS = { "unrevokeendentity", USER_NAME, String.valueOf(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) };
+    private static final String[] HAPPY_PATH_REVOKE_ONHOLD_ARGS = { USER_NAME, String.valueOf(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) };
+    private static final String[] HAPPY_PATH_REVOKE_PERMANENT_ARGS = { USER_NAME, String.valueOf(RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE) };
+    private static final String[] HAPPY_PATH_UNREVOKE_ARGS = { USER_NAME };
 
     private int caid = getTestCAId();
 
@@ -148,7 +149,7 @@ public class RevokeEndEntityCommandTest extends CaTestCase {
             assertEquals(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, info.getRevocationReason());
 
             // Now unrevoke, will not change status of user, only of the certificate
-            command1.execute(HAPPY_PATH_UNREVOKE_ARGS);
+            assertEquals(CommandResult.SUCCESS, command1.execute(HAPPY_PATH_UNREVOKE_ARGS));
             col = eeSession.query(admin, query, caauthstring, eeprofilestr, 0);
             assertEquals(1, col.size());
             eei = col.iterator().next();

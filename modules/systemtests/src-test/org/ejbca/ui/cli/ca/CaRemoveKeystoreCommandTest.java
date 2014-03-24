@@ -13,6 +13,7 @@
 
 package org.ejbca.ui.cli.ca;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
@@ -28,6 +29,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,17 +43,19 @@ public class CaRemoveKeystoreCommandTest {
 
     private static final String CA_NAME = "1327removekeystore";
     private static final String tempDir = System.getProperty("java.io.tmpdir");
-    private static final String KEYSTOREFILE = tempDir+"/1327removekeystore.p12";
+    private static final String KEYSTOREFILE = tempDir + "/1327removekeystore.p12";
 
-    private static final String[] EXPORT_HAPPY_PATH_ARGS = { "exportca", "-kspassword", "foo123", CA_NAME, KEYSTOREFILE};
-    private static final String[] REMOVE_HAPPY_PATH_ARGS = { "removekeystore", CA_NAME};
-    private static final String[] RESTORE_HAPPY_PATH_ARGS = { "restorekeystore", "-kspassword", "foo123", CA_NAME, KEYSTOREFILE, "SignatureKeyAlias", "EncryptionKeyAlias"};
+    private static final String[] EXPORT_HAPPY_PATH_ARGS = { "-kspassword", "foo123", CA_NAME, KEYSTOREFILE };
+    private static final String[] REMOVE_HAPPY_PATH_ARGS = { CA_NAME };
+    private static final String[] RESTORE_HAPPY_PATH_ARGS = { "-kspassword", "foo123", CA_NAME, KEYSTOREFILE, "-s", "SignatureKeyAlias", "-e",
+            "EncryptionKeyAlias" };
 
     private CaExportCACommand caExportCaCommand;
     private CaRemoveKeyStoreCommand caRemoveKeystoreCommand;
     private CaRestoreKeyStoreCommand caRestoreKeystoreCommand;
-    
-    private AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaRemoveKeystoreCommandTest"));
+
+    private AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(
+            new UsernamePrincipal("CaRemoveKeystoreCommandTest"));
 
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private CryptoTokenManagementSessionRemote tokenSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
@@ -80,23 +84,23 @@ public class CaRemoveKeystoreCommandTest {
             CryptoTokenInfo tokenInfo = tokenSession.getCryptoTokenInfo(authenticationToken, cryptoTokenId);
             assertNotNull("CryptoTokenInfo of a new CA should not be null", tokenInfo);
             // First we have to export the CA token keystore so we can import it back later
-            caExportCaCommand.execute(EXPORT_HAPPY_PATH_ARGS);
+            assertEquals(CommandResult.SUCCESS, caExportCaCommand.execute(EXPORT_HAPPY_PATH_ARGS));
             // Second remove the keystore of the CA
-            caRemoveKeystoreCommand.execute(REMOVE_HAPPY_PATH_ARGS);
+            assertEquals(CommandResult.SUCCESS, caRemoveKeystoreCommand.execute(REMOVE_HAPPY_PATH_ARGS));
             info = caSession.getCAInfo(authenticationToken, CA_NAME);
             cryptoTokenId = info.getCAToken().getCryptoTokenId();
             tokenInfo = tokenSession.getCryptoTokenInfo(authenticationToken, cryptoTokenId);
             assertNull("CryptoTokenInfo of a CA with removed keystore should be null", tokenInfo);
             // Third restore the keystore of the CA again
-            caRestoreKeystoreCommand.execute(RESTORE_HAPPY_PATH_ARGS);
+            assertEquals(CommandResult.SUCCESS, caRestoreKeystoreCommand.execute(RESTORE_HAPPY_PATH_ARGS));
             info = caSession.getCAInfo(authenticationToken, CA_NAME);
             cryptoTokenId = info.getCAToken().getCryptoTokenId();
             tokenInfo = tokenSession.getCryptoTokenInfo(authenticationToken, cryptoTokenId);
-            assertNotNull("CryptoTokenInfo of a CA with restored keystore should not be null", tokenInfo);            
+            assertNotNull("CryptoTokenInfo of a CA with restored keystore should not be null", tokenInfo);
         } finally {
             File f = new File(KEYSTOREFILE);
             f.deleteOnExit();
         }
     }
-    
+
 }

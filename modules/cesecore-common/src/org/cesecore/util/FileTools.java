@@ -99,7 +99,7 @@ public abstract class FileTools {
      * @return byte[] containing the contents of the file.
      * @throws FileNotFoundException if file was not found
      *
-     * @throws IOException if the file does not exist or cannot be read.
+     * @throws FileNotFoundException if the file does not exist or cannot be read.
      */
     public static byte[] readFiletoBuffer(final String file) throws FileNotFoundException {
         final InputStream in = new FileInputStream(file);

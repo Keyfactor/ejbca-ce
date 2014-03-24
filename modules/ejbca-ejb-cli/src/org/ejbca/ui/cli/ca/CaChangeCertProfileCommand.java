@@ -14,8 +14,9 @@
 package org.ejbca.ui.cli.ca;
 
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -24,8 +25,12 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRem
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.ui.cli.CliUsernameException;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * Changes the certificate profile of a CA.
@@ -34,97 +39,95 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class CaChangeCertProfileCommand extends BaseCaAdminCommand {
 
-    @Override
-	public String getSubCommand() { return "changecertprofile"; }
-    @Override
-	public String getDescription() { return "Changes the certificate profile of a CA"; }
+    private static final String CA_NAME_KEY = "--caname";
+    private static final String CERTIFICATE_PROFILE_NAME = "--certprofile";
+
+    private static final Logger log = Logger.getLogger(CaChangeCertProfileCommand.class);
+
+    {
+        registerParameter(new Parameter(CA_NAME_KEY, "CA Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "The name of the CA."));
+        registerParameter(new Parameter(CERTIFICATE_PROFILE_NAME, "Certificate Progile Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW,
+                ParameterMode.ARGUMENT, "The name of the certificate profile"));
+    }
 
     @Override
-    public void execute(String[] args) throws ErrorAdminCommandException {
-		getLogger().trace(">execute()");
-		CryptoProviderTools.installBCProvider(); // need this for CVC certificate
-		
+    public String getMainCommand() {
+        return "changecertprofile";
+    }
+
+    @Override
+    public CommandResult execute(ParameterContainer parameters) {
+        log.trace(">execute()");
+        CryptoProviderTools.installBCProvider(); // need this for CVC certificate
+
         try {
-            args = parseUsernameAndPasswordFromArgs(args);
-        } catch (CliUsernameException e) {
-            return;
-        }
-		
-		if ( args.length<3 ) {
-			usage(cliUserName, cliPassword);
-			return;
-		}
-		try {
-		    final String caName = args[1];
-		    {
-		        final CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(cliUserName, cliPassword), caName);
-		        final String certProfileName = args[2];
-		        getLogger().debug("Searching for Certificate Profile " + certProfileName);
-		        final int certificateprofileid = ejb.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfileId(certProfileName);
-		        if (certificateprofileid == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
-		        	getLogger().error("Certificate Profile " + certProfileName + " does not exist.");
-		            throw new Exception("Certificate Profile '" + certProfileName + "' does not exist.");
-		        }
-                cainfo.setCertificateProfileId(certificateprofileid);
-                ejb.getRemoteSession(CAAdminSessionRemote.class).editCA(getAuthenticationToken(cliUserName, cliPassword), cainfo);
-		    }{
-                final CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(cliUserName, cliPassword), caName);
-                getLogger().info("Certificate profile for CA changed:");
-                getLogger().info("CA Name: " + caName);
-                getLogger().info("Certificate Profile: " + ejb.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfileName(cainfo.getCertificateProfileId()));
-		    }
-		} catch (Exception e) {
-			getLogger().error(e.getMessage());
-			usage(cliUserName, cliPassword);
-		}
-		getLogger().trace("<execute()");
-	}
-
-	protected void usage(String cliUserName, String cliPassword) {
-		getLogger().info("Description: " + getDescription());
-		getLogger().info("Usage: " + getCommand() + " <caname> <certificateprofile>");
-		String existingCasInfo = " Existing CAs: ";
-		Collection<Integer> cas = null;
-		try {
-			// Print available CAs
-			cas = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCAs(getAuthenticationToken(cliUserName, cliPassword));
-			boolean first = true;
-			for (Integer caid : cas) {
-				if (first) {
-					first = false;					
-				} else {
-					existingCasInfo += ", ";
-				}
-				CAInfo info = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(cliUserName, cliPassword), caid);
-				existingCasInfo += info.getName();				
-			}
-		} catch (Exception e) {
-			existingCasInfo += "<unable to fetch available CA>";
-		}
-		getLogger().info(existingCasInfo);
-		try {
-			// Print available Root CA and Sub CA profiles
-			Collection<Integer> cpssub = ejb.getRemoteSession(CertificateProfileSessionRemote.class).getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_SUBCA, cas);
-			Collection<Integer> cpsroot = ejb.getRemoteSession(CertificateProfileSessionRemote.class).getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_ROOTCA, cas);
-			HashMap<String,Collection<Integer>> cps = new HashMap<String,Collection<Integer>>();
-			cps.put("Root CA profiles: ", cpsroot);
-			cps.put("Sub CA profiles: ", cpssub);
-            for (String type : cps.keySet()) {
-                String profileInfo = type;
-                Collection<Integer> col = cps.get(type);
-                boolean first = true;
-                for (Integer profid : col) {
-                    if (first) {
-                        first = false;
-                    } else {
-                        profileInfo += ", ";
-                    }
-                    profileInfo += ejb.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfileName(profid);
+            final String caName = parameters.get(CA_NAME_KEY);
+            {
+                final CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caName);
+                final String certProfileName = parameters.get(CERTIFICATE_PROFILE_NAME);
+                log.debug("Searching for Certificate Profile " + certProfileName);
+                final int certificateprofileid = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class)
+                        .getCertificateProfileId(certProfileName);
+                if (certificateprofileid == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
+                    log.error("Certificate Profile " + certProfileName + " does not exist.");
+                    throw new Exception("Certificate Profile '" + certProfileName + "' does not exist.");
                 }
-                getLogger().info(profileInfo);
+                cainfo.setCertificateProfileId(certificateprofileid);
+                EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class).editCA(getAuthenticationToken(), cainfo);
             }
-		} catch (Exception e) {
-			getLogger().error("<unable to fetch available certificate profile>");
-		}
-	}
+            {
+                final CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caName);
+                log.info("Certificate profile for CA changed:");
+                log.info("CA Name: " + caName);
+                log.info("Certificate Profile: "
+                        + EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfileName(
+                                cainfo.getCertificateProfileId()));
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return CommandResult.FUNCTIONAL_FAILURE;
+        }
+        log.trace("<execute()");
+        return CommandResult.SUCCESS;
+    }
+
+    @Override
+    public String getCommandDescription() {
+        return "Changes the certificate profile of a CA.";
+    }
+
+    @Override
+    public String getFullHelpText() {
+        StringBuffer sb = new StringBuffer();
+        sb.append(getCommandDescription() + "\n\n");
+        sb.append(getCaList());
+        List<Integer> cas = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCAs(getAuthenticationToken());
+        // Print available Root CA and Sub CA profiles
+        Collection<Integer> cpssub = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class)
+                .getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_SUBCA, cas);
+        Collection<Integer> cpsroot = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class)
+                .getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_ROOTCA, cas);
+        sb.append("Root CA profiles:\n");
+        StringBuilder rootCaProfiles = new StringBuilder();
+        for (Integer id : cpsroot) {
+            rootCaProfiles.append("   "
+                    + EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfileName(id) + "\n");
+        }
+        sb.append(rootCaProfiles);
+        sb.append("Sub CA profiles:\n");
+        StringBuilder subCaProfiles = new StringBuilder();
+        for (Integer id : cpssub) {
+            subCaProfiles.append("   "
+                    + EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfileName(id) + "\n");
+        }
+        subCaProfiles.append("\n");
+        sb.append(subCaProfiles);
+        return sb.toString();
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return log;
+    }
 }

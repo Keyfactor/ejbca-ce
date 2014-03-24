@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -29,140 +30,169 @@ import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingProperty;
 import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
-import org.ejbca.util.CliTools;
+import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * See getDescription().
  * 
  * @version $Id$
  */
-public class InternalKeyBindingModifyCommand extends BaseInternalKeyBindingCommand {
+public class InternalKeyBindingModifyCommand extends RudInternalKeyBindingCommand {
+
+    private static final Logger log = Logger.getLogger(InternalKeyBindingModifyCommand.class);
+
+    private static final String NEXTKEYPAIR_KEY = "--nextkeypair";
+    private static final String ADDTRUST_KEY = "--addtrust";
+    private static final String REMOVETRUST_KEY = "--removetrust";
+
+    private static final String TRUSTARGUMENT_SEPARATOR = ",";
+
+    // TODO: Implement escape characters for the trusts. Both ',' and ';' are valid in CA names. 
+    // TODO: Test adding and removing multiple trusts
+
+    {
+        registerParameter(new Parameter(NEXTKEYPAIR_KEY, "Alias", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "Use of setting the name of the next key pair"));
+        registerParameter(new Parameter(
+                ADDTRUST_KEY,
+                "TrustEntry",
+                MandatoryMode.OPTIONAL,
+                StandaloneMode.FORBID,
+                ParameterMode.ARGUMENT,
+                "Adds trust entries to the given keybinding. Trust entries can be of the form <CAName[;CertificateSerialNumber]> where the serialnumber is in hex and optional. "
+                        + "Multiple trust entries can be added by separating them with a ',' i.e. <CA1[;CertificateSerialNumber],CA2[;CertificateSerialNumber]>"));
+        registerParameter(new Parameter(
+                REMOVETRUST_KEY,
+                "TrustEntry",
+                MandatoryMode.OPTIONAL,
+                StandaloneMode.FORBID,
+                ParameterMode.ARGUMENT,
+                "Removes trust entries to the given keybinding. Trust entries can be of the form <CAName[;CertificateSerialNumber]> where the serialnumber is in hex and optional. "
+                        + "Multiple trust entries can be added by separating them with a ',' i.e. <CA1[;CertificateSerialNumber],CA2[;CertificateSerialNumber]>"));
+        //Register type specific properties dynamically
+        Map<String, Map<String, InternalKeyBindingProperty<? extends Serializable>>> typesAndProperties = EjbRemoteHelper.INSTANCE.getRemoteSession(
+                InternalKeyBindingMgmtSessionRemote.class).getAvailableTypesAndProperties();
+        for (Entry<String, Map<String, InternalKeyBindingProperty<? extends Serializable>>> entry : typesAndProperties.entrySet()) {
+            for (InternalKeyBindingProperty<? extends Serializable> property : entry.getValue().values()) {
+                if (isParameterRegistered("-"+property.getName())) {
+                    //Different properties could contain the same keyword. Simply use the same one. 
+                    continue;
+                }
+                Parameter parameter = new Parameter("-"+property.getName(), "", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT, "");
+                parameter.setAllowList(false);
+                registerParameter(parameter);
+            }
+        }
+    }
 
     @Override
-    public String getSubCommand() {
+    public String getMainCommand() {
         return "modify";
     }
 
     @Override
-    public String getDescription() {
-        return "Modify an existing InternalKeyBinding.";
-    }
+    public CommandResult executeCommand(Integer internalKeyBindingId, ParameterContainer parameters) throws AuthorizationDeniedException, Exception {
+        final InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE
+                .getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
+        final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+        final InternalKeyBinding internalKeyBinding = internalKeyBindingMgmtSession
+                .getInternalKeyBinding(getAdmin(), internalKeyBindingId.intValue());
 
-    @Override
-    public void executeCommand(Integer internalKeyBindingId, String[] args) throws AuthorizationDeniedException, Exception {
-        final InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = ejb.getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
-        final CaSessionRemote caSession = ejb.getRemoteSession(CaSessionRemote.class);
-        if (args.length < 3) {
-            getLogger().info("Description: " + getDescription());
-            getLogger().info("Usage: " + getCommand() + " <name> [--nextkeypair nextKeyPairAlias or \"null\"] [--removetrust trustEntry ...] [--addtrust trustEntry ...] [--property key1=value1]");
-            getLogger().info(" trustEntry is in the form <CAName[;CertificateSerialNumber]> where the serialnumber is in hex and optional.");
-            getLogger().info(" Multiple --addtrust, --removetrust and --property arguments are allowed.");
-            getLogger().info("");
-            getLogger().info("OcspKeyBinding example: " + getCommand() + " OcspKeyBinding1 --nextkeypair nextSigningKey --property maxAge=30 --property untilNextUpdate=30");
-            getLogger().info("");
-            showTypesProperties();
-            return;
-        }
-        final List<String> argsList = CliTools.getAsModifyableList(args);
-        // Extract properties
-        final Map<String,String> propertyMap = new HashMap<String,String>();
-        while (true) {
-            final String propertyArg = CliTools.getAndRemoveParameter("--property", argsList);
-            if (propertyArg == null) {
-                break;
+        // Extract properties      
+        final Map<String, String> propertyMap = new HashMap<String, String>();
+        //Get dynamically loaded properties
+        Map<String, Map<String, InternalKeyBindingProperty<? extends Serializable>>> typesAndProperties = EjbRemoteHelper.INSTANCE.getRemoteSession(
+                InternalKeyBindingMgmtSessionRemote.class).getAvailableTypesAndProperties();
+        for (String propertyName : typesAndProperties.get(internalKeyBinding.getImplementationAlias()).keySet()) {
+            if (parameters.containsKey("-"+propertyName)) {
+                propertyMap.put(propertyName, parameters.get("-"+propertyName));
             }
-            int indexOfEqualsSign = propertyArg.indexOf('=');
-            if (indexOfEqualsSign == -1) {
-                getLogger().info(" Ignoring --property with value " + propertyArg + ". The correct format is \"key=value\"");
-                continue;
-            }
-            String key = propertyArg.substring(0, indexOfEqualsSign);
-            String value = propertyArg.substring(indexOfEqualsSign+1);
-            propertyMap.put(key, value);
         }
         // Extract remove trust entries
         final List<InternalKeyBindingTrustEntry> removeTrustList = new ArrayList<InternalKeyBindingTrustEntry>();
-        while (true) {
-            final String trustArg = CliTools.getAndRemoveParameter("--removetrust", argsList);
-            if (trustArg == null) {
-                break;
-            }
-            String value;
-            String key;
-            int indexOfEqualsSign = trustArg.indexOf(';');
-            if (indexOfEqualsSign == -1) {
-                value = null;
-                key = trustArg;
-            } else {
-                key = trustArg.substring(0, indexOfEqualsSign);
-                if (trustArg.length()==indexOfEqualsSign) {
+        final String removeTrustArguments = parameters.get(REMOVETRUST_KEY);
+        if (removeTrustArguments != null) {
+            for (String trustArgument : removeTrustArguments.split(TRUSTARGUMENT_SEPARATOR)) {
+                String value;
+                String key;
+                int indexOfEqualsSign = trustArgument.indexOf(';');
+                if (indexOfEqualsSign == -1) {
                     value = null;
+                    key = trustArgument;
                 } else {
-                    value = trustArg.substring(indexOfEqualsSign+1);
-                }
-            }
-            try {
-                final CAInfo caInfo = caSession.getCAInfo(getAdmin(), key);
-                if (value == null) {
-                    removeTrustList.add(new InternalKeyBindingTrustEntry(Integer.valueOf(caInfo.getCAId()), null));
-                } else {
-                    try {
-                        final BigInteger serialNumber = new BigInteger(value, 16);
-                        removeTrustList.add(new InternalKeyBindingTrustEntry(Integer.valueOf(caInfo.getCAId()), serialNumber));
-                    } catch (NumberFormatException e) {
-                        getLogger().info(" Ignoring trustEntry with invalid certificate serial number: " + value);
+                    key = trustArgument.substring(0, indexOfEqualsSign);
+                    if (trustArgument.length() == indexOfEqualsSign) {
+                        value = null;
+                    } else {
+                        value = trustArgument.substring(indexOfEqualsSign + 1);
                     }
                 }
-            } catch (CADoesntExistsException e) {
-                getLogger().info(" Ignoring trustEntry with unknown CA: " + key);
+                try {
+                    final CAInfo caInfo = caSession.getCAInfo(getAdmin(), key);
+                    if (value == null) {
+                        removeTrustList.add(new InternalKeyBindingTrustEntry(Integer.valueOf(caInfo.getCAId()), null));
+                    } else {
+                        try {
+                            final BigInteger serialNumber = new BigInteger(value, 16);
+                            removeTrustList.add(new InternalKeyBindingTrustEntry(Integer.valueOf(caInfo.getCAId()), serialNumber));
+                        } catch (NumberFormatException e) {
+                            getLogger().info(" Ignoring trustEntry with invalid certificate serial number: " + value);
+                        }
+                    }
+                } catch (CADoesntExistsException e) {
+                    getLogger().info(" Ignoring trustEntry with unknown CA: " + key);
+                }
             }
         }
-        // Extract add trust entries
+     // Extract add trust entries
         final List<InternalKeyBindingTrustEntry> addTrustList = new ArrayList<InternalKeyBindingTrustEntry>();
-        while (true) {
-            final String trustArg = CliTools.getAndRemoveParameter("--addtrust", argsList);
-            if (trustArg == null) {
-                break;
-            }
-            String value;
-            String key;
-            int indexOfEqualsSign = trustArg.indexOf(';');
-            if (indexOfEqualsSign == -1) {
-                value = null;
-                key = trustArg;
-            } else {
-                key = trustArg.substring(0, indexOfEqualsSign);
-                if (trustArg.length()==indexOfEqualsSign) {
+        final String addTrustArguments = parameters.get(ADDTRUST_KEY);
+        if (addTrustArguments != null) {
+            for (String trustArgument : addTrustArguments.split(TRUSTARGUMENT_SEPARATOR)) {
+                String value;
+                String key;
+                int indexOfEqualsSign = trustArgument.indexOf(';');
+                if (indexOfEqualsSign == -1) {
                     value = null;
+                    key = trustArgument;
                 } else {
-                    value = trustArg.substring(indexOfEqualsSign+1);
-                }
-            }
-            try {
-                final CAInfo caInfo = caSession.getCAInfo(getAdmin(), key);
-                if (value == null) {
-                    addTrustList.add(new InternalKeyBindingTrustEntry(Integer.valueOf(caInfo.getCAId()), null));
-                } else {
-                    try {
-                        final BigInteger serialNumber = new BigInteger(value, 16);
-                        addTrustList.add(new InternalKeyBindingTrustEntry(Integer.valueOf(caInfo.getCAId()), serialNumber));
-                    } catch (NumberFormatException e) {
-                        getLogger().info(" Ignoring trustEntry with invalid certificate serial number: " + value);
+                    key = trustArgument.substring(0, indexOfEqualsSign);
+                    if (trustArgument.length() == indexOfEqualsSign) {
+                        value = null;
+                    } else {
+                        value = trustArgument.substring(indexOfEqualsSign + 1);
                     }
                 }
-            } catch (CADoesntExistsException e) {
-                getLogger().info(" Ignoring trustEntry with unknown CA: " + key);
+                try {
+                    final CAInfo caInfo = caSession.getCAInfo(getAdmin(), key);
+                    if (value == null) {
+                        addTrustList.add(new InternalKeyBindingTrustEntry(Integer.valueOf(caInfo.getCAId()), null));
+                    } else {
+                        try {
+                            final BigInteger serialNumber = new BigInteger(value, 16);
+                            addTrustList.add(new InternalKeyBindingTrustEntry(Integer.valueOf(caInfo.getCAId()), serialNumber));
+                        } catch (NumberFormatException e) {
+                            getLogger().info(" Ignoring trustEntry with invalid certificate serial number: " + value);
+                        }
+                    }
+                } catch (CADoesntExistsException e) {
+                    getLogger().info(" Ignoring trustEntry with unknown CA: " + key);
+                } 
             }
         }
         // Extract nextKeyPair
-        final String nextKeyPairAlias = CliTools.getAndRemoveParameter("--nextkeypair", argsList);
-        args = CliTools.getAsArgs(argsList);
+        final String nextKeyPairAlias = parameters.get(NEXTKEYPAIR_KEY);
         boolean modified = false;
         // Perform nextKeyPair changes
-        final InternalKeyBinding internalKeyBinding = internalKeyBindingMgmtSession.getInternalKeyBinding(getAdmin(), internalKeyBindingId.intValue());
-        if (nextKeyPairAlias!=null) {
+        if (nextKeyPairAlias != null) {
             if ("null".equals(nextKeyPairAlias)) {
-                if (internalKeyBinding.getNextKeyPairAlias()==null) {
+                if (internalKeyBinding.getNextKeyPairAlias() == null) {
                     getLogger().info(" No nextKeyPairAlias mapping was currently set.");
                 } else {
                     getLogger().info(" Removing nextKeyPairAlias mapping.");
@@ -170,12 +200,15 @@ public class InternalKeyBindingModifyCommand extends BaseInternalKeyBindingComma
                     modified = true;
                 }
             } else {
-                final List<String> availableKeyPairAliases = ejb.getRemoteSession(CryptoTokenManagementSessionRemote.class).getKeyPairAliases(getAdmin(), internalKeyBinding.getCryptoTokenId());
+                final List<String> availableKeyPairAliases = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class)
+                        .getKeyPairAliases(getAdmin(), internalKeyBinding.getCryptoTokenId());
                 if (internalKeyBinding.getKeyPairAlias().equals(nextKeyPairAlias)) {
-                    getLogger().info(" Ignoring --nextkeypair with value " + nextKeyPairAlias + ". The value is already used as the current keyPairAlias.");
+                    getLogger().info(
+                            " Ignoring --nextkeypair with value " + nextKeyPairAlias + ". The value is already used as the current keyPairAlias.");
                 } else if (!availableKeyPairAliases.contains(nextKeyPairAlias)) {
-                    getLogger().info(" Ignoring --nextkeypair with value " + nextKeyPairAlias + ". The alias is not present in the bound CryptoToken." +
-                            " Available aliases: " + availableKeyPairAliases.toString());
+                    getLogger().info(
+                            " Ignoring --nextkeypair with value " + nextKeyPairAlias + ". The alias is not present in the bound CryptoToken."
+                                    + " Available aliases: " + availableKeyPairAliases.toString());
                 } else {
                     getLogger().info(" Setting nextKeyPairAlias to \"" + nextKeyPairAlias + "\".");
                     internalKeyBinding.setNextKeyPairAlias(nextKeyPairAlias);
@@ -205,25 +238,43 @@ public class InternalKeyBindingModifyCommand extends BaseInternalKeyBindingComma
         internalKeyBinding.setTrustedCertificateReferences(internalKeyBindingTrustEntries);
         // Perform property changes
         Map<String, Serializable> validatedProperties = validateProperties(internalKeyBinding.getImplementationAlias(), propertyMap);
-        if(validatedProperties == null) {
-            return;
+        if (validatedProperties == null) {
+            return CommandResult.FUNCTIONAL_FAILURE;
         }
-        for(Entry<String, Serializable> entry : validatedProperties.entrySet()) {
+        for (Entry<String, Serializable> entry : validatedProperties.entrySet()) {
             InternalKeyBindingProperty<? extends Serializable> oldProperty = internalKeyBinding.getProperty(entry.getKey());
             if (!oldProperty.getValue().equals(entry.getValue())) {
                 internalKeyBinding.setProperty(entry.getKey(), entry.getValue());
                 getLogger().info(" Setting " + entry.getKey() + " to " + String.valueOf(entry.getValue()) + "");
                 modified = true;
             }
-            
+
         }
         // Persist modifications
         if (modified) {
             internalKeyBindingMgmtSession.persistInternalKeyBinding(getAdmin(), internalKeyBinding);
             getLogger().info("InternalKeyBinding with id " + internalKeyBindingId.intValue() + " modified successfully.");
+            return CommandResult.SUCCESS;
         } else {
-            getLogger().info("No changes were made to InternalKeyBinding with id " + internalKeyBindingId.intValue() + ".");
+            getLogger().error("No changes were made to InternalKeyBinding with id " + internalKeyBindingId.intValue() + ".");
+            return CommandResult.FUNCTIONAL_FAILURE;
         }
     }
 
+    @Override
+    public String getCommandDescription() {
+        return "Modify an existing InternalKeyBinding.";
+    }
+
+    @Override
+    public String getFullHelpText() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getCommandDescription() + "Optional Type specific properties are listed below and are written as [propertyname=value].\n");
+        sb.append(showTypesProperties() + "\n");
+        return sb.toString();
+    }
+
+    protected Logger getLogger() {
+        return log;
+    }
 }

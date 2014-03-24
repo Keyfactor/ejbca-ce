@@ -10,18 +10,25 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package org.ejbca.ui.cli.ca;
 
+import org.apache.log4j.Logger;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAConstants;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.ui.cli.CliUsernameException;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * Makes the specified HSM CA offline.
@@ -30,50 +37,76 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class CaDeactivateCACommand extends BaseCaAdminCommand {
 
-    @Override
-	public String getSubCommand() { return "deactivateca"; }
-    @Override
-    public String getDescription() { return "Makes the specified HSM CA offline"; }
+    private static final Logger log = Logger.getLogger(CaDeactivateCACommand.class);
+
+    private static final String CA_NAME_KEY = "--caname";
+
+    {
+        registerParameter(new Parameter(CA_NAME_KEY, "Name of the CA", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "If no caname is given, CRLs will be created for all the CAs where it is neccessary."));
+    }
 
     @Override
-    public void execute(String[] args) throws ErrorAdminCommandException {
+    public String getMainCommand() {
+        return "deactivateca";
+    }
+
+    @Override
+    public CommandResult execute(ParameterContainer parameters) {
+
+        String caname = parameters.get(CA_NAME_KEY);
         try {
-            args = parseUsernameAndPasswordFromArgs(args);
-        } catch (CliUsernameException e) {
-            return;
-        }
-        
-        try {
-            if (args.length < 2) {
-    			getLogger().info("Description: " + getDescription());
-                getLogger().info("Usage: " + getCommand() + " <CA name> ");
-                return;
-            }
-            String caname = args[1];
             CryptoProviderTools.installBCProvider();
             // Get the CAs info and id
-            CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(cliUserName, cliPassword), caname);
-            if(cainfo == null){
-            	getLogger().error("CA " + caname + " cannot be found");	
-            	return;            	
+            CAInfo cainfo;
+            try {
+                cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caname);
+            } catch (CADoesntExistsException e) {
+                log.error("CA " + caname + " cannot be found");
+                return CommandResult.FUNCTIONAL_FAILURE;
             }
-            final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = ejb.getRemoteSession(CryptoTokenManagementSessionRemote.class);
+            final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
+                    .getRemoteSession(CryptoTokenManagementSessionRemote.class);
             final int cryptoTokenId = cainfo.getCAToken().getCryptoTokenId();
-            final boolean tokenOnline = cryptoTokenManagementSession.isCryptoTokenStatusActive(getAuthenticationToken(cliUserName, cliPassword), cryptoTokenId);
+            final boolean tokenOnline = cryptoTokenManagementSession.isCryptoTokenStatusActive(getAuthenticationToken(), cryptoTokenId);
             if (cainfo.getStatus() == CAConstants.CA_ACTIVE || tokenOnline) {
                 if (cainfo.getStatus() == CAConstants.CA_ACTIVE) {
-                    ejb.getRemoteSession(CAAdminSessionRemote.class).deactivateCAService(getAuthenticationToken(cliUserName, cliPassword), cainfo.getCAId());
-                    getLogger().info("CA Service deactivated.");
+                    try {
+                        EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class).deactivateCAService(getAuthenticationToken(),
+                                cainfo.getCAId());
+                    } catch (CADoesntExistsException e) {
+                        throw new IllegalStateException("CA was not found though just retrieved.");
+                    }
+                    log.info("CA Service deactivated.");
                 }
                 if (tokenOnline) {
-                    cryptoTokenManagementSession.deactivate(getAuthenticationToken(cliUserName, cliPassword), cryptoTokenId);
-                    getLogger().info("CA CryptoToken deactivated.");
+                    cryptoTokenManagementSession.deactivate(getAuthenticationToken(), cryptoTokenId);
+                    log.info("CA CryptoToken deactivated.");
                 }
             } else {
-            	getLogger().error("CA Service or CryptoToken must be active for this command to do anything.");
+                log.error("CA Service or CryptoToken must be active for this command to do anything.");
+                return CommandResult.FUNCTIONAL_FAILURE;
             }
-        } catch (Exception e) {
-            throw new ErrorAdminCommandException(e);
+        } catch (AuthorizationDeniedException e) {
+            log.error("CLI User was not authorized to CA " + caname);
+            return CommandResult.AUTHORIZATION_FAILURE;
         }
+        return CommandResult.SUCCESS;
+
+    }
+
+    @Override
+    public String getCommandDescription() {
+        return "Makes the specified HSM CA offline.";
+    }
+
+    @Override
+    public String getFullHelpText() {
+        return getCommandDescription();
+    }
+    
+    @Override
+    protected Logger getLogger() {
+        return log;
     }
 }

@@ -72,7 +72,7 @@ public class CryptoTokenDeactivateCommandTest {
 
     @Test
     public void testCommand() throws ErrorAdminCommandException, AuthorizationDeniedException {
-        String[] args = new String[] { "deactivate", TOKEN_NAME};
+        String[] args = new String[] { TOKEN_NAME};
         command.execute(args);
         CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(authenticationToken, cryptoTokenId);
         assertFalse("Crypto token was not deactivated.", cryptoTokenInfo.isActive());

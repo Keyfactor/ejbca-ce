@@ -73,7 +73,7 @@ public class RequestMessageUtils {
 	 * 
 	 * @return IRequestMessage
 	 */
-	public static RequestMessage parseRequestMessage(byte[] request) throws IOException {
+	public static RequestMessage parseRequestMessage(byte[] request) {
 		RequestMessage ret = null;
 		try {
 			ret = genPKCS10RequestMessage(request);			

@@ -40,9 +40,9 @@ public class ServiceDeleteCommandTest extends ServiceTestCase {
     private ServiceDeleteCommand serviceDeleteCommand;
     private static final String SERVICE_NAME = "TestServiceCLIDelete";
     
-    private static final String[] DELETE_ARGS = { "delete", SERVICE_NAME };
-    private static final String[] NONEXISTENT_ARGS = { "delete", "TestServiceShouldNotExist" };
-    private static final String[] MISSING_NAME_ARGS = { "delete" };
+    private static final String[] DELETE_ARGS = { SERVICE_NAME };
+    private static final String[] NONEXISTENT_ARGS = { "TestServiceShouldNotExist" };
+    private static final String[] MISSING_NAME_ARGS = {};
     
     @Before
     public void setUp() throws Exception {

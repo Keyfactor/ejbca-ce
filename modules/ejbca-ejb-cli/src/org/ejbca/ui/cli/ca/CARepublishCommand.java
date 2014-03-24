@@ -13,6 +13,7 @@
 
 package org.ejbca.ui.cli.ca;
 
+import java.security.cert.CRLException;
 import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
@@ -21,7 +22,10 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateInfo;
@@ -35,9 +39,12 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
-import org.ejbca.ui.cli.CliUsernameException;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
-import org.ejbca.util.CliTools;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * Re-publishes the certificates of all users belonging to a particular CA.
@@ -46,64 +53,69 @@ import org.ejbca.util.CliTools;
  */
 public class CARepublishCommand extends BaseCaAdminCommand {
 
+    private static final Logger log = Logger.getLogger(CARepublishCommand.class);
+
+    private static final String CA_NAME_KEY = "--caname";
+    private static final String ALL_KEY = "-all";
+    private static final String CACERT_KEY = "-cacert";
+    private static final String CACRL_KEY = "-cacrl";
+    private static final String EECERT_KEY = "-eecert";
+
+    {
+        registerParameter(new Parameter(CA_NAME_KEY, "CA Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Name of the CA"));
+        registerParameter(Parameter.createFlag(ALL_KEY,
+                "Publish all certificates for each end entity instead of only the latest (default only publishes the latest)."));
+        registerParameter(Parameter.createFlag(CACERT_KEY, "Publish CA certificate."));
+        registerParameter(Parameter.createFlag(CACRL_KEY, "Publish CA CRL."));
+        registerParameter(Parameter.createFlag(EECERT_KEY, "Publish End Entity certificates."));
+    }
+
     @Override
-    public String getSubCommand() {
+    public String getMainCommand() {
         return "republish";
     }
+
     @Override
-    public String getDescription() {
-        return "Re-publishes the certificates of a CA and/or all users issued by a particular CA";
-    }
-    @Override
-    public void execute(String[] args) throws ErrorAdminCommandException {
+    public CommandResult execute(ParameterContainer parameters) {
+        boolean addAll = parameters.containsKey(ALL_KEY);
+        boolean cacertmode = parameters.containsKey(CACERT_KEY);
+        boolean cacrlmode = parameters.containsKey(CACRL_KEY);
+        boolean eecertmode = parameters.containsKey(EECERT_KEY);
+        String caname = parameters.get(CA_NAME_KEY);
+
         try {
-            args = parseUsernameAndPasswordFromArgs(args);
-        } catch (CliUsernameException e) {
-            return;
-        }
-        
-        try {
-            // Get and remove switches
-            List<String> argsList = CliTools.getAsModifyableList(args);
-            boolean addAll = argsList.remove("-all");
-            boolean cacertmode = argsList.remove("-cacert");
-            boolean cacrlmode = argsList.remove("-cacrl");
-            boolean eecertmode = argsList.remove("-eecert");
-            args = argsList.toArray(new String[argsList.size()]);
-            // Parse the rest of the arguments
-            if (args.length < 2) {
-                getLogger().info("Description: " + getDescription());
-                getLogger().info("Usage: " + getCommand() + " <CA name> [-all]");
-                getLogger().info(" -all   publish all certificates for each end entity instead of only the latest (default only publishes the latest).");
-                getLogger().info(" -cacert   Publish CA certificate.");
-                getLogger().info(" -cacrl    Publish CA CRL.");
-                getLogger().info(" -eecert   Publish End Entity certificates.");
-                getLogger().info("Default if none of cacert, cacrl or eecert is specific is to publish all types, you can specify one or several on the command line.");
-                getLogger().info("Example to only publish CA certificate and CRL, no end entity certificates: ca republish ManagementCA -cacert -cacrl");
-                getLogger().info("Example to only publish CA certificate and CRL, and latest end entity certificates: ca republish ManagementCA");
-                return;
-            }
-            String caname = args[1];
-            
             // Get the CAs info and id
-            CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(cliUserName, cliPassword), caname);
+            CAInfo cainfo;
+            try {
+                cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caname);
+            } catch (CADoesntExistsException e) {
+                getLogger().info("CA with name '" + caname + "' does not exist.");
+                return CommandResult.FUNCTIONAL_FAILURE;
+            }
             if (cainfo == null) {
                 getLogger().info("CA with name '" + caname + "' does not exist.");
-                return;
+                return CommandResult.FUNCTIONAL_FAILURE;
             }
             // If no mode is give we will enable all modes (backwards compatibility for when there were no modes)
             if (!cacertmode && !cacrlmode && !eecertmode) {
                 cacertmode = cacrlmode = eecertmode = true;
             }
-            getLogger().info("Publishing with modes: cacert="+cacertmode+", cacrl="+cacrlmode+", eecert="+eecertmode);
+            getLogger().info("Publishing with modes: cacert=" + cacertmode + ", cacrl=" + cacrlmode + ", eecert=" + eecertmode);
             // Publish the CAs certificate and CRL
             Collection<Certificate> cachain = cainfo.getCertificateChain();
             Iterator<Certificate> caiter = cachain.iterator();
             if (caiter.hasNext()) {
                 final X509Certificate cacert = (X509Certificate) caiter.next();
-                final byte[] crlbytes = ejb.getRemoteSession(CrlStoreSessionRemote.class).getLastCRL(cainfo.getSubjectDN(), false);
+                final byte[] crlbytes = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class).getLastCRL(cainfo.getSubjectDN(),
+                        false);
                 // Get the CRLnumber
-                X509CRL crl = CertTools.getCRLfromByteArray(crlbytes);
+                X509CRL crl;
+                try {
+                    crl = CertTools.getCRLfromByteArray(crlbytes);
+                } catch (CRLException e) {
+                    throw new IllegalStateException("Couldn't deserialize CRL", e);
+                }
                 int crlNumber = CrlExtensions.getCrlNumber(crl).intValue();
                 final Collection<Integer> capublishers = cainfo.getCRLPublishers();
                 // Store cert and CRL in ca publishers.
@@ -111,18 +123,22 @@ public class CARepublishCommand extends BaseCaAdminCommand {
                     String fingerprint = CertTools.getFingerprintAsString(cacert);
                     if (cacertmode) {
                         getLogger().info("Publishing CA certificate to CA publishers.");
-                        String username = ejb.getRemoteSession(CertificateStoreSessionRemote.class).findUsernameByCertSerno(cacert.getSerialNumber(), cacert.getIssuerDN().getName());
-                        CertificateInfo certinfo = ejb.getRemoteSession(CertificateStoreSessionRemote.class).getCertificateInfo(fingerprint);
-                        ejb.getRemoteSession(PublisherSessionRemote.class).storeCertificate(getAuthenticationToken(cliUserName, cliPassword), capublishers, cacert, username, null, cainfo.getSubjectDN(), fingerprint, certinfo
-                                .getStatus(), certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(), certinfo.getTag(),
+                        String username = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class).findUsernameByCertSerno(
+                                cacert.getSerialNumber(), cacert.getIssuerDN().getName());
+                        CertificateInfo certinfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class).getCertificateInfo(
+                                fingerprint);
+                        EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class).storeCertificate(getAuthenticationToken(),
+                                capublishers, cacert, username, null, cainfo.getSubjectDN(), fingerprint, certinfo.getStatus(), certinfo.getType(),
+                                certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(), certinfo.getTag(),
                                 certinfo.getCertificateProfileId(), certinfo.getUpdateTime().getTime(), null);
                         getLogger().info("Certificate published for " + caname);
                     }
                     if (cacrlmode) {
-                        if ( crlbytes!=null && crlbytes.length>0 && crlNumber>0) {
+                        if (crlbytes != null && crlbytes.length > 0 && crlNumber > 0) {
                             getLogger().info("Publishing CRL to CA publishers.");
-                            ejb.getRemoteSession(PublisherSessionRemote.class).storeCRL(getAuthenticationToken(cliUserName, cliPassword), capublishers, crlbytes, fingerprint, crlNumber, cainfo.getSubjectDN());
-                            getLogger().info("CRL with number "+crlNumber+" published for " + caname);
+                            EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class).storeCRL(getAuthenticationToken(), capublishers,
+                                    crlbytes, fingerprint, crlNumber, cainfo.getSubjectDN());
+                            getLogger().info("CRL with number " + crlNumber + " published for " + caname);
                         } else {
                             getLogger().info("CRL not published, no CRL exists for CA.");
                         }
@@ -136,27 +152,32 @@ public class CARepublishCommand extends BaseCaAdminCommand {
 
             if (eecertmode) {
                 // Get all users for this CA
-                Collection<EndEntityInformation> coll = ejb.getRemoteSession(EndEntityManagementSessionRemote.class).findAllUsersByCaId(getAuthenticationToken(cliUserName, cliPassword), cainfo.getCAId());
+                Collection<EndEntityInformation> coll = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class)
+                        .findAllUsersByCaId(getAuthenticationToken(), cainfo.getCAId());
                 Iterator<EndEntityInformation> iter = coll.iterator();
                 while (iter.hasNext()) {
                     EndEntityInformation data = iter.next();
                     getLogger().info(
-                            "User: " + data.getUsername() + ", \"" + data.getDN() + "\", \"" + data.getSubjectAltName() + "\", " + data.getEmail() + ", "
-                                    + data.getStatus() + ", " + data.getType().getHexValue() + ", " + data.getTokenType() + ", " + data.getHardTokenIssuerId() + ", "
-                                    + data.getCertificateProfileId());
+                            "User: " + data.getUsername() + ", \"" + data.getDN() + "\", \"" + data.getSubjectAltName() + "\", " + data.getEmail()
+                                    + ", " + data.getStatus() + ", " + data.getType().getHexValue() + ", " + data.getTokenType() + ", "
+                                    + data.getHardTokenIssuerId() + ", " + data.getCertificateProfileId());
 
                     if (data.getCertificateProfileId() > 0) { // only if we find a
                         // certificate profile
-                        CertificateProfile certProfile = ejb.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfile(data.getCertificateProfileId());
+                        CertificateProfile certProfile = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class)
+                                .getCertificateProfile(data.getCertificateProfileId());
                         if (certProfile == null) {
                             getLogger().error("Can not get certificate profile with id: " + data.getCertificateProfileId());
                             continue;
                         }
                         // Get an ordered list of certificates, last expire date first
-                        List<Certificate> certCol = ejb.getRemoteSession(CertificateStoreSessionRemote.class).findCertificatesByUsername(data.getUsername());
+                        List<Certificate> certCol = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class)
+                                .findCertificatesByUsername(data.getUsername());
                         if ((certCol != null) && certCol.iterator().hasNext()) {
                             if (certProfile.getPublisherList() != null) {
-                                getLogger().info("Re-publishing user " + data.getUsername()+" to publishers in users certificate profile "+data.getCertificateProfileId());
+                                getLogger().info(
+                                        "Re-publishing user " + data.getUsername() + " to publishers in users certificate profile "
+                                                + data.getCertificateProfileId());
                                 if (addAll) {
                                     getLogger().info("Re-publishing all certificates (" + certCol.size() + ").");
                                     // Reverse the collection so we publish the latest certificate last
@@ -164,15 +185,16 @@ public class CARepublishCommand extends BaseCaAdminCommand {
                                     Iterator<Certificate> i = certCol.iterator();
                                     while (i.hasNext()) {
                                         X509Certificate c = (X509Certificate) i.next();
-                                        publishCert(getAuthenticationToken(cliUserName, cliPassword), data, certProfile, c);
+                                        publishCert(getAuthenticationToken(), data, certProfile, c);
                                     }
                                 } else {
                                     // Only publish the latest one (last expire date)
                                     // The latest one is the first in the List according to findCertificatesByUsername()
-                                    publishCert(getAuthenticationToken(cliUserName, cliPassword), data, certProfile, (X509Certificate)certCol.iterator().next());
+                                    publishCert(getAuthenticationToken(), data, certProfile, (X509Certificate) certCol.iterator().next());
                                 }
                             } else {
-                                getLogger().info("Not publishing certificate for user " + data.getUsername() + ", no publisher in certificate profile.");
+                                getLogger().info(
+                                        "Not publishing certificate for user " + data.getUsername() + ", no publisher in certificate profile.");
                             }
                         } else {
                             getLogger().info("No certificate to publish for user " + data.getUsername());
@@ -181,26 +203,50 @@ public class CARepublishCommand extends BaseCaAdminCommand {
                         getLogger().info("No certificate profile is set for user " + data.getUsername());
                     }
                 }
+               
             } // if (eecertmode)
-        } catch (Exception e) {
-            throw new ErrorAdminCommandException(e);
+            return CommandResult.SUCCESS;
+        } catch (AuthorizationDeniedException e) {
+            log.error("CLI user was not authorized to CA " + caname);
+            return CommandResult.AUTHORIZATION_FAILURE;
         }
+
     }
 
     private void publishCert(AuthenticationToken authenticationToken, EndEntityInformation data, CertificateProfile certProfile, X509Certificate cert) {
         try {
             String fingerprint = CertTools.getFingerprintAsString(cert);
-            CertificateInfo certinfo = ejb.getRemoteSession(CertificateStoreSessionRemote.class).getCertificateInfo(fingerprint);
+            CertificateInfo certinfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class).getCertificateInfo(fingerprint);
             final String userDataDN = data.getCertificateDN();
-            boolean ret = ejb.getRemoteSession(PublisherSessionRemote.class).storeCertificate(authenticationToken, certProfile.getPublisherList(), cert, data.getUsername(), data.getPassword(), userDataDN,
-                    fingerprint, certinfo.getStatus(), certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(), certinfo
-                            .getTag(), certinfo.getCertificateProfileId(), certinfo.getUpdateTime().getTime(), null);
+            boolean ret = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class).storeCertificate(authenticationToken,
+                    certProfile.getPublisherList(), cert, data.getUsername(), data.getPassword(), userDataDN, fingerprint, certinfo.getStatus(),
+                    certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(), certinfo.getTag(),
+                    certinfo.getCertificateProfileId(), certinfo.getUpdateTime().getTime(), null);
             if (!ret) {
-                getLogger().error("Failed to publish certificate for user " + data.getUsername() + ", continuing with next user. Publish returned false.");
+                getLogger().error(
+                        "Failed to publish certificate for user " + data.getUsername() + ", continuing with next user. Publish returned false.");
             }
         } catch (Exception e) {
             // catch failure to publish one user and continue with the rest
-            getLogger().error("Failed to publish certificate for user " + data.getUsername() + ", continuing with next user. "+e.getMessage());
+            getLogger().error("Failed to publish certificate for user " + data.getUsername() + ", continuing with next user. " + e.getMessage());
         }
+    }
+
+    @Override
+    public String getCommandDescription() {
+        return "Re-publishes the certificates of a CA and/or all users issued by a particular CA. ";
+    }
+
+    @Override
+    public String getFullHelpText() {
+        return getCommandDescription()
+                + "Default if none of cacert, cacrl or eecert is specific is to publish all types, you can specify one or several on the command line. "
+                + "For example to only publish CA certificate and CRL, no end entity certificates: ca republish ManagementCA -cacert -cacrl"
+                + "Example to only publish CA certificate and CRL, and latest end entity certificates: ca republish ManagementCA";
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return log;
     }
 }

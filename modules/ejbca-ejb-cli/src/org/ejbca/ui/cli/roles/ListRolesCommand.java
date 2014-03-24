@@ -17,10 +17,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
-import org.ejbca.ui.cli.CliUsernameException;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
 
 /**
  * Lists admin roles
@@ -28,33 +30,37 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class ListRolesCommand extends BaseRolesCommand {
 
+    private static final Logger log = Logger.getLogger(ListRolesCommand.class);
 
     @Override
-    public String getSubCommand() {
+    public String getMainCommand() {
         return "listroles";
     }
+
     @Override
-    public String getDescription() {
+    public CommandResult execute(ParameterContainer parameters) {
+        Collection<RoleData> roles = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class).getAllRolesAuthorizedToEdit(
+                getAuthenticationToken());
+        Collections.sort((List<RoleData>) roles);
+        for (RoleData role : roles) {
+            int numberOfAdmins = role.getAccessUsers().size();
+            getLogger().info(role.getRoleName() + " (" + numberOfAdmins + " admin" + (numberOfAdmins == 1 ? "" : "s") + ")");
+        }
+        return CommandResult.SUCCESS;
+    }
+
+    @Override
+    public String getCommandDescription() {
         return "Lists admin roles";
     }
 
-    public void execute(String[] args) throws ErrorAdminCommandException {
-        try {
-            args = parseUsernameAndPasswordFromArgs(args);
-        } catch (CliUsernameException e) {
-            return;
-        }
-        
-        try {
-            Collection<RoleData> roles = ejb.getRemoteSession(RoleManagementSessionRemote.class).getAllRolesAuthorizedToEdit(getAuthenticationToken(cliUserName, cliPassword));            
-            Collections.sort((List<RoleData>) roles);
-            for (RoleData role : roles) {                
-                int numberOfAdmins = role.getAccessUsers().size();
-                getLogger().info(role.getRoleName() + " (" + numberOfAdmins + " admin" + (numberOfAdmins == 1 ? "" : "s") + ")");
-            }
-        } catch (Exception e) {
-            getLogger().error("", e);
-            throw new ErrorAdminCommandException(e);
-        }
+    @Override
+    public String getFullHelpText() {
+        return getCommandDescription();
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return log;
     }
 }

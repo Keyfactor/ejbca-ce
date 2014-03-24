@@ -68,7 +68,7 @@ public class CryptoTokenDeleteCommandTest {
 
     @Test
     public void testCommand() throws ErrorAdminCommandException {
-        String[] args = new String[] { "delete", CRYPTOTOKEN_NAME };
+        String[] args = new String[] { CRYPTOTOKEN_NAME };
         command.execute(args);
         assertNull("CryptoToken was not deleted.", cryptoTokenManagementSession.getIdFromName(CRYPTOTOKEN_NAME));
     }

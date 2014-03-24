@@ -71,7 +71,7 @@ public class CaGetRootCertCommandTest {
 
     @Test
     public void testCommand() throws ErrorAdminCommandException, CertificateException, IOException {
-        String[] args = new String[] { "getrootcert", ca.getName(), resultFile.getAbsolutePath() };
+        String[] args = new String[] { ca.getName(), resultFile.getAbsolutePath() };
         command.execute(args);
         Certificate result = CertTools.getCertsFromPEM(resultFile.getAbsolutePath()).get(0);
         assertNotNull("No certificate was produced.", result);

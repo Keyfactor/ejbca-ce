@@ -104,7 +104,7 @@ public class CreateCertCommandTest {
 
     @Test
     public void testCommand() throws ErrorAdminCommandException, CertificateException, IOException {
-        String[] args = new String[] { "createcert", USERNAME, PASSWORD, requestFile.getAbsolutePath(), resultFile.getAbsolutePath() };
+        String[] args = new String[] { USERNAME, PASSWORD, requestFile.getAbsolutePath(), resultFile.getAbsolutePath() };
         command.execute(args);
         Certificate result = CertTools.getCertsFromPEM(resultFile.getAbsolutePath()).get(0);
         assertNotNull("No certificate was produced", result);

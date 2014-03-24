@@ -35,7 +35,7 @@ import org.junit.Test;
 public class CaEditCaCommandTest {
 
     private static final String CA_NAME = "1327editca2";
-    private static final String[] HAPPY_PATH_ARGS = { "editca", CA_NAME, "CRLPeriod", "2592000000"};
+    private static final String[] HAPPY_PATH_ARGS = { CA_NAME, "CRLPeriod", "2592000000"};
 
     private CaEditCaCommand caEditCommand;
     private AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaEditCommandTest"));

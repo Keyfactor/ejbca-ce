@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.cli.keybind;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -32,6 +33,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -47,10 +49,9 @@ public class InternalKeyBindingCreateCommandTest {
     private static final String TESTCLASSNAME = InternalKeyBindingCreateCommandTest.class.getSimpleName();
     private static final String KEYBINDING_NAME = "CliTest";
     private static final String KEY_PAIR_ALIAS = "CliTest";
-    private static final String[] STANDARD_ARGS = { "create", KEYBINDING_NAME, "OcspKeyBinding", "DISABLED", "null", TESTCLASSNAME, KEY_PAIR_ALIAS,
-            "SHA256WithRSA", "--property", "nonexistingisgood=false", "--property", "maxAge=0", "--property", "nonexistingisrevoked=true",
-            "--property", "requireTrustedSignature=true", "--property", "untilNextUpdate=0", "--property", "responderidtype=NAME", "--property",
-            "includecertchain=false" };
+    private static final String[] STANDARD_ARGS = { KEYBINDING_NAME, "OcspKeyBinding", "DISABLED", "null", TESTCLASSNAME, KEY_PAIR_ALIAS,
+            "SHA256WithRSA", "-nonexistingisgood=false", "-maxAge=0", "-nonexistingisrevoked=true", "-requireTrustedSignature=true", "-untilNextUpdate=0",
+            "-responderidtype=NAME", "-includecertchain=false" };
 
     private static final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(TESTCLASSNAME));
 
@@ -86,15 +87,15 @@ public class InternalKeyBindingCreateCommandTest {
     @Test
     public void testAddVanillaKeyBinding() throws ErrorAdminCommandException, AuthorizationDeniedException {
         try {
-            command.execute(STANDARD_ARGS);
+            assertEquals(CommandResult.SUCCESS, command.execute(STANDARD_ARGS));
             Integer keyBindingId = internalKeyBindingMgmtSession.getIdFromName(KEYBINDING_NAME);
             assertNotNull("No internal keybinding was created", keyBindingId);
             //Verify that some non String values were correctly typed 
             InternalKeyBinding internalKeyBinding = internalKeyBindingMgmtSession.getInternalKeyBinding(alwaysAllowToken, keyBindingId);
             assertTrue("Purported Long value was not saved as Long.",
                     internalKeyBinding.getProperty(OcspKeyBinding.PROPERTY_MAX_AGE).getValue() instanceof Long);
-            assertTrue("Purported Boolean value was not saved as Boolean.",
-                    internalKeyBinding.getProperty(OcspKeyBinding.PROPERTY_NON_EXISTING_GOOD).getValue() instanceof Boolean);
+            assertTrue("Purported Boolean value was not saved as Boolean.", internalKeyBinding.getProperty(OcspKeyBinding.PROPERTY_NON_EXISTING_GOOD)
+                    .getValue() instanceof Boolean);
         } finally {
             Integer keyBindingId = internalKeyBindingMgmtSession.getIdFromName(KEYBINDING_NAME);
             if (keyBindingId != null) {

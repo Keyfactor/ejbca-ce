@@ -70,7 +70,7 @@ public class CaCreateCrlCommandTest {
     @Test
     public void testCommand() throws ErrorAdminCommandException, CADoesntExistsException, AuthorizationDeniedException {
         CRLInfo oldCrl = crlStoreSession.getLastCRLInfo(CA_DN, false);
-        String[] args = new String[] { "createcrl", CA_NAME };
+        String[] args = new String[] { CA_NAME };
         command.execute(args);
         assertFalse("No CRL was produced", crlStoreSession.getLastCRLInfo(CA_DN, false).equals(oldCrl));
     }

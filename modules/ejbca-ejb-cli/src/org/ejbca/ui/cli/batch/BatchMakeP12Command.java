@@ -28,7 +28,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 
-import org.cesecore.authorization.AuthorizationDeniedException;
+import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -51,9 +51,13 @@ import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryInformation;
 import org.ejbca.core.model.ra.EndEntityManagementConstants;
-import org.ejbca.ui.cli.BaseCommand;
-import org.ejbca.ui.cli.CliUsernameException;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.command.EjbcaCliUserCommandBase;
+import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 import org.ejbca.util.keystore.P12toPEM;
 
 /**
@@ -62,64 +66,65 @@ import org.ejbca.util.keystore.P12toPEM;
  *
  * @version $Id$
  */
-public class BatchMakeP12Command extends BaseCommand {
+public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
+
+    private static final String END_ENTITY_USERNAME_KEY = "-e";
+    private static final String DIRECTORY_KEY = "-dir";
+
+    private static final Logger log = Logger.getLogger(BatchMakeP12Command.class);
+
+    {
+        registerParameter(new Parameter(END_ENTITY_USERNAME_KEY, "End entity username", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW,
+                ParameterMode.ARGUMENT,
+                "The name of the end entity to generate the key for. If omitted, keys will be generated for all users with status NEW or FAILED"));
+        registerParameter(new Parameter(DIRECTORY_KEY, "Directory", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "The name of the directory to store the keys to. If not specified, the current EJBCA_HOME/p12 directory will be used."));
+    }
 
     private BatchToolProperties props = null;
-    
+
     /** Lazy loading of properties so we don't have to read it when CliCommandHelper goes through all commands.
      * @return BatchToolProperties, never null
      */
     private BatchToolProperties getProps() {
         if (props == null) {
-            props = new BatchToolProperties(getLogger());            
+            props = new BatchToolProperties(log);
         }
         return props;
     }
-    
+
     /**
      * Where created P12-files are stored, default p12
      */
     private String mainStoreDir = "";
     private Boolean usekeyrecovery = null;
+
     @Override
     public String getMainCommand() {
-        return null;
-    }
-    @Override
-    public String getSubCommand() {
         return "batch";
     }
+
     @Override
-    public String getDescription() {
+    public String getCommandDescription() {
         return "Generate keys and certificates for all users with status NEW";
     }
+
     @Override
-    public void execute(String[] args) throws ErrorAdminCommandException {
+    public String getFullHelpText() {
+        return "Generate keys and certificates for all users with status NEW";
+    }
+
+    @Override
+    public CommandResult execute(ParameterContainer parameters) {
         try {
-            args = parseUsernameAndPasswordFromArgs(args);
-        } catch (CliUsernameException e) {
-            return;
-        }
-        
-        try {
-            String username = null;
-            String directory = getHomeDir() + "p12";
-            for (int i = 1; i < args.length; i++) {
-                if ("-?".equalsIgnoreCase(args[i]) || "--help".equalsIgnoreCase(args[i])) {
-                    getLogger().info("Description: " + getDescription());
-                    getLogger().info("Usage: " + getCommand() + " [username] [-dir directory]");
-                    getLogger().info("   username: the name of the user to generate the key.");
-                    getLogger().info("             If omitted, keys will be generated for all users with status NEW or FAILED");
-                    getLogger().info("   directory: the name of the directory to store the keys to");
-                    System.exit(1); // NOPMD
-                } else if ("-dir".equalsIgnoreCase(args[i])) {
-                    directory = args[++i];
-                } else {
-                    username = args[i];
-                }
+            String username = parameters.get(END_ENTITY_USERNAME_KEY);
+            String directory = parameters.get(DIRECTORY_KEY);
+            if (directory == null) {
+                directory = getHomeDir() + "p12";
             }
+
             if (username == null) {
-                getLogger().info("Use '" + getSubCommand() + " --help' for additional options.");
+                log.info("Use '" + getMainCommand() + " --help' for additional options.");
             }
             // Bouncy Castle security provider
             CryptoProviderTools.installBCProviderIfNotAvailable();
@@ -128,43 +133,33 @@ public class BatchMakeP12Command extends BaseCommand {
             dir.mkdir();
             setMainStoreDir(directory);
             String iMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.generateindir", dir);
-            getLogger().info(iMsg);
-
+            log.info(iMsg);
             if (username != null) {
-                createUser(cliUserName, cliPassword, username);
+                createUser(username);
             } else {
                 // Make P12 for all NEW users in local DB
-                createAllNew(cliUserName, cliPassword);
+                createAllNew();
                 // Make P12 for all FAILED users in local DB
-                createAllFailed(cliUserName, cliPassword);
+                createAllFailed();
                 // Make P12 for all KEYRECOVERABLE users in local DB
-                createAllKeyRecover(cliUserName, cliPassword);
+                createAllKeyRecover();
             }
+            return CommandResult.SUCCESS;
         } catch (Exception e) {
             e.printStackTrace();
-            System.exit(1); // NOPMD
+            return CommandResult.FUNCTIONAL_FAILURE;
         }
     }
 
-    private boolean getUseKeyRecovery(String cliUserName, String cliPassword) {
+    private boolean getUseKeyRecovery() {
         if (usekeyrecovery == null) {
-            usekeyrecovery = ( (GlobalConfiguration) ejb.getRemoteSession(GlobalConfigurationSessionRemote.class).getCachedConfiguration(Configuration.GlobalConfigID)).getEnableKeyRecovery();
+            usekeyrecovery = ((GlobalConfiguration) EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class)
+                    .getCachedConfiguration(Configuration.GlobalConfigID)).getEnableKeyRecovery();
         }
         return usekeyrecovery;
     }
 
-    /**
-     * Gets full CA-certificate chain.
-     * 
-     * @return Certificate[]
-     * @throws AuthorizationDeniedException 
-     */
-    private Certificate[] getCACertChain(String cliUserName, String cliPassword, int caid) throws AuthorizationDeniedException {
-        getLogger().trace(">getCACertChain()");
-        Certificate[] chain = (Certificate[]) ejb.getRemoteSession(SignSessionRemote.class).getCertificateChain(getAuthenticationToken(cliUserName, cliPassword), caid).toArray(new Certificate[0]);
-        getLogger().trace("<getCACertChain()");
-        return chain;
-    }
+  
 
     /**
      * Sets the location where generated P12-files will be stored, full name
@@ -173,7 +168,7 @@ public class BatchMakeP12Command extends BaseCommand {
      * @param dir
      *            existing directory
      */
-    public void setMainStoreDir(String dir) {
+    private void setMainStoreDir(String dir) {
         mainStoreDir = dir;
     }
 
@@ -193,10 +188,10 @@ public class BatchMakeP12Command extends BaseCommand {
      * @throws IOException
      *             if directory to store keystore cannot be created
      */
-    private void storeKeyStore(KeyStore ks, String username, String kspassword, boolean createJKS, boolean createPEM) throws IOException, KeyStoreException,
-            UnrecoverableKeyException, NoSuchAlgorithmException, NoSuchProviderException, CertificateException {
-        if (getLogger().isTraceEnabled()) {
-            getLogger().trace(">storeKeyStore: ks=" + ks.toString() + ", username=" + username);
+    private void storeKeyStore(KeyStore ks, String username, String kspassword, boolean createJKS, boolean createPEM) throws IOException,
+            KeyStoreException, UnrecoverableKeyException, NoSuchAlgorithmException, NoSuchProviderException, CertificateException {
+        if (log.isTraceEnabled()) {
+            log.trace(">storeKeyStore: ks=" + ks.toString() + ", username=" + username);
         }
         // Where to store it?
         if (mainStoreDir == null) {
@@ -205,7 +200,7 @@ public class BatchMakeP12Command extends BaseCommand {
 
         if (!new File(mainStoreDir).exists()) {
             new File(mainStoreDir).mkdir();
-            getLogger().info("Directory '" + mainStoreDir + "' did not exist and was created.");
+            log.info("Directory '" + mainStoreDir + "' did not exist and was created.");
         }
 
         String keyStoreFilename = mainStoreDir + "/" + username;
@@ -227,9 +222,9 @@ public class BatchMakeP12Command extends BaseCommand {
             ks.store(os, kspassword.toCharArray());
         }
 
-        getLogger().debug("Keystore stored in " + keyStoreFilename);
-        if (getLogger().isTraceEnabled()) {
-            getLogger().trace("<storeKeyStore: ks=" + ks.toString() + ", username=" + username);
+        log.debug("Keystore stored in " + keyStoreFilename);
+        if (log.isTraceEnabled()) {
+            log.trace("<storeKeyStore: ks=" + ks.toString() + ", username=" + username);
         }
     }
 
@@ -264,20 +259,22 @@ public class BatchMakeP12Command extends BaseCommand {
      *             if keyfile (generated by ourselves) is corrupt
      */
 
-    private void createUser(String cliUserName, String cliPassword, String username, String password, int caid, KeyPair rsaKeys, boolean createJKS, boolean createPEM, boolean savekeys,
+    private void createUser(String username, String password, int caid, KeyPair rsaKeys, boolean createJKS, boolean createPEM, boolean savekeys,
             X509Certificate orgCert) throws Exception {
-        if (getLogger().isTraceEnabled()) {
-            getLogger().trace(">createUser: username=" + username);
+        if (log.isTraceEnabled()) {
+            log.trace(">createUser: username=" + username);
         }
 
         X509Certificate cert = null;
 
         if (orgCert != null) {
             cert = orgCert;
-            boolean finishUser = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(cliUserName, cliPassword), caid).getFinishUser();
+            boolean finishUser = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caid)
+                    .getFinishUser();
             if (finishUser) {
-            	EndEntityInformation userdata = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAuthenticationToken(cliUserName, cliPassword), username);
-                ejb.getRemoteSession(EndEntityAuthenticationSessionRemote.class).finishUser(userdata);
+                EndEntityInformation userdata = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(
+                        getAuthenticationToken(), username);
+                EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAuthenticationSessionRemote.class).finishUser(userdata);
             }
 
         } else {
@@ -288,20 +285,20 @@ public class BatchMakeP12Command extends BaseCommand {
                 sigAlg = AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA;
             } else if (getProps().getKeyAlg().equals("DSA")) {
                 sigAlg = AlgorithmConstants.SIGALG_SHA1_WITH_DSA;
-            } else if (getProps().getKeyAlg().equals(AlgorithmConstants.KEYALGORITHM_ECGOST3410)) {                
+            } else if (getProps().getKeyAlg().equals(AlgorithmConstants.KEYALGORITHM_ECGOST3410)) {
                 sigAlg = AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410;
-            } else if (getProps().getKeyAlg().equals(AlgorithmConstants.KEYALGORITHM_DSTU4145)) {                
+            } else if (getProps().getKeyAlg().equals(AlgorithmConstants.KEYALGORITHM_DSTU4145)) {
                 sigAlg = AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145;
             }
 
             X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, rsaKeys.getPrivate(), rsaKeys.getPublic(), sigAlg, false);
-            cert = (X509Certificate) ejb.getRemoteSession(SignSessionRemote.class).createCertificate(getAuthenticationToken(cliUserName, cliPassword), username, password, selfcert);
+            cert = (X509Certificate) EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class).createCertificate(getAuthenticationToken(),
+                    username, password, selfcert);
         }
 
-        // System.out.println("issuer " + CertTools.getIssuerDN(cert) + ", " +
-        // cert.getClass().getName());
         // Make a certificate chain from the certificate and the CA-certificate
-        Certificate[] cachain = getCACertChain(cliUserName, cliPassword, caid);
+        Certificate[] cachain = (Certificate[]) EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class)
+                .getCertificateChain(getAuthenticationToken(), caid).toArray(new Certificate[0]);
         // Verify CA-certificate
         if (CertTools.isSelfSigned((X509Certificate) cachain[cachain.length - 1])) {
             try {
@@ -332,9 +329,10 @@ public class BatchMakeP12Command extends BaseCommand {
             throw new Exception(errMsg);
         }
 
-        if (getUseKeyRecovery(cliUserName, cliPassword) && savekeys) {
+        if (getUseKeyRecovery() && savekeys) {
             // Save generated keys to database.
-            ejb.getRemoteSession(KeyRecoverySessionRemote.class).addKeyRecoveryData(getAuthenticationToken(cliUserName, cliPassword), cert, username, rsaKeys);
+            EjbRemoteHelper.INSTANCE.getRemoteSession(KeyRecoverySessionRemote.class).addKeyRecoveryData(getAuthenticationToken(), cert, username,
+                    rsaKeys);
         }
 
         // Use CN if as alias in the keystore, if CN is not present use username
@@ -354,9 +352,9 @@ public class BatchMakeP12Command extends BaseCommand {
 
         storeKeyStore(ks, username, password, createJKS, createPEM);
         String iMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.createkeystore", username);
-        getLogger().info(iMsg);
-        if (getLogger().isTraceEnabled()) {
-            getLogger().trace("<createUser: username=" + username);
+        log.info(iMsg);
+        if (log.isTraceEnabled()) {
+            log.trace("<createUser: username=" + username);
         }
     }
 
@@ -374,16 +372,18 @@ public class BatchMakeP12Command extends BaseCommand {
      * @throws Exception
      *             If something goes wrong...
      */
-    private void processUser(String cliUserName, String cliPassword, EndEntityInformation data, boolean createJKS, boolean createPEM, boolean keyrecoverflag) throws Exception {
+    private void processUser(EndEntityInformation data, boolean createJKS, boolean createPEM, boolean keyrecoverflag) throws Exception {
         KeyPair rsaKeys = null;
         X509Certificate orgCert = null;
-        if (getUseKeyRecovery(cliUserName, cliPassword) && keyrecoverflag) {
-            boolean reusecertificate = ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfile(data.getEndEntityProfileId()).getReUseKeyRecoveredCertificate();
+        if (getUseKeyRecovery() && keyrecoverflag) {
+            boolean reusecertificate = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class)
+                    .getEndEntityProfile(data.getEndEntityProfileId()).getReUseKeyRecoveredCertificate();
             // Recover Keys
 
-            KeyRecoveryInformation recoveryData = ejb.getRemoteSession(KeyRecoverySessionRemote.class).recoverKeys(getAuthenticationToken(cliUserName, cliPassword), data.getUsername(), data.getEndEntityProfileId());
+            KeyRecoveryInformation recoveryData = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyRecoverySessionRemote.class).recoverKeys(
+                    getAuthenticationToken(), data.getUsername(), data.getEndEntityProfileId());
             if (reusecertificate) {
-                ejb.getRemoteSession(KeyRecoverySessionRemote.class).unmarkUser(getAuthenticationToken(cliUserName, cliPassword), data.getUsername());
+                EjbRemoteHelper.INSTANCE.getRemoteSession(KeyRecoverySessionRemote.class).unmarkUser(getAuthenticationToken(), data.getUsername());
             }
             if (recoveryData != null) {
                 rsaKeys = recoveryData.getKeyPair();
@@ -399,12 +399,12 @@ public class BatchMakeP12Command extends BaseCommand {
         }
         // Get certificate for user and create keystore
         if (rsaKeys != null) {
-            createUser(cliUserName, cliPassword, data.getUsername(), data.getPassword(), data.getCAId(), rsaKeys, createJKS, createPEM, !keyrecoverflag && data.getKeyRecoverable(),
-                    orgCert);
+            createUser(data.getUsername(), data.getPassword(), data.getCAId(), rsaKeys, createJKS, createPEM,
+                    !keyrecoverflag && data.getKeyRecoverable(), orgCert);
         }
     }
 
-    private boolean doCreate(String cliUserName, String cliPassword, EndEntityInformation data, int status) throws Exception {
+    private boolean doCreate(EndEntityInformation data, int status) throws Exception {
         boolean ret = false;
         // get users Token Type.
         int tokentype = data.getTokenType();
@@ -415,12 +415,13 @@ public class BatchMakeP12Command extends BaseCommand {
         if (createP12 || createPEM || createJKS) {
             if (status == EndEntityConstants.STATUS_KEYRECOVERY) {
                 String iMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.retrieveingkeys", data.getUsername());
-                getLogger().info(iMsg);
+                log.info(iMsg);
             } else {
-                String iMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.generatingkeys", getProps().getKeyAlg(), getProps().getKeySpec(), data.getUsername());
-                getLogger().info(iMsg);
+                String iMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.generatingkeys", getProps().getKeyAlg(),
+                        getProps().getKeySpec(), data.getUsername());
+                log.info(iMsg);
             }
-            processUser(cliUserName, cliPassword, data, createJKS, createPEM, (status == EndEntityConstants.STATUS_KEYRECOVERY));
+            processUser(data, createJKS, createPEM, (status == EndEntityConstants.STATUS_KEYRECOVERY));
             // If all was OK, users status is set to GENERATED by the
             // signsession when the user certificate is created.
             // If status is still NEW, FAILED or KEYRECOVER though, it means we
@@ -428,20 +429,23 @@ public class BatchMakeP12Command extends BaseCommand {
             // request counter
             // meaning that we should not reset the clear text password yet.
 
-            EndEntityInformation vo = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAuthenticationToken(cliUserName, cliPassword), data.getUsername());
+            EndEntityInformation vo = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(
+                    getAuthenticationToken(), data.getUsername());
             if ((vo.getStatus() == EndEntityConstants.STATUS_NEW) || (vo.getStatus() == EndEntityConstants.STATUS_FAILED)
                     || (vo.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY)) {
-                ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setClearTextPassword(getAuthenticationToken(cliUserName, cliPassword), data.getUsername(), data.getPassword());
+                EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).setClearTextPassword(getAuthenticationToken(),
+                        data.getUsername(), data.getPassword());
             } else {
                 // Delete clear text password, if we are not letting status be
                 // the same as originally
-                ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setClearTextPassword(getAuthenticationToken(cliUserName, cliPassword), data.getUsername(), null);
+                EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).setClearTextPassword(getAuthenticationToken(),
+                        data.getUsername(), null);
             }
             ret = true;
             String iMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.generateduser", data.getUsername());
-            getLogger().info(iMsg);
+            log.info(iMsg);
         } else {
-            getLogger().debug("Cannot batchmake browser generated token for user (wrong tokentype)- " + data.getUsername());
+            log.debug("Cannot batchmake browser generated token for user (wrong tokentype)- " + data.getUsername());
         }
         return ret;
     }
@@ -453,12 +457,13 @@ public class BatchMakeP12Command extends BaseCommand {
      * @throws Exception
      *             if something goes wrong...
      */
-    public void createAllNew(String cliUserName, String cliPassword) throws Exception {
-        getLogger().trace(">createAllNew");
+    private void createAllNew()
+            throws Exception {
+        log.trace(">createAllNew");
         String iMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.generatingallstatus", "NEW");
-        getLogger().info(iMsg);
-        createAllWithStatus(cliUserName, cliPassword, EndEntityConstants.STATUS_NEW);
-        getLogger().trace("<createAllNew");
+        log.info(iMsg);
+        createAllWithStatus(EndEntityConstants.STATUS_NEW);
+        log.trace("<createAllNew");
     }
 
     /**
@@ -467,12 +472,13 @@ public class BatchMakeP12Command extends BaseCommand {
      * @throws Exception
      *             if something goes wrong...
      */
-    public void createAllFailed(String cliUserName, String cliPassword) throws Exception {
-        getLogger().trace(">createAllFailed");
+    private void createAllFailed()
+            throws Exception {
+        log.trace(">createAllFailed");
         String iMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.generatingallstatus", "FAILED");
-        getLogger().info(iMsg);
-        createAllWithStatus(cliUserName, cliPassword, EndEntityConstants.STATUS_FAILED);
-        getLogger().trace("<createAllFailed");
+        log.info(iMsg);
+        createAllWithStatus(EndEntityConstants.STATUS_FAILED);
+        log.trace("<createAllFailed");
     }
 
     /**
@@ -482,33 +488,37 @@ public class BatchMakeP12Command extends BaseCommand {
      * @throws Exception
      *             if something goes wrong...
      */
-    public void createAllKeyRecover(String cliUserName, String cliPassword) throws Exception {
-        if (getUseKeyRecovery(cliUserName, cliPassword)) {
-            getLogger().trace(">createAllKeyRecover");
+    private void createAllKeyRecover()
+            throws Exception {
+        if (getUseKeyRecovery()) {
+            log.trace(">createAllKeyRecover");
             String iMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.generatingallstatus", "KEYRECOVER");
-            getLogger().info(iMsg);
-            createAllWithStatus(cliUserName, cliPassword, EndEntityConstants.STATUS_KEYRECOVERY);
-            getLogger().trace("<createAllKeyRecover");
+            log.info(iMsg);
+            createAllWithStatus(EndEntityConstants.STATUS_KEYRECOVERY);
+            log.trace("<createAllKeyRecover");
         }
     }
 
     /**
      * Creates P12-files for all users with status in the local database.
      * 
+     * Since authentication tokens from the CLI are single use only, this method will take multiple (until a better design is reached). 
+     * 
      * @param status
      * @throws Exception
      *             if something goes wrong...
      */
-    public void createAllWithStatus(String cliUserName, String cliPassword, int status) throws Exception {
-        if (getLogger().isTraceEnabled()) {
-            getLogger().trace(">createAllWithStatus: " + status);
+    private void createAllWithStatus(int status) throws Exception {
+        if (log.isTraceEnabled()) {
+            log.trace(">createAllWithStatus: " + status);
         }
         CryptoProviderTools.installBCProviderIfNotAvailable(); // If this is invoked directly
         ArrayList<EndEntityInformation> result = new ArrayList<EndEntityInformation>();
 
         boolean stopnow = false;
         do {
-            for(EndEntityInformation data : ejb.getRemoteSession(EndEntityManagementSessionRemote.class).findAllBatchUsersByStatusWithLimit(status)) {
+            for (EndEntityInformation data : EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class)
+                    .findAllBatchUsersByStatusWithLimit(status)) {
                 if (data.getTokenType() == SecConst.TOKEN_SOFT_JKS || data.getTokenType() == SecConst.TOKEN_SOFT_PEM
                         || data.getTokenType() == SecConst.TOKEN_SOFT_P12) {
                     result.add(data);
@@ -516,7 +526,7 @@ public class BatchMakeP12Command extends BaseCommand {
             }
 
             String iMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.generatingnoofusers", Integer.valueOf(result.size()));
-            getLogger().info(iMsg);
+            log.info(iMsg);
 
             int failcount = 0;
             int successcount = 0;
@@ -527,60 +537,65 @@ public class BatchMakeP12Command extends BaseCommand {
                 }
                 String failedusers = "";
                 String successusers = "";
-                for(EndEntityInformation data : result) {
+                for (EndEntityInformation data : result) {
                     if ((data.getPassword() != null) && (data.getPassword().length() > 0)) {
                         try {
-                            if (doCreate(cliUserName, cliPassword, data, status)) {
+                            if (doCreate(data, status)) {
                                 successusers += (":" + data.getUsername());
                                 successcount++;
                             }
                         } catch (Exception e) {
                             // If things went wrong set status to FAILED
-                            getLogger().debug(InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorsetstatus", "FAILED"), e);
+                            log.debug(InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorsetstatus", "FAILED"), e);
                             failedusers += (":" + data.getUsername());
                             failcount++;
                             final String newStatusString;
                             if (status == EndEntityConstants.STATUS_KEYRECOVERY) {
-                                ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAuthenticationToken(cliUserName, cliPassword), data.getUsername(), EndEntityConstants.STATUS_KEYRECOVERY);
+                                EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(
+                                        getAuthenticationToken(), data.getUsername(), EndEntityConstants.STATUS_KEYRECOVERY);
                                 newStatusString = "KEYRECOVERY";
                             } else {
-                                ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAuthenticationToken(cliUserName, cliPassword), data.getUsername(), EndEntityConstants.STATUS_FAILED);
+                                EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(
+                                        getAuthenticationToken(), data.getUsername(), EndEntityConstants.STATUS_FAILED);
                                 newStatusString = "FAILED";
                             }
                             if (e instanceof IllegalKeyException) {
-                                final String errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorbatchfaileduser", data.getUsername());
-                                getLogger().error(errMsg+" "+e.getMessage());
-                                getLogger().error(InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorsetstatus", newStatusString));
-                                getLogger().error(InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorcheckconfig"));                        
+                                final String errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorbatchfaileduser",
+                                        data.getUsername());
+                                log.error(errMsg + " " + e.getMessage());
+                                log.error(InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorsetstatus", newStatusString));
+                                log.error(InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorcheckconfig"));
                             } else {
-                                getLogger().error(InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorsetstatus", newStatusString), e);
-                                final String errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorbatchfaileduser", data.getUsername());
-                                throw new Exception(errMsg);
+                                log.error(InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorsetstatus", newStatusString), e);
+                                final String errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorbatchfaileduser",
+                                        data.getUsername());
+                                throw new Exception(errMsg, e);
                             }
-                            
+
                         }
                     } else {
                         iMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.infonoclearpwd", data.getUsername());
-                        getLogger().info(iMsg);
+                        log.info(iMsg);
                     }
                 }
 
                 if (failedusers.length() > 0) {
-                    String errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorbatchfailed", Integer.valueOf(failcount), Integer.valueOf(successcount), failedusers);
+                    String errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorbatchfailed", Integer.valueOf(failcount),
+                            Integer.valueOf(successcount), failedusers);
                     throw new Exception(errMsg);
                 }
 
                 iMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.success", Integer.valueOf(successcount), successusers);
-                getLogger().info(iMsg);
+                log.info(iMsg);
             }
         } while ((result.size() > 0) && !stopnow);
-        if (getLogger().isTraceEnabled()) {
-            getLogger().trace("<createAllWithStatus: " + status);
+        if (log.isTraceEnabled()) {
+            log.trace("<createAllWithStatus: " + status);
         }
     }
 
     /**
-     * Creates P12-files for one user in the local database.
+     * Creates P12-files for one end entity in the local database.
      * 
      * @param username
      *            username
@@ -588,50 +603,53 @@ public class BatchMakeP12Command extends BaseCommand {
      *             if the user does not exist or something goes wrong during
      *             generation
      */
-    public void createUser(String cliUserName, String cliPassword, String username) throws Exception {
-        if (getLogger().isTraceEnabled()) {
-            getLogger().trace(">createUser(" + username + ")");
+    private void createUser(String username) throws Exception {
+        if (log.isTraceEnabled()) {
+            log.trace(">createUser(" + username + ")");
         }
-        EndEntityInformation data = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAuthenticationToken(cliUserName, cliPassword), username);
+        EndEntityInformation data = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAuthenticationToken(),
+                username);
         if (data == null) {
-            getLogger().error(InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorunknown", username));
+            log.error(InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorunknown", username));
             return;
         }
         int status = data.getStatus();
 
         if ((data != null) && (data.getPassword() != null) && (data.getPassword().length() > 0)) {
-            if ((status == EndEntityConstants.STATUS_NEW) || ((status == EndEntityConstants.STATUS_KEYRECOVERY) && getUseKeyRecovery(cliUserName, cliPassword))) {
+            if ((status == EndEntityConstants.STATUS_NEW) || ((status == EndEntityConstants.STATUS_KEYRECOVERY) && getUseKeyRecovery())) {
                 try {
-                    doCreate(cliUserName, cliPassword, data, status);
+                    doCreate(data, status);
                 } catch (Exception e) {
                     // If things went wrong set status to FAILED
                     final String newStatusString;
                     if (status == EndEntityConstants.STATUS_KEYRECOVERY) {
-                        ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAuthenticationToken(cliUserName, cliPassword), data.getUsername(), EndEntityConstants.STATUS_KEYRECOVERY);
+                        EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAuthenticationToken(),
+                                data.getUsername(), EndEntityConstants.STATUS_KEYRECOVERY);
                         newStatusString = "KEYRECOVERY";
                     } else {
-                        ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAuthenticationToken(cliUserName, cliPassword), data.getUsername(), EndEntityConstants.STATUS_FAILED);
+                        EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAuthenticationToken(),
+                                data.getUsername(), EndEntityConstants.STATUS_FAILED);
                         newStatusString = "FAILED";
                     }
                     if (e instanceof IllegalKeyException) {
                         final String errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorbatchfaileduser", username);
-                        getLogger().error(errMsg+" "+e.getMessage());
-                        getLogger().error(InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorsetstatus", newStatusString));
-                        getLogger().error(InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorcheckconfig"));                        
+                        log.error(errMsg + " " + e.getMessage());
+                        log.error(InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorsetstatus", newStatusString));
+                        log.error(InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorcheckconfig"));
                     } else {
-                        getLogger().error(InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorsetstatus", newStatusString), e);
+                        log.error(InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorsetstatus", newStatusString), e);
                         final String errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorbatchfaileduser", username);
                         throw new Exception(errMsg);
                     }
                 }
             } else {
                 String errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorbatchfaileduser", username);
-                getLogger().error(errMsg);
+                log.error(errMsg);
                 throw new Exception(errMsg);
             }
         }
-        if (getLogger().isTraceEnabled()) {
-            getLogger().trace(">createUser(" + username + ")");
+        if (log.isTraceEnabled()) {
+            log.trace(">createUser(" + username + ")");
         }
     }
 
@@ -652,12 +670,8 @@ public class BatchMakeP12Command extends BaseCommand {
     }
 
     @Override
-    public String[] getMainCommandAliases() {
-        return new String[]{};
+    protected Logger getLogger() {
+        return log;
     }
-    
-    @Override
-    public String[] getSubCommandAliases() {
-        return new String[]{};
-    }
+
 }

@@ -170,7 +170,7 @@ public class CertAndRequestDumpBean {
 					  cachain.add(chaincert);
 				  }
 			  }
-		  } catch (IOException e) {
+		  } catch (CertificateException e) {
 			  // See if it is a single binary certificate
 			  cert = CertTools.getCertfromByteArray(certbytes);
 		  }

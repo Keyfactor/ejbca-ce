@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.cli.cryptotoken;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Properties;
@@ -25,6 +26,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -77,8 +79,9 @@ public class CryptoTokenActivateCommandTest {
 
     @Test
     public void testCommand() throws ErrorAdminCommandException, AuthorizationDeniedException {
-        String[] args = new String[] { "activate", TOKEN_NAME, TOKEN_PASSWORD };
-        command.execute(args);
+        String[] args = new String[] { TOKEN_NAME, TOKEN_PASSWORD };
+        CommandResult result = command.execute(args);
+        assertEquals("Command did not succeed.", CommandResult.SUCCESS, result);
         CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(authenticationToken, cryptoTokenId);
         assertTrue("Crypto token was not activated.", cryptoTokenInfo.isActive());
     }
