@@ -12,24 +12,13 @@
  *************************************************************************/
 package org.ejbca.ui.cli.infrastructure.command;
 
-import java.io.IOException;
-
 /**
+ * Return value for CLI commands. Mostly to allow commands to fail well without having to toss an exception to the command line.
+ * Unexpected failures should be handled by RunTimeException
+ * 
  * @version $Id$
  *
  */
-public interface CliCommand {
-
-    /**
-     * Executes whatever this command specifies
-     * 
-     * @param arguments an array of arguments parsed into this command.
-     * @throws IOException for any IO related issues.
-     */
-    CommandResult execute(String... arguments);
-
-    /**
-     * @return a human friendly description of the implementing command.
-     */
-    String getCommandDescription();
+public enum CommandResult {
+    SUCCESS, AUTHORIZATION_FAILURE, FUNCTIONAL_FAILURE, CLI_FAILURE;
 }
