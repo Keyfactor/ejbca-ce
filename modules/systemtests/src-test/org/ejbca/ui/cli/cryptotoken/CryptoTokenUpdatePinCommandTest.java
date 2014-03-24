@@ -81,7 +81,7 @@ public class CryptoTokenUpdatePinCommandTest {
     public void testCommand() throws ErrorAdminCommandException, AuthorizationDeniedException, CryptoTokenOfflineException,
             CryptoTokenAuthenticationFailedException {
         final String newPin = "bar123";
-        String[] args = new String[] { "setpin", TOKEN_NAME, TOKEN_PIN, newPin };
+        String[] args = new String[] { TOKEN_NAME, TOKEN_PIN, newPin };
         command.execute(args);
         cryptoTokenManagementSession.activate(authenticationToken, cryptoTokenId, newPin.toCharArray());
         CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(authenticationToken, cryptoTokenId);

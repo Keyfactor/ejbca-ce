@@ -129,7 +129,7 @@ public class UnRevokeEndEntityCommandTest {
 
     @Test
     public void testUnrevokeEndEntity() throws ErrorAdminCommandException, AuthorizationDeniedException {
-        final String args[] = new String[] { "unrevokeendentity", TESTCLASS_NAME };
+        final String args[] = new String[] { TESTCLASS_NAME };
         command.execute(args);
         assertFalse("Certificate was not unrevoked.",
                 certificateStoreSession.isRevoked(x509ca.getSubjectDN(), CertTools.getSerialNumber(certificate)));

@@ -92,10 +92,6 @@ public class RenewCAWorker extends BaseWorker {
 				}
 			} catch (CADoesntExistsException e) {
 				log.error("Error renewing CA: ", e);
-			} catch (CryptoTokenAuthenticationFailedException e) {
-				log.error("Error renewing CA: ", e);
-			} catch (CertPathValidatorException e) {
-				log.error("Error renewing CA: ", e);
 			} catch (AuthorizationDeniedException e) {
 				log.error("Error renewing CA: ", e);
 			}				

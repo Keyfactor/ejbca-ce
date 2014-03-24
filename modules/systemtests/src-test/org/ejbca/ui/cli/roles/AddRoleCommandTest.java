@@ -49,7 +49,7 @@ public class AddRoleCommandTest {
 
     @Test
     public void testAddRoleCommand() throws ErrorAdminCommandException {
-        String[] args = new String[] { "addrole", TESTCLASS_NAME };
+        String[] args = new String[] { TESTCLASS_NAME };
         command.execute(args);
         assertNotNull("Role was not added.", roleAccessSession.findRole(TESTCLASS_NAME));
     }

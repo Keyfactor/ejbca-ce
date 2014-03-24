@@ -48,8 +48,8 @@ public class CaExportImportProfilesCommandTest {
     private static final String CA_DN = "CN=CLI TEST CA 4712, O=PrimeKey,C=SE";
     private static final String tempDirectory = System.getProperty("java.io.tmpdir");
     private static final String PROFILES_DIR = tempDirectory + "/clitest_4712"; 
-    private static final String[] CAEXPORTPROFILES_ARGS = { "exportprofiles", PROFILES_DIR };
-    private static final String[] CAIMPORTPROFILES_ARGS = { "importprofiles", PROFILES_DIR };
+    private static final String[] CAEXPORTPROFILES_ARGS = { PROFILES_DIR };
+    private static final String[] CAIMPORTPROFILES_ARGS = { PROFILES_DIR };
 
     private CaExportProfilesCommand caExportProfilesCommand;
     private CaImportProfilesCommand caImportProfilesCommand;

@@ -16,32 +16,39 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
+import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.command.EjbcaCliUserCommandBase;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
 
 /**
  * CryptoToken EJB CLI command. See {@link #getDescription()} implementation.
  * 
  * @version $Id$
  */
-public class CryptoTokenListCommand extends BaseCryptoTokenCommand {
+public class CryptoTokenListCommand extends EjbcaCliUserCommandBase {
 
+    private static final Logger log = Logger.getLogger(CryptoTokenListCommand.class);
+    
     @Override
-    public String getSubCommand() {
+    public String[] getCommandPath() {
+        return new String[] { "cryptotoken" };
+    }
+    
+    @Override
+    public String getMainCommand() {
         return "list";
     }
 
     @Override
-    public String getDescription() {
-        return "List all available CryptoTokens";
-    }
-
-    @Override
-    public void executeCommand(Integer cryptoTokenId, String[] args) {
-        final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = ejb.getRemoteSession(CryptoTokenManagementSessionRemote.class);
-        final List<CryptoTokenInfo> cryptoTokenInfos = cryptoTokenManagementSession.getCryptoTokenInfos(getAdmin());
+    protected CommandResult execute(ParameterContainer parameters) {
+        final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
+        final List<CryptoTokenInfo> cryptoTokenInfos = cryptoTokenManagementSession.getCryptoTokenInfos(getAuthenticationToken());
         // Sort by name
         Collections.sort(cryptoTokenInfos, new Comparator<CryptoTokenInfo>(){
             @Override
@@ -68,5 +75,22 @@ public class CryptoTokenListCommand extends BaseCryptoTokenCommand {
             }
             getLogger().info(sb);
         }
+        return CommandResult.SUCCESS;
     }
+    
+    @Override
+    public String getCommandDescription() {
+        return "List all available CryptoTokens";
+    }
+
+    @Override
+    public String getFullHelpText() {
+        return getCommandDescription();
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return log;
+    }
+
 }

@@ -10,12 +10,20 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package org.ejbca.ui.cli.roles;
 
+import org.apache.log4j.Logger;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
-import org.ejbca.ui.cli.CliUsernameException;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * Adds a new admin role
@@ -23,33 +31,48 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class AddRoleCommand extends BaseRolesCommand {
 
+    private static final Logger log = Logger.getLogger(AddRoleCommand.class);
+
+    private static final String NAME_KEY = "--name";
+
+    {
+        registerParameter(new Parameter(NAME_KEY, "Role Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Name of the new role."));
+    }
+
     @Override
-    public String getSubCommand() {
+    public String getMainCommand() {
         return "addrole";
     }
+
     @Override
-    public String getDescription() {
+    public CommandResult execute(ParameterContainer parameters) {
+        String roleName = parameters.get(NAME_KEY);
+        try {
+            EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class).create(getAuthenticationToken(), roleName);
+            return CommandResult.SUCCESS;
+        } catch (RoleExistsException e) {
+            log.error("ERROR: Role of name " + roleName + " already exists.");
+            return CommandResult.FUNCTIONAL_FAILURE;
+        } catch (AuthorizationDeniedException e) {
+            log.error("ERROR: CLI user not authorized to add role.");
+            return CommandResult.FUNCTIONAL_FAILURE;
+        }
+    }
+
+    @Override
+    public String getCommandDescription() {
         return "Adds an administrative role.";
     }
 
-    /** @see org.ejbca.ui.cli.CliCommandPlugin */
-    public void execute(String[] args) throws ErrorAdminCommandException {
-        try {
-            args = parseUsernameAndPasswordFromArgs(args);
-        } catch (CliUsernameException e) {
-            return;
-        }
-        
-        try {
-            if (args.length < 2) {
-                getLogger().info("Description: " + getDescription());
-                getLogger().info("Usage: " + getCommand() + " <name of role>");
-                return;
-            }
-            String roleName = args[1];
-            ejb.getRemoteSession(RoleManagementSessionRemote.class).create(getAuthenticationToken(cliUserName, cliPassword), roleName);
-        } catch (Exception e) {
-            throw new ErrorAdminCommandException(e);
-        }
+    @Override
+    public String getFullHelpText() {
+        return getCommandDescription();
     }
+    
+    @Override
+    protected Logger getLogger() {
+        return log;
+    }
+
 }

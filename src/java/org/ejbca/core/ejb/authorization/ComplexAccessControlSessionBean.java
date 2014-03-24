@@ -37,7 +37,6 @@ import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
-import org.cesecore.authorization.rules.AccessRuleNotFoundException;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
@@ -164,7 +163,7 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
     }
 
     public void initializeAuthorizationModule(AuthenticationToken admin, int caid, String superAdminCN) throws RoleExistsException,
-            AuthorizationDeniedException, AccessRuleNotFoundException, RoleNotFoundException {
+            AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">initializeAuthorizationModule(" + caid + ", " + superAdminCN);
         }
@@ -178,6 +177,7 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
         }
         Map<Integer, AccessRuleData> rules = role.getAccessRules();
         AccessRuleData rule = new AccessRuleData(SUPERADMIN_ROLE, StandardRules.ROLE_ROOT.resource(), AccessRuleState.RULE_ACCEPT, true);
+        try {
         if (!rules.containsKey(rule.getPrimaryKey())) {
             log.debug("Adding new rule '/' to " + SUPERADMIN_ROLE + ".");
             Collection<AccessRuleData> newrules = new ArrayList<AccessRuleData>();
@@ -192,6 +192,9 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
             Collection<AccessUserAspectData> subjects = new ArrayList<AccessUserAspectData>();
             subjects.add(aua);
             roleMgmtSession.addSubjectsToRole(admin, role, subjects);
+        }
+        } catch(RoleNotFoundException e) {
+            throw new IllegalStateException("Newly created role " + role.getRoleName() + " was not found.", e);
         }
         accessTreeUpdateSession.signalForAccessTreeUpdate();
         accessControlSession.forceCacheExpire();

@@ -97,7 +97,7 @@ public class InternalKeyBindingSetStatusCommandTest {
 
     @Test
     public void testSetStatus() throws ErrorAdminCommandException, AuthorizationDeniedException {
-        String[] args = new String[] { "setstatus", TESTCLASS_NAME, InternalKeyBindingStatus.ACTIVE.name()};
+        String[] args = new String[] { TESTCLASS_NAME, InternalKeyBindingStatus.ACTIVE.name()};
         command.execute(args);
         InternalKeyBindingInfo internalKeyBindingInfo = internalKeyBindingMgmtSession.getInternalKeyBindingInfo(authenticationToken,
                 internalKeyBindingId);

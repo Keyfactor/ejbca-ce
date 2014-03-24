@@ -30,6 +30,7 @@ import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,7 +38,6 @@ import org.junit.Test;
 /**
  * Tests the CaRenewCACommand.
  *
- * @author Markus Kilas
  * @version $Id$
  */
 public class CaRenewCACommandTest extends CaTestCase {
@@ -77,7 +77,7 @@ public class CaRenewCACommandTest extends CaTestCase {
         LOG.trace(">test01renewCAwithSameKeys()");
 
         final CaRenewCACommand command = new CaRenewCACommand();
-        command.execute(new String[]{"renewca", CA_NAME, "false", "foo123"});
+        assertEquals(CommandResult.SUCCESS, command.execute(new String[]{ CA_NAME, "foo123"}));
         
         final X509CAInfo newinfo = (X509CAInfo) EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(internalAdmin, CA_NAME);
         final X509Certificate newcertsamekeys = (X509Certificate) newinfo.getCertificateChain().iterator().next();
@@ -106,7 +106,7 @@ public class CaRenewCACommandTest extends CaTestCase {
     	LOG.trace(">test02renewCAwithNewKeys()");
     	
     	final CaRenewCACommand command = new CaRenewCACommand();
-        command.execute(new String[]{"renewca", CA_NAME, "true", "foo123"});
+        command.execute(new String[]{ CA_NAME, "foo123", "-R"});
     	
 		final X509CAInfo newinfo2 = (X509CAInfo) EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(internalAdmin, CA_NAME);
 		final X509Certificate newcertnewkeys = (X509Certificate) newinfo2.getCertificateChain().iterator().next();
@@ -141,12 +141,12 @@ public class CaRenewCACommandTest extends CaTestCase {
         final String notBefore = "2009-04-15 08:55:00+02:00";
         
         final CaRenewCACommand command = new CaRenewCACommand();
-        command.execute(new String[]{"renewca", CA_NAME, "false", "foo123", notBefore});
+        assertEquals(CommandResult.SUCCESS, command.execute(new String[]{CA_NAME, "foo123", "--notbefore", notBefore}));
         
         final X509CAInfo newinfo = (X509CAInfo) EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(internalAdmin, CA_NAME);
         final X509Certificate newcertsamekeys = (X509Certificate) newinfo.getCertificateChain().iterator().next();
         
-        assertTrue("new serial number", !orgCert.getSerialNumber().equals(newcertsamekeys.getSerialNumber()));
+        assertTrue("No new serial number.", !orgCert.getSerialNumber().equals(newcertsamekeys.getSerialNumber()));
         
         final byte[] orgkey = orgCert.getPublicKey().getEncoded();
         final byte[] samekey = newcertsamekeys.getPublicKey().getEncoded();
@@ -180,7 +180,7 @@ public class CaRenewCACommandTest extends CaTestCase {
         final String notBefore = "2009-04-15 08:55:00+02:00";
     	
     	final CaRenewCACommand command = new CaRenewCACommand();
-        command.execute(new String[]{"renewca", CA_NAME, "true", "foo123", notBefore});
+        command.execute(new String[]{ CA_NAME, "foo123", "-R", "--notbefore", notBefore});
     	
 		final X509CAInfo newinfo2 = (X509CAInfo) EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(internalAdmin, CA_NAME);
 		final X509Certificate newcertnewkeys = (X509Certificate) newinfo2.getCertificateChain().iterator().next();
@@ -212,7 +212,7 @@ public class CaRenewCACommandTest extends CaTestCase {
         Thread.sleep(2000);
         
         final CaRenewCACommand command = new CaRenewCACommand();
-        command.execute(new String[]{"renewca", CA_NAME});
+        command.execute(new String[]{ CA_NAME});
         
         final X509CAInfo newinfo = (X509CAInfo) EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(internalAdmin, CA_NAME);
         final X509Certificate newcertsamekeys = (X509Certificate) newinfo.getCertificateChain().iterator().next();

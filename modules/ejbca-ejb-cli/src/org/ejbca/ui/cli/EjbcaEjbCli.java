@@ -13,6 +13,10 @@
 
 package org.ejbca.ui.cli;
 
+import org.cesecore.util.CryptoProviderTools;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.library.CommandLibrary;
+
 
 /**
  * Main entry point for the EJBCA EJB CLI
@@ -22,6 +26,13 @@ package org.ejbca.ui.cli;
 public class EjbcaEjbCli {
 
     public static void main(String[] args) {
-        CliCommandHelper.searchAndRun(args, "org.ejbca.ui.cli");
+        if (args.length == 0 || !CommandLibrary.INSTANCE.doesCommandExist(args)) {
+            CommandLibrary.INSTANCE.listRootCommands();
+        } else {
+            CryptoProviderTools.installBCProvider();
+            if(CommandLibrary.INSTANCE.findAndExecuteCommandFromParameters(args) != CommandResult.SUCCESS) {
+                System.exit(1);
+            }
+        }
     }
 }

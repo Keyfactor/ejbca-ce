@@ -12,8 +12,13 @@
  *************************************************************************/
 package org.ejbca.ui.cli.cryptotoken;
 
+import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
 
 /**
  * CryptoToken EJB CLI command. See {@link #getDescription()} implementation.
@@ -22,30 +27,40 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
  */
 public class CryptoTokenDeleteCommand extends BaseCryptoTokenCommand {
 
+    private static final Logger log = Logger.getLogger(CryptoTokenDeleteCommand.class);
+
     @Override
-    public String getSubCommand() {
+    public String getMainCommand() {
         return "delete";
     }
 
     @Override
-    public String getDescription() {
-        return "Delete a CryptoToken";
+    public CommandResult executeCommand(Integer cryptoTokenId, ParameterContainer parameters) throws AuthorizationDeniedException, CryptoTokenOfflineException {
+        try {
+            EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class).deleteCryptoToken(getAdmin(), cryptoTokenId);
+            getLogger().info("CryptoToken deleted successfully.");
+            return CommandResult.SUCCESS;
+        } catch (AuthorizationDeniedException e) {
+            getLogger().info(e.getMessage());
+            return CommandResult.AUTHORIZATION_FAILURE;
+        } catch (Exception e) {
+            getLogger().info("CryptoToken deletion failed: " + e.getMessage());
+            return CommandResult.FUNCTIONAL_FAILURE;
+        }
     }
 
     @Override
-    public void executeCommand(Integer cryptoTokenId, String[] args) {
-        if (args.length < 2) {
-            getLogger().info("Description: " + getDescription());
-            getLogger().info("Usage: " + getCommand() + " <name of CryptoToken>");
-            return;
-        }
-        try {
-            ejb.getRemoteSession(CryptoTokenManagementSessionRemote.class).deleteCryptoToken(getAdmin(), cryptoTokenId);
-            getLogger().info("CryptoToken deleted successfully.");
-        } catch (AuthorizationDeniedException e) {
-            getLogger().info(e.getMessage());
-        } catch (Exception e) {
-            getLogger().info("CryptoToken deletion failed: " + e.getMessage());
-        }
+    public String getCommandDescription() {
+        return "Delete CryptoToken";
+    }
+
+    @Override
+    public String getFullHelpText() {
+        return getCommandDescription();
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return log;
     }
 }

@@ -97,11 +97,7 @@ public class X509ResponseMessage implements CertificateResponseMessage {
         }
     }
 
-    /**
-     * Gets the response message in the default encoding format.
-     *
-     * @return the response message in the default encoding format.
-     */
+    @Override
     public byte[] getResponseMessage() throws CertificateEncodingException {
         return cert.getEncoded();
     }

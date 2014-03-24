@@ -21,7 +21,7 @@ import javax.ejb.ApplicationException;
  *
  */
 @ApplicationException(rollback=true)  
-public class CliAuthenticationFailedException extends RuntimeException {
+public class CliAuthenticationFailedException extends Exception {
 
     private static final long serialVersionUID = 1092700837332116526L;
 

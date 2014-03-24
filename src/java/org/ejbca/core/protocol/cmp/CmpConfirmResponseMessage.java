@@ -82,8 +82,7 @@ public class CmpConfirmResponseMessage extends BaseCmpMessage implements Respons
 	}
 
 	@Override
-	public byte[] getResponseMessage() throws IOException,
-			CertificateEncodingException {
+	public byte[] getResponseMessage() {
         return responseMessage;
 	}
 

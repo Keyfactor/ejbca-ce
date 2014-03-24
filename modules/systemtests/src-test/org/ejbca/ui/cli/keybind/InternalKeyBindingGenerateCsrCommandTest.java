@@ -102,7 +102,7 @@ public class InternalKeyBindingGenerateCsrCommandTest {
 
     @Test
     public void testGenerateCsr() throws ErrorAdminCommandException, AuthorizationDeniedException, FileNotFoundException {
-        String[] args = new String[] { "gencsr", TESTCLASS_NAME, "--genkeypair", csrFile.getAbsolutePath() };
+        String[] args = new String[] { TESTCLASS_NAME, "--genkeypair", csrFile.getAbsolutePath() };
         command.execute(args);
         try {
             new PKCS10RequestMessage(FileTools.readFiletoBuffer(csrFile.getAbsolutePath()));

@@ -134,7 +134,7 @@ public class KeyRecoveryNewestCommandTest {
 
     @Test
     public void testKeyRecovery() throws ErrorAdminCommandException, AuthorizationDeniedException {
-        String[] args = new String[] { "keyrecover", TESTCLASS_NAME };
+        String[] args = new String[] { TESTCLASS_NAME };
         command.execute(args);
         assertTrue("End Entity was not marked for recovery.", keyRecoverySession.isUserMarked(TESTCLASS_NAME));
     }

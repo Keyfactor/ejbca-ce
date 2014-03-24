@@ -250,7 +250,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     }
 
     @Override
-    public void canonicalizeUser(final EndEntityInformation endEntity) throws EjbcaException, UserDoesntFullfillEndEntityProfile {
+    public void canonicalizeUser(final EndEntityInformation endEntity) throws EjbcaException {
         final int endEntityProfileId = endEntity.getEndEntityProfileId();
         final String endEntityProfileName = endEntityProfileSession.getEndEntityProfileName(endEntityProfileId);
         try {
@@ -992,7 +992,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     }
 
     private void setUserStatus(final AuthenticationToken admin, final UserData data1, final int status) throws AuthorizationDeniedException,
-            FinderException, ApprovalException, WaitingForApprovalException {
+             ApprovalException, WaitingForApprovalException {
         final int caid = data1.getCaId();
         final String username = data1.getUsername();
         final int endEntityProfileId = data1.getEndEntityProfileId();
@@ -1274,14 +1274,15 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         try {
             revokeCert(admin, certserno, null, issuerdn, reason, false);
         } catch (RevokeBackDateNotAllowedForProfileException e) {
-            throw new Error("This is should not happen since there is no back dating.",e);
+            throw new IllegalStateException("This is should not happen since there is no back dating.",e);
         }
     }
 
     @Override
     public void revokeCert(AuthenticationToken admin, BigInteger certserno, Date revocationdate, String issuerdn, int reason, boolean checkDate)
-            throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException, RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException {
-        if (log.isTraceEnabled()) {
+            throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException,
+            RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException {
+     if (log.isTraceEnabled()) {
             log.trace(">revokeCert(" + certserno.toString(16) + ", IssuerDN: " + issuerdn + ")");
         }
         // Check that the admin has revocation rights.
@@ -1433,7 +1434,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public Collection<EndEntityInformation> findAllUsersByStatus(AuthenticationToken admin, int status) throws FinderException {
+    public Collection<EndEntityInformation> findAllUsersByStatus(AuthenticationToken admin, int status) {
         if (log.isTraceEnabled()) {
             log.trace(">findAllUsersByStatus(" + status + ")");
         }

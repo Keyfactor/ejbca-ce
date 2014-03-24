@@ -10,78 +10,109 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package org.ejbca.ui.cli.ca;
 
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Iterator;
 
+import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.cvc.CardVerifiableCertificate;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.command.EjbcaCommandBase;
+import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * List certificates that will expire within the given number of days.
  *
  * @version $Id$
  */
-public class CaListExpiredCommand extends BaseCaAdminCommand {
+public class CaListExpiredCommand extends EjbcaCommandBase {
+
+    private static final Logger log = Logger.getLogger(CaListExpiredCommand.class);
+
+    private static final String DAYS_KEY = "-d";
+
+    {
+        registerParameter(new Parameter(DAYS_KEY, "Days", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Expire time in days"));
+    }
 
     @Override
-	public String getSubCommand() { return "listexpired"; }
-    @Override
-    public String getDescription() { return "List certificates that will expire within the given number of days"; }
+    public String getMainCommand() {
+        return "listexpired";
+    }
 
     @Override
-    public void execute(String[] args) throws ErrorAdminCommandException {
-        if (args.length < 2) {
-    		getLogger().info("Description: " + getDescription());
-    		getLogger().info("Usage: " + getCommand() + " <days>");
-            return;
-        }
+    public CommandResult execute(ParameterContainer parameters) {
         CryptoProviderTools.installBCProvider();
+        long days;
         try {
-            long days = Long.parseLong(args[1]);
-            Date findDate = new Date();
-            long millis = (days * 24 * 60 * 60 * 1000);
-            findDate.setTime(findDate.getTime() +  millis);
-            getLogger().info("Looking for certificates that expire before " + findDate + ".");
-
-            Collection<Certificate> certs = getExpiredCerts(findDate);
-            Iterator<Certificate> iter = certs.iterator();
-
-            while (iter.hasNext()) {
-                Certificate cert = iter.next();
-                Date retDate;
-                if (cert instanceof CardVerifiableCertificate) {
-                    retDate = ((CardVerifiableCertificate)cert).getCVCertificate().getCertificateBody().getValidTo();
-                } else {
-                    retDate = ((X509Certificate)cert).getNotAfter();
-                }
-                String subjectDN = CertTools.getSubjectDN(cert);
-                String serNo = CertTools.getSerialNumberAsString(cert);
-                getLogger().info("Certificate with subjectDN '" + subjectDN +
-                    "' and serialNumber '" + serNo + "' expires at " + retDate + ".");
-            }
-        } catch (Exception e) {
-            throw new ErrorAdminCommandException(e);
+            days = Long.parseLong(parameters.get(DAYS_KEY));
+        } catch (NumberFormatException e) {
+            log.error(parameters.get(DAYS_KEY) + " was not a number.");
+            return CommandResult.FUNCTIONAL_FAILURE;
         }
+        Date findDate = new Date();
+        long millis = (days * 24 * 60 * 60 * 1000);
+        findDate.setTime(findDate.getTime() + millis);
+        getLogger().info("Looking for certificates that expire before " + findDate + ".");
+
+        for (Certificate cert : getExpiredCerts(findDate)) {
+            Date retDate;
+            if (cert instanceof CardVerifiableCertificate) {
+                try {
+                    retDate = ((CardVerifiableCertificate) cert).getCVCertificate().getCertificateBody().getValidTo();
+                } catch (NoSuchFieldException e) {
+                    throw new IllegalStateException("Dependent library failure.", e);
+                }
+            } else {
+                retDate = ((X509Certificate) cert).getNotAfter();
+            }
+            String subjectDN = CertTools.getSubjectDN(cert);
+            String serNo = CertTools.getSerialNumberAsString(cert);
+            getLogger().info("Certificate with subjectDN '" + subjectDN + "' and serialNumber '" + serNo + "' expires at " + retDate + ".");
+        }
+        return CommandResult.SUCCESS;
+
     }
 
     private Collection<Certificate> getExpiredCerts(Date findDate) {
         try {
-        	getLogger().debug("Looking for cert with expireDate=" + findDate);
-            Collection<Certificate> certs = ejb.getRemoteSession(CertificateStoreSessionRemote.class).findCertificatesByExpireTimeWithLimit(findDate);
+            getLogger().debug("Looking for cert with expireDate=" + findDate);
+            Collection<Certificate> certs = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class)
+                    .findCertificatesByExpireTimeWithLimit(findDate);
             getLogger().debug("Found " + certs.size() + " certs.");
             return certs;
         } catch (Exception e) {
-        	getLogger().error("Error getting list of certificates", e);
+            getLogger().error("Error getting list of certificates", e);
         }
         return null;
     }
+
+    @Override
+    public String getCommandDescription() {
+        return "List certificates that will expire within the given number of days";
+    }
+
+    @Override
+    public String getFullHelpText() {
+        return getCommandDescription();
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return log;
+    }
+
 }

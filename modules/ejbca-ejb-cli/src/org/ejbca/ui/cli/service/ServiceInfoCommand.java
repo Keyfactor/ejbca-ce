@@ -16,9 +16,12 @@ import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.services.ServiceSessionRemote;
 import org.ejbca.core.model.services.ServiceConfiguration;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
 
 /**
  * CLI subcommand that shows the settings of a service.
@@ -27,25 +30,17 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class ServiceInfoCommand extends BaseServiceCommand {
 
+    private static final Logger log = Logger.getLogger(ServiceInfoCommand.class);
+
     @Override
-    public String getSubCommand() {
+    public String getMainCommand() {
         return "info";
     }
 
     @Override
-    public String getDescription() {
-        return "Show information about a service.";
-    }
-
-    @Override
-    public void execute(String[] args, int serviceId) throws ErrorAdminCommandException {
-        if (args.length != 2) {
-            getLogger().info("Description: " + getDescription());
-            getLogger().info("Usage: " + getCommand() + " <service name>");
-            return;
-        }
+    public CommandResult execute(ParameterContainer parameters, int serviceId) {
         
-        final ServiceSessionRemote serviceSession = ejb.getRemoteSession(ServiceSessionRemote.class);
+        final ServiceSessionRemote serviceSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ServiceSessionRemote.class);
         ServiceConfiguration serviceConfig = serviceSession.getServiceConfiguration(getAdmin(), serviceId);
         
         info("Id", serviceId);
@@ -71,6 +66,7 @@ public class ServiceInfoCommand extends BaseServiceCommand {
         info("Active", serviceConfig.isActive());
         info("Pin to nodes", serviceConfig.getPinToNodes());
         info("Description", serviceConfig.getDescription());
+        return CommandResult.SUCCESS;
     }
     
     /** Displays "name: value" with proper alignment */
@@ -119,4 +115,18 @@ public class ServiceInfoCommand extends BaseServiceCommand {
     }
     
 
+    @Override
+    public String getCommandDescription() {
+        return "Show information about a service.";
+    }
+
+    @Override
+    public String getFullHelpText() {
+        return getCommandDescription();
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return log;
+    }
 }

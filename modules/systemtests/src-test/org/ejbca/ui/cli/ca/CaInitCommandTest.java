@@ -59,6 +59,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.FileTools;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -74,21 +75,21 @@ public class CaInitCommandTest {
     private static final String CA_NAME = "1327ca2";
     private static final String CA_DN = "CN=CLI Test CA 1237ca2,O=EJBCA,C=SE";
     private static final String CERTIFICATE_PROFILE_NAME = "certificateProfile1327";
-    private static final String[] HAPPY_PATH_ARGS = { "init", CA_NAME, CA_DN, "soft", "foo123", "2048", "RSA", "365", "null", "SHA256WithRSA" };
-    private static final String[] X509_TYPE_ARGS = { "init", CA_NAME, CA_DN, "soft", "foo123", "2048", "RSA", "365", "null", "SHA1WithRSA", "-type",
+    private static final String[] HAPPY_PATH_ARGS = {  CA_NAME, CA_DN, "soft", "foo123", "2048", "RSA", "365", "null", "SHA256WithRSA" };
+    private static final String[] X509_TYPE_ARGS = { CA_NAME, CA_DN, "soft", "foo123", "2048", "RSA", "365", "null", "SHA1WithRSA", "-type",
             "x509" };
-    private static final String[] X509_ARGS_NON_DEFULTPWD = { "init", CA_NAME, CA_DN, "soft", "bar123", "2048", "RSA", "365", "1.1.1.1",
+    private static final String[] X509_ARGS_NON_DEFULTPWD = { CA_NAME, CA_DN, "soft", "bar123", "2048", "RSA", "365", "1.1.1.1",
             "SHA1WithRSA" };
-    private static final String[] ROOT_CA_ARGS = { "init", CA_NAME, CA_DN, "soft", "foo123", "2048", "RSA", "365", "null", "SHA256WithRSA",
+    private static final String[] ROOT_CA_ARGS = {  CA_NAME, CA_DN, "soft", "foo123", "2048", "RSA", "365", "null", "SHA256WithRSA",
             "-certprofile", "ROOTCA" };
-    private static final String[] CUSTOM_PROFILE_ARGS = { "init", CA_NAME, CA_DN, "soft", "foo123", "2048", "RSA", "365", "null", "SHA256WithRSA",
+    private static final String[] CUSTOM_PROFILE_ARGS = {  CA_NAME, CA_DN, "soft", "foo123", "2048", "RSA", "365", "null", "SHA256WithRSA",
             "-certprofile", CERTIFICATE_PROFILE_NAME };
-    private static final String[] ECC_CA_ARGS = { "init", CA_NAME, CA_DN, "soft", "foo123", "secp256r1", "ECDSA", "365", "null", "SHA256withECDSA" };
-    private static final String[] ECC_CA_EXPLICIT_ARGS = { "init", CA_NAME, CA_DN, "soft", "foo123", "secp256r1", "ECDSA", "365", "null",
+    private static final String[] ECC_CA_ARGS = {  CA_NAME, CA_DN, "soft", "foo123", "secp256r1", "ECDSA", "365", "null", "SHA256withECDSA" };
+    private static final String[] ECC_CA_EXPLICIT_ARGS = {  CA_NAME, CA_DN, "soft", "foo123", "secp256r1", "ECDSA", "365", "null",
             "SHA256withECDSA", "-explicitecc" };
-    private static final String[] SIGNED_BY_EXTERNAL_ARGS = { "init", CA_NAME, CA_DN, "soft", "foo123", "2048", "RSA", "365", "null", "SHA256WithRSA",
-            "null", "External", "-externalcachain", "chain.pem" };
-    private static final String[] IMPORT_SIGNED_BY_EXTERNAL_ARGS = { "importcacert", CA_NAME, "cert.pem" };
+    private static final String[] SIGNED_BY_EXTERNAL_ARGS = { CA_NAME, CA_DN, "soft", "foo123", "2048", "RSA", "365", "null", "SHA256WithRSA",
+        "--signedby", "External", "-externalcachain", "chain.pem" };
+    private static final String[] IMPORT_SIGNED_BY_EXTERNAL_ARGS = { CA_NAME, "cert.pem" };
 
     private CaInitCommand caInitCommand;
     private CaImportCACertCommand caImportCaCertCommand;
@@ -218,7 +219,7 @@ public class CaInitCommandTest {
             fos.write(CertTools.getPemFromCertificateChain(mylist));
             fos.close();
             SIGNED_BY_EXTERNAL_ARGS[SIGNED_BY_EXTERNAL_ARGS.length - 1] = temp.getAbsolutePath();
-            caInitCommand.execute(SIGNED_BY_EXTERNAL_ARGS);
+            assertEquals(CommandResult.SUCCESS, caInitCommand.execute(SIGNED_BY_EXTERNAL_ARGS));
             CAInfo cainfo = caSession.getCAInfo(admin, CA_NAME);
             assertNotNull("CA signed by external CA was not created.", cainfo);
             assertEquals("Creating a CA signed by an external CA should initially create it in status 'waiting for certificate response'",
@@ -255,7 +256,7 @@ public class CaInitCommandTest {
             fos.write(CertTools.getPemFromCertificateChain(mylist));
             fos.close();
             IMPORT_SIGNED_BY_EXTERNAL_ARGS[IMPORT_SIGNED_BY_EXTERNAL_ARGS.length - 1] = certfile.getAbsolutePath();
-            caImportCaCertCommand.execute(IMPORT_SIGNED_BY_EXTERNAL_ARGS);
+            assertEquals(CommandResult.SUCCESS, caImportCaCertCommand.execute(IMPORT_SIGNED_BY_EXTERNAL_ARGS));
             cainfo = caSession.getCAInfo(admin, CA_NAME);
             assertNotNull("CA signed by external CA does not exist.", cainfo);
             assertEquals("importing a certificate to a CA signed by an external CA should result in status 'active'", CAConstants.CA_ACTIVE,
@@ -277,16 +278,16 @@ public class CaInitCommandTest {
     public void testCreateSubCa() throws ErrorAdminCommandException, AuthorizationDeniedException {
         final String rootCaName = "rootca";
         final String subCaName = "subca";
-        final String[] ROOT_CA_ARGS = { "init", rootCaName, "CN=rootca", "soft", "foo123", "2048", "RSA", "365", "null", "SHA1WithRSA" };
+        final String[] ROOT_CA_ARGS = { rootCaName, "CN=rootca", "soft", "foo123", "2048", "RSA", "365", "null", "SHA1WithRSA" };
       
         try {
-            caInitCommand.execute(ROOT_CA_ARGS);
+            assertEquals(CommandResult.SUCCESS, caInitCommand.execute(ROOT_CA_ARGS));
             CAInfo rootCaInfo = caSession.getCAInfo(admin, rootCaName);
             int rootCaId = rootCaInfo.getCAId();
             try {
-                final String[] SUB_CA_ARGS = { "init", subCaName, "CN=subca", "soft", "foo123", "2048", "RSA", "365", "null", "SHA1WithRSA", null,
+                final String[] SUB_CA_ARGS = { subCaName, "CN=subca", "soft", "foo123", "2048", "RSA", "365", "null", "SHA1WithRSA", "--signedby",
                         Integer.toString(rootCaId) };
-                caInitCommand.execute(SUB_CA_ARGS);
+                assertEquals(CommandResult.SUCCESS, caInitCommand.execute(SUB_CA_ARGS));
                 CAInfo subCaInfo = caSession.getCAInfo(admin, subCaName);
                 int subCaId = subCaInfo.getCAId();
                 try {
@@ -300,7 +301,7 @@ public class CaInitCommandTest {
                 cryptoTokenManagementSession.deleteCryptoToken(admin, rootCaInfo.getCAToken().getCryptoTokenId());
             }
         } catch (CADoesntExistsException e) {
-            throw new RuntimeException("Root CA wasn't created, can't continue.");
+            throw new RuntimeException("Root CA wasn't created, can't continue.", e);
         }
 
     }

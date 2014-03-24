@@ -96,7 +96,7 @@ public class InternalKeyBindingDeleteCommandTest {
 
     @Test
     public void testDeleteKeyBinding() throws ErrorAdminCommandException, AuthorizationDeniedException {
-        String[] args = new String[] { "delete", TESTCLASS_NAME };
+        String[] args = new String[] { TESTCLASS_NAME };
         command.execute(args);
         assertNull("Internal keybinding was not deleted.",
                 internalKeyBindingMgmtSession.getInternalKeyBinding(authenticationToken, internalKeyBindingId));

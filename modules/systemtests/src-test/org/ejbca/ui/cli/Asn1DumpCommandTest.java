@@ -66,7 +66,7 @@ public class Asn1DumpCommandTest {
 
     @Test
     public void testCommand() {
-        String[] args = new String[] { "asn1dump", pemFile.getAbsolutePath() };
+        String[] args = new String[] { pemFile.getAbsolutePath() };
         try {
             asn1DumpCommand.execute(args);
         } catch (Exception e) {

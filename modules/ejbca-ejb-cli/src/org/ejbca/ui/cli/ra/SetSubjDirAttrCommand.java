@@ -10,18 +10,27 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package org.ejbca.ui.cli.ra;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
-import org.ejbca.ui.cli.CliUsernameException;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * Set the Subject Directory Attributes for an end entity.
@@ -30,55 +39,69 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class SetSubjDirAttrCommand extends BaseRaCommand {
 
-    @Override
-	public String getSubCommand() { return "setsubjectdirattr"; }
-    
-    @Override
-    public String getDescription() { return "Set the Subject Directory Attributes for a end entity"; }
+    private static final Logger log = Logger.getLogger(SetSubjDirAttrCommand.class);
+
+    private static final String USERNAME_KEY = "--username";
+    private static final String ATTRIBUTES_KEY = "--attr";
+
+    {
+        registerParameter(new Parameter(USERNAME_KEY, "Username", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Username of the end entity to modify."));
+        registerParameter(new Parameter(ATTRIBUTES_KEY, "Attributes", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Attributes are: dateOfBirth=<19590927>, placeOfBirth=<string>, gender=<M/F>, countryOfCitizenship=<two letter ISO3166>, countryOfResidence=<two letter ISO3166>"));
+    }
 
     @Override
-    public String[] getSubCommandAliases() {
-        return new String[]{};
+    public String getMainCommand() {
+        return "setsubjectdirattr";
     }
-    
+
     @Override
-    public void execute(String[] args) throws ErrorAdminCommandException {
-        try {
-            args = parseUsernameAndPasswordFromArgs(args);
-        } catch (CliUsernameException e) {
-            return;
+    public CommandResult execute(ParameterContainer parameters) {
+        String username = parameters.get(USERNAME_KEY);
+        String attributes = parameters.get(ATTRIBUTES_KEY);
+        if (StringUtils.isEmpty(attributes)) {
+            getLogger().error("Subject directory attributes must be supplied.");
+            return CommandResult.FUNCTIONAL_FAILURE;
         }
-        
+        getLogger().info("Setting subject directory attributes '" + attributes + "' for end entity " + username);
         try {
-            if (args.length < 3) {
-    			getLogger().info("Description: " + getDescription());
-            	getLogger().info("Usage: " + getCommand() + " <username> \"subject directory attributes\"");
-            	getLogger().info(" Attributes are: dateOfBirth=<19590927>, placeOfBirth=<string>, gender=<M/F>, countryOfCitizenship=<two letter ISO3166>, countryOfResidence=<two letter ISO3166>");
-                return;
+            EndEntityInformation uservo = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(
+                    getAuthenticationToken(), username);
+            ExtendedInformation ext = uservo.getExtendedinformation();
+            if (ext == null) {
+                ext = new ExtendedInformation();
             }
-            String username = args[1];
-            String attributes = args[2];
-            if (StringUtils.isEmpty(attributes)) {
-            	getLogger().error("Subject directory attributes must be supplied.");
-            	return;
-            }
-            getLogger().info("Setting subject directory attributes '" + attributes + "' for end entity " + username);
-            try {
-            	EndEntityInformation uservo = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAuthenticationToken(cliUserName, cliPassword), username);
-            	ExtendedInformation ext = uservo.getExtendedinformation();
-            	if (ext == null) {
-            		ext = new ExtendedInformation();
-            	}
-            	ext.setSubjectDirectoryAttributes(attributes);
-            	uservo.setExtendedinformation(ext);
-            	ejb.getRemoteSession(EndEntityManagementSessionRemote.class).changeUser(getAuthenticationToken(cliUserName, cliPassword), uservo, false);
-            } catch (AuthorizationDeniedException e) {
-            	getLogger().error("Not authorized to change end entity.");
-            } catch (UserDoesntFullfillEndEntityProfile e) {
-            	getLogger().error("Given end entity doesn't fullfill end entity profile. : " + e.getMessage());
-            }
-        } catch (Exception e) {
-            throw new ErrorAdminCommandException(e);
+            ext.setSubjectDirectoryAttributes(attributes);
+            uservo.setExtendedinformation(ext);
+            EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).changeUser(getAuthenticationToken(), uservo, false);
+            return CommandResult.SUCCESS;
+        } catch (AuthorizationDeniedException e) {
+            getLogger().error("Not authorized to change end entity.");
+        } catch (UserDoesntFullfillEndEntityProfile e) {
+            getLogger().error("Given end entity doesn't fullfill end entity profile. : " + e.getMessage());
+        } catch (CADoesntExistsException e) {
+            getLogger().error("ERROR: " + e.getMessage());
+        } catch (WaitingForApprovalException e) {
+            getLogger().error("ERROR: " + e.getMessage());
+        } catch (EjbcaException e) {
+            getLogger().error("ERROR: " + e.getMessage());
         }
+        return CommandResult.FUNCTIONAL_FAILURE;
     }
+
+    @Override
+    public String getCommandDescription() {
+        return "Set the Subject Directory Attributes for a end entity";
+    }
+
+    @Override
+    public String getFullHelpText() {
+        return getCommandDescription();
+    }
+
+    protected Logger getLogger() {
+        return log;
+    }
+
 }

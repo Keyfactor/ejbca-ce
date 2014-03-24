@@ -19,38 +19,48 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * See getDescription().
  * 
  * @version $Id$
  */
-public class InternalKeyBindingImportCertificateCommand extends BaseInternalKeyBindingCommand {
+public class InternalKeyBindingImportCertificateCommand extends RudInternalKeyBindingCommand {
+
+    private static final Logger log = Logger.getLogger(InternalKeyBindingImportCertificateCommand.class);
+
+    private static final String PEM_FILE_KEY = "-f";
+
+    {
+        registerParameter(new Parameter(PEM_FILE_KEY, "Filename", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "PEM to import from."));
+    }
 
     @Override
-    public String getSubCommand() {
+    public String getMainCommand() {
         return "import";
     }
 
     @Override
-    public String getDescription() {
-        return "Validate and import a certificate in PEM format to the database and update the key binding.";
-    }
-
-    @Override
-    public void executeCommand(Integer internalKeyBindingId, String[] args) throws AuthorizationDeniedException, CertificateImportException {
-        if (args.length < 3) {
-            getLogger().info("Description: " + getDescription());
-            getLogger().info("Usage: " + getCommand() + " <name> <PEM input file name>");
-            return;
-        }
-        final InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = ejb.getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
+    public CommandResult executeCommand(Integer internalKeyBindingId, ParameterContainer parameters) throws AuthorizationDeniedException,
+            CertificateImportException {
+        final InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE
+                .getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
+        final String filename = parameters.get(PEM_FILE_KEY);
         try {
-            final InputStream is = new FileInputStream(args[2]);
+            final InputStream is = new FileInputStream(filename);
             final List<Certificate> certificates = CertTools.getCertsFromPEM(is);
             is.close();
             // Import first non-CA cert
@@ -67,12 +77,30 @@ public class InternalKeyBindingImportCertificateCommand extends BaseInternalKeyB
                 }
             }
             if (!imported) {
-                getLogger().info("Unable to import any certificate from the specified file.");
+                getLogger().error("Unable to import any certificate from the specified file.");
+                return CommandResult.FUNCTIONAL_FAILURE;
             }
+            return CommandResult.SUCCESS;
         } catch (IOException e) {
-            getLogger().info("Filed to read PEM format certificate from \"" + args[2] + "\". " + e.getMessage());
+            throw new IllegalStateException("Failed to read PEM format certificate from \"" + filename + "\". " + e.getMessage());
         } catch (CertificateException e) {
-            getLogger().info("Filed to read PEM format certificate from \"" + args[2] + "\". " + e.getMessage());
+            log.error("Failed to read PEM format certificate from \"" + filename + "\". " + e.getMessage());
+            return CommandResult.FUNCTIONAL_FAILURE;
         }
     }
+
+    @Override
+    public String getCommandDescription() {
+        return "Validate and import a certificate in PEM format to the database and update the key binding.";
+    }
+
+    @Override
+    public String getFullHelpText() {
+        return getCommandDescription();
+    }
+
+    protected Logger getLogger() {
+        return log;
+    }
+
 }

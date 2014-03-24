@@ -105,23 +105,21 @@ appserver.home         : ${appserver.home}
 
     <target name="ejbca:initCA" >
        <echo message="Initializing CA with '${ca.name}' '${ca.dn}' '${ca.tokentype}' &lt;ca.tokenpassword hidden&gt; '${ca.keyspec}' '${ca.keytype}' '${ca.validity}' '${ca.policy}' '${ca.signaturealgorithm}' ${ca.tokenproperties} ${install.certprofile.command} -superadmincn '${superadmin.cn}'..." />
-        <ejbca:cli-hideargs arg='ca init "${ca.name}" "${ca.dn}" "${ca.tokentype}" "${ca.tokenpassword}" "${ca.keyspec}" "${ca.keytype}" "${ca.validity}" "${ca.policy}" "${ca.signaturealgorithm}" ${ca.tokenproperties} ${install.certprofile.command} -superadmincn "${superadmin.cn}"'/>
+        <ejbca:cli-hideargs arg="ca init ${ca.name} &quot;'${ca.dn}'&quot; ${ca.tokentype} ${ca.tokenpassword} ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties} ${install.certprofile.command} -superadmincn ${superadmin.cn}"/>
      </target>
 
 	<target name="ejbca:adminweb">
 		<!-- Add an altname of 127.0.0.1 if the httpsservers hostname is localhost -->
 	    <condition property="httpsserver.an" value="IPAddress=127.0.0.1" else="null">
 	        <contains string="${httpsserver.dn}" substring="CN=localhost,"/>
-	    </condition>
-		
-		
-		<ejbca:cli-hideargs arg='ra addendentity tomcat ${httpsserver.password} "${httpsserver.dn}" "${httpsserver.an}" "${ca.name}" null 1 JKS SERVER'/>
+	    </condition>		
+		<ejbca:cli-hideargs arg="ra addendentity tomcat --password ${httpsserver.password} &quot;'${httpsserver.dn}'&quot; --altname &quot;'${httpsserver.an}'&quot; ${ca.name} 1 JKS --certprofile SERVER"/>
 		<ejbca:cli-hideargs arg="ra setclearpwd tomcat ${httpsserver.password}"/>
 		<ejbca:cli arg="batch tomcat"/>
         <condition property="superadmin.keystoretype" value="P12" else="USERGENERATED">
            	<istrue value="${superadmin.batch}" />
         </condition>
-		<ejbca:cli-hideargs arg='ra addendentity superadmin ${superadmin.password} "${superadmin.dn}" null "${ca.name}" null 1 ${superadmin.keystoretype}'/>
+		<ejbca:cli-hideargs arg="ra addendentity superadmin --password ${superadmin.password} &quot;'${superadmin.dn}'&quot; ${ca.name} 1 ${superadmin.keystoretype}"/>
 		<ejbca:cli-hideargs arg="ra setclearpwd superadmin ${superadmin.password}" />
 		
 		<!--
@@ -181,7 +179,7 @@ appserver.home         : ${appserver.home}
     <macrodef name="cli-hideargs" uri="ejbca" description="same as 'cli', but does not output the given arguments to console">
         <attribute name="arg"/>
         <sequential>
-            <java dir="${ejbca.home}" jar="${ejbca.home}/dist/ejbca-ejb-cli/ejbca-ejb-cli.jar" fork="true">
+            <java dir="${ejbca.home}" jar="${ejbca.home}/dist/ejbca-ejb-cli/ejbca-ejb-cli.jar" fork="true" failonerror="true">
                 <arg line="@{arg}"/>
             </java>
         </sequential>
