@@ -81,7 +81,7 @@ $
 Enter the command:
 </p>
 <source>
-$ bin/ejbca.sh ca importca
+$ bin/ejbca.sh ca importca --help
 </source>
 <p>
 to get usage instructions how to import HSM CAs.
@@ -134,7 +134,7 @@ To restore the catoken keys again for "TestCA" with the keystore exported as "Te
 the following from the $EJBCA_HOME directory:
 </p>
 <source>
-$ bin/ejbca.sh ca restorekeystore TestCA /path/TestCA-exported.p12 SignatureKeyAlias EncryptionKeyAlias
+$ bin/ejbca.sh ca restorekeystore TestCA /path/TestCA-exported.p12 -s SignatureKeyAlias -e EncryptionKeyAlias
 Using JBoss JNDI provider...
 Enter keystore password: foo123
 $ 
@@ -187,7 +187,7 @@ EJBCA supports importing certificates into the existing database. This can be us
 In order to import a single certificate, use the command:
 </p>
 <source>
-bin/ejbca.sh ca importcert &lt;username&gt; &lt;password&gt; &lt;caname&gt; &lt;status&gt; &lt;email&gt; &lt;certificate file&gt; &lt;endentityprofile&gt; [&lt;certificateprofile&gt;]
+bin/ejbca.sh ca importcert &lt;username&gt; &lt;password&gt; &lt;caname&gt; &lt;status&gt; --email &lt;email&gt; &lt;certificate file&gt; --eeprofile &lt;endentityprofile&gt; [--certprofile &lt;certificateprofile&gt;]
 </source>
 <p>
 The parameters are as follows:
@@ -209,7 +209,7 @@ Running the command without any parameters will display basic usage help, and a 
 Here's an example usage of the <em>importcert</em> command:
 </p>
 <source>
-bin/ejbca.sh ca importcert myuser mypassword SomeCAName ACTIVE mymail@example.com mycertificate.pem EMPTY ENDUSER
+bin/ejbca.sh ca importcert myuser mypassword SomeCAName ACTIVE --email mymail@example.com mycertificate.pem --eeprofile EMPTY --certprofile ENDUSER
 </source>
 <p>
 This command would create a new end entity (or use the existing one) in EJBCA called <em>myuser</em> with the supplied password, and add a new active (non-revoked) certificate for this user under the end entity profile <em>EMPTY</em>, using the certificate profile <em>ENDUSER</em>.
@@ -220,7 +220,7 @@ This command would create a new end entity (or use the existing one) in EJBCA ca
 In order to import certificates in bulk, use the commnad:
 </p>
 <source>
-bin/ejbca.sh ca importcertdir &lt;username-source&gt; &lt;caname&gt; &lt;status&gt; &lt;certificate dir&gt; &lt;endentityprofile&gt; &lt;certificateprofile&gt; [-resumeonerror]
+bin/ejbca.sh ca importcertdir &lt;username-source&gt; &lt;caname&gt; &lt;status&gt; &lt;certificate dir&gt; --eeprofile &lt;endentityprofile&gt; --certprofile &lt;certificateprofile&gt; [-resumeonerror]
 </source>
 <p>
 The parameters are as follows:
@@ -1101,7 +1101,7 @@ Extract Username Component : CN
 </source>
 <p>You can now add a new user in EJBCA:</p>
 <source>
-bin/ejbca.sh ra addendentity user1 password "CN=user1,O=My Organization,C=SE" null ManagementCA null 1 USERGENERATED
+bin/ejbca.sh ra addendentity user1 --password password "CN=user1,O=My Organization,C=SE" ManagementCA 1 USERGENERATED
 bin/ejbca.sh ra setclearpwd user1 password
 bin/ejbca.sh ra setendentitystatus user1 10
 </source>
@@ -1379,10 +1379,10 @@ superadmin.p12 keystore generated during the installation or generate a new JKS 
 Below is a short description how to create a JKS for a user on the command line, and adding the new user to the superadministrator role.
 </p>
 <source>
-bin/ejbca.sh ra addendentity &lt;1> &lt;2> "C=..,O=..,CN=&lt;1>" null AdminCA null 1 JKS
+bin/ejbca.sh ra addendentity &lt;1> &lt;2> "C=..,O=..,CN=&lt;1>" AdminCA 1 JKS
 bin/ejbca.sh ra setclearpwd &lt;1> &lt;2>
 bin/ejbca.sh batch &lt;1>
-bin/ejbca.sh roles addadmin 'username' 'password' "Temporary Super Administrator Group" AdminCA WITHCOMMONNAME EQUALCASEINS &lt;1>
+bin/ejbca.sh roles addadmin "Temporary Super Administrator Group" AdminCA WITHCOMMONNAME EQUALCASEINS &lt;1>
 </source>
 </subsection>
 
@@ -1904,7 +1904,7 @@ Information on how to use the External RA API is available <a href="externalra.h
 </p>
 </section>
 
-<section name="Key recovery">
+<section name="Key Recovery">
 <p>
 Key Recovery can be used to re-use or restore a users private key.
 Key recovery means that <i>server generated</i> keys (and the certificate) of a user is stored, encrypted, in the CAs database.
@@ -1933,19 +1933,19 @@ same key pair, if the key and certificate was generated key recoverable as desci
 # Mark the generated certificate for keyrecovery,
 </p>
 <source>
-bin/ejbca.sh ra keyrecovernewest $username
+bin/ejbca.sh ra keyrecovernewest &lt;username&gt;
 </source>
 <p>
 # then set clear text password for Batch session to use
 </p>
 <source>
-bin/ejbca.sh ra setclearpwd $username $userpass
+bin/ejbca.sh ra setclearpwd &lt;username&gt; &lt;userpass&gt;
 </source>
 <p>
 # and finally reissue the certificate.
 </p>
 <source>
-bin/ejbca.sh batch $username
+bin/ejbca.sh batch &lt;username&gt;
 </source>
 <p>
 The same can be accomplished using a browser:
@@ -4189,7 +4189,7 @@ in the LDAP servers certificate is the same as the hostname.
 An example of adding a user for the LDAP server with the CLI interface is:
 </p>e
 <source>
-bin/ejbca.sh ra addendentity ldap password "C=SE,O=Foo,CN=ldap.foo.se" null MyCA null 1 PEM SERVER
+bin/ejbca.sh ra addendentity ldap password "C=SE,O=Foo,CN=ldap.foo.se" MyCA 1 PEM SERVER
 </source>
 <p>
 where ldap.foo.se is the hostname of the LDAP server that Outlook should use.
@@ -5428,16 +5428,16 @@ to all CLI operations demanding authentication in the form of the following flag
 <p>which will cause the console to prompt for the password. If instead the password should be included in the command line (such as)
 	from a script, it can be specified using the following flags:</p>
 <source>
--u &lt;username&gt; -password=&lt;password&gt;
+-u &lt;username&gt; --clipassword=&lt;password&gt;
 </source>
 <p>You can also specify that the password is provided as the first line in a file, which can be useful for scripting. It can be specified prepending 'file:' to the password:</p>
 <source>
--u &lt;username&gt; -password=file:&lt;filename&gt;
+-u &lt;username&gt; --clipassword=file:&lt;filename&gt;
 </source>
 <p>Where <i>filename</i> is a file, for example /tmp/pwd.txt, containing the password as a single line.</p>
 <p>An example CLI command to list CAs can look like:</p>
 <source>
-bin/ejbca.sh ca listcas -u ejbca -password=file:/tmp/pwd.txt
+bin/ejbca.sh ca listcas -u ejbca --clipassword=file:/tmp/pwd.txt
 </source>
 <p>Command line users are authenticated from the existing list of End Entities, and are granted the same rights.
 You can find the default CLI user in the 'Super Administrator Role' under 'Administrator Roles' after a default install or upgrade.</p>
