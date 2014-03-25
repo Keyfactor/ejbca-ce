@@ -74,7 +74,7 @@ public enum OcspSigningCache {
                 if (CertTools.getSubjectDN(signingCertificate).equals(OcspConfiguration.getDefaultResponderId())) {
                     defaultResponderCacheEntry = entry;
                     if (log.isDebugEnabled()) {
-                        log.info("Setting keybinding with ID" + entry.getOcspKeyBinding().getId() + " and DN "
+                        log.info("Setting CA with DN "
                                 + OcspConfiguration.getDefaultResponderId() + " as default responder.");
                     }
                     break;
