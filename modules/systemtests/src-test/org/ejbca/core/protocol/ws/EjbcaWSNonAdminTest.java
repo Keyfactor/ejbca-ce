@@ -471,7 +471,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         endEntityManagementSession.addUser(intadmin, userData, true);
 
         File tmpfile = File.createTempFile("ejbca", "p12");
-        BatchCreateTool.createAllNew(admin1, tmpfile.getParent());
+        BatchCreateTool.createAllNew(intadmin, tmpfile.getParent());
         adminEntities = new ArrayList<AccessUserAspectData>();
         adminEntities.add(new AccessUserAspectData(getRoleName(), caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASEINS, adminusername1));  
         roleManagementSession.addSubjectsToRole(intadmin, roleAccessSession.findRole(getRoleName()), adminEntities);
