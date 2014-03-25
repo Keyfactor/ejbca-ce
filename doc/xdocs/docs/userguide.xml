@@ -187,7 +187,7 @@ ejbca.sh ca init
 Issuing the command will give usage instructions. An example is:
 </p>
 <source>
-bin/ejbca.sh ca init TestRoot "C=SE,O=PrimeKey,CN=TestRoot" soft foo123 2048 RSA 265 2.5.29.32.0 SHA256WithRSA
+bin/ejbca.sh ca init TestRoot "C=SE,O=PrimeKey,CN=TestRoot" soft foo123 2048 RSA 365 --policy 2.5.29.32.0 SHA256WithRSA
 </source>
 <p>This will create a root CA with the DN 'C=SE,O=PrimeKey,CN=TestRoot'. The
 keylength is
@@ -524,7 +524,7 @@ the PKI but with only one CA active at a time.
 Create the CA generating a CSR (Crypto token password is set to foo123):
 </p> 
 <source>
-bin/ejbca.sh ca init CaSignedByExteral "CN=This CA is Signed by an external CA" soft foo123 secp256r1 ECDSA 365 null SHA256withECDSA null External -externalcachain chain.pem
+bin/ejbca.sh ca init CaSignedByExteral "CN=This CA is Signed by an external CA" soft foo123 secp256r1 ECDSA 365 null SHA256withECDSA --signedby External -externalcachain chain.pem
 </source>
 <p>
 The file chain.pem contains the certificate chain of the external CA, just as described above.

@@ -219,7 +219,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
                 + "Should only be used when creating a CSCA for ePassports."));
         registerParameter(new Parameter(SIGNED_BY, "CA ID", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 " The ID of a CA that will sign this CA. If this is omitted the new CA will be self signed (i.e. a root CA)."
-                        + "To create a CA signed by an external CA, use the keyword 'External' as <signed by caid>, "
+                        + "To create a CA signed by an external CA, use the keyword 'External' as <CA_ID>, "
                         + "this will result in a certificate request (CSR) being saved on file, to be signed by the external CA. "
                         + "Requires parameter '-externalcachain <externalCA chain PEM file' with the full certificate chain of the external CA."));
         registerParameter(new Parameter(EXTERNAL_CHAIN_KEY, "Certificate Chain File", MandatoryMode.OPTIONAL, StandaloneMode.FORBID,
