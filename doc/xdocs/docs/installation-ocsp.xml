@@ -143,7 +143,7 @@ See the file doc/sql-scripts/create-index-ejbca.sql (section for certificatedata
 bin/ejbca.sh ca importcacert OCSP_CA /home/tomas/tmp/OCSP_CA.pem
 bin/ejbca.sh cryptotoken create OCSPCryptoToken foo123 true SoftCryptoToken true
 bin/ejbca.sh cryptotoken generatekey OCSPCryptoToken ocspsignkey RSA2048
-bin/ejbca.sh keybind create OCSP_CA_KeyBinding OcspKeyBinding DISABLED null OCSPCryptoToken ocspsignkey SHA256WithRSA nonexistingisgood=false includecertchain=true
+bin/ejbca.sh keybind create OCSP_CA_KeyBinding OcspKeyBinding DISABLED null OCSPCryptoToken ocspsignkey SHA256WithRSA -nonexistingisgood=false -includecertchain=true
 bin/ejbca.sh keybind gencsr OCSP_CA_KeyBinding csr.pem
 
 (send the csr to OCSP_CA and get signed certificate back)
