@@ -14,6 +14,7 @@ package org.cesecore.certificates.certificateprofile;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,6 +27,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
@@ -1595,11 +1597,18 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         if (data.get(CVCLONGACCESSRIGHTS) == null) {
             return null;
         }
-        return (byte[])data.get(CVCLONGACCESSRIGHTS);
+        @SuppressWarnings("unchecked")
+        List<Byte> rightsList = (List<Byte>)data.get(CVCLONGACCESSRIGHTS);
+        return ArrayUtils.toPrimitive(rightsList.toArray(new Byte[0]));
     }
 
     public void setCVCLongAccessRights(byte[] access) {
-        data.put(CVCLONGACCESSRIGHTS, access != null ? access.clone() : null);
+        if (access == null) {
+            data.put(CVCLONGACCESSRIGHTS, null);
+        } else {
+            // Convert to List<Byte> since byte[] doesn't work with database protection
+            data.put(CVCLONGACCESSRIGHTS, new ArrayList<Byte>(Arrays.asList(ArrayUtils.toObject(access))));
+        }
     }
     
     public int getCVCSignTermDVType() {
