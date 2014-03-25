@@ -862,7 +862,7 @@ function checkallfields(){
                 out.write(ejbcawebbean.getText("NOTUSED"));
               }
            }else{ %>
-        <input type="obligatory" id="<%=TEXTFIELD_VALIDITY%>" size="25" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMD") %> <%= ejbcawebbean.getText("OR") %> <%= ejbcawebbean.getText("FORMAT_ISO8601") %>"
+        <input type="obligatory" name="<%=TEXTFIELD_VALIDITY%>" id="<%=TEXTFIELD_VALIDITY%>" size="25" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMD") %> <%= ejbcawebbean.getText("OR") %> <%= ejbcawebbean.getText("FORMAT_ISO8601") %>"
            <% if(editca) out.write("value=\"" + ValidityDate.getString(cainfo.getValidity()) + "\""); %> />
            <% if(editca) { %>
         &nbsp;
@@ -883,7 +883,7 @@ function checkallfields(){
               <span class="dn"><c:out value="<%= cainfo.getSubjectDN() %>"/></span>
         <% } else { %>
         <% /* Maxlength for the CA subject DN is based on 250 chars MySQL String mapping minus the "CN=xxxxSignerCertificate," string that is added for services. */ %>
-        <input type="obligatory" id="<%=TEXTFIELD_SUBJECTDN%>" size="45" maxlength="225" value="CN=<%= caname %>" title="<%= ejbcawebbean.getText("FORMAT_DN") %>">
+        <input type="obligatory" name="<%=TEXTFIELD_SUBJECTDN%>" id="<%=TEXTFIELD_SUBJECTDN%>" size="45" maxlength="225" value="CN=<%= caname %>" title="<%= ejbcawebbean.getText("FORMAT_DN") %>">
         <% } %>
       </td>
     </tr>
@@ -1235,7 +1235,7 @@ function checkallfields(){
           <% if (isexternal) {
                out.write(CombineTime.getInstance(cainfo.getCRLPeriod()).toString(CombineTime.TYPE_MINUTES));
              } else { %>
-        <input type="obligatory" id="<%=TEXTFIELD_CRLPERIOD%>" size="20" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %>"
+        <input type="obligatory" name="<%=TEXTFIELD_CRLPERIOD%>" id="<%=TEXTFIELD_CRLPERIOD%>" size="20" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %>"
           <%   if (editca) { out.write(" value='" + CombineTime.getInstance(cainfo.getCRLPeriod()).toString(CombineTime.TYPE_MINUTES) + "'"); }
                else { out.write(" value='1"+CombineTime.TYPE_DAYS+"'"); } %>>
           <% } %>
@@ -1283,7 +1283,7 @@ function checkallfields(){
           <% if (isexternal) {
                out.write("" + CombineTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(CombineTime.TYPE_MINUTES));
              } else { %>
-        <input type="obligatory" id="<%=TEXTFIELD_DELTACRLPERIOD%>" size="20" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %>"
+        <input type="obligatory" name="<%=TEXTFIELD_DELTACRLPERIOD%>" id="<%=TEXTFIELD_DELTACRLPERIOD%>" size="20" maxlength="255" title="<%= ejbcawebbean.getText("FORMAT_TIME_YMDHMIN") %>"
           <%   if (editca) { out.write(" value='" + CombineTime.getInstance(cainfo.getDeltaCRLPeriod()).toString(CombineTime.TYPE_MINUTES) + "'"); }
                else { out.write(" value='0"+CombineTime.TYPE_MINUTES+"'");} %> />
           <% } %> 
