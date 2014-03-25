@@ -437,9 +437,9 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
     public void test38UniqueSubjectDN() throws Exception {
     	// Make sure that the CA requires unique subject DN
     	CAInfo cainfo = caSession.getCAInfo(roleMgmgToken, testx509ca.getCAId());
-    	boolean enforceuniquesubjectdn = cainfo.isDoEnforceUniqueDistinguishedName();
+    	boolean enforceuniquesubjectdn = new Boolean(cainfo.isDoEnforceUniqueDistinguishedName());
     	// We don't want to use this for simplicity of the test
-    	boolean enforceuniquekey = cainfo.isDoEnforceUniquePublicKeys();
+    	boolean enforceuniquekey = new Boolean(cainfo.isDoEnforceUniquePublicKeys());
     	cainfo.setDoEnforceUniqueDistinguishedName(true);
     	cainfo.setDoEnforceUniquePublicKeys(false);
         String fp1 = null;
@@ -534,6 +534,14 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
 
     @Test
     public void testNullInjection() throws Exception {
+        // Make sure that the CA requires unique subject DN, but not unique public keys
+        CAInfo cainfo = caSession.getCAInfo(roleMgmgToken, testx509ca.getCAId());
+        boolean enforceuniquesubjectdn = new Boolean(cainfo.isDoEnforceUniqueDistinguishedName());
+        boolean enforceuniquekey = new Boolean(cainfo.isDoEnforceUniquePublicKeys());
+        cainfo.setDoEnforceUniqueDistinguishedName(true);
+        cainfo.setDoEnforceUniquePublicKeys(false);
+        caSession.editCA(roleMgmgToken, cainfo);
+        // Use certificate profile that allows DN override
         final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
     	certprof.setAllowDNOverride(true);
         String fp1 = null;
@@ -606,6 +614,9 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
         	}
 
         } finally {
+            cainfo.setDoEnforceUniqueDistinguishedName(enforceuniquesubjectdn);
+            cainfo.setDoEnforceUniquePublicKeys(enforceuniquekey);
+            caSession.editCA(roleMgmgToken, cainfo);
         	certProfileSession.removeCertificateProfile(roleMgmgToken, "createCertTest");
         	internalCertStoreSession.removeCertificate(fp1);
         	internalCertStoreSession.removeCertificate(fp2);
