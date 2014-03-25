@@ -171,7 +171,10 @@ public class CaImportCVCCACommand extends BaseCaAdminCommand {
 
             String dn = parameters.get(DN_KEY);
             String sigAlg = parameters.get(SIG_ALG_KEY);
-            Integer valdays = Integer.parseInt(parameters.get(VALIDITY_KEY));
+            Integer valdays = null;
+            if (parameters.get(VALIDITY_KEY) != null) {
+                valdays = Integer.parseInt(parameters.get(VALIDITY_KEY));
+            }
             try {
                 if (dn != null || sigAlg != null || valdays != null) {
                     if (dn == null || sigAlg == null || valdays == null) {
