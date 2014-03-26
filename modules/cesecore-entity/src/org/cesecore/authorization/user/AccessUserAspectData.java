@@ -50,15 +50,21 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
 
     public AccessUserAspectData(final String roleName, final int caId, final AccessMatchValue matchWith, final AccessMatchType matchType,
             final String matchValue) {
+        this(roleName, caId, matchWith.getNumericValue(), matchWith.getTokenType(), matchType, matchValue);
+    }
+    
+    /** This constructor for internal use only */
+    public AccessUserAspectData(final String roleName, final int caId, final int matchWith, final String tokenType, final AccessMatchType matchType,
+            final String matchValue) {
         if (roleName == null) {
             throw new InvalidParameterException("Attempted to create an AccessUserAspectData with roleName == null");
         } else {
             this.primaryKey = generatePrimaryKey(roleName, caId, matchWith, matchType, matchValue);
         }
-        if (matchWith == null) {
-            throw new InvalidParameterException("Attempted to create an AccessUserAspectData with matchWith == null");
+        if (tokenType == null) {
+            throw new InvalidParameterException("Attempted to create an AccessUserAspectData with tokenType == null");
         } else {
-            this.matchWith = matchWith.getNumericValue();
+            this.tokenType = tokenType;
         }
         if (matchType == null) {
             throw new InvalidParameterException("Attempted to create an AccessUserAspectData with matchType == null");
@@ -70,8 +76,8 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
         } else {
             this.matchValue = matchValue;
         }
+        this.matchWith = matchWith;
         this.caId = caId;
-        this.tokenType = matchWith.getTokenType();
     }
 
     /**
