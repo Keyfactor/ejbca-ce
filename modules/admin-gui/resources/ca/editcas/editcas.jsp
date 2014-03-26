@@ -510,9 +510,12 @@ java.security.InvalidAlgorithmParameterException
                 final boolean serviceXkmsActive = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACTIVATEXKMSSERVICE));
                 final boolean serviceCmsActive = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACTIVATECMSSERVICE));
                 final String sharedCmpRaSecret = requestMap.get(TEXTFIELD_SHAREDCMPRASECRET);
-                // Subject DN changing is disabled for now
-                //final String subjectdn = requestMap.get(TEXTFIELD_SUBJECTDN);
-                final String subjectdn = cadatahandler.getCAInfo(caid).getCAInfo().getSubjectDN();
+                final String subjectdn;
+                if (cadatahandler.getCAInfo(caid).getCAInfo().getStatus() == CAConstants.CA_UNINITIALIZED) {
+                    subjectdn = requestMap.get(TEXTFIELD_SUBJECTDN);
+                } else {
+                    subjectdn = cadatahandler.getCAInfo(caid).getCAInfo().getSubjectDN();
+                }
                 final CAInfo cainfo = cabean.createCaInfo(caid, caname, subjectdn, catype,
             		keySequenceFormatParam, keySequence, description, validityString,
             		crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, finishUser,
@@ -526,9 +529,12 @@ java.security.InvalidAlgorithmParameterException
                 
                 if (cadatahandler.getCAInfo(caid).getCAInfo().getStatus() == CAConstants.CA_UNINITIALIZED) {
                     // Allow changing of subjectDN etc. for uninitialized CAs
-                    final long validity = ValidityDate.encode(validityString);
-                    if (validity<0) {
-                        throw new ParameterException(ejbcawebbean.getText("INVALIDVALIDITYORCERTEND"));
+                    if (validityString != null) {
+                        final long validity = ValidityDate.encode(validityString);
+                        if (validity<0) {
+                            throw new ParameterException(ejbcawebbean.getText("INVALIDVALIDITYORCERTEND"));
+                        }
+                        cainfo.setValidity(validity);
                     }
                     
                     signatureAlgorithmParam = requestMap.get(HIDDEN_CASIGNALGO);
@@ -542,9 +548,9 @@ java.security.InvalidAlgorithmParameterException
                     final String keyAliasKeyTestKey = requestMap.get(SELECT_CRYPTOTOKEN_KEYTESTKEY);
                     final String signkeyspec = requestMap.get(SELECT_KEYSIZE);
                     
-                    // Subject DN changing is disabled for now
+                    // TODO should we allow changing the CA Name also?
                     //cainfo.setName(caname);
-                    //cainfo.setSubjectDN(subjectdn);
+                    cainfo.setSubjectDN(subjectdn);
                     final Properties caTokenProperties = new Properties();
                     caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, keyAliasDefaultKey);
                     if (keyAliasCertSignKey.length()>0) {
@@ -581,7 +587,6 @@ java.security.InvalidAlgorithmParameterException
                     final CAToken newCAToken = new CAToken(cryptoTokenId, caTokenProperties);
                     newCAToken.setSignatureAlgorithm(signatureAlgorithmParam);
                     cainfo.setCAToken(newCAToken);
-                    cainfo.setValidity(validity);
                     if (cainfo instanceof X509CAInfo) {
                         X509CAInfo x509cainfo = (X509CAInfo)cainfo;
                         x509cainfo.setSubjectAltName(subjectaltname);
