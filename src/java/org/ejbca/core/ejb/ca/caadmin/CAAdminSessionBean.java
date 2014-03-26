@@ -352,6 +352,10 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     null, null, detailsMsg);
             throw new CAExistsException(detailsMsg);
         }
+        // Check if we are creating a CVC CA, and in case we have a unique (issuerDN,serialNumber) index in the database, then fail fast.
+        if ((cainfo.getCAType() == CAInfo.CATYPE_CVC) && certificateStoreSession.isUniqueCertificateSerialNumberIndex()) {
+            throw new IllegalArgumentException("Not possible to create CVC CA when there is a unique (issuerDN, serialNumber) index in the database.");
+        }
         // Create CAToken
         final CAToken caToken = cainfo.getCAToken();
         int cryptoTokenId = caToken.getCryptoTokenId();

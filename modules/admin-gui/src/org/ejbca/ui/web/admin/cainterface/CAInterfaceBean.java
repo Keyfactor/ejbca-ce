@@ -68,7 +68,7 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStatus;
-import org.cesecore.certificates.certificate.CertificateStoreSession;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -95,7 +95,6 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.FileTools;
 import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
-import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
@@ -155,7 +154,7 @@ public class CAInterfaceBean implements Serializable {
     private CaSession caSession;
     private CertificateCreateSessionLocal certcreatesession;
     private CertificateProfileSession certificateProfileSession;
-    private CertificateStoreSession certificatesession;
+    private CertificateStoreSessionLocal certificatesession;
     private CertReqHistorySessionLocal certreqhistorysession;
     private CrlStoreSession crlStoreSession;
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
@@ -1441,7 +1440,7 @@ public class CAInterfaceBean implements Serializable {
     }
     
     /** Returns true if any CVC CA implementation is available, false otherwise.
-     * Used to hide/give warning when no CVC CA implementaiton is available.
+     * Used to hide/give warning when no CVC CA implementation is available.
      */
     public boolean isCVCAvailable() {
         boolean ret = false;
@@ -1451,4 +1450,12 @@ public class CAInterfaceBean implements Serializable {
         }
         return ret;
     }
+    /** Returns true if a unique (issuerDN,serialNumber) is present in the database. 
+     * If this is available, you can not use CVC CAs. Returns false if a unique index is 
+     * Used to hide/give warning when no CVC CA implementation is available.
+     */
+    public boolean isUniqueIssuerDNSerialNoIndexPresent() {
+        return certificatesession.isUniqueCertificateSerialNumberIndex();
+    }
+
 }
