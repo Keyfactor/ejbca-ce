@@ -1127,6 +1127,30 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             log.trace("<setPassword(" + username + ", hiddenpwd), " + cleartext);
         }
     }
+    
+    public void updateCAId(final AuthenticationToken admin, final String username, int newCAId)
+            throws AuthorizationDeniedException, FinderException {
+        if (log.isTraceEnabled()) {
+            log.trace(">updateCAId(" + username + ", "+newCAId+")");
+        }
+        // Find user
+        final UserData data = UserData.findByUsername(entityManager, username);
+        if (data == null) {
+            throw new FinderException("Could not find user " + username);
+        }
+        int oldCAId = data.getCaId();
+        assertAuthorizedToCA(admin, oldCAId);
+        data.setCaId(newCAId);
+        
+        final String msg = intres.getLocalizedMessage("ra.editpwdentity", username);
+        Map<String, Object> details = new LinkedHashMap<String, Object>();
+        details.put("msg", msg);
+        auditSession.log(EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.SUCCESS, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(),
+            String.valueOf(oldCAId), null, username, details);
+        if (log.isTraceEnabled()) {
+            log.trace(">updateCAId(" + username + ", "+newCAId+")");
+        }
+    }
 
     @Override
     public boolean verifyPassword(AuthenticationToken admin, String username, String password) throws UserDoesntFullfillEndEntityProfile,

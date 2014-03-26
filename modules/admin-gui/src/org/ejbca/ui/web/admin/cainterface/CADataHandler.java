@@ -35,6 +35,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.rules.AccessRuleManagementSessionLocal;
 import org.cesecore.authorization.user.AccessUserAspectManagerSessionLocal;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -165,7 +166,9 @@ public class CADataHandler implements Serializable {
   public void editCA(CAInfo cainfo) throws AuthorizationDeniedException, CADoesntExistsException{
 	  CAInfo oldinfo = caSession.getCAInfo(administrator, cainfo.getCAId());
 	  cainfo.setName(oldinfo.getName());
-	  cainfo.setSubjectDN(oldinfo.getSubjectDN());
+	  if (cainfo.getStatus() != CAConstants.CA_UNINITIALIZED) {
+	      cainfo.setSubjectDN(oldinfo.getSubjectDN());
+	  }
 	  caadminsession.editCA(administrator, cainfo);  
 	  info.cAsEdited();
   }

@@ -883,9 +883,11 @@ function checkallfields(){
         <strong><%= ejbcawebbean.getText("CERT_SUBJECTDN") %></strong>
       </td>
       <td width="50%"> 
-        <% if (editca) { %>
+        <% if (editca && !isUninitialized) { %>
               <span class="dn"><c:out value="<%= cainfo.getSubjectDN() %>"/></span>
-        <% } else { %>
+        <% } else if (editca && isUninitialized) { %>  
+             <input type="text" name="<%=TEXTFIELD_SUBJECTDN%>" size="45" maxlength="225" value="<%= cainfo.getSubjectDN() %>" title="<%= ejbcawebbean.getText("FORMAT_DN") %>">
+          <% } else { %>
         <% /* Maxlength for the CA subject DN is based on 250 chars MySQL String mapping minus the "CN=xxxxSignerCertificate," string that is added for services. */ %>
         <input type="obligatory" name="<%=TEXTFIELD_SUBJECTDN%>" id="<%=TEXTFIELD_SUBJECTDN%>" size="45" maxlength="225" value="CN=<%= caname %>" title="<%= ejbcawebbean.getText("FORMAT_DN") %>">
         <% } %>
