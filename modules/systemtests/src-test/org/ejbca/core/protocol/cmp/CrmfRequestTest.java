@@ -723,17 +723,17 @@ public class CrmfRequestTest extends CmpTestCase {
         EndEntityInformation user = new EndEntityInformation(username, userDN, caid, null, username + "@primekey.se", new EndEntityType(EndEntityTypes.ENDUSER),
                 SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("foo123");
+        log.debug("Trying to add/edit user: " + user.getUsername() + ", foo123, " + userDN);
         try {
             endEntityManagementSession.addUser(admin, user, true); 
-            log.debug("created user: " + username + ", foo123, " + userDN);
         } catch (Exception e) {
             userExists = true;
         }
 
         if (userExists) {
-            log.debug("User cmptest already exists.");
+            log.debug("user already exists: " + user.getUsername() + ", foo123, " + userDN);
             endEntityManagementSession.changeUser(admin, user, true);
-            endEntityManagementSession.setUserStatus(admin, username, EndEntityConstants.STATUS_NEW);
+            endEntityManagementSession.setUserStatus(admin, user.getUsername(), EndEntityConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
     }
