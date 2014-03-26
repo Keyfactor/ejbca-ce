@@ -1,3 +1,13 @@
+EJBCA 6.1.1
+-----------
+This is a maintenance release with a few bug fixes. In all 4 issues have been fixed.
+EJBCA 6.1.0 was never distributed publicly.
+
+* Noteworthy changes:
+- Fixed some regressions that prevented 6.1.0 from functioning optimally.
+
+See the notes, and known issues, for 6.1.0 below.
+
 EJBCA 6.1.0
 -----------
 This is a maintenance release with new features, bug fixes and improvements. In all 32 issues have been fixed.

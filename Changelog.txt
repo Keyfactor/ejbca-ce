@@ -1,3 +1,11 @@
+EJBCA 6.1.1, 2014-03-27
+---
+Bug
+    [ECA-3479] - Regression: OCSPSigningCache debug causes an NPE for internal OCSP default responders
+    [ECA-3480] - Regression: Creating a CA in Adminweb issues Stacktrace
+    [ECA-3485] - Regression: Certificate Profiles with EAC 2.10 AT role doesn't work with database protection
+    [ECA-3487] - Regression: Unique certificatedata_idx12 is not detected
+
 EJBCA 6.1.0, 2014-03-24
 ---
 Bug
