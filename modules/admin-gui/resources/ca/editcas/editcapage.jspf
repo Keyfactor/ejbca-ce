@@ -401,10 +401,14 @@ function checkallfields(){
 	           } %>
             </td>
         </tr>
-        <% if ( (catype == CAInfo.CATYPE_CVC) && !cabean.isCVCAvailable() ) { %>
+        <% if ( (catype == CAInfo.CATYPE_CVC) && (!cabean.isCVCAvailable() || cabean.isUniqueIssuerDNSerialNoIndexPresent()) ) { %>
         <tr id="Row<%=row++%2%>">
             <td width="50%" align="right"></td>
-            <td class="alert"><%= ejbcawebbean.getText("CVCCANOTAVAILABLE") %></td>
+            <% if ( !cabean.isCVCAvailable() ) { %>
+                <td class="alert"><%= ejbcawebbean.getText("CVCCANOTAVAILABLE") %></td>
+            <% } else { %>
+                <td class="alert"><%= ejbcawebbean.getText("CVCCANOTAVAILABLEUNIQUEINDEX") %></td>
+            <% } %>
         </tr>
         <% } else { 
         // begin "IF CVC AVAILABLE", search for "IF CVC AVAILABLE" to find the end } in the end of this file 
