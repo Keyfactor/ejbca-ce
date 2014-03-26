@@ -122,6 +122,7 @@ public class OcspJunitHelper {
 		}
 		BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
 		X509CertificateHolder[] chain = brep.getCerts();
+		assertNotNull("No certificate chain returned in response (chain == null), is ocsp.includesignercert=false in ocsp.properties?. It should be set to default value for test to run.", chain);
 		boolean verify = brep.isSignatureValid(new JcaContentVerifierProviderBuilder().build(chain[0]));
 		assertTrue("Response failed to verify.", verify);
 		// Check nonce (if we sent one)
