@@ -193,8 +193,7 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
             
             Collection<AccessUserAspectData> subjects = new ArrayList<AccessUserAspectData>();
             for (AccessUserAspectData user : role.getAccessUsers().values()) {
-                // The matchWith is difficult to copy so just change the id
-                user.setPrimaryKey(AccessUserAspectData.generatePrimaryKey(newName, user.getCaId(), user.getMatchWith(), user.getMatchTypeAsType(), user.getMatchValue()));
+                user = new AccessUserAspectData(newName, user.getCaId(), user.getMatchWith(), user.getTokenType(), user.getMatchTypeAsType(), user.getMatchValue());
                 subjects.add(user);
             }
             
