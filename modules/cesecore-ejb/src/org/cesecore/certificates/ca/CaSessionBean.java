@@ -255,9 +255,11 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 		// The CA needs the same name and subject DN in order to store it
 		if (name == null || subjectDN == null) {
 		    throw new CADoesntExistsException("Null CA name or SubjectDN");
-		} else if (!StringUtils.equals(name, ca.getName()) || !StringUtils.equals(subjectDN, ca.getSubjectDN())) {
-		    throw new CADoesntExistsException("Not same CA name and subject DN.");            	
-		}
+		} else if (!StringUtils.equals(name, ca.getName())) {
+		    throw new CADoesntExistsException("Not same CA name.");
+		} else if (!StringUtils.equals(subjectDN, ca.getSubjectDN()) && ca.getCAInfo().getStatus() != CAConstants.CA_UNINITIALIZED) {
+            throw new CADoesntExistsException("Not same CA subject DN.");
+        }
 	}
 
     @Override

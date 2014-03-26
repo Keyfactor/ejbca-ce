@@ -38,17 +38,20 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Random;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
+import javax.ejb.FinderException;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -75,6 +78,8 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.authorization.rules.AccessRuleData;
+import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAData;
@@ -131,6 +136,10 @@ import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.roles.RoleData;
+import org.cesecore.roles.RoleExistsException;
+import org.cesecore.roles.RoleNotFoundException;
+import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -144,6 +153,9 @@ import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
+import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -155,6 +167,9 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
+import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
 import org.ejbca.core.protocol.certificatestore.CertificateCacheFactory;
 import org.ejbca.cvc.CardVerifiableCertificate;
 
@@ -189,13 +204,21 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @EJB
     private CryptoTokenSessionLocal cryptoTokenSession;
     @EJB
+    private EndEntityProfileSessionLocal endEntityProfileSession;
+    @EJB
+    private EndEntityManagementSessionLocal endEntityManagementSession;
+    @EJB
     private PublisherSessionLocal publisherSession;
     @EJB
     private PublishingCrlSessionLocal publishingCrlSession;
     @EJB
     private RevocationSessionLocal revocationSession;
     @EJB
+    private RoleManagementSessionLocal roleManagementSession;
+    @EJB
     private SecurityEventsLoggerSessionLocal auditSession;
+    @EJB
+    private UserDataSourceSessionLocal userDataSourceSession;
 
     @Resource
     private SessionContext sessionContext;
@@ -241,19 +264,21 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             InvalidAlgorithmException, CAExistsException, IllegalCryptoTokenException {
 
         if (caInfo.getStatus() != CAConstants.CA_UNINITIALIZED) {
-            throw new IllegalArgumentException("CA Status was not " + CAConstants.CA_UNINITIALIZED);
+            throw new IllegalArgumentException("CA Status was not CA_UNINITIALIZED (" + CAConstants.CA_UNINITIALIZED+")");
         } else {
             //Find the intended status
             caInfo.setStatus(getCaStatus(caInfo));
         }
-        //Since it's acceptable that SubjectDN changes, in initializing we'll simply kill the old unitialized CA and then recreate it if anything has changed.
-        CAInfo caFromDatabase = caSession.getCAInfo(authenticationToken, caInfo.getCAId());
-        if (!caFromDatabase.getSubjectDN().equals(caInfo.getSubjectDN())) {
-            caSession.removeCA(authenticationToken, caFromDatabase.getCAId());
-            caInfo.setCAId(CertTools.stringToBCDNString(caInfo.getSubjectDN()).hashCode());
+        // Since it's acceptable that SubjectDN (and CAId) changes, in initializing we'll simply kill the old uninitialized CA and then recreate it if anything has changed.
+        int calculatedCAId = CertTools.stringToBCDNString(caInfo.getSubjectDN()).hashCode();
+        int currentCAId = caInfo.getCAId();
+        if (calculatedCAId != currentCAId) {
+            caSession.removeCA(authenticationToken, currentCAId);
+            caInfo.setCAId(calculatedCAId);
             // Changing the SubjectDN will break cert chains in extended CA services
             caInfo.getExtendedCAServiceInfos().clear();
             createCA(authenticationToken, caInfo);
+            updateCAIds(authenticationToken, currentCAId, calculatedCAId);
         } else {
             CAToken caToken = caInfo.getCAToken();
             CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(caInfo.getCertificateProfileId());
@@ -274,6 +299,157 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             caSession.editCA(authenticationToken, ca, true);
         }
 
+    }
+
+    /**
+     * Updates all references to the given CAId in the database.
+     */
+    private void updateCAIds(AuthenticationToken authenticationToken, int fromId, int toId) throws AuthorizationDeniedException {
+        log.info("Updating CAIds in relations from "+fromId+" to "+toId+"\n");
+        
+        // Update Certificate Profiles
+        final Map<Integer,String> certProfiles = certificateProfileSession.getCertificateProfileIdToNameMap();
+        for (Integer certProfId : certProfiles.keySet()) {
+            boolean changed = false;
+            final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(certProfId);
+            final List<Integer> availableCAs = new ArrayList<Integer>(certProfile.getAvailableCAs());
+            // The list is modified so we can't use an iterator
+            for (int i = 0; i < availableCAs.size(); i++) {
+                int value = availableCAs.get(i);
+                if (value == fromId) {
+                    availableCAs.set(i, toId);
+                    changed = true;
+                }
+            }
+            
+            if (changed) {
+                certProfile.setAvailableCAs(availableCAs);
+                String name = certProfiles.get(certProfId);
+                certificateProfileSession.changeCertificateProfile(authenticationToken, name, certProfile);
+            }
+        }
+        
+        // Update End-Entity Profiles
+        final Map<Integer,String> endEntityProfiles = endEntityProfileSession.getEndEntityProfileIdToNameMap();
+        for (Integer endEntityProfId : endEntityProfiles.keySet()) {
+            boolean changed = false;
+            final EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(endEntityProfId);
+            
+            if (endEntityProfile.getDefaultCA() == fromId) {
+                endEntityProfile.setValue(EndEntityProfile.DEFAULTCA, 0, String.valueOf(toId));
+                changed = true;
+            }
+            
+            final Collection<String> original = endEntityProfile.getAvailableCAs();
+            final List<Integer> updated = new ArrayList<Integer>();
+            for (String oldvalueStr : original) {
+                int oldvalue = Integer.valueOf(oldvalueStr);
+                int newvalue;
+                if (oldvalue == fromId) {
+                    newvalue = toId;
+                    changed = true;
+                } else {
+                    newvalue = oldvalue;
+                }
+                updated.add(newvalue);
+            }
+            
+            if (changed) {
+                endEntityProfile.setAvailableCAs(updated);
+                String name = endEntityProfiles.get(endEntityProfId);
+                try {
+                    endEntityProfileSession.changeEndEntityProfile(authenticationToken, name, endEntityProfile);
+                } catch (EndEntityProfileNotFoundException e) {
+                    log.error("End-entity profile "+name+" could no longer be found", e);
+                }
+            }
+        }
+        
+        // Update End-Entities
+        final Collection<EndEntityInformation> endEntities = endEntityManagementSession.findAllUsersByCaId(authenticationToken, fromId);
+        for (EndEntityInformation endEntityInfo : endEntities) {
+            endEntityInfo.setCAId(toId);
+            try {
+                endEntityManagementSession.updateCAId(authenticationToken, endEntityInfo.getUsername(), toId);
+            } catch (FinderException e) {
+                log.error("End entity "+endEntityInfo.getUsername()+" could no longer be found", e);
+            }
+        }
+        
+        // Update Data Sources
+        final Map<Integer,String> dataSources = userDataSourceSession.getUserDataSourceIdToNameMap(authenticationToken);
+        for (Integer dataSourceId : dataSources.keySet()) {
+            boolean changed = false;
+            final BaseUserDataSource dataSource = userDataSourceSession.getUserDataSource(authenticationToken, dataSourceId);
+            
+            dataSource.getApplicableCAs();
+            
+            final List<Integer> applicableCAs = new ArrayList<Integer>(dataSource.getApplicableCAs());
+            // The list is modified so we can't use an iterator
+            for (int i = 0; i < applicableCAs.size(); i++) {
+                int value = applicableCAs.get(i);
+                if (value == fromId) {
+                    applicableCAs.set(i, toId);
+                    changed = true;
+                }
+            }
+            
+            
+            if (changed) {
+                dataSource.setApplicableCAs(applicableCAs);
+                String name = dataSources.get(dataSourceId);
+                userDataSourceSession.changeUserDataSource(authenticationToken, name, dataSource);
+            }
+        }
+        
+        // Update Services
+        // TODO CRL Updater, Certificate Expiration Checker, User Password Expiration Service, Renew CA Service
+        
+        // Update Internal Key Bindings
+        // TODO update CAIds in trusted certificate references
+        
+        // Update System Configuration
+        // TODO AutoEnrollment CA
+        
+        // Update CMP Configuration
+        // TODO Auth Module Issuer CA (RA Mode), RA CA Name (RA Mode), Default CA
+        
+        // Update Roles
+        final Random random = new Random(System.nanoTime()); 
+        for (RoleData role : roleManagementSession.getAllRolesAuthorizedToEdit(authenticationToken)) {
+            final String roleName = role.getRoleName();
+            final Map<Integer,AccessUserAspectData> users = new HashMap<Integer,AccessUserAspectData>(role.getAccessUsers());
+            boolean changed = false;
+            for (int id : new ArrayList<Integer>(users.keySet())) {
+                AccessUserAspectData user = users.get(id);
+                if (user.getCaId() == fromId) {
+                    user = new AccessUserAspectData(roleName, toId, user.getMatchWith(), user.getTokenType(), user.getMatchTypeAsType(), user.getMatchValue());
+                    users.put(id, user);
+                    changed = true;
+                }
+            }
+            if (changed) {
+                final Map<Integer,AccessRuleData> rules = role.getAccessRules(); // Contains no CAIds. Used as-is
+                
+                try {
+                    // Rename old role so we can replace it without getting locked out
+                    final String oldTempName = roleName + "_CAIdUpdateOld" + random.nextLong();
+                    roleManagementSession.renameRole(authenticationToken, roleName, oldTempName);
+                    
+                    RoleData newRole = roleManagementSession.create(authenticationToken, roleName);
+                    // Rights are unchanged because they don't reference CAs
+                    newRole = roleManagementSession.addAccessRulesToRole(authenticationToken, newRole, rules.values());
+                    newRole = roleManagementSession.addSubjectsToRole(authenticationToken, newRole, users.values());
+
+                    roleManagementSession.remove(authenticationToken, oldTempName);
+                } catch (RoleNotFoundException e) {
+                    throw new IllegalStateException("Newly created temporary role was not found", e);
+                } catch (RoleExistsException e) {
+                    throw new IllegalStateException("Temporary role name already exists", e);
+                }
+            }
+        }
+        
     }
 
     private CA createCAObject(CAInfo cainfo, CAToken catoken, CertificateProfile certprofile) throws InvalidAlgorithmException {
