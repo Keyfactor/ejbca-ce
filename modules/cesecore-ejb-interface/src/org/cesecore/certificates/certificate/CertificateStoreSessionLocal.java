@@ -153,6 +153,7 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
 
     /** Checks for present certificate serial number unique index in a new transaction in order to avoid rollback, since we can expect SQL exceptions here. 
      * Should not be used externally. */
-    void checkForUniqueCertificateSerialNumberIndexInTransaction();
+    void checkForUniqueCertificateSerialNumberIndexInTransaction(AuthenticationToken admin, Certificate incert, String username, String cafp, int status, int type,
+            int certificateProfileId, String tag, long updateTime) throws CreateException, AuthorizationDeniedException;
 
 }
