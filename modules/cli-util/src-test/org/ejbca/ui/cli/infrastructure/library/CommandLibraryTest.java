@@ -92,8 +92,9 @@ public class CommandLibraryTest {
         assertTrue("Standard command could not be found.", CommandLibrary.INSTANCE.doesCommandExist("aleph", "bet", "foo"));
     }
 
-    private static final String TESTCLASS = "import org.ejbca.ui.cli.infrastructure.command.CliCommandPlugin; import java.util.Set; import java.util.HashSet; " + "public class MockCommand implements CliCommandPlugin { "
-            + "public void execute(String... arguments) { } "
+    private static final String TESTCLASS = "import org.ejbca.ui.cli.infrastructure.command.CliCommandPlugin; import java.util.Set; import java.util.HashSet; import org.ejbca.ui.cli.infrastructure.command.CommandResult;"
+            + "public class MockCommand implements CliCommandPlugin { "
+            + "public CommandResult execute(String... arguments) { return CommandResult.SUCCESS; } "
             + "public String getCommandDescription() { return \"\";} "
             + "public String getMainCommand() { return \"foo\"; } "
             + "public Set<String> getMainCommandAliases() { Set<String> aliases = new HashSet<String>(); aliases.add(\"bar\"); return aliases; } "
@@ -116,3 +117,4 @@ class JavaSourceFromString extends SimpleJavaFileObject {
         return code;
     }
 }
+
