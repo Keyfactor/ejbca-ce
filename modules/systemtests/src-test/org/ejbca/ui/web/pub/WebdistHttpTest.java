@@ -25,6 +25,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.CaTestUtils;
+import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CA;
@@ -51,17 +52,17 @@ public class WebdistHttpTest {
     final private static Logger log = Logger.getLogger(WebdistHttpTest.class);
     final private AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("WebdistHttpTest"));
 
-
     private String httpPort;
+    private String remoteHost;
     private CA testx509ca;
 
-    private ConfigurationSessionRemote configurationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
 
     @Before
     public void setUp() throws Exception {
-        httpPort = configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP);
-        
+        httpPort = SystemTestsConfiguration.getRemotePortHttp(configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP));
+        remoteHost = SystemTestsConfiguration.getRemoteHost("127.0.0.1");
         int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
         testx509ca = CaTestUtils.createTestX509CA("CN=TestCA", null, false, keyusage);
         caSession.addCA(admin, testx509ca);
@@ -78,7 +79,7 @@ public class WebdistHttpTest {
         
         // We hit the pages and see that they return a 200 value, so we know
         // they at least compile correctly
-        String httpReqPath = "http://127.0.0.1:" + httpPort + "/ejbca";
+        String httpReqPath = "http://"+remoteHost+":" + httpPort + "/ejbca";
         String resourceName = "publicweb/webdist/certdist";
         String resourceName1 = "publicweb/webdist/certdist?cmd=cacert&issuer=CN%3dTestCA&level=0";
 
@@ -97,7 +98,7 @@ public class WebdistHttpTest {
     public void testPublicWeb() throws Exception {
         // We hit the pages and see that they return a 200 value, so we know
         // they at least compile correctly
-        String httpReqPath = "http://127.0.0.1:" + httpPort + "/ejbca";
+        String httpReqPath = "http://"+remoteHost+":" + httpPort + "/ejbca";
         String resourceName = "retrieve/ca_crls.jsp";
         String resourceName1 = "retrieve/ca_certs.jsp";
         String resourceName2 = "retrieve/latest_cert.jsp";
@@ -147,8 +148,8 @@ public class WebdistHttpTest {
     @Test
     public void testPublicWebChainDownload() throws Exception {
     	
-        String httpReqPathPem = "http://localhost:" + httpPort + "/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=" + testx509ca.getCAId() + "&format=pem";        
-        String httpReqPathJks = "http://localhost:" + httpPort + "/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=" + testx509ca.getCAId() + "&format=jks";
+        String httpReqPathPem = "http://"+remoteHost+":" + httpPort + "/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=" + testx509ca.getCAId() + "&format=pem";        
+        String httpReqPathJks = "http://"+remoteHost+":" + httpPort + "/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=" + testx509ca.getCAId() + "&format=jks";
 
         final WebClient webClient = new WebClient();
         WebConnection con = webClient.getWebConnection();

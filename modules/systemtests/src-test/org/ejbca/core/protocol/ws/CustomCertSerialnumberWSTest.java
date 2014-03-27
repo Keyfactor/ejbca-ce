@@ -1,5 +1,6 @@
 package org.ejbca.core.protocol.ws;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -17,6 +18,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.protocol.ws.client.gen.KeyStore;
@@ -100,12 +102,11 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
                 profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(certProfID));
                 this.endEntityProfileSession.addEndEntityProfile(intAdmin, END_ENTITY_PROFILE, profile);
             }
-            // Creating certificate for user: wsfoo
+            // Fail to create a certificate with custom serialnumber for user TEST_USER1 when there is no unique constraint
             UserDataVOWS user = new UserDataVOWS(TEST_USER1, PASSWORD, true, "C=SE, CN="+TEST_USER1,
                     getAdminCAName(), null, "foo@anatom.se", UserDataVOWS.STATUS_NEW,
                     UserDataVOWS.TOKEN_TYPE_P12, END_ENTITY_PROFILE, CERTIFICATE_PROFILE, null);
             user.setCertificateSerialNumber(serno);
-
             try {
                 // Make sure EJBCA thinks that we don't have a unique serno index, then we should get a CustomCertSerialNumberException
                 sernoHelperSession.setUniqueSernoIndexFalse();
@@ -114,37 +115,62 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
             } catch (Exception e) {
                 assertTrue("Exception message should tell that custom cert serial is not allowed: "+e.getMessage(), e.getMessage().contains("Custom certificate serial number not allowed since there is no unique index on (issuerDN,serialNumber) on the 'CertificateData' table."));
             }
+            // Succeed to create a certificate with custom serialnumber when there is a unique constraint
+            user = new UserDataVOWS(TEST_USER1, PASSWORD, true, "C=SE, CN="+TEST_USER1,
+                    getAdminCAName(), null, "foo@anatom.se", UserDataVOWS.STATUS_NEW,
+                    UserDataVOWS.TOKEN_TYPE_P12, END_ENTITY_PROFILE, CERTIFICATE_PROFILE, null);
+            user.setCertificateSerialNumber(serno);
             // Make sure EJBCA "thinks" that we have a unique serno index in the database
             sernoHelperSession.setUniqueSernoIndexTrue();
-
             KeyStore ksenv = this.ejbcaraws.softTokenRequest(user, null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
             java.security.KeyStore keyStore = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(), "PKCS12", PASSWORD);
             assertNotNull(keyStore);
-            Enumeration<String> en = keyStore.aliases();
-            String alias = en.nextElement();
-            X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);
-            assertTrue("wsfoo serno: " + cert.getSerialNumber(), cert.getSerialNumber().compareTo(serno) == 0);
+            BigInteger result = null;
+            final Enumeration<String> en = keyStore.aliases();
+            while (en.hasMoreElements()) {
+                final String alias = en.nextElement();
+                final X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);
+                log.debug("KeyStore contains certificate with serial number: " + cert.getSerialNumber());
+                if (CertTools.isCA(cert)) {
+                    log.debug("...but it was a CA certificate, so checking next one.");
+                    continue;
+                } else {
+                    result = cert.getSerialNumber();
+                    break;
+                }
+            }
+            log.debug(TEST_USER1 + " serno: " + result);
+            assertEquals(TEST_USER1 + "'s serno was not the requested one.", serno, result);
 
-            // Creating certificate for user: wsfoo2
+            // Succeed to create a certificate without a custom serialnumber when there is a unique constraint
             user = new UserDataVOWS(TEST_USER2, PASSWORD, true, "C=SE, CN="+TEST_USER2,
                     getAdminCAName(), null, "foo@anatom.se", UserDataVOWS.STATUS_NEW,
                     UserDataVOWS.TOKEN_TYPE_P12, END_ENTITY_PROFILE, CERTIFICATE_PROFILE, null);
-
             ksenv = this.ejbcaraws.softTokenRequest(user,null,"1024", AlgorithmConstants.KEYALGORITHM_RSA);
             keyStore = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(), "PKCS12", PASSWORD);
             assertNotNull(keyStore);
-            en = keyStore.aliases();
-            alias = en.nextElement();
-            cert = (X509Certificate) keyStore.getCertificate(alias);
-            log.debug("wsfoo2 serno: " + cert.getSerialNumber());
-            assertTrue(cert.getSerialNumber().compareTo(serno) != 0);
+            BigInteger result2 = null;
+            final Enumeration<String> en2 = keyStore.aliases();
+            while (en2.hasMoreElements()) {
+                final String alias = en2.nextElement();
+                final X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);
+                log.debug("KeyStore contains certificate with serial number: " + cert.getSerialNumber());
+                if (CertTools.isCA(cert)) {
+                    log.debug("...but it was a CA certificate, so checking next one.");
+                    continue;
+                } else {
+                    result2 = cert.getSerialNumber();
+                    break;
+                }
+            }
+            log.debug(TEST_USER2 + " serno: " + result2);
+            assertTrue("Did not expect to get the previously requested custom serialnumber in subsequent request: " + result2, !serno.equals(result2));
 
-            // Creating certificate for user: wsfoo3
+            // Try to issue another cert with the same custom serial number and get a rollback if there really is a unique constraint in the database
             user = new UserDataVOWS(TEST_USER3, PASSWORD, true, "C=SE, CN="+TEST_USER3,
                     getAdminCAName(), null, "foo@anatom.se", UserDataVOWS.STATUS_NEW,
                     UserDataVOWS.TOKEN_TYPE_P12, END_ENTITY_PROFILE, CERTIFICATE_PROFILE, null);
             user.setCertificateSerialNumber(serno);
-
             // See if we really have a unique serno index in the database
             sernoHelperSession.resetUniqueSernoCheck();
             boolean hasUniqueSernoIndex = sernoHelperSession.existsUniqueSernoIndex();

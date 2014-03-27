@@ -111,6 +111,7 @@ import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.X509Principal;
+import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -165,8 +166,8 @@ public abstract class CmpTestCase extends CaTestCase {
 
     protected void setUp() throws Exception { // NOPMD: this is a test base class
         super.setUp();
-        String httpServerPubHttp = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP);
-        CMP_HOST = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME);
+        String httpServerPubHttp = SystemTestsConfiguration.getRemotePortHttp(configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP));
+        CMP_HOST = SystemTestsConfiguration.getRemoteHost(configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME));
         httpReqPath = "http://" + CMP_HOST + ":" + httpServerPubHttp + "/ejbca";
     }
     

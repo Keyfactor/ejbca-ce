@@ -29,6 +29,7 @@ import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.cmp.ErrorMsgContent;
 import org.bouncycastle.asn1.cmp.PKIBody;
 import org.bouncycastle.asn1.cmp.PKIMessage;
+import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -64,9 +65,9 @@ public class CmpAliasTest extends CmpTestCase {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        String httpServerPubHttp = confSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP);
-        String CMP_HOST = confSession.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME);
-        httpReqPath = "http://" + CMP_HOST + ":" + httpServerPubHttp + "/ejbca";
+        String httpServerPubHttp = SystemTestsConfiguration.getRemotePortHttp(confSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP));
+        String httpServerHost = SystemTestsConfiguration.getRemoteHost(confSession.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME));
+        httpReqPath = "http://" + httpServerHost + ":" + httpServerPubHttp + "/ejbca";
     }
 
     @After
