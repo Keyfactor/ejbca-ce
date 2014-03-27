@@ -235,7 +235,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         // We can not inject ourself, JBoss will not start then therefore we use this to get a reference to this session bean
         // to call initializeCa we want to do it on the real bean in order to get the transaction setting (REQUIRES_NEW).
         caAdminSession = sessionContext.getBusinessObject(CAAdminSessionLocal.class);
-        endEntityManagementSession =  new EjbLocalHelper().getEndEntityManagementSession();
+        endEntityManagementSession = sessionContext.getBusinessObject(EndEntityManagementSessionLocal.class);
     }
 
     @Override
