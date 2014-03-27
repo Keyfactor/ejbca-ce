@@ -59,6 +59,7 @@ import org.cesecore.authorization.rules.AccessRuleExistsException;
 import org.cesecore.authorization.rules.AccessRuleManagementSessionLocal;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessUserAspectData;
+import org.cesecore.authorization.user.AccessUserAspectManagerSessionLocal;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -120,6 +121,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private AccessControlSessionLocal accessControlSession;
     @EJB
     private AccessRuleManagementSessionLocal accessRuleManagementSession;
+    @EJB
+    private AccessUserAspectManagerSessionLocal accessUserAspectManagerSession;
     @EJB
     private AccessTreeUpdateSessionLocal accessTreeUpdateSession;
     @EJB
@@ -187,11 +190,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         		return false;
         	}
         }
-        
-        if (oldVersion < 600) {
-            displayNoUpgradeIn600Message();
-        }
-        
+
         return true;
     }
 
@@ -209,15 +208,12 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
 
         if (oldVersion < 600) {
-            displayNoUpgradeIn600Message();
+            log.error("(this is not an error) Nothing to upgrade at this point for EJBCA 6.2.");
+            log.error("(this is not an error) The upgrade to 6.2 is performed when EJBCA is started.");
         }
         return true;
     }
 
-    private void displayNoUpgradeIn600Message() {
-        log.error("(this is not an error) Nothing to upgrade at this point for EJBCA 6.0.");
-        log.error("(this is not an error) The upgrade to 6.0 is performed when EJBCA is started.");
-    }
 
     /**
      * Called from other migrate methods, don't call this directly, call from an
@@ -268,7 +264,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * NOTE: You only need to run this if you upgrade a JBoss installation.
      */
     private boolean postMigrateDatabase400() {
-    	log.error("(this is not an error) Starting post upgrade from ejbca 3.11.x to ejbca 4.0.x");
+    	log.error("(this is not an error) Starting post upgrade from EJBCA 3.11.x to EJBCA 4.0.x");
     	boolean ret = true;
     	upgradeSession.postMigrateDatabase400SmallTables();	// Migrate small tables in a new transaction 
     	log.info(" Processing HardTokenData entities.");
@@ -282,10 +278,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     		upgradeSession.postMigrateDatabase400HardTokenData(getSubSet(tokenSNs, position, chunkSize));
     		position += chunkSize;
     	}
-    	log.error("(this is not an error) Finished post upgrade from ejbca 3.11.x to ejbca 4.0.x with result: "+ret);
+    	log.error("(this is not an error) Finished post upgrade from EJBCA 3.11.x to EJBCA 4.0.x with result: "+ret);
         return ret;
     }
-    
+        
     /** @return a subset of the source list with index as its first item and index+count-1 as its last. */
     private <T> List<T> getSubSet(final List<T> source, final int index, final int count) {
     	List<T> ret = new ArrayList<T>(count);
@@ -375,7 +371,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * @param dbtype A string representation of the actual database.
      * 
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "deprecation" })
     private boolean migrateDatabase500(String dbtype) {
     	log.error("(this is not an error) Starting upgrade from ejbca 4.0.x to ejbca 5.0.x");
     	boolean ret = true;
@@ -632,7 +628,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      */
     private boolean postMigrateDatabase500(String dbtype) {
 
-        log.error("(this is not an error) Starting post upgrade from ejbca 4.0.x to ejbca 5.0.x");
+        log.error("(this is not an error) Starting post upgrade from EJBCA 4.0.x to ejbca 5.0.x");
         boolean ret = true;
 
         AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("UpgradeSessionBean.migrateDatabase500"));
@@ -700,7 +696,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         //Remove all old roles, should remove associated aspects and rules as well.
         removeOldRoles500();
 
-    	log.error("(this is not an error) Finished post upgrade from ejbca 4.0.x to ejbca 5.0.x with result: "+ret);
+    	log.error("(this is not an error) Finished post upgrade from EJBCA 4.0.x to EJBCA 5.0.x with result: "+ret);
 	
         return ret;
     }
