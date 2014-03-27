@@ -221,9 +221,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     @Resource
     private SessionContext sessionContext;
-    // Looked up in postConstruct to avoid circular references
+    // Myself needs to be looked up in postConstruct
     private CAAdminSessionLocal caAdminSession;
-    private EndEntityManagementSessionLocal endEntityManagementSession;
 
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
@@ -235,7 +234,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         // We can not inject ourself, JBoss will not start then therefore we use this to get a reference to this session bean
         // to call initializeCa we want to do it on the real bean in order to get the transaction setting (REQUIRES_NEW).
         caAdminSession = sessionContext.getBusinessObject(CAAdminSessionLocal.class);
-        endEntityManagementSession = sessionContext.getBusinessObject(EndEntityManagementSessionLocal.class);
     }
 
     @Override
@@ -367,6 +365,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
         
         // Update End-Entities
+        EndEntityManagementSessionLocal endEntityManagementSession = new EjbLocalHelper().getEndEntityManagementSession();
         final Collection<EndEntityInformation> endEntities = endEntityManagementSession.findAllUsersByCaId(authenticationToken, fromId);
         for (EndEntityInformation endEntityInfo : endEntities) {
             endEntityInfo.setCAId(toId);
