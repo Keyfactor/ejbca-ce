@@ -28,6 +28,7 @@ import java.security.cert.X509Certificate;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -61,6 +62,7 @@ import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.TraceLogMethodsRule;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -201,7 +203,9 @@ public class OcspKeyRenewalTest {
             roleInitSession.initializeAccessWithCert(authenticationToken, TESTCLASSNAME, clientSSLCertificate);
         }
         // Set re-keying URL to our local instance
-        cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.REKEYING_WSURL, "https://localhost:8443/ejbca/ejbcaws/ejbcaws");
+        final String remotePort = SystemTestsConfiguration.getRemotePortHttps("8443");
+        final String remoteHost = SystemTestsConfiguration.getRemoteHost("localhost");
+        cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.REKEYING_WSURL, "https://"+remoteHost+":"+remotePort+"/ejbca/ejbcaws/ejbcaws");
     }
     
     @AfterClass

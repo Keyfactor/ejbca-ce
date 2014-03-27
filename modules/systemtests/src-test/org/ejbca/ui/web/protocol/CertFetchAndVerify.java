@@ -33,6 +33,7 @@ import javax.mail.Multipart;
 import javax.mail.internet.MimeMultipart;
 
 import org.apache.log4j.Logger;
+import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
@@ -115,8 +116,15 @@ public class CertFetchAndVerify {
 	static String getURL() {
 		if (theURL == null) {
 			try {
-				String port = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST).getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP);
-				theURL = "http://localhost:" + port + "/certificates/search.cgi"; // Fallback, like if we run tests on a stand-alone VA
+			    final ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+				String port = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP);
+				final String remotePort = SystemTestsConfiguration.getRemotePortHttp(port);
+				final String remoteHost = SystemTestsConfiguration.getRemoteHost("127.0.0.1");
+				final String contextRoot = "/ejbca/publicweb/certificates";
+                theURL = "http://"+remoteHost+":" + remotePort + contextRoot + "/search.cgi";
+                if (((HttpURLConnection)new URL(theURL).openConnection()).getResponseCode() != 200) {
+                    theURL = "http://localhost:8080/certificates/search.cgi"; // Fallback, like if we run tests on a stand-alone VA
+                }
 			} catch (Exception e) {
 				theURL = "http://localhost:8080/certificates/search.cgi"; // Fallback, like if we run tests on a stand-alone VA
 			}

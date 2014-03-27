@@ -39,6 +39,7 @@ import org.bouncycastle.cert.ocsp.SingleResp;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CaSessionRemote;
@@ -62,6 +63,7 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.TraceLogMethodsRule;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
@@ -129,7 +131,9 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        helper = new OcspJunitHelper("http://127.0.0.1:8080/ejbca", "publicweb/status/ocsp"); 
+        final String remoteHost = SystemTestsConfiguration.getRemoteHost("127.0.0.1");
+        final String remotePort = SystemTestsConfiguration.getRemotePortHttp("8080");
+        helper = new OcspJunitHelper("http://"+remoteHost+":"+remotePort+"/ejbca", "publicweb/status/ocsp"); 
         cacert = (X509Certificate) getTestCACert();
         originalSigRequiredValue =  configurationSessionRemote.getConfigurationValue(OcspConfiguration.SIGNATUREREQUIRED);
     	configurationSessionRemote.setConfigurationValue(OcspConfiguration.SIGNATUREREQUIRED, "true");

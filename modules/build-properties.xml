@@ -143,6 +143,7 @@
     <property name="log4j.cli.file" location="${mod.common.path}/resources/log4j-cli.xml" />
     <property name="internal.properties.file" location="${ejbca.home}/src/internal.properties" />
     <property name="defaultvalues.properties.file" location="${ejbca.home}/src/java/defaultvalues.properties" />
+	<property name="systemtests.properties.file" location="${ejbca.home}/conf/systemtests.properties"/>
     
 	<!-- Define class-paths of global interest -->
 	<path id="lib.cert-cvc.classpath"><fileset dir="${ejbca.home}/lib" includes="cert-cvc.jar"/></path>

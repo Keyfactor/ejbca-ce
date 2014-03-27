@@ -28,6 +28,7 @@ import java.net.URL;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.CaTestUtils;
+import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CA;
@@ -61,6 +62,7 @@ public class HttpMethodsTest {
     
     private String httpBaseUrl;
     private String httpPort;
+    private String httpHost;
     private CA testx509ca;
     
     private ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
@@ -68,8 +70,9 @@ public class HttpMethodsTest {
 
     @Before
     public void setUp() throws Exception {
-        httpPort = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP);
-        httpBaseUrl = "http://127.0.0.1:" + httpPort;
+        httpHost = SystemTestsConfiguration.getRemoteHost("127.0.0.1");
+        httpPort = SystemTestsConfiguration.getRemotePortHttp(configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP));
+        httpBaseUrl = "http://" + httpHost + ":" + httpPort;
         
         int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
         testx509ca = CaTestUtils.createTestX509CA("CN=TestCA", null, false, keyusage);
@@ -142,9 +145,9 @@ public class HttpMethodsTest {
     /** Try an HTTP OPTIONS and return true if it was successful. */
     private boolean allowHttpOptions(String resource, String httpPort) throws IOException {
         // Create the HTTP header
-        String headers = "OPTIONS " + resource + " HTTP/1.1\r\n" + "Host: 127.0.0.1\r\n\r\n";
+        String headers = "OPTIONS " + resource + " HTTP/1.1\r\n" + "Host: "+httpHost+"\r\n\r\n";
         // Create the socket.
-        Socket socket = new Socket(InetAddress.getByName("127.0.0.1"), Integer.parseInt(httpPort));
+        Socket socket = new Socket(InetAddress.getByName(httpHost), Integer.parseInt(httpPort));
         // Send data byte for byte.
         OutputStream os = socket.getOutputStream();
         os.write(headers.getBytes());
@@ -167,8 +170,8 @@ public class HttpMethodsTest {
 
     /** Try to perform an HTTP DELETE. */
     private boolean allowsDeleteHttpRequest(String resource, String httpPort) throws IOException {
-        String headers = "DELETE " + resource + " HTTP/1.1\r\n" + "Host: 127.0.0.1\r\n\r\n";
-        Socket socket = new Socket(InetAddress.getByName("127.0.0.1"), Integer.parseInt(httpPort));
+        String headers = "DELETE " + resource + " HTTP/1.1\r\n" + "Host: "+httpHost+"\r\n\r\n";
+        Socket socket = new Socket(InetAddress.getByName(httpHost), Integer.parseInt(httpPort));
         OutputStream os = socket.getOutputStream();
         os.write(headers.getBytes());
         InputStream is = socket.getInputStream();
@@ -182,9 +185,9 @@ public class HttpMethodsTest {
     /** Try to upload some XML content. */
     private boolean allowsPutHttpRequest(String resource, String httpPort) throws IOException {
         String xml = "<dummy/>";
-        String headers = "PUT " + resource + " HTTP/1.1\r\n" + "Host: 127.0.0.1\r\n" + "Content-Type: text/xml\r\n" + "Content-Length: " + xml.length()
+        String headers = "PUT " + resource + " HTTP/1.1\r\n" + "Host: "+httpHost+"\r\n" + "Content-Type: text/xml\r\n" + "Content-Length: " + xml.length()
                 + "\r\n" + "\r\n";
-        Socket socket = new Socket(InetAddress.getByName("127.0.0.1"), Integer.parseInt(httpPort));
+        Socket socket = new Socket(InetAddress.getByName(httpHost), Integer.parseInt(httpPort));
         OutputStream os = socket.getOutputStream();
         os.write((headers + xml).getBytes());
         InputStream is = socket.getInputStream();
@@ -198,8 +201,8 @@ public class HttpMethodsTest {
 
     /** Try to perform an HTTP TRACE. */
     private boolean allowsTraceHttpRequest(String resource, String httpPort) throws IOException {
-        String headers = "TRACE " + resource + " HTTP/1.1\r\n" + "Host: 127.0.0.1\r\n" + "A: qwertyuiop\r\n" + "\r\n";
-        Socket socket = new Socket(InetAddress.getByName("127.0.0.1"), Integer.parseInt(httpPort));
+        String headers = "TRACE " + resource + " HTTP/1.1\r\n" + "Host: "+httpHost+"\r\n" + "A: qwertyuiop\r\n" + "\r\n";
+        Socket socket = new Socket(InetAddress.getByName(httpHost), Integer.parseInt(httpPort));
         OutputStream os = socket.getOutputStream();
         os.write(headers.getBytes());
         InputStream is = socket.getInputStream();

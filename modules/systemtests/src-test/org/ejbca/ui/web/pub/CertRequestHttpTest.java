@@ -46,6 +46,7 @@ import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -100,7 +101,9 @@ public class CertRequestHttpTest extends CaTestCase {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        httpReqPath = "http://127.0.0.1:" + configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP) + "/ejbca";
+        final String remoteHost = SystemTestsConfiguration.getRemoteHost("127.0.0.1");
+        final String remotePort = SystemTestsConfiguration.getRemotePortHttp(configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP));
+        httpReqPath = "http://" + remoteHost + ":" + remotePort + "/ejbca";
         resourceReq = "certreq";
     }
 

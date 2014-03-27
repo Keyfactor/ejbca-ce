@@ -41,6 +41,7 @@ public class WebEjbcaClearCacheTest {
 
     @Before
     public void setUp() throws Exception {
+        // Clear cache is only available when sent from localhost or a resolved IP, so there is no point in trying to go through a proxy
         httpPort = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP);
         httpReqPath = "http://localhost:" + httpPort + "/ejbca/clearcache/?command=clearcaches";
         httpReqPathNoCommand = "http://localhost:" + httpPort + "/ejbca/clearcache/";

@@ -70,6 +70,7 @@ import org.bouncycastle.cms.SignerId;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -176,8 +177,9 @@ public class ProtocolScepHttpTest extends CaTestCase {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        final String httpPort = configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP);
-        httpReqPath = "http://127.0.0.1:" + httpPort + "/ejbca";
+        final String httpHost = SystemTestsConfiguration.getRemoteHost(configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME));
+        final String httpPort = SystemTestsConfiguration.getRemotePortHttp(configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP));
+        httpReqPath = "http://"+httpHost+":" + httpPort + "/ejbca";
         cacert = (X509Certificate) getTestCACert();
 
     }

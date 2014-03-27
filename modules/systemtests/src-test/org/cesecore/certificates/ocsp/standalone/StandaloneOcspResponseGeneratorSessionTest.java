@@ -273,7 +273,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         addTrustEntry(ocspKeyBinding, -2, null);
         addTrustEntry(ocspKeyBinding, x509ca.getCAId(), new BigInteger("0"));
         internalKeyBindingMgmtSession.persistInternalKeyBinding(authenticationToken, ocspKeyBinding);
-
+        // Clear caches must always be run over localhost and not through a configured proxy
         final int responseCode = ((HttpURLConnection) new URL("http://localhost:8080/ejbca/clearcache/?command=clearcaches").openConnection()).getResponseCode();
         assertEquals("Failed to invoked clear cache servlet.", HttpURLConnection.HTTP_OK, responseCode);
         final OcspKeyBinding ocspKeyBindingLoaded = (OcspKeyBinding) internalKeyBindingMgmtSession.getInternalKeyBinding(authenticationToken, internalKeyBindingId);

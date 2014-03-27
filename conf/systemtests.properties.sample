@@ -1,0 +1,16 @@
+# $Id$
+#
+# Configuration file for running the system tests on a less standard setup (e.g. when using a proxy in front of EJBCA)
+#
+
+# Resolvable target hostname or IP of the external interface of EJBCA
+# Normally this overrides "127.0.0.1" or "localhost" in the tests.
+#target.hostname=192.168.5.181
+
+# Target http port of the external interface of EJBCA
+# Normally this overrides "8080" in the tests.
+#target.port.http=80
+
+# Target (dual authenticated) https port of the external interface of EJBCA
+# Normally this overrides "8443" in the tests.
+#target.port.https=443

@@ -20,6 +20,7 @@ import java.security.cert.X509Certificate;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
+import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -114,8 +115,9 @@ public class WebEjbcaHealthCheckTest extends WebHealthTestAbstract {
     
     @Before
     public void setUp() throws Exception {
-        httpPort = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP);
-        httpReqPath = "http://localhost:" + httpPort + "/ejbca/publicweb/healthcheck/ejbcahealth";
+        httpPort = SystemTestsConfiguration.getRemotePortHttp(configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP));
+        final String remoteHost = SystemTestsConfiguration.getRemoteHost("localhost");
+        httpReqPath = "http://"+remoteHost+":" + httpPort + "/ejbca/publicweb/healthcheck/ejbcahealth";
     }
 
     @After
