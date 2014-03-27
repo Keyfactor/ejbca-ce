@@ -28,7 +28,7 @@ import org.cesecore.roles.RoleData;
 @Remote
 public interface AccessUserAspectManagerTestSessionRemote {
 
-    void persistAccessUserAspect(AccessUserAspect accessUserAspectData);
+    void persistAccessUserAspect(AccessUserAspectData accessUserAspectData) throws AccessUserAspectExistsException;
     
     public AccessUserAspectData create(final RoleData role, final int caId,
             final X500PrincipalAccessMatchValue matchWith, final AccessMatchType matchType, final String matchValue) throws AccessUserAspectExistsException;

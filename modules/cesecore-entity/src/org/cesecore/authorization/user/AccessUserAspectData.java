@@ -40,6 +40,8 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
 
     private static final long serialVersionUID = 2504191317243484124L;
     private int primaryKey;
+    //Kept for legacy reasons
+    private int legacyPrimaryKey;
     private String tokenType;
     private Integer caId;
     private int rowVersion = 0;
@@ -50,22 +52,15 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
 
     public AccessUserAspectData(final String roleName, final int caId, final AccessMatchValue matchWith, final AccessMatchType matchType,
             final String matchValue) {
-        this(roleName, caId, matchWith.getNumericValue(), matchWith.getTokenType(), matchType, matchValue);
+        this(roleName, caId, matchWith.getNumericValue(), matchWith.getTokenType(), matchType, matchValue);        
     }
     
-    /** This constructor for internal use only */
+     /** This constructor for internal use only */
     public AccessUserAspectData(final String roleName, final int caId, final int matchWith, final String tokenType, final AccessMatchType matchType,
             final String matchValue) {
         if (roleName == null) {
             throw new InvalidParameterException("Attempted to create an AccessUserAspectData with roleName == null");
-        } else {
-            this.primaryKey = generatePrimaryKey(roleName, caId, matchWith, matchType, matchValue);
-        }
-        if (tokenType == null) {
-            throw new InvalidParameterException("Attempted to create an AccessUserAspectData with tokenType == null");
-        } else {
-            this.tokenType = tokenType;
-        }
+        } 
         if (matchType == null) {
             throw new InvalidParameterException("Attempted to create an AccessUserAspectData with matchType == null");
         } else {
@@ -76,8 +71,16 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
         } else {
             this.matchValue = matchValue;
         }
+        if (tokenType == null) {
+            throw new InvalidParameterException("Attempted to create an AccessUserAspectData with tokenType == null");
+        } else {
+            this.tokenType = tokenType;
+        }
+        
         this.matchWith = matchWith;
         this.caId = caId;
+        this.primaryKey = generatePrimaryKey(roleName, caId, matchWith, matchType, matchValue, tokenType);
+        this.legacyPrimaryKey = generatePrimaryKeyOld(roleName, caId, matchWith, matchType, matchValue);
     }
 
     /**
@@ -192,18 +195,80 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
         this.tokenType = tokenType;
     }
 
+    /**
+     * Method for creating a primary key
+     * 
+     * @param roleName the name of the role that this value belongs to
+     * @param caId the ID of the CA that issued the user
+     * @param matchWith The type to match with
+     * @param matchType How to match
+     * @param matchValue the value to match
+     * @param tokenType the token type.
+     * @return a unique primary key
+     * 
+     */
     public static int generatePrimaryKey(final String roleName, final int caId, final AccessMatchValue matchWith, final AccessMatchType matchType,
             final String matchValue) {
-        return generatePrimaryKey(roleName, caId, matchWith.getNumericValue(), matchType, matchValue);
+        return generatePrimaryKey(roleName, caId, matchWith.getNumericValue(), matchType, matchValue, matchWith.getTokenType());
     }
     
+    /**
+     * Method for creating a primary key
+     * 
+     * @param roleName the name of the role that this value belongs to
+     * @param caId the ID of the CA that issued the user
+     * @param matchWith The type to match with
+     * @param matchType How to match
+     * @param matchValue the value to match
+     * @return a unique primary key
+     * 
+     */
     public static int generatePrimaryKey(final String roleName, final int caId, final int matchWith, final AccessMatchType matchType,
+            final String matchValue, final String tokenType) {
+        final int roleNameHash = roleName == null ? 0 : roleName.hashCode();
+        final int matchValueHash = matchValue == null ? 0 : matchValue.hashCode();
+        if(tokenType == null) {
+            throw new IllegalArgumentException("Could not generate primary key for aspect with null token type.");
+        }
+        return hash(23, 31, new int[]{ roleNameHash, matchValueHash, caId, matchWith, matchType.getNumericValue(), tokenType.hashCode() });
+    }
+    
+    /**
+     * Create a combined hash value, stolen from the Great Skeet
+     * 
+     * @param seedValue a start value
+     * @param aggregateValue an aggregate value, should be coprime to seedValue
+     * @param values a list of values to add to the hash
+     * @return a relatively unique number
+     */
+    private static int hash(int seedValue, int aggregateValue, int[] values) {
+        int hash = seedValue;
+        for (int value : values) {
+            hash = (hash * aggregateValue) + value;
+        }
+        return hash;
+    }
+    
+    /**
+     * Method for creating a primary key
+     * 
+     * @param roleName the name of the role that this value belongs to
+     * @param caId the ID of the CA that issued the user
+     * @param matchWith The type to match with
+     * @param matchType How to match
+     * @param matchValue the value to match
+     * @return a unique primary key
+     * 
+     * @deprecated Replaced in 6.2.0 with generatePrimaryKey, kept only for upgrade purposes
+     */
+    @Deprecated
+    public static int generatePrimaryKeyOld(final String roleName, final int caId, final int matchWith, final AccessMatchType matchType,
             final String matchValue) {
         final int roleNameHash = roleName == null ? 0 : roleName.hashCode();
         final int matchValueHash = matchValue == null ? 0 : matchValue.hashCode();
         return (roleNameHash & matchValueHash) ^ caId ^ matchWith ^ matchType.getNumericValue();
     }
-
+   
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -306,5 +371,13 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
     @Override
     public int compareTo(AccessUserAspectData o) {
         return new CompareToBuilder().append(this.matchValue, o.matchValue).toComparison();
+    }
+
+    /**
+     * @return the oldPrimaryKey
+     */
+    @Transient
+    public int getLegacyPrimaryKey() {
+        return legacyPrimaryKey;
     }
 }

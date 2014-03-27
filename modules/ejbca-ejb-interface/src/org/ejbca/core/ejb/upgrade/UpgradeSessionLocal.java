@@ -43,4 +43,5 @@ public interface UpgradeSessionLocal  extends UpgradeSession{
      */
 	RoleData replaceAccessRulesInRoleNoAuth(final AuthenticationToken authenticationToken, final RoleData role,
             final Collection<AccessRuleData> accessRules) throws RoleNotFoundException;
+	
 }

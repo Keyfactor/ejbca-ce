@@ -43,23 +43,20 @@ public class AccessUserAspectManagerSessionBean implements AccessUserAspectManag
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public void persistAccessUserAspect(AccessUserAspect accessUserAspectData) {
-        entityManager.persist(accessUserAspectData);
-    }
-    
-    @Override
-    @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public AccessUserAspectData create(final RoleData role, final int caId,
-            final AccessMatchValue matchWith, final AccessMatchType matchType, final String matchValue) throws AccessUserAspectExistsException {
-        AccessUserAspectData result = null;
-
-        if (find(AccessUserAspectData.generatePrimaryKey(role.getRoleName(), caId, matchWith, matchType, matchValue)) == null) {
-            result = new AccessUserAspectData(role.getRoleName(), caId, matchWith, matchType, matchValue);
-            entityManager.persist(result);
+    public void persistAccessUserAspect(AccessUserAspectData accessUserAspectData) throws AccessUserAspectExistsException {
+        if (find(accessUserAspectData.getPrimaryKey()) == null && find(accessUserAspectData.getLegacyPrimaryKey()) == null) {
+            entityManager.persist(accessUserAspectData);
         } else {
             throw new AccessUserAspectExistsException("Access user aspect already exists in database.");
         }
+    }
 
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public AccessUserAspectData create(final RoleData role, final int caId, final AccessMatchValue matchWith, final AccessMatchType matchType,
+            final String matchValue) throws AccessUserAspectExistsException {
+        AccessUserAspectData result = new AccessUserAspectData(role.getRoleName(), caId, matchWith, matchType, matchValue);
+        persistAccessUserAspect(result);
         return result;
     }
 
@@ -70,7 +67,6 @@ public class AccessUserAspectManagerSessionBean implements AccessUserAspectManag
         return (AccessUserAspectData) QueryResultWrapper.getSingleResult(query);
     }
     
-
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void remove(AccessUserAspectData userAspect) {
@@ -95,5 +91,5 @@ public class AccessUserAspectManagerSessionBean implements AccessUserAspectManag
 
         return count > 0;
     }
-
+   
 }

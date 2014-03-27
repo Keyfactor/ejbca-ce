@@ -32,8 +32,9 @@ public interface AccessUserAspectManagerSessionLocal {
      * Persists an unpersisted AccessUserAspectData object.
      * 
      * @param accessUserAspectData the AccessUserAspectData to persist.
+     * @throws AccessUserAspectExistsException if aspect already exists in database
      */
-    void persistAccessUserAspect(AccessUserAspect accessUserAspectData);
+    void persistAccessUserAspect(AccessUserAspectData accessUserAspectData) throws AccessUserAspectExistsException;
     
     /**
      * Creates a new {@link AccessUserAspectData}

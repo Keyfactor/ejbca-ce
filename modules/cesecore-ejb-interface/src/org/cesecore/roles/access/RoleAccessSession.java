@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.cesecore.roles.access;
 
-import java.util.Collection;
+import java.util.List;
 
 import org.cesecore.roles.RoleData;
 
@@ -29,7 +29,7 @@ public interface RoleAccessSession {
      * 
      * @return all the roles in the database.
      */
-    Collection<RoleData> getAllRoles();
+    List<RoleData> getAllRoles();
 
     /**
      * Finds a RoleData object by its primary key.

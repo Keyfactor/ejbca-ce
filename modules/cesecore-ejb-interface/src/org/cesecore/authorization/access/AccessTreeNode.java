@@ -143,7 +143,7 @@ public class AccessTreeNode {
         if (resourcePath.equals(resource)) {
             if (legacyState == AccessTreeState.STATE_DECLINE) {
                 if (log.isTraceEnabled()) {
-                    log.trace("Rejecting because legaceState is AccessTreeState.STATE_DECLINE");
+                    log.trace("Rejecting because legacyState is AccessTreeState.STATE_DECLINE");
                 }
                 returnval = false;
             } else if (legacyState == AccessTreeState.STATE_ACCEPT_RECURSIVE) {

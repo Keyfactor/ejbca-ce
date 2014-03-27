@@ -13,7 +13,7 @@
 package org.cesecore.roles.access;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -41,7 +41,7 @@ public class RoleAccessSessionBean implements RoleAccessSessionLocal, RoleAccess
     @SuppressWarnings("unchecked")
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public Collection<RoleData> getAllRoles() {
+    public List<RoleData> getAllRoles() {
         final Query query = entityManager.createQuery("SELECT a FROM RoleData a");
         return (query.getResultList() != null ? query.getResultList() : new ArrayList<RoleData>());
     }
