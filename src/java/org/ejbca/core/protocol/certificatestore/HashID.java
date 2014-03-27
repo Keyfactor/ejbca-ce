@@ -100,14 +100,13 @@ public class HashID {
 	public static HashID getFromIssuerDN(X509CertificateHolder certificateHolder) throws CertificateException {
         return getFromIssuerDN(new JcaX509CertificateConverter().getCertificate(certificateHolder));
     }
-	/**
-	 * @param sDN A string representation of a DN to be as ID.
-	 * @return the ID.
-	 */
-	public static HashID getFromDN(String sDN) {
-		final String ejbcaDN = CertTools.stringToBCDNString(sDN);
+    /**
+     * @param sDN A string representation of a DN to be as ID. The DN will not be transformed in any way.
+     * @return the ID.
+     */
+    public static HashID getFromDNString(String sDN) {
 		// Note that the DN string has to be encoded to an ASN1 with the BC lib. BC endcoding is EJBCA standard.
-		return getFromDN( new X500Principal(new X509Principal(ejbcaDN).getEncoded()) );
+		return getFromDN( new X500Principal(new X509Principal(sDN).getEncoded()) );
 	}
 	/**
 	 * @param s The hash base64 encoded. See RFC4387
