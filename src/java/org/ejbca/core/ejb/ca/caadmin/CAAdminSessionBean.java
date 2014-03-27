@@ -170,6 +170,7 @@ import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
+import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.core.protocol.certificatestore.CertificateCacheFactory;
 import org.ejbca.cvc.CardVerifiableCertificate;
 
@@ -206,8 +207,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
     @EJB
-    private EndEntityManagementSessionLocal endEntityManagementSession;
-    @EJB
     private PublisherSessionLocal publisherSession;
     @EJB
     private PublishingCrlSessionLocal publishingCrlSession;
@@ -222,8 +221,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     @Resource
     private SessionContext sessionContext;
-    // Myself needs to be looked up in postConstruct
+    // Looked up in postConstruct to avoid circular references
     private CAAdminSessionLocal caAdminSession;
+    private EndEntityManagementSessionLocal endEntityManagementSession;
 
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
@@ -235,6 +235,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         // We can not inject ourself, JBoss will not start then therefore we use this to get a reference to this session bean
         // to call initializeCa we want to do it on the real bean in order to get the transaction setting (REQUIRES_NEW).
         caAdminSession = sessionContext.getBusinessObject(CAAdminSessionLocal.class);
+        endEntityManagementSession =  new EjbLocalHelper().getEndEntityManagementSession();
     }
 
     @Override
