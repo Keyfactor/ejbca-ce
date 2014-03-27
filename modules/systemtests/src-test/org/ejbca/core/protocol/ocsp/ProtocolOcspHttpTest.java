@@ -95,6 +95,7 @@ import org.bouncycastle.operator.BufferingContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
+import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -261,7 +262,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
     }
 
     public ProtocolOcspHttpTest() throws MalformedURLException, URISyntaxException {
-        super("http", "127.0.0.1", 8080, "ejbca", "publicweb/status/ocsp");
+        super("http", "ejbca", "publicweb/status/ocsp");
     }
 
     @Before
@@ -289,8 +290,6 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         CaTestCase.removeTestCA();
         removeDSACA();
         removeECDSACA();
-        assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
-                .getResponseCode() == 200);
     }
 
     public String getRoleName() {
@@ -531,9 +530,8 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         OCSPResp response = new OCSPResp(IOUtils.toByteArray(con.getInputStream()));
         assertNotNull("Response should not be null.", response);
         assertTrue("Should not be considered malformed.", OCSPRespBuilder.MALFORMED_REQUEST != response.getStatus());
-        final String dubbleSlashNonEncReq = "http://127.0.0.1:"
-                + httpPort
-                + "/ejbca/publicweb/status/ocsp/MGwwajBFMEMwQTAJBgUrDgMCGgUABBRBRfilzPB%2BAevx0i1AoeKTkrHgLgQUFJw5gwk9BaEgsX3pzsRF9iso29ICCAvB//HJyKqpoiEwHzAdBgkrBgEFBQcwAQIEEOTzT2gv3JpVva22Vj8cuKo%3D";
+        final String dubbleSlashNonEncReq = httpReqPath + '/' + resourceOcsp + '/'
+                + "MGwwajBFMEMwQTAJBgUrDgMCGgUABBRBRfilzPB%2BAevx0i1AoeKTkrHgLgQUFJw5gwk9BaEgsX3pzsRF9iso29ICCAvB//HJyKqpoiEwHzAdBgkrBgEFBQcwAQIEEOTzT2gv3JpVva22Vj8cuKo%3D";
         url = new URL(dubbleSlashNonEncReq);
         log.info(url.toString()); // Dump the exact string we use for access
         con = (HttpURLConnection) url.openConnection();
@@ -653,12 +651,12 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         }
         // Create the HTTP header
         String path = "/ejbca/" + resourceOcsp;
-        String headers = "POST " + path + " HTTP/1.1\r\n" + "Host: 127.0.0.1\r\n" + "Content-Type: application/ocsp-request\r\n" + "Content-Length: 1000\r\n"
+        String headers = "POST " + path + " HTTP/1.1\r\n" + "Host: "+httpHost+"\r\n" + "Content-Type: application/ocsp-request\r\n" + "Content-Length: 1000\r\n"
                 + "\r\n";
         // Merge the HTTP headers and the raw data into one package.
         byte input[] = concatByteArrays(headers.getBytes(), data);
         // Create the socket.
-        Socket socket = new Socket(InetAddress.getByName("127.0.0.1"), Integer.parseInt(httpPort));
+        Socket socket = new Socket(InetAddress.getByName(httpHost), Integer.parseInt(httpPort));
         OutputStream os = socket.getOutputStream();
         try {
             // Send data byte for byte.
@@ -670,24 +668,53 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
                 // the server than it should. JBoss on Linux does not.
                 // assertTrue("Tried to write more than it should to the server (>1000), "+i, i > 1000);
                 return;
-            } 
+            }
+            /* Note that an Apache proxy interprets this as two requests in the same session (where the second one is bad):
+HTTP/1.1 200 OK
+Date: Thu, 27 Mar 2014 16:13:24 GMT
+Server: Apache/2.4.6 (Unix) OpenSSL/1.0.1e
+Content-Type: application/ocsp-response
+Content-Length: 5
+
+0
+HTTP/1.1 400 Bad Request
+Date: Thu, 27 Mar 2014 16:13:24 GMT
+Server: Apache/2.4.6 (Unix) OpenSSL/1.0.1e
+Content-Length: 226
+Connection: close
+Content-Type: text/html; charset=iso-8859-1
+
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+<html><head>
+<title>400 Bad Request</title>
+</head><body>
+<h1>Bad Request</h1>
+<p>Your browser sent a request that this server could not understand.<br />
+</p>
+</body></html>
+
+            But since the response is ANS1 encoded, the response is still correctly parsed even though we provide 420 bytes extra.
+             */
             // Reading the response.
             InputStream ins = socket.getInputStream();
             byte ret[] = new byte[1024];
-            ins.read(ret);
-            // Removing the HTTP headers. The HTTP headers end at the last
-            // occurrence of "\r\n".
-            for (i = ret.length - 1; i > 0; i--) {
-                if ((ret[i] == 0x0A) && (ret[i - 1] == 0x0D)) {
+            int len = ins.read(ret);
+            assertTrue("Could not read response.", len!=-1);
+            // Removing the HTTP headers. The HTTP headers end at the first occurrence of "\r\n\r\n".
+            for (i = 3; i < len; i++) {
+                if ((ret[i] == 0x0A) && (ret[i - 1] == 0x0D) && (ret[i-2] == 0x0A) && (ret[i - 3] == 0x0D)) {
                     break;
                 }
             }
+            log.info("response headers:  " + new String(ret, 0, i));
             int start = i + 1;
-            byte respa[] = new byte[ret.length - start];
-            for (i = start; i < ret.length; i++) {
+            byte respa[] = new byte[len - start];
+            for (i = start; i < len; i++) {
                 respa[i - start] = ret[i];
             }
             log.info("response contains: " + respa.length + " bytes.");
+            log.info("response bytes:    " + Hex.toHexString(respa));
+            log.info("response as string:" + new String(respa));
             // Reading the response as a OCSPResp. When the input data array is
             // longer than allowed the OCSP response will return as an internal
             // error.
@@ -729,12 +756,12 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         }
         // Create the HTTP header
         String path = "/ejbca/" + resourceOcsp;
-        String headers = "POST " + path + " HTTP/1.1\r\n" + "Host: 127.0.0.1\r\n" + "Content-Type: application/ocsp-request\r\n" + "Content-Length: 200000\r\n"
+        String headers = "POST " + path + " HTTP/1.1\r\n" + "Host: "+httpHost+"\r\n" + "Content-Type: application/ocsp-request\r\n" + "Content-Length: 200000\r\n"
                 + "\r\n";
         // Merge the HTTP headers and the raw data into one package.
         byte input[] = concatByteArrays(headers.getBytes(), data);
         // Create the socket.
-        Socket socket = new Socket(InetAddress.getByName("127.0.0.1"), Integer.parseInt(httpPort));
+        Socket socket = new Socket(InetAddress.getByName(httpHost), Integer.parseInt(httpPort));
         // Send data byte for byte.
         OutputStream os = socket.getOutputStream();
         try {
@@ -1412,7 +1439,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
      */
     private OCSPResp sendRawRequestToOcsp(int contentLength, byte[] payload, boolean writeByteByByte) throws IOException {
         // Create the HTTP header
-        String headers = "POST " + "/ejbca/" + resourceOcsp + " HTTP/1.1\r\n" + "Host: 127.0.0.1\r\n" + "Content-Type: application/ocsp-request\r\n"
+        String headers = "POST " + "/ejbca/" + resourceOcsp + " HTTP/1.1\r\n" + "Host: "+httpHost+"\r\n" + "Content-Type: application/ocsp-request\r\n"
                 + "Content-Length: " + contentLength + "\r\n" + "\r\n";
         // Merge the HTTP headers, the OCSP request and the raw data into one
         // package.
@@ -1421,7 +1448,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         log.debug("HTTP headers size: " + headers.getBytes().length);
         log.debug("Size of data to send: " + input.length);
         // Create the socket.
-        Socket socket = new Socket(InetAddress.getByName("127.0.0.1"), Integer.parseInt(httpPort));
+        Socket socket = new Socket(InetAddress.getByName(httpHost), Integer.parseInt(httpPort));
         // Send data byte for byte.
         OutputStream os = socket.getOutputStream();
         if (writeByteByByte) {

@@ -58,6 +58,7 @@ import org.bouncycastle.cert.ocsp.UnknownStatus;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.CesecoreException;
+import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -112,6 +113,7 @@ public abstract class ProtocolOcspTestBase {
 
 
     final protected String httpPort;
+    final protected String httpHost;
     final protected String httpReqPath;
     final protected String resourceOcsp;
     final protected OcspJunitHelper helper;
@@ -124,10 +126,11 @@ public abstract class ProtocolOcspTestBase {
 
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class); // Stand alone OCSP version..
 
-    ProtocolOcspTestBase(String protocol, String host, int port, String applicationPath, String _resourceOcsp) throws MalformedURLException, URISyntaxException {
-        this.httpPort = Integer.toString(port);
-        this.httpReqPath = protocol+"://"+host+":" + port + "/" + applicationPath;
-        this.resourceOcsp = _resourceOcsp;
+    ProtocolOcspTestBase(String protocol, String applicationPath, String resourceOcsp) throws MalformedURLException, URISyntaxException {
+        httpHost = SystemTestsConfiguration.getRemoteHost("127.0.0.1");
+        httpPort = SystemTestsConfiguration.getRemotePortHttp("8080");
+        this.httpReqPath = protocol+"://"+httpHost+":" + httpPort + "/" + applicationPath;
+        this.resourceOcsp = resourceOcsp;
         this.helper = new OcspJunitHelper(this.httpReqPath, this.resourceOcsp);
 
     }
@@ -347,9 +350,8 @@ public abstract class ProtocolOcspTestBase {
         OCSPResp response = new OCSPResp(IOUtils.toByteArray(con.getInputStream()));
         assertNotNull("Response should not be null.", response);
         assertTrue("Should not be concidered malformed.", OCSPRespBuilder.MALFORMED_REQUEST != response.getStatus());
-        final String dubbleSlashNonEncReq = "http://127.0.0.1:"
-                + httpPort
-                + "/ejbca/publicweb/status/ocsp/MGwwajBFMEMwQTAJBgUrDgMCGgUABBRBRfilzPB%2BAevx0i1AoeKTkrHgLgQUFJw5gwk9BaEgsX3pzsRF9iso29ICCAvB//HJyKqpoiEwHzAdBgkrBgEFBQcwAQIEEOTzT2gv3JpVva22Vj8cuKo%3D";
+        final String dubbleSlashNonEncReq = httpReqPath + '/' + resourceOcsp + '/'
+                + "MGwwajBFMEMwQTAJBgUrDgMCGgUABBRBRfilzPB%2BAevx0i1AoeKTkrHgLgQUFJw5gwk9BaEgsX3pzsRF9iso29ICCAvB//HJyKqpoiEwHzAdBgkrBgEFBQcwAQIEEOTzT2gv3JpVva22Vj8cuKo%3D";
         url = new URL(dubbleSlashNonEncReq);
         log.info(url.toString()); // Dump the exact string we use for access
         con = (HttpURLConnection) url.openConnection();

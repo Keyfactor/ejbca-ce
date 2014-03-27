@@ -54,6 +54,7 @@ import org.bouncycastle.cert.ocsp.SingleResp;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.X509CA;
@@ -77,6 +78,7 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.TraceLogMethodsRule;
+import org.ejbca.config.WebConfiguration;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -110,7 +112,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
     public TestRule traceLogMethodsRule = new TraceLogMethodsRule();
 
     public ProtocolOcspHttpStandaloneTest() throws MalformedURLException, URISyntaxException {
-    	super("http", "127.0.0.1", 8080, "ejbca", "publicweb/status/ocsp");
+    	super("http", "ejbca", "publicweb/status/ocsp");
     }
   
     @BeforeClass
@@ -340,6 +342,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         OCSPReq req = gen.build();
         String reqString = new String(Base64.encode(req.getEncoded(), false));
         URL url = new URL(httpReqPath + '/' + resourceOcsp + '/' + URLEncoder.encode(reqString, "UTF-8"));
+        log.debug("OCSP Request: " + url.toExternalForm());
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
         assertEquals("Response code did not match. (Make sure you allow encoded slashes in your appserver.. add -Dorg.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH=true in Tomcat)", 200, con.getResponseCode());
         // Some appserver (Weblogic) responds with

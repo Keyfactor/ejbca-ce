@@ -33,6 +33,7 @@ import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
 import org.bouncycastle.cms.jcajce.JcaX509CertSelectorConverter;
+import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -42,6 +43,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.junit.After;
@@ -225,7 +227,9 @@ public class AutoEnrollServletTest {
 	 * Post Certificate request to Servlet 
 	 */
 	private X509Certificate doRequest(String remoteUser, String requestData)  throws Exception {
-		URL localAutoEnrollServletURL = new URL("http://127.0.0.1:8080/ejbca/autoenroll");
+        final String remoteHost = SystemTestsConfiguration.getRemoteHost("127.0.0.1");
+        final String remotePort = SystemTestsConfiguration.getRemotePortHttp("8080");
+		URL localAutoEnrollServletURL = new URL("http://"+remoteHost+":"+remotePort+"/ejbca/autoenroll");
 		HttpURLConnection localServletConnection = (HttpURLConnection) localAutoEnrollServletURL.openConnection();
 		localServletConnection.setRequestProperty("X-Remote-User", remoteUser);
 		localServletConnection.setRequestMethod("POST");
@@ -273,7 +277,9 @@ public class AutoEnrollServletTest {
 	 * Get status from Servlet 
 	 */
 	private String getStatus(String remoteUser, String certificateTemplate)  throws Exception {
-		URL localAutoEnrollServletURL = new URL("http://127.0.0.1:8080/ejbca/autoenroll");
+        final String remoteHost = SystemTestsConfiguration.getRemoteHost("127.0.0.1");
+        final String remotePort = SystemTestsConfiguration.getRemotePortHttp("8080");
+		URL localAutoEnrollServletURL = new URL("http://"+remoteHost+":"+remotePort+"/ejbca/autoenroll");
 		HttpURLConnection localServletConnection = (HttpURLConnection) localAutoEnrollServletURL.openConnection();
 		localServletConnection.setRequestProperty("X-Remote-User", remoteUser);
 		localServletConnection.setRequestProperty("CertificateTemplate", certificateTemplate);

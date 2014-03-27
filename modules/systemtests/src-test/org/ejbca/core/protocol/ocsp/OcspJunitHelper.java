@@ -72,6 +72,7 @@ public class OcspJunitHelper {
 
 	public OcspJunitHelper(String httpReqPath, String resourceOcsp) throws MalformedURLException, URISyntaxException {
 		this.sBaseURL = httpReqPath + '/' + resourceOcsp;
+		log.info("sBaseURL="+sBaseURL);
 		this.baseURI = new URL(this.sBaseURL).toURI();
 	}
 
@@ -330,12 +331,19 @@ public class OcspJunitHelper {
 		servletGetWithParam(sb.toString());
 	}
 
+	/** Send command  */
 	private void servletGetWithParam(String param) throws IOException, URISyntaxException {
+	    /* Only localhost is allowed as sender, so no fancy external target used here
 		final URI uriWithParam = new URI(
 				this.baseURI.getScheme(), this.baseURI.getUserInfo(), this.baseURI.getHost(),
 				this.baseURI.getPort(), this.baseURI.getPath(), param, this.baseURI.getFragment());
+				*/
+        final URI uriWithParam = new URI(
+                this.baseURI.getScheme(), this.baseURI.getUserInfo(), "127.0.0.1",
+                8080, this.baseURI.getPath(), param, this.baseURI.getFragment());
 		final URL url = uriWithParam.toURL();
 		final HttpURLConnection con = (HttpURLConnection)url.openConnection();
+		log.debug("Connection to " + url.toExternalForm() + " resulted in HTTP " + con.getResponseCode());
 		assertEquals("Response code", HttpURLConnection.HTTP_OK, con.getResponseCode());
 		con.disconnect();
 	}
