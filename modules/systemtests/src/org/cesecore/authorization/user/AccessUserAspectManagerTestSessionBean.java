@@ -38,7 +38,7 @@ public class AccessUserAspectManagerTestSessionBean implements AccessUserAspectM
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public void persistAccessUserAspect(AccessUserAspect accessUserAspectData) {
+    public void persistAccessUserAspect(AccessUserAspectData accessUserAspectData) throws AccessUserAspectExistsException {
     	accessUserAspectSession.persistAccessUserAspect(accessUserAspectData);
     }
     

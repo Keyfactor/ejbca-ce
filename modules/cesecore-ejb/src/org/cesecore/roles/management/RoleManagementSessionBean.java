@@ -47,6 +47,7 @@ import org.cesecore.authorization.rules.AccessRuleExistsException;
 import org.cesecore.authorization.rules.AccessRuleManagementSessionLocal;
 import org.cesecore.authorization.rules.AccessRuleNotFoundException;
 import org.cesecore.authorization.user.AccessUserAspectData;
+import org.cesecore.authorization.user.AccessUserAspectExistsException;
 import org.cesecore.authorization.user.AccessUserAspectManagerSessionLocal;
 import org.cesecore.authorization.user.AccessUserAspectNotFoundException;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -349,9 +350,18 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
         final StringBuilder subjectsAdded = new StringBuilder();
         final StringBuilder subjectsChanged = new StringBuilder();
         for (AccessUserAspectData userAspect : users) {
-            // if userAspect hasn't been persisted, do so.
+            if(accessUserAspectSession.find(userAspect.getLegacyPrimaryKey()) != null) {
+                //If an aspect exists using the old primary key, remove it so that we can replace it with the new one.
+                accessUserAspectSession.remove(accessUserAspectSession.find(userAspect.getLegacyPrimaryKey()));
+            }
             if (accessUserAspectSession.find(userAspect.getPrimaryKey()) == null) {
-                accessUserAspectSession.persistAccessUserAspect(userAspect);
+                // if userAspect hasn't been persisted, do so.
+                try {
+                    accessUserAspectSession.persistAccessUserAspect(userAspect);
+                } catch (AccessUserAspectExistsException e) {
+                    throw new IllegalStateException("Tried to persist user aspect with primary key " + userAspect.getPrimaryKey()
+                            + " which was apparently found in the database in spite of a previous check.");
+                }
             }
 
             if (existingUsers.containsKey(userAspect.getPrimaryKey())) {
@@ -379,7 +389,7 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
             final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.adminchanged", subjectsChanged, role.getRoleName());
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
-            securityEventsLogger.log(EventTypes.ROLE_ACCESS_USER_ADDITION, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
+            securityEventsLogger.log(EventTypes.ROLE_ACCESS_USER_CHANGE, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
                     authenticationToken.toString(), null, null, null, details);
         }
         return result;
@@ -593,7 +603,7 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
 
         return result;
     }
-
+    
     private void logAccessRulesRemoved(AuthenticationToken authenticationToken, String rolename, Collection<AccessRuleData> removedRules) {
         if (removedRules.size() > 0) {
             StringBuilder removedRulesMsg = new StringBuilder();

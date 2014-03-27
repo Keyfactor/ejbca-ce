@@ -617,4 +617,5 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
             roleManagementSession.remove(alwaysAllowAuthenticationToken, authorizedRole);
         }
     }
+    
 }
