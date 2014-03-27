@@ -69,7 +69,7 @@ public class CertificateCacheTest {
 		ICertificateCache cache = new CertificateCache(certs);
 		
 		// Test lookup of not existing cert
-		X509Certificate cert = cache.findLatestBySubjectDN(HashID.getFromDN("CN=Foo,C=SE"));
+		X509Certificate cert = cache.findLatestBySubjectDN(HashID.getFromDNString("CN=Foo,C=SE"));
 		assertNull(cert);
 		// Old root cert should not be found, we only store the latest to be found by subjectDN
 		X509Certificate rootcert = cache.findLatestBySubjectDN(HashID.getFromSubjectDN(testrootnewcert));
@@ -81,7 +81,7 @@ public class CertificateCacheTest {
 			fail("verification should have failed");
 		} catch (SignatureException e) {} // NOPMD: BC 1.47
 		// CVC certificate should not be part of OCSP certificate cache
-		cert = cache.findLatestBySubjectDN(HashID.getFromDN(CertTools.getSubjectDN(testcvccert)));
+		cert = cache.findLatestBySubjectDN(HashID.getFromDNString(CertTools.getSubjectDN(testcvccert)));
 		assertNull(cert);
 		cert = cache.findLatestBySubjectDN(HashID.getFromSubjectDN(testscepcert));
 		assertEquals(CertTools.getSubjectDN(testscepcert), CertTools.getSubjectDN(cert));

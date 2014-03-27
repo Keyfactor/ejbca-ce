@@ -30,7 +30,7 @@ public class CacheTester implements Runnable { // NOPMD, this is not a JEE app, 
 	}
 	public void run() {
 		for (int i=0; i<1000;i++) {
-			X509Certificate cert = cache.findLatestBySubjectDN(HashID.getFromDN(dn));
+			X509Certificate cert = cache.findLatestBySubjectDN(HashID.getFromDNString(dn));
 			// The cache tests will not return any CV Certificates because this OCSP cache 
 			// only handles X.509 Certificates.
 			if (!StringUtils.contains(dn, "CVCTest")) {
