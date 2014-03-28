@@ -19,7 +19,6 @@
 #
 # For the internal OCSP responder this is the subject DN of the CA to use for signing
 # For an external OCSP responder this is the issuer DN of the OCSP responders certificate to use for signing, i.e. the CAs subject DN.
-# Note: The DN should be in EJBCA "normalized" form, i.e. with CN first.
 # Default: CN=ManagementCA,O=EJBCA Sample,C=SE
 ocsp.defaultresponder=CN=ManagementCA,O=EJBCA Sample,C=SE
 
