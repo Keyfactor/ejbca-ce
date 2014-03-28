@@ -292,6 +292,7 @@ public class CAsTest extends CaTestCase {
     public void testInitializeCa() throws Exception {
         final String caName = "testInitializeCa";
         
+        removeOldCa(caName);
         CAInfo x509CaInfo = createUnititializedCaInfo(caName, caName);
         caAdminSession.createCA(admin, x509CaInfo);
         try {
@@ -315,6 +316,7 @@ public class CAsTest extends CaTestCase {
     public void testInitializeCaAndChangeSubjectDn() throws Exception {
         final String caName = "testInitializeCaAndChangeSubjectDn";
         
+        removeOldCa(caName);
         CAInfo x509CaInfo = createUnititializedCaInfo(caName, caName);
         caAdminSession.createCA(admin, x509CaInfo);
         try {
