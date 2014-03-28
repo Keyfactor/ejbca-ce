@@ -215,11 +215,12 @@ public class ParameterHandler {
                 String indent = tab(longestKeyWord / TAB.length() + 2);
                 for (Parameter missingParameter : missingArguments) {
                     sb.append(tab(2) + missingParameter.getKeyWord() + indent.substring(missingParameter.getKeyWord().length()));
-
                     List<String> lines = CommandBase.splitStringIntoLines(missingParameter.getInstruction(), 120 - indent.length());
-                    sb.append(lines.get(0) + "\n");
-                    for (int i = 1; i < lines.size(); i++) {
-                        sb.append(tab(2) + indent + lines.get(i) + "\n");
+                    if (lines.size() > 0) {
+                        sb.append(lines.get(0) + "\n");
+                        for (int i = 1; i < lines.size(); i++) {
+                            sb.append(tab(2) + indent + lines.get(i) + "\n");
+                        }
                     }
 
                 }
