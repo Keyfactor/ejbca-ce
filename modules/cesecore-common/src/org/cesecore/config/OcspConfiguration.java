@@ -24,6 +24,7 @@ import org.apache.commons.configuration.ConversionException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.util.CertTools;
 
 /**
  * Parses configuration bundled in conf/ocsp.properties, both for the internal and external OCSP responder.
@@ -262,9 +263,14 @@ public class OcspConfiguration {
      * Specifies the subject of a certificate which is used to identify the responder which will generate responses when no real CA can be found from
      * the request. This is used to generate 'unknown' responses when a request is received for a certificate that is not signed by any CA on this
      * server.
+     * @return the name configured in ocsp.defaultresponder, reordered to EJBCA normalized ordering.
      */
     public static String getDefaultResponderId() {
-        return ConfigurationHolder.getExpandedString(DEFAULT_RESPONDER);
+        final String ret = ConfigurationHolder.getExpandedString(DEFAULT_RESPONDER);
+        if (ret != null) {
+            return CertTools.stringToBCDNString(ret);
+        }
+        return ret;
     }
 
     /**
