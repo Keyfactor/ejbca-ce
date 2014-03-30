@@ -305,16 +305,15 @@ public class Pkcs11SlotLabel {
             pw.println(new String(attrs));
         } else {
             // setting the attributes like this should work for most HSMs.
-            pw.println("attributes(*, *, *) = {");
-            pw.println("  CKA_TOKEN = true"); // all created objects should be permanent. They should not only exiswt during the session.
-            pw.println("}");
             pw.println("attributes(*, CKO_PUBLIC_KEY, *) = {");
+            pw.println("  CKA_TOKEN = false"); // Do not save public keys permanent in order to save space.
             pw.println("  CKA_ENCRYPT = true");
             pw.println("  CKA_VERIFY = true");
             pw.println("  CKA_WRAP = true");// no harm allowing wrapping of keys. created private keys can not be wrapped anyway since CKA_EXTRACTABLE
             // is false.
             pw.println("}");
             pw.println("attributes(*, CKO_PRIVATE_KEY, *) = {");
+            pw.println("  CKA_TOKEN = true"); // all created private keys should be permanent. They should not only exist during the session.
             pw.println("  CKA_PRIVATE = true"); // always require logon with password to use the key
             pw.println("  CKA_SENSITIVE = true"); // not possible to read the key
             pw.println("  CKA_EXTRACTABLE = false"); // not possible to wrap the key with another key
