@@ -316,11 +316,17 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
     public void testRenameRole() throws RoleExistsException, AuthorizationDeniedException, RoleNotFoundException {
         RoleData kip = roleManagementSession.create(authenticationToken, "Kip");
         RoleData cubert = roleManagementSession.create(authenticationToken, "Cubert");
+        final int caId = 1337;
         
         Collection<AccessRuleData> accessRules = new LinkedList<AccessRuleData>();
         AccessRuleData accessRule = new AccessRuleData(kip.getRoleName(), "/TestRule", AccessRuleState.RULE_ACCEPT, false);
         accessRules.add(accessRule);
         kip = roleManagementSession.addAccessRulesToRole(alwaysAllowAuthenticationToken, kip, accessRules);
+        
+        Collection<AccessUserAspectData> subjects = new LinkedList<AccessUserAspectData>();
+        subjects.add(new AccessUserAspectData(kip.getRoleName(), caId,
+            X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, "Kip"));
+        kip = roleManagementSession.addSubjectsToRole(alwaysAllowAuthenticationToken, kip, subjects);
 
         try {
             kip = roleManagementSession.renameRole(authenticationToken, kip, "Amy");
