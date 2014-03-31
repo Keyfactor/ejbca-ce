@@ -196,7 +196,9 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
     }
 
     /**
-     * Method for creating a primary key
+     * Method for creating a primary key. All of the given parameters will be factored into the key using their hash values, 
+     * and will be aggregated and multiplied with two primes (23, 31) in order to ensure that the same value for different 
+     * parameters are weighted differently. 
      * 
      * @param roleName the name of the role that this value belongs to
      * @param caId the ID of the CA that issued the user
@@ -204,7 +206,7 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
      * @param matchType How to match
      * @param matchValue the value to match
      * @param tokenType the token type.
-     * @return a unique primary key
+     * @return a pseudo-unique primary key
      * 
      */
     public static int generatePrimaryKey(final String roleName, final int caId, final AccessMatchValue matchWith, final AccessMatchType matchType,
@@ -213,14 +215,16 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
     }
     
     /**
-     * Method for creating a primary key
+     * Method for creating a primary key. All of the given parameters will be factored into the key using their hash values, 
+     * and will be aggregated and multiplied with two primes (23, 31) in order to ensure that the same value for different 
+     * parameters are weighted differently. 
      * 
      * @param roleName the name of the role that this value belongs to
      * @param caId the ID of the CA that issued the user
      * @param matchWith The type to match with
      * @param matchType How to match
      * @param matchValue the value to match
-     * @return a unique primary key
+     * @return a pseudo-unique primary key
      * 
      */
     public static int generatePrimaryKey(final String roleName, final int caId, final int matchWith, final AccessMatchType matchType,
@@ -230,6 +234,7 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
         if(tokenType == null) {
             throw new IllegalArgumentException("Could not generate primary key for aspect with null token type.");
         }
+        //Use 23 and 31 as seed and aggregate values, as they are coprime numbers. 
         return hash(23, 31, new int[]{ roleNameHash, matchValueHash, caId, matchWith, matchType.getNumericValue(), tokenType.hashCode() });
     }
     
