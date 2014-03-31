@@ -365,15 +365,21 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
         
         // Update End-Entities
-        EndEntityManagementSessionLocal endEntityManagementSession = new EjbLocalHelper().getEndEntityManagementSession();
-        final Collection<EndEntityInformation> endEntities = endEntityManagementSession.findAllUsersByCaId(authenticationToken, fromId);
-        for (EndEntityInformation endEntityInfo : endEntities) {
-            endEntityInfo.setCAId(toId);
-            try {
-                endEntityManagementSession.updateCAId(authenticationToken, endEntityInfo.getUsername(), toId);
-            } catch (FinderException e) {
-                log.error("End entity "+endEntityInfo.getUsername()+" could no longer be found", e);
+        // This can't be done with an @EJB injection since that fails on JBoss 5.1 which doesn't support circular dependencies.
+        // The code below only works on an EJB 3.1 app server, but on older app server the error is a catchable exception.
+        try {
+            EndEntityManagementSessionLocal endEntityManagementSession = new EjbLocalHelper().getEndEntityManagementSession();
+            final Collection<EndEntityInformation> endEntities = endEntityManagementSession.findAllUsersByCaId(authenticationToken, fromId);
+            for (EndEntityInformation endEntityInfo : endEntities) {
+                endEntityInfo.setCAId(toId);
+                try {
+                    endEntityManagementSession.updateCAId(authenticationToken, endEntityInfo.getUsername(), toId);
+                } catch (FinderException e) {
+                    log.error("End entity "+endEntityInfo.getUsername()+" could no longer be found", e);
+                }
             }
+        } catch (Exception e) {
+            log.info("Could not update CAIds of end-entities (this requires EJB 3.1 support in the appserver)", e);
         }
         
         // Update Data Sources
