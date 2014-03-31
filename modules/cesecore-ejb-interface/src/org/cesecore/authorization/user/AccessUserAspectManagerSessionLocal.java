@@ -29,7 +29,7 @@ import org.cesecore.roles.RoleData;
 public interface AccessUserAspectManagerSessionLocal {
 
     /**
-     * Persists an unpersisted AccessUserAspectData object.
+     * Persists an unpersisted AccessUserAspectData object. Does not check if object is attached or not.
      * 
      * @param accessUserAspectData the AccessUserAspectData to persist.
      * @throws AccessUserAspectExistsException if aspect already exists in database
