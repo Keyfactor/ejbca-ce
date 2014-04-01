@@ -54,7 +54,6 @@ import org.bouncycastle.cert.ocsp.SingleResp;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.X509CA;
@@ -78,7 +77,6 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.TraceLogMethodsRule;
-import org.ejbca.config.WebConfiguration;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -94,7 +92,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
     private static final Logger log = Logger.getLogger(ProtocolOcspHttpStandaloneTest.class);
     
     private static final String TESTCLASSNAME = ProtocolOcspHttpStandaloneTest.class.getSimpleName();
-    private static final String CA_DN = "CN=OcspDefaultTestCA";
+    private static final String CA_DN = "CN=OcspDefaultTestCA,O=Foo,C=SE";
     
     private CesecoreConfigurationProxySessionRemote configurationSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
@@ -121,7 +119,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         cryptoTokenId = CryptoTokenTestUtils.createCryptoToken(authenticationToken, TESTCLASSNAME);
         internalKeyBindingId = OcspTestUtils.createInternalKeyBinding(authenticationToken, cryptoTokenId,
                 OcspKeyBinding.IMPLEMENTATION_ALIAS, TESTCLASSNAME, "RSA2048", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-        String signerDN = "CN=ocspTestSigner";
+        String signerDN = "CN=ocspTestSigner,O=Foo,C=SE";
         ocspSigningCertificate = OcspTestUtils.createOcspSigningCertificate(authenticationToken, OcspTestUtils.OCSP_END_USER_NAME, signerDN, internalKeyBindingId, x509ca.getCAId());
         OcspTestUtils.updateInternalKeyBindingCertificate(authenticationToken, internalKeyBindingId);
         OcspTestUtils.setInternalKeyBindingStatus(authenticationToken, internalKeyBindingId, InternalKeyBindingStatus.ACTIVE);
@@ -229,9 +227,22 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
 
     @Test
     public void test05OcspUnknownCA() throws Exception {
-        configurationSession.setConfigurationValue(OcspConfiguration.DEFAULT_RESPONDER, CertTools.getIssuerDN(ocspSigningCertificate));
+        final String issuerDN = CertTools.getIssuerDN(ocspSigningCertificate);
+        configurationSession.setConfigurationValue(OcspConfiguration.DEFAULT_RESPONDER, issuerDN);
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
         super.test05OcspUnknownCA();
+
+        // Reverted issuer DN should work as well, we are independent of the order here
+        final String revertedIssuerDN = CertTools.reverseDN(issuerDN);
+        assertNotEquals("Reverting DN should produce a different result.", issuerDN, revertedIssuerDN);
+        configurationSession.setConfigurationValue(OcspConfiguration.DEFAULT_RESPONDER, revertedIssuerDN);
+        ocspResponseGeneratorTestSession.reloadOcspSigningCache();
+        super.test05OcspUnknownCA();
+        
+        configurationSession.setConfigurationValue(OcspConfiguration.DEFAULT_RESPONDER, "CN=error");
+        ocspResponseGeneratorTestSession.reloadOcspSigningCache();
+        super.testOcspInternalError();
+
     }
 
     @Test
