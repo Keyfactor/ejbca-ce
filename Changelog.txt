@@ -527,6 +527,12 @@ EJBCA 6.0.0, 2013-11-08
     * [ECA-3159] - Possibility to Export/Import all CMP configuration
     * [ECA-3192] - Possibility to change Subject DN in dump files from CLI
 
+EJBCA 5.0.14, 2014-04-02
+---
+Bug
+    [ECA-3469] - Problem adding several administrators
+    [ECA-3473] - Internal error when using default responder on standalone OCSP for X.500 issuer DN order
+
 EJBCA 5.0.13, 2014-02-20
 ---
 Bug
