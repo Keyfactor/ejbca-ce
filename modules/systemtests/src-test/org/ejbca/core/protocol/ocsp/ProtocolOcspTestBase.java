@@ -101,7 +101,7 @@ public abstract class ProtocolOcspTestBase {
     private static final Logger log = Logger.getLogger(ProtocolOcspTestBase.class);
 
     private static final String CERTIFICATE_USERNAME = "ocspTest";
-    protected static final String ISSUER_DN = "CN=OcspDefaultTestCA";
+    protected static final String ISSUER_DN = "CN=OcspDefaultTestCA,O=Foo,C=SE";
     private static final String REVOKED_CERT_DN = "CN=ocspTest";
     protected static final byte[] unknowncacertBytes = Base64.decode(("MIICLDCCAZWgAwIBAgIIbzEhUVZYO3gwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
             + "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAyMDcw" + "OTEyNDc1OFoXDTA0MDgxNTEyNTc1OFowLzEPMA0GA1UEAxMGVGVzdENBMQ8wDQYD"
@@ -174,8 +174,15 @@ public abstract class ProtocolOcspTestBase {
         loadUserCert(this.caid);
         // An OCSP request for a certificate from an unknwon CA
         this.helper.verifyStatusUnknown( this.caid, this.unknowncacert, new BigInteger("1"));
-
         log.trace("<test05OcspUnknownCA()");
+    }
+
+    protected void testOcspInternalError() throws Exception { // NOPMD, this is not a test class itself
+        log.trace(">testocspInternalError()");
+        loadUserCert(this.caid);
+        // An OCSP request for a certificate from an unknwon CA
+        this.helper.verifyResponseInternalError( this.caid, this.unknowncacert, new BigInteger("1"));
+        log.trace("<testocspInternalError()");
     }
 
     protected void test06OcspSendWrongContentType() throws Exception { // NOPMD, this is not a test class itself

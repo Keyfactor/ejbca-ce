@@ -49,6 +49,7 @@ import org.bouncycastle.cert.ocsp.OCSPException;
 import org.bouncycastle.cert.ocsp.OCSPReq;
 import org.bouncycastle.cert.ocsp.OCSPReqBuilder;
 import org.bouncycastle.cert.ocsp.OCSPResp;
+import org.bouncycastle.cert.ocsp.OCSPRespBuilder;
 import org.bouncycastle.cert.ocsp.RevokedStatus;
 import org.bouncycastle.cert.ocsp.SingleResp;
 import org.bouncycastle.cert.ocsp.UnknownStatus;
@@ -227,8 +228,24 @@ public class OcspJunitHelper {
 	 * @throws OperatorCreationException 
 	 */
 	public void verifyStatusUnknown(int caid, X509Certificate cacert, BigInteger certSerial) throws NoSuchProviderException, IOException, OCSPException, OperatorCreationException, CertificateException {
-		verifyStatus(caid, cacert, certSerial, Status.Unknown, Integer.MIN_VALUE, null);
+		verifyStatus(caid, cacert, certSerial, OCSPRespBuilder.SUCCESSFUL, Status.Unknown, Integer.MIN_VALUE, null);
 	}
+
+   /**
+     * Verify that the OCSP response code is Internal Error.
+     * @param caid
+     * @param cacert
+     * @param certSerial
+     * @throws NoSuchProviderException
+     * @throws IOException
+     * @throws OCSPException
+     * @throws CertificateException 
+     * @throws OperatorCreationException 
+     */
+    public void verifyResponseInternalError(int caid, X509Certificate cacert, BigInteger certSerial) throws NoSuchProviderException, IOException, OCSPException, OperatorCreationException, CertificateException {
+        verifyStatus(caid, cacert, certSerial, OCSPRespBuilder.INTERNAL_ERROR, Status.Unknown, Integer.MIN_VALUE, null);
+    }
+
 	/**
 	 * Verify that the status is "Good"
 	 * @param caid
@@ -241,7 +258,7 @@ public class OcspJunitHelper {
 	 * @throws OperatorCreationException 
 	 */
 	public void verifyStatusGood(int caid, X509Certificate cacert, BigInteger certSerial) throws NoSuchProviderException, IOException, OCSPException, OperatorCreationException, CertificateException {
-		verifyStatus(caid, cacert, certSerial, Status.Good, Integer.MIN_VALUE, null);
+		verifyStatus(caid, cacert, certSerial, OCSPRespBuilder.SUCCESSFUL, Status.Good, Integer.MIN_VALUE, null);
 	}
 
 	/**
@@ -257,10 +274,10 @@ public class OcspJunitHelper {
 	 * @throws OperatorCreationException 
 	 */
 	public void verifyStatusRevoked(int caid, X509Certificate cacert, BigInteger certSerial, int expectedReason, Date expectedRevTime) throws NoSuchProviderException, IOException, OCSPException, OperatorCreationException, CertificateException {
-		verifyStatus(caid, cacert, certSerial, Status.Revoked, expectedReason, expectedRevTime);
+		verifyStatus(caid, cacert, certSerial, OCSPRespBuilder.SUCCESSFUL, Status.Revoked, expectedReason, expectedRevTime);
 	}
 
-	private void verifyStatus(int caid, X509Certificate cacert, BigInteger certSerial, Status expectedStatus, 
+	private void verifyStatus(int caid, X509Certificate cacert, BigInteger certSerial, int ocspResponseStatus, Status expectedStatus, 
 			int expectedReason, Date expectedRevTime) throws NoSuchProviderException, IOException, OCSPException, OperatorCreationException, CertificateException {
 		// And an OCSP request
 		final OCSPReqBuilder gen = new OCSPReqBuilder();
@@ -274,7 +291,11 @@ public class OcspJunitHelper {
 		final OCSPReq req = gen.build();
 
 		// Send the request and receive a singleResponse
-		final SingleResp[] singleResps = sendOCSPPost(req.getEncoded(), sNonce, 0, 200);
+		final SingleResp[] singleResps = sendOCSPPost(req.getEncoded(), sNonce, ocspResponseStatus, 200);
+		// if we expected internal error, we should not expect any data, and can not make any more tests
+		if (ocspResponseStatus == OCSPRespBuilder.INTERNAL_ERROR) {
+		    return;
+		}
 		assertEquals("No of SingleResps should be 1.", 1, singleResps.length);
 		final SingleResp singleResp = singleResps[0];
 

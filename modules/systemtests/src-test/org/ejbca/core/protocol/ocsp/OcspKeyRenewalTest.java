@@ -79,7 +79,7 @@ import org.junit.rules.TestRule;
  */
 public class OcspKeyRenewalTest {
 
-    private static final String CA_DN = "CN=OcspDefaultTestCA";
+    private static final String CA_DN = "CN=OcspDefaultTestCA,O=Foo,C=SE";
     private static final String CA_ECC_DN = "CN=OcspDefaultECCTestCA";
     private static final String OCSP_ECC_END_USER_NAME = OcspTestUtils.OCSP_END_USER_NAME+"Ecc";
 
