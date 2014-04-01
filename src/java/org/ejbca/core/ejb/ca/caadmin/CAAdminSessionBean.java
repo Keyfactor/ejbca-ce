@@ -170,7 +170,6 @@ import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
-import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.core.protocol.certificatestore.CertificateCacheFactory;
 import org.ejbca.cvc.CardVerifiableCertificate;
 
@@ -364,11 +363,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
         }
         
-        // Update End-Entities
-        // This can't be done with an @EJB injection since that fails on JBoss 5.1 which doesn't support circular dependencies.
-        // The code below only works on an EJB 3.1 app server, but on older app server the error is a catchable exception.
-        try {
-            EndEntityManagementSessionLocal endEntityManagementSession = new EjbLocalHelper().getEndEntityManagementSession();
+        // Update End-Entities (only if it's possible to get the session bean)
+        EndEntityManagementSessionLocal endEntityManagementSession = getEndEntityManagementSession();
+        if (endEntityManagementSession != null) {
             final Collection<EndEntityInformation> endEntities = endEntityManagementSession.findAllUsersByCaId(authenticationToken, fromId);
             for (EndEntityInformation endEntityInfo : endEntities) {
                 endEntityInfo.setCAId(toId);
@@ -378,8 +375,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     log.error("End entity "+endEntityInfo.getUsername()+" could no longer be found", e);
                 }
             }
-        } catch (Exception e) {
-            log.info("Could not update CAIds of end-entities (this requires EJB 3.1 support in the appserver)", e);
+        } else {
+            log.info("Can not update CAIds of end-entities (this requires EJB 3.1 support in the appserver)");
         }
         
         // Update Data Sources
@@ -456,6 +453,27 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
         }
         
+    }
+    
+    /**
+     * Tries to get an EndEntityManagementSession, if this is possible on the appserver.
+     * We can't use @EJB since that fails on JBoss 5.1 which doesn't support circular dependencies.
+     * We also can't use EjbLocalHelper here since it will "remember" failures, and propagate failures to other parts of EJBCA.
+     * 
+     * This method can be removed whenever JBoss 5.1 support is dropped, and replaced with a normal @EJB injection
+     *
+     * @return Session bean or null.
+     */
+    private EndEntityManagementSessionLocal getEndEntityManagementSession() {
+        try {
+            return (EndEntityManagementSessionLocal)sessionContext.lookup("java:global/ejbca/ejbca-ejb/EndEntityManagementSessionBean!org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal");
+        } catch (Exception e) {
+            // Non EJB 3.1 app servers
+            if (log.isDebugEnabled()) {
+                log.debug("Could not look up end-entity management session", e);
+            }
+            return null;
+        }
     }
 
     private CA createCAObject(CAInfo cainfo, CAToken catoken, CertificateProfile certprofile) throws InvalidAlgorithmException {
