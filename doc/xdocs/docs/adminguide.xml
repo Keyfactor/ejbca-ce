@@ -4785,7 +4785,7 @@ then restart the server.
 <p>
 If your setup makes it very complex to configure multiple certificate
 profiles and multiple publishers you might consider writing a custom publisher that
-handles things directly according to you needs.
+handles things directly according to your needs.
 </p><p>
 Look in the directory src/java/org/ejbca/core/model/ca/publishers for more
 information about writing your own solution. There is an empty custom publisher called
