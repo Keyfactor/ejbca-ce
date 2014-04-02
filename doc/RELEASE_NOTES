@@ -156,8 +156,6 @@ EJBCA 5.0.14
 -----------
 This is a maintenance release with only minor bug fixes. In all 2 issues have been fixed.
 
-The security issue is rated as low, and can lead only to excessive CPU usage, if exposed to untrusted networks.
-
 * Noteworthy changes:
 - Fix problem, in some cases, when adding administrators with similar names.
 - Default CA in OCSP responder can now handle CA DNs of any order.
