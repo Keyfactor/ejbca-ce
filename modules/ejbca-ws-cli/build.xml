@@ -10,7 +10,6 @@
 	<property name="build.dir" location="${this.dir}/build"/>
 	<property name="src.dir" location="${this.dir}/src"/>
 	<property name="src-gen.dir" location="${this.dir}/src-gen"/>
-	<property name="reports.base.dir" location="${this.dir}/build-test/reports/"/>
 	<property name="resources.dir" location="${this.dir}/resources"/>
 
 	<path id="compile.classpath">

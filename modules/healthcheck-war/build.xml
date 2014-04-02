@@ -12,7 +12,6 @@
 	<property name="src.dir" location="${this.dir}/src"/>
 	<property name="src-test.dir" location="${this.dir}/src-test"/>
 	<property name="resources.dir" location="${this.dir}/resources"/>
-	<property name="reports.base.dir" location="${this.dir}/build-test/reports/"/>
 
 	<path id="compile-common.classpath">
 		<path refid="lib.servlet.classpath"/>
@@ -61,9 +60,6 @@
 	</target>
 
 	<target name="test" depends="compile-tests">
-		<property name="reports.dir" location="${reports.base.dir}/test"/>
-		<delete dir="${reports.dir}" />
-		<mkdir dir="${reports.dir}/html"/>
 		<junit printsummary="yes" haltonfailure="no" >
 			<classpath>
 				<path refid="test.classpath"/>
@@ -76,7 +72,6 @@
 				</fileset>
 			</batchtest>
 		</junit>
-		<antcall target="createreport"/>
 	</target>
 
 </project>

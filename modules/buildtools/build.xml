@@ -10,23 +10,10 @@
 	<property name="build-test.dir" location="${this.dir}/build-test"/>
 	<property name="src.dir" location="${this.dir}/src"/>
 	<property name="src-test.dir" location="${this.dir}/src-test"/>
-	<property name="reports.base.dir" location="${this.dir}/build-test/reports/"/>
 
-<!--
-    <target name="build-servicemanifestbuilder" depends="compile-servicemanifestbuilder">
-        <jar jarfile="${mod.servicemanifestbuilder.lib}">
-    		<manifest >
-    			<attribute name="Class-path" value="${mod.cli-util.lib} ./" />
-    			<attribute name="Main-Class" value="org.primekey.anttools.ServiceManifestBuilder"/>
-    		</manifest>
-            <fileset dir="${build.dir}" includes="**/*ServiceManifestBuilder.class"/>
-        </jar>
-    </target>
--->
     <target name="clean" description="Clean up this module">
 		<delete dir="${build.dir}" />
     	<delete dir="${build-test.dir}" />
-		<!--<delete dir="${mod.buildtools.dist}" />-->
     </target>
 	
     <target name="compile-servicemanifestbuilder">
@@ -55,9 +42,6 @@
 
 	<target name="test" depends="compile-tests" description="Run tests for this module">
     	<antcall target="showtime"/>
-    	<property name="reports.dir" location="${reports.base.dir}/test"/>
-		<delete dir="${reports.dir}" />
-		<mkdir dir="${reports.dir}/html"/>
 		<junit printsummary="yes" haltonfailure="no" dir="${this.dir}">
 			<classpath>
                 <path refid="lib.junit.classpath"/>
@@ -71,7 +55,6 @@
 				</fileset>
 			</batchtest>
 		</junit>
-		<antcall target="createreport"/>
     	<antcall target="showtime"/>
     </target>
 

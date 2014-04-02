@@ -11,7 +11,6 @@
 	<property name="build-lib.dir" location="${this.dir}/build-lib"/>
 	<property name="src.dir" location="${this.dir}/src"/>
 	<property name="src-gen.dir" location="${this.dir}/src-gen"/>
-	<property name="reports.base.dir" location="${this.dir}/build-test/reports/"/>
 
 	<path id="compile.classpath">
 		<path refid="compile-library.classpath"/>

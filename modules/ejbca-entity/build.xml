@@ -26,7 +26,6 @@
 	<property name="build.dir" location="${this.dir}/build"/>
 	<property name="build-test.dir" location="${this.dir}/build-test"/>
 	<property name="build-cli.dir" location="${this.dir}/build-cli"/>
-	<property name="reports.base.dir" location="${this.dir}/build-test/reports/"/>
 	<property name="src.dir" location="${this.dir}/src"/>
 	<property name="src-test.dir" location="${this.dir}/src-test"/>
 	<property name="src-cli.dir" location="${this.dir}/src-cli"/>
@@ -156,9 +155,6 @@
         <copy file="${resources.dir}/log4j.xml" tofile="${build-test.dir}/log4j.xml" />
     	<mkdir dir="${build-test.dir}/META-INF"/>
 		<copy file="${resources.dir}/orm-ejbca-${database.name}.xml" todir="${build-test.dir}/META-INF/" failonerror="true" overwrite="true"/>
-    	<property name="reports.dir" location="${reports.base.dir}/dbschema"/>
-		<delete dir="${reports.dir}" />
-		<mkdir dir="${reports.dir}/html"/>
 		<junit printsummary="yes" haltonfailure="no" fork="true" failureproperty="databaseschemarest.failed">
 			<classpath>
         		<path refid="test.classpath"/>
@@ -168,7 +164,6 @@
 			<formatter type="xml" />
 			<test name="org.ejbca.database.DatabaseSchemaTest" todir="${reports.dir}"/>
 		</junit>
-		<antcall target="createreport"/>
     	<condition property="databaseschemarest.ok" value="true"><not><isset property="databaseschemarest.failed"/></not></condition>
     	<echo message="If your test runs our of memory (for example during the CRL write), you might want to consider using ANT_OPTS like '-Xms1024m -Xmx2048m'." />
     </target>
@@ -184,10 +179,7 @@
         <copy file="${resources.dir}/log4j.xml" tofile="${build-test.dir}/log4j.xml" />
     	<mkdir dir="${build-test.dir}/META-INF"/>
 		<copy file="${resources.dir}/orm-ejbca-${database.name}.xml" todir="${build-test.dir}/META-INF/" failonerror="true" overwrite="true"/>
-    	<property name="reports.dir" location="${reports.base.dir}/ocspmon"/>
-		<delete dir="${reports.dir}" />
-		<mkdir dir="${reports.dir}/html"/>
-		<junit printsummary="yes" haltonfailure="no" fork="false" failureproperty="databaseschemarest.failed">
+    	<junit printsummary="yes" haltonfailure="no" fork="false" failureproperty="databaseschemarest.failed">
 			<classpath>
         		<path refid="test.classpath"/>
 				<pathelement path="${clover.jar}"/>
@@ -196,15 +188,11 @@
 			<formatter type="xml" />
 			<test name="org.ejbca.database.OcspMonitoringToolTest" todir="${reports.dir}"/>
 		</junit>
-		<antcall target="createreport"/>
     </target>
 
 	<target name="test" depends="compile-test" description="Run tests for this module">
     	<antcall target="showtime"/>
-    	<property name="reports.dir" location="${reports.base.dir}/test"/>
-		<delete dir="${reports.dir}" />
-		<mkdir dir="${reports.dir}/html"/>
-		<echo message=" ** Running stand-alone tests. **"/>
+		<echo message=" ** Running EJBCA entity tests **"/>
 		<junit printsummary="yes" haltonfailure="no" dir="${this.dir}">
 			<classpath>
 	    		<path refid="test.classpath-nojdbc"/>
@@ -216,29 +204,29 @@
 				<fileset dir="${build-test.dir}" includes="org/cesecore/**/*Test.class" excludes=""/>
 			</batchtest>
 		</junit>
-		<antcall target="createreport"/>
     	<antcall target="showtime"/>
     </target>
 
-    <target name="compile-test" depends="with.clover, ejbca-util, build, build-cli-conditional">
-    	<mkdir dir="${build-test.dir}" />
-        <javac destdir="${build-test.dir}" debug="on" includeantruntime="no"
-        	encoding="UTF-8" target="${java.target.version}" classpathref="compile-test.classpath"
-        	>
-        	<include name="org/ejbca/database/**/*Test.java"/>
-	    	<src path="${src-test.dir}"/>
-	    	<src path="${src.dir}"/>
-        	<src path="${ejbca.home}/src/java"/>
-        	<src path="${ejbca.home}/modules/ejbca-ejb-cli/src"/>
-        </javac>
-		<copy todir="${build-test.dir}" failonerror="true">
-			<fileset dir="${src-test.dir}">
-				<include name="**/*.xml"/>
-			</fileset>
-			<fileset dir="${ejbca.home}/src" includes="intresources/**"/>
-			<fileset dir="${ejbca.home}/src/java/" includes="defaultvalues.properties"/>
-		</copy>
-    </target>
+	 <target name="compile-test" depends="with.clover, ejbca-util, build, build-cli-conditional">
+	    	<mkdir dir="${build-test.dir}" />
+	        <javac destdir="${build-test.dir}" debug="on" includeantruntime="no"
+	        	encoding="UTF-8" target="${java.target.version}" classpathref="compile-test.classpath">
+	        	<include name="org/ejbca/database/**/*Test.java"/>
+	        	<include name="org/ejbca/util/**/*Test.java"/>
+	        	<exclude name="org/ejbca/util/PerformanceTest.java"/>
+		    	<src path="${src-test.dir}"/>
+		    	<src path="${src.dir}"/>
+	        	<src path="${ejbca.home}/src/java"/>
+	        	<src path="${ejbca.home}/modules/ejbca-ejb-cli/src"/>
+	        </javac>
+			<copy todir="${build-test.dir}" failonerror="true">
+				<fileset dir="${src-test.dir}">
+					<include name="**/*.xml"/>
+				</fileset>
+				<fileset dir="${ejbca.home}/src" includes="intresources/**"/>
+				<fileset dir="${ejbca.home}/src/java/" includes="defaultvalues.properties"/>
+			</copy>
+	    </target>
 
     <condition property="cli-exists">
    		<available file="${src-cli.dir}/org" type="dir"/>
@@ -313,9 +301,6 @@
 	<target name="runone" depends="compile-test">
 		<fail message="'test.runone' is not set. Example -Dtest.runone=ApprovalExecutorUtilTest" unless="test.runone" />
         <copy file="${log4j.test.file}" tofile="${build-test.dir}/log4j.xml" failonerror="true"/>
-    	<property name="reports.dir" location="${reports.base.dir}/runone"/>
-		<delete dir="${reports.dir}" />
-		<mkdir dir="${reports.dir}/html"/>
 		<junit printsummary="yes" haltonfailure="no" >
 			<classpath>
         		<path refid="test.classpath-nojdbc"/>
@@ -328,7 +313,6 @@
 				</fileset>
 			</batchtest>
 		</junit>
-		<antcall target="createreport"/>
 	</target>
 
 </project>
