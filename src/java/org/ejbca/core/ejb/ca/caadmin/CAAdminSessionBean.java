@@ -182,8 +182,6 @@ import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
 import org.ejbca.core.protocol.certificatestore.CertificateCacheFactory;
 import org.ejbca.cvc.CardVerifiableCertificate;
 
-import com.arjuna.orbportability.Services;
-
 /**
  * Administrates and manages CAs in EJBCA system.
  * 
