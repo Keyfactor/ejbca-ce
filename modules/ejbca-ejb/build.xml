@@ -17,7 +17,7 @@
 	<property name="src.dir" location="${ejbca.home}/src/java"/>
 	<property name="src-test.dir" location="${this.dir}/src-test"/>
 	<property name="resources.dir" location="${this.dir}/resources"/>
-	<property name="reports.base.dir" location="${this.dir}/build-test/reports/"/>
+	
 
 	<path id="compile-util.classpath">
 		<path refid="lib.cert-cvc.classpath"/>
@@ -557,11 +557,8 @@
 
 	<target name="test" depends="compile-tests" description="Run tests for this module, use -Dtest.includep11=true to include P11 tests">
 		<antcall target="showtime"/>
-		<property name="reports.dir" location="${reports.base.dir}/test"/>
-		<delete dir="${reports.dir}" />
-		<mkdir dir="${reports.dir}/html"/>
     	<echo message="pkcs11-exclude=${p11exclude}"/>
-		<echo message=" ** Running stand-alone tests in parallel chunks. Console output will be a bit scrambled.. **"/>
+		<echo message=" ** Running unit tests in parallel chunks. Console output will be a bit scrambled.. **"/>
 		<parallel>
 			<antcall target="test-subprocess">
 				<param name="test-subprocess.include-pattern" value="org/ejbca/core/model/ra/*Test.class" />
@@ -604,7 +601,6 @@
 				<param name="test-subprocess.exclude-pattern" value="org/ejbca/core/model/**/*Test.class org/ejbca/util/**/*Test.class org/cesecore/certificates/**/*Test.class org/cesecore/util/**/*Test.class org/ejbca/core/protocol/**/*Test.class org/cesecore/keys/**/*Test.class ${p11exclude}" />
 			</antcall>
 		</parallel>
-		<antcall target="createreport"/>
 		<antcall target="showtime"/>
 	</target>
 
@@ -623,9 +619,6 @@
 
 	<target name="runone" depends="compile-tests">
 		<fail message="'test.runone' is not set. Example -Dtest.runone=ApprovalExecutorUtilTest" unless="test.runone" />
-		<property name="reports.dir" location="${reports.base.dir}/runone"/>
-		<delete dir="${reports.dir}" />
-		<mkdir dir="${reports.dir}/html"/>
 		<junit printsummary="yes" haltonfailure="no" >
 			<classpath>
 				<path refid="test.classpath"/>
@@ -638,6 +631,5 @@
 				</fileset>
 			</batchtest>
 		</junit>
-		<antcall target="createreport"/>
 	</target>
 </project>

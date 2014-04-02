@@ -54,7 +54,6 @@ modules/{module name}/resources   Holds the module's meta-data and templates
 	<property name="build.dir" location="${this.dir}/build"/>
 	<property name="build-test.dir" location="${this.dir}/build-test"/>
 	<property name="src.dir" location="${this.dir}/src"/>
-	<property name="reports.base.dir" location="${this.dir}/build-test/reports/"/>
 
 	<path id="compile.classpath">
 		<path refid="{reference to class-path(s) defined in build-properties.xml}"/>
@@ -98,9 +97,6 @@ modules/{module name}/resources   Holds the module's meta-data and templates
 
 	<target name="test" depends="compile-tests" description="Run tests for this module">
     	<antcall target="showtime"/>
-    	<property name="reports.dir" location="${reports.base.dir}/test"/>
-		<delete dir="${reports.dir}" />
-		<mkdir dir="${reports.dir}/html"/>
 		<junit printsummary="yes" haltonfailure="no" dir="${this.dir}">
 			<classpath>
         		<path refid="test.classpath"/>
@@ -119,9 +115,6 @@ modules/{module name}/resources   Holds the module's meta-data and templates
 
 	<target name="runone" depends="compile-tests">
 		<fail message="'test.runone' is not set. Example -Dtest.runone=ApprovalExecutorUtilTest" unless="test.runone" />
-    	<property name="reports.dir" location="${reports.base.dir}/runone"/>
-		<delete dir="${reports.dir}" />
-		<mkdir dir="${reports.dir}/html"/>
 		<junit printsummary="yes" haltonfailure="no" >
 			<classpath>
         		<path refid="test.classpath"/>
