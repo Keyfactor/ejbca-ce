@@ -124,6 +124,11 @@ import org.cesecore.certificates.ocsp.exception.NotSupportedException;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.keybind.InternalKeyBinding;
+import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
+import org.cesecore.keybind.InternalKeyBindingNameInUseException;
+import org.cesecore.keybind.InternalKeyBindingProperty;
+import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
@@ -145,13 +150,17 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
+import org.ejbca.config.CmpConfiguration;
+import org.ejbca.config.Configuration;
 import org.ejbca.config.EjbcaConfiguration;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
@@ -172,6 +181,8 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
 import org.ejbca.core.protocol.certificatestore.CertificateCacheFactory;
 import org.ejbca.cvc.CardVerifiableCertificate;
+
+import com.arjuna.orbportability.Services;
 
 /**
  * Administrates and manages CAs in EJBCA system.
@@ -205,6 +216,10 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     private CryptoTokenSessionLocal cryptoTokenSession;
     @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
+    @EJB
+    private InternalKeyBindingMgmtSessionLocal keyBindMgmtSession;
     @EJB
     private PublisherSessionLocal publisherSession;
     @EJB
@@ -276,7 +291,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             // Changing the SubjectDN will break cert chains in extended CA services
             caInfo.getExtendedCAServiceInfos().clear();
             createCA(authenticationToken, caInfo);
-            updateCAIds(authenticationToken, currentCAId, calculatedCAId);
+            updateCAIds(authenticationToken, currentCAId, calculatedCAId, caInfo.getSubjectDN());
         } else {
             CAToken caToken = caInfo.getCAToken();
             CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(caInfo.getCertificateProfileId());
@@ -302,7 +317,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     /**
      * Updates all references to the given CAId in the database.
      */
-    private void updateCAIds(AuthenticationToken authenticationToken, int fromId, int toId) throws AuthorizationDeniedException {
+    private void updateCAIds(AuthenticationToken authenticationToken, int fromId, int toId, String toDN) throws AuthorizationDeniedException {
         log.info("Updating CAIds in relations from "+fromId+" to "+toId+"\n");
         
         // Update Certificate Profiles
@@ -409,13 +424,69 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         // TODO CRL Updater, Certificate Expiration Checker, User Password Expiration Service, Renew CA Service
         
         // Update Internal Key Bindings
-        // TODO update CAIds in trusted certificate references
+        Map<String,Map<String,InternalKeyBindingProperty<?>>> keyBindTypes = keyBindMgmtSession.getAvailableTypesAndProperties();
+        Map<String,List<Integer>> typesKeybindings = new HashMap<String,List<Integer>>();
+        for (String type : keyBindTypes.keySet()) {
+            typesKeybindings.put(type, keyBindMgmtSession.getInternalKeyBindingIds(authenticationToken, type));
+        }
+        for (Map.Entry<String,List<Integer>> entry : typesKeybindings.entrySet()) {
+            final String type = entry.getKey();
+            final List<Integer> keybindIds = entry.getValue();
+            for (int keybindId : keybindIds) {
+                final InternalKeyBinding keybind = keyBindMgmtSession.getInternalKeyBinding(authenticationToken, keybindId);
+                boolean changed = false;
+                List<InternalKeyBindingTrustEntry> trustentries = new ArrayList<InternalKeyBindingTrustEntry>();
+                for (InternalKeyBindingTrustEntry trustentry : keybind.getTrustedCertificateReferences()) {
+                    int trustCaId = trustentry.getCaId();
+                    if (trustCaId == fromId) {
+                        trustCaId = toId;
+                        changed = true;
+                    }
+                    trustentries.add(new InternalKeyBindingTrustEntry(trustCaId, trustentry.fetchCertificateSerialNumber()));
+                }
+                
+                
+                if (changed) {
+                    keybind.setTrustedCertificateReferences(trustentries);
+                    try {
+                        keyBindMgmtSession.persistInternalKeyBinding(authenticationToken, keybind);
+                    } catch (InternalKeyBindingNameInUseException e) {
+                        // Should never happen
+                        log.error("Name existed when trying to update keybinding", e);
+                    }
+                }
+            }
+        }
         
         // Update System Configuration
-        // TODO AutoEnrollment CA
+        GlobalConfiguration globalConfig = (GlobalConfiguration)globalConfigurationSession.getCachedConfiguration(Configuration.GlobalConfigID);
+        if (globalConfig != null) {
+            boolean changed = false;
+            if (globalConfig.getAutoEnrollCA() == fromId) {
+                globalConfig.setAutoEnrollCA(toId);
+                changed = true;
+            }
+            if (changed) {
+                globalConfigurationSession.saveConfiguration(authenticationToken, globalConfig, Configuration.GlobalConfigID);
+            }
+        }
         
         // Update CMP Configuration
-        // TODO Auth Module Issuer CA (RA Mode), RA CA Name (RA Mode), Default CA
+        // Only "Default CA" contains a reference to the Subject DN. All other fields reference the CAs by CA name.
+        CmpConfiguration cmpConfig = (CmpConfiguration)globalConfigurationSession.getCachedConfiguration(Configuration.CMPConfigID);
+        if (cmpConfig != null) {
+            boolean changed = false;
+            for (String alias : cmpConfig.getAliasList()) {
+                final String defaultCaDN = cmpConfig.getCMPDefaultCA(alias);
+                if (defaultCaDN != null && defaultCaDN.hashCode() == fromId) {
+                    cmpConfig.setCMPDefaultCA(alias, toDN);
+                    changed = true;
+                }
+            }
+            if (changed) {
+                globalConfigurationSession.saveConfiguration(authenticationToken, cmpConfig, Configuration.CMPConfigID);
+            }
+        }
         
         // Update Roles
         final Random random = new Random(System.nanoTime()); 
