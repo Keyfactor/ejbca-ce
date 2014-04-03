@@ -428,7 +428,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             typesKeybindings.put(type, keyBindMgmtSession.getInternalKeyBindingIds(authenticationToken, type));
         }
         for (Map.Entry<String,List<Integer>> entry : typesKeybindings.entrySet()) {
-            final String type = entry.getKey();
             final List<Integer> keybindIds = entry.getValue();
             for (int keybindId : keybindIds) {
                 final InternalKeyBinding keybind = keyBindMgmtSession.getInternalKeyBinding(authenticationToken, keybindId);
