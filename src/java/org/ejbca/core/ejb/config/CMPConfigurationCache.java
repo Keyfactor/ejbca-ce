@@ -16,7 +16,7 @@ import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EjbcaConfiguration;
 
 /**
- * Class Holding cache variable for global configuration. Needed because EJB spec does not allow volatile, non-final 
+ * Class Holding cache variable for cmp configuration. Needed because EJB spec does not allow volatile, non-final 
  * fields in session beans.
  * This is a trivial cache, too trivial, it needs manual handling of setting the cache variable, this class does not keep track on if
  * the cache variable is null or not, the using class must ensure that it does not try to use a null value. 
@@ -27,12 +27,12 @@ import org.ejbca.config.EjbcaConfiguration;
 public final class CMPConfigurationCache {
 
     /**
-     * Cache variable containing the global configuration. This cache may be
+     * Cache variable containing the cmp configuration. This cache may be
      * unsynchronized between multiple instances of EJBCA, but is common to all
      * threads in the same VM. Set volatile to make it thread friendly.
      */
     private volatile CmpConfiguration cmpconfigurationCache = null;
-    /** help variable used to control that GlobalConfiguration update isn't performed to often. */
+    /** help variable used to control that CmpConfiguration update isn't performed to often. */
     private volatile long lastupdatetime = -1;  
 
     public CMPConfigurationCache() {
