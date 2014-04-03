@@ -31,7 +31,7 @@ public final class CTLogInfo implements Serializable {
     
     private final int logId;
     private final byte[] publicKeyBytes;
-    private final String url;
+    private final String url; // base URL, without "add-chain" or "add-pre-chain"
     private int timeout = 5000; // milliseconds
     
     private transient PublicKey publicKey;
@@ -39,6 +39,11 @@ public final class CTLogInfo implements Serializable {
     /**
      * Creates a CT log info object, but does not parse the public key yet
      * (so it can be created from static blocks etc.)
+     * 
+     * @param url  Base URL to the log. The CT log library will automatically append
+     *        the strings "add-chain" or "add-pre-chain" depending on whether
+     *        EJBCA is submitting a pre-certificate or a regular certificate.
+     * @param publicKeyBytes  The ASN1 encoded public key of the log.
      */
     public CTLogInfo(final String url, final byte[] publicKeyBytes) {
         this.logId = url.hashCode();
