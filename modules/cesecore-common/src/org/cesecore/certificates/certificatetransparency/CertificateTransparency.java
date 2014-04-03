@@ -12,7 +12,6 @@
  *************************************************************************/  
 package org.cesecore.certificates.certificatetransparency;
 
-import java.io.IOException;
 import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.List;
