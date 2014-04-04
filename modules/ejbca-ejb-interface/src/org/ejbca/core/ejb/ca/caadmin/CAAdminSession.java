@@ -306,7 +306,7 @@ public interface CAAdminSession {
      *         certificate signing key in case of CVC CA.
      */
     public byte[] exportCAKeyStore(AuthenticationToken admin, String caname, String keystorepass, String privkeypass,
-            String privateSignatureKeyAlias, String privateEncryptionKeyAlias) throws Exception;
+            String privateSignatureKeyAlias, String privateEncryptionKeyAlias);
 
     /**
      * Method returning a Collection of Certificate of all CA certificates known
