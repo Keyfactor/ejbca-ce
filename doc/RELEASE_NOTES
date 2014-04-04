@@ -1,3 +1,24 @@
+EJBCA 6.2.0
+-----------
+This is a maintenance release with new features, bug fixes and improvements. In all xy issues have been fixed.
+
+The biggest news in this release is a rework of the local CLI (command line interface), bringing the CLI up to the most 
+modern standard with option handling and manual pages. 
+
+* Noteworthy changes:
+- Completely reworked command handling of local command line interface (CLI).
+- xyz
+
+Note 1: If you are customizing the EJBCA public web to be embedded in a frame, note that EJBCA now uses the X-FRAME-OPTIONS HTTP header, 
+preventing web GUIs from being framed in modern browsers. 
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE.
+
+-  Known issues:
+	*	One test failure on DB2: https://jira.primekey.se/browse/ECA-3298
+	*	OCSP request signer verification does an additional database lookup: https://jira.primekey.se/browse/ECA-3299
+
 EJBCA 6.1.1
 -----------
 This is a maintenance release with a few bug fixes. In all 4 issues have been fixed.

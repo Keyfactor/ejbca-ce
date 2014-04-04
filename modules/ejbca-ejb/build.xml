@@ -300,6 +300,7 @@
 		<include name="org/ejbca/ui/web/CertificateResponseType.java"/>
 		<include name="org/ejbca/ui/web/RequestHelper.java"/>
 		<include name="org/ejbca/ui/web/RevokedInfoView.java"/>
+		<include name="org/owasp/filters/ClickjackFilter.java"/>
 		<!-- Move to AdminGUI src -->
 		<include name="org/ejbca/ui/web/CertificateView.java"/>
 		<include name="org/ejbca/util/HTMLTools.java"/>
