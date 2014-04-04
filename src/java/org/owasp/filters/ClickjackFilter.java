@@ -17,6 +17,9 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * @version $Id$
+ */
 public class ClickjackFilter implements Filter 
 {
 
