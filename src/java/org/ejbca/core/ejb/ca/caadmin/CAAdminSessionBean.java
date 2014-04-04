@@ -2385,7 +2385,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public byte[] exportCAKeyStore(AuthenticationToken admin, String caname, String keystorepass, String privkeypass,
-            String privateSignatureKeyAlias, String privateEncryptionKeyAlias) throws Exception {
+            String privateSignatureKeyAlias, String privateEncryptionKeyAlias) {
         log.trace(">exportCAKeyStore");
         try {
             final CA thisCa = caSession.getCAForEdit(admin, caname);
