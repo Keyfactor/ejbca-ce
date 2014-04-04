@@ -49,6 +49,8 @@
         <url-pattern>*.jsf</url-pattern>
     </filter-mapping>
 
+    <!-- Clickjack Filter from OWASP adding X-FRAME-OPTIONS header to pages to prevent including 
+         our pages in other frames. https://www.owasp.org/index.php/Clickjacking_Protection_for_Java_EE -->
 	<filter>
 		<filter-name>ClickjackFilterDeny</filter-name>
 		<filter-class>org.owasp.filters.ClickjackFilter</filter-class>
