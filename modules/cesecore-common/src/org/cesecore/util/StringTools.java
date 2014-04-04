@@ -381,9 +381,20 @@ public final class StringTools {
         return s;
     }
 
+    /** Obfuscates a String if it does not already start with "OBF:"
+     * @see #obfuscate(String)
+     * @param s string to obfuscate
+     * @return an obfuscated string, or the original if it started with OBF:
+     */
+    public static String obfuscateIfNot(final String s) {
+        if (s.startsWith("OBF:")) {
+            return s;
+        }
+        return obfuscate(s);
+    }
     /**
      * Makes a string "hard" to read. Does not provide any real security, but at least lets you hide passwords so that people with no malicious
-     * content don't accidentaly stumble upon information they should not have.
+     * content don't accidentally stumble upon information they should not have.
      * 
      * @param s string to obfuscate
      * @return an obfuscated string
@@ -415,10 +426,21 @@ public final class StringTools {
 
     }
 
+    /** Deobfuscates a String if it does start with "OBF:"
+     * @see #deobfuscate(String)
+     * @param s string to deobfuscate
+     * @return a deobfuscated string, or the original if it does not start with OBF:
+     */
+    public static String deobfuscateIf(final String s) {
+        if (s.startsWith("OBF:")) {
+            return deobfuscate(s);
+        }
+        return s;
+    }
     /**
      * Retrieves the clear text from a string obfuscated with the obfuscate methods
      * 
-     * @param s obfuscated string, usually (bot not neccesarily) starts with OBF:
+     * @param s obfuscated string, usually (but not necessarily) starts with OBF:
      * @return plain text string
      */
     public static String deobfuscate(final String in) {

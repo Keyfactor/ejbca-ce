@@ -186,7 +186,10 @@
 	         gc.setAutoEnrollConnectionDN(params.getParameter(TEXTFIELD_AUTOENROLL_CONNECTIONDN));
 	       }
 	       if (params.contains(TEXTFIELD_AUTOENROLL_CONNECTIONPWD)) {
-	         gc.setAutoEnrollConnectionPwd(params.getParameter(TEXTFIELD_AUTOENROLL_CONNECTIONPWD));
+	         String str = params.getParameter(TEXTFIELD_AUTOENROLL_CONNECTIONPWD);
+	         if ( (str != null) && (str.length() > 0) ) {
+	           gc.setAutoEnrollConnectionPwd(str);
+	         }
 	       }
 	       if (params.contains(TEXTFIELD_AUTOENROLL_BASEDN_USER)) {
 	         gc.setAutoEnrollBaseDNUser(params.getParameter(TEXTFIELD_AUTOENROLL_BASEDN_USER));

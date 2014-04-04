@@ -291,7 +291,7 @@ function checkuseautoenroll(){
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"AUTOENROLLCONNECTIONPWD_HELP\") %>"/></p>
       </td>
       <td width="51%" valign="top"> 
-        <input type="password" autocomplete="off" name="<%=TEXTFIELD_AUTOENROLL_CONNECTIONPWD %>" value='<c:out value="<%= gc.getAutoEnrollConnectionPwd() %>"/>' <% if(!gc.getAutoEnrollUse()){ out.write(" disabled "); }%>maxlength="150" size="20">
+        <input type="password" autocomplete="off" name="<%=TEXTFIELD_AUTOENROLL_CONNECTIONPWD %>" value='' <% if(!gc.getAutoEnrollUse()){ out.write(" disabled "); }%>maxlength="150" size="20">
       </td>
     </tr>          
     <tr id="Row1"> 
