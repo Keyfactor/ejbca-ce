@@ -26,6 +26,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.util.Base64;
+import org.cesecore.util.StringTools;
 import org.ejbca.core.model.InternalEjbcaResources;
 
 
@@ -438,10 +439,12 @@ public class GlobalConfiguration extends Configuration implements Serializable {
     	   String ret = (String) data.get(AUTOENROLL_CONNECTIONDN);
    		   return (ret == null ? AUTOENROLL_DEFAULT_CONNECTIONDN : ret);
        }
-       public void setAutoEnrollConnectionPwd(String connectionDN) { data.put(AUTOENROLL_CONNECTIONPWD, connectionDN); }
+       public void setAutoEnrollConnectionPwd(String connectionPwd) { 
+           data.put(AUTOENROLL_CONNECTIONPWD, StringTools.obfuscateIfNot(connectionPwd));
+       }
        public String getAutoEnrollConnectionPwd() {
     	   String ret = (String) data.get(AUTOENROLL_CONNECTIONPWD);
-   		   return (ret == null ? AUTOENROLL_DEFAULT_CONNECTIONPWD : ret);
+   		   return (ret == null ? AUTOENROLL_DEFAULT_CONNECTIONPWD : StringTools.deobfuscateIf(ret));
        }
        public void setAutoEnrollSSLConnection(boolean use) { data.put(AUTOENROLL_SSLCONNECTION, Boolean.valueOf(use)); }
        public boolean getAutoEnrollSSLConnection() {
