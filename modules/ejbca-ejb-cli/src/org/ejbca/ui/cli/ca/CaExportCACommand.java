@@ -93,9 +93,9 @@ public class CaExportCACommand extends BaseCaAdminCommand {
         } else {
             log.info("Keystore password was supplied on the command line.");
         }
-        try {
-            byte[] keyStoreBytes = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class).exportCAKeyStore(getAuthenticationToken(),
-                    caName, kspwd, kspwd, signatureKeyAlias, encryptionKeyAlias);
+        byte[] keyStoreBytes = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class).exportCAKeyStore(getAuthenticationToken(),
+                caName, kspwd, kspwd, signatureKeyAlias, encryptionKeyAlias);
+        try {            
             FileOutputStream fos = new FileOutputStream(p12file);
             fos.write(keyStoreBytes);
             fos.close();
@@ -104,10 +104,7 @@ public class CaExportCACommand extends BaseCaAdminCommand {
             return CommandResult.FUNCTIONAL_FAILURE;
         } catch (IOException e) {
             throw new IllegalStateException("Could not write to file for unknown reason", e);
-        } catch (Exception e) {
-            //FIXME: Unavoidable because of exportCAKeyStore. Fix when exportCAKeyStore doesn't toss Exception any more.
-            throw new IllegalStateException("Unknown exception caught", e);
-        }
+        } 
         return CommandResult.SUCCESS;
 
     }
