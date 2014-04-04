@@ -345,6 +345,7 @@ function checkallfields(){
      if(jumpTo != '') {
     	 //Go there.
     	 document.getElementById(jumpTo).scrollIntoView();
+    	 document.getElementById(jumpTo).focus();
      }
      return illegalfields == 0;  
    } 
