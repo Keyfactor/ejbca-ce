@@ -41,10 +41,13 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
@@ -88,6 +91,7 @@ public class CertDistServlet extends HttpServlet {
     private static final String COMMAND_CRL = "crl";
     private static final String COMMAND_DELTACRL = "deltacrl"; 
     private static final String COMMAND_REVOKED = "revoked";
+    private static final String COMMAND_EECERT = "eecert";
     private static final String COMMAND_CERT = "lastcert";
     private static final String COMMAND_LISTCERT = "listcerts";
     private static final String COMMAND_NSCACERT = "nscacert";
@@ -196,6 +200,47 @@ public class CertDistServlet extends HttpServlet {
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting latest CRL.");
                 return;
             }
+        } else if (command.equalsIgnoreCase(COMMAND_EECERT)) {
+            // HttpServetRequets.getParameter URLDecodes the value for you
+            // No need to do it manually, that will cause problems with + characters
+            String dn = req.getParameter(ISSUER_PROPERTY);
+            if (dn == null) {
+                log.debug("Bad request, no 'issuer' arg to 'eecert'.");
+                res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Usage command=eecert?issuer=<issuerdn>&serno=<serialnumber in hex>.");
+                return;
+            }
+            String serno = req.getParameter(SERNO_PROPERTY);
+            if (serno == null) {
+                log.debug("Bad request, no 'serno' arg to 'eeceert'.");
+                res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Usage command=eecert?issuer=<issuerdn>&serno=<serialnumber in hex>.");
+                return;
+            }
+            log.debug("Looking for certificate with issuer/serno '"+dn+"', '"+serno+"'.");
+            try {
+                // Serial number in hex
+                Certificate cert = storesession.findCertificateByIssuerAndSerno(dn, new BigInteger(serno, 16));
+                sendEndEntityCert(administrator, req, res, format, cert);
+            } catch (NumberFormatException e) {
+                log.debug("Error getting End Entity certificate, invalid serial number (hex): ", e);
+                res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting End Entity certificate, invalid serial number (hex).");
+                return;
+            } catch (CertificateEncodingException e) {
+                log.info("Error getting End Entity certificate, invalid certificate?: ", e);
+                res.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error getting End Entity certificate, invalid certificate.");
+                return;
+            } catch (NoSuchFieldException e) {
+                log.info("Error getting End Entity certificate, can not get field to generate filename?: ", e);
+                res.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error getting End Entity certificate, invalid certificate.");
+                return;
+            } catch (AuthorizationDeniedException e) {
+                log.error("Error getting End Entity certificate, not authorized to create PKCS7: ", e);
+                res.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error getting End Entity certificate, not authorized to create PKCS7.");
+                return;
+            } catch (CesecoreException e) {
+                log.info("Error getting End Entity certificate, CA to create PKCS7 does not exist, or can not create PKCS7: ", e);
+                res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting End Entity certificate, CA to create PKCS7 does not exist, or can not create PKCS7.");
+                return;
+            }
         } else if (command.equalsIgnoreCase(COMMAND_CERT) || command.equalsIgnoreCase(COMMAND_LISTCERT)) {
             // HttpServetRequets.getParameter URLDecodes the value for you
             // No need to do it manually, that will cause problems with + characters
@@ -209,9 +254,9 @@ public class CertDistServlet extends HttpServlet {
                 log.debug("Looking for certificates for '"+dn+"'.");
                 Collection<Certificate> certcoll = storesession.findCertificatesBySubject(dn);
                 Object[] certs = certcoll.toArray();
-                int latestcertno = -1;
                 if (command.equalsIgnoreCase(COMMAND_CERT)) {
                     long maxdate = 0;
+                    int latestcertno = -1;
                     for (int i=0;i<certs.length;i++) {
                         if (i == 0) {
                             maxdate = CertTools.getNotBefore((Certificate)certs[i]).getTime();
@@ -222,51 +267,16 @@ public class CertDistServlet extends HttpServlet {
                             latestcertno = i;
                         }
                     }
+                    Certificate certcert = null;
                     if (latestcertno > -1) {
-                    	Certificate certcert = (Certificate)certs[latestcertno];
-                        byte[] cert = certcert.getEncoded();
-                    	String ending;
-                    	if (certcert instanceof CardVerifiableCertificate) {
-                    		ending = ".cvcert";
-                        } else if (StringUtils.equals(format, "PEM") || StringUtils.equals(format, "chain")) {
-                            ending = ".pem";
-                    	} else if (StringUtils.equals(format, "PKCS7")) {
-                    	    ending = ".p7b";
-                    	} else {
-                    	    ending = ".crt";
-                    	}
-                        String filename = RequestHelper.getFileNameFromCertNoEnding(certcert, "ca");
-                        filename = filename+ending;                        
-                        // We must remove cache headers for IE
-                        ServletUtils.removeCacheHeaders(res);
-                        if ("netscape".equals(req.getParameter(INSTALLTOBROWSER_PROPERTY))) {
-                            res.setContentType("application/x-x509-user-cert");
-                        } else {
-                            res.setHeader("Content-disposition", "attachment; filename=\"" +  StringTools.stripFilename(filename)+"\"");
-                            res.setContentType("application/octet-stream");
-                        }
-                        if (StringUtils.equals(format, "PEM")) {
-                            RequestHelper.sendNewB64File(Base64.encode(cert, true), res, filename, RequestHelper.BEGIN_CERTIFICATE_WITH_NL, RequestHelper.END_CERTIFICATE_WITH_NL);
-                        } else if (StringUtils.equals(format, "PKCS7")) {
-                            byte[] pkcs7 = signSession.createPKCS7(administrator, certcert, true);
-                            RequestHelper.sendNewB64File(Base64.encode(pkcs7, true), res, filename, RequestHelper.BEGIN_PKCS7_WITH_NL, RequestHelper.END_PKCS7_WITH_NL);
-                        } else if (StringUtils.equals(format, "chain")) {
-                            int issuerCAId = CertTools.getIssuerDN(certcert).hashCode();
-                            LinkedList<Certificate> chain = new LinkedList<Certificate>(signSession.getCertificateChain(administrator, issuerCAId));
-                            chain.addFirst(certcert);
-                            byte[] chainbytes = CertTools.getPemFromCertificateChain(chain);
-                            RequestHelper.sendNewB64File(chainbytes, res, filename, "", ""); // chain includes begin/end already
-                        } else {
-                            res.setContentLength(cert.length);
-                            res.getOutputStream().write(cert);
-                        }
-                        log.debug("Sent latest certificate for '"+dn+"' to client at " + remoteAddr);
-
+                    	certcert = (Certificate)certs[latestcertno];
+                    }
+                    if (certcert == null) {
+                        log.debug("No certificate found for requested subject DN. '"+dn+"'.");
+                        res.sendError(HttpServletResponse.SC_NOT_FOUND, "No certificate found for requested subject DN.");
                     } else {
-                        log.debug("No certificate found for '"+dn+"'.");
-                        String ret = HTMLTools.htmlescape(dn);
-                        ret = HTMLTools.javascriptEscape(ret); 
-                        res.sendError(HttpServletResponse.SC_NOT_FOUND, "No certificate found for requested subject '"+ret+"'.");
+                        sendEndEntityCert(administrator, req, res, format, certcert);
+                        log.debug("Sent latest certificate for '"+dn+"' to client at " + remoteAddr);                    	
                     }
                 }
                 if (command.equalsIgnoreCase(COMMAND_LISTCERT)) {
@@ -432,6 +442,48 @@ public class CertDistServlet extends HttpServlet {
             return;
         }
 
+    }
+
+    /** Sends a certificate for download to a client */
+    private void sendEndEntityCert(final AuthenticationToken administrator, HttpServletRequest req, HttpServletResponse res, String format,
+            Certificate certcert) throws CertificateEncodingException, NoSuchFieldException, IOException, CADoesntExistsException,
+            SignRequestSignatureException, AuthorizationDeniedException {
+        byte[] cert = certcert.getEncoded();
+        String ending;
+        if (certcert instanceof CardVerifiableCertificate) {
+            ending = ".cvcert";
+        } else if (StringUtils.equals(format, "PEM") || StringUtils.equals(format, "chain")) {
+            ending = ".pem";
+        } else if (StringUtils.equals(format, "PKCS7")) {
+            ending = ".p7b";
+        } else {
+            ending = ".crt";
+        }
+        String filename = RequestHelper.getFileNameFromCertNoEnding(certcert, "ca");
+        filename = filename+ending;                        
+        // We must remove cache headers for IE
+        ServletUtils.removeCacheHeaders(res);
+        if ("netscape".equals(req.getParameter(INSTALLTOBROWSER_PROPERTY))) {
+            res.setContentType("application/x-x509-user-cert");
+        } else {
+            res.setHeader("Content-disposition", "attachment; filename=\"" +  StringTools.stripFilename(filename)+"\"");
+            res.setContentType("application/octet-stream");
+        }
+        if (StringUtils.equals(format, "PEM")) {
+            RequestHelper.sendNewB64File(Base64.encode(cert, true), res, filename, RequestHelper.BEGIN_CERTIFICATE_WITH_NL, RequestHelper.END_CERTIFICATE_WITH_NL);
+        } else if (StringUtils.equals(format, "PKCS7")) {
+            byte[] pkcs7 = signSession.createPKCS7(administrator, certcert, true);
+            RequestHelper.sendNewB64File(Base64.encode(pkcs7, true), res, filename, RequestHelper.BEGIN_PKCS7_WITH_NL, RequestHelper.END_PKCS7_WITH_NL);
+        } else if (StringUtils.equals(format, "chain")) {
+            int issuerCAId = CertTools.getIssuerDN(certcert).hashCode();
+            LinkedList<Certificate> chain = new LinkedList<Certificate>(signSession.getCertificateChain(administrator, issuerCAId));
+            chain.addFirst(certcert);
+            byte[] chainbytes = CertTools.getPemFromCertificateChain(chain);
+            RequestHelper.sendNewB64File(chainbytes, res, filename, "", ""); // chain includes begin/end already
+        } else {
+            res.setContentLength(cert.length);
+            res.getOutputStream().write(cert);
+        }
     } // doGet
 
 	private Certificate[] getCertificateChain(AuthenticationToken administrator,
