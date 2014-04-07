@@ -2835,6 +2835,24 @@ public abstract class CertTools {
     } // generateSHA1Fingerprint
 
     /**
+     * Generate a SHA256 fingerprint from a byte array containing a certificate
+     * 
+     * @param ba Byte array containing DER encoded Certificate or CRL.
+     * 
+     * @return Byte array containing SHA256 hash of DER encoded certificate.
+     */
+    public static byte[] generateSHA256Fingerprint(byte[] ba) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+
+            return md.digest(ba);
+        } catch (NoSuchAlgorithmException nsae) {
+            log.error("SHA-256 algorithm not supported", nsae);
+        }
+        return null;
+    } // generateSHA256Fingerprint
+
+    /**
      * Generate a MD5 fingerprint from a byte array containing a certificate
      * 
      * @param ba Byte array containing DER encoded Certificate.
