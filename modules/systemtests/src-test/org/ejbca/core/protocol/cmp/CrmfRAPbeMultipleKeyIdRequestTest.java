@@ -24,10 +24,10 @@ import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Vector;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -582,7 +582,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         X509KeyUsage ku = new X509KeyUsage(bcku);
         extgen.addExtension(Extension.keyUsage, false, ku);
         // Extended Key Usage
-        Vector<KeyPurposeId> usage = new Vector<KeyPurposeId>();
+        List<KeyPurposeId> usage = new ArrayList<KeyPurposeId>();
         usage.add(KeyPurposeId.id_kp_codeSigning);
         ExtendedKeyUsage eku = ExtendedKeyUsage.getInstance(usage);
         extgen.addExtension(Extension.extendedKeyUsage, false, eku);

@@ -25,7 +25,6 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -281,14 +280,14 @@ public class CertificateRetrievalTest {
         Certificate rootcacert;
         Certificate subcacert;
         Certificate cert;
-        Vector<BigInteger> sernos;
+        List<BigInteger> sernos;
         Collection<Certificate> certfps;
 
         rootcacert = CertTools.getCertfromByteArray(testrootcert);
         subcacert = CertTools.getCertfromByteArray(testcacert);
         cert = CertTools.getCertfromByteArray(testcert);
 
-        sernos = new Vector<BigInteger>();
+        sernos = new ArrayList<BigInteger>();
         sernos.add(CertTools.getSerialNumber(subcacert));
         sernos.add(CertTools.getSerialNumber(rootcacert));
         certfps = certificateStoreSession.findCertificatesByIssuerAndSernos(CertTools.getSubjectDN(rootcacert), sernos);
@@ -299,7 +298,7 @@ public class CertificateRetrievalTest {
         dumpCertificates(certfps);
         assertTrue("failed to list certs", certfps.size() == 2);
 
-        sernos = new Vector<BigInteger>();
+        sernos = new ArrayList<BigInteger>();
         sernos.add(CertTools.getSerialNumber(cert));
         certfps = certificateStoreSession.findCertificatesByIssuerAndSernos(CertTools.getSubjectDN(subcacert), sernos);
         assertNotNull("failed to list certs", certfps);

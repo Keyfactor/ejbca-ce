@@ -19,9 +19,9 @@
 package org.ejbca.util.query;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
-import java.util.Vector;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.cesecore.util.StringTools;
@@ -54,8 +54,8 @@ public class Query implements Serializable {
     static final String[] CONNECTOR_SQL_NAMES = { " AND ", " OR ", " AND NOT ", " OR NOT " };
 
     // Private fields.
-    final private Vector<BasicMatch> matches; // Should only contain BasicMatch objects.
-    final private Vector<Integer> connectors; // Should only containg CONNECTOR constants.
+    final private List<BasicMatch> matches; // Should only contain BasicMatch objects.
+    final private List<Integer> connectors; // Should only containg CONNECTOR constants.
     final protected int type;
     private boolean hasIllegalSqlChars = false;
     
@@ -68,8 +68,8 @@ public class Query implements Serializable {
      *        class.
      */
     public Query(int type) {
-        matches = new Vector<BasicMatch>();
-        connectors = new Vector<Integer>();
+        matches = new ArrayList<BasicMatch>();
+        connectors = new ArrayList<Integer>();
         this.type = type;
     }
 
@@ -81,7 +81,7 @@ public class Query implements Serializable {
      * @param enddate gives the end date of the query or null if it no startdate.
      */
     public void add(Date startdate, Date enddate) {
-        matches.addElement(new TimeMatch(type, startdate, enddate));
+        matches.add(new TimeMatch(type, startdate, enddate));
     }
 
     /**
@@ -94,7 +94,7 @@ public class Query implements Serializable {
      * @param enddate gives the end date of the query or null if it no startdate.
      */
     public void add(int matchwith, Date startdate, Date enddate) {
-        matches.addElement(new TimeMatch(type, matchwith, startdate, enddate));
+        matches.add(new TimeMatch(type, matchwith, startdate, enddate));
     }
 
     /**
@@ -106,8 +106,8 @@ public class Query implements Serializable {
      * @param connector should be one of the 'CONNECTOR' constants.
      */
     public void add(Date startdate, Date enddate, int connector) {
-        matches.addElement(new TimeMatch(type, startdate, enddate));
-        connectors.addElement(Integer.valueOf(connector));
+        matches.add(new TimeMatch(type, startdate, enddate));
+        connectors.add(Integer.valueOf(connector));
     }
 
     /**
@@ -121,8 +121,8 @@ public class Query implements Serializable {
      * @param connector should be one of the 'CONNECTOR' constants.
      */
     public void add(int matchwith, Date startdate, Date enddate, int connector) {
-        matches.addElement(new TimeMatch(type, matchwith, startdate, enddate));
-        connectors.addElement(Integer.valueOf(connector));
+        matches.add(new TimeMatch(type, matchwith, startdate, enddate));
+        connectors.add(Integer.valueOf(connector));
     }
 
     /**
@@ -139,13 +139,13 @@ public class Query implements Serializable {
         throws NumberFormatException {
         switch (this.type) {
         case TYPE_LOGQUERY:
-            matches.addElement(new LogMatch(matchwith, matchtype, matchvalue));
+            matches.add(new LogMatch(matchwith, matchtype, matchvalue));
             break;
         case TYPE_USERQUERY:
-            matches.addElement(new UserMatch(matchwith, matchtype, matchvalue));
+            matches.add(new UserMatch(matchwith, matchtype, matchvalue));
             break;
         case TYPE_APPROVALQUERY:
-        	matches.addElement(new ApprovalMatch(matchwith, matchtype, matchvalue));
+        	matches.add(new ApprovalMatch(matchwith, matchtype, matchvalue));
         	break;
         }
         if (StringTools.hasSqlStripChars(matchvalue)) {
@@ -167,7 +167,7 @@ public class Query implements Serializable {
     public void add(int matchwith, int matchtype, String matchvalue, int connector)
         throws NumberFormatException {
         add(matchwith,matchtype,matchvalue);
-        connectors.addElement(Integer.valueOf(connector));
+        connectors.add(Integer.valueOf(connector));
 
  
     }
@@ -180,7 +180,7 @@ public class Query implements Serializable {
      * @throws NumberFormatException if there is an illegal character in matchvalue string.
      */
     public void add(int connector) {
-        connectors.addElement(Integer.valueOf(connector));
+        connectors.add(Integer.valueOf(connector));
     }
 
     /**
@@ -190,13 +190,11 @@ public class Query implements Serializable {
      */
     public String getQueryString() {
         String returnval = "";
-
         for (int i = 0; i < (matches.size() - 1); i++) {
-            returnval += ((BasicMatch) matches.elementAt(i)).getQueryString();
-            returnval += CONNECTOR_SQL_NAMES[((Integer) connectors.elementAt(i)).intValue()];
+            returnval += ((BasicMatch) matches.get(i)).getQueryString();
+            returnval += CONNECTOR_SQL_NAMES[((Integer) connectors.get(i)).intValue()];
         }
-
-        returnval += ((BasicMatch) matches.elementAt(matches.size() - 1)).getQueryString();
+        returnval += ((BasicMatch) matches.get(matches.size() - 1)).getQueryString();
 
         return returnval;
     }
@@ -209,13 +207,10 @@ public class Query implements Serializable {
      */
     public boolean isLegalQuery() {
         boolean returnval = true;
-        Iterator<BasicMatch> i = matches.iterator();
-
-        while (i.hasNext()) {
-        	BasicMatch match = i.next();
+        for (BasicMatch match : matches) {
             returnval = returnval && match.isLegalQuery();
             if (!returnval) {
-            	log.error("Query is illegal: "+match.getQueryString());
+                log.error("Query is illegal: " + match.getQueryString());
             }
         }
 

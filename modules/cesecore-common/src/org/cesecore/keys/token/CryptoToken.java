@@ -26,7 +26,7 @@ import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.spec.AlgorithmParameterSpec;
-import java.util.Enumeration;
+import java.util.List;
 import java.util.Properties;
 
 import javax.crypto.IllegalBlockSizeException;
@@ -284,7 +284,7 @@ public interface CryptoToken extends Serializable {
      * @throws KeyStoreException if the keystore has not been initialized (loaded).
      * @throws CryptoTokenOfflineException if the keystore has not been initialized (loaded).
      */
-    Enumeration<String> getAliases() throws KeyStoreException, CryptoTokenOfflineException;
+    List<String> getAliases() throws KeyStoreException, CryptoTokenOfflineException;
 
     /** @return true if there is an auto activation PIN stored in the token */
     boolean isAutoActivationPinPresent();
