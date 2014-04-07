@@ -228,20 +228,20 @@
           // TEMPORATE
        editbuttonpressed=true;
        java.util.Enumeration parameters = request.getParameterNames();
-       java.util.Vector indexes = new  java.util.Vector();
+       java.util.List indexes = new  java.util.ArrayList();
        int index;
        while(parameters.hasMoreElements()){
         String parameter = (String) parameters.nextElement();
          if(parameter.startsWith(CHECKBOX_SELECT_USER) && request.getParameter(parameter).equals(CHECKBOX_VALUE)) {
            index = java.lang.Integer.parseInt(parameter.substring(CHECKBOX_SELECT_USER.length())); //Without []
-           indexes.addElement(Integer.valueOf(index));
+           indexes.add(Integer.valueOf(index));
          }
        }
        
        if(indexes.size() > 0){
          String[] usernames = new String[indexes.size()];
          for(int i = 0; i < indexes.size(); i++){
-           index = ((java.lang.Integer) indexes.elementAt(i)).intValue();
+           index = ((java.lang.Integer) indexes.get(i)).intValue();
            usernames[i] = java.net.URLDecoder.decode(request.getParameter(HIDDEN_USERNAME+index),"UTF-8");
          }
          notauthorizeddeleteall = !rabean.deleteUsers(usernames);
@@ -255,20 +255,20 @@
           // Revoke selected users
          editbuttonpressed=true;
          java.util.Enumeration parameters = request.getParameterNames();
-         java.util.Vector indexes = new  java.util.Vector();
+         java.util.List indexes = new  java.util.ArrayList();
          int index;
          while(parameters.hasMoreElements()){
           String parameter = (String) parameters.nextElement();
            if(parameter.startsWith(CHECKBOX_SELECT_USER) && request.getParameter(parameter).equals(CHECKBOX_VALUE)) {
              index = java.lang.Integer.parseInt(parameter.substring(CHECKBOX_SELECT_USER.length())); //Without []
-             indexes.addElement(Integer.valueOf(index));
+             indexes.add(Integer.valueOf(index));
            }
          }
        
          if(indexes.size() > 0){
            String[] usernames = new String[indexes.size()];
            for(int i = 0; i < indexes.size(); i++){
-             index = ((java.lang.Integer) indexes.elementAt(i)).intValue();
+             index = ((java.lang.Integer) indexes.get(i)).intValue();
              usernames[i] = java.net.URLDecoder.decode(request.getParameter(HIDDEN_USERNAME+index),"UTF-8");
              try {
              	rabean.revokeUser(usernames[i], Integer.parseInt(reason));
@@ -295,20 +295,20 @@
           // Revoke selected users
          editbuttonpressed=true;
          java.util.Enumeration parameters = request.getParameterNames();
-         java.util.Vector indexes = new  java.util.Vector();
+         java.util.List indexes = new  java.util.ArrayList();
          int index;
          while(parameters.hasMoreElements()){
           String parameter = (String) parameters.nextElement();
            if(parameter.startsWith(CHECKBOX_SELECT_USER) && request.getParameter(parameter).equals(CHECKBOX_VALUE)) {
              index = java.lang.Integer.parseInt(parameter.substring(CHECKBOX_SELECT_USER.length())); //Without []
-             indexes.addElement(Integer.valueOf(index));
+             indexes.add(Integer.valueOf(index));
            }
          }
        
          if(indexes.size() > 0){
            String[] usernames = new String[indexes.size()];
            for(int i = 0; i < indexes.size(); i++){
-             index = ((java.lang.Integer) indexes.elementAt(i)).intValue();
+             index = ((java.lang.Integer) indexes.get(i)).intValue();
              usernames[i] = java.net.URLDecoder.decode(request.getParameter(HIDDEN_USERNAME+index),"UTF-8");
              try {
              	rabean.revokeAndDeleteUser(usernames[i], Integer.parseInt(reason));
@@ -328,32 +328,6 @@
          }
         }
       }
-/*      if( request.getParameter(BUTTON_CHANGESTATUS) != null){
-          // Change statuse on selected users
-          // TEMPORATE
-       editbuttonpressed=true;
-       java.util.Enumeration parameters = request.getParameterNames();
-       java.util.Vector indexes = new  java.util.Vector();
-       int index;
-       while(parameters.hasMoreElements()){
-        String parameter = (String) parameters.nextElement();
-         if(parameter.startsWith(CHECKBOX_SELECT_USER) && request.getParameter(parameter).equals(CHECKBOX_VALUE)) {
-           index = java.lang.Integer.parseInt(parameter.substring(CHECKBOX_SELECT_USER.length())); //Without []
-           indexes.addElement(Integer.valueOf(index));
-         }
-       }
-       
-       String newstatus = request.getParameter(SELECT_CHANGE_STATUS);
-       if(indexes.size() > 0){
-         String[] usernames = new String[indexes.size()];
-         for(int i = 0; i < indexes.size(); i++){
-           index = ((java.lang.Integer) indexes.elementAt(i)).intValue();
-           usernames[i] = java.net.URLDecoder.decode(request.getParameter(HIDDEN_USERNAME+index),"UTF-8");
-         }
-         if(newstatus != null && !newstatus.trim().equals("")) 
-           notauthorizedchangeall=!rabean.setUserStatuses(usernames,newstatus);
-       }
-      } */
     }
    }
  

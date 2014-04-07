@@ -63,7 +63,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TooManyListenersException;
-import java.util.Vector;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
@@ -139,7 +138,7 @@ public class BatchEnrollmentGUIView extends FrameView {
 
     private Collection<Certificate> trustedCerts;
 
-    private Vector<UserDataVOWS> endEntities = new Vector<UserDataVOWS>();
+    private List<UserDataVOWS> endEntities = new ArrayList<UserDataVOWS>();
 
     private JComboBox endEntitiesComboBox = new JComboBox();
 
@@ -229,7 +228,7 @@ public class BatchEnrollmentGUIView extends FrameView {
 
         });
 
-        endEntitiesComboBox.setModel(new DefaultComboBoxModel(endEntities));
+        endEntitiesComboBox.setModel(new DefaultComboBoxModel(endEntities.toArray(new UserDataVOWS[endEntities.size()])));
 
         endEntitiesComboBox.setRenderer(new DefaultListCellRenderer() {
 
@@ -1151,7 +1150,7 @@ public class BatchEnrollmentGUIView extends FrameView {
             // on a background thread, so don't reference
             // the Swing GUI from here.
             Object result;
-            final Vector<UserDataVOWS> users = new Vector<UserDataVOWS>();
+            final List<UserDataVOWS> users = new ArrayList<UserDataVOWS>();
 
             try {
                 List<NameAndId> cas = ejbcaWS.getAvailableCAs();
@@ -1177,17 +1176,16 @@ public class BatchEnrollmentGUIView extends FrameView {
         @Override protected void succeeded(Object result) {
             // Runs on the EDT.  Update the GUI based on
             // the result computed by doInBackground().
-            if (result instanceof Vector) {
+            if (result instanceof ArrayList) {
                 @SuppressWarnings("unchecked")
-                final Vector<UserDataVOWS> newUsers = (Vector<UserDataVOWS>) result;
+                final ArrayList<UserDataVOWS> newUsers = (ArrayList<UserDataVOWS>) result;
                 endEntities = newUsers;
 
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("list: " + endEntities);
                 }
-
                 endEntitiesComboBox.setModel(
-                        new DefaultComboBoxModel(endEntities));
+                        new DefaultComboBoxModel(endEntities.toArray(new UserDataVOWS[endEntities.size()])));
                 endEntitiesComboBox.revalidate();
             } else if (result instanceof Exception) {
                 final Exception ex = (Exception) result;

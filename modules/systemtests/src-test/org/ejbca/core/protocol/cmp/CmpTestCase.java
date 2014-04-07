@@ -43,9 +43,10 @@ import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.Vector;
+import java.util.List;
 
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
@@ -1059,7 +1060,7 @@ public abstract class CmpTestCase extends CaTestCase {
         Certificate racert = signSession.createCertificate(admin, username, password, keys.getPublic(), X509KeyUsage.digitalSignature|X509KeyUsage.keyCertSign, notBefore, notAfter, certProfileSession.getCertificateProfileId(certProfile), caid);
 
         
-        Vector<Certificate> certCollection = new Vector<Certificate>();
+        List<Certificate> certCollection = new ArrayList<Certificate>();
         certCollection.add(racert);
         byte[] pemRaCert = CertTools.getPemFromCertificateChain(certCollection);
         

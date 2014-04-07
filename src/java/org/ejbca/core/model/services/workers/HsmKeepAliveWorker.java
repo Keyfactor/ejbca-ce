@@ -14,7 +14,6 @@ package org.ejbca.core.model.services.workers;
 
 import java.security.InvalidKeyException;
 import java.security.KeyStoreException;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 
@@ -59,10 +58,9 @@ public class HsmKeepAliveWorker extends BaseWorker {
             if (info.isActive() && StringUtils.isNotEmpty(info.getP11Library())) {
                 CryptoToken token = tokenSession.getCryptoToken(info.getCryptoTokenId());
                 try {
-                    Enumeration<String> aliases = token.getAliases();
+                    List<String> aliases = token.getAliases();
                     boolean tested = false;
-                    while (aliases.hasMoreElements()) {
-                        final String alias = aliases.nextElement();
+                    for(final String alias : aliases) {
                         if ("testKey".equals(alias)) {
                             if (log.isDebugEnabled()) {
                                 log.debug("Keepalive testing crypto token '"+info.getName()+"' with id "+info.getCryptoTokenId());

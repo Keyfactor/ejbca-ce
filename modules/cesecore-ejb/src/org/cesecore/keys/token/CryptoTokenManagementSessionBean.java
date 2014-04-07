@@ -25,7 +25,6 @@ import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -471,10 +470,9 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
 
     private List<String> getKeyPairAliasesInternal(final CryptoToken cryptoToken) throws CryptoTokenOfflineException {
         try {
-            final Enumeration<String> aliasEnumeration = cryptoToken.getAliases();
+            final List<String> aliasEnumeration = cryptoToken.getAliases();
             final List<String> keyPairAliases = new ArrayList<String>();
-            while (aliasEnumeration.hasMoreElements()) {
-                final String currentAlias = aliasEnumeration.nextElement();
+            for(final String currentAlias : aliasEnumeration) {
                 if (cryptoToken.getPublicKey(currentAlias) != null && cryptoToken.getPrivateKey(currentAlias) != null) {
                     // A key pair exists for this alias, so add it
                     keyPairAliases.add(currentAlias);

@@ -30,9 +30,9 @@ import java.security.cert.CertificateFactory;
 import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.Enumeration;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
-import java.util.Vector;
 
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
@@ -227,13 +227,10 @@ public class PublicCryptoToken implements CryptoToken {
 		return false;
 	}
 
-	@Override
-	public Enumeration<String> getAliases() throws KeyStoreException,
-			CryptoTokenOfflineException {
-		final Vector<String> v = new Vector<String>();
-		v.add("dummy");
-		return v.elements();
-	}
+    @Override
+    public List<String> getAliases() {
+        return Arrays.asList("dummy");
+    }
 
 	@Override
 	public void storeKey(String alias, Key key, Certificate[] chain, char[] password) throws KeyStoreException {
