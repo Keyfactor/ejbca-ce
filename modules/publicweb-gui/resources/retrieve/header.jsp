@@ -65,6 +65,9 @@
                 <a href="ca_crls.jsp">Fetch CA CRLs</a>
               </li>
               <li>
+                <a href="list_certs.jsp">List  User's Certificates</a>
+              </li>
+              <li>
                 <a href="latest_cert.jsp">Fetch User's Latest Certificate</a>
               </li>
             </ul>
@@ -74,16 +77,13 @@
               <li>
                 <a href="../inspect/request.jsp">Inspect certificate/CSR</a>
               </li>
+              <li>
+                <a href="check_status.jsp">Check Certificate Status</a>
+              </li>
             </ul>
           </li>
           <li><div class="menuheader">Miscellaneous</div>
             <ul>
-              <li>
-                <a href="list_certs.jsp">List  User's Certificates</a>
-              </li>
-              <li>
-                <a href="check_status.jsp">Check Certificate Status</a>
-              </li>
               <li>
                 <% java.net.URL adminURL = new java.net.URL("https",request.getServerName(),
                 		org.ejbca.config.WebConfiguration.getExternalPrivateHttpsPort(),

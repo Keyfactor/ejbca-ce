@@ -24,6 +24,7 @@ import java.util.Iterator;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.util.encoders.DecoderException;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -201,9 +202,13 @@ public class CertificateFinderBean {
 				result.setRevocationDate(info.revocationDate);
 				result.setUserCertificate(serialBignum);
 			}
+        } catch (NumberFormatException e) {
+            log.info("Invalid serial number entered (NumberFormatException): "+serialNumber+": "+e.getMessage());
 		} catch (StringIndexOutOfBoundsException e) {
-			log.error("Invalid serial number entered: "+serialNumber);
-		}		
+			log.info("Invalid serial number entered (StringIndexOutOfBoundsException): "+serialNumber+": "+e.getMessage());
+		} catch (DecoderException e) {
+            log.info("Invalid serial number entered (DecoderException): "+serialNumber+": "+e.getMessage());		    
+		}
 	}
 
 	/**

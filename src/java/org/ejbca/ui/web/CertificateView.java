@@ -274,6 +274,17 @@ public class CertificateView implements Serializable {
       return  returnval;
     }
 
+    public String getSHA256Fingerprint(){
+        String returnval = "";
+        try {
+           byte[] res = CertTools.generateSHA256Fingerprint(certificate.getEncoded());
+           String ret = new String(Hex.encode(res));
+           returnval = ret.toUpperCase();
+        } catch (CertificateEncodingException cee) {
+        }
+        return  returnval;
+      }
+
     public String getMD5Fingerprint(){
       String returnval = "";
       try {
