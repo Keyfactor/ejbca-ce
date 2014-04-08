@@ -505,4 +505,9 @@ public interface CAAdminSession {
 
     /** @return the latest link certificate (if any) */
     byte[] getLatestLinkCertificate(int caId) throws CADoesntExistsException;
+
+    /**
+     * Updates all references to the given CAId in the database.
+     */
+    void updateCAIds(AuthenticationToken authenticationToken, int fromId, int toId, String toDN) throws AuthorizationDeniedException;
 }
