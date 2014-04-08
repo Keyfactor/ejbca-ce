@@ -312,10 +312,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     }
 
-    /**
-     * Updates all references to the given CAId in the database.
-     */
-    private void updateCAIds(AuthenticationToken authenticationToken, int fromId, int toId, String toDN) throws AuthorizationDeniedException {
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public void updateCAIds(AuthenticationToken authenticationToken, int fromId, int toId, String toDN) throws AuthorizationDeniedException {
         log.info("Updating CAIds in relations from "+fromId+" to "+toId+"\n");
         
         // Update Certificate Profiles
@@ -521,6 +520,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
         }
         
+        final String detailsMsg = intres.getLocalizedMessage("caadmin.updatedcaid", fromId, toId, toDN);
+        auditSession.log(EventTypes.CA_EDITING, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, authenticationToken.toString(), String.valueOf(toId),
+                    null, null, detailsMsg);
     }
     
     /**
