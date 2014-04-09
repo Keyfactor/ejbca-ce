@@ -18,11 +18,17 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.security.KeyManagementException;
 import java.security.KeyPair;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 import java.security.SecureRandom;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -167,6 +173,24 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     @After
     public void tearDown() throws Exception {
         super.tearDown();
+    }
+
+    /** This test is not a WebService test, but for simplicity it re-uses the created administrator certificate in order to connect to the
+     * EJBCA Admin Web and verify returned security headers.
+     * @throws IOException 
+     * @throws CertificateException 
+     * @throws KeyStoreException 
+     * @throws NoSuchAlgorithmException 
+     * @throws KeyManagementException 
+     * @throws UnrecoverableKeyException 
+     */
+    @Test
+    public void testAdminWebXFrameOptions() throws UnrecoverableKeyException, KeyManagementException, NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
+        HttpURLConnection con = super.getHttpsURLConnection("https://localhost:8443"+"/ejbca/adminweb/index.jsp");
+        String str = con.getHeaderField("X-FRAME-OPTIONS");
+        con.disconnect();
+        assertNotNull("Admin web error page should return X-FRAME-OPTIONS header", str);
+        assertEquals("Admin web error page should return X-FRAME-OPTIONS SAMEORIGIN", "SAMEORIGIN", str);
     }
 
     @Test
