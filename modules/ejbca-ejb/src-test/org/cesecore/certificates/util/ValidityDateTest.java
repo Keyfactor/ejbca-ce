@@ -130,6 +130,10 @@ public class ValidityDateTest {
         LOG.trace(">testEncodeGet");
         Assert.assertEquals("", ValidityDate.parseAsIso8601("2011-05-09 16:58:00+00:00"), ValidityDate.parseAsIso8601(ValidityDate.getString(ValidityDate.encode("2011-05-09 16:58:00+00:00"))));
         Assert.assertEquals("", ValidityDate.parseAsIso8601("1970-01-25 20:32:00+00:00"), ValidityDate.parseAsIso8601(ValidityDate.getString(ValidityDate.encode("1970-01-25 20:32:00+00:00"))));
+        Assert.assertEquals("", ValidityDate.parseAsIso8601("2011-05-09 16:58:12"), ValidityDate.parseAsIso8601(ValidityDate.getString(ValidityDate.encode("2011-05-09 16:58:12"))));
+        Assert.assertEquals("", ValidityDate.parseAsIso8601("2011-05-09 16:58"), ValidityDate.parseAsIso8601(ValidityDate.getString(ValidityDate.encode("2011-05-09 16:58"))));
+        Assert.assertEquals("", ValidityDate.parseAsIso8601("2012-02-29"), ValidityDate.parseAsIso8601(ValidityDate.getString(ValidityDate.encode("2012-02-29"))));
+        Assert.assertEquals("", ValidityDate.parseAsIso8601("2012-02-29").getTime(), ValidityDate.encode("2012-02-29 00:00:00+00:00"));
         LOG.trace("<testEncodeGet");
     }
 
