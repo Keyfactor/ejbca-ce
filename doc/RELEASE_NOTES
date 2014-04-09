@@ -19,6 +19,15 @@ For upgrade instructions, please see UPGRADE.
 	*	One test failure on DB2: https://jira.primekey.se/browse/ECA-3298
 	*	OCSP request signer verification does an additional database lookup: https://jira.primekey.se/browse/ECA-3299
 
+EJBCA 6.1.2
+-----------
+This is a maintenance release with only one bug fixes. In all 1 issue have been fixed.
+
+* Noteworthy changes:
+- Fixed an issue where browser enrollment link was generated with incorrect encoding
+
+See the notes, and known issues, for 6.1.0 below.
+
 EJBCA 6.1.1
 -----------
 This is a maintenance release with a few bug fixes. In all 4 issues have been fixed.
