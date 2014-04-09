@@ -28,6 +28,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URL;
 
+import org.apache.commons.fileupload.util.Streams;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.CaTestUtils;
@@ -251,18 +252,7 @@ public class HttpMethodsTest {
         int ret = con.getResponseCode();
         log.debug("HTTP response code: "+ret);
         if ( ret == 200 ) {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            // This works for small requests
-            InputStream in = con.getInputStream();
-            int b = in.read();
-            while (b != -1) {
-                baos.write(b);
-                b = in.read();
-            }
-            baos.flush();
-            in.close();
-            byte[] respBytes = baos.toByteArray();
-            log.debug(new String(respBytes));
+            log.debug(Streams.asString(con.getInputStream())); 
         }
         con.disconnect();
         return ret;
