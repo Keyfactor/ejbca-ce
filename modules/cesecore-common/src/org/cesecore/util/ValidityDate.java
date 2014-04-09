@@ -37,16 +37,30 @@ public class ValidityDate {
 	private static final String[] IMPLIED_UTC_PATTERN = {"yyyy-MM-dd HH:mm"};
 	private static final String[] IMPLIED_UTC_PATTERN_TZ = {"yyyy-MM-dd HH:mmZZ"};
 	// Time format for human interactions
-	private static final String[] ISO8601_PATTERNS = {ISO8601_DATE_FORMAT};
+	private static final String[] ISO8601_PATTERNS = {
+	   // These must have timezone on date-only format also, since it has a time also (which is 00:00).
+	   // If the timezone is omitted then the string "+00:00" is appended to the date before parsing
+	   ISO8601_DATE_FORMAT, "yyyy-MM-dd HH:mmZZ", "yyyy-MM-ddZZ"
+    };
+    
+    // Can't be instantiated
+    private ValidityDate() {
+    }
 	
 	/** Parse a String in the format "yyyy-MM-dd HH:mm" as a date with implied TimeZone UTC. */
 	public static Date parseAsUTC(final String dateString) throws ParseException {
 		return DateUtils.parseDateStrictly(dateString+"+00:00", IMPLIED_UTC_PATTERN_TZ);
 	}
 
-	/** Parse a String in the format "yyyy-MM-dd HH:mm:ssZZ". */
+	/** Parse a String in the format "yyyy-MM-dd HH:mm:ssZZ". The hour/minutes, seconds and timezone are optional parts. */
 	public static Date parseAsIso8601(final String dateString) throws ParseException {
-		return DateUtils.parseDateStrictly(dateString, ISO8601_PATTERNS);
+	    try {
+		    return DateUtils.parseDateStrictly(dateString, ISO8601_PATTERNS);
+	    } catch (ParseException e) {
+	        // Try again with timezone. In DateUtils, the default timezone seems to be the server
+	        // timezone and not UTC, so we can't have date formats without "ZZ".
+	        return DateUtils.parseDateStrictly(dateString+"+00:00", ISO8601_PATTERNS);
+	    }
 	}
 
 	/** Convert a Date to the format "yyyy-MM-dd HH:mm" with implied TimeZone UTC. */
