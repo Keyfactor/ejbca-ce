@@ -15,12 +15,15 @@ package org.ejbca.ui.web.pub;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URL;
@@ -41,12 +44,6 @@ import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import com.gargoylesoftware.htmlunit.SubmitMethod;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebConnection;
-import com.gargoylesoftware.htmlunit.WebRequestSettings;
-import com.gargoylesoftware.htmlunit.WebResponse;
 
 /**
  * Try HTTP methods that should be disabled, like HTTP DELETE, for all public
@@ -95,6 +92,25 @@ public class HttpMethodsTest {
     @Test
     public void testPublicWeb() throws Exception {
         performResourceTest("/ejbca/index.jsp");
+        // Check for X-FRAME-OPTIONS headers
+        HttpURLConnection con = getHttpURLConnection(httpBaseUrl+"/ejbca/index.jsp");
+        String str = con.getHeaderField("X-FRAME-OPTIONS");
+        con.disconnect();
+        assertNotNull("Public web should return X-FRAME-OPTIONS header", str);
+        assertEquals("Public web should return X-FRAME-OPTIONS DENY", "DENY", str);
+    }
+
+    /** Test the adminweb.war module that it returns X-FRAME-OPTIONS on the error page. */
+    @Test
+    public void testAdminWebXFrameOptionsOnError() throws Exception {
+        // Check for X-FRAME-OPTIONS headers
+        // We will not be able to actually read this url, because we use port 8080, and adminweb requires client authentication,
+        // But EJBCA will still return a "blank" page with the correct http header.
+        HttpURLConnection con = getHttpURLConnection(httpBaseUrl+"/ejbca/adminweb/index.jsp");
+        String str = con.getHeaderField("X-FRAME-OPTIONS");
+        con.disconnect();
+        assertNotNull("Admin web error page should return X-FRAME-OPTIONS header", str);
+        assertEquals("Admin web error page should return X-FRAME-OPTIONS SAMEORIGIN", "SAMEORIGIN", str);
     }
 
     /** Test the webdist.war module. */
@@ -160,7 +176,7 @@ public class HttpMethodsTest {
                 allowsHttpOptions = true;
         		break;
         	} else if (nextLine.equals("")) {
-        		log.debug("Got a pure newline.. we only care about the hearders to skipping the rest..");
+        		log.debug("Got a pure newline.. we only care about the headers to skipping the rest..");
         		break;
             }
         }
@@ -213,14 +229,42 @@ public class HttpMethodsTest {
         return new String(b).indexOf("qwertyuiop") != -1;
     }
 
+    /** Returns a connected HttpURLConnection, that must be closed with con.diconnect() when you are done 
+     * 
+     * @param url The URL to connect to 
+     * @return HttpURLConnection that you can use
+     * @throws IOException In case the connection can not be opened
+     */
+    private HttpURLConnection getHttpURLConnection(String url) throws IOException {
+        final HttpURLConnection con;
+        URL u = new URL(url);
+        con = (HttpURLConnection)u.openConnection();
+        con.setRequestMethod("GET");
+        con.getDoOutput();
+        con.connect();
+        return con;
+    }
+    
     /** Do a HTTP GET. */
     private int getUrl(String url) throws IOException {
-        final WebClient webClient = new WebClient();
-        WebConnection con = webClient.getWebConnection();
-        WebRequestSettings settings = new WebRequestSettings(new URL(url));
-        settings.setSubmitMethod(SubmitMethod.GET);
-        WebResponse resp = con.getResponse(settings);
-        log.debug(resp.getContentAsString());
-        return resp.getStatusCode();
+        final HttpURLConnection con = getHttpURLConnection(url);
+        int ret = con.getResponseCode();
+        log.debug("HTTP response code: "+ret);
+        if ( ret == 200 ) {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            // This works for small requests
+            InputStream in = con.getInputStream();
+            int b = in.read();
+            while (b != -1) {
+                baos.write(b);
+                b = in.read();
+            }
+            baos.flush();
+            in.close();
+            byte[] respBytes = baos.toByteArray();
+            log.debug(new String(respBytes));
+        }
+        con.disconnect();
+        return ret;
     }
 }

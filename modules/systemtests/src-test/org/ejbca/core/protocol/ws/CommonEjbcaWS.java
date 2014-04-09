@@ -22,14 +22,21 @@ import static org.junit.Assert.fail;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.KeyManagementException;
 import java.security.KeyPair;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.SecureRandom;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.CertStore;
+import java.security.cert.CertificateException;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -39,6 +46,15 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.namespace.QName;
 
@@ -359,9 +375,54 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         return "O=" + userName.charAt(userName.length() - 1) + "Test,CN=" + userName;
     }
 
+    /** A simple host name verifier for passing HTTPS connections without verifying the hostname against the cert, 
+     * used for simple testing.
+     */
+    class SimpleVerifier implements HostnameVerifier {
+        public boolean verify(String hostname, SSLSession session) {
+            return true;
+        }
+    }
+    /** Getting SSL socket factory using the Admin cert created for client certificate authentication **/
+    private SSLSocketFactory getSSLFactory() throws IOException, NoSuchAlgorithmException, UnrecoverableKeyException, KeyStoreException,
+    CertificateException, KeyManagementException {
+        // Put the key and certs in the user keystore (if available)
+        java.security.KeyStore ks = java.security.KeyStore.getInstance("jks");
+        ks.load(new FileInputStream(TEST_ADMIN_FILE), PASSWORD.toCharArray());
+        final KeyManagerFactory kmf;
+        kmf = KeyManagerFactory.getInstance("SunX509");
+        kmf.init(ks, PASSWORD.toCharArray());
+        final KeyManager km[] = kmf.getKeyManagers();
+        
+        final TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
+        tmf.init(ks);
+        final TrustManager tm[] = tmf.getTrustManagers();
+        if ( km==null && tm==null ) {
+            return (SSLSocketFactory)SSLSocketFactory.getDefault();
+        }
+        final SSLContext ctx = SSLContext.getInstance("TLS");
+        ctx.init(km, tm, null);
+        return ctx.getSocketFactory();
+    }
+    /** Return a HttpsURLConnection for a GET, using client certificate authentication to the url. The url should be EJBCA client protected https port, i.e. 8443
+     * @param url the URL to connect to, i.e. https://localhost:8443/ejbca/adminweb/index.jsp
+     */
+    protected HttpURLConnection getHttpsURLConnection(String url) throws IOException, UnrecoverableKeyException, KeyManagementException, NoSuchAlgorithmException, KeyStoreException, CertificateException {
+        final HttpsURLConnection con;
+        URL u = new URL(url);
+        con = (HttpsURLConnection)u.openConnection();
+        con.setHostnameVerifier(new SimpleVerifier());
+        con.setSSLSocketFactory(getSSLFactory());
+        con.setRequestMethod("GET");
+        con.getDoOutput();
+        con.connect();
+        return con;
+    }
+
     private void editUser(String userName, String caName) throws ApprovalException_Exception, AuthorizationDeniedException_Exception,
             CADoesntExistsException_Exception, EjbcaException_Exception, UserDoesntFullfillEndEntityProfile_Exception,
             WaitingForApprovalException_Exception, IllegalQueryException_Exception, EndEntityProfileNotFoundException_Exception {
+        
    // Test to add a user.
         final UserDataVOWS user = new UserDataVOWS();
         user.setUsername(userName);
