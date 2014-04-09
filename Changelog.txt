@@ -1,3 +1,8 @@
+EJBCA 6.1.2, 2014-04-09
+---
+Bug
+    [ECA-3514] - Browser enrollment link is generated with incorrect encoding
+
 EJBCA 6.1.1, 2014-03-27
 ---
 Bug
