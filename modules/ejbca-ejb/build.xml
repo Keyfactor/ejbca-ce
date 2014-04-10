@@ -177,7 +177,8 @@
 		<include name="org/cesecore/keybind/InternalKeyBindingInfo.java"/>
 		<include name="org/cesecore/keybind/InternalKeyBindingRules.java"/>
 		<include name="org/ejbca/config/CmpConfiguration.java"/>
-			<include name="org/ejbca/config/CmpTcpConfiguration.java"/>
+		<include name="org/ejbca/config/CmpTcpConfiguration.java"/>
+		<include name="org/ejbca/config/ScepConfiguration.java"/>
 		<include name="org/ejbca/config/EjbcaConfiguration.java"/>
 		<include name="org/ejbca/core/model/approval/ApprovalException.java"/>
 		<include name="org/ejbca/core/model/approval/ApprovalRequestExpiredException.java"/>

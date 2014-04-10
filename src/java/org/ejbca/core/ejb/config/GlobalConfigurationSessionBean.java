@@ -48,6 +48,7 @@ import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.Configuration;
 import org.ejbca.config.EjbcaConfigurationHolder;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.config.ScepConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
@@ -75,6 +76,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
      */
     private static final GlobalConfigurationCache globalconfigurationCache = new GlobalConfigurationCache();
     private static final CMPConfigurationCache cmpConfigurationCache = new CMPConfigurationCache();
+    private static final ScepConfigurationCache scepConfigurationCache = new ScepConfigurationCache();
     
     private final AlwaysAllowLocalAuthenticationToken internalAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Internal GlobalConfiguration Admin"));
     
@@ -142,6 +144,18 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
             
             CmpConfiguration cmpConfig = (CmpConfiguration) getCachedConfiguration(configID);
             return cmpConfig.getAsProperties();
+            
+        } else if(StringUtils.equals(configID, Configuration.ScepConfigID)) {
+            if (!accessSession.isAuthorized(admin, StandardRules.ROLE_ROOT.resource())) {
+                String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.ROLE_ROOT, null);
+                Map<String, Object> details = new LinkedHashMap<String, Object>();
+                details.put("msg", msg);
+                auditSession.log(EventTypes.ACCESS_CONTROL, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), null, null, null, details);
+                throw new AuthorizationDeniedException(msg);
+            } 
+            
+            ScepConfiguration scepConfig = (ScepConfiguration) getCachedConfiguration(configID);
+            return scepConfig.getAsProperties();
         }
         
         return null;
@@ -162,6 +176,8 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
                 result = globalconfigurationCache.getGlobalconfiguration();
             } else if(StringUtils.equals(configID, Configuration.CMPConfigID) && !cmpConfigurationCache.needsUpdate()) {
                 result = cmpConfigurationCache.getCMPConfiguration();
+            } else if(StringUtils.equals(configID, Configuration.ScepConfigID) && !cmpConfigurationCache.needsUpdate()) {
+                result = scepConfigurationCache.getScepConfiguration();
             } else {
                 if (log.isDebugEnabled()) {
                     log.debug("Reading Configuration");
@@ -272,6 +288,8 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
             globalconfigurationCache.setGlobalconfiguration((GlobalConfiguration) conf);
         } else if(StringUtils.equals(configID, Configuration.CMPConfigID)) {
             cmpConfigurationCache.setCMPConfiguration((CmpConfiguration) conf);
+        } else if(StringUtils.equals(configID, Configuration.ScepConfigID)) {
+            scepConfigurationCache.setScepConfiguration((ScepConfiguration) conf);
         }
     }
 
@@ -286,6 +304,11 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
             if (log.isDebugEnabled()) {
                 log.debug("Flushed CMP configuration cache.");
             }
+        } else if(StringUtils.equals(configID, Configuration.ScepConfigID)) {
+            scepConfigurationCache.clearCache();
+            if (log.isDebugEnabled()) {
+                log.debug("Flushed SCEP configuration cache.");
+            }
         }
     }
     
@@ -294,6 +317,8 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
             return new GlobalConfiguration();
         } else if(StringUtils.endsWith(configID, Configuration.CMPConfigID)) {
             return new CmpConfiguration();
+        } else if(StringUtils.endsWith(configID, Configuration.ScepConfigID)) {
+            return new ScepConfiguration();
         }
         return null;
     }

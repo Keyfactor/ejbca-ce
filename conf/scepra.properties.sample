@@ -1,5 +1,5 @@
 #####
-# Configuration file for default values for the built in and the stand-alone SCEP RA Server
+# Configuration file for default values for the stand-alone SCEP RA Server
 # Configure as you please, but all values must be set to something.
 #
 # Default values (that you enter here) is built into the application and deployed
@@ -14,25 +14,17 @@
 # By setting this property to true, you can also dynamically re-configure
 # the RA by changing values in properties files in the file system.
 # 
-# You can put a scep.properties file in your "app server runtime home"/conf directory
+# You can put a scepra.properties file in your "app server runtime home"/conf directory
 # to override these values. To find out which this directory is, it is logged during startup as for example:
-# [ExtraConfiguration] Added file to configuration source: /opt/jboss-4.2.2.GA/bin/conf/scep.properties
+# [ExtraConfiguration] Added file to configuration source: /opt/jboss-4.2.2.GA/bin/conf/scepra.properties
 # This file is re-read if changed so changes can be made in runtime.
 #
-# You can put a /etc/ejbca/conf/extra/scep.properties file to override these values.
+# You can put a /etc/ejbca/conf/extra/scepra.properties file to override these values.
 # This file is re-read if changed so changes can be made in runtime.
 #
 # Finally you can override anything by setting system properties for your appserver, for example:
 # java -Dscep.ra.authpwd=mysecret
 allow.external-dynamic.configuration=false
-
-#
-# Settings for the Internal SCEP Server in EJBCA.
-# The internal SCEP server is a part of the CA and runs as part of the CA server
-#
-# The default CA to use to send CA cert responses if the client does not pass a CA name in the GetCACert request
-# Default: ManagementCA
-#scep.defaultca=ManagementCA
 
 
 #
@@ -100,7 +92,7 @@ scep.ra.namegenerationparameters=CN
 # Note that even when the SCEP request is sent to the RA specific URL, if this option is set to 'false', no users will be added or edited
 #
 # Default: false
-scep.ra.createOrEditUser=false
+scep.ra.createOrEditUser=true
 
 # The Certificate profile used to register new SCEP users, if createOrEditUser=true.
 scep.ra.certificateProfile=ENDUSER

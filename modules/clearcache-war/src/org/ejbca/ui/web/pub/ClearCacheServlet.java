@@ -97,6 +97,11 @@ public class ClearCacheServlet extends HttpServlet {
                     log.debug("CMP Configuration cache cleared");
                 }
                 
+                globalconfigurationsession.flushConfigurationCache(Configuration.ScepConfigID);
+                if(log.isDebugEnabled()) {
+                    log.debug("SCEP Configuration cache cleared");
+                }
+                
         		endentitysession.flushProfileCache();
         		if(log.isDebugEnabled()) {
         			log.debug("RA Profile cache cleared");
