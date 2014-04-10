@@ -324,8 +324,25 @@ the Oracle documentation on the JCE.
 </p><p>
 There are some compatibility issues with SCEP, one being if the CA certificate should be returned in an SCEP enrollment
 response or not. The CA certificate is optional but some, Cisco VPN client, seems to require it while others, Juniper, 
-seems to dislike it. Therefore EJBCA has two sets of SCEP URLs: one when the CA certificate is included and one when it is not.
+seems to dislike it. Therefore EJBCA has this option configurable.
 </p>
+<subsection name="SCEP Configuration">
+<p>
+The SCEP URL is: 
+</p>
+<source>
+http://HOST:PORT/ejbca/publicweb/apply/scep/ALIAS/pkiclient.exe
+</source>
+<p>
+The URL contains a reference to a configuration alias 'ALIAS'. 'ALIAS' is an alphanumeric string that refers to 
+the set of SCEP configurations that should be used when handling the SCEP reqest coming through this URL. It is possible 
+to configure as many configuration aliases as desired through the command line. Documentations on how to create and configure the 
+SCEP aliases are available when executing the following command from EJBCA home directory:
+</p>
+<source>
+./bin/ejbca.sh config scep
+</source>
+</subsection>
 <subsection name="Level of SCEP support">
 <p>
 EJBCA implements features from (at least) draft 11 of the SCEP specification. This means that we implement the following SCEP messages:
@@ -348,18 +365,6 @@ The following CA capabilities are supported:
 </p>
 <subsubsection name="CA mode">
 <p>
-This is the default (and recommended) mode. The default SCEP URL includes the CA certificate (use if nothing else is specified):
-</p>
-<source>
-http://localhost:8080/ejbca/publicweb/apply/scep/pkiclient.exe
-</source>
-<p>
-Not including the CA certificate (try if the default doesn't work): 
-</p>
-<source>
-http://localhost:8080/ejbca/publicweb/apply/scep/noca/pkiclient.exe
-</source>
-<p>
 EJBCA does successfully receive SCEP 'PKCSReq' requests and send back the certifificate/CRL immediately in a proper SCEP reply message.
 EJBCA (standard) does not support the 'polling' model, EJBCA uses the direct CA method, where a request is granted or denied immediately.
 The SCEP client will send messages directly to the CA, encrypted with the CAs certificate.
@@ -377,18 +382,15 @@ The most common errors should be wrong username/password or wrong status (not NE
 <p>
 EJBCA does also successfully recieve SCEP 'PKCSReq' requests when a user is to be created (or edited). A certificate is returned immediately in
 a proper SCEP reply message. 
-</p><p>
-The used URL including the CA certificate:
 </p>
-<source>http://localhost:8080/ejbca/publicweb/apply/scep/ra/pkiclient.exe</source>
 <p>
-Not including the CA certificate:
+For this mode to work, the property 'ALIAS.ramode' has to be set to 'true' through the command line. 
+All the parameters needed to create the new end entity should be set through the command line. Documentation on how to set the different 
+parameters is available when executing the following command from EJBCA home directory:
 </p>
-<source>http://localhost:8080/ejbca/publicweb/apply/scep/ra/noca/pkiclient.exe</source>
-<p>
-For this mode to work, in addition for using the RA specific URLs, the property 'scep.ra.createOrEditUser' in scep.properties has to be set to 'true'.
-All the parameters needed to create the new end entity should be set in the scep.properties file.
-</p>
+<source>
+./bin/ejbca.sh config scep updatealias --help
+</source>
 </subsubsection>
 
 <subsubsection name="RA mode (ExtRA API 3.4.2)">
@@ -419,7 +421,7 @@ that causes it to crash when receiving SCEP responses. There are <a href="http:/
 To use the <a href="http://openscep.othello.ch/">OpenScep</a> client to request a certificate from this servlet, use the command:
 </p>
 <source>
-./scep -k test.key -r test.pemreq -c ejbca-ca.pem -q foo123 -u http://localhost:8080/ejbca/publicweb/apply/scep
+./scep -k test.key -r test.pemreq -c ejbca-ca.pem -q foo123 -u http://localhost:8080/ejbca/publicweb/apply/scep/ALIAS/pkiclient.exe
 </source>
 <p>
 Where test.key is generated with:
@@ -457,7 +459,7 @@ There is a <a href="https://github.com/asyd/jscep-cli-jdk6">CLI for jSCEP</a> by
 </subsubsection>
 <subsubsection name="Juniper Networks NetScreen-25/NetScreen-50">
 <p>
-Works nice using the URL not including the CA certificate.
+Works well.
 </p>
 <p>
 To enroll using the Juniper box go to the Web GUI at https://&lt;juniper-ip&gt;/, then click your way to Objects->Certificates.
@@ -473,10 +475,9 @@ To create a new certificate request:
   </ul>
 Click generate.
 </li>
-<li>Automatically enroll to -> New CA Server settings. The CGI URL differs if you are using the direct CA mode or the RA polling mode:
+<li>Automatically enroll to -> New CA Server settings. You have to configure if EJBCA should use the direct CA mode or the RA polling mode:
   <ul>
-  <li>RA CGI: http://&lt;ra-ip&gt;:8080/scepraserver/scep/noca/pkiclient.exe or http://&lt;ca-ip&gt;:8080/ejbca/publicweb/apply/scep/noca/pkiclient.exe.</li>
-  <li>CA CGI: http://&lt;ra-ip&gt;:8080/scepraserver/scep/noca/pkiclient.exe or http://&lt;ca-ip&gt;:8080/ejbca/publicweb/apply/scep/noca/pkiclient.exe.</li>
+  <li>CGI URL: http://&lt;ra-ip&gt;:8080/scepraserver/scep/&lt;config-alias&gt;/pkiclient.exe</li>
   <li>CA IDENT: The CA Name in EJBCA, for example ScepCA.</li>
   <li>Challenge: A password for a pre-registered user in CA mode, or a random password used for polling RA mode.</li>
   </ul>
@@ -499,11 +500,9 @@ Use the complete path as for the Cisco VPN client below as server name.
 </p></subsubsection>
 <subsubsection name="Cisco VPN client">
 <p>
-Tested with version 4.0.2 and 5.0.
-</p><p>
 To enroll using the Cisco VPN client use:
 <ul>
-<li>CA URL='http://127.0.0.1:8080/ejbca/publicweb/apply/scep/pkiclient.exe'</li>
+<li>CA URL='http://127.0.0.1:8080/ejbca/publicweb/apply/scep/ALIAS/pkiclient.exe'</li>
 <li>CA Domain=your CAs name in EJBCA</li>
 <li>In the DN screen simply enter the username (as added in EJBCA) as 'Name [CN]'</li>
 </ul>

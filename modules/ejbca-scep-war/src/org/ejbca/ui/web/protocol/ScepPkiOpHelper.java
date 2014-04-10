@@ -61,6 +61,7 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
 public class ScepPkiOpHelper {
     private static Logger log = Logger.getLogger(ScepPkiOpHelper.class);
     private AuthenticationToken admin = null;
+    private String configAlias = null;
     
     private SignSessionLocal signsession;
     private CaSessionLocal caSession;
@@ -69,6 +70,7 @@ public class ScepPkiOpHelper {
     private EndEntityManagementSessionLocal endEntityManagementSession;    
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     
+    private ScepConfiguration scepConfiguration;
 
     /**
      * Creates a new ScepPkiOpHelper object.
@@ -76,13 +78,15 @@ public class ScepPkiOpHelper {
      * @param admin administrator performing this
      * @param signsession signsession used to request certificates
      */
-    public ScepPkiOpHelper(AuthenticationToken admin, SignSessionLocal signsession, CaSessionLocal caSession, EndEntityProfileSessionLocal endEntityProfileSession, 
+    public ScepPkiOpHelper(AuthenticationToken admin, String alias, ScepConfiguration scepConfig, SignSessionLocal signsession, CaSessionLocal caSession, EndEntityProfileSessionLocal endEntityProfileSession, 
                     CertificateProfileSessionLocal certProfileSession, EndEntityManagementSessionLocal endEntityManagementSession, 
                     CryptoTokenManagementSessionLocal cryptoTokenManagementSession) {
     	if (log.isTraceEnabled()) {
     		log.trace(">ScepPkiOpHelper");
     	}
         this.admin = admin;
+        this.configAlias = alias;
+        this.scepConfiguration = scepConfig;
         this.signsession = signsession;
         this.caSession = caSession;
         this.endEntityProfileSession = endEntityProfileSession;
@@ -191,7 +195,7 @@ public class ScepPkiOpHelper {
         }
         
         // Verify the request
-        String authPwd = ScepConfiguration.getRAAuthPwd();
+        String authPwd = scepConfiguration.getRAAuthPassword(configAlias);
         if (StringUtils.isNotEmpty(authPwd) && !StringUtils.equals(authPwd, "none")) {
             if (log.isDebugEnabled()) {
                 log.debug("Requiring authPwd in order to precess SCEP requests");
@@ -212,10 +216,10 @@ public class ScepPkiOpHelper {
         
         //Creating the user
         UsernameGeneratorParams usernameGenParams = new UsernameGeneratorParams();
-        usernameGenParams.setMode(ScepConfiguration.getRANameGenerationScheme());
-        usernameGenParams.setDNGeneratorComponent(ScepConfiguration.getRANameGenerationParameters());
-        usernameGenParams.setPrefix(ScepConfiguration.getRANameGenerationPrefix());
-        usernameGenParams.setPostfix(ScepConfiguration.getRANameGenerationPostfix());
+        usernameGenParams.setMode(scepConfiguration.getRANameGenerationScheme(configAlias));
+        usernameGenParams.setDNGeneratorComponent(scepConfiguration.getRANameGenerationParameters(configAlias));
+        usernameGenParams.setPrefix(scepConfiguration.getRANameGenerationPrefix(configAlias));
+        usernameGenParams.setPostfix(scepConfiguration.getRANameGenerationPostfix(configAlias));
         
         X500Name dnname = new X500Name(reqmsg.getRequestDN());
         final UsernameGenerator gen = UsernameGenerator.getInstance(usernameGenParams);
@@ -236,13 +240,13 @@ public class ScepPkiOpHelper {
         
         int eeProfileId = 0;
         try {
-            eeProfileId = endEntityProfileSession.getEndEntityProfileId(ScepConfiguration.getRAEndEntityProfile());
+            eeProfileId = endEntityProfileSession.getEndEntityProfileId(scepConfiguration.getRAEndEntityProfile(configAlias));
         } catch (EndEntityProfileNotFoundException e) {
-            log.error("Could not find the end entity profile: " + ScepConfiguration.getRAEndEntityProfile());
+            log.error("Could not find the end entity profile: " + scepConfiguration.getRAEndEntityProfile(configAlias));
             log.error(e.getLocalizedMessage(), e);
             return false;
         }
-        int certProfileId = certProfileSession.getCertificateProfileId(ScepConfiguration.getRACertProfile());
+        int certProfileId = certProfileSession.getCertificateProfileId(scepConfiguration.getRACertProfile(configAlias));
         
         final EndEntityInformation userdata = new EndEntityInformation(username, dnname.toString(), cainfo.getCAId(), altNames, email, EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), eeProfileId, certProfileId, null, null, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
         userdata.setPassword(pwd);
@@ -273,7 +277,7 @@ public class ScepPkiOpHelper {
                 log.debug("Found a CA name '"+caName+"' from issuerDN: "+issuerDN);
             }
         } catch(Exception e) {
-            caName = ScepConfiguration.getRADefaultCA();
+            caName = scepConfiguration.getRADefaultCA(configAlias);
             log.info("Did not find a CA name from issuerDN: "+issuerDN+", using the default CA '"+caName+"'");
         }
         return caName;

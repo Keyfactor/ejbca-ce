@@ -100,6 +100,10 @@ public class ClearCacheCommand extends EjbcaCommandBase {
             log.info("Flushing CMP configuration cache.");
             // Flush CMPConfiguration
             globalConfigurationSession.flushConfigurationCache(Configuration.CMPConfigID);
+            
+            log.info("Flushing SCEP configuration cache.");
+            // Flush SCEP Configuration
+            globalConfigurationSession.flushConfigurationCache(Configuration.ScepConfigID);
         }
         if (eeprofile) {
             log.info("Flushing End Entity Profile cache.");

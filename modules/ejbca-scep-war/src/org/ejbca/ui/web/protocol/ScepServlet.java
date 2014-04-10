@@ -19,6 +19,8 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.ejb.EJB;
 import javax.servlet.ServletConfig;
@@ -38,14 +40,17 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
+import org.ejbca.config.Configuration;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -94,7 +99,10 @@ public class ScepServlet extends HttpServlet {
     private EndEntityManagementSessionLocal endEntityManagementSession;    
     @EJB
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigSession;
     
+    private static final String DEFAULT_SCEP_ALIAS = "scep";
 
     /**
      * Inits the SCEP servlet
@@ -145,7 +153,7 @@ public class ScepServlet extends HttpServlet {
             output.write(buf, 0, n);
         }
         String message = new String(Base64.encode(output.toByteArray()));
-        service(operation, message, request.getRemoteAddr(), response);
+        service(operation, message, request.getRemoteAddr(), response, request.getPathInfo());
         log.trace("<doPost()");
     } //doPost
 
@@ -175,32 +183,41 @@ public class ScepServlet extends HttpServlet {
             if (message != null && operation != null && operation.equals("PKIOperation")) {
             	message = message.replace(' ', '+');
             }
-
-            service(operation, message, request.getRemoteAddr(), response);
+            
+            service(operation, message, request.getRemoteAddr(), response, request.getPathInfo());
             
         log.trace("<doGet()");
     } // doGet
 
-    private void service(String operation, String message, String remoteAddr, HttpServletResponse response) throws IOException {
+    private void service(String operation, String message, String remoteAddr, HttpServletResponse response, String pathInfo) throws IOException {
+
+        String alias = getAlias(pathInfo);
+        if(alias == null) {
+            log.info("Wrong URL format. The SCEP URL should look like: " +
+            		"'http://HOST:PORT/ejbca/publicweb/apply/scep/ALIAS/pkiclien.exe' " +
+            		"but was 'http://HOST:PORT/ejbca/publicweb/apply/scep" + pathInfo + "'");
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Wrong URL. No alias found.");
+            return;
+        }
+        if(alias.length() > 32) {
+            log.info("Unaccepted alias more than 32 characters.");
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Unaccepted alias more than 32 characters.");
+            return;
+        }
+        ScepConfiguration scepConfig = (ScepConfiguration) this.globalConfigSession.getCachedConfiguration(Configuration.ScepConfigID);
+        if(!scepConfig.aliasExists(alias)) {
+            String msg = "SCEP alias '" + alias + "' does not exist";
+            log.info(msg);
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, msg);
+            return;
+        }
+        
         try {
             if (operation == null) {
         		String errMsg = intres.getLocalizedMessage("scep.errormissingparam", remoteAddr);
                 log.error(errMsg);
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST,errMsg);
                 return;
-            }
-            
-            boolean isRAModeOK = false;
-            String servletName = getServletName();
-            if(StringUtils.equals(servletName, "ScepServletRA") || StringUtils.equals(servletName, "ScepServletRANoCACert")) {
-                if(ScepConfiguration.getAddOrEditUser()) {
-                    isRAModeOK = true;
-                } else {
-                    String errMsg = "RA mode is disabled. Cannot use the RA specific URL when ra mode is disabled.";
-                    log.error(errMsg);
-                    response.sendError(HttpServletResponse.SC_FORBIDDEN, errMsg);
-                    return;
-                }
             }
             
 			final AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ScepServlet: "+remoteAddr));
@@ -216,15 +233,15 @@ public class ScepServlet extends HttpServlet {
                     response.sendError(HttpServletResponse.SC_BAD_REQUEST,errMsg);
                     return;
                 }
+                
                 byte[] scepmsg = Base64.decode(message.getBytes());
-                ScepPkiOpHelper helper = new ScepPkiOpHelper(administrator, signsession, casession, endEntityProfileSession, certProfileSession, 
-                                    endEntityManagementSession, cryptoTokenManagementSession);
+                ScepPkiOpHelper helper = new ScepPkiOpHelper(administrator, alias, scepConfig, signsession, casession, endEntityProfileSession, 
+                                    certProfileSession, endEntityManagementSession, cryptoTokenManagementSession);
+                
+                boolean includeCACert = scepConfig.getIncludeCA(alias);
+                boolean isRAModeOK = scepConfig.getRAMode(alias);
                 
                 // Read the message end get the cert, this also checksauthorization
-                boolean includeCACert = true;
-                if (StringUtils.equals("0", getInitParameter("includeCACert"))) {
-                	includeCACert = false;
-                }
                 byte[] reply = helper.scepCertRequest(scepmsg, includeCACert, isRAModeOK);
                 if (reply == null) {
                     // This is probably a getCert message?
@@ -334,6 +351,12 @@ public class ScepServlet extends HttpServlet {
             log.info(errMsg, ee);
             // TODO: Send back proper Failure Response
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ee.getMessage());
+        } catch (SignRequestException ee) {
+            String errMsg = intres.getLocalizedMessage("scep.errorgeneral");
+            errMsg += " Registering new EndEntities is only allowed in RA mode.";
+            log.info(errMsg, ee);
+            // TODO: Send back proper Failure Response
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, ee.getMessage());    
         } catch (Exception e) {
     		String errMsg = intres.getLocalizedMessage("scep.errorgeneral");
             log.info(errMsg, e);
@@ -345,7 +368,7 @@ public class ScepServlet extends HttpServlet {
     /** Later SCEP draft say that for GetCACert message is optional. If message is there, it is the CA name
      * but if message is not provided by the client, some default CA should be used.
      * @param message the message part for the SCEP get request, can be null or empty string
-     * @return the message parameter or the default CA from EJBCA scep.properties is message is null or mepty.
+     * @return the message parameter or the default CA from ALIAS.defaultca property if message is null or empty.
      */
     private String getCAName(final String message) {
         // If message is a string, return it, but if message is empty return default CA
@@ -353,6 +376,30 @@ public class ScepServlet extends HttpServlet {
             return EjbcaConfiguration.getScepDefaultCA();
         }
         return message;
+    }
+    
+    private String getAlias(String pathInfo) {
+        // PathInfo contains the alias used for SCEP configuration. 
+        // The SCEP URL for custom configuration looks like: http://HOST:PORT/ejbca/publicweb/apply/scep/*
+        // pathInfo contains what * is and should have the form "/<SOME IDENTIFYING TEXT>/pkiclient.exe". We extract the "SOME IDENTIFYING 
+        // TEXT" and that will be the SCEP configuration alias.
+        
+        String alias = null;
+        Pattern pattern = Pattern.compile("/?([A-Za-z0-9]*)/pkiclient.exe");
+        Matcher matcher = pattern.matcher(pathInfo);
+        
+        if(matcher.find()) {
+            alias = matcher.group(1);
+            if(alias.length() == 0) {
+                log.info("No SCEP alias specified in the URL. Using the default alias: " + DEFAULT_SCEP_ALIAS);
+                alias = DEFAULT_SCEP_ALIAS;
+            } else {
+                if(log.isDebugEnabled()) {
+                    log.debug("Found SCEP configuration alias: " + alias);
+                }
+            }
+        }
+        return alias;
     }
     
 } // ScepServlet

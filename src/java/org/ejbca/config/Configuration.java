@@ -10,6 +10,7 @@ public class Configuration extends UpgradeableDataHashMap {
     
     public static final String GlobalConfigID = "0";
     public static final String CMPConfigID = "1";
+    public static final String ScepConfigID = "2";
     
     @Override
     public float getLatestVersion() {
