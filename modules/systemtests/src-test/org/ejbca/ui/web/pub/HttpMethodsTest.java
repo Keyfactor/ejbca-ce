@@ -18,7 +18,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -40,8 +39,11 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.config.Configuration;
+import org.ejbca.config.ScepConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -65,6 +67,7 @@ public class HttpMethodsTest {
     
     private ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    private GlobalConfigurationSessionRemote globalConfigSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
 
     @Before
     public void setUp() throws Exception {
@@ -129,7 +132,22 @@ public class HttpMethodsTest {
     /** Test the scep.war module. */
     @Test
     public void testScep() throws Exception {
-        performResourceTest("/ejbca/publicweb/apply/scep/pkiclient.exe?operation=GetCACert&message=TestCA");
+        ScepConfiguration scepConfig = (ScepConfiguration) globalConfigSession.getCachedConfiguration(Configuration.ScepConfigID);
+        boolean remove = false;
+        if(!scepConfig.aliasExists("scep")) {
+            scepConfig.addAlias("scep");
+            globalConfigSession.saveConfiguration(admin, scepConfig, Configuration.ScepConfigID);
+            remove = true;
+        }
+        
+        try {
+            performResourceTest("/ejbca/publicweb/apply/scep/pkiclient.exe?operation=GetCACert&message=TestCA");
+        } finally {
+            if(remove) {
+                scepConfig.removeAlias("scep");
+                globalConfigSession.saveConfiguration(admin, scepConfig, Configuration.ScepConfigID);
+            }
+        }
     }
 
     /** Test the healthcheck.war module. */
