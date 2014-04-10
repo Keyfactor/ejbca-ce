@@ -1597,13 +1597,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         if (data.get(CVCLONGACCESSRIGHTS) == null) {
             return null;
         }
-        try  {
         @SuppressWarnings("unchecked")
         List<Byte> rightsList = (List<Byte>)data.get(CVCLONGACCESSRIGHTS);
         return ArrayUtils.toPrimitive(rightsList.toArray(new Byte[0]));
-        }catch (Exception e) {
-            return null;
-        }
     }
 
     public void setCVCLongAccessRights(byte[] access) {
