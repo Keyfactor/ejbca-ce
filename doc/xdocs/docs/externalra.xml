@@ -186,11 +186,11 @@ requests from SCEP clients and uses the External RA API to get the CA to process
  and re-deploy EJBCA</li>
  <li>Configure a new worker for this new DataSource (as described in previous sections)</li>
  <li>Issue a PKCS#12 keystore for the SCEP RA Server from the SCEP CA and configure it
- in EJBCA_HOME/conf/scep.properties. The SCEP CA is this issuer of all SCEP requests.</li>
+ in EJBCA_HOME/conf/scepra.properties. The SCEP CA is this issuer of all SCEP requests.</li>
  <li>Create an End Entity Profile and Certificate Profile to issue SCEP requests from and configure it
- in EJBCA_HOME/conf/scep.properties.</li>
- <li>Configure the DataSouce in EJBCA_HOME/conf/scep.properties</li>
- <li>Optional: Configure scep.ra.authPwd in EJBCA_HOME/conf/scep.properties if you want to authenticate
+ in EJBCA_HOME/conf/scepra.properties.</li>
+ <li>Configure the DataSouce in EJBCA_HOME/conf/scepra.properties</li>
+ <li>Optional: Configure scep.ra.authPwd in EJBCA_HOME/conf/scepra.properties if you want to authenticate
  SCEP messages based on a password in the request.</li>
  <li>Make sure a database JDBC connector JAR is installed in the application server for your database.</li>
  <li>Run 'ant externalra-scep-deploy' to deploy the DataSource and SCEP RA Server</li>
@@ -215,7 +215,7 @@ it picks up the message from the RA.
 </p><p>
 To make a more secure setup, one of the two following ways are recommended:
 <ul>
- <li>Each SCEP request can contain a password. Set authPwd in conf/scep.properties to another
+ <li>Each SCEP request can contain a password. Set authPwd in conf/scepra.properties to another
  value then none. This will require a correct password to be sent in the SCEP request.</li>
  <li>Configure Approvals on the CA(s) issuing SCEP certificates.</li>
 </ul>

@@ -32,6 +32,7 @@ import org.cesecore.util.JBossUnmarshaller;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.Configuration;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.config.ScepConfiguration;
 
 /**
  * Entity Bean representing admin web interface global configuration.
@@ -59,7 +60,7 @@ public class GlobalConfigurationData extends ProtectedData implements Serializab
 	public GlobalConfigurationData(String configurationId, Configuration configuration) {
 		setConfigurationId(configurationId);
 		setConfiguration(configuration);
-		log.debug("Created global configuration "+configurationId);
+		log.debug("Created configuration "+configurationId);
 	}
 	
 	public GlobalConfigurationData() { }
@@ -102,6 +103,8 @@ public class GlobalConfigurationData extends ProtectedData implements Serializab
 	        returnval = new GlobalConfiguration();
 	    } else if(StringUtils.equals(configID, Configuration.CMPConfigID)) {
 	        returnval = new CmpConfiguration();
+	    } else if(StringUtils.equals(configID, Configuration.ScepConfigID)) {
+	        returnval = new ScepConfiguration();
 	    }
 		returnval.loadData(getData());
 		return returnval;

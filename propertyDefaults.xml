@@ -57,7 +57,7 @@
     <property file="${ejbca.home}/conf/jaxws.properties" />
     <property file="${ejbca.home}/conf/xkms.properties" />
     <property file="${ejbca.home}/conf/externalra.properties" />
-    <property file="${ejbca.home}/conf/scep.properties" />
+    <property file="${ejbca.home}/conf/scepra.properties" />
     <property file="${ejbca.home}/conf/externalra-gui.properties" />
     <property file="${ejbca.home}/conf/certstore.properties" />
     <property file="${ejbca.home}/conf/crlstore.properties" />

@@ -51,6 +51,7 @@ import java.util.Random;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.httpclient.NameValuePair;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
@@ -88,10 +89,13 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.config.Configuration;
+import org.ejbca.config.ScepConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -118,8 +122,8 @@ import com.gargoylesoftware.htmlunit.WebResponse;
 public class ProtocolScepHttpTest extends CaTestCase {
     private static final Logger log = Logger.getLogger(ProtocolScepHttpTest.class);
 
-    private static final String resourceScep = "publicweb/apply/scep/pkiclient.exe";
-    private static final String resourceScepNoCA = "publicweb/apply/scep/noca/pkiclient.exe";
+    private static final String scepAlias = "ProtocolHttpTestScepAlias";
+    private static final String resourceScep = "publicweb/apply/scep/" + scepAlias + "/pkiclient.exe";
 
     private static final byte[] openscep = Base64.decode(("MIIGqwYJKoZIhvcNAQcCoIIGnDCCBpgCAQExDjAMBggqhkiG9w0CBQUAMIICuwYJ"
             + "KoZIhvcNAQcBoIICrASCAqgwggKkBgkqhkiG9w0BBwOgggKVMIICkQIBADGB1TCB" + "0gIBADA7MC8xDzANBgNVBAMTBlRlc3RDQTEPMA0GA1UEChMGQW5hVG9tMQswCQYD"
@@ -156,9 +160,11 @@ public class ProtocolScepHttpTest extends CaTestCase {
 
     private Random rand = new Random();
     private String httpReqPath;
+    private ScepConfiguration scepConfiguration;
 
     private ConfigurationSessionRemote configurationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private GlobalConfigurationSessionRemote globalConfigSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
 
     @BeforeClass
     public static void beforeClass() {
@@ -181,6 +187,10 @@ public class ProtocolScepHttpTest extends CaTestCase {
         final String httpPort = SystemTestsConfiguration.getRemotePortHttp(configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP));
         httpReqPath = "http://"+httpHost+":" + httpPort + "/ejbca";
         cacert = (X509Certificate) getTestCACert();
+        
+        scepConfiguration = (ScepConfiguration) globalConfigSession.getCachedConfiguration(Configuration.ScepConfigID);
+        scepConfiguration.addAlias(scepAlias);
+        globalConfigSession.saveConfiguration(admin, scepConfiguration, Configuration.ScepConfigID);
 
     }
 
@@ -200,21 +210,49 @@ public class ProtocolScepHttpTest extends CaTestCase {
         } catch (Exception e) {
         	// NOPMD: ignore
         }        
+        
+        scepConfiguration.removeAlias(scepAlias);
+        globalConfigSession.saveConfiguration(admin, scepConfiguration, Configuration.ScepConfigID);
     }
 
     public String getRoleName() {
         return this.getClass().getSimpleName(); 
     }
-    
+
     @Test
     public void test01Access() throws Exception {
-        // Hit scep, gives a 400: Bad Request
+        // Hit scep
         final WebClient webClient = new WebClient();
         WebConnection con = webClient.getWebConnection();
+        
+        // Gives a 400: Bad Request
         WebRequestSettings settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceScep));
         WebResponse resp = con.getResponse(settings);
         assertEquals("Response code", 400, resp.getStatusCode());
     }
+    
+    /**
+     * Tests that the right configuration alias is extracted from the SCEP URL. 
+     * 
+     * A SCEP request for a non-existing alias is sent. Expected an error message caused by the absence of the expected SCEP alias 
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void test02Access() throws Exception {
+        log.trace(">test02Access()");
+        
+        ScepConfiguration scepConfig = (ScepConfiguration) globalConfigSession.getCachedConfiguration(Configuration.ScepConfigID);
+        
+        sendScepAliasRequest(scepConfig, "alias123", "alias123", "SCEP alias 'alias123' does not exist"); // "alias123" in the request causes Ejbca to use "alias123" as SCEP alias
+        sendScepAliasRequest(scepConfig, "123", "123", "SCEP alias '123' does not exist"); // "123" in the request causes Ejbca to use "123" as SCEP alias
+        sendScepAliasRequest(scepConfig, "", "scep", "SCEP alias 'scep' does not exist"); // No alias in the request causes Ejbca to use "scep" (the default alias) as SCEP alias
+        sendScepAliasRequest(scepConfig, null, "scep", "SCEP alias 'scep' does not exist"); // No alias in the request causes Ejbca to use "scep" (the default alias) as SCEP alias
+        sendScepAliasRequest(scepConfig, "alias??&!!foo", null, "Wrong URL. No alias found"); // Specifying alias with non-alphanumeric characters causes the request to fail. 
+
+        log.trace("<test02Access()");
+    }
+    
 
     /**
      * Tests a random old scep message from OpenScep
@@ -222,7 +260,7 @@ public class ProtocolScepHttpTest extends CaTestCase {
      * @throws Exception error
      */
     @Test
-    public void test02OpenScep() throws Exception {
+    public void test03OpenScep() throws Exception {
         log.debug(">test02OpenScep()");
         // send message to server and see what happens
         final WebClient webClient = new WebClient();
@@ -243,73 +281,89 @@ public class ProtocolScepHttpTest extends CaTestCase {
     }
 
     @Test
-    public void test03ScepRequestOKSHA1() throws Exception {
+    public void test04ScepRequestOKSHA1() throws Exception {
         log.debug(">test03ScepRequestOKSHA1()");
         // find a CA create a user and
         // send SCEP req to server and get good response with cert
 
+        scepConfiguration.setIncludeCA(scepAlias, true);
+        globalConfigSession.saveConfiguration(admin, scepConfiguration, Configuration.ScepConfigID);
+        
         // Make user that we know...
         createScepUser(userName1, userDN1);
 
         byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA1, userDN1);
         // Send message with GET
-        byte[] retMsg = sendScep(false, msgBytes, false);
+        byte[] retMsg = sendScep(false, msgBytes);
         assertNotNull(retMsg);
         checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, false);
+        
         log.debug("<test03ScepRequestOKSHA1()");
     }
 
     @Test
-    public void test04ScepRequestOKMD5() throws Exception {
+    public void test05ScepRequestOKMD5() throws Exception {
         log.debug(">test04ScepRequestOKMD5()");
         // find a CA create a user and
         // send SCEP req to server and get good response with cert
 
+        scepConfiguration.setIncludeCA(scepAlias, true);
+        globalConfigSession.saveConfiguration(admin, scepConfiguration, Configuration.ScepConfigID);
+        
         // Make user that we know...
         createScepUser(userName1, userDN1);
 
         byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_MD5, userDN1);
         // Send message with GET
-        byte[] retMsg = sendScep(false, msgBytes, false);
+        byte[] retMsg = sendScep(false, msgBytes);
         assertNotNull(retMsg);
         checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_MD5, false);
+        
         log.debug("<test04ScepRequestOKMD5()");
     }
 
     @Test
-    public void test05ScepRequestPostOK() throws Exception {
+    public void test06ScepRequestPostOK() throws Exception {
         log.debug(">test05ScepRequestPostOK()");
         // find a CA, create a user and
         // send SCEP req to server and get good response with cert
 
+        scepConfiguration.setIncludeCA(scepAlias, true);
+        globalConfigSession.saveConfiguration(admin, scepConfiguration, Configuration.ScepConfigID);
+        
         createScepUser(userName1, userDN1);
 
         byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA1, userDN1);
         // Send message with GET
-        byte[] retMsg = sendScep(true, msgBytes, false);
+        byte[] retMsg = sendScep(true, msgBytes);
         assertNotNull(retMsg);
         checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, false);
+        
         log.debug(">test05ScepRequestPostOK()");
     }
 
     @Test
-    public void test06ScepRequestPostOKNoCA() throws Exception {
+    public void test07ScepRequestPostOKNoCA() throws Exception {
         log.debug(">test06ScepRequestPostOKNoCA()");
         // find a CA, create a user and
         // send SCEP req to server and get good response with cert
 
+        scepConfiguration.setIncludeCA(scepAlias, false);
+        globalConfigSession.saveConfiguration(admin, scepConfiguration, Configuration.ScepConfigID);
+        
         createScepUser(userName1, userDN1);
 
         byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA1, userDN1);
         // Send message with GET
-        byte[] retMsg = sendScep(true, msgBytes, true);
+        byte[] retMsg = sendScep(true, msgBytes);
         assertNotNull(retMsg);
         checkScepResponse(retMsg, userDN1, senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, true);
+        
         log.debug(">test06ScepRequestPostOKNoCA()");
     }
 
     @Test
-    public void test07ScepGetCACert() throws Exception {
+    public void test08ScepGetCACert() throws Exception {
         log.debug(">test07ScepGetCACert()");
         {
             String reqUrl = httpReqPath + '/' + resourceScep + "?operation=GetCACert&message=" + URLEncoder.encode(caname, "UTF-8");
@@ -383,18 +437,23 @@ public class ProtocolScepHttpTest extends CaTestCase {
     }
 
     @Test
-    public void test08ScepGetCrl() throws Exception {
+    public void test09ScepGetCrl() throws Exception {
         log.debug(">test08ScepGetCrl()");
+        
+        scepConfiguration.setIncludeCA(scepAlias, false);
+        globalConfigSession.saveConfiguration(admin, scepConfiguration, Configuration.ScepConfigID);
+        
         byte[] msgBytes = genScepRequest(true, CMSSignedGenerator.DIGEST_SHA1, userDN1);
         // Send message with GET
-        byte[] retMsg = sendScep(false, msgBytes, false);
+        byte[] retMsg = sendScep(false, msgBytes);
         assertNotNull(retMsg);
         checkScepResponse(retMsg, userDN1, senderNonce, transId, true, CMSSignedGenerator.DIGEST_SHA1, false);
+        
         log.debug(">test08ScepGetCrl()");
     }
 
     @Test
-    public void test09ScepGetCACaps() throws Exception {
+    public void test10ScepGetCACaps() throws Exception {
         log.debug(">test09ScepGetCACaps()");
         String reqUrl = httpReqPath + '/' + resourceScep + "?operation=GetCACaps&message=" + URLEncoder.encode(caname, "UTF-8");
         URL url = new URL(reqUrl);
@@ -423,14 +482,18 @@ public class ProtocolScepHttpTest extends CaTestCase {
     }
 
     @Test
-    public void test10EnforcementOfUniquePublicKeys() throws Exception {
+    public void test11EnforcementOfUniquePublicKeys() throws Exception {
         log.debug(">test10EnforcementOfUniquePublicKeys()");
+        
+        scepConfiguration.setIncludeCA(scepAlias, false);
+        globalConfigSession.saveConfiguration(admin, scepConfiguration, Configuration.ScepConfigID);
+        
         // create new user for new DN.
         createScepUser(userName2, userDN2);
 
         final byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA1, userDN2);
         // Send message with GET
-        final byte[] retMsg = sendScep(true, msgBytes, false, HttpServletResponse.SC_BAD_REQUEST);
+        final byte[] retMsg = sendScep(true, msgBytes, HttpServletResponse.SC_BAD_REQUEST);
     
         String returnMessageString = new String(retMsg);      
         String localizedMessage = InternalResourcesStub.getInstance().getLocalizedMessage("createcert.key_exists_for_another_user",
@@ -440,11 +503,16 @@ public class ProtocolScepHttpTest extends CaTestCase {
             throw new Error("Test can't continue, can't find language resource files. Current directory is " + currentDirectory);
         }
         assertTrue(returnMessageString.indexOf(localizedMessage) >= 0);
+        
         log.debug("<test10EnforcementOfUniquePublicKeys()");
     }
 
     @Test
-    public void test11EnforcementOfUniqueDN() throws Exception {
+    public void test12EnforcementOfUniqueDN() throws Exception {
+        
+        scepConfiguration.setIncludeCA(scepAlias, false);
+        globalConfigSession.saveConfiguration(admin, scepConfiguration, Configuration.ScepConfigID);
+        
         createScepUser(userName2, userDN2);
         // new user will have a DN of a certificate already issued for another
         // user.
@@ -452,7 +520,7 @@ public class ProtocolScepHttpTest extends CaTestCase {
 
         final byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA1, userDN2, key2);
         // Send message with GET
-        final byte[] retMsg = sendScep(true, msgBytes, false, HttpServletResponse.SC_BAD_REQUEST);
+        final byte[] retMsg = sendScep(true, msgBytes, HttpServletResponse.SC_BAD_REQUEST);
         String returnMessageString = new String(retMsg);      
         String localizedMessage = InternalResourcesStub.getInstance().getLocalizedMessage(
                 "createcert.subjectdn_exists_for_another_user", "'" + userName2 + "'", "'" + userName1 + "'");
@@ -464,9 +532,52 @@ public class ProtocolScepHttpTest extends CaTestCase {
         assertTrue(returnMessageString.indexOf(localizedMessage) >= 0);
     }
 
+    
     //
     // Private helper methods
     //
+    /**
+     * Sends a SCEP request with the alias requestAlias in the URL and expects a SCEP error message 
+     * that can inform us about the alias extracted from the URL.
+     */
+    private void sendScepAliasRequest(ScepConfiguration scepConfig, String requestAlias, String extractedAlias, String expectedErrMsg) throws Exception {
+        
+        if(extractedAlias != null) {
+            if(scepConfig.aliasExists(extractedAlias)) {
+                scepConfig.renameAlias(extractedAlias, "backUpAlias" + extractedAlias + "ForAliasTesting001122334455");
+                globalConfigSession.saveConfiguration(admin, scepConfig, Configuration.ScepConfigID);
+            }
+        }
+        
+        try {
+            String resource = "publicweb/apply/scep/" + (requestAlias != null ? requestAlias + "/" : "") + "pkiclient.exe";
+            String urlString = httpReqPath + '/' + resource + "?operation=PKIOperation";
+            log.info("http URL: " + urlString);
+            
+            String reqUrl = urlString + "&message=" + URLEncoder.encode("Test Scep message", "UTF-8");
+            URL url = new URL(reqUrl);
+            final HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
+            con.getDoOutput();
+            con.connect();
+            assertEquals("Unexpected HTTP response code.", HttpServletResponse.SC_BAD_REQUEST, con.getResponseCode()); // OK response (will use alias "alias123")
+            
+            InputStream err = con.getErrorStream();
+            byte[] errB = new byte[1024];
+            err.read(errB);
+            err.close();
+            String response = new String(errB);
+            assertTrue("Response does not contain the correct error message", StringUtils.contains(response, expectedErrMsg));
+        } finally {
+            if(extractedAlias != null) {
+                if(scepConfig.aliasExists("backUpAlias" + extractedAlias + "ForAliasTesting001122334455")) {
+                    scepConfig.renameAlias("backUpAlias" + extractedAlias + "ForAliasTesting001122334455", extractedAlias);
+                    globalConfigSession.saveConfiguration(admin, scepConfig, Configuration.ScepConfigID);
+                }
+            }
+        }
+    }
+    
     private EndEntityInformation getEndEntityInformation(String userName, String userDN) {
         final EndEntityInformation data = new EndEntityInformation(userName, userDN, caid, null, "sceptest@primekey.se", new EndEntityType(EndEntityTypes.ENDUSER),
                 SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
@@ -686,18 +797,14 @@ public class ProtocolScepHttpTest extends CaTestCase {
         return signer2.verify(signature);
     }
 
-    private byte[] sendScep(boolean post, byte[] scepPackage, boolean noca) throws IOException {
-        return sendScep(post, scepPackage, noca, HttpServletResponse.SC_OK);
+    private byte[] sendScep(boolean post, byte[] scepPackage) throws IOException {
+        return sendScep(post, scepPackage, HttpServletResponse.SC_OK);
     }
 
-    private byte[] sendScep(boolean post, byte[] scepPackage, boolean noca, int responseCode) throws IOException {
+    private byte[] sendScep(boolean post, byte[] scepPackage, int responseCode) throws IOException {
         // POST the SCEP request
         // we are going to do a POST
-        String resource = resourceScep;
-        if (noca) {
-            resource = resourceScepNoCA;
-        }
-        String urlString = httpReqPath + '/' + resource + "?operation=PKIOperation";
+        String urlString = httpReqPath + '/' + resourceScep + "?operation=PKIOperation";
         log.debug("UrlString =" + urlString);
         final HttpURLConnection con;
         if (post) {
