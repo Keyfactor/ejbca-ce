@@ -63,6 +63,7 @@ import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.certificates.certificatetransparency.CTExtensionCertGenParams;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
@@ -177,7 +178,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 }
             }
             
-            Certificate cert = createCertificate(admin, userData, ca, req, reqpk, keyusage, notBefore, notAfter, exts, sequence);
+            Certificate cert = createCertificate(admin, userData, ca, req, reqpk, keyusage, notBefore, notAfter, exts, sequence, null);
             // Create the response message with all nonces and checks etc
             ret = req.createResponseMessage(responseClass, req, ca.getCertificateChain());
             ResponseStatus status = ResponseStatus.SUCCESS;
@@ -261,11 +262,11 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         }
         return ca;
     }
-
+    
     @Override
     public Certificate createCertificate(final AuthenticationToken admin, final EndEntityInformation data, final CA ca,
             final RequestMessage request, final PublicKey pk, final int keyusage, final Date notBefore, final Date notAfter,
-            final Extensions extensions, final String sequence) throws CustomCertSerialNumberException, IllegalKeyException,
+            final Extensions extensions, final String sequence, CTExtensionCertGenParams ctParams) throws CustomCertSerialNumberException, IllegalKeyException,
             AuthorizationDeniedException, CertificateCreateException, CesecoreException {
         if (log.isTraceEnabled()) {
             log.trace(">createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)");
@@ -341,7 +342,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 if (cryptoToken==null) {
                     throw new CryptoTokenOfflineException("CA's CryptoToken not found.");
                 }
-                cert = ca.generateCertificate(cryptoToken, data, request, pk, keyusage, notBefore, notAfter, certProfile, extensions, sequence);
+                cert = ca.generateCertificate(cryptoToken, data, request, pk, keyusage, notBefore, notAfter, certProfile, extensions, sequence, ctParams);
                 serialNo = CertTools.getSerialNumberAsString(cert);
                 cafingerprint = CertTools.getFingerprintAsString(cacert);
                 // Store certificate in the database, if this CA is configured to do so.

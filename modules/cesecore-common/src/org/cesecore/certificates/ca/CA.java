@@ -49,6 +49,7 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificatetransparency.CTExtensionCertGenParams;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -732,11 +733,17 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      *            profile default extensions should be used.
      * @param sequence an optional requested sequence number (serial number) for the certificate, may or may not be used by the CA. Currently used by
      *            CVC CAs for sequence field. Can be set to null.
+     * @param ctParams Parameters for the CT extension. May contain references to session beans. NOTE: This parameter may be replaced with a map (for multiple extensions) in the future.
      * @return
      * @throws Exception
      */
     public abstract Certificate generateCertificate(CryptoToken cryptoToken, EndEntityInformation subject, RequestMessage request, PublicKey publicKey, int keyusage,
-            Date notBefore, Date notAfter, CertificateProfile certProfile, Extensions extensions, String sequence) throws Exception;
+            Date notBefore, Date notAfter, CertificateProfile certProfile, Extensions extensions, String sequence, CTExtensionCertGenParams ctParams) throws Exception;
+    
+    public final Certificate generateCertificate(CryptoToken cryptoToken, final EndEntityInformation subject, final RequestMessage request, final PublicKey publicKey, final int keyusage, final Date notBefore,
+            final Date notAfter, final CertificateProfile certProfile, final Extensions extensions, final String sequence) throws Exception {
+        return generateCertificate(cryptoToken, subject, request, publicKey, keyusage, notBefore, notAfter, certProfile, extensions, sequence, null);
+    }
 
     public abstract X509CRLHolder generateCRL(CryptoToken cryptoToken,Collection<RevokedCertInfo> certs, int crlnumber) throws Exception;
 
