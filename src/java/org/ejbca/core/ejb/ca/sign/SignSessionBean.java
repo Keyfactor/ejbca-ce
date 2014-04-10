@@ -21,9 +21,12 @@ import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.cert.CRLException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -39,6 +42,11 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.cesecore.CesecoreException;
+import org.cesecore.audit.enums.EventStatus;
+import org.cesecore.audit.enums.EventTypes;
+import org.cesecore.audit.enums.ModuleTypes;
+import org.cesecore.audit.enums.ServiceTypes;
+import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CA;
@@ -64,6 +72,8 @@ import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.certificates.certificatetransparency.CTExtensionCertGenParams;
+import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -72,6 +82,7 @@ import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.GlobalConfiguration;
@@ -86,6 +97,7 @@ import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
+import org.ejbca.core.model.log.LogConstants;
 
 /**
  * Creates and signs certificates.
@@ -123,6 +135,8 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
+    @EJB
+    private SecurityEventsLoggerSessionLocal logSession;
 
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
@@ -640,16 +654,48 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             log.trace(">createCertificate(pk, ku, notAfter)");
         }
 
-        // Get Certificate Transparency configuration
+        // Supply extra info to X509CA for Certificate Transparency
+        CTExtensionCertGenParams ctParams = null;
         if (ca instanceof X509CA) {
-            GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession
+            final GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession
                     .getCachedConfiguration(GlobalConfiguration.GlobalConfigID);
-            ((X509CA) ca).setConfiguredCTLogs(globalConfiguration.getCTLogs());
+            final Map<Integer, CTLogInfo> configuredCTLogs = globalConfiguration.getCTLogs();
+            
+            ctParams = new CTExtensionCertGenParams() {
+                @Override
+                public void logPreCertSubmission(X509CA issuer, EndEntityInformation subject, X509Certificate precert, boolean success) {
+                    // Mostly the same info is logged as in CertificateCreateSessionBean.createCertificate
+                    int revreason = RevokedCertInfo.NOT_REVOKED;
+                    final ExtendedInformation ei = subject.getExtendedinformation();
+                    if (ei != null) {
+                        revreason = ei.getIssuanceRevocationReason();
+                    }
+                    
+                    final Map<String, Object> issuedetails = new LinkedHashMap<String, Object>();
+                    issuedetails.put("ctprecert", true);
+                    issuedetails.put("msg", intres.getLocalizedMessage(success ? "createcert.ctlogsubmissionsuccessful" : "createcert.ctlogsubmissionfailed"));
+                    issuedetails.put("subjectdn", CertTools.getSubjectDN(precert));
+                    issuedetails.put("certprofile", subject.getCertificateProfileId());
+                    issuedetails.put("issuancerevocationreason", revreason);
+                    try {
+                        issuedetails.put("cert", new String(Base64.encode(precert.getEncoded(), false)));
+                    } catch (CertificateEncodingException e) {
+                        log.warn("Could not encode cert", e);
+                    }
+                    logSession.log(EventTypes.CERT_CTPRECERT_SUBMISSION, success ? EventStatus.SUCCESS : EventStatus.FAILURE,
+                            ModuleTypes.CERTIFICATE, ServiceTypes.CORE, LogConstants.NO_AUTHENTICATION_TOKEN, String.valueOf(issuer.getCAId()),
+                            CertTools.getSerialNumberAsString(precert), subject.getUsername(), issuedetails);
+                }
+                @Override
+                public Map<Integer, CTLogInfo> getConfiguredCTLogs() {
+                    return configuredCTLogs;
+                }
+            };
         }
 
         // Create the certificate. Does access control checks (with audit log) on the CA and create_certificate.
         final Certificate cert = certificateCreateSession.createCertificate(admin, data, ca, null, pk, keyusage, notBefore, notAfter, extensions,
-                sequence);
+                sequence, ctParams);
 
         postCreateCertificate(admin, data, ca, cert);
 

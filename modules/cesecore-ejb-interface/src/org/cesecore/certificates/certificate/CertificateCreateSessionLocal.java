@@ -27,6 +27,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.certificates.certificatetransparency.CTExtensionCertGenParams;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 
 /**
@@ -96,6 +97,7 @@ public interface CertificateCreateSessionLocal extends CertificateCreateSession 
      *            profile default extensions should be used.
      * @param sequence an optional requested sequence number (serial number) for the certificate, may or may not be used by the CA. Currently used by
      *            CVC CAs for sequence field. Can be set to null.
+     * @param ctParams Parameters for the CT extension. May contain references to session beans. NOTE: This parameter may be replaced with a map (for multiple extensions) in the future.
      * @return Certificate that has been generated and signed by the CA
      * 
      * @throws CustomCertSerialNumberException (no rollback) if custom serial number is registered for user, but it is not allowed to be used (either
@@ -107,7 +109,7 @@ public interface CertificateCreateSessionLocal extends CertificateCreateSession 
      *             in CA.
      */
     Certificate createCertificate(AuthenticationToken admin, EndEntityInformation data, CA ca, RequestMessage request, PublicKey pk, int keyusage, Date notBefore, Date notAfter,
-            Extensions extensions, String sequence) throws CustomCertSerialNumberException, IllegalKeyException,
+            Extensions extensions, String sequence, CTExtensionCertGenParams ctParams) throws CustomCertSerialNumberException, IllegalKeyException,
             AuthorizationDeniedException, CertificateCreateException, CesecoreException;
 
 }

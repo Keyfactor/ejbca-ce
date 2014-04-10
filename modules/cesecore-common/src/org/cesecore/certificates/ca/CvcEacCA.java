@@ -40,6 +40,7 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificatetransparency.CTExtensionCertGenParams;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.token.CryptoToken;
@@ -271,7 +272,8 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
 			Date notAfter,
 			CertificateProfile certProfile,
 			Extensions extensions,
-			String sequence) throws Exception{
+			String sequence,
+			CTExtensionCertGenParams ctParams) throws Exception{
 		if (log.isTraceEnabled()) {
 			log.trace(">generateCertificate("+notBefore+", "+notAfter+")");
 		}

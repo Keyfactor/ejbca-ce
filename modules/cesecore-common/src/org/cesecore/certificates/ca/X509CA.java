@@ -39,7 +39,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -111,7 +110,7 @@ import org.cesecore.certificates.certificate.certextensions.CertificateExtension
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
-import org.cesecore.certificates.certificatetransparency.CTLogInfo;
+import org.cesecore.certificates.certificatetransparency.CTExtensionCertGenParams;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparency;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -169,8 +168,6 @@ public class X509CA extends CA implements Serializable {
     protected static final String CRLDISTRIBUTIONPOINTONCRLCRITICAL = "crldistributionpointoncrlcritical";
     protected static final String CMPRAAUTHSECRET = "cmpraauthsecret";
 
-    private transient Map<Integer,CTLogInfo> configuredCTLogs;
-    
     private static final CertificateTransparency ct = CertificateTransparencyFactory.getInstance();
 
     // Public Methods
@@ -393,18 +390,6 @@ public class X509CA extends CA implements Serializable {
         data.put(CMPRAAUTHSECRET, cmpRaAuthSecret);
     }
 
-    /**
-     * Sets the mapping of IDs to CT log definitions. Used in generateCertificate.
-     * It must be set explicitly after constructing/obtaining the CA object if
-     * you want to use Certificate Transparency.
-     * 
-     * A sample configuration can be found in the EJBCA source code,
-     * in the GlobalConfiguration class.
-     */
-    public void setConfiguredCTLogs(Map<Integer, CTLogInfo> configuredCTLogs) {
-        this.configuredCTLogs = configuredCTLogs;
-    }
-
     public void updateCA(CryptoToken cryptoToken, CAInfo cainfo) throws InvalidAlgorithmException {
         super.updateCA(cryptoToken, cainfo);
         X509CAInfo info = (X509CAInfo) cainfo;
@@ -574,7 +559,7 @@ public class X509CA extends CA implements Serializable {
                 // The sequence is ignored later, but we fetch the same previous for now to do this the same way as for CVC..
                 final String ignoredKeySequence = catoken.getProperties().getProperty(CATokenConstants.PREVIOUS_SEQUENCE_PROPERTY);
                 final Certificate retcert = generateCertificate(cadata, null, currentCaCert.getPublicKey(), -1, currentCaCert.getNotBefore(), currentCaCert.getNotAfter(),
-                        certProfile, null, ignoredKeySequence, previousCaPublicKey, previousCaPrivateKey, provider);
+                        certProfile, null, ignoredKeySequence, previousCaPublicKey, previousCaPrivateKey, provider, null);
                 log.info(intres.getLocalizedMessage("cvc.info.createlinkcert", cadata.getDN(), cadata.getDN()));
                 ret = retcert.getEncoded();
             } catch (CryptoTokenOfflineException e) {
@@ -585,10 +570,10 @@ public class X509CA extends CA implements Serializable {
         }
         updateLatestLinkCertificate(ret);
     }
-
+    
     @Override
     public Certificate generateCertificate(CryptoToken cryptoToken, final EndEntityInformation subject, final RequestMessage request, final PublicKey publicKey, final int keyusage, final Date notBefore,
-            final Date notAfter, final CertificateProfile certProfile, final Extensions extensions, final String sequence) throws Exception {
+            final Date notAfter, final CertificateProfile certProfile, final Extensions extensions, final String sequence, CTExtensionCertGenParams ctParams) throws Exception {
         // Before we start, check if the CA is off-line, we don't have to waste time
         // one the stuff below of we are off-line. The line below will throw CryptoTokenOfflineException of CA is offline
         final CAToken catoken = getCAToken();
@@ -596,16 +581,16 @@ public class X509CA extends CA implements Serializable {
         final PrivateKey caPrivateKey = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
         final String provider = cryptoToken.getSignProviderName();
         return generateCertificate(subject, request, publicKey, keyusage, notBefore, notAfter, certProfile, extensions, sequence,
-                caPublicKey, caPrivateKey, provider);
+                caPublicKey, caPrivateKey, provider, ctParams);
     }
 
     /**
-     * sequence is ignored by X509CA.
-     * Certificate Transparency logs, if any, should be defined before with the setConfiguredCTLogs method.
+     * Sequence is ignored by X509CA. The ctParams argument will NOT be kept after the function call returns,
+     * and is allowed to contain references to session beans.
      */
     private Certificate generateCertificate(final EndEntityInformation subject, final RequestMessage request, final PublicKey publicKey, final int keyusage, final Date notBefore,
             final Date notAfter, final CertificateProfile certProfile, final Extensions extensions, final String sequence, final PublicKey caPublicKey,
-            final PrivateKey caPrivateKey, final String provider) throws Exception {
+            final PrivateKey caPrivateKey, final String provider, CTExtensionCertGenParams ctParams) throws Exception {
 
         // We must only allow signing to take place if the CA itself is on line, even if the token is on-line.
         // We have to allow expired as well though, so we can renew expired CAs
@@ -832,7 +817,8 @@ public class X509CA extends CA implements Serializable {
         
         // Add Certificate Transparency extension. It needs to access the certbuilder and
         // the CA key so it has to be processed here inside X509CA.
-        if (ct != null && certProfile.isUseCertificateTransparencyInCerts() && configuredCTLogs != null) {
+        if (ct != null && certProfile.isUseCertificateTransparencyInCerts() &&
+                ctParams != null && ctParams.getConfiguredCTLogs() != null) {
             // Create pre-certificate
             // A critical extension is added to prevent this cert from being used
             ct.addPreCertPoison(precertbuilder);
@@ -853,7 +839,13 @@ public class X509CA extends CA implements Serializable {
             chain.addAll(getCertificateChain());
             
             // Submit to logs and get signed timestamps
-            byte[] sctlist = ct.fetchSCTList(chain, certProfile, configuredCTLogs);
+            byte[] sctlist = null;
+            try {
+                sctlist = ct.fetchSCTList(chain, certProfile, ctParams.getConfiguredCTLogs());
+            } finally {
+                // Notify that pre-cert has been successfully or unsuccessfully submitted so it can be audit logged.
+                ctParams.logPreCertSubmission(this, subject, cert, sctlist != null);
+            }
             if (sctlist != null) { // can be null if the CTLog has been deleted from the configuration
                 ASN1ObjectIdentifier sctOid = new ASN1ObjectIdentifier(CertificateTransparency.SCTLIST_OID);
                 certbuilder.addExtension(sctOid, false, new DEROctetString(sctlist));
