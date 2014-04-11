@@ -56,6 +56,7 @@ public class ContentSecurityPolicyFilter implements Filter {
     public void init(FilterConfig filterConfig) throws ServletException {
         String plugins = filterConfig.getInitParameter("plugins");
         String objects = filterConfig.getInitParameter("objects");
+        String unsafeeval = filterConfig.getInitParameter("unsafeeval");
 
         // Init secure random
         /*
@@ -85,7 +86,13 @@ public class ContentSecurityPolicyFilter implements Filter {
         // --Define loading policies for Styles (CSS), allow inline style elements
         cspPolicies.add("style-src " + originLocationRef+" 'unsafe-inline'");
         // --Define loading policies for javascript, allow inline style elements in order to use onClick attributes
-        cspPolicies.add("script-src " + originLocationRef+" 'unsafe-inline'");
+        final String evalstr;
+        if (StringUtils.isNotEmpty(unsafeeval)) {
+            evalstr = " 'unsafe-eval'";
+        } else {
+            evalstr = "";
+        }
+        cspPolicies.add("script-src " + originLocationRef+" 'unsafe-inline'"+evalstr);
         // --Define loading policies for Images
         cspPolicies.add("img-src " + originLocationRef);
         // Frame + Sandbox : Here sandbox allow nothing, customize sandbox options depending on your app....
