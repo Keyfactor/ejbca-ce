@@ -90,6 +90,10 @@
 		    <param-name>plugins</param-name>
 		    <param-value>yes</param-value>
 		</init-param>
+		<init-param>
+		    <param-name>unsafeeval</param-name>
+		    <param-value>yes</param-value>
+		</init-param>
 	</filter>
 	
 	<filter-mapping> 
