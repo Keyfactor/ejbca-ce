@@ -27,7 +27,7 @@
   <section name="Virtual Machine Demo">
     <p>
     Get a feeling for, and start testing, EJBCA easily by downloading and running our 
-    <a href="http://download.primekey.se/public/ejbcav6ce-vm.zip">EJBCAv6 VM</a>.
+    <a href="https://download.primekey.se/public/ejbcav6ce-vm.zip">EJBCAv6 VM</a>.
     The VM features a full EJBCA Community v6 install, running on JBoss 7.1.1.GA and Java 7, using a <a href="http://www.mariadb.org/" target="_mariadb">MariaDB</a> database backend. 
     It also comes with a readme file with instructions and some usage hints. The VM runs on KVM, VirtualBox and VWware<sup>&#174;</sup>. 
     <br/>Have fun! 
