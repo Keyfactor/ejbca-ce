@@ -803,7 +803,7 @@
 		
         <!-- find out svn.revision of HEAD, need svn.exe installed on local machine will end up in property ${Revision} -->
         <exec executable="svn" output="svnlog.out">
-            <arg line="info -r ${revision}"/>
+            <arg line="info -r ${revision} --force-interactive"/>
         </exec>
 		<loadproperties srcFile="svnlog.out">
 		      <filterchain>
