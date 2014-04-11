@@ -42,6 +42,7 @@
 	<path id="compile-common-web.classpath">
 		<path refid="compile-util.classpath"/>
 		<path refid="lib.ejbca-util.classpath"/>
+	    <path refid="lib.commons-codec.classpath"/>
 		<path location="${mod.ejbca-ejb-interface.lib}"/>
 	</path>
 
@@ -301,7 +302,7 @@
 		<include name="org/ejbca/ui/web/CertificateResponseType.java"/>
 		<include name="org/ejbca/ui/web/RequestHelper.java"/>
 		<include name="org/ejbca/ui/web/RevokedInfoView.java"/>
-		<include name="org/owasp/filters/ClickjackFilter.java"/>
+		<include name="org/owasp/filters/*Filter.java"/>
 		<!-- Move to AdminGUI src -->
 		<include name="org/ejbca/ui/web/CertificateView.java"/>
 		<include name="org/ejbca/util/HTMLTools.java"/>
