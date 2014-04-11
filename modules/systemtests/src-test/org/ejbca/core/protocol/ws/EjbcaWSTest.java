@@ -185,12 +185,18 @@ public class EjbcaWSTest extends CommonEjbcaWS {
      * @throws UnrecoverableKeyException 
      */
     @Test
-    public void testAdminWebXFrameOptions() throws UnrecoverableKeyException, KeyManagementException, NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
+    public void testAdminWebSecurityHeaders() throws UnrecoverableKeyException, KeyManagementException, NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
         HttpURLConnection con = super.getHttpsURLConnection("https://localhost:8443"+"/ejbca/adminweb/index.jsp");
-        String str = con.getHeaderField("X-FRAME-OPTIONS");
+        String xframe = con.getHeaderField("X-FRAME-OPTIONS");
+        String csp = con.getHeaderField("content-security-policy");
+        String xcsp = con.getHeaderField("x-content-security-policy");
         con.disconnect();
-        assertNotNull("Admin web error page should return X-FRAME-OPTIONS header", str);
-        assertEquals("Admin web error page should return X-FRAME-OPTIONS SAMEORIGIN", "SAMEORIGIN", str);
+        assertNotNull("Admin web page should return X-FRAME-OPTIONS header", xframe);
+        assertNotNull("Admin web page should return content-security-policy header", csp);
+        assertNotNull("Admin web page should return x-content-security-policy header", xcsp);
+        assertEquals("Admin web page should return X-FRAME-OPTIONS SAMEORIGIN", "SAMEORIGIN", xframe);
+        assertEquals("Admin web page should return csp default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self'; frame-src 'self'; form-action 'self'; plugin-types application/pdf; reflected-xss block", "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self'; frame-src 'self'; form-action 'self'; plugin-types application/pdf; reflected-xss block", csp);
+        assertEquals("Admin web page should return xcsp default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self'; frame-src 'self'; form-action 'self'; plugin-types application/pdf; reflected-xss block", "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self'; frame-src 'self'; form-action 'self'; plugin-types application/pdf; reflected-xss block", xcsp);
     }
 
     @Test

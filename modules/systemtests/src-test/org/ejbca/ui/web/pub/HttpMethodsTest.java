@@ -96,12 +96,23 @@ public class HttpMethodsTest {
     @Test
     public void testPublicWeb() throws Exception {
         performResourceTest("/ejbca/index.jsp");
+    }
+
+    /** Test the publicweb.war module. */
+    @Test
+    public void testPublicWebSecurityHeaders() throws Exception {
         // Check for X-FRAME-OPTIONS headers
         HttpURLConnection con = getHttpURLConnection(httpBaseUrl+"/ejbca/index.jsp");
-        String str = con.getHeaderField("X-FRAME-OPTIONS");
+        String xframe = con.getHeaderField("X-FRAME-OPTIONS");
+        String csp = con.getHeaderField("content-security-policy");
+        String xcsp = con.getHeaderField("x-content-security-policy");
         con.disconnect();
-        assertNotNull("Public web should return X-FRAME-OPTIONS header", str);
-        assertEquals("Public web should return X-FRAME-OPTIONS DENY", "DENY", str);
+        assertNotNull("Public web should return X-FRAME-OPTIONS header", xframe);
+        assertNotNull("Public web page should return content-security-policy header", csp);
+        assertNotNull("Public web page should return x-content-security-policy header", xcsp);
+        assertEquals("Public web should return X-FRAME-OPTIONS DENY", "DENY", xframe);
+        assertEquals("Public web page should return csp default-src 'none'; object-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self'; frame-src 'self'; form-action 'self'; reflected-xss block", "default-src 'none'; object-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self'; frame-src 'self'; form-action 'self'; reflected-xss block", csp);
+        assertEquals("Public web page should return xcsp default-src 'none'; object-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self'; frame-src 'self'; form-action 'self'; reflected-xss block", "default-src 'none'; object-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self'; frame-src 'self'; form-action 'self'; reflected-xss block", xcsp);
     }
 
     /** Test the adminweb.war module that it returns X-FRAME-OPTIONS on the error page. */
@@ -111,10 +122,16 @@ public class HttpMethodsTest {
         // We will not be able to actually read this url, because we use port 8080, and adminweb requires client authentication,
         // But EJBCA will still return a "blank" page with the correct http header.
         HttpURLConnection con = getHttpURLConnection(httpBaseUrl+"/ejbca/adminweb/index.jsp");
-        String str = con.getHeaderField("X-FRAME-OPTIONS");
+        String xframe = con.getHeaderField("X-FRAME-OPTIONS");
+        String csp = con.getHeaderField("content-security-policy");
+        String xcsp = con.getHeaderField("x-content-security-policy");
         con.disconnect();
-        assertNotNull("Admin web error page should return X-FRAME-OPTIONS header", str);
-        assertEquals("Admin web error page should return X-FRAME-OPTIONS SAMEORIGIN", "SAMEORIGIN", str);
+        assertNotNull("Admin web error page should return X-FRAME-OPTIONS header", xframe);
+        assertNotNull("Admin web error page should return content-security-policy header", csp);
+        assertNotNull("Admin web error page should return x-content-security-policy header", xcsp);
+        assertEquals("Admin web error page should return X-FRAME-OPTIONS SAMEORIGIN", "SAMEORIGIN", xframe);
+        assertEquals("Admin web error page should return csp default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self'; frame-src 'self'; reflected-xss block", "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self'; frame-src 'self'; reflected-xss block", csp);
+        assertEquals("Admin web error page should return x-csp default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self'; frame-src 'self'; reflected-xss block", "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self'; frame-src 'self'; reflected-xss block", xcsp);
     }
 
     /** Test the webdist.war module. */

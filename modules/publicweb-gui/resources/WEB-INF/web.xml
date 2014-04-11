@@ -41,6 +41,20 @@
 	</filter-mapping>
     -->
     
+	<filter>
+		<filter-name>ContentSecurityPolicyFilter</filter-name>
+		<filter-class>org.owasp.filters.ContentSecurityPolicyFilter</filter-class>
+		<init-param>
+		    <param-name>objects</param-name>
+		    <param-value>yes</param-value>
+		</init-param>
+	</filter>
+	
+	<filter-mapping> 
+		<filter-name>ContentSecurityPolicyFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	    
     <servlet>
         <servlet-name>CertReqServlet</servlet-name>
         <servlet-class>org.ejbca.ui.web.pub.CertReqServlet</servlet-class>
