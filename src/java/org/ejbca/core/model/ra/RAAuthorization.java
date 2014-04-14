@@ -17,6 +17,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -45,6 +46,7 @@ public class RAAuthorization implements Serializable {
     private TreeMap<String, Integer> authprofilenames = null;
     private TreeMap<String, Integer> authcreateprofilenames = null;
 	private TreeMap<String, Integer> authviewprofilenames = null;
+	private List<Integer> authprofileswithmissingcas = null;
     private AuthenticationToken admin;
     private AccessControlSessionLocal authorizationsession;
     private ComplexAccessControlSession complexAccessControlSession;
@@ -176,7 +178,14 @@ public class RAAuthorization implements Serializable {
 	  	  authviewprofilenames = this.authEndEntityProfileNames(AccessRulesConstants.VIEW_RIGHTS);
 	  }
 	  return authviewprofilenames;
-	}    
+	}
+	
+	public List<Integer> getViewAuthorizedEndEntityProfilesWithMissingCAs() {
+	   if (authprofileswithmissingcas == null) {
+	       authprofileswithmissingcas = endEntityProfileSession.getAuthorizedEndEntityProfileIdsWithMissingCAs(admin);
+	   }
+	   return authprofileswithmissingcas;
+	}
     
     public void clear(){
       authcastring=null;
@@ -184,6 +193,7 @@ public class RAAuthorization implements Serializable {
       authprofilenames = null;
 	  authcreateprofilenames = null;
 	  authviewprofilenames = null;
+	  authprofileswithmissingcas = null;
     }
     
     
