@@ -46,6 +46,7 @@ public class CAAuthorization implements Serializable {
     private TreeMap<String, Integer> canames = null;
     private TreeMap<String, Integer> allcanames = null;
     private TreeMap<String, Integer> allprofilenames = null;
+    private List<Integer> profileswithmissingca = null;
     private AuthenticationToken admin;
     private CaSessionLocal caSession;
     private AccessControlSessionLocal authorizationsession;
@@ -79,9 +80,9 @@ public class CAAuthorization implements Serializable {
         profilenamesendentity = new TreeMap<String, Integer>();  
         Iterator<Integer> iter = null;
         if(usehardtokenprofiles) {         
-          iter = certificateProfileSession.getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_HARDTOKEN, getAuthorizedCAIds()).iterator();
+          iter = certificateProfileSession.getAuthorizedCertificateProfileIds(admin, CertificateConstants.CERTTYPE_HARDTOKEN).iterator();
         } else {
-		  iter = certificateProfileSession.getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_ENDENTITY, getAuthorizedCAIds()).iterator();
+		  iter = certificateProfileSession.getAuthorizedCertificateProfileIds(admin, CertificateConstants.CERTTYPE_ENDENTITY).iterator();
         }
         Map<Integer, String> idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap();
         while(iter.hasNext()){
@@ -95,7 +96,7 @@ public class CAAuthorization implements Serializable {
     public TreeMap<String, Integer> getAuthorizedSubCACertificateProfileNames(){
       if(profilenamessubca==null){
         profilenamessubca = new TreeMap<String, Integer>();  
-        Iterator<Integer> iter = certificateProfileSession.getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_SUBCA, getAuthorizedCAIds()).iterator();      
+        Iterator<Integer> iter = certificateProfileSession.getAuthorizedCertificateProfileIds(admin, CertificateConstants.CERTTYPE_SUBCA).iterator();      
         Map<Integer, String> idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap();
         while(iter.hasNext()){
           Integer id = (Integer) iter.next();
@@ -109,7 +110,7 @@ public class CAAuthorization implements Serializable {
     public TreeMap<String, Integer> getAuthorizedRootCACertificateProfileNames(){
       if(profilenamesrootca==null){
         profilenamesrootca = new TreeMap<String, Integer>();  
-        Iterator<Integer> iter = certificateProfileSession.getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_ROOTCA, getAuthorizedCAIds()).iterator();      
+        Iterator<Integer> iter = certificateProfileSession.getAuthorizedCertificateProfileIds(admin, CertificateConstants.CERTTYPE_ROOTCA).iterator();      
         Map<Integer, String> idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap();
         while(iter.hasNext()){
           Integer id = (Integer) iter.next();
@@ -129,12 +130,12 @@ public class CAAuthorization implements Serializable {
             allprofilenames = new TreeMap<String, Integer>();
         Iterator<Integer> iter= null;  
         if(includefixedhardtokenprofiles){
-          iter = certificateProfileSession.getAuthorizedCertificateProfileIds(0, getAuthorizedCAIds()).iterator();
+          iter = certificateProfileSession.getAuthorizedCertificateProfileIds(admin, 0).iterator();
         }else{
           ArrayList<Integer> certprofiles = new ArrayList<Integer>();
-		  certprofiles.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_ENDENTITY, getAuthorizedCAIds()));
-		  certprofiles.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_ROOTCA, getAuthorizedCAIds()));
-		  certprofiles.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_SUBCA, getAuthorizedCAIds()));
+		  certprofiles.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(admin, CertificateConstants.CERTTYPE_ENDENTITY));
+		  certprofiles.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(admin, CertificateConstants.CERTTYPE_ROOTCA));
+		  certprofiles.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(admin, CertificateConstants.CERTTYPE_SUBCA));
 		  iter = certprofiles.iterator();
         }
         Map<Integer, String> idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap();
@@ -155,7 +156,14 @@ public class CAAuthorization implements Serializable {
         }  
       }
       return allprofilenames;  
-    }    
+    }
+    
+    public List<Integer> getEditCertificateProfilesWithMissingCAs() {
+        if (profileswithmissingca == null) {
+            profileswithmissingca = certificateProfileSession.getAuthorizedCertificateProfileWithMissingCAs(admin);
+        }
+        return profileswithmissingca;
+    }
         
     
     
@@ -188,8 +196,10 @@ public class CAAuthorization implements Serializable {
       profilenamesendentity = null;
       profilenamessubca = null;
       profilenamesrootca = null;
+      profileswithmissingca = null;
       allprofilenames = null;
       canames=null;
       allcanames=null;
-    }    
+    }
+
 }

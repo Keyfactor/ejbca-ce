@@ -337,7 +337,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
         sb.append("End entity profiles: " + endEntityProfiles + "\n");
         String certificateProfiles = "";
         Collection<Integer> cps = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class)
-                .getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_ENDENTITY, cas);
+                .getAuthorizedCertificateProfileIds(getAuthenticationToken(), CertificateConstants.CERTTYPE_ENDENTITY);
         for (int cpid : cps) {
             certificateProfiles += (certificateProfiles.length() == 0 ? "" : ", ") + "\""
                     + EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfileName(cpid) + "\"";

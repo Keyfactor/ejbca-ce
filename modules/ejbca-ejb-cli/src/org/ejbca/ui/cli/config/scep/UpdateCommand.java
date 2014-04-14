@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.ui.cli.config.scep;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -122,12 +121,11 @@ public class UpdateCommand extends BaseScepConfigCommand {
         }
         sb.append("    " + ScepConfiguration.SCEP_RA_ENTITYPROFILE + " - possible values: " + existingEeps + "\n");
         
-        Collection<Integer> caids = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCAs(getAuthenticationToken());
         Map<Integer, String> certificateprofileidtonamemap = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class)
                 .getCertificateProfileIdToNameMap();
         StringBuilder existingCps = new StringBuilder();
         for (Integer profileId : EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class).getAuthorizedCertificateProfileIds(
-                CertificateConstants.CERTTYPE_ENDENTITY, caids)) {
+                getAuthenticationToken(), CertificateConstants.CERTTYPE_ENDENTITY)) {
             existingCps.append((existingCps.length() == 0 ? "" : " | ") + certificateprofileidtonamemap.get(profileId));
         }
         sb.append("    " + ScepConfiguration.SCEP_RA_CERTPROFILE + " - possible values: ProfileDefault | " + existingCps + "\n");

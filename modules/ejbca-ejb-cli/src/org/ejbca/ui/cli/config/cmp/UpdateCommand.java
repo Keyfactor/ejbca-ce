@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.ui.cli.config.cmp;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -127,12 +126,11 @@ public class UpdateCommand extends BaseCmpConfigCommand {
             existingEeps.append((existingEeps.length() == 0 ? "" : divider) + endentityprofileidtonamemap.get(profileId));
         }
         sb.append("    " + CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE + " - possible values: " + existingEeps + "\n");
-        Collection<Integer> caids = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCAs(getAuthenticationToken());
         Map<Integer, String> certificateprofileidtonamemap = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class)
                 .getCertificateProfileIdToNameMap();
         StringBuilder existingCps = new StringBuilder();
         for (Integer profileId : EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class).getAuthorizedCertificateProfileIds(
-                CertificateConstants.CERTTYPE_ENDENTITY, caids)) {
+                getAuthenticationToken(), CertificateConstants.CERTTYPE_ENDENTITY)) {
             existingCps.append((existingCps.length() == 0 ? "" : " | ") + certificateprofileidtonamemap.get(profileId));
         }
         sb.append("    " + CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE + " - possible values: ProfileDefault | " + existingCps + "\n");

@@ -39,6 +39,8 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
@@ -66,6 +68,8 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
 
+    @EJB
+    private CaSessionLocal caSession;
     @EJB
     private AccessControlSessionLocal accessSession;
     @EJB
@@ -220,11 +224,12 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
             throw new EJBException(f);
         }
     }
-
+    
     @Override
-    public Collection<Integer> getAuthorizedCertificateProfileIds(final int certprofiletype, final Collection<Integer> authorizedCaIds) {
+    public Collection<Integer> getAuthorizedCertificateProfileIds(final AuthenticationToken admin, final int certprofiletype) {
         final ArrayList<Integer> returnval = new ArrayList<Integer>();
-        final HashSet<Integer> authorizedcaids = new HashSet<Integer>(authorizedCaIds);
+        final HashSet<Integer> authorizedcaids = new HashSet<Integer>(caSession.getAuthorizedCAs(admin));
+        final HashSet<Integer> allcaids = new HashSet<Integer>(caSession.getAvailableCAs());
 
         // Add fixed certificate profiles.
         if (certprofiletype == 0 || certprofiletype == CertificateConstants.CERTTYPE_ENDENTITY
@@ -245,6 +250,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
             returnval.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENENC));
             returnval.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENSIGN));
         }
+        final boolean rootAccess = accessSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource());
         for (final Entry<Integer,CertificateProfile> cpEntry : profileCache.getProfileCache(entityManager).entrySet()) {
                 final CertificateProfile profile = cpEntry.getValue();
             // Check if all profiles available CAs exists in authorizedcaids.          
@@ -256,7 +262,8 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
                         allexists = true;
                         break;
                     }
-                    if (!authorizedcaids.contains(nextcaid)) {
+                    // superadmin should be able to access profiles with missing CA Ids
+                    if (!authorizedcaids.contains(nextcaid) && (!rootAccess || allcaids.contains(nextcaid))) {
                         allexists = false;
                         break;
                     }
@@ -268,6 +275,31 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         }
         return returnval;
     } // getAuthorizedCertificateProfileIds
+    
+    @Override
+    public List<Integer> getAuthorizedCertificateProfileWithMissingCAs(final AuthenticationToken admin) {
+        final ArrayList<Integer> returnval = new ArrayList<Integer>();
+        if (!accessSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource())) {
+            return returnval;
+        }
+        
+        final HashSet<Integer> allcaids = new HashSet<Integer>(caSession.getAvailableCAs());
+        allcaids.add(CertificateProfile.ANYCA);
+        for (final Entry<Integer,CertificateProfile> cpEntry : profileCache.getProfileCache(entityManager).entrySet()) {
+            final CertificateProfile profile = cpEntry.getValue();
+            boolean nonExistingCA = false;
+            for (final Integer caid : profile.getAvailableCAs()) {
+                if (!allcaids.contains(caid)) {
+                    nonExistingCA = true;
+                    break;
+                }
+            }
+            if (nonExistingCA) {
+                returnval.add(cpEntry.getKey());
+            }
+        }
+        return returnval;
+    } // getAuthorizedCertificateProfileWithMissingCAs
 
     @Override
     public CertificateProfile getCertificateProfile(final int id) {

@@ -234,8 +234,7 @@ public abstract class BaseCaAdminCommand extends EjbcaCliUserCommandBase {
         final StringBuilder existingCas = new StringBuilder();
         try {
             for (final Integer nextId : EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class)
-                    .getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_ENDENTITY,
-                            EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCAs(getAuthenticationToken()))) {
+                    .getAuthorizedCertificateProfileIds(getAuthenticationToken(), CertificateConstants.CERTTYPE_ENDENTITY)) {
                 final String caName = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfileName(
                         nextId.intValue());
                 if (existingCas.length() > 0) {

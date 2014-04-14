@@ -22,7 +22,7 @@ import java.net.URLEncoder;
 import java.util.Collection;
 
 import org.apache.log4j.Logger;
-import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
@@ -66,8 +66,7 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
             return CommandResult.FUNCTIONAL_FAILURE;
         }
         Collection<Integer> certprofids = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class)
-                .getAuthorizedCertificateProfileIds(0,
-                        EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCAs(getAuthenticationToken()));
+                .getAuthorizedCertificateProfileIds(getAuthenticationToken(), 0);
         Collection<Integer> endentityprofids = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class)
                 .getAuthorizedEndEntityProfileIds(getAuthenticationToken());
 

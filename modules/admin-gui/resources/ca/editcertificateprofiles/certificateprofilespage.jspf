@@ -1,5 +1,6 @@
 <%
-  TreeMap certificateprofiles     = cabean.getEditCertificateProfileNames(); 
+  TreeMap<String,Integer> certificateprofiles = cabean.getEditCertificateProfileNames();
+  List<Integer> withMissingCAs = cabean.getEditCertificateProfilesWithMissingCAs(); 
 
 %>
 
@@ -127,11 +128,13 @@
     <tr> 
       <td width="40%">
         <select name="<%=SELECT_CERTIFICATEPROFILES%>" style="width: 50em" size="15"  >
-          <% Iterator iter = certificateprofiles.keySet().iterator();
-             while(iter.hasNext()){
-               String profilename = (String) iter.next(); %>     
+          <% for (Entry<String,Integer> entry : certificateprofiles.entrySet()) {
+               String profilename = entry.getKey();
+               int profileid = entry.getValue();
+               String displayname = profilename + (withMissingCAs.contains(profileid) ? " "+ejbcawebbean.getText("MISSINGCAIDS") : "");
+               %>     
             	<option value="<c:out value="<%= profilename %>"/>"> 
-                <c:out value="<%= profilename %>"/>
+                <c:out value="<%= displayname %>"/>
              </option>
           <%}%>
         </select>

@@ -155,7 +155,7 @@ public class InformationMemory implements Serializable {
     }
     
     /**
-     * 
+     * Returns a list of authorized end-entity profiles ids of profiles with missing CA Ids.
      */
     public List<Integer> getAuthorizedEndEntityProfileIdsWithMissingCAs() {
         return this.raauthorization.getViewAuthorizedEndEntityProfilesWithMissingCAs();
@@ -207,6 +207,13 @@ public class InformationMemory implements Serializable {
      */
     public TreeMap<String, Integer> getEditCertificateProfileNames() {
         return this.caauthorization.getEditCertificateProfileNames(getGlobalConfiguration().getIssueHardwareTokens());
+    }
+    
+    /**
+     * Returns a list of authorized certificate profiles ids of profiles with missing CA Ids.
+     */
+    public List<Integer> getEditCertificateProfilesWithMissingCAs() {
+        return this.caauthorization.getEditCertificateProfilesWithMissingCAs();
     }
 
     /**

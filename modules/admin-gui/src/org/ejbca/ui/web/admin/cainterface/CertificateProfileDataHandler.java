@@ -156,19 +156,18 @@ public class CertificateProfileDataHandler implements Serializable {
     private boolean authorizedToProfile(CertificateProfile profile, boolean editcheck) {
         boolean returnval = false;
 
-        boolean issuperadministrator = authorizationsession.isAuthorizedNoLogging(administrator, StandardRules.ROLE_ROOT.resource());
+        final boolean issuperadministrator = authorizationsession.isAuthorizedNoLogging(administrator, StandardRules.ROLE_ROOT.resource());
 
         boolean editauth = true; // will be set to false if we should check it and we are not authorized
         if (editcheck) {
             editauth = authorizationsession.isAuthorizedNoLogging(administrator, "/ca_functionality/edit_certificate_profiles");
         }
         if (editauth) {
-            HashSet<Integer> authorizedcaids = new HashSet<Integer>(caSession.getAuthorizedCAs(administrator));
             if (profile != null) {
                 if (!issuperadministrator && profile.getType() != CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER) {
                     returnval = false;
                 } else {
-                    Collection<Integer> availablecas = profile.getAvailableCAs();
+                    final Collection<Integer> availablecas = profile.getAvailableCAs();
                     if (availablecas.contains(Integer.valueOf(CertificateProfile.ANYCA))) {
                         if (issuperadministrator && editcheck) {
                             returnval = true;
@@ -177,7 +176,15 @@ public class CertificateProfileDataHandler implements Serializable {
                             returnval = true;
                         }
                     } else {
-                        returnval = authorizedcaids.containsAll(availablecas);
+                        final HashSet<Integer> authorizedcaids = new HashSet<Integer>(caSession.getAuthorizedCAs(administrator));
+                        final HashSet<Integer> allcaids = new HashSet<Integer>(caSession.getAvailableCAs());
+                        returnval = true; // if no unauthorized ca id can be found
+                        for (int caid : availablecas) {
+                            // superadmin is allowed to see/edit profiles with non-existent CA Ids
+                            if (!authorizedcaids.contains(caid) && (!issuperadministrator || allcaids.contains(caid))) {
+                                returnval = false;
+                            }
+                        }
                     }
                 }
             }        	
