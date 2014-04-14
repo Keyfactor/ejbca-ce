@@ -277,9 +277,12 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     public Collection<Integer> getAuthorizedEndEntityProfileIds(final AuthenticationToken admin) {
     	final ArrayList<Integer> returnval = new ArrayList<Integer>();
     	final HashSet<Integer> authorizedcaids = new HashSet<Integer>(caSession.getAuthorizedCAs(admin));
+    	final HashSet<Integer> allcaids = new HashSet<Integer>(caSession.getAvailableCAs());
 		// If this is the special value ALLCAs we are authorized
     	authorizedcaids.add(Integer.valueOf(SecConst.ALLCAS));
-        if (authSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource())) {
+    	
+    	final boolean rootAccess = authSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource());
+        if (rootAccess) {
             returnval.add(SecConst.EMPTY_ENDENTITYPROFILE);
         }
         try {
@@ -289,7 +292,9 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         		if (availableCasString != null) {
         			boolean authorizedToProfile = true;
         			for (final String caidString : availableCasString.split(EndEntityProfile.SPLITCHAR)) {
-        				if (!authorizedcaids.contains(Integer.parseInt(caidString))) {
+        			    final int caIdInt = Integer.parseInt(caidString);
+        			    // with root rule access you can edit profiles with missing CA ids
+        				if (!authorizedcaids.contains(caIdInt) && (!rootAccess || allcaids.contains(caIdInt))) {
         					authorizedToProfile = false;
         					if (LOG.isDebugEnabled()) {
         						LOG.debug("Profile " + entry.getKey().toString() + " not authorized");
@@ -302,6 +307,40 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         			}
         		}
         	}
+        } catch (Exception e) {
+            LOG.error(INTRES.getLocalizedMessage("ra.errorgetids"), e);
+        }
+        return returnval;
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public List<Integer> getAuthorizedEndEntityProfileIdsWithMissingCAs(final AuthenticationToken admin) {
+        final ArrayList<Integer> returnval = new ArrayList<Integer>();
+        final HashSet<Integer> allcaids = new HashSet<Integer>(caSession.getAvailableCAs());
+        allcaids.add(Integer.valueOf(SecConst.ALLCAS));
+        if (!authSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource())) {
+            // we can only see profiles with missing CA Ids if we have root rule access
+            return returnval;
+        }
+        
+        try {
+            for (final Entry<Integer, EndEntityProfile> entry : profileCache.getProfileCache(entityManager).entrySet()) {
+                final String availableCasString = entry.getValue().getValue(EndEntityProfile.AVAILCAS, 0);
+                if (availableCasString != null) {
+                    boolean nonExistingCA = false;
+                    for (final String caidString : availableCasString.split(EndEntityProfile.SPLITCHAR)) {
+                        final int caIdInt = Integer.parseInt(caidString);
+                        // with root rule access you can edit profiles with missing CA ids
+                        if (!allcaids.contains(caIdInt)) {
+                            nonExistingCA = true;
+                        }
+                    }
+                    if (nonExistingCA) {
+                        returnval.add(entry.getKey());
+                    }
+                }
+            }
         } catch (Exception e) {
             LOG.error(INTRES.getLocalizedMessage("ra.errorgetids"), e);
         }

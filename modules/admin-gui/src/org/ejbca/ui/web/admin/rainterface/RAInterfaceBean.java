@@ -486,6 +486,10 @@ public class RAInterfaceBean implements Serializable {
     public TreeMap<String,Integer> getAuthorizedEndEntityProfileNames() {
     	return informationmemory.getAuthorizedEndEntityProfileNames();
     }
+    
+    public List<Integer> getAuthorizedEndEntityProfileIdsWithMissingCAs() {
+        return informationmemory.getAuthorizedEndEntityProfileIdsWithMissingCAs();
+    }
 
     /** Returns the profile name from id proxied */
     public String getEndEntityProfileName(int profileid) {

@@ -1,5 +1,6 @@
 <% 
-  TreeMap profiles     = ejbcarabean.getAuthorizedEndEntityProfileNames();
+  TreeMap<String,Integer> profiles     = ejbcarabean.getAuthorizedEndEntityProfileNames();
+  List<Integer> withMissingCAs = ejbcarabean.getAuthorizedEndEntityProfileIdsWithMissingCAs();
 
 %>
 
@@ -51,11 +52,13 @@
     <tr> 
       <td width="40%">
         <select name="<%=SELECT_PROFILE%>" style="width: 50em" size="15"  >
-          <% Iterator iter = profiles.keySet().iterator();
-             while(iter.hasNext()){
-               String profilename = (String) iter.next();%>
+          <% for (Entry<String,Integer> entry : profiles.entrySet()) {
+               String profilename = entry.getKey();
+               int profileid = entry.getValue();
+               String displayname = profilename + (withMissingCAs.contains(profileid) ? " "+ejbcawebbean.getText("MISSINGCAIDS") : "");
+               %>
             <option value="<c:out value="<%= profilename %>"/>"> 
-                <c:out value="<%= profilename %>"/>
+                <c:out value="<%= displayname %>"/>
              </option>
           <%}%>
         </select>
