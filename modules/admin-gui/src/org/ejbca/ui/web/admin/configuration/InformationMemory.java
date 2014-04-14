@@ -153,6 +153,13 @@ public class InformationMemory implements Serializable {
     public TreeMap<String, Integer> getAuthorizedEndEntityProfileNames() {
         return this.raauthorization.getAuthorizedEndEntityProfileNames();
     }
+    
+    /**
+     * 
+     */
+    public List<Integer> getAuthorizedEndEntityProfileIdsWithMissingCAs() {
+        return this.raauthorization.getViewAuthorizedEndEntityProfilesWithMissingCAs();
+    }
 
     /**
      * Returns end entity profile names with create rights as a treemap of name (String) -> id (Integer)

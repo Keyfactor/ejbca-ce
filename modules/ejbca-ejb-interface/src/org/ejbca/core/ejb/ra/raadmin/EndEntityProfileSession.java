@@ -98,6 +98,12 @@ public interface EndEntityProfileSession {
     /** Retrieves a Collection of id:s (Integer) to authorized profiles. */
     Collection<Integer> getAuthorizedEndEntityProfileIds(AuthenticationToken admin);
 
+    /**
+     * Retrives a list of ids to profiles with missing CA ids, if the admin has root rule access.
+     * Otherwise an empty list is returned.
+     */
+    List<Integer> getAuthorizedEndEntityProfileIdsWithMissingCAs(final AuthenticationToken admin);
+
     /** @return mapping of profile id (Integer) to profile name (String). */
     Map<Integer, String> getEndEntityProfileIdToNameMap();
 
