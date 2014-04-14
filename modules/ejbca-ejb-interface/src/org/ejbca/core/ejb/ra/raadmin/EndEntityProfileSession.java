@@ -99,7 +99,7 @@ public interface EndEntityProfileSession {
     Collection<Integer> getAuthorizedEndEntityProfileIds(AuthenticationToken admin);
 
     /**
-     * Retrives a list of ids to profiles with missing CA ids, if the admin has root rule access.
+     * Retrives a list of ids to profiles with non-existent CA ids, if the admin has root rule access.
      * Otherwise an empty list is returned.
      */
     List<Integer> getAuthorizedEndEntityProfileIdsWithMissingCAs(final AuthenticationToken admin);
