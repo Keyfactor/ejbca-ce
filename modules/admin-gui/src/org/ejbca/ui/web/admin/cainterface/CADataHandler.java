@@ -196,9 +196,11 @@ public class CADataHandler implements Serializable {
         
         caadminsession.initializeCa(administrator, caInfo);
         
-        // Always generate certificates for extended services, so they can be enabled in one step
-        renewAndRevokeXKMSCertificate(caInfo.getCAId());
-        renewAndRevokeCmsCertificate(caInfo.getCAId());
+        if (caInfo.getSignedBy() != CAInfo.SIGNEDBYEXTERNALCA) {
+            // Always generate certificates for extended services, so they can be enabled in one step
+            renewAndRevokeXKMSCertificate(caInfo.getCAId());
+            renewAndRevokeCmsCertificate(caInfo.getCAId());
+        }
         
         info.cAsEdited();
     }
