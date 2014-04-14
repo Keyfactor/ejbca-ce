@@ -102,12 +102,11 @@ public class CaChangeCertProfileCommand extends BaseCaAdminCommand {
         StringBuffer sb = new StringBuffer();
         sb.append(getCommandDescription() + "\n\n");
         sb.append(getCaList());
-        List<Integer> cas = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCAs(getAuthenticationToken());
         // Print available Root CA and Sub CA profiles
         Collection<Integer> cpssub = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class)
-                .getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_SUBCA, cas);
+                .getAuthorizedCertificateProfileIds(getAuthenticationToken(), CertificateConstants.CERTTYPE_SUBCA);
         Collection<Integer> cpsroot = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class)
-                .getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_ROOTCA, cas);
+                .getAuthorizedCertificateProfileIds(getAuthenticationToken(), CertificateConstants.CERTTYPE_ROOTCA);
         sb.append("Root CA profiles:\n");
         StringBuilder rootCaProfiles = new StringBuilder();
         for (Integer id : cpsroot) {
