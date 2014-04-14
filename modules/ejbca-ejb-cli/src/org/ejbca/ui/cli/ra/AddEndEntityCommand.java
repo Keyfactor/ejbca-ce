@@ -313,12 +313,11 @@ public class AddEndEntityCommand extends BaseRaCommand {
         }
         sb.append("Existing cas: " + existingCas + "\n");
 
-        Collection<Integer> caids = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAuthorizedCAs(getAuthenticationToken());
         Map<Integer, String> certificateprofileidtonamemap = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class)
                 .getCertificateProfileIdToNameMap();
         StringBuilder existingCps = new StringBuilder();
         for (Integer id : EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class).getAuthorizedCertificateProfileIds(
-                CertificateConstants.CERTTYPE_ENDENTITY, caids)) {
+                getAuthenticationToken(), CertificateConstants.CERTTYPE_ENDENTITY)) {
             existingCps.append((existingCps.length() == 0 ? "" : ", ") + certificateprofileidtonamemap.get(id));
         }
         sb.append("Existing certificate profiles: " + existingCps + "\n");

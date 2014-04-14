@@ -294,13 +294,12 @@ public class EditServiceManagedBean extends BaseManagedBean {
      */
     public Collection<SelectItem> getCertificateProfiles() {
         TreeMap<String, SelectItem> certificateProfiles = new TreeMap<String, SelectItem>();
-        Collection<Integer> caIds = ejb.getCaSession().getAuthorizedCAs(getAdmin());
 
         final Integer[] certificateProfileTypes = new Integer[] { CertificateConstants.CERTTYPE_ENDENTITY,
                 CertificateConstants.CERTTYPE_ROOTCA, CertificateConstants.CERTTYPE_SUBCA };
         
         for (Integer certificateProfileType : certificateProfileTypes) {
-            Collection<Integer> profiles = ejb.getCertificateProfileSession().getAuthorizedCertificateProfileIds(certificateProfileType, caIds);
+            Collection<Integer> profiles = ejb.getCertificateProfileSession().getAuthorizedCertificateProfileIds(getAdmin(), certificateProfileType);
             for (Integer certificateProfile : profiles) {
                 String profileName = ejb.getCertificateProfileSession().getCertificateProfileName(
                         certificateProfile);
@@ -309,7 +308,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
         }
         //Only add hardprofile certificate profiles if enabled. 
         if( ( (GlobalConfiguration) ejb.getGlobalConfigurationSession().getCachedConfiguration(Configuration.GlobalConfigID)).getIssueHardwareTokens()) {
-            Collection<Integer> profiles = ejb.getCertificateProfileSession().getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_HARDTOKEN, caIds);
+            Collection<Integer> profiles = ejb.getCertificateProfileSession().getAuthorizedCertificateProfileIds(getAdmin(), CertificateConstants.CERTTYPE_HARDTOKEN);
             for (Integer certificateProfile : profiles) {
                 String profileName = ejb.getCertificateProfileSession().getCertificateProfileName(
                         certificateProfile);

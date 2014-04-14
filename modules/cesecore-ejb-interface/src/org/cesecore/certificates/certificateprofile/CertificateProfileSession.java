@@ -89,9 +89,9 @@ public interface CertificateProfileSession {
             List<Integer> authorizedCaIds) throws CertificateProfileExistsException, CertificateProfileDoesNotExistException, AuthorizationDeniedException;
 
     /**
-     * Retrieves a Collection of id:s (Integer) to authorized profiles. The method does not make any authorization checks itself, only 
-     * matches certificate profiles with the authorizedCaIds parameter.
+     * Retrieves a Collection of id:s (Integer) to authorized profiles.
      * 
+     * @param admin Administrator performing the operation
      * @param certprofiletype
      *            should be either CertificateConstants.CERTTYPE_ENDENTITY,
      *            CertificateConstants.CERTTYPE_SUBCA,
@@ -99,12 +99,16 @@ public interface CertificateProfileSession {
      *            CertificateConstants.CERTTYPE_HARDTOKEN (i.e EndEntity
      *            certificates and Hardtoken fixed profiles) or 0 for all.
      *            Retrieves certificate profile names sorted.
-     * @param authorizedCaIds
-     *            Collection<Integer> of authorized CA Ids for the specified Admin
      * @return Collection of id:s (Integer)
      */
-    public Collection<Integer> getAuthorizedCertificateProfileIds(int certprofiletype,
-            Collection<Integer> authorizedCaIds);
+    Collection<Integer> getAuthorizedCertificateProfileIds(AuthenticationToken admin, int certprofiletype);
+
+    /**
+     * Retrieves a Collection of id:s (Integer) of all certificate profiles which have non-existent CA Ids.
+     * This requires access to the root resource (i.e. superadmin access). If access is denied then an empty
+     * list is returned.
+     */
+    List<Integer> getAuthorizedCertificateProfileWithMissingCAs(AuthenticationToken admin);
 
     /**
      * Finds a certificate profile by id.

@@ -301,6 +301,10 @@ public class CAInterfaceBean implements Serializable {
     public TreeMap<String, Integer> getEditCertificateProfileNames() {
       return informationmemory.getEditCertificateProfileNames();
     }
+    
+    public List<Integer> getEditCertificateProfilesWithMissingCAs() {
+      return informationmemory.getEditCertificateProfilesWithMissingCAs();
+    }
 
     /** Returns the profile name from id proxied */
     public String getCertificateProfileName(int profileid) {
@@ -1354,7 +1358,7 @@ public class CAInterfaceBean implements Serializable {
         final Map<Integer, String> idToNameMap = certificateProfileSession.getCertificateProfileIdToNameMap();
         final List<Entry<String,String>> ret = new ArrayList<Entry<String,String>>();
 	    for (int type : types) {
-	        final Collection<Integer> ids = certificateProfileSession.getAuthorizedCertificateProfileIds(type, caSession.getAuthorizedCAs(authenticationToken));
+	        final Collection<Integer> ids = certificateProfileSession.getAuthorizedCertificateProfileIds(authenticationToken, type);
 	        for (final Integer id : ids) {
 	            ret.add(new SimpleEntry<String,String>(id.toString(), (type==CertificateConstants.CERTTYPE_ROOTCA ? "(RootCAs) " : "(SubCAs) ") + idToNameMap.get(id)));
 	        }

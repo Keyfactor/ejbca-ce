@@ -331,7 +331,6 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
                     boolean nonExistingCA = false;
                     for (final String caidString : availableCasString.split(EndEntityProfile.SPLITCHAR)) {
                         final int caIdInt = Integer.parseInt(caidString);
-                        // with root rule access you can edit profiles with missing CA ids
                         if (!allcaids.contains(caIdInt)) {
                             nonExistingCA = true;
                         }
