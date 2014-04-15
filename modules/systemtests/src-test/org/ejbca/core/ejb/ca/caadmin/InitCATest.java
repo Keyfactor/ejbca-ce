@@ -76,8 +76,11 @@ import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionRemote;
+import org.ejbca.core.ejb.services.ServiceSessionRemote;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.userdatasource.CustomUserDataSourceContainer;
+import org.ejbca.core.model.services.BaseWorker;
+import org.ejbca.core.model.services.ServiceConfiguration;
 import org.junit.Test;
 
 /**
@@ -100,12 +103,14 @@ public class InitCATest extends CaTestCase {
     private final InternalKeyBindingMgmtSessionRemote keyBindMgmtSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
     private final RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
     private final RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
+    private final ServiceSessionRemote serviceSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ServiceSessionRemote.class);
     private final UserDataSourceSessionRemote userDataSourceSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserDataSourceSessionRemote.class);
 
     private static final String RENAME_CA = "testInitializeCaAndChangeSubjectDn";
     private static final String CERT_PROFILE_NAME = "TestChangeSubjectDN_CP";
     private static final String ENDENTITY_PROFILE_NAME = "TestChangeSubjectDN_EEP";
     private static final String DATASOURCE_NAME = "TestChangeSubjectDN_UDS";
+    private static final String SERVICE_NAME = "TestChangeSubjectDN_Service";
     private static final String KEYBINDING_NAME = "TestChangeSubjectDN_IKB";
     private static final String ROLE_NAME = "TestChangeSubjectDN_Role";
     private static final String CMP_ALIAS = "TestChangeSubjectDN_CMP";
@@ -182,6 +187,14 @@ public class InitCATest extends CaTestCase {
             userdatasource.setApplicableCAs(new ArrayList<Integer>(Collections.singletonList(origCaId)));
             userDataSourceSession.addUserDataSource(admin, DATASOURCE_NAME, userdatasource);
             
+            ServiceConfiguration sc = new ServiceConfiguration();
+            Properties workerProperties = new Properties();
+            workerProperties.put(BaseWorker.PROP_CAIDSTOCHECK, "1234;"+origCaId);
+            sc.setWorkerProperties(workerProperties);
+            sc.setPinToNodes(new String[] {"some","hosts"});
+            sc.setActive(false);
+            serviceSession.addService(admin, SERVICE_NAME, sc);
+            
             final CAToken caToken = x509CaInfo.getCAToken();
             final Map<String, Serializable> dataMap = new LinkedHashMap<String, Serializable>();
             final List<InternalKeyBindingTrustEntry> trustedcerts = new ArrayList<InternalKeyBindingTrustEntry>();
@@ -224,6 +237,11 @@ public class InitCATest extends CaTestCase {
             
             userdatasource = (CustomUserDataSourceContainer)userDataSourceSession.getUserDataSource(admin, DATASOURCE_NAME);
             assertEquals("CAId was not updated in user data source.", newCaId, (int)userdatasource.getApplicableCAs().iterator().next());
+            
+            final int serviceId = serviceSession.getServiceId(SERVICE_NAME);
+            sc = serviceSession.getServiceConfiguration(admin, serviceId);
+            workerProperties = sc.getWorkerProperties();
+            assertEquals("CAIds were not updated (or were incorrect) in service.", "1234;"+newCaId, workerProperties.getProperty(BaseWorker.PROP_CAIDSTOCHECK));
             
             final InternalKeyBindingInfo keybind = keyBindMgmtSession.getInternalKeyBindingInfo(admin, keybindId);
             assertEquals("CAId was not updated in keybinding trusted certificate reference.", newCaId, keybind.getTrustedCertificateReferences().get(0).getCaId());
@@ -317,6 +335,7 @@ public class InitCATest extends CaTestCase {
         certificateProfileSession.removeCertificateProfile(admin, CERT_PROFILE_NAME);
         endEntityProfileSession.removeEndEntityProfile(admin, ENDENTITY_PROFILE_NAME);
         userDataSourceSession.removeUserDataSource(admin, DATASOURCE_NAME);
+        serviceSession.removeService(admin, SERVICE_NAME);
         final Integer keybindIdToDelete = keyBindMgmtSession.getIdFromName(KEYBINDING_NAME);
         if (keybindIdToDelete != null) {
             keyBindMgmtSession.deleteInternalKeyBinding(admin, keybindIdToDelete);
