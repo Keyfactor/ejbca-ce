@@ -165,6 +165,7 @@ import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
+import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -179,6 +180,8 @@ import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
+import org.ejbca.core.model.services.BaseWorker;
+import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.core.protocol.certificatestore.CertificateCacheFactory;
 import org.ejbca.cvc.CardVerifiableCertificate;
 
@@ -226,6 +229,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     private RevocationSessionLocal revocationSession;
     @EJB
     private RoleManagementSessionLocal roleManagementSession;
+    @EJB
+    private ServiceSessionLocal serviceSession;
     @EJB
     private SecurityEventsLoggerSessionLocal auditSession;
     @EJB
@@ -418,7 +423,28 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
         
         // Update Services
-        // TODO CRL Updater, Certificate Expiration Checker, User Password Expiration Service, Renew CA Service
+        final Map<Integer,String> services = serviceSession.getServiceIdToNameMap();
+        for (String serviceName : services.values()) {
+            final ServiceConfiguration serviceConf = serviceSession.getService(serviceName);
+            final Properties workerProps = serviceConf.getWorkerProperties();
+            final String idsToCheckStr = workerProps.getProperty(BaseWorker.PROP_CAIDSTOCHECK);
+            if (!StringUtils.isEmpty(idsToCheckStr)) {
+                boolean changed = false;
+                final String[] caIds = idsToCheckStr.split(";");
+                for (int i = 0; i < caIds.length; i++) {
+                    if (Integer.parseInt(caIds[i]) == fromId) {
+                        caIds[i] = String.valueOf(toId);
+                        changed = true;
+                    }
+                }
+                
+                if (changed) {
+                    workerProps.setProperty(BaseWorker.PROP_CAIDSTOCHECK, StringUtils.join(caIds, ';'));
+                    serviceConf.setWorkerProperties(workerProps);
+                    serviceSession.changeService(authenticationToken, serviceName, serviceConf, false);
+                }
+            }
+        }
         
         // Update Internal Key Bindings
         Map<String,Map<String,InternalKeyBindingProperty<?>>> keyBindTypes = keyBindMgmtSession.getAvailableTypesAndProperties();
