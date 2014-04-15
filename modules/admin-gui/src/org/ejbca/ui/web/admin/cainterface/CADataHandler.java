@@ -14,7 +14,6 @@
 package org.ejbca.ui.web.admin.cainterface;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
