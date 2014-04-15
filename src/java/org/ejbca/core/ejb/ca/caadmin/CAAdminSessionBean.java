@@ -230,8 +230,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @EJB
     private RoleManagementSessionLocal roleManagementSession;
     @EJB
-    private ServiceSessionLocal serviceSession;
-    @EJB
     private SecurityEventsLoggerSessionLocal auditSession;
     @EJB
     private UserDataSourceSessionLocal userDataSourceSession;
@@ -423,25 +421,28 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
         
         // Update Services
-        final Map<Integer,String> services = serviceSession.getServiceIdToNameMap();
-        for (String serviceName : services.values()) {
-            final ServiceConfiguration serviceConf = serviceSession.getService(serviceName);
-            final Properties workerProps = serviceConf.getWorkerProperties();
-            final String idsToCheckStr = workerProps.getProperty(BaseWorker.PROP_CAIDSTOCHECK);
-            if (!StringUtils.isEmpty(idsToCheckStr)) {
-                boolean changed = false;
-                final String[] caIds = idsToCheckStr.split(";");
-                for (int i = 0; i < caIds.length; i++) {
-                    if (Integer.parseInt(caIds[i]) == fromId) {
-                        caIds[i] = String.valueOf(toId);
-                        changed = true;
+        ServiceSessionLocal serviceSession = getServiceSession();
+        if (serviceSession != null) {
+            final Map<Integer,String> services = serviceSession.getServiceIdToNameMap();
+            for (String serviceName : services.values()) {
+                final ServiceConfiguration serviceConf = serviceSession.getService(serviceName);
+                final Properties workerProps = serviceConf.getWorkerProperties();
+                final String idsToCheckStr = workerProps.getProperty(BaseWorker.PROP_CAIDSTOCHECK);
+                if (!StringUtils.isEmpty(idsToCheckStr)) {
+                    boolean changed = false;
+                    final String[] caIds = idsToCheckStr.split(";");
+                    for (int i = 0; i < caIds.length; i++) {
+                        if (Integer.parseInt(caIds[i]) == fromId) {
+                            caIds[i] = String.valueOf(toId);
+                            changed = true;
+                        }
                     }
-                }
-                
-                if (changed) {
-                    workerProps.setProperty(BaseWorker.PROP_CAIDSTOCHECK, StringUtils.join(caIds, ';'));
-                    serviceConf.setWorkerProperties(workerProps);
-                    serviceSession.changeService(authenticationToken, serviceName, serviceConf, false);
+                    
+                    if (changed) {
+                        workerProps.setProperty(BaseWorker.PROP_CAIDSTOCHECK, StringUtils.join(caIds, ';'));
+                        serviceConf.setWorkerProperties(workerProps);
+                        serviceSession.changeService(authenticationToken, serviceName, serviceConf, false);
+                    }
                 }
             }
         }
@@ -567,6 +568,22 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             // Non EJB 3.1 app servers
             if (log.isDebugEnabled()) {
                 log.debug("Could not look up end-entity management session", e);
+            }
+            return null;
+        }
+    }
+    
+    /**
+     * Tries to get an ServiceSession.
+     * @see getEndEntityManagementSession
+     */
+    private ServiceSessionLocal getServiceSession() {
+        try {
+            return (ServiceSessionLocal)sessionContext.lookup("java:global/ejbca/ejbca-ejb/ServiceSessionBean!org.ejbca.core.ejb.services.ServiceSessionLocal");
+        } catch (Exception e) {
+            // Non EJB 3.1 app servers
+            if (log.isDebugEnabled()) {
+                log.debug("Could not look up ServiceSession", e);
             }
             return null;
         }
