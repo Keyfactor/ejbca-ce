@@ -42,8 +42,9 @@ import org.apache.log4j.Logger;
  * 
  * @version $Id$
  */
-public class CompressedCollection<T extends Serializable> implements Collection<T> {
+public class CompressedCollection<T extends Serializable> implements Collection<T> , Serializable {
 
+    private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(CompressedCollection.class);
 
     private ByteArrayOutputStream baos = null;
@@ -160,8 +161,8 @@ public class CompressedCollection<T extends Serializable> implements Collection<
         return size==0;
     }
 
-    @Override
-    public Iterator<T> iterator() {
+    /** Signal that no more data will be added to this collection. Call before Serialization. */
+    public void closeForWrite() {
         if (compressedData==null) {
             if (oos==null) {
                 // Nothing was added
@@ -182,6 +183,11 @@ public class CompressedCollection<T extends Serializable> implements Collection<
                 }
             }
         }
+    }
+
+    @Override
+    public Iterator<T> iterator() {
+        closeForWrite();
         // Create a new decompression stream over the data that belongs to the Iterator
         final ByteArrayInputStream bais = new ByteArrayInputStream(compressedData);
         final InflaterInputStream iis = new InflaterInputStream(bais);
