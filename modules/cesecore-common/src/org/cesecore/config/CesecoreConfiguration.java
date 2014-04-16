@@ -335,6 +335,11 @@ public final class CesecoreConfiguration {
         return Boolean.valueOf(ConfigurationHolder.getString("ca.keepocspextendedservice").toLowerCase());
     }
 
+    /** @return the number of rows that should be fetched at the time when creating CRLs. */
+    public static int getDatabaseRevokedCertInfoFetchSize() {
+        return Long.valueOf(getLongValue("database.crlgenfetchsize", 500000L, "rows")).intValue();
+    }
+
     /**
      * Used just in {@link #getForbiddenCharacters()}. The method is called very
      * often so we declare this String in the class so it does not have to be
