@@ -116,7 +116,7 @@ function checkallfields() {
         <h3><c:out value="<%= ejbcawebbean.getText(\"CMPOPERATIONALMODE\") %>"/>
         <%= ejbcawebbean.getHelpReference("/adminguide.html#Client%20mode%20for%20CMP") %>
         </h3>
-        <p class="help"><c:out value="If the CMP service should work in 'client' or 'ra' mode."/></p>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPOPERATIONALMODE_HELP\") %>"/></p>
       </td>
       <td width="50%">
         <input type="radio" name="<%=RADIO_CMPMODE%>" value="client" onchange="reload()" onclick="reload()" <%-- IE needs onclick as well, since onchange is delayed until another element is selected --%>
@@ -141,7 +141,7 @@ function checkallfields() {
         <h3><c:out value="<%= ejbcawebbean.getText(\"CMPRESPONSEPROTECTION\") %>"/>
         <%= ejbcawebbean.getHelpReference("/adminguide.html#CMP%20Response%20Message") %>
         </h3>
-        <p class="help"><c:out value="Which sort of protection the response messages will have."/></p>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPRESPONSEPROTECTION_HELP\") %>"/></p>
       </td>
       <td width="50%"> 
         <select name="<%= LIST_CMPRESPONSEPROTECTION %>" onchange="reload()">
@@ -270,7 +270,6 @@ function checkallfields() {
       <td width="50%" align="top">
         <h3><c:out value="<%= ejbcawebbean.getText(\"CMPALLOWVERIFYPOPO\") %>"/></h3>
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CMPALLOWVERIFYPOPO_HELP\") %>"/></p>
-        <p class="help"><c:out value=""/></p>
       </td>
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_CMP_ALLOWRAVERIFYPOPO%>" value="<%=CHECKBOX_VALUE %>" 
