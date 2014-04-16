@@ -18,7 +18,6 @@ import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -45,6 +44,7 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.CompressedCollection;
 import org.cesecore.util.QueryResultWrapper;
 import org.cesecore.util.StringTools;
 import org.cesecore.util.ValueExtractor;
@@ -914,15 +914,14 @@ public class CertificateData extends ProtectedData implements Serializable {
         return query.getResultList();
     }
 
-    /** @return return the query results as a List<RevokedCertInfo>. */
-    public static List<RevokedCertInfo> getRevokedCertInfos(EntityManager entityManager, String issuerDN, long lastbasecrldate) {
+    /** @return return the query results as a Collection<RevokedCertInfo>. */
+    public static Collection<RevokedCertInfo> getRevokedCertInfos(EntityManager entityManager, String issuerDN, long lastbasecrldate) {
         Query query;
         if (lastbasecrldate > 0) {
-            query = entityManager
-                    .createNativeQuery(
-                            "SELECT a.fingerprint, a.serialNumber, a.expireDate, a.revocationDate, a.revocationReason FROM CertificateData a WHERE "
-                                    + "a.issuerDN=:issuerDN AND a.revocationDate>:revocationDate AND (a.status=:status1 OR (a.status=:status2 AND a.revocationReason=:revocationReason))",
-                            "RevokedCertInfoSubset");
+            query = entityManager.createNativeQuery(
+                    "SELECT a.fingerprint, a.serialNumber, a.expireDate, a.revocationDate, a.revocationReason FROM CertificateData a WHERE "
+                            + "a.issuerDN=:issuerDN AND a.revocationDate>:revocationDate AND (a.status=:status1 OR (a.status=:status2 AND a.revocationReason=:revocationReason))",
+                    "RevokedCertInfoSubset");
             query.setParameter("issuerDN", issuerDN);
             query.setParameter("revocationDate", lastbasecrldate);
             query.setParameter("status1", CertificateConstants.CERT_REVOKED);
@@ -931,21 +930,33 @@ public class CertificateData extends ProtectedData implements Serializable {
         } else {
             query = entityManager.createNativeQuery(
                     "SELECT a.fingerprint, a.serialNumber, a.expireDate, a.revocationDate, a.revocationReason FROM CertificateData a WHERE "
-                            + "a.issuerDN=:issuerDN AND a.status=:status", "RevokedCertInfoSubset");
+                            + "a.issuerDN=:issuerDN AND a.status=:status",
+                    "RevokedCertInfoSubset");
             query.setParameter("issuerDN", issuerDN);
             query.setParameter("status", CertificateConstants.CERT_REVOKED);
         }
-        @SuppressWarnings("unchecked")
-        final List<Object[]> incompleteCertificateDatas = query.getResultList();
-        final List<RevokedCertInfo> revokedCertInfos = new ArrayList<RevokedCertInfo>();
-        for (final Object[] current : incompleteCertificateDatas) {
-            // The order of the results are defined by the SqlResultSetMapping annotation
-            final byte[] fingerprint = ((String)current[0]).getBytes();
-            final byte[] serialNumber = new BigInteger((String)current[1]).toByteArray();
-            final long expireDate = ValueExtractor.extractLongValue(current[2]);
-            final long revocationDate = ValueExtractor.extractLongValue(current[3]);
-            final int revocationReason = ValueExtractor.extractIntValue(current[4]);
-            revokedCertInfos.add(new RevokedCertInfo(fingerprint, serialNumber, revocationDate, revocationReason, expireDate));
+        query.setMaxResults(10000);
+        query.setFirstResult(0);
+        final Collection<RevokedCertInfo> revokedCertInfos = new CompressedCollection<RevokedCertInfo>();
+        while (true) {
+            @SuppressWarnings("unchecked")
+            final List<Object[]> incompleteCertificateDatas = query.getResultList();
+            if (incompleteCertificateDatas.size()==0) {
+                break;
+            }
+            if (log.isDebugEnabled()) {
+                log.debug("Read batch of " + incompleteCertificateDatas.size() + " RevokedCertInfo.");
+            }
+            for (final Object[] current : incompleteCertificateDatas) {
+                // The order of the results are defined by the SqlResultSetMapping annotation
+                final byte[] fingerprint = ((String)current[0]).getBytes();
+                final byte[] serialNumber = new BigInteger((String)current[1]).toByteArray();
+                final long expireDate = ValueExtractor.extractLongValue(current[2]);
+                final long revocationDate = ValueExtractor.extractLongValue(current[3]);
+                final int revocationReason = ValueExtractor.extractIntValue(current[4]);
+                revokedCertInfos.add(new RevokedCertInfo(fingerprint, serialNumber, revocationDate, revocationReason, expireDate));
+            }
+            query.setFirstResult(query.getFirstResult()+query.getMaxResults());
         }
         return revokedCertInfos;
     }

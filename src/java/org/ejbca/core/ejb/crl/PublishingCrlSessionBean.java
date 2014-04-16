@@ -15,7 +15,6 @@ package org.ejbca.core.ejb.crl;
 import java.security.cert.CRLException;
 import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
@@ -64,6 +63,7 @@ import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.CompressedCollection;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 
@@ -417,6 +417,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
         }
         CAInfo cainfo = ca.getCAInfo();
         String ret = null;
+        Collection<RevokedCertInfo> revokedCertificates = null;
         try {
             final String caCertSubjectDN; // DN from the CA issuing the CRL to be used when searching for the CRL in the database.
             {
@@ -431,7 +432,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                 if (log.isDebugEnabled()) {
                     log.debug("Listing revoked certificates. Free memory="+Runtime.getRuntime().freeMemory());
                 }          
-                Collection<RevokedCertInfo> revokedCertificates = certificateStoreSession.listRevokedCertInfo(caCertSubjectDN, -1);
+                revokedCertificates = certificateStoreSession.listRevokedCertInfo(caCertSubjectDN, -1);
                 if (log.isDebugEnabled()) {
                     log.debug("Found "+revokedCertificates.size()+" revoked certificates. Free memory="+Runtime.getRuntime().freeMemory());
                 }
@@ -449,7 +450,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                 Date now = new Date();
                 Date check = new Date(now.getTime() - crlperiod);
                 AuthenticationToken archiveAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CrlCreateSession.archive_expired"));
-                for(RevokedCertInfo revokedCertInfo : revokedCertificates) {
+                for (final RevokedCertInfo revokedCertInfo : revokedCertificates) {
                     // We want to include certificates that was revoked after the last CRL was issued, but before this one
                     // so the revoked certs are included in ONE CRL at least. See RFC5280 section 3.3.
                     if ( revokedCertInfo.getExpireDate().before(check) ) {
@@ -493,7 +494,12 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
             // Should really not happen
             log.error(e);
             throw new EJBException(e);
-        } 
+        } finally {
+            // Special treatment of our CompressedCollection to ensure that we release all resources
+            if (revokedCertificates!=null) {
+                revokedCertificates.clear();
+            }
+        }
         if (log.isTraceEnabled()) {
             log.trace("<internalCreateCRL()");
         }
@@ -532,10 +538,12 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                 log.trace(">internalCreateDeltaCRL: "+cainfo.getSubjectDN());
         }
         byte[] crlBytes = null;
+        Collection<RevokedCertInfo> revcertinfos = null;
+        CompressedCollection<RevokedCertInfo> certs = null;
         try {
             final String caCertSubjectDN; {
-                final Collection<Certificate> certs = cainfo.getCertificateChain();
-                final Certificate cacert = !certs.isEmpty() ? certs.iterator().next(): null;
+                final Collection<Certificate> certChain = cainfo.getCertificateChain();
+                final Certificate cacert = !certChain.isEmpty() ? certChain.iterator().next(): null;
                 caCertSubjectDN = cacert!=null ? CertTools.getSubjectDN(cacert) : null;
             }
             // We can not create a CRL for a CA that is waiting for certificate response
@@ -546,20 +554,19 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                     baseCrlNumber = basecrlinfo.getLastCRLNumber();                                 
                 }
                 // Find all revoked certificates
-                Collection<RevokedCertInfo> revcertinfos = certificateStoreSession.listRevokedCertInfo(caCertSubjectDN, baseCrlCreateTime);
+                revcertinfos = certificateStoreSession.listRevokedCertInfo(caCertSubjectDN, baseCrlCreateTime);
                 if (log.isDebugEnabled()) {
                     log.debug("Found "+revcertinfos.size()+" revoked certificates.");
                 }
                 // Go through them and create a CRL, at the same time archive expired certificates
-                ArrayList<RevokedCertInfo> certs = new ArrayList<RevokedCertInfo>();
-                Iterator<RevokedCertInfo> iter = revcertinfos.iterator();
-                while (iter.hasNext()) {
-                    RevokedCertInfo ci = iter.next();
+                certs = new CompressedCollection<RevokedCertInfo>();
+                for (final RevokedCertInfo ci : revcertinfos) {
                     if (ci.getRevocationDate() == null) {
                         ci.setRevocationDate(new Date());
                     }
                     certs.add(ci);
                 }
+                revcertinfos.clear();  // Release unused resources
                 // create a delta CRL
                 crlBytes = generateAndStoreCRL(admin, ca, certs, baseCrlNumber);
                 X509CRL crl = CertTools.getCRLfromByteArray(crlBytes);
@@ -575,6 +582,14 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
             // Should really not happen
             log.error(e);
             throw new EJBException(e);
+        } finally {
+            // Special treatment of our CompressedCollections to ensure that we release all resources
+            if (revcertinfos!=null) {
+                revcertinfos.clear();  
+            }
+            if (certs!=null) {
+                certs.clear();
+            }
         }
         if (log.isTraceEnabled()) {
             log.trace("<internalCreateDeltaCRL: "+cainfo.getSubjectDN());
