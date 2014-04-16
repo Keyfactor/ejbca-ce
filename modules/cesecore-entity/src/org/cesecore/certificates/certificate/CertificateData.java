@@ -39,6 +39,7 @@ import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.keys.util.KeyTools;
@@ -935,7 +936,7 @@ public class CertificateData extends ProtectedData implements Serializable {
             query.setParameter("issuerDN", issuerDN);
             query.setParameter("status", CertificateConstants.CERT_REVOKED);
         }
-        final int maxResults = 1000000; // Use ~500M of the heap at the time 
+        final int maxResults = CesecoreConfiguration.getDatabaseRevokedCertInfoFetchSize(); 
         query.setMaxResults(maxResults);
         int firstResult = 0;
         final CompressedCollection<RevokedCertInfo> revokedCertInfos = new CompressedCollection<RevokedCertInfo>();

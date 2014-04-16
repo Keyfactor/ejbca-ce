@@ -152,6 +152,19 @@ securityeventsaudit.exporter.1=org.cesecore.audit.impl.AuditExporterXml
 # Default: false
 #ca.keepocspextendedservice=true
 
+# When generating large CRLs, the RAM of the Java process will limit how many entries that can be
+# fetched from the database at the time. A small value will lead to multiple round-trips to the
+# database and CRL generation will take more time.
+#
+# The heap usage can be estimated to roughly 600 bytes * rows per database read. The default of
+# 0.5M revoked entries per database round trip will usually fit within a 2GiB heap assigned to the
+# application server. If multiple large CRLs are generated at the same time, the used heap will be
+# the sum of the heap used by each CRL generation.
+#
+# If you have plenty of RAM assigned to the application server you should increase this value.
+# Default: 500000
+#database.crlgenfetchsize=500000
+
 #------------------- ECDSA implicitlyCA settings -------------
 # Sets pre-defined EC curve parameters for the implicitlyCA facility.
 # See the User's Guide for more information about the implicitlyCA facility.
