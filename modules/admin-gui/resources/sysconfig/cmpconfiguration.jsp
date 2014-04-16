@@ -81,8 +81,8 @@
 	static final String CHECKBOX_VALUE								= "true"; 
 	 
 	 
-	List<String> dnfields = Arrays.asList("CN", "UID", "OU", "O", "L","ST", "DC", "C", "emailAddress",  "serialNumber", "givenName", "initials", "surname", "title", 
-			   		"unstructuredAddress", "unstructuredName", "postalCode", "businessCaegory", "dnQualifier", "postalAddress", 
+	List<String> dnfields = Arrays.asList("CN", "UID", "OU", "O", "L", "ST", "DC", "C", "emailAddress", "serialNumber", "givenName", "initials", "surname", "title", 
+			   		"unstructuredAddress", "unstructuredName", "postalCode", "businessCategory", "dnQualifier", "postalAddress", 
 			   		"telephoneNumber", "pseudonym", "streetAddress", "name", "CIF", "NIF");
 
 
