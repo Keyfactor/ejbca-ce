@@ -935,10 +935,10 @@ public class CertificateData extends ProtectedData implements Serializable {
             query.setParameter("issuerDN", issuerDN);
             query.setParameter("status", CertificateConstants.CERT_REVOKED);
         }
-        final int maxResults = 10000;
+        final int maxResults = 1000000; // Use ~500M of the heap at the time 
         query.setMaxResults(maxResults);
         int firstResult = 0;
-        final Collection<RevokedCertInfo> revokedCertInfos = new CompressedCollection<RevokedCertInfo>();
+        final CompressedCollection<RevokedCertInfo> revokedCertInfos = new CompressedCollection<RevokedCertInfo>();
         while (true) {
             query.setFirstResult(firstResult);
             @SuppressWarnings("unchecked")
@@ -960,6 +960,7 @@ public class CertificateData extends ProtectedData implements Serializable {
             }
             firstResult += maxResults;
         }
+        revokedCertInfos.closeForWrite();
         return revokedCertInfos;
     }
 
