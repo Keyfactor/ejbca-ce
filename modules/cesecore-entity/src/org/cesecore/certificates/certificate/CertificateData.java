@@ -935,10 +935,12 @@ public class CertificateData extends ProtectedData implements Serializable {
             query.setParameter("issuerDN", issuerDN);
             query.setParameter("status", CertificateConstants.CERT_REVOKED);
         }
-        query.setMaxResults(10000);
-        query.setFirstResult(0);
+        final int maxResults = 10000;
+        query.setMaxResults(maxResults);
+        int firstResult = 0;
         final Collection<RevokedCertInfo> revokedCertInfos = new CompressedCollection<RevokedCertInfo>();
         while (true) {
+            query.setFirstResult(firstResult);
             @SuppressWarnings("unchecked")
             final List<Object[]> incompleteCertificateDatas = query.getResultList();
             if (incompleteCertificateDatas.size()==0) {
@@ -956,7 +958,7 @@ public class CertificateData extends ProtectedData implements Serializable {
                 final int revocationReason = ValueExtractor.extractIntValue(current[4]);
                 revokedCertInfos.add(new RevokedCertInfo(fingerprint, serialNumber, revocationDate, revocationReason, expireDate));
             }
-            query.setFirstResult(query.getFirstResult()+query.getMaxResults());
+            firstResult += maxResults;
         }
         return revokedCertInfos;
     }
