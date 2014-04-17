@@ -325,6 +325,17 @@ public class Pkcs11SlotLabel {
             }
             pw.println("  CKA_UNWRAP = true");// for unwrapping of session keys,
             pw.println("}");
+            pw.println("disabledMechanisms = {");
+            // by disabling these algorithms the hashing will be done in the application instead of the HSM.
+            pw.println("  CKM_SHA1_RSA_PKCS");
+            pw.println("  CKM_SHA256_RSA_PKCS");
+            pw.println("  CKM_SHA384_RSA_PKCS");
+            pw.println("  CKM_SHA512_RSA_PKCS");
+            pw.println("  CKM_MD2_RSA_PKCS");
+            pw.println("  CKM_MD5_RSA_PKCS");
+            pw.println("  CKM_DSA_SHA1");
+            pw.println("  CKM_ECDSA_SHA1");
+            pw.println("}");
             pw.println("attributes(*, CKO_SECRET_KEY, *) = {");
             pw.println("  CKA_SENSITIVE = true"); // not possible to read the key
             pw.println("  CKA_EXTRACTABLE = false"); // not possible to wrap the key with another key

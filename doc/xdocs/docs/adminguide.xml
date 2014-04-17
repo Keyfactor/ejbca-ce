@@ -2845,7 +2845,17 @@ attributes(*, CKO_PRIVATE_KEY, *) = {
   CKA_DECRYPT = true
   CKA_SIGN = true
   CKA_UNWRAP = true
-}");
+}
+disabledMechanisms = {
+  CKM_SHA1_RSA_PKCS
+  CKM_SHA256_RSA_PKCS
+  CKM_SHA384_RSA_PKCS
+  CKM_SHA512_RSA_PKCS
+  CKM_MD2_RSA_PKCS
+  CKM_MD5_RSA_PKCS
+  CKM_DSA_SHA1
+  CKM_ECDSA_SHA1
+}
 </source>
 <p>The only occasion that we know of where the default is not working is when the module protected slot of a Thales/nCipher HSM is used; then the file must exist and have 'CKA_PRIVATE = false' (see below).
 </p>
@@ -3290,6 +3300,16 @@ attributes(*,CKO_PRIVATE_KEY,*) = {
   CKA_PRIVATE = false
   CKA_SIGN = true
   CKA_DECRYPT = true
+}
+disabledMechanisms = {
+  CKM_SHA1_RSA_PKCS
+  CKM_SHA256_RSA_PKCS
+  CKM_SHA384_RSA_PKCS
+  CKM_SHA512_RSA_PKCS
+  CKM_MD2_RSA_PKCS
+  CKM_MD5_RSA_PKCS
+  CKM_DSA_SHA1
+  CKM_ECDSA_SHA1
 }
 </source>
 <strong>Not using preload.</strong>
