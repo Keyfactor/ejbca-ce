@@ -390,6 +390,7 @@ public class HSMKeyTool extends ClientToolBox {
         if ( args[1].toLowerCase().trim().equals(TEST_SWITCH)) {
             if ( args.length < 6 ) {
                 System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " [<# of tests or threads>] [<alias for stress test>] [<type of stress test>]");
+                System.err.println("    If a file named \"./testData\" exists then the data that is signed, is read from this file.");
                 tooFewArguments(args);
             } else {
                 String storeId = null;

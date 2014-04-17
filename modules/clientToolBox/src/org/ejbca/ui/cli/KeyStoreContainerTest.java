@@ -13,7 +13,11 @@
 package org.ejbca.ui.cli;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.security.KeyPair;
@@ -150,17 +154,17 @@ class KeyStoreContainerTest {
                                     final ProtectionParameter protectionParameter) throws Exception {
         final KeyStoreContainer keyStore = getKeyStore(providerClassName, encryptProviderClassName,
                                                        keyStoreType, storeID, slotLabelType, protectionParameter);
-        if ( keyStore.getKeyStore().isKeyEntry(alias) ) {
-            PrivateKey privateKey = (PrivateKey)keyStore.getKey(alias);
-            new KeyStoreContainerTest.StressTest(alias,
-                           new KeyPair(keyStore.getKeyStore().getCertificate(alias).getPublicKey(), privateKey),
-                           keyStore.getProviderName(),
-                           numberOfThreads,
-                           -1,
-                           isSign);
-        } else {
+        if ( !keyStore.getKeyStore().isKeyEntry(alias) ) {
             termOut.println("Key alias does not exist.");
         }
+        PrivateKey privateKey = (PrivateKey)keyStore.getKey(alias);
+        StressTest.execute(
+                alias,
+                new KeyPair(keyStore.getKeyStore().getCertificate(alias).getPublicKey(), privateKey),
+                keyStore.getProviderName(),
+                numberOfThreads,
+                -1,
+                isSign);
     }
     static private KeyStoreContainer getKeyStore(final String providerName,
                                                  final String encryptProviderClassName,
@@ -214,6 +218,8 @@ class KeyStoreContainerTest {
             this.byteLength = (this.modulusLength+7)/8-11;
             this.original = this.testS.substring(0, this.byteLength).getBytes();
         }
+        @SuppressWarnings("synthetic-access")
+        @Override
         public void prepare() throws Exception {
             this.cipherEnCryption = Cipher.getInstance(this.pkcs1Padding);
             this.cipherEnCryption.init(Cipher.ENCRYPT_MODE, KeyStoreContainerTest.this.keyPair.getPublic());
@@ -221,16 +227,19 @@ class KeyStoreContainerTest {
             this.cipherDeCryption = Cipher.getInstance(this.pkcs1Padding, KeyStoreContainerTest.this.providerName);
             this.cipherDeCryption.init(Cipher.DECRYPT_MODE, KeyStoreContainerTest.this.keyPair.getPrivate());
         }
+        @Override
         public void doOperation() throws Exception {
             this.decoded = this.cipherDeCryption.doFinal(this.encoded);
         }
+        @Override
         public boolean verify() {
             this.result = Arrays.equals(this.original, this.decoded);
             return this.result;
         }
+        @Override
         public void printInfo(PrintStream ps) {
-            ps.print("encryption provider: "+this.cipherEnCryption!=null ? this.cipherEnCryption.getProvider() : "not initialized");
-            ps.print("; decryption provider: "+this.cipherDeCryption!=null ? this.cipherDeCryption.getProvider() : "not initialized");
+            ps.print("encryption provider: "+(this.cipherEnCryption!=null ? this.cipherEnCryption.getProvider() : "not initialized"));
+            ps.print("; decryption provider: "+(this.cipherDeCryption!=null ? this.cipherDeCryption.getProvider() : "not initialized"));
             ps.print("; modulus length: "+this.modulusLength+"; byte length "+this.byteLength);
             if ( this.result ) {
                 ps.println(". The decoded byte string is equal to the original!");
@@ -240,13 +249,56 @@ class KeyStoreContainerTest {
                 ps.println("Decoded: \""+new String(this.decoded)+'\"');
             }
         }
+        @Override
         public String getOperation() {
             return "crypto";
         }
     }
+    static private class Data {
+        private final InputStream is;
+        private Data() {
+            InputStream tmp;
+            try {
+                tmp = new FileInputStream("./testData");
+            } catch (FileNotFoundException e) {
+                tmp = new ByteArrayInputStream("Lillan gick on the roaden ut.".getBytes());
+            }
+            this.is = tmp;
+        }
+        @Override
+        protected void finalize() throws Throwable {
+            this.is.close();
+            super.finalize();
+        }
+        private byte[] getBytes() throws Exception {
+            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            while( true ) {
+                final byte buffer[] = new byte[0x400];
+                final int length = this.is.read(buffer);
+                if (length<0) {
+                    break;// eof
+                }
+                if (buffer.length==0) {
+                    continue; // no data no eof, try again
+                }
+                baos.write(buffer, 0, length);
+                break; // we got some data return
+            }
+            return baos.toByteArray();
+        }
+        public static void update(Signature signature) throws Exception {
+            final Data data = new Data();
+            while( true ) {
+                final byte bytes[] = data.getBytes();
+                if ( bytes.length<1 ){
+                    break;
+                }
+                signature.update( bytes );
+            }
+        }
+    }
     class Sign implements Test {
         private final String sigAlgName;
-        private final byte signInput[] = "Lillan gick on the roaden ut.".getBytes();
         private byte signBA[];
         private Signature signature;
         private boolean result;
@@ -265,42 +317,63 @@ class KeyStoreContainerTest {
             }
             this.sigAlgName = null;
         }
+        @SuppressWarnings("synthetic-access")
+        @Override
         public void prepare() throws Exception {
             this.signature = Signature.getInstance(this.sigAlgName, KeyStoreContainerTest.this.providerName);
             this.signature.initSign( KeyStoreContainerTest.this.keyPair.getPrivate() );
-            this.signature.update( this.signInput );
+            Data.update(this.signature);
         }
+        @Override
         public void doOperation() throws Exception {
             this.signBA = this.signature.sign();
         }
+        @Override
         public boolean verify() throws Exception {
 
-            Signature verifySignature = Signature.getInstance(this.sigAlgName);
+            final Signature verifySignature = Signature.getInstance(this.sigAlgName);
             verifySignature.initVerify(KeyStoreContainerTest.this.keyPair.getPublic());
-            verifySignature.update(this.signInput);
+            Data.update(verifySignature);
             this.result = verifySignature.verify(this.signBA);
             return this.result;
         }
+        @Override
         public void printInfo(PrintStream ps) {
             ps.println("Signature test of key "+KeyStoreContainerTest.this.alias+
                        ": signature length " + this.signBA.length +
                        "; first byte " + Integer.toHexString(0xff&this.signBA[0]) +
                        "; verifying " + this.result);
         }
+        @Override
         public String getOperation() {
             return "sign";
         }
     }
     static private class StressTest extends KeyStoreContainerTest {
-        final PerformanceTest performanceTest;
-        StressTest( final String alias,
-                    final KeyPair keyPair,
-                    final String providerName,
-                    final int numberOfThreads,
-                    final int waitTime,
-                    final boolean isSignTest) throws Exception {
+        final private PerformanceTest performanceTest;
+        private StressTest(
+                final String alias,
+                final KeyPair keyPair,
+                final String providerName) throws Exception {
             super(alias, keyPair, providerName);
             this.performanceTest = new PerformanceTest();
+        }
+        static void execute(
+                final String alias,
+                final KeyPair keyPair,
+                final String providerName,
+                final int numberOfThreads,
+                final int waitTime,
+                final boolean isSignTest) throws Exception {
+            final StressTest test = new StressTest(alias, keyPair, providerName);
+            test.execute(numberOfThreads, waitTime, isSignTest);
+        }
+        @SuppressWarnings("synthetic-access")
+        private void execute(
+                final int numberOfThreads,
+                final int waitTime,
+                final boolean isSignTest
+                ) throws Exception {
             this.performanceTest.execute(new MyCommandFactory(isSignTest), numberOfThreads, waitTime, termOut);
         }
         private class Prepare implements Command {
@@ -308,10 +381,12 @@ class KeyStoreContainerTest {
             Prepare(Test _test) {
                 this.test = _test;
             }
+            @Override
             public boolean doIt() throws Exception {
                 this.test.prepare();
                 return true;
             }
+            @Override
             public String getJobTimeDescription() {
                 return this.test.getOperation() + " preparation";
             }
@@ -321,10 +396,12 @@ class KeyStoreContainerTest {
             DoOperation(Test _test) {
                 this.test = _test;
             }
+            @Override
             public boolean doIt() throws Exception {
                 this.test.doOperation();
                 return true;
             }
+            @Override
             public String getJobTimeDescription() {
                 return this.test.getOperation() + " operation";
             }
@@ -334,6 +411,8 @@ class KeyStoreContainerTest {
             Verify(Test _test) {
                 this.test = _test;
             }
+            @SuppressWarnings("synthetic-access")
+            @Override
             public boolean doIt() throws Exception {
                 final boolean isOK = this.test.verify();
                 final ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -345,6 +424,7 @@ class KeyStoreContainerTest {
                 }
                 return isOK;
             }
+            @Override
             public String getJobTimeDescription() {
                 return this.test.getOperation() + " verify";
             }
@@ -355,12 +435,14 @@ class KeyStoreContainerTest {
                 super();
                 this.isSignTest = _isSignTest;
             }
+            @Override
             public Command[] getCommands() throws Exception {
                 final Test test = this.isSignTest ? new Sign() : new Crypto();
                 return new Command[]{new Prepare(test), new DoOperation(test), new Verify(test)};
             }
         }
     }
+    @SuppressWarnings("synthetic-access")
     static private class NormalTest extends KeyStoreContainerTest {
         long totalSignTime = 0;
         long totalDecryptTime = 0;
@@ -368,7 +450,7 @@ class KeyStoreContainerTest {
         NormalTest(String alias, KeyPair keyPair, String providerName) {
             super(alias, keyPair, providerName);
         }
-        private long test(Test test) throws Exception { // NOPMD: this is not a JUnit test
+        private static long test(Test test) throws Exception { // NOPMD: this is not a JUnit test
             test.prepare();
             final long startTime = System.nanoTime();
             test.doOperation();
