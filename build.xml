@@ -35,6 +35,7 @@
     <!-- =================================================================== -->
     <target name="clean" depends="deprecated:check">
         <delete dir="${dist.dir}" />
+    	<delete dir="${reports.base.dir}" />
         <delete dir="${apidoc}" />
         <delete dir="${tmp}"/>
         <delete file="velocity.log" />
