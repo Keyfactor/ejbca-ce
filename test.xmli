@@ -17,7 +17,13 @@
 		<echo message="Profiling results (when enabled) can be found in file://${reports.dir}/html/org/ejbca/core/ejb/${profilingtest.logfile}"/>
     </target>
 
-	<target name="deleteDirectories"> 
+	<target name="evaluate.aggregate">
+		<condition property="aggregate.test.results" value="true"  else="">
+    		<equals arg1="${aggregate.results}" arg2="true"/>
+    	</condition>
+	</target>
+
+	<target name="deleteDirectories" depends="evaluate.aggregate" if="${aggregate.test.results}" > 
 		<fail message="'reports.dir' is not set." unless="reports.dir" />
     	<delete dir="${reports.dir}" />
     	<mkdir dir="${reports.dir}" />
