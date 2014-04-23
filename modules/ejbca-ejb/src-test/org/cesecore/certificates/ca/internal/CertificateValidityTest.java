@@ -13,14 +13,25 @@
 package org.cesecore.certificates.ca.internal;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SignatureException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
 import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -36,7 +47,6 @@ import org.junit.Test;
 /**
  * Tests calculation of certificate validity dates
  * 
- * @author tomas
  * @version $Id$
  *
  */
@@ -58,6 +68,106 @@ public class CertificateValidityTest {
         cal.add(Calendar.DATE, 50);
         testBaseTestCertificateValidity(cal.getTime().getTime());
     }
+	
+	@Test
+	public void test03TestCheckPrivateKeyUsagePeriod() throws InvalidAlgorithmParameterException, InvalidKeyException, NoSuchAlgorithmException, SignatureException, IllegalStateException, NoSuchProviderException, OperatorCreationException, CertificateException, IOException, CAOfflineException, ParseException {
+	    final KeyPair pair = KeyTools.genKeys("512", "RSA");
+	    /// A certificate without private key usage period
+	    X509Certificate cert = CertTools.genSelfCertForPurpose("CN=CheckPK", 365, null, pair.getPrivate(), pair.getPublic(),
+	            AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, X509KeyUsage.digitalSignature, null, null, "BC");
+	    // No private key usage period, should pass fine 
+	    CertificateValidity.checkPrivateKeyUsagePeriod(cert);
+        // A certificate with private key usage period notBefore == "now"
+        cert = CertTools.genSelfCertForPurpose("CN=CheckPK", 365, null, pair.getPrivate(), pair.getPublic(),
+                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, X509KeyUsage.digitalSignature, new Date(), null, "BC");
+        // should pass fine 
+        CertificateValidity.checkPrivateKeyUsagePeriod(cert);
+        // A certificate with private key usage period notAfter == "now+1h"
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.HOUR_OF_DAY, 1);
+        cert = CertTools.genSelfCertForPurpose("CN=CheckPK", 365, null, pair.getPrivate(), pair.getPublic(),
+                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, X509KeyUsage.digitalSignature, null, cal.getTime(), "BC");
+        // should pass fine 
+        CertificateValidity.checkPrivateKeyUsagePeriod(cert);
+        // A certificate with private key usage period notBefore == "now" and notAfter == "now+1h"
+        cal = Calendar.getInstance();
+        cal.add(Calendar.HOUR_OF_DAY, 1);
+        cert = CertTools.genSelfCertForPurpose("CN=CheckPK", 365, null, pair.getPrivate(), pair.getPublic(),
+                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, X509KeyUsage.digitalSignature, new Date(), cal.getTime(), "BC");
+        // should pass fine 
+        CertificateValidity.checkPrivateKeyUsagePeriod(cert);
+        // A certificate with private key usage period notBefore == "now+1h"
+        cal = Calendar.getInstance();
+        cal.add(Calendar.HOUR_OF_DAY, 1);
+        cert = CertTools.genSelfCertForPurpose("CN=CheckPK", 365, null, pair.getPrivate(), pair.getPublic(),
+                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, X509KeyUsage.digitalSignature, cal.getTime(), null, "BC");
+        try {
+            CertificateValidity.checkPrivateKeyUsagePeriod(cert);
+            fail("A certificate with private key usage period notBefore == now+1h should not be useful.");
+        } catch (CAOfflineException e) {
+            // NOPMD: should throw
+        }
+        // A certificate with private key usage period notAfter == "now-1h"
+        cal = Calendar.getInstance();
+        cal.add(Calendar.HOUR_OF_DAY, -1);
+        cert = CertTools.genSelfCertForPurpose("CN=CheckPK", 365, null, pair.getPrivate(), pair.getPublic(),
+                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, X509KeyUsage.digitalSignature, null, cal.getTime(), "BC");
+        try {
+            CertificateValidity.checkPrivateKeyUsagePeriod(cert);
+            fail("A certificate with private key usage period notAfter == now-1h should not be useful.");
+        } catch (CAOfflineException e) {
+            // NOPMD: should throw
+        }
+        // A certificate with private key usage period notBefore == "now+1h" and notAfter == "now-1h"
+        cal = Calendar.getInstance();
+        cal.add(Calendar.HOUR_OF_DAY, -1);
+        Calendar cal2 = Calendar.getInstance();
+        cal2.add(Calendar.HOUR_OF_DAY, 1);
+        cert = CertTools.genSelfCertForPurpose("CN=CheckPK", 365, null, pair.getPrivate(), pair.getPublic(),
+                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, X509KeyUsage.digitalSignature, cal2.getTime(), cal.getTime(), "BC");
+        try {
+            CertificateValidity.checkPrivateKeyUsagePeriod(cert);
+            fail("A certificate with private key usage period notBefore == now+1h and notAfter == now-1h should not be useful.");
+        } catch (CAOfflineException e) {
+            // NOPMD: should throw
+        }
+        // A certificate with private key usage period notBefore == "now-1h" and notAfter == "now-1h"
+        cal = Calendar.getInstance();
+        cal.add(Calendar.HOUR_OF_DAY, -1);
+        cal2 = Calendar.getInstance();
+        cal2.add(Calendar.HOUR_OF_DAY, -1);
+        cert = CertTools.genSelfCertForPurpose("CN=CheckPK", 365, null, pair.getPrivate(), pair.getPublic(),
+                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, X509KeyUsage.digitalSignature, cal2.getTime(), cal.getTime(), "BC");
+        try {
+            CertificateValidity.checkPrivateKeyUsagePeriod(cert);
+            fail("A certificate with private key usage period notBefore == now-1h and notAfter == now-1h should not be useful.");
+        } catch (CAOfflineException e) {
+            // NOPMD: should throw
+        }
+        // A certificate with private key usage period notBefore == "now+1h" and notAfter == "now+1h"
+        cal = Calendar.getInstance();
+        cal.add(Calendar.HOUR_OF_DAY, 1);
+        cal2 = Calendar.getInstance();
+        cal2.add(Calendar.HOUR_OF_DAY, 1);
+        cert = CertTools.genSelfCertForPurpose("CN=CheckPK", 365, null, pair.getPrivate(), pair.getPublic(),
+                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, X509KeyUsage.digitalSignature, cal2.getTime(), cal.getTime(), "BC");
+        try {
+            CertificateValidity.checkPrivateKeyUsagePeriod(cert);
+            fail("A certificate with private key usage period notBefore == now+1h and notAfter == now+1h should not be useful.");
+        } catch (CAOfflineException e) {
+            // NOPMD: should throw
+        }
+        // A certificate with private key usage period notBefore == "now-1h" and notAfter == "now+1h"
+        cal = Calendar.getInstance();
+        cal.add(Calendar.HOUR_OF_DAY, 1);
+        cal2 = Calendar.getInstance();
+        cal2.add(Calendar.HOUR_OF_DAY, -1);
+        cert = CertTools.genSelfCertForPurpose("CN=CheckPK", 365, null, pair.getPrivate(), pair.getPublic(),
+                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, X509KeyUsage.digitalSignature, cal2.getTime(), cal.getTime(), "BC");
+        // Should work
+        CertificateValidity.checkPrivateKeyUsagePeriod(cert);
+	}
+	
     private void testBaseTestCertificateValidity(long encodedValidity) throws Exception {
 
 		KeyPair keys = KeyTools.genKeys("1024", "RSA");
