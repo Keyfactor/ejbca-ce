@@ -493,7 +493,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 if(sa != null) {
                     sigAlg = AlgorithmTools.getAlgorithmNameFromOID(sa);
                     if((sigAlg != null) && OcspConfiguration.isAcceptedSignatureAlgorithm(sigAlg) && AlgorithmTools.isCompatibleSigAlg(pk, sigAlg)) {
-                        log.info("Using OCSP response signature algorithm extracted from OCSP request extension. " + sa);
+                        if (log.isDebugEnabled()) {
+                            log.debug("Using OCSP response signature algorithm extracted from OCSP request extension. " + sa);
+                        }
                         return sigAlg;
                     }
                     
@@ -506,7 +508,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         if(req.getSignatureAlgOID() != null) {
             sigAlg = AlgorithmTools.getAlgorithmNameFromOID(req.getSignatureAlgOID());
             if(OcspConfiguration.isAcceptedSignatureAlgorithm(sigAlg) && AlgorithmTools.isCompatibleSigAlg(pk, sigAlg)) {
-                log.info("OCSP response signature algorithm: the signature algorithm used to sign the OCSPRequest. " + sigAlg);
+                if (log.isDebugEnabled()) {
+                    log.debug("OCSP response signature algorithm: the signature algorithm used to sign the OCSPRequest. " + sigAlg);
+                }
                 return sigAlg;
             }
         }
@@ -517,8 +521,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         if (ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
             // If we have an OcspKeyBinding we use this configuration to override the default
             sigAlg = ocspSigningCacheEntry.getOcspKeyBinding().getSignatureAlgorithm();
-            log.info("OCSP response signature algorithm: the signature algorithm that has been advertised as being the default signature algorithm " +
-                    "for the signing service using an out-of-band mechanism. " + sigAlg);
+            if (log.isDebugEnabled()) {
+                log.debug("OCSP response signature algorithm: the signature algorithm that has been advertised as being the default signature algorithm " +
+                        "for the signing service using an out-of-band mechanism. " + sigAlg);
+            }
             return sigAlg;
         }   
              
@@ -526,7 +532,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         // The signature algorithm specified for the version of OCSP in use.
         String sigAlgs = OcspConfiguration.getSignatureAlgorithm();
         sigAlg = getSigningAlgFromAlgSelection(sigAlgs, pk);
-        log.info("Using configured signature algorithm to sign OCSP response. " + sigAlg);
+        if (log.isDebugEnabled()) {
+            log.debug("Using configured signature algorithm to sign OCSP response. " + sigAlg);
+        }
         return sigAlg;
     }
 
