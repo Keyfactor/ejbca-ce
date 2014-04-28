@@ -47,18 +47,18 @@ public class ScepConfiguration extends Configuration implements Serializable {
     public static final String EJBCA_VERSION = InternalConfiguration.getAppVersion();
     
     
-    private static final Set<String> DEFAULT_ALIAS_LIST      = new LinkedHashSet<String>();
-    private static final String DEFAULT_OPERATION_MODE = "ca";
-    private static final String DEFAULT_INCLUDE_CA = "true";
-    private static final String DEFAULT_CA = "";
-    private static final String DEFAULT_RA_CERTPROFILE = "ENDUSER";
-    private static final String DEFAULT_RA_ENTITYPROFILE = "EMPTY";
-    private static final String DEFAULT_RA_DEFAULTCA = "";
-    private static final String DEFAULT_RA_AUTHPWD = "";
-    private static final String DEFAULT_RA_NAME_GENERATION_SCHEME = "DN";
-    private static final String DEFAULT_RA_NAME_GENERATION_PARAMETERS = "CN";
-    private static final String DEFAULT_RA_NAME_GENERATION_PREFIX = "";
-    private static final String DEFAULT_RA_NAME_GENERATION_POSTFIX = "";
+    public static final Set<String> DEFAULT_ALIAS_LIST      = new LinkedHashSet<String>();
+    public static final String DEFAULT_OPERATION_MODE = "ca";
+    public static final String DEFAULT_INCLUDE_CA = "true";
+    public static final String DEFAULT_CA = "";
+    public static final String DEFAULT_RA_CERTPROFILE = "ENDUSER";
+    public static final String DEFAULT_RA_ENTITYPROFILE = "EMPTY";
+    public static final String DEFAULT_RA_DEFAULTCA = "";
+    public static final String DEFAULT_RA_AUTHPWD = "";
+    public static final String DEFAULT_RA_NAME_GENERATION_SCHEME = "DN";
+    public static final String DEFAULT_RA_NAME_GENERATION_PARAMETERS = "CN";
+    public static final String DEFAULT_RA_NAME_GENERATION_PREFIX = "";
+    public static final String DEFAULT_RA_NAME_GENERATION_POSTFIX = "";
     
     
     /** Creates a new instance of ScepConfiguration */

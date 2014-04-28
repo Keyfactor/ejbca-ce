@@ -60,6 +60,9 @@ org.cesecore.keybind.InternalKeyBindingRules
     final String ADMINISTRATORPRIV_LINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAuthorizationPath() 
                                                     + "/administratorprivileges.jsf";
     
+    final String SCEPCONFIGURATION_LINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath() 
+            										+ "/scepconfiguration.jsf";
+    
 	final String PUBLICWEB_LINK          = ejbcawebbean.getBaseUrl();
     
     final String MYPREFERENCES_LINK     =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "mypreferences.jsp";
@@ -349,7 +352,7 @@ org.cesecore.keybind.InternalKeyBindingRules
 %>
 
 <%
-    // If authorized to configure Ejbca then display related links.
+    // If authorized to configure CMP Configuration then display related links.
     try{
       if(ejbcawebbean.isAuthorizedNoLog(SYSTEMCONFIGURATION_RESOURCE)){ 
           if(!systemheaderprinted){      
@@ -381,6 +384,21 @@ org.cesecore.keybind.InternalKeyBindingRules
 <%   }
    }catch(AuthorizationDeniedException e){}
 %>
+
+<%
+   // If authorized to edit SCEP configuration then display related links.
+   try{
+     if(ejbcawebbean.isAuthorizedNoLog(SYSTEMCONFIGURATION_RESOURCE)){
+       if(!systemheaderprinted){
+         out.write("<li id=\"cat7\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMFUNCTIONS")+"</strong><ul>"); 
+         systemheaderprinted=true;
+         }  %>
+				<li><a href="<%= SCEPCONFIGURATION_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_SCEPCONFIGURATION") %></a></li>
+<%   }
+  }catch(AuthorizationDeniedException e){}
+%>
+
+
 <%
    // If authorized to edit services then display related links.
    try{
