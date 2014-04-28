@@ -336,12 +336,15 @@ http://HOST:PORT/ejbca/publicweb/apply/scep/ALIAS/pkiclient.exe
 <p>
 The URL contains a reference to a configuration alias 'ALIAS'. 'ALIAS' is an alphanumeric string that refers to 
 the set of SCEP configurations that should be used when handling the SCEP reqest coming through this URL. It is possible 
-to configure as many configuration aliases as desired through the command line. Documentations on how to create and configure the 
-SCEP aliases are available when executing the following command from EJBCA home directory:
+to configure as many configuration aliases as desired through the command line or the AdminGUI. Documentations on how to 
+create and configure the SCEP aliases in the command line are available when executing the following command from EJBCA home directory:
 </p>
 <source>
 ./bin/ejbca.sh config scep
 </source>
+<p>
+To manage SCEP aliases in the AdminGUI, go to System Functions -> SCEP Configuration
+</p>
 </subsection>
 <subsection name="Level of SCEP support">
 <p>
@@ -384,9 +387,9 @@ EJBCA does also successfully recieve SCEP 'PKCSReq' requests when a user is to b
 a proper SCEP reply message. 
 </p>
 <p>
-For this mode to work, the property 'ALIAS.ramode' has to be set to 'true' through the command line. 
-All the parameters needed to create the new end entity should be set through the command line. Documentation on how to set the different 
-parameters is available when executing the following command from EJBCA home directory:
+For this mode to work, the property 'ALIAS.operationmode' in the command line or 'Operational mode' in the AdminGUI has to be set to 'ra'. 
+All the parameters needed to create the new end entity should be set through the command line or the AdminGUI. Documentation on how to set 
+the different parameters through the command line is available when executing the following command from EJBCA home directory:
 </p>
 <source>
 ./bin/ejbca.sh config scep updatealias --help
