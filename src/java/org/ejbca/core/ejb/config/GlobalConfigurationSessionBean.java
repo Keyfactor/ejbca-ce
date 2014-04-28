@@ -176,7 +176,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
                 result = globalconfigurationCache.getGlobalconfiguration();
             } else if(StringUtils.equals(configID, Configuration.CMPConfigID) && !cmpConfigurationCache.needsUpdate()) {
                 result = cmpConfigurationCache.getCMPConfiguration();
-            } else if(StringUtils.equals(configID, Configuration.ScepConfigID) && !cmpConfigurationCache.needsUpdate()) {
+            } else if(StringUtils.equals(configID, Configuration.ScepConfigID) && !scepConfigurationCache.needsUpdate()) {
                 result = scepConfigurationCache.getScepConfiguration();
             } else {
                 if (log.isDebugEnabled()) {

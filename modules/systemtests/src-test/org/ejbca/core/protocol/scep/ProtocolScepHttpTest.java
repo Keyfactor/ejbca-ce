@@ -50,6 +50,7 @@ import java.util.Random;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.fileupload.util.Streams;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -230,7 +231,47 @@ public class ProtocolScepHttpTest extends CaTestCase {
         WebResponse resp = con.getResponse(settings);
         assertEquals("Response code", 400, resp.getStatusCode());
     }
-    
+
+    @Test
+    public void test02AccessTest() throws Exception {
+        
+        ScepConfiguration scepConfig = (ScepConfiguration) globalConfigSession.getCachedConfiguration(Configuration.ScepConfigID);
+        boolean remove = false;
+        if(!scepConfig.aliasExists("scep")) {
+            scepConfig.addAlias("scep");
+            globalConfigSession.saveConfiguration(admin, scepConfig, Configuration.ScepConfigID);
+            remove = true;
+        }
+        
+        String resourceName = "/ejbca/publicweb/apply/scep/pkiclient.exe?operation=GetCACert&message=" + caname;
+        String httpHost = SystemTestsConfiguration.getRemoteHost("127.0.0.1");
+        String httpPort = SystemTestsConfiguration.getRemotePortHttp(configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP));
+        String httpBaseUrl = "http://" + httpHost + ":" + httpPort;
+        
+        
+        String url = httpBaseUrl + resourceName;
+        final HttpURLConnection con;
+        URL u = new URL(url);
+        con = (HttpURLConnection)u.openConnection();
+        con.setRequestMethod("GET");
+        con.getDoOutput();
+        con.connect();
+        
+        int ret = con.getResponseCode();
+        log.debug("HTTP response code: "+ret);
+        if ( ret == 200 ) {
+            log.debug(Streams.asString(con.getInputStream())); 
+        }
+        con.disconnect();
+        
+        if(remove) {
+            scepConfig.removeAlias("scep");
+            globalConfigSession.saveConfiguration(admin, scepConfig, Configuration.ScepConfigID);
+        }
+        assertEquals("HTTP GET is not supported. (This test expects " + httpBaseUrl+resourceName + " to exist)", 200, ret);
+        
+    }
+
     /**
      * Tests that the right configuration alias is extracted from the SCEP URL. 
      * 
