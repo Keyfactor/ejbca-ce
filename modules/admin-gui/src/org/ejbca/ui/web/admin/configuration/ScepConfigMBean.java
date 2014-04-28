@@ -179,6 +179,29 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         currentAlias = null;
         return aliasGuiList;
     }
+    
+    
+    /** @return the name of the Scep alias that is subject to view or edit */
+    public String getCurrentAliasStr() {
+        // Get the HTTP GET/POST parameter named "alias"
+        final String inputAlias = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("alias");        
+        if (inputAlias!=null && inputAlias.length()>0) {
+            if (!inputAlias.equals(currentAliasStr)) {
+                flushCache();
+                this.currentAliasStr = inputAlias;
+            }
+        }
+        return currentAliasStr;
+    }
+
+    /** @return cached or populate a new CryptoToken GUI representation for view or edit */
+    public ScepAliasGuiInfo getCurrentAlias() throws AuthorizationDeniedException {
+        if (this.currentAlias == null) {
+            final String alias = getCurrentAliasStr();
+            this.currentAlias = new ScepAliasGuiInfo(scepConfig, alias);
+        }
+        return this.currentAlias;
+    }   
    
     /** Invoked when admin saves the SCEP alias configurations */
     public void saveCurrentAlias() throws AuthorizationDeniedException {
@@ -215,6 +238,10 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         flushCache();
     }
     
+    public void selectUpdate() {
+        // NOOP: Only for page reload
+    }
+    
     /** @return a list of usable operational modes */
     public List<SelectItem> getAvailableModes() {
         final List<SelectItem> ret = new ArrayList<SelectItem>();
@@ -249,7 +276,12 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
     
     /** @return a list of certificate profiles that are available for the current end entity profile */
     public List<SelectItem> getAvailableCertProfilesOfEEProfile() {
-        EndEntityProfile p = endentityProfileSession.getEndEntityProfile(currentAlias.getRaEEProfile());
+        String eep = currentAlias.getRaEEProfile();
+        if( (eep==null) || (eep.length() <= 0) ) {
+            eep = ScepConfiguration.DEFAULT_RA_ENTITYPROFILE;
+        }
+        EndEntityProfile p = endentityProfileSession.getEndEntityProfile(eep);
+        
         final List<SelectItem> ret = new ArrayList<SelectItem>();
         ArrayList<String> cpids = (ArrayList<String>) p.getAvailableCertificateProfileIds();
         Iterator<String> itr = cpids.iterator();
@@ -263,7 +295,12 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
     
     /** @return a list of CAs that are available for the current end entity profile */
     public List<SelectItem> getAvailableCAsOfEEProfile() {
-        EndEntityProfile p = endentityProfileSession.getEndEntityProfile(currentAlias.getRaEEProfile());
+        String eep = currentAlias.getRaEEProfile();
+        if( (eep==null) || (eep.length() <= 0) ) {
+            eep = ScepConfiguration.DEFAULT_RA_ENTITYPROFILE;
+        }
+        EndEntityProfile p = endentityProfileSession.getEndEntityProfile(eep);
+        
         final List<SelectItem> ret = new ArrayList<SelectItem>();
         Map<Integer, String> caidname = informationmemory.getCAIdToNameMap();
         ArrayList<String> caids = (ArrayList<String>) p.getAvailableCAs();
@@ -317,32 +354,6 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         ret.add(new SelectItem("CIF", "CIF"));
         ret.add(new SelectItem("NIF", "NIF"));
         return ret;
-    }
-    
-    /** @return the name of the Scep alias that is subject to view or edit */
-    public String getCurrentAliasStr() {
-        // Get the HTTP GET/POST parameter named "alias"
-        final String inputAlias = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("alias");        
-        if (inputAlias!=null && inputAlias.length()>0) {
-            if (!inputAlias.equals(currentAliasStr)) {
-                flushCache();
-                this.currentAliasStr = inputAlias;
-            }
-        }
-        return currentAliasStr;
-    }
-
-    /** @return cached or populate a new CryptoToken GUI representation for view or edit */
-    public ScepAliasGuiInfo getCurrentAlias() throws AuthorizationDeniedException {
-        if (this.currentAlias == null) {
-            final String alias = getCurrentAliasStr();
-            this.currentAlias = new ScepAliasGuiInfo(scepConfig, alias);
-        }
-        return this.currentAlias;
-    }   
-    
-    public void selectUpdate() {
-        // NOOP: Only for page reload
     }
 
 }
