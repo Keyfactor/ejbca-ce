@@ -130,6 +130,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
     private ScepAliasGuiInfo currentAlias = null;
     private InformationMemory informationmemory;
     private ScepConfiguration scepConfig;
+    private boolean isNewAlias = false;
 
     private final GlobalConfigurationSessionLocal globalConfigSession = getEjbcaWebBean().getEjb().getGlobalConfigurationSession();
     private final AccessControlSessionLocal accessControlSession = getEjbcaWebBean().getEjb().getAccessControlSession();
@@ -150,6 +151,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
     private void flushCache() {
         currentAlias = null;
         aliasGuiList = null;
+        isNewAlias = false;
     }
        
     /** Build a list sorted by name from the existing SCEP configuration aliases */
@@ -191,25 +193,57 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
 
     /** @return cached or populate a new CryptoToken GUI representation for view or edit */
     public ScepAliasGuiInfo getCurrentAlias() throws AuthorizationDeniedException {
+        String ref = getParamRef();
+        if(StringUtils.equals(ref, "newalias")) {
+            isNewAlias = true;
+        }
+        
         if (this.currentAlias == null) {
             final String alias = getCurrentAliasStr();
             this.currentAlias = new ScepAliasGuiInfo(scepConfig, alias);
         }
+        
         return this.currentAlias;
-    }   
+    }
+    
+    /** Used to draw the back link. No white-listing to the calling method must be careful to only use this for branching. */
+    public String getParamRef() {
+        final String reference = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("ref");
+        if (reference==null || reference.isEmpty()) {
+            return "default";
+        }
+        return reference;
+    }
    
     /** Invoked when admin saves the SCEP alias configurations */
     public void saveCurrentAlias() throws AuthorizationDeniedException {
         if(currentAlias != null) {
-            String alias = currentAlias.getAlias();
-
-            if(!StringUtils.equals(alias, currentAliasStr)) {
-                scepConfig.renameAlias(currentAliasStr, alias);
-                currentAliasStr = alias;
-            } else if(!scepConfig.aliasExists(alias)) {
-                scepConfig.addAlias(alias);
-                currentAliasStr = alias;
+            String alias = currentAlias.getAlias();  
+            if(isNewAlias) {
+                if(scepConfig.aliasExists(alias)) {
+                    String msg = "Cannot save. Alias '" + alias + "' already exists";
+                    log.info("Message displayed to user: " + msg);
+                    super.addNonTranslatedErrorMessage(msg);
+                    return;
+                } else {
+                    scepConfig.addAlias(alias);
+                    log.info("Added alias: " + alias);
+                }
+            } else {
+                if(!StringUtils.equals(alias, currentAliasStr)) {
+                    if(scepConfig.aliasExists(alias)) {
+                        String msg = "Cannot rename. Alias '" + alias + "' already exists";
+                        log.info("Message displayed to user: " + msg);
+                        super.addNonTranslatedErrorMessage(msg);
+                        return;
+                    } else {
+                        scepConfig.renameAlias(currentAliasStr, alias);
+                        log.info("Renamed alias '" + currentAliasStr + "' to '" + alias + "'");
+                    }
+                }
             }
+            currentAliasStr = alias;
+            
             
             scepConfig.setRAMode(alias, "ra".equalsIgnoreCase(currentAlias.getMode()));
             scepConfig.setIncludeCA(alias, currentAlias.isIncludeCA());
