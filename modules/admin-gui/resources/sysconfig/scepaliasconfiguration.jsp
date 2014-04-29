@@ -48,11 +48,8 @@ org.cesecore.authorization.control.AuditLogRules
 		
 		<h:panelGroup id="placeholder1" rendered="true"/>
 		
-		<h:outputLabel for="currentAliasStr" value="#{web.text.SCEP_ALIAS}" rendered="true"/>
-		<h:outputText id="currentAliasStr" value="#{scepConfigMBean.currentAliasStr}" rendered="true"/>
-		
-		<h:outputLabel for="currentAliasRename" value="#{web.text.SCEP_ALIAS_RENAME}"/>
-		<h:panelGroup id="currentAliasRename">
+		<h:outputLabel for="currentAlias" value="#{web.text.SCEP_ALIAS}"/>
+		<h:panelGroup id="currentAlias">
 	    	<h:inputText  value="#{scepConfigMBean.currentAlias.alias}" rendered="true">
 	    		<f:validator validatorId="legalCharsValidator"/>
 	    	</h:inputText>
