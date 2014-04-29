@@ -52,7 +52,6 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         private String alias;
         private String mode;
         private boolean includeCA;
-        private String defaultCA;
         private String raCertProfile;
         private String raEEProfile;
         private String raAuthPassword;
@@ -68,7 +67,6 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                 if(scepConfig.aliasExists(alias)) {
                     this.mode = scepConfig.getRAMode(alias)?"ra":"ca";
                     this.includeCA = scepConfig.getIncludeCA(alias);
-                    this.defaultCA = scepConfig.getScepDefaultCA(alias);
                     this.raCertProfile = scepConfig.getRACertProfile(alias);
                     this.raEEProfile = scepConfig.getRAEndEntityProfile(alias);
                     this.raAuthPassword = scepConfig.getRAAuthPassword(alias);
@@ -80,7 +78,6 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                 } else {
                     this.mode = ScepConfiguration.DEFAULT_OPERATION_MODE;
                     this.includeCA = Boolean.parseBoolean(ScepConfiguration.DEFAULT_INCLUDE_CA);
-                    this.defaultCA = ScepConfiguration.DEFAULT_CA;
                     this.raCertProfile = ScepConfiguration.DEFAULT_RA_CERTPROFILE;
                     this.raEEProfile = ScepConfiguration.DEFAULT_RA_ENTITYPROFILE;
                     this.raAuthPassword = ScepConfiguration.DEFAULT_RA_AUTHPWD;
@@ -105,8 +102,6 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         public void setMode(String mode) { this.mode = mode; }
         public boolean isIncludeCA() { return includeCA; }
         public void setIncludeCA(boolean includeca) {this.includeCA = includeca; }
-        public String getDefaultCA() { return defaultCA; }
-        public void setDefaultCA(String caname) {this.defaultCA = caname; }
         public String getRaCertProfile() { return raCertProfile; }
         public void setRaCertProfile(String cp) {this.raCertProfile = cp; }
         public String getRaEEProfile() { return raEEProfile; }
@@ -218,7 +213,6 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             
             scepConfig.setRAMode(alias, "ra".equalsIgnoreCase(currentAlias.getMode()));
             scepConfig.setIncludeCA(alias, currentAlias.isIncludeCA());
-            scepConfig.setSCEPDefaultCA(alias, currentAlias.getDefaultCA());
             scepConfig.setRACertProfile(alias, currentAlias.getRaCertProfile());
             scepConfig.setRAEndEntityProfile(alias, currentAlias.getRaEEProfile());
             scepConfig.setRADefaultCA(alias, currentAlias.getRaDefaultCA());

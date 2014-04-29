@@ -98,20 +98,16 @@ public class UpdateCommand extends BaseScepConfigCommand {
 
     @Override
     public String getFullHelpText() {
+        final String divider = " | ";
+        
         StringBuilder sb = new StringBuilder();
         sb.append(getCommandDescription() + "\n\n");
         sb.append("The key could be any of the following:\n");
         
-        sb.append("    " + ScepConfiguration.SCEP_OPERATIONMODE + " - possible values: ca | ra" + "\n");
-        sb.append("    " + ScepConfiguration.SCEP_INCLUDE_CA + " - possible values: true | false" + "\n");
+        sb.append("    " + ScepConfiguration.SCEP_OPERATIONMODE + " - possible values: ca " + divider + " ra" + "\n");
+        sb.append("    " + ScepConfiguration.SCEP_INCLUDE_CA + " - possible values: true " + divider + " false" + "\n");
         
-        StringBuilder existingCas = new StringBuilder();
-        final String divider = " | ";
-        for (String ca : EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAvailableCANames(getAuthenticationToken())) {
-            existingCas.append((existingCas.length() == 0 ? "" : divider) + ca);
-        }
-        sb.append("    " + ScepConfiguration.SCEP_CA + " - possible values: " + existingCas + "\n");
-        
+
         Map<Integer, String> endentityprofileidtonamemap = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class)
                 .getEndEntityProfileIdToNameMap();
         StringBuilder existingEeps = new StringBuilder();
@@ -126,16 +122,21 @@ public class UpdateCommand extends BaseScepConfigCommand {
         StringBuilder existingCps = new StringBuilder();
         for (Integer profileId : EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class).getAuthorizedCertificateProfileIds(
                 getAuthenticationToken(), CertificateConstants.CERTTYPE_ENDENTITY)) {
-            existingCps.append((existingCps.length() == 0 ? "" : " | ") + certificateprofileidtonamemap.get(profileId));
+            existingCps.append((existingCps.length() == 0 ? "" : divider) + certificateprofileidtonamemap.get(profileId));
         }
-        sb.append("    " + ScepConfiguration.SCEP_RA_CERTPROFILE + " - possible values: ProfileDefault | " + existingCps + "\n");
+        sb.append("    " + ScepConfiguration.SCEP_RA_CERTPROFILE + " - possible values: ProfileDefault" + divider + existingCps + "\n");
         
-        sb.append("    " + ScepConfiguration.SCEP_RA_DEFAULTCA + " - possible values: ProfileDefault | " + existingCas + "\n");
-        sb.append("    " + ScepConfiguration.SCEP_RA_AUTHPWD + " - possible values: none | any alphanumeric string" + "\n");
-        sb.append("    " + ScepConfiguration.SCEP_RA_NAME_GENERATION_SCHEME + " - possible values: DN | RANDOM | USERNAME | FIXED" + "\n");
+        StringBuilder existingCas = new StringBuilder();
+        for (String ca : EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAvailableCANames(getAuthenticationToken())) {
+            existingCas.append((existingCas.length() == 0 ? "" : divider) + ca);
+        }
+        sb.append("    " + ScepConfiguration.SCEP_RA_DEFAULTCA + " - possible values: ProfileDefault" + divider + existingCas + "\n");
+        
+        sb.append("    " + ScepConfiguration.SCEP_RA_AUTHPWD + " - possible values: none " + divider + " any alphanumeric string" + "\n");
+        sb.append("    " + ScepConfiguration.SCEP_RA_NAME_GENERATION_SCHEME + " - possible values: DN " + divider + " RANDOM " + divider + " USERNAME " + divider + " FIXED" + "\n");
         sb.append("    " + ScepConfiguration.SCEP_RA_NAME_GENERATION_PARAMETERS + " - possible values: See CMP Configurations in the Admin GUI" + "\n");
-        sb.append("    " + ScepConfiguration.SCEP_RA_NAME_GENERATION_PREFIX + " - possible values: ${RANDOM} | any alphanumeric string" + "\n");
-        sb.append("    " + ScepConfiguration.SCEP_RA_NAME_GENERATION_POSTFIX + " - possible values: ${RANDOM} | any alphanumeric string" + "\n");
+        sb.append("    " + ScepConfiguration.SCEP_RA_NAME_GENERATION_PREFIX + " - possible values: ${RANDOM} " + divider + " any alphanumeric string" + "\n");
+        sb.append("    " + ScepConfiguration.SCEP_RA_NAME_GENERATION_POSTFIX + " - possible values: ${RANDOM} " + divider + " any alphanumeric string" + "\n");
         
         return sb.toString();
 
