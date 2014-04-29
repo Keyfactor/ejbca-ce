@@ -67,36 +67,18 @@ public class CompressedCollection<T extends Serializable> implements Collection<
                 ret = true;
                 size++;
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
         }
         return ret;
     }
-    
-    /* Estimate the size of a single entry.
-    private void estimateSize(final T object) {
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(baos);
-            oos.writeObject(object);
-            oos.close();
-            log.info("Uncompressed data of one entry is " + baos.toByteArray().length);
-        } catch (IOException e) {
-            log.warn(e.getMessage(), e);
-        }
-    }
-    */
 
     /** Lazy initialization of our in memory object storage */
-    private ObjectOutputStream getObjectOutputStream() {
+    private ObjectOutputStream getObjectOutputStream() throws IOException {
         if (oos==null) {
             baos = new ByteArrayOutputStream();
             final DeflaterOutputStream dos = new DeflaterOutputStream(baos, new Deflater(Deflater.BEST_COMPRESSION));
-            try {
-                oos = new ObjectOutputStream(dos);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            oos = new ObjectOutputStream(dos);
         }
         return oos;
     }
@@ -142,7 +124,7 @@ public class CompressedCollection<T extends Serializable> implements Collection<
                 try {
                     oiss.get(oiss.size()-1).close();
                 } catch (IOException e) {
-                    log.error(e.getMessage(), e);
+                    throw new IllegalStateException(e);
                 }
                 oiss.remove(oiss.size()-1);
                 return true;
@@ -198,7 +180,7 @@ public class CompressedCollection<T extends Serializable> implements Collection<
             try {
                 ois = new ObjectInputStream(iis);
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
             oiss.add(ois);
         }
