@@ -66,7 +66,7 @@ org.ejbca.core.model.authorization.AccessRulesConstants
 
 	</h:dataTable>
 	<br/>
-	<h:outputLink value="adminweb/sysconfig/scepaliasconfiguration.jsf?alias=NewAlias" rendered="true">
+	<h:outputLink value="adminweb/sysconfig/scepaliasconfiguration.jsf?alias=NewAlias&ref=newalias" rendered="true">
 		<h:outputText value="#{web.text.CRYPTOTOKEN_CREATENEW}"/>
 	</h:outputLink>
  
