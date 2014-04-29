@@ -62,19 +62,6 @@ org.cesecore.authorization.control.AuditLogRules
 		<h:outputLabel for="includeca" value="#{web.text.SCEP_INCLUDE_CA}" rendered="true"/>
 		<h:selectBooleanCheckbox id="includeca" value="#{scepConfigMBean.currentAlias.includeCA}" disabled="false" rendered="true"/>
 
-		<h:outputLabel for="defca" value="#{web.text.SCEP_DEFAULT_CA}"/>
-		<h:panelGroup id="defca">
-			<h:panelGroup rendered="true">
-			<h:selectOneMenu id="selectOneMenuDefCA" value="#{scepConfigMBean.currentAlias.defaultCA}"
-				onchange="document.getElementById('currentAliasForm:selectDefCA').click();">
-				<f:selectItems value="#{scepConfigMBean.availableCAs}"/>
-			</h:selectOneMenu>
-			<h:commandButton id="selectDefCA" action="#{scepConfigMBean.selectUpdate}" value="#{scepConfigMBean.currentAlias.defaultCA}"/>
-			<script>document.getElementById('currentAliasForm:selectDefCA').style.display = 'none';</script>
-			</h:panelGroup>
-	    	<h:outputText value="#{scepConfigMBean.currentAlias.defaultCA}" rendered="false"/>
-		</h:panelGroup>
-
 		<h:outputLabel for="currentMode" value="#{web.text.SCEP_OPERATIONAL_MODE}"/>
 		<h:panelGroup id="currentMode">
 			<h:panelGroup rendered="true">
