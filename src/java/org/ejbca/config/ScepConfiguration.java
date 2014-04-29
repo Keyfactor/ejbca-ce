@@ -20,7 +20,6 @@ public class ScepConfiguration extends Configuration implements Serializable {
     public static final String SCEP_RAMODE_OLD = "ra.createOrEditUser";
     public static final String SCEP_OPERATIONMODE = "operationmode";
     public static final String SCEP_INCLUDE_CA = "includeca";
-    public static final String SCEP_CA = "defaultca";
     public static final String SCEP_RA_CERTPROFILE = "ra.certificateProfile";
     public static final String SCEP_RA_ENTITYPROFILE = "ra.entityProfile";
     public static final String SCEP_RA_AUTHPWD = "ra.authPwd";
@@ -50,7 +49,6 @@ public class ScepConfiguration extends Configuration implements Serializable {
     public static final Set<String> DEFAULT_ALIAS_LIST      = new LinkedHashSet<String>();
     public static final String DEFAULT_OPERATION_MODE = "ca";
     public static final String DEFAULT_INCLUDE_CA = "true";
-    public static final String DEFAULT_CA = "";
     public static final String DEFAULT_RA_CERTPROFILE = "ENDUSER";
     public static final String DEFAULT_RA_ENTITYPROFILE = "EMPTY";
     public static final String DEFAULT_RA_DEFAULTCA = "";
@@ -79,7 +77,6 @@ public class ScepConfiguration extends Configuration implements Serializable {
         if(StringUtils.isNotEmpty(alias)) {
             data.put(alias + SCEP_OPERATIONMODE, DEFAULT_OPERATION_MODE);
             data.put(alias + SCEP_INCLUDE_CA, DEFAULT_INCLUDE_CA);
-            data.put(alias + SCEP_CA, DEFAULT_CA);
             data.put(alias + SCEP_RA_CERTPROFILE, DEFAULT_RA_CERTPROFILE);
             data.put(alias + SCEP_RA_ENTITYPROFILE, DEFAULT_RA_ENTITYPROFILE);
             data.put(alias + SCEP_RA_DEFAULTCA, DEFAULT_RA_DEFAULTCA);
@@ -97,7 +94,6 @@ public class ScepConfiguration extends Configuration implements Serializable {
         Set<String> keys = new LinkedHashSet<String>();
         keys.add(alias + SCEP_OPERATIONMODE);
         keys.add(alias + SCEP_INCLUDE_CA);
-        keys.add(alias + SCEP_CA);
         keys.add(alias + SCEP_RA_CERTPROFILE);
         keys.add(alias + SCEP_RA_ENTITYPROFILE);
         keys.add(alias + SCEP_RA_DEFAULTCA);
@@ -128,15 +124,6 @@ public class ScepConfiguration extends Configuration implements Serializable {
     public void setIncludeCA(String alias, boolean includeca) {
         String key = alias + "." + SCEP_INCLUDE_CA;
         setValue(key, Boolean.toString(includeca), alias);
-    }
-    
-    public String getScepDefaultCA(String alias) {
-        String key = alias + "." + SCEP_CA;
-        return getValue(key, alias);
-    }
-    public void setSCEPDefaultCA(String alias, String defCA) {
-        String key = alias + "." + SCEP_CA;
-        setValue(key, defCA, alias);
     }
 
     public String getRACertProfile(String alias) {
