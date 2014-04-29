@@ -95,10 +95,10 @@ public class UploadFileCommand extends BaseCmpConfigCommand {
                 "Note that the alias 'cmp' is the default alias used when sending the CMP request through the URL 'http://HOST:PORT/ejbca/publicweb/cmp'. "
                         + "Note also that the alias 'cmp' does not exist per default and should be created before using this URL"+ "\n");
         sb.append("The following keys (if present) will be read from the file:" + "\n");
-        Set<String> keys = CmpConfiguration.getAllAliasKeys("<ALIAS>" + "\n");
+        Set<String> keys = CmpConfiguration.getAllAliasKeys("<ALIAS>");
         Iterator<String> itr = keys.iterator();
         while (itr.hasNext()) {
-            sb.append("     " + itr.next());
+            sb.append("     " + itr.next() + "\n");
         }
         return sb.toString();
     }
