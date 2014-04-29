@@ -63,6 +63,11 @@ org.ejbca.core.model.authorization.AccessRulesConstants
 				<h:outputText value="#{alias.alias}" title="#{alias.alias}"/>
 			</h:outputLink>
 		</h:column>
+		
+		<h:column>
+   			<f:facet name="header"><h:outputText value="Operational Mode"/></f:facet>
+			<h:outputText value="#{alias.mode}" title="#{alias.mode}"/>
+		</h:column>
 
 	</h:dataTable>
 	<br/>
