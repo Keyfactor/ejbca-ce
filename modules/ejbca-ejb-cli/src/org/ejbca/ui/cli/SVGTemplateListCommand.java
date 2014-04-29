@@ -34,7 +34,7 @@ public class SVGTemplateListCommand extends EjbcaCommandBase {
 
     @Override
     public String[] getCommandPath() {
-        return new String[] { "SVGTemplate" };
+        return new String[] { "svgtemplate" };
     }
 
     @Override
