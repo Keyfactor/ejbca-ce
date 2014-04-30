@@ -82,6 +82,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.Query;
 import org.ejbca.util.query.UserMatch;
@@ -149,9 +150,8 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         }
         try {
             endEntityProfileSession.removeEndEntityProfile(admin, "TESTMERGEWITHWS");
-        } catch (Exception e) {
-        } // NOPMD, ignore errors so we don't stop deleting users because one of
-          // them does not exist.
+            endEntityProfileSession.removeEndEntityProfile(admin, "TESTADDUSER");
+        } catch (Exception e) {} // NOPMD, ignore errors
     }
     
     public String getRoleName() {
@@ -209,6 +209,72 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         log.trace("<addUser()");
     }
 
+    /**
+     * tests creation of new user testing behavior of empty passwords
+     * 
+     * @throws Exception error
+     */
+    @Test
+    public void testAddUserWithEmptyPwd() throws Exception {
+        String thisusername = genRandomUserName();
+        String email = thisusername + "@anatom.se";
+        try {
+            endEntityManagementSession.addUser(admin, thisusername, null, "C=SE, CN=" + thisusername, null, email, false,
+                    SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, caid);
+            usernames.add(thisusername);
+            fail("User " + thisusername + " was added to the database although it should not have been.");
+        } catch (UserDoesntFullfillEndEntityProfile e) {
+            assertTrue("Error message should be about password", e.getMessage().contains("Password cannot be empty or null"));
+        }
+
+        thisusername = genRandomUserName();
+        email = thisusername + "@anatom.se";
+        try {
+            endEntityManagementSession.addUser(admin, thisusername, "", "C=SE, CN=" + thisusername, null, email, false,
+                    SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, caid);
+            usernames.add(thisusername);
+            fail("User " + thisusername + " was added to the database although it should not have been.");
+        } catch (UserDoesntFullfillEndEntityProfile e) {
+            assertTrue("Error message should be about password", e.getMessage().contains("Password cannot be empty or null"));
+        }
+
+        
+        EndEntityProfile profile = new EndEntityProfile();
+        profile.addField(DnComponents.COMMONNAME);
+        profile.addField(DnComponents.COUNTRY);
+        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+        profile.setAllowMergeDnWebServices(true);
+        endEntityProfileSession.addEndEntityProfile(admin, "TESTADDUSER", profile);
+        int profileId = endEntityProfileSession.getEndEntityProfileId("TESTADDUSER");
+        try {
+            endEntityManagementSession.addUser(admin, thisusername, "", "C=SE, CN=" + thisusername, null, email, false,
+                    profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, caid);
+            usernames.add(thisusername);
+            fail("User " + thisusername + " was added to the database although it should not have been.");
+        } catch (UserDoesntFullfillEndEntityProfile e) {
+            assertTrue("Error message should be about password", e.getMessage().contains("Password cannot be empty or null"));
+        }
+        profile.setRequired(EndEntityProfile.PASSWORD,0,false);
+        endEntityProfileSession.changeEndEntityProfile(admin, "TESTADDUSER", profile);
+        try {
+            endEntityManagementSession.addUser(admin, thisusername, "", "C=SE, CN=" + thisusername, null, email, false,
+                    profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, caid);
+            usernames.add(thisusername);
+        } catch (UserDoesntFullfillEndEntityProfile e) {
+            fail("User " + thisusername + " was not added to the database although it should have been.");
+        }
+        thisusername = genRandomUserName();
+        email = thisusername + "@anatom.se";
+        try {
+            endEntityManagementSession.addUser(admin, thisusername, null, "C=SE, CN=" + thisusername, null, email, false,
+                    profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, caid);
+            usernames.add(thisusername);
+        } catch (UserDoesntFullfillEndEntityProfile e) {
+            fail("User " + thisusername + " was not added to the database although it should have been.");
+        }
+
+    }
+    
     /**
      * tests creation of new user with unique serialnumber
      * 
