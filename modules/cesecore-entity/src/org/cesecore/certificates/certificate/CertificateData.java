@@ -108,7 +108,7 @@ public class CertificateData extends ProtectedData implements Serializable {
      *            parameters. Can be null if RSA or certificate public key contains all parameters.
      * @param username the username in UserData to map the certificate to
      * @param cafp CA certificate fingerprint, can be null
-     * @param status status of the certificate, active, revoked etcc, i.e. SecConst.CERT_ACTIVE etc
+     * @param status status of the certificate, active, revoked etcc, i.e. CertificateConstants.CERT_ACTIVE etc
      * @param type the user type the certificate belongs to, i.e. EndEntityTypes.USER_ENDUSER etc
      * @param certprofileid certificate profile id, can be 0
      * @param tag a custom tag to map the certificate to any custom defined tag
