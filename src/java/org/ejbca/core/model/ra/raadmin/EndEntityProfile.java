@@ -895,8 +895,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     				throw new UserDoesntFullfillEndEntityProfile("Password cannot be empty or null.");
     			}
     		}
-    		// Assume a-zA-Z0-9 + 22 other printable chars = 72 different chars
-    		final int passwordStrengthEstimate = getPasswordStrength(72, password.trim().length()); 
+    		// Assume a-zA-Z0-9 + 22 other printable chars = 72 different chars. Null password has 0 bits.
+    		final int passwordStrengthEstimate = getPasswordStrength(72, (password == null ? 0 : password.trim().length())); 
     		if (log.isDebugEnabled()) {
     			log.debug("passwordStrengthEstimate=" + passwordStrengthEstimate + " getMinPwdStrength=" + getMinPwdStrength());
     		}
