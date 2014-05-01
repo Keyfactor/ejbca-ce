@@ -150,7 +150,6 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         }
         try {
             endEntityProfileSession.removeEndEntityProfile(admin, "TESTMERGEWITHWS");
-            endEntityProfileSession.removeEndEntityProfile(admin, "TESTADDUSER");
         } catch (Exception e) {} // NOPMD, ignore errors
     }
     
@@ -216,53 +215,64 @@ public class EndEntityManagementSessionTest extends CaTestCase {
      */
     @Test
     public void testAddUserWithEmptyPwd() throws Exception {
-        // Add a new end entity profile, by default password is required and we should not be able to add a user with empty or null password.
-        EndEntityProfile profile = new EndEntityProfile();
-        profile.addField(DnComponents.COMMONNAME);
-        profile.addField(DnComponents.COUNTRY);
-        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
-        profile.setAllowMergeDnWebServices(true);
-        // Profile will be removed in teardown()
-        endEntityProfileSession.addEndEntityProfile(admin, "TESTADDUSER", profile);
-        int profileId = endEntityProfileSession.getEndEntityProfileId("TESTADDUSER");
-        String thisusername = genRandomUserName();
-        String email = thisusername + "@anatom.se";
-        try {
-            endEntityManagementSession.addUser(admin, thisusername, "", "C=SE, CN=" + thisusername, null, email, false,
-                    profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, caid);
-            usernames.add(thisusername);
-            fail("User " + thisusername + " was added to the database although it should not have been.");
-        } catch (UserDoesntFullfillEndEntityProfile e) {
-            assertTrue("Error message should be about password", e.getMessage().contains("Password cannot be empty or null"));
+        // First make sure we have end entity profile limitations enabled
+        final GlobalConfiguration gc = (GlobalConfiguration) globalConfSession.getCachedConfiguration(Configuration.GlobalConfigID);
+        final boolean eelimitation = gc.getEnableEndEntityProfileLimitations();
+        gc.setEnableEndEntityProfileLimitations(true);
+        globalConfSession.saveConfiguration(roleMgmgToken, gc, Configuration.GlobalConfigID);   
+        final String eeprofileName = "TESTADDUSER";
+        try {            
+            // Add a new end entity profile, by default password is required and we should not be able to add a user with empty or null password.
+            EndEntityProfile profile = new EndEntityProfile();
+            profile.addField(DnComponents.COMMONNAME);
+            profile.addField(DnComponents.COUNTRY);
+            profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+            profile.setAllowMergeDnWebServices(true);
+            // Profile will be removed in finally clause
+            endEntityProfileSession.addEndEntityProfile(admin, eeprofileName, profile);
+            int profileId = endEntityProfileSession.getEndEntityProfileId(eeprofileName);
+            String thisusername = genRandomUserName();
+            String email = thisusername + "@anatom.se";
+            try {
+                endEntityManagementSession.addUser(admin, thisusername, "", "C=SE, CN=" + thisusername, null, email, false,
+                        profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, caid);
+                usernames.add(thisusername);
+                fail("User " + thisusername + " was added to the database although it should not have been.");
+            } catch (UserDoesntFullfillEndEntityProfile e) {
+                assertTrue("Error message should be about password", e.getMessage().contains("Password cannot be empty or null"));
+            }
+            try {
+                endEntityManagementSession.addUser(admin, thisusername, null, "C=SE, CN=" + thisusername, null, email, false,
+                        profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, caid);
+                usernames.add(thisusername);
+                fail("User " + thisusername + " was added to the database although it should not have been.");
+            } catch (UserDoesntFullfillEndEntityProfile e) {
+                assertTrue("Error message should be about password", e.getMessage().contains("Password cannot be empty or null"));
+            }
+            // Set required = false for password, then an empty password should be allowed
+            profile.setRequired(EndEntityProfile.PASSWORD,0,false);
+            endEntityProfileSession.changeEndEntityProfile(admin, eeprofileName, profile);
+            try {
+                endEntityManagementSession.addUser(admin, thisusername, "", "C=SE, CN=" + thisusername, null, email, false,
+                        profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, caid);
+                usernames.add(thisusername);
+            } catch (UserDoesntFullfillEndEntityProfile e) {
+                fail("User " + thisusername + " was not added to the database although it should have been.");
+            }
+            thisusername = genRandomUserName();
+            email = thisusername + "@anatom.se";
+            try {
+                endEntityManagementSession.addUser(admin, thisusername, null, "C=SE, CN=" + thisusername, null, email, false,
+                        profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, caid);
+                usernames.add(thisusername);
+            } catch (UserDoesntFullfillEndEntityProfile e) {
+                fail("User " + thisusername + " was not added to the database although it should have been.");
+            }
+        } finally {
+            gc.setEnableEndEntityProfileLimitations(eelimitation);
+            globalConfSession.saveConfiguration(roleMgmgToken, gc, Configuration.GlobalConfigID);            
+            endEntityProfileSession.removeEndEntityProfile(admin, eeprofileName);
         }
-        try {
-            endEntityManagementSession.addUser(admin, thisusername, null, "C=SE, CN=" + thisusername, null, email, false,
-                    profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, caid);
-            usernames.add(thisusername);
-            fail("User " + thisusername + " was added to the database although it should not have been.");
-        } catch (UserDoesntFullfillEndEntityProfile e) {
-            assertTrue("Error message should be about password", e.getMessage().contains("Password cannot be empty or null"));
-        }
-        // Set required = false for password, then an empty password should be allowed
-        profile.setRequired(EndEntityProfile.PASSWORD,0,false);
-        endEntityProfileSession.changeEndEntityProfile(admin, "TESTADDUSER", profile);
-        try {
-            endEntityManagementSession.addUser(admin, thisusername, "", "C=SE, CN=" + thisusername, null, email, false,
-                    profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, caid);
-            usernames.add(thisusername);
-        } catch (UserDoesntFullfillEndEntityProfile e) {
-            fail("User " + thisusername + " was not added to the database although it should have been.");
-        }
-        thisusername = genRandomUserName();
-        email = thisusername + "@anatom.se";
-        try {
-            endEntityManagementSession.addUser(admin, thisusername, null, "C=SE, CN=" + thisusername, null, email, false,
-                    profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, caid);
-            usernames.add(thisusername);
-        } catch (UserDoesntFullfillEndEntityProfile e) {
-            fail("User " + thisusername + " was not added to the database although it should have been.");
-        }
-
     }
     
     /**
