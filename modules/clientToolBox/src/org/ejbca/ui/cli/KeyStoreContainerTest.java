@@ -56,6 +56,7 @@ class KeyStoreContainerTest {
     final private String providerName;
     final private static PrintStream termOut = System.out;
     final private static PrintStream termErr = System.err;
+    final private static InputStream termIn = System.in;
     KeyStoreContainerTest(String a, KeyPair kp, String pn) {
         this.alias = a;
         this.keyPair = kp;
@@ -70,7 +71,7 @@ class KeyStoreContainerTest {
                      final String alias,
                      final String typeOfOperation,
                      final ProtectionParameter protectionParameter) throws Exception {
-        if ( alias==null ) {
+        if ( alias==null ) while( true ) {
             startNormal(providerClassName,
                         encryptProviderClassName,
                         keyStoreType,
@@ -78,7 +79,11 @@ class KeyStoreContainerTest {
                         slotLabelType,
                         nrOfTests,
                         protectionParameter);
-            return;
+            termOut.println("Hit RETURN to run again. Type x and hit RETURN to quit.");
+            final int character = termIn.read();
+            if( character=='x' || character== 'X') {
+                return;
+            }
         }
         startStress(providerClassName,
                     encryptProviderClassName,
