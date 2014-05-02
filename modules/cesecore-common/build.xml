@@ -13,6 +13,7 @@
         <path refid="lib.bouncycastle.classpath"/>
         <path refid="lib.log4j.classpath"/>
         <path refid="lib.commons-logging.classpath"/>
+        <path refid="lib.commons-codec.classpath"/>
         <path refid="lib.commons-config.classpath"/>
         <path refid="lib.commons-collections.classpath"/>
         <path refid="lib.ldap.classpath"/>

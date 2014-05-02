@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparency;
@@ -345,6 +346,15 @@ public class CertificateView implements Serializable {
     	}        
 
       return subjectaltnamestring; 	
+    }
+    
+    public boolean hasNameConstraints() {
+        if (certificate instanceof X509Certificate) {
+            X509Certificate x509cert = (X509Certificate)certificate;
+            byte[] ext = x509cert.getExtensionValue(Extension.nameConstraints.getId());
+            return ext != null;
+        }
+        return false;
     }
 
     public boolean hasQcStatement() {

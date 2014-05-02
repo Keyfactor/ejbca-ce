@@ -1546,7 +1546,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             cainfo = new X509CAInfo(subjectdn, caname, CAConstants.CA_EXTERNAL, new Date(), subjectaltname, certprofileid, validity,
                     CertTools.getNotAfter(x509CaCertificate), CAInfo.CATYPE_X509, signedby, null, null, description, -1, null, policies, crlperiod,
                     crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, useauthoritykeyidentifier, authoritykeyidentifiercritical,
-                    usecrlnumber, crlnumbercritical, "", "", "", null, "", finishuser, extendedcaserviceinfos, useutf8policytext, approvalsettings,
+                    usecrlnumber, crlnumbercritical, "", "", "", null, null, null, "", finishuser, extendedcaserviceinfos, useutf8policytext, approvalsettings,
                     numofreqapprovals, useprintablestringsubjectdn, useldapdnorder, usecrldistpointoncrl, crldistpointoncrlcritical, false, true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
@@ -2359,6 +2359,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     "", // Default CRL Issuer
                     "", // Default OCSP Service Locator
                     null, //Authority Information Access
+                    null, null, // Name Constraints
                     "", // CA defined freshest CRL
                     true, // Finish User
                     extendedcaservices, false, // use default utf8 settings
