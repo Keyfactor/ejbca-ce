@@ -6,7 +6,7 @@
 
 <script type="text/vbscript">
 <!--
-	If InStr(Navigator.UserAgent, "Windows NT 6") <> 0 Then
+	If InStr(navigator.UserAgent, "Windows NT 6") <> 0 Then
 		InitVistaCSP()
 	End if
 
@@ -234,7 +234,7 @@
 		Dim TheForm, result
 		Set TheForm = Document.CertReqForm
 		err.clear
-		If InStr(Navigator.UserAgent, "Windows NT 6") <> 0 Then
+		If InStr(navigator.UserAgent, "Windows NT 6") <> 0 Then
 			If g_certEnrollLoadError <> 0 Then
 				Call MsgBox("Could not load CertEnroll.", 0, "Alert")
 				Exit Sub
@@ -379,7 +379,7 @@
     <input name="containername" type="hidden" value="" />
     <input type="hidden" name="hidemenu" value="${hidemenu}" />
 
-	<label for="CspProvider">Provider:</label>
+	<label for="CspProvider">Provider</label>
     <select name="CspProvider" id="CspProvider" accesskey="p">
     </select>
     <br />
@@ -411,11 +411,11 @@
         <input type="hidden" name="certprofile" id="certprofile" value="${availableCertProfiles[0]}">
     </c:if>
 
-    <label for="enchancedeid">Add to enhanced eID card:</label>
+    <label for="enchancedeid" style="white-space:normal;">Add to enhanced eID card</label>
     <input type="checkbox" name="enchancedeid" value="true" accesskey="a" /> 
     <br />
 
-    <label for="enchancedeid">If possible, make key exportable:</label>
+    <label for="exportable" style="white-space:normal;">If possible, make key exportable</label>
     <input type="checkbox" name="exportable" value="true" checked="true" accesskey="e" /> 
     <br />
 
@@ -436,7 +436,7 @@
 
 <script type="text/vbscript" defer="true">
 <!--
-	If InStr(Navigator.UserAgent, "Windows NT 6") <> 0 Then
+	If InStr(navigator.UserAgent, "Windows NT 6") <> 0 Then
 		Call GetCertEnrollCSPList()
 		Document.CertReqForm.classid.value = "clsid:884e2049-217d-11da-b2a4-000e7bbb2b09"
 	Else

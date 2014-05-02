@@ -8,6 +8,7 @@
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+    <meta http-equiv="x-ua-compatible" content="IE=10">
     <title><%= org.ejbca.config.InternalConfiguration.getAppNameCapital() %> Public Web</title>
 	<link rel="shortcut icon" href="images/favicon.png" type="image/png" />
     <link rel="stylesheet" href="styles.css" type="text/css" />
