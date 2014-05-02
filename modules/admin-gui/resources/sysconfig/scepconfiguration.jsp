@@ -49,31 +49,53 @@ org.ejbca.core.model.authorization.AccessRulesConstants
 <body>
 	<h1>
 		<h:outputText value="#{web.text.SCEP_MANAGEALIASES}"/>
-		<%= ejbcawebbean.getHelpReference("/userguide.html#Managing%20Crypto%20Tokens") %>
+		<%= ejbcawebbean.getHelpReference("/adminguide.html#Scep") %>
 	</h1>
 	<div class="message"><h:messages layout="table" errorClass="alert"/></div>
 	<h:form id="aliases">
-	<h:dataTable value="#{scepConfigMBean.aliasGuiList}" var="alias" styleClass="grid">
-		<h:column rendered="false">
-			<h:selectBooleanCheckbox value="#{alias.selected}"/>
-		</h:column>
-		<h:column>
-   			<f:facet name="header"><h:outputText value="#{web.text.SCEP_ALIAS1}"/></f:facet>
-			<h:outputLink value="adminweb/sysconfig/scepaliasconfiguration.jsf?alias=#{alias.alias}">
-				<h:outputText value="#{alias.alias}" title="#{alias.alias}"/>
-			</h:outputLink>
-		</h:column>
+	
+		<h:inputHidden id="newAlias" value="#{scepConfigMBean.newAlias}">
+			<f:validator validatorId="legalCharsValidator" />
+		</h:inputHidden>	
+	
+		<h:inputHidden id="currentAliasStr" value="#{scepConfigMBean.currentAliasStr}">
+			<f:validator validatorId="legalCharsValidator" />
+		</h:inputHidden>
+	
+		<h:dataTable value="#{scepConfigMBean.aliasGuiList}" var="alias" styleClass="grid">
+			<h:column rendered="false">
+				<h:selectBooleanCheckbox value="#{alias.selected}"/>
+			</h:column>
+			<h:column>
+   				<f:facet name="header"><h:outputText value="#{web.text.SCEP_ALIAS1}"/></f:facet>
+				<h:outputLink value="adminweb/sysconfig/scepaliasconfiguration.jsf?alias=#{alias.alias}">
+					<h:outputText value="#{alias.alias}" title="#{alias.alias}"/>
+				</h:outputLink>
+			</h:column>
 		
 		<h:column>
    			<f:facet name="header"><h:outputText value="Operational Mode"/></f:facet>
 			<h:outputText value="#{alias.mode}" title="#{alias.mode}"/>
 		</h:column>
+		
+		<h:column>
+			<h:commandLink action="#{scepConfigMBean.renameAlias}"
+				onclick="return getInputToField('aliases:newAlias','#{web.text.ENTERNEWNAME}', '#{web.text.ONLYCHARACTERS}') && getInsertIntoField('aliases:currentAliasStr','#{alias.alias}', '#{web.text.ONLYCHARACTERS}');"
+				styleClass="commandLink" title="#{web.text.RENAMEROLE}">
+				<h:outputText value="#{web.text.RENAME}"/>
+			</h:commandLink>
+			<h:commandLink action="#{scepConfigMBean.deleteAlias}" onclick="return confirm('#{web.text.AREYOUSURE}') && getInsertIntoField('aliases:currentAliasStr','#{alias.alias}', '#{web.text.ONLYCHARACTERS}');"
+				styleClass="commandLink" title="#{web.text.DELETEROLE}">
+				<h:outputText value="#{web.text.DELETE}"/>
+			</h:commandLink>
+		</h:column>
 
 	</h:dataTable>
 	<br/>
-	<h:outputLink value="adminweb/sysconfig/scepaliasconfiguration.jsf?alias=NewAlias&ref=newalias" rendered="true">
-		<h:outputText value="#{web.text.CRYPTOTOKEN_CREATENEW}"/>
-	</h:outputLink>
+	<h:commandLink action="#{scepConfigMBean.addAlias}" styleClass="commandLink" title="#{web.text.ADDROLE}"
+		onclick="return getInputToField('aliases:newAlias','#{web.text.ENTERNEWNAME}', '#{web.text.ONLYCHARACTERS}');" >
+		<h:outputText value="#{web.text.ADD}"/>
+	</h:commandLink>
  
 	</h:form>
 	<%	// Include Footer 
