@@ -20,6 +20,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.KeyStoreException;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
@@ -69,6 +70,8 @@ import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
+import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -708,7 +711,8 @@ public class CAInterfaceBean implements Serializable {
             long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod,
             String availablePublisherValues, boolean usecrlnumber, boolean crlnumbercritical,
             String defaultcrldistpoint, String defaultcrlissuer, String defaultocsplocator,
-            String authorityInformationAccessString, String caDefinedFreshestCrlString, boolean useutf8policytext,
+            String authorityInformationAccessString, String nameConstraintsPermittedString, String nameConstraintsExcludedString,
+            String caDefinedFreshestCrlString, boolean useutf8policytext,
             boolean useprintablestringsubjectdn, boolean useldapdnorder, boolean usecrldistpointoncrl,
             boolean crldistpointoncrlcritical, boolean serviceOcspActive, boolean serviceXkmsActive,
             boolean serviceCmsActive, String sharedCmpRaSecret, boolean buttonCreateCa, boolean buttonMakeRequest,
@@ -767,6 +771,7 @@ public class CAInterfaceBean implements Serializable {
                     useauthoritykeyidentifier, authoritykeyidentifiercritical, crlperiod, crlIssueInterval,
                     crlOverlapTime, deltacrlperiod, availablePublisherValues, usecrlnumber, crlnumbercritical,
                     defaultcrldistpoint, defaultcrlissuer, defaultocsplocator, authorityInformationAccessString,
+                    nameConstraintsPermittedString, nameConstraintsExcludedString,
                     caDefinedFreshestCrlString, useutf8policytext, useprintablestringsubjectdn, useldapdnorder,
                     usecrldistpointoncrl, crldistpointoncrlcritical, serviceOcspActive, serviceXkmsActive,
                     serviceCmsActive, sharedCmpRaSecret, buttonCreateCa, buttonMakeRequest, cryptoTokenId,
@@ -795,7 +800,7 @@ public class CAInterfaceBean implements Serializable {
             long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod,
             String availablePublisherValues, boolean usecrlnumber, boolean crlnumbercritical,
             String defaultcrldistpoint, String defaultcrlissuer, String defaultocsplocator,
-            String authorityInformationAccessString, String caDefinedFreshestCrlString, boolean useutf8policytext,
+            String authorityInformationAccessString, String nameConstraintsPermittedString, String nameConstraintsExcludedString, String caDefinedFreshestCrlString, boolean useutf8policytext,
             boolean useprintablestringsubjectdn, boolean useldapdnorder, boolean usecrldistpointoncrl,
             boolean crldistpointoncrlcritical, boolean serviceOcspActive, boolean serviceXkmsActive,
             boolean serviceCmsActive, String sharedCmpRaSecret, boolean buttonCreateCa, boolean buttonMakeRequest,
@@ -910,6 +915,13 @@ public class CAInterfaceBean implements Serializable {
 	            if (caDefinedFreshestCrlString != null) {
 	                cadefinedfreshestcrl = caDefinedFreshestCrlString;
 	            }
+	            
+	            final List<String> nameConstraintsPermitted = parseNameConstraintsString(nameConstraintsPermittedString);
+	            final List<String> nameConstraintsExcluded = parseNameConstraintsString(nameConstraintsExcludedString);
+	            final boolean hasNameConstraints = !nameConstraintsPermitted.isEmpty() || !nameConstraintsExcluded.isEmpty();
+	            if (hasNameConstraints && !isNameConstraintAllowedInProfile(certprofileid)) {
+	               throw new ParameterException(ejbcawebbean.getText("NAMECONSTRAINTSNOTENABLED"));
+	            }
 
 	            if (crlperiod != 0 && !illegaldnoraltname) {
 	                if (buttonCreateCa) {
@@ -927,6 +939,7 @@ public class CAInterfaceBean implements Serializable {
 	                            defaultcrlissuer,
 	                            defaultocsplocator, 
 	                            authorityInformationAccess,
+	                            nameConstraintsPermitted, nameConstraintsExcluded,
 	                            cadefinedfreshestcrl,
 	                            finishUser, extendedcaservices,
 	                            useutf8policytext,
@@ -971,6 +984,7 @@ public class CAInterfaceBean implements Serializable {
 	                            defaultcrlissuer,
 	                            defaultocsplocator, 
 	                            authorityInformationAccess,
+	                            nameConstraintsPermitted, nameConstraintsExcluded,
 	                            cadefinedfreshestcrl,
 	                            finishUser, extendedcaservices,
 	                            useutf8policytext,
@@ -1044,7 +1058,49 @@ public class CAInterfaceBean implements Serializable {
 	    return illegaldnoraltname;
 	}
 
-	public List<ExtendedCAServiceInfo> makeExtendedServicesInfos(String keySpec, String subjectdn, boolean serviceXkmsActive, boolean serviceCmsActive) {
+	private List<String> parseNameConstraintsString(String input) throws ParameterException {
+        List<String> encodedNames = new ArrayList<String>();
+        if (input != null) {
+            String[] pieces = input.split(",");
+            for (String piece : pieces) {
+                piece = piece.trim();
+                if (!piece.isEmpty()) {
+                    try {
+                        encodedNames.add(NameConstraint.parseNameConstraintEntry(piece));
+                    } catch (CertificateExtensionException e) {
+                        throw new ParameterException(MessageFormat.format(ejbcawebbean.getText("INVALIDNAMECONSTRAINT"), piece) + e.getMessage() + e);
+                    }
+                }
+            }
+        }
+        return encodedNames;
+    }
+    
+    public String formatNameConstraintsString(List<String> encodedList) {
+        StringBuilder sb = new StringBuilder();
+        if (encodedList != null) {
+            boolean first = true;
+            for (String encodedName : encodedList) {
+                if (!first) {
+                    sb.append(", ");
+                }
+                first = false;
+                sb.append(NameConstraint.formatNameConstraintEntry(encodedName));
+            }
+        }
+        return sb.toString();
+    }
+    
+    private boolean isNameConstraintAllowedInProfile(int certProfileId) {
+        final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(certProfileId);
+        
+        final boolean isCA = (certProfile.getType() == CertificateConstants.CERTTYPE_SUBCA ||
+                certProfile.getType() == CertificateConstants.CERTTYPE_ROOTCA);
+        
+        return isCA && certProfile.getUseNameConstraints();
+    }
+
+    public List<ExtendedCAServiceInfo> makeExtendedServicesInfos(String keySpec, String subjectdn, boolean serviceXkmsActive, boolean serviceCmsActive) {
 	    String keyType = AlgorithmConstants.KEYALGORITHM_RSA;
         try {
             Integer.parseInt(keySpec);
@@ -1108,6 +1164,7 @@ public class CAInterfaceBean implements Serializable {
 	        boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, String approvalSettingValues, String numofReqApprovalsParam,
 	        String availablePublisherValues, boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical, boolean usecrlnumber,
 	        boolean crlnumbercritical, String defaultcrldistpoint, String defaultcrlissuer, String defaultocsplocator, String authorityInformationAccessParam,
+	        String nameConstraintsPermittedString, String nameConstraintsExcludedString,
 	        String caDefinedFreshestCrl, boolean useutf8policytext, boolean useprintablestringsubjectdn, boolean useldapdnorder, boolean usecrldistpointoncrl,
 	        boolean crldistpointoncrlcritical, boolean includeInHealthCheck, boolean serviceOcspActive, boolean serviceXkmsActive, boolean serviceCmsActive, String sharedCmpRaSecret
 	        ) throws Exception {
@@ -1180,6 +1237,7 @@ public class CAInterfaceBean implements Serializable {
                        defaultcrlissuer,
                        defaultocsplocator, 
                        authorityInformationAccess,
+                       parseNameConstraintsString(nameConstraintsPermittedString), parseNameConstraintsString(nameConstraintsExcludedString),
                        cadefinedfreshestcrl,
                        finishUser,extendedcaservices,
                        useutf8policytext,

@@ -123,7 +123,7 @@ public abstract class CertificateExtension {
 	 * this is the method at all implementors must implement.
 	 * 
 	 * @param userData the userdata of the issued certificate.
-	 * @param ca the CA data with access to all the keys etc
+	 * @param ca the CA data with access to all the keys etc. For CA certificates, this is the CA itself.
 	 * @param certProfile the certificate profile
 	 * @param userPublicKey public key of the user, or null if not available
 	 * @param caPublicKey public key of the CA, or null if not available

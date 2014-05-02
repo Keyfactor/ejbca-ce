@@ -329,6 +329,7 @@ public class DatabaseCliCommandTest {
                 null, // defaultcrlissuer
                 null, // defaultocsplocator
                 null, // Authority Information Access
+                null, null, // Name Constraints
                 null, // defaultfreshestcrl
                 true, // Finish User
                 extendedcaservices, false, // use default utf8 settings

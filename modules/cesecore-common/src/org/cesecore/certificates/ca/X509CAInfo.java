@@ -52,6 +52,8 @@ public class X509CAInfo extends CAInfo{
 	private boolean crlDistributionPointOnCrlCritical;
 	private String cmpRaAuthSecret = "";
 	private List<String> authorityInformationAccess;
+	private List<String> nameConstraintsPermitted;
+	private List<String> nameConstraintsExcluded;
     
     /** Constructor that should be used when creating CA and retrieving CA info. */
     public X509CAInfo(final String subjectdn,final  String name, final int status, final Date updateTime, 
@@ -61,7 +63,7 @@ public class X509CAInfo extends CAInfo{
     		final long crlperiod, final long crlIssueInterval, final long crlOverlapTime, final long deltacrlperiod, 
     		final Collection<Integer> crlpublishers, final boolean useauthoritykeyidentifier, final boolean authoritykeyidentifiercritical, 
     		final boolean usecrlnumber, final boolean crlnumbercritical, final String defaultcrldistpoint, final String defaultcrlissuer,  
-    		final String defaultocspservicelocator, final List<String> authorityInformationAccess, final String cadefinedfreshestcrl, 
+    		final String defaultocspservicelocator, final List<String> authorityInformationAccess, final List<String> nameConstraintsPermitted, final List<String> nameConstraintsExcluded, final String cadefinedfreshestcrl, 
     		final boolean finishuser, final Collection<ExtendedCAServiceInfo> extendedcaserviceinfos, 
     		final boolean useUTF8PolicyText, final Collection<Integer> approvalSettings, final int numOfReqApprovals, final boolean usePrintableStringSubjectDN, 
     		final boolean useLdapDnOrder, final boolean useCrlDistributionPointOnCrl, final boolean crlDistributionPointOnCrlCritical, final boolean includeInHealthCheck,
@@ -130,6 +132,8 @@ public class X509CAInfo extends CAInfo{
         this.useCertificateStorage = _useCertificateStorage;
         setCmpRaAuthSecret(_cmpRaAuthSecret);
         this.authorityInformationAccess = authorityInformationAccess;
+        this.nameConstraintsPermitted = nameConstraintsPermitted;
+        this.nameConstraintsExcluded = nameConstraintsExcluded;
         
     }
 
@@ -138,7 +142,7 @@ public class X509CAInfo extends CAInfo{
     		final long crlperiod, final long crlIssueInterval, final long crlOverlapTime, final long deltacrlperiod, 
     		final Collection<Integer> crlpublishers, final boolean useauthoritykeyidentifier, final boolean authoritykeyidentifiercritical,
     		final boolean usecrlnumber, final boolean crlnumbercritical, final String defaultcrldistpoint, final String defaultcrlissuer, 
-    		final String defaultocspservicelocator, final List<String> authorityInformationAccess,final String cadefinedfreshestcrl, 
+    		final String defaultocspservicelocator, final List<String> authorityInformationAccess, final List<String> nameConstraintsPermitted, final List<String> nameConstraintsExcluded, final String cadefinedfreshestcrl, 
     		final boolean finishuser, final Collection<ExtendedCAServiceInfo> extendedcaserviceinfos, 
     		final boolean useUTF8PolicyText, final Collection<Integer> approvalSettings, final int numOfReqApprovals, final boolean usePrintableStringSubjectDN, 
     		final boolean useLdapDnOrder, final boolean useCrlDistributionPointOnCrl, final boolean crlDistributionPointOnCrlCritical, final boolean includeInHealthCheck,
@@ -179,6 +183,8 @@ public class X509CAInfo extends CAInfo{
         this.useCertificateStorage = _useCertificateStorage;
         setCmpRaAuthSecret(_cmpRaAuthSecret);
         this.authorityInformationAccess = authorityInformationAccess;
+        this.nameConstraintsPermitted = nameConstraintsPermitted;
+        this.nameConstraintsExcluded = nameConstraintsExcluded;
     }
    
   public List<CertificatePolicy> getPolicies() {
@@ -265,6 +271,22 @@ public class X509CAInfo extends CAInfo{
 
     public void setAuthorityInformationAccess(List<String> authorityInformationAccess) {
         this.authorityInformationAccess = authorityInformationAccess;
+    }
+    
+    public List<String> getNameConstraintsPermitted() {
+        return nameConstraintsPermitted;
+    }
+    
+    public void setNameConstraintsPermittedNames(List<String> encodedNames) {
+        nameConstraintsPermitted = encodedNames;
+    }
+    
+    public List<String> getNameConstraintsExcluded() {
+        return nameConstraintsExcluded;
+    }
+    
+    public void setNameConstraintsExcludedNames(List<String> encodedNames) {
+        nameConstraintsExcluded = encodedNames;
     }
   
 }

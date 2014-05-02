@@ -220,6 +220,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String USEQCCUSTOMSTRING = "useqccustomstring";
     protected static final String QCCUSTOMSTRINGOID = "qccustomstringoid";
     protected static final String QCCUSTOMSTRINGTEXT = "qccustomstringtext";
+    protected static final String USENAMECONSTRAINTS = "usenameconstraints";
+    protected static final String NAMECONSTRAINTSCRITICAL = "nameconstraintscritical";
     protected static final String USESUBJECTDIRATTRIBUTES = "usesubjectdirattributes";
     protected static final String CVCTERMINALTYPE = "cvctermtype";
     protected static final String CVCACCESSRIGHTS = "cvcaccessrights";
@@ -255,6 +257,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         useStandardCertificateExtensions.put(USECERTIFICATEPOLICIES, Extension.certificatePolicies.getId());
         useStandardCertificateExtensions.put(USEEXTENDEDKEYUSAGE, Extension.extendedKeyUsage.getId());
         useStandardCertificateExtensions.put(USEQCSTATEMENT, Extension.qCStatements.getId());
+        useStandardCertificateExtensions.put(USENAMECONSTRAINTS, Extension.nameConstraints.getId());
         useStandardCertificateExtensions.put(USESUBJECTDIRATTRIBUTES, Extension.subjectDirectoryAttributes.getId());
         useStandardCertificateExtensions.put(USEAUTHORITYINFORMATIONACCESS, Extension.authorityInfoAccess.getId());
         useStandardCertificateExtensions.put(USEPRIVKEYUSAGEPERIOD, Extension.privateKeyUsagePeriod.getId());
@@ -1553,6 +1556,24 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         } else {
             data.put(QCCUSTOMSTRINGTEXT, qccustomstringtext);
         }
+    }
+    
+    public boolean getUseNameConstraints() {
+        Boolean b = (Boolean) data.get(USENAMECONSTRAINTS);
+        return b != null && b.booleanValue();
+    }
+
+    public void setUseNameConstraints(boolean use) {
+        data.put(USENAMECONSTRAINTS, Boolean.valueOf(use));
+    }
+    
+    public boolean getNameConstraintsCritical() {
+        Boolean b = (Boolean) data.get(NAMECONSTRAINTSCRITICAL);
+        return b != null && b.booleanValue();
+    }
+
+    public void setNameConstraintsCritical(boolean use) {
+        data.put(NAMECONSTRAINTSCRITICAL, Boolean.valueOf(use));
     }
 
     public boolean getUseSubjectDirAttributes() {

@@ -977,6 +977,30 @@ function checkallfields(){
            <label for="<%=CHECKBOX_SUBJECTDIRATTRIBUTES%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
       </td>
     </tr>
+    
+    <%-- Name Constraints extension --%>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NAMECONSTRAINTS\") %>" />
+      </td>
+      <td width="50%">
+           <input type="checkbox" name="<%=CHECKBOX_NAMECONSTRAINTS%>" value="<%=CHECKBOX_VALUE %>" 
+           <% if(certificateprofiledata.getUseNameConstraints())
+                 out.write("CHECKED");
+           %> id="<%=CHECKBOX_NAMECONSTRAINTS%>">
+           <label for="<%=CHECKBOX_NAMECONSTRAINTS%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
+           &nbsp;
+           <input type="checkbox" name="<%=CHECKBOX_NAMECONSTRAINTSCRITICAL %>" value="<%=CHECKBOX_VALUE %>" 
+           <% 
+             if(!certificateprofiledata.getUseNameConstraints())
+                 out.write(" disabled "); 
+              else
+              if(certificateprofiledata.getNameConstraintsCritical())
+                 out.write("CHECKED");
+           %> id="<%=CHECKBOX_NAMECONSTRAINTSCRITICAL%>"> 
+           <label for="<%=CHECKBOX_NAMECONSTRAINTSCRITICAL%>"><c:out value="<%= ejbcawebbean.getText(\"EXT_CRITICAL\") %>" /></label>
+      </td>
+    </tr>
 
     <%-- CRL Distribution Points (CRL-DP) extension --%>
     <tr  id="Row<%=row%2%>"> 

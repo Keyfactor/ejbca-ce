@@ -1,5 +1,6 @@
 <%@page import="org.cesecore.keys.token.CryptoTokenFactory"%>
 <%@page import="org.ejbca.core.model.ca.caadmin.extendedcaservices.BaseSigningCAServiceInfo"%>
+<%@page import="org.apache.commons.lang.StringUtils"%>
 
 <%               
   TreeMap<String,Integer> rootcaprofiles = info.getAuthorizedRootCACertificateProfileNames();
@@ -1093,6 +1094,40 @@ function checkallfields(){
       </td>
     </tr>
     <% } %>
+    
+    <%
+    String nameConstraintsPermittedString = !editca ? "" : cabean.formatNameConstraintsString(x509cainfo.getNameConstraintsPermitted());
+    String nameConstraintsExcludedString = !editca ? "" : cabean.formatNameConstraintsString(x509cainfo.getNameConstraintsExcluded());
+    %>
+    <tr id="Row<%=row%2%>">
+      <td width="50%"  align="right">
+        <%= ejbcawebbean.getText("EXT_PKIX_NAMECONSTRAINTS_PERMITTED") %>
+        <%= ejbcawebbean.getHelpReference("/userguide.html#Name%20Constraints") %>
+      </td>
+      <td width="50%">
+        <% if (!editca || isUninitialized) { %>
+            <input type="text" name="<%=TEXTFIELD_NAMECONSTRAINTSPERMITTED%>" size="40" maxlength="256" value="<c:out value="<%= nameConstraintsPermittedString %>"/>">
+            <p class="help"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NAMECONSTRAINTS_PERMITTED_HELP1\") %>" /><br />
+            <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NAMECONSTRAINTS_PERMITTED_HELP2\") %>" /></p>
+        <% } else { %>
+            <c:out value="<%= !StringUtils.isEmpty(nameConstraintsPermittedString) ? nameConstraintsPermittedString : ejbcawebbean.getText(&quot;NONE&quot;) %>" />
+        <% } %>
+      </td>
+    </tr>
+    <tr id="Row<%=row++%2%>">
+      <td width="50%"  align="right">
+        <%= ejbcawebbean.getText("EXT_PKIX_NAMECONSTRAINTS_EXCLUDED") %>
+        <%= ejbcawebbean.getHelpReference("/userguide.html#Name%20Constraints") %>
+      </td>
+      <td width="50%">
+        <% if (!editca || isUninitialized) { %>
+            <input type="text" name="<%=TEXTFIELD_NAMECONSTRAINTSEXCLUDED%>" size="40" maxlength="256" value="<c:out value="<%= nameConstraintsExcludedString %>"/>"><br />
+            <p class="help"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_NAMECONSTRAINTS_EXCLUDED_HELP\") %>" /></p>
+        <% } else { %>
+            <c:out value="<%= !StringUtils.isEmpty(nameConstraintsExcludedString) ? nameConstraintsExcludedString : ejbcawebbean.getText(&quot;NONE&quot;) %>" />
+        <% } %>
+      </td>
+    </tr>
 
     <%-- ---------- CRL Specific Data -------------------- --%>
 

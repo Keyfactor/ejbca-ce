@@ -262,6 +262,7 @@ public class CAImportExportTest  {
                 "", // Default CRL Issuer
                 "", // Default OCSP Service Locator  
                 null, // Authority Information Access
+                null, null, // Name Constraints
                 null, // defaultfreshestcrl
                 true, // Finish User
                 new ArrayList<ExtendedCAServiceInfo>(), //extendedcaservices

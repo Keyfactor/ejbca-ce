@@ -619,6 +619,7 @@ public class IntegratedOcspResponseTest extends RoleUsingTestCase {
                     null, // defaultcrlissuer
                     null, // defaultocsplocator
                     null, // Authority Information Access
+                    null, null, // Name Constraints
                     null, // defaultfreshestcrl
                     true, // Finish User
                     new ArrayList<ExtendedCAServiceInfo>(), false, // use default utf8 settings

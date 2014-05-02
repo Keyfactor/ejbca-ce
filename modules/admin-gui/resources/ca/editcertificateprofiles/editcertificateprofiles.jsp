@@ -80,6 +80,8 @@
   static final String CHECKBOX_SUBJECTALTERNATIVENAME             = "checkboxsubjectalternativename";
   static final String CHECKBOX_SUBJECTALTERNATIVENAMECRITICAL     = "checkboxsubjectalternativenamecritical";
   static final String CHECKBOX_SUBJECTDIRATTRIBUTES               = "checksubjectdirattributes";
+  static final String CHECKBOX_NAMECONSTRAINTS                    = "checknameconstraints";
+  static final String CHECKBOX_NAMECONSTRAINTSCRITICAL            = "checknameconstraintscritical";
   static final String CHECKBOX_CRLDISTRIBUTIONPOINT               = "checkboxcrldistributionpoint";
   static final String CHECKBOX_USEDEFAULTCRLDISTRIBUTIONPOINT     = "checkboxusedefaultcrldistributionpoint";
   static final String CHECKBOX_CRLDISTRIBUTIONPOINTCRITICAL       = "checkboxcrldistributionpointcritical";
@@ -449,6 +451,19 @@
              					} else {
                  						certificateprofiledata.setUseSubjectDirAttributes(false);
              					}
+             					
+             					value = request.getParameter(CHECKBOX_NAMECONSTRAINTS);
+                                if(value != null){                  
+                                        certificateprofiledata.setUseNameConstraints(value.equals(CHECKBOX_VALUE));
+                                        value = request.getParameter(CHECKBOX_NAMECONSTRAINTSCRITICAL); 
+                                        if(value != null)
+                                                certificateprofiledata.setNameConstraintsCritical(value.equals(CHECKBOX_VALUE)); 
+                                        else
+                                                certificateprofiledata.setNameConstraintsCritical(false);
+                                } else {
+                                        certificateprofiledata.setUseNameConstraints(false);
+                                        certificateprofiledata.setNameConstraintsCritical(false);
+                                }
 
              					use = false;
              					value = request.getParameter(CHECKBOX_CRLDISTRIBUTIONPOINT);

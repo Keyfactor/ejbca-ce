@@ -170,6 +170,8 @@ public class X509CA extends CA implements Serializable {
     protected static final String USECRLDISTRIBUTIONPOINTONCRL = "usecrldistributionpointoncrl";
     protected static final String CRLDISTRIBUTIONPOINTONCRLCRITICAL = "crldistributionpointoncrlcritical";
     protected static final String CMPRAAUTHSECRET = "cmpraauthsecret";
+    protected static final String NAMECONSTRAINTSPERMITTED = "nameconstraintspermitted";
+    protected static final String NAMECONSTRAINTSEXCLUDED = "nameconstraintsexcluded";
 
     private static final CertificateTransparency ct = CertificateTransparencyFactory.getInstance();
 
@@ -198,6 +200,8 @@ public class X509CA extends CA implements Serializable {
         setCrlDistributionPointOnCrlCritical(cainfo.getCrlDistributionPointOnCrlCritical());
         setCmpRaAuthSecret(cainfo.getCmpRaAuthSecret());
         setAuthorityInformationAccess(cainfo.getAuthorityInformationAccess());
+        setNameConstraintsPermitted(cainfo.getNameConstraintsPermitted());
+        setNameConstraintsExcluded(cainfo.getNameConstraintsExcluded());
         data.put(CA.CATYPE, Integer.valueOf(CAInfo.CATYPE_X509));
         data.put(VERSION, new Float(LATEST_VERSION));
     }
@@ -228,7 +232,7 @@ public class X509CA extends CA implements Serializable {
                 getExpireTime(), getCAType(), getSignedBy(), getCertificateChain(), getCAToken(), getDescription(),
                 getRevocationReason(), getRevocationDate(), getPolicies(), getCRLPeriod(), getCRLIssueInterval(), getCRLOverlapTime(),
                 getDeltaCRLPeriod(), getCRLPublishers(), getUseAuthorityKeyIdentifier(), getAuthorityKeyIdentifierCritical(), getUseCRLNumber(),
-                getCRLNumberCritical(), getDefaultCRLDistPoint(), getDefaultCRLIssuer(), getDefaultOCSPServiceLocator(), getAuthorityInformationAccess(), getCADefinedFreshestCRL(),
+                getCRLNumberCritical(), getDefaultCRLDistPoint(), getDefaultCRLIssuer(), getDefaultOCSPServiceLocator(), getAuthorityInformationAccess(), getNameConstraintsPermitted(), getNameConstraintsExcluded(), getCADefinedFreshestCRL(),
                 getFinishUser(), externalcaserviceinfos, getUseUTF8PolicyText(), getApprovalSettings(), getNumOfRequiredApprovals(),
                 getUsePrintableStringSubjectDN(), getUseLdapDNOrder(), getUseCrlDistributionPointOnCrl(), getCrlDistributionPointOnCrlCritical(),
                 getIncludeInHealthCheck(), isDoEnforceUniquePublicKeys(), isDoEnforceUniqueDistinguishedName(),
@@ -379,6 +383,25 @@ public class X509CA extends CA implements Serializable {
     public void setCrlDistributionPointOnCrlCritical(boolean crlDistributionPointOnCrlCritical) {
         data.put(CRLDISTRIBUTIONPOINTONCRLCRITICAL, Boolean.valueOf(crlDistributionPointOnCrlCritical));
     }
+    
+    @SuppressWarnings("unchecked")
+    public List<String> getNameConstraintsPermitted() {
+        return (List<String>) data.get(NAMECONSTRAINTSPERMITTED);
+    }
+    
+    public void setNameConstraintsPermitted(List<String> encodedNames) {
+        data.put(NAMECONSTRAINTSPERMITTED, encodedNames);
+    }
+    
+    @SuppressWarnings("unchecked")
+    public List<String> getNameConstraintsExcluded() {
+        return (List<String>) data.get(NAMECONSTRAINTSEXCLUDED);
+    }
+    
+    public void setNameConstraintsExcluded(List<String> encodedNames) {
+        data.put(NAMECONSTRAINTSEXCLUDED, encodedNames);
+    }
+
 
     public String getCmpRaAuthSecret() {
         Object o = data.get(CMPRAAUTHSECRET);
@@ -412,6 +435,8 @@ public class X509CA extends CA implements Serializable {
         setUseCrlDistributionPointOnCrl(info.getUseCrlDistributionPointOnCrl());
         setCrlDistributionPointOnCrlCritical(info.getCrlDistributionPointOnCrlCritical());
         setCmpRaAuthSecret(info.getCmpRaAuthSecret());
+        setNameConstraintsPermitted(info.getNameConstraintsPermitted());
+        setNameConstraintsExcluded(info.getNameConstraintsExcluded());
     }
     
     /**
