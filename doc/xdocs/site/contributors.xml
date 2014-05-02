@@ -106,6 +106,7 @@ administrators, who can be reached through the <a href="contact.html">Contact</a
 <li>Vlad, Exim Bank, <!-- VStepin@hq.eximb.com -->Fix for IE provider selection in External RA GUI.</li>
 <li>Matthias Knoll, BRZ, <!-- matthias.knoll@brz.gv.at -->Fix for automatic OCSP renewal using ECC.</li>
 <li>Andrew Dunn, <!-- ammd77@yahoo.co.uk -->Fix for not adding OCSP GET cache headers for responses with nonce.</li>
+<li>SecureMetric, <!-- securemetric.com -->Fix IE11 enrollment in public web.</li>
 </ul>
     </section>
   </body>
