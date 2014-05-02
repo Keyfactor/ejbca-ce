@@ -248,7 +248,7 @@ public class ApplyBean implements java.io.Serializable {
         if (userAgent != null) {
             final boolean isGecko = userAgent.contains("Gecko");
             final boolean isIE = userAgent.contains("MSIE");
-            final boolean isNewIE = userAgent.contains("Trident");
+            final boolean isNewIE = userAgent.contains("Trident"); // IE11
             
             if (isIE && !isGecko) return "explorer";
             if (isNewIE) return "explorer";
