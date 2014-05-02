@@ -155,7 +155,9 @@ public class KeyRecoveryTest extends CaTestCase {
                 log.error("Exception generating keys/cert: ", e);
                 fail("Exception generating keys/cert");
             }
-            keyRecoverySession.addKeyRecoveryData(internalAdmin, cert1, user, keypair1);
+            if(keyRecoverySession.addKeyRecoveryData(internalAdmin, cert1, user, keypair1)) {
+                throw new RuntimeException("Key recovery data already exists in database.");
+            }
             assertTrue("Couldn't save key's in database", keyRecoverySession.existsKeys(cert1));
             log.trace("<test01AddKeyPair()");
             log.trace(">test02MarkAndRecoverKeyPair()");

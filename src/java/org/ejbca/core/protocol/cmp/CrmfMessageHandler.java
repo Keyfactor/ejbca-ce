@@ -31,6 +31,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
@@ -276,7 +277,11 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORADDUSER);
 			LOG.error(errMsg, e);			
 			resp = null;
-		}							
+		} catch (CertificateExtensionException e) {
+            final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
+            LOG.info(errMsg, e); // info because this is something we should expect and we handle it
+            resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_POP, e.getMessage());
+        }							
 		if (LOG.isTraceEnabled()) {
 			LOG.trace("<handleMessage");
 		}
@@ -433,7 +438,10 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			} catch (EndEntityExistsException e) {
 				LOG.info(INTRES.getLocalizedMessage(CMP_ERRORADDUSER, username), e);
 				resp = CmpMessageHelper.createErrorMessage(msg, FailInfo.NOT_AUTHORIZED, e.getMessage(), requestId, requestType, verifyer, keyId, this.responseProt);
-			}
+			} catch (CertificateExtensionException e) {
+			    LOG.info(INTRES.getLocalizedMessage(CMP_ERRORADDUSER, username), e);
+                resp = CmpMessageHelper.createErrorMessage(msg, FailInfo.INCORRECT_DATA, e.getMessage(), requestId, requestType, verifyer, keyId, this.responseProt);
+            }
 		} catch (HandlerException e) {
 			LOG.error(INTRES.getLocalizedMessage("cmp.errorexthandlerexec"), e);
 			resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getMessage());

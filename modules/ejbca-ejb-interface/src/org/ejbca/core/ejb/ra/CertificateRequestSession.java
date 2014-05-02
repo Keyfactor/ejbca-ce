@@ -29,6 +29,7 @@ import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -53,11 +54,12 @@ public interface CertificateRequestSession {
 	 * @param responseType is one of SecConst.CERT_RES_TYPE_...
      * @return a encoded certificate of the type specified in responseType 
 	 * @throws CesecoreException 
+	 * @throws CertificateExtensionException if the request contained invalid extensions
 	 */
     public byte[] processCertReq(AuthenticationToken admin, EndEntityInformation userdata, String req, int reqType, String hardTokenSN, int responseType) throws CADoesntExistsException,
             AuthorizationDeniedException, NotFoundException, InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException,
             SignatureException, IOException, ObjectNotFoundException, CreateException, CertificateException, UserDoesntFullfillEndEntityProfile,
-            ApprovalException, EjbcaException, CesecoreException;
+            ApprovalException, EjbcaException, CesecoreException, CertificateExtensionException;
 
 	/**
 	 * Edits or adds a user and generates a certificate for that user in a single transaction.
@@ -69,9 +71,10 @@ public interface CertificateRequestSession {
 	 * @param responseClass the class of the response message that should be returned back
      * @return a response message of the type specified in responseClass 
 	 * @throws CesecoreException 
+	 * @throws CertificateExtensionException (rollback) if an error exists in the exensions specified in the request
 	 */
     public ResponseMessage processCertReq(AuthenticationToken admin, EndEntityInformation userdata, RequestMessage req, Class<? extends ResponseMessage> responseClass) throws EndEntityExistsException,
-            AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, CesecoreException;
+            AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, CesecoreException, CertificateExtensionException;
 
 	/**
 	 * Edits or adds a user and generates a keystore for that user in a single transaction.

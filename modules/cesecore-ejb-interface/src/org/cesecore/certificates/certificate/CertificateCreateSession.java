@@ -12,14 +12,22 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate;
 
-import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAOfflineException;
+import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.ca.IllegalValidityException;
+import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.ca.SignRequestSignatureException;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
+import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 
 
 /**
@@ -50,16 +58,25 @@ public interface CertificateCreateSession {
      * @return The newly created response or null.
      * 
      * @throws AuthorizationDeniedException (rollback) if admin is not authorized to issue this certificate
-	 * @throws CustomCertSerialNumberException (no rollback) if custom serial number is registered for user, but it is not allowed to be used (either missing unique index in database, or certificate profile does not allow it
+	 * @throws CustomCertificateSerialNumberException (no rollback) if custom serial number is registered for user, but it is not allowed to be used (either missing unique index in database, 
+	 *     or certificate profile does not allow it
      * @throws IllegalKeyException (no rollback) if the passed in PublicKey does not fulfill requirements in CertificateProfile
      * @throws CertificateCreateException (rollback) if another error occurs
      * @throws CADoesntExistsException (no rollback) if CA to issue certificate does not exist
-     * @throws CesecoreException (no rollback) if certificate with same subject DN or key already exists for a user, if these limitations are enabled in CA.
+     * @throws CertificateSerialNumberException if certificate with same subject DN or key already exists for a user, if these limitations are enabled in CA.
+     * @throws CertificateRevokeException if certificate was meant to be issued revoked, but could not. Causes rollback. 
+     * @throws IllegalNameException if the certificate request contained an illegal name 
+     * @throws SignRequestSignatureException (no rollback) if POPO verification on the request fails 
+     * @throws CryptoTokenOfflineException (no rollback) if token in the CA was unavailable. 
+     * @throws CertificateExtensionException if any if the extensions were invalid
+     * @throws IllegalValidityException if the validity defined by notBefore and notAfter was invalid
+     * @throws CAOfflineException if the CA was offline
+     * @throws InvalidAlgorithmException if the signing algorithm in the certificate profile (or the CA Token if not found) was invalid.
      * 
-     * @see org.cesecore.certificates.certificate.request.RequestMessage
-     * @see org.cesecore.certificates.certificate.request.ResponseMessage
-     * @see org.cesecore.certificates.certificate.request.X509ResponseMessage
      */
-    CertificateResponseMessage createCertificate(AuthenticationToken admin, EndEntityInformation userData, RequestMessage req, Class<? extends ResponseMessage> responseClass) throws AuthorizationDeniedException, CustomCertSerialNumberException, IllegalKeyException, CADoesntExistsException, CertificateCreateException, CesecoreException;
-	
+    CertificateResponseMessage createCertificate(AuthenticationToken admin, EndEntityInformation userData, RequestMessage req,
+            Class<? extends ResponseMessage> responseClass) throws AuthorizationDeniedException, CustomCertificateSerialNumberException,
+            IllegalKeyException, CADoesntExistsException, CertificateCreateException, CryptoTokenOfflineException, SignRequestSignatureException,
+            IllegalNameException, CertificateRevokeException, CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CertificateExtensionException;
+
 }

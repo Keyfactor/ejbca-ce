@@ -19,16 +19,23 @@ import java.util.Date;
 import javax.ejb.Local;
 
 import org.bouncycastle.asn1.x509.Extensions;
-import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CA;
-import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAOfflineException;
+import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.ca.IllegalValidityException;
+import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.ca.SignRequestSignatureException;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
+import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificatetransparency.CTExtensionCertGenParams;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 
 /**
  * Local interface for CertificateCreateSession.
@@ -57,21 +64,28 @@ public interface CertificateCreateSessionLocal extends CertificateCreateSession 
      * @param req           a Certification Request message, containing the public key to be put in the
      *                      created certificate. Currently no additional parameters in requests are considered!
      * @param responseClass The implementation class that will be used as the response message.
+     * 
      * @return The newly created response or null.
      * 
      * @throws AuthorizationDeniedException (rollback) if admin is not authorized to issue this certificate
-     * @throws CustomCertSerialNumberException (no rollback) if custom serial number is registered for user, but it is not allowed to be used (either missing unique index in database, or certificate profile does not allow it
-     * @throws IllegalKeyException (no rollback) if the passed in PublicKey does not fulfill requirements in CertificateProfile
-     * @throws CertificateCreateException (rollback) if another error occurs
-     * @throws CADoesntExistsException (no rollback) if CA to issue certificate does not exist
-     * @throws CesecoreException (no rollback) if certificate with same subject DN or key already exists for a user, if these limitations are enabled in CA.
-     * 
-     * @see org.cesecore.certificates.certificate.CertificateCreateSession#createCertificate(AuthenticationToken, EndEntityInformation, RequestMessage, Class)
-     * @see org.cesecore.certificates.certificate.request.RequestMessage
-     * @see org.cesecore.certificates.certificate.request.ResponseMessage
-     * @see org.cesecore.certificates.certificate.request.X509ResponseMessage
+	 * @throws CryptoTokenOfflineException (no rollback) if token in the CA was unavailable. 
+	 * @throws SignRequestSignatureException (no rollback) if POPO verification on the request fails 
+	 * @throws IllegalKeyException (no rollback) if the passed in PublicKey does not fulfill requirements in CertificateProfile
+	 * @throws CertificateSerialNumberException if certificate with same subject DN or key already exists for a user, if these limitations are enabled in CA.
+	 * @throws CertificateRevokeException if certificate was meant to be issued revoked, but could not. Causes rollback. 
+	 * @throws IllegalNameException if the certificate request contained an illegal name 
+     * @throws CustomCertificateSerialNumberException (no rollback) if custom serial number is registered for user, but it is not allowed to be used (either missing unique index in database, or certificate profile does not allow it
+     * @throws CertificateCreateException (rollback) (rollback) if certificate couldn't be created.
+     * @throws CertificateExtensionException if any if the extensions (contained in the request) were invalid
+     * @throws IllegalValidityException if the validity defined by notBefore and notAfter was invalid
+     * @throws CAOfflineException if the CA was offline
+     * @throws InvalidAlgorithmException if the signing algorithm in the certificate profile (or the CA Token if not found) was invalid.
+     *
 	 */
-    CertificateResponseMessage createCertificate(AuthenticationToken admin, EndEntityInformation userData, CA ca, RequestMessage req, Class<? extends ResponseMessage> responseClass) throws AuthorizationDeniedException, CustomCertSerialNumberException, IllegalKeyException, CADoesntExistsException, CertificateCreateException, CesecoreException;
+    CertificateResponseMessage createCertificate(AuthenticationToken admin, EndEntityInformation userData, CA ca, RequestMessage req,
+            Class<? extends ResponseMessage> responseClass) throws CryptoTokenOfflineException, SignRequestSignatureException, IllegalKeyException,
+            IllegalNameException, CustomCertificateSerialNumberException, CertificateCreateException, CertificateRevokeException,
+            CertificateSerialNumberException, AuthorizationDeniedException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CertificateExtensionException;
 
     /**
      * Creates the certificate.
@@ -100,16 +114,25 @@ public interface CertificateCreateSessionLocal extends CertificateCreateSession 
      * @param ctParams Parameters for the CT extension. May contain references to session beans. NOTE: This parameter may be replaced with a map (for multiple extensions) in the future.
      * @return Certificate that has been generated and signed by the CA
      * 
-     * @throws CustomCertSerialNumberException (no rollback) if custom serial number is registered for user, but it is not allowed to be used (either
-     *             missing unique index in database, or certificate profile does not allow it
-     * @throws IllegalKeyException (no rollback) if the passed in PublicKey does not fulfill requirements in CertificateProfile
      * @throws AuthorizationDeniedException (rollback) if admin is not authorized to issue this certificate
-     * @throws CertificateCreateException (rollback) if another error occurs
-     * @throws CesecoreException (no rollback) if certificate with same subject DN or key already exists for a user, if these limitations are enabled
-     *             in CA.
+     * @throws CertificateCreateException (rollback) if certificate couldn't be created.
+     * @throws CustomCertificateSerialNumberException (no rollback) if custom serial number is registered for user, but it is not allowed to be used (either
+     *             missing unique index in database, or certificate profile does not allow it
+     * @throws IllegalNameException if the certificate request contained an illegal name 
+     * @throws CertificateRevokeException (rollback) if certificate was meant to be issued revoked, but could not.
+     * @throws CertificateSerialNumberException if certificate with same subject DN or key already exists for a user, if these limitations are enabled in CA.
+     * @throws CryptoTokenOfflineException if the crypto token for the CA wasn't found
+     * @throws IllegalKeyException if the public key didn't conform to the constrains of the CA's certificate profile.
+     * @throws CertificateExtensionException if any if the extensions were invalid
+     * @throws IllegalValidityException if the validity defined by notBefore and notAfter was invalid
+     * @throws CAOfflineException if the CA was offline
+     * @throws InvalidAlgorithmException if the signing algorithm in the certificate profile (or the CA Token if not found) was invalid.
+     * 
      */
-    Certificate createCertificate(AuthenticationToken admin, EndEntityInformation data, CA ca, RequestMessage request, PublicKey pk, int keyusage, Date notBefore, Date notAfter,
-            Extensions extensions, String sequence, CTExtensionCertGenParams ctParams) throws CustomCertSerialNumberException, IllegalKeyException,
-            AuthorizationDeniedException, CertificateCreateException, CesecoreException;
+    Certificate createCertificate(AuthenticationToken admin, EndEntityInformation data, CA ca, RequestMessage request, PublicKey pk, int keyusage,
+            Date notBefore, Date notAfter, Extensions extensions, String sequence, CTExtensionCertGenParams ctParams)
+            throws AuthorizationDeniedException, IllegalNameException, CustomCertificateSerialNumberException, CertificateCreateException,
+            CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalKeyException,
+            CertificateExtensionException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException;
 
 }

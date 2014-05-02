@@ -20,6 +20,7 @@ import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
+import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
@@ -47,6 +48,8 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequest;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestException;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
+import org.cesecore.certificates.certificate.CertificateCreateException;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificatetransparency.CTExtensionCertGenParams;
@@ -734,16 +737,32 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * @param sequence an optional requested sequence number (serial number) for the certificate, may or may not be used by the CA. Currently used by
      *            CVC CAs for sequence field. Can be set to null.
      * @param ctParams Parameters for the CT extension. May contain references to session beans. NOTE: This parameter may be replaced with a map (for multiple extensions) in the future.
-     * @return
-     * @throws Exception
+     * @return the generated certificate
+     * 
+     * @throws CryptoTokenOfflineException if the crypto token was unavailable
+     * @throws CertificateExtensionException  if any of the certificate extensions were invalid
+     * @throws CertificateCreateException if an error occurred when trying to create a certificate. 
+     * @throws OperatorCreationException  if CA's private key contained an unknown algorithm or provider
+     * @throws IllegalNameException if the name specified in the certificate request was invalid
+     * @throws IllegalValidityException  if validity was invalid
+     * @throws InvalidAlgorithmException  if the signing algorithm in the certificate profile (or the CA Token if not found) was invalid. 
+     * @throws CAOfflineException if the CA wasn't active
+     * @throws SignatureException if the CA's certificate's and request's certificate's and signature algorithms differ
      */
-    public abstract Certificate generateCertificate(CryptoToken cryptoToken, EndEntityInformation subject, RequestMessage request, PublicKey publicKey, int keyusage,
-            Date notBefore, Date notAfter, CertificateProfile certProfile, Extensions extensions, String sequence, CTExtensionCertGenParams ctParams) throws Exception;
-    
-    public final Certificate generateCertificate(CryptoToken cryptoToken, final EndEntityInformation subject, final RequestMessage request, final PublicKey publicKey, final int keyusage, final Date notBefore,
-            final Date notAfter, final CertificateProfile certProfile, final Extensions extensions, final String sequence) throws Exception {
+    public abstract Certificate generateCertificate(CryptoToken cryptoToken, EndEntityInformation subject, RequestMessage request,
+            PublicKey publicKey, int keyusage, Date notBefore, Date notAfter, CertificateProfile certProfile, Extensions extensions, String sequence,
+            CTExtensionCertGenParams ctParams) throws CryptoTokenOfflineException, CAOfflineException, InvalidAlgorithmException,
+            IllegalValidityException, IllegalNameException, OperatorCreationException, CertificateCreateException, CertificateExtensionException,
+            SignatureException;
+
+    public final Certificate generateCertificate(CryptoToken cryptoToken, final EndEntityInformation subject, final RequestMessage request,
+            final PublicKey publicKey, final int keyusage, final Date notBefore, final Date notAfter, final CertificateProfile certProfile,
+            final Extensions extensions, final String sequence) throws CryptoTokenOfflineException, CAOfflineException, InvalidAlgorithmException,
+            IllegalValidityException, IllegalNameException, OperatorCreationException, CertificateCreateException, CertificateExtensionException,
+            SignatureException {
         return generateCertificate(cryptoToken, subject, request, publicKey, keyusage, notBefore, notAfter, certProfile, extensions, sequence, null);
     }
+    
 
     public abstract X509CRLHolder generateCRL(CryptoToken cryptoToken,Collection<RevokedCertInfo> certs, int crlnumber) throws Exception;
 

@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.certificates.certificate;
+package org.cesecore.certificates.certificate.exception;
 
 import org.cesecore.CesecoreException;
 
@@ -20,15 +20,15 @@ import org.cesecore.CesecoreException;
  * 
  * @version $Id$
  */
-public class CustomCertSerialNumberException extends CesecoreException {
+public class CustomCertificateSerialNumberException extends CesecoreException {
 
     private static final long serialVersionUID = -2969078756967846634L;
 
-    public CustomCertSerialNumberException(String message) {
+    public CustomCertificateSerialNumberException(String message) {
         super(message);
     }
 
-    public CustomCertSerialNumberException(Exception e) {
+    public CustomCertificateSerialNumberException(Exception e) {
         super(e);
     }
 }

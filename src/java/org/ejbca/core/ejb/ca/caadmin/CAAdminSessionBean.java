@@ -2669,69 +2669,66 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @Override
     public void publishCACertificate(AuthenticationToken admin, Collection<Certificate> certificatechain, Collection<Integer> usedpublishers,
             String caDataDN) throws AuthorizationDeniedException {
-        try {
-            Object[] certs = certificatechain.toArray();
-            for (int i = 0; i < certs.length; i++) {
-                Certificate cert = (Certificate) certs[i];
-                String fingerprint = CertTools.getFingerprintAsString(cert);
-                // CA fingerprint, figure out the value if this is not a root CA
-                String cafp = fingerprint;
-                // Calculate the certificate type
-                boolean isSelfSigned = CertTools.isSelfSigned(cert);
-                int type = CertificateConstants.CERTTYPE_ENDENTITY;
-                if (CertTools.isCA(cert)) {
-                    // this is a CA
-                    if (isSelfSigned) {
-                        type = CertificateConstants.CERTTYPE_ROOTCA;
-                    } else {
-                        type = CertificateConstants.CERTTYPE_SUBCA;
-                        // If not a root CA, the next certificate in the chain
-                        // should be the CA of this CA
-                        if ((i + 1) < certs.length) {
-                            Certificate cacert = (Certificate) certs[i + 1];
-                            cafp = CertTools.getFingerprintAsString(cacert);
-                        }
-                    }
-                } else if (isSelfSigned) {
-                    // If we don't have basic constraints, but is self signed,
-                    // we are still a CA, just a stupid CA
+
+        Object[] certs = certificatechain.toArray();
+        for (int i = 0; i < certs.length; i++) {
+            Certificate cert = (Certificate) certs[i];
+            String fingerprint = CertTools.getFingerprintAsString(cert);
+            // CA fingerprint, figure out the value if this is not a root CA
+            String cafp = fingerprint;
+            // Calculate the certificate type
+            boolean isSelfSigned = CertTools.isSelfSigned(cert);
+            int type = CertificateConstants.CERTTYPE_ENDENTITY;
+            if (CertTools.isCA(cert)) {
+                // this is a CA
+                if (isSelfSigned) {
                     type = CertificateConstants.CERTTYPE_ROOTCA;
                 } else {
-                    // If and end entity, the next certificate in the chain
-                    // should be the CA of this end entity
+                    type = CertificateConstants.CERTTYPE_SUBCA;
+                    // If not a root CA, the next certificate in the chain
+                    // should be the CA of this CA
                     if ((i + 1) < certs.length) {
                         Certificate cacert = (Certificate) certs[i + 1];
                         cafp = CertTools.getFingerprintAsString(cacert);
                     }
                 }
-
-                String name = "SYSTEMCERT";
-                if (type != CertificateConstants.CERTTYPE_ENDENTITY) {
-                    name = "SYSTEMCA";
-                }
-                // Store CA certificate in the database if it does not exist
-                long updateTime = new Date().getTime();
-                int profileId = 0;
-                String tag = null;
-                CertificateInfo ci = certificateStoreSession.getCertificateInfo(fingerprint);
-                if (ci == null) {
-                    // If we don't have it in the database, store it setting
-                    // certificateProfileId = 0 and tag = null
-                    certificateStoreSession.storeCertificate(admin, cert, name, cafp, CertificateConstants.CERT_ACTIVE, type, profileId, tag,
-                            updateTime);
-                } else {
-                    updateTime = ci.getUpdateTime().getTime();
-                    profileId = ci.getCertificateProfileId();
-                    tag = ci.getTag();
-                }
-                if (usedpublishers != null) {
-                    publisherSession.storeCertificate(admin, usedpublishers, cert, cafp, null, caDataDN, fingerprint,
-                            CertificateConstants.CERT_ACTIVE, type, -1, RevokedCertInfo.NOT_REVOKED, tag, profileId, updateTime, null);
+            } else if (isSelfSigned) {
+                // If we don't have basic constraints, but is self signed,
+                // we are still a CA, just a stupid CA
+                type = CertificateConstants.CERTTYPE_ROOTCA;
+            } else {
+                // If and end entity, the next certificate in the chain
+                // should be the CA of this end entity
+                if ((i + 1) < certs.length) {
+                    Certificate cacert = (Certificate) certs[i + 1];
+                    cafp = CertTools.getFingerprintAsString(cacert);
                 }
             }
-        } catch (javax.ejb.CreateException ce) {
-            throw new EJBException(ce);
+
+            String name = "SYSTEMCERT";
+            if (type != CertificateConstants.CERTTYPE_ENDENTITY) {
+                name = "SYSTEMCA";
+            }
+            // Store CA certificate in the database if it does not exist
+            long updateTime = new Date().getTime();
+            int profileId = 0;
+            String tag = null;
+            CertificateInfo ci = certificateStoreSession.getCertificateInfo(fingerprint);
+            if (ci == null) {
+                // If we don't have it in the database, store it setting
+                // certificateProfileId = 0 and tag = null
+                certificateStoreSession.storeCertificate(admin, cert, name, cafp, CertificateConstants.CERT_ACTIVE, type, profileId, tag, updateTime);
+            } else {
+                updateTime = ci.getUpdateTime().getTime();
+                profileId = ci.getCertificateProfileId();
+                tag = ci.getTag();
+            }
+            if (usedpublishers != null) {
+                publisherSession.storeCertificate(admin, usedpublishers, cert, cafp, null, caDataDN, fingerprint, CertificateConstants.CERT_ACTIVE,
+                        type, -1, RevokedCertInfo.NOT_REVOKED, tag, profileId, updateTime, null);
+            }
         }
+
     }
 
     @Override

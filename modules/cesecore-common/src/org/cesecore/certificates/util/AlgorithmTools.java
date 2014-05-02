@@ -318,9 +318,9 @@ public abstract class AlgorithmTools {
                 log.debug(ecNamedCurveBc + " is not available in provider " + providerName);
             }
         } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("EC capabale provider " + providerName + " could no longer handle elliptic curve algorithm.." ,e);
+            throw new RuntimeException("EC capable provider " + providerName + " could no longer handle elliptic curve algorithm.." ,e);
         } catch (NoSuchProviderException e) {
-            throw new RuntimeException("EC capabale provider " + providerName + " disappeard unexpectedly." ,e);
+            throw new RuntimeException("EC capable provider " + providerName + " disappeard unexpectedly." ,e);
         }
         return false;
 	}

@@ -12,7 +12,6 @@
  *************************************************************************/ 
 package org.cesecore.certificates.certificate.request;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -22,8 +21,6 @@ import java.security.cert.CRL;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.util.Collection;
-
-import org.cesecore.certificates.ca.SignRequestException;
 
 /**
  * Base interface for response messages sent from the CA. Implementors of this interface must also
@@ -124,16 +121,14 @@ public interface ResponseMessage extends Serializable {
      * @return True if signature/encryption was successful, false if it failed, request should not
      *         be sent back i failed.
      *
-     * @throws IOException If input/output or encoding failed.
      * @throws InvalidKeyException If the key used for signing/encryption is invalid.
      * @throws NoSuchProviderException if there is an error with the Provider.
      * @throws NoSuchAlgorithmException if the signature on the request is done with an unhandled
      *         algorithm.
      *
-     * @see #setSignKeyInfo
      */
     public boolean create()
-            throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignRequestException;
+            throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException;
 
     /**
      * indicates if this message needs recipients public and private key to sign. If this returns

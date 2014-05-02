@@ -51,8 +51,8 @@ public class SeisCardNumber extends StandardCertificateExtension {
 	}
 	
     @Override
-	public ASN1Encodable getValue(final EndEntityInformation userData, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey, CertificateValidity val)
-			throws CertificateExtentionConfigurationException, CertificateExtensionException {
+    public ASN1Encodable getValue(final EndEntityInformation userData, final CA ca, final CertificateProfile certProfile,
+            final PublicKey userPublicKey, final PublicKey caPublicKey, CertificateValidity val) {
 		final String cardnumber = userData.getCardNumber();
 		ASN1Encodable ret = null;
 		if (StringUtils.isNotEmpty(cardnumber)) {

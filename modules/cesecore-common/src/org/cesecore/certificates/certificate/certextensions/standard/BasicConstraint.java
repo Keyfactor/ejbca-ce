@@ -21,7 +21,6 @@ import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.internal.CertificateValidity;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
-import org.cesecore.certificates.certificate.certextensions.CertificateExtentionConfigurationException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 
@@ -40,8 +39,10 @@ public class BasicConstraint extends StandardCertificateExtension {
 	}
     
     @Override
-	public ASN1Encodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey, CertificateValidity val ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
-		// Default value, end entity 
+    public ASN1Encodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile,
+            final PublicKey userPublicKey, final PublicKey caPublicKey, CertificateValidity val) throws
+            CertificateExtensionException {
+	// Default value, end entity 
 		BasicConstraints bc = new BasicConstraints(false);
         if ((certProfile.getType() == CertificateConstants.CERTTYPE_SUBCA)
             || (certProfile.getType() == CertificateConstants.CERTTYPE_ROOTCA)){            	

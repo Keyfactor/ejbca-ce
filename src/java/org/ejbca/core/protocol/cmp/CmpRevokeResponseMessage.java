@@ -128,13 +128,9 @@ public class CmpRevokeResponseMessage extends BaseCmpMessage implements Response
 		return failText;
 	}
 
-	@Override
-	public boolean create() throws IOException, InvalidKeyException,
-			NoSuchAlgorithmException, NoSuchProviderException,
-			SignRequestException {
-
+    @Override
+    public boolean create() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
 		final PKIHeaderBuilder myPKIHeader = CmpMessageHelper.createPKIHeaderBuilder(getSender(), getRecipient(), getSenderNonce(), getRecipientNonce(), getTransactionId());
-
 		PKIStatusInfo myPKIStatusInfo = new PKIStatusInfo(PKIStatus.granted); // 0 = accepted
 		if (status != ResponseStatus.SUCCESS && status != ResponseStatus.GRANTED_WITH_MODS) {
 			if (log.isDebugEnabled()) {

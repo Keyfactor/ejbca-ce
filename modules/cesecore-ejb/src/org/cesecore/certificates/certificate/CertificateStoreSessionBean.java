@@ -22,6 +22,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.ECParameterSpec;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -37,7 +38,6 @@ import javax.annotation.Resource;
 import javax.ejb.CreateException;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
-import javax.ejb.FinderException;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -106,20 +106,19 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public boolean storeCertificate(AuthenticationToken admin, Certificate incert, String username, String cafp, int status, int type,
-            int certificateProfileId, String tag, long updateTime) throws CreateException, AuthorizationDeniedException {
+    public void storeCertificate(AuthenticationToken admin, Certificate incert, String username, String cafp, int status, int type,
+            int certificateProfileId, String tag, long updateTime) throws AuthorizationDeniedException {
     	// Check that user is authorized to the CA that issued this certificate
     	int caid = CertTools.getIssuerDN(incert).hashCode();
         authorizedToCA(admin, caid);
-        
-    	return storeCertificateNoAuth(admin, incert, username, cafp, status, type, certificateProfileId, tag, updateTime);
+    	storeCertificateNoAuth(admin, incert, username, cafp, status, type, certificateProfileId, tag, updateTime);
     }
     
     /** Local interface only */
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public boolean storeCertificateNoAuth(AuthenticationToken adminForLogging, Certificate incert, String username, String cafp, int status, int type,
-            int certificateProfileId, String tag, long updateTime) throws CreateException {
+    public void storeCertificateNoAuth(AuthenticationToken adminForLogging, Certificate incert, String username, String cafp, int status, int type,
+            int certificateProfileId, String tag, long updateTime) {
         if (log.isTraceEnabled()) {
             log.trace(">storeCertificateNoAuth(" + username + ", " + cafp + ", " + status + ", " + type + ")");
         }
@@ -136,29 +135,26 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
                     if (cafp != null) {
                         String cafingerp = cafp;
                         CertificateData cacert = CertificateData.findByFingerprint(entityManager, cafp);
-                        if (cacert == null) {
-                            throw new FinderException();
-                        }
+                        if(cacert != null) {
                         String nextcafp = cacert.getCaFingerprint();
                         int bar = 0; // never go more than 5 rounds, who knows what strange things can exist in the CAFingerprint column, make sure we
                                      // never get stuck here
                         while ((!StringUtils.equals(cafingerp, nextcafp)) && (bar++ < 5)) {
                             cacert = CertificateData.findByFingerprint(entityManager, cafp);
                             if (cacert == null) {
-                                throw new FinderException();
+                                break;
                             }
                             cafingerp = nextcafp;
                             nextcafp = cacert.getCaFingerprint();
                         }
-                        // We found a root CA certificate, hopefully ?
-                        PublicKey pkwithparams = cacert.getCertificate(this.entityManager).getPublicKey();
-                        pubk = KeyTools.getECPublicKeyWithParams(pubk, pkwithparams);
+                            if (cacert != null) {
+                                // We found a root CA certificate, hopefully ?
+                                PublicKey pkwithparams = cacert.getCertificate(this.entityManager).getPublicKey();
+                                pubk = KeyTools.getECPublicKeyWithParams(pubk, pkwithparams);
+                            }
+                        }
                     }
-                } catch (FinderException e) {
-                    log.info("Can not find CA certificate with fingerprint: " + cafp);
-                } catch (Exception e) {
-                    // This catches NoSuchAlgorithmException, NoSuchProviderException and InvalidKeySpecException and possibly something else (NPE?)
-                    // because we want to continue anyway
+                }  catch (InvalidKeySpecException e) {
                     if (log.isDebugEnabled()) {
                         log.debug("Can not enrich EC public key with missing parameters: ", e);
                     }
@@ -171,30 +167,25 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         // insert statement. If we do a home.create and the some setXX, it will create one insert and one update statement to the database.
         // Probably not important in EJB3 anymore
         final CertificateData data1;
-        try {
-            final boolean useBase64CertTable = CesecoreConfiguration.useBase64CertTable();
-            if ( useBase64CertTable ) {
-                // use special table for encoded data if told so.
-                this.entityManager.persist(new Base64CertData(incert));
-            }
-            data1 = new CertificateData(incert, pubk, username, cafp, status, type, certificateProfileId, tag, updateTime, useBase64CertTable);
-            this.entityManager.persist(data1);
-        } catch (Exception e) {
-            // For backward compatibility. We should drop the throw entirely and rely on the return value.
-            CreateException ce = new CreateException(e.getMessage());
-            ce.setStackTrace(e.getStackTrace());
-            throw ce;
+        final boolean useBase64CertTable = CesecoreConfiguration.useBase64CertTable();
+        if (useBase64CertTable) {
+            // use special table for encoded data if told so.
+            this.entityManager.persist(new Base64CertData(incert));
         }
+        data1 = new CertificateData(incert, pubk, username, cafp, status, type, certificateProfileId, tag, updateTime, useBase64CertTable);
+        this.entityManager.persist(data1);
+
         final String serialNo = CertTools.getSerialNumberAsString(incert);
-		final String msg = INTRES.getLocalizedMessage("store.storecert", username, data1.getFingerprint(), data1.getSubjectDN(), data1.getIssuerDN(), serialNo);
-		Map<String, Object> details = new LinkedHashMap<String, Object>();
-		details.put("msg", msg);
-		final String caId = String.valueOf(CertTools.getIssuerDN(incert).hashCode());
-		logSession.log(EventTypes.CERT_STORED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, adminForLogging.toString(), caId, serialNo, username, details);
+        final String msg = INTRES.getLocalizedMessage("store.storecert", username, data1.getFingerprint(), data1.getSubjectDN(), data1.getIssuerDN(),
+                serialNo);
+        Map<String, Object> details = new LinkedHashMap<String, Object>();
+        details.put("msg", msg);
+        final String caId = String.valueOf(CertTools.getIssuerDN(incert).hashCode());
+        logSession.log(EventTypes.CERT_STORED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, adminForLogging.toString(), caId,
+                serialNo, username, details);
         if (log.isTraceEnabled()) {
             log.trace("<storeCertificateNoAuth()");
         }
-        return true;
     }
     
     @Override

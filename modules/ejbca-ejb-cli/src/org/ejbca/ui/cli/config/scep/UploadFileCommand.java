@@ -125,9 +125,10 @@ public class UploadFileCommand extends BaseScepConfigCommand {
         // Reading all relevant configurations from file.
         boolean populated = false;
         Set<String> keys = ScepConfiguration.getAllAliasKeys(alias);
-        Iterator itr = config.getKeys();
+        @SuppressWarnings("unchecked")
+        Iterator<String> itr = config.getKeys();
         while (itr.hasNext()) {
-            String key = (String) itr.next();
+            String key = itr.next();
             String value = config.getString(key);
             if(StringUtils.contains(key, ScepConfiguration.SCEP_RAMODE_OLD)) {
                 value = StringUtils.equalsIgnoreCase(config.getString(key), "true") ? "ra" : "ca";

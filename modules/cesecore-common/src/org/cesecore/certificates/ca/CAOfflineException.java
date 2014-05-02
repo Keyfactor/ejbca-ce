@@ -17,7 +17,7 @@ import org.cesecore.ErrorCode;
 
 
 /**
- * An exception thrown when someone tries to use a CA that is off line
+ * An exception thrown when someone tries to use a CA that is offline
  *
  * @version $Id$
  */

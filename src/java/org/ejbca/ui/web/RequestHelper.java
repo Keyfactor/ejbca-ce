@@ -53,6 +53,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.request.CVCRequestMessage;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
@@ -129,7 +130,7 @@ public class RequestHelper {
      * @param password users password for authorization.
      *
      * @return byte[] containing DER-encoded certificate.
-     * @throws IOException 
+     *
      * @throws CesecoreException 
      * @throws AuthorizationDeniedException 
      * @throws EjbcaException 
@@ -141,8 +142,9 @@ public class RequestHelper {
      * @throws NoSuchAlgorithmException 
      * @throws InvalidKeyException 
      */
-    public byte[] nsCertRequest(SignSessionLocal signsession, byte[] reqBytes, String username,
-        String password) throws IOException, ObjectNotFoundException, CADoesntExistsException, EjbcaException, AuthorizationDeniedException, CesecoreException, CertificateEncodingException, InvalidKeyException, NoSuchAlgorithmException, SignatureException, NoSuchProviderException {
+    public byte[] nsCertRequest(SignSessionLocal signsession, byte[] reqBytes, String username, String password) throws 
+            ObjectNotFoundException, CADoesntExistsException, EjbcaException, AuthorizationDeniedException, CesecoreException,
+            CertificateEncodingException, InvalidKeyException, NoSuchAlgorithmException, SignatureException, NoSuchProviderException {
         byte[] buffer = Base64.decode(reqBytes);
 
         if (buffer == null) {
@@ -150,9 +152,14 @@ public class RequestHelper {
         }
 
         ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(buffer));
-        ASN1Sequence spkac = (ASN1Sequence) in.readObject();
-        in.close();
-
+        ASN1Sequence spkac;
+        try {
+            spkac = (ASN1Sequence) in.readObject();
+            in.close();
+        } catch (IOException e) {
+            throw new IllegalStateException("Unexpected IOException was caught.", e);
+        }
+       
         NetscapeCertRequest nscr = new NetscapeCertRequest(spkac);
 
         // Verify POPO, we don't care about the challenge, it's not important.
@@ -216,13 +223,13 @@ public class RequestHelper {
      * @throws AuthorizationDeniedException 
      * @throws CesecoreException 
      * @throws EjbcaException 
-     * @throws IOException 
      * @throws CertificateException 
      * @throws CertificateEncodingException 
+     * @throws CertificateExtensionException if b64Encoded specified invalid extensions
      */
     public CertificateRequestResponse pkcs10CertRequest(SignSessionLocal signsession, CaSessionLocal caSession, byte[] b64Encoded, String username, String password,
             CertificateResponseType resulttype, boolean doSplitLines) throws EjbcaException, CesecoreException, AuthorizationDeniedException,
-            CertificateEncodingException, CertificateException, IOException {
+            CertificateEncodingException, CertificateException, CertificateExtensionException {
         byte[] encoded = null;
         Certificate cert = null;
 		PKCS10RequestMessage req = RequestMessageUtils.genPKCS10RequestMessage(b64Encoded);
@@ -260,13 +267,13 @@ public class RequestHelper {
     @Deprecated
     public byte[] pkcs10CertRequest(SignSessionLocal signsession, CaSessionLocal caSession, byte[] b64Encoded, String username, String password,
             int resulttype, boolean doSplitLines) throws EjbcaException, CesecoreException, AuthorizationDeniedException,
-            CertificateEncodingException, CertificateException, IOException {
+            CertificateEncodingException, CertificateException, IOException, CertificateExtensionException {
         return pkcs10CertRequest(signsession, caSession, b64Encoded, username, password, CertificateResponseType.fromNumber(resulttype), doSplitLines).getEncoded();
     }
     
     public CertificateRequestResponse pkcs10CertRequest(SignSessionLocal signsession, CaSessionLocal caSession, byte[] b64Encoded, String username, String password,
             CertificateResponseType resulttype) throws CertificateEncodingException, CertificateException, EjbcaException, CesecoreException,
-            AuthorizationDeniedException, IOException {
+            AuthorizationDeniedException, IOException, CertificateExtensionException {
         return pkcs10CertRequest(signsession, caSession, b64Encoded, username, password, resulttype, true);
     }
     
@@ -276,7 +283,7 @@ public class RequestHelper {
     @Deprecated
     public byte[] pkcs10CertRequest(SignSessionLocal signsession, CaSessionLocal caSession, byte[] b64Encoded, String username, String password,
             int resulttype) throws CertificateEncodingException, CertificateException, EjbcaException, CesecoreException,
-            AuthorizationDeniedException, IOException {
+            AuthorizationDeniedException, IOException, CertificateExtensionException {
         return pkcs10CertRequest(signsession, caSession, b64Encoded, username, password, resulttype, true);
     }
 

@@ -22,6 +22,7 @@ import java.util.Arrays;
 import org.apache.log4j.Logger;
 import org.cesecore.CesecoreException;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
@@ -116,6 +117,9 @@ public class CreateCertCommand extends EjbcaCliUserCommandBase {
         } catch (AuthorizationDeniedException ee) {
             log.error("CLI user with username " + parameters.get(USERNAME_KEY) + " was not authorized to create a certificate.");
             return CommandResult.AUTHORIZATION_FAILURE;
+        } catch (CertificateExtensionException e) {
+            log.error("CSR specified extensions which were invalid: " + e.getMessage());
+            return CommandResult.FUNCTIONAL_FAILURE;
         }
         byte[] pembytes;
         try {

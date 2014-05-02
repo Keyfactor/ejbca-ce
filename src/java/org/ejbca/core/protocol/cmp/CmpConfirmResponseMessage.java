@@ -113,11 +113,8 @@ public class CmpConfirmResponseMessage extends BaseCmpMessage implements Respons
 		return null;
 	}
 
-	@Override
-	public boolean create() throws IOException, InvalidKeyException,
-			NoSuchAlgorithmException, NoSuchProviderException,
-			SignRequestException {
-
+    @Override
+    public boolean create() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
 		final PKIHeaderBuilder myPKIHeader = CmpMessageHelper.createPKIHeaderBuilder(getSender(), getRecipient(), getSenderNonce(), getRecipientNonce(), getTransactionId());
 		final PKIBody myPKIBody = new PKIBody(19, DERNull.INSTANCE);
 		PKIMessage myPKIMessage = null;

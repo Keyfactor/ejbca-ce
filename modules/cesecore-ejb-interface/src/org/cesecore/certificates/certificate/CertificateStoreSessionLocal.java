@@ -52,11 +52,10 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * @param type Type of certificate (CERTTYPE_ENDENTITY etc from CertificateConstants).
      * @param certificateProfileId the certificate profile id this cert was issued under
      * @param tag a custom string tagging this certificate for some purpose
-     * @return true if storage was successful.
-     * @throws CreateException if the certificate can not be stored in the database
+     * 
      */
-    boolean storeCertificateNoAuth(AuthenticationToken admin, Certificate incert, String username,
-            String cafp, int status, int type, int certificateProfileId, String tag, long updateTime) throws CreateException, AuthorizationDeniedException;
+    void storeCertificateNoAuth(AuthenticationToken admin, Certificate incert, String username,
+            String cafp, int status, int type, int certificateProfileId, String tag, long updateTime);
 
     /**
      * Update the base64cert column if the database row exists, but the column is empty.
@@ -74,6 +73,7 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * @param reason the reason of the revocation. (One of the RevokedCertInfo.REVOCATION_REASON constants.)
      * @param userDataDN if an DN object is not found in the certificate use object from user data instead.
      * @return true if status was changed in the database, false if not, for example if the certificate was already revoked or a null value was passed as certificate
+     * 
      * @throws CertificaterevokeException (rollback) if certificate does not exist
      */
     boolean setRevokeStatusNoAuth(AuthenticationToken admin, Certificate certificate, Date revokedDate, int reason, String userDataDN)

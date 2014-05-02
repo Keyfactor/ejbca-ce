@@ -83,6 +83,7 @@ import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util;
 import org.bouncycastle.jce.ECGOST3410NamedCurveTable;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.interfaces.PKCS12BagAttributeCarrier;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import org.bouncycastle.jce.spec.ECPublicKeySpec;
@@ -281,12 +282,10 @@ public final class KeyTools {
      * @param pkwithparams
      *            PublicKey, org.ejbca.cvc.PublicKeyEC, that contains all parameters.
      * @return PublicKey with parameters from the named curve
-     * @throws NoSuchAlgorithmException
-     * @throws NoSuchProviderException
-     * @throws InvalidKeySpecException
+     *
+     * @throws InvalidKeySpecException if the key specification in pkwithparams was invalid
      */
-    public static PublicKey getECPublicKeyWithParams(final PublicKey pk, final PublicKey pkwithparams) throws NoSuchAlgorithmException,
-            NoSuchProviderException, InvalidKeySpecException {
+    public static PublicKey getECPublicKeyWithParams(final PublicKey pk, final PublicKey pkwithparams) throws InvalidKeySpecException {
         PublicKey ret = pk;
         if ((pk instanceof PublicKeyEC) && (pkwithparams instanceof PublicKeyEC)) {
             final PublicKeyEC pkec = (PublicKeyEC) pk;
@@ -300,7 +299,14 @@ public final class KeyTools {
                     final java.security.spec.ECPoint p = pkec.getW();
                     final org.bouncycastle.math.ec.ECPoint ecp = EC5Util.convertPoint(pkspec, p, false);
                     final ECPublicKeySpec pubKey = new ECPublicKeySpec(ecp, bcspec);
-                    final KeyFactory keyfact = KeyFactory.getInstance("ECDSA", "BC");
+                    KeyFactory keyfact;
+                    try {
+                        keyfact = KeyFactory.getInstance("ECDSA", BouncyCastleProvider.PROVIDER_NAME);
+                    } catch (NoSuchAlgorithmException e) {
+                       throw new IllegalStateException("ECDSA was an unknown algorithm", e);
+                    } catch (NoSuchProviderException e) {
+                        throw new IllegalStateException("BouncyCastle was not found as a provider.", e);
+                    }
                     ret = keyfact.generatePublic(pubKey);
                 } else {
                     log.info("pkwithparams does not have any params.");

@@ -630,9 +630,8 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
 		try {
 			final String fp = CertTools.getFingerprintAsString(xcert);
 			final String username = "foouser<tag>mytag</mytag>!";
-	        boolean ret = certificateStoreSession.storeCertificate(roleMgmgToken, xcert, username, "1234", CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY,
+	        certificateStoreSession.storeCertificate(roleMgmgToken, xcert, username, "1234", CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY,
 	        		CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, "footag", new Date().getTime());
-	        assertTrue("Failed to store", ret);
 	        CertificateInfo info = certificateStoreSession.getCertificateInfo(fp);
 	        // Username must not include <tag>s or !
 	        assertEquals("username must not contain < or ! signs: ", "foouser/tag/mytag//mytag//", info.getUsername());
@@ -686,9 +685,8 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
         if (ce != null) {
             assertTrue("Certificate with fp=" + fp + " already exists in db, very strange since I just generated it.", false);
         }
-        boolean ret = certificateStoreSession.storeCertificate(admin, xcert, USERNAME, "1234", status, CertificateConstants.CERTTYPE_ENDENTITY,
+        certificateStoreSession.storeCertificate(admin, xcert, USERNAME, "1234", status, CertificateConstants.CERTTYPE_ENDENTITY,
         		CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, "footag", new Date().getTime());
-        assertTrue("Failed to store", ret);
         return xcert;
     }
 

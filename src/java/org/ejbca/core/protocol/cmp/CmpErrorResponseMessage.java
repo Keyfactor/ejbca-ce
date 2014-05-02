@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.protocol.cmp;
 
-import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -115,9 +114,7 @@ public class CmpErrorResponseMessage extends BaseCmpMessage implements ResponseM
 	}
 
 	@Override
-	public boolean create() throws IOException, InvalidKeyException,
-			NoSuchAlgorithmException, NoSuchProviderException,
-			SignRequestException {
+    public boolean create() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
 		final PKIHeaderBuilder myPKIHeaderBuilder = CmpMessageHelper.createPKIHeaderBuilder(getSender(), getRecipient(), getSenderNonce(), getRecipientNonce(), getTransactionId());
 		boolean pbeProtected = (getPbeDigestAlg() != null) && (getPbeMacAlg() != null) && (getPbeKeyId() != null) && (getPbeKey() != null) ;
 		if(pbeProtected) {

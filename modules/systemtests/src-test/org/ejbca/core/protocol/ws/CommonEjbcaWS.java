@@ -910,7 +910,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         // certificate with this DN should fail
         final ErrorCode errorCode = certreqInternal(ca1userData2, getP10(), CertificateHelper.CERT_REQ_TYPE_PKCS10);
         assertNotNull("error code should not be null", errorCode);
-        assertEquals(org.cesecore.ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALLREADY_EXISTS_FOR_ANOTHER_USER.getInternalErrorCode(),
+        assertEquals(org.cesecore.ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER.getInternalErrorCode(),
                 errorCode.getInternalErrorCode());
 
         // test that the user that was denied a cert can get a cert with another

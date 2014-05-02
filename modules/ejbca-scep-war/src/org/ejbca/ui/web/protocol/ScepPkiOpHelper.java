@@ -29,6 +29,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -49,6 +50,7 @@ import org.ejbca.core.model.ra.UsernameGenerator;
 import org.ejbca.core.model.ra.UsernameGeneratorParams;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.protocol.scep.ScepRequestMessage;
+import org.ejbca.core.protocol.scep.ScepResponseMessage;
 import org.ejbca.util.passgen.IPasswordGenerator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
 
@@ -106,9 +108,10 @@ public class ScepPkiOpHelper {
      * @return byte[] containing response to be sent to client.
      * @throws AuthorizationDeniedException 
      * @throws CesecoreException 
+     * @throws CertificateExtensionException if msg specified invalid extensions
      */
     public byte[] scepCertRequest(byte[] msg, boolean includeCACert, boolean ramode)
-            throws EjbcaException, CesecoreException, AuthorizationDeniedException {
+            throws EjbcaException, CesecoreException, AuthorizationDeniedException, CertificateExtensionException {
         byte[] ret = null;
         if (log.isTraceEnabled()) {
         	log.trace(">getRequestMessage(" + msg.length + " bytes)");
@@ -136,7 +139,7 @@ public class ScepPkiOpHelper {
                 }
                 
                 // Get the certificate
-                ResponseMessage resp = signsession.createCertificate(admin, reqmsg, org.ejbca.core.protocol.scep.ScepResponseMessage.class, null);
+                ResponseMessage resp = signsession.createCertificate(admin, reqmsg, ScepResponseMessage.class, null);
                 if (resp != null) {
                     ret = resp.getResponseMessage();
                 }
@@ -144,7 +147,7 @@ public class ScepPkiOpHelper {
             if (reqmsg.getMessageType() == ScepRequestMessage.SCEP_TYPE_GETCRL) {
                 // create the stupid encrypted CRL message, the below can actually only be made 
                 // at the CA, since CAs private key is needed to decrypt
-                ResponseMessage resp = signsession.getCRL(admin, reqmsg, org.ejbca.core.protocol.scep.ScepResponseMessage.class);
+                ResponseMessage resp = signsession.getCRL(admin, reqmsg, ScepResponseMessage.class);
                 if (resp != null) {
                     ret = resp.getResponseMessage();
                 }

@@ -297,13 +297,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		} catch (NoSuchProviderException e) {
 		    String errMsg = INTRES.getLocalizedMessage("cmp.errorgeneral");
 		    LOG.error(errMsg, e);			
-		} catch (SignRequestException e) {
-		    String errMsg = INTRES.getLocalizedMessage("cmp.errorgeneral");
-		    LOG.error(errMsg, e);			
-		} catch (IOException e) {
-		    String errMsg = INTRES.getLocalizedMessage("cmp.errorgeneral");
-		    LOG.error(errMsg, e);			
-		}							
+		} 						
 		
 		return resp;
 	}  

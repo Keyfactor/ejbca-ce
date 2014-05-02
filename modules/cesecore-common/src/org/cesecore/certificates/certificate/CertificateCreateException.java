@@ -15,6 +15,7 @@ package org.cesecore.certificates.certificate;
 import javax.ejb.ApplicationException;
 
 import org.cesecore.CesecoreException;
+import org.cesecore.ErrorCode;
 
 /**
  * An exception thrown when a serious error happens creating a certificate. 
@@ -54,6 +55,20 @@ public class CertificateCreateException extends CesecoreException {
      */
     public CertificateCreateException(Exception e) {
         super(e);
+    }
+    
+    /**
+     * Marked as rollback=true
+     * 
+     * @see CertificateCreateException
+     * @param e causing exception that will be wrapped
+     */
+    public CertificateCreateException(String msg, Exception e) {
+        super(msg, e);
+    }
+
+    public CertificateCreateException(ErrorCode errorCode, String msg) {
+       super(errorCode, msg);
     }
 
 }

@@ -20,8 +20,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import javax.ejb.CreateException;
-
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -47,11 +45,11 @@ public interface CertificateStoreSession {
      * @param type Type of certificate (CERTTYPE_ENDENTITY etc from CertificateConstants).
      * @param certificateProfileId the certificate profile id this cert was issued under
      * @param tag a custom string tagging this certificate for some purpose
-     * @return true if storage was successful.
-     * @throws CreateException if the certificate can not be stored in the database
+     *
+     * @throws AuthorizationDeniedException if admin was not authorized to store certificate in database
      */
-    boolean storeCertificate(AuthenticationToken admin, Certificate incert, String username,
-            String cafp, int status, int type, int certificateProfileId, String tag, long updateTime) throws CreateException, AuthorizationDeniedException;
+    void storeCertificate(AuthenticationToken admin, Certificate incert, String username,
+            String cafp, int status, int type, int certificateProfileId, String tag, long updateTime) throws AuthorizationDeniedException;
 
     /**
      * Lists fingerprint (primary key) of ALL certificates in the database.

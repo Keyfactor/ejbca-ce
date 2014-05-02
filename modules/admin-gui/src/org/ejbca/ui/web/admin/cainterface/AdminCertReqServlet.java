@@ -36,6 +36,7 @@ import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
@@ -298,7 +299,9 @@ public class AdminCertReqServlet extends HttpServlet {
 		} catch (AuthorizationDeniedException e) {
             // Weird authorization error.
             throw new ServletException(e);
-		}
+		} catch (CertificateExtensionException e) {
+		    throw new ServletException(e);
+        }
         if (log.isDebugEnabled()) {
         	log.debug("Created certificate (PKCS7) for " + username);
         }
