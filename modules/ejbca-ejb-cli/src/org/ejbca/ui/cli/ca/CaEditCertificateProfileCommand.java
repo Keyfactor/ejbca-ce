@@ -48,7 +48,7 @@ public class CaEditCertificateProfileCommand extends BaseCaAdminCommand {
                 ParameterMode.ARGUMENT, "Name of the certificate profile."));
         registerParameter(new Parameter(FIELD_KEY, "Field Name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "The sought field."));
-        registerParameter(new Parameter(VALUE_KEY, "Value", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+        registerParameter(new Parameter(VALUE_KEY, "Value", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "The value to set, if any."));
         registerParameter(new Parameter(LISTFIELDS_KEY, "", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG,
                 "Set to only list available fields in the CA"));

@@ -71,7 +71,7 @@ public class CaRenewCACommand extends BaseCaAdminCommand {
                 "Name of the CA"));
         registerParameter(Parameter.createFlag(REGENERATE_KEYS_KEY, "Set this switch if the CA's keys are to be regenerated."));
         registerParameter(new Parameter(AUTHORIZATION_CODE_KEY, "Authorization Code", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW,
-                ParameterMode.ARGUMENT, "Authorization code is only used when generating new keys. Do not set "));
+                ParameterMode.ARGUMENT, "Authorization code is only used when generating new keys. If key regeneration is chosen and this parameter is not set then user will be prompted."));
         registerParameter(new Parameter(CUSTOM_NOT_BEFORE_KEY, "Date", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "Set this value of a value other than current time should be used. Must be in ISO 8601 format, for example '2010-09-08 07:06:05+02:00"));
     }
@@ -105,10 +105,6 @@ public class CaRenewCACommand extends BaseCaAdminCommand {
             Date customNotBefore = null;
             regenerateKeys = parameters.containsKey(REGENERATE_KEYS_KEY);
             String authCode = parameters.get(AUTHORIZATION_CODE_KEY);
-            //if (regenerateKeys && authCode != null) {
-            //    log.error("ERROR: Auth code was provided, but setting key regeneration (" + REGENERATE_KEYS_KEY + "), was this intentional?");
-            //    return CommandResult.FUNCTIONAL_FAILURE;
-           // }
             if (parameters.get(CUSTOM_NOT_BEFORE_KEY) != null) {
                 try {
                     customNotBefore = ValidityDate.parseAsIso8601(parameters.get(CUSTOM_NOT_BEFORE_KEY));

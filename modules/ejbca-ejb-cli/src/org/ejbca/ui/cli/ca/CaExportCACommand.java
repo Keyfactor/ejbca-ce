@@ -111,7 +111,7 @@ public class CaExportCACommand extends BaseCaAdminCommand {
 
     @Override
     public String getCommandDescription() {
-        return "Exports CA as a PKCS#12 or PKCS#8 file";
+        return "Exports CA as a PKCS#12 or PKCS#8 file. ";
 
     }
 
