@@ -72,7 +72,7 @@ public class CaImportCVCCACommand extends BaseCaAdminCommand {
 
     private static final Logger log = Logger.getLogger(CaImportCVCCACommand.class);
 
-    private static final String CA_NAME_KEY = "--ca";
+    private static final String CA_NAME_KEY = "--caname";
     private static final String KEY_FILE_KEY = "-f";
     private static final String CERTIFICATE_FILE_KEY = "-c";
     private static final String DN_KEY = "--dn";

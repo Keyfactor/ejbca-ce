@@ -67,7 +67,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 
     private static final String ENDENTITY_USERNAME_KEY = "--username";
     private static final String ENDENTITY_PASSWORD_KEY = "--password";
-    private static final String CA_NAME_KEY = "--ca";
+    private static final String CA_NAME_KEY = "--caname";
     private static final String ACTIVE_KEY = "-a";
     private static final String E_MAIL_KEY = "--email";
     private static final String FILE_KEY = "-f";

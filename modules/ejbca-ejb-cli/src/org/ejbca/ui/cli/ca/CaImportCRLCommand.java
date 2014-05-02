@@ -80,7 +80,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
     private static final String LENIENT_OP = "LENIENT";
     private static final String ADAPTIVE_OP = "ADAPTIVE";
 
-    private static final String CA_NAME_KEY = "--ca";
+    private static final String CA_NAME_KEY = "--caname";
     private static final String CRL_FILE_KEY = "-f";
     private static final String OPERATION_KEY = "-o";
 

@@ -45,7 +45,7 @@ public class CaActivateCACommand extends BaseCaAdminCommand {
 
     private static final Logger log = Logger.getLogger(CaActivateCACommand.class);
     
-    private static final String CA_NAME_KEY = "--name";
+    private static final String CA_NAME_KEY = "--caname";
     private static final String AUTHORIZATION_CODE_KEY = "--code";
     
     {
