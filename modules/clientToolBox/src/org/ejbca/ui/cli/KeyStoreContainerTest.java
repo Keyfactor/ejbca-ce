@@ -46,7 +46,7 @@ import org.ejbca.util.keystore.KeyStoreContainer;
 import org.ejbca.util.keystore.KeyStoreContainerFactory;
 
 /**
- * 
+ *
  * @version $Id$
  *
  */
@@ -71,21 +71,25 @@ class KeyStoreContainerTest {
                      final String alias,
                      final String typeOfOperation,
                      final ProtectionParameter protectionParameter) throws Exception {
-        if ( alias==null ) while( true ) {
-            startNormal(providerClassName,
+        if ( alias==null ) {
+            while( true ) {
+                startNormal(
+                        providerClassName,
                         encryptProviderClassName,
                         keyStoreType,
                         storeID,
                         slotLabelType,
                         nrOfTests,
                         protectionParameter);
-            termOut.println("Hit RETURN to run again. Type x and hit RETURN to quit.");
-            final int character = termIn.read();
-            if( character=='x' || character== 'X') {
-                return;
+                termOut.println("Hit RETURN to run again. Type x and hit RETURN to quit.");
+                final int character = termIn.read();
+                if( character=='x' || character== 'X') {
+                    break;
+                }
             }
-        }
-        startStress(providerClassName,
+        } else {
+            startStress(
+                    providerClassName,
                     encryptProviderClassName,
                     keyStoreType,
                     storeID,
@@ -94,6 +98,7 @@ class KeyStoreContainerTest {
                     alias,
                     typeOfOperation==null || typeOfOperation.toLowerCase().indexOf("sign")>=0,
                     protectionParameter);
+        }
     }
     private static NormalTest[] getTests(final KeyStoreContainer keyStore) throws Exception {
         Enumeration<String> e = keyStore.getKeyStore().aliases();
@@ -101,23 +106,23 @@ class KeyStoreContainerTest {
         while( e.hasMoreElements() ) {
             String alias = e.nextElement();
             if ( keyStore.getKeyStore().isKeyEntry(alias) ) {
-            	try {
+                try {
                     PrivateKey privateKey = (PrivateKey)keyStore.getKey(alias);
                     Certificate cert = keyStore.getKeyStore().getCertificate(alias);
                     if (cert != null) {
                         testSet.add(new NormalTest(alias,
                                 new KeyPair(cert.getPublicKey(), privateKey),
-                                keyStore.getProviderName()));                	
+                                keyStore.getProviderName()));
                     } else {
-                    	termOut.println("Not testing keys with alias "+alias+". No certificate exists.");
-                    }            		
-            	} catch (ClassCastException ce) {
-                	termOut.println("Not testing keys with alias "+alias+". Not a private key.");            		
-            	} catch (KeyStoreException ce) {
-                	termOut.println("Not testing keys with alias "+alias+". KeyStoreException getting key: "+ce.getMessage());            		
-            	} catch (ProviderException ce) {
-                	termOut.println("Not testing keys with alias "+alias+". ProviderException getting key: "+ce.getMessage());            		
-            	}
+                        termOut.println("Not testing keys with alias "+alias+". No certificate exists.");
+                    }
+                } catch (ClassCastException ce) {
+                    termOut.println("Not testing keys with alias "+alias+". Not a private key.");
+                } catch (KeyStoreException ce) {
+                    termOut.println("Not testing keys with alias "+alias+". KeyStoreException getting key: "+ce.getMessage());
+                } catch (ProviderException ce) {
+                    termOut.println("Not testing keys with alias "+alias+". ProviderException getting key: "+ce.getMessage());
+                }
             }
         }
         return testSet.toArray(new NormalTest[testSet.size()]);
