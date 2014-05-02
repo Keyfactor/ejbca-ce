@@ -12,6 +12,7 @@
 <%@page import="org.ejbca.config.WebConfiguration"%><html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=<%= org.ejbca.config.WebConfiguration.getWebContentEncoding() %>" />
+    <meta http-equiv="x-ua-compatible" content="IE=10">
     <title>Certificate Enrollment - <%= org.ejbca.config.InternalConfiguration.getAppNameCapital() %></title>
 	<link rel="shortcut icon" href="../images/favicon.png" type="image/png" />
     <link rel="stylesheet" href="../styles.css" type="text/css" />

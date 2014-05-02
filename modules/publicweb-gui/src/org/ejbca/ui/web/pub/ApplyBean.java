@@ -251,6 +251,7 @@ public class ApplyBean implements java.io.Serializable {
             final boolean isNewIE = userAgent.contains("Trident");
             
             if (isIE && !isGecko) return "explorer";
+            if (isNewIE) return "explorer";
             if (isGecko && !isNewIE) return "netscape";
             /*
              * TODO: IE 11.0 will emulate Firefox in some aspects and implement some HTML5 stuff
