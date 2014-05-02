@@ -396,6 +396,31 @@ This means that if you have a value defined in both places, both Certificate Pol
 </p>
 </subsubsection>
 
+<subsubsection name="Name Constraints">
+<p>
+You may restrict the domain names and IP addresses under which the CA is allowed to issue certificates. Root CA operators might require that this certificate extension is used in sub CAs that are operated by customers.
+</p>
+<p>
+<strong>Note:</strong> Name constraints must first be enabled in the Certificate Profile of the CA. At the time of writing (May 2014) they are not supported in Apple Safari or on iOS devices, so this extension can not yet be marked as critical if there are such clients. The default mode is non-critical for this reason.
+</p>
+<p>
+EJBCA supports domain name and IP address (both IPv4 and IPv6) constraints. These syntaxes are accepted:
+</p>
+<dl>
+<dt><code>example.com</code></dt>
+<dd>Matches example.com, but <strong>not</strong> subdomains.</dd>
+<dt><code>.example.com</code></dt>
+<dd>Matches subdomains of example.com, but <strong>not</strong> example.com itself. To match both the domain itself and its subdomains, then both forms must be used.</dd>
+<dt><code>198.51.100.0/24</code></dt>
+<dd>Matches an IPv4 subnet. The IP address checked is the one in the certificate, which in turn is checked if the host is accessed by IP address.</dd>
+<dt><code>2001:db8::/32</code></dt>
+<dd>Similarly, matches an IPv6 subnet.</dd>
+</dl>
+<p>
+Name constraints are only checked for the types of constraints that are specified. So, if e.g. no IP addresses are addresses then the IP address will not be constrained. Conversely, if e.g. a domain name is listed as permitted then no other domain names will be permitted. If neither any permitted or excluded names are entered, then the Name Constraints extension will be omitted from the certificate.
+</p>
+</subsubsection>
+
 <subsubsection name="CRL Period">
 <p>
 There are four settings in CA configuration dictating the times when CRL generation is done:

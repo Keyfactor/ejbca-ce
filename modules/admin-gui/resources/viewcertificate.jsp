@@ -546,6 +546,17 @@ function confirmrepublish(){
 	%>
 	         </td>
        </tr>
+       
+       <tr id="Row<%=(row++)%2%>">
+         <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("EXT_ABBR_NAMECONSTRAINTS") %></td>
+         <td><% if (certificatedata.hasNameConstraints()) {
+                 out.write(ejbcawebbean.getText("YES"));
+             } else {
+                 out.write(ejbcawebbean.getText("NO"));
+             }
+             %></td>
+       </tr>
+       
        <tr id="Row<%=(row++)%2%>">
 		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("EXT_ABBR_QCSTATEMENTS") %></td>
 		 <td><% if (certificatedata.hasQcStatement()) {

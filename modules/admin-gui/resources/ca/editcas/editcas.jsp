@@ -144,6 +144,8 @@ java.security.InvalidAlgorithmParameterException
   static final String TEXTFIELD_IMPORTCA_NAME		  = "textfieldimportcaname";
   static final String TEXTFIELD_SHAREDCMPRASECRET     = "textfieldsharedcmprasecret";
   static final String TEXTFIELD_AUTHORITYINFORMATIONACCESS  = "textfieldauthorityinformationaccess";
+  static final String TEXTFIELD_NAMECONSTRAINTSPERMITTED    = "textfieldnameconstraintspermitted";
+  static final String TEXTFIELD_NAMECONSTRAINTSEXCLUDED     = "textfieldnameconstraintsexcluded";
 
 
   static final String CHECKBOX_AUTHORITYKEYIDENTIFIER             = "checkboxauthoritykeyidentifier";
@@ -357,6 +359,8 @@ java.security.InvalidAlgorithmParameterException
                 final String defaultcrlissuer = requestMap.get(TEXTFIELD_DEFAULTCRLISSUER);
                 final String defaultocsplocator  = requestMap.get(TEXTFIELD_DEFAULTOCSPLOCATOR);
                 final String authorityInformationAccess = requestMap.get(TEXTFIELD_AUTHORITYINFORMATIONACCESS);
+                final String nameConstraintsPermitted = requestMap.get(TEXTFIELD_NAMECONSTRAINTSPERMITTED);
+                final String nameConstraintsExcluded = requestMap.get(TEXTFIELD_NAMECONSTRAINTSEXCLUDED);
                 final String caDefinedFreshestCrl = requestMap.get(TEXTFIELD_CADEFINEDFRESHESTCRL);
                 final boolean useutf8policytext = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USEUTF8POLICYTEXT));
                 final boolean useprintablestringsubjectdn = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_USEPRINTABLESTRINGSUBJECTDN));
@@ -384,7 +388,8 @@ java.security.InvalidAlgorithmParameterException
                		 subjectaltname, policyid, useauthoritykeyidentifier, authoritykeyidentifiercritical,
                		 crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, availablePublisherValues,
                		 usecrlnumber, crlnumbercritical, defaultcrldistpoint, defaultcrlissuer, defaultocsplocator,
-               		 authorityInformationAccess, caDefinedFreshestCrl, useutf8policytext, useprintablestringsubjectdn, useldapdnorder,
+               		 authorityInformationAccess, nameConstraintsPermitted, nameConstraintsExcluded,
+               		 caDefinedFreshestCrl, useutf8policytext, useprintablestringsubjectdn, useldapdnorder,
                		 usecrldistpointoncrl, crldistpointoncrlcritical, serviceOcspActive, serviceXkmsActive,
                		 serviceCmsActive, sharedCmpRaSecret, buttonCreateCa, buttonMakeRequest,
                		 cryptoTokenIdString, keyAliasCertSignKey, keyAliasCrlSignKey, keyAliasDefaultKey,
@@ -511,10 +516,22 @@ java.security.InvalidAlgorithmParameterException
                 final boolean serviceCmsActive = CHECKBOX_VALUE.equals(requestMap.get(CHECKBOX_ACTIVATECMSSERVICE));
                 final String sharedCmpRaSecret = requestMap.get(TEXTFIELD_SHAREDCMPRASECRET);
                 final String subjectdn;
+                final String nameConstraintsPermitted;
+                final String nameConstraintsExcluded;
                 if (cadatahandler.getCAInfo(caid).getCAInfo().getStatus() == CAConstants.CA_UNINITIALIZED) {
                     subjectdn = requestMap.get(TEXTFIELD_SUBJECTDN);
+                    nameConstraintsPermitted = requestMap.get(TEXTFIELD_NAMECONSTRAINTSPERMITTED);
+                    nameConstraintsExcluded = requestMap.get(TEXTFIELD_NAMECONSTRAINTSEXCLUDED);
                 } else {
-                    subjectdn = cadatahandler.getCAInfo(caid).getCAInfo().getSubjectDN();
+                    CAInfo cainfo = cadatahandler.getCAInfo(caid).getCAInfo();
+                    subjectdn = cainfo.getSubjectDN();
+                    if (cainfo instanceof X509CAInfo) {
+                        nameConstraintsPermitted = cabean.formatNameConstraintsString(((X509CAInfo)cainfo).getNameConstraintsPermitted());
+                        nameConstraintsExcluded = cabean.formatNameConstraintsString(((X509CAInfo)cainfo).getNameConstraintsExcluded());
+                    } else {
+                        nameConstraintsPermitted = null;
+                        nameConstraintsExcluded = null;
+                    }
                 }
                 final CAInfo cainfo = cabean.createCaInfo(caid, caname, subjectdn, catype,
             		keySequenceFormatParam, keySequence, description, validityString,
@@ -523,6 +540,7 @@ java.security.InvalidAlgorithmParameterException
             		useCertReqHistory, useUserStorage, useCertificateStorage, approvalSettingValues, numofReqApprovalsParam,
             		availablePublisherValues, useauthoritykeyidentifier, authoritykeyidentifiercritical, usecrlnumber,
             		crlnumbercritical, defaultcrldistpoint, defaultcrlissuer, defaultocsplocator, authorityInformationAccess,
+            		nameConstraintsPermitted, nameConstraintsExcluded,
             		caDefinedFreshestCrl, useutf8policytext, useprintablestringsubjectdn, useldapdnorder, usecrldistpointoncrl,
             		crldistpointoncrlcritical, includeInHealthCheck, serviceOcspActive, serviceXkmsActive, serviceCmsActive, sharedCmpRaSecret
             		);

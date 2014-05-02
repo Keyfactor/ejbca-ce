@@ -229,7 +229,7 @@ public class RevocationApprovalTest extends CaTestCase {
                 0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
                 10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
                 0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
-                new ArrayList<Integer>(), true, false, true, false, "", "", "", null, "", true, new ArrayList<ExtendedCAServiceInfo>(), false,
+                new ArrayList<Integer>(), true, false, true, false, "", "", "", null, null, null, "", true, new ArrayList<ExtendedCAServiceInfo>(), false,
                 approvalSettings, 1, false, true, false, false, true, true, true, false, false, true, true, null);
         int caID = cainfo.getCAId();
         try {

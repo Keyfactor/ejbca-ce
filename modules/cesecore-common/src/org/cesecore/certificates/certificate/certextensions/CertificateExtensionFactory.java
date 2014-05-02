@@ -31,6 +31,7 @@ import org.cesecore.certificates.certificate.certextensions.standard.ExtendedKey
 import org.cesecore.certificates.certificate.certextensions.standard.FreshestCrl;
 import org.cesecore.certificates.certificate.certextensions.standard.KeyUsage;
 import org.cesecore.certificates.certificate.certextensions.standard.MsTemplate;
+import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
 import org.cesecore.certificates.certificate.certextensions.standard.OcspNoCheck;
 import org.cesecore.certificates.certificate.certextensions.standard.PrivateKeyUsagePeriod;
 import org.cesecore.certificates.certificate.certextensions.standard.QcStatement;
@@ -85,6 +86,7 @@ public class CertificateExtensionFactory {
 		standardCertificateExtensions.put(Extension.subjectDirectoryAttributes.getId(), SubjectDirectoryAttributes.class.getName());
 		standardCertificateExtensions.put(Extension.authorityInfoAccess.getId(), AuthorityInformationAccess.class.getName());
 		standardCertificateExtensions.put(Extension.qCStatements.getId(), QcStatement.class.getName());
+		standardCertificateExtensions.put(Extension.nameConstraints.getId(), NameConstraint.class.getName());
 		standardCertificateExtensions.put(OCSPObjectIdentifiers.id_pkix_ocsp_nocheck.getId(), OcspNoCheck.class.getName());
 		standardCertificateExtensions.put(CertTools.OID_MSTEMPLATE, MsTemplate.class.getName());
 		standardCertificateExtensions.put(SeisCardNumber.OID_CARDNUMBER, SeisCardNumber.class.getName());

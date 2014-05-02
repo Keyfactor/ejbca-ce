@@ -447,7 +447,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
                 0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
                 10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
                 0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
-                new ArrayList<Integer>(), true, false, true, false, "", "", "", null, "", true,
+                new ArrayList<Integer>(), true, false, true, false, "", "", "", null, null, null, "", true,
                 extendedcaservices, false, approvalSettings, 1, false, true, false, false, true, true, true, false, false, true,
                 true, null);
         int caID = cainfo.getCAId();

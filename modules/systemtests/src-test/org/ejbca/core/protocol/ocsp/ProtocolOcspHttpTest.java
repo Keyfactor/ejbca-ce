@@ -1559,6 +1559,7 @@ Content-Type: text/html; charset=iso-8859-1
                     null, // defaultcrlissuer
                     null, // defaultocsplocator
                     null, // Authority Information Access
+                    null, null, // Name Constraints
                     null, // defaultfreshestcrl
                     true, // Finish User
                     extendedcaservices, false, // use default utf8 settings
@@ -1656,6 +1657,7 @@ Content-Type: text/html; charset=iso-8859-1
                     null, // defaultcrlissuer
                     null, // defaultocsplocator
                     null, // Authority Information Access
+                    null, null, // Name Constraints
                     null, // defaultfreshestcrl
                     true, // Finish User
                     extendedcaservices, false, // use default utf8 settings
@@ -1724,6 +1726,7 @@ Content-Type: text/html; charset=iso-8859-1
                         null, // defaultcrlissuer
                         null, // defaultocsplocator
                         null, // Authority Information Access
+                        null, null, // Name Constraints
                         null, // defaultfreshestcrl
                         true, // Finish User
                         extendedcaservices, false, // use default utf8 settings
