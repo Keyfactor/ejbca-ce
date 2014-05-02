@@ -178,3 +178,11 @@ securityeventsaudit.exporter.1=org.cesecore.audit.impl.AuditExporterXml
 # ecdsa.implicitlyca.g=020ffa963cdca8816ccc33b8642bedf905c3d358573d3f27fbbd3b3cb9aaaf
 # ecdsa.implicitlyca.n=883423532389192164791648750360308884807550341691627752275345424702807307
 
+#------------------- PKCS#11 -------------------------------------
+# Configuration of PKCS#11 tokens.
+#
+# Disabling of sign mechanisms that are using PKCS#11 to hash the data before signing.
+# If these mechanisms are disabled then the sun PKCS#11 wrapper will do the hashing
+# before PKCS#11 is called.
+# Default: true (the mechanisms are disabled).
+#pkcs11.disableHashingSignMechanisms=false
