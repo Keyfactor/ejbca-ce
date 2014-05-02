@@ -51,7 +51,7 @@ public class NameConstraint extends StandardCertificateExtension {
 
     @Override
     public ASN1Encodable getValue(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey,
-            PublicKey caPublicKey, CertificateValidity val) throws CertificateExtentionConfigurationException, CertificateExtensionException {
+            PublicKey caPublicKey, CertificateValidity val) throws CertificateExtensionException {
         NameConstraints nc = null;
         if ((certProfile.getType() == CertificateConstants.CERTTYPE_SUBCA ||
             certProfile.getType() == CertificateConstants.CERTTYPE_ROOTCA) &&
