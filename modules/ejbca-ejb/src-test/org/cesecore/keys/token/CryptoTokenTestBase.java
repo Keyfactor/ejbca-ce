@@ -41,6 +41,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.token.p11.exception.NoSuchSlotException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
@@ -54,6 +55,7 @@ public abstract class CryptoTokenTestBase {
 
     public static final String tokenpin = "userpin1";
 
+    private static final InternalResources intres = InternalResources.getInstance();
 
     public CryptoTokenTestBase() {
         super();
@@ -412,7 +414,7 @@ public abstract class CryptoTokenTestBase {
                     pub = cryptoToken.getPublicKey("sdfsdf77474");
                     assertTrue("Should throw", false);
                 } catch (CryptoTokenOfflineException e) {
-                    assertTrue(e.getMessage(), e.getMessage().contains("No key with alias 'sdfsdf77474'."));
+                    assertTrue(e.getMessage(), e.getMessage().contains(intres.getLocalizedMessage("token.errornosuchkey", "sdfsdf77474")));
                 }
                 // We have not set auto activate, so the internal key storage in CryptoToken is emptied
                 cryptoToken.deactivate();
@@ -420,18 +422,18 @@ public abstract class CryptoTokenTestBase {
                     priv = cryptoToken.getPrivateKey("rsatest00001");
                     assertTrue("Should throw", false);
                 } catch (CryptoTokenOfflineException e) {
-                    assertEquals("Can not instantiate "+getProvider()+". keyStore (111) == null.", e.getMessage());
+                    assertTrue(e.getMessage(), e.getMessage().contains("keyStore (111) == null"));
                 }
                 try {
                     pub = cryptoToken.getPublicKey("rsatest00001");
                     assertTrue("Should throw", false);
                 } catch (CryptoTokenOfflineException e) {
-                    assertEquals("Can not instantiate "+getProvider()+". keyStore (111) == null.", e.getMessage());
+                    assertTrue(e.getMessage(), e.getMessage().contains("keyStore (111) == null"));
                 }
                 // Activate with wrong PIN should not work
                 try {
                     cryptoToken.activate("gfhf56564".toCharArray());
-                    assertTrue("should throw", false);
+                    fail("Should have thrown");
                 } catch (CryptoTokenAuthenticationFailedException e) {
                     String strsoft = "PKCS12 key store mac invalid - wrong password or corrupted file.";
                     String strp11 = "Failed to initialize PKCS11 provider slot '1'.";

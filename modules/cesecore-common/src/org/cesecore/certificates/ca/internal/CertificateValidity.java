@@ -12,7 +12,6 @@
  *************************************************************************/ 
 package org.cesecore.certificates.ca.internal;
 
-import java.io.IOException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
@@ -193,45 +192,50 @@ public class CertificateValidity {
 	public Date getNotBefore() {
 		return firstDate;
 	}
-	
+	 
 	/**
 	 * Checks that the PrivateKeyUsagePeriod of the certificate is valid at this time
 	 * @param cacert
-	 * @throws IOException If there is an error reading PrivateKeyUsagePeriod extension from the certificate
-	 * @throws ParseException If there is an error reading PrivateKeyUsagePeriod extension from the certificate
+
 	 * @throws CAOfflineException if PrivateKeyUsagePeriod either is not valid yet or has expired, exception message gives details
 	 */
-    public static void checkPrivateKeyUsagePeriod(final X509Certificate cert) throws IOException, ParseException, CAOfflineException {
+    public static void checkPrivateKeyUsagePeriod(final X509Certificate cert) throws CAOfflineException {
         if (cert != null) {
             final PrivateKeyUsagePeriod pku = CertTools.getPrivateKeyUsagePeriod(cert);
             if (pku != null) {
                 final Date now = new Date();
                 final DERGeneralizedTime notBefore = pku.getNotBefore();
                 final Date pkuNotBefore;
-                if (notBefore == null) {
-                    pkuNotBefore = null;
-                } else {
-                    pkuNotBefore = notBefore.getDate();
-                }
-                if (log.isDebugEnabled()) {
-                    log.debug("PrivateKeyUsagePeriod.notBefore is "+pkuNotBefore);
-                }
-                if (pkuNotBefore != null && now.before(pkuNotBefore)) {
-                    final String msg = intres.getLocalizedMessage("createcert.privatekeyusagenotvalid", pkuNotBefore.toString(), cert.getSubjectDN().toString());
-                    if (log.isDebugEnabled()) {
-                        log.debug(msg);
-                    }
-                    throw new CAOfflineException(msg);
-                }
-                final DERGeneralizedTime notAfter = pku.getNotAfter();
                 final Date pkuNotAfter;
-                if (notAfter == null) {
-                    pkuNotAfter = null;
-                } else {
-                    pkuNotAfter = notAfter.getDate();
-                }
+                try {
+                    if (notBefore == null) {
+                        pkuNotBefore = null;
+                    } else {
+                        pkuNotBefore = notBefore.getDate();
+                    }
+                    if (log.isDebugEnabled()) {
+                        log.debug("PrivateKeyUsagePeriod.notBefore is " + pkuNotBefore);
+                    }
+                    if (pkuNotBefore != null && now.before(pkuNotBefore)) {
+                        final String msg = intres.getLocalizedMessage("createcert.privatekeyusagenotvalid", pkuNotBefore.toString(), cert
+                                .getSubjectDN().toString());
+                        if (log.isDebugEnabled()) {
+                            log.debug(msg);
+                        }
+                        throw new CAOfflineException(msg);
+                    }
+                    final DERGeneralizedTime notAfter = pku.getNotAfter();
+
+                    if (notAfter == null) {
+                        pkuNotAfter = null;
+                    } else {
+                        pkuNotAfter = notAfter.getDate();
+                    }
+                } catch (ParseException e) {
+                    throw new IllegalStateException("Could not parse dates.", e);
+                } 
                 if (log.isDebugEnabled()) {
-                    log.debug("PrivateKeyUsagePeriod.notAfter is "+pkuNotAfter);
+                    log.debug("PrivateKeyUsagePeriod.notAfter is " + pkuNotAfter);
                 }
                 if (pkuNotAfter != null && now.after(pkuNotAfter)) {
                     final String msg = intres.getLocalizedMessage("createcert.privatekeyusageexpired", pkuNotAfter.toString(), cert.getSubjectDN().toString());

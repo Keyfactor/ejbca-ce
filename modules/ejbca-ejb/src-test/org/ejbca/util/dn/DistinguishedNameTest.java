@@ -26,7 +26,6 @@ import org.junit.Test;
 
 /** Tests for DistinguishedName class.
  * 
- * @author David Galichet
  * @version $Id$
  */
 public class DistinguishedNameTest {

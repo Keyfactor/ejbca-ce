@@ -18,7 +18,9 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
+import java.security.SignatureException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -37,7 +39,7 @@ import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
-import org.cesecore.CesecoreException;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.ErrorCode;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
@@ -52,10 +54,17 @@ import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.ca.IllegalValidityException;
+import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
+import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
@@ -73,16 +82,13 @@ import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 
 /**
- * Interface for creating certificates
- * 
- * Only one method from this bean is used, and it's the private method for creating certificates, also this modified.
+ * Session bean for creating certificates.
  * 
  * @version $Id$
  */
@@ -116,9 +122,11 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
     }
 
     @Override
-    public CertificateResponseMessage createCertificate(final AuthenticationToken admin, final EndEntityInformation userData, final CA ca, final RequestMessage req,
-            final Class<? extends ResponseMessage> responseClass) throws AuthorizationDeniedException, CustomCertSerialNumberException, IllegalKeyException,
-            CADoesntExistsException, CertificateCreateException, CesecoreException {
+    public CertificateResponseMessage createCertificate(final AuthenticationToken admin, final EndEntityInformation userData, final CA ca,
+            final RequestMessage req, final Class<? extends ResponseMessage> responseClass) throws CryptoTokenOfflineException,
+            SignRequestSignatureException, IllegalKeyException, IllegalNameException, CustomCertificateSerialNumberException,
+            CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException, AuthorizationDeniedException,
+            IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CertificateExtensionException {
         if (log.isTraceEnabled()) {
             log.trace(">createCertificate(IRequestMessage, CA)");
         }
@@ -135,7 +143,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             // Verify the request
             final PublicKey reqpk;
             try {
-                if (req.verify() == false) {
+                if (!req.verify()) {
                     throw new SignRequestSignatureException(intres.getLocalizedMessage("createcert.popverificationfailed"));
                 }
                 reqpk = req.getRequestPublicKey();
@@ -160,7 +168,12 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 final Extension ext = exts.getExtension(Extension.keyUsage);
                 if (ext != null) {
                     final ASN1OctetString os = ext.getExtnValue();
-                        final DERBitString bs = new DERBitString(os.getEncoded());
+                        DERBitString bs;
+                        try {
+                            bs = new DERBitString(os.getEncoded());
+                        } catch (IOException e) {
+                            throw new IllegalStateException("Unexpected IOException caught.");
+                        }
                         keyusage = bs.intValue();
                     if (log.isDebugEnabled()) {
                         log.debug("We have a key usage request extension: " + keyusage);
@@ -195,16 +208,13 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 ret.setFailInfo(failInfo);
                 ret.setFailText(failText);
             }
-
-            ret.create();
-        } catch (IOException e) {
-            throw new CertificateCreateException(e);
+            ret.create();          
         } catch (InvalidKeyException e) {
-            throw new IllegalCryptoTokenException(e);
+            throw new CertificateCreateException(e);
         } catch (NoSuchAlgorithmException e) {
-            throw new IllegalCryptoTokenException(e);
+            throw new CertificateCreateException(e);
         } catch (NoSuchProviderException e) {
-            throw new IllegalCryptoTokenException(e);
+            throw new CertificateCreateException(e);
         }
 
         if (log.isTraceEnabled()) {
@@ -215,9 +225,10 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
 
 
     @Override
-    public CertificateResponseMessage createCertificate(final AuthenticationToken admin, final EndEntityInformation userData, final RequestMessage req,
-            final Class<? extends ResponseMessage> responseClass) throws AuthorizationDeniedException, CustomCertSerialNumberException, IllegalKeyException,
-            CADoesntExistsException, CertificateCreateException, CesecoreException {
+    public CertificateResponseMessage createCertificate(final AuthenticationToken admin, final EndEntityInformation userData,
+            final RequestMessage req, final Class<? extends ResponseMessage> responseClass) throws CADoesntExistsException,
+            AuthorizationDeniedException, CryptoTokenOfflineException, SignRequestSignatureException, IllegalKeyException, IllegalNameException,
+            CustomCertificateSerialNumberException, CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CertificateExtensionException {
         if (log.isTraceEnabled()) {
             log.trace(">createCertificate(IRequestMessage)");
         }
@@ -264,10 +275,11 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
     }
     
     @Override
-    public Certificate createCertificate(final AuthenticationToken admin, final EndEntityInformation data, final CA ca,
-            final RequestMessage request, final PublicKey pk, final int keyusage, final Date notBefore, final Date notAfter,
-            final Extensions extensions, final String sequence, CTExtensionCertGenParams ctParams) throws CustomCertSerialNumberException, IllegalKeyException,
-            AuthorizationDeniedException, CertificateCreateException, CesecoreException {
+    public Certificate createCertificate(final AuthenticationToken admin, final EndEntityInformation data, final CA ca, final RequestMessage request,
+            final PublicKey pk, final int keyusage, final Date notBefore, final Date notAfter, final Extensions extensions, final String sequence,
+            CTExtensionCertGenParams ctParams) throws AuthorizationDeniedException, IllegalNameException, CustomCertificateSerialNumberException,
+            CertificateCreateException, CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException,
+            IllegalKeyException, CertificateExtensionException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException {
         if (log.isTraceEnabled()) {
             log.trace(">createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)");
         }
@@ -324,23 +336,27 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 if (ca.isUseCertificateStorage() && !isUniqueCertificateSerialNumberIndex()) {
                     final String msg = intres.getLocalizedMessage("createcert.not_unique_certserialnumberindex");
                     log.error(msg);
-                    throw new CustomCertSerialNumberException(new CesecoreException(msg));
+                    throw new CustomCertificateSerialNumberException(msg);
                 }
                 if (!certProfile.getAllowCertSerialNumberOverride()) {
                     final String msg = intres
                             .getLocalizedMessage("createcert.certprof_not_allowing_cert_sn_override", Integer.valueOf(certProfileId));
                     log.info(msg);
-                    throw new CesecoreException(msg);
+                    throw new CustomCertificateSerialNumberException(msg);
                 }
                 maxRetrys = 1;
             } else {
                 maxRetrys = 5;
             }
-            Exception storeEx = null; // this will not be null if stored == false after the below passage
+            CertificateSerialNumberException storeEx = null; // this will not be null if stored == false after the below passage
             for (int retrycounter = 0; retrycounter < maxRetrys; retrycounter++) {
                 final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
                 if (cryptoToken==null) {
-                    throw new CryptoTokenOfflineException("CA's CryptoToken not found.");
+                    final String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getCAId());
+                    log.info(msg);
+                    CryptoTokenOfflineException exception = new CryptoTokenOfflineException("CA's CryptoToken not found.");
+                    auditFailure(admin, exception, exception.getMessage(), "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), data.getUsername());
+                    throw exception;
                 }
                 cert = ca.generateCertificate(cryptoToken, data, request, pk, keyusage, notBefore, notAfter, certProfile, extensions, sequence, ctParams);
                 serialNo = CertTools.getSerialNumberAsString(cert);
@@ -360,7 +376,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                             certProfile.getType(), certProfileId, tag, updateTime);
                     storeEx = null;
                     break;
-                } catch (Exception e) {
+                } catch (CertificateSerialNumberException e) {
                     // If we have created a unique index on (issuerDN,serialNumber) on table CertificateData we can
                     // get a CreateException here if we would happen to generate a certificate with the same serialNumber
                     // as one already existing certificate.
@@ -375,7 +391,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 if (useCustomSN) {
                     final String msg = intres.getLocalizedMessage("createcert.cert_serial_number_allready_in_database", serialNo);
                     log.info(msg);
-                    throw new CesecoreException(msg);
+                    throw new CustomCertificateSerialNumberException(msg);
                 }
                 log.error("Can not store certificate in database in 5 tries, aborting: ", storeEx);
                 throw storeEx;
@@ -407,7 +423,12 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             issuedetails.put("subjectdn", data.getDN());
             issuedetails.put("certprofile", data.getCertificateProfileId());
             issuedetails.put("issuancerevocationreason", revreason);
-            issuedetails.put("cert", new String(Base64.encode(cert.getEncoded(), false)));
+            try {
+                issuedetails.put("cert", new String(Base64.encode(cert.getEncoded(), false)));
+            } catch (CertificateEncodingException e) {
+                //Should not be able to happen at this point
+                throw new IllegalStateException();
+            }
             logSession.log(EventTypes.CERT_CREATION, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(ca.getCAId()), serialNo, data.getUsername(),
             		issuedetails);
 
@@ -416,20 +437,11 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             }
             return cert;
             // We need to catch and re-throw all of these exception just because we need to audit log all failures
-        } catch (CryptoTokenOfflineException e) {
-            final String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getCAId());
-            log.info(msg);
-            auditFailure(admin, e, e.getMessage(), "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), data.getUsername());
-            throw e;
-        } catch (AuthorizationDeniedException e) {
+        } catch (CustomCertificateSerialNumberException e) {
             log.info(e.getMessage());
             auditFailure(admin, e, null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), data.getUsername());
             throw e;
-        } catch (CustomCertSerialNumberException e) {
-            log.info(e.getMessage());
-            auditFailure(admin, e, null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), data.getUsername());
-            throw e;
-        } catch (IllegalKeyException e) {
+        }  catch (AuthorizationDeniedException e) {
             log.info(e.getMessage());
             auditFailure(admin, e, null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), data.getUsername());
             throw e;
@@ -438,23 +450,58 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             auditFailure(admin, e, null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), data.getUsername());
             // Rollback
             throw e;
-        } catch (CesecoreException e) {
-            log.info(e.getMessage());
+        } catch(CryptoTokenOfflineException e) {
+            final String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getCAId());
+            log.info(msg);
+            auditFailure(admin, e, e.getMessage(), "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), data.getUsername());
+            throw e;
+        } catch (CAOfflineException e) {
+            log.error("Error creating certificate", e);
             auditFailure(admin, e, null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), data.getUsername());
             throw e;
-        } catch (Exception e) {
+        } catch (InvalidAlgorithmException e) {
+            log.error("Error creating certificate", e);
+            auditFailure(admin, e, null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), data.getUsername());
+            throw e;
+        } catch (IllegalValidityException e) {
+            log.error("Error creating certificate", e);
+            auditFailure(admin, e, null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), data.getUsername());
+            throw e;
+        } catch (OperatorCreationException e) {
             log.error("Error creating certificate", e);
             auditFailure(admin, e, null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), data.getUsername());
             // Rollback
             throw new CertificateCreateException(e);
+        } catch (SignatureException e) {
+            log.error("Error creating certificate", e);
+            auditFailure(admin, e, null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), data.getUsername());
+            // Rollback
+            throw new CertificateCreateException(e);
+        } catch (CertificateExtensionException e) {
+            log.error("Error creating certificate", e);
+            auditFailure(admin, e, null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), data.getUsername());
+            throw e;
         }
+        
+    /* catch (Exception e) {
+    log.error("Error creating certificate", e);
+    auditFailure(admin, e, null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), data.getUsername());
+    // Rollback
+    throw new CertificateCreateException(e);
+}*/ 
     }
 
     /**
      * Happy path optimization that performs enforcement checks as a single database round trip.
      * However, if any of the checks fail we will end up with additional queries to find out what went wrong.
+     * 
+     * @param ca
+     * @param issuerDN
+     * @param endEntityInformation
+     * @param publicKey
+     * @throws CertificateCreateException if the certificate couldn't be created. 
      */
-    private void assertSubjectEnforcements(final CA ca, final String issuerDN, final EndEntityInformation endEntityInformation, final PublicKey publicKey) throws CesecoreException {
+    private void assertSubjectEnforcements(final CA ca, final String issuerDN, final EndEntityInformation endEntityInformation, final PublicKey publicKey) throws CertificateCreateException {
         boolean enforceUniqueDistinguishedName = false;
         if (ca.isDoEnforceUniqueDistinguishedName()) {
             if (ca.isUseCertificateStorage()) {
@@ -495,7 +542,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             if (users.size() > 0 && !users.contains(username)) {
                 final String msg = intres.getLocalizedMessage("createcert.subjectdn_exists_for_another_user", "'" + username + "'",
                         listUsers(users));
-                throw new CesecoreException(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALLREADY_EXISTS_FOR_ANOTHER_USER, msg);
+                throw new CertificateCreateException(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER, msg);
             }
         }
         if (!multipleCheckOk && enforceUniquePublicKeys) {
@@ -503,24 +550,25 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             if (users.size() > 0 && !users.contains(username)) {
                 final String msg = intres.getLocalizedMessage("createcert.key_exists_for_another_user", "'" + username + "'",
                         listUsers(users));
-                throw new CesecoreException(ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALLREADY_EXISTS_FOR_ANOTHER_USER, msg);
+                throw new CertificateCreateException(ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALLREADY_EXISTS_FOR_ANOTHER_USER, msg);
             }
         }
     }
 
-    /** When no unique index is present in the database, we still try to enforce X.509 serial number per CA uniqueness. */
-    private void assertSerialNumberForIssuerOk(final CA ca, final String issuerDN, final BigInteger serialNumber) throws CesecoreException {
+    /** When no unique index is present in the database, we still try to enforce X.509 serial number per CA uniqueness. 
+     * @throws CertificateCreateException if serial number already exists in database
+     */
+    private void assertSerialNumberForIssuerOk(final CA ca, final String issuerDN, final BigInteger serialNumber) throws CertificateSerialNumberException {
         if (ca.getCAType()==CAInfo.CATYPE_X509 && !isUniqueCertificateSerialNumberIndex()) {
             if (certificateStoreSession.findCertificateByIssuerAndSerno(issuerDN, serialNumber)!=null) {
                 final String msg = intres.getLocalizedMessage("createcert.cert_serial_number_allready_in_database", serialNumber.toString());
                 log.info(msg);
-                throw new CesecoreException(msg);
+                throw new CertificateSerialNumberException(msg);
             }
         }
     }
 
-    private CertificateProfile getCertificateProfile(final int certProfileId, final int caid)
-            throws AuthorizationDeniedException {
+    private CertificateProfile getCertificateProfile(final int certProfileId, final int caid) throws AuthorizationDeniedException {
         final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(certProfileId);
         // What if certProfile == null?
         if (certProfile == null) {

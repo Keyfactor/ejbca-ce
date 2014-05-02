@@ -140,7 +140,7 @@ public interface RequestMessage extends Serializable {
      * Verifies signatures, popo etc on the request message. If verification fails the request
      * should be considered invalid.
      *
-     * @return True if verification was successful, false if it failed.
+     * @return true if verification was successful, false if it failed.
      *
      * @throws InvalidKeyException If the key used for verification is invalid.
      * @throws NoSuchProviderException if there is an error with the Provider.

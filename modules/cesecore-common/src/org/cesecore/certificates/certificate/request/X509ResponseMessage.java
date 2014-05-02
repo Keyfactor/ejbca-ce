@@ -162,24 +162,22 @@ public class X509ResponseMessage implements CertificateResponseMessage {
      *
      * @see #setSignKeyInfo()
      */
-    public boolean create()
-            throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignRequestException {
+    public boolean create() {
 
         if (status.equals(ResponseStatus.SUCCESS)) {
             log.debug("Creating a STATUS_OK message.");
         } else {
-        	if (status.equals(ResponseStatus.FAILURE)) {
+            if (status.equals(ResponseStatus.FAILURE)) {
                 log.debug("Creating a STATUS_FAILED message (or throwing an exception).");
                 if (failInfo.equals(FailInfo.WRONG_AUTHORITY)) {
-                	throw new SignRequestException(failText);            
+                    return false;
                 }
                 if (failInfo.equals(FailInfo.INCORRECT_DATA)) {
-                	throw new SignRequestException(failText);
+                    return false;
                 }
-
             } else {
                 log.debug("Creating a STATUS_PENDING message.");
-            }               
+            }
         }
         return true;
     }

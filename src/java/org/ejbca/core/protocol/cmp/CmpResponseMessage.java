@@ -187,7 +187,7 @@ public class CmpResponseMessage implements CertificateResponseMessage {
     }
 
     @Override
-    public boolean create() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
+    public boolean create() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
         boolean ret = false;
         // Some general stuff, common for all types of messages
         String issuer = null;
@@ -219,23 +219,27 @@ public class CmpResponseMessage implements CertificateResponseMessage {
                     PKIStatusInfo myPKIStatusInfo = new PKIStatusInfo(PKIStatus.granted); // 0 = accepted
                     ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(cert.getEncoded()));
                     try {
-                        CMPCertificate cmpcert = CMPCertificate.getInstance(asn1InputStream.readObject());
-                        CertOrEncCert retCert = new CertOrEncCert(cmpcert);
-                        CertifiedKeyPair myCertifiedKeyPair = new CertifiedKeyPair(retCert);
-                        CertResponse myCertResponse = new CertResponse(new ASN1Integer(requestId), myPKIStatusInfo, myCertifiedKeyPair, null);
+                        try {
+                            CMPCertificate cmpcert = CMPCertificate.getInstance(asn1InputStream.readObject());
+                            CertOrEncCert retCert = new CertOrEncCert(cmpcert);
+                            CertifiedKeyPair myCertifiedKeyPair = new CertifiedKeyPair(retCert);
+                            CertResponse myCertResponse = new CertResponse(new ASN1Integer(requestId), myPKIStatusInfo, myCertifiedKeyPair, null);
 
-                        CertResponse[] certRespos = { myCertResponse };
-                        CMPCertificate[] cmpCerts = { cmpcert };
+                            CertResponse[] certRespos = { myCertResponse };
+                            CMPCertificate[] cmpCerts = { cmpcert };
 
-                        CertRepMessage myCertRepMessage = new CertRepMessage(cmpCerts, certRespos);
+                            CertRepMessage myCertRepMessage = new CertRepMessage(cmpCerts, certRespos);
 
-                        int respType = requestType + 1; // 1 = intitialization response, 3 = certification response etc
-                        if (log.isDebugEnabled()) {
-                            log.debug("Creating response body of type " + respType);
+                            int respType = requestType + 1; // 1 = intitialization response, 3 = certification response etc
+                            if (log.isDebugEnabled()) {
+                                log.debug("Creating response body of type " + respType);
+                            }
+                            myPKIBody = new PKIBody(respType, myCertRepMessage);
+                        } finally {
+                            asn1InputStream.close();
                         }
-                        myPKIBody = new PKIBody(respType, myCertRepMessage);
-                    } finally {
-                        asn1InputStream.close();
+                    } catch (IOException e) {
+                        throw new IllegalStateException("Unexpected IOException caught.", e);
                     }
                 }
             } else if (status.equals(ResponseStatus.FAILURE)) {

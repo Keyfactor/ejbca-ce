@@ -36,6 +36,8 @@ public interface CertificateTransparency {
     /**
      * Overloaded method that with allLogs = false
      * 
+     * @throws CTLogException If too many servers are down to satisfy the certificate profile.
+     *
      * @see CertificateTransparency#fetchSCTList(List, CertificateProfile, Map, boolean)
      */
     byte[] fetchSCTList(List<Certificate> chain, CertificateProfile certProfile, Map<Integer,CTLogInfo> configuredCTLogs) throws CTLogException;

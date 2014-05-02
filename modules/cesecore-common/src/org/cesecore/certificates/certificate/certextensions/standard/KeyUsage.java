@@ -21,7 +21,6 @@ import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.internal.CertificateValidity;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
-import org.cesecore.certificates.certificate.certextensions.CertificateExtentionConfigurationException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.CertTools;
@@ -42,7 +41,9 @@ public class KeyUsage extends StandardCertificateExtension {
 	}
     
     @Override
-	public ASN1Encodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey, CertificateValidity val ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
+    public ASN1Encodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile,
+            final PublicKey userPublicKey, final PublicKey caPublicKey, CertificateValidity val) throws
+            CertificateExtensionException {
 		// Key usage
 		X509KeyUsage ret = null;
 		final int keyUsage = CertTools.sunKeyUsageToBC(certProfile.getKeyUsage());

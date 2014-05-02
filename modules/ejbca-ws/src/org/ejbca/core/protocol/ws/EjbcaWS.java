@@ -91,6 +91,7 @@ import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.IllegalKeyException;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
@@ -596,13 +597,7 @@ public class EjbcaWS implements IEjbcaWS {
 					} catch (InvalidKeySpecException e) {
 						String msg = intres.getLocalizedMessage("cvc.error.outersignature", CertTools.getSubjectDN(cert), e.getMessage());            	
 						log.warn(msg, e);
-					} catch (NoSuchProviderException e) {
-						String msg = intres.getLocalizedMessage("cvc.error.outersignature", CertTools.getSubjectDN(cert), e.getMessage());            	
-						log.warn(msg, e);
-					} catch (NoSuchAlgorithmException e) {
-						String msg = intres.getLocalizedMessage("cvc.error.outersignature", CertTools.getSubjectDN(cert), e.getMessage());            	
-						log.info(msg, e);
-					}
+					} 
 				}
 			}											
 		}
@@ -954,7 +949,9 @@ public class EjbcaWS implements IEjbcaWS {
 			if (imsg != null) {
 				retval = getCertResponseFromPublicKey(admin, imsg, hardTokenSN, responseType);
 			}
-		} catch (InvalidKeyException e) {
+		} catch (CertificateExtensionException e) {
+		    throw EjbcaWSHelper.getInternalException(e, logger);
+        } catch (InvalidKeyException e) {
             throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.INVALID_KEY, Level.ERROR);
 		} catch (IllegalKeyException e) {
 			// Don't log a bad error for this (user's key length too small)
@@ -989,28 +986,29 @@ public class EjbcaWS implements IEjbcaWS {
             throw EjbcaWSHelper.getInternalException(e, logger);
         } catch (RuntimeException e) {	// EJBException, ...
             throw EjbcaWSHelper.getInternalException(e, logger);
-		}
+		} 
 		return retval;
 	}
 
 
-	private byte[] getCertResponseFromPublicKey(final AuthenticationToken admin, final RequestMessage msg,
-			final String hardTokenSN, final String responseType) throws EjbcaException, CertificateEncodingException, CertificateException, IOException, CesecoreException, AuthorizationDeniedException {
-		byte[] retval = null;
-		final ResponseMessage resp = signSession.createCertificate(admin, msg, X509ResponseMessage.class, null);
-		final java.security.cert.Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
-		if (responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_CERTIFICATE)) {
-			retval = cert.getEncoded();
-		} else if(responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7)) {
-			retval = signSession.createPKCS7(admin, cert, false);
-		} else if(responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7WITHCHAIN)) {
-			retval = signSession.createPKCS7(admin, cert, true);
-		}
-		if(hardTokenSN != null){ 
-			hardTokenSession.addHardTokenCertificateMapping(admin,hardTokenSN,cert);				  
-		}
-		return retval;
-	}
+    private byte[] getCertResponseFromPublicKey(final AuthenticationToken admin, final RequestMessage msg, final String hardTokenSN,
+            final String responseType) throws AuthorizationDeniedException, CertificateEncodingException, EjbcaException, CesecoreException,
+            CertificateExtensionException, CertificateParsingException {
+        byte[] retval = null;
+        final ResponseMessage resp = signSession.createCertificate(admin, msg, X509ResponseMessage.class, null);
+        final java.security.cert.Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
+        if (responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_CERTIFICATE)) {
+            retval = cert.getEncoded();
+        } else if (responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7)) {
+            retval = signSession.createPKCS7(admin, cert, false);
+        } else if (responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7WITHCHAIN)) {
+            retval = signSession.createPKCS7(admin, cert, true);
+        }
+        if (hardTokenSN != null) {
+            hardTokenSession.addHardTokenCertificateMapping(admin, hardTokenSN, cert);
+        }
+        return retval;
+    }
 
 	/**
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#pkcs12Req(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
@@ -2440,7 +2438,9 @@ public class EjbcaWS implements IEjbcaWS {
         } catch( NotFoundException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
-		} catch (InvalidKeyException e) {
+		} catch (CertificateExtensionException e) {
+            throw EjbcaWSHelper.getInternalException(e, logger);
+        } catch (InvalidKeyException e) {
             throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.INVALID_KEY, Level.ERROR);
 		} catch (IllegalKeyException e) {
 			// Don't log a bad error for this (user's key length too small)

@@ -76,7 +76,7 @@ public class SernoGeneratorRandom implements SernoGenerator {
     /**
      * Creates a serial number generator using SecureRandom
      */
-    protected SernoGeneratorRandom() throws NoSuchAlgorithmException {
+    protected SernoGeneratorRandom() {
         if (log.isTraceEnabled()) {
             log.trace(">SernoGenerator()");
         }
@@ -88,9 +88,14 @@ public class SernoGeneratorRandom implements SernoGenerator {
         }
     }
 
-    private void init() throws NoSuchAlgorithmException {
+    private void init() {
         // Init random number generator for random serial numbers
-        random = SecureRandom.getInstance(algorithm);
+        try {
+            random = SecureRandom.getInstance(algorithm);
+        } catch (NoSuchAlgorithmException e) {
+            //This state is unrecoverable, and since algorithm is set in configuration requires a redeploy to handle
+            throw new IllegalStateException("Algorithm " + algorithm + " was not a valid algorithm.", e);
+        }
 
         // Using this seed we should get a different seed every time.
         // We are not concerned about the security of the random bits, only that
@@ -131,7 +136,7 @@ public class SernoGeneratorRandom implements SernoGenerator {
      * 
      * @return An instance of the serial number generator.
      */
-    public static synchronized SernoGenerator instance() throws NoSuchAlgorithmException {
+    public static synchronized SernoGenerator instance() {
         if (instance == null) {
             instance = new SernoGeneratorRandom();
         }

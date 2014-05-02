@@ -27,6 +27,7 @@ import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateParsingException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Random;
 
@@ -46,6 +47,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -65,6 +67,8 @@ import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertReqHistoryProxySessionRemote;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.junit.After;
 import org.junit.Before;
@@ -143,16 +147,31 @@ public class CertificateRequestThrowAwayTest extends CaTestCase {
 
     /**
      * Reconfigure CA, process a certificate request and assert that the right things were stored in the database.
+     * @throws AuthorizationDeniedException 
+     * @throws CertificateExtensionException 
+     * @throws CreateException 
+     * @throws IOException 
+     * @throws EjbcaException 
+     * @throws UserDoesntFullfillEndEntityProfile 
+     * @throws ObjectNotFoundException 
+     * @throws InvalidKeySpecException 
+     * @throws CertificateException 
+     * @throws SignatureException 
+     * @throws InvalidAlgorithmParameterException 
+     * @throws NoSuchProviderException 
+     * @throws NoSuchAlgorithmException 
+     * @throws CertificateEncodingException 
+     * @throws InvalidKeyException 
      * 
      * @throws CesecoreException
-     * @throws CADoesntExistsException
      * @throws OperatorCreationException 
+     * @throws RemoveException 
      */
     private void generateCertificatePkcs10(boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, boolean raw)
-            throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, InvalidKeyException, NoSuchAlgorithmException,
-            NoSuchProviderException, SignatureException, InvalidAlgorithmParameterException, CertificateEncodingException, CertificateException,
-            IOException, RemoveException, InvalidKeySpecException, ObjectNotFoundException, CreateException, CADoesntExistsException,
-            CesecoreException, OperatorCreationException {
+            throws AuthorizationDeniedException, InvalidKeyException, CertificateEncodingException, NoSuchAlgorithmException,
+            NoSuchProviderException, InvalidAlgorithmParameterException, SignatureException, CertificateException, InvalidKeySpecException,
+            ObjectNotFoundException, OperatorCreationException, UserDoesntFullfillEndEntityProfile, EjbcaException, IOException, CreateException,
+            CesecoreException, CertificateExtensionException, RemoveException {
         LOG.trace(">generateCertificatePkcs10");
         LOG.info("useCertReqHistory=" + useCertReqHistory + " useUserStorage=" + useUserStorage + " useCertificateStorage=" + useCertificateStorage);
         reconfigureCA(useCertReqHistory, useUserStorage, useCertificateStorage);
@@ -219,14 +238,27 @@ public class CertificateRequestThrowAwayTest extends CaTestCase {
      * Generate a new keypair and PKCS#10 request and request a new certificate in a single transaction.
      * 
      * @param raw true if an encoded request should be sent, false if an EJBCA PKCS10RequestMessage should be used.
+     * @throws InvalidAlgorithmParameterException 
      * @throws CesecoreException
      * @throws CADoesntExistsException
      * @throws OperatorCreationException 
+     * @throws EjbcaException 
+     * @throws UserDoesntFullfillEndEntityProfile 
+     * @throws CreateException 
+     * @throws AuthorizationDeniedException 
+     * @throws ApprovalException 
+     * @throws CertificateException 
+     * @throws ObjectNotFoundException 
+     * @throws SignatureException 
+     * @throws NoSuchProviderException 
+     * @throws InvalidKeySpecException 
+     * @throws NoSuchAlgorithmException 
+     * @throws NotFoundException 
+     * @throws InvalidKeyException 
+     * @throws CertificateParsingException 
+     * @throws CertificateExtensionException 
      */
-    private Certificate doPkcs10Request(EndEntityInformation userData, boolean raw) throws AuthorizationDeniedException,
-            UserDoesntFullfillEndEntityProfile, EjbcaException, NoSuchAlgorithmException, NoSuchProviderException,
-            InvalidAlgorithmParameterException, InvalidKeyException, SignatureException, CertificateEncodingException, CertificateException,
-            IOException, InvalidKeySpecException, ObjectNotFoundException, CreateException, CADoesntExistsException, CesecoreException, OperatorCreationException {
+    private Certificate doPkcs10Request(EndEntityInformation userData, boolean raw) throws InvalidAlgorithmParameterException, OperatorCreationException, IOException, CertificateParsingException, InvalidKeyException, CADoesntExistsException, NotFoundException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException, SignatureException, ObjectNotFoundException, CertificateException, ApprovalException, AuthorizationDeniedException, CreateException, UserDoesntFullfillEndEntityProfile, EjbcaException, CesecoreException, CertificateExtensionException {
         Certificate ret;
         KeyPair rsakeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA); // Use short keys, since this will be done many times
         byte[] rawPkcs10req = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", CertTools.stringToBcX500Name("CN=ignored"), rsakeys.getPublic(),

@@ -21,7 +21,6 @@ import java.security.cert.CertificateException;
 import java.util.Collection;
 import java.util.Date;
 
-import javax.ejb.CreateException;
 import javax.ejb.FinderException;
 
 import org.apache.log4j.Logger;
@@ -270,9 +269,6 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
         try {
             EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class).storeCertificate(getAuthenticationToken(), certificate,
                     username, fingerprint, status, certificateType, certificateprofileid, null, new Date().getTime());
-        } catch (CreateException e) {
-            log.error("Certificate could not be stored in database.", e);
-            return CommandResult.FUNCTIONAL_FAILURE;
         } catch (AuthorizationDeniedException e) {
             log.error("CLI user not authorized to import certificate.");
             return CommandResult.FUNCTIONAL_FAILURE;

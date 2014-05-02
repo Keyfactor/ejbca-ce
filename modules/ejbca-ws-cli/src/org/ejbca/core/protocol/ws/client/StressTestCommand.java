@@ -419,9 +419,6 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			this.bitsInCertificateSN = _bitsInCertificateSN;
 			try {
                 this.pkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX500Name("CN=NOUSED"), keys.getPublic(), new DERSet(), keys.getPrivate(), null);
-            } catch (IOException e) {
-                getPrintStream().println(e.getLocalizedMessage());
-                e.printStackTrace(getPrintStream());
             } catch (OperatorCreationException e) {
                 getPrintStream().println(e.getLocalizedMessage());
                 e.printStackTrace(getPrintStream());
