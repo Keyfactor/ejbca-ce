@@ -62,8 +62,9 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
-import org.cesecore.certificates.certificate.CustomCertSerialNumberException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
+import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
@@ -247,7 +248,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     @Override
     public ResponseMessage createCertificate(final AuthenticationToken admin, final RequestMessage req,
             Class<? extends ResponseMessage> responseClass, final EndEntityInformation suppliedUserData) throws EjbcaException, CesecoreException,
-            AuthorizationDeniedException {
+            AuthorizationDeniedException, CertificateExtensionException {
         if (log.isTraceEnabled()) {
             log.trace(">createCertificate(IRequestMessage)");
         }
@@ -308,7 +309,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             if (ca.isUseUserStorage() && data != null) {
                 finishUser(ca, data);
             }
-        } catch (CustomCertSerialNumberException e) {
+        } catch (CustomCertificateSerialNumberException e) {
             cleanUserCertDataSN(data);
             throw e;
         } catch (IllegalKeyException ke) {
@@ -325,9 +326,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             log.error("Invalid key in request: ", e);
         } catch (NoSuchAlgorithmException e) {
             log.error("No such algorithm: ", e);
-        } catch (IOException e) {
-            log.error("Cannot create response message: ", e);
-        }
+        } 
         if (log.isTraceEnabled()) {
             log.trace("<createCertificate(IRequestMessage)");
         }
@@ -375,9 +374,11 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             cert = createCertificate(admin, data, ca, pk, keyusage, notBefore, notAfter, null, null);
             // Call authentication session and tell that we are finished with this user
             finishUser(ca, data);
-        } catch (CustomCertSerialNumberException e) {
+        } catch (CustomCertificateSerialNumberException e) {
             cleanUserCertDataSN(data);
             throw e;
+        } catch (CertificateExtensionException e) {
+            throw new IllegalStateException("CertificateExtensionException was thrown, even though no extensions were supplied.", e);
         }
         if (log.isTraceEnabled()) {
             log.trace("<createCertificate(pk, ku, date)");
@@ -414,8 +415,6 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             log.error("Invalid key in request: ", e);
         } catch (NoSuchAlgorithmException e) {
             log.error("No such algorithm: ", e);
-        } catch (IOException e) {
-            log.error("Cannot create response message: ", e);
         } catch (CryptoTokenOfflineException ctoe) {
             String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getSubjectDN());
             log.warn(msg, ctoe);
@@ -521,9 +520,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             log.error("No such algorithm: ", e);
         } catch (CRLException e) {
             log.error("Cannot create response message: ", e);
-        } catch (IOException e) {
-            log.error("Cannot create response message: ", e);
-        } catch (CryptoTokenOfflineException ctoe) {
+        }  catch (CryptoTokenOfflineException ctoe) {
             String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getSubjectDN());
             log.error(msg, ctoe);
             throw ctoe;
@@ -645,11 +642,12 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @throws AuthorizationDeniedException 
      * @throws CertificateCreateException 
      * @throws IllegalKeyException 
+     * @throws CertificateExtensionException if any of the extensions were invalid
      * @see org.cesecore.certificates.certificate.CertificateCreateSessionLocal#createCertificate(AuthenticationToken, EndEntityInformation, CA, X500Name, PublicKey, int, Date, Date, Extensions, String)
      */
     private Certificate createCertificate(final AuthenticationToken admin, final EndEntityInformation data, final CA ca, final PublicKey pk,
             final int keyusage, final Date notBefore, final Date notAfter, final Extensions extensions, final String sequence)
-            throws IllegalKeyException, CertificateCreateException, AuthorizationDeniedException, CesecoreException {
+            throws IllegalKeyException, CertificateCreateException, AuthorizationDeniedException, CesecoreException, CertificateExtensionException {
         if (log.isTraceEnabled()) {
             log.trace(">createCertificate(pk, ku, notAfter)");
         }

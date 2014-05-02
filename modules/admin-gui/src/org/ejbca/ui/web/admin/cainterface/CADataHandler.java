@@ -21,6 +21,7 @@ import java.security.KeyStore;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -274,7 +275,7 @@ public class CADataHandler implements Serializable {
                   Certificate cert = CertTools.getCertfromByteArray(caChainBytes);
                   certChain = new ArrayList<Certificate>();
                   certChain.add(cert);
-              } catch (CertificateException e2) {
+              } catch (CertificateParsingException e2) {
                   // Ok.. so no chain was supplied.. we go ahead anyway..
                   throw new CADoesntExistsException("Invalid CA chain file.");
               }

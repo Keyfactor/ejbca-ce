@@ -95,7 +95,7 @@ public class BasicCertificateExtension extends CertificateExtension {
      * @deprecated use getValueEncoded instead.
      */
     public ASN1Encodable getValue(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey, CertificateValidity val)
-    throws CertificateExtensionException, CertificateExtentionConfigurationException {
+    throws CertificateExtensionException {
         throw new UnsupportedOperationException("Use getValueEncoded instead");
     }
 
@@ -119,7 +119,7 @@ public class BasicCertificateExtension extends CertificateExtension {
      */
     @Override
     public byte[] getValueEncoded(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey, CertificateValidity val)
-    throws CertificateExtensionException, CertificateExtentionConfigurationException {
+    throws CertificateExtensionException {
         final byte[] result;
         String encoding = StringUtils.trim(getProperties().getProperty(PROPERTY_ENCODING));
         String[] values = getValues(userData);
@@ -128,13 +128,13 @@ public class BasicCertificateExtension extends CertificateExtension {
         }
 
         if (values == null || values.length == 0) {
-            throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.incorrectvalue", Integer.valueOf(getId()), getOID()));
+            throw new CertificateExtensionException(intres.getLocalizedMessage("certext.basic.incorrectvalue", Integer.valueOf(getId()), getOID()));
         }
 
         if (encoding.equalsIgnoreCase(ENCODING_RAW)) {
             if (values.length > 1) {
                 // nvalues can not be used together with encoding=RAW
-                throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.certextmissconfigured", Integer.valueOf(getId())));
+                throw new CertificateExtensionException(intres.getLocalizedMessage("certext.certextmissconfigured", Integer.valueOf(getId())));
             } else {
                 result = parseRaw(values[0]);
             }
@@ -224,12 +224,12 @@ public class BasicCertificateExtension extends CertificateExtension {
         return result;
     } 
 
-    private ASN1Encodable parseValue(String encoding, String value) throws CertificateExtentionConfigurationException, CertificateExtensionException {
+    private ASN1Encodable parseValue(String encoding, String value) throws CertificateExtensionException {
 
         ASN1Encodable toret = null;
 
         if (!encoding.equalsIgnoreCase(ENCODING_DERNULL) && (value == null || value.trim().equals(""))) {
-            throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.incorrectvalue", Integer.valueOf(getId()), getOID()));
+            throw new CertificateExtensionException(intres.getLocalizedMessage("certext.basic.incorrectvalue", Integer.valueOf(getId()), getOID()));
         }
 
         if (encoding.equalsIgnoreCase(ENCODING_DERBITSTRING)) {
@@ -253,13 +253,13 @@ public class BasicCertificateExtension extends CertificateExtension {
         } else if (encoding.equalsIgnoreCase(ENCODING_DEROBJECT)) {
             toret = parseHexEncodedDERObject(value);
         } else {
-            throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.incorrectenc", encoding,
+            throw new CertificateExtensionException(intres.getLocalizedMessage("certext.basic.incorrectenc", encoding,
                     Integer.valueOf(getId())));
         }
         return toret;
     }
 
-    private ASN1Encodable parseDERBitString(String value) throws CertificateExtentionConfigurationException {
+    private ASN1Encodable parseDERBitString(String value) throws CertificateExtensionException {
         ASN1Encodable retval = null;
         try {
             BigInteger bigInteger = new BigInteger(value, 2);
@@ -275,45 +275,45 @@ public class BasicCertificateExtension extends CertificateExtension {
             }
             retval = new DERBitString(byteArray, padBits);
         } catch (NumberFormatException e) {
-            throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.illegalvalue", value,
+            throw new CertificateExtensionException(intres.getLocalizedMessage("certext.basic.illegalvalue", value,
                     Integer.valueOf(getId()), getOID()));
         }
 
         return retval;
     }
 
-    private ASN1Encodable parseDEROID(String value) throws CertificateExtentionConfigurationException {
+    private ASN1Encodable parseDEROID(String value) throws CertificateExtensionException {
         ASN1Encodable retval = null;
         try {
             retval = new ASN1ObjectIdentifier(value);
         } catch (Exception e) {
-            throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.illegalvalue", value,
+            throw new CertificateExtensionException(intres.getLocalizedMessage("certext.basic.illegalvalue", value,
                     Integer.valueOf(getId()), getOID()));
         }
 
         return retval;
     }
 
-    private ASN1Encodable parseDERInteger(String value) throws CertificateExtentionConfigurationException {
+    private ASN1Encodable parseDERInteger(String value) throws CertificateExtensionException {
         ASN1Encodable retval = null;
         try {
             BigInteger intValue = new BigInteger(value, 10);
             retval = new DERInteger(intValue);
         } catch (NumberFormatException e) {
-            throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.illegalvalue", value,
+            throw new CertificateExtensionException(intres.getLocalizedMessage("certext.basic.illegalvalue", value,
                     Integer.valueOf(getId()), getOID()));
         }
 
         return retval;
     }
 
-    private ASN1Encodable parseDEROctetString(String value) throws CertificateExtentionConfigurationException {
+    private ASN1Encodable parseDEROctetString(String value) throws CertificateExtensionException {
         ASN1Encodable retval = null;
         if (value.matches("^\\p{XDigit}*")) {
             byte[] bytes = Hex.decode(value);
             retval = new DEROctetString(bytes);
         } else {
-            throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.illegalvalue", value,
+            throw new CertificateExtensionException(intres.getLocalizedMessage("certext.basic.illegalvalue", value,
                     Integer.valueOf(getId()), getOID()));
         }
         return retval;
@@ -322,7 +322,7 @@ public class BasicCertificateExtension extends CertificateExtension {
     /**
      * Tries to read the hex-string as an DERObject. If it contains more than one ASN1Encodable object, return a DERSequence of the objects.
      */
-    private ASN1Encodable parseHexEncodedDERObject(String value) throws CertificateExtentionConfigurationException {
+    private ASN1Encodable parseHexEncodedDERObject(String value) throws CertificateExtensionException {
         ASN1Encodable retval = null;
         if (value.matches("^\\p{XDigit}*")) {
             byte[] bytes = Hex.decode(value);
@@ -341,17 +341,17 @@ public class BasicCertificateExtension extends CertificateExtension {
                 }
                 ais.close();
             } catch (Exception e) {
-                throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.illegalvalue", value,
+                throw new CertificateExtensionException(intres.getLocalizedMessage("certext.basic.illegalvalue", value,
                         Integer.valueOf(getId()), getOID()));
             }
         } else {
-            throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.illegalvalue", value,
+            throw new CertificateExtensionException(intres.getLocalizedMessage("certext.basic.illegalvalue", value,
                     Integer.valueOf(getId()), getOID()));
         }
         return retval;
     }
 
-    private ASN1Encodable parseDERBoolean(String value) throws CertificateExtentionConfigurationException {
+    private ASN1Encodable parseDERBoolean(String value) throws CertificateExtensionException {
         ASN1Encodable retval = null;
         if (value.equalsIgnoreCase("TRUE")) {
             retval = DERBoolean.TRUE;
@@ -362,18 +362,18 @@ public class BasicCertificateExtension extends CertificateExtension {
         }
 
         if (retval == null) {
-            throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.illegalvalue", value,
+            throw new CertificateExtensionException(intres.getLocalizedMessage("certext.basic.illegalvalue", value,
                     Integer.valueOf(getId()), getOID()));
         }
 
         return retval;
     }
 
-    private ASN1Encodable parseDERPrintableString(String value) throws CertificateExtentionConfigurationException {
+    private ASN1Encodable parseDERPrintableString(String value) throws CertificateExtensionException {
         try {
             return new DERPrintableString(value, true);
-        } catch (java.lang.IllegalArgumentException e) {
-            throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.illegalvalue", value,
+        } catch (IllegalArgumentException e) {
+            throw new CertificateExtensionException(intres.getLocalizedMessage("certext.basic.illegalvalue", value,
                     Integer.valueOf(getId()), getOID()));
         }
     }
@@ -382,18 +382,18 @@ public class BasicCertificateExtension extends CertificateExtension {
         return new DERUTF8String(value);
     }
 
-    private ASN1Encodable parseDERIA5String(String value) throws CertificateExtentionConfigurationException {
+    private ASN1Encodable parseDERIA5String(String value) throws CertificateExtensionException {
         try {
             return new DERIA5String(value, true);
         } catch (java.lang.IllegalArgumentException e) {
-            throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.illegalvalue", value,
+            throw new CertificateExtensionException(intres.getLocalizedMessage("certext.basic.illegalvalue", value,
                     Integer.valueOf(getId()), getOID()));
         }
     }
 
-    private byte[] parseRaw(String value) throws CertificateExtentionConfigurationException {
+    private byte[] parseRaw(String value) throws CertificateExtensionException {
         if(value == null) {
-            throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.incorrectvalue", Integer.valueOf(getId()), getOID()));
+            throw new CertificateExtensionException(intres.getLocalizedMessage("certext.basic.incorrectvalue", Integer.valueOf(getId()), getOID()));
         }
         return Hex.decode(value);
     }

@@ -130,12 +130,12 @@ public abstract class CertificateExtension {
 	 * @param val validity of certificate where the extension will be added
 	 * @return a ASN1Encodable or null, if this extension should not be used, which was determined from the values somehow.
 	 * @throws CertificateExtensionException if there was an error constructing the certificate extension
-         * @deprecated Callers should use the getValueEncoded method as this 
-         * method might not be supported by all implementations. Implementors 
-         * can still implement this method if they prefer as it gets called 
-         * from getValueEncoded.
+	 * 
+     * @deprecated Callers should use the getValueEncoded method as this method might not be supported by all implementations. Implementors can
+     * still implement this method if they prefer as it gets called from getValueEncoded.
 	 */
-	public abstract ASN1Encodable getValue(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey, CertificateValidity val ) throws CertificateExtentionConfigurationException, CertificateExtensionException;
+    public abstract ASN1Encodable getValue(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey,
+            PublicKey caPublicKey, CertificateValidity val) throws CertificateExtensionException;
 
 	/**
 	 * Method that should return the byte[] value used in the extension. 
@@ -154,9 +154,11 @@ public abstract class CertificateExtension {
 	 * @param caPublicKey public key of the CA, or null if not available
      * @param val validity of certificate where the extension will be added
 	 * @return a byte[] or null, if this extension should not be used, which was determined from the values somehow.
-	 * @throws CertificateExtensionException if there was an error constructing the certificate extension
+	 * @throws CertificateExtensionException if there was an error constructing the certificate extensio
+     *
 	 */
-	public byte[] getValueEncoded(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey, CertificateValidity val ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
+    public byte[] getValueEncoded(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey,
+            PublicKey caPublicKey, CertificateValidity val) throws CertificateExtensionException {
 		final byte[] result;
 		final ASN1Encodable value = getValue(userData, ca, certProfile, userPublicKey, caPublicKey, val);
 		if (value == null) {

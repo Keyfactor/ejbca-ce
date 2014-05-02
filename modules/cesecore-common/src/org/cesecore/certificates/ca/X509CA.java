@@ -30,6 +30,7 @@ import java.security.SignatureException;
 import java.security.cert.CRLException;
 import java.security.cert.CertStore;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.CollectionCertStoreParameters;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -106,11 +107,13 @@ import org.cesecore.certificates.ca.internal.SernoGeneratorRandom;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionFactory;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificatetransparency.CTExtensionCertGenParams;
+import org.cesecore.certificates.certificatetransparency.CTLogException;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparency;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -572,8 +575,10 @@ public class X509CA extends CA implements Serializable {
     }
     
     @Override
-    public Certificate generateCertificate(CryptoToken cryptoToken, final EndEntityInformation subject, final RequestMessage request, final PublicKey publicKey, final int keyusage, final Date notBefore,
-            final Date notAfter, final CertificateProfile certProfile, final Extensions extensions, final String sequence, CTExtensionCertGenParams ctParams) throws Exception {
+    public Certificate generateCertificate(CryptoToken cryptoToken, final EndEntityInformation subject, final RequestMessage request,
+            final PublicKey publicKey, final int keyusage, final Date notBefore, final Date notAfter, final CertificateProfile certProfile,
+            final Extensions extensions, final String sequence, CTExtensionCertGenParams ctParams) throws CryptoTokenOfflineException, CAOfflineException, InvalidAlgorithmException,
+            IllegalValidityException, IllegalNameException, OperatorCreationException, CertificateCreateException, CertificateExtensionException, SignatureException {
         // Before we start, check if the CA is off-line, we don't have to waste time
         // one the stuff below of we are off-line. The line below will throw CryptoTokenOfflineException of CA is offline
         final CAToken catoken = getCAToken();
@@ -587,10 +592,21 @@ public class X509CA extends CA implements Serializable {
     /**
      * Sequence is ignored by X509CA. The ctParams argument will NOT be kept after the function call returns,
      * and is allowed to contain references to session beans.
+     * 
+     * @throws CAOfflineException if the CA wasn't active
+     * @throws InvalidAlgorithmException if the signing algorithm in the certificate profile (or the CA Token if not found) was invalid.  
+     * @throws IllegalValidityException if validity was invalid
+     * @throws IllegalNameException if the name specified in the certificate request was invalid
+     * @throws CertificateExtensionException if any of the certificate extensions were invalid
+     * @throws OperatorCreationException if CA's private key contained an unknown algorithm or provider
+     * @throws CertificateCreateException if an error occurred when trying to create a certificate. 
+     * @throws SignatureException if the CA's certificate's and request's certificate's and signature algorithms differ
      */
-    private Certificate generateCertificate(final EndEntityInformation subject, final RequestMessage request, final PublicKey publicKey, final int keyusage, final Date notBefore,
-            final Date notAfter, final CertificateProfile certProfile, final Extensions extensions, final String sequence, final PublicKey caPublicKey,
-            final PrivateKey caPrivateKey, final String provider, CTExtensionCertGenParams ctParams) throws Exception {
+    private Certificate generateCertificate(final EndEntityInformation subject, final RequestMessage request, final PublicKey publicKey,
+            final int keyusage, final Date notBefore, final Date notAfter, final CertificateProfile certProfile, final Extensions extensions,
+            final String sequence, final PublicKey caPublicKey, final PrivateKey caPrivateKey, final String provider, CTExtensionCertGenParams ctParams) throws CAOfflineException,
+            InvalidAlgorithmException, IllegalValidityException, IllegalNameException, CertificateExtensionException,
+             OperatorCreationException, CertificateCreateException, SignatureException {
 
         // We must only allow signing to take place if the CA itself is on line, even if the token is on-line.
         // We have to allow expired as well though, so we can renew expired CAs
@@ -700,7 +716,12 @@ public class X509CA extends CA implements Serializable {
             }
         }
 
-        SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo((ASN1Sequence)ASN1Primitive.fromByteArray(publicKey.getEncoded()));
+        SubjectPublicKeyInfo pkinfo;
+        try {
+            pkinfo = new SubjectPublicKeyInfo((ASN1Sequence)ASN1Primitive.fromByteArray(publicKey.getEncoded()));
+        } catch (IOException e) {
+            throw new IllegalStateException("Caught unexpected IOException.", e);
+        }
         final X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(issuerDNName, serno, val.getNotBefore(), val.getNotAfter(), subjectDNName, pkinfo);
         
         // Only created and used if Certificate Transparency is enabled
@@ -725,7 +746,11 @@ public class X509CA extends CA implements Serializable {
                 if (log.isDebugEnabled()) {
                     log.debug("Overriding extension with oid: " + oid);
                 }
+                try {
                     extgen.addExtension(oid, ext.isCritical(), ext.getParsedValue());
+                } catch (IOException e) {
+                    throw new IllegalStateException("Caught unexpected IOException.", e);
+                }
             }
         }
 
@@ -741,7 +766,11 @@ public class X509CA extends CA implements Serializable {
                 // from the request, if AllowExtensionOverride is enabled.
                 // Two extensions with the same oid is not allowed in the standard.
                 if (overridenexts.getExtension(Extension.keyUsage) == null) {
-                    extgen.addExtension(Extension.keyUsage, certProfile.getKeyUsageCritical(), ku);
+                    try {
+                        extgen.addExtension(Extension.keyUsage, certProfile.getKeyUsageCritical(), ku);
+                    } catch (IOException e) {
+                        throw new IllegalStateException("Caught unexpected IOException.", e);
+                    }
                 } else {
                     if (log.isDebugEnabled()) {
                         log.debug("KeyUsage was already overridden by an extension, not using KeyUsage from parameter.");
@@ -804,45 +833,47 @@ public class X509CA extends CA implements Serializable {
         // Finally add extensions to certificate generator
         final Extensions exts = extgen.generate();
         ASN1ObjectIdentifier[] oids = exts.getExtensionOIDs();
-        for(ASN1ObjectIdentifier oid : oids) {
-            final Extension ext = exts.getExtension(oid);
-            final boolean isCritical = ext.isCritical();
-            final ASN1Encodable parsedValue = ext.getParsedValue();
-            
-            certbuilder.addExtension(oid, isCritical, parsedValue);
-            if (precertbuilder != null) {
-                precertbuilder.addExtension(oid, isCritical, parsedValue);
+        try {
+            for (ASN1ObjectIdentifier oid : oids) {
+                final Extension ext = exts.getExtension(oid);
+                final boolean isCritical = ext.isCritical();
+                final ASN1Encodable parsedValue = ext.getParsedValue();
+
+                certbuilder.addExtension(oid, isCritical, parsedValue);
+                if (precertbuilder != null) {
+                    precertbuilder.addExtension(oid, isCritical, parsedValue);
+                }
             }
-        }
-        
-        // Add Certificate Transparency extension. It needs to access the certbuilder and
-        // the CA key so it has to be processed here inside X509CA.
-        if (ct != null && certProfile.isUseCertificateTransparencyInCerts() &&
+
+            // Add Certificate Transparency extension. It needs to access the certbuilder and
+            // the CA key so it has to be processed here inside X509CA.
+             if (ct != null && certProfile.isUseCertificateTransparencyInCerts() &&
                 ctParams != null && ctParams.getConfiguredCTLogs() != null) {
-            // Create pre-certificate
-            // A critical extension is added to prevent this cert from being used
-            ct.addPreCertPoison(precertbuilder);
-            
-            // Sign pre-certificate
-            /*
-             *  TODO: Should be able to use a special CT signing certificate.
-             *  It should have CA=true and ExtKeyUsage=PRECERTIFICATE_SIGNING_OID,
-             *  and should not have any other key usages.
-             */
-            final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(provider).build(caPrivateKey), 20480);
-            final X509CertificateHolder certHolder = precertbuilder.build(signer);
-            final X509Certificate cert = (X509Certificate)CertTools.getCertfromByteArray(certHolder.getEncoded());
-            
-            // Get certificate chain
-            final List<Certificate> chain = new ArrayList<Certificate>();
-            chain.add(cert);
-            chain.addAll(getCertificateChain());
-            
-            // Submit to logs and get signed timestamps
-            byte[] sctlist = null;
+                // Create pre-certificate
+                // A critical extension is added to prevent this cert from being used
+                ct.addPreCertPoison(precertbuilder);
+
+                // Sign pre-certificate
+                /*
+                 *  TODO: Should be able to use a special CT signing certificate.
+                 *  It should have CA=true and ExtKeyUsage=PRECERTIFICATE_SIGNING_OID,
+                 *  and should not have any other key usages.
+                 */
+                final ContentSigner signer = new BufferingContentSigner(
+                        new JcaContentSignerBuilder(sigAlg).setProvider(provider).build(caPrivateKey), 20480);
+                final X509CertificateHolder certHolder = precertbuilder.build(signer);
+                final X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(certHolder.getEncoded());
+
+                // Get certificate chain
+                final List<Certificate> chain = new ArrayList<Certificate>();
+                chain.add(cert);
+                chain.addAll(getCertificateChain());
+
+                // Submit to logs and get signed timestamps
+                byte[] sctlist = null;
             try {
                 sctlist = ct.fetchSCTList(chain, certProfile, ctParams.getConfiguredCTLogs());
-            } finally {
+            }  finally {
                 // Notify that pre-cert has been successfully or unsuccessfully submitted so it can be audit logged.
                 ctParams.logPreCertSubmission(this, subject, cert, sctlist != null);
             }
@@ -850,6 +881,13 @@ public class X509CA extends CA implements Serializable {
                 ASN1ObjectIdentifier sctOid = new ASN1ObjectIdentifier(CertificateTransparency.SCTLIST_OID);
                 certbuilder.addExtension(sctOid, false, new DEROctetString(sctlist));
             }
+            }
+        } catch (CertificateException e) {
+            throw new CertificateExtensionException("Could not process CA's private key when parsing Certificate Transparency extension.", e);
+        } catch (IOException e) {
+            throw new CertificateExtensionException("IOException was caught when parsing Certificate Transparency extension.", e);
+        } catch (CTLogException e) {
+            throw new CertificateExtensionException("An exception occurred because too many servers were down to satisfy the certificate profile.");
         }
 
         //
@@ -861,7 +899,14 @@ public class X509CA extends CA implements Serializable {
         }
         final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(provider).build(caPrivateKey), 20480);
         final X509CertificateHolder certHolder = certbuilder.build(signer);
-        final X509Certificate cert = (X509Certificate)CertTools.getCertfromByteArray(certHolder.getEncoded());
+        X509Certificate cert;
+        try {
+            cert = (X509Certificate) CertTools.getCertfromByteArray(certHolder.getEncoded());
+        } catch (IOException e) {
+            throw new IllegalStateException("Unexpected IOException caught when parsing certificate holder.", e);
+        } catch (CertificateException e) {
+            throw new CertificateCreateException("Could not create certificate from CA's private key,", e);
+        }
         if (log.isTraceEnabled()) {
             log.trace("<certgen.generate");
         }
@@ -877,7 +922,17 @@ public class X509CA extends CA implements Serializable {
         } else {
             verifyKey = caPublicKey;
         }
-        cert.verify(verifyKey);
+        try {
+            cert.verify(verifyKey);
+        } catch (InvalidKeyException e) {
+            throw new CertificateCreateException("CA's public key was invalid,", e);
+        } catch (NoSuchAlgorithmException e) {
+           throw new CertificateCreateException(e);
+        } catch (NoSuchProviderException e) {
+            throw new IllegalStateException("Provider was unknown", e);
+        } catch (CertificateException e) {
+            throw new CertificateCreateException(e);
+        }
 
         // If we have a CA-certificate, verify that we have all path verification stuff correct
         if (cacert != null) {
@@ -1319,5 +1374,4 @@ public class X509CA extends CA implements Serializable {
         log.info("Encrypted data using key alias '"+keyAlias+"' from Crypto Token "+cryptoToken.getId());
         return ed.getEncoded();
     }
-
 }

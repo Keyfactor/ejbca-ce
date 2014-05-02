@@ -25,6 +25,7 @@ import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateParsingException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Calendar;
@@ -157,7 +158,7 @@ public class CaImportCVCCACommand extends BaseCaAdminCommand {
                 // This was not a PEM certificate, I hope it's binary...
                 try {
                     cert = CertTools.getCertfromByteArray(certbytes);
-                } catch (CertificateException e1) {
+                } catch (CertificateParsingException e1) {
                     log.error("File " + certFile + " did not contain a correct certificate.");
                     return CommandResult.FUNCTIONAL_FAILURE;
                 }

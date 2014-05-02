@@ -25,6 +25,7 @@ import java.security.cert.CertStoreException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.CollectionCertStoreParameters;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -47,7 +48,7 @@ import org.bouncycastle.cms.CMSProcessableByteArray;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.bouncycastle.cms.CMSSignedGenerator;
-import org.cesecore.certificates.ca.SignRequestException;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
@@ -185,24 +186,20 @@ public class ScepResponseMessage implements CertificateResponseMessage {
     }
 
     @Override
-    public boolean create()
-            throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignRequestException {
+    public boolean create() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
         boolean ret = false;
-
         try {
-
             if (status.equals(ResponseStatus.SUCCESS)) {
                 log.debug("Creating a STATUS_OK message.");
             } else {
             	if (status.equals(ResponseStatus.FAILURE)) {
                     log.debug("Creating a STATUS_FAILED message (or throwing an exception).");
                     if (failInfo.equals(FailInfo.WRONG_AUTHORITY)) {
-                    	throw new SignRequestException(failText);            
+                    	return false;      
                     }
                     if (failInfo.equals(FailInfo.INCORRECT_DATA)) {
-                    	throw new SignRequestException(failText);
+                        return false;     
                     }
-
                 } else {
                     log.debug("Creating a STATUS_PENDING message.");
                 }               
@@ -236,13 +233,13 @@ public class ScepResponseMessage implements CertificateResponseMessage {
                     }
                 }
                 CertStore certs = CertStore.getInstance("Collection",
-                        new CollectionCertStoreParameters(certList), "BC");
+                        new CollectionCertStoreParameters(certList), BouncyCastleProvider.PROVIDER_NAME);
 
                 // Create the signed CMS message to be contained inside the envelope
                 // this message does not contain any message, and no signerInfo
                 CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
                 gen.addCertificatesAndCRLs(certs);
-                CMSSignedData s = gen.generate(null, false, "BC");
+                CMSSignedData s = gen.generate(null, false, BouncyCastleProvider.PROVIDER_NAME);
 
                 // Envelope the CMS message
                 if (recipientKeyInfo != null) {
@@ -250,17 +247,21 @@ public class ScepResponseMessage implements CertificateResponseMessage {
                         X509Certificate rec = (X509Certificate)CertTools.getCertfromByteArray(recipientKeyInfo);
                         log.debug("Added recipient information - issuer: '" + CertTools.getIssuerDN(rec) + "', serno: '" + CertTools.getSerialNumberAsString(rec));
                         edGen.addKeyTransRecipient(rec);
-                    } catch (CertificateException e) {
-                        throw new IOException("Can not decode recipients self signed certificate!");
+                    } catch (CertificateParsingException e) {
+                        throw new IllegalArgumentException("Can not decode recipients self signed certificate!", e);
                     }
                 } else {
                     edGen.addKeyTransRecipient((X509Certificate) cert);
                 }
-                CMSEnvelopedData ed = edGen.generate(new CMSProcessableByteArray(s.getEncoded()),
-                        SMIMECapability.dES_CBC.getId(), "BC");
+                try {
+                    CMSEnvelopedData ed = edGen.generate(new CMSProcessableByteArray(s.getEncoded()), SMIMECapability.dES_CBC.getId(),
+                            BouncyCastleProvider.PROVIDER_NAME);
 
-                log.debug("Enveloped data is " + ed.getEncoded().length + " bytes long");
-                msg = new CMSProcessableByteArray(ed.getEncoded());
+                    log.debug("Enveloped data is " + ed.getEncoded().length + " bytes long");
+                    msg = new CMSProcessableByteArray(ed.getEncoded());
+                } catch (IOException e) {
+                    throw new IllegalStateException("Unexpected IOException caught", e);
+                }
             } else {
                 // Create an empty message here
                 //msg = new CMSProcessableByteArray("PrimeKey".getBytes());
@@ -275,29 +276,6 @@ public class ScepResponseMessage implements CertificateResponseMessage {
             ASN1ObjectIdentifier oid;
             Attribute attr;
             DERSet value;
-            
-            // Content Type
-            /* Added automagically by CMSSignedDataGenerator
-            oid = PKCSObjectIdentifiers.pkcs_9_at_contentType;
-            value = new DERSet(PKCSObjectIdentifiers.data);
-            attr = new Attribute(oid, value);
-            attributes.put(attr.getAttrType(), attr);
-            */
-
-            // Message digest
-            /* Added automagically by CMSSignedDataGenerator
-            byte[] digest = null;
-            if (s != null) {
-                MessageDigest md = MessageDigest.getInstance("SHA1");
-                digest = md.digest(s.getEncoded());
-            } else {
-                digest = new byte[]{0};
-            }
-            oid = PKCSObjectIdentifiers.pkcs_9_at_messageDigest;
-            value = new DERSet(new DEROctetString(digest));
-            attr = new Attribute(oid, value);
-            attributes.put(attr.getAttrType(), attr);
-            */
 
             // Message type (certrep)
             oid = new ASN1ObjectIdentifier(ScepRequestMessage.id_messageType);
@@ -352,7 +330,11 @@ public class ScepResponseMessage implements CertificateResponseMessage {
             gen1.addSigner(signKey, (X509Certificate)cacert, digestAlg, new AttributeTable(attributes), null);
             // The un-encoded response message itself
             final CMSSignedData signedData = gen1.generate(msg, true, provider);
-            responseMessage = signedData.getEncoded();
+            try {
+                responseMessage = signedData.getEncoded();
+            } catch (IOException e) {
+                throw new IllegalStateException("Unexpected IOException caught.", e);
+            }
             if (responseMessage != null) {
                 ret = true;
             }

@@ -97,7 +97,7 @@ public class BasicCertificateExtensionTest {
 		  baseExt = new BasicCertificateExtension();
 		  baseExt.init(1, "1.2.3", false, props);
 		  value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));
-		}catch(CertificateExtentionConfigurationException e){
+		}catch(CertificateExtensionException e){
 			exceptionThrown = true;
                         assertEquals(intres.getLocalizedMessage("certext.basic.illegalvalue", "123SA4", 1, "1.2.3"), e.getMessage());
 		}
@@ -150,7 +150,7 @@ public class BasicCertificateExtensionTest {
 		try {
 			value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));
 			assertTrue("Should throw", false);
-		} catch (CertificateExtentionConfigurationException e) {
+		} catch (CertificateExtensionException e) {
 			assertEquals(intres.getLocalizedMessage("certext.basic.illegalvalue", "qqqq", 1, "1.2.3"), e.getMessage());
 		}
 
@@ -188,7 +188,7 @@ public class BasicCertificateExtensionTest {
 		  baseExt = new BasicCertificateExtension();
 		  baseExt.init(1, "1.2.3", false, props);
 		  value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));
-		}catch(CertificateExtentionConfigurationException e){
+		}catch(CertificateExtensionException e){
 			exceptionThrown = true;
                         assertEquals(intres.getLocalizedMessage("certext.basic.illegalvalue", "1sdf", 1, "1.2.3"), e.getMessage());
 		}
@@ -216,7 +216,7 @@ public class BasicCertificateExtensionTest {
 		  baseExt = new BasicCertificateExtension();
 		  baseExt.init(1, "1.2.3", false, props);
 		  value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));		  
-		}catch(CertificateExtentionConfigurationException e){
+		}catch(CertificateExtensionException e){
 			exceptionThrown = true;
                         assertEquals(intres.getLocalizedMessage("certext.basic.illegalvalue", "123SA4", 1, "1.2.3"), e.getMessage());
 		}
@@ -245,7 +245,7 @@ public class BasicCertificateExtensionTest {
 		  baseExt = new BasicCertificateExtension();
 		  baseExt.init(1, "1.2.3", false, props);
 		  value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));
-		}catch(CertificateExtentionConfigurationException e){
+		}catch(CertificateExtensionException e){
 			exceptionThrown = true;
 			assertEquals(intres.getLocalizedMessage("certext.basic.illegalvalue", "This is a non  printable string åäöüè", 1, "1.2.3"), e.getMessage());
 			// Verify with unicode encoded as well to ensure file encodings were not just messed up
@@ -280,7 +280,7 @@ public class BasicCertificateExtensionTest {
 		try{
 			baseExt.getValueEncoded(null, null, null, null, null, null);
 			assertTrue("Should throw", false);		
-		}catch(CertificateExtentionConfigurationException e){
+		}catch(CertificateExtensionException e){
 			assertEquals(intres.getLocalizedMessage("certext.basic.incorrectenc", "DERUTF8sdfTRING", 1), e.getMessage());
 		}
 		
@@ -293,7 +293,7 @@ public class BasicCertificateExtensionTest {
 		try{
 			baseExt1.getValueEncoded(null, null, null, null, null, null);
 			assertTrue("Should throw", false);		
-		}catch(CertificateExtentionConfigurationException e){
+		}catch(CertificateExtensionException e){
 			// NOPMD
 		}
 	}
@@ -320,7 +320,7 @@ public class BasicCertificateExtensionTest {
 		try{
 			baseExt.getValueEncoded(null, null, null, null, null, null);
 			assertTrue("Should throw", false);		
-		}catch(CertificateExtentionConfigurationException e){
+		}catch(CertificateExtensionException e){
 			// NOPMD
 		}
 	}
@@ -374,7 +374,7 @@ public class BasicCertificateExtensionTest {
 		  baseExt = new BasicCertificateExtension();
 		  baseExt.init(1, "1.2.3", false, props);
 		  value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));
-		}catch(CertificateExtentionConfigurationException e){
+		}catch(CertificateExtensionException e){
 			exceptionThrown = true;
 		}
 		assertTrue(exceptionThrown);        
@@ -408,7 +408,7 @@ public class BasicCertificateExtensionTest {
 		try{	
 		  value = getObject(baseExt.getValueEncoded(null, null, null, null, null, null));
 		  assertTrue("Should throw", false);
-		}catch(CertificateExtentionConfigurationException e){
+		}catch(CertificateExtensionException e){
 			// NOPMD
 		}
 	}
@@ -433,7 +433,7 @@ public class BasicCertificateExtensionTest {
 		try {
 			baseExt.getValueEncoded(userData, null, null, null, null, null);
 			fail("Should have failed as no value was specified in EI.");
-		} catch (CertificateExtentionConfigurationException ex) {
+		} catch (CertificateExtensionException ex) {
 			assertEquals(intres.getLocalizedMessage("certext.basic.incorrectvalue", 1, "1.2.3"), ex.getMessage());
 		}
 		
@@ -695,7 +695,7 @@ public class BasicCertificateExtensionTest {
                 try {
                     baseExt.getValueEncoded(userData, null, null, null, null, null);
                     fail("Should have fail as no dynamic value specified");
-                } catch (CertificateExtentionConfigurationException ex) {
+                } catch (CertificateExtensionException ex) {
                     assertEquals(intres.getLocalizedMessage("certext.basic.incorrectvalue", 1, "1.2.3"), ex.getMessage());
 }
 		
@@ -719,7 +719,7 @@ public class BasicCertificateExtensionTest {
                 try {
                     baseExt.getValueEncoded(null, null, null, null, null, null);
                     fail("Should have fail as no value specified");
-                } catch (CertificateExtentionConfigurationException ex) {
+                } catch (CertificateExtensionException ex) {
                     assertEquals(intres.getLocalizedMessage("certext.basic.incorrectvalue", 1, "1.2.3"), ex.getMessage());
                 }
 	}
@@ -746,7 +746,7 @@ public class BasicCertificateExtensionTest {
                 try {
                     baseExt.getValueEncoded(userData, null, null, null, null, null);
                     fail("Should have fail as both raw and nvalues specified");
-                } catch (CertificateExtentionConfigurationException ex) {
+                } catch (CertificateExtensionException ex) {
                     assertEquals(intres.getLocalizedMessage("certext.certextmissconfigured", 1), ex.getMessage());
                 }
 	}

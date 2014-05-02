@@ -1126,9 +1126,9 @@ public abstract class CertTools {
      * 
      * @param certstream the input stream containing the certificates in PEM-format
      * @return Ordered List of Certificates, first certificate first, or empty List
-     * @exception CertificateException if the stream contains an incorrect certificate.
+     * @exception CertificateParsingException if the stream contains an incorrect certificate.
      */
-    public static List<Certificate> getCertsFromPEM(InputStream certstream) throws CertificateException {
+    public static List<Certificate> getCertsFromPEM(InputStream certstream) throws CertificateParsingException {
         if (log.isTraceEnabled()) {
             log.trace(">getCertfromPEM");
         }
@@ -1298,21 +1298,21 @@ public abstract class CertTools {
      * @param cert byte array containing certificate in binary (DER) format, or PEM encoded X.509 certificate
      * @param provider provider for example "SUN" or "BC", use null for the default provider (BC)
      * 
-     * @return Certificate
+     * @return a Certificate 
+     * @throws CertificateParsingException if certificate couldn't be parsed from cert
      * 
-     * @throws CertificateException if the byte array does not contain a proper certificate.
      */
-    public static Certificate getCertfromByteArray(byte[] cert, String provider) throws CertificateException {
+    public static Certificate getCertfromByteArray(byte[] cert, String provider) throws CertificateParsingException {
         Certificate ret = null;
         String prov = provider;
         if (provider == null) {
-            prov = "BC";
+            prov = BouncyCastleProvider.PROVIDER_NAME;
         }
         try {
             final CertificateFactory cf = CertTools.getCertificateFactory(prov);
             ret = cf.generateCertificate(new ByteArrayInputStream(cert));
         } catch (CertificateException e) {
-            log.debug("CertificateException trying to read X509Certificate.");
+            log.debug("CertificateException trying to read X509Certificate.", e);
         }
         if (ret == null) {
             // We could not create an X509Certificate, see if it is a CVC certificate instead
@@ -1320,25 +1320,23 @@ public abstract class CertTools {
                 final CVCertificate parsedObject = CertificateParser.parseCertificate(cert);
                 ret = new CardVerifiableCertificate(parsedObject);
             } catch (ParseException e) {
-                log.debug("ParseException trying to read CVCCertificate.");
-                throw new CertificateException("Certificate exception trying to read CVCCertificate", e);
+                log.debug("ParseException trying to read CVCCertificate.", e);
             } catch (ConstructionException e) {
-                log.debug("ConstructionException trying to read CVCCertificate.");
-                throw new CertificateException("Certificate exception trying to read CVCCertificate", e);
-            } catch (IllegalArgumentException e) {
-                log.debug("CertificateException trying to read CVCCertificate.");
-                throw new CertificateException("Certificate exception trying to read CVCCertificate", e);
-            }
+                log.debug("ConstructionException trying to read CVCCertificate.", e);
+            } 
+        }
+        if(ret == null) {
+            throw new CertificateParsingException("No certificate could be parsed from byte array. See debug logs for details.");
         }
         return ret;
     }
 
     /**
      * 
-     * @throws CertificateException if the byte array does not contain a proper certificate.
+     * @throws CertificateParsingException if the byte array does not contain a proper certificate.
      */
-    public static Certificate getCertfromByteArray(byte[] cert) throws CertificateException {
-        return getCertfromByteArray(cert, "BC");
+    public static Certificate getCertfromByteArray(byte[] cert) throws CertificateParsingException {
+        return getCertfromByteArray(cert, BouncyCastleProvider.PROVIDER_NAME);
     }
 
     /**
@@ -1696,30 +1694,34 @@ public abstract class CertTools {
      * 
      * @param cert certificate containing the extension
      * @return byte[] containing the authority key identifier, or null if it does not exist
-     * @throws IOException if extension can not be parsed
      */
-    public static byte[] getAuthorityKeyId(Certificate cert) throws IOException {
+    public static byte[] getAuthorityKeyId(Certificate cert) {
         if (cert == null) {
             return null;
         }
         if (cert instanceof X509Certificate) {
             X509Certificate x509cert = (X509Certificate) cert;
+                    
             byte[] extvalue = x509cert.getExtensionValue("2.5.29.35");
             if (extvalue == null) {
                 return null;
             }
-            ASN1InputStream octAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(extvalue));
             try {
-                DEROctetString oct = (DEROctetString) (octAsn1InputStream.readObject());
-                ASN1InputStream keyAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(oct.getOctets()));
+                ASN1InputStream octAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(extvalue));
                 try {
-                    AuthorityKeyIdentifier keyId = AuthorityKeyIdentifier.getInstance((ASN1Sequence) keyAsn1InputStream.readObject());
-                    return keyId.getKeyIdentifier();
+                    DEROctetString oct = (DEROctetString) (octAsn1InputStream.readObject());
+                    ASN1InputStream keyAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(oct.getOctets()));
+                    try {
+                        AuthorityKeyIdentifier keyId = AuthorityKeyIdentifier.getInstance((ASN1Sequence) keyAsn1InputStream.readObject());
+                        return keyId.getKeyIdentifier();
+                    } finally {
+                        keyAsn1InputStream.close();
+                    }
                 } finally {
-                    keyAsn1InputStream.close();
+                    octAsn1InputStream.close();
                 }
-            } finally {
-                octAsn1InputStream.close();
+            } catch (IOException e) {
+                throw new IllegalStateException("Could not parse authority key identifier from certificate.", e);
             }
         }
         return null;
@@ -1730,9 +1732,8 @@ public abstract class CertTools {
      * 
      * @param cert certificate containing the extension
      * @return byte[] containing the subject key identifier, or null if it does not exist
-     * @throws IOException if extension can not be parsed
      */
-    public static byte[] getSubjectKeyId(Certificate cert) throws IOException {
+    public static byte[] getSubjectKeyId(Certificate cert) {
         if (cert == null) {
             return null;
         }
@@ -1744,16 +1745,20 @@ public abstract class CertTools {
             }
             ASN1InputStream extvalueAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(extvalue));
             try {
-                ASN1OctetString str = ASN1OctetString.getInstance(extvalueAsn1InputStream.readObject());
-                ASN1InputStream strAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(str.getOctets()));
                 try {
-                    SubjectKeyIdentifier keyId = SubjectKeyIdentifier.getInstance(strAsn1InputStream.readObject());
-                    return keyId.getKeyIdentifier();
+                    ASN1OctetString str = ASN1OctetString.getInstance(extvalueAsn1InputStream.readObject());
+                    ASN1InputStream strAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(str.getOctets()));
+                    try {
+                        SubjectKeyIdentifier keyId = SubjectKeyIdentifier.getInstance(strAsn1InputStream.readObject());
+                        return keyId.getKeyIdentifier();
+                    } finally {
+                        strAsn1InputStream.close();
+                    }
                 } finally {
-                    strAsn1InputStream.close();
+                    extvalueAsn1InputStream.close();
                 }
-            } finally {
-                extvalueAsn1InputStream.close();
+            } catch (IOException e) {
+                throw new IllegalStateException("Could not parse subject key ID from certificate.", e);
             }
         }
         return null;
@@ -2677,7 +2682,7 @@ public abstract class CertTools {
     /** Reads PrivateKeyUsagePeriod extension from a certificate
      * 
      */
-    public static PrivateKeyUsagePeriod getPrivateKeyUsagePeriod(final X509Certificate cert) throws IOException {
+    public static PrivateKeyUsagePeriod getPrivateKeyUsagePeriod(final X509Certificate cert) {
         PrivateKeyUsagePeriod res = null;
         final byte[] extvalue = cert.getExtensionValue(Extension.privateKeyUsagePeriod.getId());
         if ((extvalue != null) && (extvalue.length > 0)) {
@@ -2685,6 +2690,7 @@ public abstract class CertTools {
                 log.trace("Found a PrivateKeyUsagePeriod in the certificate with subject: " + cert.getSubjectDN().toString());
             }
             ASN1InputStream extAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(extvalue));
+            try {
             try {
                 final DEROctetString oct = (DEROctetString) (extAsn1InputStream.readObject());
                 ASN1InputStream octAsn1InputStream = new ASN1InputStream(new ByteArrayInputStream(oct.getOctets()));
@@ -2695,6 +2701,9 @@ public abstract class CertTools {
                 }
             } finally {
                 extAsn1InputStream.close();
+            }
+            } catch(IOException e) {
+                throw new IllegalStateException("Unknown IOException caught when trying to parse certificate.", e);
             }
         }
         return res;
@@ -3364,8 +3373,11 @@ public abstract class CertTools {
                 byte[] certBytes = (byte[]) o;
                 try {
                     cert = CertTools.getCertfromByteArray(certBytes);
-                } catch (CertificateException e1) {
+                } catch (CertificateParsingException e1) {
                     throw new CertPathValidatorException(e1);
+                }
+                if (cert == null) {
+                   
                 }
             }
             if (CertTools.isSelfSigned(cert)) {
@@ -3487,24 +3499,30 @@ public abstract class CertTools {
      * @param signingKey
      * @param provider
      * @return a PKCS10CertificateRequest based on the input parameters.
-     * @throws IOException
-     * @throws OperatorCreationException 
+     * 
+     * @throws OperatorCreationException if an error occurred while creating the signing key
      */
     public static PKCS10CertificationRequest genPKCS10CertificationRequest(String signatureAlgorithm, X500Name subject, PublicKey publickey,
-            ASN1Set attributes, PrivateKey signingKey, String provider) throws IOException, OperatorCreationException {
+            ASN1Set attributes, PrivateKey signingKey, String provider) throws OperatorCreationException {
 
-        ASN1Sequence seq = (ASN1Sequence) ASN1Primitive.fromByteArray(publickey.getEncoded());
-        SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo(seq);
-        CertificationRequestInfo reqInfo = new CertificationRequestInfo(subject, pkinfo, attributes);
+        ContentSigner signer;
+        CertificationRequestInfo reqInfo;
+        try {
+            ASN1Sequence seq = (ASN1Sequence) ASN1Primitive.fromByteArray(publickey.getEncoded());
+            SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo(seq);
+            reqInfo = new CertificationRequestInfo(subject, pkinfo, attributes);
 
-        if (provider == null) {
-            provider = BouncyCastleProvider.PROVIDER_NAME;
+            if (provider == null) {
+                provider = BouncyCastleProvider.PROVIDER_NAME;
+            }
+          
+
+            signer = new BufferingContentSigner(new JcaContentSignerBuilder(signatureAlgorithm).setProvider(provider).build(signingKey), 20480);
+            signer.getOutputStream().write(reqInfo.getEncoded(ASN1Encoding.DER));
+            signer.getOutputStream().flush();
+        } catch (IOException e) {
+            throw new IllegalStateException("Unexpected IOException was caught.", e);
         }
-
-        ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(signatureAlgorithm).setProvider(provider).build(signingKey),
-                20480);
-        signer.getOutputStream().write(reqInfo.getEncoded(ASN1Encoding.DER));
-        signer.getOutputStream().flush();
         byte[] sig = signer.getSignature();
         DERBitString sigBits = new DERBitString(sig);
 

@@ -23,6 +23,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -37,6 +38,7 @@ import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.internal.CertificateValidity;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -264,17 +266,10 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
 	}
 	
     @Override
-	public Certificate generateCertificate(CryptoToken cryptoToken, EndEntityInformation subject, 
-    		RequestMessage request,
-            PublicKey publicKey, 
-			int keyusage, 
-			Date notBefore,
-			Date notAfter,
-			CertificateProfile certProfile,
-			Extensions extensions,
-			String sequence,
-			CTExtensionCertGenParams ctParams) throws Exception{
-		if (log.isTraceEnabled()) {
+    public Certificate generateCertificate(CryptoToken cryptoToken, EndEntityInformation subject, RequestMessage request, PublicKey publicKey,
+            int keyusage, Date notBefore, Date notAfter, CertificateProfile certProfile, Extensions extensions, String sequence, CTExtensionCertGenParams ctParams)
+            throws IllegalValidityException, CryptoTokenOfflineException, CertificateCreateException, SignatureException {
+	if (log.isTraceEnabled()) {
 			log.trace(">generateCertificate("+notBefore+", "+notAfter+")");
 		}
 		// Get the fields for the Holder Reference fields
@@ -328,7 +323,12 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
             if (log.isDebugEnabled()) {
                 log.debug("Using CA Ref directly from the CA certificates Holder Ref");
             }
-            HolderReferenceField hr = cacert.getCVCertificate().getCertificateBody().getHolderReference();
+            HolderReferenceField hr;
+            try {
+                hr = cacert.getCVCertificate().getCertificateBody().getHolderReference();
+            } catch (NoSuchFieldException e) {
+                throw new IllegalStateException("Field was unknown", e);
+            }
             caRef = new CAReferenceField(hr.getCountry(), hr.getMnemonic(), hr.getSequence());
         }
         
@@ -345,25 +345,43 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
             log.debug("Creating CV certificate with algorithm "+sigAlg+", using provider "+provider+", public key algorithm from CVC request must match this algorithm.");
             log.debug("CARef: "+caRef.getConcatenated()+"; holderRef: "+holderRef.getConcatenated());
         }
-        CVCertificate cvc = CertificateGenerator.createCertificate(publicKey, caPrivateKey, 
-        		sigAlg, caRef, holderRef, authRole, accessRights, val.getNotBefore(), val.getNotAfter(), provider);
-
-        if (log.isDebugEnabled()) {
-            log.debug("Certificate: "+cvc.toString());
-            log.debug("Certificate bytes: "+new String(Base64.encode(cvc.getDEREncoded())));        	
+        CVCertificate cvc;
+        try {
+            cvc = CertificateGenerator.createCertificate(publicKey, caPrivateKey, sigAlg, caRef, holderRef, authRole, accessRights,
+                    val.getNotBefore(), val.getNotAfter(), provider);
+            if (log.isDebugEnabled()) {
+                log.debug("Certificate: " + cvc.toString());
+                try {
+                    log.debug("Certificate bytes: " + new String(Base64.encode(cvc.getDEREncoded())));
+                } catch (IOException e) {
+                    throw new IllegalStateException("Unexpected IOException was caught.", e);
+                }
+            }
+            CardVerifiableCertificate retCert = new CardVerifiableCertificate(cvc);
+            // Verify certificate before returning
+            retCert.verify(cryptoToken.getPublicKey(alias));
+         // Before returning from this method, we will set the private key and provider in the request message, in case the response  message needs to be signed
+            if (request != null) {
+                request.setResponseKeyInfo(caPrivateKey, provider);
+            }
+            if (log.isTraceEnabled()) {
+                log.trace("<generateCertificate()");
+            }
+            return retCert;       
+        } catch (InvalidKeyException e) {
+            throw new CertificateCreateException("CA's public key was invalid,", e);
+        } catch (NoSuchAlgorithmException e) {
+            throw new CertificateCreateException(e);
+        } catch (NoSuchProviderException e) {
+            throw new IllegalStateException("Provider was unknown", e);
+        } catch (CertificateException e) {
+            throw new CertificateCreateException(e);
+        } catch (ConstructionException e) {
+            throw new IllegalStateException("Certificate couldn't be constructed for unknown reason.", e);
+        } catch (IOException e) {
+            throw new IllegalStateException("Unexpected IOException was caught.", e);
         }
-        
-        CardVerifiableCertificate retCert = new CardVerifiableCertificate(cvc);
-        // Verify certificate before returning
-        retCert.verify(cryptoToken.getPublicKey(alias));
-        // Before returning from this method, we will set the private key and provider in the request message, in case the response  message needs to be signed
-        if (request != null) {
-            request.setResponseKeyInfo(caPrivateKey, provider);
-        }
-        if (log.isTraceEnabled()) {
-        	log.trace("<generateCertificate()");
-        }
-		return retCert;                                                                                        
+                                                                                         
 	}
 
     @Override
@@ -372,7 +390,7 @@ public class CvcEacCA extends CvcCA implements CvcPlugin {
     }
     
     private AuthorizationRole getAuthorizationRole(final CertificateProfile certProfile,
-            CAReferenceField caRef, HolderReferenceField holderRef) throws NoSuchFieldException {
+            CAReferenceField caRef, HolderReferenceField holderRef) {
         
         // Determine which set of roles to use
         final AuthorizationRole roleRootCA, roleDSubCA, roleFSubCA, roleEndEntity;

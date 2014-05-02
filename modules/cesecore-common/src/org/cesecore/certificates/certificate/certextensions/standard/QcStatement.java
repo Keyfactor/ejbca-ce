@@ -20,8 +20,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
-import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.x509.Extension;
@@ -35,7 +35,6 @@ import org.bouncycastle.asn1.x509.qualified.SemanticsInformation;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.internal.CertificateValidity;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
-import org.cesecore.certificates.certificate.certextensions.CertificateExtentionConfigurationException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.CertTools;
@@ -57,7 +56,8 @@ public class QcStatement extends StandardCertificateExtension {
 	}
     
     @Override
-	public ASN1Encodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey, CertificateValidity val ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
+    public ASN1Encodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile,
+            final PublicKey userPublicKey, final PublicKey caPublicKey, CertificateValidity val) throws CertificateExtensionException {
 		DERSequence ret = null;
 		final String names = certProfile.getQCStatementRAName();
 		final GeneralNames san = CertTools.getGeneralNamesFromAltName(names);
@@ -140,7 +140,7 @@ public class QcStatement extends StandardCertificateExtension {
 		}
 		if (ret == null) {
 		    log.error("Qualified certificate statements extension has been enabled, but no statements were included!");
-		    throw new CertificateExtentionConfigurationException("If qualified certificate statements extension has been enabled, at least one statement must be included!");
+		    throw new CertificateExtensionException("If qualified certificate statements extension has been enabled, at least one statement must be included!");
 		}
 		return ret;
     }	

@@ -146,11 +146,10 @@ public class CmpMessageHelper {
 
     public static byte[] signPKIMessage(PKIMessage myPKIMessage, Collection<Certificate> signCertChain, PrivateKey signKey, String digestAlg,
             String provider) throws InvalidKeyException, NoSuchProviderException, NoSuchAlgorithmException, SecurityException, SignatureException,
-            IOException, CertificateEncodingException {
+            CertificateEncodingException {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">signPKIMessage()");
         }
-
         CMPCertificate[] extraCerts = new CMPCertificate[signCertChain.size()];
         Iterator<Certificate> itr = signCertChain.iterator();
         int i = 0;
@@ -158,15 +157,18 @@ public class CmpMessageHelper {
             X509Certificate tmp = (X509Certificate) itr.next();
             ASN1InputStream asn1InputStream = null;
             try {
-                asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(tmp.getEncoded()));
-                CMPCertificate signStruct = CMPCertificate.getInstance(asn1InputStream.readObject());
-                extraCerts[i] = signStruct;
-            } finally {
-                asn1InputStream.close();
+                try {
+                    asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(tmp.getEncoded()));
+                    CMPCertificate signStruct = CMPCertificate.getInstance(asn1InputStream.readObject());
+                    extraCerts[i] = signStruct;
+                } finally {
+                    asn1InputStream.close();
+                }
+            } catch (IOException e) {
+                throw new IllegalStateException("Caught unexpected IOException", e);
             }
             i++;
         }
-
         myPKIMessage = CmpMessageHelper.buildCertBasedPKIProtection(myPKIMessage, extraCerts, signKey, digestAlg, provider);
         if (LOG.isTraceEnabled()) {
             LOG.trace("<signPKIMessage()");
@@ -177,8 +179,7 @@ public class CmpMessageHelper {
     }
 
     public static PKIMessage buildCertBasedPKIProtection(PKIMessage pKIMessage, CMPCertificate[] extraCerts, PrivateKey key, String digestAlg,
-            String provider) throws NoSuchProviderException, NoSuchAlgorithmException, SecurityException, SignatureException, InvalidKeyException,
-            IOException {
+            String provider) throws NoSuchProviderException, NoSuchAlgorithmException, SecurityException, SignatureException, InvalidKeyException {
         // Select which signature algorithm we should use for the response, based on the digest algorithm and key type.
         ASN1ObjectIdentifier oid = AlgorithmTools.getSignAlgOidFromDigestAndKey(digestAlg, key.getAlgorithm());
         if (LOG.isDebugEnabled()) {
@@ -215,7 +216,7 @@ public class CmpMessageHelper {
     }
 
     //TODO see if we could do this in a better way
-    public static PKIHeaderBuilder getHeaderBuilder(PKIHeader head) throws IOException {
+    public static PKIHeaderBuilder getHeaderBuilder(PKIHeader head) {
         PKIHeaderBuilder builder = new PKIHeaderBuilder(head.getPvno().getValue().intValue(), head.getSender(), head.getRecipient());
         builder.setFreeText(head.getFreeText());
         builder.setGeneralInfo(head.getGeneralInfo());
@@ -255,7 +256,7 @@ public class CmpMessageHelper {
     }
 
     public static byte[] protectPKIMessageWithPBE(PKIMessage msg, String keyId, String raSecret, String digestAlgId, String macAlgId,
-            int iterationCount) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, IOException {
+            int iterationCount) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">protectPKIMessageWithPBE()");
         }
@@ -319,12 +320,16 @@ public class CmpMessageHelper {
         return CmpMessageHelper.pkiMessageToByteArray(new PKIMessage(pkiHeader, msg.getBody(), bs, msg.getExtraCerts()));
     }
 
-    public static byte[] pkiMessageToByteArray(PKIMessage msg) throws IOException {
+    public static byte[] pkiMessageToByteArray(PKIMessage msg) {
         // Return response as byte array 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DEROutputStream mout = new DEROutputStream(baos);
-        mout.writeObject(msg);
-        mout.close();
+        try {
+            mout.writeObject(msg);
+            mout.close();
+        } catch (IOException e) {
+            throw new IllegalStateException("Caught unexpected IOException.");
+        }
         return baos.toByteArray();
     }
 
@@ -377,11 +382,7 @@ public class CmpMessageHelper {
             LOG.error("Exception during CMP processing: ", e);
         } catch (NoSuchProviderException e) {
             LOG.error("Exception during CMP processing: ", e);
-        } catch (SignRequestException e) {
-            LOG.error("Exception during CMP processing: ", e);
-        } catch (IOException e) {
-            LOG.error("Exception during CMP processing: ", e);
-        }
+        } 
         return resp;
     }
 
@@ -425,11 +426,7 @@ public class CmpMessageHelper {
             LOG.error(INTRES.getLocalizedMessage(CMP_ERRORGENERAL), e);
         } catch (NoSuchProviderException e) {
             LOG.error(INTRES.getLocalizedMessage(CMP_ERRORGENERAL), e);
-        } catch (SignRequestException e) {
-            LOG.error(INTRES.getLocalizedMessage(CMP_ERRORGENERAL), e);
-        } catch (IOException e) {
-            LOG.error(INTRES.getLocalizedMessage(CMP_ERRORGENERAL), e);
-        }
+        } 
         return resp;
     }
 
@@ -442,7 +439,7 @@ public class CmpMessageHelper {
      * @return IResponseMessage that can be sent to user
      * @throws IOException 
      */
-    public static PKIBody createCertRequestRejectBody(PKIStatusInfo info, int requestId, int requestType) throws IOException {
+    public static PKIBody createCertRequestRejectBody(PKIStatusInfo info, int requestId, int requestType) {
         // Create a failure message
         if (LOG.isDebugEnabled()) {
             LOG.debug("Creating a cert request rejection message");

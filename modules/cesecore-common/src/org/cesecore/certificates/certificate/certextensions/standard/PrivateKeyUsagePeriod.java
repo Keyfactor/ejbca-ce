@@ -26,7 +26,6 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.internal.CertificateValidity;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
-import org.cesecore.certificates.certificate.certextensions.CertificateExtentionConfigurationException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 
@@ -48,7 +47,7 @@ public class PrivateKeyUsagePeriod extends StandardCertificateExtension {
 
     @Override
     public ASN1Encodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile,
-            final PublicKey userPublicKey, final PublicKey caPublicKey, CertificateValidity val) throws CertificateExtentionConfigurationException,
+            final PublicKey userPublicKey, final PublicKey caPublicKey, CertificateValidity val) throws 
             CertificateExtensionException {
         // Construct the start and end dates of PrivateKeyUsagePeriod
         // As start date, use the same as the start date of the certificate
@@ -82,7 +81,7 @@ public class PrivateKeyUsagePeriod extends StandardCertificateExtension {
         return privateKeyUsagePeriod(notBefore, notAfter);
     }
 
-    private static DERSequence privateKeyUsagePeriod(final Date notBefore, final Date notAfter) throws CertificateExtentionConfigurationException {
+    private static DERSequence privateKeyUsagePeriod(final Date notBefore, final Date notAfter) throws CertificateExtensionException {
         // Create the extension.
         // PrivateKeyUsagePeriod ::= SEQUENCE {
         // notBefore [0] GeneralizedTime OPTIONAL,
@@ -95,7 +94,7 @@ public class PrivateKeyUsagePeriod extends StandardCertificateExtension {
             v.add(new DERTaggedObject(false, 1, new DERGeneralizedTime(notAfter)));
         }
         if (v.size() == 0) {
-            throw new CertificateExtentionConfigurationException("At least one of notBefore and notAfter must be specified!");
+            throw new CertificateExtensionException("At least one of notBefore and notAfter must be specified!");
         }
         return new DERSequence(v);
     }

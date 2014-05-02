@@ -19,8 +19,6 @@ import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.internal.CertificateValidity;
-import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
-import org.cesecore.certificates.certificate.certextensions.CertificateExtentionConfigurationException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 
@@ -40,7 +38,8 @@ public class OcspNoCheck extends StandardCertificateExtension {
 	}
     
     @Override
-	public ASN1Encodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey, CertificateValidity val ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
+    public ASN1Encodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile,
+            final PublicKey userPublicKey, final PublicKey caPublicKey, CertificateValidity val) {
 		return DERNull.INSTANCE;
 	}	
 }

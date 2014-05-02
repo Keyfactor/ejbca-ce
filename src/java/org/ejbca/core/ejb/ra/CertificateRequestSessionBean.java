@@ -45,6 +45,7 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
@@ -116,7 +117,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
     public byte[] processCertReq(AuthenticationToken admin, EndEntityInformation userdata, String req, int reqType, String hardTokenSN,
             int responseType) throws AuthorizationDeniedException, NotFoundException, InvalidKeyException, NoSuchAlgorithmException,
             InvalidKeySpecException, NoSuchProviderException, SignatureException, IOException, ObjectNotFoundException, CertificateException,
-            UserDoesntFullfillEndEntityProfile, ApprovalException, EjbcaException, CesecoreException {
+            UserDoesntFullfillEndEntityProfile, ApprovalException, EjbcaException, CesecoreException, CertificateExtensionException {
         byte[] retval = null;
 
         // Check tokentype
@@ -172,13 +173,16 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
         } catch (NoSuchFieldException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
             throw new EjbcaException(ErrorCode.FIELD_VALUE_NOT_VALID, e);
+        } catch (CertificateExtensionException e) {
+            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
+            throw e;
         }
         return retval;
     }
 
     @Override
     public ResponseMessage processCertReq(AuthenticationToken admin, EndEntityInformation userdata, RequestMessage req, Class<? extends ResponseMessage> responseClass)
-            throws EndEntityExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, CesecoreException {
+            throws EndEntityExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, CesecoreException, CertificateExtensionException {
         // Check tokentype
         if (userdata.getTokenType() != SecConst.TOKEN_SOFT_BROWSERGEN) {
             throw new WrongTokenTypeException("Error: Wrong Token Type of user, must be 'USERGENERATED' for PKCS10/SPKAC/CRMF/CVC requests");
@@ -192,6 +196,9 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
             throw e;
         } catch (EjbcaException e) {
+            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
+            throw e;
+        } catch (CertificateExtensionException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
             throw e;
         }
@@ -252,10 +259,11 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
      * @param responseType is one of SecConst.CERT_RES_TYPE_...
      * @return a encoded certificate of the type specified in responseType
      * @throws AuthorizationDeniedException
+     * @throws CertificateExtensionException if the request message contained invalid extensions
      */
     private byte[] getCertResponseFromPublicKey(AuthenticationToken admin, RequestMessage msg, String hardTokenSN, int responseType,
             EndEntityInformation userData) throws EjbcaException, CesecoreException, CertificateEncodingException, CertificateException, IOException,
-            AuthorizationDeniedException {
+            AuthorizationDeniedException, CertificateExtensionException {
         byte[] retval = null;
         Class<X509ResponseMessage> respClass = X509ResponseMessage.class;
         ResponseMessage resp = signSession.createCertificate(admin, msg, respClass, userData);

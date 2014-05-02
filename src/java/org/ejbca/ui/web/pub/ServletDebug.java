@@ -69,16 +69,18 @@ public class ServletDebug {
         print(msg);
     }
 
-    public void printInsertLineBreaks(byte[] bA) throws IOException {
+    public void printInsertLineBreaks(byte[] bA) {
         BufferedReader br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(bA)));
-
         while (true) {
-            String line = br.readLine();
-
+            String line;
+            try {
+                line = br.readLine();
+            } catch (IOException e) {
+                throw new IllegalStateException("Unexpected IOException was caught.", e);
+            }
             if (line == null) {
                 break;
             }
-
             print(line.toString());
         }
     }

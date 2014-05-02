@@ -37,9 +37,10 @@ import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
-import org.cesecore.certificates.certificate.CustomCertSerialNumberException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
+import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
 import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -111,7 +112,10 @@ public class RevokeEndEntityCommandTest extends CaTestCase {
     }
 
     @Test
-    public void testExecuteHappyPath() throws EndEntityExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException, IllegalQueryException, RemoveException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, CustomCertSerialNumberException, IllegalKeyException, CertificateCreateException, CesecoreException  {
+    public void testExecuteHappyPath() throws EndEntityExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
+            WaitingForApprovalException, EjbcaException, IllegalQueryException, RemoveException, NoSuchAlgorithmException, NoSuchProviderException,
+            InvalidAlgorithmParameterException, CustomCertificateSerialNumberException, IllegalKeyException, CertificateCreateException,
+            CesecoreException, CertificateExtensionException {
 
         String fingerprint = null;
         try {

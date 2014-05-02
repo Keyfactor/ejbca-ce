@@ -26,6 +26,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
@@ -169,8 +170,12 @@ public interface SignSession {
      *                      | CertificateDataBean.cRLSign; gives keyCertSign and cRLSign. Keyusage < 0 means that default
      *                      keyUsage should be used, or should be taken from extensions in the request.
      * @param responseClass The implementation class that will be used as the response message.
-     * @param suppliedUserData Optional (can be null) supplied user data, if we are running without storing UserData this will be used. Should only be supplied when we issue certificates in a single transaction.
+     * @param suppliedUserData Optional (can be null) supplied user data, if we are running without storing UserData this will be used. Should only 
+     *  be supplied when we issue certificates in a single transaction.
+     *  
      * @return The newly created response or null.
+     * 
+     * @throws CertificateExtensionException if there was an error with the extensions specified in the request message
      * @throws ObjectNotFoundException       if the user does not exist.
      * @throws AuthStatusException           If the users status is incorrect.
      * @throws AuthLoginException            If the password is incorrect.
@@ -185,7 +190,7 @@ public interface SignSession {
      * @see org.cesecore.certificates.certificate.request.X509ResponseMessage
      */
     public ResponseMessage createCertificate(AuthenticationToken admin, RequestMessage req, Class<? extends ResponseMessage> responseClass,
-            EndEntityInformation suppliedUserData) throws EjbcaException, CesecoreException, AuthorizationDeniedException;
+            EndEntityInformation suppliedUserData) throws EjbcaException, CesecoreException, AuthorizationDeniedException, CertificateExtensionException;
 
     /**
      * Requests for a certificate to be created for the passed public key with the passed key

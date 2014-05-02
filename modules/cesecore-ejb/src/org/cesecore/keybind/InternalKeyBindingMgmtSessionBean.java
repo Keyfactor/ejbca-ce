@@ -36,7 +36,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 
-import javax.ejb.CreateException;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -64,8 +63,9 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
-import org.cesecore.certificates.certificate.CustomCertSerialNumberException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
+import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
@@ -724,7 +724,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         final CertificateResponseMessage response;
         try {
             response = certificateCreateSession.createCertificate(authenticationToken, endEntityInformation, req, X509ResponseMessage.class);
-        } catch (CustomCertSerialNumberException e) {
+        } catch (CustomCertificateSerialNumberException e) {
             throw new CertificateImportException(e);
         } catch (IllegalKeyException e) {
             throw new CertificateImportException(e);
@@ -733,6 +733,8 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         } catch (CertificateCreateException e) {
             throw new CertificateImportException(e);
         } catch (CesecoreException e) {
+            throw new CertificateImportException(e);
+        } catch (CertificateExtensionException e) {
             throw new CertificateImportException(e);
         }
         final String newCertificateId = updateCertificateForInternalKeyBinding(authenticationToken, internalKeyBindingId);
@@ -808,16 +810,8 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         if (caFingerprint == null) {
             throw new CertificateImportException("No CA certificate for " + issuerDn + " was found on the system.");
         }
-        try {
-            certificateStoreSession.storeCertificate(authenticationToken, certificate, username, caFingerprint, CertificateConstants.CERT_ACTIVE,
-                    CertificateConstants.CERTTYPE_ENDENTITY, certificateProfileId, null, System.currentTimeMillis());
-        } catch (CreateException e) {
-            // Just pass on the message, in case this is a remote invocation where the underlying class is not available.
-            if (log.isDebugEnabled()) {
-                log.debug("", e);
-            }
-            throw new CertificateImportException(e.getMessage());
-        }
+        certificateStoreSession.storeCertificate(authenticationToken, certificate, username, caFingerprint, CertificateConstants.CERT_ACTIVE,
+                CertificateConstants.CERTTYPE_ENDENTITY, certificateProfileId, null, System.currentTimeMillis());
     }
 
     /** Helper method for audit logging changes */
