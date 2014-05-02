@@ -60,7 +60,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
     private static final Logger log = Logger.getLogger(CaImportCertDirCommand.class);
 
     private static final String USERNAME_FILTER_KEY = "--filter";
-    private static final String CA_NAME_KEY = "--ca";
+    private static final String CA_NAME_KEY = "--caname";
     private static final String ACTIVE_KEY = "-a";
     private static final String RESUME_ON_ERROR_KEY = "-resumeonerror";
     private static final String DIRECTORY_KEY = "--dir";
