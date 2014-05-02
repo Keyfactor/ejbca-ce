@@ -76,7 +76,7 @@ public class CaImportCACommand extends BaseCaAdminCommand {
                 "The name of the CA to import."));
         //P12 arguments        
         registerParameter(new Parameter(P12_FILE_KEY, "File name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "(PKCS#12) The PKCS#12 file to import from."));
+                "(PKCS#12) The PKCS#12 file to import from. Mandatory for soft keys."));
         registerParameter(new Parameter(KEYSTORE_PASSWORD_KEY, "Password", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "(PKCS#12) The keystore password. If not set then it will be prompted for."));
         registerParameter(new Parameter(SIGNATURE_ALIAS_KEY, "Signature Alias", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
@@ -123,6 +123,10 @@ public class CaImportCACommand extends BaseCaAdminCommand {
                 kspwd = String.valueOf(System.console().readPassword());
             }
             String p12file = parameters.get(P12_FILE_KEY);
+            if(p12file == null) {
+                log.error("P12 file needs to be specified for soft keys.");
+                return CommandResult.CLI_FAILURE;
+            }
             String alias = parameters.get(SIGNATURE_ALIAS_KEY);
             String encryptionAlias = parameters.get(ENCRYPTION_ALIAS_KEY);
             // Read old keystore file in the beginning so we know it's good

@@ -46,9 +46,9 @@ public class CaGetCrlCommand extends BaseCaAdminCommand {
     private static final String FILE_KEY = "-f";
 
     {
-        registerParameter(new Parameter(CA_NAME_KEY, "CA Name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "If no caname is given, CRLs will be created for all the CAs where it is neccessary."));
-        registerParameter(new Parameter(FILE_KEY, "File Name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+        registerParameter(new Parameter(CA_NAME_KEY, "CA Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "The CA to get the CRL for."));
+        registerParameter(new Parameter(FILE_KEY, "File Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "The file to export to."));
         registerParameter(new Parameter(DELTA_KEY, "", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG,
                 "Fetch the latest delta CRL. Default is regular CRL."));

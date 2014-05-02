@@ -85,9 +85,9 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
         registerParameter(new Parameter(DIRECTORY_KEY, "Certificate Directory", MandatoryMode.MANDATORY, StandaloneMode.ALLOW,
                 ParameterMode.ARGUMENT, "Directory of PEM certificates, which must be PEM encoded"));
         registerParameter(new Parameter(EE_PROFILE_KEY, "Profile Name", MandatoryMode.MANDATORY, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
-                "Certificate Profile to create end entity with."));
-        registerParameter(new Parameter(CERT_PROFILE_KEY, "Profile Name", MandatoryMode.MANDATORY, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "End Entity Profile to create end entity with."));
+        registerParameter(new Parameter(CERT_PROFILE_KEY, "Profile Name", MandatoryMode.MANDATORY, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "Certificate Profile to create end entity with."));
         registerParameter(Parameter.createFlag(RESUME_ON_ERROR_KEY,
                 "Set if the import should resume in case of errors, or stop on first one. Default is stop"));
 

@@ -111,6 +111,11 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
             final String operationsMode = parameters.get(OPERATION_KEY);
             final boolean strict = operationsMode.equalsIgnoreCase(STRICT_OP);
             final boolean adaptive = operationsMode.equalsIgnoreCase(ADAPTIVE_OP);
+            if (!strict && !adaptive && !operationsMode.equalsIgnoreCase(LENIENT_OP)) {
+                //None of the above.
+                log.error("Operations mode must be one of " + STRICT_OP + "," + LENIENT_OP + " or " + ADAPTIVE_OP + ".");
+                return CommandResult.CLI_FAILURE;
+            }
             // Fetch CA and related info
             final CAInfo cainfo = getCAInfo(getAuthenticationToken(), caname);
             final X509Certificate cacert = (X509Certificate) cainfo.getCertificateChain().iterator().next();

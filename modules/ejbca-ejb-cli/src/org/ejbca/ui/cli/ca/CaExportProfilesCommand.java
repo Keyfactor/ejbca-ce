@@ -22,7 +22,6 @@ import java.net.URLEncoder;
 import java.util.Collection;
 
 import org.apache.log4j.Logger;
-import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
@@ -46,11 +45,11 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
 
     private static final Logger log = Logger.getLogger(CaExportProfilesCommand.class);
 
-    private static final String FILE_KEY = "-f";
+    private static final String DIRECTORY_KEY = "-d";
 
     {
-        registerParameter(new Parameter(FILE_KEY, "File name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "The destination file."));
+        registerParameter(new Parameter(DIRECTORY_KEY, "Directory name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "The destination directory."));
     }
 
     @Override
@@ -60,7 +59,7 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
 
     @Override
     public CommandResult execute(ParameterContainer parameters) {
-        String outpath = parameters.get(FILE_KEY);
+        String outpath = parameters.get(DIRECTORY_KEY);
         if (!new File(outpath).isDirectory()) {
             log.error("Error: '" + outpath + "' is not a directory.");
             return CommandResult.FUNCTIONAL_FAILURE;
