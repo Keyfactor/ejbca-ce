@@ -360,5 +360,13 @@ public final class CesecoreConfiguration {
         }
         return s.toCharArray();
     }
+
+    /**
+     * @return true if sign mechanisms that uses pkcs#11 for hashing should be disabled.
+     */
+    public static boolean p11disableHashingSignMechanisms() {
+        final String value = ConfigurationHolder.getString("pkcs11.disableHashingSignMechanisms");
+        return value==null || Boolean.parseBoolean(value.trim());
+    }
 }
 
