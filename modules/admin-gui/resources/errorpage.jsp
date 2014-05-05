@@ -15,6 +15,7 @@
     <title><c:out value="<%= globalconfiguration.getEjbcaTitle() %>" /></title>
     <base href="<%= ejbcawebbean.getBaseUrl() %>" />
     <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>" />
+    <meta http-equiv="Content-Type" content="text/html; charset=<%= WebConfiguration.getWebContentEncoding() %>" />
 </head>
 
 <body>
