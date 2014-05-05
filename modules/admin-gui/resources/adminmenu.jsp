@@ -333,11 +333,14 @@ org.cesecore.keybind.InternalKeyBindingRules
    if(logheaderprinted){
      out.write("</ul></li>"); 
    }
+%>
 
 
+<%
    // --------------------------------------------------------------------------
    // SYSTEM FUNCTIONS
 %>
+
 <%
    // If authorized to edit authorizations then display related links.
    try{
@@ -352,7 +355,20 @@ org.cesecore.keybind.InternalKeyBindingRules
 %>
 
 <%
-    // If authorized to configure CMP Configuration then display related links.
+   // If authorized to edit services then display related links.
+   try{
+     if(ejbcawebbean.isAuthorizedNoLog(SERVICES_RESOURCE)){
+       if(!systemheaderprinted){
+         out.write("<li id=\"cat7\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMFUNCTIONS")+"</strong><ul>"); 
+         systemheaderprinted=true;
+         }  %>
+				<li><a href="<%= SERVICES_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_SERVICES") %></a></li>
+<%   }
+  }catch(AuthorizationDeniedException e){} 
+%>
+
+<%
+    // If authorized to edit CMP Configuration then display related links.
     try{
       if(ejbcawebbean.isAuthorizedNoLog(SYSTEMCONFIGURATION_RESOURCE)){ 
           if(!systemheaderprinted){      
@@ -360,27 +376,6 @@ org.cesecore.keybind.InternalKeyBindingRules
         systemheaderprinted = true;
           } %>
 				<li><a href="<%= CMPCONFIGURATION_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_CMPCONFIGURATION") %></a></li>
-<%   }
-   }catch(AuthorizationDeniedException e){}
-%>
-
-<%   
-   // If authorized to edit authorizations then display related links.
-   try{
-     if(ejbcawebbean.isAuthorizedNoLog(INTERNALKEYBINDING_RESOURCE)){
-       if(!systemheaderprinted){
-         out.write("<li id=\"cat7\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_INTERNALKEYBINDINGS")+"</strong><ul>"); 
-         systemheaderprinted=true;
-         }  %>
-				<li><a href="<%= INTERNALKEYBINDING_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_KEYBINDINGS") %></a></li>
-<%   }
-  }catch(AuthorizationDeniedException e){}
-%>
-<%
-    // If authorized to edit user preferences then display related links.
-    try{
-      if(ejbcawebbean.isAuthorizedNoLog(MAIN_RESOURCE)){ %>
-				<li><a href="<%= MYPREFERENCES_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_MYPREFERENCES") %></a></li>
 <%   }
    }catch(AuthorizationDeniedException e){}
 %>
@@ -398,19 +393,19 @@ org.cesecore.keybind.InternalKeyBindingRules
   }catch(AuthorizationDeniedException e){}
 %>
 
-
-<%
-   // If authorized to edit services then display related links.
+<%   
+   // If authorized to edit Internal Key Bindings then display related links.
    try{
-     if(ejbcawebbean.isAuthorizedNoLog(SERVICES_RESOURCE)){
+     if(ejbcawebbean.isAuthorizedNoLog(INTERNALKEYBINDING_RESOURCE)){
        if(!systemheaderprinted){
          out.write("<li id=\"cat7\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMFUNCTIONS")+"</strong><ul>"); 
          systemheaderprinted=true;
          }  %>
-				<li><a href="<%= SERVICES_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_SERVICES") %></a></li>
+				<li><a href="<%= INTERNALKEYBINDING_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_KEYBINDINGS") %></a></li>
 <%   }
-  }catch(AuthorizationDeniedException e){} 
+  }catch(AuthorizationDeniedException e){}
 %>
+
 <%
     // If authorized to configure Ejbca then display related links.
     try{
@@ -425,10 +420,20 @@ org.cesecore.keybind.InternalKeyBindingRules
 %>
 
 <%
+    // If authorized to edit user preferences then display related links.
+    try{
+      if(ejbcawebbean.isAuthorizedNoLog(MAIN_RESOURCE)){ %>
+				<li><a href="<%= MYPREFERENCES_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_MYPREFERENCES") %></a></li>
+<%   }
+   }catch(AuthorizationDeniedException e){}
+%>
+
+<%
    if(systemheaderprinted){
      out.write("</ul></li>"); 
    }
 %>
+
 
 		<li id="cat8"><a href="<%= PUBLICWEB_LINK %>" target="_ejbcapublicweb"><%=ejbcawebbean.getText("PUBLICWEB") %></a>
 		</li>
