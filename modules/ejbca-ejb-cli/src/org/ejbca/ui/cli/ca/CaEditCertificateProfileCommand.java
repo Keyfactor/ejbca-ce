@@ -74,6 +74,20 @@ public class CaEditCertificateProfileCommand extends BaseCaAdminCommand {
         final String field = parameters.get(FIELD_KEY);
         final String value = parameters.get(VALUE_KEY);
 
+        if(!listOnly && field == null) {
+            log.error("No field was specified.");
+            return CommandResult.CLI_FAILURE;
+        } else if(!listOnly && !getOnly && value == null) {
+            log.error("No value was specified.");
+            return CommandResult.CLI_FAILURE;
+        } else if(listOnly && getOnly) {
+            log.error("Cannot specify both " + LISTFIELDS_KEY + " and " + GETVALUE_KEY);
+            return CommandResult.CLI_FAILURE;
+        } else if(getOnly && value != null) {
+            log.error("Cannot submit a value with "+ GETVALUE_KEY + " set.");
+            return CommandResult.CLI_FAILURE;
+        }
+        
         final CertificateProfile profile = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfile(
                 name);
         if (profile == null) {

@@ -25,6 +25,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -36,10 +37,10 @@ import org.junit.Test;
 public class CaEditCertificateProfileCommandTest {
 
     private static final String PROFILE_NAME = "1327profile2";
-    private static final String[] HAPPY_PATH_ARGS1 = { PROFILE_NAME, "CRLDistributionPointURI", "http://my-crl-distp.com/my.crl" };
-    private static final String[] HAPPY_PATH_ARGS2 = { PROFILE_NAME, "caIssuers", "http://my-ca.issuer.com/ca" };
-    private static final String[] HAPPY_PATH_ARGS3 = { PROFILE_NAME, "useOcspNoCheck", "true" };
-    private static final String[] HAPPY_PATH_ARGS4 = { PROFILE_NAME, "numOfReqApprovals", "5" };
+    private static final String[] HAPPY_PATH_ARGS1 = { PROFILE_NAME, "CRLDistributionPointURI", "--value", "http://my-crl-distp.com/my.crl" };
+    private static final String[] HAPPY_PATH_ARGS2 = { PROFILE_NAME, "caIssuers", "--value", "http://my-ca.issuer.com/ca" };
+    private static final String[] HAPPY_PATH_ARGS3 = { PROFILE_NAME, "useOcspNoCheck", "--value", "true" };
+    private static final String[] HAPPY_PATH_ARGS4 = { PROFILE_NAME, "numOfReqApprovals", "--value", "5" };
     private static final String[] HAPPY_PATH_GETVALUE_ARGS = { PROFILE_NAME, "-getValue", "caIssuers" };
     private static final String[] HAPPY_PATH_LISTFIELDS_ARGS = { PROFILE_NAME, "-listFields" };
     private static final String[] MISSING_ARGS = { PROFILE_NAME };
@@ -104,7 +105,7 @@ public class CaEditCertificateProfileCommandTest {
             CertificateProfile profile1 = profileSession.getCertificateProfile(PROFILE_NAME);
             assertEquals("storing cert profile with values failed", "http://crl1.foo.com/crl1.crl", profile1.getCRLDistributionPointURI());
             assertEquals("storing cert profile with values failed", "ldap://caissuer.foo.com/ca1.der", profile1.getCaIssuers().get(0));
-            command.execute(MISSING_ARGS);
+            assertEquals(CommandResult.CLI_FAILURE, command.execute(MISSING_ARGS));
             // Check that nothing happened
             CertificateProfile profile2 = profileSession.getCertificateProfile(PROFILE_NAME);
             assertEquals("storing cert profile with values failed", "http://crl1.foo.com/crl1.crl", profile2.getCRLDistributionPointURI());
