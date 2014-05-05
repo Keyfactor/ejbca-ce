@@ -18,6 +18,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.ui.cli.infrastructure.command.CommandBase;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
@@ -175,7 +176,7 @@ public class ParameterHandler {
                 value = value.substring(1, value.length() - 1);
             }
             if (log.isDebugEnabled()) {
-                if(parameter.getParameterMode() == ParameterMode.ARGUMENT) {
+                if (!StringUtils.isEmpty(value)) {
                     log.error("SETTING: " + parameterString + " as " + value);
                 }
             }
