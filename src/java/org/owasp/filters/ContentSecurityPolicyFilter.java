@@ -110,7 +110,7 @@ public class ContentSecurityPolicyFilter implements Filter {
         //cspPolicies.add("connect-src " + originLocationRef);
         // --Define loading policies for Form
         cspPolicies.add("form-action " + originLocationRef);
-        // --Define loading policies for Plugins Types, only allow PDF documents
+        // --Define loading policies for Plugins Types, only allow PDF documents, if plug-ins are enabled in web.xml
         if (StringUtils.isNotEmpty(plugins)) {
             cspPolicies.add("plugin-types application/pdf");
         }
