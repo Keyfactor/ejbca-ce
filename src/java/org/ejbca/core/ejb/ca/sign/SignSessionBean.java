@@ -92,6 +92,7 @@ import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
@@ -247,7 +248,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     @Override
     public ResponseMessage createCertificate(final AuthenticationToken admin, final RequestMessage req,
             Class<? extends ResponseMessage> responseClass, final EndEntityInformation suppliedUserData) throws EjbcaException, CesecoreException,
-            AuthorizationDeniedException, CertificateExtensionException {
+            AuthorizationDeniedException, CertificateExtensionException, NoSuchEndEntityException {
         if (log.isTraceEnabled()) {
             log.trace(">createCertificate(IRequestMessage)");
         }
@@ -296,11 +297,11 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                         ret = certificateCreateSession.createCertificate(admin, data, ca, req, responseClass);
                         postCreateCertificate(admin, data, ca, ret.getCertificate());
                     }
-                } catch (ObjectNotFoundException oe) {
+                } catch (ObjectNotFoundException e) {
                     // If we didn't find the entity return error message
                     final String failText = intres.getLocalizedMessage("signsession.nosuchuser", req.getUsername());
-                    log.info(failText, oe);
-                    ret = createRequestFailedResponse(admin, req, responseClass, FailInfo.INCORRECT_DATA, failText);
+                    log.info(failText, e);
+                    throw new NoSuchEndEntityException(failText, e);
                 }
             }
             ret.create();

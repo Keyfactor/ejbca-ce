@@ -33,6 +33,7 @@ import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 
@@ -176,7 +177,7 @@ public interface SignSession {
      * @return The newly created response or null.
      * 
      * @throws CertificateExtensionException if there was an error with the extensions specified in the request message
-     * @throws ObjectNotFoundException       if the user does not exist.
+     * @throws NoSuchEndEntityException       if the user does not exist.
      * @throws AuthStatusException           If the users status is incorrect.
      * @throws AuthLoginException            If the password is incorrect.
      * @throws IllegalKeyException           if the public key is of wrong type.
@@ -190,7 +191,7 @@ public interface SignSession {
      * @see org.cesecore.certificates.certificate.request.X509ResponseMessage
      */
     public ResponseMessage createCertificate(AuthenticationToken admin, RequestMessage req, Class<? extends ResponseMessage> responseClass,
-            EndEntityInformation suppliedUserData) throws EjbcaException, CesecoreException, AuthorizationDeniedException, CertificateExtensionException;
+            EndEntityInformation suppliedUserData) throws EjbcaException, CesecoreException, AuthorizationDeniedException, CertificateExtensionException, NoSuchEndEntityException;
 
     /**
      * Requests for a certificate to be created for the passed public key with the passed key
