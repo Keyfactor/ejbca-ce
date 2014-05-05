@@ -13,7 +13,6 @@
 
 package org.ejbca.core.ejb.ca.sign;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -326,7 +325,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             log.error("Invalid key in request: ", e);
         } catch (NoSuchAlgorithmException e) {
             log.error("No such algorithm: ", e);
-        } 
+        }
         if (log.isTraceEnabled()) {
             log.trace("<createCertificate(IRequestMessage)");
         }
@@ -520,7 +519,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             log.error("No such algorithm: ", e);
         } catch (CRLException e) {
             log.error("Cannot create response message: ", e);
-        }  catch (CryptoTokenOfflineException ctoe) {
+        } catch (CryptoTokenOfflineException ctoe) {
             String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getSubjectDN());
             log.error(msg, ctoe);
             throw ctoe;
@@ -658,7 +657,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             final GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession
                     .getCachedConfiguration(GlobalConfiguration.GlobalConfigID);
             final Map<Integer, CTLogInfo> configuredCTLogs = globalConfiguration.getCTLogs();
-            
+
             ctParams = new CTExtensionCertGenParams() {
                 @Override
                 public void logPreCertSubmission(X509CA issuer, EndEntityInformation subject, X509Certificate precert, boolean success) {
@@ -668,10 +667,11 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                     if (ei != null) {
                         revreason = ei.getIssuanceRevocationReason();
                     }
-                    
+
                     final Map<String, Object> issuedetails = new LinkedHashMap<String, Object>();
                     issuedetails.put("ctprecert", true);
-                    issuedetails.put("msg", intres.getLocalizedMessage(success ? "createcert.ctlogsubmissionsuccessful" : "createcert.ctlogsubmissionfailed"));
+                    issuedetails.put("msg",
+                            intres.getLocalizedMessage(success ? "createcert.ctlogsubmissionsuccessful" : "createcert.ctlogsubmissionfailed"));
                     issuedetails.put("subjectdn", CertTools.getSubjectDN(precert));
                     issuedetails.put("certprofile", subject.getCertificateProfileId());
                     try {
@@ -683,6 +683,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                             ModuleTypes.CERTIFICATE, ServiceTypes.CORE, LogConstants.NO_AUTHENTICATION_TOKEN, String.valueOf(issuer.getCAId()),
                             CertTools.getSerialNumberAsString(precert), subject.getUsername(), issuedetails);
                 }
+
                 @Override
                 public Map<Integer, CTLogInfo> getConfiguredCTLogs() {
                     return configuredCTLogs;
