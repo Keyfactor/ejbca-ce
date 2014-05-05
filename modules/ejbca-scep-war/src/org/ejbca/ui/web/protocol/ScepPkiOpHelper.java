@@ -44,6 +44,7 @@ import org.ejbca.config.ScepConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.UsernameGenerator;
@@ -111,7 +112,7 @@ public class ScepPkiOpHelper {
      * @throws CertificateExtensionException if msg specified invalid extensions
      */
     public byte[] scepCertRequest(byte[] msg, boolean includeCACert, boolean ramode)
-            throws EjbcaException, CesecoreException, AuthorizationDeniedException, CertificateExtensionException {
+            throws EjbcaException, CesecoreException, AuthorizationDeniedException, CertificateExtensionException, NoSuchEndEntityException {
         byte[] ret = null;
         if (log.isTraceEnabled()) {
         	log.trace(">getRequestMessage(" + msg.length + " bytes)");
