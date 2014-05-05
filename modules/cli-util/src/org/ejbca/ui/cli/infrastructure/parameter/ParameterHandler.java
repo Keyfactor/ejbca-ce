@@ -175,7 +175,9 @@ public class ParameterHandler {
                 value = value.substring(1, value.length() - 1);
             }
             if (log.isDebugEnabled()) {
-                log.error("SETTING: " + parameterString + " as " + value);
+                if(parameter.getParameterMode() == ParameterMode.ARGUMENT) {
+                    log.error("SETTING: " + parameterString + " as " + value);
+                }
             }
             result.put(parameterString, value, isStandalone);
         }
