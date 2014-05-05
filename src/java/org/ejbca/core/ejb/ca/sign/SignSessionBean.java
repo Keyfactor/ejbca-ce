@@ -674,7 +674,6 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                     issuedetails.put("msg", intres.getLocalizedMessage(success ? "createcert.ctlogsubmissionsuccessful" : "createcert.ctlogsubmissionfailed"));
                     issuedetails.put("subjectdn", CertTools.getSubjectDN(precert));
                     issuedetails.put("certprofile", subject.getCertificateProfileId());
-                    issuedetails.put("issuancerevocationreason", revreason);
                     try {
                         issuedetails.put("cert", new String(Base64.encode(precert.getEncoded(), false)));
                     } catch (CertificateEncodingException e) {
