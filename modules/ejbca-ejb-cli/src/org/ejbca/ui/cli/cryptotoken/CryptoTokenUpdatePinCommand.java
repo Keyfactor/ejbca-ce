@@ -41,7 +41,7 @@ public class CryptoTokenUpdatePinCommand extends BaseCryptoTokenCommand {
     {
         registerParameter(new Parameter(OLD_PIN_KEY, "Pin", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "The old pin. Set as \"null\" to prompt"));
-        registerParameter(new Parameter(NEW_PIN_KEY, "Pin", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+        registerParameter(new Parameter(NEW_PIN_KEY, "Pin", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "The new pin. Set as \"null\" to prompt"));
         registerParameter(Parameter.createFlag(SWITCH_UPDATE_ONLY_KEY,
                 "Set the auto-activation pin and make the token auto-activated if it was so previously."));
