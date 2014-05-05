@@ -896,16 +896,34 @@ public class X509CA extends CA implements Serializable {
 
                 // Submit to logs and get signed timestamps
                 byte[] sctlist = null;
-            try {
-                sctlist = ct.fetchSCTList(chain, certProfile, ctParams.getConfiguredCTLogs());
-            }  finally {
-                // Notify that pre-cert has been successfully or unsuccessfully submitted so it can be audit logged.
-                ctParams.logPreCertSubmission(this, subject, cert, sctlist != null);
-            }
-            if (sctlist != null) { // can be null if the CTLog has been deleted from the configuration
-                ASN1ObjectIdentifier sctOid = new ASN1ObjectIdentifier(CertificateTransparency.SCTLIST_OID);
-                certbuilder.addExtension(sctOid, false, new DEROctetString(sctlist));
-            }
+                try {
+                    sctlist = ct.fetchSCTList(chain, certProfile, ctParams.getConfiguredCTLogs());
+                }  finally {
+                    // Notify that pre-cert has been successfully or unsuccessfully submitted so it can be audit logged.
+                    ctParams.logPreCertSubmission(this, subject, cert, sctlist != null);
+                }
+                if (sctlist != null) { // can be null if the CTLog has been deleted from the configuration
+                    ASN1ObjectIdentifier sctOid = new ASN1ObjectIdentifier(CertificateTransparency.SCTLIST_OID);
+                    certbuilder.addExtension(sctOid, false, new DEROctetString(sctlist));
+                }
+            } else {
+                if (log.isDebugEnabled()) {
+                    String cause = "";
+                    if (ct == null) {
+                        cause += "CT is not available in this version of EJBCA.";
+                    } else {
+                        if (!certProfile.isUseCertificateTransparencyInCerts()) {
+                            cause += "CT is not enabled in the certificate profile. ";
+                        }
+                        if (ctParams == null) {
+                            cause += "There are no CTParams passed to certificate generation. ";
+                        }
+                        if (ctParams != null && ctParams.getConfiguredCTLogs() == null) {
+                            cause += "There are no CT logs configured in System Configuration.";
+                        }
+                    }
+                    log.debug("Not logging to CT. "+cause);                    
+                }
             }
         } catch (CertificateException e) {
             throw new CertificateExtensionException("Could not process CA's private key when parsing Certificate Transparency extension.", e);
