@@ -40,7 +40,6 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
-import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -52,6 +51,7 @@ import org.ejbca.config.ScepConfiguration;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ca.AuthLoginException;
@@ -351,11 +351,10 @@ public class ScepServlet extends HttpServlet {
             log.info(errMsg, ee);
             // TODO: Send back proper Failure Response
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ee.getMessage());
-        } catch (SignRequestException ee) {
+        } catch (NoSuchEndEntityException ee) {
             String errMsg = intres.getLocalizedMessage("scep.errorgeneral");
             errMsg += " Registering new EndEntities is only allowed in RA mode.";
             log.info(errMsg, ee);
-            // TODO: Send back proper Failure Response
             response.sendError(HttpServletResponse.SC_FORBIDDEN, ee.getMessage());    
         } catch (Exception e) {
     		String errMsg = intres.getLocalizedMessage("scep.errorgeneral");
