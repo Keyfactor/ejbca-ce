@@ -912,7 +912,7 @@ public class X509CA extends CA implements Serializable {
         } catch (IOException e) {
             throw new CertificateExtensionException("IOException was caught when parsing Certificate Transparency extension.", e);
         } catch (CTLogException e) {
-            throw new CertificateExtensionException("An exception occurred because too many servers were down to satisfy the certificate profile.");
+            throw new CertificateExtensionException("An exception occurred because too many CT servers were down to satisfy the certificate profile.");
         }
 
         //
