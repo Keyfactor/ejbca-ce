@@ -1261,7 +1261,7 @@ debug=false
 	Edit Default Domain Policy -> Computer Configuration -> Windows Settings -> Security Settings -> Public Key Policies ->
 	Trusted Root Certificate Authorities -> Import -> import the root ca certificate and run "gpupdate /force" on
 	machines that are used for testing. 
-	(You can fetch the CA certificate using the EJCBA CLI with "$EJBCA_HOME/bin/ejbca.sh ca getrootcert ManagementCA ~/ManagementCA.crt -der".)
+	(You can fetch the CA certificate using the EJCBA CLI with "$EJBCA_HOME/bin/ejbca.sh ca getcacert ManagementCA ~/ManagementCA.crt -der".)
   </p><p>
   	Add Startup Scripts in 
 	Start Menu -> Administration -> Users and Computer -> Right click the domain name -> Properties -> Group Policy ->

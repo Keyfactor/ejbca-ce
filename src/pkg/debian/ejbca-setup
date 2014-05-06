@@ -308,7 +308,7 @@ randompass() {
 # manually doing the same as ant javastruststore
 #	rm -f /tmp/rootcert.der
 #	cd $EJBCA_HOME
-#	./bin/ejbca.sh ca getrootcert  /tmp/rootcert.der  -der 
+#	./bin/ejbca.sh ca getcacert  /tmp/rootcert.der  -der 
 #	keytool -import -keystore $EJBCA_HOME/p12/truststore.jks -file /tmp/rootcert.der -storepass ${javakeystorepass} -noprompt -trustcacerts
 #	# ant doesn't return anything but true ....
 #	echo "ok"

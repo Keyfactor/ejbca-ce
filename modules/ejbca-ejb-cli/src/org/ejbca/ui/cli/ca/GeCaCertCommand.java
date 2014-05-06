@@ -19,6 +19,9 @@ import java.io.IOException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.cesecore.util.CertTools;
@@ -31,13 +34,13 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
- * Export root CA certificate.
+ * Export any CA certificate.
  *
  * @version $Id$
  */
-public class CaGetRootCertCommand extends BaseCaAdminCommand {
+public class GeCaCertCommand extends BaseCaAdminCommand {
 
-    private static final Logger log = Logger.getLogger(CaGetRootCertCommand.class);
+    private static final Logger log = Logger.getLogger(GeCaCertCommand.class);
 
     private static final String CA_NAME_KEY = "--caname";
     private static final String FILE_KEY = "-f";
@@ -54,7 +57,12 @@ public class CaGetRootCertCommand extends BaseCaAdminCommand {
 
     @Override
     public String getMainCommand() {
-        return "getrootcert";
+        return "getcacert";
+    }
+    
+    @Override
+    public Set<String> getMainCommandAliases() {    
+        return new HashSet<String>(Arrays.asList("getrootcert"));
     }
 
     @Override
@@ -98,7 +106,7 @@ public class CaGetRootCertCommand extends BaseCaAdminCommand {
 
     @Override
     public String getCommandDescription() {
-        return "Save root CA certificate (PEM- or DER-format) to file";
+        return "Save a CA certificate (PEM- or DER-format) to file";
 
     }
 
