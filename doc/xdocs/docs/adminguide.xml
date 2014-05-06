@@ -4659,7 +4659,7 @@ Otherwise you will have to add it using something like:
 First get the CA cert:
 </p>
 <source>
-bin/ejbca.sh ca getrootcert MyCA myca.der -der
+bin/ejbca.sh ca getcacert MyCA myca.der -der
 </source>
 <p>
 Then add it to the java trust store:
