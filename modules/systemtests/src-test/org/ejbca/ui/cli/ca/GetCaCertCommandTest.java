@@ -48,7 +48,7 @@ public class GetCaCertCommandTest {
     private final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(
             GetCaCertCommandTest.class.getSimpleName());
 
-    private final GeCaCertCommand command = new GeCaCertCommand();
+    private final GetCaCertCommand command = new GetCaCertCommand();
     private File resultFile;
 
     @Before
