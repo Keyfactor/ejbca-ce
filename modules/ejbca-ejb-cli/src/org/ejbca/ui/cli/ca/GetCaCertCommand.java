@@ -38,9 +38,9 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
  *
  * @version $Id$
  */
-public class GeCaCertCommand extends BaseCaAdminCommand {
+public class GetCaCertCommand extends BaseCaAdminCommand {
 
-    private static final Logger log = Logger.getLogger(GeCaCertCommand.class);
+    private static final Logger log = Logger.getLogger(GetCaCertCommand.class);
 
     private static final String CA_NAME_KEY = "--caname";
     private static final String FILE_KEY = "-f";
