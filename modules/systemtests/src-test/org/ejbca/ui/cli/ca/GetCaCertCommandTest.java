@@ -16,7 +16,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
-import java.io.IOException;
+import java.io.FileNotFoundException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 
@@ -29,7 +29,6 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.FileTools;
-import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,7 +37,7 @@ import org.junit.Test;
  * @version $Id$
  *
  */
-public class CaGetRootCertCommandTest {
+public class GetCaCertCommandTest {
 
     private static final String CA_NAME = "CaGetRootCertCommandTest";
     private static final String CA_DN = "CN=" + CA_NAME;
@@ -47,9 +46,9 @@ public class CaGetRootCertCommandTest {
 
     private X509CA ca;
     private final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(
-            CaGetRootCertCommandTest.class.getSimpleName());
+            GetCaCertCommandTest.class.getSimpleName());
 
-    private final CaGetRootCertCommand command = new CaGetRootCertCommand();
+    private final GeCaCertCommand command = new GeCaCertCommand();
     private File resultFile;
 
     @Before
@@ -70,7 +69,7 @@ public class CaGetRootCertCommandTest {
     }
 
     @Test
-    public void testCommand() throws ErrorAdminCommandException, CertificateException, IOException {
+    public void testCommand() throws CertificateException, FileNotFoundException {
         String[] args = new String[] { ca.getName(), resultFile.getAbsolutePath() };
         command.execute(args);
         Certificate result = CertTools.getCertsFromPEM(resultFile.getAbsolutePath()).get(0);
