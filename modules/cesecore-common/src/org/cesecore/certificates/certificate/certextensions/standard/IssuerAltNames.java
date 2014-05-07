@@ -30,31 +30,31 @@ import org.cesecore.util.CertTools;
  * 
  * @version $Id$
  */
-public class SubjectAltNames extends StandardCertificateExtension {
-    private static final Logger log = Logger.getLogger(SubjectAltNames.class);
+public class IssuerAltNames extends StandardCertificateExtension {
+    private static final Logger log = Logger.getLogger(IssuerAltNames.class);
 
     @Override
-	public void init(final CertificateProfile certProf) {
-		super.setOID(Extension.subjectAlternativeName.getId());
-		super.setCriticalFlag(certProf.getSubjectAlternativeNameCritical());
-	}
+    public void init(final CertificateProfile certProf) {
+        super.setOID(Extension.issuerAlternativeName.getId());
+        super.setCriticalFlag(certProf.getIssuerAlternativeNameCritical());
+    }
     
     @Override
     public ASN1Encodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile,
             final PublicKey userPublicKey, final PublicKey caPublicKey, CertificateValidity val) {
-		GeneralNames ret = null;
-        String altName = subject.getSubjectAltName(); 
-        if(certProfile.getUseSubjectAltNameSubSet()){
-        	altName = certProfile.createSubjectAltNameSubSet(altName);
-        }
+        GeneralNames ret = null;
+        String altName = CertTools.getSubjectAlternativeName(ca.getCACertificate()); //subject.getSubjectAltName(); 
+        //if(certProfile.getUseSubjectAltNameSubSet()){
+        //    altName = certProfile.createSubjectAltNameSubSet(altName);
+        //}
         if ( (altName != null) && (altName.length() > 0) ) {
-        	ret = CertTools.getGeneralNamesFromAltName(altName);
+            ret = CertTools.getGeneralNamesFromAltName(altName);
         }
-		if (ret == null) {
-			if (log.isDebugEnabled()) {
-				log.debug("No altnames trying to make SubjectAltName extension: "+altName);
-			}
-		}
-		return ret;
-	}	
+        if (ret == null) {
+            if (log.isDebugEnabled()) {
+                log.debug("No altnames trying to make SubjectAltName extension: "+altName);
+            }
+        }
+        return ret;
+    }   
 }

@@ -79,6 +79,8 @@
   static final String CHECKBOX_AUTHORITYKEYIDENTIFIERCRITICAL     = "checkboxauthoritykeyidentifiercritical";
   static final String CHECKBOX_SUBJECTALTERNATIVENAME             = "checkboxsubjectalternativename";
   static final String CHECKBOX_SUBJECTALTERNATIVENAMECRITICAL     = "checkboxsubjectalternativenamecritical";
+  static final String CHECKBOX_ISSUERALTERNATIVENAME              = "checkboxissueralternativename";
+  static final String CHECKBOX_ISSUERALTERNATIVENAMECRITICAL      = "checkboxissueralternativenamecritical";
   static final String CHECKBOX_SUBJECTDIRATTRIBUTES               = "checksubjectdirattributes";
   static final String CHECKBOX_NAMECONSTRAINTS                    = "checknameconstraints";
   static final String CHECKBOX_NAMECONSTRAINTSCRITICAL            = "checknameconstraintscritical";
@@ -444,7 +446,22 @@
                  						certificateprofiledata.setUseSubjectAlternativeName(false);
                  						certificateprofiledata.setSubjectAlternativeNameCritical(false); 
              					}
-
+             					
+             					use = false;
+             					value = request.getParameter(CHECKBOX_ISSUERALTERNATIVENAME);
+             					if(value != null){
+                 						use = value.equals(CHECKBOX_VALUE);
+                 						certificateprofiledata.setUseIssuerAlternativeName(use);
+                 						value = request.getParameter(CHECKBOX_ISSUERALTERNATIVENAMECRITICAL); 
+                 						if(value != null)
+                   								certificateprofiledata.setIssuerAlternativeNameCritical(value.equals(CHECKBOX_VALUE)); 
+                 						else
+                   								certificateprofiledata.setIssuerAlternativeNameCritical(false); 
+             					}else{
+                 						certificateprofiledata.setUseIssuerAlternativeName(false);
+                 						certificateprofiledata.setIssuerAlternativeNameCritical(false); 
+             					}
+								
             					value = request.getParameter(CHECKBOX_SUBJECTDIRATTRIBUTES);
              					if(value != null){                  
                   						certificateprofiledata.setUseSubjectDirAttributes(value.equals(CHECKBOX_VALUE));

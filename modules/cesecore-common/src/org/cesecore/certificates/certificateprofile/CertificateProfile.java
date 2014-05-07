@@ -51,7 +51,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Public Constants
-    public static final float LATEST_VERSION = (float) 35.0;
+    public static final float LATEST_VERSION = (float) 36.0;
 
     public static final String ROOTCAPROFILENAME = "ROOTCA";
     public static final String SUBCAPROFILENAME = "SUBCA";
@@ -178,6 +178,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String AUTHORITYKEYIDENTIFIERCRITICAL = "authoritykeyidentifiercritical";
     protected static final String USESUBJECTALTERNATIVENAME = "usesubjectalternativename";
     protected static final String SUBJECTALTERNATIVENAMECRITICAL = "subjectalternativenamecritical";
+    protected static final String USEISSUERALTERNATIVENAME = "useissueralternativename";
+    protected static final String ISSUERALTERNATIVENAMECRITICAL = "issueralternativenamecritical";
     protected static final String USECRLDISTRIBUTIONPOINT = "usecrldistributionpoint";
     protected static final String USEDEFAULTCRLDISTRIBUTIONPOINT = "usedefaultcrldistributionpoint";
     protected static final String CRLDISTRIBUTIONPOINTCRITICAL = "crldistributionpointcritical";
@@ -252,6 +254,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         useStandardCertificateExtensions.put(USESUBJECTKEYIDENTIFIER, Extension.subjectKeyIdentifier.getId());
         useStandardCertificateExtensions.put(USEAUTHORITYKEYIDENTIFIER, Extension.authorityKeyIdentifier.getId());
         useStandardCertificateExtensions.put(USESUBJECTALTERNATIVENAME, Extension.subjectAlternativeName.getId());
+        useStandardCertificateExtensions.put(USEISSUERALTERNATIVENAME, Extension.issuerAlternativeName.getId());
         useStandardCertificateExtensions.put(USECRLDISTRIBUTIONPOINT, Extension.cRLDistributionPoints.getId());
         useStandardCertificateExtensions.put(USEFRESHESTCRL, Extension.freshestCRL.getId());
         useStandardCertificateExtensions.put(USECERTIFICATEPOLICIES, Extension.certificatePolicies.getId());
@@ -321,6 +324,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
         setUseSubjectAlternativeName(true);
         setSubjectAlternativeNameCritical(false);
+        
+        setUseIssuerAlternativeName(true);
+        setIssuerAlternativeNameCritical(false);
 
         setUseCRLDistributionPoint(false);
         setUseDefaultCRLDistributionPoint(false);
@@ -709,6 +715,22 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
     public void setSubjectAlternativeNameCritical(boolean subjectalternativenamecritical) {
         data.put(SUBJECTALTERNATIVENAMECRITICAL, Boolean.valueOf(subjectalternativenamecritical));
+    }
+    
+    public boolean getUseIssuerAlternativeName() {
+        return ((Boolean) data.get(USEISSUERALTERNATIVENAME)).booleanValue();
+    }
+
+    public void setUseIssuerAlternativeName(boolean useissueralternativename) {
+        data.put(USEISSUERALTERNATIVENAME, Boolean.valueOf(useissueralternativename));
+    }
+
+    public boolean getIssuerAlternativeNameCritical() {
+        return ((Boolean) data.get(ISSUERALTERNATIVENAMECRITICAL)).booleanValue();
+    }
+
+    public void setIssuerAlternativeNameCritical(boolean issueralternativenamecritical) {
+        data.put(ISSUERALTERNATIVENAMECRITICAL, Boolean.valueOf(issueralternativenamecritical));
     }
 
     public boolean getUseCRLDistributionPoint() {
@@ -2161,6 +2183,12 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             }
             if (data.get(PRIVKEYUSAGEPERIODLENGTH) == null) { // v 35
                 setPrivateKeyUsagePeriodLength(getValidity() * 24 * 3600);
+            }
+            if(data.get(USEISSUERALTERNATIVENAME) == null) { // v 36
+                setUseIssuerAlternativeName(false);
+            }
+            if(data.get(ISSUERALTERNATIVENAMECRITICAL) == null) { // v 36
+                setIssuerAlternativeNameCritical(false);
             }
             
             data.put(VERSION, new Float(LATEST_VERSION));

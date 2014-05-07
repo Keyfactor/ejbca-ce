@@ -29,6 +29,7 @@ import org.cesecore.certificates.certificate.certextensions.standard.Certificate
 import org.cesecore.certificates.certificate.certextensions.standard.CrlDistributionPoints;
 import org.cesecore.certificates.certificate.certextensions.standard.ExtendedKeyUsage;
 import org.cesecore.certificates.certificate.certextensions.standard.FreshestCrl;
+import org.cesecore.certificates.certificate.certextensions.standard.IssuerAltNames;
 import org.cesecore.certificates.certificate.certextensions.standard.KeyUsage;
 import org.cesecore.certificates.certificate.certextensions.standard.MsTemplate;
 import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
@@ -80,6 +81,7 @@ public class CertificateExtensionFactory {
 		standardCertificateExtensions.put(Extension.keyUsage.getId(), KeyUsage.class.getName());
 		standardCertificateExtensions.put(Extension.extendedKeyUsage.getId(), ExtendedKeyUsage.class.getName());
 		standardCertificateExtensions.put(Extension.subjectAlternativeName.getId(), SubjectAltNames.class.getName());
+		standardCertificateExtensions.put(Extension.issuerAlternativeName.getId(), IssuerAltNames.class.getName());
 		standardCertificateExtensions.put(Extension.cRLDistributionPoints.getId(), CrlDistributionPoints.class.getName());
 		standardCertificateExtensions.put(Extension.freshestCRL.getId(), FreshestCrl.class.getName());
 		standardCertificateExtensions.put(Extension.certificatePolicies.getId(), CertificatePolicies.class.getName());
