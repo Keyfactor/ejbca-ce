@@ -61,6 +61,7 @@ public class CertificateProfileTest {
         assertEquals(true, prof.getUseAuthorityKeyIdentifier());
         assertEquals(false, prof.getAuthorityKeyIdentifierCritical());
         assertEquals(true, prof.getUseSubjectAlternativeName());
+        assertEquals(true, prof.getUseIssuerAlternativeName());
         assertEquals(false, prof.getSubjectAlternativeNameCritical());
         assertEquals(false, prof.getUseCRLDistributionPoint());
         assertEquals(false, prof.getUseDefaultCRLDistributionPoint());

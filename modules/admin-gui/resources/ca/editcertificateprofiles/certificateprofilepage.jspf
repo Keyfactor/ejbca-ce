@@ -964,6 +964,30 @@ function checkallfields(){
       </td>
     </tr>
 
+    <%-- Issuer Alternative Name (IAN) extension --%>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_ISSUERALTNAME\") %>" />
+      </td>
+      <td width="50%">
+           <input type="checkbox" name="<%=CHECKBOX_ISSUERALTERNATIVENAME %>" onClick="checkusefield('<%=CHECKBOX_ISSUERALTERNATIVENAME %>', '<%=CHECKBOX_ISSUERALTERNATIVENAMECRITICAL %>')" value="<%=CHECKBOX_VALUE %>" 
+           <% if(certificateprofiledata.getUseIssuerAlternativeName())
+                 out.write("CHECKED");
+           %> id="<%=CHECKBOX_ISSUERALTERNATIVENAME%>">
+           <label for="<%=CHECKBOX_ISSUERALTERNATIVENAME%>"><c:out value="<%= ejbcawebbean.getText(\"USE\") %>" /></label>
+           &nbsp;
+           <input type="checkbox" name="<%=CHECKBOX_ISSUERALTERNATIVENAMECRITICAL %>" value="<%=CHECKBOX_VALUE %>" 
+           <% 
+             if(!certificateprofiledata.getUseIssuerAlternativeName())
+                 out.write(" disabled "); 
+              else
+              if(certificateprofiledata.getIssuerAlternativeNameCritical())
+                 out.write("CHECKED");
+           %> id="<%=CHECKBOX_ISSUERALTERNATIVENAMECRITICAL%>"> 
+           <label for="<%=CHECKBOX_ISSUERALTERNATIVENAMECRITICAL%>"><c:out value="<%= ejbcawebbean.getText(\"EXT_CRITICAL\") %>" /></label>
+      </td>
+    </tr>
+
     <%-- Subject Directory Attributes (SDA) extension --%>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
