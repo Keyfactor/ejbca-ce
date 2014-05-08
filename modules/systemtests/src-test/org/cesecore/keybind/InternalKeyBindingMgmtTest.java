@@ -50,6 +50,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.TraceLogMethodsRule;
+import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -70,6 +71,7 @@ public class InternalKeyBindingMgmtTest {
     private static final InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
     private static final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private static final CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
+    private static final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     
     private static final InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
@@ -151,7 +153,7 @@ public class InternalKeyBindingMgmtTest {
             user.setPassword("foo123");
             RequestMessage req = new SimpleRequestMessage(publicKey, user.getUsername(), user.getPassword());            
             X509Certificate keyBindingCertificate = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(alwaysAllowToken, user, req,
-                    X509ResponseMessage.class)).getCertificate());
+                    X509ResponseMessage.class, signSession.fetchCertGenParams())).getCertificate());
             certFpToDelete = CertTools.getFingerprintAsString(keyBindingCertificate);
             // Ask the key binding to search the database for a new certificate matching its public key
             final String boundCertificateFingerprint = internalKeyBindingMgmtSession.updateCertificateForInternalKeyBinding(alwaysAllowToken, internalKeyBindingId);
@@ -205,7 +207,7 @@ public class InternalKeyBindingMgmtTest {
             final byte[] csr = internalKeyBindingMgmtSession.generateCsrForNextKey(alwaysAllowToken, internalKeyBindingId);
             RequestMessage req = new PKCS10RequestMessage(csr);
             X509Certificate keyBindingCertificate = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(alwaysAllowToken, endEntityInformation, req,
-                    X509ResponseMessage.class)).getCertificate());
+                    X509ResponseMessage.class, signSession.fetchCertGenParams())).getCertificate());
             certFpToDelete = CertTools.getFingerprintAsString(keyBindingCertificate);
             // Ask the key binding to search the database for a new certificate matching its public key
             final String boundCertificateFingerprint = internalKeyBindingMgmtSession.updateCertificateForInternalKeyBinding(alwaysAllowToken, internalKeyBindingId);
@@ -250,7 +252,7 @@ public class InternalKeyBindingMgmtTest {
             user.setPassword("foo123");
             RequestMessage req = new PKCS10RequestMessage(csr);
             X509Certificate keyBindingCertificate = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(alwaysAllowToken, user, req,
-                    X509ResponseMessage.class)).getCertificate());
+                    X509ResponseMessage.class, signSession.fetchCertGenParams())).getCertificate());
             certFpToDelete = CertTools.getFingerprintAsString(keyBindingCertificate);
             // Import the issued certificate (since it is already in the database, only the pointer will be updated)
             internalKeyBindingMgmtSession.importCertificateForInternalKeyBinding(alwaysAllowToken, internalKeyBindingId, keyBindingCertificate.getEncoded());

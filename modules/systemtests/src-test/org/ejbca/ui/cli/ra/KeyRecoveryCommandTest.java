@@ -44,6 +44,7 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.Configuration;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
@@ -78,6 +79,7 @@ public class KeyRecoveryCommandTest {
     private static final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(GlobalConfigurationSessionRemote.class);
     private final KeyRecoverySessionRemote keyRecoverySession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyRecoverySessionRemote.class);
+    private final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
 
     private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
             InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
@@ -115,7 +117,7 @@ public class KeyRecoveryCommandTest {
         endEntityManagementSession.addUser(authenticationToken, userdata, false);
         KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), userdata.getUsername(), userdata.getPassword());
-        Certificate certificate = certificateCreateSession.createCertificate(authenticationToken, userdata, req, X509ResponseMessage.class)
+        Certificate certificate = certificateCreateSession.createCertificate(authenticationToken, userdata, req, X509ResponseMessage.class, signSession.fetchCertGenParams())
                 .getCertificate();
         if (null == endEntityAccessSession.findUser(authenticationToken, TESTCLASS_NAME)) {
             throw new RuntimeException("Could not create end entity.");

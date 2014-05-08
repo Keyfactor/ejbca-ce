@@ -449,12 +449,12 @@ public abstract class ProtocolOcspTestBase {
         
       
         X509Certificate revokedCert = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(authenticationToken, revokedUser,
-                req, X509ResponseMessage.class)).getCertificate());
+                req, X509ResponseMessage.class, null)).getCertificate());
         certificateStoreSession.setRevokeStatus(authenticationToken, revokedCert, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, null);
         
         @SuppressWarnings("unused")
         X509Certificate activeCert = (X509Certificate) (((X509ResponseMessage) certificateCreateSession.createCertificate(authenticationToken, revokedUser,
-                req, X509ResponseMessage.class)).getCertificate());
+                req, X509ResponseMessage.class, null)).getCertificate());
         
     }
     
