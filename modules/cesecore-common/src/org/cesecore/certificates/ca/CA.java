@@ -52,7 +52,6 @@ import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
-import org.cesecore.certificates.certificatetransparency.CTExtensionCertGenParams;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -751,7 +750,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      */
     public abstract Certificate generateCertificate(CryptoToken cryptoToken, EndEntityInformation subject, RequestMessage request,
             PublicKey publicKey, int keyusage, Date notBefore, Date notAfter, CertificateProfile certProfile, Extensions extensions, String sequence,
-            CTExtensionCertGenParams ctParams) throws CryptoTokenOfflineException, CAOfflineException, InvalidAlgorithmException,
+            CertificateGenerationParams certGenParams) throws CryptoTokenOfflineException, CAOfflineException, InvalidAlgorithmException,
             IllegalValidityException, IllegalNameException, OperatorCreationException, CertificateCreateException, CertificateExtensionException,
             SignatureException;
 

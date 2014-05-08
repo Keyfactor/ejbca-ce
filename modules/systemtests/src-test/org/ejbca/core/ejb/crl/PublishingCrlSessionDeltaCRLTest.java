@@ -61,6 +61,7 @@ import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -89,6 +90,7 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
     private CrlStoreSessionRemote crlStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class);
     private PublishingCrlSessionRemote publishingCrlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublishingCrlSessionRemote.class);
     private InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
 
     private static KeyPair keys;
     
@@ -386,7 +388,7 @@ public class PublishingCrlSessionDeltaCRLTest extends RoleUsingTestCase {
         EndEntityInformation user = new EndEntityInformation(USERNAME, "C=SE,O=AnaTom,CN=deltacrltest", testx509ca.getCAId(), null, "deltacrltest@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER), 0,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_USERGEN, 0, null);
         SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), user.getUsername(), user.getPassword());
-        X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
+        X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
         X509Certificate cert = (X509Certificate)resp.getCertificate();
         assertNotNull("Failed to create certificate", cert);
         return cert;

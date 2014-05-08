@@ -67,6 +67,7 @@ import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.StringTools;
+import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 
 /**
  * Tests the CA session bean.
@@ -83,6 +84,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
     private CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
     private RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
+    private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
     protected CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
@@ -317,7 +319,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
             user.setStatus(EndEntityConstants.STATUS_NEW);
             user.setPassword("foo123");
         	SimpleRequestMessage req = new SimpleRequestMessage(pk, user.getUsername(), user.getPassword());
-            X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
+            X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
             cert = (X509Certificate)resp.getCertificate();
             assertNotNull("Failed to create certificate", cert);
             // Verifies with CA token?
@@ -369,7 +371,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
             user.setStatus(EndEntityConstants.STATUS_NEW);
             user.setPassword("foo123");
         	SimpleRequestMessage req = new SimpleRequestMessage(pubK, user.getUsername(), user.getPassword());
-            X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
+            X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
             cert = (X509Certificate)resp.getCertificate();
             assertNotNull("Failed to create certificate", cert);
             // Verifies with CA token?

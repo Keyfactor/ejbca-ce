@@ -84,6 +84,7 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -106,6 +107,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
     private CertificateProfileSessionRemote certProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
+    private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
             InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
@@ -175,7 +177,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
 
             SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), user.getUsername(), user.getPassword());
             X509ResponseMessage resp = (X509ResponseMessage) certificateCreateSession.createCertificate(roleMgmgToken, user, req,
-                    org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
+                    org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
             X509Certificate cert = (X509Certificate) resp.getCertificate();
             assertNotNull("Failed to create certificate", cert);
             fingerprint = CertTools.getFingerprintAsString(cert);
@@ -212,7 +214,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
 
             SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), user.getUsername(), user.getPassword());
             X509ResponseMessage resp = (X509ResponseMessage) certificateCreateSession.createCertificate(roleMgmgToken, user, req,
-                    org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
+                    org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
             X509Certificate cert = (X509Certificate) resp.getCertificate();
             assertNotNull("Failed to create certificate", cert);
             fingerprint = CertTools.getFingerprintAsString(cert);
@@ -228,7 +230,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             certProfileSession.changeCertificateProfile(roleMgmgToken, "createCertTest", certprof);
 
             resp = (X509ResponseMessage) certificateCreateSession.createCertificate(roleMgmgToken, user, req,
-                    org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
+                    org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
             cert = (X509Certificate) resp.getCertificate();
             assertNotNull("Failed to create certificate", cert);
             fingerprint = CertTools.getFingerprintAsString(cert);
@@ -273,7 +275,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             // Make the call
             {
                 X509ResponseMessage resp = (X509ResponseMessage) certificateCreateSession.createCertificate(roleMgmgToken, user, req,
-                        org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
+                        org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
                 assertNotNull("Failed to get response", resp);
                 Certificate cert = (X509Certificate) resp.getCertificate();
                 finger1 = CertTools.getFingerprintAsString(cert);
@@ -284,7 +286,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             certprof.setAllowDNOverride(true);
             certProfileSession.changeCertificateProfile(roleMgmgToken, "createCertTest", certprof);
             X509ResponseMessage resp = (X509ResponseMessage) certificateCreateSession.createCertificate(roleMgmgToken, user, req,
-                    org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
+                    org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
             assertNotNull("Failed to get response", resp);
             Certificate cert = (X509Certificate) resp.getCertificate();
             finger2 = CertTools.getFingerprintAsString(cert);
@@ -295,7 +297,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             certProfileSession.changeCertificateProfile(roleMgmgToken, "createCertTest", certprof);
 
             resp = (X509ResponseMessage) certificateCreateSession.createCertificate(roleMgmgToken, user, req,
-                    org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
+                    org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
             assertNotNull("Failed to get response", resp);
             cert = (X509Certificate) resp.getCertificate();
             finger3 = CertTools.getFingerprintAsString(cert);
@@ -331,7 +333,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
 
             // Make the call
             X509ResponseMessage resp = (X509ResponseMessage) certificateCreateSession.createCertificate(roleMgmgToken, user, req,
-                    org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
+                    org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
             assertNotNull("Failed to get response", resp);
             Certificate cert = (X509Certificate) resp.getCertificate();
             finger1 = CertTools.getFingerprintAsString(cert);
@@ -354,7 +356,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             certProfileSession.changeCertificateProfile(roleMgmgToken, "createCertTest", certprof);
 
             resp = (X509ResponseMessage) certificateCreateSession.createCertificate(roleMgmgToken, user, req,
-                    org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
+                    org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
             assertNotNull("Failed to get response", resp);
             cert = (X509Certificate) resp.getCertificate();
             finger2 = CertTools.getFingerprintAsString(cert);
@@ -400,7 +402,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
 
             // Make the call
             X509ResponseMessage resp = (X509ResponseMessage) certificateCreateSession.createCertificate(roleMgmgToken, user, req,
-                    org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
+                    org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
             assertNotNull("Failed to get response", resp);
             Certificate cert = (X509Certificate) resp.getCertificate();
             fp1 = CertTools.getFingerprintAsString(cert);
@@ -416,7 +418,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             user.setExtendedinformation(ei);
             // create cert again
             resp = (X509ResponseMessage) certificateCreateSession.createCertificate(roleMgmgToken, user, req,
-                    org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
+                    org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
             assertNotNull("Failed to get response", resp);
             Certificate cert2 = (X509Certificate) resp.getCertificate();
             fp2 = CertTools.getFingerprintAsString(cert2);
@@ -436,7 +438,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             assertEquals("CN=noUserData,OU=FooOU,O=PrimeKey,C=SE", user.getCertificateDN());
             // Create cert again
             resp = (X509ResponseMessage) certificateCreateSession.createCertificate(roleMgmgToken, user, req,
-                    org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
+                    org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
             assertNotNull("Failed to get response", resp);
             Certificate cert3 = (X509Certificate) resp.getCertificate();
             assertNotNull("Failed to create cert", cert3);
@@ -486,13 +488,13 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             req.setIssuerDN(CertTools.getIssuerDN(testx509ca.getCACertificate()));
             req.setRequestDN("CN=foounique,O=PrimeKey,C=SE");
             X509ResponseMessage resp = (X509ResponseMessage) certificateCreateSession.createCertificate(roleMgmgToken, user1, req,
-                    org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
+                    org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
             assertNotNull("Failed to create cert", resp);
             fp1 = CertTools.getFingerprintAsString(resp.getCertificate());
             // Create second cert, should not work with the same DN
             try {
                 resp = (X509ResponseMessage) certificateCreateSession.createCertificate(roleMgmgToken, user2, req,
-                        org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
+                        org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
                 assertTrue("Should not work to create same DN with another username", false);
             } catch (CesecoreException e) {
                 assertEquals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER, e.getErrorCode());
@@ -505,7 +507,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             assertEquals("CN=foounique,OU=FooOU,O=PrimeKey,C=SE", user1.getCertificateDN());
             // Create cert again, should work now, first time with unique DN
             resp = (X509ResponseMessage) certificateCreateSession.createCertificate(roleMgmgToken, user1, req,
-                    org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
+                    org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
             assertNotNull("Failed to create cert", resp);
             fp2 = CertTools.getFingerprintAsString(resp.getCertificate());
             // Now the second user, should not work to issue the cert with the same DN
@@ -515,7 +517,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             // Create cert again
             try {
                 resp = (X509ResponseMessage) certificateCreateSession.createCertificate(roleMgmgToken, user2, req,
-                        org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
+                        org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
                 assertTrue("Should not work to create same DN with another username", false);
             } catch (CesecoreException e) {
                 assertEquals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER, e.getErrorCode());
@@ -551,7 +553,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
 
             SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), user.getUsername(), user.getPassword());
             try {
-                certificateCreateSession.createCertificate(roleMgmgToken, user, req, X509ResponseMessage.class);
+                certificateCreateSession.createCertificate(roleMgmgToken, user, req, X509ResponseMessage.class, signSession.fetchCertGenParams());
                 fail("Creating certificate should not work with invalid signature algoritmh,");
             } catch (InvalidAlgorithmException e) {
                 //Expected state, make sure rollback occurred
@@ -593,7 +595,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), user.getUsername(), user.getPassword());
             try {
                 X509ResponseMessage resp = (X509ResponseMessage) certificateCreateSession.createCertificate(roleMgmgToken, user, req,
-                        X509ResponseMessage.class);
+                        X509ResponseMessage.class, signSession.fetchCertGenParams());
                 X509Certificate cert = (X509Certificate) resp.getCertificate();
                 fp1 = CertTools.getFingerprintAsString(cert);
                 fail("We should not have been allowed to create certificate with that DN.");
@@ -605,7 +607,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
                 final String requestName = "CN=another\0nullguy%00";
                 req.setRequestDN(requestName);
                 X509ResponseMessage resp = (X509ResponseMessage) certificateCreateSession.createCertificate(roleMgmgToken, user, req,
-                        X509ResponseMessage.class);
+                        X509ResponseMessage.class, signSession.fetchCertGenParams());
                 X509Certificate cert = (X509Certificate) resp.getCertificate();
                 fp2 = CertTools.getFingerprintAsString(cert);
                 fail("We should not have been allowed to create certificate with that DN.");
@@ -617,7 +619,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
                 final String requestName = "CN=anothernullguy\\\\%00";
                 req.setRequestDN(requestName);
                 X509ResponseMessage resp = (X509ResponseMessage) certificateCreateSession.createCertificate(roleMgmgToken, user, req,
-                        X509ResponseMessage.class);
+                        X509ResponseMessage.class, signSession.fetchCertGenParams());
                 X509Certificate cert = (X509Certificate) resp.getCertificate();
                 fp3 = CertTools.getFingerprintAsString(cert);
                 fail("We should not have been allowed to create certificate with that DN.");
@@ -629,7 +631,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
                 final String requestName = "CN=anothersemicolon;guy";
                 req.setRequestDN(requestName);
                 X509ResponseMessage resp = (X509ResponseMessage) certificateCreateSession.createCertificate(roleMgmgToken, user, req,
-                        X509ResponseMessage.class);
+                        X509ResponseMessage.class, signSession.fetchCertGenParams());
                 X509Certificate cert = (X509Certificate) resp.getCertificate();
                 fp4 = CertTools.getFingerprintAsString(cert);
                 assertEquals("Escaped semicolon should have worked", "CN=anothersemicolon\\;guy", cert.getSubjectDN().toString());
@@ -643,7 +645,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
                 final String requestName = "CN=anothersemicolon\\;guy";
                 req.setRequestDN(requestName);
                 X509ResponseMessage resp = (X509ResponseMessage) certificateCreateSession.createCertificate(roleMgmgToken, user, req,
-                        X509ResponseMessage.class);
+                        X509ResponseMessage.class, signSession.fetchCertGenParams());
                 X509Certificate cert = (X509Certificate) resp.getCertificate();
                 fp5 = CertTools.getFingerprintAsString(cert);
                 assertEquals("Escaped semicolon should have worked", "CN=anothersemicolon\\;guy", cert.getSubjectDN().toString());
@@ -682,7 +684,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
 
             SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), user.getUsername(), user.getPassword());
             X509ResponseMessage resp = (X509ResponseMessage) certificateCreateSession.createCertificate(roleMgmgToken, user, req,
-                    X509ResponseMessage.class);
+                    X509ResponseMessage.class, signSession.fetchCertGenParams());
             X509Certificate cert = (X509Certificate) resp.getCertificate();
             fp1 = CertTools.getFingerprintAsString(cert);
             assertEquals("The DN should have escaped < and >", "CN=\\<script\\>alert('cesecore')\\</script\\>", cert.getSubjectDN().toString());
@@ -717,7 +719,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             PKCS10RequestMessage req = new PKCS10RequestMessage(basicpkcs10.toASN1Structure().getEncoded());
             assertTrue("Request must verify (POP)", req.verify());
             X509ResponseMessage resp = (X509ResponseMessage) certificateCreateSession.createCertificate(roleMgmgToken, user, req,
-                    X509ResponseMessage.class);
+                    X509ResponseMessage.class, signSession.fetchCertGenParams());
             assertNotNull("Creating a cert should have worked", resp);
             X509Certificate cert = (X509Certificate) resp.getCertificate();
             fp1 = CertTools.getFingerprintAsString(cert);
@@ -728,7 +730,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
                     keyPair2.getPrivate(), null);
             req = new PKCS10RequestMessage(invalidpoppkcs10.toASN1Structure().getEncoded());
             try {
-                resp = (X509ResponseMessage) certificateCreateSession.createCertificate(roleMgmgToken, user, req, X509ResponseMessage.class);
+                resp = (X509ResponseMessage) certificateCreateSession.createCertificate(roleMgmgToken, user, req, X509ResponseMessage.class, signSession.fetchCertGenParams());
                 fail("Creating a cert from a request with invalid PoP (proof of possession) should not work");
             } catch (SignRequestSignatureException e) {
                 // NOPMD: this is what we want
@@ -737,7 +739,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             // Try with a PKCS#10 request with a asn.1 corrupt public key entry
             req = new PKCS10RequestMessage(invalidp10);
             try {
-                resp = (X509ResponseMessage) certificateCreateSession.createCertificate(roleMgmgToken, user, req, X509ResponseMessage.class);
+                resp = (X509ResponseMessage) certificateCreateSession.createCertificate(roleMgmgToken, user, req, X509ResponseMessage.class, signSession.fetchCertGenParams());
                 fail("Creating a cert from a request with invalid PoP (proof of possession) should not work");
             } catch (IllegalKeyException e) { // NOPMD: this is what we want
             } catch (SignRequestSignatureException e) {
@@ -771,7 +773,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
         String fingerprint = null;
         try {
             X509ResponseMessage resp = (X509ResponseMessage) certificateCreateSession.createCertificate(adminTokenNoAuth, user, req,
-                    org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
+                    org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
             X509Certificate cert = (X509Certificate) resp.getCertificate();
             fingerprint = CertTools.getFingerprintAsString(cert);
             assertTrue("should throw", false);

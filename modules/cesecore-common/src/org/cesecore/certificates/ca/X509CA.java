@@ -112,7 +112,7 @@ import org.cesecore.certificates.certificate.certextensions.CertificateExtension
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
-import org.cesecore.certificates.certificatetransparency.CTExtensionCertGenParams;
+import org.cesecore.certificates.certificatetransparency.CTAuditLogCallback;
 import org.cesecore.certificates.certificatetransparency.CTLogException;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparency;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
@@ -602,7 +602,7 @@ public class X509CA extends CA implements Serializable {
     @Override
     public Certificate generateCertificate(CryptoToken cryptoToken, final EndEntityInformation subject, final RequestMessage request,
             final PublicKey publicKey, final int keyusage, final Date notBefore, final Date notAfter, final CertificateProfile certProfile,
-            final Extensions extensions, final String sequence, CTExtensionCertGenParams ctParams) throws CryptoTokenOfflineException, CAOfflineException, InvalidAlgorithmException,
+            final Extensions extensions, final String sequence, CertificateGenerationParams certGenParams) throws CryptoTokenOfflineException, CAOfflineException, InvalidAlgorithmException,
             IllegalValidityException, IllegalNameException, OperatorCreationException, CertificateCreateException, CertificateExtensionException, SignatureException {
         // Before we start, check if the CA is off-line, we don't have to waste time
         // one the stuff below of we are off-line. The line below will throw CryptoTokenOfflineException of CA is offline
@@ -611,7 +611,7 @@ public class X509CA extends CA implements Serializable {
         final PrivateKey caPrivateKey = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
         final String provider = cryptoToken.getSignProviderName();
         return generateCertificate(subject, request, publicKey, keyusage, notBefore, notAfter, certProfile, extensions, sequence,
-                caPublicKey, caPrivateKey, provider, ctParams);
+                caPublicKey, caPrivateKey, provider, certGenParams);
     }
 
     /**
@@ -629,8 +629,8 @@ public class X509CA extends CA implements Serializable {
      */
     private Certificate generateCertificate(final EndEntityInformation subject, final RequestMessage request, final PublicKey publicKey,
             final int keyusage, final Date notBefore, final Date notAfter, final CertificateProfile certProfile, final Extensions extensions,
-            final String sequence, final PublicKey caPublicKey, final PrivateKey caPrivateKey, final String provider, CTExtensionCertGenParams ctParams) throws CAOfflineException,
-            InvalidAlgorithmException, IllegalValidityException, IllegalNameException, CertificateExtensionException,
+            final String sequence, final PublicKey caPublicKey, final PrivateKey caPrivateKey, final String provider, CertificateGenerationParams certGenParams)
+            throws CAOfflineException, InvalidAlgorithmException, IllegalValidityException, IllegalNameException, CertificateExtensionException,
              OperatorCreationException, CertificateCreateException, SignatureException {
 
         // We must only allow signing to take place if the CA itself is on line, even if the token is on-line.
@@ -873,7 +873,9 @@ public class X509CA extends CA implements Serializable {
             // Add Certificate Transparency extension. It needs to access the certbuilder and
             // the CA key so it has to be processed here inside X509CA.
              if (ct != null && certProfile.isUseCertificateTransparencyInCerts() &&
-                ctParams != null && ctParams.getConfiguredCTLogs() != null) {
+                certGenParams.getConfiguredCTLogs() != null &&
+                certGenParams.getCTAuditLogCallback() != null) {
+                
                 // Create pre-certificate
                 // A critical extension is added to prevent this cert from being used
                 ct.addPreCertPoison(precertbuilder);
@@ -897,10 +899,10 @@ public class X509CA extends CA implements Serializable {
                 // Submit to logs and get signed timestamps
                 byte[] sctlist = null;
                 try {
-                    sctlist = ct.fetchSCTList(chain, certProfile, ctParams.getConfiguredCTLogs());
+                    sctlist = ct.fetchSCTList(chain, certProfile, certGenParams.getConfiguredCTLogs());
                 }  finally {
                     // Notify that pre-cert has been successfully or unsuccessfully submitted so it can be audit logged.
-                    ctParams.logPreCertSubmission(this, subject, cert, sctlist != null);
+                    certGenParams.getCTAuditLogCallback().logPreCertSubmission(this, subject, cert, sctlist != null);
                 }
                 if (sctlist != null) { // can be null if the CTLog has been deleted from the configuration
                     ASN1ObjectIdentifier sctOid = new ASN1ObjectIdentifier(CertificateTransparency.SCTLIST_OID);
@@ -915,22 +917,25 @@ public class X509CA extends CA implements Serializable {
                         if (!certProfile.isUseCertificateTransparencyInCerts()) {
                             cause += "CT is not enabled in the certificate profile. ";
                         }
-                        if (ctParams == null) {
-                            cause += "There are no CTParams passed to certificate generation. ";
-                        }
-                        if (ctParams != null && ctParams.getConfiguredCTLogs() == null) {
+                        if (certGenParams == null) {
+                            cause += "Certificate generation parameters was null.";
+                        } else if (certGenParams.getCTAuditLogCallback() == null) {
+                            cause += "No CT audit logging callback was passed to X509CA.";
+                        } else if (certGenParams.getConfiguredCTLogs() == null) {
                             cause += "There are no CT logs configured in System Configuration.";
+                        } else {
+                            cause += "Internal error, should not happen.";
                         }
                     }
                     log.debug("Not logging to CT. "+cause);                    
                 }
             }
         } catch (CertificateException e) {
-            throw new CertificateExtensionException("Could not process CA's private key when parsing Certificate Transparency extension.", e);
+            throw new CertificateCreateException("Could not process CA's private key when parsing Certificate Transparency extension.", e);
         } catch (IOException e) {
-            throw new CertificateExtensionException("IOException was caught when parsing Certificate Transparency extension.", e);
+            throw new CertificateCreateException("IOException was caught when parsing Certificate Transparency extension.", e);
         } catch (CTLogException e) {
-            throw new CertificateExtensionException("An exception occurred because too many CT servers were down to satisfy the certificate profile.");
+            throw new CertificateCreateException("An exception occurred because too many CT servers were down to satisfy the certificate profile.", e);
         }
 
         //
