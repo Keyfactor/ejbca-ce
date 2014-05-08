@@ -95,6 +95,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.TraceLogMethodsRule;
+import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -133,6 +134,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
             .getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
     private final OcspResponseGeneratorSessionRemote ocspResponseGeneratorSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(OcspResponseGeneratorSessionRemote.class);
+    private final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
 
     private final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(TESTCLASSNAME);
     
@@ -576,7 +578,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         user.setStatus(EndEntityConstants.STATUS_NEW);
         user.setPassword("foo123");
         final SimpleRequestMessage certreq = new SimpleRequestMessage(keys.getPublic(), user.getUsername(), user.getPassword());
-        final X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(authenticationToken, user, certreq, X509ResponseMessage.class);
+        final X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(authenticationToken, user, certreq, X509ResponseMessage.class, signSession.fetchCertGenParams());
         final X509Certificate ocspTestCert = (X509Certificate)resp.getCertificate();
 
         X509CertificateHolder chain[] = new JcaX509CertificateHolder[2];
@@ -675,7 +677,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         user.setPassword("foo123");
         final SimpleRequestMessage req = new SimpleRequestMessage(publicKey, user.getUsername(), user.getPassword());
         final X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(authenticationToken, user, req,
-                org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
+                org.cesecore.certificates.certificate.request.X509ResponseMessage.class, signSession.fetchCertGenParams());
         final X509Certificate cert = (X509Certificate)resp.getCertificate();
         assertNotNull("Failed to create certificate", cert);
         assertTrue("Issued certificate was not for the requested public key.", cert.getPublicKey().equals(publicKey));

@@ -16,6 +16,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAOfflineException;
+import org.cesecore.certificates.ca.CertificateGenerationParams;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
@@ -55,6 +56,7 @@ public interface CertificateCreateSession {
      * @param req           a Certification Request message, containing the public key to be put in the
      *                      created certificate. Currently no additional parameters in requests are considered!
      * @param responseClass The implementation class that will be used as the response message.
+     * @param certGenParams Parameters for certificate generation (e.g for the CT extension), or null.
      * @return The newly created response or null.
      * 
      * @throws AuthorizationDeniedException (rollback) if admin is not authorized to issue this certificate
@@ -75,7 +77,7 @@ public interface CertificateCreateSession {
      * 
      */
     CertificateResponseMessage createCertificate(AuthenticationToken admin, EndEntityInformation userData, RequestMessage req,
-            Class<? extends ResponseMessage> responseClass) throws AuthorizationDeniedException, CustomCertificateSerialNumberException,
+            Class<? extends ResponseMessage> responseClass, CertificateGenerationParams certGenParams) throws AuthorizationDeniedException, CustomCertificateSerialNumberException,
             IllegalKeyException, CADoesntExistsException, CertificateCreateException, CryptoTokenOfflineException, SignRequestSignatureException,
             IllegalNameException, CertificateRevokeException, CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CertificateExtensionException;
 

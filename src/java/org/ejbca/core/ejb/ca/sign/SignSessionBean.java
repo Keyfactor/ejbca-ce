@@ -52,6 +52,7 @@ import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.CertificateGenerationParams;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.ca.X509CA;
@@ -72,7 +73,7 @@ import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
-import org.cesecore.certificates.certificatetransparency.CTExtensionCertGenParams;
+import org.cesecore.certificates.certificatetransparency.CTAuditLogCallback;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -294,7 +295,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                     } else {
 
                         // Issue the certificate from the request
-                        ret = certificateCreateSession.createCertificate(admin, data, ca, req, responseClass);
+                        ret = certificateCreateSession.createCertificate(admin, data, ca, req, responseClass, fetchCertGenParams());
                         postCreateCertificate(admin, data, ca, ret.getCertificate());
                     }
                 } catch (ObjectNotFoundException e) {
@@ -652,49 +653,9 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             log.trace(">createCertificate(pk, ku, notAfter)");
         }
 
-        // Supply extra info to X509CA for Certificate Transparency
-        CTExtensionCertGenParams ctParams = null;
-        if (ca instanceof X509CA) {
-            final GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession
-                    .getCachedConfiguration(GlobalConfiguration.GlobalConfigID);
-            final Map<Integer, CTLogInfo> configuredCTLogs = globalConfiguration.getCTLogs();
-
-            ctParams = new CTExtensionCertGenParams() {
-                @Override
-                public void logPreCertSubmission(X509CA issuer, EndEntityInformation subject, X509Certificate precert, boolean success) {
-                    // Mostly the same info is logged as in CertificateCreateSessionBean.createCertificate
-                    int revreason = RevokedCertInfo.NOT_REVOKED;
-                    final ExtendedInformation ei = subject.getExtendedinformation();
-                    if (ei != null) {
-                        revreason = ei.getIssuanceRevocationReason();
-                    }
-
-                    final Map<String, Object> issuedetails = new LinkedHashMap<String, Object>();
-                    issuedetails.put("ctprecert", true);
-                    issuedetails.put("msg",
-                            intres.getLocalizedMessage(success ? "createcert.ctlogsubmissionsuccessful" : "createcert.ctlogsubmissionfailed"));
-                    issuedetails.put("subjectdn", CertTools.getSubjectDN(precert));
-                    issuedetails.put("certprofile", subject.getCertificateProfileId());
-                    try {
-                        issuedetails.put("cert", new String(Base64.encode(precert.getEncoded(), false)));
-                    } catch (CertificateEncodingException e) {
-                        log.warn("Could not encode cert", e);
-                    }
-                    logSession.log(EventTypes.CERT_CTPRECERT_SUBMISSION, success ? EventStatus.SUCCESS : EventStatus.FAILURE,
-                            ModuleTypes.CERTIFICATE, ServiceTypes.CORE, LogConstants.NO_AUTHENTICATION_TOKEN, String.valueOf(issuer.getCAId()),
-                            CertTools.getSerialNumberAsString(precert), subject.getUsername(), issuedetails);
-                }
-
-                @Override
-                public Map<Integer, CTLogInfo> getConfiguredCTLogs() {
-                    return configuredCTLogs;
-                }
-            };
-        }
-
         // Create the certificate. Does access control checks (with audit log) on the CA and create_certificate.
         final Certificate cert = certificateCreateSession.createCertificate(admin, data, ca, null, pk, keyusage, notBefore, notAfter, extensions,
-                sequence, ctParams);
+                sequence, fetchCertGenParams());
 
         postCreateCertificate(admin, data, ca, cert);
 
@@ -702,6 +663,18 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             log.trace("<createCertificate(pk, ku, notAfter)");
         }
         return cert;
+    }
+    
+    @Override
+    public CertificateGenerationParams fetchCertGenParams() {
+        // Supply extra info to X509CA for Certificate Transparency
+        final GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalConfiguration.GlobalConfigID);
+        final Map<Integer, CTLogInfo> configuredCTLogs = globalConfiguration.getCTLogs();
+        
+        final CertificateGenerationParams certGenParams = new CertificateGenerationParams();
+        certGenParams.setConfiguredCTLogs(configuredCTLogs);
+        return certGenParams;
     }
 
     /**

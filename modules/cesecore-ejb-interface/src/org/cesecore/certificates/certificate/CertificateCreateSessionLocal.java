@@ -23,6 +23,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAOfflineException;
+import org.cesecore.certificates.ca.CertificateGenerationParams;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
@@ -33,7 +34,6 @@ import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNu
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
-import org.cesecore.certificates.certificatetransparency.CTExtensionCertGenParams;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 
@@ -64,6 +64,7 @@ public interface CertificateCreateSessionLocal extends CertificateCreateSession 
      * @param req           a Certification Request message, containing the public key to be put in the
      *                      created certificate. Currently no additional parameters in requests are considered!
      * @param responseClass The implementation class that will be used as the response message.
+     * @param certGenParams Parameters for certificate generation (e.g for the CT extension), or null.
      * 
      * @return The newly created response or null.
      * 
@@ -83,7 +84,7 @@ public interface CertificateCreateSessionLocal extends CertificateCreateSession 
      *
 	 */
     CertificateResponseMessage createCertificate(AuthenticationToken admin, EndEntityInformation userData, CA ca, RequestMessage req,
-            Class<? extends ResponseMessage> responseClass) throws CryptoTokenOfflineException, SignRequestSignatureException, IllegalKeyException,
+            Class<? extends ResponseMessage> responseClass, CertificateGenerationParams certGenParams) throws CryptoTokenOfflineException, SignRequestSignatureException, IllegalKeyException,
             IllegalNameException, CustomCertificateSerialNumberException, CertificateCreateException, CertificateRevokeException,
             CertificateSerialNumberException, AuthorizationDeniedException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CertificateExtensionException;
 
@@ -111,7 +112,7 @@ public interface CertificateCreateSessionLocal extends CertificateCreateSession 
      *            profile default extensions should be used.
      * @param sequence an optional requested sequence number (serial number) for the certificate, may or may not be used by the CA. Currently used by
      *            CVC CAs for sequence field. Can be set to null.
-     * @param ctParams Parameters for the CT extension. May contain references to session beans. NOTE: This parameter may be replaced with a map (for multiple extensions) in the future.
+     * @param certGenParams Parameters for certificate generation (e.g for the CT extension), or null.
      * @return Certificate that has been generated and signed by the CA
      * 
      * @throws AuthorizationDeniedException (rollback) if admin is not authorized to issue this certificate
@@ -130,7 +131,7 @@ public interface CertificateCreateSessionLocal extends CertificateCreateSession 
      * 
      */
     Certificate createCertificate(AuthenticationToken admin, EndEntityInformation data, CA ca, RequestMessage request, PublicKey pk, int keyusage,
-            Date notBefore, Date notAfter, Extensions extensions, String sequence, CTExtensionCertGenParams ctParams)
+            Date notBefore, Date notAfter, Extensions extensions, String sequence, CertificateGenerationParams certGenParams)
             throws AuthorizationDeniedException, IllegalNameException, CustomCertificateSerialNumberException, CertificateCreateException,
             CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalKeyException,
             CertificateExtensionException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException;

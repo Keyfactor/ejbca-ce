@@ -40,6 +40,7 @@ import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -68,6 +69,7 @@ public class InternalKeyBindingUpdateCertificateCommandTest {
             .getRemoteSession(CryptoTokenManagementSessionRemote.class);
     private final InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
+    private final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
 
     private static X509CA x509ca = null;
     private static int cryptoTokenId;
@@ -120,7 +122,7 @@ public class InternalKeyBindingUpdateCertificateCommandTest {
         // Request a CSR for the key pair
         final byte[] csr = internalKeyBindingMgmtSession.generateCsrForNextKey(authenticationToken, internalKeyBindingId);
         RequestMessage req = new PKCS10RequestMessage(csr);
-        certificateCreateSession.createCertificate(authenticationToken, endEntityInformation, req, X509ResponseMessage.class);
+        certificateCreateSession.createCertificate(authenticationToken, endEntityInformation, req, X509ResponseMessage.class, signSession.fetchCertGenParams());
         String before = internalKeyBindingMgmtSession.getInternalKeyBindingInfo(authenticationToken, internalKeyBindingId).getCertificateId();
         String[] args = new String[] { TESTCLASS_NAME };
         command.execute(args);

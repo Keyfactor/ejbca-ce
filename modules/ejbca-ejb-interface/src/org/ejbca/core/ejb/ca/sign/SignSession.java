@@ -23,6 +23,7 @@ import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CertificateGenerationParams;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
@@ -304,4 +305,12 @@ public interface SignSession {
     public ResponseMessage getCRL(AuthenticationToken admin, RequestMessage req, Class<? extends ResponseMessage> responseClass)
             throws AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException,
             SignRequestSignatureException, UnsupportedEncodingException, CryptoTokenOfflineException, AuthorizationDeniedException;
+
+    /**
+     * Returns an object with configuration parameters for extensions (currently only for the CT extension).
+     * This information is needed by CESeCore methods that create certificates, since it must be fetched
+     * from the EJBCA configuration. Currently, this is needed in
+     * {@link org.cesecore.certificates.certificate.CertificateCreateSession CertificateCreateSession} and {@link org.cesecore.certificates.ca.X509CA X509CA}.
+     */
+    CertificateGenerationParams fetchCertGenParams();
 }
