@@ -812,7 +812,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         final String alias = keyPairGuiInfo.getAlias();
         try {
             cryptoTokenManagementSession.testKeyPair(getAdmin(), getCurrentCryptoTokenId(), alias);
-            super.addNonTranslatedErrorMessage(alias + " tested successfully.");
+            super.addNonTranslatedInfoMessage(alias + " tested successfully.");
         } catch (Exception e) {
             super.addNonTranslatedErrorMessage(e.getMessage());
         }

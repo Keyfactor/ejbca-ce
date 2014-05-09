@@ -56,6 +56,16 @@ public abstract class BaseManagedBean implements Serializable{
 		FacesContext ctx = FacesContext.getCurrentInstance();
 		ctx.addMessage("error", new FacesMessage(FacesMessage.SEVERITY_ERROR,messageResource,messageResource));
 	}
+	
+	protected void addInfoMessage(String messageResource){
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        ctx.addMessage("error", new FacesMessage(FacesMessage.SEVERITY_INFO,getEjbcaWebBean().getText(messageResource, true),getEjbcaWebBean().getText(messageResource, true)));
+    }
+
+    protected void addNonTranslatedInfoMessage(String messageResource){
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        ctx.addMessage("error", new FacesMessage(FacesMessage.SEVERITY_INFO,messageResource,messageResource));
+    }
 
 	protected AuthenticationToken getAdmin(){
 		return EjbcaJSFHelper.getBean().getAdmin();

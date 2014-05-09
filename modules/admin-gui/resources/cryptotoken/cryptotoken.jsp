@@ -41,7 +41,7 @@ org.cesecore.authorization.control.CryptoTokenRules
 	    <h:outputText value="#{web.text.CRYPTOTOKEN_NEW}" rendered="#{cryptoTokenMBean.currentCryptoTokenId == 0}"/>
 		<h:outputText value="#{web.text.CRYPTOTOKEN} #{cryptoTokenMBean.currentCryptoToken.name}" rendered="#{cryptoTokenMBean.currentCryptoTokenId != 0}"/>
 	</h1>
-	<div class="message"><h:messages layout="table" errorClass="alert"/></div>
+	<div class="message"><h:messages layout="table" errorClass="alert" infoClass="info"/></div>
 	<h:form id="currentCryptoTokenForm">
 	<h:panelGrid columns="2">
 		<h:panelGroup>

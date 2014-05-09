@@ -56,13 +56,13 @@
   <% } %>
   <% if(xkmsrenewed){ %> 
     <tr> 
-      <td width="40%" class="alert"><%= ejbcawebbean.getText("XKMSCERTIFICATERENEWED") %></td>
+      <td width="40%" class="info"><%= ejbcawebbean.getText("XKMSCERTIFICATERENEWED") %></td>
       <td width="60%"></td>
     </tr>
   <% } %>
   <% if(cmsrenewed){ %> 
     <tr> 
-      <td width="40%" class="alert"><%= ejbcawebbean.getText("CMSCERTIFICATERENEWED") %></td>
+      <td width="40%" class="info"><%= ejbcawebbean.getText("CMSCERTIFICATERENEWED") %></td>
       <td width="60%"></td>
     </tr>
   <% } %>
@@ -80,13 +80,13 @@
   <% } %>
   <% if(carenewed){ %> 
     <tr> 
-      <td width="40%" class="alert"><%= ejbcawebbean.getText("CARENEWED") %></td>
+      <td width="40%" class="info"><%= ejbcawebbean.getText("CARENEWED") %></td>
       <td width="60%"></td>
     </tr>
   <% } %>
   <% if(capublished){ %> 
     <tr> 
-      <td width="40%" class="alert"><%= ejbcawebbean.getText("CACERTPUBLISHINGQUEUED") %></td>
+      <td width="40%" class="info"><%= ejbcawebbean.getText("CACERTPUBLISHINGQUEUED") %></td>
       <td width="60%"></td>
     </tr>
   <% } %>
