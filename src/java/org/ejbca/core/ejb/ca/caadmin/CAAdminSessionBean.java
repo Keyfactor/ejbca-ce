@@ -1111,7 +1111,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 throw new EjbcaException(msg);
             }
             final Certificate cacert = ((X509ResponseMessage) responsemessage).getCertificate();
-            // Recieving a certificate for an internal CA will transform it into an externally signed CA
+            // Receiving a certificate for an internal CA will transform it into an externally signed CA
             if (ca.getSignedBy() != CAInfo.SIGNEDBYEXTERNALCA) {
                 ca.setSignedBy(CAInfo.SIGNEDBYEXTERNALCA);
             }
