@@ -85,55 +85,56 @@ public class InternalKeyBindingListCommand extends EjbcaCliUserCommandBase {
             final StringBuilder sb = new StringBuilder();
             final int cryptoTokenId = internalKeyBinding.getCryptoTokenId();
             try {
-                final CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(getAuthenticationToken(), cryptoTokenId);
-                if (cryptoTokenInfo == null) {
-                    sb.append("{CryptoToken with ID " + cryptoTokenId + " attached to keybinding \"" + internalKeyBinding.getName()
-                            + "\" does not exist.}");
-                } else {
-                    sb.append(' ').append(internalKeyBinding.getImplementationAlias());
-                    sb.append('\t').append('\"').append(internalKeyBinding.getName()).append('\"');
-                    sb.append(" (").append(internalKeyBinding.getId()).append(')');
-                    sb.append(", ").append(internalKeyBinding.getStatus().name());
-                    final CertificateInfo certificateInfo = certificateStoreSession.getCertificateInfo(internalKeyBinding.getCertificateId());
-                    String issuerDn = "n/a";
-                    String serialNumber = "n/a";
-                    if (certificateInfo != null) {
-                        issuerDn = "\"" + certificateInfo.getIssuerDN() + "\"";
-                        serialNumber = certificateInfo.getSerialNumber().toString(16).toUpperCase();
-                    }
-                    sb.append(", ").append(issuerDn).append(" ").append(serialNumber);
+                sb.append(' ').append(internalKeyBinding.getImplementationAlias());
+                sb.append('\t').append('\"').append(internalKeyBinding.getName()).append('\"');
+                sb.append(" (").append(internalKeyBinding.getId()).append(')');
+                sb.append(", ").append(internalKeyBinding.getStatus().name());
+                final CertificateInfo certificateInfo = certificateStoreSession.getCertificateInfo(internalKeyBinding.getCertificateId());
+                String issuerDn = "n/a";
+                String serialNumber = "n/a";
+                if (certificateInfo != null) {
+                    issuerDn = "\"" + certificateInfo.getIssuerDN() + "\"";
+                    serialNumber = certificateInfo.getSerialNumber().toString(16).toUpperCase();
+                }
+                sb.append(", ").append(issuerDn).append(" ").append(serialNumber);
 
-                    sb.append(", \"").append(cryptoTokenInfo.getName()).append("\" (").append(cryptoTokenId).append(')');
-                    sb.append(", ").append(internalKeyBinding.getKeyPairAlias());
-                    sb.append(", ").append(internalKeyBinding.getNextKeyPairAlias());
-                    sb.append(", properties={");
-                    final Collection<InternalKeyBindingProperty<? extends Serializable>> properties = internalKeyBinding.getCopyOfProperties()
-                            .values();
-                    for (final InternalKeyBindingProperty<? extends Serializable> property : properties) {
-                        sb.append("\n\t").append(property.getName()).append('=').append(property.getValue());
-                        sb.append(" [").append(property.getType().getSimpleName()).append(", ").append(property.getDefaultValue()).append("],");
-                    }
-                    if (properties.size() > 0) {
-                        sb.deleteCharAt(sb.length() - 1);
-                    }
-                    sb.append("\n }, trust={");
-                    final List<InternalKeyBindingTrustEntry> internalKeyBindingTrustEntries = internalKeyBinding.getTrustedCertificateReferences();
-                    if (internalKeyBindingTrustEntries.isEmpty()) {
-                        sb.append("\n\tANY certificate issued by a known CA");
-                    } else {
-                        for (final InternalKeyBindingTrustEntry internalKeyBindingTrustEntry : internalKeyBindingTrustEntries) {
-                            final String caSubject = caSession.getCAInfo(getAuthenticationToken(), internalKeyBindingTrustEntry.getCaId())
-                                    .getSubjectDN();
-                            sb.append("\n\t\"").append(caSubject).append("\", ");
-                            if (internalKeyBindingTrustEntry.fetchCertificateSerialNumber() == null) {
-                                sb.append("ANY certificate");
-                            } else {
-                                sb.append(internalKeyBindingTrustEntry.fetchCertificateSerialNumber().toString(16));
-                            }
+                final CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(getAuthenticationToken(), cryptoTokenId);
+                final String cryptoTokenName;
+                if (cryptoTokenInfo == null) {                        
+                    cryptoTokenName = "(CryptoToken does not exist)";
+                } else {
+                    cryptoTokenName = cryptoTokenInfo.getName();
+                }
+                sb.append(", \"").append(cryptoTokenName).append("\" (").append(cryptoTokenId).append(')');
+                sb.append(", ").append(internalKeyBinding.getKeyPairAlias());
+                sb.append(", ").append(internalKeyBinding.getNextKeyPairAlias());
+                sb.append(", properties={");
+                final Collection<InternalKeyBindingProperty<? extends Serializable>> properties = internalKeyBinding.getCopyOfProperties()
+                        .values();
+                for (final InternalKeyBindingProperty<? extends Serializable> property : properties) {
+                    sb.append("\n\t").append(property.getName()).append('=').append(property.getValue());
+                    sb.append(" [").append(property.getType().getSimpleName()).append(", ").append(property.getDefaultValue()).append("],");
+                }
+                if (properties.size() > 0) {
+                    sb.deleteCharAt(sb.length() - 1);
+                }
+                sb.append("\n }, trust={");
+                final List<InternalKeyBindingTrustEntry> internalKeyBindingTrustEntries = internalKeyBinding.getTrustedCertificateReferences();
+                if (internalKeyBindingTrustEntries.isEmpty()) {
+                    sb.append("\n\tANY certificate issued by a known CA");
+                } else {
+                    for (final InternalKeyBindingTrustEntry internalKeyBindingTrustEntry : internalKeyBindingTrustEntries) {
+                        final String caSubject = caSession.getCAInfo(getAuthenticationToken(), internalKeyBindingTrustEntry.getCaId())
+                                .getSubjectDN();
+                        sb.append("\n\t\"").append(caSubject).append("\", ");
+                        if (internalKeyBindingTrustEntry.fetchCertificateSerialNumber() == null) {
+                            sb.append("ANY certificate");
+                        } else {
+                            sb.append(internalKeyBindingTrustEntry.fetchCertificateSerialNumber().toString(16));
                         }
                     }
-                    sb.append("\n }");
                 }
+                sb.append("\n }");
                 getLogger().info(sb);
             } catch (AuthorizationDeniedException e) {
                 log.error("CLI user not authorized to view key bindings.");
