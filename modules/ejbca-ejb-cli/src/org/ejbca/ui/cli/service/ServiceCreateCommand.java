@@ -94,7 +94,7 @@ public class ServiceCreateCommand extends BaseServiceModificationCommand {
         StringBuilder sb = new StringBuilder();
         sb.append("This example creates a service that updates the CRL on a daily basis. "
                 + "The worker.caidstocheck value of 1 means check all CAs. "
-                + "You can create services from the Admin Web and use the \"service info\" command"
+                + "You can create services from the Admin Web and use the \"service info\" command "
                 + "to learn how the CLI fields correspond to the fields in the Admin Web.\n\n");
         sb.append("Example usage: service create DailyCRLUpdate workerClassPath=org.ejbca.core.model.services.workers.CRLUpdateWorker"
                 + " worker.caidstocheck=1 intervalClassPath=org.ejbca.core.model.services.intervals.PeriodicalInterval interval.periodical.unit=DAYS"

@@ -32,7 +32,7 @@ public abstract class BaseServiceModificationCommand extends BaseServiceCommand 
 
     /** Displays the help text about -listFields and -listProperties accepted by the "create" and "edit" commands. */
     protected final String FIELDS_HELP = "The \"fields\" are related directly to the "
-            + "service, e.g. it's description and whether it's active. The properties" + "are used by the different worker/interval/action classes.\n" +
+            + "service, e.g. it's description and whether it's active. The properties are used by the different worker/interval/action classes.\n" +
             "Note that no properties are set by default with the \"create\" command. "
             + "You must either use the Admin Web when creating the service or know in "
             + "advance which properties are required. It is NOT possible to list " + "non-existent (but required) properties from the CLI.";

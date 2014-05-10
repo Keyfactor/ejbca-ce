@@ -85,12 +85,15 @@ public class ListAdminsCommand extends BaseRolesCommand {
 
     @Override
     public String getCommandDescription() {
-        return "Lists admins in a role";
+        return "Lists admins in a role.";
     }
 
     @Override
     public String getFullHelpText() {
-        return getCommandDescription();
+        StringBuilder sb = new StringBuilder();
+        sb.append(getCommandDescription() + "\n");
+        sb.append("Outputs fields: caName, matchWith, matchType, matchValue.\n");
+        return sb.toString();
     }
 
     @Override
