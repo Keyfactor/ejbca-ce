@@ -90,7 +90,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
         registerParameter(new Parameter(CRL_FILE_KEY, "Filename", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "The file containing the CRL."));
         registerParameter(new Parameter(OPERATION_KEY, STRICT_OP + "|" + LENIENT_OP + "|" + ADAPTIVE_OP, MandatoryMode.MANDATORY,
-                StandaloneMode.ALLOW, ParameterMode.ARGUMENT, "Operations mode. Must be one of " + STRICT_OP + "," + LENIENT_OP + " or "
+                StandaloneMode.ALLOW, ParameterMode.ARGUMENT, "Operations mode. Must be one of " + STRICT_OP + ", " + LENIENT_OP + " or "
                         + ADAPTIVE_OP + "."));
     }
 
@@ -113,7 +113,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
             final boolean adaptive = operationsMode.equalsIgnoreCase(ADAPTIVE_OP);
             if (!strict && !adaptive && !operationsMode.equalsIgnoreCase(LENIENT_OP)) {
                 //None of the above.
-                log.error("Operations mode must be one of " + STRICT_OP + "," + LENIENT_OP + " or " + ADAPTIVE_OP + ".");
+                log.error("Operations mode must be one of " + STRICT_OP + ", " + LENIENT_OP + " or " + ADAPTIVE_OP + ".");
                 return CommandResult.CLI_FAILURE;
             }
             // Fetch CA and related info
