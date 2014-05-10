@@ -39,7 +39,7 @@ public class UpgradeCommand extends EjbcaCommandBase {
 
     {
         registerParameter(new Parameter(DATABASE_KEY, "Database type", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "The databse type."));
+                "The database type."));
         registerParameter(new Parameter(FROM_VERSION_KEY, "From version", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "From which version of EJBCA"));
         registerParameter(new Parameter(IS_POST_UPGRADE, "Add this flag if running post upgrade", MandatoryMode.OPTIONAL, StandaloneMode.FORBID,
@@ -71,12 +71,12 @@ public class UpgradeCommand extends EjbcaCommandBase {
 
     @Override
     public String getCommandDescription() {
-        return "Upgrade command. Use 'ant upgrade' instead of running this directly";
+        return "Upgrade command. Use 'ant upgrade' instead of running this directly.";
     }
 
     @Override
     public String getFullHelpText() {
-        return "Upgrade command. Use 'ant upgrade' instead of running this directly";
+        return getCommandDescription();
     }
     
     @Override

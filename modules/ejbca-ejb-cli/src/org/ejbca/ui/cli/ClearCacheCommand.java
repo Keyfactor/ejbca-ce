@@ -71,9 +71,9 @@ public class ClearCacheCommand extends EjbcaCommandBase {
 
     @Override
     public String getFullHelpText() {
-        return "Clears caches used internally by EJBCA." + "See conf/cache.properties.sample for config options. "
+        return "Clears caches used internally by EJBCA. See conf/cache.properties.sample for config options. "
                 + "This command should only be needed if cache times are set to very high values. "
-                + "All arguments are optional, but you have to provide at least one";
+                + "All arguments are optional, but you have to provide at least one.";
     }
 
     public CommandResult execute(ParameterContainer parameters) {
