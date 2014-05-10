@@ -110,12 +110,15 @@ public class ListEndEntitiesCommand extends BaseRaCommand {
 
     @Override
     public String getCommandDescription() {
-        return "List end entities with a specified status";
+        return "List end entities with a specified status.";
     }
 
     @Override
     public String getFullHelpText() {
-        return getCommandDescription();
+        StringBuilder sb = new StringBuilder();
+        sb.append(getCommandDescription() + "\n");
+        sb.append("Outputs comma separated items: username, subjectDN, subjectAltName, email, status, type, tokenType, hardTokenIssuerId.\n");
+        return sb.toString();
     }
 
     protected Logger getLogger() {
