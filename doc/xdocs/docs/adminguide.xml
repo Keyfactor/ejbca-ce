@@ -410,6 +410,11 @@ EJBCA will not send back proper SCEP error messages in all cases of failure. The
 </p>
 </subsection>
 <subsection name="Tested devices">
+<subsubsection name="Cisco ISE">
+<p>
+EJBCA SCEP, using RA mode, has been sucesfully integrated with Cisco ISE. Configuring EJBCA as a backend CA in Cisco ISE devices can be enrolled with certificates from EJBCA, through the ISE enrollment interfaces.
+</p>
+</subsubsection>
 <subsubsection name="iPhone/iOS">
 <p>
 You can enroll certificates for the iOS directly with EJBCA using SCEP. There is a SCEP profile in the iPhone that you can use for this.
