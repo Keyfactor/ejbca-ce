@@ -160,6 +160,7 @@ import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
+import org.ejbca.core.ejb.ca.store.CaCertificateCache;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
@@ -182,7 +183,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
 import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.ServiceConfiguration;
-import org.ejbca.core.protocol.certificatestore.CertificateCacheFactory;
 import org.ejbca.cvc.CardVerifiableCertificate;
 
 /**
@@ -759,7 +759,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
 
         // Update local OCSP's CA certificate cache
-        CertificateCacheFactory.getInstance(certificateStoreSession).forceReload();
+        reloadCaCertificateCache();
 
         // caSession already audit logged that the CA was added
 
@@ -2943,6 +2943,14 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         // Just forward the call, because in CaSession it is only in the local interface and we
         // want to be able to use it from CLI
         caSession.flushCACache();
+    }
+    
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS) 
+    public void reloadCaCertificateCache(){
+        Collection<Certificate> certs = certificateStoreSession.findCertificatesByType(CertificateConstants.CERTTYPE_SUBCA +
+                CertificateConstants.CERTTYPE_ROOTCA, null);
+        CaCertificateCache.INSTANCE.loadCertificates(certs);
     }
 
 }

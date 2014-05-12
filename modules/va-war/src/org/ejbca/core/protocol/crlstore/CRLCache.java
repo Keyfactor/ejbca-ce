@@ -23,8 +23,8 @@ import org.apache.log4j.Logger;
 import org.cesecore.certificates.crl.CRLInfo;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.util.CertTools;
+import org.ejbca.core.ejb.ca.store.CaCertificateCache;
 import org.ejbca.core.protocol.certificatestore.HashID;
-import org.ejbca.core.protocol.certificatestore.ICertificateCache;
 
 /**
  * See {@link ICRLCache} to see what this is.
@@ -35,7 +35,7 @@ class CRLCache implements ICRLCache {
 	private static final Logger log = Logger.getLogger(CRLCache.class);
 	
 	private final CrlStoreSessionLocal crlSession;
-	private final ICertificateCache certCache;
+	private final CaCertificateCache certCache;
 	final private Map<Integer, CRLEntity> crls = new HashMap<Integer, CRLEntity>();
 	final private Map<Integer, CRLEntity> deltaCrls = new HashMap<Integer, CRLEntity>();
 	private class CRLEntity {
@@ -61,7 +61,7 @@ class CRLCache implements ICRLCache {
 	 * @param crlSession DB connections
 	 * @param certStore references to needed CA certificates.
 	 */
-	CRLCache(CrlStoreSessionLocal crlSession, ICertificateCache certCache) {
+	CRLCache(CrlStoreSessionLocal crlSession, CaCertificateCache certCache) {
 		super();
 		this.crlSession = crlSession;
 		this.certCache = certCache;

@@ -400,8 +400,7 @@
 							<include name="org/cesecore/certificates/certificate/request/FailInfo.java"/>
 							<include name="org/cesecore/certificates/util/dn/PrintableStringEntryConverter.java"/>
 							<include name="org/cesecore/util/SimpleTime.java"/>
-							<include name="org/ejbca/core/protocol/certificatestore/HashID.java"/>
-							<include name="org/ejbca/core/protocol/certificatestore/ICertificateCache.java"/>
+							<include name="org/ejbca/core/protocol/certificatestore/HashID.java"/>						
 							<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/BaseSigningCAServiceInfo.java"/>
 							<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/ExtendedCAServiceTypes.java"/>
 							<!-- Dependency on Certificate Extensions -->					
@@ -412,8 +411,7 @@
 							<include name="org/cesecore/config/OcspConfiguration.java"/>
 							<include name="org/cesecore/certificates/ocsp/SHA1DigestCalculator.java"/>
 							<include name="org/cesecore/certificates/ocsp/exception/NotSupportedException.java"/>
-							<include name="org/cesecore/certificates/ocsp/exception/OcspFailureException.java"/>				
-							<include name="org/ejbca/core/protocol/ocsp/CertificateCache.java"/>											
+							<include name="org/cesecore/certificates/ocsp/exception/OcspFailureException.java"/>													
 							<!-- End Entity classes .. -->
 							<include name="org/cesecore/certificates/endentity/EndEntityConstants.java"/>
 							<include name="org/cesecore/certificates/endentity/ExtendedInformation.java"/>
@@ -601,7 +599,6 @@
 					<include name="org/cesecore/certificates/certificate/request/X509ResponseMessage.java" />
 					<!-- Depends on EjbRemoteHelper and EjbLocalHelper -->					
 					<exclude name="org/ejbca/core/model/approval/approvalrequests/ActivateCATokenApprovalRequest.java" />
-					<exclude name="org/ejbca/core/protocol/ocsp/CertificateCacheInternal.java" />
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/caadmin" destdir="${build-temp.dir}/caadmin" debug="on" includeantruntime="no" encoding="UTF-8" target="${java.target.version}">
@@ -1028,7 +1025,6 @@
 					<include name="org/cesecore/certificates/ocsp/exception/*Exception.java"/>
 					<include name="org/cesecore/certificates/ocsp/SHA1DigestCalculator.java"/>
 					<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/*CAService*.java"/>
-					<include name="org/ejbca/core/protocol/certificatestore/ICertificateCache.java"/>
 					<include name="org/ejbca/core/protocol/certificatestore/HashID.java"/>
 					<include name="org/ejbca/config/*Configuration.java"/>
 					<!-- upgrade of CertificatePolicy, change from ejbca to cesecore class -->

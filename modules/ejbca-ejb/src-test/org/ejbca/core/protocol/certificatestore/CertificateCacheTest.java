@@ -17,7 +17,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
-import java.math.BigInteger;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -26,11 +25,11 @@ import java.util.Collection;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.ocsp.CertificateID;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.EjbcaConfigurationHolder;
+import org.ejbca.core.ejb.ca.store.CaCertificateCache;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -66,7 +65,8 @@ public class CertificateCacheTest {
 		certs.add(testcvccert);
 		X509Certificate testscepcert = (X509Certificate)CertTools.getCertfromByteArray(testscepca);
 		certs.add(testscepcert);
-		ICertificateCache cache = new CertificateCache(certs);
+		CaCertificateCache cache = CaCertificateCache.INSTANCE;
+		cache.loadCertificates(certs);
 		
 		// Test lookup of not existing cert
 		X509Certificate cert = cache.findLatestBySubjectDN(HashID.getFromDNString("CN=Foo,C=SE"));
@@ -85,42 +85,7 @@ public class CertificateCacheTest {
 		assertNull(cert);
 		cert = cache.findLatestBySubjectDN(HashID.getFromSubjectDN(testscepcert));
 		assertEquals(CertTools.getSubjectDN(testscepcert), CertTools.getSubjectDN(cert));
-		
-		// Test lookup based on CertID
-		cert = cache.findByOcspHash(new CertificateID(CertificateID.HASH_SHA1, testrootcert, BigInteger.valueOf(0)));
-		assertNotNull(cert);
-		// The old subcert should verify with this old rootcert
-		subcert.verify(cert.getPublicKey());
-		// But not with the new rootcert
-		cert = cache.findByOcspHash(new CertificateID(CertificateID.HASH_SHA1, testrootnewcert, BigInteger.valueOf(0)));
-		assertNotNull(cert);
-		try {
-			subcert.verify(cert.getPublicKey());
-            fail("verification should have failed");
-        } catch (SignatureException e) {} // NOPMD: BC 1.47
-		
-		// See that it will work when we add the new subcert, to verify with the new rootcert
-		X509Certificate testsubcertnew = (X509Certificate)CertTools.getCertfromByteArray(testsubnew);
-		certs.add(testsubcertnew);
-		cache = new CertificateCache(certs);
-		subcert = cache.findByOcspHash(new CertificateID(CertificateID.HASH_SHA1, testsubcertnew, BigInteger.valueOf(0)));
-		assertNotNull(subcert);
-		subcert.verify(cert.getPublicKey());
-		subcert = cache.findLatestBySubjectDN(HashID.getFromSubjectDN(testsubcertnew));
-		assertNotNull(subcert);
-		subcert.verify(cert.getPublicKey());
 
-		// Check that the cache works when we have SN in the DN
-		X509Certificate testsnindncert = (X509Certificate)CertTools.getCertfromByteArray(testsnindn);
-		certs.add(testsnindncert);
-		cache = new CertificateCache(certs);
-		cert = cache.findByOcspHash(new CertificateID(CertificateID.HASH_SHA1, testsnindncert, BigInteger.valueOf(0)));
-		assertNotNull(cert);
-		cert.verify(testsnindncert.getPublicKey());
-		//log.debug(testsnindncert.getIssuerDN().getName());
-		cert = cache.findLatestBySubjectDN(HashID.getFromIssuerDN(testsnindncert));
-		assertNotNull(cert);
-		cert.verify(testsnindncert.getPublicKey());
 	}
 
 	public static Throwable threadException = null;
@@ -138,7 +103,8 @@ public class CertificateCacheTest {
 		certs.add(testcvccert);
 		X509Certificate testscepcert = (X509Certificate)CertTools.getCertfromByteArray(testscepca);
 		certs.add(testscepcert);
-		ICertificateCache cache = new CertificateCache(certs);
+		CaCertificateCache cache =  CaCertificateCache.INSTANCE;
+		cache.loadCertificates(certs);
 		
 		Thread no1 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testscepcert)),"no1"); // NOPMD we want to use thread here, it's not a JEE app
 		Thread no2 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testrootcert)),"no2"); // NOPMD we want to use thread here, it's not a JEE app
@@ -244,20 +210,6 @@ public class CertificateCacheTest {
 			"QTDenb5DWcN6XcuSHZsXJUGn3yEDjYpY6KL95XCw8mzTjmYN0sbIM3QEN0G3euir"+
 	"dAOftW06blL0zNiQ6/z4MrGmZgTf9Agf5W6uhsx2BwVCMN7bVWVIm9MlU+SW6YM=").getBytes());
 
-	private static byte[] testsubnew = Base64
-	.decode(("MIICOzCCAaSgAwIBAgIIXww57ODOukwwDQYJKoZIhvcNAQEFBQAwLjERMA8GA1UE"+
-			"AwwIVGVzdFJvb3QxDDAKBgNVBAoMA0ZvbzELMAkGA1UEBhMCU0UwHhcNMDgwOTI5"+
-			"MTM0MzUxWhcNMTYxMjE2MTM0MzM3WjAtMRAwDgYDVQQDDAdUZXN0U3ViMQwwCgYD"+
-			"VQQKDANGb28xCzAJBgNVBAYTAlNFMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKB"+
-			"gQCLCUlieZMkY8zN/BmTYnQ708utPv0tQauk94Hoh/Bbg5K2GPXibpNCZWiYlWIF"+
-			"ErTqWCMSf5N6M1l0qlWBcb+ez7bzPl6sBsUBUfY1Uu7D7nFAX6i4mPf8VqvDT2yt"+
-			"4X31S1/3VjHarLgqHS++GZD5h7q6MsOxHfuljafmW6ikYwIDAQABo2MwYTAdBgNV"+
-			"HQ4EFgQUmEEcFdMkrbtCel5Qs2OycgcRF60wDwYDVR0TAQH/BAUwAwEB/zAfBgNV"+
-			"HSMEGDAWgBTa6WEUnJusMrMHxNvWziCnAV08NTAOBgNVHQ8BAf8EBAMCAYYwDQYJ"+
-			"KoZIhvcNAQEFBQADgYEAVKRhuAV1nj1Oi39yLijm8lbq3UJ6xjMgz4wcURXBlx9T"+
-			"Az1pvN1Bpj/JmkNfYpvSmX1UP3suntgNpgGoCFxxTuelmmyH9vpSsWeCjiBK/Il9"+
-	"/jhrwrbwF8uoBSkvoE+imcuLD7mbMn66wc1s7akdHXPORxhKs3PJppXjcurxAXM=").getBytes());
-
 	private static byte[] testcvc = Base64
 	.decode(("fyGCAWh/ToHgXykBAEIOU0VDVkNUZXN0MDAwMDF/SYGUBgoEAH8ABwICAgEBgYGA"+
 			"h2uvpDVvYQygDCpZ91ln37I2UcEAPFSjgsNGRq1tJ6Xl+SueIbdR8zfc62+8yNBH"+
@@ -285,20 +237,5 @@ public class CertificateCacheTest {
 			"NfseeJcdbQFcjCyruIf2NL+8l8AuZXyLuMQE6/yqxUdNv7gZvrpk5Z+c9ZcseLTl"+
 			"3GHFTxIySlmZCblZbJzQxO5pRz27B2vPJqicA0cmoBxUQK3NHGO+WyQ+ZpZX5vl/"+
 	"+xc=").getBytes());
-
-	private static byte[] testsnindn = Base64
-	.decode(("MIICXjCCAcegAwIBAgIIEI6RN1cBmxQwDQYJKoZIhvcNAQEFBQAwPzEQMA4GA1UE"+
-			"AwwHU04gQ0EgMTEQMA4GA1UEBRMHMTExMTExMTEMMAoGA1UECgwDRm9vMQswCQYD"+
-			"VQQGEwJTRTAeFw0wODEwMDIxNTQ1MDFaFw0xMTEwMTgxNTQ1MDFaMD8xEDAOBgNV"+
-			"BAMMB1NOIENBIDExEDAOBgNVBAUTBzExMTExMTExDDAKBgNVBAoMA0ZvbzELMAkG"+
-			"A1UEBhMCU0UwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAJnxTFM83LaMg9Cv"+
-			"rDVcxTPAiuieTL2YV/RsjhvENJUtSeAll72UEJhILT5D9D4JR8l5OpW3mpD9KpgW"+
-			"2sWdx9YeB9dtqLHwDl5F+Sqrgl8slPz7879MQ8wWdhg0GlvsOHpL17XWcKmi074K"+
-			"YFsCiXoSoeoBfIS0x8pFsBhPinuHAgMBAAGjYzBhMB0GA1UdDgQWBBTNZtbXdtU3"+
-			"Vi40zxr90Xpi1W7OHzAPBgNVHRMBAf8EBTADAQH/MB8GA1UdIwQYMBaAFM1m1td2"+
-			"1TdWLjTPGv3RemLVbs4fMA4GA1UdDwEB/wQEAwIBhjANBgkqhkiG9w0BAQUFAAOB"+
-			"gQCTYNZ3miZdhQjV8k5IDkX3qVWGW8efvYu9jUIxfXb9cnk1vbx+g4Bv92foYaJz"+
-			"MHJL2dOF0Lr+K5og2OyP5Liu3NpLTHzhyZIrbE84xTiMy6fTOlXddQCg+WpfESk7"+
-	"8oxoBP+ali7cR2Gga1dN+seVKqE16lLohtlbshLUXMjPTA==").getBytes());
 
 }

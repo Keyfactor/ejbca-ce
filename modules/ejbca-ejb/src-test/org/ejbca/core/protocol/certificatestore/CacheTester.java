@@ -15,16 +15,16 @@ package org.ejbca.core.protocol.certificatestore;
 import java.security.cert.X509Certificate;
 
 import org.apache.commons.lang.StringUtils;
+import org.ejbca.core.ejb.ca.store.CaCertificateCache;
 
 /** class used from TestCertificateCache
  * 
- * @author tomas
  * @version $Id$
  */
 public class CacheTester implements Runnable { // NOPMD, this is not a JEE app, only a test
-	private ICertificateCache cache = null;
+	private CaCertificateCache cache = null;
 	private String dn;
-	public CacheTester(ICertificateCache cache, String lookfor) {
+	public CacheTester(CaCertificateCache cache, String lookfor) {
 		this.cache = cache;
 		this.dn = lookfor;
 	}

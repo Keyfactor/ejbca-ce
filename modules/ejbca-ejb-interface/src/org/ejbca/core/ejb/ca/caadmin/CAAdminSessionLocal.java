@@ -26,7 +26,7 @@ public interface CAAdminSessionLocal extends CAAdminSession {
      * CAs, if they are not already in the cache. Can have a side-effect of
      * upgrading a CA, therefore the Required transaction setting.
      */
-    public void initializeAndUpgradeCAs();
+    void initializeAndUpgradeCAs();
 
     /** Method that loads a CA in order to possibly upgrade it, in a separate transaction. 
      * This method is called from initializeAndUpgradeCAs in order to limit the transaction scope of CA upgrades.
@@ -44,7 +44,7 @@ public interface CAAdminSessionLocal extends CAAdminSession {
      * @param certprofile of the ca to check
      * @return 0 if no approvals is required otherwise the number of approvals
      */
-    public int getNumOfApprovalRequired(int action, int caid, int certProfileId);
+    int getNumOfApprovalRequired(int action, int caid, int certProfileId);
 
     /**
      * Used by health-check. Validate that CAs are online and optionally performs
@@ -52,6 +52,12 @@ public interface CAAdminSessionLocal extends CAAdminSession {
      * 
      * @return an error message or an empty String if all are ok.
      */
-    public String healthCheck();
+    String healthCheck();
+    
+    
+    /**
+     * Reloads the cache containing CA certificates
+     */
+    void reloadCaCertificateCache();
 
 }
