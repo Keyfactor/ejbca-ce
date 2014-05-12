@@ -13,7 +13,6 @@
 package org.ejbca.core.protocol.ws.client;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
