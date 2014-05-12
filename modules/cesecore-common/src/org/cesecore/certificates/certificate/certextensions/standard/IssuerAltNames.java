@@ -44,9 +44,6 @@ public class IssuerAltNames extends StandardCertificateExtension {
             final PublicKey userPublicKey, final PublicKey caPublicKey, CertificateValidity val) {
         GeneralNames ret = null;
         String altName = CertTools.getSubjectAlternativeName(ca.getCACertificate()); //subject.getSubjectAltName(); 
-        //if(certProfile.getUseSubjectAltNameSubSet()){
-        //    altName = certProfile.createSubjectAltNameSubSet(altName);
-        //}
         if ( (altName != null) && (altName.length() > 0) ) {
             ret = CertTools.getGeneralNamesFromAltName(altName);
         }
